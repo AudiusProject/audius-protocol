@@ -191,7 +191,20 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_num = None
     latest_indexed_block_hash = None
 
-    if use_redis_cache:
+    fetched_from_gateway = false
+    if not use_redis_cache:
+        try:
+            # get latest blockchain state from web3
+            latest_block = web3.eth.getBlock("latest", True)
+            latest_block_num = latest_block.number
+            latest_block_hash = latest_block.hash.hex()
+            fetched_from_gateway = true
+        except Exception as e:
+            logger.warning(f"Could not fetch latest block from gateway. Using cached block values: {e}")
+
+    # Fetch latest blockchain state from web3 if we explicitly don't want to use redis cache.
+    # If value does not exist redis cache, then result will be None
+    if not fetched_from_gateway or use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
         latest_block_num, latest_block_hash = get_latest_chain_block_set_if_nx(
             redis, web3
@@ -205,15 +218,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_hash = redis.get(most_recent_indexed_block_hash_redis_key)
         if latest_indexed_block_hash is not None:
             latest_indexed_block_hash = latest_indexed_block_hash.decode("utf-8")
-
-    # fetch latest blockchain state from web3 if:
-    # we explicitly don't want to use redis cache or
-    # value from redis cache is None
-    if not use_redis_cache or latest_block_num is None or latest_block_hash is None:
-        # get latest blockchain state from web3
-        latest_block = web3.eth.getBlock("latest", True)
-        latest_block_num = latest_block.number
-        latest_block_hash = latest_block.hash.hex()
 
     play_health_info = get_play_health_info(
         redis,
@@ -516,3 +520,5 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
             )
 
     return latest_block_num, latest_block_hash
+
+def get_block_from_redis()
