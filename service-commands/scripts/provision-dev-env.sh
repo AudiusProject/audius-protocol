@@ -91,13 +91,13 @@ source ~/.bashrc
 # audius repos setup
 cd $PROTOCOL_DIR/service-commands
 npm install
-npm link @audius/libs
 node scripts/hosts.js add
 node scripts/setup.js run init-repos up
-sh scripts/init-repos.sh
 
-cd ~/audius-protocol/libs
+cd $PROTOCOL_DIR/libs
 npm link
+
+cd $PROTOCOL_DIR/service-commands
 npm link @audius/libs
 
 cd ~

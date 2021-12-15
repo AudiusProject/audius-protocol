@@ -118,7 +118,7 @@ case "$service" in
 
 		read -p "Setup zsh? [y/N] " -n 1 -r && echo
 		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-			execute_with_ssh $provider $user $name "sudo chsh -s /bin/zsh \"$USER\""
+			execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
 
 			cp ~/.zshenv ~/.zshenv.tmp
 			echo "export PROTOCOL_DIR=$HOME/audius-protocol" >> ~/.zshenv.tmp
