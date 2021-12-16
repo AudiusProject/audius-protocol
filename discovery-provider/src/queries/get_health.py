@@ -462,7 +462,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None, use_redis_cache=true
 
     if latest_block_num is None or latest_block_hash is None:
         latest_block_num, latest_block_hash = get_latest_chain_block_from_web3(web3)
-        set_latest_chain_block_on_redis(redis, latest_block_num, latest_block_hash)
+        set_latest_chain_block_in_redis(redis, latest_block_num, latest_block_hash)
 
     return latest_block_num, latest_block_hash
 
@@ -525,10 +525,10 @@ def get_latest_chain_block_from_redis(redis):
  
     return latest_block_num, latest_block_hash
 
-def set_latest_chain_block_on_redis(redis, latest_block_num, latest_block_hash):
+def set_latest_chain_block_in_redis(redis, latest_block_num, latest_block_hash):
     try:
         if redis is None:
-            raise Exception("Redis instance not valid in set_latest_chain_block_on_redis")
+            raise Exception("Redis instance not valid in set_latest_chain_block_in_redis")
 
         if latest_block_num is None or latest_block_hash is None:
             raise Exception(
