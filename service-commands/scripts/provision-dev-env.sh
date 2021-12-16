@@ -1,7 +1,6 @@
 #!/bin/bash
 set -x
 
-cd $HOME
 export NODE_VERSION="v14.18.1"
 export PYTHON_VERSION="3.9"
 export NVM_VERSION="v0.35.3"
@@ -98,14 +97,20 @@ source ~/.profile
 source ~/.bashrc
 
 # audius repos setup
-git clone https://github.com/AudiusProject/audius-client.git && git checkout $CLIENT_GIT_REF && git pull
 cd $PROTOCOL_DIR/service-commands
 npm install
 node scripts/hosts.js add
+
+# set up client
+cd ~
+git clone https://github.com/AudiusProject/audius-client.git
+cd audius-client
+npm link @audius/libs
+
+# set up repos
 node scripts/setup.js run init-repos up
 
+# install mad dog dependencies
 sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
 sudo chmod +x /usr/local/bin/pumba
 
-echo 'Rebooting machine...
-reboot

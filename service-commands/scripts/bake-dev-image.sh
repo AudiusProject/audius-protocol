@@ -16,7 +16,7 @@ handle_provisioning_error () {
     # Azure access (if baking w Azure)
 # Default values of arguments
 USE_AZURE=0 # GCP by default
-SOURCE_DISK='audius-dev-poc' # name of remote box to bake as AMI
+SOURCE_DISK="christine-new-bake" # name of remote box to bake as AMI
 PROTOCOL_GIT_REF="master"
 CLIENT_GIT_REF="master"
 USERNAME="ubuntu"
@@ -57,13 +57,14 @@ process_arguments () {
 
 create_image_with_gcp() {
     local GOOGLE_PROJECT_NAME="audius-infrastructure"
-    local DEFAULT_GCP_REGION="us-central1-f"
-    local SOURCE_DISK=$1
-    local PROTOCOL_GIT_HASH=$2
-    local CLIENT_GIT_HASH=$3
+    local DEFAULT_GCP_REGION="us-central1-a"
+    local SOURCE_DISK="$1"
+    local PROTOCOL_GIT_HASH="$2"
+    local CLIENT_GIT_HASH="$3"
+    local IMAGE_NAME="$1-bake-$d"
     gcloud compute images create \
+        "$IMAGE_NAME" \
         --project="$GOOGLE_PROJECT_NAME" \
-        --description="dev instance image" \
         --source-disk="$SOURCE_DISK" \
         --source-disk-zone="$DEFAULT_GCP_REGION" \
         --labels=protocol-git-hash="$PROTOCOL_GIT_HASH",client-git-hash="$CLIENT_GIT_HASH" \
@@ -82,8 +83,8 @@ provision_dev_with_gcp() {
 
 prepare_gcp_instance_for_image_creation() {
     local BAKE_MACHINE_NAME=$1
-    local IP=$(gcloud compute instances describe "$BAKE_MACHINE_NAME" --format 'get(networkInterfaces[0].accessConfigs[0].natIP)')
-    ssh "ubuntu@$IP" -t 'sudo sync' # get ready for baking - TODO change to shutdown script https://cloud.google.com/compute/docs/shutdownscript
+    local IP=$(gcloud compute instances describe "$BAKE_MACHINE_NAME" --format "get(networkInterfaces[0].accessConfigs[0].natIP)")
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "ubuntu@$IP" -t "sudo sync" # get ready for baking - TODO change to shutdown script https://cloud.google.com/compute/docs/shutdownscript
     gcloud compute instances stop "$BAKE_MACHINE_NAME"
 }
 
@@ -96,7 +97,7 @@ bake_with_gcp () {
         provision_dev_with_gcp "$BUILD_INSTANCE_NAME" "$PROTOCOL_GIT_REF" "$CLIENT_GIT_REF"
         SOURCE_DISK="$BUILD_INSTANCE_NAME"
     fi
-    prepare_gcp_instance_for_image_creation "$SOURCE_DISK"
+    # prepare_gcp_instance_for_image_creation "$SOURCE_DISK"
     create_image_with_gcp "$SOURCE_DISK" "$PROTOCOL_GIT_REF" "$CLIENT_GIT_REF"
 }
 
