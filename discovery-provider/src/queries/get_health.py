@@ -487,43 +487,32 @@ def get_latest_chain_block_from_web3(web3):
     return latest_block_num, latest_block_hash
 
 def get_latest_indexed_chain_block_from_redis(redis):
-    latest_indexed_block_num = None
-    latest_indexed_block_hash = None 
-    try:
-        if redis is None:
-            raise Exception("Redis instance not valid in get_latest_indexed_chain_block_from_redis")
-
-        latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
-        if latest_indexed_block_num is not None:
-            latest_indexed_block_num = int(latest_indexed_block_num)
-
-        latest_indexed_block_hash = redis.get(most_recent_indexed_block_hash_redis_key)
-        if latest_indexed_block_hash is not None:
-            latest_indexed_block_hash = latest_indexed_block_hash.decode("utf-8")
-    except Excetion as e:
-        logger.warning(f"Could not fetch latest indexed block from redis: {e}")
-
-    return latest_indexed_block_num, latest_indexed_block_hash
+    return get_block_from_redis(redis, most_recent_indexed_block_redis_key, most_recent_indexed_block_hash_redis_key) 
 
 def get_latest_chain_block_from_redis(redis):
-    latest_block_num = None
-    latest_block_hash = None
+    return get_block_from_redis(redis, latest_block_redis_key, latest_block_hash_redis_key) 
+
+def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
+    block_num = None
+    block_hash = None
 
     try:
         if redis is None:
-            raise Exception("Redis instance not valid in get_latest_chain_block_from_redis")
+            raise Exception("Redis instance not valid in get_block_from_redis")
 
-        stored_latest_block_num = redis.get(latest_block_redis_key)
-        if stored_latest_block_num is not None:
-            latest_block_num = int(stored_latest_block_num)
+        stored_block_num = redis.get(block_redis_key)
+        if stored_block_num is not None:
+            block_num = int(stored_block_num)
 
-        stored_latest_blockhash = redis.get(latest_block_hash_redis_key)
-        if stored_latest_blockhash is not None:
-            latest_block_hash = stored_latest_blockhash.decode("utf-8")
+        stored_blockhash = redis.get(block_hash_redis_key)
+        if stored_blockhash is not None:
+            block_hash = stored_blockhash.decode("utf-8")
     except Exceptipon as e:
-        logger.warning(f"Could not fetch latest block from redis: {e}")
+        logger.warning(
+            f"Could not fetch latest block from redis for keys={block_redis_key},{block_hash_redis_key}: {e}"
+        )
  
-    return latest_block_num, latest_block_hash
+    return block_num, block_hash
 
 def set_latest_chain_block_in_redis(redis, latest_block_num, latest_block_hash):
     try:
