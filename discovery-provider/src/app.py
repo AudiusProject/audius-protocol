@@ -378,7 +378,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
             "src.tasks.index_listen_count_milestones",
-            "src.tasks.index_user_listening_history",
+            "src.tasks.user_listening_history.index_user_listening_history",
         ],
         beat_schedule={
             "update_discovery_provider": {

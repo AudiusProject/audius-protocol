@@ -100,8 +100,8 @@ const streamFromFileSystem = async (req, res, path) => {
       fileStream
         .on('open', () => fileStream.pipe(res))
         .on('end', () => {
-          res.end()
           logInfoWithDuration(req, 'Successfully served from fs!')
+          res.end()
           resolve()
         })
         .on('error', e => { reject(e) })
@@ -226,8 +226,8 @@ const getCID = async (req, res) => {
       stream
         .on('data', streamData => { res.write(streamData) })
         .on('end', () => {
-          res.end()
           logInfoWithDuration(req, 'Successfully served from ipfs!')
+          res.end()
           resolve()
         })
         .on('error', e => { reject(e) })
