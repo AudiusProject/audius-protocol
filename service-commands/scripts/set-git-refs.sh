@@ -7,7 +7,7 @@ git fetch origin
 git checkout $1
 git pull
 
-if [[ -d $(realpath $PROTOCOL_DIR/../audius_client) ]]; then
+if [[ -d $PROTOCOL_DIR/../audius_client ]]; then
 	cd $PROTOCOL_DIR/../audius_client
 	git fetch origin
 	git checkout $2
