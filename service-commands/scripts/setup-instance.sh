@@ -87,6 +87,7 @@ configure_etc_hosts() {
 	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
 		IP=$(get_ip_addr $provider $name)
 		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
+		sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
 		sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
 	fi
 }
@@ -111,7 +112,7 @@ setup_zsh() {
 		rm ~/.zshenv.tmp
 
 		copy_file_to_remote $provider $user $name '~/.zshrc' '~/.zshrc'
-		if [[ -f "~/.p10k.zsh" ]]; then
+		if [[ -f "$HOME/.p10k.zsh" ]]; then
 			copy_file_to_remote $provider $user $name '~/.p10k.zsh' '~/.p10k.zsh'
 		fi
 	fi
@@ -145,7 +146,7 @@ case "$service" in
 		execute_with_ssh $provider $user $name \
 			"PROTOCOL_DIR=/home/ubuntu/audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
 
-		copy_file_to_remote $provider $user $name '~/.gitconfig' '~/.gitconfig'
+		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
 
 		configure_etc_hosts
 
