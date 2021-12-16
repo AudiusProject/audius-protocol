@@ -20,7 +20,6 @@ export const BASENAME = process.env.PUBLIC_URL
 export const PRIVACY_POLICY = '/legal/privacy-policy'
 export const COOKIE_POLICY = `${BASE_URL}${PRIVACY_POLICY}`
 export const TERMS_OF_SERVICE = '/legal/terms-of-use'
-export const AUDIUS_PRESS_LINK = '/press'
 
 // Static routes.
 export const FEED_PAGE = '/feed'
@@ -99,6 +98,7 @@ export const EMPTY_PAGE = '/empty_page'
 export const AUDIUS_TWITTER_LINK = 'https://twitter.com/AudiusProject'
 export const AUDIUS_INSTAMGRAM_LINK = 'https://www.instagram.com/audiusmusic'
 export const AUDIUS_DISCORD_LINK = 'https://discord.gg/yNUg2e2'
+export const AUDIUS_PRESS_LINK = 'https://brand.audius.co'
 
 // Org Links
 export const AUDIUS_ORG = 'https://audius.org'
@@ -116,8 +116,6 @@ export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
 export const AUDIUS_PODCAST_LINK =
   'https://www.youtube.com/playlist?list=PLKEECkHRxmPag5iYp4dTK5fGoRcoX40RY'
 export const AUDIUS_CYPHER_LINK = 'https://discord.gg/yNUg2e2'
-export const AUDIUS_PRESS_KIT_ZIP =
-  'https://s3-us-west-1.amazonaws.com/download.audius.co/Audius+Press+Kit+2.0.zip'
 
 export const authenticatedRoutes = [
   FEED_PAGE,

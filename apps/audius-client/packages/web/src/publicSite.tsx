@@ -9,14 +9,12 @@ import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,
   UPLOAD_PAGE,
-  EXPLORE_PAGE
+  EXPLORE_PAGE,
+  AUDIUS_PRESS_LINK
 } from 'utils/route'
 
 const BASENAME = process.env.PUBLIC_URL
 
-const PressKitPage = React.lazy(() =>
-  import('containers/press-kit-page/PressKitPage')
-)
 const PrivacyPolicyPage = React.lazy(() =>
   import('containers/privacy-policy-page/PrivacyPolicyPage')
 )
@@ -129,13 +127,10 @@ const PublicSiteApp = ({
           <Route
             exact
             path={'/press'}
-            render={() => (
-              <PressKitPage
-                isMobile={isMobileOrNarrow}
-                openNavScreen={openNavScreen}
-                setRenderPublicSite={setRenderPublicSite}
-              />
-            )}
+            render={() => {
+              window.location.href = AUDIUS_PRESS_LINK
+              return null
+            }}
           />
           <Route
             exact
