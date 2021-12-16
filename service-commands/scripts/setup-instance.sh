@@ -141,6 +141,10 @@ case "$service" in
 
 		wait_for_instance $provider $user $name
 
+		# perform once more for audius-client
+		execute_with_ssh $provider $user $name \
+			"PROTOCOL_DIR=audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
+
 		copy_file_to_remote $provider $user $name '~/.gitconfig' '~/.gitconfig'
 
 		configure_etc_hosts
