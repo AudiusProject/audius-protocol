@@ -95,6 +95,7 @@ node scripts/hosts.js add
 node scripts/setup.js run init-repos up
 
 cd $PROTOCOL_DIR/libs
+npm install
 npm link
 
 cd $PROTOCOL_DIR/service-commands
