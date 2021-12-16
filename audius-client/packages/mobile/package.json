@@ -51,7 +51,7 @@
     "@react-navigation/stack": "6.0.11",
     "@reduxjs/toolkit": "1.6.1",
     "@svgr/core": "5.5.0",
-    "audius-client": "github:AudiusProject/audius-client.git#f34b60dfe87e3eda09a9b17ca44b13f7cae5ae25",
+    "audius-client": "github:AudiusProject/audius-client.git#76947480afa2dea1abe0ce04a969d4088f2ff193",
     "bn.js": "5.2.0",
     "expo-crypto": "9.2.0",
     "fxa-common-password-list": "0.0.4",
