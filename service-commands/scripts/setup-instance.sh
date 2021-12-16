@@ -34,8 +34,8 @@ name=${@:$OPTIND+1:1}
 # Set defaults and validate arguments
 provider=${provider:-$DEFAULT_PROVIDER}
 user=${user:-$DEFAULT_USER}
-audius_protocol_git_ref=${user:-$DEFAULT_AUDIUS_PROTOCOL_GIT_REF}
-audius_client_git_ref=${user:-$DEFAULT_AUDIUS_CLIENT_GIT_REF}
+audius_protocol_git_ref=${audius_protocol_git_ref:-'master'}
+audius_client_git_ref=${audius_client_git_ref:-'master'}
 
 if [[ "$provider" != "gcp" ]] && [[ "$provider" != "azure" ]]; then
 	echo "Unknown provider:" $provider
@@ -135,7 +135,6 @@ case "$service" in
 			"[[ ! -d ~/audius-protocol ]]" \
 			"&& set -ex" \
 			"&& git clone https://github.com/AudiusProject/audius-protocol.git" \
-			"&& echo PROTOCOL_DIR=audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref" \
 			"&& PROTOCOL_DIR=audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref" \
 			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh"
         reboot_instance $provider $name
