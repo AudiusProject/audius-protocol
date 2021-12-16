@@ -153,5 +153,8 @@ case "$service" in
 		set_ssh_serveralive
 
 		setup_zsh
+
+		echo -e "\nLogin using:\n"
+		echo -e "gssh $name\n"
 		;;
 esac
