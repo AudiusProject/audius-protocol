@@ -117,22 +117,16 @@ def _get_db_ipld_block_state():
     return ipld_block_number, ipld_block_hash
 
 
-# Get the max blocknumber and blockhash indexed in ipld blacklist table. Uses redis cache by default.
+# Get the max blocknumber and blockhash indexed in ipld block table. Uses redis cache by default.
 def get_latest_ipld_indexed_block(use_redis_cache=True):
     redis = redis_connection.get_redis()
-    latest_indexed_ipld_block_num = None
-    latest_indexed_ipld_block_hash = None
 
     if use_redis_cache:
-        latest_indexed_ipld_block_num = redis.get(
-            most_recent_indexed_ipld_block_redis_key
+        latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash = get_block_from_redis(
+            redis,
+            most_recent_indexed_ipld_block_redis_key,
+            most_recent_indexed_ipld_block_hash_redis_key 
         )
-        latest_indexed_ipld_block_hash = redis.get(
-            most_recent_indexed_ipld_block_hash_redis_key
-        )
-        if latest_indexed_ipld_block_num is not None:
-            latest_indexed_ipld_block_num = int(latest_indexed_ipld_block_num)
-
     if latest_indexed_ipld_block_num is None or latest_indexed_ipld_block_hash is None:
         (
             latest_indexed_ipld_block_num,
@@ -193,10 +187,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     # Fetch latest blockchain state from web3 or redis. 
     # If either `latest_block_num`, `latest_block_hash` are None and `use_redis_cache=True`, try again
-    # with the web3 provider. 
-    latest_block_num, latest_block_hash = get_latest_chain_block_set_if_nx(redis, web3, use_redis_cache)
-    if not use_redis_cache and latest_block_num is None or latest_block_hash is None:
-        latest_block_num, latest_block_hash = get_latest_chain_block_set_if_nx(redis, web3, false)
+    # with the web3 provider.
+    if use_redis_cache:
+       latest_block_num, latest_block_hash = get_latest_chain_block_from_redis(redis)
+
+    if not use_redis_cache or latest_block_num is None or latest_block_hash is None:
+        latest_block_num, latest_block_hash = get_latest_chain_block_from_web3(web3)
 
     play_health_info = get_play_health_info(
         redis,
@@ -455,11 +451,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None, use_redis_cache=true
 
     :rtype (int, string)
     """
-    latest_block_num = None
-    latest_block_hash = None
-    
-    if use_redis_cache:
-        latest_block_num, latest_block_hash = get_latest_chain_block_from_redis(redis)
+    latest_block_num, latest_block_hash = get_latest_chain_block_from_redis(redis)
 
     if latest_block_num is None or latest_block_hash is None:
         latest_block_num, latest_block_hash = get_latest_chain_block_from_web3(web3)
