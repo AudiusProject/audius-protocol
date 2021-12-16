@@ -132,16 +132,18 @@ const DownloadButtons = ({
   isOwner,
   following,
   onDownload,
-  isHidden,
   className
 }: DownloadButtonsProps) => {
   const buttons = useButtons(trackId, onDownload, isOwner, following)
+  const shouldHide = buttons.length === 0
+  if (shouldHide) {
+    return null
+  }
 
   return (
     <div
       className={cn({
-        [className!]: !!className,
-        [styles.isHidden]: isHidden
+        [className!]: !!className
       })}
     >
       {buttons.map(({ label, state, type, onClick }) => (
