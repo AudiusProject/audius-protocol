@@ -107,6 +107,9 @@ git clone https://github.com/AudiusProject/audius-client.git
 cd audius-client
 npm link @audius/libs
 
+# set git refs
+./$PROTOCOL_DIR/service-commands/set-git-refs.sh $1 $2
+
 # set up repos
 node scripts/setup.js run init-repos up
 
