@@ -280,7 +280,6 @@ function* watchFetchProfilePicture() {
           yield put(
             cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])
           )
-          
         }
       }
     } catch (e) {
