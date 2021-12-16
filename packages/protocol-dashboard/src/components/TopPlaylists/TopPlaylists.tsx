@@ -11,8 +11,6 @@ const messages = {
   title: 'Top Playlists This Week'
 }
 
-type OwnProps = {}
-
 type TopPlaylistsProps = {}
 
 const TopPlaylists: React.FC<TopPlaylistsProps> = () => {

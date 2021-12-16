@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import clsx from 'clsx'
 import BN from 'bn.js'
 import { Utils } from '@audius/libs'
@@ -64,7 +64,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
   //   where
   //    ACTIVE_STAKE = amount that we have staked in audius
   //    USED_STAKE = # of services we have * minstake for each service
-  let availableStake = new BN('0')
+  let availableStake: BN | undefined = undefined
   if (
     user &&
     'serviceProvider' in user &&
@@ -97,9 +97,15 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
 
   // Our calculated min stake is the service type min stake MINUS
   // the "unused/available" stake we have in the system already.
-  const calculatedMinStake = selectedServiceInfo
-    ? BN.max(selectedServiceInfo.minStake.sub(availableStake), new BN('0'))
-    : new BN('0')
+  const calculatedMinStake = useMemo(() => {
+    return selectedServiceInfo
+      ? BN.max(
+          selectedServiceInfo.minStake.sub(availableStake ?? new BN('0')),
+          new BN('0')
+        )
+      : new BN('0')
+  }, [selectedServiceInfo, availableStake])
+
   useEffect(() => {
     calculatedMinStakeRef.current = calculatedMinStake
   }, [calculatedMinStake])
