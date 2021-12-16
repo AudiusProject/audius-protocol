@@ -215,12 +215,14 @@ def populate_mock_db(db, entities, block_offset=0):
             )
             session.add(aggregate_play)
 
-        for i, indexing_checkpoint_meta in enumerate(indexing_checkpoints):
-            indexing_checkpoint = models.IndexingCheckpoints(
-                tablename=indexing_checkpoint_meta.get("tablename", None),
-                last_checkpoint=indexing_checkpoint_meta.get("last_checkpoint", 0),
-            )
-            session.add(indexing_checkpoint)
+        if indexing_checkpoints:
+            session.execute("TRUNCATE TABLE indexing_checkpoints") # clear primary keys before adding
+            for i, indexing_checkpoint_meta in enumerate(indexing_checkpoints):
+                indexing_checkpoint = models.IndexingCheckpoints(
+                    tablename=indexing_checkpoint_meta.get("tablename", None),
+                    last_checkpoint=indexing_checkpoint_meta.get("last_checkpoint", 0),
+                )
+                session.add(indexing_checkpoint)
 
 
         for i, route_meta in enumerate(track_routes):

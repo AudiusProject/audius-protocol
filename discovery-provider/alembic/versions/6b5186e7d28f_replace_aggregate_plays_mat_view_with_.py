@@ -27,10 +27,33 @@ def upgrade():
                 SELECT FROM information_schema.tables
                 WHERE table_name   = 'aggregate_plays'
             ) THEN
+                -- update indexing checkpoints based on current plays
+                WITH latest_play_id AS (
+                    SELECT MAX(id) AS id FROM plays
+                )
+                INSERT INTO indexing_checkpoints (tablename, last_checkpoint)
+                VALUES(
+                    'aggregate_plays',
+                    (COALESCE((SELECT id FROM latest_play_id), 0))
+                )
+                ON CONFLICT (tablename)
+                DO UPDATE SET last_checkpoint = EXCLUDED.last_checkpoint;
 
                 -- create aggregate_plays table
                 DROP TABLE IF EXISTS aggregate_plays_table;
-                CREATE TABLE aggregate_plays_table AS TABLE aggregate_plays;
+                CREATE TABLE aggregate_plays_table AS (
+                    SELECT
+                        plays.play_item_id as play_item_id,
+                        count(*) as count
+                    FROM
+                        plays
+                    WHERE plays.id <= (
+                        SELECT last_checkpoint
+                        FROM indexing_checkpoints
+                        WHERE tablename = 'aggregate_plays'
+                    )
+                    GROUP BY plays.play_item_id
+                );
 
                 -- drop existing aggregate_plays mat view and its dependencies
 
