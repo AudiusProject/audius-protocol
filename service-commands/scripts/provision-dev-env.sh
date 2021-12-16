@@ -22,10 +22,18 @@ sudo apt install -y \
     libpq-dev \
     neovim \
     net-tools \
-    sift \
     zsh
 
 sudo apt autoremove
+
+# install a faster grep
+sudo curl -L https://sift-tool.org/downloads/sift/sift_0.9.0_linux_amd64.tar.gz --output /tmp/sift.tar.gz
+(
+    cd /tmp
+    tar xf /tmp/sift.tar.gz
+    sudo mv sift_*/sift /usr/local/bin/sift
+    sudo rm sift*
+)
 
 # configure ssh timeouts
 echo "ClientAliveInterval 600" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
