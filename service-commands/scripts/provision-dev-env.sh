@@ -110,3 +110,5 @@ npm install
 cd $PROTOCOL_DIR/mad-dog
 npm install
 npm link @audius/service-commands
+sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
+sudo chmod +x /usr/local/bin/pumba
