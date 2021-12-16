@@ -119,13 +119,15 @@ def _get_db_ipld_block_state():
 
 # Get the max blocknumber and blockhash indexed in ipld block table. Uses redis cache by default.
 def get_latest_ipld_indexed_block(use_redis_cache=True):
-    redis = redis_connection.get_redis()
+    latest_indexed_ipld_block_num = None
+    latest_indexed_ipld_block_hash = None
 
+    redis = redis_connection.get_redis()
     if use_redis_cache:
         latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash = get_block_from_redis(
             redis,
             most_recent_indexed_ipld_block_redis_key,
-            most_recent_indexed_ipld_block_hash_redis_key 
+            most_recent_indexed_ipld_block_hash_redis_key
         )
     if latest_indexed_ipld_block_num is None or latest_indexed_ipld_block_hash is None:
         (
@@ -185,11 +187,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_num = None
     latest_indexed_block_hash = None
 
-    # Fetch latest blockchain state from web3 or redis. 
+    # Fetch latest blockchain state from web3 or redis.
     # If either `latest_block_num`, `latest_block_hash` are None and `use_redis_cache=True`, try again
     # with the web3 provider.
     if use_redis_cache:
-       latest_block_num, latest_block_hash = get_latest_chain_block_from_redis(redis)
+        latest_block_num, latest_block_hash = get_latest_chain_block_from_redis(redis)
 
     if not use_redis_cache or latest_block_num is None or latest_block_hash is None:
         latest_block_num, latest_block_hash = get_latest_chain_block_from_web3(web3)
@@ -440,7 +442,7 @@ def get_rewards_manager_health_info(redis: Redis, max_drift: Optional[int] = Non
     }
 
 
-def get_latest_chain_block_set_if_nx(redis=None, web3=None, use_redis_cache=true):
+def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     """
     Retrieves the latest block number and blockhash from redis if the keys exist.
     Otherwise it sets these values in redis by querying web3 and returns them
@@ -480,10 +482,10 @@ def get_latest_chain_block_from_web3(web3):
     return latest_block_num, latest_block_hash
 
 def get_latest_indexed_chain_block_from_redis(redis):
-    return get_block_from_redis(redis, most_recent_indexed_block_redis_key, most_recent_indexed_block_hash_redis_key) 
+    return get_block_from_redis(redis, most_recent_indexed_block_redis_key, most_recent_indexed_block_hash_redis_key)
 
 def get_latest_chain_block_from_redis(redis):
-    return get_block_from_redis(redis, latest_block_redis_key, latest_block_hash_redis_key) 
+    return get_block_from_redis(redis, latest_block_redis_key, latest_block_hash_redis_key)
 
 def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
     block_num = None
@@ -504,7 +506,7 @@ def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
         logger.warning(
             f"Could not fetch latest block from redis for keys={block_redis_key},{block_hash_redis_key}: {e}"
         )
- 
+
     return block_num, block_hash
 
 def set_latest_chain_block_in_redis(redis, latest_block_num, latest_block_hash):
