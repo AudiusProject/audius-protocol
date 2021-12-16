@@ -457,6 +457,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None, use_redis_cache=true
     """
     latest_block_num = None
     latest_block_hash = None
+    
     if use_redis_cache:
         latest_block_num, latest_block_hash = get_latest_chain_block_from_redis(redis)
 
