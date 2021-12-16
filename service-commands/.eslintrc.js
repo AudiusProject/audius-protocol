@@ -3,7 +3,7 @@ module.exports = {
     browser: false,
     es6: true
   },
-  extends: ['prettier-standard', 'standard'],
+  extends: ['prettier-standard', 'standard', 'prettier'],
 
   globals: {
     Atomics: 'readonly',
