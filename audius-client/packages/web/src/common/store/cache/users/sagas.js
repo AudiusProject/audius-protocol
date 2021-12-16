@@ -27,7 +27,6 @@ import {
 } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-import { averageRgb } from 'utils/imageProcessingUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { pruneBlobValues, reformat } from './utils'
@@ -264,13 +263,6 @@ function* watchFetchProfilePicture() {
           yield put(
             cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])
           )
-
-          const rgb = yield call(averageRgb, url)
-          yield put(
-            cacheActions.update(Kind.USERS, [
-              { id: userId, metadata: { _profile_picture_color: rgb } }
-            ])
-          )
         }
       } else if (user.profile_picture) {
         const url = yield call(
@@ -288,12 +280,7 @@ function* watchFetchProfilePicture() {
           yield put(
             cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])
           )
-          const rgb = yield call(averageRgb, url)
-          yield put(
-            cacheActions.update(Kind.USERS, [
-              { id: userId, metadata: { _profile_picture_color: rgb } }
-            ])
-          )
+          
         }
       }
     } catch (e) {
