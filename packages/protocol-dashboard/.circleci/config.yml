@@ -4,7 +4,7 @@ jobs:
   init:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/ruby:2.6-node
 
     steps:
       - checkout
@@ -44,7 +44,7 @@ jobs:
     working_directory: ~/protocol-dashboard
     resource_class: large
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/ruby:2.6-node
     steps:
       - checkout
       - attach_workspace:
@@ -79,7 +79,7 @@ jobs:
   update-staging-ga-build:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
@@ -108,7 +108,7 @@ jobs:
   update-staging-records:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
@@ -126,7 +126,7 @@ jobs:
   build-prod:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/ruby:2.6-node
     resource_class: large
     steps:
       - checkout
@@ -163,7 +163,7 @@ jobs:
   update-prod-ga-build:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
@@ -192,7 +192,7 @@ jobs:
   update-prod-records:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
