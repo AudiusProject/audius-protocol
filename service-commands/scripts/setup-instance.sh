@@ -83,27 +83,21 @@ fi
 
 
 configure_etc_hosts() {
-	read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
-	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-		IP=$(get_ip_addr $provider $name)
-		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
-		sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
-		sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
-	fi
+	IP=$(get_ip_addr $provider $name)
+	echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
+	sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
+	sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
 }
 
 set_ssh_serveralive() {
 	if [[ ! -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
-		read -p "Set SSH ServerAliveInterval to 60? [y/N] " -n 1 -r && echo
-		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-			echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
-		fi
+		echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
 	fi
 }
 
 setup_zsh() {
-	read -p "Setup zsh? [y/N] " -n 1 -r && echo
-	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+	# read -p "Setup zsh? [y/N] " -n 1 -r && echo
+	# if [[ "$REPLY" =~ ^[Yy]$ ]]; then
 		execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
 
 		cp ~/.zshenv ~/.zshenv.tmp
@@ -115,7 +109,7 @@ setup_zsh() {
 		if [[ -f "$HOME/.p10k.zsh" ]]; then
 			copy_file_to_remote $provider $user $name '~/.p10k.zsh' '~/.p10k.zsh'
 		fi
-	fi
+	# fi
 }
 
 # Setup service
