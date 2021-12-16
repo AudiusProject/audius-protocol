@@ -96,20 +96,28 @@ set_ssh_serveralive() {
 }
 
 setup_zsh() {
-	# read -p "Setup zsh? [y/N] " -n 1 -r && echo
-	# if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-		execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
+	execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
 
-		cp ~/.zshenv ~/.zshenv.tmp
-		echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
-		copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
-		rm ~/.zshenv.tmp
+	zshenv=$PROTOCOL_DIR/service-commands/scripts/.zshenv
+	if [[ -f "~/.zshenv.remote-dev" ]]; then
+		zshenv=~/.zshenv.remote-dev
+	fi
+	cp $zshenv ~/.zshenv.tmp
+	echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
+	copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
+	rm ~/.zshenv.tmp
 
-		copy_file_to_remote $provider $user $name '~/.zshrc' '~/.zshrc'
-		if [[ -f "$HOME/.p10k.zsh" ]]; then
-			copy_file_to_remote $provider $user $name '~/.p10k.zsh' '~/.p10k.zsh'
-		fi
-	# fi
+	zshrc=$PROTOCOL_DIR/service-commands/scripts/.zshrc
+	if [[ -f "~/.zshrc.remote-dev" ]]; then
+		zshrc=~/.zshrc.remote-dev
+	fi
+	copy_file_to_remote $provider $user $name $zshrc '~/.zshrc'
+
+	p10k_zsh=$PROTOCOL_DIR/service-commands/scripts/.p10k.zsh
+	if [[ -f "~/.p10k.zsh.remote-dev" ]]; then
+		p10k_zsh=~/.p10k.zsh.remote-dev
+	fi
+	copy_file_to_remote $provider $user $name $p10k_zsh '~/.p10k.zsh'
 }
 
 # Setup service
