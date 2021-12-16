@@ -28,6 +28,7 @@ echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main"
 sudo apt-get update
 sudo apt -y install postgresql-11
 dpkg -l | grep postgresql
+sudo systemctl disable postgresql # disable auto-start on boot
 
 # python setup
 sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
@@ -79,6 +80,3 @@ cd ~
 git clone https://github.com/AudiusProject/audius-client.git
 cd audius-client
 npm link @audius/libs
-
-echo 'Rebooting machine...'
-reboot
