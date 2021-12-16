@@ -149,7 +149,7 @@ case "$service" in
 			"PROTOCOL_DIR=/home/ubuntu/audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
 
 		execute_with_ssh $provider $user $name "nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
-		execute_with_ssh $provider $user $name "A up || (A down && A up)"
+		execute_with_ssh $provider $user $name "source ~/.nvm/nvm.sh; source ~/.profile; A up || (A down && A up)"
 
 		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
 
