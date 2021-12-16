@@ -10,7 +10,7 @@
 #   -l <audius-client-git-ref>
 #   -f (fast setup with prebaked dev image)
 
-set -ex
+set -e
 
 PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 
