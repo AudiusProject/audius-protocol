@@ -1,3 +1,5 @@
+**Note - this pattern has been deprecated. New pattern defined in `creator-node/src/README.md`.**
+
 # Component Pattern
 
 We are moving the Content Node codebase to a component + service pattern. Here's a short explanation to ensure consistency moving forward. The purpose of moving to this pattern is to ensure separation of concerns between application and business logic.
