@@ -15,7 +15,7 @@ import {
   repostTrack,
   undoRepostTrack
 } from 'common/store/social/tracks/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource
@@ -81,7 +81,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     unrepostTrack: (trackId: ID) =>
       dispatch(undoRepostTrack(trackId, RepostSource.TRACK_LIST)),
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(open(OverflowSource.TRACKS, trackId, overflowActions))
+      dispatch(
+        open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
+      )
   }
 }
 

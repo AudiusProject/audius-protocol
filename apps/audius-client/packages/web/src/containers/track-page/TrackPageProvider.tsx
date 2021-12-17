@@ -20,7 +20,7 @@ import { getUserId } from 'common/store/account/selectors'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
 import * as socialTracksActions from 'common/store/social/tracks/actions'
 import * as socialUsersActions from 'common/store/social/users/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource
@@ -591,7 +591,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(trackEvent)
     },
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(open(OverflowSource.TRACKS, trackId, overflowActions)),
+      dispatch(
+        open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
+      ),
     setRepostTrackId: (trackId: ID) =>
       dispatch(setRepost(trackId, RepostType.TRACK)),
     setFavoriteTrackId: (trackId: ID) =>

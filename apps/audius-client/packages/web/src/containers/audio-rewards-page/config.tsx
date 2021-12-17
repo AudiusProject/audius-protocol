@@ -182,10 +182,10 @@ export const challengeRewardsConfig: Record<
     title: 'Upload 5 Tracks',
     icon: <i className='emoji large multiple-musical-notes' />,
     description: 'Earn 5 $AUDIO',
-    fullDescription: 'Upload 3 tracks to your profile',
+    fullDescription: 'Upload 5 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
     amount: 5,
-    stepCount: 3,
+    stepCount: 5,
     panelButtonText: 'Upload Tracks',
     modalButtonInfo: {
       incomplete: linkButtonMap.trackUpload,

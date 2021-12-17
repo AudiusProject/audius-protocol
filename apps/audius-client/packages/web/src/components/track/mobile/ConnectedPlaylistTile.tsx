@@ -27,7 +27,7 @@ import {
   undoRepostCollection,
   shareCollection
 } from 'common/store/social/collections/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource
@@ -324,7 +324,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
     unrepostCollection: (collectionId: ID) =>
       dispatch(undoRepostCollection(collectionId, RepostSource.TILE)),
     clickOverflow: (collectionId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(open(OverflowSource.COLLECTIONS, collectionId, overflowActions)),
+      dispatch(
+        open({
+          source: OverflowSource.COLLECTIONS,
+          id: collectionId,
+          overflowActions
+        })
+      ),
     setRepostPlaylistId: (collectionId: ID) =>
       dispatch(setRepost(collectionId, RepostType.COLLECTION)),
     setFavoritePlaylistId: (collectionId: ID) =>
