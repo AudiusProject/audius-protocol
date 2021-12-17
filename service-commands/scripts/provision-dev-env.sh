@@ -112,9 +112,10 @@ npm link
 cd $PROTOCOL_DIR/service-commands
 npm link @audius/libs
 npm link
-npm install
+npm install  # to get around web3?
 
 cd $PROTOCOL_DIR/libs
+npm install
 npm install
 
 cd $PROTOCOL_DIR/service-commands
@@ -122,6 +123,18 @@ npm link
 
 cd $PROTOCOL_DIR/libs
 npm install
+
+cd $PROTOCOL_DIR/service-commands
+npm link
+
+cd $PROTOCOL_DIR/service-commands
+npm link @audius/libs
+npm link
+# caused web3 issue
+
+cd $PROTOCOL_DIR/libs
+npm install
+npm link
 
 cd ~
 git clone https://github.com/AudiusProject/audius-client.git
