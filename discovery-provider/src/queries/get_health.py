@@ -124,8 +124,10 @@ def get_latest_ipld_indexed_block(use_redis_cache=True):
 
     redis = redis_connection.get_redis()
     if use_redis_cache:
-        latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash = get_most_recent_indexed_ipld_block_from_redis(redis)
-        
+        latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash = get_most_recent_indexed_ipld_block_from_redis(
+            redis
+        )
+
     if latest_indexed_ipld_block_num is None or latest_indexed_ipld_block_hash is None:
         (
             latest_indexed_ipld_block_num,
@@ -484,7 +486,7 @@ def get_latest_block_from_redis(redis):
     return get_block_from_redis(redis, latest_block_redis_key, latest_block_hash_redis_key)
 
 def get_most_recent_indexed_ipld_block_from_redis(redis):
-    return get_block_from_redis(redis, most_recent_indexed_block_redis_key, most_recent_indexed_block_hash_redis_key)
+    return get_block_from_redis(redis, most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key)
 
 def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
     """
@@ -499,7 +501,7 @@ def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
     :param block_redis_key: the key used to fetch block hash data in redis
 
     :rtype (int, string) the block num and block hash
-    """ 
+    """
     block_num = None
     block_hash = None
 
