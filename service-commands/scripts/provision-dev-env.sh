@@ -126,11 +126,10 @@ function setup_audius_repos() {
     npm link @audius/libs
 
     # set git refs
-    ./$PROTOCOL_DIR/service-commands/set-git-refs.sh $1 $2
+    .$PROTOCOL_DIR/service-commands/scripts/set-git-refs.sh $1 $2
 
     # set up repos
-    node scripts/setup.js run init-repos up
-
+    node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up
 }
 
 function setup() {
