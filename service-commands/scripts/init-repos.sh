@@ -65,3 +65,10 @@ if [ -d "audius-client" ]; then
     npm install
     npm link @audius/libs
 fi
+
+# needed to get around lodash
+cd $PROTOCOL_DIR/
+cd libs/
+npm install
+npm install web3
+npm install lodash
