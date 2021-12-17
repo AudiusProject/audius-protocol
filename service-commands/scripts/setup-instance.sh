@@ -137,20 +137,21 @@ case "$service" in
 		;;
 	remote-dev)
 		wait_for_instance $provider $user $name
-		echo "Waiting for instance $name on $provider to be ready for ssh connections... You may see some SSHc connection errors during this time but instance should eventually come up."
+		echo "Waiting for instance $name on $provider to be ready for ssh connections... You may see some SSH connection errors during this time but instance should eventually come up."
 		if [ "${fast:-0}" -eq "0" ]; then
 			execute_with_ssh $provider $user $name \
 				"[[ ! -d ~/audius-protocol ]]" \
-				"&& git clone https://github.com/AudiusProject/audius-protocol.git" \
+				"&& git clone --branch $audius_protocol_git_ref https://github.com/AudiusProject/audius-protocol.git" \
 				"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh $audius_protocol_git_ref $audius_client_git_ref"
 
 			wait_for_instance $provider $user $name
 			reboot_instance $provider $name
+		else
+			execute_with_ssh $provider $user $name \
+				"[[ -d ~/audius-protocol ]]" \
+				"&& cd ~/audius-protocol && git checkout $audius_protocol_git_ref" \
+				"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh $audius_protocol_git_ref $audius_client_git_ref"
 		fi
-
-		# perform once more for audius-client
-		execute_with_ssh $provider $user $name \
-			"PROTOCOL_DIR=/home/ubuntu/audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
 
 		execute_with_ssh $provider $user $name "nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
 		execute_with_ssh $provider $user $name "source ~/.nvm/nvm.sh; source ~/.profile; A up || (A down && A up)"
