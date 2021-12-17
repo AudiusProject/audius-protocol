@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
-import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource
@@ -112,7 +112,11 @@ function mapDispatchToProps(dispatch: Dispatch) {
       overflowActions: OverflowAction[]
     ) =>
       dispatch(
-        open(OverflowSource.NOTIFICATIONS, notificationId, overflowActions)
+        open({
+          source: OverflowSource.NOTIFICATIONS,
+          id: notificationId,
+          overflowActions
+        })
       )
   }
 }

@@ -2,6 +2,7 @@ import { connectRouter } from 'connected-react-router'
 import { combineReducers } from 'redux'
 
 import { reducers as clientStoreReducers } from 'common/store'
+import remoteConfig from 'common/store/remote-config/slice'
 import dashboard from 'containers/artist-dashboard-page/store/reducer'
 import artistRecommendations from 'containers/artist-recommendations/store/slice'
 import changePassword from 'containers/change-password/store/slice'
@@ -99,6 +100,9 @@ const createRootReducer = routeHistory =>
     // Playback
     queue,
     player,
+
+    // Remote config/flags
+    remoteConfig,
 
     // Wallet
     audioManager,

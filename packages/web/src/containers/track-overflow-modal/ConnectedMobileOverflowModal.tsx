@@ -37,8 +37,8 @@ import {
 import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
 import { open as openEditPlaylist } from 'common/store/ui/createPlaylistModal/actions'
 import { setOpen as openDeletePlaylist } from 'common/store/ui/delete-playlist-confirmation-modal/actions'
-import { close } from 'common/store/ui/mobile-overflow-menu/actions'
 import { getMobileOverflowModal } from 'common/store/ui/mobile-overflow-menu/selectors'
+import { close } from 'common/store/ui/mobile-overflow-menu/slice'
 import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as openTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import {
