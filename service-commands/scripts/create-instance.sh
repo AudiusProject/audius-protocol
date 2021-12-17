@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Usage: create-instance.sh [options] <name> 
+# Usage: create-instance.sh [options] <name>
 #
 # Options:
 #   -p <provider>

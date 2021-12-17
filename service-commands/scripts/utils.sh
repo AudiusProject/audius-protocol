@@ -1,4 +1,4 @@
-#/bin/bash
+#!/usr/bin/env bash
 
 DEFAULT_AUDIUS_CLIENT_GIT_REF=master
 DEFAULT_AUDIUS_PROTOCOL_GIT_REF=master

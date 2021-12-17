@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # bakes from latest master on gcp by default
 
 set -x

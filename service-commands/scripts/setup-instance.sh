@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Usage: setup-instance.sh [options] <service> <name>
 #
