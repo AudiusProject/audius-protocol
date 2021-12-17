@@ -109,6 +109,9 @@ case "$service" in
 		execute_with_ssh $provider $user $name \
 			"bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
 
+		# upload personal files: ~/.zshrc, ~/.zshenv, ~/.p10k.zsh
+		setup_zsh
+
 		# start up frontend and backend
 		execute_with_ssh $provider $user $name "set -x; nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
 		execute_with_ssh $provider $user $name "cd ~/audius-protocol/libs; npm install"
@@ -118,9 +121,8 @@ case "$service" in
 		configure_etc_hosts
 		set_ssh_serveralive
 
-		# upload personal files: ~/.gitconfig, ~/.zshrc, ~/.zshenv, ~/.p10k.zsh
+		# upload personal files: ~/.gitconfig
 		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
-		setup_zsh
 
 		echo -e "\nLogin using:\n"
 		echo -e "gssh $name\n"
