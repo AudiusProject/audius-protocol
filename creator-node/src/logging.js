@@ -36,7 +36,7 @@ function requestNotExcludedFromLogging (url) {
  * @notice request headers are case-insensitive
  */
 function getRequestLoggingContext (req, requestID) {
-  req.startTime = process.hrtime()
+  req.startTime = getStartTime()
   const urlParts = req.url.split('?')
   return {
     requestID,
@@ -47,6 +47,14 @@ function getRequestLoggingContext (req, requestID) {
     requestWallet: req.get('user-wallet-addr'),
     requestBlockchainUserId: req.get('user-id')
   }
+}
+
+/**
+ * Gets the start time
+ * @returns the start time
+ */
+function getStartTime () {
+  return process.hrtime()
 }
 
 function loggingMiddleware (req, res, next) {
@@ -82,13 +90,13 @@ function setFieldsInChildLogger (req, options = {}) {
 
 /**
  * Pulls the start time of the req object to calculate the duration of the fn
- * @param {*} req
+ * @param {number} startTime the start time
  * @returns the duration of the fn call in ms
  */
-function getDuration (req) {
+function getDuration ({ startTime }) {
   let durationMs
-  if (req.startTime) {
-    const endTime = process.hrtime(req.startTime)
+  if (startTime) {
+    const endTime = process.hrtime(startTime)
     durationMs = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
   }
 
@@ -97,16 +105,17 @@ function getDuration (req) {
 
 /**
  * Prints the log message with the duration
- * @param {*} req
+ * @param {Object} logger
+ * @param {number} startTime the start time
  * @param {string} msg the message to print
  */
-function logInfoWithDuration (req, msg) {
-  const durationMs = getDuration(req)
+function logInfoWithDuration ({ logger, startTime }, msg) {
+  const durationMs = getDuration({ startTime })
 
   if (durationMs) {
-    req.logger.info({ duration: durationMs }, msg)
+    logger.info({ duration: durationMs }, msg)
   } else {
-    req.logger.info(msg)
+    logger.info(msg)
   }
 }
 
@@ -115,6 +124,7 @@ module.exports = {
   loggingMiddleware,
   requestNotExcludedFromLogging,
   getRequestLoggingContext,
+  getStartTime,
   getDuration,
   setFieldsInChildLogger,
   logInfoWithDuration
