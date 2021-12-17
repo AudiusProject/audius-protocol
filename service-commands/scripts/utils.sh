@@ -36,7 +36,11 @@ copy_file_to_remote() {
 	name=$3
 	local_file=$4
 	remote_file=$5
-	cat $local_file | eval "$(get_ssh_args $provider $user $name)" "cat > $remote_file"
+
+	case "$provider" in
+		azure) exit 1 ;;  # TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		gcp) eval "gcloud compute scp $local_file $user@$name:$remote_file" ;;
+	esac
 }
 
 get_azure_account() {
@@ -105,6 +109,33 @@ wait_for_instance() {
 	while ! eval $ssh_args ':'; do
 		sleep 1
 	done
+}
+
+reboot_instance() {
+	echo "Rebooting instance $2 on $1 platform..."
+	case "$1" in
+		azure)
+			az vm restart --name $2
+			;;
+		gcp)
+			gcloud compute instances stop $2
+			gcloud compute instances start $2
+			;;
+	esac
+}
+
+
+reboot_instance() {
+	echo "Rebooting instance $2 on $1 platform..."
+	case "$1" in
+		azure)
+			az vm restart --name $2
+			;;
+		gcp)
+			gcloud compute instances stop $2
+			gcloud compute instances start $2
+			;;
+	esac
 }
 
 
