@@ -109,6 +109,10 @@ npm link
 cd $PROTOCOL_DIR/service-commands
 npm link @audius/libs
 npm link
+npm install
+
+cd $PROTOCOL_DIR/libs
+npm install
 
 cd ~
 git clone https://github.com/AudiusProject/audius-client.git
