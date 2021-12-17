@@ -148,7 +148,7 @@ class SolanaUtils {
    */
   static ethAddressToArray (ethAddress) {
     const strippedEthAddress = ethAddress.replace('0x', '')
-    return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
+    return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be', 20))
   }
 }
 
