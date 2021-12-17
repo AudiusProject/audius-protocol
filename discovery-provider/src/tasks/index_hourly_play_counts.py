@@ -1,10 +1,8 @@
 import logging
 import time
-import datetime
 from typing import List
 from sqlalchemy import func, desc, text
-from sqlalchemy.dialects.postgresql import insert
-from src.models.models import HourlyPlayCounts, AggregatePlays
+from src.models.models import HourlyPlayCounts
 from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
 from src.tasks.celery_app import celery
 from src.models import IndexingCheckpoints, Play
@@ -21,58 +19,50 @@ UPSERT_HOURLY_PLAY_COUNTS_QUERY = """
     """
 
 def _index_hourly_play_counts(session):
-    # get the last checkpoint
-    prev_play_count = (session.query(IndexingCheckpoints.last_checkpoint)
+    # get checkpoints
+    prev_id_checkpoint = (session.query(IndexingCheckpoints.last_checkpoint)
         .filter(IndexingCheckpoints.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
     ).scalar()
 
-    if not prev_play_count:
-        prev_play_count = 0
+    if not prev_id_checkpoint:
+        prev_id_checkpoint = 0
 
-    current_play_count = int(session.query(func.sum(AggregatePlays.count)).scalar())
+    new_id_checkpoint = (
+        session.query(Play.id)
+        .order_by(Play.id.desc()).limit(1)
+    ).one().id
 
-    if prev_play_count == current_play_count:
-        logger.info("index_hourly_play_counts.py | No new plays in this hour")
+    if new_id_checkpoint == prev_id_checkpoint:
+        logger.info("index_hourly_play_counts.py | Skip update because there are no new plays")
         return
 
-    if not prev_play_count:
-        # populate existing plays
-        logger.info("index_hourly_play_counts.py | Populating hourly metrics for the first time")
+    # get play counts in hourly buckets
+    hourly_play_counts: List[HourlyPlayCounts] = (session.query(
+        func.date_trunc("hour", Play.created_at).label(
+            "hourly_timestamp"
+        ),
+        func.count(Play.id).label("play_count")
+    )
+    .filter(Play.id > prev_id_checkpoint)
+    .filter(Play.id <= new_id_checkpoint)
+    .group_by(func.date_trunc("hour", Play.created_at))
+    .order_by(desc("hourly_timestamp"))
+    .all()
+    )
 
-        current_hourly_play_counts: List[HourlyPlayCounts] = (session.query(
-            func.date_trunc("hour", Play.created_at).label(
-                "hourly_timestamp"
-            ),
-            func.count(Play.id).label("play_count")
-        )
-        .group_by(func.date_trunc("hour", Play.created_at))
-        .order_by(desc("hourly_timestamp"))
-        .all()
-        )
-
-        new_hourly_play_counts = []
-        for hourly_play_count in current_hourly_play_counts:
-            new_hourly_play_count = HourlyPlayCounts(
-                hourly_timestamp = hourly_play_count.hourly_timestamp,
-                play_count = hourly_play_count.play_count,
-            )
-            new_hourly_play_counts.append(new_hourly_play_count)
-        session.add_all(new_hourly_play_counts)
-
-    else:
-        # insert new hourly play count
-
+    # upsert hourly play count
+    for hourly_play_count in hourly_play_counts:
         session.execute(UPSERT_HOURLY_PLAY_COUNTS_QUERY, {
-            "hourly_timestamp": datetime.datetime.now().replace(microsecond=0, second=0, minute=0),
-            "play_count": current_play_count - prev_play_count
+            "hourly_timestamp": hourly_play_count.hourly_timestamp,
+            "play_count": hourly_play_count.play_count
         })
 
-    # update the checkpoint
+    # update with checkpoint
     session.execute(
         text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
         {
             "tablename": HOURLY_PLAY_COUNTS_TABLE_NAME,
-            "last_checkpoint": current_play_count,
+            "last_checkpoint": new_id_checkpoint,
         }
     )
 

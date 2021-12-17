@@ -423,7 +423,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_hourly_play_counts": {
                 "task": "index_hourly_play_counts",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=30),
             },
             "vacuum_db": {
                 "task": "vacuum_db",

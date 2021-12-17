@@ -4,7 +4,6 @@ from typing import List
 from sqlalchemy import desc
 from src.models.models import HourlyPlayCounts, IndexingCheckpoints
 from src.tasks.index_hourly_play_counts import _index_hourly_play_counts, HOURLY_PLAY_COUNTS_TABLE_NAME
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from .utils import populate_mock_db
@@ -52,8 +51,6 @@ def test_index_hourly_play_counts_populate(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
-
         _index_hourly_play_counts(session)
 
         results: List[HourlyPlayCounts] = (
@@ -81,8 +78,8 @@ def test_index_hourly_play_counts_populate(app):
         )
         assert new_checkpoint == 13
 
-def test_index_hourly_play_counts_update(app):
-    """Test that hourly play counts should update"""
+def test_index_hourly_play_counts_single_update(app):
+    """Test that hourly play counts should update from the previous checkpoint"""
 
     # setup
     with app.app_context():
@@ -118,6 +115,8 @@ def test_index_hourly_play_counts_update(app):
 
             # New plays
             {"item_id": 1, "created_at": TIMESTAMP},
+            {"item_id": 2, "created_at": TIMESTAMP},
+            {"item_id": 2, "created_at": TIMESTAMP + timedelta(hours=1)},
         ],
         "hourly_play_counts": [
             {"hourly_timestamp": TIMESTAMP - timedelta(hours=4), "play_count": 1},
@@ -133,8 +132,6 @@ def test_index_hourly_play_counts_update(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
-
         _index_hourly_play_counts(session)
 
         results: List[HourlyPlayCounts] = (
@@ -142,28 +139,111 @@ def test_index_hourly_play_counts_update(app):
             .order_by(desc(HourlyPlayCounts.hourly_timestamp))
             .all()
         )
-        assert len(results) == 5
-        assert results[0].hourly_timestamp == TIMESTAMP
+        assert len(results) == 6
+        assert results[0].hourly_timestamp == TIMESTAMP + timedelta(hours=1)
         assert results[0].play_count == 1
-        assert results[1].hourly_timestamp == TIMESTAMP - timedelta(hours=1)
-        assert results[1].play_count == 3
-        assert results[2].hourly_timestamp == TIMESTAMP - timedelta(hours=2)
+        assert results[1].hourly_timestamp == TIMESTAMP
+        assert results[1].play_count == 2
+        assert results[2].hourly_timestamp == TIMESTAMP - timedelta(hours=1)
         assert results[2].play_count == 3
-        assert results[3].hourly_timestamp == TIMESTAMP - timedelta(hours=3)
-        assert results[3].play_count == 2
-        assert results[4].hourly_timestamp == TIMESTAMP - timedelta(hours=4)
-        assert results[4].play_count == 1
+        assert results[3].hourly_timestamp == TIMESTAMP - timedelta(hours=2)
+        assert results[3].play_count == 3
+        assert results[4].hourly_timestamp == TIMESTAMP - timedelta(hours=3)
+        assert results[4].play_count == 2
+        assert results[5].hourly_timestamp == TIMESTAMP - timedelta(hours=4)
+        assert results[5].play_count == 1
 
         new_checkpoint: IndexingCheckpoints = (
             session.query(IndexingCheckpoints.last_checkpoint)
             .filter(IndexingCheckpoints.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
             .scalar()
         )
-        assert new_checkpoint == 14
+        assert new_checkpoint == 16
 
+def test_index_hourly_play_counts_idempotent_update(app):
+    """Tests multiple updates above are identical and idempotent"""
 
-    # handle another update
+    # setup
+    with app.app_context():
+        db = get_db()
 
+    # run
+    entities = {
+        "tracks": [
+            {"track_id": 1, "title": "track 0"},
+            {"track_id": 2, "title": "track 1"},
+            {"track_id": 3, "title": "track 2"},
+            {"track_id": 4, "title": "track 3"},
+        ],
+        "plays" : [
+            # Indexed Plays
+            {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=8)},
+
+            {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=7)},
+            {"item_id": 2, "created_at": TIMESTAMP - timedelta(hours=7)},
+
+            {"item_id": 2, "created_at": TIMESTAMP - timedelta(hours=6)},
+            {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=6)},
+            {"item_id": 4, "created_at": TIMESTAMP - timedelta(hours=6)},
+
+            {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=5)},
+            {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=5)},
+            {"item_id": 4, "created_at": TIMESTAMP - timedelta(hours=5)},
+
+            {"item_id": 2, "created_at": TIMESTAMP},
+            {"item_id": 3, "created_at": TIMESTAMP},
+            {"item_id": 4, "created_at": TIMESTAMP},
+            {"item_id": 4, "created_at": TIMESTAMP},
+
+            # New plays
+            {"item_id": 1, "created_at": TIMESTAMP},
+            {"item_id": 2, "created_at": TIMESTAMP},
+            {"item_id": 2, "created_at": TIMESTAMP + timedelta(hours=1)},
+
+        ],
+        "hourly_play_counts": [
+            {"hourly_timestamp": TIMESTAMP - timedelta(hours=4), "play_count": 1},
+            {"hourly_timestamp": TIMESTAMP - timedelta(hours=3), "play_count": 2},
+            {"hourly_timestamp": TIMESTAMP - timedelta(hours=2), "play_count": 3},
+            {"hourly_timestamp": TIMESTAMP - timedelta(hours=1), "play_count": 3},
+        ],
+        "indexing_checkpoints": [
+            {"tablename": HOURLY_PLAY_COUNTS_TABLE_NAME, "last_checkpoint": 13}
+        ]
+    }
+
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        _index_hourly_play_counts(session)
+        _index_hourly_play_counts(session)
+        _index_hourly_play_counts(session)
+
+        results: List[HourlyPlayCounts] = (
+            session.query(HourlyPlayCounts)
+            .order_by(desc(HourlyPlayCounts.hourly_timestamp))
+            .all()
+        )
+        assert len(results) == 6
+        assert results[0].hourly_timestamp == TIMESTAMP + timedelta(hours=1)
+        assert results[0].play_count == 1
+        assert results[1].hourly_timestamp == TIMESTAMP
+        assert results[1].play_count == 2
+        assert results[2].hourly_timestamp == TIMESTAMP - timedelta(hours=1)
+        assert results[2].play_count == 3
+        assert results[3].hourly_timestamp == TIMESTAMP - timedelta(hours=2)
+        assert results[3].play_count == 3
+        assert results[4].hourly_timestamp == TIMESTAMP - timedelta(hours=3)
+        assert results[4].play_count == 2
+        assert results[5].hourly_timestamp == TIMESTAMP - timedelta(hours=4)
+        assert results[5].play_count == 1
+
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
+            .scalar()
+        )
+        assert new_checkpoint == 16
 
 def test_index_hourly_play_counts_no_change(app):
     """Test that hourly play counts should not write if there are no new plays"""
@@ -210,8 +290,6 @@ def test_index_hourly_play_counts_no_change(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
-
         _index_hourly_play_counts(session)
 
         results: List[HourlyPlayCounts] = (
