@@ -96,6 +96,9 @@ echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" htt
 source ~/.profile
 source ~/.bashrc
 
+# silence welcome banner
+touch ~/.hushlogin
+
 # audius repos setup
 cd $PROTOCOL_DIR/service-commands
 npm install
