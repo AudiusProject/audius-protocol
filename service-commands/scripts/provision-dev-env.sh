@@ -116,6 +116,11 @@ npm install
 
 cd $PROTOCOL_DIR/libs
 npm install
+
+cd $PROTOCOL_DIR/service-commands
+npm link
+
+cd $PROTOCOL_DIR/libs
 npm install
 
 cd ~
