@@ -150,10 +150,6 @@ case "$service" in
 			# TODO fix install and provisioning for fast
 		fi
 
-		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
-
-		configure_etc_hosts
-
 		echo -e "\nLogin using:\n"
 		echo -e "gcloud compute ssh $user@$name\n"
 		;;
