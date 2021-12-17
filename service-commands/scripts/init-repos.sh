@@ -69,6 +69,6 @@ fi
 # needed to get around lodash
 cd $PROTOCOL_DIR/
 cd libs/
-npm install
+sudo npm install
 npm install web3
 npm install lodash
