@@ -16,13 +16,12 @@ TIMESTAMP = datetime.now().replace(microsecond=0, second=0, minute=0)
 
 # Tests
 def test_index_hourly_play_counts_populate(app):
-    """Test that hourly play counts should populate from empty"""
+    """Test that hourly play counts populate from empty"""
 
     # setup
     with app.app_context():
         db = get_db()
 
-    # run
     entities = {
         "tracks": [
             {"track_id": 1, "title": "track 1"},
@@ -50,6 +49,7 @@ def test_index_hourly_play_counts_populate(app):
 
     populate_mock_db(db, entities)
 
+    # run
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
 
@@ -79,13 +79,12 @@ def test_index_hourly_play_counts_populate(app):
         assert new_checkpoint == 13
 
 def test_index_hourly_play_counts_single_update(app):
-    """Test that hourly play counts should update from the previous checkpoint"""
+    """Test that hourly play counts update from the previous checkpoint"""
 
     # setup
     with app.app_context():
         db = get_db()
 
-    # run
     entities = {
         "tracks": [
             {"track_id": 1, "title": "track 0"},
@@ -131,6 +130,7 @@ def test_index_hourly_play_counts_single_update(app):
 
     populate_mock_db(db, entities)
 
+    # run
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
 
@@ -160,14 +160,13 @@ def test_index_hourly_play_counts_single_update(app):
         )
         assert new_checkpoint == 16
 
-def test_index_hourly_play_counts_idempotent_update(app):
-    """Tests multiple updates above are identical and idempotent"""
+def test_index_hourly_play_counts_idempotent(app):
+    """Tests multiple updates does not change data"""
 
     # setup
     with app.app_context():
         db = get_db()
 
-    # run
     entities = {
         "tracks": [
             {"track_id": 1, "title": "track 0"},
@@ -214,6 +213,7 @@ def test_index_hourly_play_counts_idempotent_update(app):
 
     populate_mock_db(db, entities)
 
+    # run
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
         _index_hourly_play_counts(session)
@@ -252,7 +252,6 @@ def test_index_hourly_play_counts_no_change(app):
     with app.app_context():
         db = get_db()
 
-    # run
     entities = {
         "tracks": [
             {"track_id": 1, "title": "track 0"},
@@ -289,6 +288,7 @@ def test_index_hourly_play_counts_no_change(app):
 
     populate_mock_db(db, entities)
 
+    # run
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
 

@@ -588,6 +588,8 @@ class HourlyPlayCounts(Base):
     hourly_timestamp = Column(DateTime, primary_key=True, nullable=False)
     play_count = Column(Integer, nullable=False, index=False)
 
+    Index("aggregate_user_idx", "user_id", unique=True)
+
     def __repr__(self):
         return f"<HourlyPlayCounts(\
 hourly_timestamp={self.hourly_timestamp},\

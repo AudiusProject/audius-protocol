@@ -51,13 +51,15 @@ def _index_hourly_play_counts(session):
     )
 
     # upsert hourly play count
+    # on first population, this will execute an insert for each hour
+    # subsequent updates should include 1 or 2 upserts
     for hourly_play_count in hourly_play_counts:
         session.execute(UPSERT_HOURLY_PLAY_COUNTS_QUERY, {
             "hourly_timestamp": hourly_play_count.hourly_timestamp,
             "play_count": hourly_play_count.play_count
         })
 
-    # update with checkpoint
+    # update with new checkpoint
     session.execute(
         text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
         {
