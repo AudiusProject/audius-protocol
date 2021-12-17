@@ -34,8 +34,8 @@ name=${@:$OPTIND+1:1}
 # Set defaults and validate arguments
 provider=${provider:-$DEFAULT_PROVIDER}
 user=${user:-$DEFAULT_USER}
-audius_protocol_git_ref=${audius_protocol_git_ref:-'master'}
-audius_client_git_ref=${audius_client_git_ref:-'master'}
+audius_protocol_git_ref=${audius_protocol_git_ref:-$DEFAULT_AUDIUS_PROTOCOL_GIT_REF}
+audius_client_git_ref=${audius_client_git_ref:-$DEFAULT_AUDIUS_CLIENT_GIT_REF}
 
 if [[ "$provider" != "gcp" ]] && [[ "$provider" != "azure" ]]; then
 	echo "Unknown provider:" $provider
