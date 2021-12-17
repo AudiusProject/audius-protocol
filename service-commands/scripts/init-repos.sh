@@ -39,6 +39,7 @@ npm install
 cd $PROTOCOL_DIR/
 cd libs/
 npm install
+npm install
 
 # setup identity service
 cd $PROTOCOL_DIR/
