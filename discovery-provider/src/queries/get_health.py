@@ -449,7 +449,6 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 
     :param redis: redis connection
     :param web3: web3 connection
-    :param use_redis_cache: bool to determine grabbing chain values from redis or not
 
     :rtype (int, string)
     """
