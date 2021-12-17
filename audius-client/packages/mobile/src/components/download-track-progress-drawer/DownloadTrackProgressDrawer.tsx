@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
 
-import LottieView from 'lottie-react-native'
 import { Platform, StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import Drawer from 'app/components/drawer'
+import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -90,22 +90,7 @@ const DownloadTrackProgressDrawer = () => {
           {fileName}
         </Text>
         <View style={styles.downloadContainer}>
-          <LottieView
-            style={styles.loadingIcon}
-            source={require('app/assets/animations/loadingSpinner.json')}
-            autoPlay
-            loop
-            colorFilters={[
-              {
-                keypath: 'Shape Layer 1',
-                color: spinnerColor
-              },
-              {
-                keypath: 'Shape Layer 2',
-                color: spinnerColor
-              }
-            ]}
-          />
+          <LoadingSpinner style={styles.loadingIcon} color={spinnerColor} />
           {Platform.OS === 'ios' ? (
             <Text style={styles.downloadPercent} weight='heavy'>
               {Math.round(downloadPercentage)}%

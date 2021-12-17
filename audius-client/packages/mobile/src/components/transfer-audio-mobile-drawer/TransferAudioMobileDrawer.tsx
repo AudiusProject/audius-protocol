@@ -1,19 +1,17 @@
 import React, { useCallback } from 'react'
 
-import MaskedView from '@react-native-masked-view/masked-view'
 import {
   getModalVisibility,
   setVisibility
 } from 'audius-client/src/common/store/ui/modals/slice'
 import { StyleSheet, View } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 
 import IconGold from 'app/assets/images/IconGoldBadge.svg'
 import Drawer from 'app/components/drawer'
+import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useThemeColors } from 'app/utils/theme'
 
 const TRANSFER_AUDIO_MODAL_NAME = 'TransferAudioMobileWarning'
 
@@ -51,10 +49,6 @@ const messages = {
 
 const TransferAudioMobileDrawer = () => {
   const dispatchWeb = useDispatchWeb()
-  const {
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
   const isOpen = useSelectorWeb(state =>
     getModalVisibility(state, TRANSFER_AUDIO_MODAL_NAME)
   )
@@ -69,17 +63,7 @@ const TransferAudioMobileDrawer = () => {
     <Drawer isOpen={isOpen} onClose={handleClose}>
       <View style={styles.drawer}>
         <IconGold style={styles.badge} height={134} width={134} />
-        <MaskedView
-          maskElement={<Text style={styles.title}>{messages.title}</Text>}
-        >
-          <LinearGradient
-            colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-            start={{ x: 1, y: 1 }}
-            end={{ x: 0, y: 0 }}
-          >
-            <Text style={[styles.title, { opacity: 0 }]}>{messages.title}</Text>
-          </LinearGradient>
-        </MaskedView>
+        <GradientText text={messages.title} style={styles.title} />
         <Text style={styles.subtitle}>{messages.subtitle}</Text>
       </View>
     </Drawer>

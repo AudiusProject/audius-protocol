@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useCallback } from 'react'
 
-import LottieView from 'lottie-react-native'
 import {
   StyleSheet,
   View,
@@ -12,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { MessageType } from 'app/message'
 import { updateQuery } from 'app/store/search/actions'
@@ -190,21 +190,7 @@ const TopBar = ({ onClose, isOpen }: TopBarProps) => {
         />
         {isLoading && (
           <View style={styles.loadingIcon}>
-            <LottieView
-              source={require('app/assets/animations/loadingSpinner.json')}
-              autoPlay
-              loop
-              colorFilters={[
-                {
-                  keypath: 'Shape Layer 1',
-                  color: spinnerColor
-                },
-                {
-                  keypath: 'Shape Layer 2',
-                  color: spinnerColor
-                }
-              ]}
-            />
+            <LoadingSpinner color={spinnerColor} />
           </View>
         )}
         {hasText && !isLoading && (

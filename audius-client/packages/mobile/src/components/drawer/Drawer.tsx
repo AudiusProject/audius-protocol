@@ -57,6 +57,14 @@ const createStyles = (zIndex = 5) => (themeColors: ThemeColors) =>
       height: '100%'
     },
 
+    content: {
+      height: 'auto'
+    },
+
+    fullScreenContent: {
+      height: '100%'
+    },
+
     titleContainer: {
       display: 'flex',
       flexDirection: 'row',
@@ -534,6 +542,7 @@ const Drawer = ({
       >
         <SafeAreaView
           edges={['bottom', ...((isFullscreen ? ['top'] : []) as Edge[])]}
+          style={isFullscreen ? styles.fullScreenContent : styles.content}
           onLayout={(event: LayoutChangeEvent) => {
             if (!isFullscreen) {
               const { height } = event.nativeEvent.layout

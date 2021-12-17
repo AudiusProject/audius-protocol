@@ -1,4 +1,7 @@
 import { CommonState } from 'audius-client/src/common/store'
+import remoteConfig, {
+  RemoteConfigState
+} from 'audius-client/src/common/store/remote-config/slice'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import createSagaMiddleware from 'redux-saga'
@@ -28,6 +31,7 @@ export type AppState = {
   lifecycle: LifecycleState
   notifications: NotificationsState
   oauth: OAuthState
+  remoteConfig: RemoteConfigState
   search: SearchState
   signon: SignonState
   theme: ThemeState
@@ -45,6 +49,7 @@ const createRootReducer = () =>
     lifecycle,
     notifications,
     oauth,
+    remoteConfig,
     search,
     signon,
     theme,

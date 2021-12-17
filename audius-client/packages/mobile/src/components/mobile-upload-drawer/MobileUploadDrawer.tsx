@@ -1,14 +1,13 @@
 import React from 'react'
 
-import MaskedView from '@react-native-masked-view/masked-view'
 import { getIsOpen } from 'audius-client/src/common/store/ui/mobile-upload-drawer/selectors'
 import { hide } from 'audius-client/src/common/store/ui/mobile-upload-drawer/slice'
 import { Image, StyleSheet, View } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 
 import HeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconUpload from 'app/assets/images/iconGradientUpload.svg'
 import Drawer from 'app/components/drawer'
+import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -99,24 +98,7 @@ const MobileUploadDrawer = () => {
             fill={pageHeaderGradientColor2}
             fillSecondary={pageHeaderGradientColor1}
           />
-
-          <MaskedView
-            maskElement={
-              <Text style={styles.cta} weight='heavy'>
-                {messages.start}
-              </Text>
-            }
-          >
-            <LinearGradient
-              colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-              start={{ x: 1, y: 1 }}
-              end={{ x: 0, y: 0 }}
-            >
-              <Text style={[styles.cta, { opacity: 0 }]} weight='heavy'>
-                {messages.start}
-              </Text>
-            </LinearGradient>
-          </MaskedView>
+          <GradientText text={messages.start} style={styles.cta} />
           <View>
             <Text style={styles.visit}>{messages.visit}</Text>
           </View>
