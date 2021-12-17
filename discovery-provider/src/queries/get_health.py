@@ -502,7 +502,7 @@ def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
         stored_blockhash = redis.get(block_hash_redis_key)
         if stored_blockhash is not None:
             block_hash = stored_blockhash.decode("utf-8")
-    except Exceptipon as e:
+    except Exception as e:
         logger.warning(
             f"Could not fetch latest block from redis for keys={block_redis_key},{block_hash_redis_key}: {e}"
         )
@@ -533,4 +533,4 @@ def set_latest_chain_block_in_redis(redis, latest_block_num, latest_block_hash):
             nx=True,
         )
     except Exception as e:
-        logger.warning(f"Could not set latest chain block values in redis: {e}") 
+        logger.warning(f"Could not set latest chain block values in redis: {e}")
