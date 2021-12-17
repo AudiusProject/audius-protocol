@@ -47,8 +47,10 @@ copy_file_to_remote() {
 			# az ssh config --vm-name $name --file /tmp/azuressh.config
 			# scp -F /tmp/azuressh.config $local_file $user@$name:$remote_file
 			# rm /tmp/azuressh.config
-		;;
-		gcp) eval "gcloud compute scp $local_file $user@$name:$remote_file" ;;
+			;;
+		gcp)
+			eval "gcloud compute scp $local_file $user@$name:$remote_file"
+			;;
 	esac
 }
 
