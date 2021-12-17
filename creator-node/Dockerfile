@@ -26,8 +26,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add postgresql-libs=11.12-r0 && \
     apk add python3 && \
     apk add python3-dev && \
-    apk add py3-pip && \
-    apk add py3-wheel
+    apk add py3-pip
 
 # versions
 # bash 5.1.0-r0

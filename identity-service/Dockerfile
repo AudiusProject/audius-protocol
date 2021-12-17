@@ -21,8 +21,7 @@ RUN apk update && \
     apk add rsyslog && \
     apk add python3 && \
     apk add python3-dev && \
-    apk add py3-pip && \
-    apk add py3-wheel
+    apk add py3-pip
 
 EXPOSE 7000
 
