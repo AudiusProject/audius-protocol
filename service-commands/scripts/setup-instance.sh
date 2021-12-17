@@ -10,7 +10,7 @@
 #   -l <audius-client-git-ref>
 #   -f (fast setup with prebaked dev image)
 
-set -ex
+set -e
 
 PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 
@@ -34,8 +34,8 @@ name=${@:$OPTIND+1:1}
 # Set defaults and validate arguments
 provider=${provider:-$DEFAULT_PROVIDER}
 user=${user:-$DEFAULT_USER}
-audius_protocol_git_ref=${user:-$DEFAULT_AUDIUS_PROTOCOL_GIT_REF}
-audius_client_git_ref=${user:-$DEFAULT_AUDIUS_CLIENT_GIT_REF}
+audius_protocol_git_ref=${audius_protocol_git_ref:-'master'}
+audius_client_git_ref=${audius_client_git_ref:-'master'}
 
 if [[ "$provider" != "gcp" ]] && [[ "$provider" != "azure" ]]; then
 	echo "Unknown provider:" $provider
@@ -81,6 +81,45 @@ if ! instance_exists $provider $name; then
 	fi
 fi
 
+
+configure_etc_hosts() {
+	IP=$(get_ip_addr $provider $name)
+	echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
+	sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
+	sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
+}
+
+set_ssh_serveralive() {
+	if [[ ! -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
+		echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
+	fi
+}
+
+setup_zsh() {
+	execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
+
+	zshenv=$PROTOCOL_DIR/service-commands/scripts/.zshenv
+	if [[ -f "~/.zshenv.remote-dev" ]]; then
+		zshenv=~/.zshenv.remote-dev
+	fi
+	cp $zshenv ~/.zshenv.tmp
+	echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
+	copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
+	rm ~/.zshenv.tmp
+
+	zshrc=$PROTOCOL_DIR/service-commands/scripts/.zshrc
+	if [[ -f "~/.zshrc.remote-dev" ]]; then
+		zshrc=~/.zshrc.remote-dev
+	fi
+	copy_file_to_remote $provider $user $name $zshrc '~/.zshrc'
+
+	p10k_zsh=$PROTOCOL_DIR/service-commands/scripts/.p10k.zsh
+	if [[ -f "~/.p10k.zsh.remote-dev" ]]; then
+		p10k_zsh=~/.p10k.zsh.remote-dev
+	fi
+	copy_file_to_remote $provider $user $name $p10k_zsh '~/.p10k.zsh'
+}
+
 # Setup service
 case "$service" in
 	creator-node)
@@ -97,17 +136,30 @@ case "$service" in
 		wait_for_instance $provider $user $name
 		execute_with_ssh $provider $user $name \
 			"[[ ! -d ~/audius-protocol ]]" \
+			"&& set -x" \
 			"&& git clone https://github.com/AudiusProject/audius-protocol.git" \
-			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh" \
-			"&& yes | bash audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
-
-		wait_for_instance $provider $user $name
+			"&& PROTOCOL_DIR=/home/ubuntu/audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref" \
+			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh" || true
         reboot_instance $provider $name
 
-		read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
-		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-			sudo -E AUDIUS_REMOTE_DEV_HOST=$(get_ip_addr $provider $name) node $PROTOCOL_DIR/service-commands/scripts/hosts.js
-			exit 1
-		fi
+		wait_for_instance $provider $user $name
+
+		# perform once more for audius-client
+		execute_with_ssh $provider $user $name \
+			"PROTOCOL_DIR=/home/ubuntu/audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
+
+		execute_with_ssh $provider $user $name "nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
+		execute_with_ssh $provider $user $name "source ~/.nvm/nvm.sh; source ~/.profile; A up || (A down && A up)"
+
+		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
+
+		configure_etc_hosts
+
+		set_ssh_serveralive
+
+		setup_zsh
+
+		echo -e "\nLogin using:\n"
+		echo -e "gssh $name\n"
 		;;
 esac
