@@ -22,7 +22,7 @@ import {
   undoRepostTrack,
   shareTrack
 } from 'common/store/social/tracks/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource
@@ -266,7 +266,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     unrepostTrack: (trackId: ID) =>
       dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(open(OverflowSource.TRACKS, trackId, overflowActions)),
+      dispatch(
+        open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
+      ),
     setRepostTrackId: (trackId: ID) =>
       dispatch(setRepost(trackId, RepostType.TRACK)),
     setFavoriteTrackId: (trackId: ID) =>

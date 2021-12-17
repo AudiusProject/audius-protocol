@@ -18,9 +18,6 @@ import { UsersCacheState } from 'common/store/cache/users/types'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
-import remoteConfig, {
-  RemoteConfigState
-} from 'common/store/remote-config/slice'
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from 'common/store/ui/add-to-playlist/reducer'
@@ -31,7 +28,7 @@ import createPlaylistModalReducer from 'common/store/ui/createPlaylistModal/redu
 import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
 import deletePlaylistConfirmationReducer from 'common/store/ui/delete-playlist-confirmation-modal/reducers'
 import { DeletePlaylistConfirmationModalState } from 'common/store/ui/delete-playlist-confirmation-modal/types'
-import mobileOverflowModalReducer from 'common/store/ui/mobile-overflow-menu/reducer'
+import mobileOverflowModalReducer from 'common/store/ui/mobile-overflow-menu/slice'
 import { MobileOverflowModalState } from 'common/store/ui/mobile-overflow-menu/types'
 import mobileUploadDrawerReducer, {
   MobileUploadDrawerState
@@ -77,10 +74,7 @@ export const reducers = {
   pages: combineReducers({
     audioRewards: audioRewardsSlice.reducer,
     tokenDashboard: tokenDashboardSlice.reducer
-  }),
-
-  // Remote config/flags
-  remoteConfig
+  })
 }
 
 export const sagas = {
@@ -129,6 +123,4 @@ export type CommonState = {
     audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
   }
-
-  remoteConfig: RemoteConfigState
 }

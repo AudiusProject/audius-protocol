@@ -33,7 +33,7 @@ import {
 import * as socialCollectionsActions from 'common/store/social/collections/actions'
 import * as socialTracksActions from 'common/store/social/tracks/actions'
 import * as socialUsersActions from 'common/store/social/users/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource
@@ -935,7 +935,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
         socialUsersActions.unfollowUser(userId, FollowSource.COLLECTION_PAGE)
       ),
     clickOverflow: (collectionId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(open(OverflowSource.COLLECTIONS, collectionId, overflowActions)),
+      dispatch(
+        open({
+          source: OverflowSource.COLLECTIONS,
+          id: collectionId,
+          overflowActions
+        })
+      ),
     setRepostPlaylistId: (collectionId: ID) =>
       dispatch(setRepost(collectionId, RepostType.COLLECTION)),
     setFavoritePlaylistId: (collectionId: ID) =>

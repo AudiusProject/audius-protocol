@@ -1,4 +1,5 @@
-import { CommonState } from 'common/store'
-
-export const isRemoteConfigLoaded = (state: CommonState) =>
-  state.remoteConfig.remoteConfigLoaded
+export const isRemoteConfigLoaded = <
+  State extends { remoteConfig: { remoteConfigLoaded: boolean } }
+>(
+  state: State
+) => state.remoteConfig.remoteConfigLoaded

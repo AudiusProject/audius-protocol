@@ -31,6 +31,13 @@ export enum OverflowSource {
   PROFILE = 'PROFILE'
 }
 
+export type OpenPayload = {
+  source: OverflowSource
+  id: ID | string
+  overflowActions: OverflowAction[]
+  overflowActionCallbacks?: OverflowActionCallbacks
+}
+
 export type OverflowActionCallbacks = {
   [key in OverflowAction]?: () => void
 }

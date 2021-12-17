@@ -14,7 +14,7 @@ import Status from 'common/models/Status'
 import { getAccountUser } from 'common/store/account/selectors'
 import * as socialActions from 'common/store/social/users/actions'
 import * as createPlaylistModalActions from 'common/store/ui/createPlaylistModal/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowSource,
   OverflowAction
@@ -1065,7 +1065,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setFollowersUserId: (userId: ID) => dispatch(setFollowers(userId)),
 
     clickOverflow: (userId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(open(OverflowSource.PROFILE, userId, overflowActions)),
+      dispatch(
+        open({ source: OverflowSource.PROFILE, id: userId, overflowActions })
+      ),
 
     didChangeTabsFrom: (prevLabel: string, currLabel: string) => {
       if (prevLabel !== currLabel) {

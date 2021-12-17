@@ -24,7 +24,7 @@ import {
   undoRepostTrack,
   shareTrack
 } from 'common/store/social/tracks/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowActionCallbacks,
@@ -532,7 +532,12 @@ function mapDispatchToProps(dispatch: Dispatch) {
       callbacks: OverflowActionCallbacks
     ) =>
       dispatch(
-        open(OverflowSource.TRACKS, trackId, overflowActions, callbacks)
+        open({
+          source: OverflowSource.TRACKS,
+          id: trackId,
+          overflowActions,
+          overflowActionCallbacks: callbacks
+        })
       ),
     goToRoute: (route: string) => dispatch(pushRoute(route))
   }

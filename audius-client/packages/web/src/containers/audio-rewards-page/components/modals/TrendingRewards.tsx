@@ -31,6 +31,8 @@ import ButtonWithArrow from '../ButtonWithArrow'
 import ModalDrawer from './ModalDrawer'
 import styles from './TrendingRewards.module.css'
 
+const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
 const messages = {
   tracksTitle: 'Top 5 Tracks Each Week Receive 100 $AUDIO',
   playlistTitle: 'Top 5 Playlists Each Week Receive 100 $AUDIO',
@@ -218,7 +220,7 @@ export const TrendingRewardsModal = () => {
 
   return (
     <ModalDrawer
-      isOpen={isOpen}
+      isOpen={!IS_NATIVE_MOBILE && isOpen}
       onClose={() => setOpen(false)}
       title={
         <h2 className={styles.titleHeader}>

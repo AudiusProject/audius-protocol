@@ -11,8 +11,9 @@ import {
   RemoteConfigInstance
 } from 'common/services/remote-config'
 import { isRemoteConfigLoaded } from 'common/store/remote-config/selectors'
+import { StateWithRemoteConfig } from 'common/store/remote-config/slice'
 
-export const createUseRemoteVarHook = (
+export const createUseRemoteVarHook = <State extends StateWithRemoteConfig>(
   remoteConfigInstance: RemoteConfigInstance
 ) => {
   function useRemoteVar(key: IntKeys): number
@@ -22,7 +23,9 @@ export const createUseRemoteVarHook = (
   function useRemoteVar(
     key: AllRemoteConfigKeys
   ): boolean | string | number | null {
-    const configLoaded = useSelector(isRemoteConfigLoaded)
+    const configLoaded = useSelector((state: State) =>
+      isRemoteConfigLoaded<State>(state)
+    )
     // eslint complains about configLoaded as part of the deps array
     // eslint-disable-next-line
     const remoteVar = useMemo(() => remoteConfigInstance.getRemoteVar(key), [

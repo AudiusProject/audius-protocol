@@ -1,6 +1,7 @@
 import { RouterState } from 'connected-react-router'
 
 import { CommonState } from 'common/store'
+import RemoteConfigReducer from 'common/store/remote-config/slice'
 import ArtistDashboardState from 'containers/artist-dashboard-page/store/types'
 import ArtistRecommendationsReducer from 'containers/artist-recommendations/store/slice'
 import { ChangePasswordState } from 'containers/change-password/store/slice'
@@ -143,4 +144,7 @@ export type AppState = CommonState & {
 
   // Misc
   router: RouterState
+
+  // Remote Config + Flags
+  remoteConfig: ReturnType<typeof RemoteConfigReducer>
 }
