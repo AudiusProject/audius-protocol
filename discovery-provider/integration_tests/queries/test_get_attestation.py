@@ -19,7 +19,7 @@ from src.utils.db_session import get_db
 from src.utils.config import shared_config
 from src.tasks.index_oracles import oracle_addresses_key
 
-from tests.test_get_challenges import setup_db
+from integration_tests.queries.test_get_challenges import setup_db
 
 REDIS_URL = shared_config["redis"]["url"]
 redis_handle = redis.Redis.from_url(url=REDIS_URL)

@@ -14,9 +14,9 @@ from integration_tests.utils import query_creator_by_name, to_bytes
 )
 def test_index_operations(app, client, celery_app, contracts):
     """Confirm indexing of creator operations results in expected state change"""
-    test_file = "tests/res/test_audio_file.mp3"
-    creator_metadata_json_file = "tests/res/test_creator_metadata.json"
-    track_metadata_json_file = "tests/res/test_track_metadata.json"
+    test_file = "integration_tests/res/test_audio_file.mp3"
+    creator_metadata_json_file = "integration_tests/res/test_creator_metadata.json"
+    track_metadata_json_file = "integration_tests/res/test_track_metadata.json"
 
     user_factory_contract = contracts["user_factory_contract"]
     track_factory_contract = contracts["track_factory_contract"]
