@@ -30,8 +30,8 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
 
   const routeTimeStart = getStartTime()
 
-  let codeBlockTimeStart = getStartTime()
   // Create track transcode and segments, and save all to disk
+  let codeBlockTimeStart = getStartTime()
   const { transcodedFilePath, segmentFilePaths } = await transcodeAndSegment({ cnodeUserUUID, fileName, fileDir, logContext })
   logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully re-encoded track file=${fileName}`)
 
