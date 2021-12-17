@@ -1,8 +1,8 @@
 import React from 'react'
 
-import MaskedView from '@react-native-masked-view/masked-view'
-import { StyleSheet, Text, View } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
+import { StyleSheet, View } from 'react-native'
+
+import GradientText from 'app/components/gradient-text'
 
 const styles = StyleSheet.create({
   container: {
@@ -10,16 +10,8 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingLeft: 12
   },
-  masked: {
-    height: 42
-  },
-  header: {
-    height: '100%',
-    backgroundColor: 'transparent'
-  },
   text: {
     fontSize: 24,
-    fontFamily: 'AvenirNextLTPro-Heavy',
     textShadowColor: 'rgba(126, 27, 204, 0.15)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4
@@ -28,30 +20,12 @@ const styles = StyleSheet.create({
 
 type HeaderProps = {
   text: string
-  containerStyle: Record<string, any>
 }
-/**
- * NOTE: Since masked view cannot calculate the width beforehand,
- * the width of the text must be passed in via the containerStyle prop
- */
-const Header = ({ text, containerStyle = {} }: HeaderProps) => {
+
+const Header = ({ text }: HeaderProps) => {
   return (
     <View style={styles.container}>
-      <MaskedView
-        style={[styles.masked, containerStyle]}
-        maskElement={
-          <View style={styles.header}>
-            <Text style={styles.text}>{text}</Text>
-          </View>
-        }
-      >
-        <LinearGradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          colors={['#A22FEB', '#5B23E1']}
-          style={{ flex: 1, height: '100%' }}
-        />
-      </MaskedView>
+      <GradientText text={text} style={styles.text} />
     </View>
   )
 }

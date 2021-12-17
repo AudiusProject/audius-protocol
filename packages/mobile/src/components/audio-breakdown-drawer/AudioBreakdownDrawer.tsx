@@ -1,6 +1,5 @@
 import React, { useCallback, useRef } from 'react'
 
-import MaskedView from '@react-native-masked-view/masked-view'
 import { Chain } from 'audius-client/src/common/models/Chain'
 import { BNWei } from 'audius-client/src/common/models/Wallet'
 import { getAssociatedWallets } from 'audius-client/src/common/store/pages/token-dashboard/selectors'
@@ -22,19 +21,18 @@ import {
   View,
   Animated
 } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import IconInfo from 'app/assets/images/iconInfo.svg'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import Drawer from 'app/components/drawer'
+import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 import share from 'app/utils/share'
-import { useThemeColors } from 'app/utils/theme'
 
 const AUDIO_BREAKDOWN_MODAL_NAME = 'AudioBreakdown'
 
@@ -208,11 +206,6 @@ const AudioBreakdownDrawer = () => {
     }, new BN('0')) ?? new BN('0')) as BNWei
 
   const totalBalance = accountBalance.add(linkedWalletsBalance) as BNWei
-
-  const {
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
   const isOpen = useSelectorWeb(state =>
     getModalVisibility(state, AUDIO_BREAKDOWN_MODAL_NAME)
   )
@@ -231,23 +224,10 @@ const AudioBreakdownDrawer = () => {
       isFullscreen
     >
       <View style={styles.drawer}>
-        <MaskedView
-          maskElement={
-            <Text style={styles.amount} weight='heavy'>
-              {formatWei(totalBalance, true)}
-            </Text>
-          }
-        >
-          <LinearGradient
-            colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-            start={{ x: 1, y: 1 }}
-            end={{ x: 0, y: 0 }}
-          >
-            <Text style={[styles.amount, { opacity: 0 }]} weight='heavy'>
-              {formatWei(totalBalance, true)}
-            </Text>
-          </LinearGradient>
-        </MaskedView>
+        <GradientText
+          text={formatWei(totalBalance, true)}
+          style={styles.amount}
+        />
 
         <Text style={styles.total} weight='bold'>
           {messages.total}
@@ -259,26 +239,10 @@ const AudioBreakdownDrawer = () => {
               {messages.audiusWallet}
             </Text>
 
-            <MaskedView
-              maskElement={
-                <Text style={styles.titleAmount} weight='heavy'>
-                  {formatWei(accountBalance, true)}
-                </Text>
-              }
-            >
-              <LinearGradient
-                colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-                start={{ x: 1, y: 1 }}
-                end={{ x: 0, y: 0 }}
-              >
-                <Text
-                  style={[styles.titleAmount, { opacity: 0 }]}
-                  weight='heavy'
-                >
-                  {formatWei(accountBalance, true)}
-                </Text>
-              </LinearGradient>
-            </MaskedView>
+            <GradientText
+              text={formatWei(accountBalance, true)}
+              style={styles.titleAmount}
+            />
           </View>
 
           <View style={styles.sectionDescription}>
@@ -294,26 +258,10 @@ const AudioBreakdownDrawer = () => {
               {messages.linkedWallets}
             </Text>
 
-            <MaskedView
-              maskElement={
-                <Text style={styles.titleAmount} weight='heavy'>
-                  {formatWei(linkedWalletsBalance, true)}
-                </Text>
-              }
-            >
-              <LinearGradient
-                colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-                start={{ x: 1, y: 1 }}
-                end={{ x: 0, y: 0 }}
-              >
-                <Text
-                  style={[styles.titleAmount, { opacity: 0 }]}
-                  weight='heavy'
-                >
-                  {formatWei(linkedWalletsBalance, true)}
-                </Text>
-              </LinearGradient>
-            </MaskedView>
+            <GradientText
+              text={formatWei(linkedWalletsBalance, true)}
+              style={styles.titleAmount}
+            />
           </View>
 
           <View style={styles.walletsHeader}>

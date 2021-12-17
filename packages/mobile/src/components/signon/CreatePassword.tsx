@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import commonPasswordList from 'fxa-common-password-list'
-import LottieView from 'lottie-react-native'
 import {
   Animated,
   Easing,
@@ -25,6 +24,7 @@ import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCheck from 'app/assets/images/iconValidationCheck.svg'
 import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import Button from 'app/components/button'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { MessageType } from 'app/message/types'
 import * as lifecycleActions from 'app/store/lifecycle/actions'
@@ -451,12 +451,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
         style={styles.mainButton}
         icon={
           isWorking ? (
-            <LottieView
-              style={styles.loadingIcon}
-              source={require('../../assets/animations/loadingSpinner.json')}
-              autoPlay
-              loop
-            />
+            <LoadingSpinner style={styles.loadingIcon} />
           ) : (
             <IconArrow style={styles.arrowIcon} fill='white' />
           )
