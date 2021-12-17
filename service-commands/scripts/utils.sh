@@ -156,3 +156,43 @@ get_ip_addr() {
 format_bold() {
 	printf "$(tput bold)$@$(tput sgr0)"
 }
+
+
+
+configure_etc_hosts() {
+	IP=$(get_ip_addr $provider $name)
+	echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
+	sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
+	sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
+}
+
+set_ssh_serveralive() {
+	if [[ ! -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
+		echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
+	fi
+}
+
+setup_zsh() {
+	execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
+
+	zshenv=$PROTOCOL_DIR/service-commands/scripts/.zshenv
+	if [[ -f "$HOME/.zshenv.remote-dev" ]]; then
+		zshenv=~/.zshenv.remote-dev
+	fi
+	cp $zshenv ~/.zshenv.tmp
+	echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
+	copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
+	rm ~/.zshenv.tmp
+
+	zshrc=$PROTOCOL_DIR/service-commands/scripts/.zshrc
+	if [[ -f "$HOME/.zshrc.remote-dev" ]]; then
+		zshrc=~/.zshrc.remote-dev
+	fi
+	copy_file_to_remote $provider $user $name $zshrc '~/.zshrc'
+
+	p10k_zsh=$PROTOCOL_DIR/service-commands/scripts/.p10k.zsh
+	if [[ -f "$HOME/.p10k.zsh.remote-dev" ]]; then
+		p10k_zsh=~/.p10k.zsh.remote-dev
+	fi
+	copy_file_to_remote $provider $user $name $p10k_zsh '~/.p10k.zsh'
+}
