@@ -10,7 +10,7 @@
 #   -l <audius-client-git-ref>
 #   -f (fast setup with prebaked dev image)
 
-set -e
+set -ex
 
 PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 
@@ -95,15 +95,14 @@ case "$service" in
 		;;
 	remote-dev)
 		wait_for_instance $provider $user $name
-
 		execute_with_ssh $provider $user $name \
 			"[[ ! -d ~/audius-protocol ]]" \
 			"&& git clone https://github.com/AudiusProject/audius-protocol.git" \
-			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh"
+			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh" \
+			"&& yes | bash audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
 
 		wait_for_instance $provider $user $name
-
-        execute_with_ssh $provider $user $name "bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
+        reboot_instance $provider $name
 
 		read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
 		if [[ "$REPLY" =~ ^[Yy]$ ]]; then

@@ -107,6 +107,19 @@ wait_for_instance() {
 	done
 }
 
+reboot_instance() {
+	echo "Rebooting instance $2 on $1 platform..."
+	case "$1" in
+		azure)
+			az vm restart --name $2
+			;;
+		gcp)
+			gcloud compute instances stop $2
+			gcloud compute instances start $2
+			;;
+	esac
+}
+
 
 get_ip_addr() {
 	provider=$1
