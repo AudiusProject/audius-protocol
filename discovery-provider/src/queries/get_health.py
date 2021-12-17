@@ -124,11 +124,8 @@ def get_latest_ipld_indexed_block(use_redis_cache=True):
 
     redis = redis_connection.get_redis()
     if use_redis_cache:
-        latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash = get_block_from_redis(
-            redis,
-            most_recent_indexed_ipld_block_redis_key,
-            most_recent_indexed_ipld_block_hash_redis_key
-        )
+        latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash = get_most_recent_indexed_ipld_block_from_redis(redis)
+        
     if latest_indexed_ipld_block_num is None or latest_indexed_ipld_block_hash is None:
         (
             latest_indexed_ipld_block_num,
@@ -191,10 +188,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     # If either `latest_block_num`, `latest_block_hash` are None and `use_redis_cache=True`, try again
     # with the web3 provider.
     if use_redis_cache:
-        latest_block_num, latest_block_hash = get_latest_chain_block_from_redis(redis)
+        latest_block_num, latest_block_hash = get_latest_block_from_redis(redis)
 
     if not use_redis_cache or latest_block_num is None or latest_block_hash is None:
-        latest_block_num, latest_block_hash = get_latest_chain_block_from_web3(web3)
+        latest_block_num, latest_block_hash = get_latest_block_from_web3(web3)
 
     play_health_info = get_play_health_info(
         redis,
@@ -206,7 +203,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
     # value from redis cache is None
-    latest_indexed_block_num, latest_indexed_block_hash = get_latest_indexed_chain_block_from_redis(redis)
+    latest_indexed_block_num, latest_indexed_block_hash = get_most_recent_indexed_block_from_redis(redis)
 
     if (
         not use_redis_cache
@@ -452,15 +449,15 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 
     :rtype (int, string)
     """
-    latest_block_num, latest_block_hash = get_latest_chain_block_from_redis(redis)
+    latest_block_num, latest_block_hash = get_latest_block_from_redis(redis)
 
     if latest_block_num is None or latest_block_hash is None:
-        latest_block_num, latest_block_hash = get_latest_chain_block_from_web3(web3)
-        set_latest_chain_block_in_redis(redis, latest_block_num, latest_block_hash)
+        latest_block_num, latest_block_hash = get_latest_block_from_web3(web3)
+        set_latest_block_in_redis(redis, latest_block_num, latest_block_hash)
 
     return latest_block_num, latest_block_hash
 
-def get_latest_chain_block_from_web3(web3):
+def get_latest_block_from_web3(web3):
     latest_block_num = None
     latest_block_hash = None
 
@@ -480,13 +477,29 @@ def get_latest_chain_block_from_web3(web3):
 
     return latest_block_num, latest_block_hash
 
-def get_latest_indexed_chain_block_from_redis(redis):
+def get_most_recent_indexed_block_from_redis(redis):
     return get_block_from_redis(redis, most_recent_indexed_block_redis_key, most_recent_indexed_block_hash_redis_key)
 
-def get_latest_chain_block_from_redis(redis):
+def get_latest_block_from_redis(redis):
     return get_block_from_redis(redis, latest_block_redis_key, latest_block_hash_redis_key)
 
+def get_most_recent_indexed_ipld_block_from_redis(redis):
+    return get_block_from_redis(redis, most_recent_indexed_block_redis_key, most_recent_indexed_block_hash_redis_key)
+
 def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
+    """
+    A wrapper fn that retrieves the block and block hash from redis depending on the keys.
+    Redis key pairs:
+    - most_recent_indexed_block_redis_key, most_recent_indexed_block_hash_redis_key
+    - latest_block_redis_key, latest_block_hash_redis_key
+    - most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key
+
+    :param redis: redis connection
+    :param block_redis_key: the key used to fetch block data in redis
+    :param block_redis_key: the key used to fetch block hash data in redis
+
+    :rtype (int, string) the block num and block hash
+    """ 
     block_num = None
     block_hash = None
 
@@ -508,10 +521,10 @@ def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
 
     return block_num, block_hash
 
-def set_latest_chain_block_in_redis(redis, latest_block_num, latest_block_hash):
+def set_latest_block_in_redis(redis, latest_block_num, latest_block_hash):
     try:
         if redis is None:
-            raise Exception("Redis instance not valid in set_latest_chain_block_in_redis")
+            raise Exception("Redis instance not valid in set_latest_block_in_redis")
 
         if latest_block_num is None or latest_block_hash is None:
             raise Exception(
