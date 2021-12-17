@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
 
-import LottieView from 'lottie-react-native'
 import { StyleSheet, FlatList, View, RefreshControl } from 'react-native'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import LoadingSpinner from 'app/components/loading-spinner'
 import * as haptics from 'app/haptics'
 import { AppState } from 'app/store'
 import * as notificationsActions from 'app/store/notifications/actions'
@@ -104,21 +104,7 @@ const List = ({
       ListFooterComponent={() =>
         status === Status.LOADING ? (
           <View style={styles.footer}>
-            <LottieView
-              source={require('app/assets/animations/loadingSpinner.json')}
-              autoPlay
-              loop
-              colorFilters={[
-                {
-                  keypath: 'Shape Layer 1',
-                  color: spinnerColor
-                },
-                {
-                  keypath: 'Shape Layer 2',
-                  color: spinnerColor
-                }
-              ]}
-            />
+            <LoadingSpinner color={spinnerColor} />
           </View>
         ) : null
       }

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import LottieView from 'lottie-react-native'
 import {
   Animated,
   StyleSheet,
@@ -29,6 +28,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import Button from 'app/components/button'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { MessageType } from 'app/message/types'
 import * as signonActions from 'app/store/signon/actions'
@@ -229,13 +229,7 @@ const ContinueButton = ({
       disabled={disabled}
       icon={
         isWorking ? (
-          <View style={styles.loadingIcon}>
-            <LottieView
-              source={require('app/assets/animations/loadingSpinner.json')}
-              autoPlay
-              loop
-            />
-          </View>
+          <LoadingSpinner style={styles.loadingIcon} />
         ) : (
           <IconArrow style={styles.arrowIcon} fill='white' />
         )
@@ -321,22 +315,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
   const LoadingPhoto = () => {
     return isPhotoLoading ? (
       <View style={styles.photoLoadingIconContainer}>
-        <LottieView
-          style={styles.photoLoadingIcon}
-          source={require('app/assets/animations/loadingSpinner.json')}
-          autoPlay
-          loop
-          colorFilters={[
-            {
-              keypath: 'Shape Layer 1',
-              color: spinnerColor
-            },
-            {
-              keypath: 'Shape Layer 2',
-              color: spinnerColor
-            }
-          ]}
-        />
+        <LoadingSpinner style={styles.photoLoadingIcon} color={spinnerColor} />
       </View>
     ) : null
   }

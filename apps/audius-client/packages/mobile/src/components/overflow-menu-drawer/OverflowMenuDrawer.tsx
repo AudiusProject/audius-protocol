@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 
-import { close } from 'audius-client/src/common/store/ui/mobile-overflow-menu/actions'
 import { getMobileOverflowModal } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
+import { close } from 'audius-client/src/common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import LottieView from 'lottie-react-native'
 import {
   Animated,
   StyleSheet,
@@ -18,6 +17,7 @@ import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import Button from 'app/components/button'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { MessageType } from 'app/message/types'
 import * as oauthActions from 'app/store/oauth/actions'
@@ -465,21 +465,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
           <View style={(styles.containerForm, { flex: 0.75 })}>
             <FormTitle />
             <View style={styles.loadingIcon}>
-              <LottieView
-                source={require('app/assets/animations/loadingSpinner.json')}
-                autoPlay
-                loop
-                colorFilters={[
-                  {
-                    keypath: 'Shape Layer 1',
-                    color: spinnerColor
-                  },
-                  {
-                    keypath: 'Shape Layer 2',
-                    color: spinnerColor
-                  }
-                ]}
-              />
+              <LoadingSpinner color={spinnerColor} />
             </View>
           </View>
         ) : (
