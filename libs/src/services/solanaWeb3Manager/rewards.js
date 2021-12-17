@@ -23,6 +23,8 @@ const CREATE_SENDER_PUBLIC_ENUM_VALUE = 4
 const SUBMIT_INSTRUCTION_ENUM_VALUE = 6
 const EVALUATE_INSTRUCTION_ENUM_VALUE = 7
 
+const ATTESTATION_INSTRUCTIONS_PER_TRANSACTION = 4
+
 const encoder = new TextEncoder()
 
 class SubmitAttestationInstructionData {
@@ -195,7 +197,7 @@ async function submitAttestations ({
           recipientEthAddress,
           tokenAmount,
           transferId,
-          instructionIndex: 2 * i,
+          instructionIndex: (2 * i) % ATTESTATION_INSTRUCTIONS_PER_TRANSACTION,
           encodedSenderMessage
         })
       )
@@ -212,6 +214,7 @@ async function submitAttestations ({
     }, [])
   )
 
+
   const encodedOracleMessage = SolanaUtils.constructAttestation(
     recipientEthAddress,
     tokenAmount,
@@ -222,7 +225,7 @@ async function submitAttestations ({
   const oracleSecp = await generateAttestationSecpInstruction({
     attestationMeta: oracleAttestation,
     recipientEthAddress,
-    instructionIndex: instructions.length,
+    instructionIndex: instructions.length % ATTESTATION_INSTRUCTIONS_PER_TRANSACTION,
     tokenAmount,
     transferId,
     encodedSenderMessage: encodedOracleMessage
@@ -237,9 +240,36 @@ async function submitAttestations ({
     transferId,
     feePayer
   })
-  instructions = [...instructions, oracleSecp, oracleTransfer]
 
-  return transactionHandler.handleTransaction(instructions, RewardsManagerError)
+  // Break the instructions up into multiple transactions, allowing 2 instructions
+  // per transaction.
+  instructions = [...instructions, oracleSecp, oracleTransfer]
+  const bucketedInstructions = instructions.reduce((acc, cur) => {
+    if (acc[acc.length - 1].length < ATTESTATION_INSTRUCTIONS_PER_TRANSACTION) {
+      acc[acc.length - 1].push(cur)
+    } else {
+      acc.push([cur])
+    }
+    return acc
+  }, [[]])
+
+  // console.log("DP1")
+  // await transactionHandler.handleTransaction(instructions.slice(0, 2))
+  // console.log("2")
+  // await transactionHandler.handleTransaction(instructions.slice(2, 4))
+  // console.log("3")
+  // await transactionHandler.handleTransaction(instructions.slice(4, 6))
+  // console.log("ORACLE")
+  // const results = await transactionHandler.handleTransaction(instructions.slice(6, 8))
+
+  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction(i, RewardsManagerError)))
+  // If there's any error in any of the transactions, just return that one
+  results.forEach((val) => {
+    if (val.error || val.errorCode) {
+      return val
+    }
+  })
+  return results[0]
 }
 
 /**
@@ -641,8 +671,9 @@ const generateAttestationSecpInstruction = ({
 }) => {
   const { encodedSignature, recoveryId } = encodeSignature(attestationMeta.signature)
 
+  console.log({ethAddr: attestationMeta.ethAddress})
   return Secp256k1Program.createInstructionWithEthAddress({
-    ethAddress: attestationMeta.ethAddress,
+    ethAddress: SolanaUtils.ethAddressToArray(attestationMeta.ethAddress),
     message: encodedSenderMessage,
     signature: encodedSignature,
     recoveryId,
