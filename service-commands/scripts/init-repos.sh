@@ -40,6 +40,7 @@ npm install
 cd $PROTOCOL_DIR/
 cd libs/
 npm install
+npm install lodash # lodash isn't installed on the first run for some reason...
 
 # setup identity service
 cd $PROTOCOL_DIR/

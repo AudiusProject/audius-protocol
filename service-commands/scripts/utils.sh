@@ -37,6 +37,7 @@ copy_file_to_remote() {
 	local_file=$4
 	remote_file=$5
 
+	echo "Copying $4 file to remote host $2@$3 as $5..."
 	case "$provider" in
 		azure) exit 1 ;;  # TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		gcp) eval "gcloud compute scp $local_file $user@$name:$remote_file" ;;

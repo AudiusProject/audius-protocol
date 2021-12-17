@@ -100,33 +100,35 @@ function setup_node() {
     # install nvm and node
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
     export NVM_DIR="$HOME/.nvm"
+    sudo chmod +x "$NVM_DIR/nvm.sh"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
     nvm install $NODE_VERSION
 }
 
 function setup_profile() {
-    echo "nvm use $NODE_VERSION" >> ~/.profile
-    echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.profile
-    echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.profile
-    source ~/.profile
-    source ~/.bashrc
+    echo "nvm use $NODE_VERSION" >> $HOME/.profile
+    echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> $HOME/.profile
+    echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> $HOME/.profile
 }
 
 function setup_audius_repos() {
+    source $HOME/.profile
+    source $HOME/.bashrc
+
+    # set git refs
+    bash $PROTOCOL_DIR/service-commands/scripts/set-git-refs.sh $1 $2
+
     cd $PROTOCOL_DIR/service-commands
     npm install
     sudo chown $USER /etc/hosts
     node scripts/hosts.js add
 
     # set up client
-    cd ~
+    cd $HOME
     git clone https://github.com/AudiusProject/audius-client.git
     cd audius-client
     npm link @audius/libs
-
-    # set git refs
-    .$PROTOCOL_DIR/service-commands/scripts/set-git-refs.sh $1 $2
 
     # set up repos
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up

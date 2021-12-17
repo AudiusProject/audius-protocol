@@ -93,7 +93,7 @@ configure_etc_hosts() {
 }
 
 set_ssh_serveralive() {
-	if [[ ! -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
+	if [[ -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
 		echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
 	fi
 }
@@ -146,25 +146,15 @@ case "$service" in
 
 			wait_for_instance $provider $user $name
 			reboot_instance $provider $name
-		else
-			execute_with_ssh $provider $user $name \
-				"[[ -d ~/audius-protocol ]]" \
-				"&& cd ~/audius-protocol && git checkout $audius_protocol_git_ref" \
-				"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh $audius_protocol_git_ref $audius_client_git_ref"
+			wait_for_instance $provider $user $name
+			# TODO fix install and provisioning for fast
 		fi
-
-		execute_with_ssh $provider $user $name "nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
-		execute_with_ssh $provider $user $name "source ~/.nvm/nvm.sh; source ~/.profile; A up || (A down && A up)"
 
 		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
 
 		configure_etc_hosts
 
-		set_ssh_serveralive
-
-		setup_zsh
-
 		echo -e "\nLogin using:\n"
-		echo -e "gssh $name\n"
+		echo -e "gcloud compute ssh $user@$name\n"
 		;;
 esac
