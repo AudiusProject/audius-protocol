@@ -134,7 +134,7 @@ function setup_audius_repos() {
 }
 
 function setup() {
-    if [ "$FAST_PROVISIONED" -eq "0" ]; then # run full setup
+    if [ "$FAST_PROVISIONED" -eq "1" ]; then # run full setup
         setup_linux_toolchains
         setup_ssh_timeouts
         setup_vscode
