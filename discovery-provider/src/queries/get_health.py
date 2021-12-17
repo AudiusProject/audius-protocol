@@ -486,7 +486,11 @@ def get_latest_block_from_redis(redis):
     return get_block_from_redis(redis, latest_block_redis_key, latest_block_hash_redis_key)
 
 def get_most_recent_indexed_ipld_block_from_redis(redis):
-    return get_block_from_redis(redis, most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key)
+    return get_block_from_redis(
+        redis,
+        most_recent_indexed_ipld_block_redis_key,
+        most_recent_indexed_ipld_block_hash_redis_key
+    )
 
 def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
     """
