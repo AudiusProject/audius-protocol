@@ -109,15 +109,16 @@ case "$service" in
 		execute_with_ssh $provider $user $name \
 			"bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
 
+		# start up frontend and backend
 		execute_with_ssh $provider $user $name "nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
 		execute_with_ssh $provider $user $name "source ~/.nvm/nvm.sh; source ~/.profile; A up || (A down && A up)"
 
-		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
-
+		# configure local files: /etc/hosts, /etc/ssh/ssh_config.d/60-audius.conf
 		configure_etc_hosts
-
 		set_ssh_serveralive
 
+		# upload personal files: ~/.gitconfig, ~/.zshrc, ~/.zshenv, ~/.p10k.zsh
+		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
 		setup_zsh
 
 		echo -e "\nLogin using:\n"
