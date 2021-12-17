@@ -37,6 +37,7 @@ async function run () {
   if (verbose) VERBOSE_MODE = true
   Logger.info(`Updating set of delisted content for ${CREATOR_NODE_ENDPOINT} for values: [${values}]...`)
 
+  let errors = []
   for (let i = 0; i < values.length; i += VALUES_BATCH_SIZE) {
     const valuesSliced = values.slice(i, i + VALUES_BATCH_SIZE)
     try {
@@ -66,9 +67,14 @@ async function run () {
       Logger.debug(`Number of CIDs: ${CIDs.length}
 CIDs: ${CIDs}`)
     } catch (e) {
-      Logger.error(`Verification check failed: ${e}`)
+      const errMsg = `Verification check failed: ${e}`
+      Logger.error(errMsg)
+      errors.push(errMsg)
     }
   }
+
+  if (errors.length > 0) Logger.error(`Finished Script. Status: Error. Errors:: ${errors}`)
+  else Logger.info(`Finished Script. Status: Success`)
 }
 
 /**
