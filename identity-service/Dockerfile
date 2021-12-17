@@ -18,7 +18,10 @@ COPY scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
 RUN apk update && \
-    apk add rsyslog
+    apk add rsyslog && \
+    apk add python3 && \
+    apk add python3-dev && \
+    apk add py3-pip
 
 EXPOSE 7000
 
