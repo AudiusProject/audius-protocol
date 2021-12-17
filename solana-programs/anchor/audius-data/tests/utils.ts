@@ -1,4 +1,5 @@
 import * as anchor from '@project-serum/anchor';
+import { Program, Provider, Wallet, web3 } from "@project-serum/anchor";
 import BN from 'bn.js';
 import { randomBytes } from 'crypto';
 import * as secp256k1 from 'secp256k1';
@@ -19,6 +20,15 @@ export const getRandomPrivateKey = () => {
       privKey = randomBytes(32)
     } while (!secp256k1.privateKeyVerify(privKey))
     return privKey
+}
+
+/// Retrieve a transaction with retries
+export const getTransaction = async (provider: Provider, tx: string) => {
+  let info = await provider.connection.getTransaction(tx)
+  while (info == null) {
+    info = await provider.connection.getTransaction(tx)
+  }
+  return info
 }
 
 /// Sign any bytes object with the provided eth private key
