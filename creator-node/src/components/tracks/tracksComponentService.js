@@ -29,10 +29,11 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const { fileName, fileDir, fileDestination } = requestProps
 
   const routeTimeStart = getStartTime()
-  let codeBlockTimeStart
 
+  let codeBlockTimeStart = getStartTime()
   // Create track transcode and segments, and save all to disk
   const { transcodedFilePath, segmentFilePaths } = await transcodeAndSegment({ cnodeUserUUID, fileName, fileDir, logContext })
+  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully re-encoded track file=${fileName}`)
 
   // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
   codeBlockTimeStart = getStartTime()
