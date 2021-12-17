@@ -73,7 +73,7 @@ def test_schema_missing():
 
 
 def test_schema_invalid_json():
-    ModelValidator.BASE_PATH = "./tests/res/"
+    ModelValidator.BASE_PATH = "./integration_tests/res/"
     try:
         ModelValidator.validate(to_validate={}, field="title", model="bad")
         assert False, "test_model_validator [test_schema_invalid_json] failed"
@@ -82,7 +82,7 @@ def test_schema_invalid_json():
 
 
 def test_schema_missing_model_key():
-    ModelValidator.BASE_PATH = "./tests/res/"
+    ModelValidator.BASE_PATH = "./integration_tests/res/"
 
     try:
         ModelValidator.validate(to_validate={}, field="title", model="user_bad")

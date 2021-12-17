@@ -15,7 +15,8 @@
   "python.languageServer": "Pylance",
   "editor.tabSize": 4,
   "python.testing.pytestArgs": [
-    "tests"
+    "src",
+    "integration_tests"
   ],
   "python.testing.unittestEnabled": false,
   "python.testing.nosetestsEnabled": false,

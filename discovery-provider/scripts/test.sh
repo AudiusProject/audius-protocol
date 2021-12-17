@@ -71,4 +71,4 @@ sleep 5
 pytest src
 
 # Integration tests
-pytest tests
+pytest integration_tests

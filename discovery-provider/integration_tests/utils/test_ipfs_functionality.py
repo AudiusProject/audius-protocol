@@ -10,7 +10,7 @@ from src.tasks.metadata import track_metadata_format
 
 IPFS_FETCH = 'get_metadata_from_ipfs_node'
 GATEWAY_FETCH = 'get_metadata_from_gateway'
-JSON_FILE = "tests/res/test_ipfs.json"
+JSON_FILE = "integration_tests/res/test_ipfs.json"
 
 # Helpers
 def get_ipfs_client(app):
