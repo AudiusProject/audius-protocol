@@ -26,13 +26,13 @@ const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
 const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const logger = genericLogger.child(logContext)
   const cnodeUserUUID = requestProps.session.cnodeUserUUID
-  const { fileName, fileDir } = requestProps
+  const { fileName, fileDir, fileDestination } = requestProps
 
   const routeTimeStart = getStartTime()
 
   let codeBlockTimeStart = getStartTime()
   const { transcodedFilePath, segmentFilePaths } = await transcodeAndSegment({ cnodeUserUUID, fileName, fileDir, logContext })
-  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully re-encoded track file=${requestProps.fileName}`)
+  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully re-encoded track file=${fileName}`)
 
   codeBlockTimeStart = getStartTime()
   var { segmentFileIPFSResps, transcodeFileIPFSResp } = await batchSaveFileToIPFSAndCopyFromFS({
@@ -43,28 +43,28 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
     transcodedFilePath,
     segmentFilePaths
   })
-  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully saved transcode and segment files to IPFS for file=${requestProps.fileName}`)
+  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully saved transcode and segment files to IPFS for file=${fileName}`)
 
   // Retrieve all segment durations as map(segment srcFilePath => segment duration)
   codeBlockTimeStart = getStartTime()
-  const segmentDurations = await getSegmentsDuration(requestProps.fileName, requestProps.fileDestination)
-  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully retrieved segment duration for file=${requestProps.fileName}`)
+  const segmentDurations = await getSegmentsDuration(fileName, fileDestination)
+  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully retrieved segment duration for file=${fileName}`)
 
-  let trackSegments = parseSegments(segmentFileIPFSResps, segmentDurations, logContext, requestProps)
+  let trackSegments = parseSegments({ segmentFileIPFSResps, segmentDurations, logContext, fileDir })
 
   codeBlockTimeStart = getStartTime()
   let transcodeFileUUID = await addFilesToDb({ transcodeFileIPFSResp, fileName, fileDir, cnodeUserUUID, segmentFileIPFSResps, logContext })
-  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully updated DB for file=${requestProps.fileName}`)
+  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully updated DB for file=${fileName}`)
 
   // Prune upload artifacts after success
-  fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
+  fileManager.removeTrackFolder({ logContext }, fileDir)
 
-  logInfoWithDuration({ logger, startTime: routeTimeStart }, `Successfully handled track content for file=${requestProps.fileName}`)
+  logInfoWithDuration({ logger, startTime: routeTimeStart }, `Successfully handled track content for file=${fileName}`)
   return {
     transcodedTrackCID: transcodeFileIPFSResp.multihash,
     transcodedTrackUUID: transcodeFileUUID,
     track_segments: trackSegments,
-    source_file: requestProps.fileName
+    source_file: fileName
   }
 }
 
@@ -122,7 +122,7 @@ async function addFilesToDb ({ transcodeFileIPFSResp, fileName, fileDir, cnodeUs
  * @param {Object} parseParams
  * @param {Object} parseParams.segmentFileIPFSResps an array of { multihash, srcPath: segmentFilePath, dstPath }
  * @param {Object} parseParams.segmentDurations mapping of segment filePath (segmentName) => segment duration
- * @param {string} transcodeAndSegmentParams.fileDir the dir path of the temp track artifacts
+ * @param {string} parseParams.fileDir the dir path of the temp track artifacts
  * @param {Object} parseParams.logContext
  * @returns an array of track segments with the structure { multihash, duration }
  */
@@ -181,12 +181,12 @@ async function transcodeAndSegment ({ cnodeUserUUID, fileName, fileDir, logConte
 /**
  * Save transcode and segment files (in parallel batches) to ipfs and copy to disk.
  * @param {Object} batchParams
- * @param {string}  batchParams.cnodeUserUUID the observed user's uuid
- * @param {string}  batchParams.fileName the file name of the uploaded track (<cid>.<file type extension>)
- * @param {string}  batchParams.fileDir the dir path of the temp track artifacts
- * @param {Object}  batchParams.logContext
- * @param {string}  batchParams.transcodedFilePath the transcoded track path
- * @param {string}  batchParams.segmentFilePaths the segments path
+ * @param {string} batchParams.cnodeUserUUID the observed user's uuid
+ * @param {string} batchParams.fileName the file name of the uploaded track (<cid>.<file type extension>)
+ * @param {string} batchParams.fileDir the dir path of the temp track artifacts
+ * @param {Object} batchParams.logContext
+ * @param {string} batchParams.transcodedFilePath the transcoded track path
+ * @param {string} batchParams.segmentFilePaths the segments path
  * @returns an object of array of segment multihashes, src paths, and dest paths and transcode multihash and path
  */
 async function batchSaveFileToIPFSAndCopyFromFS ({
