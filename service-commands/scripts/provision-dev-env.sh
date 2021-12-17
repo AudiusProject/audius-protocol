@@ -19,7 +19,33 @@ sudo apt install -y \
     git-secrets \
     jq \
     wget \
-    libpq-dev
+    libpq-dev \
+    neovim \
+    net-tools \
+    zsh
+
+sudo apt autoremove
+
+# install a faster grep
+sudo curl -L https://sift-tool.org/downloads/sift/sift_0.9.0_linux_amd64.tar.gz --output /tmp/sift.tar.gz
+(
+    cd /tmp
+    tar xf /tmp/sift.tar.gz
+    sudo mv sift_*/sift /usr/local/bin/sift
+    sudo rm sift*
+)
+
+# configure ssh timeouts
+echo "ClientAliveInterval 600" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
+echo "TCPKeepAlive yes" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
+echo "ClientAliveCountMax 10" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
+sudo /etc/init.d/ssh restart
+
+# allow VSCode to monitor multiple files on remote machines for changes
+cat /proc/sys/fs/inotify/max_user_watches
+echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+cat /proc/sys/fs/inotify/max_user_watches
 
 # install postgres
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
@@ -28,6 +54,7 @@ echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main"
 sudo apt-get update
 sudo apt -y install postgresql-11
 dpkg -l | grep postgresql
+sudo systemctl disable postgresql # disable auto-start on boot
 
 # python setup
 sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
@@ -75,10 +102,22 @@ npm install
 node scripts/hosts.js add
 node scripts/setup.js run init-repos up
 
+cd $PROTOCOL_DIR/libs
+npm install
+npm link
+
+cd $PROTOCOL_DIR/service-commands
+npm link @audius/libs
+npm link
+
 cd ~
 git clone https://github.com/AudiusProject/audius-client.git
 cd audius-client
 npm link @audius/libs
+npm install
 
-echo 'Rebooting machine...'
-reboot
+cd $PROTOCOL_DIR/mad-dog
+npm install
+npm link @audius/service-commands
+sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
+sudo chmod +x /usr/local/bin/pumba

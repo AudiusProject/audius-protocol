@@ -378,6 +378,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
             "src.tasks.index_listen_count_milestones",
+            "src.tasks.user_listening_history.index_user_listening_history",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -480,6 +481,10 @@ def configure_celery(flask_app, celery, test_config=None):
                 "task": "index_listen_count_milestones",
                 "schedule": timedelta(seconds=5),
             },
+            "index_user_listening_history": {
+                "task": "index_user_listening_history",
+                "schedule": timedelta(seconds=5),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -517,6 +522,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
+    redis_inst.delete("index_user_listening_history_lock")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
