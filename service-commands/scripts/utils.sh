@@ -38,7 +38,16 @@ copy_file_to_remote() {
 	remote_file=$5
 
 	case "$provider" in
-		azure) exit 1 ;;  # TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		azure)
+			# old logic that was buggy for gcloud
+			cat $local_file | eval "$(get_ssh_args $provider $user $name)" "cat > $remote_file"
+
+			# new untested logic for Azure:
+			# https://blog.nigelsim.org/2021-10-02-azure-cli-ssh-config/
+			# az ssh config --vm-name $name --file /tmp/azuressh.config
+			# scp -F /tmp/azuressh.config $local_file $user@$name:$remote_file
+			# rm /tmp/azuressh.config
+		;;
 		gcp) eval "gcloud compute scp $local_file $user@$name:$remote_file" ;;
 	esac
 }
