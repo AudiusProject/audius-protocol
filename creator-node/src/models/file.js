@@ -97,9 +97,16 @@ module.exports = (sequelize, DataTypes) => {
     // sequelize does not support composite foreign keys
   }
 
-  // TODO - why is this not externally accessible?
   File.TrackTypes = ['track', 'copy320']
   File.NonTrackTypes = ['dir', 'image', 'metadata']
+
+  File.Types = {
+    track: 'track',
+    copy320: 'copy320',
+    dir: 'dir',
+    image: 'image',
+    metadata: 'metadata'
+  }
 
   return File
 }

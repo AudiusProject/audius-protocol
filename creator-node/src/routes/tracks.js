@@ -9,7 +9,7 @@ const config = require('../config.js')
 const models = require('../models')
 const {
   saveFileFromBufferToIPFSAndDisk,
-  saveFileToIPFSFromFS,
+  saveFileToIPFSAndCopyFromFS,
   removeTrackFolder,
   handleTrackContentUpload,
   getFileExtension,
@@ -220,7 +220,7 @@ module.exports = function (app) {
 
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
-    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, ENABLE_IPFS_ADD_TRACKS)
+    const transcodeFileIPFSResp = await saveFileToIPFSAndCopyFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, ENABLE_IPFS_ADD_TRACKS)
 
     let segmentFileIPFSResps = []
     for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
@@ -228,7 +228,7 @@ module.exports = function (app) {
 
       const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
         const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
-        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, ENABLE_IPFS_ADD_TRACKS)
+        const { multihash, dstPath } = await saveFileToIPFSAndCopyFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, ENABLE_IPFS_ADD_TRACKS)
         return { multihash, srcPath: segmentFilePath, dstPath }
       }))
 
