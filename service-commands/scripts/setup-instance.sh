@@ -111,6 +111,7 @@ case "$service" in
 
 		# start up frontend and backend
 		execute_with_ssh $provider $user $name "set -x; nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
+		execute_with_ssh $provider $user $name "cd ~/audius-protocol/libs; npm install"
 		execute_with_ssh $provider $user $name "set -x; source ~/.nvm/nvm.sh; source ~/.profile; A up"
 
 		# configure local files: /etc/hosts, /etc/ssh/ssh_config.d/60-audius.conf
