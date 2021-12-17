@@ -8,7 +8,7 @@ from src.tasks.user_listening_history.index_user_listening_history import (
 )
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
-from .utils import populate_mock_db
+from integration_tests.utils.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 
