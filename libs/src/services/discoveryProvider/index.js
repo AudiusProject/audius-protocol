@@ -636,6 +636,58 @@ class DiscoveryProvider {
   }
 
   /**
+   * Gets how many blocks behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of blocks
+   * @param {Object} parsedResponse health check response object
+   * @returns {number | null} a number of blocks if behind or null if not behind
+   */
+  async _getBlocksBehind (parsedResponse) {
+    try {
+      const {
+        latest_indexed_block: indexedBlock,
+        latest_chain_block: chainBlock
+      } = parsedResponse
+
+      const blockDiff = chainBlock - indexedBlock
+      if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
+        return blockDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return UNHEALTHY_BLOCK_DIFF
+    }
+  }
+
+  /**
+   * Gets how many plays slots behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of slots
+   * @param {Object} parsedResponse health check response object
+   * @returns {number | null} a number of slots if behind or null if not behind
+   */
+  async _getPlaysSlotsBehind (parsedResponse) {
+    if (!this.unhealthySlotDiffPlays) return null
+
+    try {
+      const {
+        latest_indexed_slot_plays: indexedSlotPlays,
+        latest_chain_slot_plays: chainSlotPlays
+      } = parsedResponse
+
+      const slotDiff = chainSlotPlays - indexedSlotPlays
+      if (slotDiff > this.unhealthySlotDiffPlays) {
+        return slotDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return this.unhealthySlotDiffPlays
+    }
+  }
+
+  /**
    * Makes a request to a discovery node, reselecting if necessary
    * @param {{
    *  endpoint: string
@@ -679,69 +731,35 @@ class DiscoveryProvider {
       return null
     }
 
-    const couldNotFindHealthy = this.ethContracts && this.ethContracts.isInRegressedMode()
+    // Validate health check response
 
-    // Check to see if discovery node is behind by blocks (indexing data contracts)
-    if (
-      couldNotFindHealthy &&
-      'latest_indexed_block' in parsedResponse &&
-      'latest_chain_block' in parsedResponse
-    ) {
-      const {
-        latest_indexed_block: indexedBlock,
-        latest_chain_block: chainBlock
-      } = parsedResponse
+    // Regressed mode signals we couldn't find a node that wasn't behind by some measure
+    // so we should should pick something
+    const notInRegressedMode = this.ethContracts && !this.ethContracts.isInRegressedMode()
 
-      if (
-        !chainBlock ||
-        !indexedBlock ||
-        (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
-      ) {
-        if (retry) {
-          // If discovery node is an unhealthy num blocks behind, retry
-          const blockDiff = chainBlock && indexedBlock
-            ? ` [block diff: ${chainBlock - indexedBlock}]`
-            : ''
-          console.info(
-            `${this.discoveryProviderEndpoint} is too far behind${blockDiff}. Retrying request at attempt #${attemptedRetries}...`
-          )
-          return this._makeRequest(requestObj, retry, attemptedRetries + 1)
-        }
-        return null
+    const blockDiff = await this._getBlocksBehind(parsedResponse)
+    if (notInRegressedMode && blockDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
+      return null
     }
 
-    // Check to see if discovery node is behind by slots on plays (indexing sol plays)
-    if (
-      this.unhealthySlotDiffPlays !== null &&
-      couldNotFindHealthy &&
-      'latest_indexed_slot_plays' in parsedResponse &&
-      'latest_chain_slot_plays' in parsedResponse
-    ) {
-      const {
-        latest_indexed_slot_plays: indexedSlotPlays,
-        latest_chain_slot_plays: chainSlotPlays
-      } = parsedResponse
-
-      if (
-        !chainSlotPlays ||
-        !indexedSlotPlays ||
-        (chainSlotPlays - indexedSlotPlays) > this.unhealthySlotDiffPlays
-      ) {
-        if (retry) {
-          // If discovery node is an unhealthy num slots behind, retry
-          const slotDiff = chainSlotPlays && indexedSlotPlays
-            ? ` [slot diff: ${chainSlotPlays - indexedSlotPlays}]`
-            : ''
-          console.info(
-            `${this.discoveryProviderEndpoint} is too far behind${slotDiff}. Retrying request at attempt #${attemptedRetries}...
-          `)
-          return this._makeRequest(requestObj, retry, attemptedRetries + 1)
-        }
-        return null
+    const playsSlotDiff = await this._getPlaysSlotsBehind(parsedResponse)
+    if (notInRegressedMode && playsSlotDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
+      return null
     }
 
+    // Everything looks good, return the data!
     return parsedResponse.data
   }
 

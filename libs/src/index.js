@@ -428,7 +428,7 @@ class AudiusLibs {
         this.discoveryProviderConfig.monitoringCallbacks,
         this.discoveryProviderConfig.selectionRequestTimeout,
         this.discoveryProviderConfig.selectionRequestRetries,
-        this.discoveryProviderConfig.checkPlaysSlotDiff
+        this.discoveryProviderConfig.unhealthySlotDiffPlays
       )
       await this.discoveryProvider.init()
     }

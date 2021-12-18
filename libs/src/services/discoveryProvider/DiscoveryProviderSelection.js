@@ -184,6 +184,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // as a backup and reject
     if (
       slotDiffPlays !== null &&
+      this.unhealthySlotDiffPlays !== null &&
       slotDiffPlays > this.unhealthySlotDiffPlays
     ) {
       this.addBackup(urlMap[response.config.url], data.data)
