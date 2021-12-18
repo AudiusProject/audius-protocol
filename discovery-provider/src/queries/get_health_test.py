@@ -489,3 +489,49 @@ def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
 
     assert error == True
     assert health_results["challenge_last_event_age_sec"] < int(time() - 49)
+
+def test_get_health_with_web3_req_failing(web3_mock, redis_mock, db_mock):
+    """
+    Tests that when redis is skipped and web3 requests are failing,
+    that the health check does not fail
+    """
+    # Set up web3 eth
+    def getBlock(_u1, _u2):  # unused
+        raise Exception('web3 getBlock request failed')
+
+    web3_mock.eth.getBlock = getBlock
+
+    # Set up redis state
+    cache_play_health_vars(redis_mock)
+
+    redis_mock.set(latest_block_redis_key, "3")
+    redis_mock.set(latest_block_hash_redis_key, "0x3")
+    redis_mock.set(most_recent_indexed_block_redis_key, "2")
+    redis_mock.set(most_recent_indexed_block_hash_redis_key, "0x02")
+
+    # Set up db state
+    with db_mock.scoped_session() as session:
+        Block.__table__.create(db_mock._engine)
+        session.add(
+            Block(
+                blockhash="0x01",
+                number=1,
+                parenthash="0x01",
+                is_current=True,
+            )
+        )
+    
+    args = {}
+    health_results, error = get_health(args, use_redis_cache=False)
+
+    assert error == False
+
+    assert health_results["web"]["blocknumber"] == None
+    assert health_results["web"]["blockhash"] == None
+    assert health_results["db"]["number"] == 1
+    assert health_results["db"]["blockhash"] == "0x01"
+    assert health_results["block_difference"] == 1
+
+    assert "maximum_healthy_block_difference" in health_results
+    assert "version" in health_results
+    assert "service" in health_results
