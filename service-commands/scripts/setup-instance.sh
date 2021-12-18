@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Usage: setup-instance.sh [options] <service> <name>
 #
@@ -24,7 +24,7 @@ while getopts "p:u:c:r:l:f" flag; do
 		c) audius_k8_manifests_config=$OPTARG;;
 		r) audius_protocol_git_ref=$OPTARG;;
 		l) audius_client_git_ref=$OPTARG;;
-		f) image=${GCP_DEV_IMAGE};;
+		f) image=${GCP_DEV_IMAGE}; fast=1;;
 	esac
 done
 
@@ -34,8 +34,8 @@ name=${@:$OPTIND+1:1}
 # Set defaults and validate arguments
 provider=${provider:-$DEFAULT_PROVIDER}
 user=${user:-$DEFAULT_USER}
-audius_protocol_git_ref=${audius_protocol_git_ref:-'master'}
-audius_client_git_ref=${audius_client_git_ref:-'master'}
+audius_protocol_git_ref=${audius_protocol_git_ref:-$DEFAULT_AUDIUS_PROTOCOL_GIT_REF}
+audius_client_git_ref=${audius_client_git_ref:-$DEFAULT_AUDIUS_CLIENT_GIT_REF}
 
 if [[ "$provider" != "gcp" ]] && [[ "$provider" != "azure" ]]; then
 	echo "Unknown provider:" $provider
@@ -75,6 +75,9 @@ esac
 # Create instance if it does not exist
 if ! instance_exists $provider $name; then
 	echo "Instance does not exist. Creating it"
+	if [ "${fast:-0}" -eq "1" ]; then
+		echo "Defrosting prebaked image for provisioning... $image"
+	fi
 	if ! bash $PROTOCOL_DIR/service-commands/scripts/create-instance.sh -p $provider -i "$image" $name; then
 		echo "Creation of new instance did not succeed. Aborting"
 		exit 1
@@ -90,7 +93,7 @@ configure_etc_hosts() {
 }
 
 set_ssh_serveralive() {
-	if [[ ! -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
+	if [[ -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
 		echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
 	fi
 }
@@ -134,32 +137,20 @@ case "$service" in
 		;;
 	remote-dev)
 		wait_for_instance $provider $user $name
-		execute_with_ssh $provider $user $name \
-			"[[ ! -d ~/audius-protocol ]]" \
-			"&& set -x" \
-			"&& git clone https://github.com/AudiusProject/audius-protocol.git" \
-			"&& PROTOCOL_DIR=/home/ubuntu/audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref" \
-			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh" || true
-        reboot_instance $provider $name
+		echo "Waiting for instance $name on $provider to be ready for ssh connections... You may see some SSH connection errors during this time but instance should eventually come up."
+		if [ "${fast:-0}" -eq "0" ]; then
+			execute_with_ssh $provider $user $name \
+				"[[ ! -d ~/audius-protocol ]]" \
+				"&& git clone --branch $audius_protocol_git_ref https://github.com/AudiusProject/audius-protocol.git" \
+				"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh $audius_protocol_git_ref $audius_client_git_ref"
 
-		wait_for_instance $provider $user $name
-
-		# perform once more for audius-client
-		execute_with_ssh $provider $user $name \
-			"PROTOCOL_DIR=/home/ubuntu/audius-protocol bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
-
-		execute_with_ssh $provider $user $name "nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
-		execute_with_ssh $provider $user $name "source ~/.nvm/nvm.sh; source ~/.profile; A up || (A down && A up)"
-
-		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
-
-		configure_etc_hosts
-
-		set_ssh_serveralive
-
-		setup_zsh
+			wait_for_instance $provider $user $name
+			reboot_instance $provider $name
+			wait_for_instance $provider $user $name
+			# TODO fix install and provisioning for fast
+		fi
 
 		echo -e "\nLogin using:\n"
-		echo -e "gssh $name\n"
+		echo -e "gcloud compute ssh $user@$name\n"
 		;;
 esac
