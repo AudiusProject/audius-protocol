@@ -119,7 +119,7 @@ case "$service" in
 		set_ssh_serveralive
 
 		# upload personal files: ~/.gitconfig, ~/.zshrc, ~/.zshenv, ~/.p10k.zsh
-		copy_file_to_remote $provider $user $name "~/.gitconfig" "~/.gitconfig"
+		upload_gitconfig
 		setup_zsh
 
 		echo -e "\nLogin using:\n"

@@ -177,6 +177,12 @@ set_ssh_serveralive() {
 	fi
 }
 
+upload_gitconfig() {
+	if [[ -f "$HOME/.gitconfig.remote-dev" ]]; then
+		copy_file_to_remote $provider $user $name '~/.gitconfig.remote-dev' '~/.gitconfig'
+	fi
+}
+
 setup_zsh() {
 	execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
 
