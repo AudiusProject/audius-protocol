@@ -14,8 +14,8 @@ from src.utils.redis_connection import get_redis
 
 redis = get_redis()
 
-test_file = "tests/res/test_audio_file.mp3"
-track_metadata_json_file = "tests/res/test_track_metadata.json"
+test_file = "integration_tests/res/test_audio_file.mp3"
+track_metadata_json_file = "integration_tests/res/test_track_metadata.json"
 
 def seed_contract_data(task, contracts, web3):
     user_factory_contract = contracts["user_factory_contract"]
