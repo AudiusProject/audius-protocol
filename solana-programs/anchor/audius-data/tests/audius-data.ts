@@ -11,8 +11,9 @@ import {
   randomCID,
   findDerivedPair,
   getTransaction,
-} from "./utils";
-import { initAdmin, initUser } from "../lib/lib";
+  SystemSysVarProgramKey,
+} from "../lib/utils";
+import { initAdmin, initUser, initUserSolPubkey } from "../lib/lib";
 
 const { SystemProgram, PublicKey, Transaction, Secp256k1Program } = anchor.web3;
 
@@ -26,9 +27,6 @@ describe("audius-data", () => {
   anchor.setProvider(anchor.Provider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
-  const SystemSysVarProgramKey = new PublicKey(
-    "Sysvar1nstructions1111111111111111111111111"
-  );
   const EthWeb3 = new ethWeb3();
   const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
@@ -92,37 +90,15 @@ describe("audius-data", () => {
     newUserKey,
     newUserAcctPDA,
   }) => {
-    const signedBytes = signBytes(Buffer.from(message), pkString);
-    const { signature, recoveryId } = signedBytes;
+    let initUserTx = await initUserSolPubkey({
+      provider,
+      program,
+      privateKey: pkString,
+      message,
+      userSolPubkey: newUserKey.publicKey,
+      userStgAccount: newUserAcctPDA,
+    });
 
-    // Get the public key in a compressed format
-    const ethPubkey = secp256k1.publicKeyCreate(privKey, false).slice(1);
-    const secpTransactionInstruction =
-      Secp256k1Program.createInstructionWithPublicKey({
-        publicKey: Buffer.from(ethPubkey),
-        message: Buffer.from(message),
-        signature,
-        recoveryId,
-      });
-
-    let initUserTx = await provider.send(
-      (() => {
-        const tx = new Transaction();
-        tx.add(secpTransactionInstruction),
-          tx.add(
-            program.instruction.initUserSol(newUserKey.publicKey, {
-              accounts: {
-                user: newUserAcctPDA,
-                sysvarProgram: SystemSysVarProgramKey,
-              },
-            })
-          );
-        return tx;
-      })(),
-      [
-        // Signers
-      ]
-    );
     let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
     if (!newUserKey.publicKey.equals(userDataFromChain.authority)) {
       throw new Error("Unexpected public key found");
@@ -206,10 +182,10 @@ describe("audius-data", () => {
     const pkString = Buffer.from(privKey).toString("hex");
     const pubKey = EthWeb3.eth.accounts.privateKeyToAccount(pkString);
     const testEthAddr = pubKey.address;
-    console.log(testEthAddr);
     const testEthAddrBytes = ethAddressToArray(testEthAddr);
     const handle = randomBytes(20).toString("hex");
     const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
+    // TODO: Verify this
     const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
     const metadata = randomCID();
     const values = {

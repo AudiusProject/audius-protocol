@@ -3,9 +3,11 @@
  * Intended for later integration with libs
  */
 import { Keypair } from "@solana/web3.js";
-import { Program, Provider} from "@project-serum/anchor";
+import { Program, Provider } from "@project-serum/anchor";
 import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
+import * as secp256k1 from "secp256k1";
+import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
 type initAdminParams = {
@@ -82,4 +84,59 @@ export const initUser = async (args: initUserParams) => {
   );
 
   return tx;
+};
+
+/// Claim a user's account using given an eth private key
+export type initUserSolPubkeyArgs = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  privateKey: string;
+  message: string;
+  userSolPubkey: anchor.web3.PublicKey;
+  userStgAccount: anchor.web3.PublicKey;
+};
+
+export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
+  const {
+    message,
+    privateKey,
+    provider,
+    program,
+    userSolPubkey,
+    userStgAccount,
+  } = args;
+  const signedBytes = signBytes(Buffer.from(message), privateKey);
+  const { signature, recoveryId } = signedBytes;
+  console.log(privateKey);
+  console.log(userStgAccount);
+  // Get the public key in a compressed format
+  const ethPubkey = secp256k1
+    .publicKeyCreate(Buffer.from(privateKey, "hex"), false)
+    .slice(1);
+  const secpTransactionInstruction =
+    Secp256k1Program.createInstructionWithPublicKey({
+      publicKey: Buffer.from(ethPubkey),
+      message: Buffer.from(message),
+      signature,
+      recoveryId,
+    });
+  let initUserTx = await provider.send(
+    (() => {
+      const tx = new Transaction();
+      tx.add(secpTransactionInstruction),
+        tx.add(
+          program.instruction.initUserSol(userSolPubkey, {
+            accounts: {
+              user: userStgAccount,
+              sysvarProgram: SystemSysVarProgramKey,
+            },
+          })
+        );
+      return tx;
+    })(),
+    [
+      // Signers
+    ]
+  );
+  return initUserTx;
 };

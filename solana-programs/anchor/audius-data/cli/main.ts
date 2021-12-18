@@ -10,8 +10,13 @@ import {
   ethAddressToArray,
   randomCID,
   findDerivedPair,
-} from "../tests/utils";
-import { initAdmin, initUser } from "../lib/lib";
+} from "../lib/utils";
+import {
+  initUserSolPubkeyArgs,
+  initAdmin,
+  initUser,
+  initUserSolPubkey,
+} from "../lib/lib";
 
 import { Command } from "commander";
 const program = new Command();
@@ -31,7 +36,7 @@ const keypairFromFilePath = (path: string) => {
 };
 
 /// Initialize constants requird for any CLI functionality
-async function initializeCLI(ownerKeypairPath: string) {
+function initializeCLI(ownerKeypairPath: string) {
   const network = "https://api.testnet.solana.com";
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
@@ -61,10 +66,16 @@ async function initAdminCLI(args: initAdminCLIParams) {
   const cliVars = await initializeCLI(ownerKeypairPath);
   console.log(`AdminKeypair:`);
   console.log(adminKeypair.publicKey.toString());
-  console.log(adminKeypair.secretKey.toString());
+  console.log(`[${adminKeypair.secretKey.toString()}]`);
+  console.log(
+    `echo "[${adminKeypair.secretKey.toString()}]" > adminKeypair.json`
+  );
   console.log(`AdminStgKeypair:`);
   console.log(adminStgKeypair.publicKey.toString());
-  console.log(adminStgKeypair.secretKey.toString());
+  console.log(`[${adminStgKeypair.secretKey.toString()}]`);
+  console.log(
+    `echo "[${adminKeypair.secretKey.toString()}]" > adminStgKeypair.json`
+  );
   await initAdmin({
     provider: cliVars.provider,
     program: cliVars.program,
@@ -102,8 +113,6 @@ async function initUserCLI(args: initUserCLIParams) {
     );
 
   const userStgAddress = derivedAddress;
-  console.log(userStgAddress);
-  console.log(ethAddressBytes);
   let tx = await initUser({
     provider: cliVars.provider,
     program: cliVars.program,
@@ -124,6 +133,7 @@ async function initUserCLI(args: initUserCLIParams) {
 const functionTypes = Object.freeze({
   initAdmin: "initAdmin",
   initUser: "initUser",
+  initUserSolPubkey: "initUserSolPubkey",
 });
 
 program
@@ -132,7 +142,16 @@ program
   .option("-ak, --admin-keypair <keypair>", "admin keypair path")
   .option("-ask, --admin-storage-keypair <keypair>", "admin stg keypair path")
   .option("-h, --handle <string>", "user handle string")
-  .option("-e, --eth-address <string>", "user eth address");
+  .option("-e, --eth-address <string>", "user eth address")
+  .option("-u, --user-solana-keypair <string>", "user admin sol keypair path")
+  .option(
+    "-ustg, --user-stg-pubkey <string>",
+    "user sol handle-based PDA pubkey"
+  )
+  .option(
+    "-eth-pk, --eth-private-key <string>",
+    "private key for message signing"
+  );
 
 program.parse(process.argv);
 
@@ -158,6 +177,7 @@ switch (options.function) {
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
     });
+    break;
   case functionTypes.initUser:
     console.log(`Initializing user`);
     console.log(options);
@@ -169,28 +189,28 @@ switch (options.function) {
       adminKeypair,
       metadata: "test",
     });
+  case functionTypes.initUserSolPubkey:
+    const userSolKeypair = options.userSolanaKeypair
+      ? keypairFromFilePath(options.userSolanaKeypair)
+      : anchor.web3.Keypair.generate();
+
+    console.log(userSolKeypair.publicKey.toString());
+    let privateKey = options.ethPrivateKey;
+    let userSolPubkey = userSolKeypair.publicKey;
+    let userStgAccount = options.userStgPubkey;
+    console.log(userStgAccount);
+    let x = async () => {
+      const cliVars = initializeCLI(options.ownerKeypair);
+      console.log("hi");
+      let tx = await initUserSolPubkey({
+        program: cliVars.program,
+        provider: cliVars.provider,
+        message: "message",
+        privateKey,
+        userStgAccount,
+        userSolPubkey,
+      });
+      console.log(`initUserTx = ${tx}, userStgAccount = ${userStgAccount}`);
+    };
+    x();
 }
-
-// Airdrop to self
-/*
-solana airdrop 1 BTDNV9XQK65FUEwqmkGxokXdqZeKeETsyiHxE3SYGXbX --url https://api.testnet.solana.com
-*/
-
-/*
-
-AdminKeypair:
-4w8Th4vpdfKJbYQyMvvnDuPFriTfjfhwVGZsiLuGXzfE
-
-AdminStgKeypair:
-ERvpAkfDnd4KBa5rB67Tmyjvy9mbMHpVF5ouqSFrE45s
-
-Address: 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7
-Private key: d540ca11a0d12345f512e65e00bf8bf87435aa40b3731cbf0322971709eba60f
-
-
-*/
-
-/*
-Initializing a user from known admin accts:
-yarn run ts-node cli/main.ts -f initUser -k ~/.config/solana/id.json --admin-keypair $PWD/admin.json --admin-storage-keypair $PWD/admin-stg.json -h handle2 -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7
-*/
