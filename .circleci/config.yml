@@ -663,6 +663,51 @@ jobs:
             docker push audius/<< parameters.repo >>:$IMAGE_TAG
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
+  bake-dev-image:
+    docker:
+      - image: gcr.io/google.com/cloudsdktool/cloud-sdk:357.0.0
+        auth:
+          username: _json_key
+          password: $GCLOUD_SERVICE_KEY
+    steps:
+      - run:
+          name: gcloud service account auth
+          command: |
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+      - run:
+          name: set up bake environment
+          command: | # todo bake this into a docker image and publish; it takes too long to set up
+            # install python3.9
+            apt update -y && apt upgrade -y
+            apt install -y sudo wget build-essential libreadline-gplv2-dev libncursesw5-dev \
+            libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev
+            wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tgz
+            tar xzf Python-3.9.6.tgz >/dev/null
+            cd Python-3.9.6 && ./configure --enable-optimizations
+            make altinstall
+            # install nvm
+            curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+            # update path
+            echo "PATH=$HOME/.local/bin:$PATH" >> ~/.profile
+            source ~/.profile
+            nvm install v14.17.5
+            nvm use 14
+            export PROTOCOL_DIR=/home/circleci/project
+            git clone https://github.com/AudiusProject/audius-protocol.git && cd audius-protocol/service-commands/
+            npm install
+      - run:
+          name: provision and build instance with latest changes
+          command: |
+            A setup -y remote-dev audius-bake-nightly
+            # todo A up?
+      - run:
+          name: bake image and update refs
+          command: |
+            ./scripts/bake-dev-image.sh --source audius-bake-nightly
+            # todo use sed to update source disk in gcp secrets manager
+
 workflows:
   # test, build and push all commits
   test-build-and-push:
@@ -748,6 +793,20 @@ workflows:
       - test-mad-dog-e2e:
           name: test-mad-dog-e2e-nightly
           mad-dog-type: test-nightly
+    triggers:
+      - schedule:
+          cron: '0 5 * * *'
+          filters:
+            branches:
+              only: /(^master$)/
+
+  # bake dev image at midnight nightly
+  bake-nightly:
+    jobs:
+      - bake-dev-image:
+          context:
+            - GCP
+          name: bake-dev-image-nightly
     triggers:
       - schedule:
           cron: '0 5 * * *'

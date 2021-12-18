@@ -9,8 +9,9 @@
 #   -r <audius-protocol-git-ref>
 #   -l <audius-client-git-ref>
 #   -f (fast setup with prebaked dev image)
+#   -y (assume yes and do not prompt for manual confirm)
 
-set -e
+set -ex
 
 PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 
@@ -25,6 +26,7 @@ while getopts "p:u:c:r:l:f" flag; do
 		r) audius_protocol_git_ref=$OPTARG;;
 		l) audius_client_git_ref=$OPTARG;;
 		f) image=${GCP_DEV_IMAGE}; fast=1;;
+		y) skip_confirm=1;;
 	esac
 done
 
@@ -36,6 +38,7 @@ provider=${provider:-$DEFAULT_PROVIDER}
 user=${user:-$DEFAULT_USER}
 audius_protocol_git_ref=${audius_protocol_git_ref:-$DEFAULT_AUDIUS_PROTOCOL_GIT_REF}
 audius_client_git_ref=${audius_client_git_ref:-$DEFAULT_AUDIUS_CLIENT_GIT_REF}
+skip_confirm=${skip_confirm:-0}
 
 if [[ "$provider" != "gcp" ]] && [[ "$provider" != "azure" ]]; then
 	echo "Unknown provider:" $provider
@@ -78,7 +81,7 @@ if ! instance_exists $provider $name; then
 	if [ "${fast:-0}" -eq "1" ]; then
 		echo "Defrosting prebaked image for provisioning... $image"
 	fi
-	if ! bash $PROTOCOL_DIR/service-commands/scripts/create-instance.sh -p $provider -i "$image" $name; then
+	if ! bash $PROTOCOL_DIR/service-commands/scripts/create-instance.sh -p $provider -i "$image" -y $skip_confirm $name; then
 		echo "Creation of new instance did not succeed. Aborting"
 		exit 1
 	fi

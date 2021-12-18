@@ -23,7 +23,7 @@ def create_instance(provider, image, disk_size, machine_type, name):
     ])
 
 
-def setup(provider, service, user, config, fast, protocol_git_ref, client_git_ref, name):
+def setup(provider, service, user, config, fast, protocol_git_ref, client_git_ref, name, assume_yes):
     """Setup a environment suitable for development on a remote machine"""
     subprocess.run([
         "bash",
@@ -34,6 +34,7 @@ def setup(provider, service, user, config, fast, protocol_git_ref, client_git_re
         *(["-r", protocol_git_ref] if protocol_git_ref else []),
         *(["-l", client_git_ref] if client_git_ref else []),
         *(["-f"] if fast else []),
+        *(["-y"] if assume_yes else []),
         service,
         name,
     ])
@@ -125,6 +126,12 @@ def main():
     )
 
     parser_setup.add_argument(
+        "-y",
+        action="store_true",
+        help="provision without requiring manual confirmation",
+    )
+
+    parser_setup.add_argument(
         "--protocol-git-ref",
         help="git ref to use for audius-protocol (only used for remote-dev) (default: master)",
     )
@@ -166,6 +173,7 @@ def main():
                 args.protocol_git_ref,
                 args.client_git_ref,
                 args.name,
+                args.y,
             )
     except argparse.ArgumentError:
         if sys.argv[1] == "seed":

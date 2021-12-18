@@ -76,12 +76,12 @@ gcp_image_to_flags() {
 gcp_set_defaults() {
 	if [[ "$(gcloud config get-value 'compute/region')" == "" ]]; then
 		echo 'setting compute/region in gcloud'
-		gcloud config set-value 'compute/region' $DEFAULT_GCP_COMPUTE_REGION
+		gcloud config set 'compute/region' $DEFAULT_GCP_COMPUTE_REGION || gcloud config set-value 'compute/region' $DEFAULT_GCP_COMPUTE_REGION
 	fi
 
 	if [[ "$(gcloud config get-value 'compute/zone')" == "" ]]; then
 		echo 'setting compute/zone in gcloud'
-		gcloud config set-value 'compute/zone' $DEFAULT_GCP_COMPUTE_ZONE
+		gcloud config set 'compute/zone' $DEFAULT_GCP_COMPUTE_ZONE || gcloud config set-value 'compute/zone' $DEFAULT_GCP_COMPUTE_ZONE
 	fi
 }
 

@@ -7,8 +7,9 @@
 #   -i <image>
 #   -d <disk-size>
 #   -m <machine-type>
+#   -y <skip-confirm>
 
-set -e
+set -ex
 
 PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 
@@ -21,6 +22,7 @@ while getopts "p:i:d:m:" flag; do
 		i) image=$OPTARG;;
 		d) disk_size=$OPTARG;;
 		m) machine_type=$OPTARG;;
+		y) skip_confirm=$OPTARG;;
 	esac
 done
 
@@ -89,9 +91,11 @@ case "$provider" in
 		;;
 esac
 
-read -p "Confirm Options? [y/N] " -n 1 -r && echo
-if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
-	exit 1
+if [ "${skip_confirm:-0}" -eq "0" ]; then
+	read -p "Confirm Options? [y/N] " -n 1 -r && echo
+	if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+		exit 1
+	fi
 fi
 
 # Create the instance
