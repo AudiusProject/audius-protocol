@@ -113,28 +113,15 @@ class PeerSetManager {
    * Also handles backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
    * This only works if both functions have a consistent return format
    */
-  async getNodeUsers() {
-    let fetchUsersSuccess = false
+  async getNodeUsers () {
     let nodeUsers
 
     let firstFetchError = null
     try {
       // Retrieves users from route `v1/full/users/content_node/all`
       nodeUsers = await this.getAllNodeUsers()
-      fetchUsersSuccess = true
     } catch (e) {
-      firstFetchError = e
-    }
-
-    if (!fetchUsersSuccess) {
-      try {
-        // Retrieves users from route `users/creator_node`
-        nodeUsers = await this.getNodePrimaryUsers()
-      } catch (secondFetchError) {
-        throw new Error(
-          `getAllNodeUsers() Error: ${firstFetchError.toString()}\n\ngetNodePrimaryUsers() Error: ${secondFetchError.toString()}`
-        )
-      }
+      throw new Error(`getAllNodeUsers() Error: ${e.toString()}\n\ngetNodePrimaryUsers()`)
     }
 
     // Ensure every object in response array contains all required fields
@@ -196,40 +183,6 @@ class PeerSetManager {
     }
 
     return allNodeUsers
-  }
-
-  /**
-   * Retrieve users with this node as primary
-   * Leaving this function in until all discovery providers update to new version and expose new `/users/content_node/all` route
-   * @returns {Object[]} array of objects
-   *  - Each object should have the schema { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
-   * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
-   */
-  async getNodePrimaryUsers() {
-    // Fetch discovery node currently connected to libs as this can change
-    if (!this.discoveryProviderEndpoint) {
-      throw new Error('No discovery provider currently selected, exiting')
-    }
-
-    const requestParams = {
-      method: 'get',
-      baseURL: this.discoveryProviderEndpoint,
-      url: `users/creator_node`,
-      params: {
-        creator_node_endpoint: this.creatorNodeEndpoint
-      }
-    }
-
-    // Will throw error on non-200 response
-    let nodePrimaryUsers
-    try {
-      const resp = await axios(requestParams)
-      nodePrimaryUsers = resp.data.data
-    } catch (e) {
-      throw new Error(`getNodePrimaryUsers() Error: ${e.toString()}`)
-    }
-
-    return nodePrimaryUsers
   }
 
   /**

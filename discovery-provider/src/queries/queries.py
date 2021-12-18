@@ -576,21 +576,6 @@ def get_previously_private_playlists_route():
         return api_helpers.error_response(str(e), 400)
 
 
-# Get the users with a given `creator_node_endpoint` as primary
-# NOTE This route is deprecated in favor of `/users/content_node` in src/api/v1/users.py:UsersByContentNode()
-#       It cannot be removed for backwards-compatibility
-@bp.route("/users/creator_node", methods=("GET",))
-def get_creator_node_users():
-    try:
-        if "creator_node_endpoint" not in request.args:
-            raise exceptions.ArgumentError("Missing creator_node_endpoint")
-        cnode_url = request.args.get("creator_node_endpoint")
-        users = get_users_cnode(cnode_url)
-        return api_helpers.success_response(users)
-    except exceptions.ArgumentError as e:
-        return api_helpers.error_response(str(e), 400)
-
-
 # Get the list of content nodes registered on UserReplicaSetManager
 @bp.route("/ursm_content_nodes", methods=("GET",))
 def get_ursm_content_nodes():
