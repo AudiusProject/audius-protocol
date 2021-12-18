@@ -464,9 +464,9 @@ def test_index_users(bus_mock: mock.MagicMock, app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            get_ipfs_metadata(
-                update_task,
+            update_task.ipfs_client.get_metadata(
                 helpers.multihash_digest_to_cid(entry.args._multihashDigest),
+                "",
                 "",
             ),  # ipfs_metadata
             block_timestamp,  # Used to update the user.updated_at field
