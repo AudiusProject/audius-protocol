@@ -12,8 +12,6 @@ def test_create_new_challenges(app):
                 return
 
             challenge = challenges[0]
-            print("challenge is: ", challenge)
-            print("type is: ", type(challenge.amount))
             old_active = challenge.active
             old_amount = challenge.amount
             old_step_count = challenge.step_count

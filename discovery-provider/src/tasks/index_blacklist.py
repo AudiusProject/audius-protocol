@@ -1,5 +1,5 @@
 import logging
-from src.app import contract_addresses
+from src.app import get_contract_addresses
 from src.models import IPLDBlacklistBlock, BlacklistedIPLD
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import ipld_blacklist_state_update
@@ -146,7 +146,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle ipld blacklist operations
                 if (
                     tx_target_contract_address
-                    == contract_addresses["ipld_blacklist_factory"]
+                    == get_contract_addresses()["ipld_blacklist_factory"]
                 ):
                     logger.info(
                         f"IPLDBlacklistFactory operation, contract addr from block: {tx_target_contract_address}"
