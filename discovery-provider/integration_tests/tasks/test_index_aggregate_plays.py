@@ -208,5 +208,5 @@ def test_index_aggregate_plays_no_plays(app):
         try:
             _update_aggregate_plays(session)
             assert False, "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
-        except NoResultFound:
+        except Exception:
             assert True
