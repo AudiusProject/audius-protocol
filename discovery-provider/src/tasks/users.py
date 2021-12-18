@@ -15,7 +15,6 @@ from src.database_task import DatabaseTask
 from src.models import AssociatedWallet, User, UserEvents
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
-from src.tasks.metadata import user_metadata_format
 from src.utils import helpers
 from src.utils.indexing_errors import IndexingError
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
