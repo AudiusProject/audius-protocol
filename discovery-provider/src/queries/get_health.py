@@ -202,11 +202,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     rewards_manager_health_info = get_rewards_manager_health_info(redis)
     user_bank_health_info = get_user_bank_health_info(redis)
 
+    latest_indexed_block_num, latest_indexed_block_hash = get_most_recent_indexed_block_from_redis(redis)
+
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
     # value from redis cache is None
-    latest_indexed_block_num, latest_indexed_block_hash = get_most_recent_indexed_block_from_redis(redis)
-
     if (
         not use_redis_cache
         or latest_indexed_block_num is None
