@@ -286,7 +286,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "openresty_public_key": openresty_public_key,
     }
 
-    block_difference = abs(latest_block_num - latest_indexed_block_num)
+    block_difference = None
+    if latest_block_num is not None and latest_indexed_block_num is not None:
+        block_difference = abs(latest_block_num - latest_indexed_block_num)
+    
     health_results["block_difference"] = block_difference
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)
@@ -331,9 +334,14 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
         health_results["tables"] = table_size_info_json
 
-    unhealthy_blocks = bool(
-        enforce_block_diff and block_difference > healthy_block_diff
-    )
+    # If block difference could not be determined, set unhealthy_blocks to false as the discovery
+    # node is unable to fetch block data at the moment
+    unhealthy_blocks = False
+    if block_difference is not None:
+        unhealthy_blocks = bool(
+            enforce_block_diff and block_difference > healthy_block_diff
+        )
+
     unhealthy_challenges = bool(
         challenge_events_age_max_drift
         and challenge_events_age_sec
