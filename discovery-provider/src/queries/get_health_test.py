@@ -520,7 +520,7 @@ def test_get_health_with_web3_req_failing(web3_mock, redis_mock, db_mock):
                 is_current=True,
             )
         )
-    
+
     args = {}
     health_results, error = get_health(args, use_redis_cache=False)
 
