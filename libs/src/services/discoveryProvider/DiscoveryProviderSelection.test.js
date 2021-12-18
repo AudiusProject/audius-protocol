@@ -135,6 +135,44 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(service, healthy)
   })
 
+  it('prefers a healthy plays slot diff', async () => {
+    const healthy = 'https://healthy.audius.co'
+    nock(healthy)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-node',
+        version: '1.2.3',
+        block_difference: 0,
+        plays: {
+          tx_info: {
+            slot_diff: 0
+          }
+        }
+      } })
+    const behind = 'https://behind.audius.co'
+    nock(behind)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-node',
+        version: '1.2.3',
+        block_difference: 0,
+        plays: {
+          tx_info: {
+            slot_diff: 20
+          }
+        }
+      } })
+
+    const s = new DiscoveryProviderSelection(
+      {
+        unhealthySlotDiffPlays: 10
+      },
+      mockEthContracts([healthy, behind], '1.2.3')
+    )
+    const service = await s.select()
+    assert.strictEqual(service, healthy)
+  })
+
   it('can select an old version', async () => {
     const healthyButBehind = 'https://healthyButBehind.audius.co'
     nock(healthyButBehind)
