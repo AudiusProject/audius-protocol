@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List
-from sqlalchemy.orm.exc import NoResultFound
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.models import AggregatePlays
 from src.utils.config import shared_config
