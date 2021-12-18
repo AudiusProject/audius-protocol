@@ -84,45 +84,6 @@ if ! instance_exists $provider $name; then
 	fi
 fi
 
-
-configure_etc_hosts() {
-	IP=$(get_ip_addr $provider $name)
-	echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
-	sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
-	sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
-}
-
-set_ssh_serveralive() {
-	if [[ -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
-		echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
-	fi
-}
-
-setup_zsh() {
-	execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
-
-	zshenv=$PROTOCOL_DIR/service-commands/scripts/.zshenv
-	if [[ -f "~/.zshenv.remote-dev" ]]; then
-		zshenv=~/.zshenv.remote-dev
-	fi
-	cp $zshenv ~/.zshenv.tmp
-	echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
-	copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
-	rm ~/.zshenv.tmp
-
-	zshrc=$PROTOCOL_DIR/service-commands/scripts/.zshrc
-	if [[ -f "~/.zshrc.remote-dev" ]]; then
-		zshrc=~/.zshrc.remote-dev
-	fi
-	copy_file_to_remote $provider $user $name $zshrc '~/.zshrc'
-
-	p10k_zsh=$PROTOCOL_DIR/service-commands/scripts/.p10k.zsh
-	if [[ -f "~/.p10k.zsh.remote-dev" ]]; then
-		p10k_zsh=~/.p10k.zsh.remote-dev
-	fi
-	copy_file_to_remote $provider $user $name $p10k_zsh '~/.p10k.zsh'
-}
-
 # Setup service
 case "$service" in
 	creator-node)
@@ -149,6 +110,19 @@ case "$service" in
 			wait_for_instance $provider $user $name
 			# TODO fix install and provisioning for fast
 		fi
+
+		# start up frontend and backend
+		execute_with_ssh $provider $user $name "set -x; nohup npm run start:dev:cloud > ~/audius-client.out 2>&1 &"
+		execute_with_ssh $provider $user $name "cd ~/audius-protocol/libs; npm install"
+		execute_with_ssh $provider $user $name "set -x; source ~/.nvm/nvm.sh; source ~/.profile; A up"
+
+		# configure local files: /etc/hosts, /etc/ssh/ssh_config.d/60-audius.conf
+		configure_etc_hosts
+		set_ssh_serveralive
+
+		# upload personal files: ~/.gitconfig, ~/.zshrc, ~/.zshenv, ~/.p10k.zsh
+		upload_gitconfig
+		setup_zsh
 
 		echo -e "\nLogin using:\n"
 		echo -e "gcloud compute ssh $user@$name\n"

@@ -134,5 +134,3 @@ if [[ $(uname) = "Darwin" ]]; then
     alias firefox='open -a Firefox'
     alias chrome='open -a Google\ Chrome'
 fi
-
-# }}}

@@ -112,6 +112,10 @@ function setup_profile() {
     echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> $HOME/.profile
 }
 
+function silence_motd() {
+    touch ~/.hushlogin
+}
+
 function setup_audius_repos() {
     source $HOME/.profile
     source $HOME/.bashrc
@@ -145,6 +149,7 @@ function setup() {
         setup_mad_dog
         setup_node
         setup_profile
+        silence_motd
     fi
     setup_audius_repos $1 $2
 }
