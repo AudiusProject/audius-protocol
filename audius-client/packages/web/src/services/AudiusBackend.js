@@ -442,7 +442,8 @@ class AudiusBackend {
           AudiusBackend.discoveryProviderSelectionCallback,
           monitoringCallbacks.discoveryNode,
           getRemoteVar(IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT),
-          getRemoteVar(IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES)
+          getRemoteVar(IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES),
+          getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS)
         ),
         identityServiceConfig: AudiusLibs.configIdentityService(
           IDENTITY_SERVICE

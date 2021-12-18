@@ -17,6 +17,12 @@ export enum IntKeys {
   DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS = 'DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS',
 
   /**
+   * Number of slots at which we would consider a discovery node to be
+   * unhealthy. Unset value (null) means slot diff is ignored.
+   */
+  DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS = 'DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS',
+
+  /**
    * Frequency (in ms) to poll for user wallet balance on the client dashboard page
    */
   DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS = 'DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS',

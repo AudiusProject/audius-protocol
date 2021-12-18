@@ -6,7 +6,7 @@
   "version": "0.24.36",
   "private": true,
   "dependencies": {
-    "@audius/libs": "1.2.37",
+    "@audius/libs": "1.2.38",
     "@audius/stems": "0.3.18",
     "@craco/craco": "6.4.2",
     "@hcaptcha/react-hcaptcha": "0.3.6",
