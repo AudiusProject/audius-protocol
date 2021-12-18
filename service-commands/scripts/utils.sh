@@ -163,8 +163,6 @@ format_bold() {
 	printf "$(tput bold)$@$(tput sgr0)"
 }
 
-
-
 configure_etc_hosts() {
 	read -p "Configure /etc/hosts? [y/N] " -n 1 -r && echo
 	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
