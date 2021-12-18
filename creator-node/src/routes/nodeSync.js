@@ -2,6 +2,7 @@ const models = require('../models')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
 const { getIPFSPeerId } = require('../utils')
+const DBManager = require('../dbManager.js')
 
 module.exports = function (app) {
   /**
@@ -34,8 +35,7 @@ module.exports = function (app) {
       const cnodeUserUUIDs = cnodeUsers.map((cnodeUser) => cnodeUser.cnodeUserUUID)
 
       // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files, clockRecords.
-
-      const [audiusUsers, tracks, files, clockRecords] = await Promise.all([
+      const [audiusUsers, tracks, files, filesHashes, clockRecords] = await Promise.all([
         models.AudiusUser.findAll({
           where: {
             cnodeUserUUID: cnodeUserUUIDs,
@@ -72,6 +72,10 @@ module.exports = function (app) {
           transaction,
           raw: true
         }),
+        Promise.all(cnodeUserUUIDs.map(async cnodeUserUUID => {
+          const filesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID })
+          return { cnodeUserUUID, filesHash }
+        })),
         models.ClockRecord.findAll({
           where: {
             cnodeUserUUID: cnodeUserUUIDs,
@@ -96,6 +100,7 @@ module.exports = function (app) {
         cnodeUser['audiusUsers'] = []
         cnodeUser['tracks'] = []
         cnodeUser['files'] = []
+        cnodeUser['filesHash'] = null
         cnodeUser['clockRecords'] = []
 
         cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
@@ -124,6 +129,9 @@ module.exports = function (app) {
       })
       files.forEach(file => {
         cnodeUsersDict[file.cnodeUserUUID]['files'].push(file)
+      })
+      filesHashes.forEach(filesHashResp => {
+        cnodeUsersDict[filesHashResp.cnodeUserUUID]['filesHash'] = filesHashResp.filesHash
       })
       clockRecords.forEach(clockRecord => {
         cnodeUsersDict[clockRecord.cnodeUserUUID]['clockRecords'].push(clockRecord)

@@ -177,6 +177,46 @@ class DBManager {
       log(`completed in ${Date.now() - start}ms`)
     }
   }
+
+  /**
+   * NOTE - is it required to use 
+   * TODO - error handling
+   */
+  static async fetchFilesHashFromDB ({ cnodeUserUUID, clockMin = null, clockMax = null }) {
+    let filesSubQuery = `
+      select multihash from "Files"
+      where "cnodeUserUUID" = '${cnodeUserUUID}'
+    `
+    if (clockMin) filesSubQuery += ` and clock >= ${parseInt(clockMin)}`  // inclusive
+    if (clockMax) filesSubQuery += ` and clock <= ${parseInt(clockMax)}`   // inclusive
+    filesSubQuery += ` order by "createdAt" asc`
+
+    const filesHashResp = (await sequelize.query(`
+      select
+        md5(cast(array_agg(sorted_hashes.multihash) as text))
+      from (${filesSubQuery}) as sorted_hashes;
+    `))
+    const filesHash = filesHashResp[0][0]['md5']
+    return filesHash
+  }
+
+  static async fetchFilesHashFromDBByWallet ({ wallet, clockMin = null, clockMax = null }) {
+    let filesSubQuery = `
+      select multihash from "Files"
+      where "walletPublicKey" = '${wallet}'
+    `
+    if (clockMin) filesSubQuery += ` and clock >= ${parseInt(clockMin)}`  // inclusive
+    if (clockMax) filesSubQuery += ` and clock <= ${parseInt(clockMax)}`   // inclusive
+    filesSubQuery += ` order by "createdAt" asc`
+
+    const filesHashResp = (await sequelize.query(`
+      select
+        md5(cast(array_agg(sorted_hashes.multihash) as text))
+      from (${filesSubQuery}) as sorted_hashes;
+    `))
+    const filesHash = filesHashResp[0][0]['md5']
+    return filesHash
+  }
 }
 
 /**

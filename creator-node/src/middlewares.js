@@ -201,7 +201,7 @@ async function issueAndWaitForSecondarySyncRequests (req) {
   const pollingDurationMs = req.header('Polling-Duration-ms') || config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
   const enforceWriteQuorum = req.header('Enforce-Write-Quorum') || config.get('enforceWriteQuorum')
 
-  if (config.get('manualSyncsDisabled')) {
+  if (true) {
     req.logger.info(`issueAndWaitForSecondarySyncRequests - Cannot proceed due to manualSyncsDisabled ${config.get('manualSyncsDisabled')})`)
     return
   }

@@ -10,6 +10,7 @@ const { authMiddleware, syncLockMiddleware, ensureStorageMiddleware } = require(
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
+const DBManager = require('../dbManager.js')
 
 const CHALLENGE_VALUE_LENGTH = 20
 const CHALLENGE_TTL_SECONDS = 120
@@ -138,6 +139,7 @@ module.exports = function (app) {
     const returnSkipInfo = !!req.query.returnSkipInfo
 
     let response = {}
+    let cnodeUserUUID = null
 
     async function fetchClockValueFromDb () {
       // Fetch clock value from DB
@@ -162,6 +164,8 @@ module.exports = function (app) {
 
         response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
       }
+
+      cnodeUserUUID = (cnodeUser) ? cnodeUser.dataValues.cnodeUserUUID : null
     }
 
     async function isSyncInProgress () {
@@ -180,6 +184,9 @@ module.exports = function (app) {
     }
 
     await Promise.all([fetchClockValueFromDb(), isSyncInProgress()])
+
+    const filesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID })
+    response.filesHash = filesHash
 
     return successResponse(response)
   }))
@@ -200,19 +207,22 @@ module.exports = function (app) {
       }
     })
 
-    // For found users, return the clock value
-    let users = cnodeUsers.map(cnodeUser => {
+    let users = await Promise.all(cnodeUsers.map(async cnodeUser => {
       walletPublicKeysSet.delete(cnodeUser.walletPublicKey)
+
+      const filesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID: cnodeUser.cnodeUserUUID })
+
       return {
         walletPublicKey: cnodeUser.walletPublicKey,
-        clock: cnodeUser.clock
+        clock: cnodeUser.clock,
+        filesHash
       }
-    })
+    }))
 
-    // If there are any remaining wallets, default to -1
+    // Set default values for remaining users
     const remainingWalletPublicKeys = Array.from(walletPublicKeysSet)
     remainingWalletPublicKeys.forEach(wallet => {
-      users.push({ walletPublicKey: wallet, clock: -1 })
+      users.push({ walletPublicKey: wallet, clock: -1, filesHash: null })
     })
 
     return successResponse({ users })
