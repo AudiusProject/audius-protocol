@@ -198,10 +198,10 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerHour',
     default: null
   },
-  rateLimitingListensPerIPPerHour: {
+  rateLimitingListensPerIPTrackPerHour: {
     doc: 'Listens per track per IP per Hour',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerHour',
+    env: 'rateLimitingListensPerIPTrackPerHour',
     default: null
   },
   rateLimitingListensPerTrackPerDay: {
@@ -210,10 +210,28 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerDay',
     default: null
   },
-  rateLimitingListensPerIPPerDay: {
+  rateLimitingListensPerIPTrackPerDay: {
     doc: 'Listens per track per IP per Day',
     format: 'nat',
+    env: 'rateLimitingListensPerIPTrackPerDay',
+    default: null
+  },
+  rateLimitingListensPerIPPerHour: {
+    doc: 'Listens per IP per Hour',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPPerHour',
+    default: null
+  },
+  rateLimitingListensPerIPPerDay: {
+    doc: 'Listens per IP per Day',
+    format: 'nat',
     env: 'rateLimitingListensPerIPPerDay',
+    default: null
+  },
+  rateLimitingListensPerIPPerWeek: {
+    doc: 'Listens per IP per Week',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPPerWeek',
     default: null
   },
   rateLimitingEthRelaysPerIPPerDay: {
@@ -234,10 +252,10 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerWeek',
     default: null
   },
-  rateLimitingListensPerIPPerWeek: {
+  rateLimitingListensPerIPTrackPerWeek: {
     doc: 'Listens per track per IP per Week',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerWeek',
+    env: 'rateLimitingListensPerIPTrackPerWeek',
     default: null
   },
   rateLimitingListensIPWhitelist: {
@@ -594,6 +612,60 @@ const config = convict({
     default: 'processed',
     env: 'solanaTxCommitmentLevel'
   },
+  solanaMintAddress: {
+    doc: 'The address of our SPL token',
+    format: String,
+    default: '',
+    env: 'solanaMintAddress'
+  },
+  solanaClaimableTokenProgramAddress: {
+    doc: 'The address of our Claimable Token program',
+    format: String,
+    default: '',
+    env: 'solanaClaimableTokenProgramAddress'
+  },
+  solanaRewardsManagerProgramId: {
+    doc: 'The address of our Rewards Manager program',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerProgramId'
+  },
+  solanaRewardsManagerProgramPDA: {
+    doc: 'The PDA of this Rewards Manager deployment',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerProgramPDA'
+  },
+  solanaRewardsManagerTokenPDA: {
+    doc: 'The PDA for the Rewards Manager token account',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerTokenPDA'
+  },
+  rewardsParallelization: {
+    doc: 'How many requests to perform in parallel when disbursing rewards',
+    format: Number,
+    default: '2',
+    env: 'rewardsParallelization'
+  },
+  rewardsQuorumSize: {
+    doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
+    format: Number,
+    default: '2',
+    env: 'rewardsQuorumSize'
+  },
+  aaoEndpoint: {
+    doc: 'AAO Endpoint for fetching attestations',
+    format: String,
+    default: 'http://anti-abuse-oracle_anti_abuse_oracle_1:8000',
+    env: 'aaoEndpoint'
+  },
+  aaoAddress: {
+    doc: 'AAO eth address',
+    format: String,
+    default: '',
+    env: 'aaoAddress'
+  },
   sentryDSN: {
     doc: 'Sentry DSN key',
     format: String,
@@ -610,7 +682,7 @@ const config = convict({
     doc: 'Optimizely SDK key to use to fetch remote configuration',
     format: String,
     env: 'optimizelySdkKey',
-    default: null
+    default: 'MX4fYBgANQetvmBXGpuxzF'
   },
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
@@ -625,10 +697,16 @@ const config = convict({
     default: 1
   },
   minSolanaNotificationSlot: {
-    doc: 'The slot number to start indexing if not slots defined"',
+    doc: 'The slot number to start indexing if no slots defined',
     format: Number,
     env: 'minSolanaNotificationSlot',
     default: 105400000
+  },
+  rewardsReporterSlackUrl: {
+    doc: 'The slack url to post messages for the rewards reporter',
+    format: String,
+    env: 'rewardsReporterSlackUrl',
+    default: ''
   }
 })
 
@@ -658,7 +736,21 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaValidSigner: solanaContractConfig.validSigner,
     solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
     solanaEndpoint: solanaContractConfig.endpoint,
-    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey
+    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
+
+    solanaMintAddress: solanaContractConfig.splToken,
+    solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
+    solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
+    solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
+    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount
+  })
+}
+
+if (fs.existsSync('aao-config.json')) {
+  let aaoConfig = require('../aao-config.json')
+  console.log('rewards: ' + JSON.stringify(aaoConfig))
+  config.load({
+    aaoAddress: aaoConfig[0]
   })
 }
 

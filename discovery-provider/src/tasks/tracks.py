@@ -4,7 +4,7 @@ from typing import List, Optional, Set
 
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import functions, null
-from src.app import contract_addresses
+from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -50,7 +50,7 @@ def track_state_update(
 
     track_abi = update_task.abi_values["TrackFactory"]["abi"]
     track_contract = update_task.web3.eth.contract(
-        address=contract_addresses["track_factory"], abi=track_abi
+        address=get_contract_addresses()["track_factory"], abi=track_abi
     )
 
     pending_track_routes: List[TrackRoute] = []

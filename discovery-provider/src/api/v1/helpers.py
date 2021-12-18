@@ -8,6 +8,7 @@ from datetime import datetime
 from .models.common import full_response
 from src.queries.get_challenges import ChallengeResponse
 from src.models import ChallengeType
+from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 
 logger = logging.getLogger(__name__)
 
@@ -275,6 +276,10 @@ def extend_challenge_response(challenge: ChallengeResponse):
     new_challenge["challenge_type"] = challenge_type_map[challenge["challenge_type"]]
     return new_challenge
 
+def extend_undisbursed_challenge(undisbursed_challenge: UndisbursedChallengeResponse):
+    new_undisbursed_challenge = undisbursed_challenge.copy()
+    new_undisbursed_challenge["user_id"] = encode_int_id(new_undisbursed_challenge["user_id"])
+    return new_undisbursed_challenge
 
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, "Oh no! Bad path parameter {}.".format(param))

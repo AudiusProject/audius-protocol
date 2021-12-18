@@ -1,5 +1,5 @@
 import logging
-from src.app import contract_addresses
+from src.app import get_contract_addresses
 from src.utils import helpers
 from src.models import BlacklistedIPLD
 
@@ -11,7 +11,7 @@ def ipld_blacklist_state_update(
 ):
     ipld_blacklist_abi = task.abi_values["IPLDBlacklistFactory"]["abi"]
     ipld_blacklist_contract = task.web3.eth.contract(
-        address=contract_addresses["ipld_blacklist_factory"], abi=ipld_blacklist_abi
+        address=get_contract_addresses()["ipld_blacklist_factory"], abi=ipld_blacklist_abi
     )
 
     total_new_ipld_blacklist_events = 0

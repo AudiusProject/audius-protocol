@@ -21,7 +21,8 @@ const {
   sendResponse,
   successResponse,
   errorResponseBadRequest,
-  errorResponseServerError
+  errorResponseServerError,
+  errorResponseForbidden
 } = require('../apiHelpers')
 const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const {
@@ -41,6 +42,7 @@ const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const DiskManager = require('../diskManager')
+const BlacklistManager = require('../blacklistManager')
 
 const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
 const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
@@ -662,6 +664,11 @@ module.exports = function (app) {
     const blockchainId = decode(encodedId)
     if (!blockchainId) {
       return sendResponse(req, res, errorResponseBadRequest(`Invalid ID: ${encodedId}`))
+    }
+
+    let isNotServable = await BlacklistManager.trackIdIsInBlacklist(blockchainId)
+    if (isNotServable) {
+      return sendResponse(req, res, errorResponseForbidden(`trackId=${blockchainId} cannot be served by this node`))
     }
 
     let fileRecord = await models.File.findOne({

@@ -3,7 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 var contentDisposition = require('content-disposition')
 
-const { logger: genericLogger } = require('../logging')
+const { logger: genericLogger, logInfoWithDuration } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
@@ -99,7 +99,11 @@ const streamFromFileSystem = async (req, res, path) => {
     await new Promise((resolve, reject) => {
       fileStream
         .on('open', () => fileStream.pipe(res))
-        .on('end', () => { res.end(); resolve() })
+        .on('end', () => {
+          logInfoWithDuration(req, 'Successfully served from fs!')
+          res.end()
+          resolve()
+        })
         .on('error', e => { reject(e) })
     })
   } catch (e) {
@@ -151,7 +155,6 @@ const getCID = async (req, res) => {
 
   redisClient.incr('ipfsStandaloneReqs')
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
-  req.logger.info(`IPFS Standalone Request - ${CID}`)
   req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
@@ -222,7 +225,11 @@ const getCID = async (req, res) => {
 
       stream
         .on('data', streamData => { res.write(streamData) })
-        .on('end', () => { res.end(); resolve() })
+        .on('end', () => {
+          logInfoWithDuration(req, 'Successfully served from ipfs!')
+          res.end()
+          resolve()
+        })
         .on('error', e => { reject(e) })
     })
   } catch (e) {

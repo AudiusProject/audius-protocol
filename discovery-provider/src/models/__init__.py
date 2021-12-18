@@ -47,6 +47,7 @@ from .models import (
     UserBalance,
     UserBalanceChange,
     UserChallenge,
+    UserListeningHistory,
 )
 from .related_artist import RelatedArtist
 from .track_route import TrackRoute
@@ -119,4 +120,5 @@ __all__ = [
     "UserBankTransaction",
     "UserBankAccount",
     "UserEvents",
+    "UserListeningHistory",
 ]

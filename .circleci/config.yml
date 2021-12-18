@@ -39,7 +39,7 @@ jobs:
     resource_class: large # 4vcpu/8gb
     machine:
       image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
-      docker_layer_caching: true
+      docker_layer_caching: false
     steps:
       - add_ssh_keys
       - checkout
@@ -563,7 +563,7 @@ jobs:
       - run:
           name: Setup solana
           command: |
-            sh -c "$(curl -sSfL https://release.solana.com/v1.7.8/install)"
+            sh -c "$(curl -sSfL https://release.solana.com/v1.8.9/install)"
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
 
       - restore_cache:
@@ -656,7 +656,7 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags .
       - run:
           name: Docker push << parameters.repo >>
           command: |

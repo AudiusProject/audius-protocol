@@ -5,60 +5,65 @@ const Users = require('./user.js')
 describe('Users tests', () => {
   it('_addUserOperations finds latest block hash', async () => {
     // Initialize API with dummy services
-    const UsersAPI = new Users(null, ...[
-      /* userStateManager */ null,
-      /* identityService */ null,
-      /* hedgehog */ null,
-      /* discoveryProvider */ null,
-      /* web3Manager */ null,
-      /* contracts */ {
-        UserFactoryClient: {
-          updateName: async () => ({
-            txReceipt: {
-              blockNumber: 1,
-              blockHash: '0x1'
-            }
-          }),
-          updateLocation: async () => ({
-            txReceipt: {
-              blockNumber: 3,
-              blockHash: '0x3'
-            }
-          }),
-          updateBio: async () => ({
-            txReceipt: {
-              blockNumber: 6,
-              blockHash: '0x6'
-            }
-          }),
-          updateProfilePhoto: async () => ({
-            txReceipt: {
-              blockNumber: 5,
-              blockHash: '0x5'
-            }
-          }),
-          updateCoverPhoto: async () => ({
-            txReceipt: {
-              blockNumber: 4,
-              blockHash: '0x4'
-            }
-          }),
-          updateIsCreator: async () => ({
-            txReceipt: {
-              blockNumber: 2,
-              blockHash: '0x2'
-            }
-          })
-        }
-      },
-      /* ethWeb3Manager */ null,
-      /* ethContracts */ null,
-      /* solanaWeb3Manager */ null,
-      /* creatorNode */ null,
-      /* comstock */ null,
-      /* captcha */ null,
-      /* isServer */ null
-    ])
+    const UsersAPI = new Users(
+      null,
+      /* preferHigherPatchForPrimary */ true,
+      /* preferHigherPatchForSecondaries */ true,
+      ...[
+        /* userStateManager */ null,
+        /* identityService */ null,
+        /* hedgehog */ null,
+        /* discoveryProvider */ null,
+        /* web3Manager */ null,
+        /* contracts */ {
+          UserFactoryClient: {
+            updateName: async () => ({
+              txReceipt: {
+                blockNumber: 1,
+                blockHash: '0x1'
+              }
+            }),
+            updateLocation: async () => ({
+              txReceipt: {
+                blockNumber: 3,
+                blockHash: '0x3'
+              }
+            }),
+            updateBio: async () => ({
+              txReceipt: {
+                blockNumber: 6,
+                blockHash: '0x6'
+              }
+            }),
+            updateProfilePhoto: async () => ({
+              txReceipt: {
+                blockNumber: 5,
+                blockHash: '0x5'
+              }
+            }),
+            updateCoverPhoto: async () => ({
+              txReceipt: {
+                blockNumber: 4,
+                blockHash: '0x4'
+              }
+            }),
+            updateIsCreator: async () => ({
+              txReceipt: {
+                blockNumber: 2,
+                blockHash: '0x2'
+              }
+            })
+          }
+        },
+        /* ethWeb3Manager */ null,
+        /* ethContracts */ null,
+        /* solanaWeb3Manager */ null,
+        /* creatorNode */ null,
+        /* comstock */ null,
+        /* captcha */ null,
+        /* isServer */ null
+      ]
+    )
 
     const userId = 1
     const metadata = {
@@ -79,60 +84,65 @@ describe('Users tests', () => {
 
   it('_updateUserOperations finds latest block hash', async () => {
     // Initialize API with dummy services
-    const UsersAPI = new Users(null, ...[
-      /* userStateManager */ null,
-      /* identityService */ null,
-      /* hedgehog */ null,
-      /* discoveryProvider */ null,
-      /* web3Manager */ null,
-      /* contracts */ {
-        UserFactoryClient: {
-          updateName: async () => ({
-            txReceipt: {
-              blockNumber: 1,
-              blockHash: '0x1'
-            }
-          }),
-          updateLocation: async () => ({
-            txReceipt: {
-              blockNumber: 3,
-              blockHash: '0x3'
-            }
-          }),
-          updateBio: async () => ({
-            txReceipt: {
-              blockNumber: 6,
-              blockHash: '0x6'
-            }
-          }),
-          updateProfilePhoto: async () => ({
-            txReceipt: {
-              blockNumber: 5,
-              blockHash: '0x5'
-            }
-          }),
-          updateCoverPhoto: async () => ({
-            txReceipt: {
-              blockNumber: 4,
-              blockHash: '0x4'
-            }
-          }),
-          updateIsCreator: async () => ({
-            txReceipt: {
-              blockNumber: 2,
-              blockHash: '0x2'
-            }
-          })
-        }
-      },
-      /* ethWeb3Manager */ null,
-      /* ethContracts */ null,
-      /* solanaWeb3Manager */ null,
-      /* creatorNode */ null,
-      /* comstock */ null,
-      /* captcha */ null,
-      /* isServer */ null
-    ])
+    const UsersAPI = new Users(
+      null,
+      /* preferHigherPatchForPrimary */ true,
+      /* preferHigherPatchForSecondaries */ true,
+      ...[
+        /* userStateManager */ null,
+        /* identityService */ null,
+        /* hedgehog */ null,
+        /* discoveryProvider */ null,
+        /* web3Manager */ null,
+        /* contracts */ {
+          UserFactoryClient: {
+            updateName: async () => ({
+              txReceipt: {
+                blockNumber: 1,
+                blockHash: '0x1'
+              }
+            }),
+            updateLocation: async () => ({
+              txReceipt: {
+                blockNumber: 3,
+                blockHash: '0x3'
+              }
+            }),
+            updateBio: async () => ({
+              txReceipt: {
+                blockNumber: 6,
+                blockHash: '0x6'
+              }
+            }),
+            updateProfilePhoto: async () => ({
+              txReceipt: {
+                blockNumber: 5,
+                blockHash: '0x5'
+              }
+            }),
+            updateCoverPhoto: async () => ({
+              txReceipt: {
+                blockNumber: 4,
+                blockHash: '0x4'
+              }
+            }),
+            updateIsCreator: async () => ({
+              txReceipt: {
+                blockNumber: 2,
+                blockHash: '0x2'
+              }
+            })
+          }
+        },
+        /* ethWeb3Manager */ null,
+        /* ethContracts */ null,
+        /* solanaWeb3Manager */ null,
+        /* creatorNode */ null,
+        /* comstock */ null,
+        /* captcha */ null,
+        /* isServer */ null
+      ]
+    )
 
     const userId = 1
     const oldMetadata = {

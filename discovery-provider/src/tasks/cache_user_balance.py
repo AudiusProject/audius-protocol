@@ -5,12 +5,11 @@ from redis import Redis
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 from spl.token.client import Token
-from web3 import Web3
 from solana.rpc.api import Client
 from solana.publickey import PublicKey
 
 from src.utils.session_manager import SessionManager
-from src.app import eth_abi_values
+from src.app import get_eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, UserBalanceChange, User, AssociatedWallet, UserBankAccount
 from src.queries.get_balances import (
@@ -32,15 +31,15 @@ audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 
-WAUDIO_PROGRAM_ADDRESS = shared_config["solana"]["waudio_program_address"]
-WAUDIO_MINT_ADDRESS = shared_config["solana"]["waudio_mint_address"]
-WAUDIO_PROGRAM_PUBKEY = (
-    PublicKey(WAUDIO_PROGRAM_ADDRESS) if WAUDIO_PROGRAM_ADDRESS else None
+WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
+WAUDIO_MINT_PUBKEY = (
+    PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 )
-WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
 
 MAX_LAZY_REFRESH_USER_IDS = 100
 
+# Sol balances have 8 decimals, so they need to be increased to 18 to match eth balances
+SPL_TO_WEI = 10 ** 10
 
 class AssociatedWallets(TypedDict):
     eth: List[str]
@@ -203,6 +202,9 @@ def refresh_user_ids(
             f"cache_user_balance.py | fetching for {len(user_associated_wallet_query)} users: {user_ids}"
         )
 
+        # mapping of user_id => balance change
+        needs_balance_change_update: Dict[int, Dict] = {}
+
         # Fetch balances
         # pylint: disable=too-many-nested-blocks
         for user_id, wallets in user_id_metadata.items():
@@ -239,7 +241,7 @@ def refresh_user_ids(
                                     [
                                         bytes(root_sol_account),
                                         bytes(SPL_TOKEN_ID_PK),
-                                        bytes(WAUDIO_PROGRAM_PUBKEY),  # type: ignore
+                                        bytes(WAUDIO_MINT_PUBKEY),  # type: ignore
                                     ],
                                     ASSOCIATED_TOKEN_PROGRAM_ID_PK,
                                 )
@@ -276,12 +278,12 @@ def refresh_user_ids(
                 # update the balance on the user model
                 user_balance = user_balances[user_id]
 
-                # Sol balances have 8 decimals, so they need to be increased to 18 to match eth balances
-                waudio_in_wei = int(waudio_balance) * (10 ** 10)
-                assoc_sol_balance_in_wei = associated_sol_balance * (10 ** 10)
-
-                user_waudio_in_wei = int(user_balance.waudio) * (10 ** 10)
-                user_assoc_sol_balance_in_wei = int(user_balance.associated_sol_wallets_balance) * (10 ** 10)
+                # Convert Sol balances to wei
+                to_wei = lambda balance: int(balance) * SPL_TO_WEI if balance else 0
+                waudio_in_wei = to_wei(waudio_balance)
+                assoc_sol_balance_in_wei = to_wei(associated_sol_balance)
+                user_waudio_in_wei = to_wei(user_balance.waudio)
+                user_assoc_sol_balance_in_wei = to_wei(user_balance.associated_sol_wallets_balance)
 
                 # Get values for user balance change
                 current_total_balance = (
@@ -298,14 +300,12 @@ def refresh_user_ids(
                 )
 
                 # Write to user_balance_changes table
-                session.add(
-                    UserBalanceChange(
-                        user_id=user_id,
-                        blocknumber=Web3.eth.blockNumber,
-                        current_balance=str(current_total_balance),
-                        previous_balance=str(prev_total_balance),
-                    )
-                )
+                needs_balance_change_update[user_id] = {
+                    "user_id": user_id,
+                    "blocknumber": eth_web3.eth.blockNumber,
+                    "current_balance": str(current_total_balance),
+                    "previous_balance": str(prev_total_balance),
+                }
 
                 user_balance.balance = str(owner_wallet_balance)
                 user_balance.associated_wallets_balance = str(associated_balance)
@@ -318,6 +318,35 @@ def refresh_user_ids(
                 logger.error(
                     f"cache_user_balance.py | Error fetching balance for user {user_id}: {(e)}"
                 )
+
+        # Outside the loop, batch update the UserBalanceChanges:
+
+        # Get existing user balances
+        user_balance_ids = list(needs_balance_change_update.keys())
+        existing_user_balance_changes: List[UserBalanceChange] = session.query(UserBalanceChange).filter(
+            UserBalanceChange.user_id.in_(user_balance_ids)
+        ).all()
+        # Find all the IDs that don't already exist in the DB
+        to_create_ids = set(user_balance_ids) - { e.user_id for e in existing_user_balance_changes }
+        logger.info(f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids},\
+                    existing: {[e.user_id for e in existing_user_balance_changes]}, to create: {to_create_ids}")
+
+        # Create new entries for those IDs
+        balance_changes_to_add = [
+            UserBalanceChange(
+                user_id=user_id,
+                blocknumber=needs_balance_change_update[user_id]["blocknumber"],
+                current_balance=needs_balance_change_update[user_id]["current_balance"],
+                previous_balance=needs_balance_change_update[user_id]["previous_balance"]
+            ) for user_id in to_create_ids
+        ]
+        session.add_all(balance_changes_to_add)
+        # Lastly, update all the existing entries
+        for change in existing_user_balance_changes:
+            new_values = needs_balance_change_update[change.user_id]
+            change.blocknumber = new_values["blocknumber"]
+            change.current_balance = new_values["current_balance"]
+            change.previous_balance = new_values["previous_balance"]
 
         # Commit the new balances
         session.commit()
@@ -338,7 +367,7 @@ def get_token_address(eth_web3, config):
     )
 
     eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
 
     token_address = eth_registry_instance.functions.getContract(
@@ -352,7 +381,7 @@ def get_token_contract(eth_web3, config):
     token_address = get_token_address(eth_web3, config)
 
     audius_token_instance = eth_web3.eth.contract(
-        address=token_address, abi=eth_abi_values["AudiusToken"]["abi"]
+        address=token_address, abi=get_eth_abi_values()["AudiusToken"]["abi"]
     )
 
     return audius_token_instance
@@ -364,7 +393,7 @@ def get_delegate_manager_contract(eth_web3):
     )
 
     eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
 
     delegate_manager_address = eth_registry_instance.functions.getContract(
@@ -372,7 +401,7 @@ def get_delegate_manager_contract(eth_web3):
     ).call()
 
     delegate_manager_instance = eth_web3.eth.contract(
-        address=delegate_manager_address, abi=eth_abi_values["DelegateManager"]["abi"]
+        address=delegate_manager_address, abi=get_eth_abi_values()["DelegateManager"]["abi"]
     )
 
     return delegate_manager_instance
@@ -384,7 +413,7 @@ def get_staking_contract(eth_web3):
     )
 
     eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
 
     staking_address = eth_registry_instance.functions.getContract(
@@ -392,20 +421,22 @@ def get_staking_contract(eth_web3):
     ).call()
 
     staking_instance = eth_web3.eth.contract(
-        address=staking_address, abi=eth_abi_values["Staking"]["abi"]
+        address=staking_address, abi=get_eth_abi_values()["Staking"]["abi"]
     )
 
     return staking_instance
 
 
+SPL_TOKEN_PROGRAM_ID_PUBKEY = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+
 def get_audio_token(solana_client: Client):
-    if WAUDIO_MINT_PUBKEY is None or WAUDIO_PROGRAM_PUBKEY is None:
+    if WAUDIO_MINT_PUBKEY is None:
         logger.error("cache_user_balance.py | Missing Required SPL Confirguration")
         return None
     waudio_token = Token(
         conn=solana_client,
         pubkey=WAUDIO_MINT_PUBKEY,
-        program_id=WAUDIO_PROGRAM_PUBKEY,
+        program_id=SPL_TOKEN_PROGRAM_ID_PUBKEY,
         payer=[],  # not making any txs so payer is not required
     )
     return waudio_token

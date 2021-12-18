@@ -66,6 +66,14 @@ contract_addresses: Dict[str, Any] = defaultdict()
 logger = logging.getLogger(__name__)
 
 
+def get_contract_addresses():
+    return contract_addresses
+
+
+def get_eth_abi_values():
+    return eth_abi_values
+
+
 def init_contracts():
     registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
     registry_instance = web3.eth.contract(
@@ -160,11 +168,11 @@ def create_celery(test_config=None):
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
-    eth_abi_values = helpers.load_eth_abi_values()
     # Initialize eth_web3 with MultiProvider
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
     # However, we do not use multiprovider in data web3 because of the effect of disparate block status reads.
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
+    eth_abi_values = helpers.load_eth_abi_values()
 
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
@@ -226,7 +234,7 @@ def create(test_config=None, mode="app"):
     if mode == "celery":
         # log level is defined via command line in docker yml files
         helpers.configure_logging()
-        configure_celery(app, celery_app.celery, test_config)
+        configure_celery(celery_app.celery, test_config)
         return celery_app
 
     raise ValueError("Invalid mode")
@@ -336,9 +344,8 @@ def delete_last_scanned_eth_block_redis(redis_inst):
     )
 
 
-def configure_celery(flask_app, celery, test_config=None):
+def configure_celery(celery, test_config=None):
     database_url = shared_config["db"]["url"]
-    engine_args_literal = ast.literal_eval(shared_config["db"]["engine_args_literal"])
     redis_url = shared_config["redis"]["url"]
 
     if test_config is not None:
@@ -378,6 +385,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
             "src.tasks.index_listen_count_milestones",
+            "src.tasks.user_listening_history.index_user_listening_history",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -480,6 +488,10 @@ def configure_celery(flask_app, celery, test_config=None):
                 "task": "index_listen_count_milestones",
                 "schedule": timedelta(seconds=5),
             },
+            "index_user_listening_history": {
+                "task": "index_user_listening_history",
+                "schedule": timedelta(seconds=5),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -487,7 +499,10 @@ def configure_celery(flask_app, celery, test_config=None):
     )
 
     # Initialize DB object for celery task context
-    db = SessionManager(database_url, engine_args_literal)
+    db = SessionManager(
+        database_url,
+        ast.literal_eval(shared_config["db"]["engine_args_literal"])
+    )
     logger.info("Database instance initialized!")
     # Initialize IPFS client for celery task context
     ipfs_client = IPFSClient(
@@ -517,6 +532,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
+    redis_inst.delete("index_user_listening_history_lock")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
@@ -534,7 +550,6 @@ def configure_celery(flask_app, celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
             )
-
     celery.autodiscover_tasks(["src.tasks"], "index", True)
 
     # Subclassing celery task with discovery provider context
