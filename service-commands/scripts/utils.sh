@@ -165,15 +165,21 @@ format_bold() {
 
 
 configure_etc_hosts() {
-	IP=$(get_ip_addr $provider $name)
-	echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
-	sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
-	sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
+	read -p "Configure /etc/hosts? [y/N] " -n 1 -r && echo
+	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+		IP=$(get_ip_addr $provider $name)
+		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
+		sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
+		sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
+	fi
 }
 
 set_ssh_serveralive() {
 	if [[ ! -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
-		echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
+		read -p "Configure /etc/ssh/ssh_config.d/60-audius.conf? [y/N] " -n 1 -r && echo
+		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+			echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
+		fi
 	fi
 }
 
