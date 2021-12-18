@@ -289,7 +289,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     block_difference = None
     if latest_block_num is not None and latest_indexed_block_num is not None:
         block_difference = abs(latest_block_num - latest_indexed_block_num)
-    
+
     health_results["block_difference"] = block_difference
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)

@@ -530,7 +530,7 @@ def test_get_health_with_web3_req_failing(web3_mock, redis_mock, db_mock):
     assert health_results["web"]["blockhash"] == None
     assert health_results["db"]["number"] == 1
     assert health_results["db"]["blockhash"] == "0x01"
-    assert health_results["block_difference"] == None 
+    assert health_results["block_difference"] == None
 
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
