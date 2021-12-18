@@ -44,7 +44,6 @@ from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.queries.get_user_history import get_user_history
 from src.queries.get_users import get_users
 from src.queries.get_users_account import get_users_account
-from src.queries.get_users_cnode import get_users_cnode
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.utils.redis_metrics import record_metrics
 
