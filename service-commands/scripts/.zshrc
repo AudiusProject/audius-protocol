@@ -123,6 +123,9 @@ alias top='htop'
 alias python='python3'
 alias pip='python -m pip'
 alias gssh='gcloud compute ssh'
+function gip () {
+    gcloud compute instances describe $1 --format 'get(networkInterfaces[0].accessConfigs[0].natIP)'
+}
 
 ## docker aliases
 alias docker-prune="docker rm $(docker ps --all -q -f status=dead); docker network prune; ocker system prune"
