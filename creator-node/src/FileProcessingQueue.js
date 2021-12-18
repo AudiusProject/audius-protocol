@@ -42,7 +42,7 @@ class FileProcessingQueue {
         const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
         done(null, { response })
       } catch (e) {
-        this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode}, uuid=${transcodeParams.logContext.requestID}, error=${e.toString()}`)
+        this.logError(`Could not process taskType=${PROCESS_NAMES.transcode}, uuid=${transcodeParams.logContext.requestID}, error=${e.toString()}`, transcodeParams.logContext)
         done(e.toString())
       }
     })
@@ -53,7 +53,7 @@ class FileProcessingQueue {
   async logStatus (message, logContext = {}) {
     const logger = genericLogger.child(logContext)
     const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
-    logger.info(`FileProcessing Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`)
+    logger.info(`FileProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`)
   }
 
   async logError (message, logContext = {}) {

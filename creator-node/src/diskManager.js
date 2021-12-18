@@ -108,7 +108,7 @@ class DiskManager {
       // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
       fs.mkdirSync(dirPath, { recursive: true })
     } catch (e) {
-      genericLogger.error(`Error making directory, dirName=${dirName}, error=${e.toString()}`)
+      genericLogger.error(`Error making directory, dirName=${dirPath}, error=${e.toString()}`)
       throw new Error(`Error making directory at ${dirPath} - ${e.message}`)
     }
   }
