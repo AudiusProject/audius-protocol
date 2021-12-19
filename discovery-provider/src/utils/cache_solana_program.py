@@ -50,7 +50,15 @@ def fetch_and_cache_latest_program_tx_redis(
             program, before=None, limit=1
         )
     )
-    transactions_array = transactions_history["result"]
+
+    transactions_array = None
+    try:
+        transactions_array = transactions_history["result"]
+    except Exception as e:
+        logger.warning(
+            f"cache_solana_program.py | No transactions for program {program}, {e}"
+        )
+
     if transactions_array:
         # Cache latest transaction from chain
         cache_latest_sol_play_program_tx(redis, program, cache_key, transactions_array[0])
@@ -78,7 +86,7 @@ def cache_latest_sol_play_program_tx(
         )
     except Exception as e:
         logger.error(
-            f"cache_solana_program.py |Failed to cache sol program {program} latest transaction {tx}, {e}"
+            f"cache_solana_program.py | Failed to cache sol program {program} latest transaction {tx}, {e}"
         )
         raise e
 
