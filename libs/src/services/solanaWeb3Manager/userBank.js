@@ -74,7 +74,7 @@ const createUserBankFrom = async ({
   solanaTokenProgramKey,
   claimableTokenProgramKey,
   transactionHandler,
-  recentBlockhash,
+  recentBlockhash
 }) => {
   // Create instruction data
   const ethAddressArr = ethAddressToArray(ethAddress)

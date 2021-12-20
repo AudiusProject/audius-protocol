@@ -214,7 +214,6 @@ async function submitAttestations ({
     }, [])
   )
 
-
   const encodedOracleMessage = SolanaUtils.constructAttestation(
     recipientEthAddress,
     tokenAmount,
@@ -671,7 +670,7 @@ const generateAttestationSecpInstruction = ({
 }) => {
   const { encodedSignature, recoveryId } = encodeSignature(attestationMeta.signature)
 
-  console.log({ethAddr: attestationMeta.ethAddress})
+  console.log({ ethAddr: attestationMeta.ethAddress })
   return Secp256k1Program.createInstructionWithEthAddress({
     ethAddress: SolanaUtils.ethAddressToArray(attestationMeta.ethAddress),
     message: encodedSenderMessage,
