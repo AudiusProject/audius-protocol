@@ -22,14 +22,6 @@ else
   THREADS="${audius_gunicorn_threads}"
 fi
 
-# run db migrations
-if [ "$audius_db_run_migrations" != false ]; then
-  echo "Running alembic migrations"
-  export PYTHONPATH='.'
-  alembic upgrade head
-  echo "Finished running migrations"
-fi
-
 if [[ "$audius_openresty_enable" == true ]]; then
   openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
   tail -f /usr/local/openresty/logs/access.log | python3 scripts/openresty_log_convertor.py INFO &

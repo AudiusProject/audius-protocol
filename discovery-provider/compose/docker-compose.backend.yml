@@ -19,8 +19,10 @@ services:
       - audius_discprov_dev_mode=true
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432,${COMPOSE_PROJECT_NAME}_redis-server_1:6379, ${COMPOSE_PROJECT_NAME}-ipfs-node:5001
     depends_on:
-      - discovery-provider-db
-      - redis-server
+      discovery-provider-db:
+        condition: service_healthy
+      redis-server:
+        condition: service_started
     volumes:
       - '../.:/audius-discovery-provider'
     networks:

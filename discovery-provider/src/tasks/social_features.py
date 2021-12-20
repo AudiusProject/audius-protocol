@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Dict
 
-from src.app import contract_addresses
+from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -30,7 +30,7 @@ def social_feature_state_update(
 
     social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
     social_feature_factory_contract = update_task.web3.eth.contract(
-        address=contract_addresses["social_feature_factory"],
+        address=get_contract_addresses()["social_feature_factory"],
         abi=social_feature_factory_abi,
     )
     challenge_bus = update_task.challenge_event_bus
