@@ -604,8 +604,7 @@ function* watchDownloadTrack() {
         TrackDownload.downloadTrackMobile,
         action.cid,
         endpoints,
-        filename,
-        track.title
+        filename
       )
     } else {
       yield call(TrackDownload.downloadTrack, action.cid, endpoints, filename)
