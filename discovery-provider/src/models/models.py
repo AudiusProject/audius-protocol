@@ -581,6 +581,19 @@ class AggregatePlays(Base):
 play_item_id={self.play_item_id},\
 count={self.count})>"
 
+
+class HourlyPlayCounts(Base):
+    __tablename__ = "hourly_play_counts"
+
+    hourly_timestamp = Column(DateTime, primary_key=True, nullable=False)
+    play_count = Column(Integer, nullable=False, index=False)
+
+    def __repr__(self):
+        return f"<HourlyPlayCounts(\
+hourly_timestamp={self.hourly_timestamp},\
+play_count={self.play_count})>"
+
+
 class IndexingCheckpoints(Base):
     __tablename__ = "indexing_checkpoints"
 
