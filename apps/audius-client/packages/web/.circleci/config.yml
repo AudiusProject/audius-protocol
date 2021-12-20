@@ -74,7 +74,7 @@ jobs:
 
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
 
-      - run: npm install
+      - run: npm install --ignore-scripts
 
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
