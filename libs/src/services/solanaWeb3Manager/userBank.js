@@ -1,11 +1,12 @@
 const {
   PublicKey,
   SystemProgram,
-  SYSVAR_RENT_PUBKEY
+  SYSVAR_RENT_PUBKEY,
+  TransactionInstruction
 } = require('@solana/web3.js')
-const BN = require('bn.js')
 const borsh = require('borsh')
 const bs58 = require('bs58')
+const { ethAddressToArray } = require('./utils')
 
 class CreateTokenAccountInstructionData {
   constructor ({
@@ -39,11 +40,7 @@ const getBankAccountAddress = async (
   claimableTokenPDA,
   solanaTokenProgramKey
 ) => {
-  const strippedEthAddress = ethAddress.replace('0x', '')
-
-  const ethAddressArr = Uint8Array.of(
-    ...new BN(strippedEthAddress, 'hex').toArray('be')
-  )
+  const ethAddressArr = ethAddressToArray(ethAddress)
 
   // We b58 encode our eth address to use as seed later on
   const b58EthAddress = bs58.encode(ethAddressArr)
@@ -65,8 +62,8 @@ const getBankAccountAddress = async (
  * @param {PublicKey} mintKey
  * @param {PublicKey} solanaTokenProgramKey
  * @param {PublicKey} claimableTokenProgramKey
- * @param {Connection} connection
- * @param {IdentityService} identityService
+ * @param {*} transactionHandler
+ * @param {string?} recentBlockhash
  * @returns
  */
 const createUserBankFrom = async ({
@@ -76,15 +73,11 @@ const createUserBankFrom = async ({
   mintKey,
   solanaTokenProgramKey,
   claimableTokenProgramKey,
-  connection,
-  identityService
+  transactionHandler,
+  recentBlockhash,
 }) => {
   // Create instruction data
-  const strippedEthAddress = ethAddress.replace('0x', '')
-
-  const ethAddressArr = Uint8Array.of(
-    ...new BN(strippedEthAddress, 'hex').toArray('be')
-  )
+  const ethAddressArr = ethAddressToArray(ethAddress)
 
   const instructionData = new CreateTokenAccountInstructionData({
     ethAddress: ethAddressArr
@@ -152,25 +145,13 @@ const createUserBankFrom = async ({
     }
   ]
 
-  const { blockhash } = await connection.getRecentBlockhash()
+  const instructions = [new TransactionInstruction({
+    keys: accounts,
+    programId: claimableTokenProgramKey.toString(),
+    data: Buffer.from(serializedInstructionEnum)
+  })]
 
-  const transactionData = {
-    recentBlockhash: blockhash,
-    instructions: [{
-      keys: accounts.map(account => {
-        return {
-          pubkey: account.pubkey.toString(),
-          isSigner: account.isSigner,
-          isWritable: account.isWritable
-        }
-      }),
-      programId: claimableTokenProgramKey.toString(),
-      data: Buffer.from(serializedInstructionEnum)
-    }]
-  }
-
-  const response = await identityService.solanaRelay(transactionData)
-  return response
+  return transactionHandler.handleTransaction(instructions, null, recentBlockhash)
 }
 
 module.exports = {

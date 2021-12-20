@@ -134,7 +134,7 @@ class SolanaWeb3Manager {
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
-      identityService: this.identityService
+      transactionHandler: this.transactionHandler
     })
   }
 
