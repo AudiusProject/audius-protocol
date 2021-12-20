@@ -175,18 +175,6 @@ module.exports = function (app) {
     return successResponse({ uuid: req.logContext.requestID })
   }))
 
-  // /**
-  //  * TODO: (Needs to)
-  //  * - validate requester is a valid SP
-  //  * - make sure current node has enough storage
-  //  * - upload the file
-  //  * - submit transcode and segment request
-
-  //  */
-  // app.post('/transcode_and_segment', authMiddleware, ensureStorageMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
-
-  // }))
-
   /**
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
