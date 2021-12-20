@@ -697,11 +697,12 @@ jobs:
             export PROTOCOL_DIR=/home/circleci/project
             git clone https://github.com/AudiusProject/audius-protocol.git && cd audius-protocol/service-commands/
             npm install --unsafe-perm
-      - run:
-          name: provision and build instance with latest changes
-          command: |
             A setup -y remote-dev audius-bake-nightly
-            # todo A up?
+      # - run:
+      #     name: provision and build instance with latest changes
+      #     command: |
+      #       A setup -y remote-dev audius-bake-nightly
+      #       # todo A up?
       - run:
           name: bake image and update refs
           command: |
