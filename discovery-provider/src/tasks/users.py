@@ -8,7 +8,7 @@ from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
 
-from src.app import contract_addresses
+from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -43,7 +43,7 @@ def user_state_update(
 
     user_abi = update_task.abi_values["UserFactory"]["abi"]
     user_contract = update_task.web3.eth.contract(
-        address=contract_addresses["user_factory"], abi=user_abi
+        address=get_contract_addresses()["user_factory"], abi=user_abi
     )
     challenge_bus = update_task.challenge_event_bus
 

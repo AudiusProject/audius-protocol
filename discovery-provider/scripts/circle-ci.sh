@@ -9,14 +9,15 @@ function main {
   cd_contracts_repo
   echo 'Migrating contracts'
   node_modules/.bin/truffle migrate --network test_local
-  echo 'Writing flask config'
-  node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run --network test_local
+  echo 'Writing contracts flask config'
+  node_modules/.bin/truffle exec scripts/migrate-contracts.js --network test_local
 
   # run eth-contracts migrations
   cd_eth_contracts_repo
   echo 'Migrating eth-contracts'
   node_modules/.bin/truffle migrate --network test_local
-  export audius_eth_contracts_registry=$(node -p "require('./migrations/migration-output.json').registryAddress")
+  echo 'Writing eth-contracts flask config'
+  node_modules/.bin/truffle exec scripts/migrate-contracts.js --network test_local
 
   # run database migrations
   cd_discprov_repo
