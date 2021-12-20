@@ -43,7 +43,7 @@ function main {
     node_modules/.bin/truffle migrate
 
     echo '\nWriting flask config file'
-    node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run
+    node_modules/.bin/truffle exec scripts/migrate-contracts.js
   fi
 
   cd_discprov_repo

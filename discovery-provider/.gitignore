@@ -20,6 +20,7 @@ venv/
 
 # Do not commit contract updates
 contract_config.ini
+eth_contract_config.ini
 
 # Ignore redis generated files
 *.rdb
