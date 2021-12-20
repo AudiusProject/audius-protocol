@@ -2,12 +2,12 @@ const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
-const { handleTrackContentRoute: transcodeFn } = require('./components/tracks/tracksComponentService')
+const { handleTrackContentRoute: trackContentUpload } = require('./components/tracks/tracksComponentService')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
-  transcode: 'transcode'
+  trackContentUpload: 'trackContentUpload'
 })
 const PROCESS_STATES = Object.freeze({
   IN_PROGRESS: 'IN_PROGRESS',
@@ -34,14 +34,14 @@ class FileProcessingQueue {
       }
     )
 
-    this.queue.process(PROCESS_NAMES.transcode, MAX_CONCURRENCY, async (job, done) => {
-      const { transcodeParams } = job.data
+    this.queue.process(PROCESS_NAMES.trackContentUpload, MAX_CONCURRENCY, async (job, done) => {
+      const { trackContentUploadParams } = job.data
 
       try {
-        const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
+        const response = await this.monitorProgress(PROCESS_NAMES.trackContentUpload, trackContentUpload, trackContentUploadParams)
         done(null, { response })
       } catch (e) {
-        this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode} uuid=${transcodeParams.logContext.requestID}: ${e.toString()}`)
+        this.logError(trackContentUploadParams.logContext, `Could not process taskType=${PROCESS_NAMES.trackContentUpload} uuid=${trackContentUploadParams.logContext.requestID}: ${e.toString()}`)
         done(e.toString())
       }
     })
@@ -61,13 +61,13 @@ class FileProcessingQueue {
   }
 
   // TODO: Will make this job a background process
-  async addTranscodeTask (transcodeParams) {
-    const { logContext } = transcodeParams
-    this.logStatus(logContext, `Adding ${PROCESS_NAMES.transcode} task! uuid=${logContext.requestID}}`)
+  async addTrackContentUploadTask (trackContentUploadParams) {
+    const { logContext } = trackContentUploadParams
+    this.logStatus(logContext, `Adding ${PROCESS_NAMES.trackContentUpload} task! uuid=${logContext.requestID}}`)
 
     const job = await this.queue.add(
-      PROCESS_NAMES.transcode,
-      { transcodeParams }
+      PROCESS_NAMES.trackContentUpload,
+      { trackContentUploadParams }
     )
 
     return job
