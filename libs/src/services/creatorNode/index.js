@@ -12,6 +12,8 @@ const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const POLL_STATUS_INTERVAL = 3000 // 3s
 const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
 
+const TRACK_CONTENT_UPLOAD_TASK_NAME = 'trackContentUpload'
+
 // Currently only supports a single logged-in audius user
 class CreatorNode {
   /* Static Utils */
@@ -376,12 +378,12 @@ class CreatorNode {
 
   async handleAsyncAndResumableTrackUpload (file, onProgress) {
     const { uuid } = await this._uploadResumableTrackFile(file, onProgress)
-    return this.pollProcessingStatus('transcode', uuid)
+    return this.pollProcessingStatus(TRACK_CONTENT_UPLOAD_TASK_NAME, uuid)
   }
 
   async handleAsyncAndNotResumableTrackUpload (file, onProgress) {
     const { data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress)
-    return this.pollProcessingStatus('transcode', uuid)
+    return this.pollProcessingStatus(TRACK_CONTENT_UPLOAD_TASK_NAME, uuid)
   }
 
   async handleSynchronousAndNotResumableTrackUpload (file, onProgress) {
