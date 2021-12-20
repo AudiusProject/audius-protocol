@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/browser'
+import { CaptureConsole } from '@sentry/integrations'
 
 import { User } from 'common/models/User'
 
@@ -20,6 +21,13 @@ export const initializeSentry = () => {
     // Need to give Sentry a version so it can
     // associate stacktraces with sourcemaps
     release: process.env.REACT_APP_CURRENT_GIT_SHA,
+
+    // Capture console.errors in sentry
+    integrations: [
+      new CaptureConsole({
+        levels: ['error']
+      })
+    ],
 
     maxBreadcrumbs: MAX_BREADCRUMBS,
     beforeBreadcrumb: (breadCrumb, hint) => {
