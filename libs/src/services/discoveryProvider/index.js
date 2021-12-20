@@ -579,7 +579,8 @@ class DiscoveryProvider {
      endpoint: string,
      urlParams: string,
      queryParams: object,
-     method: string
+     method: string,
+     headers: object,
    }} requestObj
    * @param {string} discoveryProviderEndpoint
    * @returns
@@ -700,6 +701,7 @@ class DiscoveryProvider {
    *  urlParams: object
    *  queryParams: object
    *  method: string
+   *  headers: object
    * }} {
    *  endpoint: the base route
    *  urlParams: string of URL params to be concatenated after base route
@@ -818,7 +820,7 @@ class DiscoveryProvider {
       requestUrl = urlJoin(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     }
 
-    const headers = {}
+    const headers = requestObj.headers ?? {}
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId
