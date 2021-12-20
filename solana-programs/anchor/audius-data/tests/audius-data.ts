@@ -13,7 +13,12 @@ import {
   getTransaction,
   SystemSysVarProgramKey,
 } from "../lib/utils";
-import { initAdmin, initUser, initUserSolPubkey } from "../lib/lib";
+import {
+  initAdmin,
+  initUser,
+  initUserSolPubkey,
+  createTrack,
+} from "../lib/lib";
 
 const { SystemProgram, PublicKey, Transaction, Secp256k1Program } = anchor.web3;
 
@@ -114,17 +119,14 @@ describe("audius-data", () => {
     userAuthorityKey,
     trackOwnerPDA,
   }) => {
-    let tx = await program.rpc.createTrack(trackMetadata, {
-      accounts: {
-        track: newTrackKeypair.publicKey,
-        user: trackOwnerPDA,
-        authority: userAuthorityKey.publicKey,
-        payer: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [userAuthorityKey, newTrackKeypair],
+    let tx = await createTrack({
+      provider,
+      program,
+      newTrackKeypair,
+      userAuthorityKey,
+      userStgAccountPDA: trackOwnerPDA,
+      metadata: trackMetadata,
     });
-
     await confirmLogInTransaction(tx, trackMetadata);
   };
 

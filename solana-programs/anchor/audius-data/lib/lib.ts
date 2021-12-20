@@ -140,3 +140,34 @@ export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
   );
   return initUserTx;
 };
+
+/// Create a track
+export type createTrackArgs = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  newTrackKeypair: Keypair;
+  userAuthorityKey: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  metadata: string;
+};
+export const createTrack = async (args: createTrackArgs) => {
+  const {
+    provider,
+    program,
+    newTrackKeypair,
+    userAuthorityKey,
+    metadata,
+    userStgAccountPDA,
+  } = args;
+  let tx = await program.rpc.createTrack(metadata, {
+    accounts: {
+      track: newTrackKeypair.publicKey,
+      user: userStgAccountPDA,
+      authority: userAuthorityKey.publicKey,
+      payer: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId,
+    },
+    signers: [userAuthorityKey, newTrackKeypair],
+  });
+  return tx;
+};

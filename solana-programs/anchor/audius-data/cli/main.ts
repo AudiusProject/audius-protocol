@@ -16,6 +16,7 @@ import {
   initAdmin,
   initUser,
   initUserSolPubkey,
+  createTrack,
 } from "../lib/lib";
 
 import { Command } from "commander";
@@ -134,6 +135,7 @@ const functionTypes = Object.freeze({
   initAdmin: "initAdmin",
   initUser: "initUser",
   initUserSolPubkey: "initUserSolPubkey",
+  createTrack: "createTrack",
 });
 
 program
@@ -169,6 +171,11 @@ const adminStgKeypair = options.adminStorageKeypair
   ? keypairFromFilePath(options.adminStorageKeypair)
   : anchor.web3.Keypair.generate();
 
+// User admin keypair
+const userSolKeypair = options.userSolanaKeypair
+  ? keypairFromFilePath(options.userSolanaKeypair)
+  : anchor.web3.Keypair.generate();
+
 switch (options.function) {
   case functionTypes.initAdmin:
     console.log(`Initializing admin`);
@@ -189,28 +196,38 @@ switch (options.function) {
       adminKeypair,
       metadata: "test",
     });
+    break;
   case functionTypes.initUserSolPubkey:
-    const userSolKeypair = options.userSolanaKeypair
-      ? keypairFromFilePath(options.userSolanaKeypair)
-      : anchor.web3.Keypair.generate();
-
-    console.log(userSolKeypair.publicKey.toString());
     let privateKey = options.ethPrivateKey;
     let userSolPubkey = userSolKeypair.publicKey;
-    let userStgAccount = options.userStgPubkey;
-    console.log(userStgAccount);
-    let x = async () => {
+    (async () => {
       const cliVars = initializeCLI(options.ownerKeypair);
-      console.log("hi");
       let tx = await initUserSolPubkey({
         program: cliVars.program,
         provider: cliVars.provider,
         message: "message",
         privateKey,
-        userStgAccount,
+        userStgAccount: options.userStgPubkey,
         userSolPubkey,
       });
-      console.log(`initUserTx = ${tx}, userStgAccount = ${userStgAccount}`);
-    };
-    x();
+      console.log(
+        `initUserTx = ${tx}, userStgAccount = ${options.userStgPubkey}`
+      );
+    })();
+  case functionTypes.createTrack:
+    let newTrackAccount = anchor.web3.Keypair.generate();
+    console.log(`createTrack, newTrackAccount ${newTrackAccount.publicKey}`);
+    (async () => {
+      const cliVars = initializeCLI(options.ownerKeypair);
+      let tx = await createTrack({
+        program: cliVars.program,
+        provider: cliVars.provider,
+        metadata: "message",
+        newTrackKeypair: newTrackAccount,
+        userAuthorityKey: userSolKeypair,
+        userStgAccountPDA: options.userStgPubkey,
+      });
+      console.log(`createTrackTx = ${tx}`);
+    })();
+    break;
 }
