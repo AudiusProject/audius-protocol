@@ -16,13 +16,13 @@ class TrackDownload {
     )
   }
 
-  static async downloadTrackMobile(cid, creatorNodeGateways, filename, title) {
+  static async downloadTrackMobile(cid, creatorNodeGateways, filename) {
     const urls = creatorNodeGateways.map(
       gateway => new URL(`${gateway}${cid}?filename=${filename}`)
     )
 
     const message = new DownloadTrackMessage({
-      title: title,
+      title: filename.split('.').slice(0, -1).join(''),
       urls: urls
     })
     message.send()
