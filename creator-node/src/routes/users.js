@@ -208,7 +208,7 @@ module.exports = function (app) {
    * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
    */
   app.post('/users/batch_clock_status', handleResponse(async (req, res) => {
-    const walletPublicKeys = req.body.walletPublicKeys
+    const { walletPublicKeys } = req.body
     const walletPublicKeysSet = new Set(walletPublicKeys)
 
     const returnFilesHash = !!req.query.returnFilesHash // default false

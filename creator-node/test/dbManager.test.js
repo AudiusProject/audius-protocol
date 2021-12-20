@@ -23,7 +23,7 @@ describe('Test createNewDataRecord()', async function () {
   const initialClockVal = 0
   const timeoutMs = 1000
 
-  let cnodeUserUUID,  createFileQueryObj, server
+  let cnodeUserUUID, createFileQueryObj, server
 
   /** Init server to run DB migrations */
   before(async function () {

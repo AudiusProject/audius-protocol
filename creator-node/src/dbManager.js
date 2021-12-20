@@ -178,9 +178,6 @@ class DBManager {
     }
   }
 
-  /**
-   * TODO - error handling
-   */
   static async fetchFilesHashFromDB ({ cnodeUserUUID, clockMin = null, clockMax = null }) {
     let subquery = `
       select multihash from "Files"
