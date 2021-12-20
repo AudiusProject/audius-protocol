@@ -1,6 +1,6 @@
 import { RefObject } from 'react'
 
-import AsyncStorage from '@react-native-community/async-storage'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform, PushNotificationPermissions } from 'react-native'
 import Config from 'react-native-config'
 // https://dev.to/edmondso006/react-native-local-ios-and-android-notifications-2c58

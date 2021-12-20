@@ -36,7 +36,7 @@ export const useFeatureFlage = (flag: FeatureFlags) => {
   const isEnabled = useMemo(
     () => remoteConfigInstance.getFeatureEnabled(flag),
     // We want configLoaded and shouldRecompute to trigger refreshes of the memo
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [flag, configLoaded, shouldRecompute]
   )
   return { isLoaded: configLoaded, isEnabled }
@@ -51,7 +51,7 @@ export function useRemoteVar(
 ): boolean | string | number | null {
   const configLoaded = useSelector(isRemoteConfigLoaded)
   // eslint complains about configLoaded as part of the deps array
-  // eslint-disable-next-line
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const remoteVar = useMemo(() => remoteConfigInstance.getRemoteVar(key), [
     key,
     configLoaded,

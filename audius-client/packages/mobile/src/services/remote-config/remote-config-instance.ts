@@ -1,5 +1,5 @@
 import * as optimizely from '@optimizely/react-sdk'
-import AsyncStorage from '@react-native-community/async-storage'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { remoteConfig } from 'audius-client/src/common/services/remote-config'
 import Config from 'react-native-config'
 
