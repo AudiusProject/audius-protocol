@@ -33,6 +33,24 @@ def setup_challenges(app):
                 starting_block=100,
             ),
         ]
+
+        non_current_users = [
+            User(
+                blockhash=hex(99),
+                blocknumber=99,
+                txhash=f"xyz{i}",
+                user_id=i,
+                is_current=False,
+                handle=f"TestHandle{i}",
+                handle_lc=f"testhandle{i}",
+                wallet=f"0x{i}",
+                is_creator=False,
+                is_verified=False,
+                name=f"test_name{i}",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            ) for i in range(7)
+        ]
         users = [
             User(
                 blockhash=hex(99),
@@ -106,6 +124,7 @@ def setup_challenges(app):
         with db.scoped_session() as session:
             session.add_all(challenges)
             session.flush()
+            session.add_all(non_current_users)
             session.add_all(users)
             session.add_all(user_challenges)
 
