@@ -68,6 +68,9 @@ commands:
           name: copy bundle
           command: npm run bundle:ios
       - run:
+          name: Install Sentry CLI
+          command: curl -sL https://sentry.io/get-cli/ | bash
+      - run:
           name: install pods
           command: cd ios && pod install
       - run:
