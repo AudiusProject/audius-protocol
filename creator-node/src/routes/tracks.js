@@ -91,7 +91,7 @@ async function handleResumableUpload (req, res, next) {
 
     // If the entire upload is done, add a transcode task to the worker queue
     if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
-      await FileProcessingQueue.addTranscodeTask(
+      await FileProcessingQueue.addTrackContentUploadTask(
         {
           logContext: req.logContext,
           req: {
@@ -159,7 +159,7 @@ module.exports = function (app) {
       return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
     }
 
-    await FileProcessingQueue.addTranscodeTask(
+    await FileProcessingQueue.addTrackContentUploadTask(
       {
         logContext: req.logContext,
         req: {
@@ -174,6 +174,18 @@ module.exports = function (app) {
     )
     return successResponse({ uuid: req.logContext.requestID })
   }))
+
+  // /**
+  //  * TODO: (Needs to)
+  //  * - validate requester is a valid SP
+  //  * - make sure current node has enough storage
+  //  * - upload the file
+  //  * - submit transcode and segment request
+
+  //  */
+  // app.post('/transcode_and_segment', authMiddleware, ensureStorageMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+
+  // }))
 
   /**
    * upload track segment files and make avail - will later be associated with Audius track
