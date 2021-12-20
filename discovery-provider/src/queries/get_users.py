@@ -1,8 +1,10 @@
-import logging  # pylint: disable=C0302
+import logging
+from typing import List  # pylint: disable=C0302
 from sqlalchemy import asc
 
 from src import exceptions
 from src.models import User
+from src.models.user_bank import UserBankAccount
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import populate_user_metadata, paginate_query
@@ -81,5 +83,17 @@ def get_users(args):
 
         # bundle peripheral info into user results
         users = populate_user_metadata(session, user_ids, users, current_user_id)
+
+        # Debugging flag for checking user solana bank existence
+        # used by createSolanaUserBank script to confirm banks are created successfully
+        if "with_banks" in args:
+            secondary_query = session.query(UserBankAccount).filter(
+                UserBankAccount.ethereum_address.in_(user["wallet"] for user in users)
+            )
+            banks: List[UserBankAccount] = secondary_query.all()
+            logger.info(banks)
+            users_by_wallet = {user["wallet"]: user for user in users}
+            for bank in banks:
+                users_by_wallet[bank.ethereum_address]["has_solana_bank"] = True
 
     return users

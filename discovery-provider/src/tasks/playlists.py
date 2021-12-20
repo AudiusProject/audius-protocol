@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
-from src.app import contract_addresses
+from src.app import get_contract_addresses
 from src.utils import helpers
 from src.models import Playlist
 from src.utils.playlist_event_constants import (
@@ -33,7 +33,7 @@ def playlist_state_update(
 
     playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
     playlist_contract = update_task.web3.eth.contract(
-        address=contract_addresses["playlist_factory"], abi=playlist_abi
+        address=get_contract_addresses()["playlist_factory"], abi=playlist_abi
     )
 
     playlist_events_lookup = {}
