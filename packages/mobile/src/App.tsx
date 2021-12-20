@@ -7,12 +7,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import WebView from 'react-native-webview'
 import { Provider } from 'react-redux'
 
+import ApiRewardsDrawer from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import AppNavigator from 'app/components/app-navigator/AppNavigator'
 // import AudioBreakdownDrawer from 'app/components/audio-breakdown-drawer'
 import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
 import CollectibleDetailsDrawer from 'app/components/collectible-details-drawer'
 import ConnectWalletsDrawer from 'app/components/connect-wallets-drawer'
+import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer/DeactivateAccountConfirmationDrawer'
 import DownloadTrackProgressDrawer from 'app/components/download-track-progress-drawer'
 import EnablePushNotificationsDrawer from 'app/components/enable-push-notifications-drawer'
 import HCaptcha from 'app/components/hcaptcha'
@@ -31,8 +33,6 @@ import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import PushNotifications from 'app/notifications'
 import createStore from 'app/store'
 import { setup as setupAnalytics } from 'app/utils/analytics'
-
-import { DeactivateAccountConfirmationDrawer } from './components/deactivate-account-confirmation-drawer/DeactivateAccountConfirmationDrawer'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -61,6 +61,7 @@ const Drawers = () => {
       <DownloadTrackProgressDrawer />
       <TransferAudioMobileDrawer />
       <TrendingRewardsDrawer />
+      <ApiRewardsDrawer />
       {/* Disable the audio breakdown drawer until we get
       the feature flags to work for native mobile */}
       {/* <AudioBreakdownDrawer /> */}
