@@ -2,6 +2,7 @@ const assert = require('assert')
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
 const getUuid = require('uuid/v4')
+const crypto = require('crypto')
 
 const models = require('../src/models')
 const DBManager = require('../src/dbManager')
@@ -22,7 +23,7 @@ describe('Test createNewDataRecord()', async function () {
   const initialClockVal = 0
   const timeoutMs = 1000
 
-  let cnodeUserUUID, createFileQueryObj, server
+  let cnodeUserUUID,  createFileQueryObj, server
 
   /** Init server to run DB migrations */
   before(async function () {
@@ -50,6 +51,7 @@ describe('Test createNewDataRecord()', async function () {
     }
   })
 
+  /** Remove sequelize hooks */
   afterEach(async function () {
     models.sequelize.removeHook('beforeCreate', 'clockTimeout')
   })
@@ -313,6 +315,7 @@ describe('Test ClockRecord model', async function () {
     await destroyUsers()
   })
 
+  /** Close server */
   after(async function () {
     await server.close()
   })
@@ -523,4 +526,101 @@ describe('Test deleteSessionTokensFromDB when provided an Array of SessionTokens
     assert(deletedToken2 === null)
   })
 })
-describe.skip('TODO - Test deleteAllCNodeUserData', async function () { })
+
+describe.skip('TODO - Test deleteAllCNodeUserData', async () => {})
+
+describe('Test fetchFilesHashFromDB()', async () => {
+  const initialClockVal = 0
+  const filesTableInst = models.File
+
+  let cnodeUser, cnodeUserUUID, server
+
+  /** Init server to run DB migrations */
+  before(async () => {
+    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager, getIPFSMock(true))
+    server = appInfo.server
+  })
+
+  /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
+  beforeEach(async () => {
+    // Wipe all CNodeUsers + dependent data
+    await destroyUsers()
+    const resp = await createStarterCNodeUser()
+    cnodeUserUUID = resp.cnodeUserUUID
+
+    // Confirm initial clock val in DB
+    cnodeUser = await getCNodeUser(cnodeUserUUID)
+    assert.strictEqual(cnodeUser.clock, initialClockVal)
+  })
+
+  /** Wipe all CNodeUsers + dependent data */
+  after(async () => {
+    await destroyUsers()
+
+    await server.close()
+  })
+
+  const generateRandomHash = () => {
+    return Buffer.from(Math.random().toString()).toString("base64")
+  }
+
+  const generateRandomFileQueryObjects = (numFiles) => {
+    return (new Array(numFiles)).fill(0).map(() => ({
+      multihash: generateRandomHash(),
+      sourceFile: 'testSourcefile',
+      storagePath: 'testStoragePath',
+      type: 'metadata'
+    }))
+  }
+
+  const createFilesForUser = async (cnodeUserUUID, fileQueryObjects) => {
+    const multihashes = []
+
+    let transaction = await models.sequelize.transaction()
+    for (const fileQueryObj of fileQueryObjects) {
+      const fileRecord = await DBManager.createNewDataRecord(fileQueryObj, cnodeUserUUID, filesTableInst, transaction)
+      multihashes.push(fileRecord.multihash)
+    }
+    await transaction.commit()
+
+    return multihashes
+  }
+
+  it('fetchFilesHashFromDB successfully returns hash', async () => {
+    const numFiles = 10
+    const randomFileQueryObjects = generateRandomFileQueryObjects(numFiles)
+    const multihashes = await createFilesForUser(cnodeUserUUID, randomFileQueryObjects)
+
+    const multihashString = `{${multihashes.join(',')}}`
+    const expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
+    const actualFilesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID })
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+  })
+
+  it('fetchFilesHashFromDB successully returns hash by clock range when supplied', async () => {
+    const numFiles = 10
+    const randomFileQueryObjects = generateRandomFileQueryObjects(numFiles)
+    const multihashes = await createFilesForUser(cnodeUserUUID, randomFileQueryObjects)
+    
+    const clockMin = 3  // inclusive
+    const clockMax = 8  // exclusive
+
+    /** clockMin */
+    let multihashString = `{${multihashes.slice(clockMin - 1).join(',')}}`
+    let expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
+    let actualFilesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID, clockMin })
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+
+    /** clockMax */
+    multihashString = `{${multihashes.slice(0, clockMax - 1).join(',')}}`
+    expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID, clockMax })
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+
+    /** clockMin and clockMax */
+    multihashString = `{${multihashes.slice(clockMin - 1, clockMax - 1).join(',')}}`
+    expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID, clockMin, clockMax })
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+  })
+})

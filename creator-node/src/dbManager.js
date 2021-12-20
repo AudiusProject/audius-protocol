@@ -177,6 +177,27 @@ class DBManager {
       log(`completed in ${Date.now() - start}ms`)
     }
   }
+
+  /**
+   * TODO - error handling
+   */
+  static async fetchFilesHashFromDB ({ cnodeUserUUID, clockMin = null, clockMax = null }) {
+    let subquery = `
+      select multihash from "Files"
+      where "cnodeUserUUID" = '${cnodeUserUUID}'
+    `
+    if (clockMin) subquery += ` and clock >= ${parseInt(clockMin)}` // inclusive
+    if (clockMax) subquery += ` and clock < ${parseInt(clockMax)}`  // exclusive
+    subquery += ` order by "clock" asc`
+
+    const filesHashResp = (await sequelize.query(`
+      select
+        md5(cast(array_agg(sorted_hashes.multihash) as text))
+      from (${subquery}) as sorted_hashes;
+    `))
+    const filesHash = filesHashResp[0][0]['md5']
+    return filesHash
+  }
 }
 
 /**
