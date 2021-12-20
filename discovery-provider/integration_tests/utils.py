@@ -212,7 +212,7 @@ def populate_mock_db(db, entities, block_offset=0):
 
         for i, aggregate_play_meta in enumerate(aggregate_plays):
             aggregate_play = models.AggregatePlays(
-                play_item_id=aggregate_play_meta.get("play_item_id", i+1),
+                play_item_id=aggregate_play_meta.get("play_item_id", i),
                 count=aggregate_play_meta.get("count", 0),
             )
             session.add(aggregate_play)
@@ -242,6 +242,7 @@ def populate_mock_db(db, entities, block_offset=0):
                     last_checkpoint=indexing_checkpoint_meta.get("last_checkpoint", 0),
                 )
                 session.add(indexing_checkpoint)
+
 
         for i, route_meta in enumerate(track_routes):
             route = models.TrackRoute(
