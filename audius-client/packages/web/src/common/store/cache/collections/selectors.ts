@@ -89,9 +89,18 @@ export const getTracksFromCollection = (
   const ids = collection.playlist_contents.track_ids.map(t => t.track)
   const tracks = getTracks(state, { ids })
 
-  const userIds = Object.keys(tracks).map(
-    id => tracks[(id as unknown) as number].owner_id
-  )
+  const userIds = Object.keys(tracks)
+    .map(id => {
+      const track = tracks[(id as unknown) as number]
+      if (track?.owner_id) {
+        return track.owner_id
+      }
+      console.error(
+        `Found empty track ${track}, expected it to have an owner_id`
+      )
+      return null
+    })
+    .filter(userId => userId !== null) as number[]
   const users = getUsers(state, { ids: userIds })
 
   if (!users || Object.keys(users).length === 0) return emptyList
