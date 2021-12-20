@@ -1,4 +1,5 @@
-# Audius POC Contract
+# Audius Solana Programs
+# Below are deprecated
 ## Testing
 Install and configure Solana CLI to use Devnet.
 ### Creating entities

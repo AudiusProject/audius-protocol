@@ -12,6 +12,11 @@ services:
       - '${audius_db_port}:5432'
     networks:
       - audius_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
