@@ -696,7 +696,7 @@ jobs:
             nvm use 14
             export PROTOCOL_DIR=/home/circleci/project
             git clone https://github.com/AudiusProject/audius-protocol.git && cd audius-protocol/service-commands/
-            npm install
+            npm install --unsafe-perm
       - run:
           name: provision and build instance with latest changes
           command: |
@@ -806,10 +806,10 @@ workflows:
       - bake-dev-image:
           context:
             - GCP
-          name: bake-dev-image-nightly
-    triggers:
-      - schedule:
-          cron: '0 5 * * *'
-          filters:
-            branches:
-              only: /(^master$)/
+          name: bake-dev-image-test
+    # triggers:
+    #   - schedule:
+    #       cron: '0 5 * * *'
+    #       filters:
+    #         branches:
+    #           only: /(^master$)/
