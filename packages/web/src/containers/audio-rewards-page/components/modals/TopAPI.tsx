@@ -17,6 +17,7 @@ const messages = {
 }
 
 const API_LINK = 'https://audius.org/api'
+const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const TopAPIBody = () => {
   const wm = useWithMobileStyle(styles.mobile)
@@ -45,7 +46,7 @@ const TopAPIModal = () => {
 
   return (
     <ModalDrawer
-      isOpen={isOpen}
+      isOpen={!IS_NATIVE_MOBILE && isOpen}
       onClose={() => setOpen(false)}
       title={messages.modalTitle}
       isFullscreen={false}
