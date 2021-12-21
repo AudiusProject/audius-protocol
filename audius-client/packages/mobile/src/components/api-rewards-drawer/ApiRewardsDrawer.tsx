@@ -4,7 +4,7 @@ import {
   getModalVisibility,
   setVisibility
 } from 'audius-client/src/common/store/ui/modals/slice'
-import { Image, Linking, StyleSheet, View } from 'react-native'
+import { Image, ImageStyle, Linking, StyleSheet, View } from 'react-native'
 
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
 import ButtonWithArrow from 'app/components/button-with-arrow'
@@ -75,11 +75,8 @@ const ApiRewardsDrawer = () => {
   return (
     <Drawer isOpen={isOpen} onClose={handleClose}>
       <View style={styles.content}>
-        <GradientText
-          style={styles.drawerTitle}
-          text={messages.modalTitle}
-        ></GradientText>
-        <Image style={styles.image} source={AudiusAPI} />
+        <GradientText style={styles.drawerTitle} text={messages.modalTitle} />
+        <Image style={styles.image as ImageStyle} source={AudiusAPI} />
         <Text style={styles.title} weight='bold'>
           {messages.title}
         </Text>
@@ -89,7 +86,6 @@ const ApiRewardsDrawer = () => {
         <ButtonWithArrow
           title={messages.button}
           textStyle={styles.buttonText}
-          style={styles.button}
           onPress={onClickAudiusAPI}
         />
       </View>
