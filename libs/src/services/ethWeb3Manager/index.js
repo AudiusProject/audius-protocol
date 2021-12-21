@@ -3,9 +3,10 @@ const MultiProvider = require('../../utils/multiProvider')
 const EthereumTx = require('ethereumjs-tx').Transaction
 const { estimateGas } = require('../../utils/estimateGas')
 const retry = require('async-retry')
-const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
-const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
-const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so we hardcode a lower value (0x09184e72a0 from docs here)
+const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, ETH minimum allowed gas price
+const HIGH_GAS_PRICE = 250 * MIN_GAS_PRICE // 250 GWei
+const DEFAULT_GAS_PRICE = 80 * MIN_GAS_PRICE // 80 Gwei is a reasonably average gas price
+const MAX_GAS_LIMIT = 2000000 // ETH block gas limit is 30M, set to 1/15 of that or 2M
 
 /** Singleton state-manager for Audius Eth Contracts */
 class EthWeb3Manager {
@@ -58,12 +59,12 @@ class EthWeb3Manager {
     const gasLimit = txGasLimit || await estimateGas({
       method: contractMethod,
       from: this.ownerWallet,
-      gasLimitMaximum: HIGH_GAS_PRICE
+      gasLimitMaximum: MAX_GAS_LIMIT
     })
     if (contractAddress && privateKey) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())
       if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
-        gasPrice = GANACHE_GAS_PRICE
+        gasPrice = DEFAULT_GAS_PRICE
       } else if (gasPrice === 0) {
         // If the gas is zero, the txn will likely never get mined.
         gasPrice = MIN_GAS_PRICE
@@ -145,7 +146,7 @@ class EthWeb3Manager {
     const gasLimit = txGasLimit || await estimateGas({
       from: relayerWallet,
       method: contractMethod,
-      gasLimitMaximum: HIGH_GAS_PRICE
+      gasLimitMaximum: MAX_GAS_LIMIT
     })
     const response = await retry(async bail => {
       try {
