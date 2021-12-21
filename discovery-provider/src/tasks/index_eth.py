@@ -30,6 +30,7 @@ AUDIO_TOKEN_CONTRACT = web3.eth.contract(abi=eth_abi_values["AudiusToken"]["abi"
 
 AUDIO_CHECKSUM_ADDRESS = get_token_address(web3, shared_config)
 
+
 # This implementation follows the example outlined in the link below
 # https://web3py.readthedocs.io/en/stable/examples.html#advanced-example-fetching-all-token-transfer-events
 def index_eth_transfer_events(db, redis_inst):

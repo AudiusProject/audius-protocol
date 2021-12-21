@@ -4,7 +4,6 @@ import time
 from typing import Any, Iterable, Tuple, Type, TypedDict, Union
 
 from eth_abi.codec import ABICodec
-from sqlalchemy import or_
 from src.models.models import AssociatedWallet, EthBlock, User
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from web3 import Web3

@@ -31,6 +31,7 @@ from src.model_validator import ModelValidator
 Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
 
+
 # Listen for instrumentation of attributes on the base class
 # to add a listener on that attribute whenever it is set
 @event.listens_for(Base, "attribute_instrument")

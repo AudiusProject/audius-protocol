@@ -12,15 +12,15 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.search import search_model
-from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import cache, extract_key, use_redis_cache
-from src.utils.redis_metrics import record_metrics
+from src.queries.search_queries import search
+from src.utils.redis_cache import cache
 
 logger = logging.getLogger(__name__)
 
 # Models & namespaces
 
 full_ns = Namespace("search", description="Full search operations")
+
 
 # Helpers
 def extend_search(resp):

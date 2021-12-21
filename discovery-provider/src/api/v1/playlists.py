@@ -34,10 +34,7 @@ from src.trending_strategies.trending_strategy_factory import (
     DEFAULT_TRENDING_VERSIONS,
     TrendingStrategyFactory,
 )
-from src.trending_strategies.trending_type_and_version import (
-    TrendingType,
-    TrendingVersion,
-)
+from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics

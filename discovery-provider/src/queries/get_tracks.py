@@ -177,9 +177,9 @@ def get_tracks(args: GetTrackArgs):
 
             can_use_shared_cache = (
                 "id" in args
-                and not "min_block_number" in args
-                and not "sort" in args
-                and not "user_id" in args
+                and "min_block_number" not in args
+                and "sort" not in args
+                and "user_id" not in args
             )
 
             if can_use_shared_cache:

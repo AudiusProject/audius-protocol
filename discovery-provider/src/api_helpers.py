@@ -23,6 +23,7 @@ web3_connection = web3_provider.get_web3()
 logger = logging.getLogger(__name__)
 disc_prov_version = helpers.get_discovery_provider_version()
 
+
 # Subclass JSONEncoder
 class DateTimeEncoder(json.JSONEncoder):
     # Override the default method

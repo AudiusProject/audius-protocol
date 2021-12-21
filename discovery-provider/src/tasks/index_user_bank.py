@@ -53,6 +53,7 @@ TX_SIGNATURES_MAX_BATCHES = 3
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 3
 
+
 # Recover ethereum public key from bytes array
 # Message formatted as follows:
 # EthereumAddress = [214, 237, 135, 129, 143, 240, 221, 138, 97, 84, 199, 236, 234, 175, 81, 23, 114, 209, 118, 39]

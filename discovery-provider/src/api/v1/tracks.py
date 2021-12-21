@@ -23,7 +23,6 @@ from src.api.v1.helpers import (
     search_parser,
     stem_from_track,
     success_response,
-    to_dict,
     trending_parser,
 )
 from src.api.v1.models.users import user_model_full
@@ -50,10 +49,7 @@ from src.trending_strategies.trending_strategy_factory import (
     DEFAULT_TRENDING_VERSIONS,
     TrendingStrategyFactory,
 )
-from src.trending_strategies.trending_type_and_version import (
-    TrendingType,
-    TrendingVersion,
-)
+from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 

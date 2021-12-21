@@ -10,6 +10,7 @@ from src.models.models import ChallengeType
 
 logger = logging.getLogger(__name__)
 
+
 # DB Accessors
 def fetch_user_challenges(
     session: Session, challenge_id: str, specifiers: List[str]

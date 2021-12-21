@@ -56,7 +56,7 @@ class ChallengeEventBus:
     def register_listener(self, event: ChallengeEvent, listener: ChallengeManager):
         """Registers a listener (`ChallengeManager`) to listen for a particular event type."""
         self._listeners[event].append(listener)
-        if not listener.challenge_id in self._managers:
+        if listener.challenge_id not in self._managers:
             self._managers[listener.challenge_id] = listener
 
     def get_manager(self, challenge_id: str) -> ChallengeManager:

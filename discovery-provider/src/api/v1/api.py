@@ -1,6 +1,6 @@
-from flask import Blueprint, Flask
+from flask import Blueprint
 from flask.helpers import url_for
-from flask_restx import Api, Resource
+from flask_restx import Api
 from src.api.v1.challenges import ns as challenges_ns
 from src.api.v1.metrics import ns as metrics_ns
 from src.api.v1.models.users import ns as models_ns
