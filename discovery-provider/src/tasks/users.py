@@ -523,6 +523,11 @@ def update_user_events(
             # There is something wrong with events, don't process it
             return
 
+        # Get existing UserEvents entry
+        existing_user_events = session.query(UserEvents).filter_by(
+            user_id=user_record.user_id, is_current=True
+        ).one_or_none()
+
         # Mark existing UserEvents entries as not current
         session.query(UserEvents).filter_by(
             user_id=user_record.user_id, is_current=True
@@ -533,6 +538,8 @@ def update_user_events(
             is_current=True,
             blocknumber=user_record.blocknumber,
             blockhash=user_record.blockhash,
+            referrer=existing_user_events.referrer if existing_user_events else None,
+            is_mobile_user=existing_user_events.is_mobile_user if existing_user_events else False
         )
         for event, value in events.items():
             if event == "referrer" and isinstance(value, int):
