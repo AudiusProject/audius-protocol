@@ -35,7 +35,7 @@ class SessionManager:
         try to comment the caller's function name.
         """
         if "src" in conn.info:
-            statement = "-- %s \n" % conn.info.pop("src") + statement
+            statement = f"-- {conn.info.pop('src')} \n" + statement
 
         return statement, parameters
 

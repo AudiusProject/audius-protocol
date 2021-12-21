@@ -51,15 +51,15 @@ def _index_user_listening_history(session):
     new_checkpoint = new_plays[-1].id  # get the highest play id
 
     # get existing user listening history for users with new plays
-    users_with_new_plays = set([new_play.user_id for new_play in new_plays])
+    users_with_new_plays = {[new_play.user_id for new_play in new_plays]}
     existing_user_listening_history = (
         session.query(UserListeningHistory)
         .filter(UserListeningHistory.user_id.in_(users_with_new_plays))
         .all()
     )
-    existing_users = set(
+    existing_users = {
         [user_history.user_id for user_history in existing_user_listening_history]
-    )
+    }
 
     # reduce new plays
     insert_user_listening_history_dict = DefaultDict(list)

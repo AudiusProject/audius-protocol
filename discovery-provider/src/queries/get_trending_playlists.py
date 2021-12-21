@@ -43,7 +43,7 @@ class jsonb_array_length(GenericFunction):  # pylint: disable=too-many-ancestors
 
 @compiles(jsonb_array_length, "postgresql")
 def compile_jsonb_array_length(element, compiler, **kw):
-    return "%s(%s)" % (element.name, compiler.process(element.clauses))
+    return f"{element.name}({compiler.process(element.clauses)})"
 
 
 logger = logging.getLogger(__name__)

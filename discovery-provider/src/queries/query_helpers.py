@@ -93,7 +93,7 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
     order_bys = []
     for field in params.keys():
         if field not in whitelist_sort_params:
-            raise exceptions.ArgumentError("Parameter %s is invalid in sort" % field)
+            raise exceptions.ArgumentError(f"Parameter {field} is invalid in sort")
         attr = getattr(model, field)
         if params[field] == "desc":
             attr = attr.desc()

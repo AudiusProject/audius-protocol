@@ -391,9 +391,8 @@ def _retry_web3_call(  # type: ignore
                 # Let the JSON-RPC to recover e.g. from restart
                 time.sleep(delay)
                 continue
-            else:
-                logger.warning("event_scanner.py | Out of retries")
-                raise
+            logger.warning("event_scanner.py | Out of retries")
+            raise
 
 
 def _fetch_events_for_all_contracts(
