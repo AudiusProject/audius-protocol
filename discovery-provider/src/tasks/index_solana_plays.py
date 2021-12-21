@@ -23,7 +23,7 @@ from src.utils.config import shared_config
 from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
 from src.utils.redis_cache import set_json_cached_key
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_transaction_types import TransactionInfoResult
+from src.solana.solana_transaction_types import TransactionInfoResult, ConfirmedSignatureForAddressResult
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
@@ -140,7 +140,7 @@ def is_valid_tx(account_keys):
 
 
 def parse_sol_play_transaction(
-    solana_client_manager: SolanaClientManager, tx_sig
+    solana_client_manager: SolanaClientManager, tx_sig: str
 ):
     try:
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
@@ -316,7 +316,6 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
     This function also has a recursive retry upto a certain limit in case a future doesn't complete
     within the alloted time. It clears the futures thread queue and the batch is retried
     """
-    logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
     batch_start_time = time.time()
     challenge_bus_events = []
     plays = []
@@ -432,22 +431,24 @@ def split_list(list, n):
 
 # Push to head of array containing seen transactions
 # Used to avoid re-traversal from chain tail when slot diff > certain number
-def cache_traversed_tx(redis, tx):
-    redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, json.dumps(
-        {"slot": tx["slot"], "signature": tx["signature"]}))
+def cache_traversed_tx(redis: Redis, tx: ConfirmedSignatureForAddressResult):
+    redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, json.dumps(tx))
 
 
 # Fetch the cached transaction from redis queue
 # Eliminates transactions one by one if they are < latest db slot
-def fetch_traversed_tx_from_cache(redis, latest_db_slot):
+def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: int):
     cached_offset_tx_found = False
     while not cached_offset_tx_found:
         last_cached_tx_raw = redis.lrange(REDIS_TX_CACHE_QUEUE_PREFIX, 0, 1)
         if last_cached_tx_raw:
-            last_cached_tx = json.loads(last_cached_tx_raw[0])
-            logger.info(f"index_solana_plays.py | cached = {last_cached_tx}")
+            last_cached_tx: ConfirmedSignatureForAddressResult = json.loads(
+                last_cached_tx_raw[0])
+            logger.info(
+                f"index_solana_plays.py | processing cached tx = {last_cached_tx}, latest_db_slot = {latest_db_slot}")
             redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
             # Return if a valid signature is found
+            # TODO: Optimize this based on minimum delta between DB and cached tx slot
             if last_cached_tx["slot"] > latest_db_slot:
                 cached_offset_tx_found = True
                 last_tx_signature = last_cached_tx["signature"]
@@ -578,13 +579,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis, late
         )
         page_count = page_count + 1
 
-    logger.info(
-        f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries"
-    )
-
     transaction_signatures.reverse()
-
-    logger.info(f"index_solana_plays.py | {transaction_signatures}")
 
     for tx_sig_batch in transaction_signatures:
         for tx_sig_batch_records in split_list(tx_sig_batch, 50):
