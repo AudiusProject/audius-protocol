@@ -70,7 +70,7 @@ def parse_id_array_param(list):
     return [int(y) for y in list]
 
 
-######## ROUTES ########
+# ####### ROUTES ####### #
 
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids

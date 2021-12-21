@@ -224,7 +224,7 @@ def get_track_plays(self, db, lock, redis):
         logger.info("index_plays.py | update_play_count complete", extra=job_extra_info)
 
 
-######## CELERY TASK ########
+# ####### CELERY TASK ####### #
 @celery.task(name="update_play_count", bind=True)
 def update_play_count(self):
     # Cache custom task class properties

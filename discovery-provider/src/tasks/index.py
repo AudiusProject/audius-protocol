@@ -54,7 +54,7 @@ from src.utils.session_manager import SessionManager
 logger = logging.getLogger(__name__)
 
 
-######## HELPER FUNCTIONS ########
+# ####### HELPER FUNCTIONS ####### #
 
 default_padded_start_hash = (
     "0x0000000000000000000000000000000000000000000000000000000000000000"

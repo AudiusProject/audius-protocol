@@ -12,7 +12,7 @@ from src.utils.redis_constants import (
 logger = logging.getLogger(__name__)
 
 
-######## HELPER FUNCTIONS ########
+# ####### HELPER FUNCTIONS ####### #
 
 
 default_padded_start_hash = (

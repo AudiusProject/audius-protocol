@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint("search_tags", __name__)
 
 
-######## VARS ########
+# ####### VARS ####### #
 
 
 class SearchKind(Enum):
@@ -52,7 +52,7 @@ class SearchKind(Enum):
     albums = 5
 
 
-######## UTILS ########
+# ####### UTILS ####### #
 
 
 def compare_users(user1, user2):
@@ -65,7 +65,7 @@ def compare_users(user1, user2):
     return 0
 
 
-######## ROUTES ########
+# ####### ROUTES ####### #
 
 
 @bp.route("/search/tags", methods=("GET",))

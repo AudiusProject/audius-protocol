@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 redis = redis_connection.get_redis()
 
 
-######## VARS ########
+# ####### VARS ####### #
 
 
 defaultLimit = 100
@@ -61,7 +61,7 @@ electronic_sub_genres = [
     "Jersey Club",
 ]
 
-######## HELPERS ########
+# ####### HELPERS ####### #
 
 
 def get_current_user_id(required=True):

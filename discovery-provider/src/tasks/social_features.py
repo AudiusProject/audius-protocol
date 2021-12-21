@@ -151,7 +151,7 @@ def social_feature_state_update(
     return num_total_changes
 
 
-######## HELPERS ########
+# ####### HELPERS ####### #
 
 
 def dispatch_challenge_repost(bus: ChallengeEventBus, repost, block_number):
