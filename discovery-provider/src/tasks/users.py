@@ -542,7 +542,7 @@ def update_user_events(
             is_mobile_user=existing_user_events.is_mobile_user if existing_user_events else False
         )
         for event, value in events.items():
-            if event == "referrer" and isinstance(value, int):
+            if event == "referrer" and isinstance(value, int) and user_events.referrer is None:
                 user_events.referrer = value
                 bus.dispatch(
                     ChallengeEvent.referral_signup,
@@ -555,7 +555,7 @@ def update_user_events(
                     user_record.blocknumber,
                     user_record.user_id,
                 )
-            elif event == "is_mobile_user" and isinstance(value, bool):
+            elif event == "is_mobile_user" and isinstance(value, bool) and not user_events.is_mobile_user:
                 user_events.is_mobile_user = value
                 if value:
                     bus.dispatch(
