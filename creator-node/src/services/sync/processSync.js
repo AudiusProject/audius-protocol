@@ -20,13 +20,14 @@ const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
+async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null, forceResync = false) {
   const { nodeConfig, redis } = serviceRegistry
 
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
   const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get('syncRequestMaxUserFailureCountBeforeSkip')
 
   const start = Date.now()
+
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
   // object to track if the function errored, returned at the end of the function
@@ -51,11 +52,19 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
    * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
    */
   try {
-    // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
-    const cnodeUser = await models.CNodeUser.findOne({
-      where: { walletPublicKey: walletPublicKeys[0] }
-    })
-    const localMaxClockVal = (cnodeUser) ? cnodeUser.clock : -1
+    const wallet = walletPublicKeys[0]
+
+    let localMaxClockVal
+    if (forceResync) {
+      await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
+      localMaxClockVal = -1
+    } else {
+      // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
+      const cnodeUser = await models.CNodeUser.findOne({
+        where: { walletPublicKey: walletPublicKeys[0] }
+      })
+      localMaxClockVal = (cnodeUser) ? cnodeUser.clock : -1
+    }
 
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
@@ -413,7 +422,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
       }
     }
   } catch (e) {
-    // two conditions where we wipe the state on the secondary
+    // two errors where we wipe the state on the secondary
     // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
     // if the secondary gets into a weird state with constraints, wipe the records before future re-syncs
     if (e.message.includes('Can only insert contiguous clock values') || e.message.includes('SequelizeForeignKeyConstraintError')) {

@@ -46,10 +46,12 @@ class SyncQueue {
     this.queue.process(
       jobProcessorConcurrency,
       async (job, done) => {
-        const { walletPublicKeys, creatorNodeEndpoint } = job.data
+        const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
 
         try {
-          await processSync(this.serviceRegistry, walletPublicKeys, creatorNodeEndpoint)
+          await processSync(
+            this.serviceRegistry, walletPublicKeys, creatorNodeEndpoint, /* blockNumber */ null, forceResync
+          )
         } catch (e) {
           logger.error(`processSync failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`, e.message)
         }
@@ -59,8 +61,8 @@ class SyncQueue {
     )
   }
 
-  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint }
+  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint, forceResync }) {
+    const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
     const job = await this.queue.add(jobProps)
     return job
   }

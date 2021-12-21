@@ -55,8 +55,9 @@ const syncRouteController = async (req, res) => {
 
   const walletPublicKeys = req.body.wallet // array
   const creatorNodeEndpoint = req.body.creator_node_endpoint // string
-  const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
+  const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean - default false
   const blockNumber = req.body.blockNumber // integer
+  const forceResync = (req.body.forceResync === true || req.body.forceResync === 'true') // boolean - default false
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -76,7 +77,7 @@ const syncRouteController = async (req, res) => {
    * Else, debounce + add sync to queue
    */
   if (immediate) {
-    let errorObj = await processSync(serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber)
+    let errorObj = await processSync(serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber, forceResync)
     if (errorObj) {
       return errorResponseServerError(errorObj)
     }
@@ -90,7 +91,10 @@ const syncRouteController = async (req, res) => {
       }
       syncDebounceQueue[wallet] = setTimeout(
         async function () {
-          await enqueueSync({ serviceRegistry, walletPublicKeys: [wallet], creatorNodeEndpoint, blockNumber })
+          // TODO sid - blockNumber is never consumed??
+          await enqueueSync({
+            serviceRegistry, walletPublicKeys: [wallet], creatorNodeEndpoint, blockNumber, forceResync
+          })
           delete (syncDebounceQueue[wallet])
         },
         debounceTime

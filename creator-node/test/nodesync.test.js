@@ -689,7 +689,9 @@ describe('test nodesync', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Take data from TEST_ENDPOINT for export with userWallets and adds data to node running code
-      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+      await processSync(
+        serviceRegistryMock, userWallets, TEST_ENDPOINT, /* blockNumber */ null, /* forceResync */ false
+      )
 
       const exportedCnodeUser = {
         walletPublicKey: cnodeUser.walletPublicKey,
@@ -838,7 +840,9 @@ describe('test nodesync', async function () {
       const localCNodeUserBeforeSync = stringifiedDateFields(localCNodeUsersBeforeSync[0])
 
       // test: sync
-      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+      await processSync(
+        serviceRegistryMock, userWallets, TEST_ENDPOINT, /* blockNumber */ null, /* forceResync */ false
+      )
 
       const exportedCnodeUser = {
         walletPublicKey: cnodeUser.walletPublicKey,

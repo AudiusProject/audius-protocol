@@ -3,6 +3,7 @@ const proxyquire = require('proxyquire')
 const _ = require('lodash')
 const getUuid = require('uuid/v4')
 const crypto = require('crypto')
+const request = require('supertest')
 
 const models = require('../src/models')
 const DBManager = require('../src/dbManager')
@@ -488,7 +489,7 @@ describe('Test ClockRecord model', async function () {
   })
 })
 
-describe('Test deleteSessionTokensFromDB when provided an Array of SessionTokens that all exist in the SessionToken table', async function () {
+describe('Test deleteSessionTokensFromDB() when provided an Array of SessionTokens that all exist in the SessionToken table', async function () {
   const initialClockVal = 0
   let cnodeUserUUID, server, token1, token2
 
@@ -527,7 +528,90 @@ describe('Test deleteSessionTokensFromDB when provided an Array of SessionTokens
   })
 })
 
-describe.skip('TODO - Test deleteAllCNodeUserData', async () => {})
+describe('Test deleteAllCNodeUserDataFromDB()', async () => {
+  const initialClockVal = 0
+  const userId = 1
+
+  let session, app, cnodeUser, cnodeUserUUID, server, ipfsMock, ipfsLatestMock, libsMock
+
+  /** Init server to run DB migrations */
+  before(async () => {
+    const spId = 1
+    ipfsMock = getIPFSMock()
+    ipfsLatestMock = getIPFSMock(true)
+    libsMock = getLibsMock()
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, spId)
+    server = appInfo.server
+    app = appInfo.app
+  })
+
+  /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
+  beforeEach(async () => {
+    // Wipe all CNodeUsers + dependent data
+    await destroyUsers()
+    session = await createStarterCNodeUser(userId)
+    cnodeUserUUID = session.cnodeUserUUID
+
+    // Confirm initial clock val in DB
+    cnodeUser = await getCNodeUser(cnodeUserUUID)
+    assert.strictEqual(cnodeUser.clock, initialClockVal)
+  })
+
+  /** Wipe all CNodeUsers + dependent data */
+  after(async () => {
+    await destroyUsers()
+
+    await server.close()
+  })
+
+  it('Successfully deletes all state for CNodeUser with audiusUser and Track data', async () => {
+    const metadata = { test: 'field1' }
+    const resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ metadata })
+      .expect(200)
+
+    await request(app)
+      .post('/audius_users')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .expect(200)
+    
+    // TODO - upload track etc from pollingTracks.test.js "completes Audius track creation"
+
+    // assert all tables non empty
+    let cnodeUserEntries = await models.CNodeUser.findAll({ where: { cnodeUserUUID } })
+    assert.ok(cnodeUserEntries.length > 0)
+    let audiusUserEntries = await models.AudiusUser.findAll({ where: { cnodeUserUUID } })
+    assert.ok(audiusUserEntries.length > 0)
+    // let trackEntries = await models.Track.findAll({ where: { cnodeUserUUID } })
+    // assert.ok(trackEntries.length > 0)
+    let fileEntries = await models.File.findAll({ where: { cnodeUserUUID } })
+    assert.ok(fileEntries.length > 0)
+    let clockRecordEntries = await models.ClockRecord.findAll({ where: { cnodeUserUUID } })
+    assert.ok(clockRecordEntries.length > 0)
+
+    // delete all DB records
+    await DBManager.deleteAllCNodeUserDataFromDB({ lookupCnodeUserUUID: cnodeUserUUID })
+
+    // assert all tables empty
+    cnodeUserEntries = await models.CNodeUser.findAll({ where: { cnodeUserUUID } })
+    assert.strictEqual(cnodeUserEntries.length, 0)
+    audiusUserEntries = await models.AudiusUser.findAll({ where: { cnodeUserUUID } })
+    assert.strictEqual(audiusUserEntries.length, 0)
+    trackEntries = await models.Track.findAll({ where: { cnodeUserUUID } })
+    assert.strictEqual(trackEntries.length, 0)
+    fileEntries = await models.File.findAll({ where: { cnodeUserUUID } })
+    assert.strictEqual(fileEntries.length, 0)
+    clockRecordEntries = await models.ClockRecord.findAll({ where: { cnodeUserUUID } })
+    assert.strictEqual(clockRecordEntries.length, 0)
+  })
+
+  it.skip('external & internal transaction', async () => {})
+})
 
 describe('Test fetchFilesHashFromDB()', async () => {
   const initialClockVal = 0
