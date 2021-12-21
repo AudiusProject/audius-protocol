@@ -1,4 +1,5 @@
 import logging
+from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_top_users import get_top_users
 from src.queries.get_related_artists import get_related_artists
 from src.utils.auth_middleware import auth_middleware
@@ -6,7 +7,6 @@ from src.utils.helpers import encode_int_id
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
-from flask_restx import Resource, Namespace, fields, reqparse
 from src.api.v1.models.common import favorite
 from src.api.v1.models.users import (
     user_model,
@@ -22,14 +22,18 @@ from src.queries.get_users import get_users
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_tracks import get_tracks
 from src.queries.get_save_tracks import get_save_tracks
-from src.queries.get_track_history import get_track_history
+from src.queries.get_user_listening_history import get_user_listening_history, GetUserListeningHistory
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_users_cnode import get_users_cnode, ReplicaType
-
+from src.utils.redis_cache import cache
+from src.utils.redis_metrics import record_metrics
+from src.queries.get_top_genre_users import get_top_genre_users
+from src.queries.get_challenges import get_challenges
+from src.utils.db_session import get_db_read_replica
 from src.api.v1.helpers import (
     abort_not_found,
     decode_with_abort,
@@ -50,11 +54,6 @@ from src.api.v1.helpers import (
 )
 from .models.tracks import track, track_full
 from .models.activities import activity_model, activity_model_full
-from src.utils.redis_cache import cache
-from src.utils.redis_metrics import record_metrics
-from src.queries.get_top_genre_users import get_top_genre_users
-from src.queries.get_challenges import get_challenges
-from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 
@@ -525,20 +524,17 @@ class TrackHistoryFull(Resource):
     def get(self, user_id):
         """Fetch played tracks history for a user."""
         args = history_route_parser.parse_args()
-        decoded_id = decode_with_abort(user_id, ns)
         current_user_id = get_current_user_id(args)
-
         offset = format_offset(args)
         limit = format_limit(args)
-        get_tracks_args = {
-            "filter_deleted": False,
-            "user_id": decoded_id,
-            "current_user_id": current_user_id,
-            "limit": limit,
-            "offset": offset,
-            "with_users": True,
-        }
-        track_history = get_track_history(get_tracks_args)
+        get_tracks_args = GetUserListeningHistory(
+            current_user_id = current_user_id,
+            limit = limit,
+            offset = offset,
+            with_users = True,
+            filter_deleted = False,
+        )
+        track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
         return success_response(tracks)
 
@@ -816,7 +812,9 @@ class UsersByContentNode(Resource):
         """New route to call get_users_cnode with replica_type param (only consumed by content node)
         - Leaving `/users/creator_node` above untouched for backwards-compatibility
 
-        Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID }
+        Response = array of objects of schema {
+            user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID
+        }
         """
         args = users_by_content_node_route_parser.parse_args()
 

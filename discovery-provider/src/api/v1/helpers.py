@@ -1,14 +1,14 @@
 import logging
-from src.utils.helpers import decode_string_id, encode_int_id
 from typing import Dict, cast
+from datetime import datetime
+from flask_restx import reqparse
+from src.utils.helpers import decode_string_id, encode_int_id
 from src import api_helpers
 from src.utils.config import shared_config
-from flask_restx import fields, reqparse
-from datetime import datetime
-from .models.common import full_response
 from src.queries.get_challenges import ChallengeResponse
 from src.models import ChallengeType
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
+from .models.common import full_response
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +141,7 @@ def parse_bool_param(param):
     param = param.lower()
     if param == "true":
         return True
-    elif param == "false":
+    if param == "false":
         return False
     return None
 
@@ -371,7 +371,6 @@ def format_offset(args, max_offset=MAX_LIMIT):
 def get_default_max(value, default, max=None):
     if not isinstance(value, int):
         return default
-    elif max is None:
+    if max is None:
         return value
-    else:
-        return min(value, max)
+    return min(value, max)
