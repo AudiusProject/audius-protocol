@@ -1,6 +1,6 @@
 from typing import List, Tuple, TypedDict, Optional
 from sqlalchemy import and_, asc
-from src.models import UserChallenge, Challenge, ChallengeDisbursement, User
+from src.models import UserChallenge, Challenge, ChallengeDisbursement, User, UserBankAccount
 
 
 class UndisbursedChallengeResponse(TypedDict):
@@ -58,6 +58,8 @@ def get_undisbursed_challenges(
             Challenge.id == UserChallenge.challenge_id,
         )
         .join(User, UserChallenge.user_id == User.user_id)
+        # Join against UserBank to ensure only users with banks are disbursable
+        .join(UserBankAccount, UserBankAccount.ethereum_address == User.wallet)
         .filter(
             # Check that there is no matching challenge disburstment
             ChallengeDisbursement.challenge_id == None,

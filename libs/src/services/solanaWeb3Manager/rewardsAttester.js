@@ -112,11 +112,25 @@ class RewardsAttester {
 
     while (true) {
       try {
+        await this._awaitFeePayerBalance()
         await this._attestInParallel()
       } catch (e) {
         this.logger.error(`Got error: ${e}, sleeping`)
         await this._delay(1000)
       }
+    }
+  }
+
+  /**
+   * Sleeps until the feePayer has a usable Sol balance.
+   *
+   * @memberof RewardsAttester
+   */
+  async _awaitFeePayerBalance() {
+    const getHasBalance = async () => this.libs.solanaWeb3Manager.hasBalance({ pubKey: this.libs.solanaWeb3Manager.feePayerKey })
+    while (!(await getHasBalance())) {
+      this.logger.warning('No usable balance. Waiting...')
+      await this._delay(2000)
     }
   }
 
