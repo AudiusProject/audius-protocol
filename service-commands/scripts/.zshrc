@@ -128,7 +128,7 @@ function gip () {
 }
 
 ## docker aliases
-alias docker-prune="docker rm $(docker ps --all -q -f status=dead); docker network prune; ocker system prune"
+alias docker-prune="docker rm $(docker ps --all -q -f status=dead); docker network prune; docker system prune"
 alias docker-port-nuke-linux="sudo systemctl stop docker; sudo rm -rf /var/lib/docker/containers/*; sudo systemctl start docker"
 
 if [[ $(uname) = "Darwin" ]]; then
