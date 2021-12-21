@@ -129,6 +129,7 @@ const createSenderPublicInstructionSchema = new Map(
 /**
  * Submits attestations from Discovery Nodes and AAO that a user has completed a challenge.
  *
+ *
  * @param {{
  *   rewardManagerProgramId: PublicKey,
  *   rewardManagerAccount: PublicKey,
@@ -141,6 +142,7 @@ const createSenderPublicInstructionSchema = new Map(
  *   recipientEthAddress: string,
  *   tokenAmount: BN,
  *   transactionHandler: TransactionHandler,
+ *   instructionsPerTransaction?: number | null
  * }} {
  *   rewardManagerProgramId,
  *   rewardManagerAccount,
@@ -151,7 +153,8 @@ const createSenderPublicInstructionSchema = new Map(
  *   feePayer,
  *   recipientEthAddress,
  *   tokenAmount,
- *   transactionHandler
+ *   transactionHandler,
+ *   instructionsPerTransaction
  * }
  */
 async function submitAttestations ({
@@ -164,7 +167,8 @@ async function submitAttestations ({
   feePayer,
   recipientEthAddress,
   tokenAmount,
-  transactionHandler
+  transactionHandler,
+  instructionsPerTransaction = ATTESTATION_INSTRUCTIONS_PER_TRANSACTION
 }) {
   // Construct combined transfer ID
   const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
@@ -197,7 +201,7 @@ async function submitAttestations ({
           recipientEthAddress,
           tokenAmount,
           transferId,
-          instructionIndex: (2 * i) % ATTESTATION_INSTRUCTIONS_PER_TRANSACTION,
+          instructionIndex: (2 * i) % instructionsPerTransaction,
           encodedSenderMessage
         })
       )
@@ -224,7 +228,7 @@ async function submitAttestations ({
   const oracleSecp = await generateAttestationSecpInstruction({
     attestationMeta: oracleAttestation,
     recipientEthAddress,
-    instructionIndex: instructions.length % ATTESTATION_INSTRUCTIONS_PER_TRANSACTION,
+    instructionIndex: instructions.length % instructionsPerTransaction,
     tokenAmount,
     transferId,
     encodedSenderMessage: encodedOracleMessage
@@ -244,7 +248,7 @@ async function submitAttestations ({
   // per transaction.
   instructions = [...instructions, oracleSecp, oracleTransfer]
   const bucketedInstructions = instructions.reduce((acc, cur) => {
-    if (acc[acc.length - 1].length < ATTESTATION_INSTRUCTIONS_PER_TRANSACTION) {
+    if (acc[acc.length - 1].length < instructionsPerTransaction) {
       acc[acc.length - 1].push(cur)
     } else {
       acc.push([cur])
@@ -252,16 +256,8 @@ async function submitAttestations ({
     return acc
   }, [[]])
 
-  // console.log("DP1")
-  // await transactionHandler.handleTransaction(instructions.slice(0, 2))
-  // console.log("2")
-  // await transactionHandler.handleTransaction(instructions.slice(2, 4))
-  // console.log("3")
-  // await transactionHandler.handleTransaction(instructions.slice(4, 6))
-  // console.log("ORACLE")
-  // const results = await transactionHandler.handleTransaction(instructions.slice(6, 8))
-
   const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction(i, RewardsManagerError)))
+
   // If there's any error in any of the transactions, just return that one
   results.forEach((val) => {
     if (val.error || val.errorCode) {

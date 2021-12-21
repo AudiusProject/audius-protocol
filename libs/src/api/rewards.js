@@ -72,6 +72,7 @@ class Rewards extends Base {
    *   quorumSize: number,
    *   AAOEndpoint: string,
    *   endpoints: Array<string>
+   *   instructionsPerTransaction: number | null
    * }} {
    *   challengeId,
    *   encodedUserId,
@@ -82,13 +83,14 @@ class Rewards extends Base {
    *   amount,
    *   quorumSize,
    *   AAOEndpoint,
-   *   endpoints
+   *   endpoints,
+   *   instructionsPerTransaction
    *   }
    * @returns {Promise<GetSubmitAndEvaluateAttestationsReturn>}
    * @memberof Challenge
    */
   async submitAndEvaluate ({
-    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null
+    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null, instructionsPerTransaction = null
   }) {
     let phase
     try {
@@ -117,7 +119,8 @@ class Rewards extends Base {
         challengeId,
         specifier,
         recipientEthAddress,
-        tokenAmount: fullTokenAmount
+        tokenAmount: fullTokenAmount,
+        instructionsPerTransaction
       })
 
       // In the case of an unparseable error,

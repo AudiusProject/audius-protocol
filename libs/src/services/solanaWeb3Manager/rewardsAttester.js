@@ -90,7 +90,7 @@ class RewardsAttester {
     // Maximum time to wait before retrying
     this.maxCooldownMsec = 10000
     // Maximum number of retries before moving on
-    this.maxRetries = 5
+    this.maxRetries = maxRetries
 
     this._performSingleAttestation = this._performSingleAttestation.bind(this)
     this._disbursementToKey = this._disbursementToKey.bind(this)
@@ -236,6 +236,7 @@ class RewardsAttester {
    *     handle: string,
    *     wallet: string,
    *     completedBlocknumber: number
+   *     instructionsPerTransaction: number | null
    * }} {
    *     challengeId,
    *     userId,
@@ -243,7 +244,8 @@ class RewardsAttester {
    *     amount,
    *     handle,
    *     wallet,
-   *     completedBlocknumber
+   *     completedBlocknumber,
+   *     instructionsPerTransaction
    *   }
    * @return {Promise<AttestationResponse>}
    * @memberof RewardsAttester
@@ -255,9 +257,10 @@ class RewardsAttester {
     amount,
     handle,
     wallet,
-    completedBlocknumber
+    completedBlocknumber,
+    instructionsPerTransaction = null
   }) {
-    this.logger.info(`Attempting to attest for userId [${userId}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]`)
+    this.logger.info(`Attempting to attest for userId [${userId}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}] ${instructionsPerTransaction ? '[with single attestation flow!]' : ''}`)
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
       challengeId,
       encodedUserId: userId,
@@ -268,7 +271,8 @@ class RewardsAttester {
       amount,
       quorumSize: this.quorumSize,
       AAOEndpoint: this.aaoEndpoint,
-      endpoints: this.endpoints
+      endpoints: this.endpoints,
+      instructionsPerTransaction
     })
 
     if (success) {
@@ -374,6 +378,7 @@ class RewardsAttester {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW, errors.BLOCKED])
     const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT, errors.CHALLENGE_INCOMPLETE])
+    const SINGLE_INSTRUCTION_PER_TRANSACTION_ERRORS = new Set([errors.REPEATED_SENDERS, errors.OPERATOR_COLLISION])
     // Account for errors from DN aggregation + Solana program
     const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT])
 
@@ -399,6 +404,16 @@ class RewardsAttester {
           noRetry.push(res)
         }
         return !isAAO
+      })
+      // If a repsonse failed because of duplicate signers, drop into the single intruction per transaction flow
+      .map((res) => {
+        if (SINGLE_INSTRUCTION_PER_TRANSACTION_ERRORS.has(res.error)) {
+          return {
+            ...res,
+            instructionsPerTransaction: 2 // Include 1 SECP and 1 Attestion per txn
+          }
+        }
+        return res
       })
     )
 

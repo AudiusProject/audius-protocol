@@ -293,6 +293,7 @@ class SolanaWeb3Manager {
    *     specifier: string,
    *     recipientEthAddress: string,
    *     tokenAmount: BN,
+   *     instructionsPerTransaction: number | null,
    * }} {
    *     attestations,
    *     oracleAttestation,
@@ -300,6 +301,7 @@ class SolanaWeb3Manager {
    *     specifier,
    *     recipientEthAddress,
    *     tokenAmount,
+   *     instructionsPerTransaction
    *    }
    * @memberof SolanaWeb3Manager
    */
@@ -309,7 +311,8 @@ class SolanaWeb3Manager {
     challengeId,
     specifier,
     recipientEthAddress,
-    tokenAmount
+    tokenAmount,
+    instructionsPerTransaction,
   }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -321,7 +324,8 @@ class SolanaWeb3Manager {
       feePayer: this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
-      transactionHandler: this.transactionHandler
+      transactionHandler: this.transactionHandler,
+      instructionsPerTransaction,
     })
   }
 
@@ -417,7 +421,6 @@ class SolanaWeb3Manager {
     const balance = await this.getBalance(publicKey)
     return balance > ZERO_SOL_EPSILON
   }
-
 }
 
 module.exports = SolanaWeb3Manager
