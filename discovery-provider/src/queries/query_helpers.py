@@ -493,7 +493,7 @@ def get_track_remix_metadata(session, tracks, current_user_id):
     # Build a dict of user id -> user model obj of the remixed track's parent owner to dedupe users
     for remix_relationship in remix_query:
         [track_owner_id, _, _, _, _, user] = remix_relationship
-        if not track_owner_id in remix_parent_owners:
+        if track_owner_id not in remix_parent_owners:
             remix_parent_owners[track_owner_id] = user
 
     # populate the user's metadata for the remixed track's parent owner
@@ -524,7 +524,7 @@ def get_track_remix_metadata(session, tracks, current_user_id):
             has_remix_author_reposted,
             _,
         ] = remix_relationship
-        if not child_track_id in remixes:
+        if child_track_id not in remixes:
             remixes[child_track_id] = {
                 parent_track_id: {
                     response_name_constants.has_remix_author_saved: bool(

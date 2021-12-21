@@ -93,6 +93,7 @@ __all__ = [
     "Play",
     "Playlist",
     "ProfileCompletionChallenge",
+    "RelatedArtist",
     "Remix",
     "Repost",
     "RepostType",

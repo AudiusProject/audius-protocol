@@ -10,7 +10,6 @@ from src.api.v1.helpers import (
     parse_unix_epoch_param,
     parse_unix_epoch_param_non_utc,
     success_response,
-    to_dict,
 )
 from src.queries.get_app_name_metrics import (
     get_aggregate_app_metrics,

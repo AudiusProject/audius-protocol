@@ -8,6 +8,7 @@ from jsonschema import Draft7Validator, SchemaError, ValidationError
 
 logger = logging.getLogger(__name__)
 
+
 # https://app.quicktype.io/ -- JSON schema generator
 class ModelValidator:
     """

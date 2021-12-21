@@ -5,7 +5,6 @@ from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     abort_bad_path_param,
     abort_bad_request_param,
-    abort_not_found,
     decode_with_abort,
     extend_playlist,
     extend_track,
@@ -40,7 +39,7 @@ from src.trending_strategies.trending_type_and_version import (
     TrendingVersion,
 )
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_cache import cache, extract_key, use_redis_cache
+from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
 from .models.tracks import track

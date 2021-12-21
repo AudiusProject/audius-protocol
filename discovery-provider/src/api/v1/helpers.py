@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Dict, cast
 
-from flask_restx import fields, reqparse
+from flask_restx import reqparse
 from src import api_helpers
 from src.models import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
@@ -27,7 +27,7 @@ def get_primary_endpoint(user):
 
 
 def add_track_artwork(track):
-    if not "user" in track:
+    if "user" not in track:
         return track
     endpoint = get_primary_endpoint(track["user"])
     cid = track["cover_art_sizes"]
@@ -43,7 +43,7 @@ def add_track_artwork(track):
 
 
 def add_playlist_artwork(playlist):
-    if not "user" in playlist:
+    if "user" not in playlist:
         return playlist
     endpoint = get_primary_endpoint(playlist["user"])
     cid = playlist["playlist_image_sizes_multihash"]
@@ -59,7 +59,7 @@ def add_playlist_artwork(playlist):
 
 
 def add_playlist_added_timestamps(playlist):
-    if not "playlist_contents" in playlist:
+    if "playlist_contents" not in playlist:
         return playlist
     added_timestamps = []
     for track in playlist["playlist_contents"]["track_ids"]:
@@ -130,7 +130,7 @@ def extend_remix_of(remix_of):
             track["user"] = extend_user(track["user"])
         return track
 
-    if not remix_of or not "tracks" in remix_of or not remix_of["tracks"]:
+    if not remix_of or "tracks" not in remix_of or not remix_of["tracks"]:
         return remix_of
 
     remix_of["tracks"] = list(map(extend_track_element, remix_of["tracks"]))

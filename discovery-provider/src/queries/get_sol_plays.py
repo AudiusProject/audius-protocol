@@ -22,6 +22,7 @@ from src.utils.redis_constants import (
 
 logger = logging.getLogger(__name__)
 
+
 # Get single play from table
 def get_sol_play(sol_tx_signature):
     if not sol_tx_signature:

@@ -152,7 +152,7 @@ def _try_all(iterable, func, message, randomize=False):
                 f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}"
             )
             if index < len(items) - 1:
-                logger.info(f"solana_client_manager.py | _try_all | Retrying")
+                logger.info("solana_client_manager.py | _try_all | Retrying")
             continue
     raise Exception(message)
 
@@ -174,6 +174,6 @@ def _try_all_with_timeout(iterable, func, message, randomize=False):
                 f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}"
             )
             if index < len(items) - 1:
-                logger.info(f"solana_client_manager.py | _try_all | Retrying")
+                logger.info("solana_client_manager.py | _try_all | Retrying")
             continue
     raise Exception(message)

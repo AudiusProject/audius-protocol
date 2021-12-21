@@ -86,6 +86,7 @@ listen_streak_challenge_manager = ChallengeManager(
     "listen-streak", ListenStreakChallengeUpdater()
 )
 
+
 # Accessors
 def get_listen_streak_challenges(
     session: Session, user_ids: List[int]
