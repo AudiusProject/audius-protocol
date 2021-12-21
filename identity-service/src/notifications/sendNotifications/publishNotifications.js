@@ -117,6 +117,11 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
     const userId = getPublishUserId(notification, publishNotifType)
     const types = getPublishTypes(userId, publishNotifType, userNotificationSettings)
 
+    // Don't publish events for deactivated users
+    if (metadata.users[userId] && metadata.users[userId].is_deactivated) {
+      continue
+    }
+
     if (solanaNotificationBaseTypes.includes(notification.type)) {
       await publishSolanaNotification(msg, userId, tx, true, title, types)
     } else {
