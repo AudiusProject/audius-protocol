@@ -1,29 +1,28 @@
 # pylint: disable=too-many-lines
 import logging
-from sqlalchemy import func, desc, text, Integer, and_, bindparam, cast
 
 from flask import request
-
+from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
 from src import exceptions
-from src.queries import response_name_constants
 from src.models import (
-    User,
-    Track,
-    Repost,
-    RepostType,
+    AggregatePlaylist,
+    AggregatePlays,
+    AggregateTrack,
+    AggregateUser,
     Follow,
     Playlist,
+    Remix,
+    Repost,
+    RepostType,
     Save,
     SaveType,
-    Remix,
-    AggregatePlays,
-    AggregateUser,
-    AggregateTrack,
-    AggregatePlaylist,
+    Track,
+    User,
 )
-from src.utils import helpers, redis_connection
-from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
+from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
+from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
+from src.utils import helpers, redis_connection
 
 logger = logging.getLogger(__name__)
 
@@ -968,10 +967,7 @@ def get_sum_aggregate_plays(db):
         int of total play count
     """
 
-    plays = (
-        db.query(func.sum(AggregatePlays.count))
-        .scalar()
-    )
+    plays = db.query(func.sum(AggregatePlays.count)).scalar()
 
     return int(plays)
 

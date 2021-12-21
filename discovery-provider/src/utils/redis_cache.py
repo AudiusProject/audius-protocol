@@ -1,7 +1,8 @@
-import logging  # pylint: disable=C0302
 import functools
-import pickle
 import json
+import logging  # pylint: disable=C0302
+import pickle
+
 from flask.globals import request
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params

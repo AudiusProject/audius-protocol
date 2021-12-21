@@ -1,8 +1,11 @@
-import pytest
-from src.solana.solana_client_manager import SolanaClientManager
 from unittest import mock
 
-solana_client_manager = SolanaClientManager("https://audius.rpcpool.com,https://api.mainnet-beta.solana.com,https://solana-api.projectserum.com")
+import pytest
+from src.solana.solana_client_manager import SolanaClientManager
+
+solana_client_manager = SolanaClientManager(
+    "https://audius.rpcpool.com,https://api.mainnet-beta.solana.com,https://solana-api.projectserum.com"
+)
 
 
 @mock.patch("solana.rpc.api.Client")
@@ -83,26 +86,18 @@ def test_get_signatures_for_address(_):
     expected_response = {"result": "OK"}
 
     # test that it returns the client call response
-    client_mocks[
-        0
-    ].get_signatures_for_address.return_value = expected_response
+    client_mocks[0].get_signatures_for_address.return_value = expected_response
     assert (
-        solana_client_manager.get_signatures_for_address(
-            "account", "before", "limit"
-        )
+        solana_client_manager.get_signatures_for_address("account", "before", "limit")
         == expected_response
     )
 
     # test that it will try subsequent clients if first one fails
     client_mocks[0].get_signatures_for_address.side_effect = Exception()
     client_mocks[1].get_signatures_for_address.side_effect = Exception()
-    client_mocks[
-        2
-    ].get_signatures_for_address.return_value = expected_response
+    client_mocks[2].get_signatures_for_address.return_value = expected_response
     assert (
-        solana_client_manager.get_signatures_for_address(
-            "account", "before", "limit"
-        )
+        solana_client_manager.get_signatures_for_address("account", "before", "limit")
         == expected_response
     )
 
@@ -111,6 +106,4 @@ def test_get_signatures_for_address(_):
     client_mocks[1].get_signatures_for_address.side_effect = Exception()
     client_mocks[2].get_signatures_for_address.side_effect = Exception()
     with pytest.raises(Exception):
-        solana_client_manager.get_signatures_for_address(
-            "account", "before", "limit"
-        )
+        solana_client_manager.get_signatures_for_address("account", "before", "limit")

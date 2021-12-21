@@ -1,11 +1,12 @@
-from collections import defaultdict
 import logging
-from typing import Dict, Set, Tuple, TypedDict, List, Optional, cast
 from abc import ABC
-from sqlalchemy.orm.session import Session
+from collections import defaultdict
+from typing import Dict, List, Optional, Set, Tuple, TypedDict, cast
+
 from sqlalchemy import func
-from src.models.models import ChallengeType
+from sqlalchemy.orm.session import Session
 from src.models import Challenge, UserChallenge
+from src.models.models import ChallengeType
 
 logger = logging.getLogger(__name__)
 

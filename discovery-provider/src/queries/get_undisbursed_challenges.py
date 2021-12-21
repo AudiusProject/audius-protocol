@@ -1,6 +1,7 @@
-from typing import List, Tuple, TypedDict, Optional
+from typing import List, Optional, Tuple, TypedDict
+
 from sqlalchemy import and_, asc
-from src.models import UserChallenge, Challenge, ChallengeDisbursement, User
+from src.models import Challenge, ChallengeDisbursement, User, UserChallenge
 
 
 class UndisbursedChallengeResponse(TypedDict):
@@ -23,7 +24,7 @@ def to_challenge_response(
         "amount": challenge.amount,
         "completed_blocknumber": user_challenge.completed_blocknumber,
         "handle": handle,
-        "wallet": wallet
+        "wallet": wallet,
     }
 
 

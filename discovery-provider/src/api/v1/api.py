@@ -1,14 +1,17 @@
-from flask import Flask, Blueprint
+from flask import Blueprint, Flask
 from flask.helpers import url_for
-from flask_restx import Resource, Api
-from src.api.v1.users import ns as users_ns, full_ns as full_users_ns
-from src.api.v1.playlists import ns as playlists_ns, full_ns as full_playlists_ns
-from src.api.v1.tracks import ns as tracks_ns, full_ns as full_tracks_ns
+from flask_restx import Api, Resource
 from src.api.v1.challenges import ns as challenges_ns
 from src.api.v1.metrics import ns as metrics_ns
-from src.api.v1.search import full_ns as full_search_ns
 from src.api.v1.models.users import ns as models_ns
+from src.api.v1.playlists import full_ns as full_playlists_ns
+from src.api.v1.playlists import ns as playlists_ns
 from src.api.v1.resolve import ns as resolve_ns
+from src.api.v1.search import full_ns as full_search_ns
+from src.api.v1.tracks import full_ns as full_tracks_ns
+from src.api.v1.tracks import ns as tracks_ns
+from src.api.v1.users import full_ns as full_users_ns
+from src.api.v1.users import ns as users_ns
 
 
 class ApiWithHTTPS(Api):

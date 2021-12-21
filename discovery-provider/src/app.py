@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 import ast
-from collections import defaultdict
 import datetime
 import logging
 import time
+from collections import defaultdict
 from typing import Any, Dict
 
 import redis
@@ -14,14 +14,12 @@ from flask.json import JSONEncoder
 from flask_cors import CORS
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
-from web3 import HTTPProvider, Web3
-from werkzeug.middleware.proxy_fix import ProxyFix
-
 from src import api_helpers, exceptions
 from src.api.v1 import api as api_v1
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
 from src.database_task import DatabaseTask
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.queries import (
     block_confirmation,
     health_check,
@@ -32,6 +30,7 @@ from src.queries import (
     skipped_transactions,
     user_signals,
 )
+from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.utils import helpers
 from src.utils.config import ConfigIni, config_files, shared_config
@@ -39,8 +38,8 @@ from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
-from src.solana.solana_client_manager import SolanaClientManager
-from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
+from web3 import HTTPProvider, Web3
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -505,8 +504,7 @@ def configure_celery(celery, test_config=None):
 
     # Initialize DB object for celery task context
     db = SessionManager(
-        database_url,
-        ast.literal_eval(shared_config["db"]["engine_args_literal"])
+        database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
     )
     logger.info("Database instance initialized!")
     # Initialize IPFS client for celery task context
@@ -556,6 +554,7 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
             )
+
     celery.autodiscover_tasks(["src.tasks"], "index", True)
 
     # Subclassing celery task with discovery provider context

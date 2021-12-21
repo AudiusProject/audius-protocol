@@ -1,16 +1,17 @@
 import logging
-from flask_restx import Resource, Namespace, fields, reqparse, abort
+
+from flask_restx import Namespace, Resource, abort, fields, reqparse
 from src.api.v1.helpers import (
     decode_with_abort,
+    extend_undisbursed_challenge,
     get_current_user_id,
     make_response,
     success_response,
-    extend_undisbursed_challenge
 )
 from src.api.v1.models.challenges import (
-    undisbursed_challenge,
     attestation,
     create_sender_attestation,
+    undisbursed_challenge,
 )
 from src.queries.get_attestation import (
     AttestationError,
@@ -113,7 +114,9 @@ class GetUndisbursedChallenges(Resource):
                     "completed_blocknumber": args["completed_blocknumber"],
                 },
             )
-            undisbursed_challenges = list(map(extend_undisbursed_challenge, undisbursed_challenges))
+            undisbursed_challenges = list(
+                map(extend_undisbursed_challenge, undisbursed_challenges)
+            )
             return success_response(undisbursed_challenges)
 
 

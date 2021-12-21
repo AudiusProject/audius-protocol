@@ -1,10 +1,10 @@
 import logging
-from typing import List, Optional, Tuple, Dict
 from datetime import date, datetime, timedelta
-from sqlalchemy.orm.session import Session
-from sqlalchemy import desc
-import pytz
+from typing import Dict, List, Optional, Tuple
 
+import pytz
+from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,

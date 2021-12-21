@@ -1,11 +1,10 @@
-from sqlalchemy import asc, desc, or_, and_
-
+from sqlalchemy import and_, asc, desc, or_
 from src import exceptions
-from src.models import User, Playlist, Save, SaveType
+from src.models import Playlist, Save, SaveType, User
+from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.query_helpers import populate_user_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import populate_user_metadata
-from src.queries.get_unpopulated_users import get_unpopulated_users
 
 
 def get_users_account(args):

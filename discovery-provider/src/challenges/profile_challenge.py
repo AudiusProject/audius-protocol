@@ -1,20 +1,21 @@
 from collections import Counter
 from typing import List, Optional
+
 from sqlalchemy.orm.session import Session
-from src.models import (
-    ProfileCompletionChallenge,
-    UserChallenge,
-    User,
-    Repost,
-    Follow,
-    Save,
-)
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
     FullEventMetadata,
 )
 from src.challenges.challenge_event import ChallengeEvent
+from src.models import (
+    Follow,
+    ProfileCompletionChallenge,
+    Repost,
+    Save,
+    User,
+    UserChallenge,
+)
 
 REPOST_THRESHOLD = 1
 FOLLOW_THRESHOLD = 5

@@ -1,5 +1,5 @@
 import logging  # pylint: disable=C0302
-from typing import List, TypedDict, Optional
+from typing import List, Optional, TypedDict
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.sql.functions import coalesce
@@ -64,9 +64,9 @@ def _get_tracks(session, args):
         # - above case, routes are present (direct links to hidden tracks)
         # - the user is authenticated as the owner
         is_authed_user = (
-            "user_id" in args and \
-            "authed_user_id" in args and \
-            args.get("user_id") == args.get("authed_user_id")
+            "user_id" in args
+            and "authed_user_id" in args
+            and args.get("user_id") == args.get("authed_user_id")
         )
         if not is_authed_user:
             base_query = base_query.filter(Track.is_unlisted == False)

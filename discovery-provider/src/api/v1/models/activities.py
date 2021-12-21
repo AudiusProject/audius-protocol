@@ -1,9 +1,10 @@
 from flask_restx import fields
 from flask_restx.fields import MarshallingError
 from flask_restx.marshalling import marshal
+
 from .common import ns
+from .playlists import full_playlist_model, playlist_model
 from .tracks import track, track_full
-from .playlists import playlist_model, full_playlist_model
 
 
 class ItemType(fields.Raw):

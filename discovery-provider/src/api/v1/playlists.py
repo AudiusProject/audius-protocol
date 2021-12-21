@@ -1,47 +1,49 @@
 import logging
-from src.queries.get_top_playlists import get_top_playlists  # pylint: disable=C0302
-from src.api.v1.models.playlists import playlist_model, full_playlist_model
-from src.api.v1.models.users import user_model_full
-from src.queries.get_playlists import get_playlists
-from flask_restx import Resource, Namespace, fields, reqparse
-from src.queries.get_playlist_tracks import get_playlist_tracks
+
+from flask.globals import request
+from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
+    abort_bad_path_param,
+    abort_bad_request_param,
     abort_not_found,
     decode_with_abort,
     extend_playlist,
     extend_track,
+    extend_user,
+    get_current_user_id,
+    get_default_max,
     make_full_response,
     make_response,
-    success_response,
     search_parser,
-    abort_bad_request_param,
-    extend_user,
-    get_default_max,
-    get_current_user_id,
-    abort_bad_path_param,
+    success_response,
 )
-from .models.tracks import track
+from src.api.v1.models.playlists import full_playlist_model, playlist_model
+from src.api.v1.models.users import user_model_full
+from src.queries.get_playlist_tracks import get_playlist_tracks
+from src.queries.get_playlists import get_playlists
+from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
+from src.queries.get_savers_for_playlist import get_savers_for_playlist
+from src.queries.get_top_playlists import get_top_playlists  # pylint: disable=C0302
+from src.queries.get_trending_playlists import (
+    TRENDING_LIMIT,
+    TRENDING_TTL_SEC,
+    get_full_trending_playlists,
+    get_trending_playlists,
+)
 from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import cache, extract_key, use_redis_cache
-from src.utils.redis_metrics import record_metrics
 from src.trending_strategies.trending_strategy_factory import (
-    TrendingStrategyFactory,
     DEFAULT_TRENDING_VERSIONS,
+    TrendingStrategyFactory,
 )
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
     TrendingVersion,
 )
-from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
-from src.queries.get_savers_for_playlist import get_savers_for_playlist
-from src.queries.get_trending_playlists import (
-    get_trending_playlists,
-    TRENDING_LIMIT,
-    TRENDING_TTL_SEC,
-    get_full_trending_playlists,
-)
-from flask.globals import request
 from src.utils.db_session import get_db_read_replica
+from src.utils.redis_cache import cache, extract_key, use_redis_cache
+from src.utils.redis_metrics import record_metrics
+
+from .models.tracks import track
 
 logger = logging.getLogger(__name__)
 

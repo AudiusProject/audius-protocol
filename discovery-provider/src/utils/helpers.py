@@ -19,6 +19,7 @@ from src import exceptions
 
 from . import multihash
 
+
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)

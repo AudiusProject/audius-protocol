@@ -1,9 +1,10 @@
 import concurrent.futures
 import logging
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 from src.utils import web3_provider
-from src.utils.helpers import is_fqdn, load_eth_abi_values
 from src.utils.config import shared_config
+from src.utils.helpers import is_fqdn, load_eth_abi_values
 
 logger = logging.getLogger(__name__)
 

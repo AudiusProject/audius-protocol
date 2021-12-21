@@ -1,13 +1,12 @@
 import logging
-from typing import Set, TypedDict, Tuple
 from datetime import datetime
+from typing import Set, Tuple, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
-
 from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus

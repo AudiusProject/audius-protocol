@@ -1,20 +1,20 @@
 import logging  # pylint: disable=C0302
-from flask_restx import Resource, Namespace, fields, reqparse
+
+from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
+    extend_playlist,
     extend_track,
+    extend_user,
+    format_limit,
+    format_offset,
+    get_current_user_id,
     make_full_response,
     success_response,
-    format_offset,
-    format_limit,
-    extend_user,
-    extend_track,
-    extend_playlist,
-    get_current_user_id,
 )
+from src.api.v1.models.search import search_model
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from src.utils.redis_metrics import record_metrics
-from src.api.v1.models.search import search_model
 
 logger = logging.getLogger(__name__)
 

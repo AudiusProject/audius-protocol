@@ -1,15 +1,15 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 from urllib.parse import unquote
-from sqlalchemy import func, desc
 
-from src.models import AggregatePlays, Track, RepostType, Follow, SaveType, Play
+from sqlalchemy import desc, func
+from src.models import AggregatePlays, Follow, Play, RepostType, SaveType, Track
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
+    get_genre_list,
     get_karma,
     get_repost_counts,
     get_save_counts,
-    get_genre_list,
 )
 
 logger = logging.getLogger(__name__)

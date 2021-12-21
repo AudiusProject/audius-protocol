@@ -1,19 +1,18 @@
 from sqlalchemy import desc
-
 from src import exceptions
-from src.models import RepostType, Playlist, SaveType
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
+from src.models import Playlist, RepostType, SaveType
 from src.queries.query_helpers import (
-    get_current_user_id,
-    populate_playlist_metadata,
-    get_users_by_id,
-    get_users_ids,
+    create_followee_playlists_subquery,
     create_save_repost_count_subquery,
     decayed_score,
     filter_to_playlist_mood,
-    create_followee_playlists_subquery,
+    get_current_user_id,
+    get_users_by_id,
+    get_users_ids,
+    populate_playlist_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 
 
 def get_top_playlists(kind, args):

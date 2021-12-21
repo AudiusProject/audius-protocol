@@ -1,13 +1,14 @@
 import logging
 import time
+
 import sqlalchemy as sa
+from src.queries.get_health import get_elapsed_time_redis
+from src.tasks.calculate_trending_challenges import get_latest_blocknumber
 from src.tasks.celery_app import celery
 from src.utils.redis_constants import (
+    index_aggregate_user_last_refresh_completion_redis_key,
     most_recent_indexed_aggregate_user_block_redis_key,
-    index_aggregate_user_last_refresh_completion_redis_key
 )
-from src.tasks.calculate_trending_challenges import get_latest_blocknumber
-from src.queries.get_health import get_elapsed_time_redis
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 # (1,209,600 two weeks in seconds / 5 sec block_processing_interval_sec)
 TWO_WEEKS_IN_BLOCKS = 241920
 
-TWO_WEEKS_IN_SECONDS= 1209600
+TWO_WEEKS_IN_SECONDS = 1209600
 
 ### UPDATE_AGGREGATE_USER_QUERY ###
 # Get a lower bound blocknumber to check for new entity counts for a user
@@ -366,16 +367,15 @@ def update_aggregate_table(
                 f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
             )
 
-            elapsed_time = get_elapsed_time_redis(redis,
-                index_aggregate_user_last_refresh_completion_redis_key)
+            elapsed_time = get_elapsed_time_redis(
+                redis, index_aggregate_user_last_refresh_completion_redis_key
+            )
 
             is_refreshed = False
             with db.scoped_session() as session:
                 latest_indexed_block_num = get_latest_blocknumber(session, redis)
 
-                if (
-                    not most_recent_indexed_aggregate_block
-                ):
+                if not most_recent_indexed_aggregate_block:
                     # repopulate entire table
                     logger.info(f"index_aggregate_user.py | Repopulating {table_name}")
                     most_recent_indexed_aggregate_block = 0
@@ -384,7 +384,9 @@ def update_aggregate_table(
 
                 elif not elapsed_time or elapsed_time > TWO_WEEKS_IN_SECONDS:
                     # refresh the past two weeks for data accuracy
-                    logger.info(f"index_aggregate_user.py | Refreshing {table_name} for the past two weeks")
+                    logger.info(
+                        f"index_aggregate_user.py | Refreshing {table_name} for the past two weeks"
+                    )
                     most_recent_indexed_aggregate_block -= max(TWO_WEEKS_IN_BLOCKS, 0)
                     is_refreshed = True
 
@@ -399,13 +401,12 @@ def update_aggregate_table(
 
             if is_refreshed:
                 redis.set(
-                    index_aggregate_user_last_refresh_completion_redis_key, int(time.time())
+                    index_aggregate_user_last_refresh_completion_redis_key,
+                    int(time.time()),
                 )
 
             # set new block to be the lower bound for the next indexing
-            redis.set(
-                most_recent_indexed_aggregate_block_key, latest_indexed_block_num
-            )
+            redis.set(most_recent_indexed_aggregate_block_key, latest_indexed_block_num)
             logger.info(
                 f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec"""
             )

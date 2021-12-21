@@ -1,27 +1,27 @@
-from datetime import datetime
 import logging
 import time
+from datetime import datetime
 from typing import List, Optional, Tuple
+
 from redis import Redis
 from sqlalchemy.orm.session import Session
-from web3 import Web3
-
-from src.models import Track, Block
-from src.tasks.celery_app import celery
+from src.models import Block, Track
 from src.queries.get_trending_tracks import (
-    make_trending_cache_key,
     generate_unpopulated_trending,
     generate_unpopulated_trending_from_mat_views,
+    make_trending_cache_key,
 )
+from src.queries.get_underground_trending import (
+    make_get_unpopulated_tracks,
+    make_underground_trending_cache_key,
+)
+from src.tasks.celery_app import celery
+from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
+from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
-from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
-from src.trending_strategies.trending_type_and_version import TrendingType
-from src.queries.get_underground_trending import (
-    make_underground_trending_cache_key,
-    make_get_unpopulated_tracks,
-)
+from web3 import Web3
 
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
@@ -85,7 +85,7 @@ genre_allowlist = {
 def get_genres(session: Session) -> List[str]:
     """Returns all genres"""
     genres: List[Tuple[str]] = (session.query(Track.genre).distinct(Track.genre)).all()
-    genres = filter( # type: ignore
+    genres = filter(  # type: ignore
         lambda x: x[0] is not None and x[0] != "" and x[0] in genre_allowlist, genres
     )
     return list(map(lambda x: x[0], genres))
@@ -118,7 +118,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
         genres = get_genres(session)
 
         # Make sure to cache empty genre
-        genres.append(None) # type: ignore
+        genres.append(None)  # type: ignore
 
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -187,17 +187,23 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     set_last_trending_datetime(redis, timestamp)
 
 
-last_trending_timestamp = 'last_trending_timestamp'
+last_trending_timestamp = "last_trending_timestamp"
+
+
 def get_last_trending_datetime(redis: Redis):
     dt = redis.get(last_trending_timestamp)
     if dt:
         return datetime.fromtimestamp(int(dt.decode()))
     return None
 
+
 def set_last_trending_datetime(redis: Redis, timestamp: int):
     redis.set(last_trending_timestamp, timestamp)
 
-def get_should_update_trending(db: SessionManager, web3: Web3, redis: Redis) -> Optional[int]:
+
+def get_should_update_trending(
+    db: SessionManager, web3: Web3, redis: Redis
+) -> Optional[int]:
     """
     Checks if the trending job should re-run based off the last trending run's timestamp and
     the most recently indexed block's timestamp.
@@ -206,13 +212,13 @@ def get_should_update_trending(db: SessionManager, web3: Web3, redis: Redis) -> 
     The function returns the an int, representing the timestamp, if the jobs should re-run, else None
     """
     with db.scoped_session() as session:
-        current_db_block = session.query(Block.blockhash).filter(Block.is_current == True).first()
+        current_db_block = (
+            session.query(Block.blockhash).filter(Block.is_current == True).first()
+        )
         current_block = web3.eth.getBlock(current_db_block[0], True)
         current_timestamp = current_block["timestamp"]
-        block_datetime = (
-            datetime
-                .fromtimestamp(current_timestamp)
-                .replace(minute=0, second=0, microsecond=0)
+        block_datetime = datetime.fromtimestamp(current_timestamp).replace(
+            minute=0, second=0, microsecond=0
         )
 
         last_trending_datetime = get_last_trending_datetime(redis)
@@ -220,7 +226,10 @@ def get_should_update_trending(db: SessionManager, web3: Web3, redis: Redis) -> 
             return int(block_datetime.timestamp())
 
         duration_since_last_index = block_datetime - last_trending_datetime
-        if duration_since_last_index.total_seconds() >= UPDATE_TRENDING_DURATION_DIFF_SEC:
+        if (
+            duration_since_last_index.total_seconds()
+            >= UPDATE_TRENDING_DURATION_DIFF_SEC
+        ):
             return int(block_datetime.timestamp())
 
     return None

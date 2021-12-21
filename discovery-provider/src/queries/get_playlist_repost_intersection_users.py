@@ -1,8 +1,8 @@
 from src import exceptions
-from src.models import User, Playlist, Repost, RepostType, Follow
+from src.models import Follow, Playlist, Repost, RepostType, User
+from src.queries.query_helpers import paginate_query
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import paginate_query
 
 
 def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id):

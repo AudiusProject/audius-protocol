@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List
+
 from redis import Redis
 from sqlalchemy.orm.session import Session
 from src.models import UserBalance
@@ -63,7 +64,10 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
             "total_balance": str(
                 int(user_balance.balance)
                 + int(user_balance.associated_wallets_balance)
-                + (int(user_balance.associated_sol_wallets_balance) * 10 ** WAUDIO_DECIMALS)
+                + (
+                    int(user_balance.associated_sol_wallets_balance)
+                    * 10 ** WAUDIO_DECIMALS
+                )
             ),
         }
         for user_balance in query

@@ -1,34 +1,35 @@
 import json
-import time
 import logging
+import time
 from datetime import datetime, timedelta
+
 import requests
-from src.models import RouteMetrics, AppNameMetrics
+from src.models import AppNameMetrics, RouteMetrics
+from src.queries.update_historical_metrics import (
+    update_historical_daily_app_metrics,
+    update_historical_daily_route_metrics,
+    update_historical_monthly_app_metrics,
+    update_historical_monthly_route_metrics,
+)
 from src.tasks.celery_app import celery
-from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
+from src.utils.get_all_other_nodes import get_all_other_nodes
+from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.redis_metrics import (
-    metrics_prefix,
+    METRICS_INTERVAL,
+    datetime_format_secondary,
+    get_rounded_date_time,
+    get_summed_unique_metrics,
+    merge_app_metrics,
+    merge_route_metrics,
     metrics_applications,
+    metrics_prefix,
     metrics_routes,
     metrics_visited_nodes,
-    merge_route_metrics,
-    merge_app_metrics,
     parse_metrics_key,
-    get_rounded_date_time,
-    datetime_format_secondary,
-    METRICS_INTERVAL,
-    personal_route_metrics,
-    personal_app_metrics,
-    get_summed_unique_metrics,
     persist_summed_unique_counts,
+    personal_app_metrics,
+    personal_route_metrics,
 )
-from src.queries.update_historical_metrics import (
-    update_historical_daily_route_metrics,
-    update_historical_monthly_route_metrics,
-    update_historical_daily_app_metrics,
-    update_historical_monthly_app_metrics,
-)
-from src.utils.get_all_other_nodes import get_all_other_nodes
 
 logger = logging.getLogger(__name__)
 

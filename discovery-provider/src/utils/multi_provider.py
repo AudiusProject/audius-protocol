@@ -1,5 +1,6 @@
 import random
-from web3.providers import HTTPProvider, BaseProvider
+
+from web3.providers import BaseProvider, HTTPProvider
 
 
 class MultiProvider(BaseProvider):

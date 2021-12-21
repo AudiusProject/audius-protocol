@@ -3,7 +3,6 @@ from src import api_helpers
 from src.queries.queries import to_dict
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.search_queries import SearchKind, search
-
 from src.utils.redis_metrics import record_metrics
 
 bp = Blueprint("search_queries", __name__)

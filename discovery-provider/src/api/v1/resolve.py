@@ -1,10 +1,10 @@
 import logging
+
 from flask import redirect
-from flask_restx import Resource, Namespace, reqparse
+from flask_restx import Namespace, Resource, reqparse
 from src.api.v1.helpers import abort_bad_request_param, abort_not_found
 from src.api.v1.utils.resolve_url import resolve_url
 from src.utils import db_session
-
 
 logger = logging.getLogger(__name__)
 

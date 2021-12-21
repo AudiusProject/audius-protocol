@@ -1,67 +1,64 @@
+import logging  # pylint: disable=C0302
 from typing import List
 from urllib.parse import urljoin
-import logging  # pylint: disable=C0302
+
 from flask import redirect
-from flask_restx import Resource, Namespace, fields, reqparse, inputs
-from src.queries.get_tracks import RouteArgs, get_tracks
-from src.queries.get_track_user_creator_node import get_track_user_creator_node
+from flask.globals import request
+from flask_restx import Namespace, Resource, fields, inputs, reqparse
 from src.api.v1.helpers import (
+    abort_bad_path_param,
+    abort_bad_request_param,
     abort_not_found,
     decode_with_abort,
     extend_track,
+    extend_user,
+    format_limit,
+    format_offset,
+    full_trending_parser,
+    get_current_user_id,
+    get_default_max,
+    get_encoded_track_id,
     make_full_response,
     make_response,
     search_parser,
-    extend_user,
-    get_default_max,
-    trending_parser,
-    full_trending_parser,
-    success_response,
-    abort_bad_request_param,
-    to_dict,
-    format_offset,
-    format_limit,
     stem_from_track,
-    get_current_user_id,
-    get_encoded_track_id,
-    abort_bad_path_param,
+    success_response,
+    to_dict,
+    trending_parser,
 )
-from .models.tracks import (
-    track,
-    track_full,
-    stem_full,
-    remixes_response as remixes_response_model,
+from src.api.v1.models.users import user_model_full
+from src.queries.get_recommended_tracks import (
+    DEFAULT_RECOMMENDED_LIMIT,
+    get_full_recommended_tracks,
+    get_recommended_tracks,
 )
+from src.queries.get_remix_track_parents import get_remix_track_parents
+from src.queries.get_remixable_tracks import get_remixable_tracks
+from src.queries.get_remixes_of import get_remixes_of
+from src.queries.get_reposters_for_track import get_reposters_for_track
+from src.queries.get_savers_for_track import get_savers_for_track
+from src.queries.get_stems_of import get_stems_of
+from src.queries.get_track_user_creator_node import get_track_user_creator_node
+from src.queries.get_tracks import RouteArgs, get_tracks
+from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
+from src.queries.get_trending import get_full_trending, get_trending
+from src.queries.get_trending_ids import get_trending_ids
+from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
+from src.queries.get_underground_trending import get_underground_trending
 from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import cache
-
 from src.trending_strategies.trending_strategy_factory import (
-    TrendingStrategyFactory,
     DEFAULT_TRENDING_VERSIONS,
+    TrendingStrategyFactory,
 )
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
     TrendingVersion,
 )
-from flask.globals import request
+from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
-from src.api.v1.models.users import user_model_full
-from src.queries.get_reposters_for_track import get_reposters_for_track
-from src.queries.get_savers_for_track import get_savers_for_track
-from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
-from src.queries.get_stems_of import get_stems_of
-from src.queries.get_remixable_tracks import get_remixable_tracks
-from src.queries.get_remixes_of import get_remixes_of
-from src.queries.get_remix_track_parents import get_remix_track_parents
-from src.queries.get_trending_ids import get_trending_ids
-from src.queries.get_trending import get_full_trending, get_trending
-from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
-from src.queries.get_recommended_tracks import (
-    get_recommended_tracks,
-    get_full_recommended_tracks,
-    DEFAULT_RECOMMENDED_LIMIT,
-)
-from src.queries.get_underground_trending import get_underground_trending
+
+from .models.tracks import remixes_response as remixes_response_model
+from .models.tracks import stem_full, track, track_full
 
 logger = logging.getLogger(__name__)
 

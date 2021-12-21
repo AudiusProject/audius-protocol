@@ -1,16 +1,15 @@
 from sqlalchemy import desc, text
-
 from src import exceptions
-from src.models import Track, Follow
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
+from src.models import Follow, Track
 from src.queries.query_helpers import (
+    create_save_repost_count_subquery,
     get_current_user_id,
-    populate_track_metadata,
     get_users_by_id,
     get_users_ids,
-    create_save_repost_count_subquery,
+    populate_track_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 
 
 def get_top_followee_windowed(type, window, args):

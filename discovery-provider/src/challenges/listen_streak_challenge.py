@@ -7,8 +7,8 @@ from src.challenges.challenge import (
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.models.models import ListenStreakChallenge, UserChallenge
 from src.challenges.challenge_event import ChallengeEvent
+from src.models.models import ListenStreakChallenge, UserChallenge
 
 
 class ListenStreakChallengeUpdater(ChallengeUpdater):

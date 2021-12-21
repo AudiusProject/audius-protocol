@@ -1,7 +1,8 @@
 import logging
+
 import requests
-from src.tasks.index_metrics import get_all_other_nodes
 from src.queries.get_skipped_transactions import set_indexing_error
+from src.tasks.index_metrics import get_all_other_nodes
 
 logger = logging.getLogger(__name__)
 

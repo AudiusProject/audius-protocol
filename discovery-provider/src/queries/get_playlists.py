@@ -1,18 +1,18 @@
 import logging  # pylint: disable=C0302
-import sqlalchemy
-from sqlalchemy import desc
 
+import sqlalchemy
 from flask.globals import request
+from sqlalchemy import desc
 from src import exceptions
 from src.models import Playlist, RepostType, SaveType
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import (
+    get_users_by_id,
+    get_users_ids,
     paginate_query,
     populate_playlist_metadata,
-    get_users_ids,
-    get_users_by_id,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import extract_key, use_redis_cache
 
 logger = logging.getLogger(__name__)

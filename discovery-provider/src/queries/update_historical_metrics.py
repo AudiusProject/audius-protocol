@@ -1,11 +1,12 @@
 import logging
+
 from src.models import (
-    AggregateDailyUniqueUsersMetrics,
-    AggregateDailyTotalUsersMetrics,
-    AggregateMonthlyUniqueUsersMetrics,
-    AggregateMonthlyTotalUsersMetrics,
     AggregateDailyAppNameMetrics,
+    AggregateDailyTotalUsersMetrics,
+    AggregateDailyUniqueUsersMetrics,
     AggregateMonthlyAppNameMetrics,
+    AggregateMonthlyTotalUsersMetrics,
+    AggregateMonthlyUniqueUsersMetrics,
 )
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from sqlalchemy.orm.session import Session
 
+from sqlalchemy.orm.session import Session
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
     TrendingVersion,

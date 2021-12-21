@@ -1,8 +1,8 @@
 import logging
-import redis
 
-from src.models import SkippedTransaction, Block
-from src.utils import helpers, db_session
+import redis
+from src.models import Block, SkippedTransaction
+from src.utils import db_session, helpers
 from src.utils.config import shared_config
 from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
 

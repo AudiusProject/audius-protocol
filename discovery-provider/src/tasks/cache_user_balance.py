@@ -1,28 +1,31 @@
 import logging
 import time
-from typing import Tuple, TypedDict, List, Optional, Dict, Set
+from typing import Dict, List, Optional, Set, Tuple, TypedDict
+
 from redis import Redis
+from solana.publickey import PublicKey
+from solana.rpc.api import Client
+from spl.token.client import Token
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
-from spl.token.client import Token
-from solana.rpc.api import Client
-from solana.publickey import PublicKey
-
-from src.utils.session_manager import SessionManager
 from src.app import get_eth_abi_values
-from src.tasks.celery_app import celery
-from src.models import UserBalance, UserBalanceChange, User, AssociatedWallet, UserBankAccount
+from src.models import (
+    AssociatedWallet,
+    User,
+    UserBalance,
+    UserBalanceChange,
+    UserBankAccount,
+)
 from src.queries.get_balances import (
-    does_user_balance_need_refresh,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
     LAZY_REFRESH_REDIS_PREFIX,
+    does_user_balance_need_refresh,
 )
-from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
-from src.solana.solana_helpers import (
-    SPL_TOKEN_ID_PK,
-    ASSOCIATED_TOKEN_PROGRAM_ID_PK,
-)
+from src.solana.solana_helpers import ASSOCIATED_TOKEN_PROGRAM_ID_PK, SPL_TOKEN_ID_PK
+from src.tasks.celery_app import celery
 from src.utils.config import shared_config
+from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
+from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 audius_token_registry_key = bytes("Token", "utf-8")
@@ -32,14 +35,13 @@ audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
-WAUDIO_MINT_PUBKEY = (
-    PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
-)
+WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 MAX_LAZY_REFRESH_USER_IDS = 100
 
 # Sol balances have 8 decimals, so they need to be increased to 18 to match eth balances
 SPL_TO_WEI = 10 ** 10
+
 
 class AssociatedWallets(TypedDict):
     eth: List[str]
@@ -73,6 +75,7 @@ def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
 def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
     redis_user_ids = redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
     return [int(user_id.decode()) for user_id in redis_user_ids]
+
 
 # *Explanation of user balance caching*
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
@@ -129,10 +132,16 @@ def refresh_user_ids(
 
         # Balances from current user lookup may
         # not be present in the db, so make those
-        not_present_set = set(user_ids) - {user.user_id for user in existing_user_balances}
+        not_present_set = set(user_ids) - {
+            user.user_id for user in existing_user_balances
+        }
         new_balances: List[UserBalance] = [
-            UserBalance(user_id=user_id, balance="0", associated_wallets_balance="0",
-                associated_sol_wallets_balance="0")
+            UserBalance(
+                user_id=user_id,
+                balance="0",
+                associated_wallets_balance="0",
+                associated_sol_wallets_balance="0",
+            )
             for user_id in not_present_set
         ]
         if new_balances:
@@ -245,7 +254,9 @@ def refresh_user_ids(
                                     ],
                                     ASSOCIATED_TOKEN_PROGRAM_ID_PK,
                                 )
-                                bal_info = waudio_token.get_account_info(derived_account)
+                                bal_info = waudio_token.get_account_info(
+                                    derived_account
+                                )
                                 associated_waudio_balance: str = bal_info["result"][
                                     "value"
                                 ]["amount"]
@@ -274,7 +285,6 @@ def refresh_user_ids(
                         )
                         waudio_balance = bal_info["result"]["value"]["amount"]
 
-
                 # update the balance on the user model
                 user_balance = user_balances[user_id]
 
@@ -283,7 +293,9 @@ def refresh_user_ids(
                 waudio_in_wei = to_wei(waudio_balance)
                 assoc_sol_balance_in_wei = to_wei(associated_sol_balance)
                 user_waudio_in_wei = to_wei(user_balance.waudio)
-                user_assoc_sol_balance_in_wei = to_wei(user_balance.associated_sol_wallets_balance)
+                user_assoc_sol_balance_in_wei = to_wei(
+                    user_balance.associated_sol_wallets_balance
+                )
 
                 # Get values for user balance change
                 current_total_balance = (
@@ -323,13 +335,19 @@ def refresh_user_ids(
 
         # Get existing user balances
         user_balance_ids = list(needs_balance_change_update.keys())
-        existing_user_balance_changes: List[UserBalanceChange] = session.query(UserBalanceChange).filter(
-            UserBalanceChange.user_id.in_(user_balance_ids)
-        ).all()
+        existing_user_balance_changes: List[UserBalanceChange] = (
+            session.query(UserBalanceChange)
+            .filter(UserBalanceChange.user_id.in_(user_balance_ids))
+            .all()
+        )
         # Find all the IDs that don't already exist in the DB
-        to_create_ids = set(user_balance_ids) - { e.user_id for e in existing_user_balance_changes }
-        logger.info(f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids},\
-                    existing: {[e.user_id for e in existing_user_balance_changes]}, to create: {to_create_ids}")
+        to_create_ids = set(user_balance_ids) - {
+            e.user_id for e in existing_user_balance_changes
+        }
+        logger.info(
+            f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids},\
+                    existing: {[e.user_id for e in existing_user_balance_changes]}, to create: {to_create_ids}"
+        )
 
         # Create new entries for those IDs
         balance_changes_to_add = [
@@ -337,8 +355,11 @@ def refresh_user_ids(
                 user_id=user_id,
                 blocknumber=needs_balance_change_update[user_id]["blocknumber"],
                 current_balance=needs_balance_change_update[user_id]["current_balance"],
-                previous_balance=needs_balance_change_update[user_id]["previous_balance"]
-            ) for user_id in to_create_ids
+                previous_balance=needs_balance_change_update[user_id][
+                    "previous_balance"
+                ],
+            )
+            for user_id in to_create_ids
         ]
         session.add_all(balance_changes_to_add)
         # Lastly, update all the existing entries
@@ -401,7 +422,8 @@ def get_delegate_manager_contract(eth_web3):
     ).call()
 
     delegate_manager_instance = eth_web3.eth.contract(
-        address=delegate_manager_address, abi=get_eth_abi_values()["DelegateManager"]["abi"]
+        address=delegate_manager_address,
+        abi=get_eth_abi_values()["DelegateManager"]["abi"],
     )
 
     return delegate_manager_instance
@@ -428,6 +450,7 @@ def get_staking_contract(eth_web3):
 
 
 SPL_TOKEN_PROGRAM_ID_PUBKEY = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+
 
 def get_audio_token(solana_client: Client):
     if WAUDIO_MINT_PUBKEY is None:

@@ -1,6 +1,7 @@
-from contextlib import contextmanager
 import inspect
 import logging  # pylint: disable=C0302
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker

@@ -1,16 +1,24 @@
 import logging
 from datetime import datetime
-from typing import Optional, List, TypedDict
+from typing import List, Optional, TypedDict
+
 from redis import Redis
 from sqlalchemy import desc, func
 from src import exceptions
 from src.models import Play
-from src.utils import helpers
-from src.utils.cache_solana_program import CachedProgramTxInfo, get_cache_latest_sol_program_tx, get_latest_sol_db_tx
-from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_track_play_counts, get_sum_aggregate_plays
-from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
+from src.queries.query_helpers import get_sum_aggregate_plays, get_track_play_counts
 from src.tasks.index_solana_plays import cache_latest_sol_play_db_tx
+from src.utils import helpers
+from src.utils.cache_solana_program import (
+    CachedProgramTxInfo,
+    get_cache_latest_sol_program_tx,
+    get_latest_sol_db_tx,
+)
+from src.utils.db_session import get_db_read_replica
+from src.utils.redis_constants import (
+    latest_sol_play_db_tx_key,
+    latest_sol_play_program_tx_key,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +37,7 @@ def get_sol_play(sol_tx_signature):
 
     return sol_play
 
+
 class PlayDict(TypedDict):
     id: int
     user_id: int
@@ -38,6 +47,7 @@ class PlayDict(TypedDict):
     signature: Optional[str]
     created_at: datetime
     updated_at: datetime
+
 
 # Get last x sol specific plays
 def get_latest_sol_plays(limit=10) -> Optional[List[PlayDict]]:
@@ -60,6 +70,7 @@ def get_latest_sol_plays(limit=10) -> Optional[List[PlayDict]]:
 
     return sol_plays
 
+
 # For the n most recently listened to tracks, return the all time listen counts for those tracks
 def get_track_listen_milestones(limit=100):
     db = get_db_read_replica()
@@ -81,6 +92,7 @@ def get_track_listen_milestones(limit=100):
 
     return track_id_play_counts
 
+
 # Get total play count from aggregate plays
 def get_total_aggregate_plays():
     db = get_db_read_replica()
@@ -89,10 +101,13 @@ def get_total_aggregate_plays():
         total_aggregate_plays = get_sum_aggregate_plays(session)
     return total_aggregate_plays
 
+
 # Retrieve the latest stored value in database for sol plays
 # Cached during processing of plays
 def get_latest_cached_sol_play_db(redis) -> CachedProgramTxInfo:
-    latest_sol_play_db = get_cache_latest_sol_program_tx(redis, latest_sol_play_db_tx_key)
+    latest_sol_play_db = get_cache_latest_sol_program_tx(
+        redis, latest_sol_play_db_tx_key
+    )
     plays_from_db = None
     if not latest_sol_play_db:
         # If nothing found in cache, pull from db
@@ -102,17 +117,21 @@ def get_latest_cached_sol_play_db(redis) -> CachedProgramTxInfo:
             latest_sol_play_db = {
                 "signature": latest_sol_play.get("signature"),
                 "slot": latest_sol_play.get("slot"),
-                "timestamp": int(latest_sol_play["created_at"].timestamp())
+                "timestamp": int(latest_sol_play["created_at"].timestamp()),
             }
             # If found, re-cache value to avoid repeated DB hits
             if latest_sol_play_db:
                 cache_latest_sol_play_db_tx(redis, latest_sol_play_db)
     return latest_sol_play_db
 
+
 def get_latest_cached_sol_play_program_tx(redis) -> CachedProgramTxInfo:
     # Latest play tx from chain
-    latest_sol_play_program_tx = get_latest_sol_db_tx(redis, latest_sol_play_program_tx_key)
+    latest_sol_play_program_tx = get_latest_sol_db_tx(
+        redis, latest_sol_play_program_tx_key
+    )
     return latest_sol_play_program_tx
+
 
 # Retrieve sol plays health object
 def get_sol_play_health_info(redis: Redis, current_time_utc: datetime):
@@ -121,13 +140,17 @@ def get_sol_play_health_info(redis: Redis, current_time_utc: datetime):
     latest_sol_play_db = get_latest_cached_sol_play_db(redis)
 
     # Latest play tx from chain
-    latest_sol_play_program_tx = get_latest_sol_db_tx(redis, latest_sol_play_program_tx_key)
+    latest_sol_play_program_tx = get_latest_sol_db_tx(
+        redis, latest_sol_play_program_tx_key
+    )
     time_diff = -1.0
     slot_diff = -1
 
     if latest_sol_play_db and latest_sol_play_program_tx:
         slot_diff = latest_sol_play_program_tx["slot"] - latest_sol_play_db["slot"]
-        last_created_at_time = datetime.utcfromtimestamp(latest_sol_play_db["timestamp"])
+        last_created_at_time = datetime.utcfromtimestamp(
+            latest_sol_play_db["timestamp"]
+        )
         time_diff = (current_time_utc - last_created_at_time).total_seconds()
 
     return_val = {
@@ -140,16 +163,15 @@ def get_sol_play_health_info(redis: Redis, current_time_utc: datetime):
     }
     return return_val
 
+
 def get_latest_sol_play_check_info(redis: Redis, limit: int):
     response = {}
     # Latest play information from chain
     latest_sol_play_program_tx = get_latest_sol_db_tx(
-        redis,
-        latest_sol_play_program_tx_key
+        redis, latest_sol_play_program_tx_key
     )
     latest_sol_play_db_tx = get_cache_latest_sol_program_tx(
-        redis,
-        latest_sol_play_db_tx_key
+        redis, latest_sol_play_db_tx_key
     )
     response["latest_chain_tx"] = latest_sol_play_program_tx
     response["latest_db_tx"] = latest_sol_play_db_tx

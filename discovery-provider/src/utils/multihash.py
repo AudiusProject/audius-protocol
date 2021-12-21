@@ -3,12 +3,11 @@ Multihash implementation in Python.
 Ported from https://github.com/hareeshnagaraj/py-multihash
 """
 
-from typing import Optional, Union, Dict, Any
+from typing import Any, Dict, Optional, Union
 
 import base58
 
-from . import constants
-from . import varint
+from . import constants, varint
 
 
 def is_valid_code(code: int) -> bool:

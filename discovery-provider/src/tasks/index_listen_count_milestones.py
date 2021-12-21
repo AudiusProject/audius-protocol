@@ -1,28 +1,42 @@
-from datetime import datetime
 import logging
 import time
+from datetime import datetime
 from typing import List, Optional
+
 from redis import Redis
 from sqlalchemy import func
-
 from src.models import Milestone
 from src.models.models import AggregatePlays
 from src.tasks.celery_app import celery
-from src.utils.session_manager import SessionManager
 from src.utils.redis_cache import get_json_cached_key
+from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
-CURRENT_PLAY_INDEXING = 'CURRENT_PLAY_INDEXING'
-PROCESSED_LISTEN_MILESTONE = 'PROCESSED_LISTEN_MILESTONE'
-TRACK_LISTEN_IDS = 'TRACK_LISTEN_IDS'
+CURRENT_PLAY_INDEXING = "CURRENT_PLAY_INDEXING"
+PROCESSED_LISTEN_MILESTONE = "PROCESSED_LISTEN_MILESTONE"
+TRACK_LISTEN_IDS = "TRACK_LISTEN_IDS"
 
-LISTEN_COUNT_MILESTONE = 'LISTEN_COUNT'
-milestone_threshold = [10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000]
+LISTEN_COUNT_MILESTONE = "LISTEN_COUNT"
+milestone_threshold = [
+    10,
+    25,
+    50,
+    100,
+    250,
+    500,
+    1000,
+    5000,
+    10000,
+    20000,
+    50000,
+    100000,
+    1000000,
+]
 next_threshold = dict(zip(milestone_threshold[:-1], milestone_threshold[1:]))
 
 
-def get_next_track_milestone(play_count: int, prev_milestone: Optional[int]=None):
+def get_next_track_milestone(play_count: int, prev_milestone: Optional[int] = None):
     """
     Gets the next hightest milstone threshold avaiable given the play count,
     if past the last threshold or given an invalid previous milestone, will return None
@@ -40,12 +54,17 @@ def get_next_track_milestone(play_count: int, prev_milestone: Optional[int]=None
         return None
 
     # If play counts have pasted the next milestone threshold, continue to compare against higher thresholds
-    next_next_milestone = next_threshold[next_milestone] if next_milestone in next_threshold else None
+    next_next_milestone = (
+        next_threshold[next_milestone] if next_milestone in next_threshold else None
+    )
     while next_next_milestone and play_count >= next_next_milestone:
         next_milestone = next_next_milestone
-        next_next_milestone = next_threshold[next_milestone] if next_milestone in next_threshold else None
+        next_next_milestone = (
+            next_threshold[next_milestone] if next_milestone in next_threshold else None
+        )
 
     return next_milestone
+
 
 def get_track_listen_ids(redis) -> List[int]:
     check_track_ids: List[bytes] = list(redis.smembers(TRACK_LISTEN_IDS))
@@ -59,7 +78,7 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
     job_start = time.time()
     with db.scoped_session() as session:
         current_play_indexing = get_json_cached_key(redis, CURRENT_PLAY_INDEXING)
-        if not current_play_indexing or current_play_indexing['slot'] is None:
+        if not current_play_indexing or current_play_indexing["slot"] is None:
             return
 
         check_track_ids = get_track_listen_ids(redis)
@@ -67,13 +86,10 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
         # Pull off current play indexed slot number from redis
         # Pull off track ids to check from redis
         existing_milestone = (
-            session.query(
-                Milestone.id,
-                func.max(Milestone.threshold)
-            )
+            session.query(Milestone.id, func.max(Milestone.threshold))
             .filter(
                 Milestone.name == LISTEN_COUNT_MILESTONE,
-                Milestone.id.in_(check_track_ids)
+                Milestone.id.in_(check_track_ids),
             )
             .group_by(Milestone.id)
             .all()
@@ -84,9 +100,8 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
                 AggregatePlays.play_item_id,
                 AggregatePlays.count,
             )
-            .filter(
-                AggregatePlays.play_item_id.in_(check_track_ids)
-            ).all()
+            .filter(AggregatePlays.play_item_id.in_(check_track_ids))
+            .all()
         )
 
         milestones = dict(existing_milestone)
@@ -98,23 +113,28 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
             current_milestone = None
             if track_id in milestones:
                 current_milestone = milestones[track_id]
-            next_milestone_threshold = get_next_track_milestone(play_counts[track_id], current_milestone)
+            next_milestone_threshold = get_next_track_milestone(
+                play_counts[track_id], current_milestone
+            )
             if next_milestone_threshold:
-                listen_milestones.append(Milestone(
-                    id=track_id,
-                    threshold=next_milestone_threshold,
-                    name=LISTEN_COUNT_MILESTONE,
-                    slot=current_play_indexing['slot'],
-                    timestamp=datetime.utcfromtimestamp(int(current_play_indexing['timestamp']))
-                ))
+                listen_milestones.append(
+                    Milestone(
+                        id=track_id,
+                        threshold=next_milestone_threshold,
+                        name=LISTEN_COUNT_MILESTONE,
+                        slot=current_play_indexing["slot"],
+                        timestamp=datetime.utcfromtimestamp(
+                            int(current_play_indexing["timestamp"])
+                        ),
+                    )
+                )
 
         if listen_milestones:
             session.bulk_save_objects(listen_milestones)
 
-        redis.set(PROCESSED_LISTEN_MILESTONE, current_play_indexing['slot'])
+        redis.set(PROCESSED_LISTEN_MILESTONE, current_play_indexing["slot"])
         if check_track_ids:
             redis.srem(TRACK_LISTEN_IDS, *check_track_ids)
-
 
     job_end = time.time()
     job_total = job_end - job_start
