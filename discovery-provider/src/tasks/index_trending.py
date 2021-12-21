@@ -235,7 +235,7 @@ def get_should_update_trending(
     return None
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_trending", bind=True)
 def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""

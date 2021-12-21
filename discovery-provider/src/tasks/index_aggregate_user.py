@@ -424,7 +424,7 @@ def update_aggregate_table(
             update_lock.release()
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_aggregate_user", bind=True)
 def update_aggregate_user(self):
     db = update_aggregate_user.db

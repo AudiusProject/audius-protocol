@@ -970,7 +970,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
         session.delete(user_events_to_revert)
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_discovery_provider", bind=True)
 def update_task(self):
     # Cache custom task class properties

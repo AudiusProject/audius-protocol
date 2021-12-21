@@ -228,7 +228,7 @@ def revert_blocks(self, db, revert_blocks_list):
             ).delete()
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 
 
 @celery.task(name="update_ipld_blacklist", bind=True)

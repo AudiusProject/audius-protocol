@@ -567,7 +567,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
         raise e
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_solana_plays", bind=True)
 def index_solana_plays(self):
     # Cache custom task class properties

@@ -172,7 +172,7 @@ def enqueue_trending_challenges(
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="calculate_trending_challenges", bind=True)
 def calculate_trending_challenges_task(self, date=None):
     """Caches all trending combination of time-range and genre (including no genre)."""

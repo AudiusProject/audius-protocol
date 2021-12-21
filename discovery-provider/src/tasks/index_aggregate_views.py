@@ -47,7 +47,7 @@ def update_materialized_view(db, redis, mat_view_name, timeout=DEFAULT_UPDATE_TI
             update_lock.release()
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_aggregate_track", bind=True)
 def update_aggregate_track(self):
     db = update_aggregate_track.db

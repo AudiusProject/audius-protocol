@@ -91,7 +91,7 @@ def _update_aggregate_plays(session):
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_aggregate_plays", bind=True)
 def update_aggregate_plays(self):
     # Cache custom task class properties

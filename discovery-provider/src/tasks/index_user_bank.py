@@ -396,7 +396,7 @@ def process_user_bank_txs():
         )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_user_bank", bind=True)
 def index_user_bank(self):
     # Cache custom task class properties

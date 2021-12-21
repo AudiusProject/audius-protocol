@@ -144,7 +144,7 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_listen_count_milestones", bind=True)
 def index_listen_count_milestones_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""

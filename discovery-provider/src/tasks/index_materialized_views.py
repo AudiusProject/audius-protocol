@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
+
 # Vacuum can't happen inside a db txn, so we have to acquire
 # a new connection and set it's isolation level to AUTOCOMMIT
 # as per: https://stackoverflow.com/questions/1017463/postgresql-how-to-run-vacuum-from-code-outside-transaction-block
@@ -45,7 +46,7 @@ def update_views(self, db):
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_materialized_views", bind=True)
 def update_materialized_views(self):
     # Cache custom task class properties

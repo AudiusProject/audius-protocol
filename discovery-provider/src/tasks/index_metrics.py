@@ -389,7 +389,7 @@ def synchronize_all_node_metrics(self, db):
     logger.info("synchronized historical route and app metrics")
 
 
-######## CELERY TASKs ########
+# ####### CELERY TASKS ####### #
 
 
 @celery.task(name="update_metrics", bind=True)

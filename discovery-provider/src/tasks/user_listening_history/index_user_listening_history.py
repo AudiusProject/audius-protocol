@@ -112,7 +112,7 @@ def _index_user_listening_history(session):
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_user_listening_history", bind=True)
 def index_user_listening_history(self):
     # Cache custom task class properties

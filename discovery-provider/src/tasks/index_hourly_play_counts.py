@@ -74,7 +74,7 @@ def _index_hourly_play_counts(session):
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_hourly_play_counts", bind=True)
 def index_hourly_play_counts(self):
     # Cache custom task class properties
