@@ -280,7 +280,8 @@ def _get_trending_playlists_with_session(
         playlist_track_ids = playlist["playlist_contents"]["track_ids"]
         playlist_track_ids = list(
             filter(
-                lambda track_id: track_id["track"] in trimmed_track_ids,  # type: ignore
+                lambda track_id: track_id["track"]
+                in trimmed_track_ids,  # pylint: disable=W0640
                 playlist_track_ids,
             )
         )

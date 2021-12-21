@@ -118,7 +118,9 @@ def get_latest_cached_sol_play_db(redis) -> CachedProgramTxInfo:
             latest_sol_play_db = {
                 "signature": latest_sol_play.get("signature"),
                 "slot": latest_sol_play.get("slot"),
-                "timestamp": int(latest_sol_play["created_at"].timestamp()),
+                "timestamp": int(
+                    latest_sol_play["created_at"].timestamp()  # pylint: disable=E1136
+                ),
             }
             # If found, re-cache value to avoid repeated DB hits
             if latest_sol_play_db:

@@ -126,7 +126,7 @@ def timeout(time):
 
     try:
         yield
-    except TimeoutError:
+    except TimeoutError:  # pylint: disable=W0706
         raise
     finally:
         # Unregister the signal so it won't be triggered
