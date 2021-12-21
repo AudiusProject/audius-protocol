@@ -15,8 +15,6 @@ class GetUserListeningHistory(TypedDict):
     current_user_id: int
     limit: int
     offset: int
-    filter_deleted: bool
-    with_users: bool
 
 def get_user_listening_history(args: GetUserListeningHistory):
     db = get_db_read_replica()
@@ -27,7 +25,6 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistory)
     current_user_id = args["current_user_id"]
     limit = args["limit"]
     offset = args["offset"]
-    filter_deleted = args["filter_deleted"]
 
     listening_history_results = (
         session.query(UserListeningHistory.listening_history)
@@ -60,23 +57,18 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistory)
         track_query = track_query.filter(Track.is_delete == False)
     track_results = track_query.all()
 
+    track_results_dict = {track_result.track_id: track_result for track_result in track_results}
+
     # sort tracks in listening history order
-    # ignore track if we're filtering deleted and the track is not in the filtered result
-    track_results_dict = {}
     sorted_track_results = []
-    for track_result in track_results:
-        track_results_dict[track_result.track_id] = track_result
     for track_id in track_ids:
-        if not filter_deleted or (track_id in track_results_dict):
+        if track_id in track_results_dict:
             sorted_track_results.append(track_results_dict[track_id])
 
     tracks = helpers.query_result_to_list(sorted_track_results)
 
     # bundle peripheral info into track results
     tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
-
-    if args.get("with_users", False):
-        add_users_to_tracks(session, tracks, current_user_id)
 
     for idx, track in enumerate(tracks):
         track[response_name_constants.activity_timestamp] = listen_dates[idx]

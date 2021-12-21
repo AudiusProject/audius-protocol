@@ -531,8 +531,6 @@ class TrackHistoryFull(Resource):
             current_user_id = current_user_id,
             limit = limit,
             offset = offset,
-            with_users = True,
-            filter_deleted = False,
         )
         track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
