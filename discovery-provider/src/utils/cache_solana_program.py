@@ -35,6 +35,20 @@ def get_latest_sol_db_tx(redis: Redis, cahce_key: str):
     latest_sol_db: Optional[CachedProgramTxInfo] = redis_get_json_cached_key_or_restore(redis, cahce_key)
     return latest_sol_db
 
+def fetch_latest_program_tx(
+    solana_client_manager: SolanaClientManager,
+    program: str
+):
+    transactions_history = (
+        solana_client_manager.get_signatures_for_address(
+            program, before=None, limit=1
+        )
+    )
+    transactions_array = transactions_history["result"]
+    if transactions_array:
+        return transactions_array[0]
+    return None
+
 # Function that ensures we always cache the latest known transaction in redis
 # Performed outside of lock acquisition
 # Ensures a lock held for a long time (usually during catchup scenarios)
@@ -45,15 +59,13 @@ def fetch_and_cache_latest_program_tx_redis(
     program: str,
     cache_key: str
 ):
-    transactions_history = (
-        solana_client_manager.get_signatures_for_address(
-            program, before=None, limit=1
-        )
-    )
-    transactions_array = transactions_history["result"]
-    if transactions_array:
+
+    latest_tx = fetch_latest_program_tx(solana_client_manager, program)
+    if latest_tx:
         # Cache latest transaction from chain
-        cache_latest_sol_play_program_tx(redis, program, cache_key, transactions_array[0])
+        cache_latest_sol_play_program_tx(redis, program, cache_key, latest_tx)
+        return latest_tx
+    return None
 
 # Cache the latest chain tx value in redis
 # Represents most recently seen value from the sol program

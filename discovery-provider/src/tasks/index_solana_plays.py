@@ -1,4 +1,5 @@
 import concurrent.futures
+import json
 from datetime import datetime
 import logging
 import time
@@ -27,6 +28,8 @@ from src.solana.solana_transaction_types import TransactionInfoResult
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
+
+REDIS_TX_CACHE_QUEUE_PREFIX = "plays-tx-cache-queue"
 
 # The size of the tx signatures for the program coming from the RPC pool per batch
 TX_SIGNATURES_BATCH_SIZE = 1000
@@ -71,7 +74,7 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     except ValueError:
         # Deal with some python logging annoyances by pulling this out
         log = (
-            "Recording anonymous listen - failed to parse user_id from {!r}".format(
+            "Recording anonymous listen {!r}".format(
                 decoded[user_id_start:user_id_end]
             ),
         )
@@ -80,11 +83,13 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
             exc_info=True,
         )
 
-    track_id_length = int.from_bytes(decoded[user_id_end : user_id_end + 4], "little")
+    track_id_length = int.from_bytes(
+        decoded[user_id_end: user_id_end + 4], "little")
     track_id_start, track_id_end = user_id_end + 4, user_id_end + 4 + track_id_length
     track_id = int(decoded[track_id_start:track_id_end])
 
-    source_length = int.from_bytes(decoded[track_id_end : track_id_end + 4], "little")
+    source_length = int.from_bytes(
+        decoded[track_id_end: track_id_end + 4], "little")
     source_start, source_end = track_id_end + 4, track_id_end + 4 + source_length
 
     # Source is not expected to be null, but may be
@@ -93,14 +98,15 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
         source = str(decoded[source_start:source_end], "utf-8")
     except ValueError:
         log = (
-            "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
+            "Failed to parse source from {!r}".format(
+                decoded[source_start:source_end]),
         )
         logger.error(
             log,
             exc_info=True,
         )
 
-    timestamp = int.from_bytes(decoded[source_end : source_end + 8], "little")
+    timestamp = int.from_bytes(decoded[source_end: source_end + 8], "little")
 
     return user_id, track_id, source, timestamp
 
@@ -115,11 +121,15 @@ class PlayInfo(TypedDict):
 
 # Cache the latest value committed to DB in redis
 # Used for quick retrieval in health check
+
+
 def cache_latest_sol_play_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
     cache_latest_sol_db_tx(redis, latest_sol_play_db_tx_key, latest_tx)
 
 # Check for both SECP and SignerGroup
 # Ensures that a signature recovery was performed within the expected SignerGroup
+
+
 def is_valid_tx(account_keys):
     if SECP_PROGRAM in account_keys and SIGNER_GROUP in account_keys:
         return True
@@ -134,7 +144,8 @@ def parse_sol_play_transaction(
 ):
     try:
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-        logger.info(f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}")
+        logger.info(
+            f"index_solana_plays.py | Got transaction: {tx_sig}")
         meta = tx_info["result"]["meta"]
         error = meta["err"]
 
@@ -201,17 +212,20 @@ def get_latest_slot(db):
     if latest_slot is None:
         latest_slot = 0
 
-    logger.info(f"index_solana_plays.py | returning {latest_slot} for highest slot")
+    logger.info(
+        f"index_solana_plays.py | returning {latest_slot} for highest slot")
     return latest_slot
 
 
 # Query a tx signature and confirm its existence
 def get_tx_in_db(session, tx_sig):
     exists = False
-    tx_sig_db_count = (session.query(Play).filter(Play.signature == tx_sig)).count()
+    tx_sig_db_count = (session.query(Play).filter(
+        Play.signature == tx_sig)).count()
     exists = tx_sig_db_count > 0
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
+
 
 # pylint: disable=W0105
 """
@@ -293,6 +307,7 @@ This is performed by simply slicing the tx_batches array and discarding the newe
 is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
 """
 
+
 def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, retries=10):
     """
     Parse a batch of solana transactions in parallel by calling parse_sol_play_transaction
@@ -350,7 +365,8 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
                         })
 
         except Exception as exc:
-            logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
+            logger.error(
+                f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
             # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
             # in order to do that we need to actually clear the queue which we do here to force this
             # task to stop execution
@@ -408,11 +424,40 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
     )
     return None
 
+
 def split_list(list, n):
     for i in range(0, len(list), n):
         yield list[i:i + n]
 
-def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
+
+# Push to head of array containing seen transactions
+# Used to avoid re-traversal from chain tail when slot diff > certain number
+def cache_traversed_tx(redis, tx):
+    redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, json.dumps(
+        {"slot": tx["slot"], "signature": tx["signature"]}))
+
+
+# Fetch the cached transaction from redis queue
+# Eliminates transactions one by one if they are < latest db slot
+def fetch_traversed_tx_from_cache(redis, latest_db_slot):
+    cached_offset_tx_found = False
+    while not cached_offset_tx_found:
+        last_cached_tx_raw = redis.lrange(REDIS_TX_CACHE_QUEUE_PREFIX, 0, 1)
+        if last_cached_tx_raw:
+            last_cached_tx = json.loads(last_cached_tx_raw[0])
+            logger.info(f"index_solana_plays.py | cached = {last_cached_tx}")
+            redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
+            # Return if a valid signature is found
+            if last_cached_tx["slot"] > latest_db_slot:
+                cached_offset_tx_found = True
+                last_tx_signature = last_cached_tx["signature"]
+                return last_tx_signature
+        else:
+            break
+    return None
+
+
+def process_solana_plays(solana_client_manager: SolanaClientManager, redis, latest_chain_tx):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
     except ValueError:
@@ -426,7 +471,22 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
 
     # Highest currently processed slot in the DB
     latest_processed_slot = get_latest_slot(db)
-    logger.info(f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
+    logger.info(
+        f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
+
+    logger.info(f"index_solana_plays.py | latest_chain_tx={latest_chain_tx}")
+    latest_chain_slot = latest_chain_tx["slot"]
+
+    processing_slot_diff = latest_chain_slot - latest_processed_slot
+    logger.info(
+        f"index_solana_plays.py | processing_slot_diff={processing_slot_diff}")
+
+    # Utilize the cached tx to offset
+    cached_offset_tx = fetch_traversed_tx_from_cache(
+        redis, latest_processed_slot)
+
+    # The 'before' value from where we start querying transactions
+    last_tx_signature = cached_offset_tx
 
     # Loop exit condition
     intersection_found = False
@@ -437,15 +497,13 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     # Current batch of transactions
     transaction_signature_batch = []
 
-    last_tx_signature = None
-
     # Current batch
     page_count = 0
 
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
         logger.info(
-            f"index_solana_plays.py | About to make request to get transactions before {last_tx_signature}"
+            f"index_solana_plays.py | Requesting transactions before {last_tx_signature}"
         )
         transactions_history = (
             solana_client_manager.get_signatures_for_address(
@@ -453,7 +511,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
             )
         )
         logger.info(
-            f"index_solana_plays.py | Finished making request to get transactions before {last_tx_signature}"
+            f"index_solana_plays.py | Retrieved transactions before {last_tx_signature}"
         )
         transactions_array = transactions_history["result"]
         if not transactions_array:
@@ -468,9 +526,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                 for tx in transactions_array:
                     tx_sig = tx["signature"]
                     slot = tx["slot"]
-                    logger.info(
-                        f"index_solana_plays.py | Processing tx, sig={tx_sig} slot={slot}"
-                    )
                     if tx["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx["slot"] <= latest_processed_slot:
@@ -493,6 +548,10 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
+
+                # Append to recently seen cache
+                cache_traversed_tx(redis, last_tx)
+
                 # Append batch of processed signatures
                 if transaction_signature_batch:
                     transaction_signatures.append(transaction_signature_batch)
@@ -518,7 +577,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
             page_count={page_count}"
         )
         page_count = page_count + 1
-        time.sleep(2) # sleep to not overwhelm rpc pool
 
     logger.info(
         f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries"
@@ -530,7 +588,8 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
 
     for tx_sig_batch in transaction_signatures:
         for tx_sig_batch_records in split_list(tx_sig_batch, 50):
-            parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records)
+            parse_sol_tx_batch(db, solana_client_manager,
+                               redis, tx_sig_batch_records)
 
     try:
         if transaction_signatures and transaction_signatures[-1]:
@@ -546,7 +605,8 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                 }
             )
     except Exception as e:
-        logger.error("index_solana_plays.py | Unable to set redis current play indexing", exc_info=True)
+        logger.error(
+            "index_solana_plays.py | Unable to set redis current play indexing", exc_info=True)
         raise e
 
 
@@ -562,11 +622,12 @@ def index_solana_plays(self):
     have_lock = False
     # Define redis lock object
     # Max duration of lock is 4hrs or 14400 seconds
-    update_lock = redis.lock("solana_plays_lock", blocking_timeout=25, timeout=14400)
+    update_lock = redis.lock(
+        "solana_plays_lock", blocking_timeout=25, timeout=14400)
 
     try:
         # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
+        latest_chain_tx = fetch_and_cache_latest_program_tx_redis(
             solana_client_manager,
             redis,
             TRACK_LISTEN_PROGRAM,
@@ -578,11 +639,13 @@ def index_solana_plays(self):
             logger.info("index_solana_plays.py | Acquired lock")
             challenge_bus: ChallengeEventBus = index_solana_plays.challenge_event_bus
             with challenge_bus.use_scoped_dispatch_queue():
-                process_solana_plays(solana_client_manager, redis)
+                process_solana_plays(solana_client_manager,
+                                     redis, latest_chain_tx)
         else:
             logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
-        logger.error("index_solana_plays.py | Fatal error in main loop", exc_info=True)
+        logger.error(
+            "index_solana_plays.py | Fatal error in main loop", exc_info=True)
         raise e
     finally:
         if have_lock:

@@ -75,7 +75,8 @@ def get_eth_abi_values():
 
 
 def init_contracts():
-    registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
+    registry_address = web3.toChecksumAddress(
+        shared_config["contracts"]["registry"])
     registry_instance = web3.eth.contract(
         address=registry_address, abi=abi_values["Registry"]["abi"]
     )
@@ -175,7 +176,8 @@ def create_celery(test_config=None):
     eth_abi_values = helpers.load_eth_abi_values()
 
     # Initialize Solana web3 provider
-    solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
+    solana_client_manager = SolanaClientManager(
+        shared_config["solana"]["endpoint"])
 
     global registry
     global user_factory
@@ -353,7 +355,8 @@ def configure_celery(celery, test_config=None):
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
 
-    ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
+    ipld_interval = int(
+        shared_config["discprov"]["blacklist_block_indexing_interval"])
     # default is 5 seconds
     indexing_interval_sec = int(
         shared_config["discprov"]["block_processing_interval_sec"]
@@ -539,6 +542,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
+    redis_inst.delete("plays-tx-cache-queue")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
