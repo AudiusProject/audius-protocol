@@ -23,8 +23,8 @@ class ActivityItem(fields.Raw):
                 return marshal(value, track)
             if value.get("playlist_id"):
                 return marshal(value, playlist_model)
-        except:
-            raise MarshallingError("Unable to marshal as activity item")
+        except Exception as e:
+            raise MarshallingError("Unable to marshal as activity item") from e
 
 
 class FullActivityItem(fields.Raw):
@@ -34,8 +34,8 @@ class FullActivityItem(fields.Raw):
                 return marshal(value, track_full)
             if value.get("playlist_id"):
                 return marshal(value, full_playlist_model)
-        except:
-            raise MarshallingError("Unable to marshal as activity item")
+        except Exception as e:
+            raise MarshallingError("Unable to marshal as activity item") from e
 
 
 activity_model = ns.model(
