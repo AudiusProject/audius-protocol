@@ -58,7 +58,8 @@ export const remoteConfig = <
   setFeatureFlagSessionId,
   setLogLevel
 }: RemoteConfigOptions<Client>) => {
-  console.time('remote-config')
+  // Uncomment to time remote config
+  // console.time('remote-config')
 
   const state: State = {
     didInitialize: false,
@@ -82,7 +83,7 @@ export const remoteConfig = <
       state.initializationCallbacks.forEach(cb => cb())
       state.initializationCallbacks = []
 
-      console.timeEnd('remote-config')
+      // console.timeEnd('remote-config')
     })
 
     // Set sessionId for feature flag bucketing
