@@ -196,6 +196,8 @@ setup_zsh() {
 		zshenv=~/.zshenv.remote-dev
 	fi
 	cp $zshenv ~/.zshenv.tmp
+	IP=$(get_ip_addr $provider $name)
+	echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv.tmp
 	echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
 	copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
 	rm ~/.zshenv.tmp
