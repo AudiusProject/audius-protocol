@@ -292,8 +292,6 @@ def parse_user_event(
     if event_type == user_event_types_lookup["update_multihash"]:
         # Look up metadata multihash in IPFS and override with metadata fields
         if ipfs_metadata:
-            # ipfs_metadata properties are defined in get_ipfs_metadata
-
             # Fields also stored on chain
             if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
                 user_record.profile_picture = ipfs_metadata["profile_picture"]
