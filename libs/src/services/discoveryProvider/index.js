@@ -820,7 +820,10 @@ class DiscoveryProvider {
       requestUrl = urlJoin(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     }
 
-    const headers = requestObj.headers ?? {}
+    let headers = {}
+    if (requestObj.headers) {
+      headers = requestObj.headers
+    }
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId
