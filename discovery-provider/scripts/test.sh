@@ -28,15 +28,14 @@ npm run ganache-q
 npm run ganache
 sleep 5
 node_modules/.bin/truffle migrate
-node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run
+node_modules/.bin/truffle exec scripts/migrate-contracts.js
 
 cd_eth_contracts_repo
 npm run ganache-q
 npm run ganache
 sleep 5
 node_modules/.bin/truffle migrate
-export audius_eth_contracts_registry=$(node -p "require('./migrations/migration-output.json').registryAddress")
-export audius_web3_eth_provider_url=http://localhost:8546
+node_modules/.bin/truffle exec scripts/migrate-contracts.js
 
 cd_discprov_repo
 
@@ -71,4 +70,4 @@ sleep 5
 pytest src
 
 # Integration tests
-pytest tests
+pytest integration_tests

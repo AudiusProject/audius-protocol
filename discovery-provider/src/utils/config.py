@@ -15,6 +15,8 @@ if os.path.isfile("default_config.ini"):
     config_files.append("default_config.ini")
 if os.path.isfile("contract_config.ini"):
     config_files.append("contract_config.ini")
+if os.path.isfile("eth_contract_config.ini"):
+    config_files.append("eth_contract_config.ini")
 if "LOCAL_CONFIG" in os.environ and os.path.isfile(os.environ["LOCAL_CONFIG"]):
     config_files.append(os.environ["LOCAL_CONFIG"])
 

@@ -9,7 +9,7 @@ from solana.rpc.api import Client
 from solana.publickey import PublicKey
 
 from src.utils.session_manager import SessionManager
-from src.app import eth_abi_values
+from src.app import get_eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, UserBalanceChange, User, AssociatedWallet, UserBankAccount
 from src.queries.get_balances import (
@@ -367,7 +367,7 @@ def get_token_address(eth_web3, config):
     )
 
     eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
 
     token_address = eth_registry_instance.functions.getContract(
@@ -381,7 +381,7 @@ def get_token_contract(eth_web3, config):
     token_address = get_token_address(eth_web3, config)
 
     audius_token_instance = eth_web3.eth.contract(
-        address=token_address, abi=eth_abi_values["AudiusToken"]["abi"]
+        address=token_address, abi=get_eth_abi_values()["AudiusToken"]["abi"]
     )
 
     return audius_token_instance
@@ -393,7 +393,7 @@ def get_delegate_manager_contract(eth_web3):
     )
 
     eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
 
     delegate_manager_address = eth_registry_instance.functions.getContract(
@@ -401,7 +401,7 @@ def get_delegate_manager_contract(eth_web3):
     ).call()
 
     delegate_manager_instance = eth_web3.eth.contract(
-        address=delegate_manager_address, abi=eth_abi_values["DelegateManager"]["abi"]
+        address=delegate_manager_address, abi=get_eth_abi_values()["DelegateManager"]["abi"]
     )
 
     return delegate_manager_instance
@@ -413,7 +413,7 @@ def get_staking_contract(eth_web3):
     )
 
     eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
 
     staking_address = eth_registry_instance.functions.getContract(
@@ -421,7 +421,7 @@ def get_staking_contract(eth_web3):
     ).call()
 
     staking_instance = eth_web3.eth.contract(
-        address=staking_address, abi=eth_abi_values["Staking"]["abi"]
+        address=staking_address, abi=get_eth_abi_values()["Staking"]["abi"]
     )
 
     return staking_instance
