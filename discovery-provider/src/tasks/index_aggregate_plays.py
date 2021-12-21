@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 AGGREGATE_PLAYS_TABLE_NAME = "aggregate_plays"
 
-### UPDATE_AGGREGATE_PLAYS_QUERY ###
+# UPDATE_AGGREGATE_PLAYS_QUERY
 # Get new plays that came after the last indexing checkpoint for aggregate_play
 # Group those new plays by play item id to get the aggregate play counts
 # For new play item ids, insert those aggregate counts

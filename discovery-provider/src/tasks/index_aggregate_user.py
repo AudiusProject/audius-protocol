@@ -21,7 +21,7 @@ TWO_WEEKS_IN_BLOCKS = 241920
 
 TWO_WEEKS_IN_SECONDS = 1209600
 
-### UPDATE_AGGREGATE_USER_QUERY ###
+# UPDATE_AGGREGATE_USER_QUERY
 # Get a lower bound blocknumber to check for new entity counts for a user
 # Find a subset of users that have changed since that blocknumber
 # For that subset of users reclaculate the entire counts for each entity
