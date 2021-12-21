@@ -116,7 +116,6 @@ class PeerSetManager {
   async getNodeUsers () {
     let nodeUsers
 
-    let firstFetchError = null
     try {
       // Retrieves users from route `v1/full/users/content_node/all`
       nodeUsers = await this.getAllNodeUsers()
