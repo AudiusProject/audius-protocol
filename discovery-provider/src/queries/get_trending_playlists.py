@@ -271,7 +271,6 @@ def _get_trending_playlists_with_session(
         current_user_id,
     )
 
-    trimmed_track_ids = None
     for playlist in playlists:
         playlist["track_count"] = len(playlist["tracks"])
         playlist["tracks"] = playlist["tracks"][:PLAYLIST_TRACKS_LIMIT]
