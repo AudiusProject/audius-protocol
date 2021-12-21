@@ -137,3 +137,28 @@ if [[ $(uname) = "Darwin" ]]; then
     alias firefox='open -a Firefox'
     alias chrome='open -a Google\ Chrome'
 fi
+
+function ports () {
+  sudo netstat -tulpn | grep $1
+}
+
+function killport () {
+  sudo kill $(lsof -t -i :${1})
+}
+
+function start-ui () {
+  (
+    cd ${PROTOCOL_DIR}/../audius-client
+    nohup npm run start:dev:cloud \
+      > ${PROTOCOL_DIR}/../audius-client.out 2>&1 &
+  )
+}
+
+alias tail-ui='tail -f ${PROTOCOL_DIR}/../audius-client.out'
+
+alias ap='cd ${PROTOCOL_DIR}'
+alias cn='cd ${PROTOCOL_DIR}/creator-node'
+alias dp='cd ${PROTOCOL_DIR}/discovery-provider'
+alias libs='cd ${PROTOCOL_DIR}/libs'
+alias is='cd ${PROTOCOL_DIR}/identity-service'
+alias dapp='cd ${PROTOCOL_DIR}/../audius-client'
