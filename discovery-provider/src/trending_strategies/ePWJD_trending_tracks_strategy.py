@@ -49,8 +49,8 @@ class TrendingTracksStrategyePWJD(BaseTrendingStrategy):
     def __init__(self):
         super().__init__(TrendingType.TRACKS, TrendingVersion.ePWJD)
 
-    def get_track_score(self, time, track):
-        return z(time, track)
+    def get_track_score(self, time_range, track):
+        return z(time_range, track)
 
     def get_score_params(self):
         return {"xf": True, "pt": 0, "nm": 5}

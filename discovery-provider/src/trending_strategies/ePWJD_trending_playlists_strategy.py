@@ -10,8 +10,8 @@ class TrendingPlaylistsStrategyePWJD(BaseTrendingStrategy):
     def __init__(self):
         super().__init__(TrendingType.PLAYLISTS, TrendingVersion.ePWJD)
 
-    def get_track_score(self, time, track):
-        return z(time, track)
+    def get_track_score(self, time_range, track):
+        return z(time_range, track)
 
     def get_score_params(self):
         return {"zq": 1000, "xf": True, "pt": 0, "mt": 3}
