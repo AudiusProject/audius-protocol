@@ -2,9 +2,12 @@ import React, { ChangeEvent, useState } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 
+import Input from 'components/data-entry/Input'
 import { useDevModeHotkey } from 'hooks/useHotkey'
 
 import styles from './DiscoveryNodeSelection.module.css'
+
+const localStorageKey = '@audius/libs:discovery-node-timestamp'
 
 const DiscoveryNodeSelection = () => {
   const isEnabled = useDevModeHotkey(68 /* d */)
@@ -21,10 +24,7 @@ const DiscoveryNodeSelection = () => {
         endpoint: url,
         timestamp: Date.now()
       }
-      window.localStorage.setItem(
-        '@audius/libs:discovery-node-timestamp',
-        JSON.stringify(item)
-      )
+      window.localStorage.setItem(localStorageKey, JSON.stringify(item))
       setEndpoint('')
       setSuccess(true)
       setError(false)
@@ -34,17 +34,27 @@ const DiscoveryNodeSelection = () => {
     }
   }
 
+  const getDiscoveryNode = () => {
+    const storedItem = window.localStorage.getItem(localStorageKey)
+    const { endpoint } = JSON.parse(storedItem || '{}') as {
+      endpoint: string
+      timestamp: string
+    }
+    return endpoint
+  }
+
   return isEnabled ? (
     <div className={styles.container}>
       <div className={styles.title}>Discovery Node Selection Preview</div>
       <div className={styles.inputContainer}>
-        <input
+        <div className={styles.current}>
+          {`Current discovery node is: ${getDiscoveryNode()}`}
+        </div>
+        <Input
           // not using messages variable because this is not intended for end user
-          placeholder='Please enter a valid discovery node'
+          placeholder='Enter a valid discovery node to change'
           value={endpoint}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            setEndpoint(e.target.value.trim())
-          }
+          onChange={(value: string) => setEndpoint(value.trim())}
         />
 
         <Button

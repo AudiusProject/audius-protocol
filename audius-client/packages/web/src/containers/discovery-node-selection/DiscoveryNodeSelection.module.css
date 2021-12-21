@@ -11,11 +11,17 @@
   flex-direction: column;
   padding: 8px;
   text-align: center;
+  border: 1px solid var(--neutral-light-6);
+}
+
+.current {
+  margin-bottom: 16px;
+  font-weight: var(--font-medium);
 }
 
 .title {
-  font-size: 20;
-  font-weight: bold;
+  font-size: var(--font-large);
+  font-weight: var(--font-bold);
   width: 100%;
   margin: 10px 0;
 }
