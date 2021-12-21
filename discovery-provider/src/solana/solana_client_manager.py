@@ -9,7 +9,6 @@ from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResponse
-from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
 
