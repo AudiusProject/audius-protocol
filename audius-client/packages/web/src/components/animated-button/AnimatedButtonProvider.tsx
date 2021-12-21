@@ -79,7 +79,6 @@ const AnimatedButton = ({
 
       if (isDisabled) return
 
-      e.persist()
       setImmediate(() => {
         onClick(e)
       })
