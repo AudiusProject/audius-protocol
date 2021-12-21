@@ -12,6 +12,7 @@ REDIS = redis.Redis.from_url(url=REDIS_URL)
 INDEXING_ERROR_KEY = "indexing:error"
 logger = logging.getLogger(__name__)
 
+
 # returns the recorded skipped transactions in the db during indexing
 # filters by blocknumber, blockhash, or transaction hash if they are not null
 def get_skipped_transactions(blocknumber, blockhash, txhash):

@@ -167,6 +167,7 @@ profile_challenge_manager = ChallengeManager(
     "profile-completion", ProfileChallengeUpdater()
 )
 
+
 # Accessors
 def get_profile_completion_challenges(session, user_ids):
     return (

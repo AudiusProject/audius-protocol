@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Dict, List, Optional, Set, Tuple, TypedDict
+from typing import Any, Dict, List, Optional, Set, Tuple, TypedDict
 
 from redis import Redis
 from solana.publickey import PublicKey
@@ -75,6 +75,10 @@ def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
 def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
     redis_user_ids = redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
     return [int(user_id.decode()) for user_id in redis_user_ids]
+
+
+def to_wei(balance: Any):
+    return int(balance) * SPL_TO_WEI if balance else 0
 
 
 # *Explanation of user balance caching*
@@ -191,7 +195,7 @@ def refresh_user_ids(
 
         for user in user_associated_wallet_query:
             user_id, user_wallet, associated_wallet, wallet_chain = user
-            if not user_id in user_id_metadata:
+            if user_id not in user_id_metadata:
                 user_id_metadata[user_id] = {
                     "owner_wallet": user_wallet,
                     "associated_wallets": {"eth": [], "sol": []},
@@ -289,7 +293,6 @@ def refresh_user_ids(
                 user_balance = user_balances[user_id]
 
                 # Convert Sol balances to wei
-                to_wei = lambda balance: int(balance) * SPL_TO_WEI if balance else 0
                 waudio_in_wei = to_wei(waudio_balance)
                 assoc_sol_balance_in_wei = to_wei(associated_sol_balance)
                 user_waudio_in_wei = to_wei(user_balance.waudio)

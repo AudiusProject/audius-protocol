@@ -522,7 +522,7 @@ def process_solana_rewards_manager(
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_rewards_manager", bind=True)
 def index_rewards_manager(self):
     redis = index_rewards_manager.redis

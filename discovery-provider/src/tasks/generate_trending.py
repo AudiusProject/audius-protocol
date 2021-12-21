@@ -26,6 +26,7 @@ time_delta_map = {
     "day": timedelta(days=1),
 }
 
+
 # Returns listens counts for tracks, subject to time and
 # genre restrictions.
 # Returns [{ track_id: number, listens: number }]

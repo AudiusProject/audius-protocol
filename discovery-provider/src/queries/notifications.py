@@ -157,7 +157,7 @@ def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
     parent_track_users_to_remixes = {}
     for track_parent in parent_tracks:
         [remix_track_id, remix_parent_id, remix_parent_user_id] = track_parent
-        if not remix_parent_user_id in parent_track_users_to_remixes:
+        if remix_parent_user_id not in parent_track_users_to_remixes:
             parent_track_users_to_remixes[remix_parent_user_id] = {
                 remix_track_id: remix_parent_id
             }

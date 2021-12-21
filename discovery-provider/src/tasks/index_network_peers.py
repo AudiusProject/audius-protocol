@@ -23,6 +23,7 @@ cnode_info_redis_ttl = 1800
 #   Even though we 'swarm connect' to an ipfs node embedded within our protocol the
 #   concept is very much distinct.
 
+
 # Perform eth web3 call to fetch endpoint info
 def fetch_cnode_info(sp_id, sp_factory_instance):
     redis = update_network_peers.redis
@@ -138,7 +139,7 @@ def connect_peers(self, peers_list):
                 logger.error(exc)
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_network_peers", bind=True)
 def update_network_peers(self):
     # Cache custom task class properties
