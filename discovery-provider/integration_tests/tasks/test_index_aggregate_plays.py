@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List
-from sqlalchemy.orm.exc import NoResultFound
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.models import AggregatePlays
 from src.utils.config import shared_config
@@ -208,5 +207,5 @@ def test_index_aggregate_plays_no_plays(app):
         try:
             _update_aggregate_plays(session)
             assert False, "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
-        except NoResultFound:
+        except Exception:
             assert True
