@@ -175,9 +175,7 @@ class IPFSClient:
         if user_replica_set and isinstance(user_replica_set, str):
             user_replicas = user_replica_set.split(",")
             try:
-                query_urls = [
-                    "%s/ipfs/%s" % (addr, multihash) for addr in user_replicas
-                ]
+                query_urls = [f"{addr}/ipfs/{multihash}" for addr in user_replicas]
                 data = self.query_ipfs_metadata_json(
                     query_urls, default_metadata_fields
                 )
@@ -203,7 +201,7 @@ class IPFSClient:
                 \ncnode_endpoints: {self._cnode_endpoints}"
         )
 
-        query_urls = ["%s/ipfs/%s" % (addr, multihash) for addr in gateway_endpoints]
+        query_urls = [f"{addr}/ipfs/{multihash}" for addr in gateway_endpoints]
         data = self.query_ipfs_metadata_json(query_urls, default_metadata_fields)
         if data is None:
             raise Exception(

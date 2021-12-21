@@ -57,7 +57,6 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
         logger.error(
             f"get_track_score not implemented for Trending Tracks Strategy with version {TrendingVersion.aSPET}"
         )
-        return None
 
     def update_track_score_query(self, session):
         start_time = time.time()

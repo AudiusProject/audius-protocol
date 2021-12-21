@@ -143,9 +143,8 @@ def parse_bool_param(param):
     param = param.lower()
     if param == "true":
         return True
-    elif param == "false":
+    if param == "false":
         return False
-    return None
 
 
 def parse_unix_epoch_param(time, default=0):
@@ -377,7 +376,6 @@ def format_offset(args, max_offset=MAX_LIMIT):
 def get_default_max(value, default, max=None):
     if not isinstance(value, int):
         return default
-    elif max is None:
+    if max is None:
         return value
-    else:
-        return min(value, max)
+    return min(value, max)

@@ -16,8 +16,7 @@ def validate_search_args(args):
     kind = args.get("kind", "all")
     if kind not in SearchKind.__members__:
         return api_helpers.error_response(
-            "Invalid value for parameter 'kind' must be in %s"
-            % [k.name for k in SearchKind],
+            f"Invalid value for parameter 'kind' must be in {[k.name for k in SearchKind]}",
             400,
         )
     return None
