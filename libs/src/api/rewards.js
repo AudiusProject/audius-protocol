@@ -5,6 +5,7 @@ const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
 const { shuffle } = require('lodash')
 const { WAUDIO_DECMIALS } = require('../constants')
 const { sampleSize } = require('lodash')
+const { decodeHashId } = require('../utils/utils')
 
 const GetAttestationError = Object.freeze({
   CHALLENGE_INCOMPLETE: 'CHALLENGE_INCOMPLETE',
@@ -73,6 +74,7 @@ class Rewards extends Base {
    *   AAOEndpoint: string,
    *   endpoints: Array<string>
    *   instructionsPerTransaction: number | null
+   *   logger: any
    * }} {
    *   challengeId,
    *   encodedUserId,
@@ -84,13 +86,14 @@ class Rewards extends Base {
    *   quorumSize,
    *   AAOEndpoint,
    *   endpoints,
-   *   instructionsPerTransaction
+   *   instructionsPerTransaction,
+   *   logger
    *   }
    * @returns {Promise<GetSubmitAndEvaluateAttestationsReturn>}
    * @memberof Challenge
    */
   async submitAndEvaluate ({
-    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null, instructionsPerTransaction = null
+    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null, instructionsPerTransaction = null, logger = console
   }) {
     let phase
     try {
@@ -101,17 +104,21 @@ class Rewards extends Base {
         throw new Error('Invalid amount')
       }
 
+      // Aggregate
+
+      logger.info(`submitAndEvaluate: aggregating attestations for userId [${decodeHashId(encodedUserId)}], challengeId [${challengeId}]`)
       phase = AttestationPhases.AGGREGATE_ATTESTATIONS
       const { discoveryNodeAttestations, aaoAttestation, error: aggregateError } = await this.aggregateAttestations({
-        challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints
+        challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints, logger
       })
-
       if (aggregateError) {
         throw new Error(aggregateError)
       }
 
-      const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
+      // Submit
 
+      logger.info(`submitAndEvaluate: submitting for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}] with [${discoveryNodeAttestations.length}] DN and [${aaoAttestation ? 1 : 0}] oracle attestations.`)
+      const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
       phase = AttestationPhases.SUBMIT_ATTESTATIONS
       const { errorCode: submitErrorCode, error: submitError } = await this.solanaWeb3Manager.submitChallengeAttestations({
         attestations: discoveryNodeAttestations,
@@ -129,6 +136,9 @@ class Rewards extends Base {
         throw new Error(submitErrorCode || submitError)
       }
 
+      // Evaluate
+
+      logger.info(`submitAndEvaluate: evaluating for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}]`)
       phase = AttestationPhases.EVALUATE_ATTESTATIONS
       const { errorCode: evaluateErrorCode, error: evaluateError } = await this.solanaWeb3Manager.evaluateChallengeAttestations({
         challengeId,
@@ -145,7 +155,7 @@ class Rewards extends Base {
       return { success: true, error: null, phase: null }
     } catch (e) {
       const err = e.message
-      console.log(`Failed to submit and evaluate attestations at phase ${phase}: ${err}`)
+      logger.error(`submitAndEvaluate: failed for userId: [${decodeHashId(encodedUserId)}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`)
       return { success: false, error: err, phase }
     }
   }
@@ -169,6 +179,7 @@ class Rewards extends Base {
    *   quorumSize: number,
    *   AAOEndpoint: string,
    *   endpoints = null
+   *   logger: any
    * }} {
    *   challengeId,
    *   encodedUserId,
@@ -178,12 +189,13 @@ class Rewards extends Base {
    *   amount,
    *   quorumSize,
    *   AAOEndpoint,
-   *   endpoints = null
+   *   endpoints = null,
+   *   logger
    * }
    * @returns {Promise<AttestationsReturn>}
    * @memberof Rewards
    */
-  async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null }) {
+  async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null, logger = console }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
     // If no endpoints array provided, select here
@@ -191,7 +203,7 @@ class Rewards extends Base {
       endpoints = await this.discoveryProvider.serviceSelector.findAll()
     }
     if (endpoints.length < quorumSize) {
-      console.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)
+      logger.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)
 
       return {
         discoveryNodeAttestations: null,
@@ -203,7 +215,7 @@ class Rewards extends Base {
     endpoints = sampleSize(endpoints, quorumSize)
 
     try {
-      const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e }))
+      const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e, logger }))
       const AAOAttestation = this.getAAOAttestation({
         challengeId,
         specifier,
@@ -235,7 +247,7 @@ class Rewards extends Base {
       }
     } catch (e) {
       const err = e.message
-      console.error(`Failed to aggregate attestations: ${err}`)
+      logger.error(`Failed to aggregate attestations for user [${decodeHashId(encodedUserId)}], challenge-id: [${challengeId}] with err: ${err}`)
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
@@ -258,17 +270,19 @@ class Rewards extends Base {
    *   specifier: string,
    *   oracleEthAddress: string,
    *   discoveryProviderEndpoint: string
+   *   logger: any
    * }} {
    *   challengeId,
    *   encodedUserId,
    *   specifier,
    *   oracleEthAddress,
    *   discoveryProviderEndpoint
+   *   logger
    * }
    * @returns {Promise<GetAttestationReturn>}
    * @memberof Challenge
    */
-  async getChallengeAttestation ({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint }) {
+  async getChallengeAttestation ({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint, logger = console }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     try {
       const res = await this.discoveryProvider.getChallengeAttestation(
@@ -287,7 +301,7 @@ class Rewards extends Base {
       return { success: meta, error: null }
     } catch (e) {
       const err = e.message
-      console.log(`Failed to get challenge attestation from ${discoveryProviderEndpoint}: ${err}`)
+      logger.error(`Failed to get challenge attestation for userId [${decodeHashId(encodedUserId)}] challengeId [${challengeId }]from ${discoveryProviderEndpoint} with ${err}`)
       const mappedErr = GetAttestationError[err] || GetAttestationError.UNKNOWN_ERROR
       return {
         success: null,
@@ -296,7 +310,7 @@ class Rewards extends Base {
     }
   }
 
-  async getUndisbursedChallenges ({ limit, offset, completedBlockNumber, encodedUserId } = {}) {
+  async getUndisbursedChallenges ({ limit, offset, completedBlockNumber, encodedUserId, logger = console } = { logger: console }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     try {
       const res = await this.discoveryProvider.getUndisbursedChallenges(
@@ -308,7 +322,7 @@ class Rewards extends Base {
       return { success: res, error: null }
     } catch (e) {
       const error = e.message
-      console.log(`Failed to get undisbursed challenges with error: ${error}`)
+      logger.error(`Failed to get undisbursed challenges with error: ${error}`)
       return {
         success: null,
         error
@@ -331,18 +345,20 @@ class Rewards extends Base {
    *   amount: number,
    *   AAOEndpoint: string,
    *   oracleEthAddress: string
+   *   logger: any
    * }} {
    *   challengeId,
    *   specifier,
    *   handle,
    *   amount,
    *   AAOEndpoint,
-   *   oracleEthAddress
+   *   oracleEthAddress,
+   *   logger
    * }
    * @returns {Promise<GetAAOAttestationReturn>}
    * @memberof Challenge
    */
-  async getAAOAttestation ({ challengeId, specifier, handle, amount, AAOEndpoint, oracleEthAddress }) {
+  async getAAOAttestation ({ challengeId, specifier, handle, amount, AAOEndpoint, oracleEthAddress, logger = console }) {
     const data = {
       challengeId,
       challengeSpecifier: specifier,
@@ -363,7 +379,7 @@ class Rewards extends Base {
       const { result, needs } = response.data
 
       if (needs) {
-        console.log(`Failed to get AAO attestation: needs ${needs}`)
+        logger.error(`Failed to get AAO attestation: needs ${needs}`)
         const mappedErr = GetAttestationError[needs] || GetAttestationError.UNKNOWN_ERROR
         return {
           success: null,
@@ -380,7 +396,7 @@ class Rewards extends Base {
       }
     } catch (e) {
       const err = e.message
-      console.log(`Failed to get AAO attestation: ${err}`)
+      logger.error(`Failed to get AAO attestation: ${err}`)
       return {
         success: null,
         error: GetAttestationError.UNKNOWN_ERROR

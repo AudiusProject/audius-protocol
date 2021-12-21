@@ -418,7 +418,7 @@ class SolanaWeb3Manager {
    * @memberof SolanaWeb3Manager
    */
   async hasBalance({ publicKey }) {
-    const balance = await this.getBalance(publicKey)
+    const balance = await this.getBalance({ publicKey })
     return balance > ZERO_SOL_EPSILON
   }
 }

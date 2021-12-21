@@ -1,9 +1,16 @@
 const bs58 = require('bs58')
 const Web3 = require('../web3')
 const axios = require('axios')
+const Hashids = require('hashids')
 
 const MultiProvider = require('./multiProvider.js')
 const uuid = require('./uuid.js')
+
+// Hashids
+
+const HASH_SALT = 'azowernasdfoia'
+const MIN_LENGTH = 5
+const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
@@ -142,6 +149,46 @@ class Utils {
   static makeUuid () {
     return uuid()
   }
+
+  /** 
+   *
+   * Decodes a string id into an int. Returns null if an invalid ID.
+   * @static
+   * @param {string} id
+   * @returns {(number | null)} decoded
+   * @memberof Utils
+   */
+  static decodeHashId = (id) => {
+    try {
+      const ids = hashids.decode(id)
+      if (!ids.length) return null
+      const num = Number(ids[0])
+      if (isNaN(num)) return null
+      return num
+    } catch (e) {
+      console.error(`Failed to decode ${id}`, e)
+      return null
+    }
+  }
+
+ /**
+  * Encodes an int to a string based hashid
+  * @static
+  * @param {(number | null)} [id=null]
+  * @returns {(string | null)}
+  * @memberof Utils
+  */
+  static encodeHashId = (id) => {
+    try {
+      if (id === null) return null
+      const encodedId = hashids.encode(id)
+      return encodedId
+    } catch (e) {
+      console.error(`Failed to encode ${id}`, e)
+      return null
+    }
+  }
 }
+
 
 module.exports = Utils
