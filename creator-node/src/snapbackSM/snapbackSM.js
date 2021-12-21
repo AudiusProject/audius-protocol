@@ -11,6 +11,7 @@ const PeerSetManager = require('./peerSetManager')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
+const DBManager = require('../dbManager.js')
 
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
@@ -570,6 +571,60 @@ class SnapbackSM {
     return Array.from(newReplicaNodesSet)
   }
 
+  // updated version of `retrieveClockStatusesForUsersAcrossReplicaSet` that returns `clock` and `filesHash`
+  async retrieveUserInfoFromReplicaSet (replicasToWalletsMap, unhealthyPeers, maxUserClockFetchAttempts = 10) {
+    const replicasToUserInfoMap = {}
+
+    const replicas = Object.keys(replicasToWalletsMap)
+
+    // TODO change to batched parallel requests
+    await Promise.all(replicas.map(async (replica) => {
+      replicasToUserInfoMap[replica] = {}
+
+      const walletsOnReplica = replicasToWalletsMap[replica]
+      // TODO document why signature
+      const { timestamp, signature } = generateTimestampAndSignature({ spID: this.spID }, this.delegatePrivateKey)
+
+      this.log(`SIDTEST BATCH CLOCK STATUS - ${replica} - walletsOnReplica ${walletsOnReplica}`)
+      const axiosReqParams = {
+        baseURL: replica,
+        url: '/users/batch_clock_status',
+        method: 'post',
+        data: { 'walletPublicKeys': walletsOnReplica },
+        timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
+        params: {
+          spID: this.spID,
+          timestamp,
+          signature
+        }
+      }
+
+      let userClockValuesResp = []
+      let userClockFetchAttempts = 0
+      let errorMsg
+      while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
+        try {
+          userClockValuesResp = (await axios(axiosReqParams)).data.data.users
+        } catch (e) {
+          errorMsg = e
+        }
+      }
+
+      // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
+      if (userClockValuesResp.length === 0) {
+        this.logError(`[retrieveUserInfoFromReplicaSet] Could not fetch clock values for wallets=${walletsOnReplica} on replica node=${replica} ${errorMsg ? ': ' + errorMsg.toString() : ''}`)
+        unhealthyPeers.add(replica)
+      }
+
+      userClockValuesResp.forEach(userClockValueResp => {
+        const { walletPublicKey, clock, filesHash } = userClockValueResp
+        replicasToUserInfoMap[replica][walletPublicKey] = { clock, filesHash }
+      })
+    }))
+
+    return replicasToUserInfoMap
+  }
+
   /**
    * Given map(replica set node => userWallets[]), retrieves clock values for every (node, userWallet) pair
    * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
@@ -686,6 +741,91 @@ class SnapbackSM {
     return { numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors }
   }
 
+  async issueSyncRequestsToSecondaries2 (userReplicaSets, replicasToUserInfoMap) {
+    // Retrieve clock values for all users on this node, which is their primary
+    let numSyncRequestsRequired = 0
+    let numSyncRequestsEnqueued = 0
+    let enqueueSyncRequestErrors = []
+
+    await Promise.all(userReplicaSets.map(async (user) => {
+      try {
+        const { wallet, primary, secondary1, secondary2, endpoint: secondary } = user
+
+        // Short-circuit if primary is not self - this function is meant to be called from primary to secondaries only
+        if (primary !== this.endpoint) {
+          this.logError(`issueSyncRequests || Can only be called by user's primary. User ${wallet} - replicaset [${primary}, ${secondary1}, ${secondary2}].`)
+          return
+        }
+
+        const primaryClock = replicasToUserInfoMap[primary][wallet].clock
+        const secondaryClock = replicasToUserInfoMap[secondary][wallet].clock
+
+        const primaryFilesHash = replicasToUserInfoMap[primary][wallet].filesHash
+        const secondaryFilesHash = replicasToUserInfoMap[secondary][wallet].filesHash
+
+        let primaryShouldSync = false
+        let secondaryShouldSync = false
+
+        if (primaryClock == secondaryClock) {
+          if (primaryFilesHash == secondaryFilesHash) return
+          else primaryShouldSync = true
+        } else {
+          if (primaryClock < secondaryClock) primaryShouldSync = true
+          else {
+            if (!secondaryFilesHash) secondaryShouldSync = true
+            else {
+              // fetch primary filesHash for clockRange [0, secondaryClock]
+              const primaryFilesHashForRange = await DBManager.fetchFilesHashFromDBByWallet({
+                wallet, clockMin: 0, clockMax: secondaryClock
+              })
+              if (primaryFilesHashForRange == secondaryFilesHash) {
+                secondaryShouldSync = true
+              } else {
+                primaryShouldSync = true
+              }
+            }
+          }
+        }
+
+        if (secondaryShouldSync) {
+          numSyncRequestsRequired += 1
+
+          await this.enqueueSync({
+            userWallet: wallet,
+            secondaryEndpoint: secondary,
+            primaryEndpoint: this.endpoint,
+            syncType: SyncType.Recurring
+          })
+
+          numSyncRequestsEnqueued += 1
+        }
+
+        if (primaryShouldSync) {
+          /**
+           * TODO
+           */
+          // await this.syncFromSecondary()
+
+          // // Issue sync to secondary with force wipe + resync from 0
+          // await this.enqueueSync({
+          //   userWallet: wallet,
+          //   primaryEndpoint: this.endpoint,
+          //   secondaryEndpoint: secondary,
+          //   syncType: SyncType.Recurring,
+          //   immediate: false,
+          //   forceResync: true
+          // })
+        }
+
+      } catch (e) {
+        // Swallow error without short-circuiting other processing
+        enqueueSyncRequestErrors.push(`issueSyncRequestsToSecondaries() Error for user ${JSON.stringify(user)} - ${e.message}`)
+      }
+    }))
+
+    return { numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors }
+  }
+
   /**
    * Main state machine processing function
    * - Processes all users in chunks
@@ -766,24 +906,24 @@ class SnapbackSM {
         })
       }
 
-      // Retrieve clock statuses for all users and their current replica sets
-      let replicaSetNodesToUserClockStatusesMap
+      // Retrieve user info for all users and their current replica sets
+      let replicasToUserInfoMap
       try {
-        replicaSetNodesToUserClockStatusesMap = await this.retrieveClockStatusesForUsersAcrossReplicaSet(
+        replicasToUserInfoMap = await this.retrieveUserInfoFromReplicaSet(
           replicaSetNodesToUserWalletsMap,
           unhealthyPeers
         )
         decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
+          stage: 'retrieveUserInfoFromReplicaSet() Success',
           time: Date.now()
         })
       } catch (e) {
         decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
+          stage: 'retrieveUserInfoFromReplicaSet() Error',
           vals: e.message,
           time: Date.now()
         })
-        throw new Error('processStateMachineOperation():retrieveClockStatusesForUsersAcrossReplicaSet() Error')
+        throw new Error('processStateMachineOperation():retrieveUserInfoFromReplicaSet() Error')
       }
 
       const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await this.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
@@ -799,7 +939,7 @@ class SnapbackSM {
       // Issue all required sync requests
       let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
       try {
-        const resp = await this.issueSyncRequestsToSecondaries(potentialSyncRequests, replicaSetNodesToUserClockStatusesMap)
+        const resp = await this.issueSyncRequestsToSecondaries2(potentialSyncRequests, replicasToUserInfoMap)
         numSyncRequestsRequired = resp.numSyncRequestsRequired
         numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
         enqueueSyncRequestErrors = resp.enqueueSyncRequestErrors
