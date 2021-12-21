@@ -76,6 +76,7 @@ ALREADY_DISBURSED = "ALREADY_DISBURSED"
 INVALID_ORACLE = "INVALID_ORACLE"
 MISSING_CHALLENGES = "MISSING_CHALLENGES"
 INVALID_INPUT = "INVALID_INPUT"
+USER_NOT_FOUND = "USER_NOT_FOUND"
 
 
 class AttestationError(Exception):
@@ -158,11 +159,12 @@ def get_attestation(
         .filter(
             User.is_current == True,
             User.user_id == user_id,
+            User.is_deactivated == False,
         )
         .one_or_none()
     )
     if not user_eth_address:
-        raise Exception("Unexpectedly missing eth_address")
+        raise AttestationError(USER_NOT_FOUND)
     user_address = str(user_eth_address[0])
 
     attestation = Attestation(

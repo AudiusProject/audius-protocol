@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Set, Tuple, TypedDict, cast
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 from src.models import Challenge, UserChallenge
-from src.models.models import ChallengeType
+from src.models.models import ChallengeType, User
 
 logger = logging.getLogger(__name__)
 
@@ -228,11 +228,8 @@ class ChallengeManager:
                 for metadata in to_create_metadata
             ]
             logger.warning(f"new challenges ${new_user_challenges}")
-            # Do any other custom work needed after creating a challenge event
-            self._updater.on_after_challenge_creation(session, to_create_metadata)
 
-            # Update all the challenges
-
+            # Get the other challenges to update (the ones in progress)
             in_progress_challenges = [
                 challenge
                 for challenge in existing_user_challenges
@@ -240,6 +237,30 @@ class ChallengeManager:
             ]
             to_update = in_progress_challenges + new_user_challenges
 
+            # Filter out challenges for deactivated users
+            to_update_user_ids = list(set([c.user_id for c in to_update]))
+            deactivated_user_ids = (
+                session.query(User.user_id)
+                .filter(
+                    User.user_id.in_(to_update_user_ids),
+                    User.is_deactivated == True,
+                )
+                .all()
+            )
+            to_create_metadata = list(
+                filter(
+                    lambda c: c["user_id"] not in deactivated_user_ids,
+                    to_create_metadata,
+                )
+            )
+            to_update = list(
+                filter(lambda c: c.user_id not in deactivated_user_ids, to_update)
+            )
+
+            # Do any other custom work needed after creating a challenge event
+            self._updater.on_after_challenge_creation(session, to_create_metadata)
+
+            # Update all the challenges
             self._updater.update_user_challenges(
                 session,
                 event_type,

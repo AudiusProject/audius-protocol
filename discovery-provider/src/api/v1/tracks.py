@@ -301,6 +301,17 @@ class TrackStream(Resource):
         if not creator_nodes:
             abort_not_found(track_id, ns)
 
+        # before redirecting to content node,
+        # make sure the track isn't deleted and the user isn't deactivated
+        args = {
+            "id": [decoded_id],
+            "with_users": True,
+        }
+        tracks = get_tracks(args)
+        track = tracks[0]
+        if track["is_delete"] or track["user"]["is_deactivated"]:
+            abort_not_found(track_id, ns)
+
         primary_node = creator_nodes[0]
         stream_url = urljoin(primary_node, f"tracks/stream/{track_id}")
 
