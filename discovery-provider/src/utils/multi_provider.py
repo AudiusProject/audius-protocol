@@ -25,4 +25,4 @@ class MultiProvider(BaseProvider):
         return any(provider.isConnected() for provider in self.providers)
 
     def __str__(self):
-        return "MultiProvider({})".format(self.providers)
+        return f"MultiProvider({self.providers})"

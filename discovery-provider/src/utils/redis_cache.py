@@ -158,19 +158,19 @@ def cache(**kwargs):
 
 
 def get_user_id_cache_key(id):
-    return "user:id:{}".format(id)
+    return f"user:id:{id}"
 
 
 def get_track_id_cache_key(id):
-    return "track:id:{}".format(id)
+    return f"track:id:{id}"
 
 
 def get_playlist_id_cache_key(id):
-    return "playlist:id:{}".format(id)
+    return f"playlist:id:{id}"
 
 
 def get_sp_id_key(id):
-    return "sp:id:{}".format(id)
+    return f"sp:id:{id}"
 
 
 def remove_cached_user_ids(redis, user_ids):

@@ -776,7 +776,7 @@ def get_repost_counts(
     )
 
     if time is not None:
-        interval = "NOW() - interval '1 {}'".format(time)
+        interval = f"NOW() - interval '1 {time}'"
         repost_counts_query = repost_counts_query.filter(
             Repost.created_at >= text(interval)
         )
@@ -807,7 +807,7 @@ def get_karma(session, ids, time=None, is_playlist=False, xf=False):
         Save.save_type == save_type,
     )
     if time is not None:
-        interval = "NOW() - interval '1 {}'".format(time)
+        interval = f"NOW() - interval '1 {time}'"
         savers = savers.filter(Save.created_at >= text(interval))
         reposters = reposters.filter(Repost.created_at >= text(interval))
 
@@ -904,7 +904,7 @@ def get_save_counts(
     )
 
     if time is not None:
-        interval = "NOW() - interval '1 {}'".format(time)
+        interval = f"NOW() - interval '1 {time}'"
         save_counts_query = save_counts_query.filter(Save.created_at >= text(interval))
     return save_counts_query.all()
 

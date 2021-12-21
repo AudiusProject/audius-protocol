@@ -17,7 +17,7 @@ user_url_regex = re.compile(r"^/(?P<handle>[^/]*)$")
 
 
 def ns_url_for(ns, route, **kwargs):
-    return url_for("{0}.{1}_{2}".format(api_v1.bp.name, ns.name, route), **kwargs)
+    return url_for(f"{api_v1.bp.name}.{ns.name}_{route}", **kwargs)
 
 
 def resolve_url(session, url):

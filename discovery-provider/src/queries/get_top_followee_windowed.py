@@ -19,7 +19,7 @@ def get_top_followee_windowed(type, window, args):
     valid_windows = ["week", "month", "year"]
     if not window or window not in valid_windows:
         raise exceptions.ArgumentError(
-            "Invalid window provided, must be one of {}".format(valid_windows)
+            f"Invalid window provided, must be one of {valid_windows}"
         )
 
     limit = args.get("limit", 25)
@@ -53,7 +53,7 @@ def get_top_followee_windowed(type, window, args):
                 Track.is_unlisted == False,
                 Track.stem_of == None,
                 # Query only tracks created `window` time ago (week, month, etc.)
-                Track.created_at >= text("NOW() - interval '1 {}'".format(window)),
+                Track.created_at >= text(f"NOW() - interval '1 {window}'"),
             )
             .order_by(desc(count_subquery.c["count"]), desc(Track.track_id))
             .limit(limit)

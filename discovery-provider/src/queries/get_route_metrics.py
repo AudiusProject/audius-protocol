@@ -509,16 +509,14 @@ def _get_route_metrics(session, args):
         )
     else:
         metrics_query = metrics_query.filter(
-            RouteMetrics.route_path.like("{}%".format(args.get("path")))
+            RouteMetrics.route_path.like(f"{args.get('path')}%")
         )
 
     if args.get("query_string", None) != None:
         metrics_query = metrics_query.filter(
             or_(
-                RouteMetrics.query_string.like("%{}".format(args.get("query_string"))),
-                RouteMetrics.query_string.like(
-                    "%{}&%".format(args.get("query_string"))
-                ),
+                RouteMetrics.query_string.like(f"%{args.get('query_string')}"),
+                RouteMetrics.query_string.like(f"%{args.get('query_string')}&%"),
             )
         )
 

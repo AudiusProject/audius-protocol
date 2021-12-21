@@ -379,7 +379,7 @@ def update_aggregate_table(
                     # repopulate entire table
                     logger.info(f"index_aggregate_user.py | Repopulating {table_name}")
                     most_recent_indexed_aggregate_block = 0
-                    session.execute("TRUNCATE TABLE {}".format(table_name))
+                    session.execute(f"TRUNCATE TABLE {table_name}")
                     is_refreshed = True
 
                 elif not elapsed_time or elapsed_time > TWO_WEEKS_IN_SECONDS:

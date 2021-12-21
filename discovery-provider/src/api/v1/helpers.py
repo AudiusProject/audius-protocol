@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def make_image(endpoint, cid, width="", height=""):
-    return "{e}/ipfs/{cid}/{w}x{h}.jpg".format(e=endpoint, cid=cid, w=width, h=height)
+    return f"{endpoint}/ipfs/{cid}/{width}x{height}.jpg"
 
 
 def get_primary_endpoint(user):
@@ -288,21 +288,21 @@ def extend_undisbursed_challenge(undisbursed_challenge: UndisbursedChallengeResp
 
 
 def abort_bad_path_param(param, namespace):
-    namespace.abort(400, "Oh no! Bad path parameter {}.".format(param))
+    namespace.abort(400, f"Oh no! Bad path parameter {param}.")
 
 
 def abort_bad_request_param(param, namespace):
-    namespace.abort(400, "Oh no! Bad request parameter {}.".format(param))
+    namespace.abort(400, f"Oh no! Bad request parameter {param}.")
 
 
 def abort_not_found(identifier, namespace):
-    namespace.abort(404, "Oh no! Resource for ID {} not found.".format(identifier))
+    namespace.abort(404, f"Oh no! Resource for ID {identifier} not found.")
 
 
 def decode_with_abort(identifier: str, namespace) -> int:
     decoded = decode_string_id(identifier)
     if decoded is None:
-        namespace.abort(404, "Invalid ID: '{}'.".format(identifier))
+        namespace.abort(404, f"Invalid ID: '{identifier}'.")
     return cast(int, decoded)
 
 

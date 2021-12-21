@@ -75,11 +75,7 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
         user_id = int(decoded[user_id_start:user_id_end])
     except ValueError:
         # Deal with some python logging annoyances by pulling this out
-        log = (
-            "Recording anonymous listen - failed to parse user_id from {!r}".format(
-                decoded[user_id_start:user_id_end]
-            ),
-        )
+        log = f"Recording anonymous listen - failed to parse user_id from {decoded[user_id_start:user_id_end]!r}"
         logger.warning(
             log,
             exc_info=True,
@@ -97,9 +93,7 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     try:
         source = str(decoded[source_start:source_end], "utf-8")
     except ValueError:
-        log = (
-            "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
-        )
+        log = f"Failed to parse source from {decoded[source_start:source_end]!r}"
         logger.error(
             log,
             exc_info=True,

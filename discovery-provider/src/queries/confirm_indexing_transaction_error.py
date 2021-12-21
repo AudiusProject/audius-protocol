@@ -23,9 +23,7 @@ def confirm_indexing_transaction_error(
     num_transaction_failures = 0
     for node in all_other_nodes:
         try:
-            endpoint = "{}/indexing/transaction_status?blocknumber={}&blockhash={}&transactionhash={}".format(
-                node, blocknumber, blockhash, transactionhash
-            )
+            endpoint = f"{node}/indexing/transaction_status?blocknumber={blocknumber}&blockhash={blockhash}&transactionhash={transactionhash}"
             response = requests.get(endpoint, timeout=10)
             if response.status_code != 200:
                 raise Exception(

@@ -45,18 +45,14 @@ def coerce_code(name: Union[str, int]) -> int:
     code = name
     if isinstance(name, str):
         if name not in constants.names:
-            raise ValueError(
-                "Unrecognized hash function name: {name}".format(name=name)
-            )
+            raise ValueError(f"Unrecognized hash function name: {name}")
         code = constants.names[name]
 
     if not isinstance(code, int):
-        raise TypeError(
-            "Hash function code should be a number. Got: {code}".format(code=code)
-        )
+        raise TypeError(f"Hash function code should be a number. Got: {code}")
 
     if code not in constants.codes and not is_app_code(code):
-        raise ValueError("Unrecognized function code: {code}".format(code=code))
+        raise ValueError(f"Unrecognized function code: {code}")
 
     return code
 
@@ -97,18 +93,16 @@ def decode(buf: bytes) -> Dict[str, Any]:
 
     code, n = varint.from_varint(buf)
     if not is_valid_code(code):
-        raise ValueError("multihash unknown function code: {code}".format(code=code))
+        raise ValueError(f"multihash unknown function code: {code}")
 
     length, n = varint.from_varint(buf, n)
     if length < 1:
-        raise ValueError("multihash invalid length: {length}".format(length=length))
+        raise ValueError(f"multihash invalid length: {length}")
 
     buf = buf[n:]
 
     if len(buf) != length:
-        raise ValueError(
-            "multihash length inconsistent: {} != {}".format(len(buf), length)
-        )
+        raise ValueError(f"multihash length inconsistent: {len(buf)} != {length}")
 
     return dict(code=code, name=constants.codes[code], length=length, digest=buf)
 

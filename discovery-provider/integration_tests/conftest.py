@@ -74,7 +74,7 @@ def celery_config():
     }
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def celery_app():
     """
     Configures a test fixture for celery.
@@ -135,9 +135,7 @@ def init_contracts(config):
     deployed contract addresses.
     """
     # Create web3 provider to real ganache
-    web3endpoint = "http://{}:{}".format(
-        config["web3"]["host"], config["web3"]["port"]
-    )
+    web3endpoint = f"http://{config['web3']['host']}:{config['web3']['port']}"
     web3 = Web3(HTTPProvider(web3endpoint))
 
     # set pre-funded account as sender
@@ -169,7 +167,8 @@ def init_contracts(config):
         address=track_factory_address, abi=abi_values["TrackFactory"]["abi"]
     )
     user_replica_set_manager_contract = web3.eth.contract(
-        address=user_replica_set_manager_address, abi=abi_values["UserReplicaSetManager"]["abi"]
+        address=user_replica_set_manager_address,
+        abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
     return {

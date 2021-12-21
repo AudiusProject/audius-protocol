@@ -72,10 +72,8 @@ def get_transaction_status(blocknumber, blockhash, txhash):
         )
         if len(skipped_transactions_results) > 1:
             raise Exception(
-                "Expected no more than 1 row for skipped indexing transaction with \
-                blocknumber={}, blockhash={}, txhash={}".format(
-                    blocknumber, blockhash, txhash
-                )
+                f"Expected no more than 1 row for skipped indexing transaction with \
+                blocknumber={blocknumber}, blockhash={blockhash}, txhash={txhash}"
             )
         if len(skipped_transactions_results) == 1:
             return "FAILED"
@@ -87,9 +85,7 @@ def get_transaction_status(blocknumber, blockhash, txhash):
         )
         if len(block_transaction_results) > 1:
             raise Exception(
-                "Expected no more than 1 row for blocknumber={}, blockhash={}".format(
-                    blocknumber, blockhash
-                )
+                f"Expected no more than 1 row for blocknumber={blocknumber}, blockhash={blockhash}"
             )
         if len(block_transaction_results) == 1:
             return "PASSED"
