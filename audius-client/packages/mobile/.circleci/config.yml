@@ -69,7 +69,9 @@ commands:
           command: npm run bundle:ios
       - run:
           name: Install Sentry CLI
-          command: curl -sL https://sentry.io/get-cli/ | bash
+          command: |
+            curl -sL https://sentry.io/get-cli/ | bash
+            echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
       - run:
           name: install pods
           command: cd ios && pod install
@@ -194,9 +196,6 @@ jobs:
             cp .env.prod.tmpl .env.prod
             echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.prod
             echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_PROD" >> .env.prod
-      - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
 
       # Download and cache dependencies
       - restore_cache:
