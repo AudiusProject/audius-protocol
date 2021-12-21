@@ -41,7 +41,7 @@ class Resolve(Resource):
             with db.scoped_session() as session:
                 resolved_url = resolve_url(session, url)
                 if not resolved_url:
-                    return abort_not_found(url)
+                    return abort_not_found(url, ns)
 
                 return redirect(resolved_url, code=302)
 
