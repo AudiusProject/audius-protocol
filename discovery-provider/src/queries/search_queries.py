@@ -87,8 +87,7 @@ def search_tags():
             raise Exception
     except Exception:
         return api_helpers.error_response(
-            "Invalid value for parameter 'kind' must be in %s"
-            % [k.name for k in validSearchKinds],
+            f"Invalid value for parameter 'kind' must be in {[k.name for k in validSearchKinds]}",
             400,
         )
 
@@ -456,9 +455,9 @@ def track_search_query(
 
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [track[track_cols.index("track_id")] for track in track_data]
-    saved_tracks = set(
-        [track[0] for track in track_data if track[track_cols.index("is_saved")]]
-    )
+    saved_tracks = {
+        track[0] for track in track_data if track[track_cols.index("is_saved")]
+    }
 
     tracks = get_unpopulated_tracks(session, track_ids, True)
 
@@ -575,9 +574,9 @@ def user_search_query(
     user_ids = [user[user_cols.index("user_id")] for user in user_info]
 
     # if user has a follower_user_id, the current user has followed that user
-    followed_users = set(
-        [user[0] for user in user_info if user[user_cols.index("is_followed")]]
-    )
+    followed_users = {
+        user[0] for user in user_info if user[user_cols.index("is_followed")]
+    }
 
     users = get_unpopulated_users(session, user_ids)
 
@@ -702,13 +701,11 @@ def playlist_search_query(
     playlist_ids = [
         playlist[playlist_cols.index("playlist_id")] for playlist in playlist_data
     ]
-    saved_playlists = set(
-        [
-            playlist[0]
-            for playlist in playlist_data
-            if playlist[playlist_cols.index("is_saved")]
-        ]
-    )
+    saved_playlists = {
+        playlist[0]
+        for playlist in playlist_data
+        if playlist[playlist_cols.index("is_saved")]
+    }
 
     playlists = get_unpopulated_playlists(session, playlist_ids, True)
 

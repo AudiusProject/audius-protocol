@@ -257,7 +257,7 @@ def process_batch_sol_reward_manager_txs(
             )
             .all()
         )
-        user_challenge_specifiers = set([challenge[0] for challenge in user_challenges])
+        user_challenge_specifiers = {[challenge[0] for challenge in user_challenges]}
 
         challenge_disbursements = []
         for tx in reward_manager_txs:
