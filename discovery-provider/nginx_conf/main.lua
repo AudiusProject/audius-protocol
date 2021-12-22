@@ -18,36 +18,47 @@ for index, redirect_target in ipairs(config.redirect_targets) do
     redirect_target_weights[redirect_target] = 1
 end
 
+function get_request_counts (discovery_providers)
+    local httpc = resty_http.new()
+    request_counts = {}
+
+    for index, discovery_provider in ipairs(discovery_providers) do
+        local res, err = httpc:request_uri(discovery_provider .. "/health_check", { method = "GET" })
+
+        if not res then
+            ngx.log(ngx.ERR, "failed to get request count from discovery provider: ", discovery_provider, err)
+            request_count[discovery_provider] = -1
+        else
+            request_count[discovery_provider] = tonumber(res.body)
+        end
+    end
+
+    return request_counts
+end
+
 function update_redirect_target_weights (premature)
     if premature then
         return
     end
 
+    local request_count = get_request_counts(config.redirect_targets)
+
     local maximum_request_count = 0
-    local httpc = resty_http.new()
-    for index, redirect_target in ipairs(config.redirect_targets) do
-        local res, err = httpc:request_uri(redirect_target .. "/health_check", { method = "GET" })
-
-        if not res then
-            ngx.log(ngx.ERR, "failed to make request to discovery provider: ", redirect_target, err)
-            redirect_target_weights[redirect_target] = 0
-        else
-            local request_count = tonumber(res.body)
-            redirect_target_weights[redirect_target] = request_count
-            maximum_request_count = math.max(maximum_request_count, request_count)
-        end
+    for discovery_provider, count in pairs(request_count) do
+        maximum_request_count = math.max(maximum_request_count, count)
     end
-    httpc:close()
 
-    for index, redirect_target in ipairs(config.redirect_targets) do
-        if redirect_target_weights[redirect_target] ~= 0 then
-            redirect_target_weights[redirect_target] = (2 * maximum_request_count) - redirect_target_weights[redirect_target]
+    for discovery_provider, count in pairs(request_count) do
+        if count ~= -1 then
+            redirect_target_weights[discovery_provider] = (2 * maximum_request_count) - count
+        else
+            redirect_target_weights[discovery_provider] = 0
         end
     end
 end
 
 function _M.start_update_redirect_target_weights_timer ()
-    ngx.timer.every(300, update_redirect_target_weights)
+    ngx.timer.every(config.update_redirect_weights_every, update_redirect_target_weights)
 end
 
 function get_cached_public_key (discovery_provider)
@@ -181,6 +192,21 @@ function _M.limit_to_rps ()
         ngx.log(ngx.ERR, "failed to limit req: ", err)
         return ngx.exit(500)
     end
+end
+
+function _M.mark_request_processing ()
+    local rcount_key = "request-count"
+    local rcount_step_value = 1
+    local rcount_init_value = 0
+    ngx.shared.request_count:incr(rcount_key, rcount_step_value, rcount_init_value)
+end
+
+
+function _M.mark_request_processed ()
+    local rcount_key = "request-count"
+    local rcount_step_value = -1
+    local rcount_init_value = 0
+    ngx.shared.request_count:incr(rcount_key, rcount_step_value, rcount_init_value)
 end
 
 return _M
