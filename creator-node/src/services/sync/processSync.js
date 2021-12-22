@@ -20,11 +20,20 @@ const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
+async function processSync(
+  serviceRegistry,
+  walletPublicKeys,
+  creatorNodeEndpoint,
+  blockNumber = null
+) {
   const { nodeConfig, redis } = serviceRegistry
 
-  const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
-  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get('syncRequestMaxUserFailureCountBeforeSkip')
+  const FileSaveMaxConcurrency = nodeConfig.get(
+    'nodeSyncFileSaveMaxConcurrency'
+  )
+  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
+    'syncRequestMaxUserFailureCountBeforeSkip'
+  )
 
   const start = Date.now()
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
@@ -37,11 +46,13 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
    */
   const redisLock = redis.lock
   let redisKey
-  for (let wallet of walletPublicKeys) {
+  for (const wallet of walletPublicKeys) {
     redisKey = redis.getNodeSyncRedisKey(wallet)
-    let lockHeld = await redisLock.getLock(redisKey)
+    const lockHeld = await redisLock.getLock(redisKey)
     if (lockHeld) {
-      errorObj = new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
+      errorObj = new Error(
+        `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
+      )
       return errorObj
     }
     await redisLock.setLock(redisKey)
@@ -55,7 +66,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     const cnodeUser = await models.CNodeUser.findOne({
       where: { walletPublicKey: walletPublicKeys[0] }
     })
-    const localMaxClockVal = (cnodeUser) ? cnodeUser.clock : -1
+    const localMaxClockVal = cnodeUser ? cnodeUser.clock : -1
 
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
@@ -67,7 +78,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     // Build export query params
     const exportQueryParams = {
       wallet_public_key: walletPublicKeys,
-      clock_range_min: (localMaxClockVal + 1)
+      clock_range_min: localMaxClockVal + 1
     }
 
     // This is used only for logging by primary to record endpoint of requesting node
@@ -86,8 +97,12 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     })
 
     if (resp.status !== 200) {
-      logger.error(redisKey, `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
-      throw new Error(resp.data['error'])
+      logger.error(
+        redisKey,
+        `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`,
+        walletPublicKeys
+      )
+      throw new Error(resp.data.error)
     }
 
     // TODO - explain patch
@@ -98,21 +113,38 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     }
 
     const { data: body } = resp
-    if (!body.data.hasOwnProperty('cnodeUsers') || !body.data.hasOwnProperty('ipfsIDObj') || !body.data.ipfsIDObj.hasOwnProperty('addresses')) {
+    if (
+      !body.data.hasOwnProperty('cnodeUsers') ||
+      !body.data.hasOwnProperty('ipfsIDObj') ||
+      !body.data.ipfsIDObj.hasOwnProperty('addresses')
+    ) {
       throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
 
-    logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1}`)
+    logger.info(
+      redisKey,
+      `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${
+        localMaxClockVal + 1
+      }`
+    )
 
     try {
       // Attempt to connect directly to target CNode's IPFS node
       // async function runs in the background
-      _initBootstrapAndRefreshPeers(serviceRegistry, logger, body.data.ipfsIDObj.addresses, redisKey)
+      _initBootstrapAndRefreshPeers(
+        serviceRegistry,
+        logger,
+        body.data.ipfsIDObj.addresses,
+        redisKey
+      )
       logger.info(redisKey, 'IPFS Nodes connected + data export received')
     } catch (e) {
       // if there's an error peering to an IPFS node, do not stop execution
       // since we have other fallbacks, keep going on with sync
-      logger.error(`Error in _nodeSync calling _initBootstrapAndRefreshPeers for redisKey ${redisKey}`, e)
+      logger.error(
+        `Error in _nodeSync calling _initBootstrapAndRefreshPeers for redisKey ${redisKey}`,
+        e
+      )
     }
 
     /**
@@ -123,7 +155,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
-        throw new Error(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
+        throw new Error(
+          `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
+        )
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
 
@@ -145,16 +179,21 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         })
 
         // filter out current node from user's replica set
-        userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
+        userReplicaSet = userReplicaSet.filter((url) => url !== myCnodeEndpoint)
 
         // Spread + set uniq's the array
         userReplicaSet = [...new Set(userReplicaSet)]
       } catch (e) {
-        logger.error(redisKey, `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`)
+        logger.error(
+          redisKey,
+          `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        )
       }
 
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
-        throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
+        throw new Error(
+          `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
+        )
       }
 
       /**
@@ -170,13 +209,24 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
       // Error if returned data is not within requested range
       if (fetchedLatestClockVal < localMaxClockVal) {
-        throw new Error(`Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`)
+        throw new Error(
+          `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
+        )
       } else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
-        logger.info(redisKey, `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`)
+        logger.info(
+          redisKey,
+          `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`
+        )
         continue
-      } else if (localMaxClockVal !== -1 && fetchedClockRecords[0] && fetchedClockRecords[0].clock !== localMaxClockVal + 1) {
-        throw new Error(`Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`)
+      } else if (
+        localMaxClockVal !== -1 &&
+        fetchedClockRecords[0] &&
+        fetchedClockRecords[0].clock !== localMaxClockVal + 1
+      ) {
+        throw new Error(
+          `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
+        )
       }
 
       // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
@@ -186,7 +236,10 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
        * Process all DB updates for cnodeUser
        */
       try {
-        logger.info(redisKey, `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`)
+        logger.info(
+          redisKey,
+          `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`
+        )
 
         /**
          * Update CNodeUser entry if exists else create new
@@ -216,7 +269,13 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
             },
             {
               where: { walletPublicKey: fetchedWalletPublicKey },
-              fields: ['lastLogin', 'latestBlockNumber', 'clock', 'createdAt', 'updatedAt'],
+              fields: [
+                'lastLogin',
+                'latestBlockNumber',
+                'clock',
+                'createdAt',
+                'updatedAt'
+              ],
               returning: true,
               transaction
             }
@@ -224,7 +283,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
           // Error if update failed
           if (numRowsUpdated !== 1 || respObj.length !== 1) {
-            throw new Error(`Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`)
+            throw new Error(
+              `Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`
+            )
           }
           cnodeUser = respObj[0]
         } else {
@@ -245,7 +306,10 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         }
 
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
-        logger.info(redisKey, `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`)
+        logger.info(
+          redisKey,
+          `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`
+        )
 
         /**
          * Populate all new data for fetched cnodeUser
@@ -259,43 +323,69 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
          *    but tracks cannot be created until metadata and cover art files have been created.
          */
 
-        const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
-        const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
+        const trackFiles = fetchedCNodeUser.files.filter((file) =>
+          models.File.TrackTypes.includes(file.type)
+        )
+        const nonTrackFiles = fetchedCNodeUser.files.filter((file) =>
+          models.File.NonTrackTypes.includes(file.type)
+        )
         const numTotalFiles = trackFiles.length + nonTrackFiles.length
 
         const CIDsThatFailedSaveFileOp = new Set()
 
         // Save all track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
-          const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
-          logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency} out of total ${trackFiles.length}...`)
+          const trackFilesSlice = trackFiles.slice(
+            i,
+            i + FileSaveMaxConcurrency
+          )
+          logger.info(
+            redisKey,
+            `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
+              i + FileSaveMaxConcurrency
+            } out of total ${trackFiles.length}...`
+          )
 
           /**
            * Fetch content for each CID + save to FS
            * Record any CIDs that failed retrieval/saving for later use
            * @notice `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
            */
-          await Promise.all(trackFilesSlice.map(
-            async (trackFile) => {
+          await Promise.all(
+            trackFilesSlice.map(async (trackFile) => {
               const success = await saveFileForMultihashToFS(
-                serviceRegistry, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet, null, trackFile.trackBlockchainId
+                serviceRegistry,
+                logger,
+                trackFile.multihash,
+                trackFile.storagePath,
+                userReplicaSet,
+                null,
+                trackFile.trackBlockchainId
               )
 
               // If saveFile op failed, record CID for later processing
               if (!success) {
                 CIDsThatFailedSaveFileOp.add(trackFile.multihash)
               }
-            }
-          ))
+            })
+          )
         }
         logger.info(redisKey, 'Saved all track files to disk.')
 
         // Save all non-track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
-          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + FileSaveMaxConcurrency)
-          logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + FileSaveMaxConcurrency} out of total ${nonTrackFiles.length}...`)
-          await Promise.all(nonTrackFilesSlice.map(
-            async (nonTrackFile) => {
+          const nonTrackFilesSlice = nonTrackFiles.slice(
+            i,
+            i + FileSaveMaxConcurrency
+          )
+          logger.info(
+            redisKey,
+            `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
+              i + FileSaveMaxConcurrency
+            } out of total ${nonTrackFiles.length}...`
+          )
+          await Promise.all(
+            nonTrackFilesSlice.map(async (nonTrackFile) => {
               // Skip over directories since there's no actual content to sync
               // The files inside the directory are synced separately
               if (nonTrackFile.type !== 'dir') {
@@ -305,13 +395,25 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-                if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
+                if (
+                  nonTrackFile.type === 'image' &&
+                  nonTrackFile.fileName !== null
+                ) {
                   success = await saveFileForMultihashToFS(
-                    serviceRegistry, logger, multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName
+                    serviceRegistry,
+                    logger,
+                    multihash,
+                    nonTrackFile.storagePath,
+                    userReplicaSet,
+                    nonTrackFile.fileName
                   )
                 } else {
                   success = await saveFileForMultihashToFS(
-                    serviceRegistry, logger, multihash, nonTrackFile.storagePath, userReplicaSet
+                    serviceRegistry,
+                    logger,
+                    multihash,
+                    nonTrackFile.storagePath,
+                    userReplicaSet
                   )
                 }
 
@@ -320,8 +422,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                   CIDsThatFailedSaveFileOp.add(multihash)
                 }
               }
-            }
-          ))
+            })
+          )
         }
         logger.info(redisKey, 'Saved all non-track files to disk.')
 
@@ -331,7 +433,10 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
          */
         const numCIDsThatFailedSaveFileOp = CIDsThatFailedSaveFileOp.size
         if (numCIDsThatFailedSaveFileOp > 0) {
-          const userSyncFailureCount = UserSyncFailureCountManager.incrementFailureCount(fetchedWalletPublicKey)
+          const userSyncFailureCount =
+            UserSyncFailureCountManager.incrementFailureCount(
+              fetchedWalletPublicKey
+            )
 
           // Throw error if failure threshold not yet reached
           if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
@@ -342,9 +447,14 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
             // If max failure threshold reached, continue with sync and reset failure count
           } else {
             // Reset falure count so subsequent user syncs will not always succeed & skip
-            UserSyncFailureCountManager.resetFailureCount(fetchedWalletPublicKey)
+            UserSyncFailureCountManager.resetFailureCount(
+              fetchedWalletPublicKey
+            )
 
-            logger.info(redisKey, `User Sync continuing with ${numCIDsThatFailedSaveFileOp} skipped files, since SyncRequestMaxUserFailureCountBeforeSkip (${SyncRequestMaxUserFailureCountBeforeSkip}) reached.`)
+            logger.info(
+              redisKey,
+              `User Sync continuing with ${numCIDsThatFailedSaveFileOp} skipped files, since SyncRequestMaxUserFailureCountBeforeSkip (${SyncRequestMaxUserFailureCountBeforeSkip}) reached.`
+            )
           }
         } else {
           // Reset failure count if all files were successfully saved
@@ -355,56 +465,78 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
          * Write all records to DB
          */
 
-        await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
-          ...clockRecord,
-          cnodeUserUUID
-        })), { transaction })
+        await models.ClockRecord.bulkCreate(
+          fetchedCNodeUser.clockRecords.map((clockRecord) => ({
+            ...clockRecord,
+            cnodeUserUUID
+          })),
+          { transaction }
+        )
         logger.info(redisKey, 'Saved all ClockRecord entries to DB')
 
-        await models.File.bulkCreate(nonTrackFiles.map(file => {
-          if (CIDsThatFailedSaveFileOp.has(file.multihash)) {
-            file.skipped = true // defaults to false
-          }
-          return {
-            ...file,
-            trackBlockchainId: null,
-            cnodeUserUUID
-          }
-        }), { transaction })
+        await models.File.bulkCreate(
+          nonTrackFiles.map((file) => {
+            if (CIDsThatFailedSaveFileOp.has(file.multihash)) {
+              file.skipped = true // defaults to false
+            }
+            return {
+              ...file,
+              trackBlockchainId: null,
+              cnodeUserUUID
+            }
+          }),
+          { transaction }
+        )
         logger.info(redisKey, 'Saved all non-track File entries to DB')
 
-        await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
-          ...track,
-          cnodeUserUUID
-        })), { transaction })
+        await models.Track.bulkCreate(
+          fetchedCNodeUser.tracks.map((track) => ({
+            ...track,
+            cnodeUserUUID
+          })),
+          { transaction }
+        )
         logger.info(redisKey, 'Saved all Track entries to DB')
 
-        await models.File.bulkCreate(trackFiles.map(trackFile => {
-          if (CIDsThatFailedSaveFileOp.has(trackFile.multihash)) {
-            trackFile.skipped = true // defaults to false
-          }
-          return {
-            ...trackFile,
-            cnodeUserUUID
-          }
-        }), { transaction })
+        await models.File.bulkCreate(
+          trackFiles.map((trackFile) => {
+            if (CIDsThatFailedSaveFileOp.has(trackFile.multihash)) {
+              trackFile.skipped = true // defaults to false
+            }
+            return {
+              ...trackFile,
+              cnodeUserUUID
+            }
+          }),
+          { transaction }
+        )
         logger.info(redisKey, 'Saved all track File entries to DB')
 
-        await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
-          ...audiusUser,
-          cnodeUserUUID
-        })), { transaction })
+        await models.AudiusUser.bulkCreate(
+          fetchedCNodeUser.audiusUsers.map((audiusUser) => ({
+            ...audiusUser,
+            cnodeUserUUID
+          })),
+          { transaction }
+        )
         logger.info(redisKey, 'Saved all AudiusUser entries to DB')
 
         await transaction.commit()
         await redisLock.removeLock(redisKey)
 
-        logger.info(redisKey, `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${numCIDsThatFailedSaveFileOp} skipped.`)
+        logger.info(
+          redisKey,
+          `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${numCIDsThatFailedSaveFileOp} skipped.`
+        )
 
         // track that sync for this user was successful
         await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
       } catch (e) {
-        logger.error(redisKey, `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`, e)
+        logger.error(
+          redisKey,
+          `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`,
+          e
+        )
 
         await transaction.rollback()
         await redisLock.removeLock(redisKey)
@@ -416,26 +548,47 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     // two conditions where we wipe the state on the secondary
     // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
     // if the secondary gets into a weird state with constraints, wipe the records before future re-syncs
-    if (e.message.includes('Can only insert contiguous clock values') || e.message.includes('SequelizeForeignKeyConstraintError')) {
-      for (let wallet of walletPublicKeys) {
-        logger.error(`Sync error for ${wallet} - "${e.message}". Clearing db state for wallet.`)
+    if (
+      e.message.includes('Can only insert contiguous clock values') ||
+      e.message.includes('SequelizeForeignKeyConstraintError')
+    ) {
+      for (const wallet of walletPublicKeys) {
+        logger.error(
+          `Sync error for ${wallet} - "${e.message}". Clearing db state for wallet.`
+        )
         await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
       }
     }
     errorObj = e
 
-    for (let wallet of walletPublicKeys) {
+    for (const wallet of walletPublicKeys) {
       await SyncHistoryAggregator.recordSyncFail(wallet)
     }
   } finally {
     // Release all redis locks
-    for (let wallet of walletPublicKeys) {
-      let redisKey = redis.getNodeSyncRedisKey(wallet)
+    for (const wallet of walletPublicKeys) {
+      const redisKey = redis.getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
     }
 
-    if (errorObj) logger.error(redisKey, `Sync complete for wallets: ${walletPublicKeys.join(',')}. Status: Error, message: ${errorObj.message}. Duration sync: ${Date.now() - start}. From endpoint ${creatorNodeEndpoint}.`)
-    else logger.info(redisKey, `Sync complete for wallets: ${walletPublicKeys.join(',')}. Status: Success. Duration sync: ${Date.now() - start}. From endpoint ${creatorNodeEndpoint}.`)
+    if (errorObj)
+      logger.error(
+        redisKey,
+        `Sync complete for wallets: ${walletPublicKeys.join(
+          ','
+        )}. Status: Error, message: ${errorObj.message}. Duration sync: ${
+          Date.now() - start
+        }. From endpoint ${creatorNodeEndpoint}.`
+      )
+    else
+      logger.info(
+        redisKey,
+        `Sync complete for wallets: ${walletPublicKeys.join(
+          ','
+        )}. Status: Success. Duration sync: ${
+          Date.now() - start
+        }. From endpoint ${creatorNodeEndpoint}.`
+      )
   }
 
   return errorObj
@@ -444,7 +597,12 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 /**
  * Given IPFS node peer addresses, add to bootstrap peers list and manually connect
  **/
-async function _initBootstrapAndRefreshPeers ({ ipfs }, logger, targetIPFSPeerAddresses, redisKey) {
+async function _initBootstrapAndRefreshPeers(
+  { ipfs },
+  logger,
+  targetIPFSPeerAddresses,
+  redisKey
+) {
   logger.info(redisKey, 'Initializing Bootstrap Peers:')
 
   // Get own IPFS node's peer addresses
@@ -455,8 +613,12 @@ async function _initBootstrapAndRefreshPeers ({ ipfs }, logger, targetIPFSPeerAd
   const ipfsPeerAddresses = ipfsID.addresses
 
   // For each targetPeerAddress, add to trusted peer list and open connection.
-  for (let targetPeerAddress of targetIPFSPeerAddresses) {
-    if (targetPeerAddress.includes('ip6') || targetPeerAddress.includes('127.0.0.1')) continue
+  for (const targetPeerAddress of targetIPFSPeerAddresses) {
+    if (
+      targetPeerAddress.includes('ip6') ||
+      targetPeerAddress.includes('127.0.0.1')
+    )
+      continue
     if (ipfsPeerAddresses.includes(targetPeerAddress)) {
       logger.info(redisKey, 'ipfs addresses are same - do not connect')
       continue
