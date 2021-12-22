@@ -85,8 +85,11 @@ def test_listen_streak_challenge(app):
 
     with db.scoped_session() as session:
         setup_challenges(session)
+
         # wrapped dispatch play
-        dp = lambda offset: dispatch_play(offset, session, bus)
+        def dp(offset):
+            return dispatch_play(offset, session, bus)
+
         scope_and_process = make_scope_and_process(bus, session)
 
         # Make sure plays increment the step count
@@ -144,7 +147,9 @@ def test_multiple_listens(app):
         # make sure empty to start
         assert len(state) == 0
 
-        dp = lambda offset: dispatch_play(offset, session, bus)
+        def dp(offset):
+            return dispatch_play(offset, session, bus)
+
         scope_and_process = make_scope_and_process(bus, session)
         scope_and_process(lambda: dp(1))
         state = listen_streak_challenge_manager.get_user_challenge_state(
