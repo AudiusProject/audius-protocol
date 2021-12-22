@@ -34,7 +34,7 @@ function update_redirect_target_weights (premature)
         else
             local request_count = tonumber(res.body)
             redirect_target_weights[redirect_target] = request_count
-            maximum_reqeust_count = math.max(maximum_request_count, request_count)
+            maximum_request_count = math.max(maximum_request_count, request_count)
         end
     end
     httpc:close()
