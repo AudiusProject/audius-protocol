@@ -329,7 +329,7 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
     challenge_bus = index_solana_plays.challenge_event_bus
 
     # Process each batch in parallel
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         parse_sol_tx_futures = {
             executor.submit(
                 parse_sol_play_transaction,
@@ -386,17 +386,8 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
         # the data is successfully fetched so we can add it to the db session and dispatch
         # events to challenge bus
         with db.scoped_session() as session:
+            session.bulk_save_objects(plays)
             for play in plays:
-                session.add(
-                    Play(
-                        user_id=play.get('user_id'),
-                        play_item_id=play.get('track_id'),
-                        created_at=play.get('created_at'),
-                        source=play.get('source'),
-                        slot=play.get('slot'),
-                        signature=play.get('tx_sig'),
-                    )
-                )
                 if play.get('tx_sig') == last_tx_in_batch:
                     # Cache the latest play from this batch
                     # This reflects the ordering from chain
