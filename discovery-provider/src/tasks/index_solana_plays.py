@@ -386,8 +386,18 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
         # the data is successfully fetched so we can add it to the db session and dispatch
         # events to challenge bus
         with db.scoped_session() as session:
-            session.bulk_save_objects(plays)
+            plays_to_save = []
             for play in plays:
+                plays_to_save.append(
+                    Play(
+                        user_id=play.get('user_id'),
+                        play_item_id=play.get('track_id'),
+                        created_at=play.get('created_at'),
+                        source=play.get('source'),
+                        slot=play.get('slot'),
+                        signature=play.get('tx_sig'),
+                    )
+                )
                 if play.get('tx_sig') == last_tx_in_batch:
                     # Cache the latest play from this batch
                     # This reflects the ordering from chain
@@ -398,10 +408,15 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
                     }
                     cache_latest_sol_play_db_tx(redis, most_recent_db_play)
 
+            # Save in bulk
+            session.bulk_save_objects(plays_to_save)
+
         track_play_ids = [play["track_id"] for play in plays]
         if track_play_ids:
             redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
 
+        logger.info("index_solana_plays.py | Dispatching listen events")
+        listen_dispatch_start = time.time()
         for event in challenge_bus_events:
             challenge_bus.dispatch(
                 ChallengeEvent.track_listen,
@@ -409,6 +424,10 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
                 event.get('user_id'),
                 {"created_at": event.get('created_at')},
             )
+        listen_dispatch_end = time.time()
+        listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
+        logger.info(
+            f"index_solana_plays.py | Dispatched listen events in {listen_dispatch_diff}")
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
