@@ -754,7 +754,7 @@ module.exports = function (app) {
           redisClient.set(`streamFallback:::${blockchainId}`, JSON.stringify(fileRecord), 'EX', 60 * 60)
         }
       } catch (e) {
-        req.logger.error({err: e}, 'Error falling back to reconstructing data from discovery to stream')
+        req.logger.error({error: e}, 'Error falling back to reconstructing data from discovery to stream')
       }
     }
 
