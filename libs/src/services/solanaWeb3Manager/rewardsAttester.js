@@ -64,7 +64,7 @@ class RewardsAttester {
    *  }
    * @memberof RewardsAttester
    */
-  constructor ({ libs, startingBlock, offset, parallelization, logger, quorumSize, aaoEndpoint, aaoAddress, updateValues = () => {}, maxRetries = 3, reporter, challengeIdsDenyList }) {
+  constructor ({ libs, startingBlock, offset, parallelization, logger, quorumSize, aaoEndpoint, aaoAddress, updateValues = () => {}, maxRetries = 5, reporter, challengeIdsDenyList }) {
     this.libs = libs
     this.logger = logger
     this.parallelization = parallelization
@@ -84,12 +84,12 @@ class RewardsAttester {
     // recently disbursed challenges.
     this.recentlyDisbursedSet = new Set()
     // How long wait wait before retrying
-    this.cooldownMsec = 1000
+    this.cooldownMsec = 2000
     // How much we increase the cooldown between attempts:
     // coolDown = min(cooldownMsec * backoffExponent ^ retryCount, maxCooldownMsec)
-    this.backoffExponent = 1.5
+    this.backoffExponent = 1.8
     // Maximum time to wait before retrying
-    this.maxCooldownMsec = 10000
+    this.maxCooldownMsec = 15000
     // Maximum number of retries before moving on
     this.maxRetries = maxRetries
 
@@ -237,7 +237,7 @@ class RewardsAttester {
    *     handle: string,
    *     wallet: string,
    *     completedBlocknumber: number
-   *     instructionsPerTransaction: number | null
+   *     instructionsPerTransaction?: number
    * }} {
    *     challengeId,
    *     userId,
@@ -259,7 +259,7 @@ class RewardsAttester {
     handle,
     wallet,
     completedBlocknumber,
-    instructionsPerTransaction = null
+    instructionsPerTransaction,
   }) {
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}] ${instructionsPerTransaction ? '[with single attestation flow!]' : ''}`)
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
