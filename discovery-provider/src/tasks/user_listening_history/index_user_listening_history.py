@@ -58,7 +58,7 @@ def _index_user_listening_history(session):
         .all()
     )
     existing_users = {
-        [user_history.user_id for user_history in existing_user_listening_history]
+        user_history.user_id for user_history in existing_user_listening_history
     }
 
     # reduce new plays
