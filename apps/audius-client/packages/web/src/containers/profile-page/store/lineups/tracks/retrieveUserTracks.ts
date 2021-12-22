@@ -9,6 +9,11 @@ type RetrieveUserTracksArgs = {
   sort?: 'date' | 'plays'
   offset?: number
   limit?: number
+  /**
+   * This will only let a user obtain their own unlisted tracks, not
+   * anyone's unlisted tracks. Prevention logic is in discovery node.
+   */
+  getUnlisted?: boolean
 }
 
 export function* retrieveUserTracks({
@@ -16,14 +21,16 @@ export function* retrieveUserTracks({
   currentUserId,
   sort,
   offset,
-  limit
+  limit,
+  getUnlisted = false
 }: RetrieveUserTracksArgs): Generator<any, Track[], any> {
   const apiTracks = yield apiClient.getUserTracksByHandle({
     handle,
     currentUserId,
     sort,
     limit,
-    offset
+    offset,
+    getUnlisted
   })
 
   const processed: Track[] = yield processAndCacheTracks(apiTracks)

@@ -21,6 +21,7 @@ type FavoriteButtonProps = {
   wrapperClassName?: string
   isActive?: boolean
   isDisabled?: boolean
+  isUnlisted?: boolean
   stopPropagation?: boolean
   iconMode?: boolean // should it behave as a static icon?
   altVariant?: boolean
@@ -67,6 +68,7 @@ const FavoriteButton = ({
   onClick = () => {},
   isActive = false,
   isDisabled = false,
+  isUnlisted = false,
   stopPropagation = true,
   iconMode = false,
   altVariant = false
@@ -81,7 +83,10 @@ const FavoriteButton = ({
 
   return (
     <div
-      className={cn({ [styles.scaleYHolder]: yAnim }, wrapperClassName)}
+      className={cn(
+        { [styles.scaleYHolder]: yAnim, [styles.isHidden]: isUnlisted },
+        wrapperClassName
+      )}
       onAnimationEnd={() => {
         setYAnim(false)
       }}
