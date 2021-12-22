@@ -5,7 +5,7 @@ import { Favorite } from 'common/models/Favorite'
 import { ID, UID } from 'common/models/Identifiers'
 import { CoverArtSizes } from 'common/models/ImageSizes'
 import { Repost } from 'common/models/Repost'
-import { LineupTrack, Remix } from 'common/models/Track'
+import { FieldVisibility, LineupTrack, Remix } from 'common/models/Track'
 
 export enum TrackTileSize {
   LARGE = 'LARGE',
@@ -48,6 +48,7 @@ export type TrackTileProps = TileProps & {
   userSignedIn?: boolean
   listenCount?: number
   saveCount: number
+  fieldVisibility?: FieldVisibility
   artistName: string
   artistHandle: string
   artistIsVerified: boolean
@@ -57,6 +58,7 @@ export type TrackTileProps = TileProps & {
   uploadText?: string
   uploadError?: boolean
   isArtistPick?: boolean
+  isUnlisted?: boolean
   coSign?: Remix | null
   onClickOverflow?: (trackId: ID) => void
 }
@@ -109,6 +111,9 @@ export type DesktopTrackTileProps = {
   /** If the button actions should be clickable */
   isDisabled?: boolean
 
+  /** If the track is unlisted/hidden */
+  isUnlisted?: boolean
+
   /** If track metadata is loading in */
   isLoading?: boolean
 
@@ -138,6 +143,9 @@ export type DesktopTrackTileProps = {
 
   /** The beneath the username is the state, displays the favorite and repost counts */
   stats: ReactNode
+
+  /** The fields which are visible on the track */
+  fieldVisibility?: FieldVisibility
 
   /** Displayed on the bottom right is the kebab icon for menu options */
   rightActions?: ReactNode

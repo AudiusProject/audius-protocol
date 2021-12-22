@@ -399,7 +399,6 @@ const ProfilePage = ({
           ) : (
             <Lineup
               {...getLineupProps(artistTracks)}
-              count={profile.track_count}
               extraPrecedingElement={trackUploadChip}
               animateLeadingElement
               leadingElementId={profile._artist_pick}

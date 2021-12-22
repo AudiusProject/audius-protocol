@@ -290,7 +290,7 @@
   margin-left: 4px;
 }
 
-.artistPick {
+.topRightIcon {
   margin-right: 8px;
   display: inline-flex;
   align-items: center;
@@ -302,13 +302,13 @@
   letter-spacing: 0.2px;
 }
 
-.artistPick svg {
+.topRightIcon svg {
   height: 16px;
   width: 16px;
   margin-right: 4px;
 }
 
-.artistPick svg path {
+.topRightIcon svg path {
   fill: var(--neutral-light-4);
 }
 
@@ -351,4 +351,8 @@
 
 .rankIconContainer {
   margin-right: 4px !important;
+}
+
+.isHidden {
+  visibility: hidden;
 }

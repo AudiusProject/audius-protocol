@@ -221,6 +221,9 @@
   text-decoration: none;
 }
 
+.isHidden {
+  visibility: hidden;
+}
 
 .large .socialsRow .skeleton {
   height: 24px;
@@ -229,7 +232,6 @@
 .small .socialsRow .skeleton {
   height: 18px;
 }
-
 
 .large .socialsRow {
   height: 24px;
@@ -267,17 +269,17 @@
   color: var(--neutral-light-4);
 }
 
-.iconStar {
+.topRightIcon {
   height: 16px;
   width: 16px;
   margin-right: 6px;
 }
 
-.iconStar path {
+.topRightIcon path {
   fill: var(--neutral-light-4);
 }
 
-.artistPickLabel {
+.topRightIconLabel {
   display: inline-flex;
   align-items: center;
 

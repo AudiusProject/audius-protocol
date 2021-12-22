@@ -21,6 +21,7 @@ type RepostButtonProps = {
   wrapperClassName?: string
   isActive?: boolean
   isDisabled?: boolean
+  isUnlisted?: boolean
   stopPropagation?: boolean
   iconMode?: boolean // should it behave as a static icon?
   altVariant?: boolean
@@ -67,6 +68,7 @@ const RepostButton = ({
   onClick = () => {},
   isActive = false,
   isDisabled = false,
+  isUnlisted = false,
   stopPropagation = true,
   iconMode = false,
   altVariant = false
@@ -80,7 +82,10 @@ const RepostButton = ({
 
   return (
     <div
-      className={cn({ [styles.depress]: isDepressed }, wrapperClassName)}
+      className={cn(
+        { [styles.depress]: isDepressed, [styles.isHidden]: isUnlisted },
+        wrapperClassName
+      )}
       onAnimationEnd={() => {
         setIsDepressed(false)
       }}

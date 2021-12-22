@@ -4,7 +4,7 @@ import { StemTrackMetadata } from 'common/models/Track'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { Nullable, removeNullable } from 'common/utils/typeUtils'
 import { SearchKind } from 'containers/search-page/store/types'
-import AudiusBackend from 'services/AudiusBackend'
+import AudiusBackend, { AuthHeaders } from 'services/AudiusBackend'
 import {
   getEagerDiscprov,
   waitForLibsInit
@@ -210,6 +210,7 @@ type GetUserTracksByHandleArgs = {
   sort?: 'date' | 'plays'
   offset?: number
   limit?: number
+  getUnlisted: boolean
 }
 
 type GetRelatedArtistsArgs = CurrentUserIdArg &
@@ -875,7 +876,8 @@ class AudiusAPIClient {
     currentUserId,
     sort = 'date',
     limit,
-    offset
+    offset,
+    getUnlisted
   }: GetUserTracksByHandleArgs) {
     this._assertInitialized()
     const encodedCurrentUserId = encodeHashId(currentUserId)
@@ -886,9 +888,21 @@ class AudiusAPIClient {
       offset
     }
 
+    let headers = {}
+    if (encodedCurrentUserId && getUnlisted) {
+      const { data, signature } = await AudiusBackend.signDiscoveryNodeRequest()
+      headers = {
+        [AuthHeaders.Message]: data,
+        [AuthHeaders.Signature]: signature
+      }
+    }
+
     const response: Nullable<APIResponse<APITrack[]>> = await this._getResponse(
       FULL_ENDPOINT_MAP.userTracksByHandle(handle),
-      params
+      params,
+      true,
+      PathType.VersionFullPath,
+      headers
     )
 
     if (!response) return []
@@ -1339,7 +1353,8 @@ class AudiusAPIClient {
       const data = await window.audiusLibs.discoveryProvider._makeRequest(
         {
           endpoint: formattedPath,
-          queryParams: sanitizedParams
+          queryParams: sanitizedParams,
+          headers
         },
         retry
       )

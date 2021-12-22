@@ -1,6 +1,6 @@
 import React, { memo, MouseEvent, useCallback } from 'react'
 
-import { IconCrown } from '@audius/stems'
+import { IconCrown, IconHidden } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
@@ -16,7 +16,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
-import ArtistPick from '../ArtistPick'
+import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 import {
   TrackTileSize,
   DesktopTrackTileProps as TrackTileProps
@@ -26,7 +26,8 @@ import styles from './TrackTile.module.css'
 
 const messages = {
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,
-  artistPick: 'Artist Pick'
+  artistPick: 'Artist Pick',
+  hiddenTrack: 'Hidden Track'
 }
 
 const RankAndIndexIndicator = ({
@@ -64,6 +65,7 @@ const TrackTile = memo(
     isFavorited,
     isReposted,
     isOwner,
+    isUnlisted,
     listenCount,
     isActive,
     isDisabled,
@@ -76,6 +78,7 @@ const TrackTile = memo(
     userName,
     duration,
     stats,
+    fieldVisibility,
     bottomBar,
     isDarkMode,
     isMatrixMode,
@@ -93,6 +96,47 @@ const TrackTile = memo(
       (e: MouseEvent) => e.stopPropagation(),
       []
     )
+    const hideShare: boolean = fieldVisibility
+      ? fieldVisibility.share === false
+      : false
+    const hidePlays = fieldVisibility
+      ? fieldVisibility.play_count === false
+      : false
+
+    const renderShareButton = () => {
+      return (
+        <Tooltip text={'Share'} disabled={isDisabled} placement={'bottom'}>
+          <div
+            className={styles.iconButtonContainer}
+            onClick={onStopPropagation}
+          >
+            <Toast
+              text={'Copied To Clipboard!'}
+              disabled={isDisabled}
+              requireAccount={false}
+              delay={SHARE_TOAST_TIMEOUT_MILLIS}
+              fillParent={false}
+              placement={ComponentPlacement.RIGHT}
+              mount={MountPlacement.PAGE}
+            >
+              <div
+                className={cn(styles.iconShareContainer, {
+                  [styles.isHidden]: hideShare
+                })}
+              >
+                <ShareButton
+                  onClick={onClickShare}
+                  isDarkMode={!!isDarkMode}
+                  className={styles.iconButton}
+                  stopPropagation={false}
+                  isMatrixMode={isMatrixMode}
+                />
+              </div>
+            </Toast>
+          </div>
+        </Tooltip>
+      )
+    }
 
     return (
       <div
@@ -125,7 +169,18 @@ const TrackTile = memo(
         >
           {artwork}
         </div>
-        {isArtistPick && <ArtistPick isMatrixMode={isMatrixMode} />}
+        {isArtistPick && (
+          <TrackBannerIcon
+            type={TrackBannerIconType.STAR}
+            isMatrixMode={isMatrixMode}
+          />
+        )}
+        {isUnlisted && (
+          <TrackBannerIcon
+            type={TrackBannerIconType.HIDDEN}
+            isMatrixMode={isMatrixMode}
+          />
+        )}
         <div
           className={cn(styles.body, {
             // if track and not playlist/album
@@ -155,7 +210,12 @@ const TrackTile = memo(
                 userName
               )}
             </div>
-            <div className={styles.socialsRow}>
+
+            <div
+              className={cn(styles.socialsRow, {
+                [styles.isHidden]: isUnlisted
+              })}
+            >
               {isLoading ? (
                 <Skeleton width='30%' className={styles.skeleton} />
               ) : (
@@ -164,9 +224,15 @@ const TrackTile = memo(
             </div>
             <div className={styles.topRight}>
               {isArtistPick && (
-                <div className={styles.artistPickLabel}>
-                  <IconStar className={styles.iconStar} />
+                <div className={styles.topRightIconLabel}>
+                  <IconStar className={styles.topRightIcon} />
                   {messages.artistPick}
+                </div>
+              )}
+              {isUnlisted && (
+                <div className={styles.topRightIconLabel}>
+                  <IconHidden className={styles.topRightIcon} />
+                  {messages.hiddenTrack}
                 </div>
               )}
               {!isLoading && duration && (
@@ -175,7 +241,11 @@ const TrackTile = memo(
             </div>
             <div className={styles.bottomRight}>
               {!isLoading && listenCount !== undefined && listenCount > 0 && (
-                <div className={styles.plays}>
+                <div
+                  className={cn(styles.plays, {
+                    [styles.isHidden]: hidePlays
+                  })}
+                >
                   {formatCount(listenCount)}
                   {messages.getPlays(listenCount)}
                 </div>
@@ -185,7 +255,10 @@ const TrackTile = memo(
           <div className={styles.divider} />
           <div className={styles.bottomRow}>
             {bottomBar}
-            {!isLoading && showIconButtons && (
+            {!isLoading && showIconButtons && isUnlisted && (
+              <div className={styles.iconButtons}>{renderShareButton()}</div>
+            )}
+            {!isLoading && showIconButtons && !isUnlisted && (
               <div className={styles.iconButtons}>
                 <Tooltip
                   text={isReposted ? 'Unrepost' : 'Repost'}
@@ -194,7 +267,8 @@ const TrackTile = memo(
                 >
                   <div
                     className={cn(styles.iconButtonContainer, {
-                      [styles.isDisabled]: isOwner
+                      [styles.isDisabled]: isOwner,
+                      [styles.isHidden]: isUnlisted
                     })}
                   >
                     <RepostButton
@@ -214,7 +288,8 @@ const TrackTile = memo(
                 >
                   <div
                     className={cn(styles.iconButtonContainer, {
-                      [styles.isDisabled]: isOwner
+                      [styles.isDisabled]: isOwner,
+                      [styles.isHidden]: isUnlisted
                     })}
                   >
                     <FavoriteButton
@@ -227,36 +302,7 @@ const TrackTile = memo(
                     />
                   </div>
                 </Tooltip>
-                <Tooltip
-                  text={'Share'}
-                  disabled={isDisabled}
-                  placement={'bottom'}
-                >
-                  <div
-                    className={styles.iconButtonContainer}
-                    onClick={onStopPropagation}
-                  >
-                    <Toast
-                      text={'Copied To Clipboard!'}
-                      disabled={isDisabled}
-                      requireAccount={false}
-                      delay={SHARE_TOAST_TIMEOUT_MILLIS}
-                      fillParent={false}
-                      placement={ComponentPlacement.RIGHT}
-                      mount={MountPlacement.PAGE}
-                    >
-                      <div className={styles.iconShareContainer}>
-                        <ShareButton
-                          onClick={onClickShare}
-                          isDarkMode={!!isDarkMode}
-                          className={styles.iconButton}
-                          stopPropagation={false}
-                          isMatrixMode={isMatrixMode}
-                        />
-                      </div>
-                    </Toast>
-                  </div>
-                </Tooltip>
+                {renderShareButton()}
               </div>
             )}
             {!isLoading && (

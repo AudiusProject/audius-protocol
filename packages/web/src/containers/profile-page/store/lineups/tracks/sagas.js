@@ -41,6 +41,7 @@ function* getTracks({ offset, limit, payload }) {
     user => 'twitter_handle' in user
   )
   const sort = payload.sort === TracksSortMode.POPULAR ? 'plays' : 'date'
+  const getUnlisted = true
 
   if (user._artist_pick) {
     let [pinnedTrack, processed] = yield all([
@@ -50,7 +51,8 @@ function* getTracks({ offset, limit, payload }) {
         currentUserId,
         sort,
         limit,
-        offset
+        offset,
+        getUnlisted
       })
     ])
 
@@ -92,7 +94,8 @@ function* getTracks({ offset, limit, payload }) {
       currentUserId,
       sort,
       limit,
-      offset
+      offset,
+      getUnlisted
     })
     return processed
   }

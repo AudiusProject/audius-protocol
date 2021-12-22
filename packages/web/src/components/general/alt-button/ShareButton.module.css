@@ -13,3 +13,6 @@
   filter: brightness(0.8);
 }
 
+.isHidden {
+  visibility: hidden;
+}
