@@ -55,7 +55,7 @@ const streamFromFileSystem = async (req, res, path) => {
   try {
     // If file cannot be found on disk, throw error
     if (!fs.existsSync(path)) {
-      throw new Error('File could not be found on disk.')
+      throw new Error(`File could not be found on disk, path=${path}`)
     }
 
     // Stream file from file system
@@ -724,3 +724,4 @@ module.exports = function (app) {
 }
 
 module.exports.getCID = getCID
+module.exports.streamFromFileSystem = streamFromFileSystem

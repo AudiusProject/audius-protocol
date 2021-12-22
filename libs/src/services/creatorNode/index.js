@@ -376,12 +376,12 @@ class CreatorNode {
 
   async handleAsyncAndResumableTrackUpload (file, onProgress) {
     const { uuid } = await this._uploadResumableTrackFile(file, onProgress)
-    return this.pollProcessingStatus('transcode', uuid)
+    return this.pollProcessingStatus('trackContentUpload', uuid)
   }
 
   async handleAsyncAndNotResumableTrackUpload (file, onProgress) {
     const { data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress)
-    return this.pollProcessingStatus('transcode', uuid)
+    return this.pollProcessingStatus('trackContentUpload', uuid)
   }
 
   async handleSynchronousAndNotResumableTrackUpload (file, onProgress) {

@@ -13,7 +13,9 @@ const {
   removeTrackFolder,
   handleTrackContentUpload,
   getFileExtension,
-  checkFileMiddleware
+  checkFileMiddleware,
+  getTmpTrackUploadArtifactsWithFileNamePath,
+  getTmpSegmentsPath
 } = require('../fileManager')
 const {
   handleResponse,
@@ -35,7 +37,7 @@ const {
 const TranscodingQueue = require('../TranscodingQueue')
 const { getSegmentsDuration } = require('../segmentDuration')
 
-const { getCID } = require('./files')
+const { getCID, streamFromFileSystem } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const { FileProcessingQueue } = require('../FileProcessingQueue')
@@ -159,20 +161,71 @@ module.exports = function (app) {
       return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
     }
 
-    await FileProcessingQueue.addTrackContentUploadTask(
-      {
-        logContext: req.logContext,
-        req: {
-          fileName: req.fileName,
-          fileDir: req.fileDir,
-          fileDestination: req.file.destination,
-          session: {
-            cnodeUserUUID: req.session.cnodeUserUUID
+    let handOffTrack = false
+    const isTranscodeQueueAvailable = await TranscodingQueue.isAvailable()
+    if (isTranscodeQueueAvailable) {
+      await FileProcessingQueue.addTrackContentUploadTask(
+        {
+          logContext: req.logContext,
+          req: {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            fileDestination: req.file.destination,
+            session: {
+              cnodeUserUUID: req.session.cnodeUserUUID
+            },
+            handOffTrack
           }
         }
-      }
-    )
+      )
+    } else {
+      handOffTrack = true
+
+      // handleTrackHandOff()
+    }
+
     return successResponse({ uuid: req.logContext.requestID })
+  }))
+
+  /**
+   * TODO: (Needs to)
+   * - validate requester is a valid SP
+   * - make sure current node has enough storage
+   * - upload the file
+   * - submit transcode and segment request
+   */
+  app.post('/transcode_and_segment', /* important middleware ... */ handleResponse(async (req, res) => {
+    await FileProcessingQueue.addTranscodeAndSegmentTask(
+      /* context */
+    )
+
+    return successResponse({ uuid: req.requestID })
+  }))
+
+  /**
+   * TODO: (Needs to)
+   * - validate requester is a valid SP
+   */
+  app.get('/transcode_and_segment', /* important middleware ... */ handleResponse(async (req, res) => {
+    const fileName = req.query.fileName
+    const fileType = req.query.fileType
+
+    if (!fileName || !fileType) {
+      return errorResponseBadRequest(`No provided filename=${fileName} or fileType=${fileType}`)
+    }
+
+    let path
+    if (fileType === 'transcode') {
+      path = getTmpTrackUploadArtifactsWithFileNamePath(fileName)
+    } else if (fileType === 'segment') {
+      path = getTmpSegmentsPath(fileName)
+    }
+
+    try {
+      return await streamFromFileSystem(req, res, path)
+    } catch (e) {
+      return errorResponseServerError(`Could not serve content, error=${e.toString()}`)
+    }
   }))
 
   /**

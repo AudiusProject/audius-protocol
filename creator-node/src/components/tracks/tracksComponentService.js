@@ -1,4 +1,10 @@
 const path = require('path')
+const axios = require('axios')
+const fs = require('fs')
+const stream = require('stream')
+const { promisify } = require('util')
+const fsReadDir = promisify(fs.readdir)
+const pipeline = promisify(stream.pipeline)
 
 const config = require('../../config.js')
 const { logger: genericLogger, logInfoWithDuration, getStartTime } = require('../../logging')
@@ -7,10 +13,12 @@ const TranscodingQueue = require('../../TranscodingQueue')
 const models = require('../../models')
 const DBManager = require('../../dbManager')
 const fileManager = require('../../fileManager')
+const FileProcessingQueue = require('../../FileProcessingQueue')
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
 const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
+const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
 
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
@@ -164,7 +172,99 @@ async function transcodeAndSegment ({ cnodeUserUUID, fileName, fileDir, logConte
     throw new Error(err.toString())
   }
 
-  return { transcodedFilePath, segmentFilePaths }
+  // ? do we want to expose the file path routes?
+  return { transcodedFilePath, segmentFilePaths, fileName }
+}
+
+async function handleTrackHandOff ({ libs, req }) {
+  const sps = await selectRandomSPs(libs)
+
+  for (let sp of sps) {
+    try {
+      handOffTrack({ sp, req, libs })
+    } catch (e) {
+      // delete tmp dir here if fails and continue
+    }
+  }
+}
+
+async function selectRandomSPs (libs, numberOfSPs = NUMBER_OF_SPS_FOR_HANDOFF_TRACK) {
+  const allSPs = await libs.ethContracts.getServiceProviderList('content-node')
+
+  const validSPs = new Set()
+  while (validSPs.size() <= numberOfSPs) {
+    const index = getRandomInt(allSPs.length)
+    if (validSPs.has(allSPs[index])) continue
+    validSPs.add(allSPs[index])
+  }
+
+  return Array.from(validSPs)
+}
+
+function getRandomInt (max) {
+  return Math.floor(Math.random() * max)
+}
+
+// If any call fails -> throw error
+async function handOffTrack ({ sp, req, libs }) {
+  await axios({
+    url: sp,
+    method: 'get',
+    route: '/health_check'
+  })
+
+  const requestID = req.logContext.uuid
+  await axios({
+    url: sp,
+    method: 'post',
+    route: '/transcode_and_segment',
+    headers: req.headers,
+    formData: req.formData,
+    requestID
+  })
+
+  // TODO: Make sure this comes without the extension
+  const { fileName } = await libs.creatorNode.pollProcessingStatus(
+    FileProcessingQueue.PROCESS_NAMES.transcodeAndSegment,
+    requestID
+  )
+
+  // Get transcode and write to tmp disk
+  const transcodePath = fileManager.getTmpTrackUploadArtifactsWithFileNamePath(fileName)
+  const transcodeFilePath = path.join(transcodePath, fileName + '-dl.mp3')
+
+  let res = await axios({
+    url: sp,
+    method: 'get',
+    route: '/transcode_and_segment',
+    query: { fileName: fileName + '-dl.mp3', fileType: 'transcode' },
+    responseType: 'stream'
+  })
+
+  await pipeline(res.data, fs.createWriteStream(res.data, transcodeFilePath))
+
+  // Get segments and write to tmp disk
+  const segmentsPath = fileManager.getTmpSegmentsPath(fileName)
+  const numberOfSegments = await fsReadDir(segmentsPath).length
+
+  for (let i = 0; i < numberOfSegments; i++) {
+    const segmentFileName = getSegmentFileName(i)
+
+    res = await axios({
+      url: sp,
+      method: 'get',
+      route: '/transcode_and_segment',
+      query: { fileName: segmentFileName, fileType: 'segment' },
+      responseType: 'stream'
+    })
+
+    await pipeline(res.data, fs.createWriteStream(res.data, segmentFileName))
+  }
+}
+
+function getSegmentFileName (index) {
+  const suffix = ('00000' + index).slice(-5)
+  return `segment${suffix}.ts`
 }
 
 module.exports = {

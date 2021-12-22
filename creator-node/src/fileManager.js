@@ -213,6 +213,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
         }
 
         // Write file to disk
+        // TODO: USE THIS USE THIS
         await Utils.writeStreamToFileSystem(response.data, expectedStoragePath)
         fileFound = true
 
@@ -408,6 +409,18 @@ async function removeTrackFolder ({ logContext }, fileDir) {
   }
 }
 
+const getRandomFileName = () => {
+  return getUuid()
+}
+
+const getTmpTrackUploadArtifactsWithFileNamePath = (fileName) => {
+  return path.join(DiskManager.getTmpTrackUploadArtifactsPath(), fileName)
+}
+
+const getTmpSegmentsPath = (fileName) => {
+  return path.join(DiskManager.getTmpTrackUploadArtifactsPath(), fileName, 'segments')
+}
+
 // Simple in-memory storage for metadata/generic files
 const memoryStorage = multer.memoryStorage()
 const upload = multer({
@@ -426,12 +439,13 @@ const uploadTempDiskStorage = multer({
 const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     // save file under randomly named folders to avoid collisions
-    const randomFileName = getUuid()
-    const fileDir = path.join(DiskManager.getTmpTrackUploadArtifactsPath(), randomFileName)
+    const randomFileName = getRandomFileName()
+    const fileDir = getTmpTrackUploadArtifactsWithFileNamePath(randomFileName)
+    const segmentsDir = getTmpSegmentsPath(randomFileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)
-    fs.mkdirSync(fileDir + '/segments')
+    fs.mkdirSync(segmentsDir)
 
     req.fileDir = fileDir
     const fileExtension = getFileExtension(file.originalname)
@@ -485,6 +499,7 @@ function getFileExtension (fileName) {
  * @param {string} param.fileName the file name
  * @param {string} param.fileMimeType the file type
  */
+// only used for resumable upload :(  not relevant
 function checkFileType (logger, { fileName, fileMimeType }) {
   const fileExtension = getFileExtension(fileName).slice(1)
   // the function should call `cb` with a boolean to indicate if the file should be accepted
@@ -576,5 +591,7 @@ module.exports = {
   handleTrackContentUpload,
   hasEnoughStorageSpace,
   getFileExtension,
-  checkFileMiddleware
+  checkFileMiddleware,
+  getTmpTrackUploadArtifactsWithFileNamePath,
+  getTmpSegmentsPath
 }
