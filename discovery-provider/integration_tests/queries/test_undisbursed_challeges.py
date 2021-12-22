@@ -48,7 +48,8 @@ def setup_challenges(app):
                 name=f"test_name{i}",
                 created_at=datetime.now(),
                 updated_at=datetime.now(),
-            ) for i in range(7)
+            )
+            for i in range(7)
         ]
 
         user_challenges = [
@@ -132,7 +133,7 @@ def test_undisbursed_challenges(app):
                 "amount": "5",
                 "completed_blocknumber": 100,
                 "handle": "TestHandle6",
-                "wallet": '0x6'
+                "wallet": "0x6",
             },
             {
                 "challenge_id": "test_challenge_3",
@@ -141,7 +142,7 @@ def test_undisbursed_challenges(app):
                 "amount": "5",
                 "completed_blocknumber": 100,
                 "handle": "TestHandle6",
-                "wallet": '0x6'
+                "wallet": "0x6",
             },
             {
                 "challenge_id": "test_challenge_2",
@@ -150,7 +151,7 @@ def test_undisbursed_challenges(app):
                 "amount": "5",
                 "completed_blocknumber": 102,
                 "handle": "TestHandle4",
-                "wallet": '0x4'
+                "wallet": "0x4",
             },
             {
                 "challenge_id": "test_challenge_2",
@@ -159,7 +160,7 @@ def test_undisbursed_challenges(app):
                 "amount": "5",
                 "completed_blocknumber": 102,
                 "handle": "TestHandle5",
-                "wallet": '0x5'
+                "wallet": "0x5",
             },
         ]
         assert expected == undisbursed

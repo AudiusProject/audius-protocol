@@ -163,16 +163,13 @@ def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
         message_hash=to_sign_hash, signature=msg_signature
     )
 
-    assert (
-        Web3.toChecksumAddress(recovered_pubkey.to_address())
-        == config_owner_wallet
-    )
+    assert Web3.toChecksumAddress(recovered_pubkey.to_address()) == config_owner_wallet
 
 
 def test_get_create_sender_attestation_not_registered(app, patch_get_all_other_nodes):
     new_sender_address = "0x04e140D27F3d5EE9EcA0109A71CcBa0109964DCa"
     with pytest.raises(
         Exception,
-        match=r"Expected 0x04e140D27F3d5EE9EcA0109A71CcBa0109964DCa to be registered on chain"
+        match=r"Expected 0x04e140D27F3d5EE9EcA0109A71CcBa0109964DCa to be registered on chain",
     ):
         get_create_sender_attestation(new_sender_address)

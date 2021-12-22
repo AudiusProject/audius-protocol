@@ -10,7 +10,8 @@ def add_labels(rects):
         label.set_text((format(int(label.get_text()), ",")))
 
 
-users = json.load(open("output.json"))
+with open("output.json", "r") as f:
+    users = json.load(f)
 
 creator_nodes = set()
 for user in users:
@@ -133,7 +134,8 @@ frequency = [0] * (max_frequency + 1)
 for key, value in full_sync_count_frequency.items():
     frequency[key] = len(value)
 
-json.dump(dict(full_sync_count_frequency), open("full_synced.json", "w"), indent=4)
+with open("full_synced.json", "w") as f:
+    json.dump(dict(full_sync_count_frequency), f, indent=4)
 
 fig, ax = plt.subplots()
 

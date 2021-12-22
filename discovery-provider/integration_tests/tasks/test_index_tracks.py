@@ -176,6 +176,7 @@ ipfs_client = IPFSClient(
     }
 )
 
+
 # ========================================== Start Tests ==========================================
 @patch("src.tasks.index")
 def test_index_tracks(mock_index_task, app):
@@ -357,8 +358,8 @@ def test_index_tracks(mock_index_task, app):
                 [
                     route
                     for route in track_routes
-                    if route.slug == "real-magic-bassy-flip-2"
-                    or route.slug == "real-magic-bassy-flip"
+                    if route.slug
+                    in ("real-magic-bassy-flip-2", "real-magic-bassy-flip")
                 ]
             )
             == 2

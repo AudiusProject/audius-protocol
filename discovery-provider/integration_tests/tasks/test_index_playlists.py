@@ -10,6 +10,7 @@ from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, Upd
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
+
 # event_type: PlaylistCreated
 def get_playlist_created_event():
     event_type = playlist_event_types_lookup["playlist_created"]

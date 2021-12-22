@@ -11,6 +11,7 @@ REDIS_URL = shared_config["redis"]["url"]
 
 logger = logging.getLogger(__name__)
 
+
 # Tests
 def test_index_aggregate_plays_populate(app):
     """Test that we should populate plays from empty"""
@@ -29,7 +30,7 @@ def test_index_aggregate_plays_populate(app):
             {"track_id": 3, "title": "track 3"},
             {"track_id": 4, "title": "track 4"},
         ],
-        "plays" : [
+        "plays": [
             # Current Plays
             {"item_id": 0},
             {"item_id": 0},
@@ -45,7 +46,7 @@ def test_index_aggregate_plays_populate(app):
             {"item_id": 3},
             {"item_id": 4},
             {"item_id": 4},
-        ]
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -54,9 +55,7 @@ def test_index_aggregate_plays_populate(app):
         _update_aggregate_plays(session)
 
         results: List[AggregatePlays] = (
-            session.query(AggregatePlays)
-            .order_by(AggregatePlays.play_item_id)
-            .all()
+            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
         )
 
         assert len(results) == 5
@@ -86,16 +85,16 @@ def test_index_aggregate_plays_update(app):
             {"track_id": 3, "title": "track 3"},
             {"track_id": 4, "title": "track 4"},
         ],
-        "aggregate_plays" : [
+        "aggregate_plays": [
             # Current Plays
             {"play_item_id": 1, "count": 3},
             {"play_item_id": 2, "count": 3},
             {"play_item_id": 3, "count": 3},
         ],
-        "indexing_checkpoints" : [
+        "indexing_checkpoints": [
             {"tablename": "aggregate_plays", "last_checkpoint": 9}
         ],
-        "plays" : [
+        "plays": [
             # Current Plays
             {"item_id": 1},
             {"item_id": 1},
@@ -106,15 +105,13 @@ def test_index_aggregate_plays_update(app):
             {"item_id": 3},
             {"item_id": 3},
             {"item_id": 3},
-
             # New plays
             {"item_id": 1},
             {"item_id": 1},
             {"item_id": 2},
             {"item_id": 4},
             {"item_id": 4},
-        ]
-
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -123,9 +120,7 @@ def test_index_aggregate_plays_update(app):
         _update_aggregate_plays(session)
 
         results: List[AggregatePlays] = (
-            session.query(AggregatePlays)
-            .order_by(AggregatePlays.play_item_id)
-            .all()
+            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
         )
 
         assert len(results) == 4
@@ -137,6 +132,7 @@ def test_index_aggregate_plays_update(app):
         assert results[2].count == 3
         assert results[3].play_item_id == 4
         assert results[3].count == 2
+
 
 def test_index_aggregate_plays_same_checkpoint(app):
     """Test that we should not update when last index is the same"""
@@ -152,16 +148,16 @@ def test_index_aggregate_plays_same_checkpoint(app):
             {"track_id": 3, "title": "track 3"},
             {"track_id": 4, "title": "track 4"},
         ],
-        "aggregate_plays" : [
+        "aggregate_plays": [
             # Current Plays
             {"play_item_id": 1, "count": 3},
             {"play_item_id": 2, "count": 3},
             {"play_item_id": 3, "count": 3},
         ],
-        "indexing_checkpoints" : [
+        "indexing_checkpoints": [
             {"tablename": "aggregate_plays", "last_checkpoint": 9}
         ],
-        "plays" : [
+        "plays": [
             # Current Plays
             {"item_id": 1},
             {"item_id": 1},
@@ -172,8 +168,7 @@ def test_index_aggregate_plays_same_checkpoint(app):
             {"item_id": 3},
             {"item_id": 3},
             {"item_id": 3},
-        ]
-
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -182,12 +177,11 @@ def test_index_aggregate_plays_same_checkpoint(app):
         _update_aggregate_plays(session)
 
         results: List[AggregatePlays] = (
-            session.query(AggregatePlays)
-            .order_by(AggregatePlays.play_item_id)
-            .all()
+            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
         )
 
         assert len(results) == 3
+
 
 def test_index_aggregate_plays_no_plays(app):
     """Raise exception when there are no plays"""
@@ -196,16 +190,15 @@ def test_index_aggregate_plays_no_plays(app):
         db = get_db()
 
     # run
-    entities = {
-        "plays" : [
-        ]
-    }
+    entities = {"plays": []}
 
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         try:
             _update_aggregate_plays(session)
-            assert False, "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
+            assert (
+                False
+            ), "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
         except Exception:
             assert True

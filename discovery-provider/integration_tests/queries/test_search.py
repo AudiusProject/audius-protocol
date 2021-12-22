@@ -1,6 +1,10 @@
 from datetime import datetime
 from src.models import Track, Block, User, Follow, Playlist, Save, SaveType, UserBalance
-from src.queries.search_queries import playlist_search_query, track_search_query, user_search_query
+from src.queries.search_queries import (
+    playlist_search_query,
+    track_search_query,
+    user_search_query,
+)
 from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 from src.utils.db_session import get_db
 
@@ -124,7 +128,7 @@ def setup_search(db):
             followee_user_id=1,
             is_current=True,
             is_delete=False,
-            created_at=now
+            created_at=now,
         )
     ]
 
@@ -141,7 +145,7 @@ def setup_search(db):
             is_current=True,
             is_delete=False,
             updated_at=now,
-            created_at=now
+            created_at=now,
         ),
         Playlist(
             blockhash=hex(2),
@@ -155,8 +159,8 @@ def setup_search(db):
             is_current=True,
             is_delete=False,
             updated_at=now,
-            created_at=now
-        )
+            created_at=now,
+        ),
     ]
 
     saves = [
@@ -168,7 +172,7 @@ def setup_search(db):
             save_type=SaveType.track,
             created_at=now,
             is_current=True,
-            is_delete=False
+            is_delete=False,
         ),
         Save(
             blockhash=hex(1),
@@ -178,7 +182,7 @@ def setup_search(db):
             save_type=SaveType.playlist,
             created_at=now,
             is_current=True,
-            is_delete=False
+            is_delete=False,
         ),
         Save(
             blockhash=hex(1),
@@ -188,8 +192,8 @@ def setup_search(db):
             save_type=SaveType.album,
             created_at=now,
             is_current=True,
-            is_delete=False
-        )
+            is_delete=False,
+        ),
     ]
 
     balances = [
@@ -198,7 +202,7 @@ def setup_search(db):
             balance=0,
             associated_wallets_balance=0,
             associated_sol_wallets_balance=0,
-            waudio=0
+            waudio=0,
         )
     ]
 
@@ -248,6 +252,7 @@ def test_get_tracks_external(app):
         assert len(res["all"]) == 2
         assert len(res["saved"]) == 0
 
+
 def test_get_autocomplete_tracks(app):
     """Tests we get all tracks with autocomplete"""
     with app.app_context():
@@ -257,6 +262,7 @@ def test_get_autocomplete_tracks(app):
         res = track_search_query(session, "the track", 10, 0, True, None, False)
         assert len(res["all"]) == 2
         assert len(res["saved"]) == 0
+
 
 def test_get_tracks_internal(app):
     """Tests we get all tracks when a user is logged in"""
@@ -268,6 +274,7 @@ def test_get_tracks_internal(app):
         assert len(res["all"]) == 2
         assert len(res["saved"]) == 1
 
+
 def test_get_downloadable_tracks(app):
     """Tests we get only downloadable results"""
     with app.app_context():
@@ -277,6 +284,7 @@ def test_get_downloadable_tracks(app):
         res = track_search_query(session, "the track", 10, 0, False, None, True)
         assert len(res["all"]) == 1
         assert len(res["saved"]) == 0
+
 
 def test_get_external_users(app):
     """Tests we get all users"""
@@ -288,6 +296,7 @@ def test_get_external_users(app):
         assert len(res["all"]) == 2
         assert len(res["followed"]) == 0
 
+
 def test_get_autocomplete_users(app):
     """Tests we get all users with autocomplete"""
     with app.app_context():
@@ -297,6 +306,7 @@ def test_get_autocomplete_users(app):
         res = user_search_query(session, "user", 10, 0, True, None)
         assert len(res["all"]) == 2
         assert len(res["followed"]) == 0
+
 
 def test_get_internal_users(app):
     """Tests we get all users when a user is logged in"""
@@ -308,6 +318,7 @@ def test_get_internal_users(app):
         assert len(res["all"]) == 2
         assert len(res["followed"]) == 1
 
+
 def test_get_internal_users_no_following(app):
     """Tests we get all users for a user that doesn't follow anyone"""
     with app.app_context():
@@ -317,6 +328,7 @@ def test_get_internal_users_no_following(app):
         res = user_search_query(session, "user", 10, 0, False, 1)
         assert len(res["all"]) == 2
         assert len(res["followed"]) == 0
+
 
 def test_get_external_playlists(app):
     """Tests we get all playlists"""
@@ -328,6 +340,7 @@ def test_get_external_playlists(app):
         assert len(res["all"]) == 1
         assert len(res["saved"]) == 0
 
+
 def test_get_autocomplete_playlists(app):
     """Tests we get all tracks with autocomplete"""
     with app.app_context():
@@ -337,6 +350,7 @@ def test_get_autocomplete_playlists(app):
         res = playlist_search_query(session, "playlist", 10, 0, False, True, None)
         assert len(res["all"]) == 1
         assert len(res["saved"]) == 0
+
 
 def test_get_internal_playlists(app):
     """Tests we get playlists when a user is logged in"""
@@ -348,6 +362,7 @@ def test_get_internal_playlists(app):
         assert len(res["all"]) == 1
         assert len(res["saved"]) == 1
 
+
 def test_get_external_albums(app):
     """Tests we get all albums"""
     with app.app_context():
@@ -358,6 +373,7 @@ def test_get_external_albums(app):
         assert len(res["all"]) == 1
         assert len(res["saved"]) == 0
 
+
 def test_get_autocomplete_albums(app):
     """Tests we get all albums with autocomplete"""
     with app.app_context():
@@ -367,6 +383,7 @@ def test_get_autocomplete_albums(app):
         res = playlist_search_query(session, "album", 10, 0, True, True, None)
         assert len(res["all"]) == 1
         assert len(res["saved"]) == 0
+
 
 def test_get_internal_albums(app):
     """Tests we get albums when a user is logged in"""

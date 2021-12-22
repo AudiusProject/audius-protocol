@@ -72,7 +72,7 @@ def populate_tracks(db):
                 "owner_id": 1287289,
                 "release_date": "Fri Dec 19 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2018, 5, 17),
-                "is_unlisted": True
+                "is_unlisted": True,
             },
         ],
         "track_routes": [
@@ -145,13 +145,14 @@ def test_get_tracks_by_date_authed(app):
 
     with db.scoped_session() as session:
         tracks = _get_tracks(
-            session, {
+            session,
+            {
                 "user_id": 1287289,
                 "authed_user_id": 1287289,
                 "offset": 0,
                 "limit": 10,
-                "sort": "date"
-            }
+                "sort": "date",
+            },
         )
 
         assert len(tracks) == 6

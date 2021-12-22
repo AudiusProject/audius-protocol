@@ -238,7 +238,7 @@ class ChallengeManager:
             to_update = in_progress_challenges + new_user_challenges
 
             # Filter out challenges for deactivated users
-            to_update_user_ids = list(set([c.user_id for c in to_update]))
+            to_update_user_ids = list({c.user_id for c in to_update})
             deactivated_user_ids = (
                 session.query(User.user_id)
                 .filter(

@@ -11,6 +11,7 @@ from integration_tests.utils import populate_mock_db
 
 logger = logging.getLogger(__name__)
 
+
 # Setup trending from simplified metadata
 def setup_trending(db):
     # Test data

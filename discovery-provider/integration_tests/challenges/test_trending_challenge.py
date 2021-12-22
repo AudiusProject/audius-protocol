@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
 
+
 def test_trending_challenge_should_update(app):
     with app.app_context():
         db = get_db()
@@ -311,7 +312,13 @@ def test_trending_challenge_job(app):
             .all()
         )
         assert len(user_trending_tracks_challenges) == 5
-        ranks = {"2021-08-20:1", "2021-08-20:2", "2021-08-20:3", "2021-08-20:4", "2021-08-20:5"}
+        ranks = {
+            "2021-08-20:1",
+            "2021-08-20:2",
+            "2021-08-20:3",
+            "2021-08-20:4",
+            "2021-08-20:5",
+        }
         for challenge in user_trending_tracks_challenges:
             assert challenge.specifier in ranks
             ranks.remove(challenge.specifier)
