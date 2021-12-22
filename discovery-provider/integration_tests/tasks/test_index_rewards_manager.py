@@ -233,12 +233,18 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     parsed_tx = fetch_and_parse_sol_rewards_transfer_instruction(
         solana_client_manager_mock, first_tx_sig
     )
-    assert parsed_tx["transfer_instruction"]["amount"] == 10000000000
     assert (
-        parsed_tx["transfer_instruction"]["eth_recipient"]
+        parsed_tx["transfer_instruction"]["amount"]  # pylint: disable=E1136
+        == 10000000000
+    )
+    assert (
+        parsed_tx["transfer_instruction"]["eth_recipient"]  # pylint: disable=E1136
         == "0x0403be3560116a12b467855cb29a393174a59876"
     )
-    assert parsed_tx["transfer_instruction"]["challenge_id"] == "profile-completion"
+    assert (
+        parsed_tx["transfer_instruction"]["challenge_id"]  # pylint: disable=E1136
+        == "profile-completion"
+    )
     assert parsed_tx["tx_sig"] == first_tx_sig
     assert parsed_tx["slot"] == 72131741
 
