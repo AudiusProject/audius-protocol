@@ -31,4 +31,5 @@ repos:
     hooks:
       - id: mypy
         exclude: ^discovery-provider/alembic/
+        additional_dependencies: ['sqlalchemy-stubs']
         stages: [push]
