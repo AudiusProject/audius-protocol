@@ -123,7 +123,7 @@ class DiskManager {
   static extractCIDsFromFSPath (fsPath) {
     const match = CID_DIRECTORY_REGEX.exec(fsPath)
     if (!match || !match.groups) {
-      genericLogger.info(`Path is not a directory, fsPath=${fsPath}`)
+      genericLogger.info(`Input path does not match cid directory pattern, fsPath=${fsPath}`)
       return null
     }
 
