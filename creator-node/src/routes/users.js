@@ -182,7 +182,7 @@ module.exports = function (app) {
 
     async function fetchFilesHashIfRequested () {
       if (returnFilesHash && cnodeUser) {
-        const filesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID })
+        const filesHash = await DBManager.fetchFilesHashFromDB({ lookupKey: { lookupCNodeUserUUID: cnodeUserUUID } })
         response.filesHash = filesHash
 
         const filesHashClockRangeMin = req.params.filesHashClockRangeMin || null
@@ -190,7 +190,9 @@ module.exports = function (app) {
 
         if (filesHashClockRangeMin || filesHashClockRangeMax) {
           const filesHashForClockRange = await DBManager.fetchFilesHashFromDB({
-            cnodeUserUUID, clockMin: filesHashClockRangeMin, clockMax: filesHashClockRangeMax
+            lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
+            clockMin: filesHashClockRangeMin,
+            clockMax: filesHashClockRangeMax
           })
           response.filesHashForClockRange = filesHashForClockRange
         }
@@ -231,7 +233,7 @@ module.exports = function (app) {
 
       if (returnFilesHash) {
         const filesHash = await DBManager.fetchFilesHashFromDB({
-          cnodeUserUUID: cnodeUser.cnodeUserUUID
+          lookupKey: { lookupCNodeUserUUID: cnodeUser.cnodeUserUUID }
         })
         user.filesHash = filesHash
       }

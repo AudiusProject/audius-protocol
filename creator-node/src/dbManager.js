@@ -178,13 +178,27 @@ class DBManager {
     }
   }
 
-  static async fetchFilesHashFromDB ({ cnodeUserUUID, clockMin = null, clockMax = null }) {
-    let subquery = `
-      select multihash from "Files"
-      where "cnodeUserUUID" = '${cnodeUserUUID}'
-    `
-    if (clockMin) subquery += ` and clock >= ${parseInt(clockMin)}` // inclusive
-    if (clockMax) subquery += ` and clock < ${parseInt(clockMax)}`  // exclusive
+  static async fetchFilesHashFromDB ({
+    lookupKey: { lookupCNodeUserUUID, lookupWallet }, clockMin = null, clockMax = null
+  }) {
+    let subquery = 'select multihash from "Files"'
+
+    if (lookupWallet) {
+      subquery += ` where "cnodeUserUUID" = (
+        select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = '${lookupWallet}'
+      )`
+    } else {
+      subquery += ` where "cnodeUserUUID" = '${lookupCNodeUserUUID}'`
+    }
+
+    if (clockMin) {
+      // inclusive
+      subquery += ` and clock >= ${parseInt(clockMin)}`
+    }
+    if (clockMax) {
+      // exclusive
+      subquery += ` and clock < ${parseInt(clockMax)}`
+    }
     subquery += ` order by "clock" asc`
 
     const filesHashResp = (await sequelize.query(`
