@@ -1,4 +1,6 @@
 # Linting and type support
+black==21.12b0
+isort==5.10.1
 pylint==2.9.3
 mypy==0.910
 sqlalchemy-stubs==0.4
