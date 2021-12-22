@@ -46,19 +46,17 @@ def test_get_user_listening_history_multiple_plays(app):
                 current_user_id = 1,
                 limit = 10,
                 offset = 0,
-                with_users = True,
-                filter_deleted = False,
             )
         )
 
     assert len(track_history) == 3
-    assert track_history[0][response_name_constants.user][response_name_constants.user_id] == 3
+    assert track_history[0][response_name_constants.user][response_name_constants.balance] is not None
     assert track_history[0][response_name_constants.track_id] == 3
     assert track_history[0][response_name_constants.activity_timestamp] == str(TIMESTAMP + timedelta(minutes=4))
-    assert track_history[1][response_name_constants.user][response_name_constants.user_id] == 2
+    assert track_history[1][response_name_constants.user][response_name_constants.balance] is not None
     assert track_history[1][response_name_constants.track_id] == 2
     assert track_history[1][response_name_constants.activity_timestamp] == str(TIMESTAMP + timedelta(minutes=3))
-    assert track_history[2][response_name_constants.user][response_name_constants.user_id] == 1
+    assert track_history[2][response_name_constants.user][response_name_constants.balance] is not None
     assert track_history[2][response_name_constants.track_id] == 1
     assert track_history[2][response_name_constants.activity_timestamp] == str(TIMESTAMP + timedelta(minutes=2))
 
@@ -78,8 +76,6 @@ def test_get_user_listening_history_no_plays(app):
                 current_user_id = 3,
                 limit = 10,
                 offset = 0,
-                with_users = True,
-                filter_deleted = False,
             )
         )
 
@@ -101,13 +97,11 @@ def test_get_user_listening_history_single_play(app):
                 current_user_id = 2,
                 limit = 10,
                 offset = 0,
-                with_users = True,
-                filter_deleted = False,
             )
         )
 
     assert len(track_history) == 1
-    assert track_history[0][response_name_constants.user][response_name_constants.user_id] == 2
+    assert track_history[0][response_name_constants.user][response_name_constants.balance] is not None
     assert track_history[0][response_name_constants.track_id] == 2
     assert track_history[0][response_name_constants.activity_timestamp] == str(TIMESTAMP)
 
@@ -127,12 +121,10 @@ def test_get_user_listening_history_pagination(app):
                 current_user_id = 1,
                 limit = 1,
                 offset = 1,
-                with_users = True,
-                filter_deleted = False,
             )
         )
 
     assert len(track_history) == 1
-    assert track_history[0][response_name_constants.user][response_name_constants.user_id] == 2
+    assert track_history[0][response_name_constants.user][response_name_constants.balance] is not None
     assert track_history[0][response_name_constants.track_id] == 2
     assert track_history[0][response_name_constants.activity_timestamp] == str(TIMESTAMP + timedelta(minutes=3))
