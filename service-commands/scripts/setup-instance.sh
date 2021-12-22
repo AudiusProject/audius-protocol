@@ -111,13 +111,11 @@ case "$service" in
 			# TODO fix install and provisioning for fast
 		fi
 
-		# configure local files: /etc/hosts, /etc/ssh/ssh_config.d/60-audius.conf
+		# configure local files: /etc/hosts
 		configure_etc_hosts
-		set_ssh_serveralive
 
-		# upload personal files: ~/.gitconfig, ~/.zshrc, ~/.zshenv, ~/.p10k.zsh
+		# upload personal files: ~/.gitconfig
 		upload_gitconfig
-		setup_zsh
 
 		echo -e "\nLogin using:\n"
 		echo -e "gcloud compute ssh $user@$name\n"
