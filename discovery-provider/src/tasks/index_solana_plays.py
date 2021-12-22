@@ -385,6 +385,9 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
         # if the thread pool executor completes successfully without raising an exception
         # the data is successfully fetched so we can add it to the db session and dispatch
         # events to challenge bus
+        db_save_start = time.time()
+        logger.info(
+            f"index_solana_plays.py | Saving to DB, fetched batch tx details in {db_save_start - batch_start_time}")
         with db.scoped_session() as session:
             plays_to_save = []
             for play in plays:
@@ -410,6 +413,9 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
 
             # Save in bulk
             session.bulk_save_objects(plays_to_save)
+
+        logger.info(
+            f"index_solana_plays.py | Saved to DB in {time.time() - db_save_start}")
 
         track_play_ids = [play["track_id"] for play in plays]
         if track_play_ids:
@@ -597,7 +603,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis, late
     transaction_signatures.reverse()
 
     for tx_sig_batch in transaction_signatures:
-        for tx_sig_batch_records in split_list(tx_sig_batch, 50):
+        for tx_sig_batch_records in split_list(tx_sig_batch, 100):
             parse_sol_tx_batch(db, solana_client_manager,
                                redis, tx_sig_batch_records)
 

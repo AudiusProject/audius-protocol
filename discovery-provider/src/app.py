@@ -542,7 +542,6 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
-    redis_inst.delete("plays-tx-cache-queue")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
