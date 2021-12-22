@@ -691,8 +691,8 @@ module.exports = function (app) {
             fileRecord = redisFileRecord
           }
         }
-      } catch (error) {
-        req.logger.error({err: error}, 'Error looking for stream fallback in redis')
+      } catch (e) {
+        req.logger.error({error: e}, 'Error looking for stream fallback in redis')
       }
     }
 
