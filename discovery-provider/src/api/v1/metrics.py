@@ -1,11 +1,10 @@
 import logging
+from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.queries.get_genre_metrics import get_genre_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
-from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.api.v1.helpers import (
     make_response,
     success_response,
-    to_dict,
     parse_bool_param,
     parse_unix_epoch_param,
     parse_unix_epoch_param_non_utc,
@@ -13,21 +12,11 @@ from src.api.v1.helpers import (
     abort_bad_path_param,
     format_limit,
 )
-from .models.metrics import (
-    route_metric,
-    app_name_metric,
-    app_name,
-    plays_metric,
-    genre_metric,
-    route_trailing_metric,
-    app_name_trailing_metric,
-)
 from src.queries.get_route_metrics import (
     get_route_metrics,
     get_aggregate_route_metrics,
     get_historical_route_metrics,
 )
-
 from src.queries.get_app_name_metrics import (
     get_app_name_metrics,
     get_aggregate_app_metrics,
@@ -45,6 +34,15 @@ from src.utils.redis_metrics import (
     get_redis_app_metrics,
     get_aggregate_metrics_info,
     get_summed_unique_metrics,
+)
+from .models.metrics import (
+    route_metric,
+    app_name_metric,
+    app_name,
+    plays_metric,
+    genre_metric,
+    route_trailing_metric,
+    app_name_trailing_metric,
 )
 
 logger = logging.getLogger(__name__)
@@ -265,7 +263,7 @@ class RouteMetrics(Resource):
 
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         if args.get("exact") is not None:
@@ -327,7 +325,7 @@ class AppNameListMetrics(Resource):
             args["offset"] = 0
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         app_names = get_app_names(args)
@@ -386,7 +384,7 @@ class AppNameMetrics(Resource):
 
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         if args.get("bucket_size") is None:
@@ -429,7 +427,7 @@ class PlaysMetrics(Resource):
 
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         if args.get("bucket_size") is None:
@@ -473,7 +471,7 @@ class GenreMetrics(Resource):
             args["offset"] = 0
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         genre_metrics = get_genre_metrics(args)
