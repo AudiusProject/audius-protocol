@@ -74,7 +74,7 @@ def get_users_account(args):
         playlists = helpers.query_result_to_list(playlists)
 
         playlist_owner_ids = list(
-            {[playlist["playlist_owner_id"] for playlist in playlists]}
+            {playlist["playlist_owner_id"] for playlist in playlists}
         )
 
         # Get Users for the Playlist/Albums
