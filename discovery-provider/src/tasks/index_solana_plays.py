@@ -143,9 +143,12 @@ def parse_sol_play_transaction(
     solana_client_manager: SolanaClientManager, tx_sig: str
 ):
     try:
+        fetch_start_time = time.time()
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        fetch_completion_time = time.time()
+        fetch_time = fetch_completion_time - fetch_start_time
         logger.info(
-            f"index_solana_plays.py | Got transaction: {tx_sig}")
+            f"index_solana_plays.py | Got transaction: {tx_sig} in {fetch_time}")
         meta = tx_info["result"]["meta"]
         error = meta["err"]
 
@@ -447,8 +450,10 @@ def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: int):
             logger.info(
                 f"index_solana_plays.py | processing cached tx = {last_cached_tx}, latest_db_slot = {latest_db_slot}")
             redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
+            # If a single element is remaining, clear the list to avoid dupe processing
+            if redis.llen(REDIS_TX_CACHE_QUEUE_PREFIX) == 1:
+                redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
             # Return if a valid signature is found
-            # TODO: Optimize this based on minimum delta between DB and cached tx slot
             if last_cached_tx["slot"] > latest_db_slot:
                 cached_offset_tx_found = True
                 last_tx_signature = last_cached_tx["signature"]
