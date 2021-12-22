@@ -1,8 +1,9 @@
 from datetime import datetime
+
 from src import models
+from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 from src.utils import helpers
 from src.utils.db_session import get_db
-from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 
 
 def query_creator_by_name(app, creator_name=None):

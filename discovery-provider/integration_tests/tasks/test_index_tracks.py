@@ -1,18 +1,19 @@
 import random
 from datetime import datetime
 from unittest.mock import patch
-from web3 import Web3
+
+from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models import Block, TrackRoute, User
 from src.tasks.index import revert_blocks
 from src.tasks.tracks import (
-    parse_track_event,
     lookup_track_record,
+    parse_track_event,
     track_event_types_lookup,
 )
 from src.utils import helpers
 from src.utils.db_session import get_db
-from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
-from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
+from web3 import Web3
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 

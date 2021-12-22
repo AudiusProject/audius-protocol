@@ -1,12 +1,12 @@
 from unittest.mock import patch
+
 import pytest
 import redis
-from web3 import Web3
 from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
+from integration_tests.queries.test_get_challenges import setup_db
 from solana.publickey import PublicKey
-
 from src.queries.get_attestation import (
     ADD_SENDER_MESSAGE_PREFIX,
     REWARDS_MANAGER_ACCOUNT,
@@ -15,11 +15,10 @@ from src.queries.get_attestation import (
     get_attestation,
     get_create_sender_attestation,
 )
-from src.utils.db_session import get_db
-from src.utils.config import shared_config
 from src.tasks.index_oracles import oracle_addresses_key
-
-from integration_tests.queries.test_get_challenges import setup_db
+from src.utils.config import shared_config
+from src.utils.db_session import get_db
+from web3 import Web3
 
 REDIS_URL = shared_config["redis"]["url"]
 redis_handle = redis.Redis.from_url(url=REDIS_URL)

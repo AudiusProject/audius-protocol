@@ -1,13 +1,14 @@
-from contextlib import contextmanager
 import json
 import secrets
-import pytest
+from contextlib import contextmanager
+
 import ipfshttpclient
+import pytest
+import src.utils.multihash
 from chance import chance
 from integration_tests.utils import to_bytes
 from src.models.models import Block, Track, User
 from src.queries.get_skipped_transactions import get_indexing_error
-import src.utils.multihash
 from src.utils.helpers import remove_test_file
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_connection import get_redis

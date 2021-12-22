@@ -1,11 +1,12 @@
 import json
 import time
+
 import ipfshttpclient
 import pytest
 from chance import chance
-from src.utils.ipfs_lib import IPFSClient
-from src.utils.helpers import remove_test_file as cleanup_test
 from src.tasks.metadata import track_metadata_format
+from src.utils.helpers import remove_test_file as cleanup_test
+from src.utils.ipfs_lib import IPFSClient
 
 IPFS_FETCH = "get_metadata_from_ipfs_node"
 GATEWAY_FETCH = "get_metadata_from_gateway"

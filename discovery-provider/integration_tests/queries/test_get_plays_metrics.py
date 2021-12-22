@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from src.models import Play
 from src.queries.get_plays_metrics import _get_plays_metrics
 from src.utils.db_session import get_db

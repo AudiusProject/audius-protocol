@@ -1,5 +1,6 @@
 from datetime import datetime
-from src.models import Track, Block, User, Follow, Playlist, Save, SaveType, UserBalance
+
+from src.models import Block, Follow, Playlist, Save, SaveType, Track, User, UserBalance
 from src.queries.search_queries import (
     playlist_search_query,
     track_search_query,

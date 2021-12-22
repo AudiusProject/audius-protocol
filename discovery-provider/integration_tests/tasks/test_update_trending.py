@@ -1,13 +1,13 @@
 import logging
 from datetime import datetime, timedelta
 
-from src.models import TrackTrendingScore, TrendingParam, AggregateIntervalPlay
-from src.utils.db_session import get_db
+from integration_tests.utils import populate_mock_db
+from src.models import AggregateIntervalPlay, TrackTrendingScore, TrendingParam
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.trending_strategies.aSPET_trending_tracks_strategy import (
     TrendingTracksStrategyaSPET,
 )
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
-from integration_tests.utils import populate_mock_db
+from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 

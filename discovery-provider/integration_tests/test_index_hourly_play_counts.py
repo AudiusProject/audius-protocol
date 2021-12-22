@@ -1,14 +1,16 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List
+
 from sqlalchemy import desc
 from src.models.models import HourlyPlayCounts, IndexingCheckpoints
 from src.tasks.index_hourly_play_counts import (
-    _index_hourly_play_counts,
     HOURLY_PLAY_COUNTS_TABLE_NAME,
+    _index_hourly_play_counts,
 )
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+
 from .utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]

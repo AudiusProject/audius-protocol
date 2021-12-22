@@ -1,10 +1,9 @@
 from datetime import datetime
 
+from integration_tests.utils import populate_mock_db
 from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_tracks import _get_tracks
 from src.utils.db_session import get_db
-
-from integration_tests.utils import populate_mock_db
 
 
 def populate_tracks(db):

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
+from src.models import AggregatePlays, Block, Play, Track
 from src.tasks.generate_trending import get_listen_counts
-from src.models import AggregatePlays, Track, Block, Play
 
 
 # Setup trending from simplified metadata

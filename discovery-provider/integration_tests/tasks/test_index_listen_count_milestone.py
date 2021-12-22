@@ -1,19 +1,18 @@
 from datetime import datetime
+
 import redis
+from integration_tests.utils import populate_mock_db
+from src.models import Milestone
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.tasks.index_listen_count_milestones import (
     CURRENT_PLAY_INDEXING,
     TRACK_LISTEN_IDS,
-    index_listen_count_milestones,
     get_next_track_milestone,
-)
-from src.utils.db_session import get_db
-from src.models import (
-    Milestone,
+    index_listen_count_milestones,
 )
 from src.utils.config import shared_config
+from src.utils.db_session import get_db
 from src.utils.redis_cache import set_json_cached_key
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
-from integration_tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 DEFAULT_EVENT = ""

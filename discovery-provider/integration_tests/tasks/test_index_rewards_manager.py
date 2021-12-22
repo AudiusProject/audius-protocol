@@ -1,17 +1,17 @@
 from unittest.mock import create_autospec
-from src.models import ChallengeDisbursement, RewardManagerTransaction
-from src.tasks.index_rewards_manager import (
-    parse_transfer_instruction_data,
-    parse_transfer_instruction_id,
-    fetch_and_parse_sol_rewards_transfer_instruction,
-    process_batch_sol_reward_manager_txs,
-)
-from src.utils.db_session import get_db
-from src.utils.config import shared_config
-from src.utils.redis_connection import get_redis
-from src.solana.solana_client_manager import SolanaClientManager
 
 from integration_tests.utils import populate_mock_db
+from src.models import ChallengeDisbursement, RewardManagerTransaction
+from src.solana.solana_client_manager import SolanaClientManager
+from src.tasks.index_rewards_manager import (
+    fetch_and_parse_sol_rewards_transfer_instruction,
+    parse_transfer_instruction_data,
+    parse_transfer_instruction_id,
+    process_batch_sol_reward_manager_txs,
+)
+from src.utils.config import shared_config
+from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]

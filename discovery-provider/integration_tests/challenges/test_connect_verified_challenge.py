@@ -1,12 +1,12 @@
 import logging
 from datetime import datetime
-import redis
 
-from src.models import User, Block
-from src.utils.db_session import get_db
+import redis
+from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
-from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
+from src.models import Block, User
 from src.utils.config import shared_config
+from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
 logger = logging.getLogger(__name__)
