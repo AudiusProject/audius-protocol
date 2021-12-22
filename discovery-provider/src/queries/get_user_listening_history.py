@@ -46,16 +46,12 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistory)
         track_ids.append(listen["track_id"])
         listen_dates.append(listen["timestamp"])
 
-    track_query = (
+    track_results = (
         session.query(Track)
         .filter(
             Track.track_id.in_(track_ids)
         )
-    )
-
-    if filter_deleted:
-        track_query = track_query.filter(Track.is_delete == False)
-    track_results = track_query.all()
+    ).all()
 
     track_results_dict = {track_result.track_id: track_result for track_result in track_results}
 
@@ -69,6 +65,7 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistory)
 
     # bundle peripheral info into track results
     tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+    add_users_to_tracks(session, tracks, current_user_id)
 
     for idx, track in enumerate(tracks):
         track[response_name_constants.activity_timestamp] = listen_dates[idx]
