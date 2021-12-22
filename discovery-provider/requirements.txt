@@ -47,7 +47,7 @@ PyNaCl==1.4.0
 requests==2.25.1
 six==1.15.0
 solana==0.10.0
-typing-extensions==3.7.4.3
+typing-extensions==3.10.0.0
 urllib3==1.26.3
 
 # test
