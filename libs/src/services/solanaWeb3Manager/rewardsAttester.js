@@ -380,7 +380,6 @@ class RewardsAttester {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW, errors.BLOCKED])
     const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT, errors.CHALLENGE_INCOMPLETE])
-    const SINGLE_INSTRUCTION_PER_TRANSACTION_ERRORS = new Set([errors.REPEATED_SENDERS, errors.OPERATOR_COLLISION])
     // Account for errors from DN aggregation + Solana program
     const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT])
 
@@ -406,16 +405,6 @@ class RewardsAttester {
           noRetry.push(res)
         }
         return !isAAO
-      })
-      // If a repsonse failed because of duplicate signers, drop into the single intruction per transaction flow
-      .map((res) => {
-        if (SINGLE_INSTRUCTION_PER_TRANSACTION_ERRORS.has(res.error)) {
-          return {
-            ...res,
-            instructionsPerTransaction: 2 // Include 1 SECP and 1 Attestion per txn
-          }
-        }
-        return res
       })
     )
 

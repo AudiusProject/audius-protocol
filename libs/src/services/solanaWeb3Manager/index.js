@@ -293,7 +293,8 @@ class SolanaWeb3Manager {
    *     specifier: string,
    *     recipientEthAddress: string,
    *     tokenAmount: BN,
-   *     instructionsPerTransaction: number | null,
+   *     instructionsPerTransaction?: number,
+   *     logger: any
    * }} {
    *     attestations,
    *     oracleAttestation,
@@ -301,7 +302,8 @@ class SolanaWeb3Manager {
    *     specifier,
    *     recipientEthAddress,
    *     tokenAmount,
-   *     instructionsPerTransaction
+   *     instructionsPerTransaction,
+   *     logger
    *    }
    * @memberof SolanaWeb3Manager
    */
@@ -313,6 +315,7 @@ class SolanaWeb3Manager {
     recipientEthAddress,
     tokenAmount,
     instructionsPerTransaction,
+    logger = console,
   }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -326,6 +329,7 @@ class SolanaWeb3Manager {
       tokenAmount,
       transactionHandler: this.transactionHandler,
       instructionsPerTransaction,
+      logger
     })
   }
 

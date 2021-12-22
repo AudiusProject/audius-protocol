@@ -142,7 +142,8 @@ const createSenderPublicInstructionSchema = new Map(
  *   recipientEthAddress: string,
  *   tokenAmount: BN,
  *   transactionHandler: TransactionHandler,
- *   instructionsPerTransaction?: number | null
+ *   instructionsPerTransaction?: number,
+ *   logger: any
  * }} {
  *   rewardManagerProgramId,
  *   rewardManagerAccount,
@@ -154,7 +155,8 @@ const createSenderPublicInstructionSchema = new Map(
  *   recipientEthAddress,
  *   tokenAmount,
  *   transactionHandler,
- *   instructionsPerTransaction
+ *   instructionsPerTransaction,
+ *   logger
  * }
  */
 async function submitAttestations ({
@@ -168,7 +170,8 @@ async function submitAttestations ({
   recipientEthAddress,
   tokenAmount,
   transactionHandler,
-  instructionsPerTransaction = ATTESTATION_INSTRUCTIONS_PER_TRANSACTION
+  instructionsPerTransaction = ATTESTATION_INSTRUCTIONS_PER_TRANSACTION,
+  logger = console
 }) {
   // Construct combined transfer ID
   const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
@@ -256,14 +259,15 @@ async function submitAttestations ({
     return acc
   }, [[]])
 
-  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction(i, RewardsManagerError)))
+  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction(i, RewardsManagerError, null, logger)))
+  logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results, null, 2)}`)
 
   // If there's any error in any of the transactions, just return that one
-  results.forEach((val) => {
-    if (val.error || val.errorCode) {
-      return val
+  for (const res of results) {
+    if (res.error || res.errorCode) {
+      return res
     }
-  })
+  }
   return results[0]
 }
 

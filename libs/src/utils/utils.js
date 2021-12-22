@@ -1,7 +1,7 @@
 const bs58 = require('bs58')
 const Web3 = require('../web3')
 const axios = require('axios')
-const Hashids = require('hashids')
+const Hashids = require('hashids/cjs')
 
 const MultiProvider = require('./multiProvider.js')
 const uuid = require('./uuid.js')
@@ -150,7 +150,7 @@ class Utils {
     return uuid()
   }
 
-  /** 
+  /**
    *
    * Decodes a string id into an int. Returns null if an invalid ID.
    * @static
@@ -158,7 +158,7 @@ class Utils {
    * @returns {(number | null)} decoded
    * @memberof Utils
    */
-  static decodeHashId = (id) => {
+  static decodeHashId (id) {
     try {
       const ids = hashids.decode(id)
       if (!ids.length) return null
@@ -178,7 +178,7 @@ class Utils {
   * @returns {(string | null)}
   * @memberof Utils
   */
-  static encodeHashId = (id) => {
+  static encodeHashId (id) {
     try {
       if (id === null) return null
       const encodedId = hashids.encode(id)
