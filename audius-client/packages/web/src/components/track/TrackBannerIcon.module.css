@@ -9,11 +9,18 @@
 .container {
   position: absolute;
   transform: rotate(45deg) translateX(-64px);
-  background: linear-gradient(314.61deg, #7E1BCC 0%, #A22FEB 100%);
   box-shadow: 1px 1px 7px -2px rgba(0,0,0,.5);
   width: 80px;
   height: 80px;
   overflow: hidden;
+}
+
+.star {
+  background: linear-gradient(314.61deg, #7E1BCC 0%, #A22FEB 100%);
+}
+
+.hidden {
+  background: linear-gradient(314.61deg, #858199 0%, #C2C0CC 100%);
 }
 
 .matrix .container {

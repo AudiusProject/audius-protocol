@@ -14,6 +14,7 @@ type ShareButtonProps = {
   isDarkMode: boolean
   className?: string
   stopPropagation?: boolean
+  isShareHidden?: boolean
 }
 
 const iconMap = {
@@ -27,13 +28,16 @@ const ShareButton = ({
   isDarkMode,
   className,
   isMatrixMode,
-  stopPropagation = true
+  stopPropagation = true,
+  isShareHidden = false
 }: ShareButtonProps) => {
   const icon = iconMap[isMatrixMode ? 'matrix' : isDarkMode ? 'dark' : 'light']
 
   return (
     <div
-      className={cn(styles.icon, className)}
+      className={cn(styles.icon, className, {
+        [styles.isHidden]: isShareHidden
+      })}
       style={{
         backgroundImage: `url(${icon})`
       }}

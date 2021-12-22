@@ -2092,6 +2092,14 @@ class AudiusBackend {
     return { data, signature }
   }
 
+  static async signDiscoveryNodeRequest() {
+    await waitForLibsInit()
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const data = `Click sign to authenticate with discovery node: ${unixTs}`
+    const signature = await audiusLibs.Account.web3Manager.sign(data)
+    return { data, signature }
+  }
+
   static async getBrowserPushNotificationSettings() {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()

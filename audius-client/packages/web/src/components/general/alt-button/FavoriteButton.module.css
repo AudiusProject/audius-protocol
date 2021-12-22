@@ -40,3 +40,7 @@
     background-size: cover;
     cursor: pointer;
 }
+
+.isHidden {
+  visibility: hidden;
+}

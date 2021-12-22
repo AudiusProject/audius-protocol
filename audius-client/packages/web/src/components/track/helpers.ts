@@ -1,6 +1,15 @@
 import { Collection } from 'common/models/Collection'
-import { Track } from 'common/models/Track'
+import { FieldVisibility, Track } from 'common/models/Track'
 import { User } from 'common/models/User'
+
+const defaultFieldVisibility: FieldVisibility = {
+  genre: true,
+  mood: true,
+  tags: true,
+  share: true,
+  play_count: true,
+  remixes: true
+}
 
 export const getTrackWithFallback = (track: Track | null) => {
   return (
@@ -13,6 +22,7 @@ export const getTrackWithFallback = (track: Track | null) => {
       followee_saves: [],
       duration: 0,
       save_count: 0,
+      field_visibility: defaultFieldVisibility,
       has_current_user_reposted: false,
       has_current_user_saved: false,
       play_count: 0,

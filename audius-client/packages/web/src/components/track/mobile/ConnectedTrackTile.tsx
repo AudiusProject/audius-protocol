@@ -92,6 +92,7 @@ const ConnectedTrackTile = memo(
       permalink,
       repost_count,
       save_count,
+      field_visibility,
       followee_reposts,
       followee_saves,
       has_current_user_reposted,
@@ -208,6 +209,7 @@ const ConnectedTrackTile = memo(
         trackTileStyles={trackTileStyles}
         size={size}
         listenCount={play_count}
+        fieldVisibility={field_visibility}
         coSign={_co_sign}
         // Artist Pick
         showArtistPick={showArtistPick}
@@ -234,6 +236,7 @@ const ConnectedTrackTile = memo(
         darkMode={darkMode}
         isMatrix={isMatrix()}
         isTrending={isTrending}
+        isUnlisted={is_unlisted}
         showRankIcon={showRankIcon}
       />
     )

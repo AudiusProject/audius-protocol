@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react'
 
-import { IconCrown, IconTrending } from '@audius/stems'
+import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
@@ -14,7 +14,7 @@ import RepostButton from 'components/general/alt-button/RepostButton'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'containers/user-badges/UserBadges'
 
-import ArtistPick from '../ArtistPick'
+import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 
 import BottomButtons from './BottomButtons'
 import styles from './TrackTile.module.css'
@@ -25,6 +25,7 @@ const messages = {
   coSign: 'Co-Sign',
   reposted: 'Reposted',
   favorited: 'Favorited',
+  hiddenTrack: 'Hidden Track',
   repostedAndFavorited: 'Reposted & Favorited'
 }
 
@@ -103,6 +104,13 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     showRankIcon
   } = props
 
+  const hideShare: boolean = props.fieldVisibility
+    ? props.fieldVisibility.share === false
+    : false
+  const hidePlays = props.fieldVisibility
+    ? props.fieldVisibility.play_count === false
+    : false
+
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
 
   const onToggleRepost = useCallback(() => toggleRepost(id), [toggleRepost, id])
@@ -129,7 +137,18 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
   return (
     <div className={styles.container}>
       {props.showArtistPick && props.isArtistPick && (
-        <ArtistPick isMobile isMatrixMode={isMatrix} />
+        <TrackBannerIcon
+          type={TrackBannerIconType.STAR}
+          isMobile
+          isMatrixMode={isMatrix}
+        />
+      )}
+      {props.isUnlisted && (
+        <TrackBannerIcon
+          type={TrackBannerIconType.HIDDEN}
+          isMobile
+          isMatrixMode={isMatrix}
+        />
       )}
       <div
         className={styles.mainContent}
@@ -140,9 +159,15 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
       >
         <div className={cn(styles.topRight, styles.statText)}>
           {props.showArtistPick && props.isArtistPick && (
-            <div className={styles.artistPick}>
+            <div className={styles.topRightIcon}>
               <IconStar />
               {messages.artistPick}
+            </div>
+          )}
+          {props.isUnlisted && (
+            <div className={styles.topRightIcon}>
+              <IconHidden />
+              {messages.hiddenTrack}
             </div>
           )}
           <div className={cn(styles.duration, fadeIn)}>
@@ -225,7 +250,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             <>
               <div
                 className={cn(styles.statItem, fadeIn, {
-                  [styles.disabledStatItem]: !props.repostCount
+                  [styles.disabledStatItem]: !props.repostCount,
+                  [styles.isHidden]: props.isUnlisted
                 })}
                 onClick={
                   props.repostCount ? props.makeGoToRepostsPage(id) : undefined
@@ -241,7 +267,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
               </div>
               <div
                 className={cn(styles.statItem, fadeIn, {
-                  [styles.disabledStatItem]: !props.saveCount
+                  [styles.disabledStatItem]: !props.saveCount,
+                  [styles.isHidden]: props.isUnlisted
                 })}
                 onClick={
                   props.saveCount ? props.makeGoToFavoritesPage(id) : undefined
@@ -257,7 +284,11 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
               </div>
             </>
           )}
-          <div className={cn(styles.listenCount, fadeIn)}>
+          <div
+            className={cn(styles.listenCount, fadeIn, {
+              [styles.isHidden]: hidePlays
+            })}
+          >
             {formatListenCount(props.listenCount)}
           </div>
         </div>
@@ -269,6 +300,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
           onShare={onClickShare}
           onClickOverflow={onClickOverflowMenu}
           isOwner={props.isOwner}
+          isUnlisted={props.isUnlisted}
+          isShareHidden={hideShare}
           isDarkMode={darkMode}
           isMatrixMode={isMatrix}
         />

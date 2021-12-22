@@ -562,7 +562,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
     if (
       isMetadataLoading &&
       lineup.hasMore &&
-      tiles.length < (count !== undefined ? count : MAX_TILES_COUNT) &&
+      tiles.length < (count !== undefined ? count : lineupCount) &&
       (!limit || tiles.length !== limit)
     ) {
       // Calculate the number of loading tiles to display: total # requested - # rendered - # deleted
