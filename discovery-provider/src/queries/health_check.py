@@ -1,4 +1,6 @@
 from datetime import datetime
+import time
+import uuid
 import logging
 from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
@@ -6,7 +8,8 @@ from src.queries.queries import parse_bool_param
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.api_helpers import success_response
-from src.utils import helpers, redis_connection
+from src.utils import helpers, redis_connection, db_session
+from src.models import Play
 
 logger = logging.getLogger(__name__)
 
@@ -125,3 +128,20 @@ def ipld_block_check():
 def ip_check():
     ip = helpers.get_ip(request)
     return success_response(ip, sign_response=False)
+
+
+@bp.route("/test_db_write", methods=["GET"])
+def test_write_ops():
+    db = db_session.get_db()
+    plays = []
+
+    for i in range(100):
+        plays.append(Play(user_id="1", play_item_id="1", created_at="2021-12-22T18:56:30",
+                     source="hareesh", slot="1", signature=uuid.uuid4().hex))
+
+    start = time.time()
+    with db.scoped_session() as session:
+        logger.info(f"test_db_write appending plays {plays}")
+        session.bulk_save_objects(plays)
+
+    return success_response({"test": 2, "duration": time.time() - start}, sign_response=False)
