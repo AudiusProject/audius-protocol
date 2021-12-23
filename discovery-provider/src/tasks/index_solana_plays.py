@@ -88,7 +88,7 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
         )
         logger.warning(
             log,
-            exc_info=True,
+            exc_info=False,
         )
 
     track_id_length = int.from_bytes(decoded[user_id_end : user_id_end + 4], "little")
@@ -103,8 +103,8 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     try:
         source = str(decoded[source_start:source_end], "utf-8")
     except ValueError:
-        log = "Failed to parse source from {!r}".format(
-            decoded[source_start:source_end]
+        log = (
+            "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
         )
         logger.error(
             log,
@@ -409,7 +409,7 @@ def parse_sol_tx_batch(
                 "timestamp": int(play.get("created_at").timestamp()),
             }
             cache_latest_sol_play_db_tx(redis, most_recent_db_play)
-        break
+            break
 
     db_save_start = time.time()
     logger.info(
@@ -496,9 +496,7 @@ def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: int):
     return None
 
 
-def process_solana_plays(
-    solana_client_manager: SolanaClientManager, redis, latest_chain_tx
-):
+def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redis):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
     except ValueError:
@@ -513,12 +511,6 @@ def process_solana_plays(
     # Highest currently processed slot in the DB
     latest_processed_slot = get_latest_slot(db)
     logger.info(f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
-
-    logger.info(f"index_solana_plays.py | latest_chain_tx={latest_chain_tx}")
-    latest_chain_slot = latest_chain_tx["slot"]
-
-    processing_slot_diff = latest_chain_slot - latest_processed_slot
-    logger.info(f"index_solana_plays.py | processing_slot_diff={processing_slot_diff}")
 
     # Utilize the cached tx to offset
     cached_offset_tx = fetch_traversed_tx_from_cache(redis, latest_processed_slot)
@@ -655,7 +647,7 @@ def index_solana_plays(self):
 
     try:
         # Cache latest tx outside of lock
-        latest_chain_tx = fetch_and_cache_latest_program_tx_redis(
+        fetch_and_cache_latest_program_tx_redis(
             solana_client_manager,
             redis,
             TRACK_LISTEN_PROGRAM,
@@ -667,7 +659,7 @@ def index_solana_plays(self):
             logger.info("index_solana_plays.py | Acquired lock")
             challenge_bus: ChallengeEventBus = index_solana_plays.challenge_event_bus
             with challenge_bus.use_scoped_dispatch_queue():
-                process_solana_plays(solana_client_manager, redis, latest_chain_tx)
+                process_solana_plays(solana_client_manager, redis)
         else:
             logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
