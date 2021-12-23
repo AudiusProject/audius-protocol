@@ -1,6 +1,8 @@
 set -e
 
 cd $PROTOCOL_DIR
+flake8 discovery-provider/src/
+flake8 discovery-provider/integration_tests/
 isort --check-only discovery-provider/src/
 isort --check-only discovery-provider/integration_tests/
 black --check discovery-provider/src/
