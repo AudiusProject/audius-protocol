@@ -39,8 +39,14 @@ function segmentFile (fileDir, fileName, { logContext }) {
 
     proc.on('close', (code) => {
       if (code === 0) {
-        const segmentFilePaths = fs.readdirSync(fileDir + '/segments')
-        resolve(segmentFilePaths)
+        const segmentFileNames = fs.readdirSync(fileDir + '/segments')
+        const segmentFileNameToPath = {}
+
+        segmentFileNames.forEach(filename => {
+          segmentFileNameToPath[filename] = path.resolve(fileDir, 'segments', filename)
+        })
+
+        resolve({ fileNames: segmentFileNames, fileNamesToPath: segmentFileNameToPath })
       } else {
         logger.error('Error when processing file with ffmpeg')
         logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)

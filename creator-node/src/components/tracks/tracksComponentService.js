@@ -44,7 +44,11 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
 
   // Create track transcode and segments, and save all to disk
   let codeBlockTimeStart = getStartTime()
-  const { transcodedFilePath, segmentFilePaths } = await transcodeAndSegment({ logContext }, { fileName, fileDir })
+  const {
+    transcodedFilePath,
+    segmentFileNames,
+    segmentFileNamesToPath
+  } = await transcodeAndSegment({ logContext }, { fileName, fileDir })
   logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully re-encoded track file=${fileName}`)
 
   // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
@@ -57,18 +61,18 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   )
 
   let segmentFileIPFSResps = []
-  for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
-    const segmentFilePathsSlice = segmentFilePaths.slice(i, i + SaveFileToIPFSConcurrencyLimit)
+  for (let i = 0; i < segmentFileNames.length; i += SaveFileToIPFSConcurrencyLimit) {
+    const segmentFileNamesSlice = segmentFileNames.slice(i, i + SaveFileToIPFSConcurrencyLimit)
 
-    const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
-      const segmentAbsolutePath = path.join(fileDir, 'segments', segmentFilePath)
+    const sliceResps = await Promise.all(segmentFileNamesSlice.map(async (segmentFileName) => {
+      const segmentAbsolutePath = segmentFileNamesToPath[segmentFileName]
       const { multihash, dstPath } = await fileManager.saveFileToIPFSFromFS(
         { logContext },
         cnodeUserUUID,
         segmentAbsolutePath,
         ENABLE_IPFS_ADD_TRACKS
       )
-      return { multihash, srcPath: segmentFilePath, dstPath }
+      return { multihash, segmentFileName, dstPath }
     }))
 
     segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
@@ -84,7 +88,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
     return {
       multihash: segmentFileIPFSResp.multihash,
-      duration: segmentDurations[segmentFileIPFSResp.srcPath]
+      duration: segmentDurations[segmentFileIPFSResp.segmentFileName]
     }
   })
 
