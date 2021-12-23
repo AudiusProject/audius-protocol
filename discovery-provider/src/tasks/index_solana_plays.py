@@ -620,8 +620,8 @@ def process_solana_plays(
     transaction_signatures.reverse()
 
     for tx_sig_batch in transaction_signatures:
-        # for tx_sig_batch_records in split_list(tx_sig_batch, 100):
-        parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch)
+        for tx_sig_batch_records in split_list(tx_sig_batch, 100):
+            parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records)
 
     try:
         if transaction_signatures and transaction_signatures[-1]:
