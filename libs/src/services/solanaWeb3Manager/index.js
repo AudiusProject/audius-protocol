@@ -16,7 +16,10 @@ const { WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
 
-const ZERO_SOL_EPSILON = 0.02
+// Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
+// Without this padding, we could reach some low non-zero number of SOL where transactions would fail
+// despite a remaining balance.
+const ZERO_SOL_EPSILON = 0.005
 
 /**
  * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
@@ -416,14 +419,15 @@ class SolanaWeb3Manager {
    * Gets whether a PublicKey has a usable balance
    *
    * @param {{
-   *  publicKey: PublicKey
+   *  publicKey: PublicKey,
+   *  epsilon?: number
    * }} { publicKey }
    * @return {Promise<boolean>}
    * @memberof SolanaWeb3Manager
    */
-  async hasBalance ({ publicKey }) {
+  async hasBalance ({ publicKey, epsilon = ZERO_SOL_EPSILON }) {
     const balance = await this.getBalance({ publicKey })
-    return balance > ZERO_SOL_EPSILON
+    return balance > epsilon
   }
 }
 
