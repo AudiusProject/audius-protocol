@@ -12,7 +12,9 @@ const getAllContentBlacklist = async () => {
     },
     raw: true
   })
-  const individuallyBlacklistedSegments = segmentsFromCBL.map(entry => entry.value)
+  const individuallyBlacklistedSegments = segmentsFromCBL.map(
+    (entry) => entry.value
+  )
   const allSegments = await BlacklistManager.getAllCIDs()
   const blacklistedContent = {
     trackIds: await BlacklistManager.getAllTrackIds(),
