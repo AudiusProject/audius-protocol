@@ -1,4 +1,3 @@
-
 from typing import TypedDict
 from sqlalchemy.orm.session import Session
 from src.models import Track
@@ -11,17 +10,32 @@ from src.queries.query_helpers import (
     add_users_to_tracks,
 )
 
-class GetUserListeningHistory(TypedDict):
+class GetUserListeningHistoryArgs(TypedDict):
+    # The current user logged in
     current_user_id: int
+
+    # The maximum number of listens to return
     limit: int
+
+    # The offset for the listen history
     offset: int
 
-def get_user_listening_history(args: GetUserListeningHistory):
+def get_user_listening_history(args: GetUserListeningHistoryArgs):
+    """
+    Returns a user's listening history
+
+    Args:
+        args: GetUserListeningHistoryArgs The parsed args from the request
+
+    Returns:
+        Array of tracks the user listened to starting from most recently listened
+    """
+
     db = get_db_read_replica()
     with db.scoped_session() as session:
         return _get_user_listening_history(session, args)
 
-def _get_user_listening_history(session: Session, args: GetUserListeningHistory):
+def _get_user_listening_history(session: Session, args: GetUserListeningHistoryArgs):
     current_user_id = args["current_user_id"]
     limit = args["limit"]
     offset = args["offset"]

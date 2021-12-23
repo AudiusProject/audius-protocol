@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from src.queries.get_user_listening_history import GetUserListeningHistory, _get_user_listening_history
+from src.queries.get_user_listening_history import GetUserListeningHistoryArgs, _get_user_listening_history
 from src.tasks.user_listening_history.index_user_listening_history import _index_user_listening_history
 from src.utils.db_session import get_db
 from src.queries import response_name_constants
@@ -42,7 +42,7 @@ def test_get_user_listening_history_multiple_plays(app):
 
         track_history = _get_user_listening_history(
             session,
-            GetUserListeningHistory(
+            GetUserListeningHistoryArgs(
                 current_user_id = 1,
                 limit = 10,
                 offset = 0,
@@ -72,7 +72,7 @@ def test_get_user_listening_history_no_plays(app):
 
         track_history = _get_user_listening_history(
             session,
-            GetUserListeningHistory(
+            GetUserListeningHistoryArgs(
                 current_user_id = 3,
                 limit = 10,
                 offset = 0,
@@ -93,7 +93,7 @@ def test_get_user_listening_history_single_play(app):
 
         track_history = _get_user_listening_history(
             session,
-            GetUserListeningHistory(
+            GetUserListeningHistoryArgs(
                 current_user_id = 2,
                 limit = 10,
                 offset = 0,
@@ -117,7 +117,7 @@ def test_get_user_listening_history_pagination(app):
 
         track_history = _get_user_listening_history(
             session,
-            GetUserListeningHistory(
+            GetUserListeningHistoryArgs(
                 current_user_id = 1,
                 limit = 1,
                 offset = 1,
