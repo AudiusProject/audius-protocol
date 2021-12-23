@@ -523,19 +523,32 @@ def update_user_events(
             # There is something wrong with events, don't process it
             return
 
-        # Mark existing UserEvents entries as not current
-        session.query(UserEvents).filter_by(
-            user_id=user_record.user_id, is_current=True
-        ).update({"is_current": False})
-
+        # Get existing UserEvents entry
+        existing_user_events = (
+            session.query(UserEvents)
+            .filter_by(user_id=user_record.user_id, is_current=True)
+            .one_or_none()
+        )
+        existing_referrer = (
+            existing_user_events.referrer if existing_user_events else None
+        )
+        existing_mobile_user = (
+            existing_user_events.is_mobile_user if existing_user_events else False
+        )
         user_events = UserEvents(
             user_id=user_record.user_id,
             is_current=True,
             blocknumber=user_record.blocknumber,
             blockhash=user_record.blockhash,
+            referrer=existing_referrer,
+            is_mobile_user=existing_mobile_user,
         )
         for event, value in events.items():
-            if event == "referrer" and isinstance(value, int):
+            if (
+                event == "referrer"
+                and isinstance(value, int)
+                and user_events.referrer is None
+            ):
                 user_events.referrer = value
                 bus.dispatch(
                     ChallengeEvent.referral_signup,
@@ -548,7 +561,11 @@ def update_user_events(
                     user_record.blocknumber,
                     user_record.user_id,
                 )
-            elif event == "is_mobile_user" and isinstance(value, bool):
+            elif (
+                event == "is_mobile_user"
+                and isinstance(value, bool)
+                and not user_events.is_mobile_user
+            ):
                 user_events.is_mobile_user = value
                 if value:
                     bus.dispatch(
@@ -556,8 +573,17 @@ def update_user_events(
                         user_record.blocknumber,
                         user_record.user_id,
                     )
-
-        session.add(user_events)
+        # Only add a row if there's an update
+        if (
+            existing_user_events is None
+            or user_events.is_mobile_user != existing_mobile_user
+            or user_events.referrer != existing_referrer
+        ):
+            # Mark existing UserEvents entries as not current
+            session.query(UserEvents).filter_by(
+                user_id=user_record.user_id, is_current=True
+            ).update({"is_current": False})
+            session.add(user_events)
 
     except Exception as e:
         logger.error(
