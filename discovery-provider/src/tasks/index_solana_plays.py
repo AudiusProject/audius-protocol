@@ -1,8 +1,8 @@
 import concurrent.futures
 import json
-from datetime import datetime
 import logging
 import time
+from datetime import datetime
 from typing import Tuple, TypedDict, Union
 
 import base58
@@ -12,6 +12,10 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
 from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_transaction_types import (
+    ConfirmedSignatureForAddressResult,
+    TransactionInfoResult,
+)
 from src.tasks.celery_app import celery
 from src.tasks.index_listen_count_milestones import (
     CURRENT_PLAY_INDEXING,
@@ -23,14 +27,10 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
-from src.utils.redis_constants import (
-    latest_sol_play_program_tx_key,
-    latest_sol_play_db_tx_key,
-)
 from src.utils.redis_cache import set_json_cached_key
-from src.solana.solana_transaction_types import (
-    TransactionInfoResult,
-    ConfirmedSignatureForAddressResult,
+from src.utils.redis_constants import (
+    latest_sol_play_db_tx_key,
+    latest_sol_play_program_tx_key,
 )
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
