@@ -22,16 +22,17 @@ type FollowProps = {
 }
 
 const Follow = ({ notification, onGoToRoute }: FollowProps) => {
+  const textWrapperStyle = useTheme(styles.textWrapper, {
+    color: 'neutral'
+  })
+
   const firstUser = notification.users[0]
+  if (!firstUser) return null
   let otherUsers = ''
   if (notification.userIds.length > 1) {
     const usersLen = notification.userIds.length - 1
     otherUsers = ` and ${formatCount(usersLen)} other${usersLen > 1 ? 's' : ''}`
   }
-
-  const textWrapperStyle = useTheme(styles.textWrapper, {
-    color: 'neutral'
-  })
 
   return (
     <View>

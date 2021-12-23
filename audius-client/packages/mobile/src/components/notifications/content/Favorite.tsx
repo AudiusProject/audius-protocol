@@ -23,7 +23,13 @@ type FavoriteProps = {
 }
 
 const Favorite = ({ notification, onGoToRoute }: FavoriteProps) => {
+  const textWrapperStyle = useTheme(styles.textWrapper, {
+    color: 'neutral'
+  })
+
   const firstUser = notification.users[0]
+  if (!firstUser) return null
+
   let otherUsers = ''
   if (notification.userIds.length > 1) {
     const usersLen = notification.userIds.length - 1
@@ -31,10 +37,6 @@ const Favorite = ({ notification, onGoToRoute }: FavoriteProps) => {
   }
   const entityType = notification.entityType
   const entity = notification.entity
-
-  const textWrapperStyle = useTheme(styles.textWrapper, {
-    color: 'neutral'
-  })
 
   return (
     <View>

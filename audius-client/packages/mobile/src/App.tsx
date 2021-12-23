@@ -24,6 +24,7 @@ import Notifications from 'app/components/notifications/Notifications'
 import OAuth from 'app/components/oauth/OAuth'
 import OverflowMenuDrawer from 'app/components/overflow-menu-drawer'
 import Search from 'app/components/search/Search'
+import { ToastContextProvider } from 'app/components/toast/ToastContext'
 import TransferAudioMobileDrawer from 'app/components/transfer-audio-mobile-drawer'
 import TrendingRewardsDrawer from 'app/components/trending-rewards-drawer'
 import WebApp from 'app/components/web/WebApp'
@@ -33,6 +34,9 @@ import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import PushNotifications from 'app/notifications'
 import createStore from 'app/store'
 import { setup as setupAnalytics } from 'app/utils/analytics'
+
+import ErrorBoundary from './ErrorBoundary'
+import { ThemeContextProvider } from './components/theme/ThemeContext'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -97,30 +101,36 @@ const App = () => {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Provider store={store}>
-          <WebRefContextProvider>
-            <GoogleCast webRef={webRef} />
-            <WebApp webRef={webRef} />
-            {/*
+      <ThemeContextProvider>
+        <ToastContextProvider>
+          <ErrorBoundary>
+            <NavigationContainer>
+              <Provider store={store}>
+                <WebRefContextProvider>
+                  <GoogleCast webRef={webRef} />
+                  <WebApp webRef={webRef} />
+                  {/*
                 Note: it is very important that components are rendered after WebApp.
                 On Android, regardless of position: absolute, WebApp will steal all of
                 touch targets and onPress will not work.
               */}
-            <AppNavigator />
-            {/*
+                  <AppNavigator />
+                  {/*
                 Commenting out NowPlayingDrawer until all drawers and overlays are migrated to RN
               */}
-            <Search />
-            <Notifications webRef={webRef} />
-            <Drawers />
-            <Modals />
-            <Audio webRef={webRef} />
-            <OAuth webRef={webRef} />
-            <Airplay webRef={webRef} />
-          </WebRefContextProvider>
-        </Provider>
-      </NavigationContainer>
+                  <Search />
+                  <Notifications webRef={webRef} />
+                  <Drawers />
+                  <Modals />
+                  <Audio webRef={webRef} />
+                  <OAuth webRef={webRef} />
+                  <Airplay webRef={webRef} />
+                </WebRefContextProvider>
+              </Provider>
+            </NavigationContainer>
+          </ErrorBoundary>
+        </ToastContextProvider>
+      </ThemeContextProvider>
     </SafeAreaProvider>
   )
 }
