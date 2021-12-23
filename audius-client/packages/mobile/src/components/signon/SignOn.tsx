@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 
+import Clipboard from '@react-native-clipboard/clipboard'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import * as signOnActionsWeb from 'audius-client/src/containers/sign-on/store/actions.js'
+import querystring from 'query-string'
 import {
   Animated,
   Dimensions,
@@ -27,6 +30,7 @@ import signupCTA from 'app/assets/images/signUpCTA.png'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
+import useAppState from 'app/hooks/useAppState'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { MessageType } from 'app/message/types'
 import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
@@ -404,6 +408,26 @@ const SignOn = ({ navigation }: SignOnProps) => {
     showInvalidEmailError,
     showEmptyPasswordError
   ])
+
+  const processReferrerFromClipboard = useCallback(async () => {
+    const hasURL = await Clipboard.hasURL()
+    if (hasURL !== false) {
+      const contents = await Clipboard.getString()
+      if (contents) {
+        const parsed = querystring.parseUrl(contents)
+        const handle = parsed.query?.ref
+        if (handle) {
+          console.log('Setting referrer', handle)
+          dispatchWeb(signOnActionsWeb.fetchReferrer(handle))
+        }
+      }
+    }
+  }, [dispatchWeb])
+
+  useEffect(() => {
+    processReferrerFromClipboard()
+  }, [processReferrerFromClipboard])
+  useAppState(processReferrerFromClipboard, () => {})
 
   const errorView = () => {
     if (isSignin && isSigninError && showDefaultError) {
