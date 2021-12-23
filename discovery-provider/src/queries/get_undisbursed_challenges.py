@@ -1,7 +1,13 @@
 from typing import List, Optional, Tuple, TypedDict
 
 from sqlalchemy import and_, asc
-from src.models import UserChallenge, Challenge, ChallengeDisbursement, User, UserBankAccount
+from src.models import (
+    UserChallenge,
+    Challenge,
+    ChallengeDisbursement,
+    User,
+    UserBankAccount,
+)
 
 
 class UndisbursedChallengeResponse(TypedDict):
@@ -17,6 +23,7 @@ class UndisbursedChallengeResponse(TypedDict):
 def to_challenge_response(
     user_challenge: UserChallenge, challenge: Challenge, handle: str, wallet: str
 ) -> UndisbursedChallengeResponse:
+
     return {
         "challenge_id": challenge.id,
         "user_id": user_challenge.user_id,
