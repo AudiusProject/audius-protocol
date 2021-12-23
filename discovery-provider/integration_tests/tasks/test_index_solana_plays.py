@@ -1,6 +1,11 @@
 import json
-from src.tasks.index_solana_plays import cache_traversed_tx, fetch_traversed_tx_from_cache, REDIS_TX_CACHE_QUEUE_PREFIX
+
 from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResult
+from src.tasks.index_solana_plays import (
+    REDIS_TX_CACHE_QUEUE_PREFIX,
+    cache_traversed_tx,
+    fetch_traversed_tx_from_cache,
+)
 from src.utils.redis_connection import get_redis
 
 mock_tx_result_1: ConfirmedSignatureForAddressResult = {
@@ -9,7 +14,7 @@ mock_tx_result_1: ConfirmedSignatureForAddressResult = {
     "blockTime": 1640126543,
     "confirmationStatus": "finalized",
     "err": None,
-    "memo": None
+    "memo": None,
 }
 
 
@@ -18,6 +23,7 @@ def assert_cache_array_length(redis, expected_length: int):
     cached_val_array = redis.lrange(REDIS_TX_CACHE_QUEUE_PREFIX, 0, 100)
     cached_val_length = len(cached_val_array)
     assert cached_val_length == expected_length
+
 
 # Validate caching behavior
 
@@ -44,7 +50,7 @@ def test_fetch_traversed_tx_from_cache(app):
         "blockTime": 1640126543,
         "confirmationStatus": "finalized",
         "err": None,
-        "memo": None
+        "memo": None,
     }
 
     cache_traversed_tx(redis, first_mock_tx)
@@ -59,7 +65,9 @@ def test_fetch_traversed_tx_from_cache(app):
     # Now, populate 2 entries into redis
     later_mock_tx = first_mock_tx
     later_mock_tx["slot"] = tx_slot + 100
-    later_mock_tx["signature"] = "5211pasG9iDECHnNm4GCWH9xETWJYRk4cxWVcJQyqTJCFGbmmvki2oHyvHJL8MgppztYjXsXPyG4RXcMXuQRpBia"
+    later_mock_tx[
+        "signature"
+    ] = "5211pasG9iDECHnNm4GCWH9xETWJYRk4cxWVcJQyqTJCFGbmmvki2oHyvHJL8MgppztYjXsXPyG4RXcMXuQRpBia"
 
     cache_traversed_tx(redis, first_mock_tx)
     cache_traversed_tx(redis, later_mock_tx)
