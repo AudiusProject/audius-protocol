@@ -255,6 +255,9 @@ def populate_user_metadata(
         user[response_name_constants.associated_sol_wallets_balance] = user_balance.get(
             "associated_sol_wallets_balance", "0"
         )
+        user[response_name_constants.waudio_balance] = user_balance.get(
+            "waudio_balance", "0"
+        )
 
     return users
 
