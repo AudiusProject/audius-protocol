@@ -1,5 +1,6 @@
 import logging
 import time
+
 from src.tasks.celery_app import celery
 from src.utils.redis_constants import challenges_last_processed_event_redis_key
 

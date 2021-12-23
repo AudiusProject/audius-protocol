@@ -1,8 +1,9 @@
 from flask_restx import fields
+
 from .common import ns
+from .playlists import full_playlist_model
 from .tracks import track_full
 from .users import user_model_full
-from .playlists import full_playlist_model
 
 search_model = ns.model(
     "search_model",

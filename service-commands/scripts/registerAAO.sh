@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if [[ -z \"$AAO_DIR\" ]]; then 
-  echo "!!!ERROR: need to set AAO_DIR"; 
+if [[ -z \"$AAO_DIR\" ]]; then
+  echo "!!!ERROR: need to set AAO_DIR";
   exit 1;
 fi
 

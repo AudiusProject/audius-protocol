@@ -17,23 +17,20 @@ const PROCESS_NAMES = Object.freeze({
  *
  */
 class SessionExpirationQueue {
-  constructor () {
+  constructor() {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
     this.runInterval = RUN_INTERVAL
-    this.queue = new Bull(
-      'session-expiration-queue',
-      {
-        redis: {
-          port: config.get('redisPort'),
-          host: config.get('redisHost')
-        },
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true
-        }
+    this.queue = new Bull('session-expiration-queue', {
+      redis: {
+        port: config.get('redisPort'),
+        host: config.get('redisHost')
+      },
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true
       }
-    )
+    })
     this.logStatus = this.logStatus.bind(this)
     this.expireSessions = this.expireSessions.bind(this)
 
@@ -50,12 +47,18 @@ class SessionExpirationQueue {
           const SESSION_EXPIRED_CONDITION = {
             where: {
               createdAt: {
-                [Sequelize.Op.gt]: new Date(Date.now() - this.sessionExpirationAge)
+                [Sequelize.Op.gt]: new Date(
+                  Date.now() - this.sessionExpirationAge
+                )
               }
             }
           }
-          const numExpiredSessions = await SessionToken.count(SESSION_EXPIRED_CONDITION)
-          this.logStatus(`${numExpiredSessions} expired sessions ready for deletion.`)
+          const numExpiredSessions = await SessionToken.count(
+            SESSION_EXPIRED_CONDITION
+          )
+          this.logStatus(
+            `${numExpiredSessions} expired sessions ready for deletion.`
+          )
 
           let sessionsToDelete = numExpiredSessions
           while (sessionsToDelete > 0) {
@@ -73,8 +76,10 @@ class SessionExpirationQueue {
     )
   }
 
-  async expireSessions (sessionExpiredCondition) {
-    const sessionsToDelete = await SessionToken.findAll(Object.assign(sessionExpiredCondition, { limit: this.batchSize }))
+  async expireSessions(sessionExpiredCondition) {
+    const sessionsToDelete = await SessionToken.findAll(
+      Object.assign(sessionExpiredCondition, { limit: this.batchSize })
+    )
     await sessionManager.deleteSessions(sessionsToDelete)
   }
 
@@ -82,15 +87,18 @@ class SessionExpirationQueue {
    * Logs a status message and includes current queue info
    * @param {string} message
    */
-  async logStatus (message) {
-    const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
-    logger.info(`Session Expiration Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `)
+  async logStatus(message) {
+    const { waiting, active, completed, failed, delayed } =
+      await this.queue.getJobCounts()
+    logger.info(
+      `Session Expiration Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+    )
   }
 
   /**
    * Starts the session expiration queue on a daily cron.
    */
-  async start () {
+  async start() {
     try {
       // Run the job immediately
       await this.queue.add(PROCESS_NAMES.expire_sessions)

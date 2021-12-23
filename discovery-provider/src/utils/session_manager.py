@@ -1,6 +1,7 @@
-from contextlib import contextmanager
 import inspect
 import logging  # pylint: disable=C0302
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker
@@ -34,7 +35,7 @@ class SessionManager:
         try to comment the caller's function name.
         """
         if "src" in conn.info:
-            statement = "-- %s \n" % conn.info.pop("src") + statement
+            statement = f"-- {conn.info.pop('src')} \n{statement}"
 
         return statement, parameters
 

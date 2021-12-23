@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 import ast
-from collections import defaultdict
 import datetime
 import logging
 import time
+from collections import defaultdict
 from typing import Any, Dict
 
 import redis
@@ -14,14 +14,12 @@ from flask.json import JSONEncoder
 from flask_cors import CORS
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
-from web3 import HTTPProvider, Web3
-from werkzeug.middleware.proxy_fix import ProxyFix
-
 from src import api_helpers, exceptions
 from src.api.v1 import api as api_v1
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
 from src.database_task import DatabaseTask
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.queries import (
     block_confirmation,
     health_check,
@@ -32,6 +30,7 @@ from src.queries import (
     skipped_transactions,
     user_signals,
 )
+from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.utils import helpers
 from src.utils.config import ConfigIni, config_files, shared_config
@@ -39,8 +38,8 @@ from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
-from src.solana.solana_client_manager import SolanaClientManager
-from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
+from web3 import HTTPProvider, Web3
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -64,6 +63,14 @@ user_replica_set_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
 logger = logging.getLogger(__name__)
+
+
+def get_contract_addresses():
+    return contract_addresses
+
+
+def get_eth_abi_values():
+    return eth_abi_values
 
 
 def init_contracts():
@@ -160,11 +167,11 @@ def create_celery(test_config=None):
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
-    eth_abi_values = helpers.load_eth_abi_values()
     # Initialize eth_web3 with MultiProvider
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
     # However, we do not use multiprovider in data web3 because of the effect of disparate block status reads.
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
+    eth_abi_values = helpers.load_eth_abi_values()
 
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
@@ -226,7 +233,7 @@ def create(test_config=None, mode="app"):
     if mode == "celery":
         # log level is defined via command line in docker yml files
         helpers.configure_logging()
-        configure_celery(app, celery_app.celery, test_config)
+        configure_celery(celery_app.celery, test_config)
         return celery_app
 
     raise ValueError("Invalid mode")
@@ -336,9 +343,8 @@ def delete_last_scanned_eth_block_redis(redis_inst):
     )
 
 
-def configure_celery(flask_app, celery, test_config=None):
+def configure_celery(celery, test_config=None):
     database_url = shared_config["db"]["url"]
-    engine_args_literal = ast.literal_eval(shared_config["db"]["engine_args_literal"])
     redis_url = shared_config["redis"]["url"]
 
     if test_config is not None:
@@ -361,6 +367,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
             "src.tasks.index_aggregate_plays",
+            "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.index_network_peers",
             "src.tasks.index_trending",
@@ -412,6 +419,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_aggregate_plays": {
                 "task": "update_aggregate_plays",
                 "schedule": timedelta(seconds=15),
+            },
+            "index_hourly_play_counts": {
+                "task": "index_hourly_play_counts",
+                "schedule": timedelta(seconds=30),
             },
             "vacuum_db": {
                 "task": "vacuum_db",
@@ -492,7 +503,9 @@ def configure_celery(flask_app, celery, test_config=None):
     )
 
     # Initialize DB object for celery task context
-    db = SessionManager(database_url, engine_args_literal)
+    db = SessionManager(
+        database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
+    )
     logger.info("Database instance initialized!")
     # Initialize IPFS client for celery task context
     ipfs_client = IPFSClient(
@@ -511,6 +524,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("materialized_view_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
+    redis_inst.delete("index_hourly_play_counts_lock")
     redis_inst.delete("ipld_blacklist_lock")
     redis_inst.delete("update_discovery_lock")
     redis_inst.delete("aggregate_metrics_lock")

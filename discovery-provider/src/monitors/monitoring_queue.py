@@ -1,5 +1,6 @@
 import logging
 import time
+
 from src.monitors import monitor_names
 from src.monitors.monitors import MONITORS, get_monitor_redis_key
 from src.tasks.celery_app import celery

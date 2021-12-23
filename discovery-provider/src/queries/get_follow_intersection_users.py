@@ -1,12 +1,12 @@
-from src.models import User, Follow
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
+from src.models import Follow, User
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     get_current_user_id,
-    populate_user_metadata,
     paginate_query,
+    populate_user_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 
 
 def get_follow_intersection_users(followee_user_id, follower_user_id):
