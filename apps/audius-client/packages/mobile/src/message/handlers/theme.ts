@@ -1,4 +1,3 @@
-import * as themeActions from 'app/store/theme/actions'
 import {
   getInitialDarkModePreference,
   getPrefersDarkModeChange
@@ -10,8 +9,8 @@ import { MessageType, MessageHandlers } from '../types'
 let sentInitialTheme = false
 
 export const messageHandlers: Partial<MessageHandlers> = {
-  [MessageType.THEME_CHANGE]: ({ message, dispatch }) => {
-    dispatch(themeActions.set(message.theme))
+  [MessageType.THEME_CHANGE]: ({ message, setTheme }) => {
+    setTheme(message.theme)
     handleThemeChange(message.theme)
   },
   [MessageType.PREFERS_COLOR_SCHEME]: async ({ message, postMessage }) => {

@@ -30,6 +30,7 @@ import { Dispatch } from 'redux'
 import useAppState from 'app/hooks/useAppState'
 import useKeyboardListeners from 'app/hooks/useKeyboardListeners'
 import { Message, MessageType, handleMessage } from 'app/message'
+import Theme from 'app/models/Theme'
 import { AppState } from 'app/store'
 import { getTrack, getIndex } from 'app/store/audio/selectors'
 import { getIsOnFirstPage, getIsSignedIn } from 'app/store/lifecycle/selectors'
@@ -41,6 +42,7 @@ import {
 
 import NotificationReminder from '../notification-reminder/NotificationReminder'
 import SplashScreen from '../splash-screen/SplashScreen'
+import { ThemeContext } from '../theme/ThemeContext'
 
 import PullToRefresh from './PullToRefresh'
 import { WebRefContext } from './WebRef'
@@ -408,6 +410,8 @@ const WebApp = ({
   ])
   useAppState(onEnterAppForeground, () => {})
 
+  const { setTheme } = useContext(ThemeContext)
+
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
     if (event.nativeEvent.data) {
@@ -421,8 +425,7 @@ const WebApp = ({
         (newMessage: Message) => postMessageUtil(webRef.current, newMessage),
         // @ts-ignore
         reload,
-        // @ts-ignore
-        state
+        setTheme
       )
       return
     }
@@ -568,9 +571,10 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   onMessage: (
     message: Message,
     onPostMessage: (message: Message) => void,
-    reload: () => void
+    reload: () => void,
+    setTheme: (theme: Theme) => void
   ) => {
-    handleMessage(message, dispatch, onPostMessage, reload)
+    handleMessage(message, dispatch, onPostMessage, reload, setTheme)
   }
 })
 

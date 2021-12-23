@@ -28,7 +28,13 @@ type SubscriptionProps = {
 }
 
 const Subscription = ({ notification, onGoToRoute }: SubscriptionProps) => {
+  const textWrapperStyle = useTheme(styles.textWrapper, {
+    color: 'neutral'
+  })
+
   const user = notification.user
+  if (!user) return null
+
   const isMultipleUploads = notification.entities.length > 1
   let body: ReactNode
   if (isMultipleUploads) {
@@ -51,10 +57,6 @@ const Subscription = ({ notification, onGoToRoute }: SubscriptionProps) => {
       </>
     )
   }
-
-  const textWrapperStyle = useTheme(styles.textWrapper, {
-    color: 'neutral'
-  })
 
   return (
     <View style={styles.container}>

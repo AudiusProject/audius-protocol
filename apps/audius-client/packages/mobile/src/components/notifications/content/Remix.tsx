@@ -41,6 +41,8 @@ type RemixProps = {
 
 const Remix = ({ notification, onGoToRoute }: RemixProps) => {
   const user = notification.user
+  if (!user) return null
+
   const entity = notification.entities.find(
     (track: Track) => track.track_id === notification.childTrackId
   )
