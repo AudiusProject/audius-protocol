@@ -18,7 +18,7 @@ PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 source $PROTOCOL_DIR/service-commands/scripts/utils.sh
 
 # parse arguments
-while getopts "p:u:c:r:l:f" flag; do
+while getopts "p:u:c:r:l:f:y" flag; do
 	case "$flag" in
 		p) provider=$OPTARG;;
 		u) user=$OPTARG;;
@@ -127,6 +127,5 @@ case "$service" in
 			IP=$(get_ip_addr $provider $name)
 			echo -e "\nRun the following to create an SSL tunnel to allow the client into the remote-dev box:\n"
 			echo -e "ssh -N -L 3000:127.0.0.1:3000 -i ~/.ssh/google_compute_engine ubuntu@${IP}\n"
-			;;
 		fi
 esac

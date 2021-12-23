@@ -16,7 +16,7 @@ PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 source $PROTOCOL_DIR/service-commands/scripts/utils.sh
 
 # parse arguments
-while getopts "p:i:d:m:" flag; do
+while getopts "p:i:d:m:y:" flag; do
 	case "$flag" in
 		p) provider=$OPTARG;;
 		i) image=$OPTARG;;

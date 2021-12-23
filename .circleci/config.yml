@@ -683,7 +683,7 @@ jobs:
             # install python3.9
             apt update -y && apt upgrade -y
             apt install -y sudo wget build-essential libreadline-gplv2-dev libncursesw5-dev \
-            libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev
+            libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev jq
             wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tgz
             tar xzf Python-3.9.6.tgz >/dev/null
             cd Python-3.9.6 && ./configure --enable-optimizations
@@ -695,15 +695,11 @@ jobs:
             source ~/.profile
             nvm install v14.17.5
             nvm use 14
-            export PROTOCOL_DIR=/home/circleci/project/audius-protocol
+            export PROTOCOL_DIR=$CIRCLE_WORKING_DIRECTORY/audius-protocol
             git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git
             cd audius-protocol/service-commands/
             npm install --unsafe-perm
             A setup --assume-yes remote-dev audius-bake-nightly
-      - run:
-          name: provision and build instance with latest changes
-          command: |
-            A setup -y remote-dev audius-bake-nightly
       - run:
           name: provision local stack on image to store docker cache
           command: |
@@ -715,7 +711,7 @@ jobs:
               --metadata-from-file=shutdown-script="$PROTOCOL_DIR/service-commands/scripts/remote-shutdown.sh"
             gcloud compute instances stop audius-bake-nightly
             gcloud compute instances start audius-bake-nightly
-            until [[ $(gcloud compute instances describe audius-bake-nightly --format="json(metadata)" | jq '.metadata.items[] | select(.key=="done") | .value') ]]; do
+            until [[ $(gcloud compute instances describe audius-bake-nightly --format="json(metadata)" | jq '.metadata.items[] | select(.key=="pizza") | .value') ]]; do
               echo "waiting for A up..."
               sleep 30
             done
