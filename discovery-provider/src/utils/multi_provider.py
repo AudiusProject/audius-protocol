@@ -1,5 +1,6 @@
 import random
-from web3.providers import HTTPProvider, BaseProvider
+
+from web3.providers import BaseProvider, HTTPProvider
 
 
 class MultiProvider(BaseProvider):
@@ -24,4 +25,4 @@ class MultiProvider(BaseProvider):
         return any(provider.isConnected() for provider in self.providers)
 
     def __str__(self):
-        return "MultiProvider({})".format(self.providers)
+        return f"MultiProvider({self.providers})"

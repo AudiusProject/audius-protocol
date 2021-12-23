@@ -1,13 +1,15 @@
-from collections import defaultdict
 import logging
-from typing import Dict, Set, Tuple, TypedDict, List, Optional, cast
 from abc import ABC
-from sqlalchemy.orm.session import Session
+from collections import defaultdict
+from typing import Dict, List, Optional, Set, Tuple, TypedDict, cast
+
 from sqlalchemy import func
-from src.models.models import ChallengeType, User
+from sqlalchemy.orm.session import Session
 from src.models import Challenge, UserChallenge
+from src.models.models import ChallengeType, User
 
 logger = logging.getLogger(__name__)
+
 
 # DB Accessors
 def fetch_user_challenges(
@@ -236,7 +238,7 @@ class ChallengeManager:
             to_update = in_progress_challenges + new_user_challenges
 
             # Filter out challenges for deactivated users
-            to_update_user_ids = list(set([c.user_id for c in to_update]))
+            to_update_user_ids = list({c.user_id for c in to_update})
             deactivated_user_ids = (
                 session.query(User.user_id)
                 .filter(

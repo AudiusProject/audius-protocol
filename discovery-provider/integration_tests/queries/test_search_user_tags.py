@@ -1,6 +1,6 @@
+from integration_tests.utils import populate_mock_db
 from src.queries.search_user_tags import search_user_tags
 from src.utils.db_session import get_db
-from integration_tests.utils import populate_mock_db
 
 
 def test_search_user_tags(app):

@@ -1,13 +1,12 @@
 import logging
-from typing import Set, TypedDict, Tuple
 from datetime import datetime
+from typing import Set, Tuple, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
-
 from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -419,7 +418,7 @@ def update_user_associated_wallets(
 
         # Verify the wallet signatures and create the user id to wallet associations
         for associated_wallet, wallet_metadata in associated_wallets.items():
-            if not "signature" in wallet_metadata or not isinstance(
+            if "signature" not in wallet_metadata or not isinstance(
                 wallet_metadata["signature"], str
             ):
                 continue
@@ -459,7 +458,7 @@ def update_user_associated_wallets(
 
         # Mark the previously associated wallets as deleted
         for previously_associated_wallet in previous_wallets:
-            if not previously_associated_wallet in added_associated_wallets:
+            if previously_associated_wallet not in added_associated_wallets:
                 associated_wallet_entry = AssociatedWallet(
                     user_id=user_record.user_id,
                     wallet=previously_associated_wallet,
@@ -520,19 +519,32 @@ def update_user_events(
             # There is something wrong with events, don't process it
             return
 
-        # Mark existing UserEvents entries as not current
-        session.query(UserEvents).filter_by(
-            user_id=user_record.user_id, is_current=True
-        ).update({"is_current": False})
-
+        # Get existing UserEvents entry
+        existing_user_events = (
+            session.query(UserEvents)
+            .filter_by(user_id=user_record.user_id, is_current=True)
+            .one_or_none()
+        )
+        existing_referrer = (
+            existing_user_events.referrer if existing_user_events else None
+        )
+        existing_mobile_user = (
+            existing_user_events.is_mobile_user if existing_user_events else False
+        )
         user_events = UserEvents(
             user_id=user_record.user_id,
             is_current=True,
             blocknumber=user_record.blocknumber,
             blockhash=user_record.blockhash,
+            referrer=existing_referrer,
+            is_mobile_user=existing_mobile_user,
         )
         for event, value in events.items():
-            if event == "referrer" and isinstance(value, int):
+            if (
+                event == "referrer"
+                and isinstance(value, int)
+                and user_events.referrer is None
+            ):
                 user_events.referrer = value
                 bus.dispatch(
                     ChallengeEvent.referral_signup,
@@ -545,7 +557,11 @@ def update_user_events(
                     user_record.blocknumber,
                     user_record.user_id,
                 )
-            elif event == "is_mobile_user" and isinstance(value, bool):
+            elif (
+                event == "is_mobile_user"
+                and isinstance(value, bool)
+                and not user_events.is_mobile_user
+            ):
                 user_events.is_mobile_user = value
                 if value:
                     bus.dispatch(
@@ -553,8 +569,17 @@ def update_user_events(
                         user_record.blocknumber,
                         user_record.user_id,
                     )
-
-        session.add(user_events)
+        # Only add a row if there's an update
+        if (
+            existing_user_events is None
+            or user_events.is_mobile_user != existing_mobile_user
+            or user_events.referrer != existing_referrer
+        ):
+            # Mark existing UserEvents entries as not current
+            session.query(UserEvents).filter_by(
+                user_id=user_record.user_id, is_current=True
+            ).update({"is_current": False})
+            session.add(user_events)
 
     except Exception as e:
         logger.error(

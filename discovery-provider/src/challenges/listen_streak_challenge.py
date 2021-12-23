@@ -7,8 +7,8 @@ from src.challenges.challenge import (
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.models.models import ListenStreakChallenge, UserChallenge
 from src.challenges.challenge_event import ChallengeEvent
+from src.models.models import ListenStreakChallenge, UserChallenge
 
 
 class ListenStreakChallengeUpdater(ChallengeUpdater):
@@ -85,6 +85,7 @@ class ListenStreakChallengeUpdater(ChallengeUpdater):
 listen_streak_challenge_manager = ChallengeManager(
     "listen-streak", ListenStreakChallengeUpdater()
 )
+
 
 # Accessors
 def get_listen_streak_challenges(

@@ -72,6 +72,7 @@ class TransactionInfoResult(TypedDict):
     slot: int
     transaction: ResultTransction
 
+
 class ConfirmedSignatureForAddressResult(TypedDict):
     err: Any
     memo: Any
@@ -79,6 +80,7 @@ class ConfirmedSignatureForAddressResult(TypedDict):
     slot: int
     blockTime: int
     confirmationStatus: str
+
 
 class ConfirmedSignatureForAddressResponse(TypedDict):
     jsonrpc: str

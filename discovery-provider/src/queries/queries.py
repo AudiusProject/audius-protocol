@@ -1,49 +1,51 @@
 import logging  # pylint: disable=C0302
 
 from flask import Blueprint, request
-
 from src import api_helpers, exceptions
-
-from src.queries.get_users import get_users
-from src.queries.get_tracks import get_tracks
-from src.queries.get_playlists import get_playlists
-from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
-from src.queries.get_stems_of import get_stems_of
+from src.queries.get_cid_source import get_cid_source
 from src.queries.get_feed import get_feed
-from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_follow_intersection_users import get_follow_intersection_users
-from src.queries.get_track_repost_intersection_users import (
-    get_track_repost_intersection_users,
-)
+from src.queries.get_followees_for_user import get_followees_for_user
+from src.queries.get_followers_for_user import get_followers_for_user
+from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
+from src.queries.get_max_id import get_max_id
 from src.queries.get_playlist_repost_intersection_users import (
     get_playlist_repost_intersection_users,
 )
-from src.queries.get_followers_for_user import get_followers_for_user
-from src.queries.get_followees_for_user import get_followees_for_user
-from src.queries.get_reposters_for_track import get_reposters_for_track
-from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
-from src.queries.get_savers_for_track import get_savers_for_track
-from src.queries.get_savers_for_playlist import get_savers_for_playlist
-from src.queries.get_saves import get_saves
-from src.queries.get_users_account import get_users_account
-from src.queries.get_max_id import get_max_id
-from src.queries.get_top_playlists import get_top_playlists
-from src.queries.get_top_followee_windowed import get_top_followee_windowed
-from src.queries.get_top_followee_saves import get_top_followee_saves
-from src.queries.get_top_genre_users import get_top_genre_users
-from src.queries.get_remixes_of import get_remixes_of
-from src.queries.get_remix_track_parents import get_remix_track_parents
-from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
+from src.queries.get_playlists import get_playlists
 from src.queries.get_previously_private_playlists import (
     get_previously_private_playlists,
 )
-from src.queries.query_helpers import get_current_user_id, get_pagination_vars
-from src.queries.get_users_cnode import get_users_cnode
+from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
+from src.queries.get_remix_track_parents import get_remix_track_parents
+from src.queries.get_remixes_of import get_remixes_of
+from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
+from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
+from src.queries.get_reposters_for_track import get_reposters_for_track
+from src.queries.get_savers_for_playlist import get_savers_for_playlist
+from src.queries.get_savers_for_track import get_savers_for_track
+from src.queries.get_saves import get_saves
+from src.queries.get_sol_plays import (
+    get_sol_play,
+    get_total_aggregate_plays,
+    get_track_listen_milestones,
+)
+from src.queries.get_stems_of import get_stems_of
+from src.queries.get_top_followee_saves import get_top_followee_saves
+from src.queries.get_top_followee_windowed import get_top_followee_windowed
+from src.queries.get_top_genre_users import get_top_genre_users
+from src.queries.get_top_playlists import get_top_playlists
+from src.queries.get_track_repost_intersection_users import (
+    get_track_repost_intersection_users,
+)
+from src.queries.get_tracks import get_tracks
+from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
-from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones, get_total_aggregate_plays
-from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
-from src.queries.get_cid_source import get_cid_source
 from src.queries.get_user_history import get_user_history
+from src.queries.get_users import get_users
+from src.queries.get_users_account import get_users_account
+from src.queries.get_users_cnode import get_users_cnode
+from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -68,7 +70,7 @@ def parse_id_array_param(list):
     return [int(y) for y in list]
 
 
-######## ROUTES ########
+# ####### ROUTES ####### #
 
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
@@ -622,6 +624,7 @@ def get_sol_play_tx():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+
 # Get total aggregate play count
 @bp.route("/get_total_aggregate_plays", methods=("GET",))
 def get_total_plays():
@@ -630,6 +633,7 @@ def get_total_plays():
         return api_helpers.success_response(data)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
 
 # Get details for latest track listen milestones
 # Used to parse and issue notifications

@@ -1,11 +1,11 @@
 # TODO: Add DocString
-import logging
 import configparser
+import datetime
+import logging
 import os
 import os.path
-import datetime
-import requests
 
+import requests
 from flask import current_app
 
 logger = logging.getLogger(__name__)

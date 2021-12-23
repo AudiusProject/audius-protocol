@@ -1,5 +1,6 @@
 import logging
-from sqlalchemy import func, desc
+
+from sqlalchemy import desc, func
 from src.models import Track
 from src.utils import db_session
 

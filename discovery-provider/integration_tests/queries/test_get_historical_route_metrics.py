@@ -1,9 +1,10 @@
 from datetime import date, timedelta
+
 from src.models import (
-    AggregateDailyUniqueUsersMetrics,
     AggregateDailyTotalUsersMetrics,
-    AggregateMonthlyUniqueUsersMetrics,
+    AggregateDailyUniqueUsersMetrics,
     AggregateMonthlyTotalUsersMetrics,
+    AggregateMonthlyUniqueUsersMetrics,
 )
 from src.queries.get_route_metrics import _get_historical_route_metrics
 from src.utils.db_session import get_db

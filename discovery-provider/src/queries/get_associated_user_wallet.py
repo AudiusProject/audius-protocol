@@ -1,6 +1,6 @@
 import logging
+from typing import List, Tuple, TypedDict
 
-from typing import Tuple, TypedDict, List
 from src.models import AssociatedWallet
 from src.utils import db_session
 

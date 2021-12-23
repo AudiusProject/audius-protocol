@@ -1,10 +1,5 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Boolean,
-    PrimaryKeyConstraint,
-)
+from sqlalchemy import Boolean, Column, Integer, PrimaryKeyConstraint, String
+
 from .models import Base
 
 
