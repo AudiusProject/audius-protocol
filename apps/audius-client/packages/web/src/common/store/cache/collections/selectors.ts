@@ -95,9 +95,7 @@ export const getTracksFromCollection = (
       if (track?.owner_id) {
         return track.owner_id
       }
-      console.error(
-        `Found empty track ${track}, expected it to have an owner_id`
-      )
+      console.error(`Found empty track ${id}, expected it to have an owner_id`)
       return null
     })
     .filter(userId => userId !== null) as number[]
@@ -106,17 +104,23 @@ export const getTracksFromCollection = (
   if (!users || Object.keys(users).length === 0) return emptyList
 
   // Return tracks & rebuild UIDs for the track so they refer directly to this collection
-  return collection.playlist_contents.track_ids.map((t, i) => {
-    const trackUid = Uid.fromString(t.uid)
-    trackUid.source = `${collectionSource}:${trackUid.source}`
-    trackUid.count = i
+  return collection.playlist_contents.track_ids
+    .map((t, i) => {
+      const trackUid = Uid.fromString(t.uid)
+      trackUid.source = `${collectionSource}:${trackUid.source}`
+      trackUid.count = i
 
-    return {
-      ...tracks[t.track],
-      uid: trackUid.toString(),
-      user: users[tracks[t.track].owner_id]
-    }
-  })
+      if (!tracks[t.track]) {
+        console.error(`Found empty track ${t.track}`)
+        return null
+      }
+      return {
+        ...tracks[t.track],
+        uid: trackUid.toString(),
+        user: users[tracks[t.track].owner_id]
+      }
+    })
+    .filter(Boolean) as EnhancedCollectionTrack[]
 }
 
 type EnhancedCollection = Collection & { user: User }
