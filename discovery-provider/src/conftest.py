@@ -3,12 +3,14 @@ Test fixtures to support unit testing
 """
 
 from unittest.mock import MagicMock
-import pytest
+
 import fakeredis
+import pytest
+import src.utils.db_session
 import src.utils.redis_connection
 import src.utils.web3_provider
-import src.utils.db_session
 from src.utils.session_manager import SessionManager
+
 
 # Test fixture to mock a postgres database using an in-memory alternative
 @pytest.fixture()

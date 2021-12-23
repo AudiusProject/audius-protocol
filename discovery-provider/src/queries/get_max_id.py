@@ -1,7 +1,6 @@
 from sqlalchemy import func
-
 from src import exceptions
-from src.models import User, Track, Playlist
+from src.models import Playlist, Track, User
 from src.utils.db_session import get_db_read_replica
 
 

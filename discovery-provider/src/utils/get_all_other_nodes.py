@@ -1,9 +1,10 @@
 import concurrent.futures
 import logging
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 from src.utils import web3_provider
-from src.utils.helpers import is_fqdn, load_eth_abi_values
 from src.utils.config import shared_config
+from src.utils.helpers import is_fqdn, load_eth_abi_values
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,7 @@ eth_abi_values = load_eth_abi_values()
 REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
 SP_FACTORY_REGISTRY_KEY = bytes("ServiceProviderFactory", "utf-8")
 DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
+
 
 # Perform eth web3 call to fetch endpoint info
 def fetch_discovery_node_info(sp_id, sp_factory_instance):

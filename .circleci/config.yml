@@ -459,6 +459,7 @@ jobs:
       - run:
           name: python-lint
           command: |
+            export PROTOCOL_DIR=/home/circleci/project
             cd discovery-provider
             source venv/bin/activate
             sh scripts/lint.sh

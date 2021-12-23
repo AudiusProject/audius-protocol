@@ -1,7 +1,7 @@
 import json
 import logging
-from os import path
 import pathlib
+from os import path
 
 from src.models import Challenge
 

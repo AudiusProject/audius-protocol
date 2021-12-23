@@ -1,14 +1,15 @@
 import logging  # pylint: disable=C0302
-from sqlalchemy import desc, and_
+
 from flask.globals import request
-from src.models import Track, Remix
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
+from sqlalchemy import and_, desc
+from src.models import Remix, Track
 from src.queries.query_helpers import (
-    populate_track_metadata,
     add_query_pagination,
     add_users_to_tracks,
+    populate_track_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import extract_key, use_redis_cache
 
 logger = logging.getLogger(__name__)

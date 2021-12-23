@@ -1,38 +1,38 @@
 import logging
 import os
 import time
-from typing import Dict, Optional, Tuple, TypedDict, cast
 from datetime import datetime
-from redis import Redis
+from typing import Dict, Optional, Tuple, TypedDict, cast
 
+from redis import Redis
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models import Block, IPLDBlacklistBlock
-from src.monitors import monitors, monitor_names
-from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
-from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
-from src.utils import helpers, redis_connection, web3_provider, db_session
-from src.utils.config import shared_config
-from src.utils.redis_constants import (
-    latest_block_redis_key,
-    latest_block_hash_redis_key,
-    most_recent_indexed_block_hash_redis_key,
-    most_recent_indexed_block_redis_key,
-    most_recent_indexed_ipld_block_redis_key,
-    most_recent_indexed_ipld_block_hash_redis_key,
-    trending_tracks_last_completion_redis_key,
-    trending_playlists_last_completion_redis_key,
-    challenges_last_processed_event_redis_key,
-    user_balances_refresh_last_completion_redis_key,
-    index_eth_last_completion_redis_key,
-    latest_legacy_play_db_key,
-)
+from src.monitors import monitor_names, monitors
 from src.queries.get_balances import (
-    LAZY_REFRESH_REDIS_PREFIX,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
+    LAZY_REFRESH_REDIS_PREFIX,
 )
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_sol_play_health_info
+from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
+from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
+from src.utils import db_session, helpers, redis_connection, web3_provider
+from src.utils.config import shared_config
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
+from src.utils.redis_constants import (
+    challenges_last_processed_event_redis_key,
+    index_eth_last_completion_redis_key,
+    latest_block_hash_redis_key,
+    latest_block_redis_key,
+    latest_legacy_play_db_key,
+    most_recent_indexed_block_hash_redis_key,
+    most_recent_indexed_block_redis_key,
+    most_recent_indexed_ipld_block_hash_redis_key,
+    most_recent_indexed_ipld_block_redis_key,
+    trending_playlists_last_completion_redis_key,
+    trending_tracks_last_completion_redis_key,
+    user_balances_refresh_last_completion_redis_key,
+)
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -215,10 +215,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
-    play_health_info = get_play_health_info(
-        redis,
-        plays_count_max_drift
-    )
+    play_health_info = get_play_health_info(redis, plays_count_max_drift)
     rewards_manager_health_info = get_rewards_manager_health_info(redis)
     user_bank_health_info = get_user_bank_health_info(redis)
 
@@ -358,7 +355,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         and challenge_events_age_sec > challenge_events_age_max_drift
     )
 
-    is_unhealthy = unhealthy_blocks or unhealthy_challenges or play_health_info["is_unhealthy"]
+    is_unhealthy = (
+        unhealthy_blocks or unhealthy_challenges or play_health_info["is_unhealthy"]
+    )
 
     return health_results, is_unhealthy
 
@@ -368,10 +367,10 @@ class SolHealthInfo(TypedDict):
     tx_info: Dict
     time_diff_general: int
 
+
 # Aggregate play health info across Solana and legacy storage
 def get_play_health_info(
-    redis: Redis,
-    plays_count_max_drift: Optional[int]
+    redis: Redis, plays_count_max_drift: Optional[int]
 ) -> SolHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_play_health_info")
@@ -417,11 +416,13 @@ def get_play_health_info(
     return {
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
-        "time_diff_general": time_diff_general
+        "time_diff_general": time_diff_general,
     }
 
 
-def get_user_bank_health_info(redis: Redis, max_drift: Optional[int] = None) -> SolHealthInfo:
+def get_user_bank_health_info(
+    redis: Redis, max_drift: Optional[int] = None
+) -> SolHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_user_bank_health_info")
 
@@ -429,33 +430,30 @@ def get_user_bank_health_info(redis: Redis, max_drift: Optional[int] = None) -> 
 
     tx_health_info = get_sol_user_bank_health_info(redis, current_time_utc)
     # If play count max drift provided, perform comparison
-    is_unhealthy = bool(
-        max_drift
-        and max_drift < tx_health_info["time_diff"]
-    )
+    is_unhealthy = bool(max_drift and max_drift < tx_health_info["time_diff"])
 
     return {
         "is_unhealthy": is_unhealthy,
         "tx_info": tx_health_info,
-        "time_diff_general": tx_health_info["time_diff"]
+        "time_diff_general": tx_health_info["time_diff"],
     }
 
-def get_rewards_manager_health_info(redis: Redis, max_drift: Optional[int] = None) -> SolHealthInfo:
+
+def get_rewards_manager_health_info(
+    redis: Redis, max_drift: Optional[int] = None
+) -> SolHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_rewards_manager_health_info")
 
     current_time_utc = datetime.utcnow()
 
     tx_health_info = get_sol_rewards_manager_health_info(redis, current_time_utc)
-    is_unhealthy = bool(
-        max_drift
-        and max_drift < tx_health_info["time_diff"]
-    )
+    is_unhealthy = bool(max_drift and max_drift < tx_health_info["time_diff"])
 
     return {
         "is_unhealthy": is_unhealthy,
         "tx_info": tx_health_info,
-        "time_diff_general": tx_health_info["time_diff"]
+        "time_diff_general": tx_health_info["time_diff"],
     }
 
 

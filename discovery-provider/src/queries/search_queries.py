@@ -1,47 +1,47 @@
-from enum import Enum
 import concurrent.futures
 import logging  # pylint: disable=C0302
+from enum import Enum
 from functools import cmp_to_key
-from flask import Blueprint, request
-import sqlalchemy
 
+import sqlalchemy
+from flask import Blueprint, request
 from src import api_helpers, exceptions
-from src.queries.search_config import (
-    search_title_weight,
-    user_name_weight,
-    search_similarity_weight,
-    search_repost_weight,
-    user_follower_weight,
-    search_user_name_weight,
-    search_title_exact_match_boost,
-    search_handle_exact_match_boost,
-    search_user_name_exact_match_boost,
-    user_handle_exact_match_boost,
-    current_user_saved_match_boost,
-)
-from src.models import RepostType, Save, SaveType, Follow
-from src.utils.db_session import get_db_read_replica
+from src.models import Follow, RepostType, Save, SaveType
 from src.queries import response_name_constants
-from src.queries.get_unpopulated_users import get_unpopulated_users
-from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
-from src.queries.search_track_tags import search_track_tags
-from src.queries.search_user_tags import search_user_tags
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
+from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import (
     get_current_user_id,
+    get_pagination_vars,
     get_users_by_id,
     get_users_ids,
-    populate_user_metadata,
-    populate_track_metadata,
     populate_playlist_metadata,
-    get_pagination_vars,
+    populate_track_metadata,
+    populate_user_metadata,
 )
+from src.queries.search_config import (
+    current_user_saved_match_boost,
+    search_handle_exact_match_boost,
+    search_repost_weight,
+    search_similarity_weight,
+    search_title_exact_match_boost,
+    search_title_weight,
+    search_user_name_exact_match_boost,
+    search_user_name_weight,
+    user_follower_weight,
+    user_handle_exact_match_boost,
+    user_name_weight,
+)
+from src.queries.search_track_tags import search_track_tags
+from src.queries.search_user_tags import search_user_tags
+from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("search_tags", __name__)
 
 
-######## VARS ########
+# ####### VARS ####### #
 
 
 class SearchKind(Enum):
@@ -52,7 +52,7 @@ class SearchKind(Enum):
     albums = 5
 
 
-######## UTILS ########
+# ####### UTILS ####### #
 
 
 def compare_users(user1, user2):
@@ -65,7 +65,7 @@ def compare_users(user1, user2):
     return 0
 
 
-######## ROUTES ########
+# ####### ROUTES ####### #
 
 
 @bp.route("/search/tags", methods=("GET",))
@@ -87,8 +87,7 @@ def search_tags():
             raise Exception
     except Exception:
         return api_helpers.error_response(
-            "Invalid value for parameter 'kind' must be in %s"
-            % [k.name for k in validSearchKinds],
+            f"Invalid value for parameter 'kind' must be in {[k.name for k in validSearchKinds]}",
             400,
         )
 
@@ -138,7 +137,12 @@ def search_tags():
                 .all()
             )
             saved_track_ids = {i[0] for i in saves_query}
-            saved_tracks = list(filter(lambda track: track["track_id"] in saved_track_ids, results["tracks"]))
+            saved_tracks = list(
+                filter(
+                    lambda track: track["track_id"] in saved_track_ids,
+                    results["tracks"],
+                )
+            )
             results["saved_tracks"] = saved_tracks
 
         if searchKind in [SearchKind.all, SearchKind.users]:
@@ -155,7 +159,11 @@ def search_tags():
                 .all()
             )
             followed_user_ids = {i[0] for i in followed_user_query}
-            followed_users = list(filter(lambda user: user["user_id"] in followed_user_ids, results["users"]))
+            followed_users = list(
+                filter(
+                    lambda user: user["user_id"] in followed_user_ids, results["users"]
+                )
+            )
             results["followed_users"] = followed_users
 
     return api_helpers.success_response(results)
@@ -426,7 +434,7 @@ def track_search_query(
 
     track_result_proxy = session.execute(
         res,
-        params = {
+        params={
             "query": search_str,
             "limit": limit,
             "offset": offset,
@@ -439,15 +447,17 @@ def track_search_query(
             "handle_match_boost": search_handle_exact_match_boost,
             "user_name_match_boost": search_user_name_exact_match_boost,
             "current_user_saved_match_boost": current_user_saved_match_boost,
-        }
+        },
     )
 
     track_data = track_result_proxy.fetchall()
-    track_cols =  track_result_proxy.keys()
+    track_cols = track_result_proxy.keys()
 
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [track[track_cols.index("track_id")] for track in track_data]
-    saved_tracks = set([track[0] for track in track_data if track[track_cols.index("is_saved")]])
+    saved_tracks = {
+        track[0] for track in track_data if track[track_cols.index("is_saved")]
+    }
 
     tracks = get_unpopulated_tracks(session, track_ids, True)
 
@@ -564,7 +574,9 @@ def user_search_query(
     user_ids = [user[user_cols.index("user_id")] for user in user_info]
 
     # if user has a follower_user_id, the current user has followed that user
-    followed_users = set([user[0] for user in user_info if user[user_cols.index("is_followed")]])
+    followed_users = {
+        user[0] for user in user_info if user[user_cols.index("is_followed")]
+    }
 
     users = get_unpopulated_users(session, user_ids)
 
@@ -686,8 +698,14 @@ def playlist_search_query(
     playlist_cols = playlist_result_proxy.keys()
 
     # playlist_ids is list of tuples - simplify to 1-D list
-    playlist_ids = [playlist[playlist_cols.index("playlist_id")] for playlist in playlist_data]
-    saved_playlists = set([playlist[0] for playlist in playlist_data if playlist[playlist_cols.index("is_saved")]])
+    playlist_ids = [
+        playlist[playlist_cols.index("playlist_id")] for playlist in playlist_data
+    ]
+    saved_playlists = {
+        playlist[0]
+        for playlist in playlist_data
+        if playlist[playlist_cols.index("is_saved")]
+    }
 
     playlists = get_unpopulated_playlists(session, playlist_ids, True)
 
@@ -733,7 +751,9 @@ def playlist_search_query(
     playlists_resp = {
         "all": playlists,
         "saved": list(
-            filter(lambda playlist: playlist["playlist_id"] in saved_playlists, playlists)
+            filter(
+                lambda playlist: playlist["playlist_id"] in saved_playlists, playlists
+            )
         ),
     }
 

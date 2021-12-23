@@ -1,9 +1,10 @@
 import logging
+import math
 from datetime import datetime, timedelta
 from typing import List
-import math
 
 import redis
+from integration_tests.utils import populate_mock_db
 from sqlalchemy.sql.expression import desc
 from src.models.related_artist import RelatedArtist
 from src.tasks.index_related_artists import (
@@ -12,8 +13,6 @@ from src.tasks.index_related_artists import (
 )
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
-
-from integration_tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 

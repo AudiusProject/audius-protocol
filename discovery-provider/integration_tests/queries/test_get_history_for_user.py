@@ -1,6 +1,6 @@
+from integration_tests.utils import populate_mock_db
 from src.queries.get_track_history import _get_track_history
 from src.utils.db_session import get_db
-from integration_tests.utils import populate_mock_db
 
 test_entities = {
     "plays": [
@@ -12,19 +12,17 @@ test_entities = {
         {"user_id": 1, "item_id": 2},
         {"user_id": 2, "item_id": 2},
     ],
-
     "tracks": [
         {"track_id": 1, "title": "track 1"},
-        {"track_id": 2, "title": "track 2"}
+        {"track_id": 2, "title": "track 2"},
     ],
-
     "users": [
         {"user_id": 1, "handle": "user-1"},
         {"user_id": 2, "handle": "user-2"},
         {"user_id": 3, "handle": "user-3"},
-
     ],
 }
+
 
 def test_get_track_history_for_user_multiple_plays(app):
     """Tests track history from user with multiple plays"""
@@ -42,14 +40,14 @@ def test_get_track_history_for_user_multiple_plays(app):
                 "offset": 0,
                 "filter_deleted": False,
                 "with_users": True,
-
-            }
+            },
         )
 
     assert len(track_history) == 3
     assert track_history[0]["track_id"] == 2
     assert track_history[1]["track_id"] == 1
     assert track_history[2]["track_id"] == 1
+
 
 def test_get_track_history_for_user_no_plays(app):
     """Tests a user's track history with no plays"""
@@ -67,11 +65,11 @@ def test_get_track_history_for_user_no_plays(app):
                 "offset": 0,
                 "filter_deleted": False,
                 "with_users": True,
-
-            }
+            },
         )
 
     assert len(track_history) == 0
+
 
 def test_get_track_history_for_single_play(app):
     """Tests a track history with a single play"""
@@ -89,8 +87,7 @@ def test_get_track_history_for_single_play(app):
                 "offset": 0,
                 "filter_deleted": False,
                 "with_users": True,
-
-            }
+            },
         )
 
     assert len(track_history) == 1
@@ -113,8 +110,7 @@ def test_get_track_history_for_limit_bound(app):
                 "offset": 0,
                 "filter_deleted": False,
                 "with_users": True,
-
-            }
+            },
         )
 
     assert len(track_history) == 1

@@ -1,12 +1,13 @@
 import json
 from datetime import datetime, timedelta
+
+from src.utils.helpers import redis_set_and_dump
 from src.utils.redis_metrics import (
-    personal_route_metrics,
-    personal_app_metrics,
     datetime_format_secondary,
     get_redis_metrics,
+    personal_app_metrics,
+    personal_route_metrics,
 )
-from src.utils.helpers import redis_set_and_dump
 
 now = datetime.utcnow()
 old_time = now - timedelta(minutes=4)

@@ -1,13 +1,12 @@
 import logging
-from typing import Set, TypedDict, Tuple
 from datetime import datetime
+from typing import Set, Tuple, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
-
 from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -422,7 +421,7 @@ def update_user_associated_wallets(
 
         # Verify the wallet signatures and create the user id to wallet associations
         for associated_wallet, wallet_metadata in associated_wallets.items():
-            if not "signature" in wallet_metadata or not isinstance(
+            if "signature" not in wallet_metadata or not isinstance(
                 wallet_metadata["signature"], str
             ):
                 continue
@@ -462,7 +461,7 @@ def update_user_associated_wallets(
 
         # Mark the previously associated wallets as deleted
         for previously_associated_wallet in previous_wallets:
-            if not previously_associated_wallet in added_associated_wallets:
+            if previously_associated_wallet not in added_associated_wallets:
                 associated_wallet_entry = AssociatedWallet(
                     user_id=user_record.user_id,
                     wallet=previously_associated_wallet,

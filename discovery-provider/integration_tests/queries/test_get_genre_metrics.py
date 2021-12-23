@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from src.models import Block, Track
 from src.queries.get_genre_metrics import _get_genre_metrics
 from src.utils.db_session import get_db

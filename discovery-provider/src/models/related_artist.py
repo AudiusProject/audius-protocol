@@ -1,11 +1,7 @@
 import datetime
-from sqlalchemy import (
-    Column,
-    Integer,
-    DateTime,
-    PrimaryKeyConstraint,
-    Float,
-)
+
+from sqlalchemy import Column, DateTime, Float, Integer, PrimaryKeyConstraint
+
 from .models import Base
 
 
