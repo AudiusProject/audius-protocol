@@ -1220,7 +1220,7 @@ class AudiusAPIClient {
     this._assertInitialized()
     const headers = current_user_id
       ? {
-          'X-User-Id': current_user_id.toString()
+          'X-User-ID': current_user_id.toString()
         }
       : undefined
     const response: Nullable<APIResponse<
