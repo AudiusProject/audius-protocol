@@ -670,6 +670,13 @@ jobs:
           username: _json_key
           password: $GCLOUD_SERVICE_KEY
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - 3c:b3:45:12:28:12:4a:d6:a4:54:de:4a:b2:ca:06:a5
+      - run:
+          name: what is the name of the ssh key file lol
+          command: |
+            ls -la $HOME/.ssh/
       - run:
           name: gcloud service account auth
           command: |
@@ -705,10 +712,10 @@ jobs:
           command: |
             # add startup script
             gcloud compute instances add-metadata audius-bake-nightly \
-              --metadata-from-file=startup-script="$PROTOCOL_DIR/service-commands/scripts/remote-startup.sh"
+              --metadata-from-file=startup-script="audius-protocol/service-commands/scripts/remote-startup.sh"
             # add shutdown script
             gcloud compute instances add-metadata audius-bake-nightly \
-              --metadata-from-file=shutdown-script="$PROTOCOL_DIR/service-commands/scripts/remote-shutdown.sh"
+              --metadata-from-file=shutdown-script="audius-protocol/service-commands/scripts/remote-shutdown.sh"
             gcloud compute instances stop audius-bake-nightly
             gcloud compute instances start audius-bake-nightly
             until [[ $(gcloud compute instances describe audius-bake-nightly --format="json(metadata)" | jq '.metadata.items[] | select(.key=="pizza") | .value') ]]; do
