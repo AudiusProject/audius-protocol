@@ -135,9 +135,9 @@ class Rewards extends Base {
       // we'll only have the error, not the code.
       if (submitErrorCode || submitError) {
         const shouldRetryInSeperateTransactions = (
-          submitErrorCode == RewardsManagerError.REPEATED_SENDERS ||
-          submitErrorCode == RewardsManagerError.SIGN_COLLISION ||
-          submitErrorCode == RewardsManagerError.OPERATOR_COLLISION
+          submitErrorCode === RewardsManagerError.REPEATED_SENDERS ||
+          submitErrorCode === RewardsManagerError.SIGN_COLLISION ||
+          submitErrorCode === RewardsManagerError.OPERATOR_COLLISION
         )
         // If we have sender collisions, we should
         // submit one attestation per transaction and try to get
@@ -326,7 +326,7 @@ class Rewards extends Base {
       return { success: meta, error: null }
     } catch (e) {
       const err = e.message
-      logger.error(`Failed to get challenge attestation for userId [${decodeHashId(encodedUserId)}] challengeId [${challengeId }]from ${discoveryProviderEndpoint} with ${err}`)
+      logger.error(`Failed to get challenge attestation for userId [${decodeHashId(encodedUserId)}] challengeId [${challengeId}]from ${discoveryProviderEndpoint} with ${err}`)
       const mappedErr = GetAttestationError[err] || GetAttestationError.UNKNOWN_ERROR
       return {
         success: null,

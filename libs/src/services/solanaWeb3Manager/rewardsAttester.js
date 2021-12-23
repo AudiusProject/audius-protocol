@@ -127,7 +127,7 @@ class RewardsAttester {
    *
    * @memberof RewardsAttester
    */
-  async _awaitFeePayerBalance() {
+  async _awaitFeePayerBalance () {
     const getHasBalance = async () => this.libs.solanaWeb3Manager.hasBalance({ publicKey: this.libs.solanaWeb3Manager.feePayerKey })
     while (!(await getHasBalance())) {
       this.logger.warning('No usable balance. Waiting...')
@@ -259,7 +259,7 @@ class RewardsAttester {
     handle,
     wallet,
     completedBlocknumber,
-    instructionsPerTransaction,
+    instructionsPerTransaction
   }) {
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}] ${instructionsPerTransaction ? '[with single attestation flow!]' : ''}`)
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({

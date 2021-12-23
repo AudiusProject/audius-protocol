@@ -171,7 +171,7 @@ class Utils {
     }
   }
 
- /**
+  /**
   * Encodes an int to a string based hashid
   * @static
   * @param {(number | null)} [id=null]
@@ -189,6 +189,5 @@ class Utils {
     }
   }
 }
-
 
 module.exports = Utils

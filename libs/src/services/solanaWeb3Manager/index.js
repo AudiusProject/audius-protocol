@@ -315,7 +315,7 @@ class SolanaWeb3Manager {
     recipientEthAddress,
     tokenAmount,
     instructionsPerTransaction,
-    logger = console,
+    logger = console
   }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -408,7 +408,7 @@ class SolanaWeb3Manager {
    * @return {Promise<number>}
    * @memberof SolanaWeb3Manager
    */
-  async getBalance({ publicKey }) {
+  async getBalance ({ publicKey }) {
     return this.connection.getBalance(publicKey)
   }
 
@@ -421,7 +421,7 @@ class SolanaWeb3Manager {
    * @return {Promise<boolean>}
    * @memberof SolanaWeb3Manager
    */
-  async hasBalance({ publicKey }) {
+  async hasBalance ({ publicKey }) {
     const balance = await this.getBalance({ publicKey })
     return balance > ZERO_SOL_EPSILON
   }
