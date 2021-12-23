@@ -22,8 +22,8 @@ class TrackDownload {
     )
 
     const message = new DownloadTrackMessage({
-      title: filename.split('.').slice(0, -1).join(''),
-      urls: urls
+      filename,
+      urls
     })
     message.send()
   }
