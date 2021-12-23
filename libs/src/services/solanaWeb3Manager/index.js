@@ -16,6 +16,8 @@ const { WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
 
+const ZERO_SOL_EPSILON = 0.02
+
 /**
  * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
  */
@@ -134,7 +136,7 @@ class SolanaWeb3Manager {
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
-      identityService: this.identityService
+      transactionHandler: this.transactionHandler
     })
   }
 
@@ -291,6 +293,8 @@ class SolanaWeb3Manager {
    *     specifier: string,
    *     recipientEthAddress: string,
    *     tokenAmount: BN,
+   *     instructionsPerTransaction?: number,
+   *     logger: any
    * }} {
    *     attestations,
    *     oracleAttestation,
@@ -298,6 +302,8 @@ class SolanaWeb3Manager {
    *     specifier,
    *     recipientEthAddress,
    *     tokenAmount,
+   *     instructionsPerTransaction,
+   *     logger
    *    }
    * @memberof SolanaWeb3Manager
    */
@@ -307,7 +313,9 @@ class SolanaWeb3Manager {
     challengeId,
     specifier,
     recipientEthAddress,
-    tokenAmount
+    tokenAmount,
+    instructionsPerTransaction,
+    logger = console,
   }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -319,7 +327,9 @@ class SolanaWeb3Manager {
       feePayer: this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
-      transactionHandler: this.transactionHandler
+      transactionHandler: this.transactionHandler,
+      instructionsPerTransaction,
+      logger
     })
   }
 
@@ -387,6 +397,33 @@ class SolanaWeb3Manager {
       connection: this.connection,
       transactionHandler: this.transactionHandler
     })
+  }
+
+  /**
+   * Gets the balance of a PublicKey
+   *
+   * @param {{
+   *  publicKey: PublicKey
+   * }} { publicKey }
+   * @return {Promise<number>}
+   * @memberof SolanaWeb3Manager
+   */
+  async getBalance({ publicKey }) {
+    return this.connection.getBalance(publicKey)
+  }
+
+  /**
+   * Gets whether a PublicKey has a usable balance
+   *
+   * @param {{
+   *  publicKey: PublicKey
+   * }} { publicKey }
+   * @return {Promise<boolean>}
+   * @memberof SolanaWeb3Manager
+   */
+  async hasBalance({ publicKey }) {
+    const balance = await this.getBalance({ publicKey })
+    return balance > ZERO_SOL_EPSILON
   }
 }
 
