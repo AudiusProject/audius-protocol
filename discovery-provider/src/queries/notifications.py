@@ -1,41 +1,44 @@
-import logging  # pylint: disable=C0302
 import functools as ft
+import logging  # pylint: disable=C0302
 from datetime import date, datetime, timedelta
-from typing import Tuple, List
+from typing import List, Tuple
+
 from flask import Blueprint, request
 from redis import Redis
 from sqlalchemy import desc
-from src.utils.redis_connection import get_redis
-
 from src import api_helpers
 from src.models import (
+    AggregateUser,
     Block,
+    ChallengeDisbursement,
     Follow,
-    Save,
-    SaveType,
     Playlist,
-    Track,
+    Remix,
     Repost,
     RepostType,
-    Remix,
-    AggregateUser,
-    ChallengeDisbursement,
+    Save,
+    SaveType,
+    Track,
     UserBalanceChange,
 )
 from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
 from src.queries.get_sol_rewards_manager import (
     get_latest_cached_sol_rewards_manager_db,
-    get_latest_cached_sol_rewards_manager_program_tx
+    get_latest_cached_sol_rewards_manager_program_tx,
 )
 from src.queries.query_helpers import (
+    get_follower_count_dict,
     get_repost_counts,
     get_save_counts,
-    get_follower_count_dict,
 )
-from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE, PROCESSED_LISTEN_MILESTONE
-from src.utils.db_session import get_db_read_replica
+from src.tasks.index_listen_count_milestones import (
+    LISTEN_COUNT_MILESTONE,
+    PROCESSED_LISTEN_MILESTONE,
+)
 from src.utils.config import shared_config
+from src.utils.db_session import get_db_read_replica
+from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
@@ -154,7 +157,7 @@ def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
     parent_track_users_to_remixes = {}
     for track_parent in parent_tracks:
         [remix_track_id, remix_parent_id, remix_parent_user_id] = track_parent
-        if not remix_parent_user_id in parent_track_users_to_remixes:
+        if remix_parent_user_id not in parent_track_users_to_remixes:
             parent_track_users_to_remixes[remix_parent_user_id] = {
                 remix_track_id: remix_parent_id
             }
@@ -463,13 +466,13 @@ def notifications():
             # Check for a tier change and add to tier_change_notification
             tier = None
             if prev < 100000 <= current:
-                tier = 'platinum'
+                tier = "platinum"
             elif prev < 10000 <= current:
-                tier = 'gold'
+                tier = "gold"
             elif prev < 100 <= current:
-                tier = 'silver'
+                tier = "silver"
             elif prev < 10 <= current:
-                tier = 'bronze'
+                tier = "bronze"
 
             if tier is not None:
                 tier_change_notif = {
@@ -957,6 +960,7 @@ def get_max_slot(redis: Redis):
 
     return max_slot
 
+
 @bp.route("/solana_notifications", methods=("GET",))
 def solana_notifications():
     """
@@ -1041,11 +1045,11 @@ def solana_notifications():
                 {
                     const.solana_notification_type: const.solana_notification_type_listen_milestone,
                     const.solana_notification_slot: track_milestone.slot,
-                    const.solana_notification_initiator: track_owner_id, # owner_id
+                    const.solana_notification_initiator: track_owner_id,  # owner_id
                     const.solana_notification_metadata: {
                         const.solana_notification_threshold: track_milestone.threshold,
-                        const.notification_entity_id: track_milestone.id, # track_id
-                        const.notification_entity_type: "track"
+                        const.notification_entity_id: track_milestone.id,  # track_id
+                        const.notification_entity_type: "track",
                     },
                 }
             )

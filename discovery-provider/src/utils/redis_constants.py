@@ -6,8 +6,12 @@ most_recent_indexed_ipld_block_redis_key = "most_recent_indexed_ipld_block_redis
 most_recent_indexed_ipld_block_hash_redis_key = (
     "most_recent_indexed_ipld_block_hash_redis_key"
 )
-most_recent_indexed_aggregate_user_block_redis_key = "most_recent_indexed_aggregate_user_block"
-index_aggregate_user_last_refresh_completion_redis_key = "index_aggregate_user:last-refresh-completion"
+most_recent_indexed_aggregate_user_block_redis_key = (
+    "most_recent_indexed_aggregate_user_block"
+)
+index_aggregate_user_last_refresh_completion_redis_key = (
+    "index_aggregate_user:last-refresh-completion"
+)
 
 trending_tracks_last_completion_redis_key = "trending:tracks:last-completion"
 trending_playlists_last_completion_redis_key = "trending-playlists:last-completion"
@@ -20,7 +24,9 @@ index_eth_last_completion_redis_key = "index_eth:last-completion"
 latest_sol_play_program_tx_key = "latest_sol_program_tx:play:chain"
 latest_sol_play_db_tx_key = "latest_sol_program_tx:play:db"
 
-latest_sol_rewards_manager_program_tx_key = "latest_sol_program_tx:rewards_manager:chain"
+latest_sol_rewards_manager_program_tx_key = (
+    "latest_sol_program_tx:rewards_manager:chain"
+)
 latest_sol_rewards_manager_db_tx_key = "latest_sol_program_tx:rewards_manager:db"
 
 latest_sol_user_bank_program_tx_key = "latest_sol_program_tx:user_bank:chain"

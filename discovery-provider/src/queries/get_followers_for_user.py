@@ -1,11 +1,10 @@
-from sqlalchemy import func, asc, desc
+from sqlalchemy import asc, desc, func
 from sqlalchemy.orm import aliased
-
 from src.models import Follow
-from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
-from src.queries.query_helpers import populate_user_metadata, add_query_pagination
 from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.query_helpers import add_query_pagination, populate_user_metadata
+from src.utils.db_session import get_db_read_replica
 
 
 def get_followers_for_user(args):

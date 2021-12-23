@@ -1,4 +1,9 @@
-const { getDatabaseSize, getDatabaseConnections, getDatabaseConnectionInfo, getDatabaseLiveness } = require('./database')
+const {
+  getDatabaseSize,
+  getDatabaseConnections,
+  getDatabaseConnectionInfo,
+  getDatabaseLiveness
+} = require('./database')
 const {
   getTotalMemory,
   getUsedMemory,
@@ -22,9 +27,7 @@ const {
   getRedisUsedMemory,
   getRedisTotalMemory
 } = require('./redis')
-const {
-  getIPFSReadWriteStatus
-} = require('./ipfs')
+const { getIPFSReadWriteStatus } = require('./ipfs')
 const {
   get30DayRollingSyncSuccessCount,
   get30DayRollingSyncFailCount,
@@ -252,7 +255,8 @@ const MONITORS = {
   LATEST_SYNC_FAIL_TIMESTAMP
 }
 
-const getMonitorRedisKey = (monitor) => `${MONITORING_REDIS_PREFIX}:${monitor.name}`
+const getMonitorRedisKey = (monitor) =>
+  `${MONITORING_REDIS_PREFIX}:${monitor.name}`
 
 /**
  * Parses a string value into the corresponding type
@@ -289,14 +293,16 @@ const parseValue = (monitor, value) => {
  */
 const getMonitors = async (monitors) => {
   const pipeline = redis.pipeline()
-  monitors.forEach(monitor => {
+  monitors.forEach((monitor) => {
     const key = getMonitorRedisKey(monitor)
     pipeline.get(key)
   })
-  return pipeline
-    .exec()
-    // Pull the value off of the result
-    .then((result) => result.map((r, i) => parseValue(monitors[i], r[1])))
+  return (
+    pipeline
+      .exec()
+      // Pull the value off of the result
+      .then((result) => result.map((r, i) => parseValue(monitors[i], r[1])))
+  )
 }
 
 module.exports = {

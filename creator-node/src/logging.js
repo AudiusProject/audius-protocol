@@ -28,14 +28,17 @@ const excludedRoutes = [
   '/disk_check',
   '/sync_status'
 ]
-function requestNotExcludedFromLogging (url) {
-  return (excludedRoutes.filter(excludedRoute => url.includes(excludedRoute))).length === 0
+function requestNotExcludedFromLogging(url) {
+  return (
+    excludedRoutes.filter((excludedRoute) => url.includes(excludedRoute))
+      .length === 0
+  )
 }
 
 /**
  * @notice request headers are case-insensitive
  */
-function getRequestLoggingContext (req, requestID) {
+function getRequestLoggingContext(req, requestID) {
   req.startTime = getStartTime()
   const urlParts = req.url.split('?')
   return {
@@ -53,11 +56,11 @@ function getRequestLoggingContext (req, requestID) {
  * Gets the start time
  * @returns the start time
  */
-function getStartTime () {
+function getStartTime() {
   return process.hrtime()
 }
 
-function loggingMiddleware (req, res, next) {
+function loggingMiddleware(req, res, next) {
   const providedRequestID = req.header('X-Request-ID')
   const requestID = providedRequestID || shortid.generate()
   res.set('CN-Request-ID', requestID)
@@ -77,11 +80,11 @@ function loggingMiddleware (req, res, next) {
  * @param {Object} options fields to add to child logger
  * @returns a logger instance
  */
-function setFieldsInChildLogger (req, options = {}) {
+function setFieldsInChildLogger(req, options = {}) {
   const fields = Object.keys(options)
 
   const childOptions = {}
-  fields.forEach(field => {
+  fields.forEach((field) => {
     childOptions[field] = options[field]
   })
 
@@ -93,7 +96,7 @@ function setFieldsInChildLogger (req, options = {}) {
  * @param {number} startTime the start time
  * @returns the duration of the fn call in ms
  */
-function getDuration ({ startTime }) {
+function getDuration({ startTime }) {
   let durationMs
   if (startTime) {
     const endTime = process.hrtime(startTime)
@@ -109,7 +112,7 @@ function getDuration ({ startTime }) {
  * @param {number} startTime the start time
  * @param {string} msg the message to print
  */
-function logInfoWithDuration ({ logger, startTime }, msg) {
+function logInfoWithDuration({ logger, startTime }, msg) {
   const durationMs = getDuration({ startTime })
 
   if (durationMs) {

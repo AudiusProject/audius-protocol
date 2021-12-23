@@ -1,9 +1,10 @@
 import logging
 from typing import List
-from web3 import Web3, HTTPProvider
+
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.helpers import load_eth_abi_values
+from web3 import HTTPProvider, Web3
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,9 @@ def get_oracle_addresses_from_chain(redis) -> List[str]:
         redis.set(oracle_addresses_key, ",".join(oracle_addresses))
         return oracle_addresses
     except Exception as e:
-        logger.error(f"index_oracles.py | Failed to get oracle addresses from chain: {e}")
+        logger.error(
+            f"index_oracles.py | Failed to get oracle addresses from chain: {e}"
+        )
         return []
 
 

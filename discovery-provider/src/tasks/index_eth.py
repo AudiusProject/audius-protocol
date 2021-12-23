@@ -1,14 +1,14 @@
-import time
 import logging
+import time
 
-from web3 import Web3
-from web3.providers.rpc import HTTPProvider
+from src.eth_indexing.event_scanner import EventScanner
+from src.tasks.cache_user_balance import get_token_address
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
-from src.eth_indexing.event_scanner import EventScanner
 from src.utils.helpers import load_eth_abi_values
 from src.utils.redis_constants import index_eth_last_completion_redis_key
-from src.tasks.cache_user_balance import get_token_address
+from web3 import Web3
+from web3.providers.rpc import HTTPProvider
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,7 @@ eth_abi_values = load_eth_abi_values()
 AUDIO_TOKEN_CONTRACT = web3.eth.contract(abi=eth_abi_values["AudiusToken"]["abi"])
 
 AUDIO_CHECKSUM_ADDRESS = get_token_address(web3, shared_config)
+
 
 # This implementation follows the example outlined in the link below
 # https://web3py.readthedocs.io/en/stable/examples.html#advanced-example-fetching-all-token-transfer-events
@@ -61,7 +62,9 @@ def index_eth_transfer_events(db, redis_inst):
         )
         return
 
-    logger.info(f"index_eth.py | Scanning events from blocks {start_block} - {end_block}")
+    logger.info(
+        f"index_eth.py | Scanning events from blocks {start_block} - {end_block}"
+    )
     start = time.time()
 
     # Run the scan

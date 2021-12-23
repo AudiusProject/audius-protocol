@@ -10,17 +10,29 @@ if (!ipfsAddr) {
   throw new Error('Must set ipfsAddr')
 }
 const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
-const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
+const ipfsLatest = ipfsClientLatest({
+  host: ipfsAddr,
+  port: config.get('ipfsPort'),
+  protocol: 'http'
+})
 
 async function logIpfsPeerIds () {
   genericLogger.info(`Starting IPFS, ipfsAddr=${ipfsAddr}`)
   const identity = await ipfs.id()
   // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
-  genericLogger.info(`Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`)
+  genericLogger.info(
+    `Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`
+  )
 
   // init latest version of ipfs
   const identityLatest = await ipfsLatest.id()
-  genericLogger.info(`Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(identityLatest, null, 2)}`)
+  genericLogger.info(
+    `Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(
+      identityLatest,
+      null,
+      2
+    )}`
+  )
 }
 
 module.exports = {

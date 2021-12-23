@@ -1,6 +1,7 @@
 import math
 from datetime import datetime, timedelta
 
+from integration_tests.utils import populate_mock_db
 from src.models.related_artist import RelatedArtist
 from src.queries.get_related_artists import (
     _calculate_related_artists_scores,
@@ -8,9 +9,6 @@ from src.queries.get_related_artists import (
     update_related_artist_scores_if_needed,
 )
 from src.utils.db_session import get_db
-
-from integration_tests.utils import populate_mock_db
-
 
 entities = {
     "users": [{}] * 8,

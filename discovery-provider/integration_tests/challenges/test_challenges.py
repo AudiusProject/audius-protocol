@@ -1,24 +1,22 @@
 import logging
 from typing import Dict, List, Optional
 
-from sqlalchemy.orm.session import Session
 import redis
-
 from integration_tests.queries.test_get_challenges import DefaultUpdater
 from integration_tests.utils import populate_mock_db_blocks
-
-from src.models.models import Block
-from src.models import Challenge, UserChallenge, ChallengeType
-from src.utils.db_session import get_db
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.utils.helpers import model_to_dictionary
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.utils.config import shared_config
+from src.models import Challenge, ChallengeType, UserChallenge
+from src.models.models import Block
 from src.queries.get_challenges import get_challenges
+from src.utils.config import shared_config
+from src.utils.db_session import get_db
+from src.utils.helpers import model_to_dictionary
 
 logger = logging.getLogger(__name__)
 
