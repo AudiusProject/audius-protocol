@@ -197,7 +197,7 @@ setup_zsh() {
 	fi
 	cp $zshenv ~/.zshenv.tmp
 	IP=$(get_ip_addr $provider $name)
-	echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv.tmp
+	echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.zshenv.tmp
 	echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
 	copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
 	rm ~/.zshenv.tmp
