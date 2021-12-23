@@ -19,6 +19,7 @@ from src import exceptions
 
 from . import multihash
 
+
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
@@ -453,7 +454,7 @@ def create_track_slug(title, track_id, collision_id=0):
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.",
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"",
         "",
         sanitized_title,
     )
