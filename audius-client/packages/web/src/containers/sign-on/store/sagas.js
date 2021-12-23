@@ -16,6 +16,7 @@ import {
 import { FavoriteSource, Name } from 'common/models/Analytics'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import * as accountActions from 'common/store/account/reducer'
+import { getAccountUser } from 'common/store/account/selectors'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { getUsers } from 'common/store/cache/users/selectors'
@@ -138,6 +139,16 @@ function* fetchReferrer(action) {
       const user = yield call(fetchUserByHandle, handle)
       if (!user) return
       yield put(signOnActions.setReferrer(user.user_id))
+
+      // Check if the user is already signed in
+      // If so, apply retroactive referrals
+      const currentUser = yield select(getAccountUser)
+      if (currentUser && !currentUser?.events?.referrer) {
+        yield call(AudiusBackend.updateCreator, {
+          ...currentUser,
+          events: { referrer: user.user_id }
+        })
+      }
     } catch (e) {
       console.error(e)
     }
@@ -398,6 +409,14 @@ function* signIn(action) {
         })
         yield put(trackEvent)
         return
+      }
+
+      // Apply retroactive referral
+      if (!signInResponse.user?.events?.referrer && signOn.referrer) {
+        yield fork(AudiusBackend.updateCreator, {
+          ...signInResponse.user,
+          events: { referrer: signOn.referrer }
+        })
       }
 
       yield put(pushRoute(route || FEED_PAGE))

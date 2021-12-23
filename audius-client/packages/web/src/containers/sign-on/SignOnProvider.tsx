@@ -110,6 +110,15 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
 
   componentDidMount() {
     const { isMobile, replaceRoute, hasAccount } = this.props
+
+    // Check for referrer before redirecting if signed in to support retroactive referrals
+    const referrerHandle = new URLSearchParams(this.props.location.search).get(
+      'ref'
+    )
+    if (referrerHandle) {
+      this.props.fetchReferrer(referrerHandle)
+    }
+
     if (hasAccount) {
       replaceRoute(TRENDING_PAGE)
     }
@@ -120,13 +129,6 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
         }
       }
     })
-
-    const referrerHandle = new URLSearchParams(this.props.location.search).get(
-      'ref'
-    )
-    if (referrerHandle) {
-      this.props.fetchReferrer(referrerHandle)
-    }
 
     const closeModalHotkey = setupHotkeys({
       27 /* Escape */: () => {

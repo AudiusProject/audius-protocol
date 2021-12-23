@@ -337,9 +337,16 @@ class App extends Component {
       this.setState({ showWeb3ErrorBanner: true })
     }
 
+    // Once the user is loaded, we can mark the page as ready for UI
+    // Alternatively, if the page is the signup page, say we're ready without a user
+    // This is necessary for the AppRedirectPopover to load
     if (
-      prevProps.accountStatus === Status.LOADING &&
-      this.props.accountStatus !== Status.LOADING
+      (prevProps.accountStatus === Status.LOADING &&
+        this.props.accountStatus !== Status.LOADING) ||
+      matchPath(getPathname(this.props.location), {
+        path: SIGN_UP_PAGE,
+        exact: true
+      })
     ) {
       // Let the UI flush
       setImmediate(this.props.setReady)
