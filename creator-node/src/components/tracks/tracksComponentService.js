@@ -261,17 +261,7 @@ async function handOffTrack ({ sp, req }) {
   const requestID = req.uuid
   const originalTrackFormData = await createFormData(req.fileDir + '/' + req.fileName)
   logger.info({ sp }, 'BANANA posting t/s')
-  // await axios({
-  //   url: `${sp}/transcode_and_segment`,
-  //   method: 'post',
-  //   headers: req.headers,
-  //   formData,
-  //   requestID,
-  //   // Set content length headers (only applicable in server/node environments).
-  //   // See: https://github.com/axios/axios/issues/1362
-  //   maxContentLength: Infinity,
-  //   maxBodyLength: Infinity
-  // })
+
   await axios.post(
     `${sp}/transcode_and_segment`,
     originalTrackFormData,
@@ -288,25 +278,58 @@ async function handOffTrack ({ sp, req }) {
     }
   )
 
+  // TODO: PROBLEM IS THAT IT'S PASSING IN A NEW UUID SO CAUSING FILE CANNOT BE FOUND.
+  // REFACTOR THIS SHIT CUS ITS GETTING MESSYYYY
   // TODO: Make sure this comes without the extension
   logger.info({ sp, requestID }, 'BANANA polling time')
-  const { fileName, transcodedFilePath, segmentFilePaths } = await pollProcessingStatus(
+  const { fileName, transcodedFilePath, segmentFileNames, segmentFileNamesToPath } = await pollProcessingStatus(
     // FileProcessingQueue.PROCESS_NAMES.transcodeAndSegment, // ???? why is this an ampty obj
     'transcodeAndSegment',
     requestID,
     sp
   )
 
+  let res
+
+  // Get segments and write to tmp disk
+  // const segmentsPath = fileManager.getTmpSegmentsPath(fileName)
+  // const numberOfSegments = await fsReadDir(segmentsPath).length
+  // for (let i = 0; i < segmentFileNames.length; i++) {
+  for (let segmentFileName of segmentFileNames) {
+    logger.info({ sp, segmentFileName }, 'BANANA getting segments')
+
+    try {
+      res = await axios({
+        url: `${sp}/transcode_and_segment`,
+        method: 'get',
+        params: {
+          fileName: segmentFileName,
+          fileType: 'segment',
+          cidInPath: req.fileNameNoExtension
+        },
+        responseType: 'stream'
+      })
+
+      // await pipeline(res.data, fs.createWriteStream(res.data, segmentFileName))
+      await Utils.writeStreamToFileSystem(
+        res.data,
+        segmentFileName
+      )
+    } catch (e) {
+      logger.error({ error: e }, 'huh')
+    }
+  }
+
   // Get transcode and write to tmp disk
   const transcodePath = fileManager.getTmpTrackUploadArtifactsWithFileNamePath(fileName)
-  const transcodeFilePath = path.join(transcodePath, fileName + '-dl.mp3')
+  const transcodeFilePath = path.join(transcodePath, req.fileNameNoExtension + '-dl.mp3')
 
-  logger.info({ sp, transcodedFilePath, segmentFilePaths }, 'BANANA getting transcode')
+  logger.info({ sp, transcodedFilePath }, 'BANANA getting transcode')
 
-  let res = await axios({
+  res = await axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',
-    query: { fileName: fileName + '-dl.mp3', fileType: 'transcode' },
+    params: { fileName: req.fileNameNoExtension + '-dl.mp3', fileType: 'transcode', cidInPath: req.fileNameNoExtension },
     responseType: 'stream'
   })
 
@@ -315,29 +338,6 @@ async function handOffTrack ({ sp, req }) {
     res.data,
     transcodeFilePath
   )
-
-  // Get segments and write to tmp disk
-  const segmentsPath = fileManager.getTmpSegmentsPath(fileName)
-  const numberOfSegments = await fsReadDir(segmentsPath).length
-
-  for (let i = 0; i < numberOfSegments; i++) {
-    const segmentFileName = getSegmentFileName(i)
-    logger.info({ sp, segmentFileName }, 'BANANA getting segments')
-
-    res = await axios({
-      url: `${sp}/transcode_and_segment`,
-      method: 'get',
-      route: '/transcode_and_segment',
-      query: { fileName: segmentFileName, fileType: 'segment' },
-      responseType: 'stream'
-    })
-
-    // await pipeline(res.data, fs.createWriteStream(res.data, segmentFileName))
-    await Utils.writeStreamToFileSystem(
-      res.data,
-      segmentFileName
-    )
-  }
 }
 
 function getSegmentFileName (index) {
@@ -345,8 +345,8 @@ function getSegmentFileName (index) {
   return `segment${suffix}.ts`
 }
 
-const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 // 3min
-const POLL_STATUS_INTERVAL_MS = 10000 // 10s
+const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 / 3 // 3min/3
+const POLL_STATUS_INTERVAL_MS = 10000 / 10 // 10s/10
 async function pollProcessingStatus (taskType, uuid, sp) {
   const start = Date.now()
   while (Date.now() - start < MAX_TRACK_HANDOFF_TIMEOUT_MS) {

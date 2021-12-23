@@ -186,6 +186,7 @@ module.exports = function (app) {
           logContext: req.logContext,
           fileName: req.fileName,
           fileDir: req.fileDir,
+          fileNameNoExtension: req.fileNameNoExtension,
           uuid: req.logContext.requestID,
           headers: req.headers,
           libs: req.app.get('audiusLibs'),
@@ -233,15 +234,17 @@ module.exports = function (app) {
       return errorResponseBadRequest(`No provided filename=${fileName} or fileType=${fileType}`)
     }
 
-    let path
+    let pathToFile
+    let basePath = getTmpTrackUploadArtifactsWithFileNamePath(req.query.cidInPath)
     if (fileType === 'transcode') {
-      path = getTmpTrackUploadArtifactsWithFileNamePath(fileName)
+      pathToFile = path.join(basePath, fileName)
     } else if (fileType === 'segment') {
-      path = getTmpSegmentsPath(fileName)
+      pathToFile = path.join(basePath, 'segments', fileName)
     }
 
+    req.logger.info(`VICKY FOUND ZE PATH ${pathToFile}`)
     try {
-      return await streamFromFileSystem(req, res, path)
+      return await streamFromFileSystem(req, res, pathToFile)
     } catch (e) {
       return errorResponseServerError(`Could not serve content, error=${e.toString()}`)
     }
