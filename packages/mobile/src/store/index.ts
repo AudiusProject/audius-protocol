@@ -18,7 +18,6 @@ import oauth, { OAuthState } from './oauth/reducer'
 import rootSaga from './sagas'
 import search, { SearchState } from './search/reducer'
 import signon, { SignonState } from './signon/reducer'
-import theme, { ThemeState } from './theme/reducer'
 import web, { WebState } from './web/reducer'
 
 export type AppState = {
@@ -34,7 +33,6 @@ export type AppState = {
   remoteConfig: RemoteConfigState
   search: SearchState
   signon: SignonState
-  theme: ThemeState
   web: WebState
 }
 
@@ -52,7 +50,6 @@ const createRootReducer = () =>
     remoteConfig,
     search,
     signon,
-    theme,
     web
   })
 

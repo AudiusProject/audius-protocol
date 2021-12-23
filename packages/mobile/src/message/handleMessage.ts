@@ -1,6 +1,8 @@
 import { Platform } from 'react-native'
 import { Dispatch } from 'redux'
 
+import Theme from 'app/models/Theme'
+
 import { AnalyticsMessage } from '../types/analytics'
 
 import { messageHandlers as analytics } from './handlers/analytics'
@@ -46,11 +48,12 @@ export const handleMessage = async (
   message: Message | AnalyticsMessage,
   dispatch: Dispatch,
   postMessage: (message: Message) => void,
-  reload: () => void
+  reload: () => void,
+  setTheme: (theme: Theme) => void
 ) => {
   const handler = (messageHandlers as any)[message.type]
   if (handler) {
-    handler({ message, dispatch, postMessage, reload })
+    handler({ message, dispatch, postMessage, reload, setTheme })
   } else {
     // Ignore warning for android messages on ios
     if (message.type in android && isIos) {

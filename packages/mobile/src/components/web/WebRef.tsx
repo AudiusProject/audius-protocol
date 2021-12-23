@@ -1,4 +1,4 @@
-import React, { createContext, useRef, RefObject } from 'react'
+import React, { createContext, useRef, RefObject, ReactNode } from 'react'
 
 import WebView from 'react-native-webview'
 
@@ -12,7 +12,7 @@ export const WebRefContext = createContext<WebRefContextProps>({
   webRef: null
 })
 
-export const WebRefContextProvider = (props: { children: JSX.Element[] }) => {
+export const WebRefContextProvider = (props: { children: ReactNode }) => {
   const webRef = useRef<WebView | null>(null)
 
   return (

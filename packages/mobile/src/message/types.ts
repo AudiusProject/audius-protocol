@@ -1,5 +1,7 @@
 import { Dispatch } from 'redux'
 
+import Theme from 'app/models/Theme'
+
 import { AnalyticsMessage } from '../types/analytics'
 
 export enum MessageType {
@@ -147,6 +149,12 @@ export type MessageHandler = (args: {
   postMessage: (message: Message) => void
   // Used to reload the WebView
   reload: () => void
+  // Used to set the theme. Specific because theme state is
+  // handled via the context API outside of the store to be able to
+  // theme the error boundary that renders if the store throws.
+  // Generally messages should make
+  // use of dispatch to talk to global state.
+  setTheme: (theme: Theme) => void
 }) => void
 
 export type MessageHandlers = {

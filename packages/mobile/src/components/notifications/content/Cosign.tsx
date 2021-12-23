@@ -34,14 +34,15 @@ type CosignProps = {
 }
 
 const Cosign = ({ notification, onGoToRoute }: CosignProps) => {
+  const textWrapperStyle = useTheme(styles.textWrapper, {
+    color: 'neutral'
+  })
+  if (!notification.user) return null
+
   const user = notification.user
   const entity = notification.entities.find(
     (track: Track) => track.owner_id === notification.parentTrackUserId
   )
-
-  const textWrapperStyle = useTheme(styles.textWrapper, {
-    color: 'neutral'
-  })
 
   return (
     <View>
