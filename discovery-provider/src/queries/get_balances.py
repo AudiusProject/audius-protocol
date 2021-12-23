@@ -65,7 +65,8 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
             "total_balance": str(
                 int(user_balance.balance)
                 + int(user_balance.associated_wallets_balance)
-                + int(user_balance.associated_sol_wallets_balance) * 10 ** WAUDIO_DECIMALS
+                + int(user_balance.associated_sol_wallets_balance)
+                * 10 ** WAUDIO_DECIMALS
                 + int(user_balance.waudio) * 10 ** WAUDIO_DECIMALS
             ),
         }
@@ -84,7 +85,7 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
             "associated_wallets_balance": "0",
             "associated_sol_wallets_balance": "0",
             "total_balance": "0",
-            "waudio_balance": "0"
+            "waudio_balance": "0",
         }
         for user_id in needs_balance_set
     }

@@ -50,7 +50,8 @@ def setup_challenges(app):
                 name=f"test_name{i}",
                 created_at=datetime.now(),
                 updated_at=datetime.now(),
-            ) for i in range(7)
+            )
+            for i in range(7)
         ]
         users = [
             User(

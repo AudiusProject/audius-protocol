@@ -2,11 +2,11 @@ from typing import List, Optional, Tuple, TypedDict
 
 from sqlalchemy import and_, asc
 from src.models import (
-    UserChallenge,
     Challenge,
     ChallengeDisbursement,
     User,
     UserBankAccount,
+    UserChallenge,
 )
 
 
