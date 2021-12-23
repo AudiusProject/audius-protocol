@@ -529,16 +529,19 @@ def update_user_events(
             .filter_by(user_id=user_record.user_id, is_current=True)
             .one_or_none()
         )
-
+        existing_referrer = (
+            existing_user_events.referrer if existing_user_events else None
+        )
+        existing_mobile_user = (
+            existing_user_events.is_mobile_user if existing_user_events else False
+        )
         user_events = UserEvents(
             user_id=user_record.user_id,
             is_current=True,
             blocknumber=user_record.blocknumber,
             blockhash=user_record.blockhash,
-            referrer=existing_user_events.referrer if existing_user_events else None,
-            is_mobile_user=existing_user_events.is_mobile_user
-            if existing_user_events
-            else False,
+            referrer=existing_referrer,
+            is_mobile_user=existing_mobile_user,
         )
         for event, value in events.items():
             if (
@@ -573,8 +576,8 @@ def update_user_events(
         # Only add a row if there's an update
         if (
             existing_user_events is None
-            or user_events.is_mobile_user != existing_user_events.is_mobile_user
-            or user_events.referrer != existing_user_events.referrer
+            or user_events.is_mobile_user != existing_mobile_user
+            or user_events.referrer != existing_referrer
         ):
             # Mark existing UserEvents entries as not current
             session.query(UserEvents).filter_by(
