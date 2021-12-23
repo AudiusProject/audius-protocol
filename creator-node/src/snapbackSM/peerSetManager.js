@@ -113,7 +113,7 @@ class PeerSetManager {
    * Also handles backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
    * This only works if both functions have a consistent return format
    */
-  async getNodeUsers () {
+  async getNodeUsers() {
     let nodeUsers
 
     try {
