@@ -1,8 +1,6 @@
 set -e
 
 cd $PROTOCOL_DIR
-pylint discovery-provider/src/
-pylint discovery-provider/integration_tests/
 isort --check-only discovery-provider/src/
 isort --check-only discovery-provider/integration_tests/
 black --check discovery-provider/src/
