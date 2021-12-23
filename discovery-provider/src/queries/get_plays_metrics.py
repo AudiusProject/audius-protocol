@@ -2,6 +2,7 @@ from typing import TypedDict
 import logging
 import time
 from sqlalchemy import func, desc
+from sqlalchemy.orm.session import Session
 from src.models import HourlyPlayCounts
 from src.utils import db_session
 
@@ -32,7 +33,7 @@ def get_plays_metrics(args: GetPlayMetricsArgs):
         return _get_plays_metrics(session, args)
 
 
-def _get_plays_metrics(session, args):
+def _get_plays_metrics(session: Session, args: GetPlayMetricsArgs):
     metrics_query = (
         session.query(
             func.date_trunc(args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp).label(
