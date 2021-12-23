@@ -127,6 +127,7 @@ def main():
 
     parser_setup.add_argument(
         "-y",
+        "--assume-yes",
         action="store_true",
         help="provision without requiring manual confirmation",
     )
@@ -173,7 +174,7 @@ def main():
                 args.protocol_git_ref,
                 args.client_git_ref,
                 args.name,
-                args.y,
+                args.assume_yes,
             )
     except argparse.ArgumentError:
         if sys.argv[1] == "seed":

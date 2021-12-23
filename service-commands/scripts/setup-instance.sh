@@ -114,17 +114,19 @@ case "$service" in
 			# TODO fix install and provisioning for fast
 		fi
 
-		# configure local files: /etc/hosts
-		configure_etc_hosts
+		if [ ! "${CI:-}" = "true" ]; then
+			# configure local files: /etc/hosts
+			configure_etc_hosts
 
-		# upload personal files: ~/.gitconfig
-		upload_gitconfig
+			# upload personal files: ~/.gitconfig
+			upload_gitconfig
 
-		echo -e "\nLogin using:\n"
-		echo -e "gcloud compute ssh $user@$name\n"
+			echo -e "\nLogin using:\n"
+			echo -e "gcloud compute ssh $user@$name\n"
 
-		IP=$(get_ip_addr $provider $name)
-		echo -e "\nRun the following to create an SSL tunnel to allow the client into the remote-dev box:\n"
-		echo -e "ssh -N -L 3000:127.0.0.1:3000 -i ~/.ssh/google_compute_engine ubuntu@${IP}\n"
-		;;
+			IP=$(get_ip_addr $provider $name)
+			echo -e "\nRun the following to create an SSL tunnel to allow the client into the remote-dev box:\n"
+			echo -e "ssh -N -L 3000:127.0.0.1:3000 -i ~/.ssh/google_compute_engine ubuntu@${IP}\n"
+			;;
+		fi
 esac
