@@ -1,8 +1,10 @@
 import configparser
 import os
+
 from src import models
-from src.utils.db_session import get_db
 from src.utils.config import config_files
+from src.utils.db_session import get_db
+
 from .conftest import TEST_BROKER_URL, TEST_CONFIG_OVERRIDE
 
 

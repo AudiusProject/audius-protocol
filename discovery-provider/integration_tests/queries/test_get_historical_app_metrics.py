@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+
 from src.models import AggregateDailyAppNameMetrics, AggregateMonthlyAppNameMetrics
 from src.queries.get_app_name_metrics import _get_historical_app_metrics
 from src.utils.db_session import get_db

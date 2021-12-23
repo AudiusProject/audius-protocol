@@ -1,36 +1,36 @@
 # pylint: disable=too-many-lines
-import logging
 import enum
-
+import logging
 from typing import Any
+
 from jsonschema import ValidationError
-from sqlalchemy import event
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship, validates
-from sqlalchemy.sql import null
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
     Boolean,
+    Column,
     Date,
     DateTime,
-    ForeignKey,
-    Text,
     Enum,
-    PrimaryKeyConstraint,
+    ForeignKey,
     Index,
-    func,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    Text,
     Unicode,
     UnicodeText,
+    event,
+    func,
 )
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import relationship, validates
+from sqlalchemy.sql import null
 from src.model_validator import ModelValidator
-
 
 Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
+
 
 # Listen for instrumentation of attributes on the base class
 # to add a listener on that attribute whenever it is set
@@ -1218,6 +1218,7 @@ class ListenStreakChallenge(Base):
 user_id={self.user_id},\
 last_listen_date={self.last_listen_date},\
 listen_streak={self.listen_streak})>"
+
 
 class UserListeningHistory(Base):
     __tablename__ = "user_listening_history"

@@ -6,17 +6,18 @@ const web3 = new Web3()
  */
 const validateAssociatedWallets = (metadataJSON) => {
   if ('user_id' in metadataJSON && 'associated_wallets' in metadataJSON) {
-    const userId = metadataJSON['user_id']
-    const walletMappings = metadataJSON['associated_wallets']
+    const userId = metadataJSON.user_id
+    const walletMappings = metadataJSON.associated_wallets
     if (!walletMappings) return true
     if (typeof walletMappings !== 'object') return true
     const message = `AudiusUserID:${userId}`
-    return Object.keys(walletMappings).every(wallet => {
+    return Object.keys(walletMappings).every((wallet) => {
       if (
         typeof walletMappings[wallet] !== 'object' ||
         walletMappings[wallet] === null ||
         !('signature' in walletMappings[wallet])
-      ) return false
+      )
+        return false
       const signature = walletMappings[wallet].signature
       const recoveredWallet = web3.eth.accounts.recover(message, signature)
       return recoveredWallet === wallet

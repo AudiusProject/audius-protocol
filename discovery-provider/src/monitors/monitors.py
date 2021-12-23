@@ -1,26 +1,27 @@
 import json
+
 from src.monitors import monitor_names
 from src.monitors.database import (
     get_database_connection_info,
     get_database_connections,
-    get_database_liveness,
-    get_database_size,
     get_database_index_count,
     get_database_index_info,
-    get_table_size_info,
+    get_database_liveness,
+    get_database_size,
     get_frequent_queries,
     get_slow_queries,
+    get_table_size_info,
 )
-from src.monitors.memory import get_total_memory, get_used_memory
 from src.monitors.filesystem import get_filesystem_size, get_filesystem_used
+from src.monitors.memory import get_total_memory, get_used_memory
 from src.monitors.network import (
     get_received_bytes_per_sec,
     get_transferred_bytes_per_sec,
 )
 from src.monitors.redis import (
     get_redis_num_keys,
-    get_redis_used_memory,
     get_redis_total_memory,
+    get_redis_used_memory,
 )
 from src.utils import redis_connection
 

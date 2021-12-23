@@ -1,11 +1,11 @@
-from functools import reduce
 from collections import defaultdict
-from typing import List, DefaultDict, Optional, TypedDict, Tuple, cast, Dict
+from functools import reduce
+from typing import DefaultDict, Dict, List, Optional, Tuple, TypedDict, cast
+
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import UserChallenge, Challenge, ChallengeType, ChallengeDisbursement
+from src.models import Challenge, ChallengeDisbursement, ChallengeType, UserChallenge
 
 
 class ChallengeResponse(TypedDict):

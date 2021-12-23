@@ -1,15 +1,13 @@
-from datetime import datetime
-import time
-import uuid
 import logging
+from datetime import datetime
+
 from flask import Blueprint, request
-from src.queries.get_latest_play import get_latest_play
-from src.queries.queries import parse_bool_param
-from src.queries.get_health import get_health, get_latest_ipld_indexed_block
-from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.api_helpers import success_response
-from src.utils import helpers, redis_connection, db_session
-from src.models import Play
+from src.queries.get_health import get_health, get_latest_ipld_indexed_block
+from src.queries.get_latest_play import get_latest_play
+from src.queries.get_sol_plays import get_latest_sol_play_check_info
+from src.queries.queries import parse_bool_param
+from src.utils import helpers, redis_connection
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +36,7 @@ def health_check():
         "challenge_events_age_max_drift": request.args.get(
             "challenge_events_age_max_drift", type=int
         ),
-        "plays_count_max_drift": request.args.get(
-            "plays_count_max_drift", type=int
-        )
+        "plays_count_max_drift": request.args.get("plays_count_max_drift", type=int),
     }
 
     (health_results, error) = get_health(args)
@@ -128,85 +124,3 @@ def ipld_block_check():
 def ip_check():
     ip = helpers.get_ip(request)
     return success_response(ip, sign_response=False)
-
-
-@bp.route("/test_db_write", methods=["GET"])
-def test_write_ops():
-    db = db_session.get_db()
-    plays = []
-    plays2 = []
-    plays3 = []
-
-    for i in range(100):
-        plays.append(Play(user_id="1", play_item_id="1", created_at="2021-12-22T18:56:30",
-                     source="hareesh", slot="1", signature=uuid.uuid4().hex))
-        # plays2.append(Play(user_id="1", play_item_id="1", created_at="2021-12-22T18:56:30",
-        #                    source="hareesh", slot="1", signature=uuid.uuid4().hex))
-        plays2.append({
-            "user_id": 1,
-            "play_item_id": 1,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
-            "source": "hareesh",
-            "slot": 1,
-            "signature": uuid.uuid4().hex
-        })
-        plays3.append({
-            "user_id": 1,
-            "play_item_id": 1,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
-            "source": "hareesh",
-            "slot": 1,
-            "signature": uuid.uuid4().hex
-        })
-
-    start = time.time()
-    with db.scoped_session() as session:
-        logger.info(f"test_db_write appending plays {plays}")
-        session.bulk_save_objects(plays)
-    end = time.time()
-    duration1 = end - start
-
-    start2 = time.time()
-    with db.scoped_session() as session:
-        session.execute(Play.__table__.insert().values(plays2))
-    end2 = time.time()
-    duration2 = end2 - start2
-
-    bulk_insert_str = []
-    for entry in plays3:
-        val_str = "('{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(
-            entry["user_id"], entry["play_item_id"], entry["created_at"], entry["updated_at"], entry["source"], entry["slot"], entry["signature"])
-        bulk_insert_str.append(val_str)
-
-    start3 = time.time()
-    with db.scoped_session() as session:
-        session.execute(
-            """
-            INSERT INTO plays (user_id, play_item_id, created_at, updated_at, source, slot, signature)
-            VALUES {}
-            """.format(",".join(bulk_insert_str))
-        )
-    end3 = time.time()
-    duration3 = end3 - start3
-
-    return success_response({"test": 2, "duration1": duration1, "duration2": duration2, "duration3": duration3}, sign_response=False)
-
-
-'''
-
-bulk_insert_str = []
-for entry in entry_list:
-    val_str = "('{}', '{}', ...)".format(entry["column1"], entry["column2"], ...)
-    bulk_insert_str.append(val_str)
-
-engine.execute(
-    """
-    INSERT INTO my_table (column1, column2 ...)
-    VALUES {}
-    """.format(",".join(bulk_insert_str))
-)
-
-
-'''

@@ -3,15 +3,15 @@ import json
 from datetime import datetime
 import logging
 import time
-from typing import TypedDict, Union, Tuple
-from redis import Redis
+from typing import Tuple, TypedDict, Union
 
 import base58
+from redis import Redis
 from sqlalchemy import desc
 from src.challenges.challenge_event import ChallengeEvent
-
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
+from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.celery_app import celery
 from src.tasks.index_listen_count_milestones import (
     CURRENT_PLAY_INDEXING,
@@ -28,7 +28,6 @@ from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
 )
 from src.utils.redis_cache import set_json_cached_key
-from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import (
     TransactionInfoResult,
     ConfirmedSignatureForAddressResult,
@@ -104,8 +103,8 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     try:
         source = str(decoded[source_start:source_end], "utf-8")
     except ValueError:
-        log = (
-            "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
+        log = "Failed to parse source from {!r}".format(
+            decoded[source_start:source_end]
         )
         logger.error(
             log,
