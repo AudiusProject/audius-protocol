@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Required format for track metadata retrieved from IPFS
 

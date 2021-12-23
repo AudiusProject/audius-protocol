@@ -1,14 +1,15 @@
 import logging
 import time
-from src.tasks.celery_app import celery
+
 from src.queries.get_trending_playlists import (
-    make_trending_cache_key,
     make_get_unpopulated_playlists,
+    make_trending_cache_key,
 )
-from src.utils.redis_cache import pickle_and_set
-from src.utils.redis_constants import trending_playlists_last_completion_redis_key
+from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils.redis_cache import pickle_and_set
+from src.utils.redis_constants import trending_playlists_last_completion_redis_key
 
 logger = logging.getLogger(__name__)
 

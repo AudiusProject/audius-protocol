@@ -1,6 +1,7 @@
 from datetime import datetime
-from src.models import User, Block
+
 from src.api.v1.utils.resolve_url import resolve_url
+from src.models import Block, User
 from src.utils.db_session import get_db
 
 

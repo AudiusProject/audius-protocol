@@ -1,15 +1,16 @@
-
 from typing import TypedDict
+
 from sqlalchemy.orm.session import Session
 from src.models import Play, Track
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     add_query_pagination,
-    populate_track_metadata,
     add_users_to_tracks,
+    populate_track_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
+
 
 class GetTrackHistoryArgs(TypedDict):
     current_user_id: int
@@ -18,10 +19,12 @@ class GetTrackHistoryArgs(TypedDict):
     filter_deleted: bool
     with_users: bool
 
+
 def get_track_history(args: GetTrackHistoryArgs):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         return _get_track_history(session, args)
+
 
 def _get_track_history(session: Session, args: GetTrackHistoryArgs):
     current_user_id = args.get("current_user_id")

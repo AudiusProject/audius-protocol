@@ -1,6 +1,6 @@
+from integration_tests.utils import populate_mock_db
 from src.queries.get_top_user_track_tags import _get_top_user_track_tags
 from src.utils.db_session import get_db
-from integration_tests.utils import populate_mock_db
 
 
 def test_get_top_user_track_tags(app):

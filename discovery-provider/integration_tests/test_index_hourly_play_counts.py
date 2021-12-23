@@ -1,11 +1,16 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List
+
 from sqlalchemy import desc
 from src.models.models import HourlyPlayCounts, IndexingCheckpoints
-from src.tasks.index_hourly_play_counts import _index_hourly_play_counts, HOURLY_PLAY_COUNTS_TABLE_NAME
+from src.tasks.index_hourly_play_counts import (
+    HOURLY_PLAY_COUNTS_TABLE_NAME,
+    _index_hourly_play_counts,
+)
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+
 from .utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -13,6 +18,7 @@ REDIS_URL = shared_config["redis"]["url"]
 logger = logging.getLogger(__name__)
 
 TIMESTAMP = datetime.now().replace(microsecond=0, second=0, minute=0)
+
 
 # Tests
 def test_index_hourly_play_counts_populate(app):
@@ -29,7 +35,7 @@ def test_index_hourly_play_counts_populate(app):
             {"track_id": 3, "title": "track 3"},
             {"track_id": 4, "title": "track 4"},
         ],
-        "plays" : [
+        "plays": [
             # Current Plays
             {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=8)},
             {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=7)},
@@ -44,7 +50,7 @@ def test_index_hourly_play_counts_populate(app):
             {"item_id": 3, "created_at": TIMESTAMP},
             {"item_id": 4, "created_at": TIMESTAMP},
             {"item_id": 4, "created_at": TIMESTAMP},
-        ]
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -78,6 +84,7 @@ def test_index_hourly_play_counts_populate(app):
         )
         assert new_checkpoint == 13
 
+
 def test_index_hourly_play_counts_single_update(app):
     """Test that hourly play counts update from the previous checkpoint"""
 
@@ -92,26 +99,21 @@ def test_index_hourly_play_counts_single_update(app):
             {"track_id": 3, "title": "track 2"},
             {"track_id": 4, "title": "track 3"},
         ],
-        "plays" : [
+        "plays": [
             # Indexed Plays
             {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=8)},
-
             {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=7)},
             {"item_id": 2, "created_at": TIMESTAMP - timedelta(hours=7)},
-
             {"item_id": 2, "created_at": TIMESTAMP - timedelta(hours=6)},
             {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=6)},
             {"item_id": 4, "created_at": TIMESTAMP - timedelta(hours=6)},
-
             {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=5)},
             {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=5)},
             {"item_id": 4, "created_at": TIMESTAMP - timedelta(hours=5)},
-
             {"item_id": 2, "created_at": TIMESTAMP},
             {"item_id": 3, "created_at": TIMESTAMP},
             {"item_id": 4, "created_at": TIMESTAMP},
             {"item_id": 4, "created_at": TIMESTAMP},
-
             # New plays
             {"item_id": 1, "created_at": TIMESTAMP},
             {"item_id": 2, "created_at": TIMESTAMP},
@@ -125,7 +127,7 @@ def test_index_hourly_play_counts_single_update(app):
         ],
         "indexing_checkpoints": [
             {"tablename": HOURLY_PLAY_COUNTS_TABLE_NAME, "last_checkpoint": 13}
-        ]
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -159,6 +161,7 @@ def test_index_hourly_play_counts_single_update(app):
             .scalar()
         )
         assert new_checkpoint == 16
+
 
 def test_index_hourly_play_counts_idempotent(app):
     """Tests multiple updates does not change data"""
@@ -174,31 +177,25 @@ def test_index_hourly_play_counts_idempotent(app):
             {"track_id": 3, "title": "track 2"},
             {"track_id": 4, "title": "track 3"},
         ],
-        "plays" : [
+        "plays": [
             # Indexed Plays
             {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=8)},
-
             {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=7)},
             {"item_id": 2, "created_at": TIMESTAMP - timedelta(hours=7)},
-
             {"item_id": 2, "created_at": TIMESTAMP - timedelta(hours=6)},
             {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=6)},
             {"item_id": 4, "created_at": TIMESTAMP - timedelta(hours=6)},
-
             {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=5)},
             {"item_id": 3, "created_at": TIMESTAMP - timedelta(hours=5)},
             {"item_id": 4, "created_at": TIMESTAMP - timedelta(hours=5)},
-
             {"item_id": 2, "created_at": TIMESTAMP},
             {"item_id": 3, "created_at": TIMESTAMP},
             {"item_id": 4, "created_at": TIMESTAMP},
             {"item_id": 4, "created_at": TIMESTAMP},
-
             # New plays
             {"item_id": 1, "created_at": TIMESTAMP},
             {"item_id": 2, "created_at": TIMESTAMP},
             {"item_id": 2, "created_at": TIMESTAMP + timedelta(hours=1)},
-
         ],
         "hourly_play_counts": [
             {"hourly_timestamp": TIMESTAMP - timedelta(hours=4), "play_count": 1},
@@ -208,7 +205,7 @@ def test_index_hourly_play_counts_idempotent(app):
         ],
         "indexing_checkpoints": [
             {"tablename": HOURLY_PLAY_COUNTS_TABLE_NAME, "last_checkpoint": 13}
-        ]
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -245,6 +242,7 @@ def test_index_hourly_play_counts_idempotent(app):
         )
         assert new_checkpoint == 16
 
+
 def test_index_hourly_play_counts_no_change(app):
     """Test that hourly play counts should not write if there are no new plays"""
 
@@ -259,7 +257,7 @@ def test_index_hourly_play_counts_no_change(app):
             {"track_id": 3, "title": "track 2"},
             {"track_id": 4, "title": "track 3"},
         ],
-        "plays" : [
+        "plays": [
             {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=8)},
             {"item_id": 1, "created_at": TIMESTAMP - timedelta(hours=7)},
             {"item_id": 2, "created_at": TIMESTAMP - timedelta(hours=7)},
@@ -283,7 +281,7 @@ def test_index_hourly_play_counts_no_change(app):
         ],
         "indexing_checkpoints": [
             {"tablename": HOURLY_PLAY_COUNTS_TABLE_NAME, "last_checkpoint": 13}
-        ]
+        ],
     }
 
     populate_mock_db(db, entities)

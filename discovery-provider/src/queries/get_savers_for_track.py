@@ -1,11 +1,10 @@
-from sqlalchemy import func, desc
-
+from sqlalchemy import desc, func
 from src import exceptions
-from src.models import User, Track, Save, SaveType, AggregateUser
+from src.models import AggregateUser, Save, SaveType, Track, User
+from src.queries import response_name_constants
+from src.queries.query_helpers import add_query_pagination, populate_user_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries import response_name_constants
-from src.queries.query_helpers import populate_user_metadata, add_query_pagination
 
 
 def get_savers_for_track(args):

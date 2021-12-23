@@ -1,7 +1,6 @@
 import redis
-
+from src.queries.get_skipped_transactions import get_indexing_error, set_indexing_error
 from src.utils.config import shared_config
-from src.queries.get_skipped_transactions import set_indexing_error, get_indexing_error
 
 REDIS_URL = shared_config["redis"]["url"]
 
