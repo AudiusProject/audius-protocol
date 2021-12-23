@@ -164,7 +164,8 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
  */
 async function transcodeAndSegment ({ logContext }, { fileName, fileDir }) {
   let transcodedFilePath
-  let segmentFilePaths
+  let segmentFileNames
+  let segmentFileNamesToPath
   try {
     const transcode = await Promise.all([
       TranscodingQueue.segment(fileDir, fileName, { logContext }),
@@ -172,7 +173,8 @@ async function transcodeAndSegment ({ logContext }, { fileName, fileDir }) {
     ])
     // this is misleading, not actually paths but the segment file names.
     // refactor to return the segment path
-    segmentFilePaths = transcode[0].filePaths
+    segmentFileNames = transcode[0].fileNames
+    segmentFileNamesToPath = transcode[0].fileNamesToPath
     transcodedFilePath = transcode[1].filePath
   } catch (err) {
     // Prune upload artifacts
@@ -182,7 +184,7 @@ async function transcodeAndSegment ({ logContext }, { fileName, fileDir }) {
   }
 
   // ? do we want to expose the file path routes?
-  return { transcodedFilePath, segmentFilePaths, fileName }
+  return { transcodedFilePath, segmentFileNames, segmentFileNamesToPath, fileName }
 }
 
 // { logContext, fileName, fileDir, uuid, headers, libs }
