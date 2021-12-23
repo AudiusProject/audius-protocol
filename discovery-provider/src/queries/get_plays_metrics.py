@@ -1,3 +1,4 @@
+from typing import TypedDict
 import logging
 import time
 from sqlalchemy import func, desc
@@ -6,16 +7,22 @@ from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
+class GetPlayMetricsArgs(TypedDict):
+     # A date_trunc operation to aggregate timestamps by
+    bucket_size: int
 
-def get_plays_metrics(args):
+    # The max number of responses to return
+    start_time: int
+
+    # The max number of responses to return
+    limit: int
+
+def get_plays_metrics(args: GetPlayMetricsArgs):
     """
     Returns metrics for play counts
 
     Args:
-        args: dict The parsed args from the request
-        args.start_time: date The start of the query
-        args.limit: number The max number of responses to return
-        args.bucket_size: string A date_trunc operation to aggregate timestamps by
+        args: GetPlayMetrics the parsed args from the request
 
     Returns:
         Array of dictionaries with the play counts and timestamp

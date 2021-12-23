@@ -93,7 +93,6 @@ def test_index_user_listening_history_populate(app):
         )
 
         assert new_checkpoint == 6
-    return
 
 
 def test_index_user_listening_history_update(app):

@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timedelta
-from src.queries.get_plays_metrics import _get_plays_metrics
+from src.queries.get_plays_metrics import _get_plays_metrics, GetPlayMetricsArgs
 from src.tasks.index_hourly_play_counts import _index_hourly_play_counts
 from src.utils.db_session import get_db
 from integration_tests.utils import populate_mock_db
@@ -24,7 +24,6 @@ def test_get_plays_metrics(app):
             {"track_id": 3, "title": "track 3"},
         ],
         "plays" : [
-            # Current Plays
             {"item_id": 1, "created_at": date + timedelta(hours=-1)},
             {"item_id": 1, "created_at": date + timedelta(hours=-1)},
             {"item_id": 1, "created_at": date + timedelta(days=-2)},
@@ -38,8 +37,11 @@ def test_get_plays_metrics(app):
 
     populate_mock_db(db, test_entities)
 
-    start_time = date + timedelta(days=-3)
-    args = {"limit": 10, "start_time": start_time, "bucket_size": "hour"}
+    args = GetPlayMetricsArgs(
+        limit = 10,
+        start_time = date + timedelta(days=-3),
+        bucket_size = "hour",
+    )
 
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
@@ -67,7 +69,6 @@ def test_get_plays_metrics_with_weekly_buckets(app):
             {"track_id": 3, "title": "track 3"},
         ],
         "plays" : [
-            # Current Plays
             {"item_id": 1, "created_at": date + timedelta(hours=-1)},
             {"item_id": 1, "created_at": date + timedelta(hours=-1)},
             {"item_id": 1, "created_at": date + timedelta(days=-2)},
@@ -82,7 +83,11 @@ def test_get_plays_metrics_with_weekly_buckets(app):
     populate_mock_db(db, test_entities)
 
     start_time = date + timedelta(days=-3)
-    args = {"limit": 10, "start_time": start_time, "bucket_size": "week"}
+    args = GetPlayMetricsArgs(
+        limit = 10,
+        start_time = date + timedelta(days=-3),
+        bucket_size = "week",
+    )
 
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
@@ -107,7 +112,6 @@ def test_get_plays_metrics_with_yearly_buckets(app):
             {"track_id": 3, "title": "track 3"},
         ],
         "plays" : [
-            # Current Plays
             {"item_id": 1, "created_at": date + timedelta(days=-3*DAYS_IN_A_YEAR)},
             {"item_id": 1, "created_at": date + timedelta(days=-3*DAYS_IN_A_YEAR)},
             {"item_id": 3, "created_at": date + timedelta(days=-3*DAYS_IN_A_YEAR)},
@@ -122,7 +126,11 @@ def test_get_plays_metrics_with_yearly_buckets(app):
     populate_mock_db(db, test_entities)
 
     start_time = date + timedelta(days=-3*DAYS_IN_A_YEAR - 1) # -1 extra day to be inclusive
-    args = {"limit": 10, "start_time": start_time, "bucket_size": "year"}
+    args = GetPlayMetricsArgs(
+        limit = 10,
+        start_time = start_time,
+        bucket_size = "year",
+    )
 
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
