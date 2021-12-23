@@ -59,10 +59,6 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
-
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -304,9 +300,6 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
-      - run:
           name: install wrangler
           command: 'npm install @cloudflare/wrangler'
       - run:
@@ -405,9 +398,6 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
-      - run:
           name: install wrangler
           command: 'npm install @cloudflare/wrangler'
       - run:
@@ -455,9 +445,6 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
-      - run:
           name: install wrangler
           command: 'npm install @cloudflare/wrangler'
       - run:
@@ -480,9 +467,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./
-      - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
       - run:
           name: install-sentry-cli
           command: npm install @sentry/cli
