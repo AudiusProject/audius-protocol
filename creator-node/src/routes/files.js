@@ -428,7 +428,10 @@ async function _addToIpfsWithRetries ({ content, enableIPFSAdd, dirCID, retriesL
 
 module.exports = function (app) {
   app.get('/track_content_status', handleResponse(async (req, res) => {
-    const redisKey = constructProcessKey(PROCESS_NAMES.trackContentUpload, req.query.uuid)
+    // for backwards compat, default to trackContentUpload
+    const taskType = PROCESS_NAMES[req.query.taskType] || PROCESS_NAMES.trackContentUpload
+
+    const redisKey = constructProcessKey(taskType, req.query.uuid)
     const value = await redisClient.get(redisKey) || '{}'
 
     return successResponse(JSON.parse(value))

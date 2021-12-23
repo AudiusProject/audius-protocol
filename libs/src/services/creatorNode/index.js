@@ -394,7 +394,7 @@ class CreatorNode {
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
       try {
-        const { status, resp } = await this.getTrackContentProcessingStatus(uuid)
+        const { status, resp } = await this.getTrackContentProcessingStatus(uuid, taskType)
         // Should have a body structure of:
         //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
         if (status && status === 'DONE') return resp
@@ -420,11 +420,12 @@ class CreatorNode {
    * @param {string} uuid the uuid of the track transcoding task
    * @returns the status, and the success or failed response if the task is complete
    */
-  async getTrackContentProcessingStatus (uuid) {
+  async getTrackContentProcessingStatus (uuid, taskType) {
     const { data: body } = await this._makeRequest({
       url: '/track_content_status',
       params: {
-        uuid
+        uuid,
+        taskType
       },
       method: 'get'
     })

@@ -2,12 +2,16 @@ const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
-const { handleTrackContentRoute: trackContentUpload } = require('./components/tracks/tracksComponentService')
+const {
+  handleTrackContentRoute: trackContentUpload,
+  transcodeAndSegment
+} = require('./components/tracks/tracksComponentService')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
-  trackContentUpload: 'trackContentUpload'
+  trackContentUpload: 'trackContentUpload',
+  transcodeAndSegment: 'transcodeAndSegment'
 })
 const PROCESS_STATES = Object.freeze({
   IN_PROGRESS: 'IN_PROGRESS',
@@ -46,6 +50,18 @@ class FileProcessingQueue {
       }
     })
 
+    this.queue.process(PROCESS_NAMES.transcodeAndSegment, MAX_CONCURRENCY, async (job, done) => {
+      const { transcodeAndSegmentParams } = job.data
+
+      try {
+        const response = await this.monitorProgress(PROCESS_NAMES.transcodeAndSegment, transcodeAndSegment, transcodeAndSegmentParams)
+        done(null, { response })
+      } catch (e) {
+        this.logError(transcodeAndSegmentParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcodeAndSegment} uuid=${transcodeAndSegmentParams.logContext.requestID}: ${e.toString()}`)
+        done(e.toString())
+      }
+    })
+
     this.getFileProcessingQueueJobs = this.getFileProcessingQueueJobs.bind(this)
   }
 
@@ -68,6 +84,19 @@ class FileProcessingQueue {
     const job = await this.queue.add(
       PROCESS_NAMES.trackContentUpload,
       { trackContentUploadParams }
+    )
+
+    return job
+  }
+
+  async addTranscodeAndSegmentTask (transcodeAndSegmentParams, libs) {
+    const { logContext } = transcodeAndSegmentParams
+
+    this.logStatus(logContext, `Adding ${PROCESS_NAMES.transcodeAndSegment} task! uuid=${logContext.requestID}}`)
+
+    const job = await this.queue.add(
+      PROCESS_NAMES.transcodeAndSegment,
+      { transcodeAndSegmentParams }
     )
 
     return job

@@ -40,6 +40,7 @@ const { getSegmentsDuration } = require('../segmentDuration')
 const { getCID, streamFromFileSystem } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const { handleTrackHandOff } = require('../components/tracks/tracksComponentService')
 const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
@@ -162,7 +163,7 @@ module.exports = function (app) {
     }
 
     let handOffTrack = false
-    const isTranscodeQueueAvailable = await TranscodingQueue.isAvailable()
+    const isTranscodeQueueAvailable = false // await TranscodingQueue.isAvailable()
     if (isTranscodeQueueAvailable) {
       await FileProcessingQueue.addTrackContentUploadTask(
         {
@@ -180,8 +181,17 @@ module.exports = function (app) {
       )
     } else {
       handOffTrack = true
-
-      // handleTrackHandOff()
+      handleTrackHandOff(
+        {
+          logContext: req.logContext,
+          fileName: req.fileName,
+          fileDir: req.fileDir,
+          uuid: req.logContext.requestID,
+          headers: req.headers,
+          libs: req.app.get('audiusLibs'),
+          handOffTrack: true
+        }
+      )
     }
 
     return successResponse({ uuid: req.logContext.requestID })
@@ -194,12 +204,21 @@ module.exports = function (app) {
    * - upload the file
    * - submit transcode and segment request
    */
-  app.post('/transcode_and_segment', /* important middleware ... */ handleResponse(async (req, res) => {
+  app.post('/transcode_and_segment', handleTrackContentUpload, /* important middleware ... */ handleResponse(async (req, res) => {
     await FileProcessingQueue.addTranscodeAndSegmentTask(
-      /* context */
+      {
+        logContext: req.logContext,
+        req: {
+          fileName: req.fileName,
+          fileDir: req.fileDir,
+          uuid: req.logContext.requestID,
+          handOffTrack: true
+        }
+      },
+      req.app.get('audiusLibs')
     )
-
-    return successResponse({ uuid: req.requestID })
+    // TODO: hm... make sure this is ths same request id during this entire flow
+    return successResponse({ uuid: req.logContext.requestID })
   }))
 
   /**

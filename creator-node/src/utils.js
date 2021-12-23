@@ -490,7 +490,7 @@ async function createDirForFile (fileStoragePath) {
  * Given an input stream and a destination file path, this function writes the contents
  * of the stream to disk at expectedStoragePath
  * @param {stream} inputStream Stream to persist to disk
- * @param {String} expectedStoragePath path in local file system to store
+ * @param {String} expectedStoragePath path in local file system to store. includes the file name
  * @param {Boolean?} createDir if true, will ensure the expectedStoragePath path exists so we don't have errors from folders missing
  */
 async function writeStreamToFileSystem (inputStream, expectedStoragePath, createDir = false) {
