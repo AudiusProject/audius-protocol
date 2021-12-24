@@ -48,6 +48,11 @@ TX_SIGNATURES_MAX_BATCHES = 100
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 75
 
+# Number of signatures that are fetched from RPC and written at once
+# For example, in a batch of 1000 only 100 will be fetched and written in parallel
+# Intended to relieve RPC and DB pressure
+TX_SIGNATURES_PROCESSING_SIZE = 100
+
 logger = logging.getLogger(__name__)
 
 """
@@ -611,7 +616,9 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
     transaction_signatures.reverse()
 
     for tx_sig_batch in transaction_signatures:
-        for tx_sig_batch_records in split_list(tx_sig_batch, 100):
+        for tx_sig_batch_records in split_list(
+            tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
+        ):
             parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records)
 
     try:
