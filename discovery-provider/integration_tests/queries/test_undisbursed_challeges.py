@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db_blocks
-from src.models import Challenge, ChallengeType, User, UserChallenge
+from src.models import Challenge, ChallengeType, User, UserBankAccount, UserChallenge
 from src.queries.get_undisbursed_challenges import get_undisbursed_challenges
 from src.utils.db_session import get_db
 
@@ -34,6 +34,25 @@ def setup_challenges(app):
                 starting_block=100,
             ),
         ]
+
+        non_current_users = [
+            User(
+                blockhash=hex(99),
+                blocknumber=99,
+                txhash=f"xyz{i}",
+                user_id=i,
+                is_current=False,
+                handle=f"TestHandle{i}",
+                handle_lc=f"testhandle{i}",
+                wallet=f"0x{i}",
+                is_creator=False,
+                is_verified=False,
+                name=f"test_name{i}",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            )
+            for i in range(7)
+        ]
         users = [
             User(
                 blockhash=hex(99),
@@ -49,6 +68,15 @@ def setup_challenges(app):
                 name=f"test_name{i}",
                 created_at=datetime.now(),
                 updated_at=datetime.now(),
+            )
+            for i in range(7)
+        ]
+        user_bank_accounts = [
+            UserBankAccount(
+                signature=f"0x{i}",
+                ethereum_address=users[i].wallet,
+                bank_account=f"0x{i}",
+                created_at=datetime.now(),
             )
             for i in range(7)
         ]
@@ -96,19 +124,14 @@ def setup_challenges(app):
                 is_complete=True,
                 completed_blocknumber=100,
             ),
-            UserChallenge(
-                challenge_id="test_challenge_3",
-                user_id=6,
-                specifier="7",
-                is_complete=True,
-                completed_blocknumber=100,
-            ),
         ]
 
         with db.scoped_session() as session:
             session.add_all(challenges)
             session.flush()
+            session.add_all(non_current_users)
             session.add_all(users)
+            session.add_all(user_bank_accounts)
             session.add_all(user_challenges)
 
 
@@ -131,15 +154,6 @@ def test_undisbursed_challenges(app):
                 "challenge_id": "test_challenge_3",
                 "user_id": 6,
                 "specifier": "6",
-                "amount": "5",
-                "completed_blocknumber": 100,
-                "handle": "TestHandle6",
-                "wallet": "0x6",
-            },
-            {
-                "challenge_id": "test_challenge_3",
-                "user_id": 6,
-                "specifier": "7",
                 "amount": "5",
                 "completed_blocknumber": 100,
                 "handle": "TestHandle6",
@@ -177,15 +191,6 @@ def test_undisbursed_challenges(app):
                 "challenge_id": "test_challenge_3",
                 "user_id": 6,
                 "specifier": "6",
-                "amount": "5",
-                "completed_blocknumber": 100,
-                "handle": "TestHandle6",
-                "wallet": "0x6",
-            },
-            {
-                "challenge_id": "test_challenge_3",
-                "user_id": 6,
-                "specifier": "7",
                 "amount": "5",
                 "completed_blocknumber": 100,
                 "handle": "TestHandle6",
