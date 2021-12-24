@@ -62,7 +62,7 @@ class FileProcessingQueue {
     this.getFileProcessingQueueJobs = this.getFileProcessingQueueJobs.bind(this)
   }
 
-  async logStatus (message, logContext = {}) {
+  async logStatus(message, logContext = {}) {
     const logger = genericLogger.child(logContext)
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
@@ -71,10 +71,12 @@ class FileProcessingQueue {
     )
   }
 
-  async logError (message, logContext = {}) {
+  async logError(message, logContext = {}) {
     const logger = genericLogger.child(logContext)
     const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
-    logger.error(`FileProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`)
+    logger.error(
+      `FileProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
+    )
   }
 
   // TODO: Will make this job a background process
@@ -89,7 +91,7 @@ class FileProcessingQueue {
       transcodeParams
     })
     this.logStatus(
-      `Added ${PROCESS_NAMES.transcode} task, uuid=${logContext.requestID}`, 
+      `Added ${PROCESS_NAMES.transcode} task, uuid=${logContext.requestID}`,
       logContext
     )
 

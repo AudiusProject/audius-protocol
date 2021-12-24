@@ -90,9 +90,11 @@ class DiskManager {
    * @param {String} dirName directory name
    * @param {String} fileName file name
    */
-  static computeFilePathInDir (dirName, fileName) {
+  static computeFilePathInDir(dirName, fileName) {
     if (!dirName || !fileName) {
-      genericLogger.error(`Invalid dirName and/or fileName, dirName=${dirName}, fileName=${fileName}`)
+      genericLogger.error(
+        `Invalid dirName and/or fileName, dirName=${dirName}, fileName=${fileName}`
+      )
       throw new Error('Must pass in valid dirName and fileName')
     }
 
@@ -100,7 +102,9 @@ class DiskManager {
       CID.isCID(new CID(dirName))
       CID.isCID(new CID(fileName))
     } catch (e) {
-      genericLogger.error(`CID invalid, dirName=${dirName}, fileName=${fileName}, error=${e.toString()}`)
+      genericLogger.error(
+        `CID invalid, dirName=${dirName}, fileName=${fileName}, error=${e.toString()}`
+      )
       throw new Error(
         `Please pass in a valid cid to computeFilePathInDir for dirName and fileName. Passed in dirName: ${dirName} fileName: ${fileName} ${e.message}`
       )
@@ -122,7 +126,9 @@ class DiskManager {
       // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
       fs.mkdirSync(dirPath, { recursive: true })
     } catch (e) {
-      genericLogger.error(`Error making directory, dirName=${dirPath}, error=${e.toString()}`)
+      genericLogger.error(
+        `Error making directory, dirName=${dirPath}, error=${e.toString()}`
+      )
       throw new Error(`Error making directory at ${dirPath} - ${e.message}`)
     }
   }
@@ -137,7 +143,9 @@ class DiskManager {
   static extractCIDsFromFSPath(fsPath) {
     const match = CID_DIRECTORY_REGEX.exec(fsPath)
     if (!match || !match.groups) {
-      genericLogger.info(`Input path does not match cid directory pattern, fsPath=${fsPath}`)
+      genericLogger.info(
+        `Input path does not match cid directory pattern, fsPath=${fsPath}`
+      )
       return null
     }
 

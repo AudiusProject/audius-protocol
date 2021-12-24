@@ -1020,8 +1020,6 @@ module.exports = function (app) {
             `Error falling back to reconstructing data from discovery to stream`,
           )
         }
-      } catch (e) {
-        req.logger.error({error: e}, 'Error falling back to reconstructing data from discovery to stream')
       }
 
       if (!fileRecord || !fileRecord.multihash) {

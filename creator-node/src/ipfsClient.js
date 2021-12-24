@@ -16,7 +16,7 @@ const ipfsLatest = ipfsClientLatest({
   protocol: 'http'
 })
 
-async function logIpfsPeerIds () {
+async function logIpfsPeerIds() {
   genericLogger.info(`Starting IPFS, ipfsAddr=${ipfsAddr}`)
   const identity = await ipfs.id()
   // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
