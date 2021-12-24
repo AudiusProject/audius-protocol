@@ -22,7 +22,16 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * @param {string?} randomBytesToSign optional bytes string to be included in response object
  *    and used in signature generation
  */
-const healthCheck = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, getTranscodeQueueJobs, getFileProcessingQueueJobs, numberOfCPUs, randomBytesToSign = null) => {
+const healthCheck = async (
+  { libs, snapbackSM } = {},
+  logger,
+  sequelize,
+  getMonitors,
+  getTranscodeQueueJobs,
+  getFileProcessingQueueJobs,
+  numberOfCPUs,
+  randomBytesToSign = null
+) => {
   // Location information
   const country = config.get('serviceCountry')
   const latitude = config.get('serviceLatitude')
@@ -80,10 +89,12 @@ const healthCheck = async ({ libs, snapbackSM } = {}, logger, sequelize, getMoni
     currentSnapbackReconfigMode = snapbackSM.highestEnabledReconfigMode
   }
 
-  const { active: transcodeActive, waiting: transcodeWaiting } = await getTranscodeQueueJobs()
-  const { active: fileProcessingActive, waiting: fileProcessingWaiting } = await getFileProcessingQueueJobs()
+  const { active: transcodeActive, waiting: transcodeWaiting } =
+    await getTranscodeQueueJobs()
+  const { active: fileProcessingActive, waiting: fileProcessingWaiting } =
+    await getFileProcessingQueueJobs()
 
-  let response = {
+  const response = {
     ...versionInfo,
     healthy: true,
     git: process.env.GIT_SHA,
@@ -131,7 +142,8 @@ const healthCheck = async ({ libs, snapbackSM } = {}, logger, sequelize, getMoni
   }
 
   if (libs) {
-    response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
+    response.selectedDiscoveryProvider =
+      libs.discoveryProvider.discoveryProviderEndpoint
   } else {
     logger.warn('Health check with no libs')
   }
@@ -142,21 +154,40 @@ const healthCheck = async ({ libs, snapbackSM } = {}, logger, sequelize, getMoni
   await sequelize.query('SELECT 1')
 
   if (
-    !response['numberOfCPUs'] || response['numberOfCPUs'] < MIN_NUBMER_OF_CPUS ||
-    !response['totalMemory'] || response['totalMemory'] < MIN_TOTAL_MEMORY ||
-    !response['storagePathSize'] || response['storagePathSize'] < MIN_FILESYSTEM_SIZE
+    !response.numberOfCPUs ||
+    response.numberOfCPUs < MIN_NUBMER_OF_CPUS ||
+    !response.totalMemory ||
+    response.totalMemory < MIN_TOTAL_MEMORY ||
+    !response.storagePathSize ||
+    response.storagePathSize < MIN_FILESYSTEM_SIZE
   ) {
-    response['meetsMinRequirements'] = false
+    response.meetsMinRequirements = false
   } else {
-    response['meetsMinRequirements'] = true
+    response.meetsMinRequirements = true
   }
 
   return response
 }
 
 // TODO remove verbose health check after fully deprecated
-const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs, getFileProcessingQueueJobs) => {
-  return healthCheck({ libs, snapbackSM }, logger, sequelize, getMonitors, getTranscodeQueueJobs, getFileProcessingQueueJobs, numberOfCPUs)
+const healthCheckVerbose = async (
+  { libs, snapbackSM } = {},
+  logger,
+  sequelize,
+  getMonitors,
+  numberOfCPUs,
+  getTranscodeQueueJobs,
+  getFileProcessingQueueJobs
+) => {
+  return healthCheck(
+    { libs, snapbackSM },
+    logger,
+    sequelize,
+    getMonitors,
+    getTranscodeQueueJobs,
+    getFileProcessingQueueJobs,
+    numberOfCPUs
+  )
 }
 
 /**
