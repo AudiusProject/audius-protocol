@@ -26,6 +26,7 @@ mock_tx_result_2: ConfirmedSignatureForAddressResult = {
     "memo": None,
 }
 
+
 # Confirm expected length of cache array
 def assert_cache_array_length(redis, expected_length: int):
     cached_val_array = redis.lrange(REDIS_TX_CACHE_QUEUE_PREFIX, 0, 100)
