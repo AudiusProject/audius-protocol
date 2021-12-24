@@ -17,6 +17,14 @@ mock_tx_result_1: ConfirmedSignatureForAddressResult = {
     "memo": None,
 }
 
+mock_tx_result_2: ConfirmedSignatureForAddressResult = {
+    "signature": "5211pasG9iDECHnNm4GCWH9xETWJYRk4cxWVcJQyqTJCFGbmmvki2oHyvHJL8MgppztYjXsXPyG4RXcMXuQRpBia",
+    "slot": mock_tx_result_1 + 100,
+    "blockTime": 1640126543,
+    "confirmationStatus": "finalized",
+    "err": None,
+    "memo": None,
+}
 
 # Confirm expected length of cache array
 def assert_cache_array_length(redis, expected_length: int):
@@ -63,19 +71,13 @@ def test_fetch_traversed_tx_from_cache(app):
     assert_cache_array_length(redis, 0)
 
     # Now, populate 2 entries into redis
-    later_mock_tx = first_mock_tx
-    later_mock_tx["slot"] = tx_slot + 100
-    later_mock_tx[
-        "signature"
-    ] = "5211pasG9iDECHnNm4GCWH9xETWJYRk4cxWVcJQyqTJCFGbmmvki2oHyvHJL8MgppztYjXsXPyG4RXcMXuQRpBia"
-
     cache_traversed_tx(redis, first_mock_tx)
-    cache_traversed_tx(redis, later_mock_tx)
+    cache_traversed_tx(redis, mock_tx_result_2)
 
     assert_cache_array_length(redis, 2)
 
     fetched_tx = fetch_traversed_tx_from_cache(redis, latest_db_slot)
-    assert fetched_tx == later_mock_tx["signature"]
+    assert fetched_tx == mock_tx_result_2["signature"]
 
     # Confirm the values have been removed from redis queue
     assert_cache_array_length(redis, 0)
