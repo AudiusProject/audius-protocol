@@ -2,18 +2,59 @@ import json
 import logging
 import pathlib
 from os import path
+from typing import List, Optional, TypedDict
 
+from src.utils.config import shared_config
 from src.models import Challenge
 
 logger = logging.getLogger(__name__)
 
 
+class ChallengeJSON(TypedDict):
+    id: str
+    type: str
+    amount: str
+    active: bool
+    step_count: Optional[int]
+    starting_block: Optional[int]
+
+
+class OverrideChallengeJson(TypedDict):
+    id: str
+    amount: Optional[str]
+    active: Optional[bool]
+    step_count: Optional[int]
+    starting_block: Optional[int]
+
+
 def get_challenges_dicts():
     challenges_path = path.join(pathlib.Path(__file__).parent, "challenges.json")
+    challenges = []
     with open(challenges_path) as f:
         raw = f.read()
-        parsed = json.loads(raw)
-        return parsed
+        challenges: List[ChallengeJSON] = json.loads(raw)
+
+    # If we're in stage environment, set up overrides
+    if shared_config["discprov"]["env"] == "stage":
+        stage_challenges_path = path.join(
+            pathlib.Path(__file__).parent, "challenges.stage.json"
+        )
+
+        with open(stage_challenges_path) as f:
+            raw = f.read()
+            stage_challenges: List[OverrideChallengeJson] = json.loads(raw)
+            stage_challenges_map = {
+                challenge["id"]: challenge for challenge in stage_challenges
+            }
+            for challenge in challenges:
+                override = stage_challenges_map.get(challenge["id"])
+                if not override:
+                    continue
+                for key in challenge.keys():
+                    if key in override:
+                        challenge[key] = override[key]
+
+    return challenges
 
 
 def create_new_challenges(session, allowed_challenge_types=None):
