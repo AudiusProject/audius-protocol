@@ -126,7 +126,8 @@ class TranscodingQueue {
    */
   async logError(message, logContext = {}) {
     const logger = genericLogger.child(logContext)
-    const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
+    const { waiting, active, completed, failed, delayed } =
+      await this.queue.getJobCounts()
     logger.error(
       `Transcoding error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
     )
