@@ -120,7 +120,9 @@ class PeerSetManager {
       // Retrieves users from route `v1/full/users/content_node/all`
       nodeUsers = await this.getAllNodeUsers()
     } catch (e) {
-      throw new Error(`getAllNodeUsers() Error: ${e.toString()}\n\ngetNodePrimaryUsers()`)
+      throw new Error(
+        `getAllNodeUsers() Error: ${e.toString()}\n\ngetNodePrimaryUsers()`
+      )
     }
 
     // Ensure every object in response array contains all required fields
