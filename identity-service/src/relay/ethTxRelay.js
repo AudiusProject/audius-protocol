@@ -98,7 +98,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
 }
 
 const estimateEthTransactionGas = async (senderAddress, to, data) => {
-  let ethWalletIndex = getEthRelayerWalletIndex(senderAddress)
+  const ethWalletIndex = getEthRelayerWalletIndex(senderAddress)
   const selectedRelayerWallet = ethRelayerWallets[ethWalletIndex]
   const toChecksumAddress = ethWeb3.utils.toChecksumAddress
   const estimatedGas = await ethWeb3.eth.estimateGas({
