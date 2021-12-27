@@ -458,6 +458,55 @@ class Account extends Base {
     })
   }
 
+  async getUserWAudioBalance () {
+    const userBank = await this.solanaWeb3Manager.getUserBank()
+    const ownerWAudioBalance = await this.solanaWeb3Manager.getWAudioBalance(userBank)
+    return ownerWAudioBalance
+  }
+
+  /**
+   * Sends `amount` tokens to solana `recipientAddress`
+   * If there is enough wAUDIO, then that amount is transferred,
+   * else if there are enough AUDIO and wAUDIO then all the AUDIO will
+   * be transferred to wAUDIO, and the amount will be transferred in wAudio
+   */
+  async transferTokens ({ recipientAddress, amount }) {
+    // Check amount of wAUDIO in the recipient
+    const userBank = await this.solanaWeb3Manager.getUserBank()
+    const ownerWAudioBalance = await this.solanaWeb3Manager.getWAudioBalance(userBank)
+
+    // Check for existing recipient
+    let tokenAccountInfo = await this.solanaWeb3Manager.getAssociatedTokenAccountInfo(recipientAddress)
+
+    if (!tokenAccountInfo) {
+      return {
+        error: 'Recipient Address is not a valid token address',
+        result: null
+      }
+    }
+
+    if (ownerWAudioBalance.gte(amount)) {
+      // Send the amout only in wAudio land
+      return this.solanaWeb3Manager.transferWAudio(recipientAddress, amount)
+    }
+
+    const userWallet = this.web3Manager.getWalletAddress()
+    const audioBalance = await this.ethContracts.AudiusTokenClient.balanceOf(userWallet)
+    const totalUserBalance = audioBalance.add(ownerWAudioBalance)
+    const canSend = totalUserBalance.sub(amount).gt(Utils.toBN(0))
+
+    if (!canSend) {
+      return {
+        error: `Insufficient audio balance to send: User balance of ${totalUserBalance} is less than requested send amount of ${amount}`,
+        result: null
+      }
+    }
+
+    // move entire user eth $AUDIO balance from to sol wrapped audio
+    await this.proxySendTokensFromEthToSol(audioBalance, userBank)
+    return this.solanaWeb3Manager.transferWAudio(recipientAddress, amount)
+  }
+
   /**
    * Sends `amount` tokens to `ethAccount` by way of the wormhole
    * 1.) Creates a solana root wallet
