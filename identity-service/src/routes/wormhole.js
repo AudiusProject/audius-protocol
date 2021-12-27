@@ -47,7 +47,7 @@ module.exports = function (app) {
       logs.push(`Permit Succeded with tx hash: ${permitTxResponse.txHash}`)
       context.permitTxHash = permitTxResponse.txHash
 
-      // // Send off transfer tokens to eth wormhole tx
+      // Send off transfer tokens to eth wormhole tx
 
       logs.push(`Attempting Transfer Tokens for sender: ${body.senderAddress}`)
       const { sha: transferTokensSHA, txProps: transferTokensTxProps } = getTxProps(body.senderAddress, body.transferTokens)
@@ -66,6 +66,7 @@ module.exports = function (app) {
         return transaction
       }
 
+      // Gather VAA attestations, submit to solana and realize the funds at the taret address
       const response = await audiusLibs.wormholeClient.attestAndCompleteTransferEthToSol(transferTxHash, signTransaction, {
         transport: NodeHttpTransport()
       })
@@ -96,7 +97,7 @@ module.exports = function (app) {
       return sendResponse(
         req,
         res,
-        errorResponseServerError('it did not work')
+        errorResponseServerError(error.message.toString())
       )
     }
   })

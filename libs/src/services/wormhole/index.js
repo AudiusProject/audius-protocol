@@ -95,6 +95,7 @@ class Wormhole {
    * Sends `amount` tokens to `solanaAccount` by way of the wormhole
    * @param {string} ethTxReceipt The tx receipt
    * @param {function} [customSignTransaction] Optional custom sign transaction parameter
+   * @param {Object?} options The grpc options passed to get signed VAA for different transport
    *
    * else will attempt to relay
    * @returns {Promise} Promise object of {
@@ -104,7 +105,7 @@ class Wormhole {
         logs: Array<string>
       }
    */
-  async attestAndCompleteTransferEthToSol (ethTxReceipt, customSignTransaction, options) {
+  async attestAndCompleteTransferEthToSol (ethTxReceipt, customSignTransaction, options = {}) {
     const phases = {
       GET_RECEIPT: 'GET_RECEIPT',
       GET_SIGNED_VAA: 'GET_SIGNED_VAA',
@@ -216,6 +217,7 @@ class Wormhole {
    * Sends `amount` tokens to `solanaAccount` by way of the wormhole
    * @param {BN} amount The amount of AUDIO to send in Wrapped Audio (8 decimals)
    * @param {string} ethTargetAddress The eth address to transfer AUDIO
+   * @param {Object?} options The grpc options passed to get signed VAA for different transport
    */
   async sendTokensFromSolToEthViaWormhole (amount, ethTargetAddress, options = {}) {
     const phases = {
@@ -328,9 +330,8 @@ class Wormhole {
    * @param {string} fromAccount the account holding the ETH AUDIO to transfer
    * @param {BN} amount The amount of AUDIO to send in WEI (18 decimals)
    * @param {string} solanaAccount The solana token account
-   * @param {string} relayer The eth relayer to permission to aprrove and transfer
    */
-  async _getTransferTokensToEthWormholeParams (fromAccount, amount, solanaAccount, relayer) {
+  async _getTransferTokensToEthWormholeParams (fromAccount, amount, solanaAccount) {
     const web3 = this.ethWeb3Manager.getWeb3()
     const wormholeClientAddress = this.ethContracts.WormholeClient.contractAddress
 
@@ -387,7 +388,7 @@ class Wormhole {
       recipient,
       arbiterFee,
       signedDigest
-    } = await this._getTransferTokensToEthWormholeParams(fromAccount, amount, solanaAccount, relayer)
+    } = await this._getTransferTokensToEthWormholeParams(fromAccount, amount, solanaAccount)
     const tx = await this.ethContracts.WormholeClient.transferTokens(
       fromAccount,
       amount,
@@ -408,7 +409,7 @@ class Wormhole {
       recipient,
       arbiterFee,
       signedDigest
-    } = await this._getTransferTokensToEthWormholeParams(fromAccount, amount, solanaAccount, relayer)
+    } = await this._getTransferTokensToEthWormholeParams(fromAccount, amount, solanaAccount)
     const method = await this.ethContracts.WormholeClient.WormholeContract.methods.transferTokens(
       fromAccount,
       amount,

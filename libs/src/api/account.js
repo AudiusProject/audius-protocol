@@ -522,7 +522,7 @@ class Account extends Base {
   }
 
   /**
-   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   * Gets the permit method to proxy send tokens `relayerAddress` to send `amount` on behalf of the current user, `owner`
    */
   async getPermitProxySendTokensMethod (owner, relayerAddress, amount) {
     const {
