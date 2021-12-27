@@ -21,7 +21,6 @@ const getTxProps = (senderAddress, method) => {
     }
   }
 }
-const feePayerAccount = getFeePayer()
 
 module.exports = function (app) {
   app.post('/wormhole_relay', async (req, res, next) => {
@@ -59,6 +58,7 @@ module.exports = function (app) {
       const transferTxHash = transferTokensTxResponse.txHash
       context.transferTxHash = transferTxHash
       logs.push(`Attempting Transfer Tokens for sender: ${transferTxHash}`)
+      const feePayerAccount = getFeePayer()
 
       const signTransaction = async (transaction) => {
         req.logger.info(`Signing Transaction`)
