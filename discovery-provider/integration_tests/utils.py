@@ -78,6 +78,7 @@ def populate_mock_db(db, entities, block_offset=0):
         user_challenges = entities.get("user_challenges", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
+        aggregate_interval_plays = entities.get("aggregate_interval_plays", [])
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
@@ -217,6 +218,24 @@ def populate_mock_db(db, entities, block_offset=0):
                 count=aggregate_play_meta.get("count", 0),
             )
             session.add(aggregate_play)
+
+        for i, aggregate_interval_play_meta in enumerate(aggregate_interval_plays):
+            aggregate_interval_play = models.AggregateIntervalPlay(
+                track_id=aggregate_interval_play_meta.get("track_id", i),
+                created_at=aggregate_interval_play_meta.get(
+                    "created_at", datetime.now()
+                ),
+                week_listen_counts=aggregate_interval_play_meta.get(
+                    "week_listen_counts", 0
+                ),
+                month_listen_counts=aggregate_interval_play_meta.get(
+                    "month_listen_counts", 0
+                ),
+                year_listen_counts=aggregate_interval_play_meta.get(
+                    "year_listen_counts", 0
+                ),
+            )
+            session.add(aggregate_interval_play)
 
         for i, user_listening_history_meta in enumerate(user_listening_history):
             user_listening_history = models.UserListeningHistory(

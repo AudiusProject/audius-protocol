@@ -12,9 +12,10 @@ AGGREGATE_PLAYS_TABLE_NAME = "aggregate_plays"
 
 # UPDATE_AGGREGATE_PLAYS_QUERY
 # Get new plays that came after the last indexing checkpoint for aggregate_play
-# Group those new plays by play item id to get the aggregate play counts
+# Group those new plays by play item id and interval to get the aggregate interval play counts
 # For new play item ids, insert those aggregate counts
 # For existing play item ids, add the new aggregate count to the existing aggregate count
+# This task ONLY increments play counts, the pruning task will decrement those counts.
 UPDATE_AGGREGATE_PLAYS_QUERY = """
     WITH aggregate_plays_last_checkpoint AS (
         SELECT
