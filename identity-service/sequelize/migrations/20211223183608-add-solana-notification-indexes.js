@@ -10,9 +10,11 @@ module.exports = {
     })
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.removeIndex('SolanaNotifications', ['userId'])
-      .then(() => queryInterface.removeIndex('SolanaNotificationActions', ['slot']))
-      .then(() => queryInterface.removeIndex('SolanaNotificationActions', ['notificationId']))
-      .then(() => queryInterface.removeIndex('SolanaNotificationActions', ['notificationId', 'actionEntityType', 'actionEntityId', 'slot']))
+    return queryInterface.sequelize.transaction(async (transaction) => {
+      await queryInterface.removeIndex('SolanaNotifications', ['userId'], {transaction})
+      await queryInterface.removeIndex('SolanaNotificationActions', ['slot'], {transaction})
+      await queryInterface.removeIndex('SolanaNotificationActions', ['notificationId'], {transaction})
+      await queryInterface.removeIndex('SolanaNotificationActions', ['notificationId', 'actionEntityType', 'actionEntityId', 'slot'], {transaction})
+    })
   }
 }
