@@ -111,6 +111,11 @@ async function handleResumableUpload(req, res, next) {
       })
     }
   } catch (e) {
+    req.logger.error(
+      `Failed to add transcode task, uuid=${
+        req.logContext.requestID
+      }, error=${e.toString()}`
+    )
     return sendResponse(req, res, errorResponseServerError(e.toString()))
   }
 }
@@ -918,7 +923,10 @@ module.exports = function (app) {
             }
           }
         } catch (e) {
-          req.logger.error(`Error looking for stream fallback in redis`, e)
+          req.logger.error(
+            { error: e },
+            'Error looking for stream fallback in redis'
+          )
         }
       }
 
@@ -1015,8 +1023,8 @@ module.exports = function (app) {
           }
         } catch (e) {
           req.logger.error(
-            `Error falling back to reconstructing data from discovery to stream`,
-            e
+            { error: e },
+            `Error falling back to reconstructing data from discovery to stream`
           )
         }
       }
