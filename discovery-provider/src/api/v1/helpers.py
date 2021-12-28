@@ -333,13 +333,13 @@ search_parser.add_argument("query", required=True)
 search_parser.add_argument("only_downloadable", required=False, default=False)
 
 trending_parser = reqparse.RequestParser()
-trending_parser.add_argument("genre", required=False)
-trending_parser.add_argument("time", required=False)
-trending_parser.add_argument("limit", required=False)
-trending_parser.add_argument("offset", required=False)
+trending_parser.add_argument("genre", required=False, help="The genre to filter to")
+trending_parser.add_argument("time", required=False, help="The time range to find trending tracks", choices=("week", "month", "year"))
+trending_parser.add_argument("limit", required=False, help="The number of items to fetch")
+trending_parser.add_argument("offset", required=False, help="Used for pagination")
 
 full_trending_parser = trending_parser.copy()
-full_trending_parser.add_argument("user_id", required=False)
+full_trending_parser.add_argument("user_id", required=False, help="The currently logged in user ID")
 
 
 def success_response(entity):

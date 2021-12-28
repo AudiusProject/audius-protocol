@@ -197,16 +197,27 @@ class TrackByRoute(Resource):
 
 
 full_track_parser = reqparse.RequestParser()
-full_track_parser.add_argument("handle")
-full_track_parser.add_argument("url_title")
-full_track_parser.add_argument("show_unlisted", type=inputs.boolean)
-full_track_parser.add_argument("user_id")
+full_track_parser.add_argument("handle", help="Handle of the track owner")
+full_track_parser.add_argument("url_title", help="The requested track slug")
+full_track_parser.add_argument(
+    "show_unlisted", type=inputs.boolean, help="Whether to include unlisted tracks"
+)
+full_track_parser.add_argument(
+    "user_id",
+    help="The ID of the user making the request, to get contextual information",
+)
 
 
 @full_ns.route(TRACK_ROUTE)
 class FullTrack(Resource):
     @record_metrics
+    @full_ns.doc(
+        id="Get Track",
+        description="Gets a track by its ID",
+        params={"track_id": "the requested track id"},
+    )
     @full_ns.marshal_with(full_track_response)
+    @full_ns.expect(full_track_parser)
     @cache(ttl_sec=5)
     def get(self, track_id: str):
         args = full_track_parser.parse_args()
@@ -224,10 +235,19 @@ class FullTrack(Resource):
 
 
 full_track_slug_parser = reqparse.RequestParser()
-full_track_slug_parser.add_argument("handle", required=False)
-full_track_slug_parser.add_argument("slug", required=False)
-full_track_slug_parser.add_argument("user_id")
-full_track_slug_parser.add_argument("route", action="append", required=False)
+full_track_slug_parser.add_argument(
+    "handle", required=False, help="(Deprecated) The handle of the track owner"
+)
+full_track_slug_parser.add_argument(
+    "slug", required=False, help="(Deprecated) The URLized title of the track"
+)
+full_track_slug_parser.add_argument("user_id", help="The currently logged in user ID")
+full_track_slug_parser.add_argument(
+    "route",
+    action="append",
+    required=False,
+    help='The track\'s permalink (relatively pathed, eg. "handle/slug"',
+)
 
 
 @full_ns.route("")
@@ -235,6 +255,11 @@ class FullTrackByRoute(Resource):
     @record_metrics
     @full_ns.marshal_with(full_track_response)
     @cache(ttl_sec=5)
+    @full_ns.doc(
+        id="Get Tracks by Route",
+        description="Gets full tracks by their route/permalinks",
+    )
+    @full_ns.expect(full_track_slug_parser)
     def get(self):
         args = full_track_slug_parser.parse_args()
         slug, handle = args.get("slug"), args.get("handle")
@@ -428,10 +453,14 @@ class Trending(Resource):
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
 )
-@full_ns.route("/trending/<string:version>")
 class FullTrending(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
+    @full_ns.doc(
+        id="Get Trending Tracks",
+        description="Gets the top trending tracks on Audius",
+    )
+    @full_ns.expect(full_trending_parser)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -450,10 +479,29 @@ class FullTrending(Resource):
         return success_response(trending_tracks)
 
 
+@full_ns.route("/trending/<string:version>")
+class FullTrendingWithVersion(FullTrending):
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    @full_ns.doc(
+        id="Get Trending Tracks With Version",
+        description="Gets the top trending tracks on Audius based on the trending version",
+        params={"version": "The version of the trending strategy"},
+    )
+    @full_ns.expect(full_trending_parser)
+    def get(self, version):
+        super().get(version)
+
 underground_trending_parser = reqparse.RequestParser()
-underground_trending_parser.add_argument("limit", required=False)
-underground_trending_parser.add_argument("offset", required=False)
-underground_trending_parser.add_argument("user_id", required=False)
+underground_trending_parser.add_argument(
+    "limit", required=False, help="The number of items to fetch"
+)
+underground_trending_parser.add_argument(
+    "offset", required=False, help="Used for pagination"
+)
+underground_trending_parser.add_argument(
+    "user_id", required=False, help="The currently logged in user ID"
+)
 
 
 @full_ns.route(
@@ -463,10 +511,14 @@ underground_trending_parser.add_argument("user_id", required=False)
     },
     strict_slashes=False,
 )
-@full_ns.route("/trending/underground/<string:version>")
 class FullUndergroundTrending(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
+    @full_ns.expect(underground_trending_parser)
+    @full_ns.doc(
+        id="Get Underground Trending Tracks",
+        description="Gets the trending tracks for underground artists",
+    )
     def get(self, version):
         underground_trending_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.UNDERGROUND_TRACKS
@@ -485,14 +537,40 @@ class FullUndergroundTrending(Resource):
         return success_response(trending_tracks)
 
 
+@full_ns.route("/trending/underground/<string:version>")
+class FullUndergroundTrendingWithVersion(FullUndergroundTrending):
+    @full_ns.doc(
+        id="Get Underground Trending Tracks With Version",
+        description="Gets the trending tracks for underground artists using a specific trending calculator version",
+        params={"version": "The version of trending to use"},
+    )
+    def get(self, version):
+        super().get(version)
+
+
 # Get recommended tracks for a genre and exclude tracks in the exclusion list
 recommended_track_parser = reqparse.RequestParser()
-recommended_track_parser.add_argument("genre", required=False)
-recommended_track_parser.add_argument("limit", type=int, required=False)
 recommended_track_parser.add_argument(
-    "exclusion_list", type=int, action="append", required=False
+    "genre",
+    required=False,
+    help="If specified, find recommended trending tracks for a specific genre",
 )
-recommended_track_parser.add_argument("time", required=False)
+recommended_track_parser.add_argument(
+    "limit", type=int, required=False, help="Number of recommended tracks to fetch"
+)
+recommended_track_parser.add_argument(
+    "exclusion_list",
+    type=int,
+    action="append",
+    required=False,
+    help="Track IDs to exclude from the results",
+)
+recommended_track_parser.add_argument(
+    "time",
+    required=False,
+    help="The timespan to get trending tracks",
+    choices=("week", "month", "year"),
+)
 
 
 @ns.route(
@@ -536,7 +614,9 @@ class RecommendedTrack(Resource):
 
 
 full_recommended_track_parser = recommended_track_parser.copy()
-full_recommended_track_parser.add_argument("user_id", required=False)
+full_recommended_track_parser.add_argument(
+    "user_id", required=False, help="The user ID of the logged in user"
+)
 
 
 @full_ns.route(
@@ -544,10 +624,14 @@ full_recommended_track_parser.add_argument("user_id", required=False)
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
 )
-@full_ns.route("/recommended/<string:version>")
 class FullRecommendedTrack(Resource):
     @record_metrics
+    @full_ns.doc(
+        id="Get Recommended Tracks",
+        description="Get track recommendations based on genre and trending",
+    )
     @full_ns.marshal_with(full_tracks_response)
+    @full_ns.expect(full_recommended_track_parser)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -568,9 +652,21 @@ class FullRecommendedTrack(Resource):
         return success_response(full_recommended_tracks[:limit])
 
 
+@full_ns.route("/recommended/<string:version>")
+class FullRecommendedTrackWithVersion(FullRecommendedTrack):
+    @full_ns.doc(
+        id="Get Recommended Tracks With Version",
+        description="Get track recommendations based on genre and a specific trending version",
+        params={"version": "The version of the trending calculation to use"},
+    )
+    @full_ns.expect(full_recommended_track_parser)
+    def get(self, version):
+        super().get(version)
+
+
 trending_ids_route_parser = reqparse.RequestParser()
-trending_ids_route_parser.add_argument("limit", required=False, type=int, default=10)
-trending_ids_route_parser.add_argument("genre", required=False, type=str)
+trending_ids_route_parser.add_argument("limit", required=False, type=int, default=10, help="The number of items to fetch")
+trending_ids_route_parser.add_argument("genre", required=False, type=str, help="The genre to filter to")
 
 track_id = full_ns.model("track_id", {"id": fields.String(required=True)})
 trending_times_ids = full_ns.model(
@@ -591,21 +687,16 @@ trending_ids_response = make_response(
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
 )
-@full_ns.route("/trending/ids/<string:version>")
 class FullTrendingIds(Resource):
     @record_metrics
     @full_ns.expect(trending_ids_route_parser)
     @ns.doc(
-        id="""Trending Tracks Ids""",
-        params={
-            "genre": "Track genre",
-            "limit": "Limit",
-        },
+        id="""Get Trending Track Ids""",
+        description="Gets the track IDs of the top trending tracks on Audius",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(trending_ids_response)
     def get(self, version):
-        """Gets the track ids of the top trending tracks on Audius based on the trending version"""
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
         ).keys()
@@ -628,10 +719,32 @@ class FullTrendingIds(Resource):
         return success_response(res)
 
 
+@full_ns.route("/trending/ids/<string:version>")
+class FullTrendingIdsWithVersion(FullTrendingIds):
+    @record_metrics
+    @full_ns.expect(trending_ids_route_parser)
+    @ns.doc(
+        id="""Get Trending Track Ids With Version""",
+        description="Gets the track IDs of the top trending tracks on Audius using the specified trending version",
+        params={
+            "version": "The verison of trending calculation to use"
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.marshal_with(trending_ids_response)
+    def get(self, version):
+        super().get(version)
+
 track_favorites_route_parser = reqparse.RequestParser()
-track_favorites_route_parser.add_argument("user_id", required=False)
-track_favorites_route_parser.add_argument("limit", required=False, type=int)
-track_favorites_route_parser.add_argument("offset", required=False, type=int)
+track_favorites_route_parser.add_argument(
+    "user_id", required=False, help="The user ID of the logged in user"
+)
+track_favorites_route_parser.add_argument(
+    "limit", required=False, type=int, help="The number of items to fetch"
+)
+track_favorites_route_parser.add_argument(
+    "offset", required=False, type=int, help="Used for pagination"
+)
 track_favorites_response = make_full_response(
     "track_favorites_response_full",
     full_ns,
@@ -643,8 +756,8 @@ track_favorites_response = make_full_response(
 class FullTrackFavorites(Resource):
     @full_ns.expect(track_favorites_route_parser)
     @full_ns.doc(
-        id="""Get Users that Favorited a Track""",
-        params={"user_id": "A User ID", "limit": "Limit", "offset": "Offset"},
+        id="""Get Track Favoriters""",
+        description="Get users that favorited a track",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(track_favorites_response)
@@ -669,9 +782,15 @@ class FullTrackFavorites(Resource):
 
 
 track_reposts_route_parser = reqparse.RequestParser()
-track_reposts_route_parser.add_argument("user_id", required=False)
-track_reposts_route_parser.add_argument("limit", required=False, type=int)
-track_reposts_route_parser.add_argument("offset", required=False, type=int)
+track_reposts_route_parser.add_argument(
+    "user_id", required=False, help="The currently logged in user ID"
+)
+track_reposts_route_parser.add_argument(
+    "limit", required=False, type=int, help="The number of items to fetch"
+)
+track_reposts_route_parser.add_argument(
+    "offset", required=False, type=int, help="Used for pagination"
+)
 track_reposts_response = make_full_response(
     "track_reposts_response_full", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -681,8 +800,9 @@ track_reposts_response = make_full_response(
 class FullTrackReposts(Resource):
     @full_ns.expect(track_reposts_route_parser)
     @full_ns.doc(
-        id="""Get Users that Reposted a Track""",
-        params={"user_id": "A User ID", "limit": "Limit", "offset": "Offset"},
+        id="""Get Track Reposters""",
+        description="Gets users that reposted a track",
+        params={"track_id": "The track ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(track_reposts_response)
@@ -714,6 +834,11 @@ track_stems_response = make_full_response(
 class FullTrackStems(Resource):
     @full_ns.marshal_with(track_stems_response)
     @cache(ttl_sec=10)
+    @full_ns.doc(
+        id="Get Track Stems",
+        description="Get the stems of the provided track",
+        params={"track_id": "The track ID of which to get stems"},
+    )
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
         stems = get_stems_of(decoded_id)
@@ -722,24 +847,30 @@ class FullTrackStems(Resource):
 
 
 track_remixables_route_parser = reqparse.RequestParser()
-track_remixables_route_parser.add_argument("user_id", required=False)
-track_remixables_route_parser.add_argument("limit", required=False, type=int)
-track_remixables_route_parser.add_argument("with_users", required=False, type=bool)
+track_remixables_route_parser.add_argument(
+    "user_id", required=False, help="The currently logged in user ID"
+)
+track_remixables_route_parser.add_argument(
+    "limit", required=False, type=int, help="The number of items to fetch"
+)
+track_remixables_route_parser.add_argument(
+    "with_users",
+    required=False,
+    type=bool,
+    help="Whether the response should include full user objects (if false, only user IDs will be present)",
+)
 
 
 @full_ns.route("/remixables")
 class FullRemixableTracks(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Remixable Tracks""",
-        params={
-            "user_id": "User ID",
-            "limit": "Number of remixable tracks to fetch",
-            "with_users": "Boolean to include user info with tracks",
-        },
+        id="""Get Remixable Tracks""",
+        description="Gets tracks that have stems and are available to remix",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(full_track_response)
+    @full_ns.expect(track_remixables_route_parser)
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()
@@ -757,15 +888,23 @@ remixes_response = make_full_response(
     "remixes_response_full", full_ns, fields.Nested(remixes_response_model)
 )
 remixes_parser = reqparse.RequestParser()
-remixes_parser.add_argument("user_id", required=False)
-remixes_parser.add_argument("limit", required=False, default=10)
-remixes_parser.add_argument("offset", required=False, default=0)
+remixes_parser.add_argument(
+    "user_id", required=False, help="The currently logged in user ID"
+)
+remixes_parser.add_argument(
+    "limit", required=False, default=10, help="The number of items to fetch"
+)
+remixes_parser.add_argument(
+    "offset", required=False, default=0, help="Used for pagination"
+)
 
 
 @full_ns.route("/<string:track_id>/remixes")
 class FullRemixesRoute(Resource):
+    @full_ns.doc(id="Get Track Remixes", description="Get the remixes of a track")
     @full_ns.marshal_with(remixes_response)
     @cache(ttl_sec=10)
+    @full_ns.expect(remixes_parser)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
         request_args = remixes_parser.parse_args()
@@ -787,15 +926,27 @@ remixing_response = make_full_response(
     "remixing_response", full_ns, fields.List(fields.Nested(track_full))
 )
 remixing_parser = reqparse.RequestParser()
-remixing_parser.add_argument("user_id", required=False)
-remixing_parser.add_argument("limit", required=False, default=10)
-remixing_parser.add_argument("offset", required=False, default=0)
+remixing_parser.add_argument(
+    "user_id", required=False, help="The currently logged in user ID"
+)
+remixing_parser.add_argument(
+    "limit", required=False, default=10, help="The number of items to fetch"
+)
+remixing_parser.add_argument(
+    "offset", required=False, default=0, help="Used for pagination"
+)
 
 
 @full_ns.route("/<string:track_id>/remixing")
 class FullRemixingRoute(Resource):
     @full_ns.marshal_with(remixing_response)
     @cache(ttl_sec=10)
+    @full_ns.expect(remixing_parser)
+    @full_ns.doc(
+        id="Get Track Remixing",
+        description="Get the tracks this track remixes",
+        params={"track_id": "The track ID of the remix"},
+    )
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
         request_args = remixing_parser.parse_args()
