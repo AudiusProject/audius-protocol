@@ -185,8 +185,8 @@ module.exports = function (app) {
         const filesHash = await DBManager.fetchFilesHashFromDB({ lookupKey: { lookupCNodeUserUUID: cnodeUserUUID } })
         response.filesHash = filesHash
 
-        const filesHashClockRangeMin = req.params.filesHashClockRangeMin || null
-        const filesHashClockRangeMax = req.params.filesHashClockRangeMax || null
+        const filesHashClockRangeMin = req.query.filesHashClockRangeMin || null
+        const filesHashClockRangeMax = req.query.filesHashClockRangeMax || null
 
         if (filesHashClockRangeMin || filesHashClockRangeMax) {
           const filesHashForClockRange = await DBManager.fetchFilesHashFromDB({

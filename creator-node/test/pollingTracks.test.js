@@ -171,7 +171,7 @@ describe.only('test Polling Tracks with mocked IPFS', function () {
   })
 
   // depends on "uploads /track_content_async"
-  it.only('Confirm /users/clock_status works with user and track state', async function () {
+  it('Confirm /users/clock_status works with user and track state', async function () {
     const numExpectedFilesForUser = TestAudiusTrackFileNumSegments + 1 // numSegments + 320kbps copy
 
     /** Upload track */
@@ -222,16 +222,89 @@ describe.only('test Polling Tracks with mocked IPFS', function () {
       { clockValue: numExpectedFilesForUser, syncInProgress: false, CIDSkipInfo: { numCIDs: numExpectedFilesForUser, numSkippedCIDs: TestAudiusTrackFileNumSegments } }
     )
 
-    // Confirm /users/clock_status returns expected info with `returnFilesHash` flag
     const files = await models.File.findAll({ where: { cnodeUserUUID: session.cnodeUserUUID }})
     const filesSorted = _.sortBy(files, ['clock'], ['asc'])
     const multihashesSorted = filesSorted.map(file => file.multihash)
-    const multihashString = `{${multihashesSorted.join(',')}}`
-    const expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
+
+    // Confirm /users/clock_status returns expected info with `returnFilesHash` flag
+    const multihashStringFull = `{${multihashesSorted.join(',')}}`
+    const expectedFilesHashFull = crypto.createHash('md5').update(multihashStringFull).digest('hex')
     resp = await request(app)
       .get(`/users/clock_status/${wallet}?returnFilesHash=true`)
       .expect(200)
-    assert.deepStrictEqual(resp.body.data, { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHash })
+    assert.deepStrictEqual(resp.body.data, { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHashFull })
+
+    /** Confirm /users/clock_status returns expected info with `returnsFilesHash` and clock range specified */
+    const clockMin = 3
+    const clockMax = 8
+
+    /** clockMin */
+    const multihashStringClockMin = `{${multihashesSorted.slice(clockMin - 1).join(',')}}`
+    const expectedFilesHashClockMin = crypto.createHash('md5').update(multihashStringClockMin).digest('hex')
+    resp = await request(app)
+      .get(`/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}`)
+      .expect(200)
+    assert.deepStrictEqual(
+      resp.body.data,
+      { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHashFull, filesHashForClockRange: expectedFilesHashClockMin }
+    )
+
+    /** clockMax */
+    const multihashStringClockMax = `{${multihashesSorted.slice(0, clockMax - 1).join(',')}}`
+    const expectedFilesHashClockMax = crypto.createHash('md5').update(multihashStringClockMax).digest('hex')
+    resp = await request(app)
+      .get(`/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMax}`)
+      .expect(200)
+    assert.deepStrictEqual(
+      resp.body.data,
+      { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHashFull, filesHashForClockRange: expectedFilesHashClockMax }
+    )
+
+    /** clockMin and clockMax */
+    const multihashStringClockRange = `{${multihashesSorted.slice(clockMin - 1, clockMax - 1).join(',')}}`
+    const expectedFilesHashClockRange = crypto.createHash('md5').update(multihashStringClockRange).digest('hex')
+    resp = await request(app)
+      .get(`/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMax}`)
+      .expect(200)
+    assert.deepStrictEqual(
+      resp.body.data,
+      { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHashFull, filesHashForClockRange: expectedFilesHashClockRange }
+    )
+  })
+
+  it.only('Confirms /users/batch_clock_status works with user and track state for 2 users', async () => {
+    const numExpectedFilesForUser = TestAudiusTrackFileNumSegments + 1 // numSegments + 320kbps copy
+
+    /** Upload track for user 1 */
+    ipfsLatestMock.add.exactly(numExpectedFilesForUser)
+    ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
+    const { fileUUID: fileUUID1, fileDir: fileDir1 } = saveFileToStorage(testAudioFilePath)
+    const uploadTrackResp1 = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID1, fileDir1, session),
+      mockServiceRegistry.blacklistManager
+    )
+
+    // Create user 2
+    const userId2 = 2
+    const pubKey2 = '0xadD36bad12002f1097Cdb7eE24085C28e9random'
+    const session2 = await createStarterCNodeUser(userId2, pubKey2)
+
+    /** Upload track for user 2 */
+    ipfsLatestMock.add.exactly(numExpectedFilesForUser)
+    ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
+    const { fileUUID: fileUUID2, fileDir: fileDir2 } = saveFileToStorage(testAudioFilePath)
+    const uploadTrackResp2 = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID2, fileDir2, session2),
+      mockServiceRegistry.blacklistManager
+    )
+
+    // Confirm /users/batch_clock_status returns expected info
+    const resp = await request(app)
+      .post(`/users/batch_clock_status`, { data: { walletPublicKeys: [session.walletPublicKey, pubKey2] } })
+      .expect(200)
+    console.log(`SIDTEST RESP ${JSON.stringify(resp.body.data)}`)
   })
 
   // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
