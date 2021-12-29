@@ -17,6 +17,13 @@ export type ShareSoundToTikTokModalState = {
   isAuthenticated: boolean
   track?: Track
   status: Status
+  openId?: string
+  accessToken?: string
+}
+
+export type AuthenticatedPayload = {
+  openId?: string
+  accessToken?: string
 }
 
 export type RequestOpenPayload = {

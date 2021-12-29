@@ -13,11 +13,13 @@
 
 .modalHeader.mobile {
   border: none;
-  margin-top: 32px;
+  margin-top: 16px;
+  margin-bottom: 16px;
   padding: 0;
 }
 
 .titleContainer {
+  font-size: 18px;
   display: flex;
   align-items: center;
 }
@@ -42,6 +44,10 @@
   height: 100%;
   justify-content: space-around;
   font-weight: var(--font-medium);
+}
+
+.modalContent.mobile {
+  padding-bottom: 64px;
 }
 
 .message {

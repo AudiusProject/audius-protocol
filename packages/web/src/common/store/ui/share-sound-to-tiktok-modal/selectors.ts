@@ -17,3 +17,11 @@ export const getStatus = createSelector(
   shareSoundToTikTokModalState,
   state => state.status
 )
+export const getOpenId = createSelector(
+  shareSoundToTikTokModalState,
+  state => state.openId
+)
+export const getAccessToken = createSelector(
+  shareSoundToTikTokModalState,
+  state => state.accessToken
+)

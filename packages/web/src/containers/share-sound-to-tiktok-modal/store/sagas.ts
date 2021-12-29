@@ -4,7 +4,9 @@ import { Name } from 'common/models/Analytics'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import {
+  getAccessToken,
   getIsAuthenticated,
+  getOpenId,
   getTrack as getTrackToShare
 } from 'common/store/ui/share-sound-to-tiktok-modal/selectors'
 import {
@@ -89,13 +91,13 @@ function* handleAuthenticated(action: ReturnType<typeof authenticated>) {
   }
 }
 
-function* handleUpload(action: ReturnType<typeof upload>) {
+function* handleUpload() {
   // Upload the track blob to TikTok api
   const formData = new FormData()
   formData.append('sound_file', trackBlob as Blob)
 
-  const openId = window.localStorage.getItem('tikTokOpenId')
-  const accessToken = window.localStorage.getItem('tikTokAccessToken')
+  const openId = yield select(getOpenId)
+  const accessToken = yield select(getAccessToken)
 
   try {
     const response = yield call(
