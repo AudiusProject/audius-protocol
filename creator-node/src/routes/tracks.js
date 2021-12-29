@@ -14,8 +14,7 @@ const {
   handleTrackContentUpload,
   getFileExtension,
   checkFileMiddleware,
-  getTmpTrackUploadArtifactsWithFileNamePath,
-  getTmpSegmentsPath
+  getTmpTrackUploadArtifactsWithCIDInPath
 } = require('../fileManager')
 const {
   handleResponse,
@@ -202,7 +201,7 @@ module.exports = function (app) {
    * TODO: (Needs to)
    * - validate requester is a valid SP
    * - make sure current node has enough storage
-   * - upload the file
+   * - upload the file (DONE)
    * - submit transcode and segment request
    */
   app.post('/transcode_and_segment', handleTrackContentUpload, /* important middleware ... */ handleResponse(async (req, res) => {
@@ -226,7 +225,7 @@ module.exports = function (app) {
    * TODO: (Needs to)
    * - validate requester is a valid SP
    */
-  app.get('/transcode_and_segment', /* important middleware ... */ handleResponse(async (req, res) => {
+  app.get('/transcode_and_segment', /* important middleware ... */ async (req, res) => {
     const fileName = req.query.fileName
     const fileType = req.query.fileType
 
@@ -235,20 +234,19 @@ module.exports = function (app) {
     }
 
     let pathToFile
-    let basePath = getTmpTrackUploadArtifactsWithFileNamePath(req.query.cidInPath)
+    let basePath = getTmpTrackUploadArtifactsWithCIDInPath(req.query.cidInPath)
     if (fileType === 'transcode') {
       pathToFile = path.join(basePath, fileName)
     } else if (fileType === 'segment') {
       pathToFile = path.join(basePath, 'segments', fileName)
     }
 
-    req.logger.info(`VICKY FOUND ZE PATH ${pathToFile}`)
     try {
       return await streamFromFileSystem(req, res, pathToFile)
     } catch (e) {
-      return errorResponseServerError(`Could not serve content, error=${e.toString()}`)
+      return sendResponse(req, res, errorResponseServerError(`Could not serve content, error=${e.toString()}`))
     }
-  }))
+  })
 
   /**
    * upload track segment files and make avail - will later be associated with Audius track

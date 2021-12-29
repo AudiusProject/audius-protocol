@@ -1,28 +1,15 @@
-const path = require('path')
-const axios = require('axios')
-const fs = require('fs')
-const fsExtra = require('fs-extra')
-const stream = require('stream')
-const FormData = require('form-data')
-const { promisify } = require('util')
-const fsReadDir = promisify(fs.readdir)
-const pipeline = promisify(stream.pipeline)
-
 const config = require('../../config.js')
 const { logger: genericLogger, logInfoWithDuration, getStartTime } = require('../../logging')
 const { getSegmentsDuration } = require('../../segmentDuration')
-const TranscodingQueue = require('../../TranscodingQueue')
 const models = require('../../models')
 const DBManager = require('../../dbManager')
 const fileManager = require('../../fileManager')
-const FileProcessingQueue = require('../../FileProcessingQueue')
-const Utils = require('../../utils')
+const TrackHandOffUtils = require('./trackHandOffUtils')
+const TrackHandlingUtils = require('./trackHandlingUtils')
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
 const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
-const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
-const SELF_ENDPOINT = config.get('creatorNodeEndpoint')
 
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
@@ -48,7 +35,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
     transcodedFilePath,
     segmentFileNames,
     segmentFileNamesToPath
-  } = await transcodeAndSegment({ logContext }, { fileName, fileDir })
+  } = await TrackHandlingUtils.transcodeAndSegment({ logContext }, { fileName, fileDir })
   logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully re-encoded track file=${fileName}`)
 
   // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
@@ -153,38 +140,8 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   }
 }
 
-/**
- * Create track transcode and segments, and save all to disk. Removes temp file dir of track data if failed to
- * segment or transcode.
- * @param {Object} transcodeAndSegmentParams
- * @param {string} transcodeAndSegmentParams.fileName the file name of the uploaded track (<cid>.<file type extension>)
- * @param {string} transcodeAndSegmentParams.fileDir the dir path of the temp track artifacts
- * @param {Object} transcodeAndSegmentParams.logContext
- * @returns the transcode and segment paths
- */
-async function transcodeAndSegment ({ logContext }, { fileName, fileDir }) {
-  let transcodedFilePath
-  let segmentFileNames
-  let segmentFileNamesToPath
-  try {
-    const transcode = await Promise.all([
-      TranscodingQueue.segment(fileDir, fileName, { logContext }),
-      TranscodingQueue.transcode320(fileDir, fileName, { logContext })
-    ])
-    // this is misleading, not actually paths but the segment file names.
-    // refactor to return the segment path
-    segmentFileNames = transcode[0].fileNames
-    segmentFileNamesToPath = transcode[0].fileNamesToPath
-    transcodedFilePath = transcode[1].filePath
-  } catch (err) {
-    // Prune upload artifacts
-    fileManager.removeTrackFolder({ logContext }, fileDir)
-
-    throw new Error(err.toString())
-  }
-
-  // ? do we want to expose the file path routes?
-  return { transcodedFilePath, segmentFileNames, segmentFileNamesToPath, fileName }
+async function handleTranscodeAndSegment ({ logContext }, { fileName, fileDir }) {
+  return TrackHandlingUtils.transcodeAndSegment({ logContext }, { fileName, fileDir })
 }
 
 // { logContext, fileName, fileDir, uuid, headers, libs }
@@ -192,7 +149,7 @@ async function handleTrackHandOff (req) {
   const { libs, logContext } = req
   const logger = genericLogger.child(logContext)
   logger.info('BANANA seleting randaom sps')
-  const sps = await selectRandomSPs(libs)
+  const sps = await TrackHandOffUtils.selectRandomSPs(libs)
 
   logger.info({ sps }, 'BANANA selected random sps')
   let successfulHandOff = false
@@ -202,197 +159,24 @@ async function handleTrackHandOff (req) {
     sp = 'http://cn2_creator-node_1:4001'
     try {
       logger.info(`BANANA handing off to sp=${sp}`)
-      await handOffTrack({ sp, req })
+      await TrackHandOffUtils.handOffTrack({ sp, req })
       successfulHandOff = true
     } catch (e) {
       // delete tmp dir here if fails and continue
       logger.warn(`BANANA Could not hand off track to sp=${sp} err=${e.toString()}`)
     }
-  }
-}
 
-async function selectRandomSPs (libs, numberOfSPs = NUMBER_OF_SPS_FOR_HANDOFF_TRACK) {
-  let allSPs = await libs.ethContracts.getServiceProviderList('content-node')
-  allSPs = allSPs.map(sp => sp.endpoint)
-
-  const validSPs = new Set()
-  while (validSPs.size < numberOfSPs) {
-    const index = getRandomInt(allSPs.length)
-    // do not pick self or a node that has already been chosen
-    if (
-      allSPs[index] === SELF_ENDPOINT ||
-      validSPs.has(allSPs[index])
-    ) {
-      continue
-    }
-    validSPs.add(allSPs[index]) // filter out selFFFF
-  }
-
-  return Array.from(validSPs)
-}
-
-function getRandomInt (max) {
-  return Math.floor(Math.random() * max)
-}
-
-async function createFormData (pathToFile) {
-  const fileExists = await fsExtra.pathExists(pathToFile)
-  if (!fileExists) {
-    throw new Error(`File does not exist at path=${pathToFile}`)
-  }
-
-  let formData = new FormData()
-  formData.append('file', fs.createReadStream(pathToFile))
-
-  return formData
-}
-
-// If any call fails -> throw error
-async function handOffTrack ({ sp, req }) {
-  const logger = genericLogger.child(req.logContext)
-
-  logger.info({ sp }, 'BANANA doing health check')
-  await axios({
-    url: `${sp}/health_check`,
-    method: 'get'
-  })
-
-  // TODO: handle backwards compat dawg... should be fine bc it will 404 and throw
-  const requestID = req.uuid
-  const originalTrackFormData = await createFormData(req.fileDir + '/' + req.fileName)
-  logger.info({ sp }, 'BANANA posting t/s')
-
-  await axios.post(
-    `${sp}/transcode_and_segment`,
-    originalTrackFormData,
-    {
-      headers: {
-        ...originalTrackFormData.getHeaders(),
-        'X-Request-ID': requestID
-      },
-      adapter: require('axios/lib/adapters/http'),
-      // Set content length headers (only applicable in server/node environments).
-      // See: https://github.com/axios/axios/issues/1362
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity
-    }
-  )
-
-  // TODO: PROBLEM IS THAT IT'S PASSING IN A NEW UUID SO CAUSING FILE CANNOT BE FOUND.
-  // REFACTOR THIS SHIT CUS ITS GETTING MESSYYYY
-  // TODO: Make sure this comes without the extension
-  logger.info({ sp, requestID }, 'BANANA polling time')
-  const { fileName, transcodedFilePath, segmentFileNames, segmentFileNamesToPath } = await pollProcessingStatus(
-    // FileProcessingQueue.PROCESS_NAMES.transcodeAndSegment, // ???? why is this an ampty obj
-    'transcodeAndSegment',
-    requestID,
-    sp
-  )
-
-  let res
-
-  // Get segments and write to tmp disk
-  // const segmentsPath = fileManager.getTmpSegmentsPath(fileName)
-  // const numberOfSegments = await fsReadDir(segmentsPath).length
-  // for (let i = 0; i < segmentFileNames.length; i++) {
-  for (let segmentFileName of segmentFileNames) {
-    logger.info({ sp, segmentFileName }, 'BANANA getting segments')
-
-    try {
-      res = await axios({
-        url: `${sp}/transcode_and_segment`,
-        method: 'get',
-        params: {
-          fileName: segmentFileName,
-          fileType: 'segment',
-          cidInPath: req.fileNameNoExtension
-        },
-        responseType: 'stream'
-      })
-
-      // await pipeline(res.data, fs.createWriteStream(res.data, segmentFileName))
-      await Utils.writeStreamToFileSystem(
-        res.data,
-        segmentFileName
-      )
-    } catch (e) {
-      logger.error({ error: e }, 'huh')
+    if (successfulHandOff) {
+      // do rest of track stuff
+    } else {
+      // go back to primary
+      // throw error?
     }
   }
-
-  // Get transcode and write to tmp disk
-  const transcodePath = fileManager.getTmpTrackUploadArtifactsWithFileNamePath(fileName)
-  const transcodeFilePath = path.join(transcodePath, req.fileNameNoExtension + '-dl.mp3')
-
-  logger.info({ sp, transcodedFilePath }, 'BANANA getting transcode')
-
-  res = await axios({
-    url: `${sp}/transcode_and_segment`,
-    method: 'get',
-    params: { fileName: req.fileNameNoExtension + '-dl.mp3', fileType: 'transcode', cidInPath: req.fileNameNoExtension },
-    responseType: 'stream'
-  })
-
-  // await pipeline(res.data, fs.createWriteStream(res.data, transcodeFilePath))
-  await Utils.writeStreamToFileSystem(
-    res.data,
-    transcodeFilePath
-  )
-}
-
-function getSegmentFileName (index) {
-  const suffix = ('00000' + index).slice(-5)
-  return `segment${suffix}.ts`
-}
-
-const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 / 3 // 3min/3
-const POLL_STATUS_INTERVAL_MS = 10000 / 10 // 10s/10
-async function pollProcessingStatus (taskType, uuid, sp) {
-  const start = Date.now()
-  while (Date.now() - start < MAX_TRACK_HANDOFF_TIMEOUT_MS) {
-    try {
-      const { status, resp } = await getTrackContentProcessingStatus(sp, uuid, taskType)
-      // Should have a body structure of:
-      //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
-      if (status && status === 'DONE') return resp
-      if (status && status === 'FAILED') {
-        throw new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`)
-      }
-    } catch (e) {
-      // Catch errors here and swallow them. Errors don't signify that the track
-      // upload has failed, just that we were unable to establish a connection to the node.
-      // This allows polling to retry
-      console.error(`Failed to poll for processing status, ${e}`)
-    }
-
-    await Utils.timeout(POLL_STATUS_INTERVAL_MS)
-  }
-
-  // TODO: update MAX_TRACK_TRANSCODE_TIMEOUT if generalizing this method
-  throw new Error(`${taskType} took over ${MAX_TRACK_HANDOFF_TIMEOUT_MS}ms. uuid=${uuid}`)
-}
-
-/**
- * Gets the task progress given the task type and uuid associated with the task
- * @param {string} uuid the uuid of the track transcoding task
- * @returns the status, and the success or failed response if the task is complete
- */
-async function getTrackContentProcessingStatus (sp, uuid, taskType) {
-  const { data: body } = await axios({
-    url: `${sp}/track_content_status`,
-    params: {
-      uuid,
-      taskType
-    },
-    method: 'get'
-  })
-
-  return body.data
 }
 
 module.exports = {
   handleTrackContentRoute,
-  handleTrackHandOff,
-  selectRandomSPs,
-  transcodeAndSegment
+  handleTranscodeAndSegment,
+  handleTrackHandOff
 }

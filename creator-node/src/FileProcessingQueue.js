@@ -4,7 +4,7 @@ const config = require('./config')
 const redisClient = require('./redis')
 const {
   handleTrackContentRoute: trackContentUpload,
-  transcodeAndSegment
+  handleTranscodeAndSegment: transcodeAndSegment
 } = require('./components/tracks/tracksComponentService')
 
 const MAX_CONCURRENCY = 100

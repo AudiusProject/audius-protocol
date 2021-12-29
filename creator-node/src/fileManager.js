@@ -413,7 +413,7 @@ const getRandomFileName = () => {
   return getUuid()
 }
 
-const getTmpTrackUploadArtifactsWithFileNamePath = (fileName) => {
+const getTmpTrackUploadArtifactsWithCIDInPath = (fileName) => {
   return path.join(DiskManager.getTmpTrackUploadArtifactsPath(), fileName)
 }
 
@@ -438,10 +438,17 @@ const uploadTempDiskStorage = multer({
 // Custom on-disk storage for track files to prep for segmentation
 const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // save file under randomly named folders to avoid collisions
-    const randomFileName = getRandomFileName()
-    const fileDir = getTmpTrackUploadArtifactsWithFileNamePath(randomFileName)
-    const segmentsDir = getTmpSegmentsPath(randomFileName)
+    let fileName
+    if (req.query.use_cid_in_path) {
+      // Use the file name provided in the headers during track hand off
+      fileName = req.query.use_cid_in_path
+    } else {
+      // Save file under randomly named folders to avoid collisions
+      fileName = getRandomFileName()
+    }
+
+    const fileDir = getTmpTrackUploadArtifactsWithCIDInPath(fileName)
+    const segmentsDir = getTmpSegmentsPath(fileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)
@@ -449,8 +456,8 @@ const trackDiskStorage = multer.diskStorage({
 
     req.fileDir = fileDir
     const fileExtension = getFileExtension(file.originalname)
-    req.fileNameNoExtension = randomFileName
-    req.fileName = randomFileName + fileExtension
+    req.fileNameNoExtension = fileName
+    req.fileName = fileName + fileExtension
 
     req.logger.info(`Created track disk storage: ${req.fileDir}, ${req.fileName}`)
     cb(null, fileDir)
@@ -593,6 +600,6 @@ module.exports = {
   hasEnoughStorageSpace,
   getFileExtension,
   checkFileMiddleware,
-  getTmpTrackUploadArtifactsWithFileNamePath,
+  getTmpTrackUploadArtifactsWithCIDInPath,
   getTmpSegmentsPath
 }

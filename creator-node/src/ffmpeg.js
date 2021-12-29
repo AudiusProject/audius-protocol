@@ -62,6 +62,7 @@ function transcodeFileTo320 (fileDir, fileName, { logContext }) {
   return new Promise((resolve, reject) => {
     logger.info(`Transcoding file ${fileName}...`)
     const sourcePath = path.resolve(fileDir, fileName)
+    // TODO: is it always mp3?
     const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
 
     // Exit if dl-copy file already exists at target path.
