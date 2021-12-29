@@ -4,6 +4,7 @@ import {
   OpenPayload,
   RequestOpenPayload,
   SetStatusPayload,
+  AuthenticatedPayload,
   ShareSoundToTikTokModalState,
   Status
 } from './types'
@@ -19,7 +20,10 @@ const slice = createSlice({
   name: 'application/ui/shareSoundToTikTokModal',
   initialState,
   reducers: {
-    authenticated: () => {},
+    authenticated: (state, action: PayloadAction<AuthenticatedPayload>) => {
+      state.openId = action.payload.openId
+      state.accessToken = action.payload.accessToken
+    },
     open: (state, action: PayloadAction<OpenPayload>) => {
       const { track } = action.payload
       state.isAuthenticated = false

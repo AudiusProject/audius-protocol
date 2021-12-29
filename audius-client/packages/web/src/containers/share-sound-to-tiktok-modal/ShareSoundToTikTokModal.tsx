@@ -1,13 +1,11 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 import {
   Button,
   Modal,
   ButtonType,
   IconTikTokInverted,
-  IconTikTok,
-  Anchor,
-  ModalProps
+  IconTikTok
 } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -24,14 +22,14 @@ import {
 } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { Status } from 'common/store/ui/share-sound-to-tiktok-modal/types'
 import { Nullable } from 'common/utils/typeUtils'
+import Drawer from 'components/drawer/Drawer'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
 
 import styles from './ShareSoundToTikTokModal.module.css'
 
-const MODAL_OFFSET_PIXELS = 41
+const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 enum FileRequirementError {
   MIN_LENGTH,
@@ -57,7 +55,6 @@ const fileRequirementErrorMessages = {
 
 const ShareSoundToTikTokModal = () => {
   const mobile = isMobile()
-  const wm = useWithMobileStyle(styles.mobile)
 
   const [isOpen, setIsOpen] = useModalState('ShareSoundToTikTok')
   const dispatch = useDispatch()
@@ -87,9 +84,13 @@ const ShareSoundToTikTokModal = () => {
       dispatch(share())
 
       // Trigger the authentication process
-      withTikTokAuth(() => dispatch(authenticated()))
+      withTikTokAuth((accessToken, openId) =>
+        dispatch(authenticated({ accessToken, openId }))
+      )
     }
   }
+
+  const handleClose = useCallback(() => setIsOpen(false), [setIsOpen])
 
   const renderMessage = () => {
     const hasError =
@@ -150,31 +151,43 @@ const ShareSoundToTikTokModal = () => {
     }
   }
 
-  const mobileProps: Partial<ModalProps> = {
-    anchor: Anchor.BOTTOM,
-    showDismissButton: false,
-    verticalAnchorOffset: MODAL_OFFSET_PIXELS
-  }
-
-  return (
+  return mobile ? (
+    !IS_NATIVE_MOBILE ? (
+      <Drawer onClose={handleClose} isOpen={isOpen}>
+        <div className={cn(styles.modalContent, styles.mobile)}>
+          <div className={cn(styles.modalHeader, styles.mobile)}>
+            <div className={cn(styles.titleContainer, styles.mobile)}>
+              <IconTikTok />
+              <div>{messages.title}</div>
+            </div>
+          </div>
+          {renderMessage()}
+          {status === Status.SHARE_STARTED ? (
+            <LoadingSpinner />
+          ) : (
+            renderButton()
+          )}
+        </div>
+      </Drawer>
+    ) : null
+  ) : (
     <Modal
       allowScroll={false}
-      bodyClassName={wm(styles.modalBody)}
+      bodyClassName={styles.modalBody}
       dismissOnClickOutside={status !== Status.SHARE_STARTED}
-      headerContainerClassName={wm(styles.modalHeader)}
+      headerContainerClassName={styles.modalHeader}
       isOpen={isOpen}
-      onClose={() => setIsOpen(false)}
+      onClose={handleClose}
       showTitleHeader
       showDismissButton
       title={
-        <div className={wm(styles.titleContainer)}>
+        <div className={styles.titleContainer}>
           <IconTikTok />
           <div>{messages.title}</div>
         </div>
       }
-      {...(mobile ? mobileProps : {})}
     >
-      <div className={wm(styles.modalContent)}>
+      <div className={styles.modalContent}>
         {renderMessage()}
         {status === Status.SHARE_STARTED ? <LoadingSpinner /> : renderButton()}
       </div>
