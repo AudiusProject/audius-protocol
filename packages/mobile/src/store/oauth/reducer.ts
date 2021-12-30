@@ -3,6 +3,7 @@ import { MessageType } from 'app/message'
 import {
   OAuthActions,
   OPEN_POPUP,
+  NATIVE_OPEN_POPUP,
   CLOSE_POPUP,
   SET_TWITTER_INFO,
   SET_INSTAGRAM_INFO,
@@ -71,6 +72,13 @@ const reducer = (
         messageId: action.message.id,
         messageType: action.message.type as MessageType,
         url: action.message.authURL,
+        provider: action.provider
+      }
+    case NATIVE_OPEN_POPUP:
+      return {
+        ...state,
+        isOpen: true,
+        url: action.url,
         provider: action.provider
       }
     case CLOSE_POPUP:

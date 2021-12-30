@@ -37,7 +37,7 @@ import {
   getHandleError,
   getHandleStatus
 } from 'app/store/signon/selectors'
-import { useColor } from 'app/utils/theme'
+import { useColor, useThemeColors } from 'app/utils/theme'
 
 import PhotoButton from './PhotoButton'
 import ProfileImage from './ProfileImage'
@@ -220,6 +220,7 @@ const ContinueButton = ({
   onPress: () => void
   disabled: boolean
 }) => {
+  const { staticWhite } = useThemeColors()
   return (
     <Button
       title={messages.continue}
@@ -229,7 +230,7 @@ const ContinueButton = ({
       disabled={disabled}
       icon={
         isWorking ? (
-          <LoadingSpinner style={styles.loadingIcon} />
+          <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
         ) : (
           <IconArrow style={styles.arrowIcon} fill='white' />
         )

@@ -24,6 +24,7 @@ import Notifications from 'app/components/notifications/Notifications'
 import OAuth from 'app/components/oauth/OAuth'
 import OverflowMenuDrawer from 'app/components/overflow-menu-drawer'
 import Search from 'app/components/search/Search'
+import ShareToTiktokDrawer from 'app/components/share-to-tiktok-drawer'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
 import TransferAudioMobileDrawer from 'app/components/transfer-audio-mobile-drawer'
 import TrendingRewardsDrawer from 'app/components/trending-rewards-drawer'
@@ -66,6 +67,7 @@ const Drawers = () => {
       <TransferAudioMobileDrawer />
       <TrendingRewardsDrawer />
       <ApiRewardsDrawer />
+      <ShareToTiktokDrawer />
       {/* Disable the audio breakdown drawer until we get
       the feature flags to work for native mobile */}
       {/* <AudioBreakdownDrawer /> */}

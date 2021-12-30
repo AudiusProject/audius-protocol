@@ -53,7 +53,10 @@ export enum EventNames {
   NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification',
 
   // Page View
-  PAGE_VIEW = 'PAGE VIEW'
+  PAGE_VIEW = 'PAGE VIEW',
+
+  // TikTok
+  TIKTOK_OAUTH_ERROR = 'TikTok: TikTok OAuth Error'
 }
 
 // Create Account
@@ -134,6 +137,12 @@ type NotificationsOpenPushNotification = {
   body?: string
 }
 
+// TikTok
+type TikTokOAuthError = {
+  eventName: EventNames.TIKTOK_OAUTH_ERROR
+  error: string
+}
+
 export type AllEvents =
   | CreateAccountOpen
   | CreateAccountCompletePassword
@@ -149,3 +158,4 @@ export type AllEvents =
   | PlaybackPlay
   | PlaybackPause
   | NotificationsOpenPushNotification
+  | TikTokOAuthError

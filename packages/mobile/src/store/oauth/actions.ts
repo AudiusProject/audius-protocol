@@ -1,8 +1,12 @@
 import { Message } from 'app/message'
 
 import { Provider } from './reducer'
+import { Credentials } from './types'
 
 export const OPEN_POPUP = 'OAUTH/OPEN_POPUP'
+export const REQUEST_NATIVE_OPEN_POPUP = 'OAUTH/REQUEST_NATIVE_OPEN_POPUP'
+export const SET_CREDENTIALS = 'OAUTH/SET_CREDENTIALS'
+export const NATIVE_OPEN_POPUP = 'OAUTH/NATIVE_OPEN_POPUP'
 export const CLOSE_POPUP = 'OAUTH/CLOSE_POPUP'
 export const SET_TWITTER_INFO = 'OAUTH/SET_TWITTER_INFO'
 export const SET_TWITTER_ERROR = 'OAUTH/SET_TWITTER_ERROR'
@@ -13,6 +17,22 @@ export const RESET_OAUTH_STATE = 'OAUTH/RESET_OAUTH_STATE'
 type OpenPopupAction = {
   type: typeof OPEN_POPUP
   message: Message
+  provider: Provider
+}
+export type RequestNativeOpenPopupAction = {
+  type: typeof REQUEST_NATIVE_OPEN_POPUP
+  resolve: (c: Credentials | PromiseLike<Credentials>) => void
+  reject: (e: Error) => void
+  url: string
+  provider: Provider
+}
+export type SetCredentialsAction = {
+  type: typeof SET_CREDENTIALS
+  credentials: Credentials
+}
+type NativeOpenPopupAction = {
+  type: typeof NATIVE_OPEN_POPUP
+  url: string
   provider: Provider
 }
 type ClosePopupAction = {
@@ -50,6 +70,9 @@ type ResetOAuthStateAction = {
 
 export type OAuthActions =
   | OpenPopupAction
+  | RequestNativeOpenPopupAction
+  | SetCredentialsAction
+  | NativeOpenPopupAction
   | ClosePopupAction
   | SetTwitterInfoAction
   | SetTwitterErrorAction
@@ -63,6 +86,32 @@ export const openPopup = (
 ): OpenPopupAction => ({
   type: OPEN_POPUP,
   message,
+  provider
+})
+export const requestNativeOpenPopup = (
+  resolve: (c: Credentials | PromiseLike<Credentials>) => void,
+  reject: (e: Error) => void,
+  url: string,
+  provider: Provider
+): RequestNativeOpenPopupAction => ({
+  type: REQUEST_NATIVE_OPEN_POPUP,
+  resolve,
+  reject,
+  url,
+  provider
+})
+export const setCredentials = (
+  credentials: Credentials
+): SetCredentialsAction => ({
+  type: SET_CREDENTIALS,
+  credentials
+})
+export const nativeOpenPopup = (
+  url: string,
+  provider: Provider
+): NativeOpenPopupAction => ({
+  type: NATIVE_OPEN_POPUP,
+  url,
   provider
 })
 export const closePopup = (): ClosePopupAction => ({
