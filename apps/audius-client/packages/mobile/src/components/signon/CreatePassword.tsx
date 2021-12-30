@@ -31,6 +31,7 @@ import * as lifecycleActions from 'app/store/lifecycle/actions'
 import { getOnSignUp } from 'app/store/lifecycle/selectors'
 import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
+import { useThemeColors } from 'app/utils/theme'
 
 import SignupHeader from './SignupHeader'
 import { SignOnStackParamList } from './types'
@@ -349,6 +350,8 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
     }
   }, [areRequirementsMet, isPasswordFocused, isPasswordConfirmationFocused])
 
+  const { staticWhite } = useThemeColors()
+
   const updateRequirementsStatus = useCallback(
     (
       previousRequirements: any,
@@ -451,7 +454,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
         style={styles.mainButton}
         icon={
           isWorking ? (
-            <LoadingSpinner style={styles.loadingIcon} />
+            <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
           ) : (
             <IconArrow style={styles.arrowIcon} fill='white' />
           )

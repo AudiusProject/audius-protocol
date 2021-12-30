@@ -4,11 +4,9 @@ import { NativeSyntheticEvent, Modal, View, Button } from 'react-native'
 import Config from 'react-native-config'
 import { WebView } from 'react-native-webview'
 import { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { AppState } from 'app/store'
-import { closePopup } from 'app/store/oauth/actions'
+import { closePopup, setCredentials } from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 import {
   getUrl,
@@ -17,6 +15,7 @@ import {
   getAuthProvider,
   getMessageType
 } from 'app/store/oauth/selectors'
+import { Credentials } from 'app/store/oauth/types'
 import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import { postMessage } from 'app/utils/postMessage'
 
@@ -178,23 +177,20 @@ const TIKTOK_POLLER = `
 })();
 `
 
-type OwnProps = {
+type Props = {
   webRef: RefObject<MessagePostingWebView>
 }
 
-type Props = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
+const OAuth = ({ webRef }: Props) => {
+  const dispatch = useDispatch()
+  const url = useSelector(getUrl)
+  const isOpen = useSelector(getIsOpen)
+  const messageId = useSelector(getMessageId)
+  const messageType = useSelector(getMessageType)
+  const provider = useSelector(getAuthProvider)
 
-const OAuth = ({
-  url,
-  isOpen,
-  messageId,
-  messageType,
-  webRef,
-  provider,
-  close
-}: Props) => {
+  const close = useCallback(() => dispatch(closePopup()), [dispatch])
+
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
     if (event.nativeEvent.data && webRef.current) {
@@ -227,11 +223,18 @@ const OAuth = ({
                 }
         }
 
-        postMessage(webRef.current, {
-          type: messageType,
-          id: messageId,
-          ...payloadByProvider[provider as Provider](data)
-        })
+        const isNativeOAuth = !messageType && !messageId
+        const payload = payloadByProvider[provider as Provider](data)
+
+        if (isNativeOAuth) {
+          dispatch(setCredentials(payload as Credentials))
+        } else {
+          postMessage(webRef.current, {
+            type: messageType,
+            id: messageId,
+            ...payload
+          })
+        }
         close()
       }
     }
@@ -283,16 +286,4 @@ const OAuth = ({
   )
 }
 
-const mapStateToProps = (state: AppState) => ({
-  url: getUrl(state),
-  isOpen: getIsOpen(state),
-  messageId: getMessageId(state),
-  messageType: getMessageType(state),
-  provider: getAuthProvider(state)
-})
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  close: () => dispatch(closePopup())
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(OAuth)
+export default OAuth
