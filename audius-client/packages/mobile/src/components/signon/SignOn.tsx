@@ -44,6 +44,7 @@ import {
 } from 'app/store/signon/selectors'
 import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
+import { useThemeColors } from 'app/utils/theme'
 
 import { SignOnStackParamList } from './types'
 
@@ -429,6 +430,8 @@ const SignOn = ({ navigation }: SignOnProps) => {
   }, [processReferrerFromClipboard])
   useAppState(processReferrerFromClipboard, () => {})
 
+  const { staticWhite } = useThemeColors()
+
   const errorView = () => {
     if (isSignin && isSigninError && showDefaultError) {
       return (
@@ -626,7 +629,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
           style={styles.mainButton}
           icon={
             isWorking ? (
-              <LoadingSpinner style={styles.loadingIcon} />
+              <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
             ) : (
               <IconArrow style={styles.arrowIcon} fill='white' />
             )
