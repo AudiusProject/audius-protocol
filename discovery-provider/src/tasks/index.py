@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
+import time
 
 from sqlalchemy import func
 from src.app import get_contract_addresses
@@ -125,12 +126,12 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
     return target_blockhash
 
 
-def get_latest_block(db: SessionManager):
-    latest_block = None
+def get_latest_block(db: SessionManager, retry: bool = False):
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
     )
     with db.scoped_session() as session:
+        latest_block = None
         current_block_query = session.query(Block).filter_by(is_current=True)
         assert current_block_query.count() == 1, "Expected SINGLE row marked as current"
 
@@ -154,7 +155,17 @@ def get_latest_block(db: SessionManager):
             f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
         latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
-    return latest_block
+
+        # if the block had no transactions, retry after small delay to confirm the block is actually empty
+        # we've seen potential instances of blocks returning no transactions
+        if len(latest_block.transactions) == 0 and not retry:
+            logger.info(
+                f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
+            )   
+            time.sleep(0.5)
+            return get_latest_block(db, True)
+
+        return latest_block
 
 
 def update_latest_block_redis():
@@ -997,6 +1008,10 @@ def update_task(self):
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
+            if not latest_block:
+                raise Exception(
+                    f"index.py | {self.request.id} | update_task | None value for get_latest_block"
+                )
 
             # Capture block information between latest and target block hash
             index_blocks_list = []
