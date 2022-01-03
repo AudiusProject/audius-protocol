@@ -148,6 +148,7 @@ export type createTrackArgs = {
   newTrackKeypair: Keypair;
   userAuthorityKey: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
+  adminStgKeypair: Keypair;
   metadata: string;
 };
 export const createTrack = async (args: createTrackArgs) => {
@@ -158,6 +159,7 @@ export const createTrack = async (args: createTrackArgs) => {
     userAuthorityKey,
     metadata,
     userStgAccountPDA,
+    adminStgKeypair,
   } = args;
   let tx = await program.rpc.createTrack(metadata, {
     accounts: {
@@ -165,6 +167,7 @@ export const createTrack = async (args: createTrackArgs) => {
       user: userStgAccountPDA,
       authority: userAuthorityKey.publicKey,
       payer: provider.wallet.publicKey,
+      audiusAdmin: adminStgKeypair.publicKey,
       systemProgram: SystemProgram.programId,
     },
     signers: [userAuthorityKey, newTrackKeypair],

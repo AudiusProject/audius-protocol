@@ -19,6 +19,7 @@ import {
   initUserSolPubkey,
   createTrack,
 } from "../lib/lib";
+import { assert } from "chai";
 
 const { SystemProgram, PublicKey, Transaction, Secp256k1Program } = anchor.web3;
 
@@ -118,7 +119,12 @@ describe("audius-data", () => {
     newTrackKeypair,
     userAuthorityKey,
     trackOwnerPDA,
+    adminStgKeypair,
   }) => {
+    let trackId = await program.account.audiusAdmin.fetch(
+      adminStgKeypair.publicKey
+    );
+    console.log(`trackId = ${trackId.testId}}`);
     let tx = await createTrack({
       provider,
       program,
@@ -126,8 +132,19 @@ describe("audius-data", () => {
       userAuthorityKey,
       userStgAccountPDA: trackOwnerPDA,
       metadata: trackMetadata,
+      adminStgKeypair,
     });
     await confirmLogInTransaction(tx, trackMetadata);
+    let assignedTrackId = await program.account.audiusAdmin.fetch(
+      adminStgKeypair.publicKey
+    );
+    console.log(`trackId assigned = ${assignedTrackId.testId}`);
+    assert(
+      assignedTrackId.testId.eq(trackId.testId.add(new anchor.BN(1))),
+      `Expected ${assignedTrackId.testId}, found ${trackId.testId.add(
+        new anchor.BN(1)
+      )}`
+    );
   };
 
   const testDeleteTrack = async ({
@@ -398,6 +415,7 @@ describe("audius-data", () => {
       newTrackKeypair,
       userAuthorityKey: newUserKey,
       trackOwnerPDA: newUserAcctPDA,
+      adminStgKeypair,
     });
 
     // Expected signature validation failure
@@ -410,6 +428,7 @@ describe("audius-data", () => {
         newTrackKeypair: newTrackKeypair2,
         userAuthorityKey: wrongUserKey,
         trackOwnerPDA: newUserAcctPDA,
+        adminStgKeypair,
       });
     } catch (e) {
       console.log(`ERROR FOUND AS EXPECTED ${e}`);
@@ -480,6 +499,7 @@ describe("audius-data", () => {
       newTrackKeypair,
       userAuthorityKey: newUserKey,
       trackOwnerPDA: newUserAcctPDA,
+      adminStgKeypair,
     });
 
     await testDeleteTrack({

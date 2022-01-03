@@ -102,7 +102,7 @@ async function initUserCLI(args: initUserCLIParams) {
     metadata,
     adminStgPublicKey,
   } = args;
-  const cliVars = await initializeCLI(ownerKeypairPath);
+  const cliVars = initializeCLI(ownerKeypairPath);
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
   const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
   const ethAddressBytes = ethAddressToArray(ethAddress);
@@ -226,6 +226,7 @@ switch (options.function) {
         newTrackKeypair: newTrackAccount,
         userAuthorityKey: userSolKeypair,
         userStgAccountPDA: options.userStgPubkey,
+        adminStgKeypair: adminStgKeypair,
       });
       console.log(`createTrackTx = ${tx}`);
     })();

@@ -114,6 +114,8 @@ pub mod audius_data {
         }
         // Set owner to user storage account
         ctx.accounts.track.owner = ctx.accounts.user.key();
+        ctx.accounts.track.test_id = ctx.accounts.audius_admin.test_id;
+        ctx.accounts.audius_admin.test_id = ctx.accounts.audius_admin.test_id + 1;
         msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
     }
@@ -148,12 +150,16 @@ pub mod audius_data {
     }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32;
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 
 /// Size of user account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
 pub const USER_ACCOUNT_SIZE: usize = 8 + 32 + 20;
+
+/// Size of track account
+/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
+pub const TRACK_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 
 /// Instructions
 #[derive(Accounts)]
@@ -219,12 +225,15 @@ pub struct UpdateUser<'info> {
 /// Payer is provided to facilitate an independent feepayer
 #[derive(Accounts)]
 pub struct CreateTrack<'info> {
-    #[account(init, payer = payer, space = 8 + 32)]
+    #[account(init, payer = payer, space = 8 + 32 + 8)]
     pub track: Account<'info, Track>,
     #[account(mut)]
     pub user: Account<'info, User>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    /// TEST PURPOSES - storing ID to be incremented here
+    #[account(mut)]
+    pub audius_admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>
@@ -265,6 +274,7 @@ pub struct DeleteTrack<'info> {
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
+    pub test_id: u64
 }
 
 /// User storage account
@@ -278,6 +288,7 @@ pub struct User {
 #[account]
 pub struct Track {
     pub owner: Pubkey,
+    pub test_id: u64
 }
 
 // Errors
