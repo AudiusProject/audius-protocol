@@ -3,10 +3,10 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "0.24.37",
+  "version": "0.24.38",
   "private": true,
   "dependencies": {
-    "@audius/libs": "1.2.39",
+    "@audius/libs": "1.2.40",
     "@audius/stems": "0.3.18",
     "@craco/craco": "6.4.2",
     "@hcaptcha/react-hcaptcha": "0.3.6",
