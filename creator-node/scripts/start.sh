@@ -7,11 +7,12 @@ if [[ "$WAIT_HOSTS" != "" ]]; then
     /usr/bin/wait
 fi
 
-if [[ -n "$LOGGLY_TOKEN" ]]; then
-    LOGGLY_TAGS=$(echo $LOGGLY_TAGS | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
-    mkdir -p /var/spool/rsyslog
-    mkdir -p /etc/rsyslog.d
-    cat >/etc/rsyslog.d/22-loggly.conf <<EOF
+if [[ -z "$logglyDisable" ]]; then
+    if [[ -n "$logglyToken" ]]; then
+        logglyTags=$(echo $logglyTags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
+        mkdir -p /var/spool/rsyslog
+        mkdir -p /etc/rsyslog.d
+        cat >/etc/rsyslog.d/22-loggly.conf <<EOF
 \$WorkDirectory /var/spool/rsyslog # where to place spool files
 \$ActionQueueFileName fwdRule1   # unique name prefix for spool files
 \$ActionQueueMaxDiskSpace 1g    # 1gb space limit (use as much as possible)
@@ -19,11 +20,12 @@ if [[ -n "$LOGGLY_TOKEN" ]]; then
 \$ActionQueueType LinkedList    # run asynchronously
 \$ActionResumeRetryCount -1    # infinite retries if host is down
 template(name="LogglyFormat" type="string"
- string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$LOGGLY_TOKEN@41058 $LOGGLY_TAGS] %msg%\n")
+ string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$logglyToken@41058 $logglyTags \\"$creatorNodeEndpoint\\"] %msg%\n")
 # Send messages to Loggly over TCP using the template.
 action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
 EOF
-    rsyslogd
+        rsyslogd
+    fi
 fi
 
 if [ -z "$ipfsHost" ]; then
@@ -77,9 +79,9 @@ if [[ "$devMode" == "true" ]]; then
         npm link
         cd ../app
         npm link @audius/libs
-        npx nodemon --watch src/ --watch ../audius-libs/ src/index.ts | tee >(logger) | npx bunyan
+        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger) | ./node_modules/.bin/bunyan
     else
-        npx nodemon --watch src/ src/index.ts | tee >(logger) | npx bunyan
+        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger) | ./node_modules/.bin/bunyan
     fi
 else
     node build/src/index.js | tee >(logger)

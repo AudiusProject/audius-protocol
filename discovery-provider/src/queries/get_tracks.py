@@ -1,5 +1,5 @@
 import logging  # pylint: disable=C0302
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.sql.functions import coalesce
@@ -31,6 +31,7 @@ class GetTrackArgs(TypedDict):
     handle: str
     id: int
     current_user_id: int
+    authed_user_id: Optional[int]
     min_block_number: int
     sort: str
     filter_deleted: bool
@@ -59,8 +60,16 @@ def _get_tracks(session, args):
             )
         base_query = base_query.filter(or_(*filter_cond))
     else:
-        # Only return unlisted tracks if routes are present
-        base_query = base_query.filter(Track.is_unlisted == False)
+        # Only return unlisted tracks if either
+        # - above case, routes are present (direct links to hidden tracks)
+        # - the user is authenticated as the owner
+        is_authed_user = (
+            "user_id" in args
+            and "authed_user_id" in args
+            and args.get("user_id") == args.get("authed_user_id")
+        )
+        if not is_authed_user:
+            base_query = base_query.filter(Track.is_unlisted == False)
 
     # Conditionally process an array of tracks
     if "id" in args:
@@ -136,12 +145,12 @@ def get_tracks(args: GetTrackArgs):
         def get_tracks_and_ids():
             if "handle" in args:
                 handle = args.get("handle")
-                user_id = (
+                user = (
                     session.query(User.user_id)
                     .filter(User.handle_lc == handle.lower())
                     .first()
                 )
-                args["user_id"] = user_id
+                args["user_id"] = user.user_id
 
             if "routes" in args:
                 # Convert the handles to user_ids
@@ -168,9 +177,9 @@ def get_tracks(args: GetTrackArgs):
 
             can_use_shared_cache = (
                 "id" in args
-                and not "min_block_number" in args
-                and not "sort" in args
-                and not "user_id" in args
+                and "min_block_number" not in args
+                and "sort" not in args
+                and "user_id" not in args
             )
 
             if can_use_shared_cache:
@@ -195,6 +204,12 @@ def get_tracks(args: GetTrackArgs):
 
         # bundle peripheral info into track results
         current_user_id = args.get("current_user_id")
+
+        # remove track segments and download cids from deactivated user tracks and deleted tracks
+        for track in tracks:
+            if track["user"][0]["is_deactivated"] or track["is_delete"]:
+                track["track_segments"] = []
+                track["download"]["cid"] = None
 
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 

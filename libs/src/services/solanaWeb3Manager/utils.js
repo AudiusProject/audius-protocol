@@ -103,7 +103,7 @@ class SolanaUtils {
    * @returns {Promise<[PublicKey, number]>}
    */
   static async findProgramAddressFromPubkey (programId, pubkey, seed) {
-    let seedsArr = [pubkey.toBytes().slice(0, 32)]
+    const seedsArr = [pubkey.toBytes().slice(0, 32)]
     if (seed) {
       seedsArr.push(seed)
     }
@@ -148,7 +148,9 @@ class SolanaUtils {
    */
   static ethAddressToArray (ethAddress) {
     const strippedEthAddress = ethAddress.replace('0x', '')
-    return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
+    // Need to pad the array to length 20 - otherwise, hex eth keys starting with '0' would
+    // result in truncated arrays, while eth spec is always 20 bytes
+    return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be', 20))
   }
 }
 

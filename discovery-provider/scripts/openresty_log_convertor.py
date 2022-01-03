@@ -1,6 +1,5 @@
 import sys
 import json
-import time
 
 for line in sys.stdin:
     message = line.strip()

@@ -23,6 +23,8 @@ const CREATE_SENDER_PUBLIC_ENUM_VALUE = 4
 const SUBMIT_INSTRUCTION_ENUM_VALUE = 6
 const EVALUATE_INSTRUCTION_ENUM_VALUE = 7
 
+const ATTESTATION_INSTRUCTIONS_PER_TRANSACTION = 4
+
 const encoder = new TextEncoder()
 
 class SubmitAttestationInstructionData {
@@ -127,6 +129,7 @@ const createSenderPublicInstructionSchema = new Map(
 /**
  * Submits attestations from Discovery Nodes and AAO that a user has completed a challenge.
  *
+ *
  * @param {{
  *   rewardManagerProgramId: PublicKey,
  *   rewardManagerAccount: PublicKey,
@@ -139,6 +142,8 @@ const createSenderPublicInstructionSchema = new Map(
  *   recipientEthAddress: string,
  *   tokenAmount: BN,
  *   transactionHandler: TransactionHandler,
+ *   instructionsPerTransaction?: number,
+ *   logger: any
  * }} {
  *   rewardManagerProgramId,
  *   rewardManagerAccount,
@@ -149,7 +154,9 @@ const createSenderPublicInstructionSchema = new Map(
  *   feePayer,
  *   recipientEthAddress,
  *   tokenAmount,
- *   transactionHandler
+ *   transactionHandler,
+ *   instructionsPerTransaction,
+ *   logger
  * }
  */
 async function submitAttestations ({
@@ -162,7 +169,9 @@ async function submitAttestations ({
   feePayer,
   recipientEthAddress,
   tokenAmount,
-  transactionHandler
+  transactionHandler,
+  instructionsPerTransaction = ATTESTATION_INSTRUCTIONS_PER_TRANSACTION,
+  logger = console
 }) {
   // Construct combined transfer ID
   const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
@@ -195,7 +204,7 @@ async function submitAttestations ({
           recipientEthAddress,
           tokenAmount,
           transferId,
-          instructionIndex: 2 * i,
+          instructionIndex: (2 * i) % instructionsPerTransaction,
           encodedSenderMessage
         })
       )
@@ -212,15 +221,22 @@ async function submitAttestations ({
     }, [])
   )
 
+  const encodedOracleMessage = SolanaUtils.constructAttestation(
+    recipientEthAddress,
+    tokenAmount,
+    transferId
+  )
+
   // Add instructions from oracle attestation
   const oracleSecp = await generateAttestationSecpInstruction({
     attestationMeta: oracleAttestation,
     recipientEthAddress,
-    instructionIndex: instructions.length,
+    instructionIndex: instructions.length % instructionsPerTransaction,
     tokenAmount,
     transferId,
-    encodedSenderMessage
+    encodedSenderMessage: encodedOracleMessage
   })
+
   const oracleTransfer = await generateSubmitAttestationInstruction({
     attestationMeta: oracleAttestation,
     derivedMessageAccount,
@@ -230,9 +246,28 @@ async function submitAttestations ({
     transferId,
     feePayer
   })
-  instructions = [...instructions, oracleSecp, oracleTransfer]
 
-  return transactionHandler.handleTransaction(instructions, RewardsManagerError)
+  // Break the instructions up into multiple transactions as per `instructionsPerTransaction`
+  instructions = [...instructions, oracleSecp, oracleTransfer]
+  const bucketedInstructions = instructions.reduce((acc, cur) => {
+    if (acc[acc.length - 1].length < instructionsPerTransaction) {
+      acc[acc.length - 1].push(cur)
+    } else {
+      acc.push([cur])
+    }
+    return acc
+  }, [[]])
+
+  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction(i, RewardsManagerError, null, logger)))
+  logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results, null, 2)}`)
+
+  // If there's any error in any of the transactions, just return that one
+  for (const res of results) {
+    if (res.error || res.errorCode) {
+      return res
+    }
+  }
+  return results[0]
 }
 
 /**
@@ -514,14 +549,15 @@ const generateSubmitAttestationInstruction = async ({
     rewardManagerAccount
   )
 
-  ///   Verify transfer signature
-  ///   0. `[writable]` New or existing account storing verified messages
+  ///   Submit attestations
+  ///   0. `[writable]` Verified messages - New or existing account PDA storing verified messages
   ///   1. `[]` Reward manager
   ///   2. `[]` Reward manager authority
-  ///   3. `[]` fee payer
+  ///   3. `[signer]` Funder
   ///   4. `[]` Sender
-  ///   5. `[]` sysvar rent
-  ///   6. `[]` Sysvar instruction id
+  ///   5. `[]` Sysvar rent
+  ///   6. `[]` Instruction info
+  ///   7. `[]` System program id
   const verifyInstructionAccounts = [
     {
       pubkey: derivedMessageAccount,
@@ -634,7 +670,7 @@ const generateAttestationSecpInstruction = ({
   const { encodedSignature, recoveryId } = encodeSignature(attestationMeta.signature)
 
   return Secp256k1Program.createInstructionWithEthAddress({
-    ethAddress: attestationMeta.ethAddress,
+    ethAddress: SolanaUtils.ethAddressToArray(attestationMeta.ethAddress),
     message: encodedSenderMessage,
     signature: encodedSignature,
     recoveryId,

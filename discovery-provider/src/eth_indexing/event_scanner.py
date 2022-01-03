@@ -1,23 +1,20 @@
 import datetime
-import time
 import logging
-from typing import Tuple, Iterable, Union, Type, TypedDict, Any
-from sqlalchemy import or_
+import time
+from typing import Any, Iterable, Tuple, Type, TypedDict, Union
 
+from eth_abi.codec import ABICodec
+from src.models.models import AssociatedWallet, EthBlock, User
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 from web3 import Web3
-from web3.contract import Contract, ContractEvent
-from web3.exceptions import BlockNotFound
-from web3.types import BlockIdentifier
+from web3._utils.events import get_event_data
 
 # Currently this method is not exposed over official web3 API,
 # but we need it to construct eth_get_logs parameters
 from web3._utils.filters import construct_event_filter_params
-from web3._utils.events import get_event_data
-from eth_abi.codec import ABICodec
-
-from src.models.models import AssociatedWallet, EthBlock, User
-from src.queries.get_balances import enqueue_immediate_balance_refresh
-
+from web3.contract import Contract, ContractEvent
+from web3.exceptions import BlockNotFound
+from web3.types import BlockIdentifier
 
 logger = logging.getLogger(__name__)
 
@@ -394,9 +391,8 @@ def _retry_web3_call(  # type: ignore
                 # Let the JSON-RPC to recover e.g. from restart
                 time.sleep(delay)
                 continue
-            else:
-                logger.warning("event_scanner.py | Out of retries")
-                raise
+            logger.warning("event_scanner.py | Out of retries")
+            raise
 
 
 def _fetch_events_for_all_contracts(

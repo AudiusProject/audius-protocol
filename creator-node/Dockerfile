@@ -23,7 +23,10 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add postgresql=11.12-r0 && \
     apk add postgresql-client=11.12-r0 && \
     apk add postgresql-contrib=11.12-r0 && \
-    apk add postgresql-libs=11.12-r0
+    apk add postgresql-libs=11.12-r0 && \
+    apk add python3 && \
+    apk add python3-dev && \
+    apk add py3-pip
 
 # Install openresty with public key
 RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
@@ -76,7 +79,14 @@ VOLUME "/file_storage"
 ENV storagePath=/file_storage
 
 ARG git_sha
+ARG audius_loggly_disable
+ARG audius_loggly_token
+ARG audius_loggly_tags
+
 ENV GIT_SHA=$git_sha
+ENV logglyDisable=$audius_loggly_disable
+ENV logglyToken=$audius_loggly_token
+ENV logglyTags=$audius_loggly_tags
 
 # CMD ["sh", "-c", "/usr/bin/wait && exec node src/index.js"]
 CMD ["bash", "scripts/start.sh"]

@@ -77,12 +77,18 @@ const startApp = async () => {
   const creatorNodeEndpoint = config.get('creatorNodeEndpoint')
 
   if (!delegateOwnerWallet || !delegatePrivateKey || !creatorNodeEndpoint) {
-    exitWithError('Cannot startup without delegateOwnerWallet, delegatePrivateKey, and creatorNodeEndpoint')
+    exitWithError(
+      'Cannot startup without delegateOwnerWallet, delegatePrivateKey, and creatorNodeEndpoint'
+    )
   }
 
   // fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
-  const privateKeyBuffer = Buffer.from(config.get('delegatePrivateKey').replace('0x', ''), 'hex')
-  const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
+  const privateKeyBuffer = Buffer.from(
+    config.get('delegatePrivateKey').replace('0x', ''),
+    'hex'
+  )
+  const walletAddress =
+    EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
   if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
   }
@@ -121,7 +127,9 @@ const startApp = async () => {
     // use the bunyan CLI.
     logger.info('Shutting down db and express app...', signal, error)
     sequelize.close()
-    if (appInfo) { appInfo.server.close() }
+    if (appInfo) {
+      appInfo.server.close()
+    }
   })
 }
 startApp()

@@ -1,375 +1,76 @@
 #!/usr/bin/env python3.9
+"""Script to help with deployment of audius nodes"""
 
-import os
-import sys
-import subprocess
 import argparse
+import os
+import subprocess
+import sys
 
-protocol_dir = os.getenv('PROTOCOL_DIR', './')
+DEFAULT_PROTOCOL_DIR = os.path.join(os.path.dirname(__file__), "../../")
+PROTOCOL_DIR = os.getenv("PROTOCOL_DIR", DEFAULT_PROTOCOL_DIR)
 
-def get_gcloud_config_value(key):
-    value = (
-        subprocess.run(
-            [
-                "gcloud",
-                "config",
-                "get-value",
-                key,
-            ],
-            capture_output=True,
-        )
-        .stdout.decode()
-        .strip()
-    )
-    return value
 
-def set_gcloud_config_value(key, value):
+def create_instance(provider, image, disk_size, machine_type, name):
+    """Create instance with provided options"""
     subprocess.run(
         [
-            "gcloud",
-            "config",
-            "set",
-            key,
-            value
-        ]
-    )
-    print(f'gcloud config {key} set to {value}')
-
-def set_gcloud_config_defaults():
-    default_gcloud_region = 'us-central1'
-    default_gcloud_zone = 'us-central1-a'
-    set_gcloud_config_value('compute/region', default_gcloud_region)
-    set_gcloud_config_value('compute/zone', default_gcloud_zone)
-
-def get_gcloud_project_and_account():
-    project = (
-        subprocess.run(
-            [
-                "gcloud",
-                "config",
-                "get-value",
-                "project",
-            ],
-            capture_output=True,
-        )
-        .stdout.decode()
-        .strip()
-    )
-
-    account = (
-        subprocess.run(
-            [
-                "gcloud",
-                "config",
-                "list",
-                "account",
-                "--format",
-                "value(core.account)",
-            ],
-            capture_output=True,
-        )
-        .stdout.decode()
-        .strip()
-    )
-
-    return {
-        'project': project,
-        'account': account
-    }
-
-def get_gcloud_instance_ip(instance_name):
-    ip = (
-        subprocess.run(
-            [
-                "gcloud",
-                "compute",
-                "instances",
-                "describe",
-                instance_name,
-                "--format",
-                "get(networkInterfaces[0].accessConfigs[0].natIP)",
-            ],
-            capture_output=True,
-        )
-        .stdout.decode()
-        .strip()
-    )
-    return ip
-
-def create_instance(name, azure, image_project, image_family, size, machine_type, use_image, image_name):
-    if not azure:
-        gcloud_account_details = get_gcloud_project_and_account()
-        print("Project:", gcloud_account_details['project'])
-        print("Account:", gcloud_account_details['account'])
-        if input("Confirm account and project? [y/N]").lower() != "y":
-            return
-        if use_image:
-            image_family_or_image_flag = "--image"
-            image_family_or_image_value = image_name
-        else:
-            image_family_or_image_flag = "--image-family"
-            image_family_or_image_value = image_family
-
-        subprocess.run(
-            [
-                "gcloud",
-                "compute",
-                "instances",
-                "create",
-                name,
-                "--image-project",
-                image_project,
-                image_family_or_image_flag,
-                image_family_or_image_value,
-                "--boot-disk-size",
-                size,
-                "--machine-type",
-                machine_type or "n2-custom-12-24576",
-            ]
-        )
-
-        ip = get_gcloud_instance_ip(name)
-        print("IP address:", ip)
-    else:
-        subprocess.run(
-            [
-                "az",
-                "group",
-                "create",
-                "-n",
-                "audius-azure",
-                "--location",
-                "eastus",
-            ],
-        )
-
-        subprocess.run(
-            [
-                "ssh-keygen",
-                "-m",
-                "PEM",
-                "-t",
-                "rsa",
-                "-b",
-                "4096",
-                "-P",
-                "",
-                "-f",
-                f"{os.getenv('HOME')}/.ssh/audius-azure",
-            ],
-            input=b"n\n",
-            stdout=subprocess.DEVNULL,
-        )
-
-        subprocess.run(
-            [
-                "az",
-                "vm",
-                "create",
-                "-n",
-                name,
-                "-g",
-                "audius-azure",
-                "--image",
-                "UbuntuLTS",
-                "--size",
-                machine_type or "Standard_F8s_v2",
-                "--os-disk-size-gb",
-                size,
-                "--ssh-key-values",
-                f"{os.getenv('HOME')}/.ssh/audius-azure.pub",
-                "--public-ip-sku",
-                "Basic",
-            ],
-        )
-
-        ip = (
-            subprocess.run(
-                [
-                    "az",
-                    "vm",
-                    "list-ip-addresses",
-                    "--name",
-                    name,
-                    "--resource-group",
-                    "audius-azure",
-                    "--query",
-                    "[0].virtualMachine.network.publicIpAddresses[0].ipAddress",
-                ],
-                capture_output=True,
-            )
-            .stdout.decode()
-            .strip()
-            .strip('"')
-        )  # TODO: process ip
-        print("IP address:", ip)
-
-    return ip
-
-
-def setup(name, azure, service, config, user, fast, protocol_git_ref, client_git_ref):
-    if not azure:
-        proc = subprocess.run(
-            [
-                "gcloud",
-                "compute",
-                "instances",
-                "describe",
-                name,
-                "--format",
-                "get(networkInterfaces[0].accessConfigs[0].natIP)",
-            ],
-            capture_output=True,
-        )
-    else:
-        proc = (
-            subprocess.run(
-                [
-                    "az",
-                    "vm",
-                    "list-ip-addresses",
-                    "--name",
-                    name,
-                    "--resource-group",
-                    "TestResourceGroup",
-                ],
-                capture_output=True,
-            )
-            .stdout.decode()
-            .strip()
-        )  # TODO: process ip
-
-    ip = proc.stdout.decode().strip()
-    if proc.returncode != 0:
-        fast_config = ' from prebaked image.' if fast else '.'
-        input(f"Creating new instance '{name}'{fast_config} Press Enter to continue...")
-        use_image = False
-        image_name = ""
-        image_project = "ubuntu-os-cloud"
-        if fast:
-            use_image = True
-            image_name = "audius-dev-8feda2f-82c1dea-11-22-21"
-            image_project = "audius-infrastructure"
-
-        ip = create_instance(
+            "bash",
+            f"{PROTOCOL_DIR}/service-commands/scripts/create-instance.sh",
+            *(["-p", provider] if provider else []),
+            *(["-i", image] if image else []),
+            *(["-d", disk_size] if disk_size else []),
+            *(["-m", machine_type] if machine_type else []),
             name,
-            azure,
-            image_project,
-            "ubuntu-2004-lts",
-            "256",
-            "n2-custom-12-24576",
-            use_image,
-            image_name
-        )
+        ],
+        check=False,
+    )
 
-    host = f"{user}@{ip}"
 
-    print("Waiting for instance to start")
-    returncode = None
-    while returncode != 0:
-        response = subprocess.run(["ssh", host, ":"])
-        returncode = response.returncode
+def setup(
+    provider, service, user, config, fast, protocol_git_ref, client_git_ref, name
+):
+    """Setup a environment suitable for development on a remote machine"""
+    subprocess.run(
+        [
+            "bash",
+            f"{PROTOCOL_DIR}/service-commands/scripts/setup-instance.sh",
+            *(["-p", provider] if provider else []),
+            *(["-u", user] if user else []),
+            *(["-c", config] if config else []),
+            *(["-r", protocol_git_ref] if protocol_git_ref else []),
+            *(["-l", client_git_ref] if client_git_ref else []),
+            *(["-f"] if fast else []),
+            service,
+            name,
+        ],
+        check=False,
+    )
 
-    if service in ["creator-node", "discovery-provider"]:
-        print("Setting up audius-k8s-manifests...")
-        subprocess.run(
-            [
-                "ssh",
-                host,
-                (
-                    "git clone https://github.com/AudiusProject/audius-k8s-manifests.git && "
-                    "cd audius-k8s-manifests && "
-                    "yes | sh setup.sh "
-                ),
-            ]
-        )
 
-        print("Waiting for instance to restart")
-        returncode = None
-        while returncode != 0:
-            returncode = subprocess.run(["ssh", host, ":"])
-
-        if config:
-            print("Copying config...")
-            subprocess.run(
-                ["ssh", host, "cat > $MANIFESTS_PATH/config.yaml"],
-                input=open(config).read(),
-            )
-        else:
-            print("Warning no config specified")
-
-    if service == "creator-node":
-        print("Starting creator-node...")
-        subprocess.run(
-            [
-                "ssh",
-                host,
-                "audius-cli launch creator-node --configure-ipfs",
-            ]
-        )
-    elif service == "discovery-provider":
-        print("Starting discovery-provider...")
-        subprocess.run(
-            [
-                "ssh",
-                host,
-                "audius-cli launch discovery --seed-job --configure-ipfs",
-            ]
-        )
-    elif service == "remote-dev":
-        if fast:
-            subprocess.run(
-                [
-                    "ssh",
-                    host,
-                    (
-                        f"cd ~/audius-protocol && git fetch origin && git checkout {protocol_git_ref} &&"
-                        f"cd ~/audius-client && git fetch origin && git checkout {client_git_ref}"
-                    )
-                ],
-            )
-        else:
-            subprocess.run(
-                [
-                    "ssh",
-                    host,
-                    (
-                        "git clone https://github.com/AudiusProject/audius-protocol.git &&"
-                        "yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh"
-                    ),
-                ]
-            )
-
-        if input("Configure local /etc/hosts? [y/N]").lower() == "y":
-            subprocess.run(
-                [
-                    "sudo",
-                    "-E",
-                    f"AUDIUS_REMOTE_DEV_HOST={ip}",
-                    "node",
-                    f"{protocol_dir}/service-commands/scripts/hosts.js",
-                    "add-remote-host",
-                ]
-            )
-
-        print(
-            "Follow https://www.notion.so/audiusproject/Remote-Dev-Setup-Services-Client-Linux-2597a6467d1f4dae824c0593582ad671#88c7365275c645f0be45acc2a9b87319 to setup github ssh key"
-        )
-
-def run_and_pass_args_to_node(script_name, args):
+def setup_js(options):
     subprocess.run(
         [
             "node",
-            f"{protocol_dir}/service-commands/scripts/{script_name}",
-            *args,
-        ]
+            f"{PROTOCOL_DIR}/service-commands/scripts/setup.js",
+            *options,
+        ],
+        check=False,
     )
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="",  # TODO
-        exit_on_error=False,
+
+def seed(options):
+    subprocess.run(
+        [
+            "node",
+            f"{PROTOCOL_DIR}/service-commands/scripts/seed.js",
+            *options,
+        ],
+        check=False,
     )
+
+
+def main():
+    parser = argparse.ArgumentParser(exit_on_error=False)
 
     subparser = parser.add_subparsers(
         title="operations",
@@ -379,132 +80,114 @@ def main():
 
     parser_create_instance = subparser.add_parser(
         "create-instance",
-        help="Create instance on GCP with specified options",
+        help="create instance on azure/gcp with specified options",
     )
 
     parser_create_instance.add_argument(
-        "--azure",
-        action="store_true",
-        help="Use Azure instead of GCP",
+        "--provider",
+        choices=["azure", "gcp"],
+        help="the provider to create the instance on (default: gcp)",
     )
 
     parser_create_instance.add_argument(
-        "--image-family",
-        default="ubuntu-2004-lts",
-        help="Image to use for creating the instance",
+        "--image",
+        type=str,
+        help="image to use for creating the instance; use the format project=<project>,(family=<family>|image=<image>) for specifying images on gcp (defaults: UbuntuLTS (azure), project=ubuntu-os-cloud,family=ubuntu-2004-lts (gcp))",
     )
 
     parser_create_instance.add_argument(
-        "--image-project",
-        default="ubuntu-os-cloud",
-        help="Image project to fetch image from",
-    )
-
-    parser_create_instance.add_argument(
-        "--size",
-        default="256",
-        help="Size of disk to create",
+        "--disk-size",
+        help="size of disk in gb to use for the instance (default: 256GB)",
     )
 
     parser_create_instance.add_argument(
         "--machine-type",
-        default=None,
-        help="Machine type to use for the instance",
+        type=str,
+        help="machine type to use for the instance (defaults: Standard_F8s_v2 (azure), n2-custom-12-24576 (gcp))",
     )
 
     parser_create_instance.add_argument(
         "name",
-        help="Name of instance to create",
+        help="name to assign to the created instance",
     )
 
     parser_setup = subparser.add_parser(
         "setup",
-        help="",  # TODO
+        help="setup specified service on a remote machine",
+    )
+
+    parser_setup.add_argument(
+        "--provider",
+        choices=["azure", "gcp"],
+        help="provider on which the remote machine exists (default: gcp)",
+    )
+
+    parser_setup.add_argument(
+        "--user",
+        help="user to login as (default: ubuntu)",
     )
 
     parser_setup.add_argument(
         "--config",
-        help="path to config",
-    )
-
-    parser_setup.add_argument(
-        "--azure",
-        action="store_true",
-        help="Use Azure instead of GCP",
+        help="audius-cli config to use (only used for creator-node and discovery-provider)",
     )
 
     parser_setup.add_argument(
         "--fast",
         action="store_true",
-        help="Use prebaked dev image when provisioning",
+        help="expect instance to be using prebaked dev image (only used for remote-dev and only supported on gcp)",
     )
 
     parser_setup.add_argument(
         "--protocol-git-ref",
-        default="master",
-        help="audius-protocol branch name or commit hash to check out when provisioning",
+        help="git ref to use for audius-protocol (only used for remote-dev) (default: master)",
     )
 
     parser_setup.add_argument(
         "--client-git-ref",
-        default="master",
-        help="audius-client branch name or commit hash to check out when provisioning",
-    )
-
-    parser_setup.add_argument(
-        "--user",
-        default="ubuntu",
-        help="user to login as",
+        help="git ref to use for audius-client (only used for remote-dev) (default: master)",
     )
 
     parser_setup.add_argument(
         "service",
         choices=["creator-node", "discovery-provider", "remote-dev"],
-        help="",  # TODO
+        help="service to setup on the remote machine",
     )
 
     parser_setup.add_argument(
         "name",
-        help="name of gcp instance to do setup on",
+        help="name of machine on which to setup the service",
     )
 
     try:
         args = parser.parse_args()
-        if not args.azure and (not get_gcloud_config_value('compute/zone') or not get_gcloud_config_value('compute/region')):
-            print('one or more gcloud config default values unset - setting...')
-            set_gcloud_config_defaults()
 
         if args.operation == "create-instance":
             create_instance(
+                args.provider,
+                args.image,
+                args.disk_size,
+                args.machine_type,
                 args.name,
-                args.azure,
-                args.image_project,
-                args.image_family,
-                args.size,
-                args.machine_type
             )
         elif args.operation == "setup":
             setup(
-                args.name,
-                args.azure,
+                args.provider,
                 args.service,
-                args.config,
                 args.user,
+                args.config,
                 args.fast,
                 args.protocol_git_ref,
-                args.client_git_ref
+                args.client_git_ref,
+                args.name,
             )
     except argparse.ArgumentError:
-        if sys.argv[1] == 'seed':
-            if 'service-commands' not in os.getcwd():
-                print('Changing to service-commands dir to run seed...')
-                os.chdir(f'{protocol_dir}/service-commands')
-            script_name = 'seed.js'
-            args = sys.argv[2:]
+        if sys.argv[1] == "seed":
+            options = sys.argv[2:]
+            seed(options)
         else:
-            script_name = 'setup.js'
-            args = sys.argv[1:]
-        run_and_pass_args_to_node(script_name, args)
+            options = sys.argv[1:]
+            setup_js(options)
 
 
 if __name__ == "__main__":

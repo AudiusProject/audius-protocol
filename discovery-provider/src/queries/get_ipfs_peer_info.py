@@ -1,7 +1,7 @@
 import re
 
-from src.utils.ipfs_lib import IPFSClient
 from src.utils.config import shared_config
+from src.utils.ipfs_lib import IPFSClient
 
 # Convert key to snake case
 pattern = re.compile(r"(?<!^)(?=[A-Z])")

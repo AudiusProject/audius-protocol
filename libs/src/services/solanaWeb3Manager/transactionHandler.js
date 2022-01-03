@@ -38,30 +38,32 @@ class TransactionHandler {
    * @typedef {Object} HandleTransactionReturn
    * @property {Object} res the result
    * @property {string} [error=null] the optional error
-   * @property {string|number} [error_code=null] the optional error code.
    *  Will be a string if `errorMapping` is passed to the handler.
+   * @property {string|number} [error_code=null] the optional error code.
+   * @property {string} [recentBlockhash=null] optional recent blockhash to prefer over fetching
+   * @property {any} [logger=console] optional logger
    *
    * @param {Array<TransactionInstruction>} instructions an array of `TransactionInstructions`
    * @param {*} [errorMapping=null] an optional error mapping. Should expose a `fromErrorCode` method.
    * @returns {Promise<HandleTransactionReturn>}
    * @memberof TransactionHandler
    */
-  async handleTransaction (instructions, errorMapping = null) {
+  async handleTransaction (instructions, errorMapping = null, recentBlockhash = null, logger = console) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions)
+      result = await this._relayTransaction(instructions, recentBlockhash)
     } else {
-      result = await this._locallyConfirmTransaction(instructions)
+      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger)
     }
-    if (result.errorCode !== null && errorMapping) {
+    if (result.error && result.errorCode !== null && errorMapping) {
       result.errorCode = errorMapping.fromErrorCode(result.errorCode)
     }
     return result
   }
 
-  async _relayTransaction (instructions) {
+  async _relayTransaction (instructions, recentBlockhash) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
-    const { blockhash: recentBlockhash } = await this.connection.getRecentBlockhash()
+    recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash()).blockhash
 
     const transactionData = {
       recentBlockhash,
@@ -69,16 +71,16 @@ class TransactionHandler {
     }
 
     try {
-      console.log({ transactionData })
       const response = await this.identityService.solanaRelay(transactionData)
       return { res: response, error: null, errorCode: null }
     } catch (e) {
-      const { errorCode, error } = e.response.data
+      const error = e.response.data.error || e.message
+      const errorCode = this._parseSolanaErrorCode(error)
       return { res: null, error, errorCode }
     }
   }
 
-  async _locallyConfirmTransaction (instructions) {
+  async _locallyConfirmTransaction (instructions, recentBlockhash, logger) {
     if (!this.feePayerKeypair) {
       console.error('Local feepayer keys missing for direct confirmation!')
       return {
@@ -88,7 +90,7 @@ class TransactionHandler {
       }
     }
 
-    const { blockhash: recentBlockhash } = await this.connection.getRecentBlockhash()
+    recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash()).blockhash
     const tx = new Transaction({ recentBlockhash })
 
     instructions.forEach(i => tx.add(i))
@@ -106,6 +108,7 @@ class TransactionHandler {
           preflightCommitment: 'processed'
         }
       )
+      logger.info(`transactionHandler: signature: ${transactionSignature}`)
       return {
         res: transactionSignature,
         error: null,
@@ -128,6 +131,7 @@ class TransactionHandler {
    * Returns null for unparsable strings.
    */
   _parseSolanaErrorCode (errorMessage) {
+    if (!errorMessage) return null
     const matcher = /(?:custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
     if (!res || !res.length === 2) return null

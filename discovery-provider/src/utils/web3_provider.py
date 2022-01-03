@@ -3,11 +3,11 @@ Interface for using a web3 provider
 """
 
 from typing import Optional
-from web3 import HTTPProvider, Web3
+
 from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.multi_provider import MultiProvider
-
+from web3 import HTTPProvider, Web3
 
 web3: Optional[Web3] = None
 

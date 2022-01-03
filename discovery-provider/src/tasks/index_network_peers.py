@@ -1,10 +1,11 @@
-import logging
 import concurrent.futures
-from src.tasks.celery_app import celery
-from src.app import eth_abi_values
-from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
+import logging
+
+from src.app import get_eth_abi_values
 from src.models import User
-from src.utils.redis_cache import pickle_and_set, get_sp_id_key, get_pickled_key
+from src.tasks.celery_app import celery
+from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
+from src.utils.redis_cache import get_pickled_key, get_sp_id_key, pickle_and_set
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ cnode_info_redis_ttl = 1800
 # NOTE - The terminology of "peer" in this file overlaps with ipfs swarm peers
 #   Even though we 'swarm connect' to an ipfs node embedded within our protocol the
 #   concept is very much distinct.
+
 
 # Perform eth web3 call to fetch endpoint info
 def fetch_cnode_info(sp_id, sp_factory_instance):
@@ -51,13 +53,14 @@ def retrieve_peers_from_eth_contracts(self):
         shared_config["eth_contracts"]["registry"]
     )
     eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
     sp_factory_address = eth_registry_instance.functions.getContract(
         sp_factory_registry_key
     ).call()
     sp_factory_inst = eth_web3.eth.contract(
-        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+        address=sp_factory_address,
+        abi=get_eth_abi_values()["ServiceProviderFactory"]["abi"],
     )
     total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(
         content_node_service_type
@@ -136,7 +139,7 @@ def connect_peers(self, peers_list):
                 logger.error(exc)
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_network_peers", bind=True)
 def update_network_peers(self):
     # Cache custom task class properties

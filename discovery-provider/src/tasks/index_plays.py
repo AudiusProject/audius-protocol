@@ -1,10 +1,11 @@
 import logging
 import time
-from urllib.parse import urljoin
 from datetime import datetime
-import requests
+from urllib.parse import urljoin
+
 import dateutil.parser
-from sqlalchemy import func, desc, or_, and_
+import requests
+from sqlalchemy import and_, desc, func, or_
 from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.helpers import redis_set_and_dump
@@ -209,8 +210,12 @@ def get_track_plays(self, db, lock, redis):
             session.bulk_save_objects(plays)
             # Parse returned UTC timestamp into datetime object and write timestam to redis
             # Format example 2021-10-26T19:01:09.814Z = '%Y-%m-%dT%H:%M:%S.%fZ'
-            cache_timestamp = datetime.strptime(plays[-1].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
-            redis_set_and_dump(redis, latest_legacy_play_db_key, cache_timestamp.timestamp())
+            cache_timestamp = datetime.strptime(
+                plays[-1].created_at, "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
+            redis_set_and_dump(
+                redis, latest_legacy_play_db_key, cache_timestamp.timestamp()
+            )
 
         job_extra_info["has_lock"] = has_lock
         job_extra_info["number_rows_insert"] = len(plays)
@@ -219,7 +224,7 @@ def get_track_plays(self, db, lock, redis):
         logger.info("index_plays.py | update_play_count complete", extra=job_extra_info)
 
 
-######## CELERY TASK ########
+# ####### CELERY TASK ####### #
 @celery.task(name="update_play_count", bind=True)
 def update_play_count(self):
     # Cache custom task class properties

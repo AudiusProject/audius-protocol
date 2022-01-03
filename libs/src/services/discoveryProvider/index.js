@@ -27,9 +27,9 @@ const MAX_MAKE_REQUEST_RETRY_COUNT = 5
  *  @param {function} monitoringCallbacks.request
  *  @param {function} monitoringCallbacks.healthCheck
  * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
-* @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+ * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+ * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
  */
-
 class DiscoveryProvider {
   constructor (
     whitelist,
@@ -41,7 +41,8 @@ class DiscoveryProvider {
     selectionCallback,
     monitoringCallbacks = {},
     selectionRequestTimeout,
-    selectionRequestRetries
+    selectionRequestRetries,
+    unhealthySlotDiffPlays
   ) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -55,10 +56,12 @@ class DiscoveryProvider {
       reselectTimeout,
       selectionCallback,
       monitoringCallbacks,
-      requestTimeout: selectionRequestTimeout
+      requestTimeout: selectionRequestTimeout,
+      unhealthySlotDiffPlays: unhealthySlotDiffPlays
     }, this.ethContracts)
     this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
     this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
+    this.unhealthySlotDiffPlays = unhealthySlotDiffPlays
 
     this.monitoringCallbacks = monitoringCallbacks
   }
@@ -560,6 +563,12 @@ class DiscoveryProvider {
     return data
   }
 
+  async getUndisbursedChallenges (limit = null, offset = null, completedBlockNumber = null, encodedUserId = null) {
+    const req = Requests.getUndisbursedChallenges(limit, offset, completedBlockNumber, encodedUserId)
+    const res = await this._makeRequest(req)
+    return res.map(r => ({ ...r, amount: parseInt(r.amount) }))
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**
@@ -569,14 +578,16 @@ class DiscoveryProvider {
    * @param {{
      endpoint: string,
      urlParams: string,
-     queryParams: object
+     queryParams: object,
+     method: string,
+     headers: object,
    }} requestObj
    * @param {string} discoveryProviderEndpoint
    * @returns
    * @memberof DiscoveryProvider
    */
   async _performRequestWithMonitoring (requestObj, discoveryProviderEndpoint) {
-    let axiosRequest = this._createDiscProvRequest(requestObj, discoveryProviderEndpoint)
+    const axiosRequest = this._createDiscProvRequest(requestObj, discoveryProviderEndpoint)
     let response
     let parsedResponse
 
@@ -631,10 +642,75 @@ class DiscoveryProvider {
     return parsedResponse
   }
 
-  // requestObj consists of multiple properties
-  // endpoint - base route
-  // urlParams - string of url params to be appended after base route
-  // queryParams - object of query params to be appended to url
+  /**
+   * Gets how many blocks behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of blocks
+   * @param {Object} parsedResponse health check response object
+   * @returns {number | null} a number of blocks if behind or null if not behind
+   */
+  async _getBlocksBehind (parsedResponse) {
+    try {
+      const {
+        latest_indexed_block: indexedBlock,
+        latest_chain_block: chainBlock
+      } = parsedResponse
+
+      const blockDiff = chainBlock - indexedBlock
+      if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
+        return blockDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return UNHEALTHY_BLOCK_DIFF
+    }
+  }
+
+  /**
+   * Gets how many plays slots behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of slots
+   * @param {Object} parsedResponse health check response object
+   * @returns {number | null} a number of slots if behind or null if not behind
+   */
+  async _getPlaysSlotsBehind (parsedResponse) {
+    if (!this.unhealthySlotDiffPlays) return null
+
+    try {
+      const {
+        latest_indexed_slot_plays: indexedSlotPlays,
+        latest_chain_slot_plays: chainSlotPlays
+      } = parsedResponse
+
+      const slotDiff = chainSlotPlays - indexedSlotPlays
+      if (slotDiff > this.unhealthySlotDiffPlays) {
+        return slotDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return this.unhealthySlotDiffPlays
+    }
+  }
+
+  /**
+   * Makes a request to a discovery node, reselecting if necessary
+   * @param {{
+   *  endpoint: string
+   *  urlParams: object
+   *  queryParams: object
+   *  method: string
+   *  headers: object
+   * }} {
+   *  endpoint: the base route
+   *  urlParams: string of URL params to be concatenated after base route
+   *  queryParams: URL query (search) params
+   *  method: string HTTP method
+   * }
+   * @param {boolean?} retry whether to retry on failure
+   * @param {number?} attemptedRetries number of attempted retries (stops retrying at max)
+   */
   async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
     try {
       const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
@@ -655,41 +731,43 @@ class DiscoveryProvider {
     try {
       parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
     } catch (e) {
-      const fullErrString = `Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(e.message)}`
-      console.error(fullErrString)
+      const fullErrString = `Failed to make Discovery Provider request at attempt #${attemptedRetries}, error ${JSON.stringify(e.message)}, request: ${JSON.stringify(requestObj)}`
+      console.warn(fullErrString)
       if (retry) {
         return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
       return null
     }
 
-    if (
-      this.ethContracts &&
-      !this.ethContracts.isInRegressedMode() &&
-      'latest_indexed_block' in parsedResponse &&
-      'latest_chain_block' in parsedResponse
-    ) {
-      const {
-        latest_indexed_block: indexedBlock,
-        latest_chain_block: chainBlock
-      } = parsedResponse
+    // Validate health check response
 
-      if (
-        !chainBlock ||
-        !indexedBlock ||
-        (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
-      ) {
-        if (retry) {
-          // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
-          // hopes it will catch up
-          const blockDiff = chainBlock && indexedBlock ? ` [block diff: ${chainBlock - indexedBlock}]` : ''
-          console.info(`${this.discoveryProviderEndpoint} is too far behind${blockDiff}. Retrying request at attempt #${attemptedRetries}...`)
-          return this._makeRequest(requestObj, retry, attemptedRetries + 1)
-        }
-        return null
+    // Regressed mode signals we couldn't find a node that wasn't behind by some measure
+    // so we should should pick something
+    const notInRegressedMode = this.ethContracts && !this.ethContracts.isInRegressedMode()
+
+    const blockDiff = await this._getBlocksBehind(parsedResponse)
+    if (notInRegressedMode && blockDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
+      return null
     }
 
+    const playsSlotDiff = await this._getPlaysSlotsBehind(parsedResponse)
+    if (notInRegressedMode && playsSlotDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
+      }
+      return null
+    }
+
+    // Everything looks good, return the data!
     return parsedResponse.data
   }
 
@@ -727,13 +805,25 @@ class DiscoveryProvider {
   _createDiscProvRequest (requestObj, discoveryProviderEndpoint) {
     let requestUrl
 
+    // Sanitize URL params if needed
+    if (requestObj.queryParams) {
+      Object.entries(requestObj.queryParams).forEach(([k, v]) => {
+        if (v === undefined || v === null) {
+          delete requestObj.queryParams[k]
+        }
+      })
+    }
+
     if (urlJoin && urlJoin.default) {
       requestUrl = urlJoin.default(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     } else {
       requestUrl = urlJoin(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     }
 
-    const headers = {}
+    let headers = {}
+    if (requestObj.headers) {
+      headers = requestObj.headers
+    }
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId

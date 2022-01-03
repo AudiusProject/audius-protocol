@@ -1,22 +1,25 @@
-from datetime import datetime
 import logging
 import time
+from datetime import datetime
 from typing import Optional
+
 from redis import Redis
 from sqlalchemy.orm.session import Session
-
-from src.models import Block
-from src.tasks.celery_app import celery
-from src.queries.get_trending_tracks import _get_trending_tracks_with_session
-from src.queries.get_trending_playlists import GetTrendingPlaylistsArgs, _get_trending_playlists_with_session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
-from src.trending_strategies.trending_type_and_version import TrendingType
+from src.models import Block
+from src.queries.get_trending_playlists import (
+    GetTrendingPlaylistsArgs,
+    _get_trending_playlists_with_session,
+)
+from src.queries.get_trending_tracks import _get_trending_tracks_with_session
 from src.queries.get_underground_trending import (
     GetUndergroundTrendingTrackcArgs,
-    _get_underground_trending_with_session
+    _get_underground_trending_with_session,
 )
+from src.tasks.celery_app import celery
+from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
+from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from src.utils.session_manager import SessionManager
 
@@ -49,6 +52,7 @@ def dispatch_trending_challenges(
     tracks,
     version: str,
     date: datetime,
+    type: TrendingType,
 ):
     for idx, track in enumerate(tracks):
         challenge_bus.dispatch(
@@ -59,7 +63,7 @@ def dispatch_trending_challenges(
                 "id": track["track_id"],
                 "user_id": track["owner_id"],
                 "rank": idx + 1,
-                "type": str(TrendingType.TRACKS),
+                "type": str(type),
                 "version": str(version),
                 "week": str(date),
             },
@@ -91,7 +95,9 @@ def enqueue_trending_challenges(
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
-            top_tracks = _get_trending_tracks_with_session(session, {"time": time_range}, strategy)
+            top_tracks = _get_trending_tracks_with_session(
+                session, {"time": time_range}, strategy
+            )
             top_tracks = top_tracks[:TRENDING_LIMIT]
             dispatch_trending_challenges(
                 challenge_bus,
@@ -100,6 +106,7 @@ def enqueue_trending_challenges(
                 top_tracks,
                 version,
                 date,
+                TrendingType.TRACKS,
             )
 
         # Cache underground trending
@@ -110,8 +117,13 @@ def enqueue_trending_challenges(
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.UNDERGROUND_TRACKS, version
             )
-            underground_args: GetUndergroundTrendingTrackcArgs = {"offset": 0, "limit":TRENDING_LIMIT}
-            top_tracks = _get_underground_trending_with_session(session, underground_args, strategy, False)
+            underground_args: GetUndergroundTrendingTrackcArgs = {
+                "offset": 0,
+                "limit": TRENDING_LIMIT,
+            }
+            top_tracks = _get_underground_trending_with_session(
+                session, underground_args, strategy, False
+            )
 
             dispatch_trending_challenges(
                 challenge_bus,
@@ -120,6 +132,7 @@ def enqueue_trending_challenges(
                 top_tracks,
                 version,
                 date,
+                TrendingType.UNDERGROUND_TRACKS,
             )
 
         trending_playlist_versions = trending_strategy_factory.get_versions_for_type(
@@ -132,9 +145,11 @@ def enqueue_trending_challenges(
             playlists_args: GetTrendingPlaylistsArgs = {
                 "limit": TRENDING_LIMIT,
                 "offset": 0,
-                "time": time_range
+                "time": time_range,
             }
-            trending_playlists = _get_trending_playlists_with_session(session, playlists_args, strategy, False)
+            trending_playlists = _get_trending_playlists_with_session(
+                session, playlists_args, strategy, False
+            )
             for idx, playlist in enumerate(trending_playlists):
                 challenge_bus.dispatch(
                     ChallengeEvent.trending_playlist,
@@ -157,7 +172,7 @@ def enqueue_trending_challenges(
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="calculate_trending_challenges", bind=True)
 def calculate_trending_challenges_task(self, date=None):
     """Caches all trending combination of time-range and genre (including no genre)."""

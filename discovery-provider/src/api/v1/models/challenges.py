@@ -1,5 +1,6 @@
-from .common import ns
 from flask_restx import fields
+
+from .common import ns
 
 attestation = ns.model(
     "attestation",
@@ -17,6 +18,8 @@ undisbursed_challenge = ns.model(
         "specifier": fields.String(required=True),
         "amount": fields.String(required=True),
         "completed_blocknumber": fields.Integer(required=True),
+        "handle": fields.String(required=True),
+        "wallet": fields.String(required=True),
     },
 )
 

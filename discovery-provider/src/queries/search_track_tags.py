@@ -1,9 +1,9 @@
 import logging  # pylint: disable=C0302
 
-from src.models import Track, TagTrackUserMatview
-from src.utils import helpers
+from src.models import TagTrackUserMatview, Track
 from src.queries import response_name_constants
-from src.queries.query_helpers import populate_track_metadata, get_track_play_counts
+from src.queries.query_helpers import get_track_play_counts, populate_track_metadata
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 

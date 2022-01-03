@@ -1,6 +1,13 @@
-from typing import List, Tuple, TypedDict, Optional
+from typing import List, Optional, Tuple, TypedDict
+
 from sqlalchemy import and_, asc
-from src.models import UserChallenge, Challenge, ChallengeDisbursement
+from src.models import (
+    Challenge,
+    ChallengeDisbursement,
+    User,
+    UserBankAccount,
+    UserChallenge,
+)
 
 
 class UndisbursedChallengeResponse(TypedDict):
@@ -9,17 +16,22 @@ class UndisbursedChallengeResponse(TypedDict):
     specifier: str
     amount: str
     completed_blocknumber: Optional[int]
+    handle: str
+    wallet: str
 
 
 def to_challenge_response(
-    user_challenge: UserChallenge, challenge: Challenge
+    user_challenge: UserChallenge, challenge: Challenge, handle: str, wallet: str
 ) -> UndisbursedChallengeResponse:
+
     return {
         "challenge_id": challenge.id,
         "user_id": user_challenge.user_id,
         "specifier": user_challenge.specifier,
         "amount": challenge.amount,
         "completed_blocknumber": user_challenge.completed_blocknumber,
+        "handle": handle,
+        "wallet": wallet,
     }
 
 
@@ -40,7 +52,7 @@ def get_undisbursed_challenges(
     session, args: UndisbursedChallengesArgs
 ) -> List[UndisbursedChallengeResponse]:
     undisbursed_challenges_query = (
-        session.query(UserChallenge, Challenge)
+        session.query(UserChallenge, Challenge, User.handle, User.wallet)
         .outerjoin(
             ChallengeDisbursement,
             and_(
@@ -53,11 +65,15 @@ def get_undisbursed_challenges(
             Challenge,
             Challenge.id == UserChallenge.challenge_id,
         )
+        .join(User, UserChallenge.user_id == User.user_id)
+        # Join against UserBank to ensure only users with banks are disbursable
+        .join(UserBankAccount, UserBankAccount.ethereum_address == User.wallet)
         .filter(
             # Check that there is no matching challenge disburstment
             ChallengeDisbursement.challenge_id == None,
             UserChallenge.is_complete == True,
             Challenge.active == True,
+            User.is_current == True,
         )
         .order_by(
             asc(UserChallenge.completed_blocknumber),
@@ -90,12 +106,12 @@ def get_undisbursed_challenges(
         )
 
     undisbursed_challenges: List[
-        Tuple[UserChallenge, Challenge]
+        Tuple[UserChallenge, Challenge, str, str]
     ] = undisbursed_challenges_query.all()
 
     undisbursed_challenges_response: List[UndisbursedChallengeResponse] = [
-        to_challenge_response(user_challenge, challenge)
-        for user_challenge, challenge in undisbursed_challenges
+        to_challenge_response(user_challenge, challenge, handle, wallet)
+        for user_challenge, challenge, handle, wallet in undisbursed_challenges
     ]
 
     return undisbursed_challenges_response

@@ -1,6 +1,10 @@
 const config = require('./config')
 
-const { requestNotExcludedFromLogging } = require('./logging')
+const {
+  requestNotExcludedFromLogging,
+  getDuration,
+  setFieldsInChildLogger
+} = require('./logging')
 const { generateTimestampAndSignature } = require('./apiSigning')
 
 module.exports.handleResponse = (func) => {
@@ -55,22 +59,18 @@ module.exports.handleResponseWithHeartbeat = (func) => {
       sendResponseWithHeartbeatTerminator(req, res, resp)
       next()
     } catch (error) {
-      sendResponseWithHeartbeatTerminator(
-        req,
-        res,
-        errorResponse(500, error)
-      )
+      sendResponseWithHeartbeatTerminator(req, res, errorResponse(500, error))
     }
   }
 }
 
-const sendResponse = module.exports.sendResponse = (req, res, resp) => {
-  const endTime = process.hrtime(req.startTime)
-  const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
-  let logger = req.logger.child({
-    statusCode: resp.statusCode,
-    duration
+const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
+  const duration = getDuration(req)
+  let logger = setFieldsInChildLogger(req, resp, {
+    duration,
+    statusCode: resp.statusCode
   })
+
   if (resp.statusCode === 200) {
     if (requestNotExcludedFromLogging(req.originalUrl)) {
       logger.info('Success')
@@ -80,7 +80,14 @@ const sendResponse = module.exports.sendResponse = (req, res, resp) => {
       errorMessage: resp.object.error
     })
     if (req && req.body) {
-      logger.info('Error processing request:', resp.object.error, '|| Request Body:', req.body, '|| Request Query Params:', req.query)
+      logger.info(
+        'Error processing request:',
+        resp.object.error,
+        '|| Request Body:',
+        req.body,
+        '|| Request Query Params:',
+        req.query
+      )
     } else {
       logger.info('Error processing request:', resp.object.error)
     }
@@ -91,15 +98,14 @@ const sendResponse = module.exports.sendResponse = (req, res, resp) => {
   res.set('Access-Control-Expose-Headers', 'CN-Request-ID')
 
   res.status(resp.statusCode).send(resp.object)
-}
+})
 
 const sendResponseWithHeartbeatTerminator =
-  module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
-    const endTime = process.hrtime(req.startTime)
-    const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
-    let logger = req.logger.child({
-      statusCode: resp.statusCode,
-      duration
+  (module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
+    const duration = getDuration(req)
+    let logger = setFieldsInChildLogger(req, resp, {
+      duration,
+      statusCode: resp.statusCode
     })
     if (resp.statusCode === 200) {
       if (requestNotExcludedFromLogging(req.originalUrl)) {
@@ -110,14 +116,24 @@ const sendResponseWithHeartbeatTerminator =
         errorMessage: resp.object.error
       })
       if (req && req.body) {
-        logger.info('Error processing request:', resp.object.error, '|| Request Body:', req.body)
+        logger.info(
+          'Error processing request:',
+          resp.object.error,
+          '|| Request Body:',
+          req.body
+        )
       } else {
         logger.info('Error processing request:', resp.object.error)
       }
 
       // Converts the error object into an object that JSON.stringify can parse
       if (resp.object.error) {
-        resp.object.error = Object.getOwnPropertyNames(resp.object.error).reduce((acc, cur) => { acc[cur] = resp.object.error[cur]; return acc }, {})
+        resp.object.error = Object.getOwnPropertyNames(
+          resp.object.error
+        ).reduce((acc, cur) => {
+          acc[cur] = resp.object.error[cur]
+          return acc
+        }, {})
       }
     }
 
@@ -128,15 +144,15 @@ const sendResponseWithHeartbeatTerminator =
 
     // Terminate the response
     res.end(response)
-  }
+  })
 
-const isValidResponse = module.exports.isValidResponse = (resp) => {
+const isValidResponse = (module.exports.isValidResponse = (resp) => {
   if (!resp || !resp.statusCode || !resp.object) {
     return false
   }
 
   return true
-}
+})
 
 module.exports.successResponse = (obj = {}) => {
   const toSignData = {
@@ -146,7 +162,10 @@ module.exports.successResponse = (obj = {}) => {
     signer: config.get('delegateOwnerWallet')
   }
 
-  const { timestamp, signature } = generateTimestampAndSignature(toSignData, config.get('delegatePrivateKey'))
+  const { timestamp, signature } = generateTimestampAndSignature(
+    toSignData,
+    config.get('delegatePrivateKey')
+  )
 
   return {
     statusCode: 200,
@@ -158,12 +177,12 @@ module.exports.successResponse = (obj = {}) => {
   }
 }
 
-const errorResponse = module.exports.errorResponse = (statusCode, message) => {
+const errorResponse = (module.exports.errorResponse = (statusCode, message) => {
   return {
     statusCode: statusCode,
     object: { error: message }
   }
-}
+})
 
 module.exports.errorResponseUnauthorized = (message) => {
   return errorResponse(401, message)
@@ -190,7 +209,10 @@ module.exports.errorResponseNotFound = (message) => {
 }
 
 module.exports.errorResponseSocketTimeout = (socketTimeout) => {
-  return errorResponse(500, `${socketTimeout} socket timeout exceeded for request`)
+  return errorResponse(
+    500,
+    `${socketTimeout} socket timeout exceeded for request`
+  )
 }
 
 /**
@@ -238,16 +260,20 @@ module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
     throw new Error('Unexpected respObj format')
   }
 
-  requiredFields.map(requiredField => {
+  requiredFields.map((requiredField) => {
     if (!respObj.data.data[requiredField]) {
-      throw new Error(`CNodeResponse missing required data field: ${requiredField}`)
+      throw new Error(
+        `CNodeResponse missing required data field: ${requiredField}`
+      )
     }
   })
 
   const signatureFields = ['signer', 'timestamp', 'signature']
-  signatureFields.map(signatureField => {
+  signatureFields.map((signatureField) => {
     if (!respObj.data[signatureField]) {
-      throw new Error(`CNodeResponse missing required signature field: ${signatureField}`)
+      throw new Error(
+        `CNodeResponse missing required signature field: ${signatureField}`
+      )
     }
   })
 

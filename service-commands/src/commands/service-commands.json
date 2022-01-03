@@ -27,8 +27,8 @@
       "sleep 10",
       "echo 'Migrating contracts'",
       "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
-      "echo 'Writing flask config'",
-      "cd contracts/; node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run"
+      "echo 'Writing configs'",
+      "cd contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
     "down": [
       "cd contracts/; npm run ganache-q"
@@ -42,7 +42,9 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
+      "echo 'Writing configs'",
+      "cd eth-contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
     "down": [
       "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
@@ -240,6 +242,7 @@
       "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
       "echo 'Starting AAO...'",
       "cd $AAO_DIR; ./scripts/configureLocal.sh; docker-compose -f docker-compose-dev.yml up -d",
+      "cp ~/.audius/aao-config.json $PROTOCOL_DIR/identity-service",
       "sleep 5",
       "echo 'AAO Started'"
     ],

@@ -92,9 +92,10 @@ class SeedSession {
     try {
       signUpResponse = await this.libs.Account.signUp(email, password, metadata, profilePictureFile, coverPhotoFile, hasWallet, host, createWAudioUserBank)
     } catch (error) {
-      console.log(error, signUpResponse)
+      console.error(error, signUpResponse)
     }
     if (signUpResponse.error) {
+      console.error(`Got signup error: ${signUpResponse.error} at phase: ${signUpResponse.phase}`)
       throw new Error(signUpResponse.error)
     } else {
       const hedgehogEntropyKey = this.localstorage.getUserEntropy()

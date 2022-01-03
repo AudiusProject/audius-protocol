@@ -1,6 +1,7 @@
 from flask_restx import fields
 from flask_restx.fields import MarshallingError
 from flask_restx.marshalling import marshal
+
 from .common import ns
 
 playlist_identifier = ns.model(
@@ -31,8 +32,8 @@ class PlaylistLibraryIdentifier(fields.Raw):
                 return marshal(value, playlist_library_folder)
         except Exception as e:
             raise MarshallingError(
-                f"Unable to marshal as playlist library identifier: {e}"
-            )
+                "Unable to marshal as playlist library identifier"
+            ) from e
 
     def output(self, key, obj, **kwargs):
         return self.format(obj)

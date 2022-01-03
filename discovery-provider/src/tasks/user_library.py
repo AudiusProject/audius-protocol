@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Dict
 
-from src.app import contract_addresses
+from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -29,7 +29,7 @@ def user_library_state_update(
 
     user_library_abi = update_task.abi_values["UserLibraryFactory"]["abi"]
     user_library_contract = update_task.web3.eth.contract(
-        address=contract_addresses["user_library_factory"], abi=user_library_abi
+        address=get_contract_addresses()["user_library_factory"], abi=user_library_abi
     )
     challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
@@ -112,7 +112,7 @@ def user_library_state_update(
     return num_total_changes
 
 
-######## HELPERS ########
+# ####### HELPERS ####### #
 
 
 def dispatch_favorite(bus: ChallengeEventBus, save, block_number):
