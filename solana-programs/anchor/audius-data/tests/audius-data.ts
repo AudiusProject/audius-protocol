@@ -124,7 +124,7 @@ describe("audius-data", () => {
     let trackId = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
-    console.log(`trackId = ${trackId.testId}}`);
+    console.log(`track: ${trackMetadata}, trackId = ${trackId.testId}}`);
     let tx = await createTrack({
       provider,
       program,
@@ -135,15 +135,11 @@ describe("audius-data", () => {
       adminStgKeypair,
     });
     await confirmLogInTransaction(tx, trackMetadata);
-    let assignedTrackId = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
+    let assignedTrackId = await program.account.track.fetch(
+      newTrackKeypair.publicKey
     );
-    console.log(`trackId assigned = ${assignedTrackId.testId}`);
-    assert(
-      assignedTrackId.testId.eq(trackId.testId.add(new anchor.BN(1))),
-      `Expected ${assignedTrackId.testId}, found ${trackId.testId.add(
-        new anchor.BN(1)
-      )}`
+    console.log(
+      `track: ${trackMetadata}, trackId assigned = ${assignedTrackId.testId}`
     );
   };
 
@@ -556,22 +552,27 @@ describe("audius-data", () => {
     let newTrackKeypair2 = anchor.web3.Keypair.generate();
     let newTrackKeypair3 = anchor.web3.Keypair.generate();
     let trackMetadata = randomCID();
+    let trackMetadata2 = randomCID();
+    let trackMetadata3 = randomCID();
     let start = Date.now();
     await Promise.all([
       testCreateTrack({
         trackMetadata,
         newTrackKeypair,
+        adminStgKeypair,
         userAuthorityKey: newUserKey,
         trackOwnerPDA: newUserAcctPDA,
       }),
       testCreateTrack({
-        trackMetadata,
+        trackMetadata: trackMetadata2,
+        adminStgKeypair,
         newTrackKeypair: newTrackKeypair2,
         userAuthorityKey: newUserKey,
         trackOwnerPDA: newUserAcctPDA,
       }),
       testCreateTrack({
-        trackMetadata,
+        trackMetadata: trackMetadata3,
+        adminStgKeypair,
         newTrackKeypair: newTrackKeypair3,
         userAuthorityKey: newUserKey,
         trackOwnerPDA: newUserAcctPDA,
