@@ -156,7 +156,7 @@ module.exports = function (app) {
   )
 }
 
-function _formatBytes (bytes, decimals = 2) {
+function _formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes'
 
   const k = 1024

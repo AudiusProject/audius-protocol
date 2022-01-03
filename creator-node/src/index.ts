@@ -60,8 +60,8 @@ const getPort = () => {
   const openRestyCacheCIDEnabled = config.get('openRestyCacheCIDEnabled')
 
   if (openRestyCacheCIDEnabled) {
-    return 3000 
-  } 
+    return 3000
+  }
 
   return config.get('port')
 }
