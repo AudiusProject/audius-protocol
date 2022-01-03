@@ -212,8 +212,10 @@ class DBManager {
    * @param {Number?} clockMax if provided, consider only Files with clock < clockMax (exclusive)
    * @returns {Number} filesHash
    */
-  static async fetchFilesHashFromDB ({
-    lookupKey: { lookupCNodeUserUUID, lookupWallet }, clockMin = null, clockMax = null
+  static async fetchFilesHashFromDB({
+    lookupKey: { lookupCNodeUserUUID, lookupWallet },
+    clockMin = null,
+    clockMax = null
   }) {
     let subquery = 'select multihash from "Files"'
 
@@ -235,12 +237,12 @@ class DBManager {
     }
     subquery += ` order by "clock" asc`
 
-    const filesHashResp = (await sequelize.query(`
+    const filesHashResp = await sequelize.query(`
       select
         md5(cast(array_agg(sorted_hashes.multihash) as text))
       from (${subquery}) as sorted_hashes;
-    `))
-    const filesHash = filesHashResp[0][0]['md5']
+    `)
+    const filesHash = filesHashResp[0][0].md5
     return filesHash
   }
 }
