@@ -1,15 +1,16 @@
 import logging
 import time
-import sqlalchemy as sa
-from src.tasks.celery_app import celery
+
+from sqlalchemy import func, text
 from src.models import IndexingCheckpoints, Play
+from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
 
 logger = logging.getLogger(__name__)
 
 AGGREGATE_PLAYS_TABLE_NAME = "aggregate_plays"
 
-### UPDATE_AGGREGATE_PLAYS_QUERY ###
+# UPDATE_AGGREGATE_PLAYS_QUERY
 # Get new plays that came after the last indexing checkpoint for aggregate_play
 # Group those new plays by play item id to get the aggregate play counts
 # For new play item ids, insert those aggregate counts
@@ -54,26 +55,26 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
         count = aggregate_plays.count + EXCLUDED.count
     """
 
+
 def _update_aggregate_plays(session):
     # get the last updated id that counted towards the current aggregate plays
-    prev_id_checkpoint = (session.query(IndexingCheckpoints.last_checkpoint)
-        .filter(IndexingCheckpoints.tablename == AGGREGATE_PLAYS_TABLE_NAME)
+    prev_id_checkpoint = (
+        session.query(IndexingCheckpoints.last_checkpoint).filter(
+            IndexingCheckpoints.tablename == AGGREGATE_PLAYS_TABLE_NAME
+        )
     ).scalar()
 
     if not prev_id_checkpoint:
         prev_id_checkpoint = 0
 
     # get the new latest
-    new_id_checkpoint = (
-        session.query(Play.id)
-        .order_by(Play.id.desc()).limit(1)
-    ).one().id
+    new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
     # update aggregate plays with new plays that came after the prev_id_checkpoint
     logger.info(f"index_aggregate_plays.py | Updating {AGGREGATE_PLAYS_TABLE_NAME}")
 
     session.execute(
-        sa.text(UPDATE_AGGREGATE_PLAYS_QUERY),
+        text(UPDATE_AGGREGATE_PLAYS_QUERY),
         {
             "prev_id_checkpoint": prev_id_checkpoint,
             "new_id_checkpoint": new_id_checkpoint,
@@ -82,15 +83,15 @@ def _update_aggregate_plays(session):
 
     # update indexing_checkpoints with the new id
     session.execute(
-        sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
+        text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
         {
             "tablename": AGGREGATE_PLAYS_TABLE_NAME,
             "last_checkpoint": new_id_checkpoint,
-        }
+        },
     )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_aggregate_plays", bind=True)
 def update_aggregate_plays(self):
     # Cache custom task class properties

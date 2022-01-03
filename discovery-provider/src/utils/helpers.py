@@ -19,6 +19,7 @@ from src import exceptions
 
 from . import multihash
 
+
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
@@ -280,7 +281,7 @@ def configure_flask_app_logging(app, loglevel_str):
 
         parts = []
         for name, value in log_params.items():
-            part = "{}={}".format(name, value)
+            part = f"{name}={value}"
             parts.append(part)
 
         logger.info("handle flask request", extra=log_params)
@@ -329,11 +330,11 @@ def multihash_digest_to_cid(multihash_digest):
 
 def get_web3_endpoint(shared_config):
     if shared_config["web3"]["port"] != "443":
-        web3endpoint = "http://{}:{}".format(
-            shared_config["web3"]["host"], shared_config["web3"]["port"]
+        web3endpoint = (
+            f"http://{shared_config['web3']['host']}:{shared_config['web3']['port']}"
         )
     else:
-        web3endpoint = "https://{}".format(shared_config["web3"]["host"])
+        web3endpoint = f"https://{shared_config['web3']['host']}"
     return web3endpoint
 
 
@@ -453,7 +454,7 @@ def create_track_slug(title, track_id, collision_id=0):
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.",
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"",
         "",
         sanitized_title,
     )

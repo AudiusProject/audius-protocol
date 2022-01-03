@@ -1,19 +1,20 @@
 import logging
 from datetime import datetime
+
 from sqlalchemy.orm.session import make_transient
-from src.app import contract_addresses, eth_abi_values
+from src.app import get_contract_addresses, get_eth_abi_values
 from src.models import URSMContentNode
-from src.tasks.users import lookup_user_record, invalidate_old_user
 from src.tasks.index_network_peers import (
     content_node_service_type,
     sp_factory_registry_key,
 )
+from src.tasks.users import invalidate_old_user, lookup_user_record
+from src.utils.indexing_errors import IndexingError
+from src.utils.redis_cache import get_pickled_key, get_sp_id_key
 from src.utils.user_event_constants import (
     user_replica_set_manager_event_types_arr,
     user_replica_set_manager_event_types_lookup,
 )
-from src.utils.redis_cache import get_pickled_key, get_sp_id_key
-from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ def user_replica_set_state_update(
         "abi"
     ]
     user_contract = update_task.web3.eth.contract(
-        address=contract_addresses["user_replica_set_manager"],
+        address=get_contract_addresses()["user_replica_set_manager"],
         abi=user_replica_set_manager_abi,
     )
 
@@ -283,13 +284,14 @@ def get_sp_factory_inst(update_task):
         shared_config["eth_contracts"]["registry"]
     )
     eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
     sp_factory_address = eth_registry_instance.functions.getContract(
         sp_factory_registry_key
     ).call()
     sp_factory_inst = eth_web3.eth.contract(
-        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+        address=sp_factory_address,
+        abi=get_eth_abi_values()["ServiceProviderFactory"]["abi"],
     )
     return sp_factory_inst
 

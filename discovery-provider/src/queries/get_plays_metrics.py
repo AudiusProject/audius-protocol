@@ -1,6 +1,7 @@
 import logging
 import time
-from sqlalchemy import func, desc
+
+from sqlalchemy import desc, func
 from src.models import Play
 from src.utils import db_session
 

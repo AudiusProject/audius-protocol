@@ -1,8 +1,8 @@
 from src import exceptions
-from src.models import User, Track, Repost, RepostType, Follow
+from src.models import Follow, Repost, RepostType, Track, User
+from src.queries.query_helpers import paginate_query
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import paginate_query
 
 
 def get_track_repost_intersection_users(repost_track_id, follower_user_id):

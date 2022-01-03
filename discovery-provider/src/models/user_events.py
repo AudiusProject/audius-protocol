@@ -1,11 +1,7 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Boolean,
-    ForeignKey
-)
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+
 from .models import Base
+
 
 class UserEvents(Base):
     """
@@ -19,6 +15,7 @@ class UserEvents(Base):
 
     Future events may wish to take on the shape of JSONB data within the UserEvents table itself.
     """
+
     __tablename__ = "user_events"
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)

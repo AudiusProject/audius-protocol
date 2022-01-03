@@ -7,7 +7,7 @@ const redis = require('../redis')
 const parseInfo = (info) => {
   const lines = info.split('\r\n')
   const obj = {}
-  for (var i = 0, l = info.length; i < l; ++i) {
+  for (let i = 0, l = info.length; i < l; ++i) {
     let line = lines[i]
     if (line && line.split) {
       line = line.split(':')

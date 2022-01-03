@@ -1,17 +1,18 @@
 import logging
-from src.app import contract_addresses
-from src.models import IPLDBlacklistBlock, BlacklistedIPLD
+
+from src.app import get_contract_addresses
+from src.models import BlacklistedIPLD, IPLDBlacklistBlock
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import ipld_blacklist_state_update
 from src.utils.redis_constants import (
-    most_recent_indexed_ipld_block_redis_key,
     most_recent_indexed_ipld_block_hash_redis_key,
+    most_recent_indexed_ipld_block_redis_key,
 )
 
 logger = logging.getLogger(__name__)
 
 
-######## HELPER FUNCTIONS ########
+# ####### HELPER FUNCTIONS ####### #
 
 
 default_padded_start_hash = (
@@ -146,7 +147,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle ipld blacklist operations
                 if (
                     tx_target_contract_address
-                    == contract_addresses["ipld_blacklist_factory"]
+                    == get_contract_addresses()["ipld_blacklist_factory"]
                 ):
                     logger.info(
                         f"IPLDBlacklistFactory operation, contract addr from block: {tx_target_contract_address}"
@@ -227,7 +228,7 @@ def revert_blocks(self, db, revert_blocks_list):
             ).delete()
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 
 
 @celery.task(name="update_ipld_blacklist", bind=True)

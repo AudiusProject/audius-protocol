@@ -1,8 +1,7 @@
 import logging
-
 from datetime import datetime
-from dateutil.parser import parse
 
+from dateutil.parser import parse
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
@@ -50,8 +49,8 @@ class TrendingTracksStrategyePWJD(BaseTrendingStrategy):
     def __init__(self):
         super().__init__(TrendingType.TRACKS, TrendingVersion.ePWJD)
 
-    def get_track_score(self, time, track):
-        return z(time, track)
+    def get_track_score(self, time_range, track):
+        return z(time_range, track)
 
     def get_score_params(self):
         return {"xf": True, "pt": 0, "nm": 5}

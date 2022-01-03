@@ -1,12 +1,13 @@
 import functools
-from flask.globals import request
+
 from eth_account.messages import encode_defunct
+from flask.globals import request
 from src.models.models import User
-from src.utils import web3_provider, db_session
+from src.utils import db_session, web3_provider
 
+MESSAGE_HEADER = "Encoded-Data-Message"
+SIGNATURE_HEADER = "Encoded-Data-Signature"
 
-MESSAGE_HEADER = 'Encoded-Data-Message'
-SIGNATURE_HEADER = 'Encoded-Data-Signature'
 
 def auth_middleware(**kwargs):
     """
@@ -26,6 +27,7 @@ def auth_middleware(**kwargs):
     @functools.wraps simply ensures that if Python introspects `inner_wrap`, it refers to
     `func` rather than `inner_wrap`.
     """
+
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
@@ -37,8 +39,7 @@ def auth_middleware(**kwargs):
                 web3 = web3_provider.get_web3()
                 encoded_to_recover = encode_defunct(text=message)
                 wallet = web3.eth.account.recover_message(
-                    encoded_to_recover,
-                    signature=signature
+                    encoded_to_recover, signature=signature
                 )
                 db = db_session.get_db_read_replica()
                 with db.scoped_session() as session:
@@ -46,14 +47,15 @@ def auth_middleware(**kwargs):
                         session.query(User.user_id)
                         .filter(
                             # Convert checksum wallet to lowercase
-                            User.wallet==wallet.lower(),
-                            User.is_current==True
+                            User.wallet == wallet.lower(),
+                            User.is_current == True,
                         )
                         .first()
                     )
                     if user:
                         authed_user_id = user.user_id
             return func(*args, **kwargs, authed_user_id=authed_user_id)
+
         return inner_wrap
 
     return outer_wrap
