@@ -488,4 +488,75 @@ describe("audius-data", () => {
       userAuthorityKey: newUserKey,
     });
   });
+
+  it("create multiple tracks in parallel", async () => {
+    let {
+      privKey,
+      pkString,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      metadata,
+    } = initTestConstants();
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+    let newUserAcctPDA = derivedAddress;
+
+    await testInitUser(
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserAcctPDA
+    );
+
+    // New sol key that will be used to permission user updates
+    let newUserKey = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKey.publicKey.toString();
+
+    await testInitUserSolPubkey({
+      message,
+      pkString,
+      privKey,
+      newUserKey,
+      newUserAcctPDA,
+    });
+
+    let newTrackKeypair = anchor.web3.Keypair.generate();
+    let newTrackKeypair2 = anchor.web3.Keypair.generate();
+    let newTrackKeypair3 = anchor.web3.Keypair.generate();
+    let trackMetadata = randomCID();
+    let start = Date.now();
+    await Promise.all([
+      testCreateTrack({
+        trackMetadata,
+        newTrackKeypair,
+        userAuthorityKey: newUserKey,
+        trackOwnerPDA: newUserAcctPDA,
+      }),
+      testCreateTrack({
+        trackMetadata,
+        newTrackKeypair: newTrackKeypair2,
+        userAuthorityKey: newUserKey,
+        trackOwnerPDA: newUserAcctPDA,
+      }),
+      testCreateTrack({
+        trackMetadata,
+        newTrackKeypair: newTrackKeypair3,
+        userAuthorityKey: newUserKey,
+        trackOwnerPDA: newUserAcctPDA,
+      }),
+    ]);
+    console.log(`Created 3 tracks in ${Date.now() - start}ms`);
+  });
 });
