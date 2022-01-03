@@ -19,7 +19,7 @@ mock_tx_result_1: ConfirmedSignatureForAddressResult = {
 
 mock_tx_result_2: ConfirmedSignatureForAddressResult = {
     "signature": "5211pasG9iDECHnNm4GCWH9xETWJYRk4cxWVcJQyqTJCFGbmmvki2oHyvHJL8MgppztYjXsXPyG4RXcMXuQRpBia",
-    "slot": mock_tx_result_1 + 100,
+    "slot": mock_tx_result_1["slot"] + 100,
     "blockTime": 1640126543,
     "confirmationStatus": "finalized",
     "err": None,
