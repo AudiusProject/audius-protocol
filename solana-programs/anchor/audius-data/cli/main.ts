@@ -38,7 +38,8 @@ const keypairFromFilePath = (path: string) => {
 
 /// Initialize constants requird for any CLI functionality
 function initializeCLI(ownerKeypairPath: string) {
-  const network = "https://api.testnet.solana.com";
+  // const network = "https://api.testnet.solana.com";
+  const network = "http://127.0.0.1:8899";
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
   const wallet = new Wallet(ownerKeypair);
