@@ -1,6 +1,7 @@
 import pickle
 from time import sleep
 from unittest.mock import patch
+
 import flask
 from src.utils.redis_cache import cache
 

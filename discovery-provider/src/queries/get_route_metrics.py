@@ -1,17 +1,18 @@
+import functools as ft
 import logging
 import time
-import functools as ft
 from datetime import date, timedelta
-from sqlalchemy import func, asc, desc, or_
+
+from sqlalchemy import asc, desc, func, or_
 from src import exceptions
 from src.models import (
+    AggregateDailyTotalUsersMetrics,
+    AggregateDailyUniqueUsersMetrics,
+    AggregateMonthlyTotalUsersMetrics,
+    AggregateMonthlyUniqueUsersMetrics,
     RouteMetrics,
     RouteMetricsDayMatview,
     RouteMetricsMonthMatview,
-    AggregateDailyUniqueUsersMetrics,
-    AggregateDailyTotalUsersMetrics,
-    AggregateMonthlyUniqueUsersMetrics,
-    AggregateMonthlyTotalUsersMetrics,
 )
 from src.utils import db_session
 
@@ -508,16 +509,14 @@ def _get_route_metrics(session, args):
         )
     else:
         metrics_query = metrics_query.filter(
-            RouteMetrics.route_path.like("{}%".format(args.get("path")))
+            RouteMetrics.route_path.like(f"{args.get('path')}%")
         )
 
     if args.get("query_string", None) != None:
         metrics_query = metrics_query.filter(
             or_(
-                RouteMetrics.query_string.like("%{}".format(args.get("query_string"))),
-                RouteMetrics.query_string.like(
-                    "%{}&%".format(args.get("query_string"))
-                ),
+                RouteMetrics.query_string.like(f"%{args.get('query_string')}"),
+                RouteMetrics.query_string.like(f"%{args.get('query_string')}&%"),
             )
         )
 

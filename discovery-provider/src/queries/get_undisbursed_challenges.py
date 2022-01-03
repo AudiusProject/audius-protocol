@@ -1,6 +1,13 @@
-from typing import List, Tuple, TypedDict, Optional
+from typing import List, Optional, Tuple, TypedDict
+
 from sqlalchemy import and_, asc
-from src.models import UserChallenge, Challenge, ChallengeDisbursement, User
+from src.models import (
+    Challenge,
+    ChallengeDisbursement,
+    User,
+    UserBankAccount,
+    UserChallenge,
+)
 
 
 class UndisbursedChallengeResponse(TypedDict):
@@ -16,6 +23,7 @@ class UndisbursedChallengeResponse(TypedDict):
 def to_challenge_response(
     user_challenge: UserChallenge, challenge: Challenge, handle: str, wallet: str
 ) -> UndisbursedChallengeResponse:
+
     return {
         "challenge_id": challenge.id,
         "user_id": user_challenge.user_id,
@@ -23,7 +31,7 @@ def to_challenge_response(
         "amount": challenge.amount,
         "completed_blocknumber": user_challenge.completed_blocknumber,
         "handle": handle,
-        "wallet": wallet
+        "wallet": wallet,
     }
 
 
@@ -58,11 +66,14 @@ def get_undisbursed_challenges(
             Challenge.id == UserChallenge.challenge_id,
         )
         .join(User, UserChallenge.user_id == User.user_id)
+        # Join against UserBank to ensure only users with banks are disbursable
+        .join(UserBankAccount, UserBankAccount.ethereum_address == User.wallet)
         .filter(
             # Check that there is no matching challenge disburstment
             ChallengeDisbursement.challenge_id == None,
             UserChallenge.is_complete == True,
             Challenge.active == True,
+            User.is_current == True,
         )
         .order_by(
             asc(UserChallenge.completed_blocknumber),

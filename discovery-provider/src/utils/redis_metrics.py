@@ -2,19 +2,20 @@ import functools
 import json
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
+
 import redis
 from flask.globals import request
-from src.utils.config import shared_config
-from src.utils.helpers import get_ip, redis_set_and_dump, redis_get_or_restore
-from src.utils.query_params import stringify_query_params, app_name_param
 from src.models import (
-    AggregateDailyUniqueUsersMetrics,
-    AggregateDailyTotalUsersMetrics,
-    AggregateMonthlyUniqueUsersMetrics,
-    AggregateMonthlyTotalUsersMetrics,
     AggregateDailyAppNameMetrics,
+    AggregateDailyTotalUsersMetrics,
+    AggregateDailyUniqueUsersMetrics,
     AggregateMonthlyAppNameMetrics,
+    AggregateMonthlyTotalUsersMetrics,
+    AggregateMonthlyUniqueUsersMetrics,
 )
+from src.utils.config import shared_config
+from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
+from src.utils.query_params import app_name_param, stringify_query_params
 
 logger = logging.getLogger(__name__)
 

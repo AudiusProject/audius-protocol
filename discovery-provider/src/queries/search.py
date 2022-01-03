@@ -3,7 +3,6 @@ from src import api_helpers
 from src.queries.queries import to_dict
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.search_queries import SearchKind, search
-
 from src.utils.redis_metrics import record_metrics
 
 bp = Blueprint("search_queries", __name__)
@@ -17,8 +16,7 @@ def validate_search_args(args):
     kind = args.get("kind", "all")
     if kind not in SearchKind.__members__:
         return api_helpers.error_response(
-            "Invalid value for parameter 'kind' must be in %s"
-            % [k.name for k in SearchKind],
+            f"Invalid value for parameter 'kind' must be in {[k.name for k in SearchKind]}",
             400,
         )
     return None

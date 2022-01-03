@@ -675,9 +675,16 @@ describe('Test fetchFilesHashFromDB()', async () => {
     const randomFileQueryObjects = generateRandomFileQueryObjects(numFiles)
     const multihashes = await createFilesForUser(cnodeUserUUID, randomFileQueryObjects)
 
+    // compute expectedFilesHash
     const multihashString = `{${multihashes.join(',')}}`
     const expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
-    const actualFilesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID })
+
+    // fetch filesHash by cnodeUserUUID & assert equal
+    let actualFilesHash = await DBManager.fetchFilesHashFromDB({ lookupKey: { lookupCNodeUserUUID: cnodeUserUUID } })
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+
+    // fetch filesHash by wallet & assert equal
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({ lookupKey: { lookupWallet: cnodeUser.walletPublicKey } })
     assert.strictEqual(actualFilesHash, expectedFilesHash)
   })
 
@@ -692,19 +699,21 @@ describe('Test fetchFilesHashFromDB()', async () => {
     /** clockMin */
     let multihashString = `{${multihashes.slice(clockMin - 1).join(',')}}`
     let expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
-    let actualFilesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID, clockMin })
+    let actualFilesHash = await DBManager.fetchFilesHashFromDB({ lookupKey: { lookupCNodeUserUUID: cnodeUserUUID }, clockMin })
     assert.strictEqual(actualFilesHash, expectedFilesHash)
 
     /** clockMax */
     multihashString = `{${multihashes.slice(0, clockMax - 1).join(',')}}`
     expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
-    actualFilesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID, clockMax })
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({ lookupKey: { lookupCNodeUserUUID: cnodeUserUUID }, clockMax })
     assert.strictEqual(actualFilesHash, expectedFilesHash)
 
     /** clockMin and clockMax */
     multihashString = `{${multihashes.slice(clockMin - 1, clockMax - 1).join(',')}}`
     expectedFilesHash = crypto.createHash('md5').update(multihashString).digest('hex')
-    actualFilesHash = await DBManager.fetchFilesHashFromDB({ cnodeUserUUID, clockMin, clockMax })
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({ lookupKey: { lookupCNodeUserUUID: cnodeUserUUID }, clockMin, clockMax })
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({ lookupKey: { lookupWallet: cnodeUser.walletPublicKey }, clockMin, clockMax })
     assert.strictEqual(actualFilesHash, expectedFilesHash)
   })
 })

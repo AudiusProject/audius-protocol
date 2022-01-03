@@ -112,7 +112,7 @@ def user_library_state_update(
     return num_total_changes
 
 
-######## HELPERS ########
+# ####### HELPERS ####### #
 
 
 def dispatch_favorite(bus: ChallengeEventBus, save, block_number):

@@ -1,6 +1,6 @@
 import time
-import psutil
 
+import psutil
 
 # Global counters to keep track of last sent/recv value
 bytes_sent = None

@@ -1,14 +1,14 @@
 import logging
 from typing import List  # pylint: disable=C0302
-from sqlalchemy import asc
 
+from sqlalchemy import asc
 from src import exceptions
 from src.models import User
 from src.models.user_bank import UserBankAccount
+from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.query_helpers import paginate_query, populate_user_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import populate_user_metadata, paginate_query
-from src.queries.get_unpopulated_users import get_unpopulated_users
 
 logger = logging.getLogger(__name__)
 

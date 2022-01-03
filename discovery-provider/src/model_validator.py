@@ -1,11 +1,13 @@
-import os.path
-import json
 import copy
-from typing import Dict, Any
+import json
 import logging  # pylint: disable=C0302
-from jsonschema import Draft7Validator, ValidationError, SchemaError
+import os.path
+from typing import Any, Dict
+
+from jsonschema import Draft7Validator, SchemaError, ValidationError
 
 logger = logging.getLogger(__name__)
+
 
 # https://app.quicktype.io/ -- JSON schema generator
 class ModelValidator:

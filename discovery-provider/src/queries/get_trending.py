@@ -1,13 +1,13 @@
 import logging
-from src.utils.helpers import decode_string_id  # pylint: disable=C0302
 
+from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 from src.queries.get_trending_tracks import (
-    get_trending_tracks,
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
+    get_trending_tracks,
 )
-from src.api.v1.helpers import extend_track, format_offset, format_limit, to_dict
-from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
+from src.utils.helpers import decode_string_id  # pylint: disable=C0302
+from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,7 @@
 import base58
 from solana.publickey import PublicKey
 
+
 # Retrieve the base public key and derived public key for claimable token acct
 def get_address_pair(mint, hashed_eth_pk, program_id, spl_token_id):
     base_pk, base_seed = get_base_address(mint, program_id)

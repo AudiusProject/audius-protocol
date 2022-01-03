@@ -1,36 +1,36 @@
 # pylint: disable=too-many-lines
-import logging
 import enum
-
+import logging
 from typing import Any
+
 from jsonschema import ValidationError
-from sqlalchemy import event
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship, validates
-from sqlalchemy.sql import null
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
     Boolean,
+    Column,
     Date,
     DateTime,
-    ForeignKey,
-    Text,
     Enum,
-    PrimaryKeyConstraint,
+    ForeignKey,
     Index,
-    func,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    Text,
     Unicode,
     UnicodeText,
+    event,
+    func,
 )
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import relationship, validates
+from sqlalchemy.sql import null
 from src.model_validator import ModelValidator
-
 
 Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
+
 
 # Listen for instrumentation of attributes on the base class
 # to add a listener on that attribute whenever it is set
@@ -580,6 +580,19 @@ class AggregatePlays(Base):
         return f"<AggregatePlays(\
 play_item_id={self.play_item_id},\
 count={self.count})>"
+
+
+class HourlyPlayCounts(Base):
+    __tablename__ = "hourly_play_counts"
+
+    hourly_timestamp = Column(DateTime, primary_key=True, nullable=False)
+    play_count = Column(Integer, nullable=False, index=False)
+
+    def __repr__(self):
+        return f"<HourlyPlayCounts(\
+hourly_timestamp={self.hourly_timestamp},\
+play_count={self.play_count})>"
+
 
 class IndexingCheckpoints(Base):
     __tablename__ = "indexing_checkpoints"
@@ -1205,6 +1218,7 @@ class ListenStreakChallenge(Base):
 user_id={self.user_id},\
 last_listen_date={self.last_listen_date},\
 listen_streak={self.listen_streak})>"
+
 
 class UserListeningHistory(Base):
     __tablename__ = "user_listening_history"
