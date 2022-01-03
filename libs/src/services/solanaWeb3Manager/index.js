@@ -21,6 +21,9 @@ const { PublicKey } = solanaWeb3
 // despite a remaining balance.
 const ZERO_SOL_EPSILON = 0.005
 
+// Generous default connection confirmation timeout to better cope with RPC congestion
+const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
+
 /**
  * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
  */
@@ -58,6 +61,7 @@ class SolanaWeb3Manager {
    * @param {boolean} solanaWeb3Config.shouldUseRelay
    *  whether to submit transactions via a relay, or locally
    * @param {KeyPair} solanaWeb3Config.feePayerKepair
+   * @param {number} [solanaWeb3Config.confirmationTimeout] optional default confirmation timeout
    *  KeyPair for feepayer
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
@@ -87,14 +91,17 @@ class SolanaWeb3Manager {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair
+      feePayerKeypair,
+      confirmationTimeout
     } = this.solanaWeb3Config
 
     // Helper to safely create pubkey from nullable val
     const newPublicKeyNullable = (val) => val ? new PublicKey(val) : null
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
-    this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
+    this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
+      confirmTransactionInitialTimeout: confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
+    })
 
     this.transactionHandler = new TransactionHandler({
       connection: this.connection,
