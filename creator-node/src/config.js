@@ -653,10 +653,10 @@ const config = convict({
     env: 'healthCheckIpfsTimeoutMs',
     default: 30000 // 30s
   },
-  openrestyEnabled: {
+  openRestyCacheCIDEnabled: {
     doc: 'Flag to enable or disable OpenResty',
     format: 'BooleanCustom',
-    env: 'openrestyEnabled',
+    env: 'openRestyCacheCIDEnabled',
     default: false
   }
 

@@ -57,9 +57,9 @@ const getMode = () => {
  * @returns the port number to configure the Content Node app
  */
 const getPort = () => {
-  const openrestyEnabled = config.get('openrestyEnabled')
+  const openRestyCacheCIDEnabled = config.get('openRestyCacheCIDEnabled')
 
-  if (openrestyEnabled) {
+  if (openRestyCacheCIDEnabled) {
     return 3000 
   } 
 

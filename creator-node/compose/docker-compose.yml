@@ -29,7 +29,7 @@ services:
       - manualSyncsDisabled=${manualSyncsDisabled}
       - devMode=${DEV_MODE}
       - spOwnerWallet=${spOwnerWallet}
-      - openrestyEnabled=${openrestyEnabled}
+      - openRestyCacheCIDEnabled=${openRestyCacheCIDEnabled}
     env_file:
       - ./env/base.env
     ports:

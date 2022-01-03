@@ -419,7 +419,6 @@ jobs:
             export spOwnerWallet='yes'
             export isCIBuild=true
             export ipfsPort=5001
-            export portWithOpenRestyEnabled=3000
             npm run test:unit
             npm run test:ci
 
