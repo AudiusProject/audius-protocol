@@ -139,7 +139,6 @@ const tierInfoMap: Record<BadgeTier, { label: string; icon: string }> = {
 
 export const getTierChangeText = (notif: TierChange & { user: User }) => {
   const { label, icon } = tierInfoMap[notif.tier]
-  console.log({ handle: notif.user.handle, notif })
   return {
     link: getUserRoute(notif.user, true),
     text: `I’ve reached ${label} Tier on @AudiusProject! Check out the shiny new badge next to my name ${icon}`

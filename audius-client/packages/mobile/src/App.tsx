@@ -117,9 +117,6 @@ const App = () => {
                 touch targets and onPress will not work.
               */}
                   <AppNavigator />
-                  {/*
-                Commenting out NowPlayingDrawer until all drawers and overlays are migrated to RN
-              */}
                   <Search />
                   <Notifications webRef={webRef} />
                   <Drawers />

@@ -12,7 +12,6 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center'
   },
-
   iconWrapper: {
     width: 28,
     height: 49
@@ -25,6 +24,7 @@ const AnimatedBottomButton = (
   return (
     <AnimatedButtonProvider
       {...props}
+      showUnderlay
       style={styles.animatedButton}
       wrapperStyle={styles.iconWrapper}
     />
