@@ -178,6 +178,14 @@ class DBManager {
     }
   }
 
+  /**
+   * Retrieves md5 hash of all File multihashes for user ordered by clock asc, optionally by clock range
+   *
+   * @param {Object} lookupKey lookup user by either cnodeUserUUID or walletPublicKey
+   * @param {Number?} clockMin if provided, consider only Files with clock >= clockMin (inclusive)
+   * @param {Number?} clockMax if provided, consider only Files with clock < clockMax (exclusive)
+   * @returns {Number} filesHash
+   */
   static async fetchFilesHashFromDB ({
     lookupKey: { lookupCNodeUserUUID, lookupWallet }, clockMin = null, clockMax = null
   }) {

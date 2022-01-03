@@ -529,7 +529,7 @@ describe('Test deleteSessionTokensFromDB when provided an Array of SessionTokens
 
 describe.skip('TODO - Test deleteAllCNodeUserData', async () => {})
 
-describe.only('Test fetchFilesHashFromDB()', async () => {
+describe('Test fetchFilesHashFromDB()', async () => {
   const initialClockVal = 0
   const filesTableInst = models.File
 

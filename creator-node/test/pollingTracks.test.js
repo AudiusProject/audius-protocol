@@ -17,7 +17,7 @@ const DiskManager = require('../src/diskManager')
 const FileManager = require('../src/fileManager')
 
 const { getApp } = require('./lib/app')
-const { createStarterCNodeUser } = require('./lib/dataSeeds')
+const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
@@ -38,8 +38,9 @@ const logContext = {
   }
 }
 
-describe.only('test Polling Tracks with mocked IPFS', function () {
-  let app, server, session, ipfsMock, ipfsLatestMock, libsMock, handleTrackContentRoute, mockServiceRegistry, userId
+describe('test Polling Tracks with mocked IPFS', function () {
+  let app, server, ipfsMock, ipfsLatestMock, libsMock, handleTrackContentRoute, mockServiceRegistry
+  let session, userId, userWallet
 
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
@@ -48,6 +49,7 @@ describe.only('test Polling Tracks with mocked IPFS', function () {
     libsMock.useTrackContentPolling = true
 
     userId = 1
+    userWallet = testEthereumConstants.pubKey.toLowerCase()
 
     process.env.enableIPFSAddTracks = true
 
@@ -58,7 +60,7 @@ describe.only('test Polling Tracks with mocked IPFS', function () {
     app = appInfo.app
     server = appInfo.server
     mockServiceRegistry = appInfo.mockServiceRegistry
-    session = await createStarterCNodeUser(userId)
+    session = await createStarterCNodeUser(userId, userWallet)
 
     // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
     ;({ handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
@@ -272,14 +274,14 @@ describe.only('test Polling Tracks with mocked IPFS', function () {
     )
   })
 
-  it.only('Confirms /users/batch_clock_status works with user and track state for 2 users', async () => {
+  it('Confirms /users/batch_clock_status works with user and track state for 2 users', async () => {
     const numExpectedFilesForUser = TestAudiusTrackFileNumSegments + 1 // numSegments + 320kbps copy
 
     /** Upload track for user 1 */
     ipfsLatestMock.add.exactly(numExpectedFilesForUser)
     ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
     const { fileUUID: fileUUID1, fileDir: fileDir1 } = saveFileToStorage(testAudioFilePath)
-    const uploadTrackResp1 = await handleTrackContentRoute(
+    await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID1, fileDir1, session),
       mockServiceRegistry.blacklistManager
@@ -294,17 +296,23 @@ describe.only('test Polling Tracks with mocked IPFS', function () {
     ipfsLatestMock.add.exactly(numExpectedFilesForUser)
     ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
     const { fileUUID: fileUUID2, fileDir: fileDir2 } = saveFileToStorage(testAudioFilePath)
-    const uploadTrackResp2 = await handleTrackContentRoute(
+    await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID2, fileDir2, session2),
       mockServiceRegistry.blacklistManager
     )
 
     // Confirm /users/batch_clock_status returns expected info
-    const resp = await request(app)
-      .post(`/users/batch_clock_status`, { data: { walletPublicKeys: [session.walletPublicKey, pubKey2] } })
+    const batchClockResp = await request(app)
+      .post(`/users/batch_clock_status`)
+      .send({ walletPublicKeys: [userWallet, pubKey2] })
       .expect(200)
-    console.log(`SIDTEST RESP ${JSON.stringify(resp.body.data)}`)
+    assert.deepStrictEqual(batchClockResp.body.data,
+      { users: [
+        { walletPublicKey: userWallet, clock: numExpectedFilesForUser }
+        , { walletPublicKey: pubKey2, clock: numExpectedFilesForUser }
+      ] }
+    )
   })
 
   // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
