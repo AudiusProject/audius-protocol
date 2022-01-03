@@ -164,6 +164,12 @@ def get_latest_block(db: SessionManager, retry: bool = False):
             )   
             time.sleep(0.5)
             return get_latest_block(db, True)
+        
+        # if it retries getting the block and this time it has transactions when it didn't previously
+        if len(latest_block.tranactions) > 0 and retry:
+            logger.info(
+                f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
+            )
 
         return latest_block
 
