@@ -618,7 +618,7 @@ const generateSubmitAttestationInstruction = async ({
 }
 
 /**
- * Encodes a given signature for SECP recovery
+ * Encodes a given signature to a 64 byte array for SECP recovery
  * @param {string} signature
  * @returns {{encodedSignature: string, recoveryId: number}} encodedSignature
  */
@@ -634,8 +634,10 @@ const encodeSignature = (signature) => {
   const recoveryIdStr = strippedSignature.slice(strippedSignature.length - 2)
   const recoveryId = new BN(recoveryIdStr, 'hex').toNumber()
   strippedSignature = strippedSignature.slice(0, strippedSignature.length - 2)
+  // Pad to 64 bytes - otherwise, signatures starting with '0' would result
+  // in < 64 byte arrays
   const encodedSignature = Uint8Array.of(
-    ...new BN(strippedSignature, 'hex').toArray('be')
+    ...new BN(strippedSignature, 'hex').toArray('be', 64)
   )
   return { encodedSignature, recoveryId }
 }
