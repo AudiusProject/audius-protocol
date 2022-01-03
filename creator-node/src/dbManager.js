@@ -17,7 +17,12 @@ class DBManager {
    *
    * B. Given a list of IDs, batch deletes user session tokens to expire sessions on the server-side.
    */
-  static async createNewDataRecord (queryObj, cnodeUserUUID, sequelizeTableInstance, transaction) {
+  static async createNewDataRecord(
+    queryObj,
+    cnodeUserUUID,
+    sequelizeTableInstance,
+    transaction
+  ) {
     // Increment CNodeUser.clock value by 1
     await models.CNodeUser.increment('clock', {
       where: { cnodeUserUUID },
@@ -25,14 +30,18 @@ class DBManager {
       transaction
     })
 
-    const selectCNodeUserClockSubqueryLiteral = _getSelectCNodeUserClockSubqueryLiteral(cnodeUserUUID)
+    const selectCNodeUserClockSubqueryLiteral =
+      _getSelectCNodeUserClockSubqueryLiteral(cnodeUserUUID)
 
     // Add row in ClockRecords table using new CNodeUser.clock
-    await models.ClockRecord.create({
-      cnodeUserUUID,
-      clock: selectCNodeUserClockSubqueryLiteral,
-      sourceTable: sequelizeTableInstance.name
-    }, { transaction })
+    await models.ClockRecord.create(
+      {
+        cnodeUserUUID,
+        clock: selectCNodeUserClockSubqueryLiteral,
+        sourceTable: sequelizeTableInstance.name
+      },
+      { transaction }
+    )
 
     // Add cnodeUserUUID + clock value to queryObj
     queryObj.cnodeUserUUID = cnodeUserUUID
@@ -53,14 +62,21 @@ class DBManager {
    * @param {*} sequelizeTableInstance
    * @param {Transaction} externalTransaction
    */
-  static async deleteAllCNodeUserDataFromDB ({ lookupCnodeUserUUID, lookupWallet }, externalTransaction) {
-    const transaction = (externalTransaction) || (await models.sequelize.transaction())
-    const log = (msg) => logger.info(`DBManager.deleteAllCNodeUserDataFromDB log: ${msg}`)
+  static async deleteAllCNodeUserDataFromDB(
+    { lookupCnodeUserUUID, lookupWallet },
+    externalTransaction
+  ) {
+    const transaction =
+      externalTransaction || (await models.sequelize.transaction())
+    const log = (msg) =>
+      logger.info(`DBManager.deleteAllCNodeUserDataFromDB log: ${msg}`)
 
     const start = Date.now()
     let error
     try {
-      const cnodeUserWhereFilter = (lookupWallet) ? { walletPublicKey: lookupWallet } : { cnodeUserUUID: lookupCnodeUserUUID }
+      const cnodeUserWhereFilter = lookupWallet
+        ? { walletPublicKey: lookupWallet }
+        : { cnodeUserUUID: lookupCnodeUserUUID }
       const cnodeUser = await models.CNodeUser.findOne({
         where: cnodeUserWhereFilter,
         transaction
@@ -81,7 +97,9 @@ class DBManager {
         where: { cnodeUserUUID },
         transaction
       })
-      log(`${cnodeUserUUIDLog} || numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
+      log(
+        `${cnodeUserUUIDLog} || numAudiusUsersDeleted ${numAudiusUsersDeleted}`
+      )
 
       // TrackFiles must be deleted before associated Tracks can be deleted
       const numTrackFilesDeleted = await models.File.destroy({
@@ -104,19 +122,25 @@ class DBManager {
         where: { cnodeUserUUID },
         transaction
       })
-      log(`${cnodeUserUUIDLog} || numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
+      log(
+        `${cnodeUserUUIDLog} || numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`
+      )
 
       const numClockRecordsDeleted = await models.ClockRecord.destroy({
         where: { cnodeUserUUID },
         transaction
       })
-      log(`${cnodeUserUUIDLog} || numClockRecordsDeleted ${numClockRecordsDeleted}`)
+      log(
+        `${cnodeUserUUIDLog} || numClockRecordsDeleted ${numClockRecordsDeleted}`
+      )
 
       const numSessionTokensDeleted = await models.SessionToken.destroy({
         where: { cnodeUserUUID },
         transaction
       })
-      log(`${cnodeUserUUIDLog} || numSessionTokensDeleted ${numSessionTokensDeleted}`)
+      log(
+        `${cnodeUserUUIDLog} || numSessionTokensDeleted ${numSessionTokensDeleted}`
+      )
 
       // Delete cnodeUser entry
       await cnodeUser.destroy({ transaction })
@@ -147,10 +171,12 @@ class DBManager {
    * @param {Array} sessionTokens from the SessionTokens table
    * @param {Transaction} externalTransaction
    */
-  static async deleteSessionTokensFromDB (sessionTokens, externalTransaction) {
-    const transaction = (externalTransaction) || (await models.sequelize.transaction())
-    const log = (msg) => logger.info(`DBManager.deleteSessionTokensFromDB || log: ${msg}`)
-    const ids = sessionTokens.map(st => st.id)
+  static async deleteSessionTokensFromDB(sessionTokens, externalTransaction) {
+    const transaction =
+      externalTransaction || (await models.sequelize.transaction())
+    const log = (msg) =>
+      logger.info(`DBManager.deleteSessionTokensFromDB || log: ${msg}`)
+    const ids = sessionTokens.map((st) => st.id)
     const start = Date.now()
     let error
     try {
@@ -223,7 +249,7 @@ class DBManager {
  * returns string literal `select "clock" from "CNodeUsers" where "cnodeUserUUID" = '${cnodeUserUUID}'`
  * @dev source: https://stackoverflow.com/questions/36164694/sequelize-subquery-in-where-clause
  */
-function _getSelectCNodeUserClockSubqueryLiteral (cnodeUserUUID) {
+function _getSelectCNodeUserClockSubqueryLiteral(cnodeUserUUID) {
   const subquery = sequelize.dialect.QueryGenerator.selectQuery('CNodeUsers', {
     attributes: ['clock'],
     where: { cnodeUserUUID }

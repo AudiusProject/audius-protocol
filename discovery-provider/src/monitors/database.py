@@ -1,5 +1,6 @@
 import json
 import logging  # pylint: disable=C0302
+
 import sqlalchemy
 
 logger = logging.getLogger(__name__)

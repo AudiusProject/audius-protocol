@@ -1,4 +1,5 @@
 from flask_restx import fields
+
 from .common import ns
 
 route_metric = ns.model(

@@ -1,10 +1,11 @@
 from datetime import datetime
+
 import redis
-from src.models import User, Block, Repost, RepostType, Save, Follow, SaveType
-from src.utils.db_session import get_db
+from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.profile_challenge import profile_challenge_manager
-from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
+from src.models import Block, Follow, Repost, RepostType, Save, SaveType, User
 from src.utils.config import shared_config
+from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
 

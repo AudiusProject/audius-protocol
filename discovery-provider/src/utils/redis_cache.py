@@ -1,7 +1,8 @@
-import logging  # pylint: disable=C0302
 import functools
-import pickle
 import json
+import logging  # pylint: disable=C0302
+import pickle
+
 from flask.globals import request
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
@@ -133,7 +134,7 @@ def cache(**kwargs):
                     try:
                         deserialized = pickle.loads(cached_resp)
                         if transform is not None:
-                            return transform(deserialized)
+                            return transform(deserialized)  # pylint: disable=E1102
                         return deserialized, 200
                     except Exception as e:
                         logger.warning(f"Unable to deserialize cached response: {e}")
@@ -149,7 +150,7 @@ def cache(**kwargs):
                 return resp, status_code
             serialized = pickle.dumps(response)
             redis.set(key, serialized, ttl_sec)
-            return transform(response)
+            return transform(response)  # pylint: disable=E1102
 
         return inner_wrap
 
@@ -157,19 +158,19 @@ def cache(**kwargs):
 
 
 def get_user_id_cache_key(id):
-    return "user:id:{}".format(id)
+    return f"user:id:{id}"
 
 
 def get_track_id_cache_key(id):
-    return "track:id:{}".format(id)
+    return f"track:id:{id}"
 
 
 def get_playlist_id_cache_key(id):
-    return "playlist:id:{}".format(id)
+    return f"playlist:id:{id}"
 
 
 def get_sp_id_key(id):
-    return "sp:id:{}".format(id)
+    return f"sp:id:{id}"
 
 
 def remove_cached_user_ids(redis, user_ids):

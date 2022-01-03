@@ -1,9 +1,8 @@
 import logging  # pylint: disable=C0302
 import pickle
 
-from src.utils import redis_connection
 from src.models import Playlist
-from src.utils import helpers
+from src.utils import helpers, redis_connection
 from src.utils.redis_cache import get_playlist_id_cache_key
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,7 @@
 from datetime import datetime
-from src.queries.get_latest_play import get_latest_play
+
 from src.models import Play
+from src.queries.get_latest_play import get_latest_play
 
 
 def test_get_latest_play(db_mock):

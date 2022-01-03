@@ -579,7 +579,8 @@ class DiscoveryProvider {
      endpoint: string,
      urlParams: string,
      queryParams: object,
-     method: string
+     method: string,
+     headers: object,
    }} requestObj
    * @param {string} discoveryProviderEndpoint
    * @returns
@@ -700,6 +701,7 @@ class DiscoveryProvider {
    *  urlParams: object
    *  queryParams: object
    *  method: string
+   *  headers: object
    * }} {
    *  endpoint: the base route
    *  urlParams: string of URL params to be concatenated after base route
@@ -730,7 +732,7 @@ class DiscoveryProvider {
       parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
     } catch (e) {
       const fullErrString = `Failed to make Discovery Provider request at attempt #${attemptedRetries}, error ${JSON.stringify(e.message)}, request: ${JSON.stringify(requestObj)}`
-      console.error(fullErrString)
+      console.warn(fullErrString)
       if (retry) {
         return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
@@ -818,7 +820,10 @@ class DiscoveryProvider {
       requestUrl = urlJoin(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     }
 
-    const headers = {}
+    let headers = {}
+    if (requestObj.headers) {
+      headers = requestObj.headers
+    }
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId

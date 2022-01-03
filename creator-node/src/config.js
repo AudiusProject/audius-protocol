@@ -11,7 +11,7 @@ const path = require('path')
 convict.addFormat({
   name: 'BooleanCustom',
   validate: function (val) {
-    return (typeof val === 'boolean') || (typeof val === 'string')
+    return typeof val === 'boolean' || typeof val === 'string'
   },
   coerce: function (val) {
     return val === true || val === 'true'
@@ -61,18 +61,38 @@ const config = convict({
     format: Array,
     env: 'allowedUploadFileExtensions',
     default: [
-      'mp2', 'mp3', 'mpga',
-      'mp4', 'm4a', 'm4p', 'm4b', 'm4r', 'm4v',
-      'wav', 'wave',
+      'mp2',
+      'mp3',
+      'mpga',
+      'mp4',
+      'm4a',
+      'm4p',
+      'm4b',
+      'm4r',
+      'm4v',
+      'wav',
+      'wave',
       'flac',
-      'aif', 'aiff', 'aifc',
-      'ogg', 'ogv', 'oga', 'ogx', 'ogm', 'spx', 'opus',
-      '3gp', 'aac',
-      'amr', '3ga',
+      'aif',
+      'aiff',
+      'aifc',
+      'ogg',
+      'ogv',
+      'oga',
+      'ogx',
+      'ogm',
+      'spx',
+      'opus',
+      '3gp',
+      'aac',
+      'amr',
+      '3ga',
       'awb',
       'xwma',
       'webm',
-      'ts', 'tsv', 'tsa'
+      'ts',
+      'tsv',
+      'tsa'
     ]
   },
   redisPort: {
@@ -632,6 +652,12 @@ const config = convict({
     format: 'nat',
     env: 'healthCheckIpfsTimeoutMs',
     default: 30000 // 30s
+  },
+  openRestyCacheCIDEnabled: {
+    doc: 'Flag to enable or disable OpenResty',
+    format: 'BooleanCustom',
+    env: 'openRestyCacheCIDEnabled',
+    default: false
   }
 
   /**
@@ -663,26 +689,26 @@ const config = convict({
  * So if registryAddress or ownerWallet env variables are defined, they take precendence.
  */
 
-const pathTo = fileName => path.join(process.cwd(), fileName)
+const pathTo = (fileName) => path.join(process.cwd(), fileName)
 
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
 if (fs.existsSync(pathTo('eth-contract-config.json'))) {
-  let ethContractConfig = require(pathTo('eth-contract-config.json'))
+  const ethContractConfig = require(pathTo('eth-contract-config.json'))
   config.load({
-    'ethTokenAddress': ethContractConfig.audiusTokenAddress,
-    'ethRegistryAddress': ethContractConfig.registryAddress,
-    'ethOwnerWallet': ethContractConfig.ownerWallet,
-    'ethWallets': ethContractConfig.allWallets
+    ethTokenAddress: ethContractConfig.audiusTokenAddress,
+    ethRegistryAddress: ethContractConfig.registryAddress,
+    ethOwnerWallet: ethContractConfig.ownerWallet,
+    ethWallets: ethContractConfig.allWallets
   })
 }
 
 if (fs.existsSync(pathTo('contract-config.json'))) {
   const dataContractConfig = require(pathTo('contract-config.json'))
   config.load({
-    'dataRegistryAddress': dataContractConfig.registryAddress
+    dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
 
@@ -700,7 +726,9 @@ const asyncConfig = async () => {
     if (!config.get('serviceLatitude')) config.set('serviceLatitude', lat)
     if (!config.get('serviceLongitude')) config.set('serviceLongitude', long)
   } catch (e) {
-    console.error(`config.js:asyncConfig(): Failed to retrieve IP info || ${e.message}`)
+    console.error(
+      `config.js:asyncConfig(): Failed to retrieve IP info || ${e.message}`
+    )
   }
 }
 

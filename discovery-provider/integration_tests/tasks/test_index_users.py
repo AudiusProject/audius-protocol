@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import mock
-from web3 import Web3
 
+from integration_tests.challenges.index_helpers import AttrDict, IPFSClient
 from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models import AssociatedWallet, UserEvents
@@ -10,8 +10,7 @@ from src.utils import helpers
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 from src.utils.user_event_constants import user_event_types_lookup
-
-from integration_tests.challenges.index_helpers import AttrDict, IPFSClient
+from web3 import Web3
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
