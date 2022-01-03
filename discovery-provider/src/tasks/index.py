@@ -130,48 +130,54 @@ def get_latest_block(db: SessionManager, retry: bool = False):
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
     )
-    with db.scoped_session() as session:
-        latest_block = None
-        current_block_query = session.query(Block).filter_by(is_current=True)
-        assert current_block_query.count() == 1, "Expected SINGLE row marked as current"
+    try:
+        with db.scoped_session() as session:
+            current_block_query = session.query(Block).filter_by(is_current=True)
+            assert (
+                current_block_query.count() == 1
+            ), "Expected SINGLE row marked as current"
 
-        current_block_query_results = current_block_query.all()
-        current_block = current_block_query_results[0]
-        current_block_number = current_block.number
+            current_block_query_results = current_block_query.all()
+            current_block = current_block_query_results[0]
+            current_block_number = current_block.number
 
-        if current_block_number == None:
-            current_block_number = 0
+            if current_block_number == None:
+                current_block_number = 0
 
-        target_latest_block_number = current_block_number + block_processing_window
+            target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
-        latest_block_number_from_chain = latest_block_from_chain.number
+            latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+            latest_block_number_from_chain = latest_block_from_chain.number
 
-        target_latest_block_number = min(
-            target_latest_block_number, latest_block_number_from_chain
-        )
-
-        logger.info(
-            f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
-        )
-        latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
-
-        # if the block had no transactions, retry after small delay to confirm the block is actually empty
-        # we've seen potential instances of blocks returning no transactions
-        if len(latest_block.transactions) == 0 and not retry:
-            logger.info(
-                f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
-            )   
-            time.sleep(0.5)
-            return get_latest_block(db, True)
-        
-        # if it retries getting the block and this time it has transactions when it didn't previously
-        if len(latest_block.tranactions) > 0 and retry:
-            logger.info(
-                f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
+            target_latest_block_number = min(
+                target_latest_block_number, latest_block_number_from_chain
             )
 
-        return latest_block
+            logger.info(
+                f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
+            )
+            latest_block = update_task.web3.eth.getBlock(
+                target_latest_block_number, True
+            )
+
+            # if the block had no transactions, retry after small delay to confirm the block is actually empty
+            # we've seen potential instances of blocks returning no transactions
+            if len(latest_block.transactions) == 0 and not retry:
+                logger.info(
+                    f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
+                )
+                time.sleep(0.5)
+                return get_latest_block(db, True)
+
+            # if it retries getting the block and this time it has transactions when it didn't previously
+            if len(latest_block.tranactions) > 0 and retry:
+                logger.info(
+                    f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
+                )
+
+            return latest_block
+    except Exception as e:
+        raise Exception(f"index.py | get_latest_block | got exception {e}")
 
 
 def update_latest_block_redis():
@@ -1014,10 +1020,6 @@ def update_task(self):
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
-            if not latest_block:
-                raise Exception(
-                    f"index.py | {self.request.id} | update_task | None value for get_latest_block"
-                )
 
             # Capture block information between latest and target block hash
             index_blocks_list = []
