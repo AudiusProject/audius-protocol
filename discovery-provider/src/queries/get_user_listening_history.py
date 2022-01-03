@@ -10,8 +10,12 @@ from src.queries.query_helpers import (
     add_users_to_tracks,
 )
 
+
 class GetUserListeningHistoryArgs(TypedDict):
-    # The current user logged in
+    # The current user logged in (from route param)
+    user_id: int
+
+    # The current user logged in (from query arg)
     current_user_id: int
 
     # The maximum number of listens to return
@@ -19,6 +23,7 @@ class GetUserListeningHistoryArgs(TypedDict):
 
     # The offset for the listen history
     offset: int
+
 
 def get_user_listening_history(args: GetUserListeningHistoryArgs):
     """
@@ -35,18 +40,21 @@ def get_user_listening_history(args: GetUserListeningHistoryArgs):
     with db.scoped_session() as session:
         return _get_user_listening_history(session, args)
 
+
 def _get_user_listening_history(session: Session, args: GetUserListeningHistoryArgs):
+    user_id = args["user_id"]
     current_user_id = args["current_user_id"]
     limit = args["limit"]
     offset = args["offset"]
 
+    if user_id != current_user_id:
+        return []
+
     listening_history_results = (
-        session.query(UserListeningHistory.listening_history)
-        .filter(
+        session.query(UserListeningHistory.listening_history).filter(
             UserListeningHistory.user_id == current_user_id
         )
     ).scalar()
-
 
     if not listening_history_results:
         return []
@@ -60,14 +68,11 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
         track_ids.append(listen["track_id"])
         listen_dates.append(listen["timestamp"])
 
-    track_results = (
-        session.query(Track)
-        .filter(
-            Track.track_id.in_(track_ids)
-        )
-    ).all()
+    track_results = (session.query(Track).filter(Track.track_id.in_(track_ids))).all()
 
-    track_results_dict = {track_result.track_id: track_result for track_result in track_results}
+    track_results_dict = {
+        track_result.track_id: track_result for track_result in track_results
+    }
 
     # sort tracks in listening history order
     sorted_track_results = []

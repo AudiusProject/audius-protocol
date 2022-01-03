@@ -22,7 +22,10 @@ from src.queries.get_users import get_users
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_tracks import get_tracks
 from src.queries.get_save_tracks import get_save_tracks
-from src.queries.get_user_listening_history import get_user_listening_history, GetUserListeningHistoryArgs
+from src.queries.get_user_listening_history import (
+    get_user_listening_history,
+    GetUserListeningHistoryArgs,
+)
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
@@ -524,13 +527,15 @@ class TrackHistoryFull(Resource):
     def get(self, user_id):
         """Fetch played tracks history for a user."""
         args = history_route_parser.parse_args()
+        decoded_id = decode_with_abort(user_id, ns)
         current_user_id = get_current_user_id(args)
         offset = format_offset(args)
         limit = format_limit(args)
         get_tracks_args = GetUserListeningHistoryArgs(
-            current_user_id = current_user_id,
-            limit = limit,
-            offset = offset,
+            user_id=decoded_id,
+            current_user_id=current_user_id,
+            limit=limit,
+            offset=offset,
         )
         track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
