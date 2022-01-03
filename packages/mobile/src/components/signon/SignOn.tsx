@@ -418,7 +418,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
         const parsed = querystring.parseUrl(contents)
         const handle = parsed.query?.ref
         if (handle) {
-          console.log('Setting referrer', handle)
           dispatchWeb(signOnActionsWeb.fetchReferrer(handle))
         }
       }

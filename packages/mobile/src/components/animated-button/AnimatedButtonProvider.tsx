@@ -14,17 +14,17 @@ import { useColor } from 'app/utils/theme'
 
 export type BaseAnimatedButtonProps = {
   onPress: () => void
-  uniqueKey: string
-  isActive: boolean
+  isActive?: boolean
   isDisabled?: boolean
-  style: ViewStyle
-  wrapperStyle: ViewStyle
+  showUnderlay?: boolean
+  style?: ViewStyle
+  wrapperStyle?: ViewStyle
 }
 
 type IconJSON = any
 
 type AnimatedButtonProps = {
-  iconJSON: IconJSON
+  iconJSON: IconJSON | IconJSON[]
 } & BaseAnimatedButtonProps
 
 const AnimatedButton = ({
@@ -32,16 +32,29 @@ const AnimatedButton = ({
   onPress,
   isActive,
   isDisabled = false,
+  showUnderlay = false,
   style,
   wrapperStyle
 }: AnimatedButtonProps) => {
+  const [iconIndex, setIconIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const underlayColor = useColor('neutralLight8')
   const animationRef = useRef<LottieView | null>()
 
-  const handleAnimationFinish = useCallback(() => setIsPlaying(false), [
-    setIsPlaying
-  ])
+  const hasMultipleStates = Array.isArray(iconJSON)
+  let source: IconJSON
+  if (hasMultipleStates) {
+    source = iconJSON[iconIndex]
+  } else {
+    source = iconJSON
+  }
+
+  const handleAnimationFinish = useCallback(() => {
+    if (hasMultipleStates) {
+      setIconIndex(iconIndex => (iconIndex + 1) % iconJSON.length)
+    }
+    setIsPlaying(false)
+  }, [setIsPlaying, hasMultipleStates, setIconIndex, iconJSON])
 
   const handleClick = useCallback(() => {
     if (isDisabled) {
@@ -68,8 +81,9 @@ const AnimatedButton = ({
     <TouchableHighlight
       onPress={handleClick}
       onLongPress={handleClick}
+      hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
       style={style}
-      underlayColor={underlayColor}
+      underlayColor={showUnderlay ? underlayColor : null}
     >
       <View style={wrapperStyle}>
         <LottieView
@@ -77,7 +91,7 @@ const AnimatedButton = ({
           onAnimationFinish={handleAnimationFinish}
           progress={progress}
           loop={false}
-          source={iconJSON}
+          source={source}
         />
       </View>
     </TouchableHighlight>
@@ -86,8 +100,8 @@ const AnimatedButton = ({
 
 export type AnimatedButtonProviderProps = {
   isDarkMode: boolean
-  iconDarkJSON: any
-  iconLightJSON: any
+  iconDarkJSON: IconJSON | IconJSON[]
+  iconLightJSON: IconJSON | IconJSON[]
 } & BaseAnimatedButtonProps
 
 const AnimatedButtonProvider = ({
@@ -96,21 +110,29 @@ const AnimatedButtonProvider = ({
   iconLightJSON,
   ...buttonProps
 }: AnimatedButtonProviderProps) => {
-  const [iconJSON, setIconJSON] = useState<IconJSON | null>(null)
-  const defaultAnimations = useRef<IconJSON | null>(null)
-  const darkAnimations = useRef<IconJSON | null>(null)
+  const [iconJSON, setIconJSON] = useState<IconJSON | IconJSON[] | null>(null)
+  const defaultAnimations = useRef<IconJSON | IconJSON[] | null>(null)
+  const darkAnimations = useRef<IconJSON | IconJSON[] | null>(null)
 
   useEffect(() => {
     if (isDarkMode) {
       if (!darkAnimations.current) {
         darkAnimations.current = iconDarkJSON
       }
-      setIconJSON({ ...darkAnimations.current })
+      setIconJSON(
+        Array.isArray(darkAnimations.current)
+          ? [...darkAnimations.current]
+          : { ...darkAnimations.current }
+      )
     } else {
       if (!defaultAnimations.current) {
         defaultAnimations.current = iconLightJSON
       }
-      setIconJSON({ ...defaultAnimations.current })
+      setIconJSON(
+        Array.isArray(defaultAnimations.current)
+          ? [...defaultAnimations.current]
+          : { ...defaultAnimations.current }
+      )
     }
   }, [isDarkMode, setIconJSON, iconDarkJSON, iconLightJSON])
 

@@ -267,7 +267,6 @@ const BottomTabBar = ({
           return (
             <AnimatedBottomButton
               key={key}
-              uniqueKey={key}
               isActive={isFocused}
               isDarkMode={isDarkMode}
               onPress={() => onPress(route, isFocused)}
