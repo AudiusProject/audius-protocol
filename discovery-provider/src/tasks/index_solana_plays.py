@@ -339,7 +339,7 @@ def parse_sol_tx_batch(
     challenge_bus = index_solana_plays.challenge_event_bus
 
     # Process each batch in parallel
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         parse_sol_tx_futures = {
             executor.submit(
                 parse_sol_play_transaction,
