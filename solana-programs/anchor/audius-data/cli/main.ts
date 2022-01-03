@@ -45,6 +45,7 @@ function initializeCLI(ownerKeypairPath: string) {
   const provider = new Provider(connection, wallet, opts);
   const programID = new PublicKey(idl.metadata.address);
   const program = new Program<AudiusData>(idl, programID, provider);
+  console.log(`Using programID=${programID}`);
   return {
     network,
     connection,
@@ -153,7 +154,8 @@ program
   .option(
     "-eth-pk, --eth-private-key <string>",
     "private key for message signing"
-  );
+  )
+  .option("--num-tracks <integer>", "number of tracks to generate");
 
 program.parse(process.argv);
 
@@ -214,20 +216,32 @@ switch (options.function) {
         `initUserTx = ${tx}, userStgAccount = ${options.userStgPubkey}`
       );
     })();
+    break;
   case functionTypes.createTrack:
-    let newTrackAccount = anchor.web3.Keypair.generate();
-    console.log(`createTrack, newTrackAccount ${newTrackAccount.publicKey}`);
+    const numTracks = options.numTracks ? options.numTracks : 1;
+    console.log(
+      `Number of tracks = ${numTracks}, Target User = ${options.userStgPubkey}`
+    );
     (async () => {
+      let promises = [];
       const cliVars = initializeCLI(options.ownerKeypair);
-      let tx = await createTrack({
-        program: cliVars.program,
-        provider: cliVars.provider,
-        metadata: "message",
-        newTrackKeypair: newTrackAccount,
-        userAuthorityKey: userSolKeypair,
-        userStgAccountPDA: options.userStgPubkey,
-      });
-      console.log(`createTrackTx = ${tx}`);
+      for (var i = 0; i < numTracks; i++) {
+        promises.push(
+          createTrack({
+            program: cliVars.program,
+            provider: cliVars.provider,
+            metadata: randomCID(),
+            newTrackKeypair: anchor.web3.Keypair.generate(),
+            userAuthorityKey: userSolKeypair,
+            userStgAccountPDA: options.userStgPubkey,
+          })
+        );
+      }
+      let start = Date.now();
+      let txs = await Promise.all(promises);
+      console.log(`Resulting track tx hashes:`);
+      txs.map((e) => console.log(e));
+      console.log(`Processed ${numTracks} in ${Date.now() - start}ms`);
     })();
     break;
 }
