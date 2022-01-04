@@ -12,7 +12,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		13B32CE723D2782B002F0526 /* SampleSwiftFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */; };
-		25E84D735E9B7FBDFBD7128B /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E6442175FEF3345E0A2AB2DC /* libPods-AudiusReactNative.a */; };
+		1D1C74AC9C45BDAA287388AB /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7BA0E377C49EAD2B77B4D02 /* libPods-AudiusReactNative.a */; };
 		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
 		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
 		717F36E82733C73F0017511F /* AvenirNextLTPro-DemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 717F36E72733C73F0017511F /* AvenirNextLTPro-DemiBold.otf */; };
@@ -41,10 +41,8 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AudiusReactNative/main.m; sourceTree = "<group>"; };
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
-		282F3013AA3FE94D3485B9E0 /* Pods-AudiusReactNative.bounce.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.release.xcconfig"; sourceTree = "<group>"; };
-		28C4720DD1DB7B2FAADCDE80 /* Pods-AudiusReactNative.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.release.xcconfig"; sourceTree = "<group>"; };
 		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
-		39D470C1610ADCDCC27F6E0D /* Pods-AudiusReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.debug.xcconfig"; sourceTree = "<group>"; };
+		5F7BF21B8CA5939E46BBE018 /* Pods-AudiusReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.debug.xcconfig"; sourceTree = "<group>"; };
 		6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Regular.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
 		717F36E72733C73F0017511F /* AvenirNextLTPro-DemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "AvenirNextLTPro-DemiBold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-DemiBold.otf"; sourceTree = "<group>"; };
 		838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -54,11 +52,13 @@
 		83F735A423C64C950040A4C5 /* AirplayEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayEvent.m; sourceTree = "<group>"; };
 		8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Light.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Light.otf"; sourceTree = "<group>"; };
 		A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = "Audius Music.entitlements"; path = "AudiusReactNative/Audius Music.entitlements"; sourceTree = "<group>"; };
-		A2EB95E789533B668D1CB54E /* Pods-AudiusReactNative.bounce.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.debug.xcconfig"; sourceTree = "<group>"; };
+		AB456077D7BA5F103540F98A /* Pods-AudiusReactNative.bounce.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.release.xcconfig"; sourceTree = "<group>"; };
+		AE4E2F21CB0C756441EA2941 /* Pods-AudiusReactNative.bounce.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.debug.xcconfig"; sourceTree = "<group>"; };
 		BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Thin.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Thin.otf"; sourceTree = "<group>"; };
+		C7BA0E377C49EAD2B77B4D02 /* libPods-AudiusReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Heavy.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Heavy.otf"; sourceTree = "<group>"; };
 		D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-UltLt.otf"; path = "../src/assets/fonts/AvenirNextLTPro-UltLt.otf"; sourceTree = "<group>"; };
-		E6442175FEF3345E0A2AB2DC /* libPods-AudiusReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEDD0DBCA2181D0CE2C5A21D /* Pods-AudiusReactNative.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.release.xcconfig"; sourceTree = "<group>"; };
 		EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Bold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Bold.otf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
@@ -69,7 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25E84D735E9B7FBDFBD7128B /* libPods-AudiusReactNative.a in Frameworks */,
+				1D1C74AC9C45BDAA287388AB /* libPods-AudiusReactNative.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,7 +118,7 @@
 				83E8F64123F6101600817622 /* libRNAnalytics.a */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
-				E6442175FEF3345E0A2AB2DC /* libPods-AudiusReactNative.a */,
+				C7BA0E377C49EAD2B77B4D02 /* libPods-AudiusReactNative.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -160,10 +160,10 @@
 		9203ADA7911C8949B98165F4 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				39D470C1610ADCDCC27F6E0D /* Pods-AudiusReactNative.debug.xcconfig */,
-				A2EB95E789533B668D1CB54E /* Pods-AudiusReactNative.bounce.debug.xcconfig */,
-				28C4720DD1DB7B2FAADCDE80 /* Pods-AudiusReactNative.release.xcconfig */,
-				282F3013AA3FE94D3485B9E0 /* Pods-AudiusReactNative.bounce.release.xcconfig */,
+				5F7BF21B8CA5939E46BBE018 /* Pods-AudiusReactNative.debug.xcconfig */,
+				AE4E2F21CB0C756441EA2941 /* Pods-AudiusReactNative.bounce.debug.xcconfig */,
+				DEDD0DBCA2181D0CE2C5A21D /* Pods-AudiusReactNative.release.xcconfig */,
+				AB456077D7BA5F103540F98A /* Pods-AudiusReactNative.bounce.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -197,15 +197,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AudiusReactNative" */;
 			buildPhases = (
-				49EE016A018F3009ADC55C14 /* [CP] Check Pods Manifest.lock */,
+				A01BECF0B0EF53DA4206ABAD /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				838AABE123CE404D004B2DA3 /* ShellScript */,
-				EDA5A41F5DE94C8591A3EE5B /* [CP] Copy Pods Resources */,
 				18A5B1D0CA1543ABB2DC5C65 /* Upload Debug Symbols to Sentry */,
+				41432AAF08BF080F8250270D /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -303,46 +303,7 @@
 			shellPath = /bin/sh;
 			shellScript = "${SRCROOT}/scripts/uploadSentryDebugSymbols.sh";
 		};
-		49EE016A018F3009ADC55C14 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-AudiusReactNative-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		838AABE123CE404D004B2DA3 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${PODS_ROOT}/Fabric/run\"\n";
-		};
-		EDA5A41F5DE94C8591A3EE5B /* [CP] Copy Pods Resources */ = {
+		41432AAF08BF080F8250270D /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -364,6 +325,45 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		838AABE123CE404D004B2DA3 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${PODS_ROOT}/Fabric/run\"\n";
+		};
+		A01BECF0B0EF53DA4206ABAD /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-AudiusReactNative-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -417,7 +417,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 39D470C1610ADCDCC27F6E0D /* Pods-AudiusReactNative.debug.xcconfig */;
+			baseConfigurationReference = 5F7BF21B8CA5939E46BBE018 /* Pods-AudiusReactNative.debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Music";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon${BUNDLE_ID_SUFFIX}";
@@ -449,7 +449,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 28C4720DD1DB7B2FAADCDE80 /* Pods-AudiusReactNative.release.xcconfig */;
+			baseConfigurationReference = DEDD0DBCA2181D0CE2C5A21D /* Pods-AudiusReactNative.release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Music";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon${BUNDLE_ID_SUFFIX}";
@@ -641,7 +641,7 @@
 		};
 		D4E8207324577D66007BFEE4 /* Bounce.Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A2EB95E789533B668D1CB54E /* Pods-AudiusReactNative.bounce.debug.xcconfig */;
+			baseConfigurationReference = AE4E2F21CB0C756441EA2941 /* Pods-AudiusReactNative.bounce.debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Bounce";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon${BUNDLE_ID_SUFFIX}";
@@ -723,7 +723,7 @@
 		};
 		D4E8207524577D78007BFEE4 /* Bounce.Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 282F3013AA3FE94D3485B9E0 /* Pods-AudiusReactNative.bounce.release.xcconfig */;
+			baseConfigurationReference = AB456077D7BA5F103540F98A /* Pods-AudiusReactNative.bounce.release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Bounce";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon${BUNDLE_ID_SUFFIX}";

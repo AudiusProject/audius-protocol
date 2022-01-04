@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react'
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { ParamListBase } from '@react-navigation/native'
+import { ParamListBase, useNavigationState } from '@react-navigation/native'
 import {
   CardStyleInterpolators,
   createStackNavigator
@@ -10,15 +10,24 @@ import { Animated, StyleSheet, View } from 'react-native'
 
 import BottomTabBar, { BottomTabBarProps } from 'app/components/bottom-tab-bar'
 import NowPlayingDrawer from 'app/components/now-playing-drawer/NowPlayingDrawer'
+import ExploreScreen from 'app/screens/explore-screen'
+import FavoritesScreen from 'app/screens/favorites-screen'
 import FeedScreen from 'app/screens/feed-screen'
 import ProfileScreen from 'app/screens/profile-screen'
 import TrackScreen from 'app/screens/track-screen'
+import TrendingScreen from 'app/screens/trending-screen'
 
-import { FeedStackParamList } from './types'
+import {
+  BaseStackParamList,
+  ExploreStackParamList,
+  FavoritesStackParamList,
+  FeedStackParamList,
+  TrendingStackParamList
+} from './types'
 
-const EmptyScreen = () => {
-  return <View />
-}
+// const EmptyScreen = () => {
+//   return <View />
+// }
 
 const styles = StyleSheet.create({
   tabNavigator: {
@@ -61,7 +70,23 @@ const createStackScreen = <StackParamList extends ParamListBase>(
  * An example stack for the feed screen
  */
 const FeedStackScreen = createStackScreen<FeedStackParamList>(Stack => (
-  <Stack.Screen name='feed-screen' component={FeedScreen} />
+  <Stack.Screen name='feed-stack' component={FeedScreen} />
+))
+
+const TrendingStackScreen = createStackScreen<TrendingStackParamList>(Stack => (
+  <Stack.Screen name='trending-stack' component={TrendingScreen} />
+))
+
+const ExploreStackScreen = createStackScreen<ExploreStackParamList>(Stack => (
+  <Stack.Screen name='explore-stack' component={ExploreScreen} />
+))
+
+const FavoritesStackScreen = createStackScreen<FavoritesStackParamList>(
+  Stack => <Stack.Screen name='favorites-stack' component={FavoritesScreen} />
+)
+
+const ProfileStackScreen = createStackScreen<BaseStackParamList>(Stack => (
+  <Stack.Screen name='profile-stack' component={ProfileScreen} />
 ))
 
 const Tab = createBottomTabNavigator()
@@ -80,6 +105,23 @@ type BottomTabNavigatorProps = {
 const BottomTabNavigator = ({
   onBottomTabBarLayout
 }: BottomTabNavigatorProps) => {
+  const state = useNavigationState(state => state)
+
+  if (state) {
+    let currentState: any = state
+    const routePath = []
+
+    while (
+      currentState?.routeNames?.length > 0 &&
+      currentState?.routes?.length > 0
+    ) {
+      routePath.push(currentState.routeNames[currentState.index])
+      currentState = currentState.routes[currentState.index].state
+    }
+
+    console.log({ routePath })
+  }
+
   // Set handlers for the NowPlayingDrawer and BottomTabBar
   // When the drawer is open, the bottom bar should hide (animated away).
   // When the drawer is closed, the bottom bar should reappear (animated in).
@@ -119,10 +161,10 @@ const BottomTabNavigator = ({
           screenOptions={{ headerShown: false }}
         >
           <Tab.Screen name='feed' component={FeedStackScreen} />
-          <Tab.Screen name='trending' component={EmptyScreen} />
-          <Tab.Screen name='explore' component={EmptyScreen} />
-          <Tab.Screen name='favorites' component={EmptyScreen} />
-          <Tab.Screen name='profile' component={EmptyScreen} />
+          <Tab.Screen name='trending' component={TrendingStackScreen} />
+          <Tab.Screen name='explore' component={ExploreStackScreen} />
+          <Tab.Screen name='favorites' component={FavoritesStackScreen} />
+          <Tab.Screen name='profile' component={ProfileStackScreen} />
         </Tab.Navigator>
       </View>
     </>

@@ -155,7 +155,7 @@ const WebApp = ({
   const serverContainer = useRef<any | null>(null)
   const path = useRef<string | null>(null)
   const serverRestarting = useRef(false)
-  const checkServerInterval = useRef<number | null>(null)
+  const checkServerInterval = useRef<any | null>(null)
 
   const [key, setKey] = useState(0)
   const reload = useCallback(() => {

@@ -6,7 +6,7 @@ import { Text, View } from 'react-native'
 import { FeedStackParamList } from 'app/components/app-navigator/types'
 import Button from 'app/components/button'
 
-type Props = NativeStackScreenProps<FeedStackParamList, 'feed'>
+type Props = NativeStackScreenProps<FeedStackParamList, 'feed-stack'>
 
 const FeedScreen = ({ navigation }: Props) => {
   const handlePress = useCallback(() => {
@@ -14,7 +14,7 @@ const FeedScreen = ({ navigation }: Props) => {
   }, [navigation])
 
   return (
-    <View>
+    <View style={{ display: 'flex', flexDirection: 'column' }}>
       <Text>Example feed screen</Text>
       <Button title='Go to track screen' onPress={handlePress} />
     </View>
