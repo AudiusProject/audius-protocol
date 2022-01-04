@@ -54,7 +54,7 @@ class DBManager {
   }
 
   /**
-   * Deletes all data for a cnodeUser from DB
+   * Deletes all data for a cnodeUser from DB (every table, including CNodeUsers)
    *
    * @param {Object} CNodeUserLookupObj specifies either `lookupCnodeUserUUID` or `lookupWallet` properties
    * @param {?Transaction} externalTransaction sequelize transaction object

@@ -692,7 +692,7 @@ describe('test nodesync', async function () {
     })
   })
 
-  describe('Test processSync function', async function () {
+  describe.only('Test processSync function', async function () {
     let serviceRegistryMock
 
     const TEST_ENDPOINT = 'http://test-cn.co'
@@ -734,6 +734,181 @@ describe('test nodesync', async function () {
       return session.cnodeUserUUID
     }
 
+    const unpackSampleExportData = (sampleExportFilePath) => {
+      const sampleExport = JSON.parse(fs.readFileSync(sampleExportFilePath))
+      const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
+      const { audiusUsers, tracks, files, clockRecords } = cnodeUser
+
+      return {
+        sampleExport,
+        cnodeUser,
+        audiusUsers,
+        tracks,
+        files,
+        clockRecords
+      }
+    }
+
+    const setupMocks = (sampleExport) => {
+      // Mock /export route response
+      nock(TEST_ENDPOINT)
+        .persist()
+        .get((uri) => uri.includes('/export'))
+        .reply(200, sampleExport)
+
+      // This text 'audius is cool' is mapped to the hash in the dummy json data
+      // If changes are made to the response body, make the corresponding changes to the hash too
+      nock('http://mock-cn1.audius.co')
+        .persist()
+        .get((uri) =>
+          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(200, 'audius is cool')
+
+      nock('http://mock-cn2.audius.co')
+        .persist()
+        .get((uri) =>
+          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(200, 'audius is cool')
+
+      nock('http://mock-cn3.audius.co')
+        .persist()
+        .get((uri) =>
+          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(200, 'audius is cool')
+    }
+
+    const verifyLocalCNodeUserStateForUser = async (exportedCnodeUser) => {
+      exportedCnodeUser = _.pick(exportedCnodeUser, [
+        'cnodeUserUUID',
+        'walletPublicKey',
+        'lastLogin',
+        'latestBlockNumber',
+        'clock',
+        'createdAt'
+      ])
+
+      const localCNodeUser = stringifiedDateFields(
+        await models.CNodeUser.findOne({
+          where: {
+            walletPublicKey: exportedCnodeUser.walletPublicKey
+          },
+          raw: true
+        })
+      )
+
+      assert.deepStrictEqual(
+        _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
+        _.omit(exportedCnodeUser, ['cnodeUserUUID', 'updatedAt'])
+      )
+
+      const newCNodeUserUUID = localCNodeUser.cnodeUserUUID
+      return newCNodeUserUUID
+    }
+
+    /**
+     * Verifies local state for user with CNodeUserUUID for AudiusUsers, Tracks, Files, and ClockRecords tables
+     */
+    const verifyLocalStateForUser = async ({
+      cnodeUserUUID,
+      exportedAudiusUsers,
+      exportedClockRecords,
+      exportedFiles,
+      exportedTracks
+    }) => {
+      /**
+       * Verify local AudiusUsers table state matches export
+       */
+      for (const exportedAudiusUser of exportedAudiusUsers) {
+        const localAudiusUser = stringifiedDateFields(
+          await models.AudiusUser.findOne({
+            where: {
+              cnodeUserUUID,
+              clock: exportedAudiusUser.clock
+            },
+            raw: true
+          })
+        )
+        assert.deepStrictEqual(
+          _.omit(localAudiusUser, ['cnodeUserUUID']),
+          _.omit(exportedAudiusUser, ['cnodeUserUUID'])
+        )
+      }
+
+      /**
+       * Verify local Tracks table state matches export
+       */
+      for (const exportedTrack of exportedTracks) {
+        const { clock, blockchainId, metadataFileUUID } = exportedTrack
+        const localFile = stringifiedDateFields(
+          await models.Track.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              blockchainId,
+              metadataFileUUID
+            },
+            raw: true
+          })
+        )
+        assert.deepStrictEqual(
+          _.omit(localFile, ['cnodeUserUUID']),
+          _.omit(exportedTrack, ['cnodeUserUUID'])
+        )
+      }
+
+      /**
+       * Verify local Files table state matches export
+       */
+      for (const exportedFile of exportedFiles) {
+        const { fileUUID, multihash, clock } = exportedFile
+        const localFile = stringifiedDateFields(
+          await models.File.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              multihash,
+              fileUUID
+            },
+            raw: true
+          })
+        )
+        assert.deepStrictEqual(
+          _.omit(localFile, ['cnodeUserUUID']),
+          _.omit(exportedFile, ['cnodeUserUUID'])
+        )
+      }
+
+      /**
+       * Verify local ClockRecords table state matches export
+       */
+      for (const exportedRecord of exportedClockRecords) {
+        const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
+        const localRecord = stringifiedDateFields(
+          await models.ClockRecord.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              sourceTable,
+              createdAt,
+              updatedAt
+            },
+            raw: true
+          })
+        )
+        assert.deepStrictEqual(
+          _.omit(localRecord, ['cnodeUserUUID']),
+          _.omit(exportedRecord, ['cnodeUserUUID'])
+        )
+      }
+
+      /**
+       * TODO - Verify all expected files are on disk
+       */
+    }
+
     /**
      * Setup deps + mocks + app
      */
@@ -768,327 +943,121 @@ describe('test nodesync', async function () {
     })
 
     it('Syncs correctly from clean user state with mocked export object', async function () {
-      // Unpack sample export data
-      const sampleExport = JSON.parse(fs.readFileSync(sampleExportDummyCIDPath))
-      const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
-      const audiusUser = cnodeUser.audiusUsers[0]
-      const { tracks, files, clockRecords, clockInfo } = cnodeUser
+      const {
+        sampleExport,
+        cnodeUser: exportedCnodeUser,
+        audiusUsers: exportedAudiusUsers,
+        tracks: exportedTracks,
+        files: exportedFiles,
+        clockRecords: exportedClockRecords
+      } = unpackSampleExportData(sampleExportDummyCIDPath)
 
-      // Mock /export route response
-      nock(TEST_ENDPOINT)
-        .persist()
-        .get((uri) => uri.includes('/export'))
-        .reply(200, sampleExport)
+      setupMocks(sampleExport)
 
-      // This text 'audius is cool' is mapped to the hash in the dummy json data
-      // If changes are made to the response body, make the corresponding changes to the hash too
-      nock('http://mock-cn1.audius.co')
-        .persist()
-        .get((uri) =>
-          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
-        .reply(200, 'audius is cool')
-
-      nock('http://mock-cn2.audius.co')
-        .persist()
-        .get((uri) =>
-          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
-        .reply(200, 'audius is cool')
-
-      nock('http://mock-cn3.audius.co')
-        .persist()
-        .get((uri) =>
-          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
-        .reply(200, 'audius is cool')
-
-      // Confirm no local user state before sync
+      // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
 
-      // Take data from TEST_ENDPOINT for export with userWallets and adds data to node running code
-      await processSync(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT,
-        /* blockNumber */ null,
-        /* forceResync */ false
-      )
+      // Call processSync
+      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
 
-      const exportedCnodeUser = {
-        walletPublicKey: cnodeUser.walletPublicKey,
-        lastLogin: cnodeUser.lastLogin,
-        latestBlockNumber: cnodeUser.latestBlockNumber,
-        clock: cnodeUser.clock,
-        createdAt: cnodeUser.createdAt
-      }
-
-      // verify CNodeUser
-      const localCNodeUser = stringifiedDateFields(
-        await models.CNodeUser.findOne({
-          where: {
-            walletPublicKey: cnodeUser.walletPublicKey
-          },
-          raw: true
-        })
-      )
-      assert.deepStrictEqual(
-        _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
+      const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser
       )
 
-      const cnodeUserUUID = localCNodeUser.cnodeUserUUID
-
-      // verify AudiusUser
-      const localAudiusUser = stringifiedDateFields(
-        await models.AudiusUser.findOne({
-          where: {
-            cnodeUserUUID,
-            clock: audiusUser.clock
-          },
-          raw: true
-        })
-      )
-      assert.deepStrictEqual(
-        _.omit(localAudiusUser, ['cnodeUserUUID']),
-        _.omit(audiusUser, ['cnodeUserUUID'])
-      )
-
-      // TODO verify: expected files are all on disc
-
-      // verify clock records
-      for (const exportedRecord of clockRecords) {
-        const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
-        const localRecord = stringifiedDateFields(
-          await models.ClockRecord.findOne({
-            where: {
-              clock,
-              cnodeUserUUID,
-              sourceTable,
-              createdAt,
-              updatedAt
-            },
-            raw: true
-          })
-        )
-        assert.deepStrictEqual(
-          _.omit(localRecord, ['cnodeUserUUID']),
-          _.omit(exportedRecord, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify files
-      for (const exportedFile of files) {
-        const { fileUUID, multihash, clock } = exportedFile
-        const localFile = stringifiedDateFields(
-          await models.File.findOne({
-            where: {
-              clock,
-              cnodeUserUUID,
-              multihash,
-              fileUUID
-            },
-            raw: true
-          })
-        )
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedFile, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify tracks
-      for (const exportedTrack of tracks) {
-        const { clock, blockchainId, metadataFileUUID } = exportedTrack
-        const localFile = stringifiedDateFields(
-          await models.Track.findOne({
-            where: {
-              clock,
-              cnodeUserUUID,
-              blockchainId,
-              metadataFileUUID
-            },
-            raw: true
-          })
-        )
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedTrack, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify clockInfo
-      const localClockInfo = {
-        requestedClockRangeMin: 0,
-        requestedClockRangeMax: 0 + (maxExportClockValueRange - 1),
-        localClockMax: localCNodeUser.clock
-      }
-      assert.deepStrictEqual(localClockInfo, clockInfo)
+      await verifyLocalStateForUser({
+        cnodeUserUUID: newCNodeUserUUID,
+        exportedAudiusUsers,
+        exportedClockRecords,
+        exportedFiles,
+        exportedTracks
+      })
     })
 
     it('Syncs correctly when cnodeUser data already exists locally', async function () {
-      // Get the saved export
-      const sampleExport = JSON.parse(
-        fs.readFileSync(sampleExportDummyCIDFromClock2Path)
-      )
-      const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
-      const audiusUser = cnodeUser.audiusUsers[0]
-      const { tracks, files, clockRecords, clockInfo } = cnodeUser
+      const {
+        sampleExport,
+        cnodeUser: exportedCnodeUser,
+        audiusUsers: exportedAudiusUsers,
+        tracks: exportedTracks,
+        files: exportedFiles,
+        clockRecords: exportedClockRecords
+      } = unpackSampleExportData(sampleExportDummyCIDFromClock2Path)
 
-      // Setup mocked responses
-      nock(TEST_ENDPOINT)
-        .persist()
-        .get((uri) => uri.includes('/export'))
-        .reply(200, sampleExport)
+      setupMocks(sampleExport)
 
-      // This text 'audius is cool' is mapped to the hash in the dummy json data
-      // If changes are made to the response body, make the corresponding changes to the hash too
-      nock('http://mock-cn1.audius.co')
-        .persist()
-        .get((uri) =>
-          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
-        .reply(200, 'audius is cool')
-
-      nock('http://mock-cn2.audius.co')
-        .persist()
-        .get((uri) =>
-          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
-        .reply(200, 'audius is cool')
-
-      nock('http://mock-cn3.audius.co')
-        .persist()
-        .get((uri) =>
-          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
-        .reply(200, 'audius is cool')
-
-      // Confirm initial local state is empty
+      // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // seed user state locally with different cnodeUserUUID
       const cnodeUserUUID = await createUser()
 
-      // Confirm user state exists locally before sync
-      const localCNodeUsersBeforeSync = await models.CNodeUser.findAll({
-        where: { cnodeUserUUID },
-        raw: true
+      // Confirm local user state exists before sync
+      const localCNodeUserCount = await models.CNodeUser.count({
+        where: { cnodeUserUUID }
       })
-      assert.strictEqual(localCNodeUsersBeforeSync.length, 1)
-      const localCNodeUserBeforeSync = stringifiedDateFields(
-        localCNodeUsersBeforeSync[0]
-      )
+      assert.strictEqual(localCNodeUserCount, 1)
 
-      // test: sync
+      // Call processSync
+      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+
+      await verifyLocalCNodeUserStateForUser(exportedCnodeUser)
+
+      await verifyLocalStateForUser({
+        cnodeUserUUID,
+        exportedAudiusUsers,
+        exportedClockRecords,
+        exportedFiles,
+        exportedTracks
+      })
+    })
+
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true', async () => {
+      const {
+        sampleExport,
+        cnodeUser: exportedCnodeUser,
+        audiusUsers: exportedAudiusUsers,
+        tracks: exportedTracks,
+        files: exportedFiles,
+        clockRecords: exportedClockRecords
+      } = unpackSampleExportData(sampleExportDummyCIDPath)
+
+      setupMocks(sampleExport)
+
+      // Confirm local user state is empty before sync
+      const initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
+
+      // seed local user state with different cnodeUserUUID
+      const cnodeUserUUID = await createUser()
+
+      // Confirm local user state exists before sync
+      const localCNodeUserCount = await models.CNodeUser.count({
+        where: { cnodeUserUUID }
+      })
+      assert.strictEqual(localCNodeUserCount, 1)
+
+      // Call processSync with `forceResync` = true
       await processSync(
         serviceRegistryMock,
         userWallets,
         TEST_ENDPOINT,
         /* blockNumber */ null,
-        /* forceResync */ false
+        /* forceResync */ true
       )
 
-      const exportedCnodeUser = {
-        walletPublicKey: cnodeUser.walletPublicKey,
-        lastLogin: cnodeUser.lastLogin,
-        latestBlockNumber: cnodeUser.latestBlockNumber,
-        clock: cnodeUser.clock,
-        createdAt: cnodeUser.createdAt
-      }
-
-      // verify CNodeUser
-      const localCNodeUser = stringifiedDateFields(
-        await models.CNodeUser.findOne({
-          where: {
-            cnodeUserUUID,
-            walletPublicKey: cnodeUser.walletPublicKey
-          },
-          raw: true
-        })
-      )
-      assert.deepStrictEqual(
-        _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
+      const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser
       )
 
-      // verify AudiusUser
-      const localAudiusUser = undefined
-      assert.deepStrictEqual(localAudiusUser, audiusUser)
-
-      // TODO verify: expected files are all on disc
-
-      // verify clock records
-      for (const exportedRecord of clockRecords) {
-        const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
-        const localRecord = stringifiedDateFields(
-          await models.ClockRecord.findOne({
-            where: {
-              clock,
-              cnodeUserUUID,
-              sourceTable,
-              createdAt,
-              updatedAt
-            },
-            raw: true
-          })
-        )
-        assert.deepStrictEqual(
-          _.omit(localRecord, ['cnodeUserUUID']),
-          _.omit(exportedRecord, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify files
-      for (const exportedFile of files) {
-        const { fileUUID, multihash, clock } = exportedFile
-        const localFile = stringifiedDateFields(
-          await models.File.findOne({
-            where: {
-              clock,
-              cnodeUserUUID,
-              multihash,
-              fileUUID
-            },
-            raw: true
-          })
-        )
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedFile, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify tracks
-      for (const exportedTrack of tracks) {
-        const { clock, blockchainId, metadataFileUUID } = exportedTrack
-        const localFile = stringifiedDateFields(
-          await models.Track.findOne({
-            where: {
-              clock,
-              cnodeUserUUID,
-              blockchainId,
-              metadataFileUUID
-            },
-            raw: true
-          })
-        )
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedTrack, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify clockInfo
-      const localClockInfo = {
-        requestedClockRangeMin: localCNodeUserBeforeSync.clock + 1,
-        requestedClockRangeMax:
-          localCNodeUserBeforeSync.clock + 1 + (maxExportClockValueRange - 1),
-        localClockMax: localCNodeUser.clock
-      }
-      assert.deepStrictEqual(localClockInfo, clockInfo)
+      await verifyLocalStateForUser({
+        cnodeUserUUID: newCNodeUserUUID,
+        exportedAudiusUsers,
+        exportedClockRecords,
+        exportedFiles,
+        exportedTracks
+      })
     })
   })
 })

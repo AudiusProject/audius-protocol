@@ -266,7 +266,8 @@ async function processSync(
         })
 
         /**
-         * The first sync for a user will enter else case where no local cnodeUserRecord is found, creating a new entry.
+         * The first sync for a user will enter else case where no local cnodeUserRecord is found
+         *    creating a new entry with a new auto-generated cnodeUserUUID.
          * Every subsequent sync will enter the if case and update the existing local cnodeUserRecord.
          */
         if (cnodeUserRecord) {
