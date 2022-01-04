@@ -126,7 +126,7 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
     return target_blockhash
 
 
-def get_latest_block(db: SessionManager, retry: bool = False):
+def get_latest_block(db: SessionManager, is_retry: bool = False):
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
     )
@@ -160,9 +160,10 @@ def get_latest_block(db: SessionManager, retry: bool = False):
                 target_latest_block_number, True
             )
 
-            # if the block had no transactions, retry after small delay to confirm the block is actually empty
             # we've seen potential instances of blocks returning no transactions
-            if len(latest_block.transactions) == 0 and not retry:
+            # if the block had no transactions and this is the first call to the gatewway
+            # retry after small delay to confirm the block is actually empty
+            if len(latest_block.transactions) == 0 and not is_retry:
                 logger.info(
                     f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
                 )
@@ -170,7 +171,7 @@ def get_latest_block(db: SessionManager, retry: bool = False):
                 return get_latest_block(db, True)
 
             # if it retries getting the block and this time it has transactions when it didn't previously
-            if len(latest_block.tranactions) > 0 and retry:
+            if len(latest_block.tranactions) > 0 and is_retry:
                 logger.info(
                     f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
                 )
