@@ -1,0 +1,39 @@
+[
+	{
+		"id": "listen-streak",
+		"active": true
+	},
+	{
+		"id": "track-upload",
+		"active": true,
+		"starting_block": 0
+	},
+	{
+		"id": "referrals",
+		"active": true
+	},
+	{
+		"id": "referred",
+		"active": true
+	},
+	{
+		"id": "connect-verified",
+		"active": true
+	},
+	{
+		"id": "mobile-install",
+		"active": true
+	},
+	{
+		"id": "trending-track",
+		"active": true
+	},
+	{
+		"id": "trending-underground-track",
+		"active": true
+	},
+	{
+		"id": "trending-playlist",
+		"active": true
+	}
+]
