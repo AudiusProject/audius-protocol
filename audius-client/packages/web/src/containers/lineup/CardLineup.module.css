@@ -18,6 +18,8 @@
   margin-bottom: 5px;
 }
 
-.emptyMobileContainer {
-  width: 174px;
+.emptyMobileCard {
+  width: 100%;
+  min-width: 174px;
+  max-width: 190px;
 }

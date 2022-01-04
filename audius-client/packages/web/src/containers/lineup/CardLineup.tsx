@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 
 import cn from 'classnames'
 import { connect } from 'react-redux'
 
+import { EmptyCard } from 'components/card/mobile/Card'
 import CategoryHeader from 'components/general/header/desktop/CategoryHeader'
 import Draggable from 'containers/dragndrop/Draggable'
 import { AppState } from 'store/types'
@@ -51,8 +52,31 @@ const DesktopCardContainer = ({
   )
 }
 
+const EmptyMobileCard = () => (
+  <div className={styles.mobileCardContainer}>
+    <EmptyCard />
+  </div>
+)
+
+const renderEmptyCards = (cardsLength: number) => {
+  if (cardsLength === 1) {
+    return (
+      <>
+        <EmptyMobileCard />
+        <EmptyMobileCard />
+      </>
+    )
+  }
+  if (cardsLength === 2) {
+    return <EmptyMobileCard />
+  }
+  if (cardsLength % 2 === 1) {
+    return <EmptyMobileCard />
+  }
+  return null
+}
+
 const MobileCardContainer = ({ cards, containerClassName }: OwnProps) => {
-  const emptyMobileCard = cards.length % 2 === 1
   return (
     <div className={cn(styles.mobileContainer, containerClassName)}>
       {cards.map((card, index) => (
@@ -60,14 +84,7 @@ const MobileCardContainer = ({ cards, containerClassName }: OwnProps) => {
           {card}
         </div>
       ))}
-      {emptyMobileCard ? (
-        <div
-          className={cn(
-            styles.mobileCardContainer,
-            styles.emptyMobileContainer
-          )}
-        ></div>
-      ) : null}
+      {renderEmptyCards(cards.length)}
     </div>
   )
 }
