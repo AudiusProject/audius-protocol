@@ -221,27 +221,35 @@ class DBManager {
 
     if (lookupWallet) {
       subquery += ` where "cnodeUserUUID" = (
-        select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = '${lookupWallet}'
+        select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = :lookupWallet
       )`
     } else {
-      subquery += ` where "cnodeUserUUID" = '${lookupCNodeUserUUID}'`
+      subquery += ` where "cnodeUserUUID" = :lookupCNodeUserUUID`
     }
 
     if (clockMin) {
+      clockMin = parseInt(clockMin)
       // inclusive
-      subquery += ` and clock >= ${parseInt(clockMin)}`
+      subquery += ` and clock >= :clockMin`
     }
     if (clockMax) {
+      clockMax = parseInt(clockMax)
       // exclusive
-      subquery += ` and clock < ${parseInt(clockMax)}`
+      subquery += ` and clock < :clockMax`
     }
+
     subquery += ` order by "clock" asc`
 
-    const filesHashResp = await sequelize.query(`
+    const filesHashResp = await sequelize.query(
+      `
       select
         md5(cast(array_agg(sorted_hashes.multihash) as text))
       from (${subquery}) as sorted_hashes;
-    `)
+      `,
+      {
+        replacements: { lookupWallet, lookupCNodeUserUUID, clockMin, clockMax }
+      }
+    )
     const filesHash = filesHashResp[0][0].md5
     return filesHash
   }
