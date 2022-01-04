@@ -111,7 +111,6 @@ const syncRouteController = async (req, res) => {
         )
       }
       syncDebounceQueue[wallet] = setTimeout(async function () {
-        // TODO sid - blockNumber is never consumed??
         await enqueueSync({
           serviceRegistry,
           walletPublicKeys: [wallet],
