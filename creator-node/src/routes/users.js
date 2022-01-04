@@ -187,7 +187,7 @@ module.exports = function (app) {
       response.clockValue = clockValue
 
       async function fetchCIDSkipInfoIfRequested() {
-        if (returnSkipInfo && cnodeUser) {
+        if (returnSkipInfo && cnodeUserUUID) {
           const countsQuery = (
             await sequelize.query(
               `
@@ -224,7 +224,7 @@ module.exports = function (app) {
       }
 
       async function fetchFilesHashIfRequested() {
-        if (returnFilesHash && cnodeUser) {
+        if (returnFilesHash && cnodeUserUUID) {
           const filesHash = await DBManager.fetchFilesHashFromDB({
             lookupKey: { lookupCNodeUserUUID: cnodeUserUUID }
           })
