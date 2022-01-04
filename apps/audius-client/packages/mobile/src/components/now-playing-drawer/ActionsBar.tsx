@@ -2,10 +2,14 @@ import React from 'react'
 
 import { View, StyleSheet } from 'react-native'
 
-import IconShuffleOffDark from 'app/assets/animations/iconShuffleOffDark.json'
-import IconShuffleOffLight from 'app/assets/animations/iconShuffleOffLight.json'
-import IconShuffleOnDark from 'app/assets/animations/iconShuffleOnDark.json'
-import IconShuffleOnLight from 'app/assets/animations/iconShuffleOnLight.json'
+import IconFavoriteOffDark from 'app/assets/animations/iconFavoriteOffDark.json'
+import IconFavoriteOffLight from 'app/assets/animations/iconFavoriteOffLight.json'
+import IconFavoriteOnDark from 'app/assets/animations/iconFavoriteOnDark.json'
+import IconFavoriteOnLight from 'app/assets/animations/iconFavoriteOnLight.json'
+import IconRepostOffDark from 'app/assets/animations/iconRepostOffDark.json'
+import IconRepostOffLight from 'app/assets/animations/iconRepostOffLight.json'
+import IconRepostOnDark from 'app/assets/animations/iconRepostOnDark.json'
+import IconRepostOnLight from 'app/assets/animations/iconRepostOnLight.json'
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
 import IconChromecast from 'app/assets/images/iconChromecast.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -63,12 +67,11 @@ const ActionsBar = () => {
     )
   }
   const renderRepostButton = () => {
-    // TODO: Switch for repost assets
     return (
       <AnimatedButtonProvider
         isDarkMode={isDarkMode}
-        iconLightJSON={[IconShuffleOnLight, IconShuffleOffLight]}
-        iconDarkJSON={[IconShuffleOnDark, IconShuffleOffDark]}
+        iconLightJSON={[IconRepostOnLight, IconRepostOffLight]}
+        iconDarkJSON={[IconRepostOnDark, IconRepostOffDark]}
         onPress={() => {}}
         style={styles.button}
         wrapperStyle={styles.icon}
@@ -76,12 +79,11 @@ const ActionsBar = () => {
     )
   }
   const renderFavoriteButton = () => {
-    // TODO: Switch for favorite assets
     return (
       <AnimatedButtonProvider
         isDarkMode={isDarkMode}
-        iconLightJSON={[IconShuffleOnLight, IconShuffleOffLight]}
-        iconDarkJSON={[IconShuffleOnDark, IconShuffleOffDark]}
+        iconLightJSON={[IconFavoriteOnLight, IconFavoriteOffLight]}
+        iconDarkJSON={[IconFavoriteOnDark, IconFavoriteOffDark]}
         onPress={() => {}}
         style={styles.button}
         wrapperStyle={styles.icon}
