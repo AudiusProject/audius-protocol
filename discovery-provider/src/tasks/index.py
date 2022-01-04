@@ -165,29 +165,23 @@ def get_latest_block(db: SessionManager, is_retry: bool = False):
 
 
 def get_block_with_retry(
-    block_identifier: typing.Union[int, str], is_retry: bool = False
+    block_identifier: typing.Union[int, str], retries_left: int = False
 ):
     """
     Fetch a block with one retry if 0 transactions found in the block
     block_identifier - either a blockhash or blocknumber
-    is_retry - indicates if this is the one retry in the event the block contains 0 transactions
+    retries_left - number of retries left
     """
     block = update_task.web3.eth.getBlock(block_identifier, True)
     # we've seen potential instances of blocks returning no transactions
     # if the block had no transactions and this is the first call to the gatewway
     # retry after small delay to confirm the block is actually empty
-    if len(block.transactions) == 0 and not is_retry:
+    if len(block.transactions) == 0 and retries_left > 0:
         logger.info(
             f"index.py | get_block_with_retry | target={block_identifier} | target block has 0 transactions, retrying to confirm"
         )
         time.sleep(0.5)
-        return get_block_with_retry(block_identifier, True)
-
-    # if it retries getting the block and this time it has transactions when it didn't previously
-    if len(block.transactions) > 0 and is_retry:
-        logger.info(
-            f"index.py | get_block_with_retry | target={block_identifier} | target block got transactions after retrying, got 0 initially"
-        )
+        return get_block_with_retry(block_identifier, retries_left - 1)
 
     return block
 
