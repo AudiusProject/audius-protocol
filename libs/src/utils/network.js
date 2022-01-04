@@ -125,14 +125,16 @@ async function timeRequests ({
  * @param {object} axiosConfig extra axios config for each request
  * @param {number} timeout timeout for any requests to be considered bad
  * @param {number} timeBetweenRequests time between requests being dispatched to free up client network interface
- */
+ * @param {Boolean} withSecondaries If false, end requests after first success, else return remaining as secondaries
+  */
 async function raceRequests (
   urls,
   callback,
   axiosConfig,
   timeout = 3000,
   timeBetweenRequests = 100,
-  validationCheck = (response) => true
+  validationCheck = (response) => true,
+  withSecondaries = false
 ) {
   const CancelToken = axios.CancelToken
 
@@ -180,13 +182,30 @@ async function raceRequests (
   }
   let response
   let errored
+  let secondaries = []
   try {
-    const { val, errored: e } = await promiseFight(requests, /* captureErrorred */ true)
-    response = val
-    errored = e
+    const first = await Promise.any(requests)
+    response = first
+    if (timeout !== null) {
+      sources.forEach(source => {
+        setTimeout(() => {
+          source.cancel('Fetch already succeeded')
+        }, timeout)
+      })
+    }
+
+    if (first === undefined) {
+      const remainder = await Promise.allSettled(requests)
+      errored = remainder.filter((r) => r.status == 'rejected').map(r => r.reason)
+    } else if (withSecondaries) {
+      const remainder = await Promise.allSettled(requests)
+      secondaries = remainder.filter((r) => r.status == 'fulfilled' && r.value !== undefined && r.value.url !== first.url).map(r => r.value)
+      errored = remainder.filter((r) => r.status == 'rejected').map(r => r.reason)
+    }
   } catch (e) {
     response = null
     errored = e
+    secondaries = []
   }
   sources.forEach(source => {
     source.cancel('Fetch already succeeded')
@@ -194,10 +213,10 @@ async function raceRequests (
 
   if (response && response.url && response.blob) {
     callback(response.url)
-    return { response: response.blob, errored }
+    return { response: response.blob, errored, secondaries }
   }
 
-  return { respone: null, errored }
+  return { respone: null, errored, secondaries }
 }
 
 /**

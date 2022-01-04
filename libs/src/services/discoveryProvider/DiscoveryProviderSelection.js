@@ -54,18 +54,17 @@ class DiscoveryProviderSelection extends ServiceSelection {
       try {
         const discProvTimestamp = localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
         if (discProvTimestamp) {
-          const { endpoint: latestEndpoint, timestamp } = JSON.parse(discProvTimestamp)
-
+          const { endpoint: latestEndpoint, timestamp, secondaries } = JSON.parse(discProvTimestamp)
           const inWhitelist = !this.whitelist || this.whitelist.has(latestEndpoint)
 
           const timeout = this.reselectTimeout
             ? this.reselectTimeout
             : DISCOVERY_PROVIDER_RESELECT_TIMEOUT
           const isExpired = (Date.now() - timestamp) > timeout
-          if (!inWhitelist || isExpired) {
+          if (!inWhitelist || isExpired || !secondaries) {
             this.clearCached()
           } else {
-            return latestEndpoint
+            return { endpoint: latestEndpoint, secondaries }
           }
         }
       } catch (e) {
@@ -83,8 +82,8 @@ class DiscoveryProviderSelection extends ServiceSelection {
   }
 
   /** Sets a cached discovery provider in localstorage */
-  setCached (endpoint) {
-    localStorage.setItem(DISCOVERY_PROVIDER_TIMESTAMP, JSON.stringify({ endpoint, timestamp: Date.now() }))
+  setCached (endpoint, secondaries) {
+    localStorage.setItem(DISCOVERY_PROVIDER_TIMESTAMP, JSON.stringify({ endpoint, secondaries, timestamp: Date.now() }))
   }
 
   /** Allows the selection take a shortcut if there's a cached provider */
@@ -93,15 +92,15 @@ class DiscoveryProviderSelection extends ServiceSelection {
   }
 
   async select () {
-    const endpoint = await super.select()
+    const { service: endpoint, secondaries } = await super.select({ withSecondaries: true })
     if (endpoint) {
-      this.setCached(endpoint)
+      this.setCached(endpoint, secondaries)
     }
     console.info(`Selected discprov ${endpoint}`, this.decisionTree)
     if (this.selectionCallback) {
       this.selectionCallback(endpoint, this.decisionTree)
     }
-    return endpoint
+    return { endpoint, secondaries }
   }
 
   /**

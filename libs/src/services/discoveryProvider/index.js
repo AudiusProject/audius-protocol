@@ -49,6 +49,7 @@ class DiscoveryProvider {
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
+    this.secondaryEndpoints = []
 
     this.serviceSelector = new DiscoveryProviderSelection({
       whitelist: this.whitelist,
@@ -67,8 +68,8 @@ class DiscoveryProvider {
   }
 
   async init () {
-    const endpoint = await this.serviceSelector.select()
-    this.setEndpoint(endpoint)
+    const { endpoint, secondaries } = await this.serviceSelector.select()
+    this.setEndpoint(endpoint, secondaries)
 
     if (endpoint && this.web3Manager && this.web3Manager.web3) {
       // Set current user if it exists
@@ -77,8 +78,9 @@ class DiscoveryProvider {
     }
   }
 
-  setEndpoint (endpoint) {
+  setEndpoint (endpoint, secondaries) {
     this.discoveryProviderEndpoint = endpoint
+    this.secondaryEndpoints = secondaries
   }
 
   /**
@@ -620,6 +622,21 @@ class DiscoveryProvider {
       const resp = e.response || {}
       const duration = Date.now() - start
       const errMsg = e.response && e.response.data ? e.response.data : e
+      let shouldThrow = true
+
+      if (e.response.status === 404 && this.secondaryEndpoints.length > 0) {
+        const secondaryEndpoint = this.secondaryEndpoints[0]
+        const axiosRequest = this._createDiscProvRequest(requestObj, secondaryEndpoint)
+        try {
+          response = await axios(axiosRequest)
+          parsedResponse = Utils.parseDataFromResponse(response)
+          shouldThrow = false
+        } catch (err) {
+          // swallow error here and allow the parent error control flow to handle
+          console.error(err)
+        }
+
+      }
 
       // Fire monitoring callbaks for request failure case
       if (this.monitoringCallbacks.request) {
@@ -637,7 +654,9 @@ class DiscoveryProvider {
           console.error(e)
         }
       }
-      throw errMsg
+      if (shouldThrow) {
+        throw errMsg
+      }
     }
     return parsedResponse
   }
@@ -713,7 +732,7 @@ class DiscoveryProvider {
    */
   async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
     try {
-      const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
+      const { endpoint: newDiscProvEndpoint, secondaries } = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
 
       // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
       if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
@@ -721,6 +740,7 @@ class DiscoveryProvider {
         updateDiscProvEndpointMsg += `Switching over to the new Discovery Provider endpoint ${newDiscProvEndpoint}!`
         console.info(updateDiscProvEndpointMsg)
         this.discoveryProviderEndpoint = newDiscProvEndpoint
+        this.secondaryEndpoints = secondaries
         attemptedRetries = 0
       }
     } catch (e) {
@@ -779,6 +799,7 @@ class DiscoveryProvider {
    */
   async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
     let endpoint = this.discoveryProviderEndpoint
+    let secondaries = this.secondaryEndpoints
     if (attemptedRetries > this.selectionRequestRetries) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
       console.info(`Attempted max retries with endpoint ${endpoint}`)
@@ -786,7 +807,9 @@ class DiscoveryProvider {
 
       // Clear the cached endpoint and select new endpoint from backups
       this.serviceSelector.clearCached()
-      endpoint = await this.serviceSelector.select()
+      const { endpoint: primary, secondaries } = await this.serviceSelector.select()
+      endpoint = primary
+      secondaries = secondaries
     }
 
     // If there are no more available backups, throw error
@@ -794,7 +817,7 @@ class DiscoveryProvider {
       throw new Error('All Discovery Providers are unhealthy and unavailable.')
     }
 
-    return endpoint
+    return { endpoint, secondaries }
   }
 
   /**

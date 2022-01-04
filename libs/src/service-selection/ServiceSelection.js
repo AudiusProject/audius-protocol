@@ -78,15 +78,18 @@ class ServiceSelection {
   /**
    * Selects a service
    * @param {boolean} reset if reset is true, clear the decision tree
+   * @param {boolean} secondaries if secondaries allow all request to complete and return remaining successful
    */
-  async select (reset = true) {
+  async select ({ reset = true, withSecondaries = false }) {
     if (reset) { this.decisionTree = [] }
 
     // If a short circuit is provided, take it. Don't check it, just use it.
     const shortcircuit = this.shortcircuit()
     this.decisionTree.push({ stage: DECISION_TREE_STATE.CHECK_SHORT_CIRCUIT, val: shortcircuit })
     // If there is a shortcircuit defined and we have not blacklisted it, pick it
-    if (shortcircuit && (!this.blacklist || !this.blacklist.has(shortcircuit))) return shortcircuit
+    if (shortcircuit && (!this.blacklist || !this.blacklist.has(shortcircuit.endpoint))) {
+      return { service: shortcircuit.endpoint, secondaries: shortcircuit.secondaries }
+    }
 
     // Get all the services
     let services = await this.getServices()
@@ -121,21 +124,21 @@ class ServiceSelection {
         // Some backup exists
         const backup = await this.selectFromBackups()
         this.decisionTree.push({ stage: DECISION_TREE_STATE.SELECTED_FROM_BACKUP, val: backup })
-        return backup
+        return { service: backup, secondaries: [] }
       } else {
         // Nothing could be found that was healthy.
         // Reset everything we know so that we might try again.
         this.unhealthy = new Set([])
         this.backups = {}
         this.decisionTree.push({ stage: DECISION_TREE_STATE.FAILED_AND_RESETTING })
-        return null
+        return { service: null, secondaries: [] }
       }
     }
 
     // Race this "round" of services, getting the best and ones that errored
     // Note: ones that did not error or were not the best just get canceled so
     // we don't really know anything about them at this point.
-    const { best, errored } = await this.race(round)
+    const { best, secondaries, errored } = await this.race(round, withSecondaries)
 
     // Mark all the errored ones as unhealthy
     errored.forEach(e => this.addUnhealthy(e))
@@ -147,12 +150,12 @@ class ServiceSelection {
     // Recursively try this selection function if we didn't find something
     if (!best) {
       this.decisionTree.push({ stage: 'Round Failed Retry' })
-      return this.select(/* reset */ false)
+      return this.select({ reset })
     }
 
     this.decisionTree.push({ stage: 'Made A Selection', val: best })
     // If we made it this far, we found the best service! (of the rounds we tried)
-    return best
+    return { service: best, secondaries }
   }
 
   /**
@@ -253,8 +256,11 @@ class ServiceSelection {
     return response.status === 200
   }
 
-  /** Races requests against each other with provided timeouts and health checks */
-  async race (services) {
+  /** Races requests against each other with provided timeouts and health checks
+   * @param {Array<string>} services endpoints request, returning the first returned endpoint as best
+   * @param {Boolean} withSecondaries if false, do no wait for promises to resolve, else return remaining successful as secondaries
+  */
+  async race (services, withSecondaries = false) {
     // Key the services by their health check endpoint
     const map = services.reduce((acc, s) => {
       acc[ServiceSelection.getHealthCheckEndpoint(s)] = s
@@ -263,18 +269,22 @@ class ServiceSelection {
 
     let best
     try {
-      const { errored } = await raceRequests(
+      const { secondaries, errored } = await raceRequests(
         Object.keys(map),
-        (url) => { best = map[url] },
+        (url) => {
+          if (!best) { best = map[url] }
+        },
         {},
         /* timeout */ this.requestTimeout,
         /* timeBetweenRequests */ 0,
-        /* validationCheck */ (resp) => this.isHealthy(resp, map)
+        /* validationCheck */ (resp) => this.isHealthy(resp, map),
+        /* withSecondaries */ withSecondaries
       )
-      this.decisionTree.push({ stage: 'Raced And Found Best', val: best })
-      return { best, errored: errored.map(e => map[e.config.url]) }
+      let secondaryEndpoints = secondaries.map(resp => map[resp.url])
+      this.decisionTree.push({ stage: 'Raced And Found Best', val: best, secondaries: secondaryEndpoints })
+      return { best, secondaries: secondaryEndpoints, errored: errored.map(e => map[e.config.url]) }
     } catch (e) {
-      return { best: null, errored: [] }
+      return { best: null, secondaries: [], errored: [] }
     }
   }
 
