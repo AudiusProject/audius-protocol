@@ -203,6 +203,76 @@ class DBManager {
       log(`completed in ${Date.now() - start}ms`)
     }
   }
+
+  /**
+   * Retrieves md5 hash of all File multihashes for user ordered by clock asc, optionally by clock range
+   *
+   * @param {Object} lookupKey lookup user by either cnodeUserUUID or walletPublicKey
+   * @param {Number?} clockMin if provided, consider only Files with clock >= clockMin (inclusive)
+   * @param {Number?} clockMax if provided, consider only Files with clock < clockMax (exclusive)
+   * @returns {Number} filesHash
+   */
+  static async fetchFilesHashFromDB({
+    lookupKey: { lookupCNodeUserUUID, lookupWallet },
+    clockMin = null,
+    clockMax = null
+  }) {
+    let subquery = 'select multihash from "Files"'
+
+    if (lookupWallet) {
+      subquery += ` where "cnodeUserUUID" = (
+        select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = :lookupWallet
+      )`
+    } else if (lookupCNodeUserUUID) {
+      subquery += ` where "cnodeUserUUID" = :lookupCNodeUserUUID`
+    } else {
+      throw new Error(
+        '[fetchFilesHashFromDB] Error: Must provide lookupCNodeUserUUID or lookupWallet'
+      )
+    }
+
+    if (clockMin) {
+      clockMin = parseInt(clockMin)
+      // inclusive
+      subquery += ` and clock >= :clockMin`
+    }
+    if (clockMax) {
+      clockMax = parseInt(clockMax)
+      // exclusive
+      subquery += ` and clock < :clockMax`
+    }
+
+    subquery += ` order by "clock" asc`
+
+    try {
+      const filesHashResp = await sequelize.query(
+        `
+        select
+          md5(cast(array_agg(sorted_hashes.multihash) as text))
+        from (${subquery}) as sorted_hashes;
+        `,
+        {
+          replacements: {
+            lookupWallet,
+            lookupCNodeUserUUID,
+            clockMin,
+            clockMax
+          }
+        }
+      )
+
+      const filesHash = filesHashResp[0][0].md5
+
+      if (!filesHash)
+        throw new Error(
+          '[fetchFilesHashFromDB] Error: Failed to retrieve filesHash'
+        )
+
+      return filesHash
+    } catch (e) {
+      throw new Error(e.message)
+    }
+  }
 }
 
 /**
