@@ -38,8 +38,7 @@ const keypairFromFilePath = (path: string) => {
 
 /// Initialize constants requird for any CLI functionality
 function initializeCLI(ownerKeypairPath: string) {
-  // const network = "https://api.testnet.solana.com";
-  const network = "http://127.0.0.1:8899";
+  const network = "https://api.testnet.solana.com";
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
   const wallet = new Wallet(ownerKeypair);
@@ -138,6 +137,7 @@ const functionTypes = Object.freeze({
   initUser: "initUser",
   initUserSolPubkey: "initUserSolPubkey",
   createTrack: "createTrack",
+  getTrackId: "getTrackId",
 });
 
 program
@@ -244,6 +244,15 @@ switch (options.function) {
       console.log(`Resulting track tx hashes:`);
       txs.map((e) => console.log(e));
       console.log(`Processed ${numTracks} in ${Date.now() - start}ms`);
+    })();
+    break;
+  case functionTypes.getTrackId:
+    (async () => {
+      const cliVars = initializeCLI(options.ownerKeypair);
+      let info = await cliVars.program.account.audiusAdmin.fetch(
+        adminStgKeypair.publicKey
+      );
+      console.log(`trackID high:${info.testId}`);
     })();
     break;
 }
