@@ -49,6 +49,8 @@ const CollectionImage = (props: { id: ID; imageSize: CoverArtSizes }) => {
   return <DynamicImage wrapperClassName={styles.coverArt} image={image} />
 }
 
+export const EmptyCard = () => <div className={styles.emptyCardContainer} />
+
 type CardProps = {
   className?: string
   id: ID
