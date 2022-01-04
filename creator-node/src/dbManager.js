@@ -223,8 +223,12 @@ class DBManager {
       subquery += ` where "cnodeUserUUID" = (
         select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = :lookupWallet
       )`
-    } else {
+    } else if (lookupCNodeUserUUID) {
       subquery += ` where "cnodeUserUUID" = :lookupCNodeUserUUID`
+    } else {
+      throw new Error(
+        '[fetchFilesHashFromDB] Error: Must provide lookupCNodeUserUUID or lookupWallet'
+      )
     }
 
     if (clockMin) {
@@ -240,18 +244,34 @@ class DBManager {
 
     subquery += ` order by "clock" asc`
 
-    const filesHashResp = await sequelize.query(
-      `
-      select
-        md5(cast(array_agg(sorted_hashes.multihash) as text))
-      from (${subquery}) as sorted_hashes;
-      `,
-      {
-        replacements: { lookupWallet, lookupCNodeUserUUID, clockMin, clockMax }
-      }
-    )
-    const filesHash = filesHashResp[0][0].md5
-    return filesHash
+    try {
+      const filesHashResp = await sequelize.query(
+        `
+        select
+          md5(cast(array_agg(sorted_hashes.multihash) as text))
+        from (${subquery}) as sorted_hashes;
+        `,
+        {
+          replacements: {
+            lookupWallet,
+            lookupCNodeUserUUID,
+            clockMin,
+            clockMax
+          }
+        }
+      )
+
+      const filesHash = filesHashResp[0][0].md5
+
+      if (!filesHash)
+        throw new Error(
+          '[fetchFilesHashFromDB] Error: Failed to retrieve filesHash'
+        )
+
+      return filesHash
+    } catch (e) {
+      throw new Error(e.message)
+    }
   }
 }
 
