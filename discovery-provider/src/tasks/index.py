@@ -162,7 +162,8 @@ def get_latest_block(db: SessionManager, retry: bool = False):
 
             # if the block had no transactions, retry after small delay to confirm the block is actually empty
             # we've seen potential instances of blocks returning no transactions
-            if len(latest_block.transactions) == 0 and not retry:
+            print('latest_block', latest_block)
+            if len(latest_block['transactions']) == 0 and not retry:
                 logger.info(
                     f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
                 )
@@ -170,7 +171,7 @@ def get_latest_block(db: SessionManager, retry: bool = False):
                 return get_latest_block(db, True)
 
             # if it retries getting the block and this time it has transactions when it didn't previously
-            if len(latest_block.tranactions) > 0 and retry:
+            if len(latest_block.transactions) > 0 and retry:
                 logger.info(
                     f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
                 )
@@ -419,7 +420,7 @@ def index_blocks(self, db, blocks_list):
             playlist_factory_txs = []
             user_library_factory_txs = []
             user_replica_set_manager_txs = []
-
+            print('block.transactions', block)
             tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
 
             # Sort transactions by hash
