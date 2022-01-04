@@ -2,6 +2,7 @@
 import concurrent.futures
 import logging
 import time
+import typing
 
 from sqlalchemy import func
 from src.app import get_contract_addresses
@@ -51,7 +52,6 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
-from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -164,7 +164,9 @@ def get_latest_block(db: SessionManager, is_retry: bool = False):
         raise Exception(f"index.py | get_latest_block | got exception {e}")
 
 
-def get_block_with_retry(block_identifier: Union[int, str], is_retry: bool = False):
+def get_block_with_retry(
+    block_identifier: typing.Union[int, str], is_retry: bool = False
+):
     """
     Fetch a block with one retry if 0 transactions found in the block
     block_identifier - either a blockhash or blocknumber
