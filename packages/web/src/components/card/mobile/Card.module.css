@@ -1,4 +1,11 @@
+.cardContainerBase {
+  width: 100%;
+  min-width: 172px;
+  max-width: 190px;
+}
+
 .cardContainer {
+  composes: cardContainerBase;
   cursor: pointer;
   position: relative;
   border: 1px solid var(--neutral-light-8);
@@ -13,9 +20,6 @@
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
   flex: 1;
   min-height: 216px;
-  width: 100%;
-  min-width: 172px;
-  max-width: 190px;
 }
 
 .cardContainer:hover {
@@ -26,6 +30,10 @@
 .cardContainer:active {
   background-color: var(--neutral-light-10);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 2px 3px -2px var(--tile-shadow-3);
+}
+
+.emptyCardContainer {
+  composes: cardContainerBase;
 }
 
 .tileCoverArtContainer {
