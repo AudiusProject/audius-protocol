@@ -16,7 +16,7 @@ const TrackScreen = ({ navigation }: Props) => {
   }, [navigation])
 
   return (
-    <View>
+    <View style={{ display: 'flex', flexDirection: 'column' }}>
       <Text>Example track screen</Text>
       <Button title='Go to profile screen' onPress={handlePress} />
     </View>

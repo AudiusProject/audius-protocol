@@ -330,6 +330,8 @@ PODS:
     - React-Core
   - react-native-netinfo (5.9.10):
     - React-Core
+  - react-native-pager-view (5.4.9):
+    - React-Core
   - react-native-safe-area-context (3.3.2):
     - React-Core
   - react-native-static-server (0.5.0):
@@ -477,6 +479,7 @@ DEPENDENCIES:
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-music-control (from `../node_modules/react-native-music-control`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-static-server (from `../node_modules/react-native-static-server`)
   - react-native-version-number (from `../node_modules/react-native-version-number`)
@@ -586,6 +589,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-music-control"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
+  react-native-pager-view:
+    :path: "../node_modules/react-native-pager-view"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-static-server:
@@ -696,6 +701,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: 7bda3c7297c3ea16f4f504ad6174aa7e548192ef
   react-native-music-control: 0eef94942456152af21316afd53923e1dd6360b0
   react-native-netinfo: 52cf0ee8342548a485e28f4b09e56b477567244d
+  react-native-pager-view: 311c10a4eead1be627cad59062aa059d8108b943
   react-native-safe-area-context: 5cf05f49df9d17261e40e518481f2e334c6cd4b5
   react-native-static-server: 201b2a945a35096be3ae7f43e367c65bcbd61343
   react-native-version-number: 15563dc4145a94aabfc1faab2a9af10174a4204e

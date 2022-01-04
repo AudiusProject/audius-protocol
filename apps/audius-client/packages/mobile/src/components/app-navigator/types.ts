@@ -7,15 +7,31 @@ export type BaseStackParamList = {
 }
 
 export type FeedStackParamList = BaseStackParamList & {
-  feed: undefined
+  'feed-stack': undefined
+}
+
+export type TrendingStackParamList = BaseStackParamList & {
+  'trending-stack': undefined
+}
+
+export type ExploreStackParamList = BaseStackParamList & {
+  'explore-stack': undefined
+}
+
+export type FavoritesStackParamList = BaseStackParamList & {
+  'favorites-stack': undefined
+}
+
+export type ProfileStackParamList = BaseStackParamList & {
+  'profile-stack': undefined
 }
 
 export type BottomTabsParamList = {
   feed: NavigatorScreenParams<FeedStackParamList>
-  trending: undefined
-  explore: undefined
-  favorites: undefined
-  profile: undefined
+  trending: NavigatorScreenParams<TrendingStackParamList>
+  explore: NavigatorScreenParams<ExploreStackParamList>
+  favorites: NavigatorScreenParams<FavoritesStackParamList>
+  profile: NavigatorScreenParams<ProfileStackParamList>
 }
 
 export type AppStackParamList = {
