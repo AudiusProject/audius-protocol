@@ -4,8 +4,8 @@ import pathlib
 from os import path
 from typing import List, Optional, TypedDict
 
-from src.utils.config import shared_config
 from src.models import Challenge
+from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
 
