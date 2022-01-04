@@ -4,7 +4,6 @@ import logging
 import time
 
 from sqlalchemy import func
-from typing import Union
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import (
@@ -52,6 +51,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
