@@ -19,6 +19,7 @@ const FileManager = require('../src/fileManager')
 const { getApp } = require('./lib/app')
 const {
   createStarterCNodeUser,
+  createStarterCNodeUserWithKey,
   testEthereumConstants
 } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
