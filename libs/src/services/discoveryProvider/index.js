@@ -623,8 +623,10 @@ class DiscoveryProvider {
       const duration = Date.now() - start
       const errMsg = e.response && e.response.data ? e.response.data : e
       let shouldThrow = true
+      let didSecondaryNotFound = false
+      const hasSecondaries = this.secondaryEndpoints.length > 0
 
-      if (e.response.status === 404 && this.secondaryEndpoints.length > 0) {
+      if (e.response.status === 404 && hasSecondaries) {
         const secondaryEndpoint = this.secondaryEndpoints[0]
         const axiosRequest = this._createDiscProvRequest(requestObj, secondaryEndpoint)
         try {
@@ -634,8 +636,8 @@ class DiscoveryProvider {
         } catch (err) {
           // swallow error here and allow the parent error control flow to handle
           console.error(err)
+          didSecondaryNotFound = err.response.status === 404
         }
-
       }
 
       // Fire monitoring callbaks for request failure case
@@ -654,7 +656,12 @@ class DiscoveryProvider {
           console.error(e)
         }
       }
-      if (shouldThrow) {
+
+      // At this point, two discovery nodes have returned a 404, this should return null
+      // to prevent an infinited loop of tries
+      if (shouldThrow && didSecondaryNotFound) {
+          return { data: null }
+      } else if (shouldThrow) {
         throw errMsg
       }
     }
@@ -807,9 +814,9 @@ class DiscoveryProvider {
 
       // Clear the cached endpoint and select new endpoint from backups
       this.serviceSelector.clearCached()
-      const { endpoint: primary, secondaries } = await this.serviceSelector.select()
+      const { endpoint: primary, secondaries: secondaryEndpoints } = await this.serviceSelector.select()
       endpoint = primary
-      secondaries = secondaries
+      secondaries = secondaryEndpoints
     }
 
     // If there are no more available backups, throw error
