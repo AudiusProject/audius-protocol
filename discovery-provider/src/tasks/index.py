@@ -4,6 +4,7 @@ import logging
 import time
 
 from sqlalchemy import func
+from typing import Union
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import (
@@ -156,29 +157,37 @@ def get_latest_block(db: SessionManager, is_retry: bool = False):
             logger.info(
                 f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
             )
-            latest_block = update_task.web3.eth.getBlock(
-                target_latest_block_number, True
-            )
-
-            # we've seen potential instances of blocks returning no transactions
-            # if the block had no transactions and this is the first call to the gatewway
-            # retry after small delay to confirm the block is actually empty
-            if len(latest_block.transactions) == 0 and not is_retry:
-                logger.info(
-                    f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
-                )
-                time.sleep(0.5)
-                return get_latest_block(db, True)
-
-            # if it retries getting the block and this time it has transactions when it didn't previously
-            if len(latest_block.transactions) > 0 and is_retry:
-                logger.info(
-                    f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
-                )
+            latest_block = get_block_with_retry(target_latest_block_number)
 
             return latest_block
     except Exception as e:
         raise Exception(f"index.py | get_latest_block | got exception {e}")
+
+
+def get_block_with_retry(block_identifier: Union[int, str], is_retry: bool = False):
+    """
+    Fetch a block with one retry if 0 transactions found in the block
+    block_identifier - either a blockhash or blocknumber
+    is_retry - indicates if this is the one retry in the event the block contains 0 transactions
+    """
+    block = update_task.web3.eth.getBlock(block_identifier, True)
+    # we've seen potential instances of blocks returning no transactions
+    # if the block had no transactions and this is the first call to the gatewway
+    # retry after small delay to confirm the block is actually empty
+    if len(block.transactions) == 0 and not is_retry:
+        logger.info(
+            f"index.py | get_block_with_retry | target={block_identifier} | target block has 0 transactions, retrying to confirm"
+        )
+        time.sleep(0.5)
+        return get_block_with_retry(block_identifier, True)
+
+    # if it retries getting the block and this time it has transactions when it didn't previously
+    if len(block.transactions) > 0 and is_retry:
+        logger.info(
+            f"index.py | get_block_with_retry | target={block_identifier} | target block got transactions after retrying, got 0 initially"
+        )
+
+    return block
 
 
 def update_latest_block_redis():
@@ -1071,7 +1080,7 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
                     else:
-                        latest_block = web3.eth.getBlock(parent_hash, True)
+                        latest_block = get_block_with_retry(parent_hash)
                         intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the
