@@ -17,6 +17,7 @@ import {
   initUser,
   initUserSolPubkey,
   createTrack,
+  createTrackArgs,
 } from "../lib/lib";
 
 import { Command } from "commander";
@@ -29,6 +30,7 @@ const idl = JSON.parse(
 );
 
 const opts: web3.ConfirmOptions = {
+  skipPreflight: true,
   preflightCommitment: "confirmed",
 };
 
@@ -38,7 +40,8 @@ const keypairFromFilePath = (path: string) => {
 
 /// Initialize constants requird for any CLI functionality
 function initializeCLI(ownerKeypairPath: string) {
-  const network = "https://api.testnet.solana.com";
+  // const network = "https://solana-api.projectserum.com";
+  const network = "https://audius.rpcpool.com/4d12c27ad978e40c1b0f8449b93c";
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
   const wallet = new Wallet(ownerKeypair);
@@ -76,7 +79,7 @@ async function initAdminCLI(args: initAdminCLIParams) {
   console.log(adminStgKeypair.publicKey.toString());
   console.log(`[${adminStgKeypair.secretKey.toString()}]`);
   console.log(
-    `echo "[${adminKeypair.secretKey.toString()}]" > adminStgKeypair.json`
+    `echo "[${adminStgKeypair.secretKey.toString()}]" > adminStgKeypair.json`
   );
   await initAdmin({
     provider: cliVars.provider,
@@ -130,6 +133,32 @@ async function initUserCLI(args: initUserCLIParams) {
   console.log(
     `Initialized user=${handle}, tx=${tx}, userAcct=${userStgAddress}`
   );
+}
+
+async function timeCreateTrack(args: createTrackArgs) {
+  let retries = 5;
+  let err = null;
+  while (retries > 0) {
+    try {
+      let start = Date.now();
+      let tx = await createTrack({
+        program: args.program,
+        provider: args.provider,
+        metadata: randomCID(),
+        newTrackKeypair: anchor.web3.Keypair.generate(),
+        userAuthorityKey: userSolKeypair,
+        userStgAccountPDA: options.userStgPubkey,
+      });
+      let duration = Date.now() - start;
+      console.log(
+        `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
+      );
+      return tx;
+    } catch (e) {
+      err = e;
+    }
+  }
+  console.log(err);
 }
 
 const functionTypes = Object.freeze({
@@ -227,7 +256,7 @@ switch (options.function) {
       const cliVars = initializeCLI(options.ownerKeypair);
       for (var i = 0; i < numTracks; i++) {
         promises.push(
-          createTrack({
+          timeCreateTrack({
             program: cliVars.program,
             provider: cliVars.provider,
             metadata: randomCID(),
@@ -238,9 +267,7 @@ switch (options.function) {
         );
       }
       let start = Date.now();
-      let txs = await Promise.all(promises);
-      console.log(`Resulting track tx hashes:`);
-      txs.map((e) => console.log(e));
+      await Promise.all(promises);
       console.log(`Processed ${numTracks} in ${Date.now() - start}ms`);
     })();
     break;
