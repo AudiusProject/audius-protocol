@@ -165,7 +165,7 @@ def get_latest_block(db: SessionManager, is_retry: bool = False):
 
 
 def get_block_with_retry(
-    block_identifier: typing.Union[int, str], retry_count: int = False
+    block_identifier: typing.Union[int, str], retry_count: int = 0
 ):
     """
     Fetch a block with one retry if 0 transactions found in the block
