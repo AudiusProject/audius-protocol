@@ -28,6 +28,20 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add python3-dev && \
     apk add py3-pip
 
+# Install openresty with public key
+RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
+    apk add wget && \
+    wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
+    mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
+    source /etc/os-release && \
+    MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
+    echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
+    apk update && \
+    apk add openresty && \
+    mkdir /usr/local/openresty/conf && \
+    mkdir /usr/local/openresty/logs && \
+    mkdir /usr/local/openresty/cache
+
 # versions
 # bash 5.1.0-r0
 # docker 20.10.3-r1
@@ -43,8 +57,12 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
 # postgresql-contrib 11.12-r0
 # postgresql-libs 11.12-r0
 
+# openresty 1.19.9.1-r0
+
 COPY --from=builder /app/node_modules ./node_modules
 COPY . .
+
+RUN cp ./nginx_conf/* /usr/local/openresty/conf/
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
@@ -59,8 +77,6 @@ RUN bash scripts/init-db.sh
 
 VOLUME "/file_storage"
 ENV storagePath=/file_storage
-
-EXPOSE 8000
 
 ARG git_sha
 ARG audius_loggly_disable

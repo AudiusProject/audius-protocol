@@ -68,6 +68,10 @@ if [ -z "$dbUrl" ]; then
     /usr/bin/wait
 fi
 
+if [[ "$openRestyCacheCIDEnabled" == "true" ]]; then
+    openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
+fi
+
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]
     then
