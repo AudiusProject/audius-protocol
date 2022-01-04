@@ -35,9 +35,10 @@ def get_challenges_dicts():
         challenges: List[ChallengeJSON] = json.loads(raw)
 
     # If we're in stage environment, set up overrides
-    if shared_config["discprov"]["env"] == "stage":
+    env = shared_config["discprov"]["env"]
+    if env == "stage":
         stage_challenges_path = path.join(
-            pathlib.Path(__file__).parent, "challenges.stage.json"
+            pathlib.Path(__file__).parent, f"challenges.{env}.json"
         )
 
         with open(stage_challenges_path) as f:
