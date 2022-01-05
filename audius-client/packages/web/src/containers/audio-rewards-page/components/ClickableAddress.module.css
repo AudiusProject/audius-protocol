@@ -1,6 +1,6 @@
 .container {
   cursor: pointer;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
   transform: scale3d(1, 1, 1);
 }
 
@@ -39,7 +39,7 @@
 }
 
 .toast {
-  left: 225.5px !important;
+  left: 246px !important;
 }
 
 :global(#WEB3_CONNECT_MODAL_ID) {

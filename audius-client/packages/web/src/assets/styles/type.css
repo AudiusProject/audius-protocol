@@ -80,9 +80,9 @@
 }
 /* End Manual Font Imports */
 
-
 :root {
-  --font-family: 'Avenir Next LT Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+  --font-family: 'Avenir Next LT Pro', 'Helvetica Neue', Helvetica, Arial,
+    sans-serif !important;
 
   --font-2xs: 10px;
   --font-xs: 12px;

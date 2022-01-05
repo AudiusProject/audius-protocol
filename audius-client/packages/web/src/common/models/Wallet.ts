@@ -8,3 +8,4 @@ export type BNWei = Brand<BN, 'BNWei'>
 export type BNAudio = Brand<BN, 'BNAudio'>
 
 export type WalletAddress = string
+export type SolanaWalletAddress = Brand<string, 'solanaWallet'>

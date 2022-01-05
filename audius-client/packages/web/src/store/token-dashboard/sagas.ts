@@ -88,8 +88,8 @@ function* send() {
   // Send the txn, update local balance
   const sendData: ReturnType<typeof getSendData> = yield select(getSendData)
   if (!sendData) return
-  const { recipientWallet, amount } = sendData
-  yield put(walletSend({ recipientWallet, amount: weiToString(amount) }))
+  const { recipientWallet, amount, chain } = sendData
+  yield put(walletSend({ recipientWallet, amount: weiToString(amount), chain }))
 
   const { error }: { error: ReturnType<typeof claimFailed> } = yield race({
     success: take(sendSucceeded),
@@ -114,7 +114,8 @@ function* send() {
     flowState: {
       stage: 'CONFIRMED_SEND',
       amount: weiToString(amount),
-      recipientWallet
+      recipientWallet,
+      chain
     }
   }
   yield put(setModalState({ modalState: sentState }))

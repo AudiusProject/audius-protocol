@@ -54,30 +54,52 @@ const slice = createSlice({
     inputSendData: (
       state,
       {
-        payload: { amount, wallet }
-      }: PayloadAction<{ amount: StringWei; wallet: WalletAddress }>
+        payload: { amount, wallet, chain }
+      }: PayloadAction<{
+        amount: StringWei
+        wallet: WalletAddress
+        chain: Chain
+      }>
     ) => {
       const newState: ModalState = {
         stage: 'SEND' as const,
         flowState: {
           stage: 'AWAITING_CONFIRMATION',
           amount,
-          recipientWallet: wallet
+          recipientWallet: wallet,
+          chain
         }
       }
       state.modalState = newState
     },
+    transferingEthAudioToSolWAudio: state => {
+      if (
+        state.modalState?.stage !== 'SEND' ||
+        state.modalState.flowState.stage !== 'SENDING'
+      )
+        return
+
+      state.modalState.flowState = {
+        stage: 'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL',
+        recipientWallet: state.modalState.flowState.recipientWallet,
+        amount: state.modalState.flowState.amount,
+        chain: state.modalState.flowState.chain
+      }
+    },
     confirmSend: state => {
       if (
         state.modalState?.stage !== 'SEND' ||
-        state.modalState.flowState.stage !== 'AWAITING_CONFIRMATION'
+        (state.modalState.flowState.stage !== 'AWAITING_CONFIRMATION' &&
+          state.modalState.flowState.stage !==
+            'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL')
       )
         return
 
       state.modalState.flowState = {
         stage: 'SENDING',
         recipientWallet: state.modalState.flowState.recipientWallet,
-        amount: state.modalState.flowState.amount
+        amount: state.modalState.flowState.amount,
+        chain: state.modalState.flowState.chain
       }
     },
     pressReceive: state => {
@@ -269,7 +291,8 @@ export const {
   removeWallet,
   updateWalletError,
   preloadWalletProviders,
-  resetStatus
+  resetStatus,
+  transferingEthAudioToSolWAudio
 } = slice.actions
 
 export default slice

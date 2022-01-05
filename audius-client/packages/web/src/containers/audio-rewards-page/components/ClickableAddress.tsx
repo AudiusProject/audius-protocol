@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { ReactNode, useCallback } from 'react'
 
 import cn from 'classnames'
 
@@ -15,7 +15,7 @@ type DisplayAddressProps = {
   address: string
   className?: string
   isCompact?: boolean
-  label?: string
+  label?: ReactNode
 }
 
 const messages = {
@@ -35,7 +35,11 @@ const ClickableAddress = ({
   }, [address])
 
   return (
-    <Tooltip text={messages.copy} placement={'top'} mount={'parent'}>
+    <Tooltip
+      text={messages.copy}
+      placement={ComponentPlacement.TOP}
+      mount={MountPlacement.PARENT}
+    >
       <div className={cn(styles.toastContainer, { [className!]: !!className })}>
         <Toast
           text={messages.copied}

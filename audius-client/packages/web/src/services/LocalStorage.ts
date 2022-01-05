@@ -14,7 +14,7 @@ const getValue = (key: string) => {
   return null
 }
 
-const getJSONValue = (key: string) => {
+export const getJSONValue = (key: string) => {
   const val = getValue(key)
   if (val) {
     try {
@@ -33,7 +33,7 @@ const setValue = (key: string, value: string) => {
   }
 }
 
-const setJSONValue = (key: string, value: object) => {
+export const setJSONValue = (key: string, value: any) => {
   const string = JSON.stringify(value)
   setValue(key, string)
 }

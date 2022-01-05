@@ -15,7 +15,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.AUTOPLAY_LIMIT]: 10,
   [IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT]: 30000,
   [IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES]: 5,
-  [IntKeys.ATTESTATION_QUORUM_SIZE]: 0
+  [IntKeys.ATTESTATION_QUORUM_SIZE]: 0,
+  [IntKeys.MIN_AUDIO_SEND_AMOUNT]: 5
 }
 
 export const remoteConfigStringDefaults: {
@@ -65,5 +66,6 @@ export const remoteConfigBooleanDefaults: {
   [BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_LINK]: true,
   [BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_PHANTOM]: true,
   [BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK]: false,
-  [BooleanKeys.USE_AMPLITUDE]: true
+  [BooleanKeys.USE_AMPLITUDE]: true,
+  [BooleanKeys.USE_SPL_AUDIO]: true
 }

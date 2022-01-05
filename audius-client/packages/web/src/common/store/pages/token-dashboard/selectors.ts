@@ -1,3 +1,4 @@
+import { Chain } from 'common/models/Chain'
 import { BNWei } from 'common/models/Wallet'
 import { CommonState } from 'common/store'
 import { Nullable } from 'common/utils/typeUtils'
@@ -5,7 +6,7 @@ import { stringWeiToBN } from 'common/utils/wallet'
 
 export const getSendData = (
   state: CommonState
-): Nullable<{ recipientWallet: string; amount: BNWei }> => {
+): Nullable<{ recipientWallet: string; amount: BNWei; chain: Chain }> => {
   const modalState = state.pages.tokenDashboard.modalState
   if (
     !(
@@ -16,8 +17,8 @@ export const getSendData = (
     )
   )
     return null
-  const { recipientWallet, amount } = modalState.flowState
-  return { recipientWallet, amount: stringWeiToBN(amount) }
+  const { recipientWallet, amount, chain } = modalState.flowState
+  return { recipientWallet, amount: stringWeiToBN(amount), chain }
 }
 
 export const getModalState = (state: CommonState) =>

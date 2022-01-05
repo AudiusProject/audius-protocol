@@ -9,13 +9,16 @@ import {
 } from '@audius/stems'
 
 import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
+import { Chain } from 'common/models/Chain'
 import {
   BNAudio,
   BNWei,
+  SolanaWalletAddress,
   StringAudio,
   StringWei,
   WalletAddress
 } from 'common/models/Wallet'
+import { BooleanKeys, IntKeys } from 'common/services/remote-config'
 import { convertFloatToWei } from 'common/utils/formatUtil'
 import { Nullable } from 'common/utils/typeUtils'
 import {
@@ -24,6 +27,7 @@ import {
   stringWeiToBN,
   weiToAudio
 } from 'common/utils/wallet'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { MIN_TRANSFERRABLE_WEI } from 'services/wallet-client/WalletClient'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
@@ -31,12 +35,15 @@ import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 import DashboardTokenValueSlider from './DashboardTokenValueSlider'
 import styles from './SendInputBody.module.css'
 
+const { getRemoteVar } = remoteConfigInstance
+
 const messages = {
   warningTitle: 'PROCEED WITH CAUTION',
   warningSubtitle: 'If you send $AUDIO to the wrong address it will be lost.',
   warningSubtitle2:
     'WARNING: $AUDIO sent will not count towards badges, tiers, and unlocked features!',
-  addressPlaceholder: '0xC7EF9651259197aA26544Af724441a46e491c12c',
+  addressEthPlaceholder: '0xC7EF9651259197aA26544Af724441a46e491c12c',
+  addressSolPlaceholder: '9qU2A32k4bL6sbohrah2MiZZRfemH92hyZTY7jKc5GR8',
   sendAudio: 'SEND $AUDIO',
   insufficientBalance: 'Account does not have enough $AUDIO',
   amountRequired: 'Amount is a required field',
@@ -45,8 +52,10 @@ const messages = {
   addressMalformed: 'Please enter a valid address',
   addressRequired: 'Address is required',
   addressIsSelf: 'You cannot send $AUDIO to your own wallet!',
+  validSPLAddress: 'Please enter a valid Solana (SPL) wallet address',
   sendAmountLabel: 'Amount to SEND',
-  destination: 'Destination Address'
+  destination: 'Destination Address',
+  destinationSPL: 'Destination Address (Solana SPL)'
 }
 
 type BalanceError =
@@ -54,49 +63,95 @@ type BalanceError =
   | 'INSUFFICIENT_TRANSFER_AMOUNT'
   | 'EMPTY'
   | 'MALFORMED'
-type AddressError = 'MALFORMED' | 'EMPTY' | 'SEND_TO_SELF'
+  | 'LESS_THAN_MIN'
+
+type AddressError =
+  | 'MALFORMED'
+  | 'EMPTY'
+  | 'SEND_TO_SELF'
+  | 'INVALID_SPL_ADDRESS'
+
+const makeMinAudioError = (num: number | string) =>
+  `You must send at least ${num} $AUDIO`
 
 const balanceErrorMap: { [B in BalanceError]: string } = {
   INSUFFICIENT_BALANCE: messages.insufficientBalance,
   EMPTY: messages.amountRequired,
   MALFORMED: messages.amountMalformed,
-  INSUFFICIENT_TRANSFER_AMOUNT: messages.amountInsufficient
+  INSUFFICIENT_TRANSFER_AMOUNT: messages.amountInsufficient,
+  LESS_THAN_MIN: 'LESS_THAN_MIN' // special case this key to create on the fly
 }
 
 const addressErrorMap: { [A in AddressError]: string } = {
   MALFORMED: messages.addressMalformed,
   EMPTY: messages.addressRequired,
-  SEND_TO_SELF: messages.addressIsSelf
+  SEND_TO_SELF: messages.addressIsSelf,
+  INVALID_SPL_ADDRESS: messages.validSPLAddress
 }
 
 type SendInputBodyProps = {
   currentBalance: BNWei
-  onSend: (balance: BNWei, destinationAddress: WalletAddress) => void
+  onSend: (
+    balance: BNWei,
+    destinationAddress: WalletAddress,
+    chain: Chain
+  ) => void
   wallet: WalletAddress
+  solWallet: WalletAddress
 }
 
-const isValidDestination = (wallet: WalletAddress) => {
+const isValidEthDestination = (wallet: WalletAddress) => {
   const libs = window.audiusLibs
   return libs.web3Manager.web3.utils.isAddress(wallet)
 }
 
-const validateWallet = (
-  wallet: Nullable<WalletAddress>,
-  ownWallet: WalletAddress
+const isValidSolDestination = (wallet: SolanaWalletAddress) => {
+  const solanaweb3 = window.audiusLibs.solanaWeb3Manager.solanaWeb3
+  try {
+    const _ = new solanaweb3.PublicKey(wallet)
+    return true
+  } catch (err) {
+    console.log(err)
+    return false
+  }
+}
+
+const validateSolWallet = (
+  wallet: Nullable<SolanaWalletAddress>,
+  ownSolWallet: WalletAddress
 ): Nullable<AddressError> => {
   if (!wallet) return 'EMPTY'
-  if (!isValidDestination(wallet)) return 'MALFORMED'
-  if (wallet.toLowerCase() === ownWallet.toLowerCase()) return 'SEND_TO_SELF'
+  if (!isValidSolDestination(wallet)) return 'INVALID_SPL_ADDRESS'
+  if (wallet.toLowerCase() === ownSolWallet.toLowerCase()) {
+    return 'SEND_TO_SELF'
+  }
+  return null
+}
+
+const validateEthWallet = (
+  wallet: Nullable<WalletAddress>,
+  ownEthWallet: WalletAddress
+): Nullable<AddressError> => {
+  if (!wallet) return 'EMPTY'
+  if (!isValidEthDestination(wallet)) return 'MALFORMED'
+  if (wallet.toLowerCase() === ownEthWallet.toLowerCase()) {
+    return 'SEND_TO_SELF'
+  }
   return null
 }
 
 const validateSendAmount = (
   stringAudioAmount: StringAudio,
-  balanceWei: BNWei
+  balanceWei: BNWei,
+  minAudioSendAmount: number
 ): Nullable<BalanceError> => {
   if (!stringAudioAmount.length) return 'EMPTY'
   const sendWeiBN = parseAudioInputToWei(stringAudioAmount)
+  const minWeiBN = parseAudioInputToWei(
+    (minAudioSendAmount?.toString() as StringAudio) ?? ('0' as StringAudio)
+  )
   if (!sendWeiBN) return 'MALFORMED'
+  if (minWeiBN && sendWeiBN.lt(minWeiBN)) return 'LESS_THAN_MIN'
   if (sendWeiBN.gt(balanceWei)) return 'INSUFFICIENT_BALANCE'
   if (sendWeiBN.lt(MIN_TRANSFERRABLE_WEI)) return 'INSUFFICIENT_TRANSFER_AMOUNT'
 
@@ -127,7 +182,8 @@ const parseAudioInputToWei = (audio: StringAudio): Nullable<BNWei> => {
 const SendInputBody = ({
   currentBalance,
   onSend,
-  wallet
+  wallet,
+  solWallet
 }: SendInputBodyProps) => {
   const [amountToSend, setAmountToSend] = useState<StringAudio>(
     '' as StringAudio
@@ -164,24 +220,57 @@ const SendInputBody = ({
     [addressError, setAddressError, setDestinationAddress]
   )
 
+  const useSolSPLAudio = getRemoteVar(BooleanKeys.USE_SPL_AUDIO) as boolean
+  const minAudioSendAmount = getRemoteVar(
+    IntKeys.MIN_AUDIO_SEND_AMOUNT
+  ) as number
+
   const onClickSend = () => {
-    const balanceError = validateSendAmount(amountToSend, currentBalance)
-    const walletError = validateWallet(destinationAddress, wallet)
+    const balanceError = validateSendAmount(
+      amountToSend,
+      currentBalance,
+      minAudioSendAmount
+    )
+    let walletError: Nullable<AddressError> = null
+    if (useSolSPLAudio) {
+      walletError = validateSolWallet(
+        destinationAddress as SolanaWalletAddress,
+        solWallet
+      )
+    } else {
+      walletError = validateEthWallet(destinationAddress, wallet)
+    }
     setBalanceError(balanceError)
     setAddressError(walletError)
     if (balanceError || walletError) return
-    onSend(amountToSendBNWei, destinationAddress)
+    onSend(
+      amountToSendBNWei,
+      destinationAddress,
+      useSolSPLAudio ? Chain.Sol : Chain.Eth
+    )
   }
 
   const renderBalanceError = () => {
     if (!balanceError) return null
-    return <ErrorLabel text={balanceErrorMap[balanceError]} />
+    const errorMsg =
+      balanceError === 'LESS_THAN_MIN'
+        ? makeMinAudioError(minAudioSendAmount)
+        : balanceErrorMap[balanceError]
+    return <ErrorLabel text={errorMsg} />
   }
 
   const renderAddressError = () => {
     if (!addressError) return null
     return <ErrorLabel text={addressErrorMap[addressError]} />
   }
+
+  const placeholderAddress = useSolSPLAudio
+    ? messages.addressSolPlaceholder
+    : messages.addressEthPlaceholder
+
+  const destinationText = useSolSPLAudio
+    ? messages.destinationSPL
+    : messages.destination
 
   return (
     <ModalBodyWrapper>
@@ -216,9 +305,9 @@ const SendInputBody = ({
         labelClassName={styles.label}
         rightLabelClassName={styles.label}
         inputClassName={styles.input}
-        label={messages.destination}
+        label={destinationText}
         format={Format.INPUT}
-        placeholder={messages.addressPlaceholder}
+        placeholder={placeholderAddress}
         value={destinationAddress}
         isNumeric={false}
         onChange={onChangeAddress}
