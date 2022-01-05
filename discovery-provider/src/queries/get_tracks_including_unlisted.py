@@ -1,17 +1,16 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import or_, and_
-
 from flask.globals import request
+from sqlalchemy import and_, or_
 from src.models import Track
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import (
-    populate_track_metadata,
-    paginate_query,
     get_users_by_id,
     get_users_ids,
+    paginate_query,
+    populate_track_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import extract_key, use_redis_cache
 
 logger = logging.getLogger(__name__)

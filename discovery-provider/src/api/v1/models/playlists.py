@@ -1,6 +1,7 @@
 from flask_restx import fields
-from src.api.v1.models.users import user_model, user_model_full
 from src.api.v1.models.tracks import track_full
+from src.api.v1.models.users import user_model, user_model_full
+
 from .common import favorite, ns, repost
 
 playlist_artwork = ns.model(

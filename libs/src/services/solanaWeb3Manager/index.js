@@ -16,6 +16,14 @@ const { WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
 
+// Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
+// Without this padding, we could reach some low non-zero number of SOL where transactions would fail
+// despite a remaining balance.
+const ZERO_SOL_EPSILON = 0.005
+
+// Generous default connection confirmation timeout to better cope with RPC congestion
+const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
+
 /**
  * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
  */
@@ -53,6 +61,7 @@ class SolanaWeb3Manager {
    * @param {boolean} solanaWeb3Config.shouldUseRelay
    *  whether to submit transactions via a relay, or locally
    * @param {KeyPair} solanaWeb3Config.feePayerKepair
+   * @param {number} [solanaWeb3Config.confirmationTimeout] optional default confirmation timeout
    *  KeyPair for feepayer
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
@@ -82,14 +91,17 @@ class SolanaWeb3Manager {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair
+      feePayerKeypair,
+      confirmationTimeout
     } = this.solanaWeb3Config
 
     // Helper to safely create pubkey from nullable val
     const newPublicKeyNullable = (val) => val ? new PublicKey(val) : null
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
-    this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
+    this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
+      confirmTransactionInitialTimeout: confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
+    })
 
     this.transactionHandler = new TransactionHandler({
       connection: this.connection,
@@ -134,7 +146,7 @@ class SolanaWeb3Manager {
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
-      identityService: this.identityService
+      transactionHandler: this.transactionHandler
     })
   }
 
@@ -291,6 +303,8 @@ class SolanaWeb3Manager {
    *     specifier: string,
    *     recipientEthAddress: string,
    *     tokenAmount: BN,
+   *     instructionsPerTransaction?: number,
+   *     logger: any
    * }} {
    *     attestations,
    *     oracleAttestation,
@@ -298,6 +312,8 @@ class SolanaWeb3Manager {
    *     specifier,
    *     recipientEthAddress,
    *     tokenAmount,
+   *     instructionsPerTransaction,
+   *     logger
    *    }
    * @memberof SolanaWeb3Manager
    */
@@ -307,7 +323,9 @@ class SolanaWeb3Manager {
     challengeId,
     specifier,
     recipientEthAddress,
-    tokenAmount
+    tokenAmount,
+    instructionsPerTransaction,
+    logger = console
   }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -319,7 +337,9 @@ class SolanaWeb3Manager {
       feePayer: this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
-      transactionHandler: this.transactionHandler
+      transactionHandler: this.transactionHandler,
+      instructionsPerTransaction,
+      logger
     })
   }
 
@@ -387,6 +407,34 @@ class SolanaWeb3Manager {
       connection: this.connection,
       transactionHandler: this.transactionHandler
     })
+  }
+
+  /**
+   * Gets the balance of a PublicKey
+   *
+   * @param {{
+   *  publicKey: PublicKey
+   * }} { publicKey }
+   * @return {Promise<number>}
+   * @memberof SolanaWeb3Manager
+   */
+  async getBalance ({ publicKey }) {
+    return this.connection.getBalance(publicKey)
+  }
+
+  /**
+   * Gets whether a PublicKey has a usable balance
+   *
+   * @param {{
+   *  publicKey: PublicKey,
+   *  epsilon?: number
+   * }} { publicKey }
+   * @return {Promise<boolean>}
+   * @memberof SolanaWeb3Manager
+   */
+  async hasBalance ({ publicKey, epsilon = ZERO_SOL_EPSILON }) {
+    const balance = await this.getBalance({ publicKey })
+    return balance > epsilon
   }
 }
 

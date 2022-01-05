@@ -1,36 +1,35 @@
 # pylint: disable=too-many-lines
 import logging
-from sqlalchemy import func, desc, text, Integer, and_, bindparam, cast
 
 from flask import request
-
+from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
 from src import exceptions
-from src.queries import response_name_constants
 from src.models import (
-    User,
-    Track,
-    Repost,
-    RepostType,
+    AggregatePlaylist,
+    AggregatePlays,
+    AggregateTrack,
+    AggregateUser,
     Follow,
     Playlist,
+    Remix,
+    Repost,
+    RepostType,
     Save,
     SaveType,
-    Remix,
-    AggregatePlays,
-    AggregateUser,
-    AggregateTrack,
-    AggregatePlaylist,
+    Track,
+    User,
 )
-from src.utils import helpers, redis_connection
-from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
+from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
+from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
+from src.utils import helpers, redis_connection
 
 logger = logging.getLogger(__name__)
 
 redis = redis_connection.get_redis()
 
 
-######## VARS ########
+# ####### VARS ####### #
 
 
 defaultLimit = 100
@@ -62,7 +61,7 @@ electronic_sub_genres = [
     "Jersey Club",
 ]
 
-######## HELPERS ########
+# ####### HELPERS ####### #
 
 
 def get_current_user_id(required=True):
@@ -94,7 +93,7 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
     order_bys = []
     for field in params.keys():
         if field not in whitelist_sort_params:
-            raise exceptions.ArgumentError("Parameter %s is invalid in sort" % field)
+            raise exceptions.ArgumentError(f"Parameter {field} is invalid in sort")
         attr = getattr(model, field)
         if params[field] == "desc":
             attr = attr.desc()
@@ -255,6 +254,9 @@ def populate_user_metadata(
         user[response_name_constants.associated_sol_wallets_balance] = user_balance.get(
             "associated_sol_wallets_balance", "0"
         )
+        user[response_name_constants.waudio_balance] = user_balance.get(
+            "waudio_balance", "0"
+        )
 
     return users
 
@@ -402,11 +404,11 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         # Populate the remix_of tracks w/ the parent track's user and if that user saved/reposted the child
         if (
             response_name_constants.remix_of in track
-            and type(track[response_name_constants.remix_of]) is dict
+            and isinstance(track[response_name_constants.remix_of], dict)
             and track["track_id"] in remixes
         ):
             remix_tracks = track[response_name_constants.remix_of].get("tracks")
-            if remix_tracks and type(remix_tracks) is list:
+            if remix_tracks and isinstance(remix_tracks, list):
                 for remix_track in remix_tracks:
                     parent_track_id = remix_track.get("parent_track_id")
                     if parent_track_id in remixes[track["track_id"]]:
@@ -494,7 +496,7 @@ def get_track_remix_metadata(session, tracks, current_user_id):
     # Build a dict of user id -> user model obj of the remixed track's parent owner to dedupe users
     for remix_relationship in remix_query:
         [track_owner_id, _, _, _, _, user] = remix_relationship
-        if not track_owner_id in remix_parent_owners:
+        if track_owner_id not in remix_parent_owners:
             remix_parent_owners[track_owner_id] = user
 
     # populate the user's metadata for the remixed track's parent owner
@@ -525,7 +527,7 @@ def get_track_remix_metadata(session, tracks, current_user_id):
             has_remix_author_reposted,
             _,
         ] = remix_relationship
-        if not child_track_id in remixes:
+        if child_track_id not in remixes:
             remixes[child_track_id] = {
                 parent_track_id: {
                     response_name_constants.has_remix_author_saved: bool(
@@ -777,7 +779,7 @@ def get_repost_counts(
     )
 
     if time is not None:
-        interval = "NOW() - interval '1 {}'".format(time)
+        interval = f"NOW() - interval '1 {time}'"
         repost_counts_query = repost_counts_query.filter(
             Repost.created_at >= text(interval)
         )
@@ -808,7 +810,7 @@ def get_karma(session, ids, time=None, is_playlist=False, xf=False):
         Save.save_type == save_type,
     )
     if time is not None:
-        interval = "NOW() - interval '1 {}'".format(time)
+        interval = f"NOW() - interval '1 {time}'"
         savers = savers.filter(Save.created_at >= text(interval))
         reposters = reposters.filter(Repost.created_at >= text(interval))
 
@@ -905,7 +907,7 @@ def get_save_counts(
     )
 
     if time is not None:
-        interval = "NOW() - interval '1 {}'".format(time)
+        interval = f"NOW() - interval '1 {time}'"
         save_counts_query = save_counts_query.filter(Save.created_at >= text(interval))
     return save_counts_query.all()
 
@@ -968,10 +970,7 @@ def get_sum_aggregate_plays(db):
         int of total play count
     """
 
-    plays = (
-        db.query(func.sum(AggregatePlays.count))
-        .scalar()
-    )
+    plays = db.query(func.sum(AggregatePlays.count)).scalar()
 
     return int(plays)
 

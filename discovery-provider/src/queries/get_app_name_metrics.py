@@ -1,12 +1,13 @@
 import logging
 import time
 from datetime import date, timedelta
-from sqlalchemy import func, desc, asc
+
+from sqlalchemy import asc, desc, func
 from src import exceptions
 from src.models import (
-    AppNameMetrics,
     AggregateDailyAppNameMetrics,
     AggregateMonthlyAppNameMetrics,
+    AppNameMetrics,
 )
 from src.utils import db_session
 

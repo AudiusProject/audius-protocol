@@ -1,26 +1,21 @@
 from typing import Tuple
 
-from web3 import Web3
-from eth_utils.conversions import to_bytes
 from eth_keys import keys
+from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
+from solana.publickey import PublicKey
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
-from solana.publickey import PublicKey
-from src.models.models import (
-    Challenge,
-    ChallengeDisbursement,
-    User,
-    UserChallenge,
-)
+from src.models.models import Challenge, ChallengeDisbursement, User, UserChallenge
 from src.solana.constants import WAUDIO_DECIMALS
-from src.utils.redis_connection import get_redis
+from src.tasks.index_oracles import (
+    get_oracle_addresses_from_chain,
+    oracle_addresses_key,
+)
 from src.utils.config import shared_config
 from src.utils.get_all_other_nodes import get_all_other_nodes
-from src.tasks.index_oracles import (
-    oracle_addresses_key,
-    get_oracle_addresses_from_chain,
-)
+from src.utils.redis_connection import get_redis
+from web3 import Web3
 
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None

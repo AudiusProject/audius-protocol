@@ -68,6 +68,10 @@ if [ -z "$dbUrl" ]; then
     /usr/bin/wait
 fi
 
+if [[ "$openRestyCacheCIDEnabled" == "true" ]]; then
+    openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
+fi
+
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]
     then
@@ -75,9 +79,9 @@ if [[ "$devMode" == "true" ]]; then
         npm link
         cd ../app
         npm link @audius/libs
-        npx nodemon --watch src/ --watch ../audius-libs/ src/index.ts | tee >(logger) | npx bunyan
+        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger) | ./node_modules/.bin/bunyan
     else
-        npx nodemon --watch src/ src/index.ts | tee >(logger) | npx bunyan
+        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger) | ./node_modules/.bin/bunyan
     fi
 else
     node build/src/index.js | tee >(logger)

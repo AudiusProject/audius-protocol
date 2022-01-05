@@ -1,11 +1,7 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    DateTime,
-    PrimaryKeyConstraint,
-)
+from sqlalchemy import Column, DateTime, Integer, PrimaryKeyConstraint, String
+
 from .models import Base
+
 
 class Milestone(Base):
     __tablename__ = "milestones"

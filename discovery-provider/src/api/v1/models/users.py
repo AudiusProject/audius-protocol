@@ -1,4 +1,5 @@
 from flask_restx import fields
+
 from .common import ns
 from .playlist_library import playlist_library
 
@@ -49,6 +50,7 @@ user_model_full = ns.clone(
         "balance": fields.String(required=True),
         "associated_wallets_balance": fields.String(required=True),
         "total_balance": fields.String(required=True),
+        "waudio_balance": fields.String(required=True),
         "associated_sol_wallets_balance": fields.String(required=True),
         "blocknumber": fields.Integer(required=True),
         "wallet": fields.String(required=True),

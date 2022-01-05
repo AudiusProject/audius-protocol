@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class ListenHistory:
     def __init__(self, track_id: int, timestamp: datetime):
         self.track_id = track_id
