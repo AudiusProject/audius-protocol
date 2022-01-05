@@ -715,9 +715,9 @@ class CreatorNode {
 
         // if the content node returns an invalid auth token error, disconnect and reconnect
         if (e.response && e.response.data && e.response.data.error && e.response.data.error.includes('Invalid authentication token')) {
+          this.authToken = null
+          this.connected = false
           try {
-            await this._logoutNodeUser()
-            this.connected = false
             await this.connect()
           } catch (e) {
             console.error(e.message)
@@ -849,9 +849,9 @@ class CreatorNode {
         return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
       } else if (e.response && e.response.data && e.response.data.error && e.response.data.error.includes('Invalid authentication token')) {
         // if the content node returns an invalid auth token error, disconnect and reconnect
+        this.authToken = null
+        this.connected = false
         try {
-          await this._logoutNodeUser()
-          this.connected = false
           await this.connect()
         } catch (e) {
           console.error(e.message)
