@@ -17,10 +17,11 @@ pub mod audius_data {
     use super::*;
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
-    pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey) -> ProgramResult {
+    pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey, track_id_offset: u64) -> ProgramResult {
         msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
+        audius_admin.track_id = track_id_offset;
         Ok(())
     }
 
@@ -114,8 +115,8 @@ pub mod audius_data {
         }
         // Set owner to user storage account
         ctx.accounts.track.owner = ctx.accounts.user.key();
-        ctx.accounts.track.test_id = ctx.accounts.audius_admin.test_id;
-        ctx.accounts.audius_admin.test_id = ctx.accounts.audius_admin.test_id + 1;
+        ctx.accounts.track.track_id = ctx.accounts.audius_admin.track_id;
+        ctx.accounts.audius_admin.track_id = ctx.accounts.audius_admin.track_id + 1;
         msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
     }
@@ -274,7 +275,7 @@ pub struct DeleteTrack<'info> {
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
-    pub test_id: u64
+    pub track_id: u64
 }
 
 /// User storage account
@@ -288,7 +289,7 @@ pub struct User {
 #[account]
 pub struct Track {
     pub owner: Pubkey,
-    pub test_id: u64
+    pub track_id: u64
 }
 
 // Errors

@@ -81,11 +81,13 @@ async function initAdminCLI(args: initAdminCLIParams) {
   console.log(
     `echo "[${adminStgKeypair.secretKey.toString()}]" > adminStgKeypair.json`
   );
+  // TODO: Accept variable offset
   await initAdmin({
     provider: cliVars.provider,
     program: cliVars.program,
     adminKeypair,
     adminStgKeypair,
+    trackIdOffset: new anchor.BN("0"),
   });
 }
 
@@ -148,6 +150,7 @@ async function timeCreateTrack(args: createTrackArgs) {
         newTrackKeypair: anchor.web3.Keypair.generate(),
         userAuthorityKey: userSolKeypair,
         userStgAccountPDA: options.userStgPubkey,
+        adminStgPublicKey: args.adminStgPublicKey,
       });
       let duration = Date.now() - start;
       console.log(
@@ -264,7 +267,7 @@ switch (options.function) {
             newTrackKeypair: anchor.web3.Keypair.generate(),
             userAuthorityKey: userSolKeypair,
             userStgAccountPDA: options.userStgPubkey,
-            adminStgKeypair,
+            adminStgPublicKey: adminStgKeypair.publicKey,
           })
         );
       }
@@ -279,7 +282,7 @@ switch (options.function) {
       let info = await cliVars.program.account.audiusAdmin.fetch(
         adminStgKeypair.publicKey
       );
-      console.log(`trackID high:${info.testId}`);
+      console.log(`trackID high:${info.trackId}`);
     })();
     break;
 }

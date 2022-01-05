@@ -124,7 +124,6 @@ describe("audius-data", () => {
     let trackId = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
-    console.log(`track: ${trackMetadata}, trackId = ${trackId.testId}}`);
     let tx = await createTrack({
       provider,
       program,
@@ -132,14 +131,14 @@ describe("audius-data", () => {
       userAuthorityKey,
       userStgAccountPDA: trackOwnerPDA,
       metadata: trackMetadata,
-      adminStgKeypair,
+      adminStgPublicKey: adminStgKeypair.publicKey,
     });
     await confirmLogInTransaction(tx, trackMetadata);
     let assignedTrackId = await program.account.track.fetch(
       newTrackKeypair.publicKey
     );
     console.log(
-      `track: ${trackMetadata}, trackId assigned = ${assignedTrackId.testId}`
+      `track: ${trackMetadata}, trackId assigned = ${assignedTrackId.trackId}`
     );
   };
 
@@ -223,6 +222,7 @@ describe("audius-data", () => {
       program: program,
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
+      trackIdOffset: new anchor.BN("0"),
     });
 
     let adminAccount = await program.account.audiusAdmin.fetch(
