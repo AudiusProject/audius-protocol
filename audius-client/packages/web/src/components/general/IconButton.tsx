@@ -26,16 +26,10 @@ const IconButton = forwardRef(
       icon,
       disabled = false
     }: IconButtonProps,
-    ref?: React.Ref<HTMLDivElement>
+    ref?: React.Ref<HTMLButtonElement>
   ) => {
-    const handleClick = (event: React.MouseEvent) => {
-      if (!disabled && onClick) {
-        onClick(event)
-      }
-    }
-
     return (
-      <div
+      <button
         className={cn(
           styles.container,
           className,
@@ -43,10 +37,11 @@ const IconButton = forwardRef(
           { [styles.disabled]: disabled }
         )}
         ref={ref}
-        onClick={handleClick}
+        disabled={disabled}
+        onClick={onClick}
       >
         {icon}
-      </div>
+      </button>
     )
   }
 )
