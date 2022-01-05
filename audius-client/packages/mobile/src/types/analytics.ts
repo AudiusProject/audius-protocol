@@ -53,7 +53,7 @@ export enum EventNames {
   NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification',
 
   // Page View
-  PAGE_VIEW = 'PAGE VIEW',
+  PAGE_VIEW = 'Page View',
 
   // TikTok
   TIKTOK_OAUTH_ERROR = 'TikTok: TikTok OAuth Error'
