@@ -4,11 +4,13 @@
 const enqueueSync = async ({
   serviceRegistry,
   walletPublicKeys,
-  creatorNodeEndpoint
+  creatorNodeEndpoint,
+  forceResync
 }) => {
   await serviceRegistry.syncQueue.enqueueSync({
     walletPublicKeys,
-    creatorNodeEndpoint
+    creatorNodeEndpoint,
+    forceResync
   })
 }
 
