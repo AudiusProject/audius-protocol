@@ -3,7 +3,11 @@ import React, { MouseEvent, useState, useEffect, useCallback } from 'react'
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import placeholderArt from 'assets/img/imageBlank2x.png'
+import placeholderArt from 'common/assets/image/imageBlank2x.png'
+import {
+  useCollectionCoverArt,
+  useUserProfilePicture
+} from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import {
   ProfilePictureSizes,
@@ -18,10 +22,6 @@ import RepostFavoritesStats, {
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Menu, { MenuOptionType } from 'containers/menu/Menu'
 import UserBadges from 'containers/user-badges/UserBadges'
-import {
-  useCollectionCoverArt,
-  useUserProfilePicture
-} from 'hooks/useImageSize'
 
 import styles from './Card.module.css'
 

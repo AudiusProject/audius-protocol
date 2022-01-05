@@ -15,7 +15,11 @@ import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
-import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
+import imageCoverPhotoBlank from 'common/assets/image/imageCoverPhotoBlank.jpg'
+import {
+  useUserCoverPhoto,
+  useUserProfilePicture
+} from 'common/hooks/useImageSize'
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import {
@@ -31,7 +35,6 @@ import SubscribeButton from 'components/general/SubscribeButton'
 import { ArtistRecommendationsDropdown } from 'containers/artist-recommendations/ArtistRecommendationsDropdown'
 import ProfilePageBadge from 'containers/user-badges/ProfilePageBadge'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
 import { make, useRecord } from 'store/analytics/actions'
 import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
 

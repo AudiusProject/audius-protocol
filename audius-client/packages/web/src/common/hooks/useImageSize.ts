@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 
 import { useDispatch } from 'react-redux'
 
-import imageEmpty from 'assets/img/imageBlank2x.png'
-import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
-import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
+import imageEmpty from 'common/assets/image/imageBlank2x.png'
+import imageCoverPhotoBlank from 'common/assets/image/imageCoverPhotoBlank.jpg'
+import profilePicEmpty from 'common/assets/image/imageProfilePicEmpty2X.png'
 import useInstanceVar from 'common/hooks/useInstanceVar'
 import {
   CoverArtSizes,

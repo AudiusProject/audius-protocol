@@ -6,7 +6,8 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import placeholderArt from 'assets/img/imageBlank2x.png'
+import placeholderArt from 'common/assets/image/imageBlank2x.png'
+import { useCollectionCoverArt } from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'
@@ -19,7 +20,6 @@ import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Menu, { MenuType } from 'containers/menu/Menu'
-import { useCollectionCoverArt } from 'hooks/useImageSize'
 import {
   setUsers,
   setVisibility

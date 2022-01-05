@@ -5,10 +5,10 @@ import PropTypes from 'prop-types'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { useUserProfilePicture } from 'common/hooks/useImageSize'
 import { SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import { useUserProfilePicture } from 'hooks/useImageSize'
 
 import styles from './ProfilePicture.module.css'
 

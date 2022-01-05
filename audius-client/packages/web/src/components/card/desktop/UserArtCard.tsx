@@ -5,7 +5,8 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import placeholderArt from 'assets/img/imageBlank2x.png'
+import placeholderArt from 'common/assets/image/imageBlank2x.png'
+import { useUserProfilePicture } from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUser } from 'common/store/cache/users/selectors'
@@ -13,7 +14,6 @@ import { formatCount } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useImageSize'
 import {
   setUsers,
   setVisibility

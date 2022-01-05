@@ -3,12 +3,12 @@ import React, { useEffect } from 'react'
 import cn from 'classnames'
 import { animated, useSpring } from 'react-spring'
 
+import { useUserProfilePicture } from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Draggable from 'containers/dragndrop/Draggable'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useImageSize'
 import { fullTrackPage } from 'utils/route'
 
 import styles from './PlayingTrackInfo.module.css'
