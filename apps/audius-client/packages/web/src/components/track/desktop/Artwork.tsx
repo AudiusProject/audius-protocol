@@ -5,16 +5,16 @@ import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import {
+  useTrackCoverArt,
+  useCollectionCoverArt,
+  useLoadImageWithTimeout
+} from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes, CoverArtSizes } from 'common/models/ImageSizes'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import {
-  useTrackCoverArt,
-  useCollectionCoverArt,
-  useLoadImageWithTimeout
-} from 'hooks/useImageSize'
 
 import styles from './Artwork.module.css'
 

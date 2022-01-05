@@ -2,17 +2,17 @@ import React, { memo } from 'react'
 
 import cn from 'classnames'
 
+import {
+  useTrackCoverArt,
+  useCollectionCoverArt,
+  useLoadImageWithTimeout
+} from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import { Remix } from 'common/models/Track'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import {
-  useTrackCoverArt,
-  useCollectionCoverArt,
-  useLoadImageWithTimeout
-} from 'hooks/useImageSize'
 
 import styles from './TrackTileArt.module.css'
 

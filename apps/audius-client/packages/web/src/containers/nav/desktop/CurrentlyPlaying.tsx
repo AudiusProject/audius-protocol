@@ -2,11 +2,11 @@ import React, { memo, useRef } from 'react'
 
 import cn from 'classnames'
 
+import { useTrackCoverArt } from 'common/hooks/useImageSize'
 import Color from 'common/models/Color'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Draggable from 'containers/dragndrop/Draggable'
-import { useTrackCoverArt } from 'hooks/useImageSize'
 
 import styles from './CurrentlyPlaying.module.css'
 

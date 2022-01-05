@@ -19,6 +19,7 @@ import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
+import { useCollectionCoverArt } from 'common/hooks/useImageSize'
 import { Variant } from 'common/models/Collection'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { squashNewLines } from 'common/utils/formatUtil'
@@ -32,7 +33,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import InfoLabel from 'components/track/InfoLabel'
 import Menu from 'containers/menu/Menu'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useCollectionCoverArt } from 'hooks/useImageSize'
 
 import styles from './CollectionHeader.module.css'
 

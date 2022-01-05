@@ -2,10 +2,10 @@ import React from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 
+import { useUserProfilePicture } from 'common/hooks/useImageSize'
 import { SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useImageSize'
 
 import styles from './ArtistProfile.module.css'
 
