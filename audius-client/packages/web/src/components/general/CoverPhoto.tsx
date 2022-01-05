@@ -7,6 +7,7 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import { CoverPhotoSizes, WidthSizes } from 'common/models/ImageSizes'
+import { Nullable } from 'common/utils/typeUtils'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import { useUserCoverPhoto } from 'hooks/useImageSize'
@@ -18,8 +19,8 @@ const messages = {
 }
 
 type CoverPhotoProps = {
-  userId: number | null
-  coverPhotoSizes: CoverPhotoSizes | null
+  userId: Nullable<number>
+  coverPhotoSizes: Nullable<CoverPhotoSizes>
   updatedCoverPhoto?: string
   className?: string
   loading?: boolean
