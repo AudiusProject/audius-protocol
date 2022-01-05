@@ -1,11 +1,10 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
-from sqlalchemy import func
+import time
 
+from sqlalchemy import func
 from src.app import get_contract_addresses
-from src.utils import helpers, multihash
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import (
     AssociatedWallet,
@@ -30,13 +29,15 @@ from src.queries.get_skipped_transactions import (
     set_indexing_error,
 )
 from src.tasks.celery_app import celery
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
+from src.tasks.metadata import track_metadata_format, user_metadata_format
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
-from src.tasks.tracks import track_state_update, track_event_types_lookup
-from src.tasks.metadata import track_metadata_format, user_metadata_format
+from src.tasks.tracks import track_event_types_lookup, track_state_update
 from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
-from src.tasks.users import user_state_update, user_event_types_lookup
+from src.tasks.users import user_event_types_lookup, user_state_update
+from src.utils import helpers, multihash
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
@@ -54,7 +55,7 @@ from src.utils.session_manager import SessionManager
 logger = logging.getLogger(__name__)
 
 
-######## HELPER FUNCTIONS ########
+# ####### HELPER FUNCTIONS ####### #
 
 default_padded_start_hash = (
     "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -125,36 +126,59 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
     return target_blockhash
 
 
-def get_latest_block(db: SessionManager):
-    latest_block = None
+def get_latest_block(db: SessionManager, is_retry: bool = False):
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
     )
-    with db.scoped_session() as session:
-        current_block_query = session.query(Block).filter_by(is_current=True)
-        assert current_block_query.count() == 1, "Expected SINGLE row marked as current"
+    try:
+        with db.scoped_session() as session:
+            current_block_query = session.query(Block).filter_by(is_current=True)
+            assert (
+                current_block_query.count() == 1
+            ), "Expected SINGLE row marked as current"
 
-        current_block_query_results = current_block_query.all()
-        current_block = current_block_query_results[0]
-        current_block_number = current_block.number
+            current_block_query_results = current_block_query.all()
+            current_block = current_block_query_results[0]
+            current_block_number = current_block.number
 
-        if current_block_number == None:
-            current_block_number = 0
+            if current_block_number == None:
+                current_block_number = 0
 
-        target_latest_block_number = current_block_number + block_processing_window
+            target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
-        latest_block_number_from_chain = latest_block_from_chain.number
+            latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+            latest_block_number_from_chain = latest_block_from_chain.number
 
-        target_latest_block_number = min(
-            target_latest_block_number, latest_block_number_from_chain
-        )
+            target_latest_block_number = min(
+                target_latest_block_number, latest_block_number_from_chain
+            )
 
-        logger.info(
-            f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
-        )
-        latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
-    return latest_block
+            logger.info(
+                f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
+            )
+            latest_block = update_task.web3.eth.getBlock(
+                target_latest_block_number, True
+            )
+
+            # we've seen potential instances of blocks returning no transactions
+            # if the block had no transactions and this is the first call to the gatewway
+            # retry after small delay to confirm the block is actually empty
+            if len(latest_block.transactions) == 0 and not is_retry:
+                logger.info(
+                    f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
+                )
+                time.sleep(0.5)
+                return get_latest_block(db, True)
+
+            # if it retries getting the block and this time it has transactions when it didn't previously
+            if len(latest_block.transactions) > 0 and is_retry:
+                logger.info(
+                    f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
+                )
+
+            return latest_block
+    except Exception as e:
+        raise Exception(f"index.py | get_latest_block | got exception {e}")
 
 
 def update_latest_block_redis():
@@ -307,7 +331,9 @@ def update_ursm_address(self):
     web3 = update_task.web3
     shared_config = update_task.shared_config
     abi_values = update_task.abi_values
-    user_replica_set_manager_address = get_contract_addresses()["user_replica_set_manager"]
+    user_replica_set_manager_address = get_contract_addresses()[
+        "user_replica_set_manager"
+    ]
     if user_replica_set_manager_address == zero_address:
         logger.info(
             f"index.py | update_ursm_address, found {user_replica_set_manager_address}"
@@ -322,9 +348,9 @@ def update_ursm_address(self):
             bytes("UserReplicaSetManager", "utf-8")
         ).call()
         if user_replica_set_manager_address != zero_address:
-            get_contract_addresses()["user_replica_set_manager"] = web3.toChecksumAddress(
-                user_replica_set_manager_address
-            )
+            get_contract_addresses()[
+                "user_replica_set_manager"
+            ] = web3.toChecksumAddress(user_replica_set_manager_address)
             logger.info(
                 f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}"
             )
@@ -394,7 +420,6 @@ def index_blocks(self, db, blocks_list):
             playlist_factory_txs = []
             user_library_factory_txs = []
             user_replica_set_manager_txs = []
-
             tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
 
             # Sort transactions by hash
@@ -424,7 +449,10 @@ def index_blocks(self, db, blocks_list):
                     continue
 
                 # Handle user operations
-                if tx_target_contract_address == get_contract_addresses()["user_factory"]:
+                if (
+                    tx_target_contract_address
+                    == get_contract_addresses()["user_factory"]
+                ):
                     logger.info(
                         f"index.py | UserFactory contract addr: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}, adding to user_factory_txs to process in bulk"
@@ -432,7 +460,10 @@ def index_blocks(self, db, blocks_list):
                     user_factory_txs.append(tx_receipt)
 
                 # Handle track operations
-                if tx_target_contract_address == get_contract_addresses()["track_factory"]:
+                if (
+                    tx_target_contract_address
+                    == get_contract_addresses()["track_factory"]
+                ):
                     logger.info(
                         f"index.py | TrackFactory contract addr: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}"
@@ -452,7 +483,10 @@ def index_blocks(self, db, blocks_list):
                     social_feature_factory_txs.append(tx_receipt)
 
                 # Handle repost operations
-                if tx_target_contract_address == get_contract_addresses()["playlist_factory"]:
+                if (
+                    tx_target_contract_address
+                    == get_contract_addresses()["playlist_factory"]
+                ):
                     logger.info(
                         f"index.py | Playlist contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
@@ -959,7 +993,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
         session.delete(user_events_to_revert)
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="update_discovery_provider", bind=True)
 def update_task(self):
     # Cache custom task class properties

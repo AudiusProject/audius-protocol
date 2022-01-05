@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from dateutil.parser import parse
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_type_and_version import (
@@ -21,7 +22,7 @@ class UndergroundTrendingTracksStrategyePWJD(BaseTrendingStrategy):
     def __init__(self):
         super().__init__(TrendingType.UNDERGROUND_TRACKS, TrendingVersion.ePWJD)
 
-    def get_track_score(self, time, track):
+    def get_track_score(self, time_range, track):
         # pylint: disable=W,C,R
         mn = track["listens"]
         c = track["windowed_repost_count"]

@@ -20,20 +20,17 @@ const PROCESS_NAMES = Object.freeze({
  *  2. Refreshes the value and stores the update in redis
  */
 class MonitoringQueue {
-  constructor () {
-    this.queue = new Bull(
-      'monitoring-queue',
-      {
-        redis: {
-          port: config.get('redisPort'),
-          host: config.get('redisHost')
-        },
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true
-        }
+  constructor() {
+    this.queue = new Bull('monitoring-queue', {
+      redis: {
+        port: config.get('redisPort'),
+        host: config.get('redisHost')
+      },
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true
       }
-    )
+    })
 
     // Clean up anything that might be still stuck in the queue on restart
     this.queue.empty()
@@ -47,7 +44,7 @@ class MonitoringQueue {
 
           // Iterate over each monitor and set a new value if the cached
           // value is not fresh.
-          Object.values(MONITORS).forEach(async monitor => {
+          Object.values(MONITORS).forEach(async (monitor) => {
             try {
               await this.refresh(monitor)
             } catch (e) {
@@ -64,7 +61,7 @@ class MonitoringQueue {
     )
   }
 
-  async refresh (monitor) {
+  async refresh(monitor) {
     const key = getMonitorRedisKey(monitor)
     const ttlKey = `${key}:ttl`
 
@@ -90,15 +87,18 @@ class MonitoringQueue {
    * Logs a status message and includes current queue info
    * @param {string} message
    */
-  async logStatus (message) {
-    const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
-    logger.info(`Monitoring Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `)
+  async logStatus(message) {
+    const { waiting, active, completed, failed, delayed } =
+      await this.queue.getJobCounts()
+    logger.info(
+      `Monitoring Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+    )
   }
 
   /**
    * Starts the monitoring queue on an every minute cron.
    */
-  async start () {
+  async start() {
     try {
       // Run the job immediately
       await this.queue.add(PROCESS_NAMES.monitor)

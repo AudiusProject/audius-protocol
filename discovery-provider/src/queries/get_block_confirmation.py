@@ -1,5 +1,6 @@
 from src.models import Block
-from src.utils import helpers, db_session
+from src.utils import db_session, helpers
+
 
 # returns a dictionary that represents whether
 # the given blockhash is present, the given blocknumber is passed

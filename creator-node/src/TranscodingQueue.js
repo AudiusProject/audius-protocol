@@ -9,9 +9,10 @@ const transcodingMaxConcurrency = config.get('transcodingMaxConcurrency')
 
 // Maximum concurrency set to config var if provided
 // Otherwise, uses the number of CPU cores available to node
-const MAX_CONCURRENCY = transcodingMaxConcurrency !== -1
-  ? transcodingMaxConcurrency
-  : os.cpus().length
+const MAX_CONCURRENCY =
+  transcodingMaxConcurrency !== -1
+    ? transcodingMaxConcurrency
+    : os.cpus().length
 
 // The minimum number of slots available for the transcode queue to be marked
 // as able to accept more jobs
@@ -23,78 +24,118 @@ const PROCESS_NAMES = Object.freeze({
 })
 
 class TranscodingQueue {
-  constructor () {
-    this.queue = new Bull(
-      'transcoding-queue',
-      {
-        redis: {
-          port: config.get('redisPort'),
-          host: config.get('redisHost')
-        },
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true
-        }
-      })
+  constructor() {
+    this.queue = new Bull('transcoding-queue', {
+      redis: {
+        port: config.get('redisPort'),
+        host: config.get('redisHost')
+      },
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true
+      }
+    })
+    this.logStatus('Initialized TranscodingQueue')
 
     // NOTE: Specifying max concurrency here dictates the max concurrency for
     // *any* process fn below
     // See https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueprocess
-    this.queue.process(PROCESS_NAMES.segment, MAX_CONCURRENCY, async (job, done) => {
-      const start = Date.now()
-      const { fileDir, fileName, logContext } = job.data
+    this.queue.process(
+      PROCESS_NAMES.segment,
+      MAX_CONCURRENCY,
+      async (job, done) => {
+        const start = Date.now()
+        const { fileDir, fileName, logContext } = job.data
 
-      try {
-        this.logStatus(logContext, `segmenting ${fileDir} ${fileName}`)
+        try {
+          this.logStatus(`Segmenting ${fileDir} ${fileName}`, logContext)
 
-        const segmentFileNamesAndPaths = await ffmpeg.segmentFile(
-          fileDir,
-          fileName,
-          { logContext }
-        )
-        this.logStatus(logContext, `Successfully completed segment job ${fileDir} ${fileName} in duration ${Date.now() - start}ms`)
-        done(null, segmentFileNamesAndPaths)
-      } catch (e) {
-        this.logStatus(logContext, `Segment Job Error ${e} in duration ${Date.now() - start}ms`)
-        done(e)
+          const filePaths = await ffmpeg.segmentFile(fileDir, fileName, {
+            logContext
+          })
+          this.logStatus(
+            `Successfully completed segment job ${fileDir} ${fileName} in duration ${
+              Date.now() - start
+            }ms`,
+            logContext
+          )
+          done(null, { filePaths })
+        } catch (e) {
+          this.logStatus(
+            `Segment Job Error ${e} in duration ${Date.now() - start}ms`,
+            logContext
+          )
+          done(e)
+        }
       }
-    })
+    )
 
-    this.queue.process(PROCESS_NAMES.transcode320, /* inherited */ 0, async (job, done) => {
-      const start = Date.now()
-      const { fileDir, fileName, logContext } = job.data
+    this.queue.process(
+      PROCESS_NAMES.transcode320,
+      /* inherited */ 0,
+      async (job, done) => {
+        const start = Date.now()
+        const { fileDir, fileName, logContext } = job.data
 
-      try {
-        this.logStatus(logContext, `transcoding to 320kbps ${fileDir} ${fileName}`)
+        try {
+          this.logStatus(
+            `transcoding to 320kbps ${fileDir} ${fileName}`,
+            logContext
+          )
 
-        const filePath = await ffmpeg.transcodeFileTo320(
-          fileDir,
-          fileName,
-          { logContext }
-        )
-        this.logStatus(logContext, `Successfully completed Transcode320 job ${fileDir} ${fileName} in duration ${Date.now() - start}ms`)
-        done(null, { filePath })
-      } catch (e) {
-        this.logStatus(logContext, `Transcode320 Job Error ${e} in duration ${Date.now() - start}`)
-        done(e)
+          const filePath = await ffmpeg.transcodeFileTo320(fileDir, fileName, {
+            logContext
+          })
+          this.logStatus(
+            `Successfully completed Transcode320 job ${fileDir} ${fileName} in duration ${
+              Date.now() - start
+            }ms`,
+            logContext
+          )
+          done(null, { filePath })
+        } catch (e) {
+          this.logStatus(
+            `Transcode320 Job Error ${e} in duration ${Date.now() - start}`,
+            logContext
+          )
+          done(e)
+        }
       }
-    })
+    )
 
     this.logStatus = this.logStatus.bind(this)
+    this.logError = this.logError.bind(this)
     this.segment = this.segment.bind(this)
     this.transcode320 = this.transcode320.bind(this)
     this.getTranscodeQueueJobs = this.getTranscodeQueueJobs.bind(this)
   }
 
   /**
-   * Logs a status message and includes current queue info
+   * Logs a successful status message and includes current queue info
    * @param {object} logContext to create a logger.child(logContext) from
    * @param {string} message
    */
-  async logStatus (logContext, message) {
+  async logStatus(message, logContext = {}) {
     const logger = genericLogger.child(logContext)
-    const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
-    logger.info(`Transcoding Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `)
+    const { waiting, active, completed, failed, delayed } =
+      await this.queue.getJobCounts()
+    logger.info(
+      `Transcoding Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+    )
+  }
+
+  /**
+   * Logs an error status message and includes current queue info
+   * @param {object} logContext to create a logger.child(logContext) from
+   * @param {string} message
+   */
+  async logError(message, logContext = {}) {
+    const logger = genericLogger.child(logContext)
+    const { waiting, active, completed, failed, delayed } =
+      await this.queue.getJobCounts()
+    logger.error(
+      `Transcoding error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+    )
   }
 
   /**
@@ -103,12 +144,26 @@ class TranscodingQueue {
    * @param {string} fileName
    * @param {object} logContext to create a logger.child(logContext) from
    */
-  async segment (fileDir, fileName, { logContext }) {
-    const job = await this.queue.add(
-      PROCESS_NAMES.segment,
-      { fileDir, fileName, logContext }
+  async segment(fileDir, fileName, { logContext }) {
+    this.logStatus(
+      `Adding job to segment queue, fileDir=${fileDir}, fileName=${fileName}`,
+      logContext
     )
+    const job = await this.queue.add(PROCESS_NAMES.segment, {
+      fileDir,
+      fileName,
+      logContext
+    })
+    this.logStatus(
+      `Job added to segment queue, fileDir=${fileDir}, fileName=${fileName}`,
+      logContext
+    )
+
     const result = await job.finished()
+    this.logStatus(
+      `Segment job successful, fileDir=${fileDir}, fileName=${fileName}`,
+      logContext
+    )
     return result
   }
 
@@ -118,21 +173,32 @@ class TranscodingQueue {
    * @param {string} fileName
    * @param {object} logContext to create a logger.child(logContext) from
    */
-  async transcode320 (fileDir, fileName, { logContext }) {
-    const job = await this.queue.add(
-      PROCESS_NAMES.transcode320,
-      { fileDir, fileName, logContext }
+  async transcode320(fileDir, fileName, { logContext }) {
+    this.logStatus(
+      `Adding job to transcode320 queue, fileDir=${fileDir}, fileName=${fileName}`,
+      logContext
     )
+    const job = await this.queue.add(PROCESS_NAMES.transcode320, {
+      fileDir,
+      fileName,
+      logContext
+    })
+    this.logStatus(
+      `Job added to transcode320 queue, fileDir=${fileDir}, fileName=${fileName}`,
+      logContext
+    )
+
     const result = await job.finished()
+    this.logStatus(
+      `Transcode320 job successful, fileDir=${fileDir}, fileName=${fileName}`,
+      logContext
+    )
     return result
   }
 
-  async getTranscodeQueueJobs () {
+  async getTranscodeQueueJobs() {
     const queue = this.queue
-    const [
-      waiting,
-      active
-    ] = await Promise.all([
+    const [waiting, active] = await Promise.all([
       queue.getJobs(['waiting']),
       queue.getJobs(['active'])
     ])
@@ -149,7 +215,7 @@ class TranscodingQueue {
    * minimum slots necessary, mark the transcode queue as available.
    * @returns boolean flag if the transcode queue can accept more jobs
    */
-  async isAvailable () {
+  async isAvailable() {
     const { active, waiting } = await this.getTranscodeQueueJobs()
     const remainingSlots = MAX_CONCURRENCY - active - waiting
 

@@ -1,7 +1,7 @@
-from functools import reduce
 import logging
-from sqlalchemy import asc, desc, func
+from functools import reduce
 
+from sqlalchemy import asc, desc, func
 from src.models import AppNameMetrics, RouteMetrics
 from src.utils import db_session
 

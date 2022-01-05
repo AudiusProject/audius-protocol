@@ -1,19 +1,20 @@
 import logging
-from functools import reduce
 from datetime import date, timedelta
+from functools import reduce
+
 from sqlalchemy import desc, func
+from src import exceptions
 from src.models import (
-    RouteMetricsTrailingWeek,
-    RouteMetricsTrailingMonth,
-    RouteMetricsAllTime,
-    AppMetricsTrailingWeek,
-    AppMetricsTrailingMonth,
-    AppMetricsAllTime,
-    AggregateDailyUniqueUsersMetrics,
     AggregateDailyTotalUsersMetrics,
+    AggregateDailyUniqueUsersMetrics,
+    AppMetricsAllTime,
+    AppMetricsTrailingMonth,
+    AppMetricsTrailingWeek,
+    RouteMetricsAllTime,
+    RouteMetricsTrailingMonth,
+    RouteMetricsTrailingWeek,
 )
 from src.utils import db_session
-from src import exceptions
 
 logger = logging.getLogger(__name__)
 
