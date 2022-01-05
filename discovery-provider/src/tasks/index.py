@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
+import time
 
 from sqlalchemy import func
 from src.app import get_contract_addresses
@@ -125,36 +126,59 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
     return target_blockhash
 
 
-def get_latest_block(db: SessionManager):
-    latest_block = None
+def get_latest_block(db: SessionManager, is_retry: bool = False):
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
     )
-    with db.scoped_session() as session:
-        current_block_query = session.query(Block).filter_by(is_current=True)
-        assert current_block_query.count() == 1, "Expected SINGLE row marked as current"
+    try:
+        with db.scoped_session() as session:
+            current_block_query = session.query(Block).filter_by(is_current=True)
+            assert (
+                current_block_query.count() == 1
+            ), "Expected SINGLE row marked as current"
 
-        current_block_query_results = current_block_query.all()
-        current_block = current_block_query_results[0]
-        current_block_number = current_block.number
+            current_block_query_results = current_block_query.all()
+            current_block = current_block_query_results[0]
+            current_block_number = current_block.number
 
-        if current_block_number == None:
-            current_block_number = 0
+            if current_block_number == None:
+                current_block_number = 0
 
-        target_latest_block_number = current_block_number + block_processing_window
+            target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
-        latest_block_number_from_chain = latest_block_from_chain.number
+            latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+            latest_block_number_from_chain = latest_block_from_chain.number
 
-        target_latest_block_number = min(
-            target_latest_block_number, latest_block_number_from_chain
-        )
+            target_latest_block_number = min(
+                target_latest_block_number, latest_block_number_from_chain
+            )
 
-        logger.info(
-            f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
-        )
-        latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
-    return latest_block
+            logger.info(
+                f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
+            )
+            latest_block = update_task.web3.eth.getBlock(
+                target_latest_block_number, True
+            )
+
+            # we've seen potential instances of blocks returning no transactions
+            # if the block had no transactions and this is the first call to the gatewway
+            # retry after small delay to confirm the block is actually empty
+            if len(latest_block.transactions) == 0 and not is_retry:
+                logger.info(
+                    f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
+                )
+                time.sleep(0.5)
+                return get_latest_block(db, True)
+
+            # if it retries getting the block and this time it has transactions when it didn't previously
+            if len(latest_block.transactions) > 0 and is_retry:
+                logger.info(
+                    f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
+                )
+
+            return latest_block
+    except Exception as e:
+        raise Exception(f"index.py | get_latest_block | got exception {e}")
 
 
 def update_latest_block_redis():
@@ -396,7 +420,6 @@ def index_blocks(self, db, blocks_list):
             playlist_factory_txs = []
             user_library_factory_txs = []
             user_replica_set_manager_txs = []
-
             tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
 
             # Sort transactions by hash

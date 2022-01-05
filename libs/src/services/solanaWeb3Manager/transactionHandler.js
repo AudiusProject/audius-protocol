@@ -17,19 +17,22 @@ class TransactionHandler {
    *  useRelay: boolean,
    *  identityService: Object,
    *  feePayerKeypair: KeyPair
+   *  skipPreflight: boolean
    * }} {
    *  connection,
    *  useRelay,
    *  identityService = null,
-   *  feePayerKeypair = null
+   *  feePayerKeypair = null,
+   *  skipPreflight = true
    * }
    * @memberof TransactionHandler
    */
-  constructor ({ connection, useRelay, identityService = null, feePayerKeypair = null }) {
+  constructor ({ connection, useRelay, identityService = null, feePayerKeypair = null, skipPreflight = true }) {
     this.connection = connection
     this.useRelay = useRelay
     this.identityService = identityService
     this.feePayerKeypair = feePayerKeypair
+    this.skipPreflight = skipPreflight
   }
 
   /**
@@ -103,7 +106,7 @@ class TransactionHandler {
         tx,
         [this.feePayerKeypair],
         {
-          skipPreflight: false,
+          skipPreflight: this.skipPreflight,
           commitment: 'processed',
           preflightCommitment: 'processed'
         }

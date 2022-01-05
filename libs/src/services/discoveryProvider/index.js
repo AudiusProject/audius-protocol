@@ -15,6 +15,7 @@ const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
+const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
 
 /**
  * Constructs a service class for a discovery node
@@ -62,6 +63,13 @@ class DiscoveryProvider {
     this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
     this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
     this.unhealthySlotDiffPlays = unhealthySlotDiffPlays
+
+    // Keep track of the number of times a request 404s so we know when a true 404 occurs
+    // Due to incident where some discovery nodes may erroneously be missing content #flare-51,
+    // we treat 404s differently than generic 4xx's or other 5xx errors.
+    // In the case of a 404, try a few other nodes
+    this.request404Count = 0
+    this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
 
     this.monitoringCallbacks = monitoringCallbacks
   }
@@ -637,6 +645,11 @@ class DiscoveryProvider {
           console.error(e)
         }
       }
+      if (resp && resp.status === 404) {
+        // We have 404'd. Throw that error message back out
+        throw new Error('404')
+      }
+
       throw errMsg
     }
     return parsedResponse
@@ -731,11 +744,31 @@ class DiscoveryProvider {
     try {
       parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
     } catch (e) {
-      const fullErrString = `Failed to make Discovery Provider request at attempt #${attemptedRetries}, error ${JSON.stringify(e.message)}, request: ${JSON.stringify(requestObj)}`
+      const failureStr = `Failed to make Discovery Provider request, `
+      const attemptStr = `attempt #${attemptedRetries}, `
+      const errorStr = `error ${JSON.stringify(e.message)}, `
+      const requestStr = `request: ${JSON.stringify(requestObj)}`
+      const fullErrString = `${failureStr}${attemptStr}${errorStr}${requestStr}`
+
       console.warn(fullErrString)
+
       if (retry) {
+        if (e.message === '404') {
+          this.request404Count += 1
+          if (this.request404Count < this.maxRequestsForTrue404) {
+            // In the case of a 404, retry with a different discovery node entirely
+            // using selectionRequestRetries + 1 to force reselection
+            return this._makeRequest(requestObj, retry, this.selectionRequestRetries + 1)
+          } else {
+            this.request404Count = 0
+            return null
+          }
+        }
+
+        // In the case of an unknown error, retry with attempts += 1
         return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
+
       return null
     }
 
@@ -766,6 +799,9 @@ class DiscoveryProvider {
       }
       return null
     }
+
+    // Reset 404 counts
+    this.request404Count = 0
 
     // Everything looks good, return the data!
     return parsedResponse.data
