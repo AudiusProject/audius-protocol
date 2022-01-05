@@ -81,6 +81,7 @@ const relayWormhole = async (
       txHash: response.txHash
     }
   } catch (err) {
+    req.logger.error(context, logs.join(','))
     const errorMessage = err.toString()
     await reportError({ logs: logs.join(','), error: errorMessage })
     return { error: errorMessage }
@@ -123,6 +124,7 @@ module.exports = function (app) {
         txHash
       }))
     } catch (error) {
+      req.logger.error(error.message)
       const errorMessage = error.message.toString()
       await reportError({ error: errorMessage })
       return sendResponse(
