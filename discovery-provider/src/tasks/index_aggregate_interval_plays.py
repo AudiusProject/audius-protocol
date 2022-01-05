@@ -97,6 +97,11 @@ UPDATE_AGGREGATE_INTERVAL_PLAYS_QUERY = """
             AND plays.created_at > (now() - interval '1 year')
             GROUP BY plays.play_item_id
         ) as year_listen_counts ON year_listen_counts.play_item_id = tracks.track_id
+        WHERE
+            tracks.is_current is True AND
+            tracks.is_delete is False AND
+            tracks.is_unlisted is False AND
+            tracks.stem_of is Null
     )
     INSERT INTO
         aggregate_interval_plays (track_id, genre, created_at, week_listen_counts, month_listen_counts, year_listen_counts)

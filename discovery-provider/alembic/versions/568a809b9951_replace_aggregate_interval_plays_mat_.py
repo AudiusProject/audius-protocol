@@ -180,7 +180,7 @@ def downgrade():
             tracks.is_unlisted is False AND
             tracks.stem_of is Null;
 
-        -- add index on above materialized view?
+        -- add index on above materialized view
         CREATE INDEX IF NOT EXISTS interval_play_track_id_idx ON aggregate_interval_plays (track_id);
         CREATE INDEX IF NOT EXISTS interval_play_week_count_idx ON aggregate_interval_plays (week_listen_counts);
         CREATE INDEX IF NOT EXISTS interval_play_month_count_idx ON aggregate_interval_plays (month_listen_counts);
