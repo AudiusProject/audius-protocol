@@ -3,12 +3,15 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
+import {
+  useUserCoverPhoto,
+  useUserProfilePicture
+} from 'common/hooks/useImageSize'
 import { WidthSizes, SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/general/FollowButton'
 import Stats from 'components/general/Stats'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
 
 import styles from './ArtistCard.module.css'
 

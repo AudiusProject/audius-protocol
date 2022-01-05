@@ -2,6 +2,10 @@ import React from 'react'
 
 import { Button, ButtonType, IconUser } from '@audius/stems'
 
+import {
+  useTrackCoverArt,
+  useCollectionCoverArt
+} from 'common/hooks/useImageSize'
 import { ID, PlayableType } from 'common/models/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import { User } from 'common/models/User'
@@ -14,7 +18,6 @@ import Page from 'components/general/Page'
 import StatBanner from 'components/general/StatBanner'
 import Lineup, { LineupWithoutTile } from 'containers/lineup/Lineup'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useTrackCoverArt, useCollectionCoverArt } from 'hooks/useImageSize'
 import { Playable } from 'models/Playable'
 import { withNullGuard } from 'utils/withNullGuard'
 
