@@ -17,7 +17,7 @@ const DiskManager = require('../src/diskManager')
 const FileManager = require('../src/fileManager')
 
 const { getApp } = require('./lib/app')
-const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants } = require('./lib/dataSeeds')
+const { createStarterCNodeUser, testEthereumConstants } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
@@ -224,7 +224,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       { clockValue: numExpectedFilesForUser, syncInProgress: false, CIDSkipInfo: { numCIDs: numExpectedFilesForUser, numSkippedCIDs: TestAudiusTrackFileNumSegments } }
     )
 
-    const files = await models.File.findAll({ where: { cnodeUserUUID: session.cnodeUserUUID }})
+    const files = await models.File.findAll({ where: { cnodeUserUUID: session.cnodeUserUUID } })
     const filesSorted = _.sortBy(files, ['clock'], ['asc'])
     const multihashesSorted = filesSorted.map(file => file.multihash)
 
@@ -309,8 +309,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(200)
     assert.deepStrictEqual(batchClockResp.body.data,
       { users: [
-        { walletPublicKey: userWallet, clock: numExpectedFilesForUser }
-        , { walletPublicKey: pubKey2, clock: numExpectedFilesForUser }
+        { walletPublicKey: userWallet, clock: numExpectedFilesForUser },
+        { walletPublicKey: pubKey2, clock: numExpectedFilesForUser }
       ] }
     )
   })
