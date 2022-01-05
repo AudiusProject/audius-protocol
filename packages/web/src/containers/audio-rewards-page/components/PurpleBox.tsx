@@ -7,7 +7,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import styles from './PurpleBox.module.css'
 
 type PurpleBoxProps = {
-  label: string
+  label: ReactNode
   text: ReactNode
   className?: string
   onClick?: () => void

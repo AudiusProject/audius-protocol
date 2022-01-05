@@ -73,7 +73,7 @@ const REWARDS_MANAGER_TOKEN_PDA =
   process.env.REACT_APP_REWARDS_MANAGER_TOKEN_PDA
 
 // Wormhole Config
-const WORMHOLE_RPC_HOST = process.env.REACT_APP_WORMHOLE_RPC_HOST
+const WORMHOLE_RPC_HOSTS = process.env.REACT_APP_WORMHOLE_RPC_HOSTS
 const ETH_BRIDGE_ADDRESS = process.env.REACT_APP_ETH_BRIDGE_ADDRESS
 const SOL_BRIDGE_ADDRESS = process.env.REACT_APP_SOL_BRIDGE_ADDRESS
 const ETH_TOKEN_BRIDGE_ADDRESS = process.env.REACT_APP_ETH_TOKEN_BRIDGE_ADDRESS
@@ -576,7 +576,7 @@ class AudiusBackend {
 
   static getWormholeConfig() {
     if (
-      !WORMHOLE_RPC_HOST ||
+      !WORMHOLE_RPC_HOSTS ||
       !ETH_BRIDGE_ADDRESS ||
       !SOL_BRIDGE_ADDRESS ||
       !ETH_TOKEN_BRIDGE_ADDRESS ||
@@ -591,7 +591,7 @@ class AudiusBackend {
     return {
       error: false,
       wormholeConfig: AudiusLibs.configWormhole({
-        rpcHost: WORMHOLE_RPC_HOST,
+        rpcHosts: WORMHOLE_RPC_HOSTS,
         solBridgeAddress: SOL_BRIDGE_ADDRESS,
         solTokenBridgeAddress: SOL_TOKEN_BRIDGE_ADDRESS,
         ethBridgeAddress: ETH_BRIDGE_ADDRESS,
@@ -662,9 +662,15 @@ class AudiusBackend {
         account._artist_pick = body.pinnedTrackId || null
         account.twitterVerified = body.twitterVerified || false
         account.instagramVerified = body.instagramVerified || false
+      } catch (e) {
+        console.error(e)
+      }
+      try {
+        const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
+        account.userBank = userBank.toString()
         return AudiusBackend.getUserImages(account)
       } catch (e) {
-        // Failed to fetch social handles and artist pick, but return what we have
+        // Failed to fetch solana user bank account for user
         // in any case
         console.error(e)
         return AudiusBackend.getUserImages(account)
@@ -2505,7 +2511,7 @@ class AudiusBackend {
   }
 
   /**
-   * Make a request to fetch the balance of the the user
+   * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
    * @returns {Promise<BN>} balance
    */
@@ -2524,6 +2530,25 @@ class AudiusBackend {
         checksumWallet
       )
       return balance
+    } catch (e) {
+      console.error(e)
+      return null
+    }
+  }
+
+  /**
+   * Make a request to fetch the sol wrapped audio balance of the the user
+   * @returns {Promise<Nullable<BN>>} balance
+   */
+  static async getWAudioBalance() {
+    await waitForLibsInit()
+
+    try {
+      const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
+      const ownerWAudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
+        userBank
+      )
+      return ownerWAudioBalance
     } catch (e) {
       console.error(e)
       return null
@@ -2575,6 +2600,14 @@ class AudiusBackend {
     return receipt
   }
 
+  /**
+   * Make a request to send solana wrapped audio
+   */
+  static async sendWAudioTokens(address, amount) {
+    await waitForLibsInit()
+    return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
+  }
+
   static async getSignature(data) {
     await waitForLibsInit()
     return audiusLibs.web3Manager.sign(data)
@@ -2605,7 +2638,7 @@ class AudiusBackend {
   static async transferAudioToWAudio(balance) {
     await waitForLibsInit()
     const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
-    return audiusLibs.Account.sendTokensFromEthToSol(
+    return audiusLibs.Account.proxySendTokensFromEthToSol(
       balance,
       userBank.toString()
     )
