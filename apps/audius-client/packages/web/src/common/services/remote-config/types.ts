@@ -67,7 +67,12 @@ export enum IntKeys {
   /**
    * Number of services that are required to attest for a user challenge
    */
-  ATTESTATION_QUORUM_SIZE = 'ATTESTATION_QUORUM_SIZE'
+  ATTESTATION_QUORUM_SIZE = 'ATTESTATION_QUORUM_SIZE',
+
+  /**
+   * The minimum amount of AUDIO needed to be sent
+   */
+  MIN_AUDIO_SEND_AMOUNT = 'MIN_AUDIO_SEND_AMOUNT'
 }
 
 export enum BooleanKeys {
@@ -104,7 +109,12 @@ export enum BooleanKeys {
   /**
    * Boolean to use amplitude as the metrics tracking.
    */
-  USE_AMPLITUDE = 'USE_AMPLITUDE'
+  USE_AMPLITUDE = 'USE_AMPLITUDE',
+
+  /**
+   * Boolean to use solana wrapped audio instead of erc20 audio for the audio page send/receive.
+   */
+  USE_SPL_AUDIO = 'USE_SPL_AUDIO'
 }
 
 export enum DoubleKeys {

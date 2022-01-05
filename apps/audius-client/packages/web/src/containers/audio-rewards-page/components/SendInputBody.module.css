@@ -28,7 +28,6 @@
   padding-bottom: 4px;
 }
 
-
 /* Input Styles */
 .inputContainer {
   margin-top: 24px;
@@ -56,7 +55,6 @@
   border: none;
   color: var(--neutral);
 }
-
 
 /* Button */
 .sendBtn {

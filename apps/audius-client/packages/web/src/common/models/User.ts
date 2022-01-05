@@ -3,7 +3,7 @@ import Color from 'common/models/Color'
 import { CID, ID } from 'common/models/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
 import { PlaylistLibrary } from 'common/models/PlaylistLibrary'
-import { StringWei } from 'common/models/Wallet'
+import { SolanaWalletAddress, StringWei } from 'common/models/Wallet'
 import { Nullable } from 'common/utils/typeUtils'
 
 import Timestamped from './Timestamped'
@@ -50,6 +50,7 @@ export type UserMetadata = {
   balance?: Nullable<StringWei>
   associated_wallets_balance?: Nullable<StringWei>
   playlist_library?: PlaylistLibrary
+  userBank?: SolanaWalletAddress
 } & Timestamped
 
 export type ComputedUserProperties = {

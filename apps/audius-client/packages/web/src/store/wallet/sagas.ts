@@ -1,11 +1,16 @@
+import BN from 'bn.js'
 import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 
 import { Name } from 'common/models/Analytics'
-import { BNWei } from 'common/models/Wallet'
+import { Chain } from 'common/models/Chain'
+import { BNWei, StringWei } from 'common/models/Wallet'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
-import { fetchAssociatedWallets } from 'common/store/pages/token-dashboard/slice'
+import {
+  fetchAssociatedWallets,
+  transferingEthAudioToSolWAudio
+} from 'common/store/pages/token-dashboard/slice'
 import {
   getAccountBalance,
   getLocalBalanceDidChange
@@ -28,15 +33,36 @@ const errors = {
   rateLimitError: 'Please wait before trying again'
 }
 
+/**
+ * Transfers tokens to recipientWallet for amount tokens on eth or sol chain
+ * @param {object} action Object passed as redux action
+ * @param {object} action.payload The payload of the action
+ * @param {string} action.payload.recipientWallet The reciepint address either sol or eth
+ * @param {StringWei} action.payload.amount The amount in string wei to transfer
+ * @param {string} action.playload.chain 'eth' or 'sol'
+ */
 function* sendAsync({
-  payload: { recipientWallet, amount }
+  payload: { recipientWallet, amount: weiAudioAmount, chain }
 }: ReturnType<typeof send>) {
   const account = yield select(getAccountUser)
-  const weiBNAmount = stringWeiToBN(amount)
-  const weiBNBalance: ReturnType<typeof getAccountBalance> = yield select(
-    getAccountBalance
+  const weiBNAmount = stringWeiToBN(weiAudioAmount)
+  const weiBNBalance: BNWei = yield select(getAccountBalance) ??
+    (new BN('0') as BNWei)
+
+  const waudioWeiAmount: BNWei = yield call(
+    walletClient.getCurrentWAudioBalance
   )
-  if (!weiBNBalance || !weiBNBalance.gte(weiBNAmount)) return
+  if (chain === Chain.Eth && (!weiBNBalance || !weiBNBalance.gt(weiBNAmount))) {
+    yield put(sendFailed({ error: 'Not enough $AUDIO' }))
+    return
+  } else if (chain === Chain.Sol) {
+    const totalBalance = waudioWeiAmount.add(weiBNBalance)
+    if (weiBNAmount.gt(totalBalance)) {
+      yield put(sendFailed({ error: 'Not enough $AUDIO' }))
+      return
+    }
+  }
+
   try {
     yield put(
       make(Name.SEND_AUDIO_REQUEST, {
@@ -44,14 +70,27 @@ function* sendAsync({
         recipient: recipientWallet
       })
     )
-    yield call(() => walletClient.sendTokens(recipientWallet, weiBNAmount))
+    // If transferring spl wrapped audio and there are insufficent funds with only the
+    // user bank balance, transfer all eth AUDIO to spl wrapped audio
+    if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
+      yield put(transferingEthAudioToSolWAudio())
+      yield call(walletClient.transferTokensFromEthToSol)
+    }
+
+    if (chain === Chain.Eth) {
+      yield call(() => walletClient.sendTokens(recipientWallet, weiBNAmount))
+    } else {
+      yield call(() =>
+        walletClient.sendWAudioTokens(recipientWallet, weiBNAmount)
+      )
+    }
 
     // Only decrease store balance if we haven't already changed
     const newBalance: ReturnType<typeof getAccountBalance> = yield select(
       getAccountBalance
     )
     if (newBalance?.eq(weiBNBalance)) {
-      yield put(decreaseBalance({ amount }))
+      yield put(decreaseBalance({ amount: weiAudioAmount }))
     }
 
     yield put(sendSucceeded())
