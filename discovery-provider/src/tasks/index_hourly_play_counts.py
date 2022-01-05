@@ -33,7 +33,7 @@ def _index_hourly_play_counts(session):
 
     new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
-    if new_id_checkpoint == prev_id_checkpoint:
+    if not new_id_checkpoint or new_id_checkpoint == prev_id_checkpoint:
         logger.info(
             "index_hourly_play_counts.py | Skip update because there are no new plays"
         )
