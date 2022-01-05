@@ -1,6 +1,9 @@
 const assert = require('assert')
 
-const { healthCheck, healthCheckVerbose } = require('./healthCheckComponentService')
+const {
+  healthCheck,
+  healthCheckVerbose
+} = require('./healthCheckComponentService')
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
@@ -18,11 +21,11 @@ const libsMock = {
 }
 
 const sequelizeMock = {
-  'query': async () => Promise.resolve()
+  query: async () => Promise.resolve()
 }
 
 const getMonitorsMock = async (monitors) => {
-  return monitors.map(monitor => {
+  return monitors.map((monitor) => {
     switch (monitor.name) {
       case MONITORS.DATABASE_LIVENESS.name:
         return true
@@ -99,8 +102,15 @@ describe('Test Health Check', function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
 
-    const res = await healthCheck({ libs: libsMock, snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock,
-      getMonitorsMock, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs, 2)
+    const res = await healthCheck(
+      { libs: libsMock, snapbackSM: snapbackSMMock },
+      mockLogger,
+      sequelizeMock,
+      getMonitorsMock,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      2
+    )
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -155,8 +165,15 @@ describe('Test Health Check', function () {
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
 
-    const res = await healthCheck({ snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock,
-      getMonitorsMock, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs, 2)
+    const res = await healthCheck(
+      { snapbackSM: snapbackSMMock },
+      mockLogger,
+      sequelizeMock,
+      getMonitorsMock,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      2
+    )
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -203,8 +220,15 @@ describe('Test Health Check', function () {
   })
 
   it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
-    const res = await healthCheck({ snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock,
-      getMonitorsMock, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs, 2)
+    const res = await healthCheck(
+      { snapbackSM: snapbackSMMock },
+      mockLogger,
+      sequelizeMock,
+      getMonitorsMock,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      2
+    )
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -263,8 +287,15 @@ describe('Test Health Check Verbose', function () {
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
 
-    const res = await healthCheckVerbose({ snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock,
-      getMonitorsMock, 2, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs)
+    const res = await healthCheckVerbose(
+      { snapbackSM: snapbackSMMock },
+      mockLogger,
+      sequelizeMock,
+      getMonitorsMock,
+      2,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs
+    )
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -320,10 +351,24 @@ describe('Test Health Check Verbose', function () {
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
 
-    const verboseRes = await healthCheckVerbose({ libs: libsMock, snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock,
-      getMonitorsMock, 2, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs)
-    const defaultRes = await healthCheck({ libs: libsMock, snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock,
-      getMonitorsMock, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs, 2)
+    const verboseRes = await healthCheckVerbose(
+      { libs: libsMock, snapbackSM: snapbackSMMock },
+      mockLogger,
+      sequelizeMock,
+      getMonitorsMock,
+      2,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs
+    )
+    const defaultRes = await healthCheck(
+      { libs: libsMock, snapbackSM: snapbackSMMock },
+      mockLogger,
+      sequelizeMock,
+      getMonitorsMock,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      2
+    )
 
     assert.deepStrictEqual(verboseRes, defaultRes)
   })

@@ -1,6 +1,6 @@
-from src.utils.db_session import get_db
-from src.models import Challenge
 from src.challenges.create_new_challenges import create_new_challenges
+from src.models import Challenge
+from src.utils.db_session import get_db
 
 
 def test_create_new_challenges(app):

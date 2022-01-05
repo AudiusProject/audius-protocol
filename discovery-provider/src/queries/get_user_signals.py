@@ -1,4 +1,4 @@
-from src.models import User, AggregateUser
+from src.models import AggregateUser, User
 from src.utils import db_session
 
 

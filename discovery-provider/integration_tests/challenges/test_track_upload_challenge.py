@@ -1,12 +1,12 @@
 from datetime import date, timedelta
-import redis
 
-from src.models.models import Challenge
-from src.models import User, Block, Track
-from src.utils.db_session import get_db
+import redis
+from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
-from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
+from src.models import Block, Track, User
+from src.models.models import Challenge
 from src.utils.config import shared_config
+from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
 

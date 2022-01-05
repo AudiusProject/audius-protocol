@@ -1,29 +1,30 @@
 import logging
 from datetime import date, datetime, timedelta
-from sqlalchemy.sql.expression import or_
-import redis
 
-from src.trending_strategies.trending_type_and_version import TrendingType
-from src.models.models import UserChallenge, Challenge
-from src.models import TrendingResult
-from src.challenges.trending_challenge import should_trending_challenge_update
-from src.utils.db_session import get_db
+import redis
+from integration_tests.utils import populate_mock_db
+from sqlalchemy.sql.expression import or_
+from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.trending_challenge import (
+    should_trending_challenge_update,
+    trending_playlist_challenge_manager,
     trending_track_challenge_manager,
     trending_underground_track_challenge_manager,
-    trending_playlist_challenge_manager,
 )
-from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
-from src.utils.config import shared_config
+from src.models import TrendingResult
+from src.models.models import Challenge, UserChallenge
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
-from integration_tests.utils import populate_mock_db
+from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils.config import shared_config
+from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
 logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
+
 
 def test_trending_challenge_should_update(app):
     with app.app_context():
@@ -311,7 +312,13 @@ def test_trending_challenge_job(app):
             .all()
         )
         assert len(user_trending_tracks_challenges) == 5
-        ranks = {"2021-08-20:1", "2021-08-20:2", "2021-08-20:3", "2021-08-20:4", "2021-08-20:5"}
+        ranks = {
+            "2021-08-20:1",
+            "2021-08-20:2",
+            "2021-08-20:3",
+            "2021-08-20:4",
+            "2021-08-20:5",
+        }
         for challenge in user_trending_tracks_challenges:
             assert challenge.specifier in ranks
             ranks.remove(challenge.specifier)

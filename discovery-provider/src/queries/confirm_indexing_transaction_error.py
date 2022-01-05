@@ -1,7 +1,8 @@
 import logging
+
 import requests
-from src.tasks.index_metrics import get_all_other_nodes
 from src.queries.get_skipped_transactions import set_indexing_error
+from src.tasks.index_metrics import get_all_other_nodes
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +23,7 @@ def confirm_indexing_transaction_error(
     num_transaction_failures = 0
     for node in all_other_nodes:
         try:
-            endpoint = "{}/indexing/transaction_status?blocknumber={}&blockhash={}&transactionhash={}".format(
-                node, blocknumber, blockhash, transactionhash
-            )
+            endpoint = f"{node}/indexing/transaction_status?blocknumber={blocknumber}&blockhash={blockhash}&transactionhash={transactionhash}"
             response = requests.get(endpoint, timeout=10)
             if response.status_code != 200:
                 raise Exception(

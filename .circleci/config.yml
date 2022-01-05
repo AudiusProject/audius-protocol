@@ -459,6 +459,7 @@ jobs:
       - run:
           name: python-lint
           command: |
+            export PROTOCOL_DIR=/home/circleci/project
             cd discovery-provider
             source venv/bin/activate
             sh scripts/lint.sh
@@ -717,7 +718,12 @@ workflows:
 
       - test-solana-programs:
           name: test-solana-programs
-
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
+          requires:
+            - test-solana-programs
+            
       - test-mad-dog-e2e:
           mad-dog-type: test
       - hold-test-mad-dog-e2e-full:

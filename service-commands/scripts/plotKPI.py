@@ -10,18 +10,19 @@ def add_labels(rects):
         label.set_text((format(int(label.get_text()), ",")))
 
 
-users = json.load(open("output.json"))
+with open("output.json", "r") as f:
+    users = json.load(f)
 
-creator_nodes = set()
+creator_nodes_set = set()
 for user in users:
-    creator_nodes |= set(
+    creator_nodes_set |= set(
         creator_node["endpoint"] for creator_node in user["creatorNodes"]
     )
-creator_nodes = sorted(creator_nodes)
+creator_nodes = sorted(creator_nodes_set)
 
 # Plot synced and reamining
-synced = defaultdict(set)
-remaining = defaultdict(set)
+synced: defaultdict[str, set] = defaultdict(set)
+remaining: defaultdict[str, set] = defaultdict(set)
 for user in users:
     user_cids = set(user["cids"])
     for creator_node in user["creatorNodes"]:
@@ -54,8 +55,8 @@ plt.savefig("synced_remaining.png")
 # ---
 
 # Plot number of users managed by each creator node
-total = defaultdict(int)
-as_primary = defaultdict(int)
+total: defaultdict[str, int] = defaultdict(int)
+as_primary: defaultdict[str, int] = defaultdict(int)
 for user in users:
     for creator_node in user["creatorNodes"]:
         if creator_node["primary"]:
@@ -133,7 +134,8 @@ frequency = [0] * (max_frequency + 1)
 for key, value in full_sync_count_frequency.items():
     frequency[key] = len(value)
 
-json.dump(dict(full_sync_count_frequency), open("full_synced.json", "w"), indent=4)
+with open("full_synced.json", "w") as f:
+    json.dump(dict(full_sync_count_frequency), f, indent=4)
 
 fig, ax = plt.subplots()
 

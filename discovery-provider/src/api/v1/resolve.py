@@ -1,10 +1,10 @@
 import logging
+
 from flask import redirect
-from flask_restx import Resource, Namespace, reqparse
+from flask_restx import Namespace, Resource, reqparse
 from src.api.v1.helpers import abort_bad_request_param, abort_not_found
 from src.api.v1.utils.resolve_url import resolve_url
 from src.utils import db_session
-
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class Resolve(Resource):
             with db.scoped_session() as session:
                 resolved_url = resolve_url(session, url)
                 if not resolved_url:
-                    return abort_not_found(url)
+                    return abort_not_found(url, ns)
 
                 return redirect(resolved_url, code=302)
 
