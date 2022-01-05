@@ -647,7 +647,7 @@ class DiscoveryProvider {
       }
       if (resp && resp.status === 404) {
         // We have 404'd. Throw that error message back out
-        throw 404
+        throw new Error('404')
       }
 
       throw errMsg
@@ -744,17 +744,16 @@ class DiscoveryProvider {
     try {
       parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
     } catch (e) {
-
       const failureStr = `Failed to make Discovery Provider request, `
       const attemptStr = `attempt #${attemptedRetries}, `
-      const errorStr = `error ${e && e.message ? JSON.stringify(e.message) : e}, `
+      const errorStr = `error ${JSON.stringify(e.message)}, `
       const requestStr = `request: ${JSON.stringify(requestObj)}`
       const fullErrString = `${failureStr}${attemptStr}${errorStr}${requestStr}`
 
       console.warn(fullErrString)
-      
+
       if (retry) {
-        if (e === 404) {
+        if (e.message === '404') {
           this.request404Count += 1
           if (this.request404Count < this.maxRequestsForTrue404) {
             // In the case of a 404, retry with a different discovery node entirely
