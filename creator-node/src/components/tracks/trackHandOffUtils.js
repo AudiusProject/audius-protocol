@@ -5,7 +5,11 @@ const fsExtra = require('fs-extra')
 const FormData = require('form-data')
 
 const config = require('../../config.js')
-const { logger: genericLogger, logInfoWithDuration, getStartTime } = require('../../logging')
+const {
+  logger: genericLogger,
+  logInfoWithDuration,
+  getStartTime
+} = require('../../logging')
 const fileManager = require('../../fileManager')
 const FileProcessingQueue = require('../../FileProcessingQueue')
 const Utils = require('../../utils')
@@ -16,17 +20,31 @@ const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 / 3 // 3min/3
 const POLL_STATUS_INTERVAL_MS = 10000 / 10 // 10s/10
 
 // If any call fails -> throw error
-async function handOffTrack ({ sp, req }) {
-  const { logContext, fileDir, fileName, fileNameNoExtension, uuid: requestID } = req
+async function handOffTrack({ sp, req }) {
+  const {
+    logContext,
+    fileDir,
+    fileName,
+    fileNameNoExtension,
+    uuid: requestID
+  } = req
   const logger = genericLogger.child(logContext)
 
-  logger.info(`the tHINGS fileDir=${fileDir} fileName=${fileName} noExtension=${fileNameNoExtension} uuid for req=${requestID}`)
+  logger.info(
+    `the tHINGS fileDir=${fileDir} fileName=${fileName} noExtension=${fileNameNoExtension} uuid for req=${requestID}`
+  )
   await fetchHealthCheck(sp)
 
-  await sendTranscodeAndSegmentRequest({ requestID, logger, sp, fileDir, fileName, fileNameNoExtension })
+  await sendTranscodeAndSegmentRequest({
+    requestID,
+    logger,
+    sp,
+    fileDir,
+    fileName,
+    fileNameNoExtension
+  })
 
   // TODO: PROBLEM IS THAT IT'S PASSING IN A NEW UUID SO CAUSING FILE CANNOT BE FOUND.
-  // REFACTOR THIS SHIT CUS ITS GETTING MESSYYYY
   logger.info({ sp, requestID }, 'BANANA polling time')
   // const { fileName, transcodedFilePath, segmentFileNames, segmentFileNamesToPath } = await pollProcessingStatus(
   const { transcodedFilePath, segmentFileNames } = await pollProcessingStatus({
@@ -46,30 +64,31 @@ async function handOffTrack ({ sp, req }) {
     res = await fetchSegment(res, sp, segmentFileName, fileNameNoExtension)
 
     // await pipeline(res.data, fs.createWriteStream(res.data, segmentFileName))
-    await Utils.writeStreamToFileSystem(
-      res.data,
-      segmentFileName
-    )
+    await Utils.writeStreamToFileSystem(res.data, segmentFileName)
   }
 
   // Get transcode and write to tmp disk
-  const transcodePath = fileManager.getTmpTrackUploadArtifactsWithCIDInPath(fileNameNoExtension)
-  const transcodeFilePath = path.join(transcodePath, fileNameNoExtension + '-dl.mp3')
+  const transcodePath =
+    fileManager.getTmpTrackUploadArtifactsWithCIDInPath(fileNameNoExtension)
+  const transcodeFilePath = path.join(
+    transcodePath,
+    fileNameNoExtension + '-dl.mp3'
+  )
 
   logger.info({ sp, transcodedFilePath }, 'BANANA getting transcode')
 
   res = await fetchTranscode(res, sp, fileNameNoExtension)
 
   // await pipeline(res.data, fs.createWriteStream(res.data, transcodeFilePath))
-  await Utils.writeStreamToFileSystem(
-    res.data,
-    transcodeFilePath
-  )
+  await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
 }
 
-async function selectRandomSPs (libs, numberOfSPs = NUMBER_OF_SPS_FOR_HANDOFF_TRACK) {
+async function selectRandomSPs(
+  libs,
+  numberOfSPs = NUMBER_OF_SPS_FOR_HANDOFF_TRACK
+) {
   let allSPs = await libs.ethContracts.getServiceProviderList('content-node')
-  allSPs = allSPs.map(sp => sp.endpoint)
+  allSPs = allSPs.map((sp) => sp.endpoint)
 
   const validSPs = new Set()
   while (validSPs.size < numberOfSPs) {
@@ -85,31 +104,34 @@ async function selectRandomSPs (libs, numberOfSPs = NUMBER_OF_SPS_FOR_HANDOFF_TR
   return Array.from(validSPs)
 }
 
-async function sendTranscodeAndSegmentRequest ({ requestID, logger, sp, fileDir, fileName, fileNameNoExtension }) {
+async function sendTranscodeAndSegmentRequest({
+  requestID,
+  logger,
+  sp,
+  fileDir,
+  fileName,
+  fileNameNoExtension
+}) {
   const originalTrackFormData = await createFormData(fileDir + '/' + fileName)
   logger.info({ sp }, 'BANANA posting t/s')
 
-  await axios.post(
-    `${sp}/transcode_and_segment`,
-    originalTrackFormData,
-    {
-      headers: {
-        ...originalTrackFormData.getHeaders(),
-        'X-Request-ID': requestID
-      },
-      params: {
-        use_cid_in_path: fileNameNoExtension
-      },
-      adapter: require('axios/lib/adapters/http'),
-      // Set content length headers (only applicable in server/node environments).
-      // See: https://github.com/axios/axios/issues/1362
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity
-    }
-  )
+  await axios.post(`${sp}/transcode_and_segment`, originalTrackFormData, {
+    headers: {
+      ...originalTrackFormData.getHeaders(),
+      'X-Request-ID': requestID
+    },
+    params: {
+      use_cid_in_path: fileNameNoExtension
+    },
+    adapter: require('axios/lib/adapters/http'),
+    // Set content length headers (only applicable in server/node environments).
+    // See: https://github.com/axios/axios/issues/1362
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity
+  })
 }
 
-async function createFormData (pathToFile) {
+async function createFormData(pathToFile) {
   const fileExists = await fsExtra.pathExists(pathToFile)
   if (!fileExists) {
     throw new Error(`File does not exist at path=${pathToFile}`)
@@ -121,11 +143,15 @@ async function createFormData (pathToFile) {
   return formData
 }
 
-async function pollProcessingStatus ({ logger, taskType, uuid, sp }) {
+async function pollProcessingStatus({ logger, taskType, uuid, sp }) {
   const start = Date.now()
   while (Date.now() - start < MAX_TRACK_HANDOFF_TIMEOUT_MS) {
     try {
-      const { status, resp } = await fetchTrackContentProcessingStatus(sp, uuid, taskType)
+      const { status, resp } = await fetchTrackContentProcessingStatus(
+        sp,
+        uuid,
+        taskType
+      )
       // Should have a body structure of:
       //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
       if (status && status === 'DONE') return resp
@@ -142,10 +168,12 @@ async function pollProcessingStatus ({ logger, taskType, uuid, sp }) {
     await Utils.timeout(POLL_STATUS_INTERVAL_MS)
   }
 
-  throw new Error(`${taskType} took over ${MAX_TRACK_HANDOFF_TIMEOUT_MS}ms. uuid=${uuid}`)
+  throw new Error(
+    `${taskType} took over ${MAX_TRACK_HANDOFF_TIMEOUT_MS}ms. uuid=${uuid}`
+  )
 }
 
-async function fetchHealthCheck (sp) {
+async function fetchHealthCheck(sp) {
   await axios({
     url: `${sp}/health_check`,
     method: 'get'
@@ -157,7 +185,7 @@ async function fetchHealthCheck (sp) {
  * @param {string} uuid the uuid of the track transcoding task
  * @returns the status, and the success or failed response if the task is complete
  */
-async function fetchTrackContentProcessingStatus (sp, uuid, taskType) {
+async function fetchTrackContentProcessingStatus(sp, uuid, taskType) {
   const { data: body } = await axios({
     url: `${sp}/track_content_status`,
     params: {
@@ -170,7 +198,7 @@ async function fetchTrackContentProcessingStatus (sp, uuid, taskType) {
   return body.data
 }
 
-async function fetchTranscode (res, sp, fileNameNoExtension) {
+async function fetchTranscode(res, sp, fileNameNoExtension) {
   return axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',
@@ -183,7 +211,7 @@ async function fetchTranscode (res, sp, fileNameNoExtension) {
   })
 }
 
-async function fetchSegment (res, sp, segmentFileName, fileNameNoExtension) {
+async function fetchSegment(res, sp, segmentFileName, fileNameNoExtension) {
   return axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',
