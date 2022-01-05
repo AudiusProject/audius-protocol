@@ -455,8 +455,7 @@ class AudiusLibs {
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
         this.creatorNodeConfig.monitoringCallbacks,
-        this.useTrackContentPolling,
-        this.useResumableTrackUpload
+        this.useTrackContentPolling
       )
       await this.creatorNode.init()
     }
