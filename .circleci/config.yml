@@ -717,6 +717,7 @@ jobs:
             gcloud compute instances add-metadata audius-bake-nightly \
               --metadata-from-file=shutdown-script="audius-protocol/service-commands/scripts/remote-shutdown.sh"
             gcloud compute instances stop audius-bake-nightly
+            gcloud compute instances set-service-account audius-bake-nightly --scopes=cloud-platform --service-account=remote-build-host@audius-infrastructure.iam.gserviceaccount.com # TODO context variable
             gcloud compute instances start audius-bake-nightly
             until [[ $(gcloud compute instances describe audius-bake-nightly --format="json(metadata)" | jq '.metadata.items[] | select(.key=="pizza") | .value') ]]; do
               echo "waiting for A up..."
