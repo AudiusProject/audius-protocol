@@ -713,6 +713,17 @@ class CreatorNode {
           }
         }
 
+        // if the content node returns an invalid auth token error, disconnect and reconnect
+        if (e.response && e.response.data && e.response.data.error && e.response.data.error.includes('Invalid authentication token')) {
+          try {
+            await this._logoutNodeUser()
+            this.connected = false
+            await this.connect()
+          } catch (e) {
+            console.error(e.message)
+          }
+        }
+
         await this._handleErrorHelper(e, axiosRequestObj.url, requestId)
       }
     }
@@ -836,6 +847,15 @@ class CreatorNode {
         console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying`)
         console.warn(e)
         return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
+      } else if (e.response && e.response.data && e.response.data.error && e.response.data.error.includes('Invalid authentication token')) {
+        // if the content node returns an invalid auth token error, disconnect and reconnect
+        try {
+          await this._logoutNodeUser()
+          this.connected = false
+          await this.connect()
+        } catch (e) {
+          console.error(e.message)
+        }
       }
 
       await this._handleErrorHelper(e, url, requestId)
