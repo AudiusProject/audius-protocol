@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigationState } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native'
+import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 
 import SignOnNavigator from 'app/components/signon/SignOnNavigator'
@@ -17,19 +18,16 @@ import { getNavigationStateAtRoute } from 'app/utils/navigation'
 import BottomTabNavigator from './BottomTabNavigator'
 
 // This enables the RN bottom bar and navigation
-const IS_MAIN_NAVIGATION_ENABLED = false
+const IS_MAIN_NAVIGATION_ENABLED = Config.NATIVE_NAVIGATION_ENABLED
 
 // As screens get migrated to RN, add them to this set.
 // This set should only include the screens accessible from the bottom bar
 // (sign on screens are implicitly included)
-const nativeScreens = new Set([])
-// const nativeScreens = new Set([
-//   'trending',
-//   'explore',
-//   'feed',
-//   'profile',
-//   'favorites'
-// ])
+const nativeScreens = new Set(
+  IS_MAIN_NAVIGATION_ENABLED
+    ? ['trending', 'explore', 'feed', 'profile', 'favorites']
+    : []
+)
 
 const styles = StyleSheet.create({
   appNavigator: {
