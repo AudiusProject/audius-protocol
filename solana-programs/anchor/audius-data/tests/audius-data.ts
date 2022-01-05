@@ -19,6 +19,7 @@ import {
   initUserSolPubkey,
   createTrack,
 } from "../lib/lib";
+import { assert } from "chai";
 
 const { SystemProgram, PublicKey, Transaction, Secp256k1Program } = anchor.web3;
 
@@ -118,7 +119,11 @@ describe("audius-data", () => {
     newTrackKeypair,
     userAuthorityKey,
     trackOwnerPDA,
+    adminStgKeypair,
   }) => {
+    let trackId = await program.account.audiusAdmin.fetch(
+      adminStgKeypair.publicKey
+    );
     let tx = await createTrack({
       provider,
       program,
@@ -126,8 +131,15 @@ describe("audius-data", () => {
       userAuthorityKey,
       userStgAccountPDA: trackOwnerPDA,
       metadata: trackMetadata,
+      adminStgPublicKey: adminStgKeypair.publicKey,
     });
     await confirmLogInTransaction(tx, trackMetadata);
+    let assignedTrackId = await program.account.track.fetch(
+      newTrackKeypair.publicKey
+    );
+    console.log(
+      `track: ${trackMetadata}, trackId assigned = ${assignedTrackId.trackId}`
+    );
   };
 
   const testDeleteTrack = async ({
@@ -210,6 +222,7 @@ describe("audius-data", () => {
       program: program,
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
+      trackIdOffset: new anchor.BN("0"),
     });
 
     let adminAccount = await program.account.audiusAdmin.fetch(
@@ -398,6 +411,7 @@ describe("audius-data", () => {
       newTrackKeypair,
       userAuthorityKey: newUserKey,
       trackOwnerPDA: newUserAcctPDA,
+      adminStgKeypair,
     });
 
     // Expected signature validation failure
@@ -410,6 +424,7 @@ describe("audius-data", () => {
         newTrackKeypair: newTrackKeypair2,
         userAuthorityKey: wrongUserKey,
         trackOwnerPDA: newUserAcctPDA,
+        adminStgKeypair,
       });
     } catch (e) {
       console.log(`ERROR FOUND AS EXPECTED ${e}`);
@@ -480,6 +495,7 @@ describe("audius-data", () => {
       newTrackKeypair,
       userAuthorityKey: newUserKey,
       trackOwnerPDA: newUserAcctPDA,
+      adminStgKeypair,
     });
 
     await testDeleteTrack({
@@ -536,22 +552,27 @@ describe("audius-data", () => {
     let newTrackKeypair2 = anchor.web3.Keypair.generate();
     let newTrackKeypair3 = anchor.web3.Keypair.generate();
     let trackMetadata = randomCID();
+    let trackMetadata2 = randomCID();
+    let trackMetadata3 = randomCID();
     let start = Date.now();
     await Promise.all([
       testCreateTrack({
         trackMetadata,
         newTrackKeypair,
+        adminStgKeypair,
         userAuthorityKey: newUserKey,
         trackOwnerPDA: newUserAcctPDA,
       }),
       testCreateTrack({
-        trackMetadata,
+        trackMetadata: trackMetadata2,
+        adminStgKeypair,
         newTrackKeypair: newTrackKeypair2,
         userAuthorityKey: newUserKey,
         trackOwnerPDA: newUserAcctPDA,
       }),
       testCreateTrack({
-        trackMetadata,
+        trackMetadata: trackMetadata3,
+        adminStgKeypair,
         newTrackKeypair: newTrackKeypair3,
         userAuthorityKey: newUserKey,
         trackOwnerPDA: newUserAcctPDA,

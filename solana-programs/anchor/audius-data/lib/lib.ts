@@ -15,18 +15,23 @@ type initAdminParams = {
   program: Program<AudiusData>;
   adminKeypair: Keypair;
   adminStgKeypair: Keypair;
+  trackIdOffset: anchor.BN;
 };
 
 /// Initialize an Audius Admin instance
 export const initAdmin = async (args: initAdminParams) => {
-  const tx = await args.program.rpc.initAdmin(args.adminKeypair.publicKey, {
-    accounts: {
-      admin: args.adminStgKeypair.publicKey,
-      payer: args.provider.wallet.publicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [args.adminStgKeypair],
-  });
+  const tx = await args.program.rpc.initAdmin(
+    args.adminKeypair.publicKey,
+    args.trackIdOffset,
+    {
+      accounts: {
+        admin: args.adminStgKeypair.publicKey,
+        payer: args.provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [args.adminStgKeypair],
+    }
+  );
   console.log(`initAdmin Tx = ${tx}`);
   let adminAccount = await args.program.account.audiusAdmin.fetch(
     args.adminStgKeypair.publicKey
@@ -148,6 +153,7 @@ export type createTrackArgs = {
   newTrackKeypair: Keypair;
   userAuthorityKey: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
+  adminStgPublicKey: anchor.web3.PublicKey;
   metadata: string;
 };
 export const createTrack = async (args: createTrackArgs) => {
@@ -158,6 +164,7 @@ export const createTrack = async (args: createTrackArgs) => {
     userAuthorityKey,
     metadata,
     userStgAccountPDA,
+    adminStgPublicKey,
   } = args;
   let tx = await program.rpc.createTrack(metadata, {
     accounts: {
@@ -165,6 +172,7 @@ export const createTrack = async (args: createTrackArgs) => {
       user: userStgAccountPDA,
       authority: userAuthorityKey.publicKey,
       payer: provider.wallet.publicKey,
+      audiusAdmin: adminStgPublicKey,
       systemProgram: SystemProgram.programId,
     },
     signers: [userAuthorityKey, newTrackKeypair],

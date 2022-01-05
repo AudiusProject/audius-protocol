@@ -81,11 +81,13 @@ async function initAdminCLI(args: initAdminCLIParams) {
   console.log(
     `echo "[${adminStgKeypair.secretKey.toString()}]" > adminStgKeypair.json`
   );
+  // TODO: Accept variable offset
   await initAdmin({
     provider: cliVars.provider,
     program: cliVars.program,
     adminKeypair,
     adminStgKeypair,
+    trackIdOffset: new anchor.BN("0"),
   });
 }
 
@@ -106,7 +108,7 @@ async function initUserCLI(args: initUserCLIParams) {
     metadata,
     adminStgPublicKey,
   } = args;
-  const cliVars = await initializeCLI(ownerKeypairPath);
+  const cliVars = initializeCLI(ownerKeypairPath);
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
   const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
   const ethAddressBytes = ethAddressToArray(ethAddress);
@@ -148,6 +150,7 @@ async function timeCreateTrack(args: createTrackArgs) {
         newTrackKeypair: anchor.web3.Keypair.generate(),
         userAuthorityKey: userSolKeypair,
         userStgAccountPDA: options.userStgPubkey,
+        adminStgPublicKey: args.adminStgPublicKey,
       });
       let duration = Date.now() - start;
       console.log(
@@ -166,6 +169,7 @@ const functionTypes = Object.freeze({
   initUser: "initUser",
   initUserSolPubkey: "initUserSolPubkey",
   createTrack: "createTrack",
+  getTrackId: "getTrackId",
 });
 
 program
@@ -263,12 +267,22 @@ switch (options.function) {
             newTrackKeypair: anchor.web3.Keypair.generate(),
             userAuthorityKey: userSolKeypair,
             userStgAccountPDA: options.userStgPubkey,
+            adminStgPublicKey: adminStgKeypair.publicKey,
           })
         );
       }
       let start = Date.now();
       await Promise.all(promises);
       console.log(`Processed ${numTracks} in ${Date.now() - start}ms`);
+    })();
+    break;
+  case functionTypes.getTrackId:
+    (async () => {
+      const cliVars = initializeCLI(options.ownerKeypair);
+      let info = await cliVars.program.account.audiusAdmin.fetch(
+        adminStgKeypair.publicKey
+      );
+      console.log(`trackID high:${info.trackId}`);
     })();
     break;
 }
