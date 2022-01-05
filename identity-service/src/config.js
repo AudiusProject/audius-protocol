@@ -707,6 +707,42 @@ const config = convict({
     format: String,
     env: 'rewardsReporterSlackUrl',
     default: ''
+  },
+  reporterSlackUrl: {
+    doc: 'The slack url to post messages for the general messages',
+    format: String,
+    env: 'reporterSlackUrl',
+    default: ''
+  },
+  wormholeRPCHosts: {
+    doc: 'Wormhole RPC Host',
+    format: String,
+    env: 'wormholeRPCHosts',
+    default: ''
+  },
+  solBridgeAddress: {
+    doc: 'Sol bridge address for wormhole',
+    format: String,
+    env: 'solBridgeAddress',
+    default: ''
+  },
+  solTokenBridgeAddress: {
+    doc: 'Sol token bridge address for wormhole',
+    format: String,
+    env: 'solTokenBridgeAddress',
+    default: ''
+  },
+  ethBridgeAddress: {
+    doc: 'Eth bridge address for wormhole',
+    format: String,
+    env: 'ethBridgeAddress',
+    default: ''
+  },
+  ethTokenBridgeAddress: {
+    doc: 'Eth token bridge address for wormhole',
+    format: String,
+    env: 'ethTokenBridgeAddress',
+    default: ''
   }
 })
 
