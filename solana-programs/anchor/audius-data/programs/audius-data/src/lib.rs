@@ -110,7 +110,7 @@ pub mod audius_data {
     */
     pub fn create_track(ctx: Context<CreateTrack>, metadata: String) -> ProgramResult {
         msg!("Audius::CreateTrack");
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority.key() {
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
         // Set owner to user storage account
