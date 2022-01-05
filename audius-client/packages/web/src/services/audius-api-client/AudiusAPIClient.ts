@@ -1368,7 +1368,6 @@ class AudiusAPIClient {
     try {
       const response = await fetch(resource, { headers })
       if (!response.ok) {
-        if (response.status === 404) return null
         throw new Error(response.statusText)
       }
       return response.json()
