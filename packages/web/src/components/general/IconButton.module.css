@@ -1,4 +1,5 @@
 .container {
+  all: unset;
   cursor: pointer;
   display: flex;
   opacity: 1;
