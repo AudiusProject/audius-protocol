@@ -20,6 +20,7 @@ const { PublicKey } = solanaWeb3
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
 // despite a remaining balance.
 const ZERO_SOL_EPSILON = 0.005
+const SOL_PER_LAMPORT = 0.000000001
 
 // Generous default connection confirmation timeout to better cope with RPC congestion
 const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
@@ -411,7 +412,7 @@ class SolanaWeb3Manager {
   }
 
   /**
-   * Gets the balance of a PublicKey
+   * Gets the balance of a PublicKey, in SOL
    *
    * @param {{
    *  publicKey: PublicKey
@@ -420,7 +421,8 @@ class SolanaWeb3Manager {
    * @memberof SolanaWeb3Manager
    */
   async getBalance ({ publicKey }) {
-    return this.connection.getBalance(publicKey)
+    const lamports = await this.connection.getBalance(publicKey)
+    return lamports * SOL_PER_LAMPORT
   }
 
   /**
