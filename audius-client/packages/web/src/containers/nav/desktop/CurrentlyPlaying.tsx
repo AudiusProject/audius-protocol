@@ -58,13 +58,13 @@ const CurrentlyPlaying = ({
   let wrapperStyle: WrapperStyle
   let artworkStyle: ArtworkStyle
   if (trackId) {
-    const artworkAverageColor = coverArtColor || { r: 13, g: 16, b: 18 }
+    const artworkAverageColor = coverArtColor ?? { r: 13, g: 16, b: 18 }
     wrapperStyle = {
-      boxShadow: `0 1px 15px -2px rgba(
+      boxShadow: `0 1px 20px -3px rgba(
         ${artworkAverageColor.r},
         ${artworkAverageColor.g},
         ${artworkAverageColor.b}
-        , 0.5)`
+        , 0.7)`
     }
     artworkStyle = {}
   } else {

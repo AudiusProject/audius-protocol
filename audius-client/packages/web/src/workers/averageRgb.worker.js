@@ -1,8 +1,7 @@
 /* globals Jimp */
+const DEFAULT_RGB = { r: 13, g: 16, b: 18 }
 
 export default () => {
-  const DEFAULT_RGB = { r: 13, g: 16, b: 18 }
-
   const script = '/scripts/jimp.min.js'
   // eslint-disable-next-line
   importWorkerScript(script)

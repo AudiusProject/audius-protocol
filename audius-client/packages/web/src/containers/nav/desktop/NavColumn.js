@@ -45,7 +45,7 @@ import * as signOnActions from 'containers/sign-on/store/actions'
 import { resetState as resetUploadState } from 'containers/upload-page/store/actions'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { make, useRecord } from 'store/analytics/actions'
-import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
+import { getDominantColorsByTrack } from 'store/application/ui/average-color/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import {
@@ -91,7 +91,7 @@ const NavColumn = ({
   goToSignUp: routeToSignup,
   goToSignIn,
   goToUpload,
-  averageRGBColor
+  dominantColors
 }) => {
   const record = useRecord()
   const goToSignUp = useCallback(
@@ -390,7 +390,7 @@ const NavColumn = ({
             (currentQueueItem?.user?.handle ?? null) ===
             (account?.handle ?? undefined)
           }
-          coverArtColor={averageRGBColor}
+          coverArtColor={dominantColors ? dominantColors[0] : null}
           coverArtSizes={currentQueueItem.track?._cover_art_sizes ?? null}
           draggableLink={getTrackPageLink()}
           onClick={onClickArtwork}
@@ -413,7 +413,7 @@ const makeMapStateToProps = () => {
       notificationPanelIsOpen: getNotificationPanelIsOpen(state),
       upload: state.upload,
       showCreatePlaylistModal: getIsOpen(state),
-      averageRGBColor: getAverageColorByTrack(state, {
+      dominantColors: getDominantColorsByTrack(state, {
         track: currentQueueItem.track
       })
     }

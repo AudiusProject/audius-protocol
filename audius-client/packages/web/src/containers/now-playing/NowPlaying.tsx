@@ -44,7 +44,7 @@ import UserBadges from 'containers/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import { useRecord, make } from 'store/analytics/actions'
-import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
+import { getDominantColorsByTrack } from 'store/application/ui/average-color/slice'
 import {
   getAudio,
   getBuffering,
@@ -122,7 +122,7 @@ const NowPlaying = g(
     goToRoute,
     isCasting,
     castMethod,
-    averageRGBColor
+    dominantColors
   }) => {
     const { uid } = currentQueueItem
     const { track, user } = currentQueueItem
@@ -330,13 +330,14 @@ const NowPlaying = g(
       }
     }
 
-    const artworkAverageColor = averageRGBColor
+    const dominantColor = dominantColors ? dominantColors[0] : null
+    const artworkAverageColor = dominantColor
       ? {
-          boxShadow: `0 1px 15px -2px rgba(
-          ${averageRGBColor.r},
-          ${averageRGBColor.g},
-          ${averageRGBColor.b}
-          , 0.5)`
+          boxShadow: `0 1px 15px -5px rgba(
+          ${dominantColor.r},
+          ${dominantColor.g},
+          ${dominantColor.b}
+          , 1)`
         }
       : {}
 
@@ -482,7 +483,7 @@ function makeMapStateToProps() {
       isBuffering: getBuffering(state),
       isCasting: getIsCasting(state),
       castMethod: getCastMethod(state),
-      averageRGBColor: getAverageColorByTrack(state, {
+      dominantColors: getDominantColorsByTrack(state, {
         track: currentQueueItem.track
       })
     }

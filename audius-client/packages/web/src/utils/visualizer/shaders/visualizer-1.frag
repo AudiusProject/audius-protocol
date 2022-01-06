@@ -1,30 +1,42 @@
 precision highp float;
 
-uniform sampler2D brushTexture;
 uniform vec3 color;
 uniform float opacity;
-uniform bool useHue;
-uniform float iGlobalTime;
 varying float vAngle;
-varying vec2 uvCoords;
+
+// Colors
+uniform float r1;
+uniform float g1;
+uniform float b1;
+
+uniform float r2;
+uniform float g2;
+uniform float b2;
+
+uniform float r3;
+uniform float g3;
+uniform float b3;
 
 #define PI 3.14
-#pragma glslify: hsl2rgb = require('glsl-hsl2rgb')
 
 void main() {
   vec3 tCol = color;
-  if (useHue) {
-    float sat = 0.7;
-    float light = 0.6;
-    
-    float rainbow = sin(vAngle * 1.0) * 0.5 + 0.5;
-    float hue = 0.0;
-    hue += mix(0.5, 0.9, rainbow);
-    tCol = hsl2rgb(vec3(hue, sat, light));
+
+  float interp = sin(vAngle * 1.0);
+  float finalR;
+  float finalG;
+  float finalB;
+  if (interp > 0.0) {
+    finalR = mix(r1, r2, interp);
+    finalG = mix(g1, g2, interp);
+    finalB = mix(b1, b2, interp);
+  } else {
+    finalR = mix(r1, r3, -1.0 * interp);
+    finalG = mix(g1, g3, -1.0 * interp);
+    finalB = mix(b1, b3, -1.0 * interp);
   }
-  
-  // vec2 vUv = vec2(uvCoords.x, 1.0 - abs(uvCoords.y));
-  // vec4 brush = texture2D(brushTexture, vUv);
+
+  tCol = vec3(finalR, finalG, finalB);
   
   gl_FragColor = vec4(tCol, opacity);
   gl_FragColor.rgb *= gl_FragColor.a;

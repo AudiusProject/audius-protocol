@@ -6,35 +6,47 @@ import { Track } from 'common/models/Track'
 import { Nullable } from 'common/utils/typeUtils'
 import { AppState } from 'store/types'
 
-const initialState: { colors: { [multihash: string]: Color } } = {
-  colors: {}
+const initialState: {
+  averageColor: { [multihash: string]: Color }
+  dominantColors: { [multihash: string]: Color[] }
+} = {
+  averageColor: {},
+  dominantColors: {}
 }
 
 /**
- * This slice tracks computed average colors for a given track art CID.
+ * This slice tracks computed average colors and dominant colors for a given track art CID.
  * Colors is a map of art cid -> Color
  */
 const slice = createSlice({
   name: 'application/ui/averageColor',
   initialState,
   reducers: {
-    setColor: (
+    setAverageColor: (
       state,
       action: PayloadAction<{ multihash: string; color: Color }>
     ) => {
       const { multihash, color } = action.payload
-      state.colors[multihash] = color
+      state.averageColor[multihash] = color
+    },
+    setDominantColors: (
+      state,
+      action: PayloadAction<{ multihash: string; colors: Color[] }>
+    ) => {
+      const { multihash, colors } = action.payload
+      state.dominantColors[multihash] = colors
     }
   }
 })
 
-export const { setColor } = slice.actions
+export const { setAverageColor, setDominantColors } = slice.actions
 
 export const getAverageColor = (
   state: AppState,
   { multihash }: { multihash: Nullable<CID> }
 ): Nullable<Color> =>
-  (multihash && state.application.ui.averageColor.colors[multihash]) || null
+  (multihash && state.application.ui.averageColor.averageColor[multihash]) ||
+  null
 
 export const getAverageColorByTrack = (
   state: AppState,
@@ -42,7 +54,16 @@ export const getAverageColorByTrack = (
 ): Nullable<Color> => {
   const multihash = track?.cover_art_sizes ?? track?.cover_art
   if (!multihash) return null
-  return state.application.ui.averageColor.colors[multihash] ?? null
+  return state.application.ui.averageColor.averageColor[multihash] ?? null
+}
+
+export const getDominantColorsByTrack = (
+  state: AppState,
+  { track }: { track: Nullable<Track> }
+): Nullable<Color[]> => {
+  const multihash = track?.cover_art_sizes ?? track?.cover_art
+  if (!multihash) return null
+  return state.application.ui.averageColor.dominantColors[multihash] ?? null
 }
 
 export default slice.reducer
