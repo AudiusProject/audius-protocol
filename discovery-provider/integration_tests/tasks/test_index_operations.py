@@ -211,6 +211,7 @@ def test_index_operations_indexing_error(celery_app, celery_app_contracts, monke
     web3 = celery_app_contracts["web3"]
 
     # Monkeypatch parse track event to raise an exception
+    # Here it does not matter which part of the indexing flow throws an exception; the expected behavior is the same
     def parse_track_event(*_):
         raise Exception("Broken parser")
 
@@ -218,6 +219,8 @@ def test_index_operations_indexing_error(celery_app, celery_app_contracts, monke
 
     seed_contract_data(task, celery_app_contracts, web3)
 
+    current_block = None
+    latest_block = None
     try:
         with db.scoped_session() as session:
             # Catch up the indexer
@@ -238,6 +241,13 @@ def test_index_operations_indexing_error(celery_app, celery_app_contracts, monke
         assert False
     except IndexingError:
         error = get_indexing_error(redis)
+        errored_block_in_db_results = (
+            session.query(Block).filter_by(number=error["blocknumber"]).all()
+        )  # should not exist
+        errored_block_in_db = len(errored_block_in_db_results) != 0
+        # when errored block is in db, it breaks the consensus mechanism
+        # for discovery nodes staying in sync
+        assert not errored_block_in_db
         assert error["message"] == "Broken parser"
         assert error["count"] == 1
 

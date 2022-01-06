@@ -386,8 +386,8 @@ def index_blocks(self, db, blocks_list):
                 current_block_query.count() == 1
             ), "Expected single row marked as current"
 
-            former_current_block = current_block_query.first()
-            former_current_block.is_current = False
+            previous_block = current_block_query.first()
+            previous_block.is_current = False
             session.add(block_model)
 
             user_factory_txs = []
@@ -492,31 +492,29 @@ def index_blocks(self, db, blocks_list):
                     )
                     user_replica_set_manager_txs.append(tx_receipt)
 
-        # pre-fetch cids asynchronously to not have it block in user_state_update
-        # and track_state_update
-        try:
-            ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
-                db,
-                user_factory_txs,
-                track_factory_txs,
-                block_number,
-                block_hash,
-            )
-        except IndexingError as err:
-            logger.info(
-                f"index.py | Error in the indexing task at"
-                f" block={err.blocknumber} and hash={err.txhash}"
-            )
-            set_indexing_error(
-                redis, err.blocknumber, err.blockhash, err.txhash, err.message
-            )
-            confirm_indexing_transaction_error(
-                redis, err.blocknumber, err.blockhash, err.txhash, err.message
-            )
-            raise err
+            # pre-fetch cids asynchronously to not have it block in user_state_update
+            # and track_state_update
+            try:
+                ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
+                    db,
+                    user_factory_txs,
+                    track_factory_txs,
+                    block_number,
+                    block_hash,
+                )
+            except IndexingError as err:
+                logger.info(
+                    f"index.py | Error in the indexing task at"
+                    f" block={err.blocknumber} and hash={err.txhash}"
+                )
+                set_indexing_error(
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                )
+                confirm_indexing_transaction_error(
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                )
+                raise err
 
-        # Handle each block in a distinct transaction
-        with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             try:
                 # bulk process operations once all tx's for block have been parsed
                 total_user_changes, user_ids = user_state_update(
