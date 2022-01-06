@@ -18,7 +18,7 @@ class Wormhole {
    * @param {object} ethContracts
    * @param {object} identityService
    * @param {object} solanaWeb3Manager
-   * @param {string} rpcHost
+   * @param {Array<string>} rpcHosts
    * @param {string} solBridgeAddress
    * @param {string} solTokenBridgeAddress
    * @param {string} ethBridgeAddress
@@ -30,7 +30,7 @@ class Wormhole {
     ethContracts,
     identityService,
     solanaWeb3Manager,
-    rpcHost,
+    rpcHosts,
     solBridgeAddress,
     solTokenBridgeAddress,
     ethBridgeAddress,
@@ -44,7 +44,7 @@ class Wormhole {
     this.solanaWeb3Manager = solanaWeb3Manager
 
     // Wormhole config
-    this.rpcHost = rpcHost
+    this.rpcHosts = rpcHosts
     this.solBridgeAddress = solBridgeAddress
     this.solTokenBridgeAddress = solTokenBridgeAddress
     this.ethBridgeAddress = ethBridgeAddress
@@ -64,8 +64,8 @@ class Wormhole {
     emitterAddress,
     sequence,
     extraGrpcOpts = {},
-    retryTimeout = 1000,
-    retryAttempts = 5
+    retryTimeout = 5000,
+    retryAttempts = 60
   ) {
     let currentWormholeRpcHost = -1
     const getNextRpcHost = () => ++currentWormholeRpcHost % hosts.length
@@ -94,8 +94,18 @@ class Wormhole {
   /**
    * Sends `amount` tokens to `solanaAccount` by way of the wormhole
    * @param {string} ethTxReceipt The tx receipt
+   * @param {function} [customSignTransaction] Optional custom sign transaction parameter
+   * @param {Object?} options The grpc options passed to get signed VAA for different transport
+   *
+   * else will attempt to relay
+   * @returns {Promise} Promise object of {
+        transactionSignature: string,
+        error: Error,
+        phase: string,
+        logs: Array<string>
+      }
    */
-  async attestAndCompleteTransferEthToSol (ethTxReceipt) {
+  async attestAndCompleteTransferEthToSol (ethTxReceipt, customSignTransaction, options = {}) {
     const phases = {
       GET_RECEIPT: 'GET_RECEIPT',
       GET_SIGNED_VAA: 'GET_SIGNED_VAA',
@@ -110,15 +120,71 @@ class Wormhole {
       const emitterAddress = this.wormholeSDK.getEmitterAddressEth(this.ethTokenBridgeAddress)
       phase = phases.GET_SIGNED_VAA
       const { vaaBytes } = await this.getSignedVAAWithRetry(
-        [this.rpcHost],
+        this.rpcHosts,
         this.wormholeSDK.CHAIN_ID_ETH,
         emitterAddress,
-        sequence
+        sequence,
+        options
       )
-      const signTransaction = async (transaction) => {
-        const { blockhash } = await connection.getRecentBlockhash()
-        // Must call serialize message to set the correct signatures on the transaction
+
+      const connection = this.solanaWeb3Manager.connection
+      let signTransaction
+      if (customSignTransaction) {
+        signTransaction = customSignTransaction
+      } else {
+        signTransaction = async (transaction) => {
+          const { blockhash } = await connection.getRecentBlockhash()
+          // Must call serialize message to set the correct signatures on the transaction
+          transaction.serializeMessage()
+          const transactionData = {
+            recentBlockhash: blockhash,
+            instructions: transaction.instructions.map(SolanaUtils.prepareInstructionForRelay),
+            signatures: transaction.signatures.map(sig => ({
+              publicKey: sig.publicKey.toString(),
+              signature: sig.signature
+            }))
+          }
+
+          const { transactionSignature } = await this.identityService.solanaRelayRaw(transactionData)
+          logs.push(`Relay sol tx for postVAA with signature ${transactionSignature}`)
+          return {
+            'serialize': () => {}
+          }
+        }
+        connection.sendRawTransaction = async () => ''
+        connection.confirmTransaction = async () => ''
+      }
+      phase = phases.POST_VAA_SOLANA
+      await this.wormholeSDK.postVaaSolana(
+        connection,
+        signTransaction,
+        this.solBridgeAddress,
+        this.solanaWeb3Manager.feePayerAddress.toString(), // payerAddress
+        vaaBytes
+      )
+
+      // Finally, redeem on Solana
+      phase = phases.REDEEM_ON_SOLANA
+      const transaction = await this.wormholeSDK.redeemOnSolana(
+        connection,
+        this.solBridgeAddress,
+        this.solTokenBridgeAddress,
+        this.solanaWeb3Manager.feePayerAddress.toString(), // payerAddress,
+        vaaBytes
+      )
+
+      let finalTxSignature
+      // Must call serialize message to set the correct signatures on the transaction
+      if (customSignTransaction) {
+        const signedTransaction = await signTransaction(transaction)
+        const txid = await connection.sendRawTransaction(signedTransaction.serialize())
+        finalTxSignature = txid
+
+        await connection.confirmTransaction(txid)
+      } else {
         transaction.serializeMessage()
+
+        const { blockhash } = await connection.getRecentBlockhash()
         const transactionData = {
           recentBlockhash: blockhash,
           instructions: transaction.instructions.map(SolanaUtils.prepareInstructionForRelay),
@@ -129,50 +195,11 @@ class Wormhole {
         }
 
         const { transactionSignature } = await this.identityService.solanaRelayRaw(transactionData)
-        logs.push(`Relay sol tx for postVAA with signature ${transactionSignature}`)
-        return {
-          'serialize': () => {}
-        }
+        finalTxSignature = transactionSignature
       }
-      const connection = this.solanaWeb3Manager.connection
-      connection.sendRawTransaction = async () => ''
-      connection.confirmTransaction = async () => ''
-      phase = phases.POST_VAA_SOLANA
-      await this.wormholeSDK.postVaaSolana(
-        connection,
-        signTransaction,
-        this.solBridgeAddress,
-        this.solanaWeb3Manager.feePayerAddress, // payerAddress
-        vaaBytes
-      )
-
-      // Finally, redeem on Solana
-      phase = phases.REDEEM_ON_SOLANA
-      const transaction = await this.wormholeSDK.redeemOnSolana(
-        connection,
-        this.solBridgeAddress,
-        this.solTokenBridgeAddress,
-        this.solanaWeb3Manager.feePayerAddress, // payerAddress,
-        vaaBytes
-      )
-
-      // Must call serialize message to set the correct signatures on the transaction
-      transaction.serializeMessage()
-
-      const { blockhash } = await connection.getRecentBlockhash()
-      const transactionData = {
-        recentBlockhash: blockhash,
-        instructions: transaction.instructions.map(SolanaUtils.prepareInstructionForRelay),
-        signatures: transaction.signatures.map(sig => ({
-          publicKey: sig.publicKey.toString(),
-          signature: sig.signature
-        }))
-      }
-
-      const { transactionSignature } = await this.identityService.solanaRelayRaw(transactionData)
-      logs.push(`Complete redeem on sol with signature ${transactionSignature}`)
+      logs.push(`Complete redeem on sol with signature ${finalTxSignature}`)
       return {
-        transactionSignature,
+        transactionSignature: finalTxSignature,
         error: null,
         phase,
         logs
@@ -190,8 +217,9 @@ class Wormhole {
    * Sends `amount` tokens to `solanaAccount` by way of the wormhole
    * @param {BN} amount The amount of AUDIO to send in Wrapped Audio (8 decimals)
    * @param {string} ethTargetAddress The eth address to transfer AUDIO
+   * @param {Object?} options The grpc options passed to get signed VAA for different transport
    */
-  async sendTokensFromSolToEthViaWormhole (amount, ethTargetAddress) {
+  async sendTokensFromSolToEthViaWormhole (amount, ethTargetAddress, options = {}) {
     const phases = {
       GENERATE_SOL_ROOT_ACCT: 'GENERATE_SOL_ROOT_ACCT',
       TRANSFER_WAUDIO_TO_ROOT: 'TRANSFER_WAUDIO_TO_ROOT',
@@ -270,14 +298,14 @@ class Wormhole {
       const info = await connection.getTransaction(transactionSignature)
       const sequence = this.wormholeSDK.parseSequenceFromLogSolana(info)
       const emitterAddress = await this.wormholeSDK.getEmitterAddressSolana(this.solTokenBridgeAddress)
-
       // Fetch the signedVAA from the Wormhole Network (this may require retries while you wait for confirmation)
       phase = phases.GET_SIGNED_VAA
       const { vaaBytes } = await this.getSignedVAAWithRetry(
-        [this.rpcHost],
+        this.rpcHosts,
         this.wormholeSDK.CHAIN_ID_SOLANA,
         emitterAddress,
-        sequence
+        sequence,
+        options
       )
 
       // Redeem on Ethereum
@@ -302,9 +330,8 @@ class Wormhole {
    * @param {string} fromAccount the account holding the ETH AUDIO to transfer
    * @param {BN} amount The amount of AUDIO to send in WEI (18 decimals)
    * @param {string} solanaAccount The solana token account
-   * @param {string} relayer The eth relayer to permission to aprrove and transfer
    */
-  async transferTokensToEthWormhole (fromAccount, amount, solanaAccount, relayer) {
+  async _getTransferTokensToEthWormholeParams (fromAccount, amount, solanaAccount) {
     const web3 = this.ethWeb3Manager.getWeb3()
     const wormholeClientAddress = this.ethContracts.WormholeClient.contractAddress
 
@@ -337,6 +364,31 @@ class Wormhole {
     )
     const myPrivateKey = this.hedgehog.wallet._privKey
     const signedDigest = sign(digest, myPrivateKey)
+    return {
+      chainId,
+      deadline,
+      recipient,
+      arbiterFee,
+      signedDigest
+    }
+  }
+
+  /**
+   * Locks assets owned by `fromAccount` into the Solana wormhole with a target
+   * solanaAccount destination via the provided relayer wallet.
+   * @param {string} fromAccount the account holding the ETH AUDIO to transfer
+   * @param {BN} amount The amount of AUDIO to send in WEI (18 decimals)
+   * @param {string} solanaAccount The solana token account
+   * @param {string} relayer The eth relayer to permission to aprrove and transfer
+   */
+  async transferTokensToEthWormhole (fromAccount, amount, solanaAccount, relayer) {
+    const {
+      chainId,
+      deadline,
+      recipient,
+      arbiterFee,
+      signedDigest
+    } = await this._getTransferTokensToEthWormholeParams(fromAccount, amount, solanaAccount)
     const tx = await this.ethContracts.WormholeClient.transferTokens(
       fromAccount,
       amount,
@@ -348,6 +400,28 @@ class Wormhole {
       relayer
     )
     return tx
+  }
+
+  async getTransferTokensToEthWormholeMethod (fromAccount, amount, solanaAccount, relayer) {
+    const {
+      chainId,
+      deadline,
+      recipient,
+      arbiterFee,
+      signedDigest
+    } = await this._getTransferTokensToEthWormholeParams(fromAccount, amount, solanaAccount)
+    const method = await this.ethContracts.WormholeClient.WormholeContract.methods.transferTokens(
+      fromAccount,
+      amount,
+      chainId,
+      recipient,
+      arbiterFee,
+      deadline,
+      signedDigest.v,
+      signedDigest.r,
+      signedDigest.s
+    )
+    return method
   }
 }
 

@@ -196,21 +196,29 @@ class AudiusLibs {
   /**
    * Configures wormhole
    * @param {Object} config
-   * @param {string} config.rpcHost
+   * @param {string | Array<string>} config.rpcHosts
    * @param {string} config.solBridgeAddress
    * @param {string} config.solTokenBridgeAddress
    * @param {string} config.ethBridgeAddress
    * @param {string} config.ethTokenBridgeAddress
    */
   static configWormhole ({
-    rpcHost,
+    rpcHosts,
     solBridgeAddress,
     solTokenBridgeAddress,
     ethBridgeAddress,
     ethTokenBridgeAddress
   }) {
+    let rpcHostList
+    if (typeof rpcHosts === 'string') {
+      rpcHostList = rpcHosts.split(',')
+    } else if (Array.isArray(rpcHosts)) {
+      rpcHostList = rpcHosts
+    } else {
+      throw new Error('rpcHosts must be of type string or Array')
+    }
     return {
-      rpcHost,
+      rpcHosts: rpcHostList,
       solBridgeAddress,
       solTokenBridgeAddress,
       ethBridgeAddress,
@@ -405,7 +413,7 @@ class AudiusLibs {
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
-    if (this.wormholeConfig && this.hedgehog && this.ethWeb3Manager && this.ethContracts && this.identityService && this.solanaWeb3Manager) {
+    if (this.wormholeConfig && this.ethWeb3Manager && this.ethContracts && this.solanaWeb3Manager) {
       this.wormholeClient = new Wormhole(
         this.hedgehog,
         this.ethWeb3Manager,
@@ -455,8 +463,7 @@ class AudiusLibs {
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
         this.creatorNodeConfig.monitoringCallbacks,
-        this.useTrackContentPolling,
-        this.useResumableTrackUpload
+        this.useTrackContentPolling
       )
       await this.creatorNode.init()
     }
