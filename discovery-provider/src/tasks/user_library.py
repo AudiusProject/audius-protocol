@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict, Tuple, Set
+from typing import Dict, Set, Tuple
 
 from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
@@ -23,7 +23,7 @@ def user_library_state_update(
     block_hash,
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of User Library model state changes found in transaction and empty Set (to align with fn signature of other _state_update functions."""
-    empty_set = set()
+    empty_set: Set[int] = set()
     num_total_changes = 0
     if not user_library_factory_txs:
         return num_total_changes, empty_set

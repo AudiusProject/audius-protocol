@@ -2,9 +2,9 @@ import logging
 from datetime import datetime
 from typing import Set, Tuple
 
-from src.database_task import DatabaseTask
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_contract_addresses
+from src.database_task import DatabaseTask
 from src.models import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
@@ -33,7 +33,7 @@ def playlist_state_update(
     num_total_changes = 0
     skipped_tx_count = 0
     # This stores the playlist_ids created or updated in the set of transactions
-    playlist_ids = set()
+    playlist_ids: Set[int] = set()
 
     if not playlist_factory_txs:
         return num_total_changes, playlist_ids
