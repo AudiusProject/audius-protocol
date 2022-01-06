@@ -1,7 +1,6 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
-import time
 from operator import itemgetter
 from sqlalchemy import func
 from src.app import get_contract_addresses
@@ -462,7 +461,6 @@ def bulk_process_state_changes(
         USER_REPLICA_SET_MANAGER: [],
     }
 
-    track_metadata_state_changed = False
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
@@ -492,8 +490,6 @@ def bulk_process_state_changes(
         if tx_type in changed_entity_ids_map.keys():
             changed_entity_ids_map[tx_type] = changed_entity_ids
 
-        if tx_type in track_metadata_affecting_contracts and entity_state_changed:
-            track_metadata_state_changed = True
         logger.info(
             f"index.py | {bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={entity_state_changed} for block={block_number}"
