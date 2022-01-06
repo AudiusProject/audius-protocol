@@ -2,6 +2,7 @@
 import concurrent.futures
 import logging
 from operator import itemgetter
+
 from sqlalchemy import func
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -37,6 +38,7 @@ from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
+from src.utils.constants import CONTRACT_TYPES
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
@@ -50,7 +52,6 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
-from src.utils.constants import CONTRACT_TYPES
 
 (
     USER_FACTORY,

@@ -2,9 +2,9 @@ import logging
 from datetime import datetime
 from typing import Set, Tuple
 
-from src.database_task import DatabaseTask
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_contract_addresses, get_eth_abi_values
+from src.database_task import DatabaseTask
 from src.models import URSMContentNode
 from src.tasks.index_network_peers import (
     content_node_service_type,
@@ -34,7 +34,7 @@ def user_replica_set_state_update(
     """Return Tuple containing int representing number of User model state changes found in transaction and set of user_id values"""
 
     num_user_replica_set_changes = 0
-    user_ids = set()
+    user_ids: Set[int] = set()
     if not user_replica_set_mgr_txs:
         return num_user_replica_set_changes, user_ids
 
