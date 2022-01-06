@@ -465,9 +465,6 @@ class AudiusBackend {
         useTrackContentPolling: remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.USE_TRACK_CONTENT_POLLING
         ),
-        useResumableTrackUpload: remoteConfigInstance.getFeatureEnabled(
-          FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD
-        ),
         preferHigherPatchForPrimary: remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY
         ),
