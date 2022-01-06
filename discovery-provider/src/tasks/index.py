@@ -1,7 +1,6 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
-import time
 
 from sqlalchemy import func
 from src.app import get_contract_addresses
@@ -126,59 +125,36 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
     return target_blockhash
 
 
-def get_latest_block(db: SessionManager, is_retry: bool = False):
+def get_latest_block(db: SessionManager):
+    latest_block = None
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
     )
-    try:
-        with db.scoped_session() as session:
-            current_block_query = session.query(Block).filter_by(is_current=True)
-            assert (
-                current_block_query.count() == 1
-            ), "Expected SINGLE row marked as current"
+    with db.scoped_session() as session:
+        current_block_query = session.query(Block).filter_by(is_current=True)
+        assert current_block_query.count() == 1, "Expected SINGLE row marked as current"
 
-            current_block_query_results = current_block_query.all()
-            current_block = current_block_query_results[0]
-            current_block_number = current_block.number
+        current_block_query_results = current_block_query.all()
+        current_block = current_block_query_results[0]
+        current_block_number = current_block.number
 
-            if current_block_number == None:
-                current_block_number = 0
+        if current_block_number == None:
+            current_block_number = 0
 
-            target_latest_block_number = current_block_number + block_processing_window
+        target_latest_block_number = current_block_number + block_processing_window
 
-            latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
-            latest_block_number_from_chain = latest_block_from_chain.number
+        latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+        latest_block_number_from_chain = latest_block_from_chain.number
 
-            target_latest_block_number = min(
-                target_latest_block_number, latest_block_number_from_chain
-            )
+        target_latest_block_number = min(
+            target_latest_block_number, latest_block_number_from_chain
+        )
 
-            logger.info(
-                f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
-            )
-            latest_block = update_task.web3.eth.getBlock(
-                target_latest_block_number, True
-            )
-
-            # we've seen potential instances of blocks returning no transactions
-            # if the block had no transactions and this is the first call to the gatewway
-            # retry after small delay to confirm the block is actually empty
-            if len(latest_block.transactions) == 0 and not is_retry:
-                logger.info(
-                    f"index.py | get_latest_block | target={target_latest_block_number} | target block has 0 transactions, retrying to confirm"
-                )
-                time.sleep(0.5)
-                return get_latest_block(db, True)
-
-            # if it retries getting the block and this time it has transactions when it didn't previously
-            if len(latest_block.transactions) > 0 and is_retry:
-                logger.info(
-                    f"index.py | get_latest_block | target={target_latest_block_number} | target block got transactions after retrying, got 0 initially"
-                )
-
-            return latest_block
-    except Exception as e:
-        raise Exception(f"index.py | get_latest_block | got exception {e}")
+        logger.info(
+            f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
+        )
+        latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
+    return latest_block
 
 
 def update_latest_block_redis():
@@ -410,8 +386,8 @@ def index_blocks(self, db, blocks_list):
                 current_block_query.count() == 1
             ), "Expected single row marked as current"
 
-            former_current_block = current_block_query.first()
-            former_current_block.is_current = False
+            previous_block = current_block_query.first()
+            previous_block.is_current = False
             session.add(block_model)
 
             user_factory_txs = []
@@ -420,6 +396,7 @@ def index_blocks(self, db, blocks_list):
             playlist_factory_txs = []
             user_library_factory_txs = []
             user_replica_set_manager_txs = []
+
             tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
 
             # Sort transactions by hash
@@ -515,31 +492,29 @@ def index_blocks(self, db, blocks_list):
                     )
                     user_replica_set_manager_txs.append(tx_receipt)
 
-        # pre-fetch cids asynchronously to not have it block in user_state_update
-        # and track_state_update
-        try:
-            ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
-                db,
-                user_factory_txs,
-                track_factory_txs,
-                block_number,
-                block_hash,
-            )
-        except IndexingError as err:
-            logger.info(
-                f"index.py | Error in the indexing task at"
-                f" block={err.blocknumber} and hash={err.txhash}"
-            )
-            set_indexing_error(
-                redis, err.blocknumber, err.blockhash, err.txhash, err.message
-            )
-            confirm_indexing_transaction_error(
-                redis, err.blocknumber, err.blockhash, err.txhash, err.message
-            )
-            raise err
+            # pre-fetch cids asynchronously to not have it block in user_state_update
+            # and track_state_update
+            try:
+                ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
+                    db,
+                    user_factory_txs,
+                    track_factory_txs,
+                    block_number,
+                    block_hash,
+                )
+            except IndexingError as err:
+                logger.info(
+                    f"index.py | Error in the indexing task at"
+                    f" block={err.blocknumber} and hash={err.txhash}"
+                )
+                set_indexing_error(
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                )
+                confirm_indexing_transaction_error(
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                )
+                raise err
 
-        # Handle each block in a distinct transaction
-        with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             try:
                 # bulk process operations once all tx's for block have been parsed
                 total_user_changes, user_ids = user_state_update(
