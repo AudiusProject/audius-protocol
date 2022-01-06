@@ -1,7 +1,9 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
-
+import time
+from operator import itemgetter
+from sqlalchemy import func
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -50,7 +52,25 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
+from src.utils.constants import CONTRACT_TYPES
 
+(
+    USER_FACTORY,
+    TRACK_FACTORY,
+    SOCIAL_FEATURE_FACTORY,
+    PLAYLIST_FACTORY,
+    USER_LIBRARY_FACTORY,
+    USER_REPLICA_SET_MANAGER,
+) = itemgetter(
+    "USER_FACTORY",
+    "TRACK_FACTORY",
+    "SOCIAL_FEATURE_FACTORY",
+    "PLAYLIST_FACTORY",
+    "USER_LIBRARY_FACTORY",
+    "USER_REPLICA_SET_MANAGER",
+)(
+    CONTRACT_TYPES
+)
 logger = logging.getLogger(__name__)
 
 
@@ -372,6 +392,45 @@ def save_and_get_skip_tx_hash(session, redis):
     return None
 
 
+def group_transaction_by_type(tx_type_to_grouped_lists_map, tx, tx_receipt):
+    tx_target_contract_address = tx["to"]
+    for tx_type, tx_list in tx_type_to_grouped_lists_map.items():
+        tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
+        if tx_is_type:
+            contract_name = helpers.snake_to_pascal(tx_type)
+            logger.info(
+                f"index.py | {contract_name} contract addr: {tx_target_contract_address}"
+                f" tx from block - {tx}, receipt - {tx_receipt}"
+            )
+            tx_list.append(tx_receipt)
+            break
+
+
+def add_indexed_block_to_db(db_session, block):
+    web3 = update_task.web3
+    current_block_query = db_session.query(Block).filter_by(is_current=True)
+
+    # Without this check we may end up duplicating an insert operation
+    block_model = Block(
+        blockhash=web3.toHex(block.hash),
+        parenthash=web3.toHex(block.parentHash),
+        number=block.number,
+        is_current=True,
+    )
+
+    # Update blocks table after
+    assert current_block_query.count() == 1, "Expected single row marked as current"
+
+    previous_block = current_block_query.first()
+    previous_block.is_current = False
+    db_session.add(block_model)
+
+
+def add_indexed_block_to_redis(block, redis):
+    redis.set(most_recent_indexed_block_redis_key, block.number)
+    redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
+
+
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
@@ -383,205 +442,145 @@ def index_blocks(self, db, blocks_list):
         update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
-        block_number = block.number
-        block_hash = block.hash
-        block_timestamp = block.timestamp
-        latest_block_timestamp = block_timestamp
+        block_number, block_hash, block_timestamp = itemgetter(
+            "number", "hash", "timestamp"
+        )(block)
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
+
         with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
-            current_block_query = session.query(Block).filter_by(is_current=True)
-
-            # Without this check we may end up duplicating an insert operation
-            block_model = Block(
-                blockhash=web3.toHex(block.hash),
-                parenthash=web3.toHex(block.parentHash),
-                number=block.number,
-                is_current=True,
-            )
-
-            # Update blocks table after
-            assert (
-                current_block_query.count() == 1
-            ), "Expected single row marked as current"
-
-            previous_block = current_block_query.first()
-            previous_block.is_current = False
-            session.add(block_model)
-
-            user_factory_txs = []
-            track_factory_txs = []
-            social_feature_factory_txs = []
-            playlist_factory_txs = []
-            user_library_factory_txs = []
-            user_replica_set_manager_txs = []
-
-            tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
-
-            # Sort transactions by hash
-            sorted_txs = sorted(block.transactions, key=lambda entry: entry["hash"])
-
             skip_tx_hash = save_and_get_skip_tx_hash(session, redis)
-            # Parse tx events in each block
-            for tx in sorted_txs:
-                tx_hash = web3.toHex(tx["hash"])
-                tx_target_contract_address = tx["to"]
-                tx_receipt = tx_receipt_dict[tx_hash]
+            skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
+            if skip_whole_block:
+                logger.info(f"index.py | Skipping all txs in block {block.hash}")
+            else:
+                add_indexed_block_to_db(session, block)
+                TXS_GROUPED_BY_TYPE = {
+                    USER_FACTORY: [],
+                    TRACK_FACTORY: [],
+                    SOCIAL_FEATURE_FACTORY: [],
+                    PLAYLIST_FACTORY: [],
+                    USER_LIBRARY_FACTORY: [],
+                    USER_REPLICA_SET_MANAGER: [],
+                }
 
-                # Skip in case a transaction targets zero address
-                if tx_target_contract_address == zero_address:
-                    logger.info(
-                        f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
+                tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
+
+                # Sort transactions by hash
+                sorted_txs = sorted(block.transactions, key=lambda entry: entry["hash"])
+
+                # Parse tx events in each block
+                for tx in sorted_txs:
+                    tx_hash = web3.toHex(tx["hash"])
+                    tx_target_contract_address = tx["to"]
+                    tx_receipt = tx_receipt_dict[tx_hash]
+                    should_skip_tx = (tx_target_contract_address == zero_address) or (
+                        skip_tx_hash is not None and skip_tx_hash == tx_hash
                     )
-                    continue
 
-                if skip_tx_hash == "commit":
-                    # The whole block is worth skipping because we failed at the database commit
-                    logger.info(f"index.py | Skipping all txs in block {block.hash}")
-                    break
+                    if should_skip_tx:
+                        logger.info(
+                            f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
+                        )
+                        continue
+                    else:
+                        group_transaction_by_type(TXS_GROUPED_BY_TYPE, tx, tx_receipt)
 
-                if skip_tx_hash is not None and skip_tx_hash == tx_hash:
-                    logger.info(f"index.py | Skipping tx {tx_hash}")
-                    continue
+                # grab references to use in further processing
+                user_factory_txs = TXS_GROUPED_BY_TYPE[USER_FACTORY]
+                track_factory_txs = TXS_GROUPED_BY_TYPE[TRACK_FACTORY]
+                social_feature_factory_txs = TXS_GROUPED_BY_TYPE[SOCIAL_FEATURE_FACTORY]
+                playlist_factory_txs = TXS_GROUPED_BY_TYPE[PLAYLIST_FACTORY]
+                user_library_factory_txs = TXS_GROUPED_BY_TYPE[USER_LIBRARY_FACTORY]
+                user_replica_set_manager_txs = TXS_GROUPED_BY_TYPE[
+                    USER_REPLICA_SET_MANAGER
+                ]
 
-                # Handle user operations
-                if (
-                    tx_target_contract_address
-                    == get_contract_addresses()["user_factory"]
-                ):
-                    logger.info(
-                        f"index.py | UserFactory contract addr: {tx_target_contract_address}"
-                        f" tx from block - {tx}, receipt - {tx_receipt}, adding to user_factory_txs to process in bulk"
+                # pre-fetch cids asynchronously to not have it block in user_state_update
+                # and track_state_update
+                try:
+                    ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
+                        db,
+                        user_factory_txs,
+                        track_factory_txs,
+                        block_number,
+                        block_hash,
                     )
-                    user_factory_txs.append(tx_receipt)
 
-                # Handle track operations
-                if (
-                    tx_target_contract_address
-                    == get_contract_addresses()["track_factory"]
-                ):
-                    logger.info(
-                        f"index.py | TrackFactory contract addr: {tx_target_contract_address}"
-                        f" tx from block - {tx}, receipt - {tx_receipt}"
-                    )
-                    # Track state operations
-                    track_factory_txs.append(tx_receipt)
-
-                # Handle social operations
-                if (
-                    tx_target_contract_address
-                    == get_contract_addresses()["social_feature_factory"]
-                ):
-                    logger.info(
-                        f"index.py | Social feature contract addr: {tx_target_contract_address}"
-                        f"tx from block - {tx}, receipt - {tx_receipt}"
-                    )
-                    social_feature_factory_txs.append(tx_receipt)
-
-                # Handle repost operations
-                if (
-                    tx_target_contract_address
-                    == get_contract_addresses()["playlist_factory"]
-                ):
-                    logger.info(
-                        f"index.py | Playlist contract addr: {tx_target_contract_address}"
-                        f"tx from block - {tx}, receipt - {tx_receipt}"
-                    )
-                    playlist_factory_txs.append(tx_receipt)
-
-                # Handle User Library operations
-                if (
-                    tx_target_contract_address
-                    == get_contract_addresses()["user_library_factory"]
-                ):
-                    logger.info(
-                        f"index.py | User Library contract addr: {tx_target_contract_address}"
-                        f"tx from block - {tx}, receipt - {tx_receipt}"
-                    )
-                    user_library_factory_txs.append(tx_receipt)
-
-                # Handle UserReplicaSetManager operations
-                if (
-                    tx_target_contract_address
-                    == get_contract_addresses()["user_replica_set_manager"]
-                ):
-                    logger.info(
-                        f"index.py | User Replica Set Manager contract addr: {tx_target_contract_address}"
-                        f"tx from block - {tx}, receipt - {tx_receipt}"
-                    )
-                    user_replica_set_manager_txs.append(tx_receipt)
-
-            # pre-fetch cids asynchronously to not have it block in user_state_update
-            # and track_state_update
-            try:
-                ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
-                    db,
-                    user_factory_txs,
-                    track_factory_txs,
-                    block_number,
-                    block_hash,
-                )
-            except IndexingError as err:
-                logger.info(
-                    f"index.py | Error in the indexing task at"
-                    f" block={err.blocknumber} and hash={err.txhash}"
-                )
-                set_indexing_error(
-                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
-                )
-                confirm_indexing_transaction_error(
-                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
-                )
-                raise err
-
-            try:
-                # bulk process operations once all tx's for block have been parsed
-                total_user_changes, user_ids = user_state_update(
-                    self,
-                    update_task,
-                    session,
-                    ipfs_metadata,
-                    blacklisted_cids,
-                    user_factory_txs,
-                    block_number,
-                    block_timestamp,
-                    block_hash,
-                )
-                user_state_changed = total_user_changes > 0
-                logger.info(
-                    f"index.py | user_state_update completed"
-                    f" user_state_changed={user_state_changed} for block={block_number}"
-                )
-
-                total_track_changes, track_ids = track_state_update(
-                    self,
-                    update_task,
-                    session,
-                    blacklisted_cids,
-                    ipfs_metadata,
-                    track_factory_txs,
-                    block_number,
-                    block_timestamp,
-                    block_hash,
-                )
-                track_state_changed = total_track_changes > 0
-                logger.info(
-                    f"index.py | track_state_update completed"
-                    f" track_state_changed={track_state_changed} for block={block_number}"
-                )
-
-                social_feature_state_changed = (  # pylint: disable=W0612
-                    social_feature_state_update(
+                    # bulk process operations once all tx's for block have been parsed
+                    total_user_changes, user_ids = user_state_update(
                         self,
                         update_task,
                         session,
-                        social_feature_factory_txs,
+                        ipfs_metadata,
+                        blacklisted_cids,
+                        user_factory_txs,
                         block_number,
                         block_timestamp,
                         block_hash,
                     )
+                    user_state_changed = total_user_changes > 0
+                    logger.info(
+                        f"index.py | user_state_update completed"
+                        f" user_state_changed={user_state_changed} for block={block_number}"
+                    )
+
+                    total_track_changes, track_ids = track_state_update(
+                        self,
+                        update_task,
+                        session,
+                        blacklisted_cids,
+                        ipfs_metadata,
+                        track_factory_txs,
+                        block_number,
+                        block_timestamp,
+                        block_hash,
+                    )
+                    track_state_changed = total_track_changes > 0
+                    logger.info(
+                        f"index.py | track_state_update completed"
+                        f" track_state_changed={track_state_changed} for block={block_number}"
+                    )
+
+                    social_feature_state_changed = (  # pylint: disable=W0612
+                        social_feature_state_update(
+                            self,
+                            update_task,
+                            session,
+                            social_feature_factory_txs,
+                            block_number,
+                            block_timestamp,
+                            block_hash,
+                        )
+                        > 0
+                    )
+                    logger.info(
+                        f"index.py | social_feature_state_update completed"
+                        f" social_feature_state_changed={social_feature_state_changed} for block={block_number}"
+                    )
+
+                    # Index UserReplicaSet changes
+                    (
+                        total_user_replica_set_changes,
+                        replica_user_ids,
+                    ) = user_replica_set_state_update(
+                        self,
+                        update_task,
+                        session,
+                        user_replica_set_manager_txs,
+                        block_number,
+                        block_timestamp,
+                        block_hash,
+                        redis,
+                    )
+                    user_replica_set_state_changed = total_user_replica_set_changes > 0
+                    logger.info(
+                        f"index.py | user_replica_set_state_update completed"
+                        f" user_replica_set_state_changed={user_replica_set_state_changed} for block={block_number}"
+                    )
+<<<<<<< HEAD
                     > 0
                 )
                 logger.info(
@@ -623,83 +622,104 @@ def index_blocks(self, db, blocks_list):
                     f"index.py | playlist_state_update completed"
                     f" playlist_state_changed={playlist_state_changed} for block={block_number}"
                 )
+=======
+>>>>>>> wip refactor
 
-                user_library_state_changed = (
-                    user_library_state_update(  # pylint: disable=W0612
+                    # Playlist state operations processed in bulk
+                    total_playlist_changes, playlist_ids = playlist_state_update(
                         self,
                         update_task,
                         session,
-                        user_library_factory_txs,
+                        playlist_factory_txs,
                         block_number,
                         block_timestamp,
                         block_hash,
                     )
-                )
-                logger.info(
-                    f"index.py | user_library_state_update completed"
-                    f" user_library_state_changed={user_library_state_changed} for block={block_number}"
-                )
+                    playlist_state_changed = total_playlist_changes > 0
+                    logger.info(
+                        f"index.py | playlist_state_update completed"
+                        f" playlist_state_changed={playlist_state_changed} for block={block_number}"
+                    )
 
-                track_lexeme_state_changed = user_state_changed or track_state_changed
-                try:
-                    session.commit()
-                except Exception as e:
-                    # Use 'commit' as the tx hash here.
-                    # We're at a point where the whole block can't be added to the database, so
-                    # we should skip it in favor of making progress
-                    blockhash = update_task.web3.toHex(block_hash)
-                    raise IndexingError(
-                        "session.commit", block_number, blockhash, "commit", str(e)
-                    ) from e
-                logger.info(
-                    f"index.py | session commmited to db for block=${block_number}"
-                )
-                if skip_tx_hash:
-                    clear_indexing_error(redis)
-                if user_state_changed:
-                    if user_ids:
-                        remove_cached_user_ids(redis, user_ids)
-                if user_replica_set_state_changed:
-                    if replica_user_ids:
-                        remove_cached_user_ids(redis, replica_user_ids)
-                if track_lexeme_state_changed:
-                    if track_ids:
-                        remove_cached_track_ids(redis, track_ids)
-                if playlist_state_changed:
-                    if playlist_ids:
-                        remove_cached_playlist_ids(redis, playlist_ids)
-                logger.info(
-                    f"index.py | redis cache clean operations complete for block=${block_number}"
-                )
-            except IndexingError as err:
-                logger.info(
-                    f"index.py | Error in the indexing task at"
-                    f" block={err.blocknumber} and hash={err.txhash}"
-                )
-                set_indexing_error(
-                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
-                )
-                confirm_indexing_transaction_error(
-                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
-                )
-                raise err
-        try:
-            # Check the last block's timestamp for updating the trending challenge
-            [should_update, date] = should_trending_challenge_update(
-                session, latest_block_timestamp
-            )
-            if should_update:
-                celery.send_task("calculate_trending_challenges", kwargs={"date": date})
-        except Exception as e:
-            # Do not throw error, as this should not stop indexing
-            logger.error(
-                f"index.py | Error in calling update trending challenge {e}",
-                exc_info=True,
-            )
+                    user_library_state_changed = (
+                        user_library_state_update(  # pylint: disable=W0612
+                            self,
+                            update_task,
+                            session,
+                            user_library_factory_txs,
+                            block_number,
+                            block_timestamp,
+                            block_hash,
+                        )
+                    )
+                    logger.info(
+                        f"index.py | user_library_state_update completed"
+                        f" user_library_state_changed={user_library_state_changed} for block={block_number}"
+                    )
 
-        # add the block number of the most recently processed block to redis
-        redis.set(most_recent_indexed_block_redis_key, block.number)
-        redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
+                    track_lexeme_state_changed = (
+                        user_state_changed or track_state_changed
+                    )
+                    try:
+                        session.commit()
+                        logger.info(
+                            f"index.py | session commmited to db for block=${block_number}"
+                        )
+                    except Exception as e:
+                        # Use 'commit' as the tx hash here.
+                        # We're at a point where the whole block can't be added to the database, so
+                        # we should skip it in favor of making progress
+                        blockhash = update_task.web3.toHex(block_hash)
+                        raise IndexingError(
+                            "session.commit", block_number, blockhash, "commit", str(e)
+                        ) from e
+                    if skip_tx_hash:
+                        clear_indexing_error(redis)
+                    if user_state_changed:
+                        if user_ids:
+                            remove_cached_user_ids(redis, user_ids)
+                    if user_replica_set_state_changed:
+                        if replica_user_ids:
+                            remove_cached_user_ids(redis, replica_user_ids)
+                    if track_lexeme_state_changed:
+                        if track_ids:
+                            remove_cached_track_ids(redis, track_ids)
+                    if playlist_state_changed:
+                        if playlist_ids:
+                            remove_cached_playlist_ids(redis, playlist_ids)
+                    logger.info(
+                        f"index.py | redis cache clean operations complete for block=${block_number}"
+                    )
+                except IndexingError as err:
+                    logger.info(
+                        f"index.py | Error in the indexing task at"
+                        f" block={err.blocknumber} and hash={err.txhash}"
+                    )
+                    set_indexing_error(
+                        redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                    )
+                    confirm_indexing_transaction_error(
+                        redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                    )
+                    raise err
+        # NOTE: This is commented out to prevent unncessary load on the DB to calculate trending
+        #       until it is fully tested on staging. The challenge was not registed so the job will
+        #       continually run for the hour interval.
+        # try:
+        #     # Check the last block's timestamp for updating the trending challenge
+        #     [should_update, date] = should_trending_challenge_update(
+        #         session, latest_block_timestamp
+        #     )
+        #     if should_update:
+        #         celery.send_task("calculate_trending_challenges", kwargs={"date": date})
+        # except Exception as e:
+        #     # Do not throw error, as this should not stop indexing
+        #     logger.error(
+        #         f"index.py | Error in calling update trending challenge {e}",
+        #         exc_info=True,
+        #     )
+
+        add_indexed_block_to_redis(block, redis)
         logger.info(
             f"index.py | update most recently processed block complete for block=${block_number}"
         )
