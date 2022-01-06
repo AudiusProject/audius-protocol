@@ -222,8 +222,17 @@ class SolanaWeb3Manager {
    */
   async getWAudioBalance (solanaAddress) {
     try {
-      const tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
-      if (!tokenAccount) return null
+      let tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
+
+      // If the token account doesn't exist, check if solanaAddress is a root account
+      // if so, derive the associated token account & check that balance
+      if (!tokenAccount) {
+        const associatedTokenAccount = await this.findAssociatedTokenAddress(solanaAddress)
+        tokenAccount = await this.getAssociatedTokenAccountInfo(associatedTokenAccount.toString())
+        if (!tokenAccount) {
+          return null
+        }
+      }
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
       const decimals = AUDIO_DECMIALS - WAUDIO_DECMIALS
