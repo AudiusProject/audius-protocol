@@ -70,10 +70,9 @@ def track_state_update(
                             entry,
                             track_id,
                             block_number,
-                            block_timestamp,
+                            blockhash,
                             txhash,
                         )
-
                     # parse track event to add metadata to record
                     if event_type in [
                         track_event_types_lookup["new_track"],
@@ -124,7 +123,6 @@ def track_state_update(
                     pass
                 except Exception as e:
                     logger.info("Error in parse track transaction")
-                    blockhash = update_task.web3.toHex(block_hash)
                     raise IndexingError(
                         "track", block_number, blockhash, txhash, str(e)
                     ) from e
