@@ -1,7 +1,9 @@
 import logging
 from datetime import datetime
+from typing import Set, Tuple
 
-from sqlalchemy.orm.session import make_transient
+from src.database_task import DatabaseTask
+from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_contract_addresses
 from src.models import Playlist
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
@@ -17,14 +19,14 @@ logger = logging.getLogger(__name__)
 
 def playlist_state_update(
     self,
-    update_task,
-    session,
+    update_task: DatabaseTask,
+    session: Session,
     playlist_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
-):
-    """Return int representing number of Playlist model state changes found in transaction."""
+) -> Tuple[int, Set]:
+    """Return Tuple containing int representing number of Playlist model state changes found in transaction and set of processed playlist IDs."""
     num_total_changes = 0
     # This stores the playlist_ids created or updated in the set of transactions
     playlist_ids = set()

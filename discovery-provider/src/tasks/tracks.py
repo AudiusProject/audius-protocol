@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple
 
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import functions, null
@@ -32,14 +32,14 @@ def track_state_update(
     self,
     update_task: DatabaseTask,
     session,
-    blacklisted_cids,
     ipfs_metadata,
+    blacklisted_cids,
     track_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
-):
-    """Return int representing number of Track model state changes found in transaction."""
+) -> Tuple[int, Set]:
+    """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     num_total_changes = 0
 
     # This stores the track_ids created or updated in the set of transactions

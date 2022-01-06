@@ -411,6 +411,92 @@ def add_indexed_block_to_redis(block, redis):
     redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
 
 
+def bulk_process_state_changes(
+    main_indexing_task,
+    session,
+    ipfs_metadata,
+    blacklisted_cids,
+    tx_type_to_grouped_lists_map,
+    block,
+    redis,
+):
+    block_number, block_hash, block_timestamp = itemgetter(
+        "number", "hash", "timestamp"
+    )(block)
+    TX_TYPE_TO_HANDLER_MAP = {
+        USER_FACTORY: user_state_update,
+        TRACK_FACTORY: track_state_update,
+        SOCIAL_FEATURE_FACTORY: social_feature_state_update,
+        PLAYLIST_FACTORY: playlist_state_update,
+        USER_LIBRARY_FACTORY: user_library_state_update,
+        USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
+    }
+    track_metadata_affecting_contracts = [
+        USER_FACTORY,
+        TRACK_FACTORY,
+    ]
+    changed_entity_ids_map = {
+        USER_FACTORY: [],
+        TRACK_FACTORY: [],
+        PLAYLIST_FACTORY: [],
+        USER_REPLICA_SET_MANAGER: [],
+    }
+
+    track_metadata_state_changed = False
+    for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
+        txs_to_process = tx_type_to_grouped_lists_map[tx_type]
+        tx_processing_args = [
+            main_indexing_task,
+            update_task,
+            session,
+        ]
+        if tx_type in track_metadata_affecting_contracts:
+            tx_processing_args += [
+                ipfs_metadata,
+                blacklisted_cids,
+            ]
+        tx_processing_args += [
+            txs_to_process,
+            block_number,
+            block_timestamp,
+            block_hash,
+        ]
+        # ursm update takes redis to find replica sets
+        if tx_type == USER_REPLICA_SET_MANAGER:
+            tx_processing_args += [redis]
+        (
+            total_changes_for_tx_type,
+            changed_entity_ids,
+        ) = bulk_processor(*tx_processing_args)
+        entity_state_changed = total_changes_for_tx_type > 0
+        if tx_type in changed_entity_ids_map.keys():
+            changed_entity_ids_map[tx_type] = changed_entity_ids
+
+        if tx_type in track_metadata_affecting_contracts and entity_state_changed:
+            track_metadata_state_changed = True
+        logger.info(
+            f"index.py | {bulk_processor.__name__} completed"
+            f" {tx_type}_state_changed={entity_state_changed} for block={block_number}"
+        )
+    return changed_entity_ids_map
+
+
+def remove_updated_entities_from_cache(redis, changed_entity_type_to_updated_ids_map):
+    CONTRACT_TYPE_TO_CLEAR_CACHE_HANDLERS = {
+        USER_FACTORY: remove_cached_user_ids,
+        USER_REPLICA_SET_MANAGER: remove_cached_user_ids,
+        TRACK_FACTORY: remove_cached_track_ids,
+        PLAYLIST_FACTORY: remove_cached_playlist_ids,
+    }
+    for (
+        contract_type,
+        clear_cache_handler,
+    ) in CONTRACT_TYPE_TO_CLEAR_CACHE_HANDLERS.items():
+        changed_entity_ids = changed_entity_type_to_updated_ids_map[contract_type]
+        if changed_entity_ids:
+            clear_cache_handler(redis, changed_entity_ids)
+
+
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
@@ -421,9 +507,7 @@ def index_blocks(self, db, blocks_list):
         update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
-        block_number, block_hash, block_timestamp = itemgetter(
-            "number", "hash", "timestamp"
-        )(block)
+        block_number, block_hash = itemgetter("number", "hash")(block)
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
@@ -467,138 +551,34 @@ def index_blocks(self, db, blocks_list):
                     else:
                         group_transaction_by_type(TXS_GROUPED_BY_TYPE, tx, tx_receipt)
 
-                # grab references to use in further processing
-                user_factory_txs = TXS_GROUPED_BY_TYPE[USER_FACTORY]
-                track_factory_txs = TXS_GROUPED_BY_TYPE[TRACK_FACTORY]
-                social_feature_factory_txs = TXS_GROUPED_BY_TYPE[SOCIAL_FEATURE_FACTORY]
-                playlist_factory_txs = TXS_GROUPED_BY_TYPE[PLAYLIST_FACTORY]
-                user_library_factory_txs = TXS_GROUPED_BY_TYPE[USER_LIBRARY_FACTORY]
-                user_replica_set_manager_txs = TXS_GROUPED_BY_TYPE[
-                    USER_REPLICA_SET_MANAGER
-                ]
-
                 # pre-fetch cids asynchronously to not have it block in user_state_update
                 # and track_state_update
                 try:
                     ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
                         db,
-                        user_factory_txs,
-                        track_factory_txs,
+                        TXS_GROUPED_BY_TYPE[USER_FACTORY],
+                        TXS_GROUPED_BY_TYPE[TRACK_FACTORY],
                         block_number,
                         block_hash,
                     )
 
                     # bulk process operations once all tx's for block have been parsed
-                    total_user_changes, user_ids = user_state_update(
+                    # and get changed entity IDs for cache clearing
+                    # after session commit
+                    changed_entity_ids_map = bulk_process_state_changes(
                         self,
-                        update_task,
                         session,
                         ipfs_metadata,
                         blacklisted_cids,
-                        user_factory_txs,
-                        block_number,
-                        block_timestamp,
-                        block_hash,
-                    )
-                    user_state_changed = total_user_changes > 0
-                    logger.info(
-                        f"index.py | user_state_update completed"
-                        f" user_state_changed={user_state_changed} for block={block_number}"
-                    )
-
-                    total_track_changes, track_ids = track_state_update(
-                        self,
-                        update_task,
-                        session,
-                        blacklisted_cids,
-                        ipfs_metadata,
-                        track_factory_txs,
-                        block_number,
-                        block_timestamp,
-                        block_hash,
-                    )
-                    track_state_changed = total_track_changes > 0
-                    logger.info(
-                        f"index.py | track_state_update completed"
-                        f" track_state_changed={track_state_changed} for block={block_number}"
-                    )
-
-                    social_feature_state_changed = (  # pylint: disable=W0612
-                        social_feature_state_update(
-                            self,
-                            update_task,
-                            session,
-                            social_feature_factory_txs,
-                            block_number,
-                            block_timestamp,
-                            block_hash,
-                        )
-                        > 0
-                    )
-                    logger.info(
-                        f"index.py | social_feature_state_update completed"
-                        f" social_feature_state_changed={social_feature_state_changed} for block={block_number}"
-                    )
-
-                    # Index UserReplicaSet changes
-                    (
-                        total_user_replica_set_changes,
-                        replica_user_ids,
-                    ) = user_replica_set_state_update(
-                        self,
-                        update_task,
-                        session,
-                        user_replica_set_manager_txs,
-                        block_number,
-                        block_timestamp,
-                        block_hash,
+                        TXS_GROUPED_BY_TYPE,
+                        block,
                         redis,
                     )
-                    user_replica_set_state_changed = total_user_replica_set_changes > 0
-                    logger.info(
-                        f"index.py | user_replica_set_state_update completed"
-                        f" user_replica_set_state_changed={user_replica_set_state_changed} for block={block_number}"
-                    )
 
-                    # Playlist state operations processed in bulk
-                    total_playlist_changes, playlist_ids = playlist_state_update(
-                        self,
-                        update_task,
-                        session,
-                        playlist_factory_txs,
-                        block_number,
-                        block_timestamp,
-                        block_hash,
-                    )
-                    playlist_state_changed = total_playlist_changes > 0
-                    logger.info(
-                        f"index.py | playlist_state_update completed"
-                        f" playlist_state_changed={playlist_state_changed} for block={block_number}"
-                    )
-
-                    user_library_state_changed = (
-                        user_library_state_update(  # pylint: disable=W0612
-                            self,
-                            update_task,
-                            session,
-                            user_library_factory_txs,
-                            block_number,
-                            block_timestamp,
-                            block_hash,
-                        )
-                    )
-                    logger.info(
-                        f"index.py | user_library_state_update completed"
-                        f" user_library_state_changed={user_library_state_changed} for block={block_number}"
-                    )
-
-                    track_lexeme_state_changed = (
-                        user_state_changed or track_state_changed
-                    )
                     try:
                         session.commit()
                         logger.info(
-                            f"index.py | session commmited to db for block=${block_number}"
+                            f"index.py | session committed to db for block=${block_number}"
                         )
                     except Exception as e:
                         # Use 'commit' as the tx hash here.
@@ -610,18 +590,8 @@ def index_blocks(self, db, blocks_list):
                         ) from e
                     if skip_tx_hash:
                         clear_indexing_error(redis)
-                    if user_state_changed:
-                        if user_ids:
-                            remove_cached_user_ids(redis, user_ids)
-                    if user_replica_set_state_changed:
-                        if replica_user_ids:
-                            remove_cached_user_ids(redis, replica_user_ids)
-                    if track_lexeme_state_changed:
-                        if track_ids:
-                            remove_cached_track_ids(redis, track_ids)
-                    if playlist_state_changed:
-                        if playlist_ids:
-                            remove_cached_playlist_ids(redis, playlist_ids)
+
+                    remove_updated_entities_from_cache(redis, changed_entity_ids_map)
                     logger.info(
                         f"index.py | redis cache clean operations complete for block=${block_number}"
                     )
@@ -653,7 +623,6 @@ def index_blocks(self, db, blocks_list):
         #         f"index.py | Error in calling update trending challenge {e}",
         #         exc_info=True,
         #     )
-
         add_indexed_block_to_redis(block, redis)
         logger.info(
             f"index.py | update most recently processed block complete for block=${block_number}"

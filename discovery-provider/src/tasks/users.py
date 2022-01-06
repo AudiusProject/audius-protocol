@@ -33,7 +33,7 @@ def user_state_update(
     block_timestamp,
     block_hash,
 ) -> Tuple[int, Set]:
-    """Return int representing number of User model state changes found in transaction."""
+    """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
 
     num_total_changes = 0
     user_ids: Set[int] = set()

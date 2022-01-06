@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Tuple, Set
 
 from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
@@ -21,12 +21,12 @@ def social_feature_state_update(
     block_number,
     block_timestamp,
     block_hash,
-):
-    """Return int representing number of social feature related state changes in this transaction"""
-
+) -> Tuple[int, Set]:
+    """Return Tuple containing int representing number of social feature related state changes in this transaction and empty Set (to align with other _state_update function signatures)"""
+    empty_set = set()
     num_total_changes = 0
     if not social_feature_factory_txs:
-        return num_total_changes
+        return num_total_changes, empty_set
 
     social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
     social_feature_factory_contract = update_task.web3.eth.contract(
@@ -147,8 +147,7 @@ def social_feature_state_update(
             dispatch_challenge_follow(challenge_bus, follow, block_number)
             queue_related_artist_calculation(update_task.redis, followee_user_id)
         num_total_changes += len(followee_user_ids)
-
-    return num_total_changes
+    return num_total_changes, empty_set
 
 
 # ####### HELPERS ####### #
