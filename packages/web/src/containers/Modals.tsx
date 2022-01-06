@@ -13,6 +13,7 @@ import EmbedModal from 'containers/embed-modal/EmbedModal'
 import FirstUploadModal from 'containers/first-upload-modal/FirstUploadModal'
 import PasswordResetModal from 'containers/password-reset/PasswordResetModal'
 import ServiceSelectionModal from 'containers/service-selection/ServiceSelectionModal'
+import { ShareModal } from 'containers/share-modal/ShareModal'
 import ShareSoundToTikTokModal from 'containers/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import ConnectedMobileOverflowModal from 'containers/track-overflow-modal/ConnectedMobileOverflowModal'
 import UnfollowConfirmationModal from 'containers/unfollow-confirmation-modal/UnfollowConfirmationModal'
@@ -36,6 +37,7 @@ const Modals = () => {
       <FirstUploadModal />
       <UnloadDialog />
       <RewardsModals />
+      <ShareModal />
       <ShareSoundToTikTokModal />
       {/* Enable and use this audio breakdown modal until we get
       the feature flags to work for native mobile */}

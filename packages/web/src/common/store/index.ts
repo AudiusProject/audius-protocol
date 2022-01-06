@@ -37,6 +37,8 @@ import modalsReducer, { ModalsState } from 'common/store/ui/modals/slice'
 import nowPlayingReducer, {
   NowPlayingState
 } from 'common/store/ui/now-playing/slice'
+import shareModalReducer from 'common/store/ui/share-modal/slice'
+import { ShareModalState } from 'common/store/ui/share-modal/types'
 import shareSoundToTikTokModalReducer from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ShareSoundToTikTokModalState } from 'common/store/ui/share-sound-to-tiktok-modal/types'
 import wallet from 'common/store/wallet/slice'
@@ -67,7 +69,8 @@ export const reducers = {
     mobileUploadDrawer: mobileUploadDrawerReducer,
     modals: modalsReducer,
     nowPlaying: nowPlayingReducer,
-    shareSoundToTikTokModal: shareSoundToTikTokModalReducer
+    shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
+    shareModal: shareModalReducer
   }),
 
   // Pages
@@ -117,6 +120,7 @@ export type CommonState = {
     modals: ModalsState
     nowPlaying: NowPlayingState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
+    shareModal: ShareModalState
   }
 
   pages: {
