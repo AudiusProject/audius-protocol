@@ -506,3 +506,7 @@ def time_method(func):
         return result
 
     return wrapper
+
+
+def snake_to_pascal(snake_case_name):
+    return snake_case_name.replace("_", " ").title().replace(" ", "")

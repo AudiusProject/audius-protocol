@@ -1023,3 +1023,12 @@ default_lengths = {
     0xB3DF: 0x7F,
     0xB3E0: 0x80,
 }
+
+CONTRACT_TYPES = {
+    "USER_FACTORY": "user_factory",
+    "TRACK_FACTORY": "track_factory",
+    "SOCIAL_FEATURE_FACTORY": "social_feature_factory",
+    "PLAYLIST_FACTORY": "playlist_factory",
+    "USER_LIBRARY_FACTORY": "user_library_factory",
+    "USER_REPLICA_SET_MANAGER": "user_replica_set_manager",
+}
