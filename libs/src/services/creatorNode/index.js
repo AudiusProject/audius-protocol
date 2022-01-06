@@ -710,7 +710,7 @@ class CreatorNode {
         if (resp.data && resp.data.error && resp.data.error.includes('Invalid authentication token')) {
           this.clearConnection()
           try {
-            await this.connect()
+            await this.ensureConnected()
           } catch (e) {
             console.error(e.message)
           }
@@ -843,7 +843,7 @@ class CreatorNode {
         // if the content node returns an invalid auth token error, clear connection and reconnect
         this.clearConnection()
         try {
-          await this.connect()
+          await this.ensureConnected()
         } catch (e) {
           console.error(e.message)
         }
