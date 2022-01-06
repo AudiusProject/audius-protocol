@@ -18,7 +18,6 @@ export const ethAddressToArray = (ethAddress: string) => {
 
 /// Generate a key from random bytes, used for testing
 export const getRandomPrivateKey = () => {
-  const msg = randomBytes(32);
   let privKey: Uint8Array;
   do {
     privKey = randomBytes(32);
