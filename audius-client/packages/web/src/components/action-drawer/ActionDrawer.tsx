@@ -6,7 +6,6 @@ import Drawer from 'components/drawer/Drawer'
 import { isDarkMode } from 'utils/theme/theme'
 
 import styles from './ActionDrawer.module.css'
-import { ActionIcon } from './ActionIcon'
 
 type Action = {
   text: string
