@@ -41,6 +41,11 @@
   background-color: var(--neutral-light-9);
 }
 
+.actionIcon {
+  min-width: 44px;
+  display: inline-flex;
+}
+
 .destructiveAction {
   color: var(--accent-red);
 }
