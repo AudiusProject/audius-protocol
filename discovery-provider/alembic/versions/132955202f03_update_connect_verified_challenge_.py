@@ -20,19 +20,27 @@ def upgrade():
     connection.execute(
         """
         begin;
-            -- Remove all old connect-verified user_challenges
-            delete from user_challenges where challenge_id='connect-verified';
+            -- Update all connect-verified user challenges with null completed_blocknumber to 1
+            update user_challenges
+            set completed_blocknumber=1
+            where
+                challenge_id='connect-verified' AND
+                completed_blocknumber is null;
 
-            -- Retroactively add connect-verified user_challenges
+            -- Retroactively add connect-verified user_challenges if not existing
             insert into user_challenges (challenge_id, user_id, specifier, is_complete, completed_blocknumber)
-            select 
+            select
                 'connect-verified' as challenge_id,
                 u.user_id as user_id,
                 u.user_id as specifier,
                 True as is_complete,
                 1 as completed_blocknumber
             from users u
-            where u.is_verified is True AND u.is_current is True;
+            where
+                u.is_verified is True AND
+                u.is_current is True
+            ON CONFLICT
+                DO NOTHING;
         commit;
         """
     )
