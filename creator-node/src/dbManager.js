@@ -54,17 +54,14 @@ class DBManager {
   }
 
   /**
-   * Deletes all data for a cnodeUser from DB
+   * Deletes all data for a cnodeUser from DB (every table, including CNodeUsers)
    *
-   * @notice This method is currently unused. It's a legacy function from non-diffed sync which might be needed in the future.
-   *
-   * @param {*} CNodeUserLookupObj
-   * @param {*} sequelizeTableInstance
-   * @param {Transaction} externalTransaction
+   * @param {Object} CNodeUserLookupObj specifies either `lookupCnodeUserUUID` or `lookupWallet` properties
+   * @param {?Transaction} externalTransaction sequelize transaction object
    */
   static async deleteAllCNodeUserDataFromDB(
     { lookupCnodeUserUUID, lookupWallet },
-    externalTransaction
+    externalTransaction = null
   ) {
     const transaction =
       externalTransaction || (await models.sequelize.transaction())
@@ -83,8 +80,7 @@ class DBManager {
       })
       log('cnodeUser', cnodeUser)
 
-      // Exit successfully if no cnodeUser found
-      // TODO - better way to do this?
+      // Throw if no cnodeUser found
       if (!cnodeUser) {
         throw new Error('No cnodeUser found')
       }
@@ -146,6 +142,7 @@ class DBManager {
       await cnodeUser.destroy({ transaction })
       log(`${cnodeUserUUIDLog} || cnodeUser entry deleted`)
     } catch (e) {
+      // Swallow 'No cnodeUser found' error
       if (e.message !== 'No cnodeUser found') {
         error = e
       }

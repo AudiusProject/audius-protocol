@@ -12,7 +12,7 @@ const Utils = require('../../utils')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
 const { submitAttestations, evaluateAttestations, createSender } = require('./rewards')
-const { WAUDIO_DECMIALS } = require('../../constants')
+const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
 
@@ -116,7 +116,7 @@ class SolanaWeb3Manager {
     this.solanaTokenAddress = solanaTokenAddress
     this.solanaTokenKey = newPublicKeyNullable(solanaTokenAddress)
 
-    this.feePayerAddress = feePayerAddress
+    this.feePayerAddress = feePayerAddress || feePayerKeypair.publicKey
     this.feePayerKey = newPublicKeyNullable(feePayerAddress || feePayerKeypair.publicKey)
 
     this.claimableTokenProgramKey = newPublicKeyNullable(claimableTokenProgramAddress)
@@ -225,7 +225,8 @@ class SolanaWeb3Manager {
       if (!tokenAccount) return null
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
-      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(WAUDIO_DECMIALS + 1, '0')))
+      const decimals = AUDIO_DECMIALS - WAUDIO_DECMIALS
+      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(decimals + 1, '0')))
     } catch (e) {
       return null
     }
