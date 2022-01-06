@@ -38,10 +38,10 @@ const keypairFromFilePath = (path: string) => {
   return Keypair.fromSecretKey(Uint8Array.from(require(path)));
 };
 
+let network = "https://audius.rpcpool.com/";
+
 /// Initialize constants requird for any CLI functionality
-function initializeCLI(ownerKeypairPath: string) {
-  // const network = "https://solana-api.projectserum.com";
-  const network = "https://audius.rpcpool.com/4d12c27ad978e40c1b0f8449b93c";
+function initializeCLI(network: string, ownerKeypairPath: string) {
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
   const wallet = new Wallet(ownerKeypair);
@@ -66,9 +66,9 @@ type initAdminCLIParams = {
   ownerKeypairPath: string;
 };
 
-async function initAdminCLI(args: initAdminCLIParams) {
+async function initAdminCLI(network: string, args: initAdminCLIParams) {
   const { adminKeypair, adminStgKeypair, ownerKeypairPath } = args;
-  const cliVars = await initializeCLI(ownerKeypairPath);
+  const cliVars = await initializeCLI(network, ownerKeypairPath);
   console.log(`AdminKeypair:`);
   console.log(adminKeypair.publicKey.toString());
   console.log(`[${adminKeypair.secretKey.toString()}]`);
@@ -108,7 +108,7 @@ async function initUserCLI(args: initUserCLIParams) {
     metadata,
     adminStgPublicKey,
   } = args;
-  const cliVars = initializeCLI(ownerKeypairPath);
+  const cliVars = initializeCLI(network, ownerKeypairPath);
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
   const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
   const ethAddressBytes = ethAddressToArray(ethAddress);
@@ -214,7 +214,7 @@ const userSolKeypair = options.userSolanaKeypair
 switch (options.function) {
   case functionTypes.initAdmin:
     console.log(`Initializing admin`);
-    initAdminCLI({
+    initAdminCLI(network, {
       ownerKeypairPath: options.ownerKeypair,
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
@@ -236,7 +236,7 @@ switch (options.function) {
     let privateKey = options.ethPrivateKey;
     let userSolPubkey = userSolKeypair.publicKey;
     (async () => {
-      const cliVars = initializeCLI(options.ownerKeypair);
+      const cliVars = initializeCLI(network, options.ownerKeypair);
       let tx = await initUserSolPubkey({
         program: cliVars.program,
         provider: cliVars.provider,
@@ -257,7 +257,7 @@ switch (options.function) {
     );
     (async () => {
       let promises = [];
-      const cliVars = initializeCLI(options.ownerKeypair);
+      const cliVars = initializeCLI(network, options.ownerKeypair);
       for (var i = 0; i < numTracks; i++) {
         promises.push(
           timeCreateTrack({
@@ -278,7 +278,7 @@ switch (options.function) {
     break;
   case functionTypes.getTrackId:
     (async () => {
-      const cliVars = initializeCLI(options.ownerKeypair);
+      const cliVars = initializeCLI(network, options.ownerKeypair);
       let info = await cliVars.program.account.audiusAdmin.fetch(
         adminStgKeypair.publicKey
       );
