@@ -15,7 +15,6 @@ export type UserChallenge = {
 export type ChallengeRewardID =
   | 'track-upload'
   | 'referrals'
-  | 'referred'
   | 'mobile-install'
   | 'connect-verified'
   | 'listen-streak'

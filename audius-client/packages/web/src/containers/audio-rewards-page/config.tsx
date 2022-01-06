@@ -84,25 +84,8 @@ export const challengeRewardsConfig: Record<
       'Invite your Friends! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
     progressLabel: '%0/%1 Invites',
     amount: 1,
-    stepCount: 10,
+    stepCount: 5,
     panelButtonText: 'Invite your Friends',
-    modalButtonInfo: {
-      incomplete: null,
-      inProgress: null,
-      complete: null
-    }
-  },
-  referred: {
-    id: 'referrals' as ChallengeRewardID,
-    title: 'Invite your Friends',
-    icon: <i className='emoji large incoming-envelope' />,
-    description: 'Earn 1 $AUDIO, for you and your friend',
-    fullDescription:
-      'Invite your Friends! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
-    progressLabel: '%0/%1 Invites',
-    amount: 1,
-    stepCount: 10,
-    panelButtonText: 'Invite Your Friends',
     modalButtonInfo: {
       incomplete: null,
       inProgress: null,
@@ -179,13 +162,13 @@ export const challengeRewardsConfig: Record<
   },
   'track-upload': {
     id: 'track-upload' as ChallengeRewardID,
-    title: 'Upload 5 Tracks',
+    title: 'Upload 3 Tracks',
     icon: <i className='emoji large multiple-musical-notes' />,
     description: 'Earn 5 $AUDIO',
-    fullDescription: 'Upload 5 tracks to your profile',
+    fullDescription: 'Upload 3 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
     amount: 5,
-    stepCount: 5,
+    stepCount: 3,
     panelButtonText: 'Upload Tracks',
     modalButtonInfo: {
       incomplete: linkButtonMap.trackUpload,
