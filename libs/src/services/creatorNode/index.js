@@ -131,7 +131,7 @@ class CreatorNode {
 
     this.lazyConnect = lazyConnect
     this.connected = false
-    this.connecting = false
+    this.connecting = false // a lock so multiple content node requests in parallel won't each try to auth
     this.authToken = null
     this.maxBlockNumber = 0
 
@@ -180,6 +180,8 @@ class CreatorNode {
     return this.creatorNodeEndpoint
   }
 
+  /**
+   * Switch from one creatorNodeEndpoint to another including logging out from the old node, updating the endpoint and logging into new node */
   async setEndpoint (creatorNodeEndpoint) {
     // If the endpoints are the same, no-op.
     if (this.creatorNodeEndpoint === creatorNodeEndpoint) return
@@ -196,6 +198,12 @@ class CreatorNode {
     if (!this.lazyConnect) {
       await this.connect()
     }
+  }
+
+  /** Clear all connection state in this class by deleting authToken and setting 'connected' = false */
+  clearConnection () {
+    this.connected = false
+    this.authToken = null
   }
 
   /**
@@ -566,11 +574,11 @@ class CreatorNode {
     this.authToken = resp.data.sessionToken
 
     setTimeout(() => {
-      this.authToken = null
-      this.connected = false
+      this.clearConnection()
     }, BROWSER_SESSION_REFRESH_TIMEOUT)
   }
 
+  /** Calls logout on the content node. Needs an authToken for this since logout is an authenticated endpoint */
   async _logoutNodeUser () {
     if (!this.authToken) {
       return
@@ -713,10 +721,9 @@ class CreatorNode {
           }
         }
 
-        // if the content node returns an invalid auth token error, disconnect and reconnect
-        if (e.response && e.response.data && e.response.data.error && e.response.data.error.includes('Invalid authentication token')) {
-          this.authToken = null
-          this.connected = false
+        // if the content node returns an invalid auth token error, clear connection and reconnect
+        if (resp.data && resp.data.error && resp.data.error.includes('Invalid authentication token')) {
+          this.clearConnection()
           try {
             await this.connect()
           } catch (e) {
@@ -848,9 +855,8 @@ class CreatorNode {
         console.warn(e)
         return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
       } else if (e.response && e.response.data && e.response.data.error && e.response.data.error.includes('Invalid authentication token')) {
-        // if the content node returns an invalid auth token error, disconnect and reconnect
-        this.authToken = null
-        this.connected = false
+        // if the content node returns an invalid auth token error, clear connection and reconnect
+        this.clearConnection()
         try {
           await this.connect()
         } catch (e) {
