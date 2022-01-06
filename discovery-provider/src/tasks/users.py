@@ -34,7 +34,8 @@ def user_state_update(
     block_timestamp,
     block_hash,
 ) -> Tuple[int, Set]:
-    """Return int representing number of User model state changes found in transaction."""
+    """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
+
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
     skipped_tx_count = 0
