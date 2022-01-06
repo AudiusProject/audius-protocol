@@ -45,7 +45,7 @@ const logContext = {
 }
 
 // Create the req context for handleTrackContentRoute
-function getReqObj (fileUUID, fileDir, session) {
+function getReqObj(fileUUID, fileDir, session) {
   return {
     fileName: `${fileUUID}.mp3`,
     fileDir,
@@ -60,7 +60,7 @@ function getReqObj (fileUUID, fileDir, session) {
  * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir
  * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
  */
-function _getTestSegmentFilePathAtIndex (index) {
+function _getTestSegmentFilePathAtIndex(index) {
   let suffix = '000'
 
   if (index >= 0 && index < 10) suffix += `0${index}`
