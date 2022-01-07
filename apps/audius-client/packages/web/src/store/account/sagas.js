@@ -38,6 +38,7 @@ import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
+import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { setSentryUser } from 'services/sentry'
@@ -93,6 +94,7 @@ function* onFetchAccount(account) {
   yield fork(addPlaylistsNotInLibrary)
 
   yield fork(initAudioChecks)
+  yield call(createUserBankIfNeeded)
 }
 
 /**
