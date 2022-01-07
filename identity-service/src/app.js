@@ -19,7 +19,7 @@ const { generateETHWalletLockKey } = require('./relay/ethTxRelay.js')
 const { RewardsAttester } = require('@audius/libs')
 const models = require('./models')
 
-const { RewardsReporter } = require('./utils/rewardsReporter')
+const { SlackReporter, RewardsReporter } = require('./utils/rewardsReporter')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
@@ -100,6 +100,7 @@ class App {
         cluster.fork({ 'WORKER_TYPE': 'notifications' })
 
         await this.configureRewardsAttester(audiusInstance)
+        await this.configureReporter()
 
         // Fork extra web server workers
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
@@ -143,6 +144,7 @@ class App {
     } else {
       // if it's not the master worker in the cluster
       const audiusInstance = await this.configureAudiusInstance()
+      await this.configureReporter()
 
       if (process.env['WORKER_TYPE'] === 'notifications') {
         await this.notificationProcessor.init(
@@ -198,6 +200,14 @@ class App {
       })
     })
     return optimizelyClientInstance
+  }
+
+  configureReporter () {
+    const slackReporter = new SlackReporter({
+      slackUrl: config.get('reporterSlackUrl'),
+      childLogger: logger
+    })
+    this.express.set('slackReporter', slackReporter)
   }
 
   async configureAudiusInstance () {

@@ -38,7 +38,7 @@ const getEthRelayerFunds = async (walletPublicKey) => {
 
 const selectEthWallet = async (walletPublicKey, reqLogger) => {
   reqLogger.info(`L1 txRelay - Acquiring lock for ${walletPublicKey}`)
-  let ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
+  const ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
   const selectedRelayerWallet = ethRelayerWallets[ethWalletIndex]
 
   while ((await Lock.setLock(generateETHWalletLockKey(selectedRelayerWallet.publicKey))) !== true) {
@@ -95,6 +95,18 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
 
   req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
   return resp
+}
+
+const estimateEthTransactionGas = async (senderAddress, to, data) => {
+  const ethWalletIndex = getEthRelayerWalletIndex(senderAddress)
+  const selectedRelayerWallet = ethRelayerWallets[ethWalletIndex]
+  const toChecksumAddress = ethWeb3.utils.toChecksumAddress
+  const estimatedGas = await ethWeb3.eth.estimateGas({
+    from: toChecksumAddress(selectedRelayerWallet.publicKey),
+    to: toChecksumAddress(to),
+    data
+  })
+  return estimatedGas
 }
 
 const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, gasLimit = null, data = null) => {
@@ -205,6 +217,7 @@ const fundEthRelayerIfEmpty = async () => {
 }
 
 module.exports = {
+  estimateEthTransactionGas,
   fundEthRelayerIfEmpty,
   sendEthTransaction,
   queryEthRelayerWallet,

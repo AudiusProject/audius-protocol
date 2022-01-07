@@ -1,6 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const config = require('./config')
+const { logger: genericLogger } = require('./logging')
 const { CID } = require('ipfs-http-client-latest')
 
 // regex to check if a directory or just a regular file
@@ -54,6 +55,7 @@ class DiskManager {
     try {
       CID.isCID(new CID(cid))
     } catch (e) {
+      genericLogger.error(`CID invalid, cid=${cid}, error=${e.toString()}`)
       throw new Error(
         `Please pass in a valid cid to computeFilePath. Passed in ${cid} ${e.message}`
       )
@@ -89,19 +91,29 @@ class DiskManager {
    * @param {String} fileName file name
    */
   static computeFilePathInDir(dirName, fileName) {
-    if (!dirName || !fileName)
+    if (!dirName || !fileName) {
+      genericLogger.error(
+        `Invalid dirName and/or fileName, dirName=${dirName}, fileName=${fileName}`
+      )
       throw new Error('Must pass in valid dirName and fileName')
+    }
+
     try {
       CID.isCID(new CID(dirName))
       CID.isCID(new CID(fileName))
     } catch (e) {
+      genericLogger.error(
+        `CID invalid, dirName=${dirName}, fileName=${fileName}, error=${e.toString()}`
+      )
       throw new Error(
         `Please pass in a valid cid to computeFilePathInDir for dirName and fileName. Passed in dirName: ${dirName} fileName: ${fileName} ${e.message}`
       )
     }
 
     const parentDirPath = this.computeFilePath(dirName)
-    return path.join(parentDirPath, fileName)
+    const absolutePath = path.join(parentDirPath, fileName)
+    genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
+    return absolutePath
   }
 
   /**
@@ -114,6 +126,9 @@ class DiskManager {
       // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
       fs.mkdirSync(dirPath, { recursive: true })
     } catch (e) {
+      genericLogger.error(
+        `Error making directory, dirName=${dirPath}, error=${e.toString()}`
+      )
       throw new Error(`Error making directory at ${dirPath} - ${e.message}`)
     }
   }
@@ -127,7 +142,12 @@ class DiskManager {
    */
   static extractCIDsFromFSPath(fsPath) {
     const match = CID_DIRECTORY_REGEX.exec(fsPath)
-    if (!match || !match.groups) return null
+    if (!match || !match.groups) {
+      genericLogger.info(
+        `Input path does not match cid directory pattern, fsPath=${fsPath}`
+      )
+      return null
+    }
 
     let ret = null
     if (match && match.groups && match.groups.outer && match.groups.inner) {

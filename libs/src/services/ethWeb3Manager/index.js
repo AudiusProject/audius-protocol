@@ -181,6 +181,20 @@ class EthWeb3Manager {
     })
     return response['resp']
   }
+
+  async getRelayMethodParams (contractAddress, contractMethod, relayerWallet) {
+    const encodedABI = contractMethod.encodeABI()
+    const gasLimit = await estimateGas({
+      from: relayerWallet,
+      method: contractMethod,
+      gasLimitMaximum: HIGH_GAS_PRICE
+    })
+    return {
+      contractAddress,
+      encodedABI,
+      gasLimit
+    }
+  }
 }
 
 module.exports = EthWeb3Manager
