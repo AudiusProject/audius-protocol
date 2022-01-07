@@ -2,11 +2,11 @@
  * Library of typescript functions used in tests/CLI
  * Intended for later integration with libs
  */
-import { Keypair } from "@solana/web3.js";
-import { Program, Provider } from "@project-serum/anchor";
-import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
+import { Program, Provider } from "@project-serum/anchor";
+import { Keypair } from "@solana/web3.js";
 import * as secp256k1 from "secp256k1";
+import { AudiusData } from "../target/types/audius_data";
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
@@ -16,6 +16,7 @@ type initAdminParams = {
   adminKeypair: Keypair;
   adminStgKeypair: Keypair;
   trackIdOffset: anchor.BN;
+  playlistIdOffset: anchor.BN;
 };
 
 /// Initialize an Audius Admin instance
@@ -23,6 +24,7 @@ export const initAdmin = async (args: initAdminParams) => {
   const tx = await args.program.rpc.initAdmin(
     args.adminKeypair.publicKey,
     args.trackIdOffset,
+    args.playlistIdOffset,
     {
       accounts: {
         admin: args.adminStgKeypair.publicKey,
@@ -177,5 +179,105 @@ export const createTrack = async (args: createTrackArgs) => {
     },
     signers: [userAuthorityKey, newTrackKeypair],
   });
+  return tx;
+};
+
+/// Create a playlist
+export type createPlaylistArgs = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  newPlaylistKeypair: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  userAuthorityKey: Keypair;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  metadata: string;
+};
+export const createPlaylist = async (args: createPlaylistArgs) => {
+  const {
+    provider,
+    program,
+    newPlaylistKeypair,
+    userStgAccountPDA,
+    userAuthorityKey,
+    adminStgPublicKey,
+    metadata
+  } = args;
+  const tx = await program.rpc.createPlaylist(
+    metadata,
+    {
+      accounts: {
+        playlist: newPlaylistKeypair.publicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKey.publicKey,
+        audiusAdmin: adminStgPublicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId
+      },
+      signers: [newPlaylistKeypair, userAuthorityKey]
+    }
+  );
+  return tx;
+};
+
+/// Update a playlist
+export type updatePlaylistArgs = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  playlistKeypair: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  userAuthorityKey: Keypair;
+  metadata: string;
+};
+export const updatePlaylist = async (args: updatePlaylistArgs) => {
+  const {
+    provider,
+    program,
+    playlistKeypair,
+    userStgAccountPDA,
+    userAuthorityKey,
+    metadata
+  } = args;
+  const tx = await program.rpc.updatePlaylist(
+    metadata,
+    {
+      accounts: {
+        playlist: playlistKeypair.publicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKey.publicKey,
+        payer: provider.wallet.publicKey
+      },
+      signers: [userAuthorityKey]
+    }
+  );
+  return tx;
+};
+
+/// Delete a playlist
+export type deletePlaylistArgs = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  playlistKeypair: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  userAuthorityKey: Keypair;
+};
+export const deletePlaylist = async (args: deletePlaylistArgs) => {
+  const {
+    provider,
+    program,
+    playlistKeypair,
+    userStgAccountPDA,
+    userAuthorityKey
+  } = args;
+  const tx = await program.rpc.deletePlaylist(
+    {
+      accounts: {
+        playlist: playlistKeypair.publicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKey.publicKey,
+        payer: provider.wallet.publicKey
+      },
+      signers: [userAuthorityKey]
+    }
+  );
   return tx;
 };

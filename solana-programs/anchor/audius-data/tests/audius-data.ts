@@ -1,27 +1,19 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { AudiusData } from "../target/types/audius_data";
-import * as secp256k1 from "secp256k1";
-import ethWeb3 from "web3";
 import { randomBytes } from "crypto";
+import ethWeb3 from "web3";
 import {
-  ethAddressToArray,
-  getRandomPrivateKey,
-  signBytes,
-  randomCID,
-  findDerivedPair,
-  getTransaction,
-  SystemSysVarProgramKey,
-} from "../lib/utils";
-import {
-  initAdmin,
+  createPlaylist, createTrack, deletePlaylist, initAdmin,
   initUser,
   initUserSolPubkey,
-  createTrack,
+  updatePlaylist
 } from "../lib/lib";
-import { assert } from "chai";
+import {
+  ethAddressToArray, findDerivedPair, getRandomPrivateKey, getTransaction, randomCID
+} from "../lib/utils";
+import { AudiusData } from "../target/types/audius_data";
 
-const { SystemProgram, PublicKey, Transaction, Secp256k1Program } = anchor.web3;
+const { PublicKey } = anchor.web3;
 
 describe("audius-data", () => {
   const provider = anchor.Provider.local("http://localhost:8899", {
@@ -121,9 +113,6 @@ describe("audius-data", () => {
     trackOwnerPDA,
     adminStgKeypair,
   }) => {
-    let trackId = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
-    );
     let tx = await createTrack({
       provider,
       program,
@@ -169,7 +158,7 @@ describe("audius-data", () => {
     let trackAcctBalance = initialTrackAcctBalance;
     let payerBalance = initialPayerBalance;
     let retries = 20;
-    while (trackAcctBalance > 0 || retries > 0) {
+    while (trackAcctBalance > 0 && retries > 0) {
       trackAcctBalance = await provider.connection.getBalance(
         trackKeypair.publicKey
       );
@@ -223,6 +212,7 @@ describe("audius-data", () => {
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
       trackIdOffset: new anchor.BN("0"),
+      playlistIdOffset: new anchor.BN("0"),
     });
 
     let adminAccount = await program.account.audiusAdmin.fetch(
@@ -579,5 +569,190 @@ describe("audius-data", () => {
       }),
     ]);
     console.log(`Created 3 tracks in ${Date.now() - start}ms`);
+  });
+
+  describe('playlists', () => {
+    const testCreatePlaylist = async ({
+      newPlaylistKeypair,
+      playlistOwnerPDA,
+      userAuthorityKey,
+      adminStgKeypair,
+      playlistMetadata
+    }) => {
+      const tx = await createPlaylist({
+        provider,
+        program,
+        newPlaylistKeypair,
+        userStgAccountPDA: playlistOwnerPDA,
+        userAuthorityKey,
+        adminStgPublicKey: adminStgKeypair.publicKey,
+        metadata: playlistMetadata
+      });
+      await confirmLogInTransaction(tx, playlistMetadata);
+      const createdPlaylist = await program.account.playlist.fetch(
+        newPlaylistKeypair.publicKey
+      );
+      console.log(
+        `playlist: ${playlistMetadata}, playlistId assigned = ${createdPlaylist.playlistId}`
+      );
+    };
+
+    const testUpdatePlaylist = async ({
+      playlistKeypair,
+      playlistOwnerPDA,
+      userAuthorityKey,
+      playlistMetadata
+    }) => {
+      const tx = await updatePlaylist({
+        provider,
+        program,
+        playlistKeypair,
+        userStgAccountPDA: playlistOwnerPDA,
+        userAuthorityKey,
+        metadata: playlistMetadata
+      });
+      await confirmLogInTransaction(tx, playlistMetadata);
+    };
+
+    const testDeletePlaylist = async ({
+      playlistKeypair,
+      playlistOwnerPDA,
+      userAuthorityKey,
+    }) => {
+      const initialPlaylistAcctBalance = await provider.connection.getBalance(
+        playlistKeypair.publicKey
+      );
+      const initialPayerBalance = await provider.connection.getBalance(
+        provider.wallet.publicKey
+      );
+
+      const tx = await deletePlaylist({
+        provider,
+        program,
+        playlistKeypair,
+        userStgAccountPDA: playlistOwnerPDA,
+        userAuthorityKey,
+      });
+
+      // Confirm that the account is zero'd out
+      // Note that there appears to be a delay in the propagation, hence the retries
+      let playlistAcctBalance = initialPlaylistAcctBalance;
+      let payerBalance = initialPayerBalance;
+      let retries = 20;
+      while (playlistAcctBalance > 0 && retries > 0) {
+        playlistAcctBalance = await provider.connection.getBalance(
+          playlistKeypair.publicKey
+        );
+        payerBalance = await provider.connection.getBalance(
+          provider.wallet.publicKey
+        );
+        retries--;
+      }
+
+      if (playlistAcctBalance > 0) {
+        throw new Error("Failed to deallocate track");
+      }
+
+      console.log(
+        `Track acct lamports ${initialPlaylistAcctBalance} -> ${playlistAcctBalance}`
+      );
+      console.log(
+        `Payer acct lamports ${initialPayerBalance} -> ${payerBalance}`
+      );
+    };
+
+    let newUserAcctPDA: anchor.web3.PublicKey;
+    let newUserKey: anchor.web3.Keypair;
+
+    beforeEach(async () => {
+      const {
+        privKey,
+        pkString,
+        testEthAddr,
+        testEthAddrBytes,
+        handleBytesArray,
+        metadata
+      } = initTestConstants();
+
+      const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+        await findDerivedPair(
+          program.programId,
+          adminStgKeypair.publicKey,
+          Buffer.from(handleBytesArray)
+        );
+      newUserAcctPDA = derivedAddress;
+
+      await testInitUser(
+        baseAuthorityAccount,
+        testEthAddr,
+        testEthAddrBytes,
+        handleBytesArray,
+        bumpSeed,
+        metadata,
+        newUserAcctPDA
+      );
+
+      // New sol key that will be used to permission user updates
+      newUserKey = anchor.web3.Keypair.generate();
+
+      // Generate signed SECP instruction
+      // Message as the incoming public key
+      const message = newUserKey.publicKey.toString();
+
+      await testInitUserSolPubkey({
+        message,
+        pkString,
+        privKey,
+        newUserKey,
+        newUserAcctPDA,
+      });
+    });
+
+    it('create playlist', async () => {
+      await testCreatePlaylist({
+        newPlaylistKeypair: anchor.web3.Keypair.generate(),
+        userAuthorityKey: newUserKey,
+        playlistOwnerPDA: newUserAcctPDA,
+        adminStgKeypair,
+        playlistMetadata: randomCID(),
+      });
+    });
+
+    it('update playlist', async () => {
+      const newPlaylistKeypair = anchor.web3.Keypair.generate();
+
+      await testCreatePlaylist({
+        newPlaylistKeypair,
+        userAuthorityKey: newUserKey,
+        playlistOwnerPDA: newUserAcctPDA,
+        adminStgKeypair,
+        playlistMetadata: randomCID(),
+      });
+
+      await testUpdatePlaylist({
+        playlistKeypair: newPlaylistKeypair,
+        userAuthorityKey: newUserKey,
+        playlistOwnerPDA: newUserAcctPDA,
+        playlistMetadata: randomCID(),
+      });
+    });
+
+    it('delete playlist', async () => {
+      const newPlaylistKeypair = anchor.web3.Keypair.generate();
+
+      await testCreatePlaylist({
+        newPlaylistKeypair,
+        userAuthorityKey: newUserKey,
+        playlistOwnerPDA: newUserAcctPDA,
+        adminStgKeypair,
+        playlistMetadata: randomCID(),
+      });
+
+      await testDeletePlaylist({
+        playlistKeypair: newPlaylistKeypair,
+        userAuthorityKey: newUserKey,
+        playlistOwnerPDA: newUserAcctPDA,
+      });
+    });
   });
 });
