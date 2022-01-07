@@ -288,7 +288,7 @@ class SolanaWeb3Manager {
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
-    await transferWAudioBalance({
+    return transferWAudioBalance({
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
       feePayerKey: this.feePayerKey,
