@@ -19,7 +19,6 @@ const FileManager = require('../src/fileManager')
 const { getApp } = require('./lib/app')
 const {
   createStarterCNodeUser,
-  createStarterCNodeUserWithKey,
   testEthereumConstants
 } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
@@ -87,7 +86,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     ipfsMock = getIPFSMock()
     ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
-    libsMock.useTrackContentPolling = true
 
     userId = 1
     userWallet = testEthereumConstants.pubKey.toLowerCase()
