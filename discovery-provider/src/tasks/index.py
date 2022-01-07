@@ -410,7 +410,6 @@ def add_indexed_block_to_db(db_session, block):
     web3 = update_task.web3
     current_block_query = db_session.query(Block).filter_by(is_current=True)
 
-    # Without this check we may end up duplicating an insert operation
     block_model = Block(
         blockhash=web3.toHex(block.hash),
         parenthash=web3.toHex(block.parentHash),
@@ -514,6 +513,7 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
+    changed_entity_ids_map = {}
     for i in block_order_range:
         update_ursm_address(self)
         block = blocks_list[i]
@@ -528,9 +528,11 @@ def index_blocks(self, db, blocks_list):
             skip_tx_hash = save_and_get_skip_tx_hash(session, redis)
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
             if skip_whole_block:
-                logger.info(f"index.py | Skipping all txs in block {block.hash}")
-            else:
+                logger.info(
+                    f"index.py | Skipping all txs in block {block.hash} {block.number}"
+                )
                 add_indexed_block_to_db(session, block)
+            else:
                 TXS_GROUPED_BY_TYPE = {
                     USER_FACTORY: [],
                     TRACK_FACTORY: [],
@@ -539,32 +541,35 @@ def index_blocks(self, db, blocks_list):
                     USER_LIBRARY_FACTORY: [],
                     USER_REPLICA_SET_MANAGER: [],
                 }
+                try:
+                    tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
 
-                tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
-
-                # Sort transactions by hash
-                sorted_txs = sorted(block.transactions, key=lambda entry: entry["hash"])
-
-                # Parse tx events in each block
-                for tx in sorted_txs:
-                    tx_hash = web3.toHex(tx["hash"])
-                    tx_target_contract_address = tx["to"]
-                    tx_receipt = tx_receipt_dict[tx_hash]
-                    should_skip_tx = (tx_target_contract_address == zero_address) or (
-                        skip_tx_hash is not None and skip_tx_hash == tx_hash
+                    # Sort transactions by hash
+                    sorted_txs = sorted(
+                        block.transactions, key=lambda entry: entry["hash"]
                     )
 
-                    if should_skip_tx:
-                        logger.info(
-                            f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
-                        )
-                        continue
-                    else:
-                        group_transaction_by_type(TXS_GROUPED_BY_TYPE, tx, tx_receipt)
+                    # Parse tx events in each block
+                    for tx in sorted_txs:
+                        tx_hash = web3.toHex(tx["hash"])
+                        tx_target_contract_address = tx["to"]
+                        tx_receipt = tx_receipt_dict[tx_hash]
+                        should_skip_tx = (
+                            tx_target_contract_address == zero_address
+                        ) or (skip_tx_hash is not None and skip_tx_hash == tx_hash)
 
-                # pre-fetch cids asynchronously to not have it block in user_state_update
-                # and track_state_update
-                try:
+                        if should_skip_tx:
+                            logger.info(
+                                f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
+                            )
+                            continue
+                        else:
+                            group_transaction_by_type(
+                                TXS_GROUPED_BY_TYPE, tx, tx_receipt
+                            )
+
+                    # pre-fetch cids asynchronously to not have it block in user_state_update
+                    # and track_state_update
                     ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
                         db,
                         TXS_GROUPED_BY_TYPE[USER_FACTORY],
@@ -572,6 +577,8 @@ def index_blocks(self, db, blocks_list):
                         block_number,
                         block_hash,
                     )
+
+                    add_indexed_block_to_db(session, block)
 
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
@@ -585,26 +592,6 @@ def index_blocks(self, db, blocks_list):
                         block,
                         redis,
                     )
-                    try:
-                        session.commit()
-                        logger.info(
-                            f"index.py | session committed to db for block=${block_number}"
-                        )
-                    except Exception as e:
-                        # Use 'commit' as the tx hash here.
-                        # We're at a point where the whole block can't be added to the database, so
-                        # we should skip it in favor of making progress
-                        blockhash = update_task.web3.toHex(block_hash)
-                        raise IndexingError(
-                            "session.commit", block_number, blockhash, "commit", str(e)
-                        ) from e
-                    if skip_tx_hash:
-                        clear_indexing_error(redis)
-
-                    remove_updated_entities_from_cache(redis, changed_entity_ids_map)
-                    logger.info(
-                        f"index.py | redis cache clean operations complete for block=${block_number}"
-                    )
                 except IndexingError as err:
                     logger.info(
                         f"index.py | Error in the indexing task at"
@@ -617,22 +604,45 @@ def index_blocks(self, db, blocks_list):
                         redis, err.blocknumber, err.blockhash, err.txhash, err.message
                     )
                     raise err
-        # NOTE: This is commented out to prevent unncessary load on the DB to calculate trending
-        #       until it is fully tested on staging. The challenge was not registed so the job will
-        #       continually run for the hour interval.
-        # try:
-        #     # Check the last block's timestamp for updating the trending challenge
-        #     [should_update, date] = should_trending_challenge_update(
-        #         session, latest_block_timestamp
-        #     )
-        #     if should_update:
-        #         celery.send_task("calculate_trending_challenges", kwargs={"date": date})
-        # except Exception as e:
-        #     # Do not throw error, as this should not stop indexing
-        #     logger.error(
-        #         f"index.py | Error in calling update trending challenge {e}",
-        #         exc_info=True,
-        #     )
+
+            try:
+                session.commit()
+                logger.info(
+                    f"index.py | session committed to db for block=${block_number}"
+                )
+            except Exception as e:
+                # Use 'commit' as the tx hash here.
+                # We're at a point where the whole block can't be added to the database, so
+                # we should skip it in favor of making progress
+                blockhash = update_task.web3.toHex(block_hash)
+                raise IndexingError(
+                    "session.commit", block_number, blockhash, "commit", str(e)
+                ) from e
+            try:
+                # Check the last block's timestamp for updating the trending challenge
+                [should_update, date] = should_trending_challenge_update(
+                    session, latest_block_timestamp
+                )
+                if should_update:
+                    celery.send_task(
+                        "calculate_trending_challenges", kwargs={"date": date}
+                    )
+            except Exception as e:
+                # Do not throw error, as this should not stop indexing
+                logger.error(
+                    f"index.py | Error in calling update trending challenge {e}",
+                    exc_info=True,
+                )
+        if skip_tx_hash:
+            clear_indexing_error(redis)
+
+        if changed_entity_ids_map:
+            remove_updated_entities_from_cache(redis, changed_entity_ids_map)
+
+        logger.info(
+            f"index.py | redis cache clean operations complete for block=${block_number}"
+        )
+
         add_indexed_block_to_redis(block, redis)
         logger.info(
             f"index.py | update most recently processed block complete for block=${block_number}"
