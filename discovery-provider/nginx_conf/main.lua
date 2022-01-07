@@ -1,5 +1,7 @@
 require "resty.core"
 
+local cjson = require "cjson"
+
 local limit_count = require "resty.limit.count"
 local resty_http = require "resty.http"
 local resty_random = require "resty.random"
@@ -13,52 +15,24 @@ math.randomseed(string.byte(resty_random.bytes(1)))
 
 local _M = {}
 
-local redirect_target_weights = {}
-for index, redirect_target in ipairs(config.redirect_targets) do
-    redirect_target_weights[redirect_target] = 1
-end
+local redirect_weights = {}
 
-function get_request_counts (discovery_providers)
-    local httpc = resty_http.new()
-    request_counts = {}
-
-    for index, discovery_provider in ipairs(discovery_providers) do
-        local res, err = httpc:request_uri(discovery_provider .. "/health_check", { method = "GET" })
-
-        if not res then
-            ngx.log(ngx.ERR, "failed to get request count from discovery provider: ", discovery_provider, err)
-            request_count[discovery_provider] = -1
-        else
-            request_count[discovery_provider] = tonumber(res.body)
-        end
-    end
-
-    return request_counts
-end
-
-function update_redirect_target_weights (premature)
+function update_redirect_weights (premature)
     if premature then
         return
     end
 
-    local request_count = get_request_counts(config.redirect_targets)
+    local httpc = resty_http.new()
+    local res = httpc:request_uri(config.public_url .. "/redirect_weights", { method = "GET" })
 
-    local maximum_request_count = 0
-    for discovery_provider, count in pairs(request_count) do
-        maximum_request_count = math.max(maximum_request_count, count)
-    end
-
-    for discovery_provider, count in pairs(request_count) do
-        if count ~= -1 then
-            redirect_target_weights[discovery_provider] = (2 * maximum_request_count) - count
-        else
-            redirect_target_weights[discovery_provider] = 0
-        end
+    for endpoint, weight in pairs(cjson.decode(res.body)) do
+        redirect_weights[endpoint] = weight
     end
 end
 
-function _M.start_update_redirect_target_weights_timer ()
-    ngx.timer.every(config.update_redirect_weights_every, update_redirect_target_weights)
+function _M.start_update_redirect_weights_timer ()
+    update_redirect_weights ()
+    ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
 end
 
 function get_cached_public_key (discovery_provider)
@@ -77,23 +51,14 @@ function get_cached_public_key (discovery_provider)
 end
 
 function get_redirect_target ()
-    local total = 0
-    for index, redirect_target in ipairs(config.redirect_targets) do
-        total = total + redirect_target_weights[redirect_target]
-    end
-
     local rand = math.random(1, total)
-
     local current = 0
-    for index, redirect_target in ipairs(config.redirect_targets) do
-        current = current + redirect_target_weights[redirect_target]
+    for endpoint, weight in pairs(redirect_weights) do
+        current = current + weight
         if rand <= current then
-            return redirect_target
+            return endpoint
         end
     end
-
-    -- choose randomly if all nodes have weight 0
-    return config.redirect_targets[math.random(1, #config.redirect_targets)]
 end
 
 function verify_signature (discovery_provider, nonce, signature)
