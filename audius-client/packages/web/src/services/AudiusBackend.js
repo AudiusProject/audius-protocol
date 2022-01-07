@@ -2535,7 +2535,7 @@ class AudiusBackend {
 
   /**
    * Make a request to fetch the sol wrapped audio balance of the the user
-   * @returns {Promise<Nullable<BN>>} balance
+   * @returns {Promise<BN>} balance
    */
   static async getWAudioBalance() {
     await waitForLibsInit()
@@ -2545,10 +2545,14 @@ class AudiusBackend {
       const ownerWAudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
         userBank
       )
+      if (!ownerWAudioBalance) {
+        console.error('Failed to fetch account waudio balance')
+        return new BN('0')
+      }
       return ownerWAudioBalance
     } catch (e) {
       console.error(e)
-      return null
+      return new BN('0')
     }
   }
 
@@ -2644,13 +2648,18 @@ class AudiusBackend {
   /**
    * Fetches the SPL WAUDIO balance for the user's solana wallet address
    * @param {string} The solana wallet address
+   * @returns {Promise<BN>}
    */
   static async getAddressWAudioBalance(address) {
     await waitForLibsInit()
     const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
       address
     )
-    return waudioBalance ?? new BN('0')
+    if (!waudioBalance) {
+      console.error(`Failed to get waudio balance for address: ${address}`)
+      return new BN('0')
+    }
+    return waudioBalance
   }
 
   /**
