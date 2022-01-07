@@ -148,7 +148,7 @@ async function timeCreateTrack(args: createTrackArgs) {
         provider: args.provider,
         metadata: randomCID(),
         newTrackKeypair: anchor.web3.Keypair.generate(),
-        userAuthorityKey: userSolKeypair,
+        userAuthorityKeypair: userSolKeypair,
         userStgAccountPDA: options.userStgPubkey,
         adminStgPublicKey: args.adminStgPublicKey,
       });
@@ -265,7 +265,7 @@ switch (options.function) {
             provider: cliVars.provider,
             metadata: randomCID(),
             newTrackKeypair: anchor.web3.Keypair.generate(),
-            userAuthorityKey: userSolKeypair,
+            userAuthorityKeypair: userSolKeypair,
             userStgAccountPDA: options.userStgPubkey,
             adminStgPublicKey: adminStgKeypair.publicKey,
           })

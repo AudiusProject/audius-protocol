@@ -153,7 +153,7 @@ export type createTrackArgs = {
   provider: Provider;
   program: Program<AudiusData>;
   newTrackKeypair: Keypair;
-  userAuthorityKey: Keypair;
+  userAuthorityKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
   adminStgPublicKey: anchor.web3.PublicKey;
   metadata: string;
@@ -163,7 +163,7 @@ export const createTrack = async (args: createTrackArgs) => {
     provider,
     program,
     newTrackKeypair,
-    userAuthorityKey,
+    userAuthorityKeypair,
     metadata,
     userStgAccountPDA,
     adminStgPublicKey,
@@ -172,12 +172,12 @@ export const createTrack = async (args: createTrackArgs) => {
     accounts: {
       track: newTrackKeypair.publicKey,
       user: userStgAccountPDA,
-      authority: userAuthorityKey.publicKey,
+      authority: userAuthorityKeypair.publicKey,
       payer: provider.wallet.publicKey,
       audiusAdmin: adminStgPublicKey,
       systemProgram: SystemProgram.programId,
     },
-    signers: [userAuthorityKey, newTrackKeypair],
+    signers: [userAuthorityKeypair, newTrackKeypair],
   });
   return tx;
 };
@@ -188,7 +188,7 @@ export type createPlaylistArgs = {
   program: Program<AudiusData>;
   newPlaylistKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
-  userAuthorityKey: Keypair;
+  userAuthorityKeypair: Keypair;
   adminStgPublicKey: anchor.web3.PublicKey;
   metadata: string;
 };
@@ -198,7 +198,7 @@ export const createPlaylist = async (args: createPlaylistArgs) => {
     program,
     newPlaylistKeypair,
     userStgAccountPDA,
-    userAuthorityKey,
+    userAuthorityKeypair,
     adminStgPublicKey,
     metadata
   } = args;
@@ -208,12 +208,12 @@ export const createPlaylist = async (args: createPlaylistArgs) => {
       accounts: {
         playlist: newPlaylistKeypair.publicKey,
         user: userStgAccountPDA,
-        authority: userAuthorityKey.publicKey,
+        authority: userAuthorityKeypair.publicKey,
         audiusAdmin: adminStgPublicKey,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId
       },
-      signers: [newPlaylistKeypair, userAuthorityKey]
+      signers: [newPlaylistKeypair, userAuthorityKeypair]
     }
   );
   return tx;

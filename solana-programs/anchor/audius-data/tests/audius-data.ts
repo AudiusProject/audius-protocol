@@ -29,7 +29,7 @@ describe("audius-data", () => {
   const testCreateTrack = async ({
     trackMetadata,
     newTrackKeypair,
-    userAuthorityKey,
+    userAuthorityKeypair,
     trackOwnerPDA,
     adminStgKeypair,
   }) => {
@@ -37,7 +37,7 @@ describe("audius-data", () => {
       provider,
       program,
       newTrackKeypair,
-      userAuthorityKey,
+      userAuthorityKeypair,
       userStgAccountPDA: trackOwnerPDA,
       metadata: trackMetadata,
       adminStgPublicKey: adminStgKeypair.publicKey,
@@ -54,7 +54,7 @@ describe("audius-data", () => {
   const testDeleteTrack = async ({
     trackKeypair,
     trackOwnerPDA,
-    userAuthorityKey,
+    userAuthorityKeypair,
   }) => {
     const initialTrackAcctBalance = await provider.connection.getBalance(
       trackKeypair.publicKey
@@ -67,10 +67,10 @@ describe("audius-data", () => {
       accounts: {
         track: trackKeypair.publicKey,
         user: trackOwnerPDA,
-        authority: userAuthorityKey.publicKey,
+        authority: userAuthorityKeypair.publicKey,
         payer: provider.wallet.publicKey,
       },
-      signers: [userAuthorityKey],
+      signers: [userAuthorityKeypair],
     });
 
     // Confirm that the account is zero'd out
@@ -182,18 +182,18 @@ describe("audius-data", () => {
     );
 
     // New sol key that will be used to permission user updates
-    let newUserKey = anchor.web3.Keypair.generate();
+    let newUserKeypair = anchor.web3.Keypair.generate();
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    let message = newUserKey.publicKey.toString();
+    let message = newUserKeypair.publicKey.toString();
 
     await testInitUserSolPubkey({
       provider,
       program,
       message,
       pkString,
-      newUserKey,
+      newUserKeypair,
       newUserAcctPDA,
     });
   });
@@ -230,18 +230,18 @@ describe("audius-data", () => {
     );
 
     // New sol key that will be used to permission user updates
-    let newUserKey = anchor.web3.Keypair.generate();
+    let newUserKeypair = anchor.web3.Keypair.generate();
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    let message = newUserKey.publicKey.toString();
+    let message = newUserKeypair.publicKey.toString();
 
     await testInitUserSolPubkey({
       provider,
       program,
       message,
       pkString,
-      newUserKey,
+      newUserKeypair,
       newUserAcctPDA,
     });
 
@@ -249,9 +249,9 @@ describe("audius-data", () => {
     let tx = await program.rpc.updateUser(updatedCID, {
       accounts: {
         user: newUserAcctPDA,
-        userAuthority: newUserKey.publicKey,
+        userAuthority: newUserKeypair.publicKey,
       },
-      signers: [newUserKey],
+      signers: [newUserKeypair],
     });
     await confirmLogInTransaction(provider, tx, updatedCID);
   });
@@ -288,18 +288,18 @@ describe("audius-data", () => {
     );
 
     // New sol key that will be used to permission user updates
-    let newUserKey = anchor.web3.Keypair.generate();
+    let newUserKeypair = anchor.web3.Keypair.generate();
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    let message = newUserKey.publicKey.toString();
+    let message = newUserKeypair.publicKey.toString();
 
     await testInitUserSolPubkey({
       provider,
       program,
       message,
       pkString,
-      newUserKey,
+      newUserKeypair,
       newUserAcctPDA,
     });
 
@@ -310,20 +310,20 @@ describe("audius-data", () => {
     await testCreateTrack({
       trackMetadata,
       newTrackKeypair,
-      userAuthorityKey: newUserKey,
+      userAuthorityKeypair: newUserKeypair,
       trackOwnerPDA: newUserAcctPDA,
       adminStgKeypair,
     });
 
     // Expected signature validation failure
     let newTrackKeypair2 = anchor.web3.Keypair.generate();
-    let wrongUserKey = anchor.web3.Keypair.generate();
-    console.log(`Expecting error with public key ${wrongUserKey.publicKey}`);
+    let wrongUserKeypair = anchor.web3.Keypair.generate();
+    console.log(`Expecting error with public key ${wrongUserKeypair.publicKey}`);
     try {
       await testCreateTrack({
         trackMetadata,
         newTrackKeypair: newTrackKeypair2,
-        userAuthorityKey: wrongUserKey,
+        userAuthorityKeypair: wrongUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
         adminStgKeypair,
       });
@@ -337,10 +337,10 @@ describe("audius-data", () => {
       accounts: {
         track: newTrackKeypair.publicKey,
         user: newUserAcctPDA,
-        authority: newUserKey.publicKey,
+        authority: newUserKeypair.publicKey,
         payer: provider.wallet.publicKey,
       },
-      signers: [newUserKey],
+      signers: [newUserKeypair],
     });
     await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
   });
@@ -377,18 +377,18 @@ describe("audius-data", () => {
     );
 
     // New sol key that will be used to permission user updates
-    let newUserKey = anchor.web3.Keypair.generate();
+    let newUserKeypair = anchor.web3.Keypair.generate();
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    let message = newUserKey.publicKey.toString();
+    let message = newUserKeypair.publicKey.toString();
 
     await testInitUserSolPubkey({
       provider,
       program,
       message,
       pkString,
-      newUserKey,
+      newUserKeypair,
       newUserAcctPDA,
     });
 
@@ -398,7 +398,7 @@ describe("audius-data", () => {
     await testCreateTrack({
       trackMetadata,
       newTrackKeypair,
-      userAuthorityKey: newUserKey,
+      userAuthorityKeypair: newUserKeypair,
       trackOwnerPDA: newUserAcctPDA,
       adminStgKeypair,
     });
@@ -406,7 +406,7 @@ describe("audius-data", () => {
     await testDeleteTrack({
       trackKeypair: newTrackKeypair,
       trackOwnerPDA: newUserAcctPDA,
-      userAuthorityKey: newUserKey,
+      userAuthorityKeypair: newUserKeypair,
     });
   });
 
@@ -442,18 +442,18 @@ describe("audius-data", () => {
     );
 
     // New sol key that will be used to permission user updates
-    let newUserKey = anchor.web3.Keypair.generate();
+    let newUserKeypair = anchor.web3.Keypair.generate();
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    let message = newUserKey.publicKey.toString();
+    let message = newUserKeypair.publicKey.toString();
 
     await testInitUserSolPubkey({
       provider,
       program,
       message,
       pkString,
-      newUserKey,
+      newUserKeypair,
       newUserAcctPDA,
     });
 
@@ -469,21 +469,21 @@ describe("audius-data", () => {
         trackMetadata,
         newTrackKeypair,
         adminStgKeypair,
-        userAuthorityKey: newUserKey,
+        userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
       }),
       testCreateTrack({
         trackMetadata: trackMetadata2,
         adminStgKeypair,
         newTrackKeypair: newTrackKeypair2,
-        userAuthorityKey: newUserKey,
+        userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
       }),
       testCreateTrack({
         trackMetadata: trackMetadata3,
         adminStgKeypair,
         newTrackKeypair: newTrackKeypair3,
-        userAuthorityKey: newUserKey,
+        userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
       }),
     ]);

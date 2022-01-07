@@ -80,7 +80,7 @@ export const testInitUserSolPubkey = async ({
   program,
   message,
   pkString,
-  newUserKey,
+  newUserKeypair,
   newUserAcctPDA,
 }) => {
   let initUserTx = await initUserSolPubkey({
@@ -88,12 +88,12 @@ export const testInitUserSolPubkey = async ({
     program,
     privateKey: pkString,
     message,
-    userSolPubkey: newUserKey.publicKey,
+    userSolPubkey: newUserKeypair.publicKey,
     userStgAccount: newUserAcctPDA,
   });
 
   let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
-  if (!newUserKey.publicKey.equals(userDataFromChain.authority)) {
+  if (!newUserKeypair.publicKey.equals(userDataFromChain.authority)) {
     throw new Error("Unexpected public key found");
   }
   let txInfo = await getTransaction(provider, initUserTx);

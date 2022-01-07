@@ -25,7 +25,7 @@ describe("playlist", () => {
   const testInitUserSolPubkey = async ({
     message,
     pkString,
-    newUserKey,
+    newUserKeypair,
     newUserAcctPDA,
   }) => {
     let initUserTx = await initUserSolPubkey({
@@ -33,12 +33,12 @@ describe("playlist", () => {
       program,
       privateKey: pkString,
       message,
-      userSolPubkey: newUserKey.publicKey,
+      userSolPubkey: newUserKeypair.publicKey,
       userStgAccount: newUserAcctPDA,
     });
 
     let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
-    if (!newUserKey.publicKey.equals(userDataFromChain.authority)) {
+    if (!newUserKeypair.publicKey.equals(userDataFromChain.authority)) {
       throw new Error("Unexpected public key found");
     }
     let txInfo = await getTransaction(provider, initUserTx);
@@ -73,7 +73,7 @@ describe("playlist", () => {
     const testCreatePlaylist = async ({
       newPlaylistKeypair,
       playlistOwnerPDA,
-      userAuthorityKey,
+      userAuthorityKeypair,
       adminStgKeypair,
       playlistMetadata
     }) => {
@@ -82,7 +82,7 @@ describe("playlist", () => {
         program,
         newPlaylistKeypair,
         userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKey,
+        userAuthorityKeypair: userAuthorityKeypair,
         adminStgPublicKey: adminStgKeypair.publicKey,
         metadata: playlistMetadata
       });
@@ -98,7 +98,7 @@ describe("playlist", () => {
     const testUpdatePlaylist = async ({
       playlistKeypair,
       playlistOwnerPDA,
-      userAuthorityKey,
+      userAuthorityKeypair,
       playlistMetadata
     }) => {
       const tx = await updatePlaylist({
@@ -106,7 +106,7 @@ describe("playlist", () => {
         program,
         playlistKeypair,
         userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKey,
+        userAuthorityKey: userAuthorityKeypair,
         metadata: playlistMetadata
       });
       await confirmLogInTransaction(provider, tx, playlistMetadata);
@@ -115,7 +115,7 @@ describe("playlist", () => {
     const testDeletePlaylist = async ({
       playlistKeypair,
       playlistOwnerPDA,
-      userAuthorityKey,
+      userAuthorityKeypair,
     }) => {
       const initialPlaylistAcctBalance = await provider.connection.getBalance(
         playlistKeypair.publicKey
@@ -129,7 +129,7 @@ describe("playlist", () => {
         program,
         playlistKeypair,
         userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKey,
+        userAuthorityKey: userAuthorityKeypair,
       });
 
       // Confirm that the account is zero'd out
@@ -160,7 +160,7 @@ describe("playlist", () => {
     };
 
     let newUserAcctPDA: anchor.web3.PublicKey;
-    let newUserKey: anchor.web3.Keypair;
+    let newUserKeypair: anchor.web3.Keypair;
 
     // Initialize user for each test
     beforeEach(async () => {
@@ -195,16 +195,16 @@ describe("playlist", () => {
       );
 
       // New sol key that will be used to permission user updates
-      newUserKey = anchor.web3.Keypair.generate();
+      newUserKeypair = anchor.web3.Keypair.generate();
 
       // Generate signed SECP instruction
       // Message as the incoming public key
-      const message = newUserKey.publicKey.toString();
+      const message = newUserKeypair.publicKey.toString();
 
       await testInitUserSolPubkey({
         message,
         pkString,
-        newUserKey,
+        newUserKeypair,
         newUserAcctPDA,
       });
     });
@@ -212,7 +212,7 @@ describe("playlist", () => {
     it('create playlist', async () => {
       await testCreatePlaylist({
         newPlaylistKeypair: anchor.web3.Keypair.generate(),
-        userAuthorityKey: newUserKey,
+        userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
         adminStgKeypair,
         playlistMetadata: randomCID(),
@@ -224,7 +224,7 @@ describe("playlist", () => {
 
       await testCreatePlaylist({
         newPlaylistKeypair,
-        userAuthorityKey: newUserKey,
+        userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
         adminStgKeypair,
         playlistMetadata: randomCID(),
@@ -232,7 +232,7 @@ describe("playlist", () => {
 
       await testUpdatePlaylist({
         playlistKeypair: newPlaylistKeypair,
-        userAuthorityKey: newUserKey,
+        userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
         playlistMetadata: randomCID(),
       });
@@ -243,7 +243,7 @@ describe("playlist", () => {
 
       await testCreatePlaylist({
         newPlaylistKeypair,
-        userAuthorityKey: newUserKey,
+        userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
         adminStgKeypair,
         playlistMetadata: randomCID(),
@@ -251,7 +251,7 @@ describe("playlist", () => {
 
       await testDeletePlaylist({
         playlistKeypair: newPlaylistKeypair,
-        userAuthorityKey: newUserKey,
+        userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
       });
     });
