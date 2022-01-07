@@ -26,12 +26,13 @@ def user_state_update(
     self,
     update_task: DatabaseTask,
     session: Session,
-    ipfs_metadata,
-    blacklisted_cids,
     user_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
+    ipfs_metadata,
+    blacklisted_cids,
+    _redis,  # prefix unused args with underscore to prevent pylint
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
 
