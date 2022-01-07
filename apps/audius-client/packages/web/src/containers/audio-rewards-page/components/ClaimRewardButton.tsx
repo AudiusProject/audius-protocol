@@ -12,6 +12,7 @@ import {
   FlowUICloseEvent,
   FlowUIOpenEvent
 } from 'common/models/AudioRewards'
+import { StringAudio } from 'common/models/Wallet'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { getAccountUser, getUserHandle } from 'common/store/account/selectors'
 import { getHCaptchaStatus } from 'common/store/pages/audio-rewards/selectors'
@@ -20,8 +21,11 @@ import {
   CognitoFlowStatus,
   HCaptchaStatus,
   setClaimStatus,
-  setCognitoFlowStatus
+  setCognitoFlowStatus,
+  setUserChallengeDisbursed
 } from 'common/store/pages/audio-rewards/slice'
+import { increaseBalance } from 'common/store/wallet/slice'
+import { stringAudioToStringWei } from 'common/utils/wallet'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useScript } from 'hooks/useScript'
 import AudiusBackend from 'services/AudiusBackend'
@@ -110,13 +114,19 @@ const ClaimRewardButton = ({
       if (error) {
         dispatch(setClaimStatus({ status: ClaimStatus.ERROR }))
       } else {
+        dispatch(
+          increaseBalance({
+            amount: stringAudioToStringWei(amount.toString() as StringAudio)
+          })
+        )
+        dispatch(setUserChallengeDisbursed({ challengeId }))
         dispatch(setClaimStatus({ status: ClaimStatus.SUCCESS }))
       }
     } catch (e) {
       console.error(`Error claiming reward after retry: ${e}`)
       dispatch(setClaimStatus({ status: ClaimStatus.ERROR }))
     }
-  }, [claimReward, dispatch])
+  }, [challengeId, claimReward, amount, dispatch])
 
   useEffect(() => {
     switch (hCaptchaStatus) {
@@ -229,6 +239,12 @@ const ClaimRewardButton = ({
             throw new Error()
         }
       } else {
+        dispatch(
+          increaseBalance({
+            amount: stringAudioToStringWei(amount.toString() as StringAudio)
+          })
+        )
+        dispatch(setUserChallengeDisbursed({ challengeId }))
         dispatch(setClaimStatus({ status: ClaimStatus.SUCCESS }))
       }
     } catch (e) {
