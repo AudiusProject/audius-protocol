@@ -49,12 +49,16 @@ class WalletClient {
       const associatedWallets = await apiClient.getAssociatedWallets({
         userID
       })
+
       if (associatedWallets === null) throw new Error('Unable to fetch wallets')
-      const balances = await Promise.all(
-        associatedWallets.wallets.map(wallet =>
+      const balances = await Promise.all([
+        ...associatedWallets.wallets.map(wallet =>
           AudiusBackend.getAddressTotalStakedBalance(wallet, bustCache)
+        ),
+        ...associatedWallets.sol_wallets.map(wallet =>
+          AudiusBackend.getAddressWAudioBalance(wallet)
         )
-      )
+      ])
 
       const totalBalance = balances.reduce(
         (sum, walletBalance) => sum.add(walletBalance),
