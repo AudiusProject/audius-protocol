@@ -21,6 +21,9 @@ def social_feature_state_update(
     block_number,
     block_timestamp,
     block_hash,
+    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
+    _redis,
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of social feature related state changes in this transaction and empty Set (to align with other _state_update function signatures)"""
     empty_set: Set[int] = set()

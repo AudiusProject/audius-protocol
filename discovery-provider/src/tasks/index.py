@@ -443,6 +443,7 @@ def bulk_process_state_changes(
     block_number, block_hash, block_timestamp = itemgetter(
         "number", "hash", "timestamp"
     )(block)
+
     TX_TYPE_TO_HANDLER_MAP = {
         USER_FACTORY: user_state_update,
         TRACK_FACTORY: track_state_update,
@@ -451,10 +452,6 @@ def bulk_process_state_changes(
         USER_LIBRARY_FACTORY: user_library_state_update,
         USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
     }
-    track_metadata_affecting_contracts = [
-        USER_FACTORY,
-        TRACK_FACTORY,
-    ]
     changed_entity_ids_map = {
         USER_FACTORY: [],
         TRACK_FACTORY: [],
@@ -463,38 +460,34 @@ def bulk_process_state_changes(
     }
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
+
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
             main_indexing_task,
             update_task,
             session,
-        ]
-        if tx_type in track_metadata_affecting_contracts:
-            tx_processing_args += [
-                ipfs_metadata,
-                blacklisted_cids,
-            ]
-        tx_processing_args += [
             txs_to_process,
             block_number,
             block_timestamp,
             block_hash,
+            ipfs_metadata,
+            blacklisted_cids,
+            redis,
         ]
-        # ursm update takes redis to find replica sets
-        if tx_type == USER_REPLICA_SET_MANAGER:
-            tx_processing_args += [redis]
+
         (
             total_changes_for_tx_type,
             changed_entity_ids,
         ) = bulk_processor(*tx_processing_args)
-        entity_state_changed = total_changes_for_tx_type > 0
+
         if tx_type in changed_entity_ids_map.keys():
             changed_entity_ids_map[tx_type] = changed_entity_ids
 
         logger.info(
             f"index.py | {bulk_processor.__name__} completed"
-            f" {tx_type}_state_changed={entity_state_changed} for block={block_number}"
+            f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
+
     return changed_entity_ids_map
 
 

@@ -27,6 +27,9 @@ def playlist_state_update(
     block_number,
     block_timestamp,
     block_hash,
+    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
+    _redis,
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of Playlist model state changes found in transaction and set of processed playlist IDs."""
     blockhash = update_task.web3.toHex(block_hash)

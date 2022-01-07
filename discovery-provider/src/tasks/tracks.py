@@ -26,12 +26,13 @@ def track_state_update(
     self,
     update_task: DatabaseTask,
     session,
-    ipfs_metadata,
-    blacklisted_cids,
     track_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
+    ipfs_metadata,
+    blacklisted_cids,
+    _redis,  # prefix unused args with underscore to prevent pylint
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     blockhash = update_task.web3.toHex(block_hash)
