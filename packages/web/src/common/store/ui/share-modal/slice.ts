@@ -10,8 +10,9 @@ const slice = createSlice({
   reducers: {
     requestOpen: (state, action: RequestOpenAction) => {},
     open: (state, action: OpenAction) => {
-      const { track } = action.payload
+      const { track, source } = action.payload
       state.track = track
+      state.source = source
     }
   }
 })
