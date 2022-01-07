@@ -41,6 +41,11 @@ const slice = createSlice({
       state.balance = existingBalance
         .add(new BN(amount))
         .toString() as StringWei
+      if (state.totalBalance) {
+        state.totalBalance = new BN(state.totalBalance)
+          .add(new BN(amount))
+          .toString() as StringWei
+      }
       state.localBalanceDidChange = true
     },
     decreaseBalance: (

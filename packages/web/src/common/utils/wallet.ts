@@ -42,6 +42,10 @@ export const weiToString = (wei: BNWei): StringWei => {
   return wei.toString() as StringWei
 }
 
+export const stringAudioToStringWei = (stringAudio: StringAudio): StringWei => {
+  return weiToString(audioToWei(stringAudio))
+}
+
 /**
  * Format wei BN to the full $AUDIO currency with decimals
  * @param {BN} amount The wei amount
