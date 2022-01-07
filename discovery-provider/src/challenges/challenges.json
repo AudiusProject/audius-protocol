@@ -2,7 +2,7 @@
 	{
 		"id": "profile-completion",
 		"type": "numeric",
-		"amount": "5",
+		"amount": "1",
 		"active": true,
 		"step_count": 7,
 		"starting_block": 25346436
@@ -10,16 +10,16 @@
 	{
 		"id": "listen-streak",
 		"type": "numeric",
-		"amount": "5",
-		"active": false,
+		"amount": "1",
+		"active": true,
 		"step_count": 7,
 		"starting_block": 116023891
 	},
 	{
 		"id": "track-upload",
 		"type": "numeric",
-		"amount": "5",
-		"active": false,
+		"amount": "1",
+		"active": true,
 		"step_count": 3,
 		"starting_block": 25346436
 	},
@@ -27,7 +27,7 @@
 		"id": "referrals",
 		"type": "aggregate",
 		"amount": "1",
-		"active": false,
+		"active": true,
 		"step_count": 5,
 		"starting_block": 25346436
 	},
@@ -35,42 +35,42 @@
 		"id": "referred",
 		"type": "boolean",
 		"amount": "1",
-		"active": false,
+		"active": true,
 		"starting_block": 25346436
 	},
 	{
 		"id": "connect-verified",
 		"type": "boolean",
-		"amount": "10",
+		"amount": "1",
 		"active": true,
 		"starting_block": 25346436
 	},
 	{
 		"id": "mobile-install",
 		"type": "boolean",
-		"amount": "10",
-		"active": false,
+		"amount": "1",
+		"active": true,
 		"starting_block": 25346436
 	},
 	{
 		"id": "trending-track",
 		"type": "trending",
 		"amount": "100",
-		"active": false,
+		"active": true,
 		"starting_block": 25346436
 	},
 	{
 		"id": "trending-underground-track",
 		"type": "trending",
 		"amount": "100",
-		"active": false,
+		"active": true,
 		"starting_block": 25346436
 	},
 	{
 		"id": "trending-playlist",
 		"type": "trending",
 		"amount": "100",
-		"active": false,
+		"active": true,
 		"starting_block": 25346436
 	}
 ]
