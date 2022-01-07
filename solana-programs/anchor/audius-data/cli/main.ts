@@ -18,6 +18,8 @@ import {
   initUserSolPubkey,
   createTrack,
   createTrackArgs,
+  createPlaylistArgs,
+  createPlaylist,
 } from "../lib/lib";
 
 import { Command } from "commander";
@@ -68,7 +70,7 @@ type initAdminCLIParams = {
 
 async function initAdminCLI(network: string, args: initAdminCLIParams) {
   const { adminKeypair, adminStgKeypair, ownerKeypairPath } = args;
-  const cliVars = await initializeCLI(network, ownerKeypairPath);
+  const cliVars = initializeCLI(network, ownerKeypairPath);
   console.log(`AdminKeypair:`);
   console.log(adminKeypair.publicKey.toString());
   console.log(`[${adminKeypair.secretKey.toString()}]`);
@@ -88,6 +90,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     adminKeypair,
     adminStgKeypair,
     trackIdOffset: new anchor.BN("0"),
+    playlistIdOffset: new anchor.BN("0"),
   });
 }
 
@@ -164,12 +167,41 @@ async function timeCreateTrack(args: createTrackArgs) {
   console.log(err);
 }
 
+async function timeCreatePlaylist(args: createPlaylistArgs) {
+  let retries = 5;
+  let err = null;
+  while (retries > 0) {
+    try {
+      let start = Date.now();
+      let tx = await createPlaylist({
+        program: args.program,
+        provider: args.provider,
+        newPlaylistKeypair: anchor.web3.Keypair.generate(),
+        userStgAccountPDA: options.userStgPubkey,
+        userAuthorityKeypair: userSolKeypair,
+        adminStgPublicKey: args.adminStgPublicKey,
+        metadata: randomCID(),
+      });
+      let duration = Date.now() - start;
+      console.log(
+        `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
+      );
+      return tx;
+    } catch (e) {
+      err = e;
+    }
+  }
+  console.log(err);
+}
+
 const functionTypes = Object.freeze({
   initAdmin: "initAdmin",
   initUser: "initUser",
   initUserSolPubkey: "initUserSolPubkey",
   createTrack: "createTrack",
   getTrackId: "getTrackId",
+  createPlaylist: "createPlaylist",
+  getPlaylistId: "getPlaylistId",
 });
 
 program
@@ -188,7 +220,8 @@ program
     "-eth-pk, --eth-private-key <string>",
     "private key for message signing"
   )
-  .option("--num-tracks <integer>", "number of tracks to generate");
+  .option("--num-tracks <integer>", "number of tracks to generate")
+  .option("--num-playlists <integer>", "number of playlists to generate");
 
 program.parse(process.argv);
 
@@ -250,6 +283,9 @@ switch (options.function) {
       );
     })();
     break;
+  /**
+   * Track-related functions
+   */
   case functionTypes.createTrack:
     const numTracks = options.numTracks ? options.numTracks : 1;
     console.log(
@@ -283,6 +319,44 @@ switch (options.function) {
         adminStgKeypair.publicKey
       );
       console.log(`trackID high:${info.trackId}`);
+    })();
+    break;
+  /**
+   * Playlist-related functions
+   */
+  case functionTypes.createPlaylist:
+    const numPlaylists = options.numPlaylists ? options.numPlaylists : 1;
+    console.log(
+      `Number of playlists = ${numPlaylists}, Target User = ${options.userStgPubkey}`
+    );
+    (async () => {
+      let promises = [];
+      const cliVars = initializeCLI(network, options.ownerKeypair);
+      for (var i = 0; i < numPlaylists; i++) {
+        promises.push(
+          timeCreatePlaylist({
+            program: cliVars.program,
+            provider: cliVars.provider,
+            metadata: randomCID(),
+            newPlaylistKeypair: anchor.web3.Keypair.generate(),
+            userAuthorityKeypair: userSolKeypair,
+            userStgAccountPDA: options.userStgPubkey,
+            adminStgPublicKey: adminStgKeypair.publicKey,
+          })
+        );
+      }
+      let start = Date.now();
+      await Promise.all(promises);
+      console.log(`Processed ${numPlaylists} in ${Date.now() - start}ms`);
+    })();
+    break;
+  case functionTypes.getPlaylistId:
+    (async () => {
+      const cliVars = initializeCLI(network, options.ownerKeypair);
+      let info = await cliVars.program.account.audiusAdmin.fetch(
+        adminStgKeypair.publicKey
+      );
+      console.log(`playlistID high:${info.playlistId}`);
     })();
     break;
 }
