@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { MouseEventHandler, ReactNode } from 'react'
 
 import cn from 'classnames'
 
@@ -12,6 +12,7 @@ type Action = {
   className?: string
   icon?: ReactNode
   isDestructive?: boolean
+  onClick?: MouseEventHandler
 }
 
 type ActionSheetModalProps = {
@@ -50,12 +51,16 @@ const ActionDrawer = ({
           </div>
           <ul aria-labelledby={headerId}>
             {actions.map(
-              ({ text, isDestructive = false, className, icon }, index) => (
+              (
+                { text, isDestructive = false, className, icon, onClick },
+                index
+              ) => (
                 <li
                   key={text}
                   role='button'
                   tabIndex={0}
-                  onClick={() => {
+                  onClick={event => {
+                    onClick?.(event)
                     didSelectRow(index)
                   }}
                   className={cn(

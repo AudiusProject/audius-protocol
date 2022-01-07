@@ -10,13 +10,13 @@ import { open, requestOpen } from './slice'
 import { RequestOpenAction } from './types'
 
 function* handleRequestOpen(action: RequestOpenAction) {
-  const { trackId } = action.payload
+  const { trackId, source } = action.payload
 
   const track: Track = yield select((state: AppState) =>
     getTrack(state, { id: trackId })
   )
 
-  yield put(open({ track }))
+  yield put(open({ track, source }))
   yield put(setVisibility({ modal: 'Share', visible: true }))
 }
 
