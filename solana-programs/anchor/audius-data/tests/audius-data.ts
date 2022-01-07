@@ -1,17 +1,12 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { randomBytes } from "crypto";
 import ethWeb3 from "web3";
 import {
-  createPlaylist, createTrack, deletePlaylist, initAdmin,
-  initUser,
-  initUserSolPubkey,
-  updatePlaylist
+  createTrack, initAdmin
 } from "../lib/lib";
-import {
-  ethAddressToArray, findDerivedPair, getRandomPrivateKey, getTransaction, randomCID
-} from "../lib/utils";
+import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
+import { confirmLogInTransaction, initTestConstants, testInitUser, testInitUserSolPubkey } from "./test-helpers";
 
 const { PublicKey } = anchor.web3;
 
@@ -31,81 +26,6 @@ describe("audius-data", () => {
   let adminKeypair = anchor.web3.Keypair.generate();
   let adminStgKeypair = anchor.web3.Keypair.generate();
 
-  const confirmLogInTransaction = async (tx: string, log: string) => {
-    let info = await getTransaction(provider, tx);
-    let logs = info.meta.logMessages;
-    let stringFound = false;
-    logs.forEach((v) => {
-      if (v.indexOf(log) > 0) {
-        stringFound = true;
-      }
-    });
-    if (!stringFound) {
-      console.log(logs);
-      throw new Error(`Failed to find ${log} in tx=${tx}`);
-    }
-  };
-
-  const testInitUser = async (
-    baseAuthorityAccount: anchor.web3.PublicKey,
-    testEthAddr: string,
-    testEthAddrBytes: Uint8Array,
-    handleBytesArray: number[],
-    bumpSeed: number,
-    metadata: string,
-    userStgAccount: anchor.web3.PublicKey
-  ) => {
-    let tx = await initUser({
-      provider,
-      program,
-      testEthAddrBytes: Array.from(testEthAddrBytes),
-      handleBytesArray,
-      bumpSeed,
-      metadata,
-      userStgAccount,
-      baseAuthorityAccount,
-      adminStgKey: adminStgKeypair.publicKey,
-      adminKeypair,
-    });
-    const userDataFromChain = await program.account.user.fetch(userStgAccount);
-    const returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress);
-    const returnedSolFromChain = userDataFromChain.authority;
-    if (testEthAddr.toLowerCase() != returnedHex) {
-      throw new Error(
-        `Invalid eth address - expected ${testEthAddr.toLowerCase()}, found ${returnedHex}`
-      );
-    }
-    if (!DefaultPubkey.equals(returnedSolFromChain)) {
-      throw new Error(`Unexpected public key found`);
-    }
-    await confirmLogInTransaction(tx, metadata);
-  };
-
-  const testInitUserSolPubkey = async ({
-    message,
-    pkString,
-    privKey,
-    newUserKey,
-    newUserAcctPDA,
-  }) => {
-    let initUserTx = await initUserSolPubkey({
-      provider,
-      program,
-      privateKey: pkString,
-      message,
-      userSolPubkey: newUserKey.publicKey,
-      userStgAccount: newUserAcctPDA,
-    });
-
-    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
-    if (!newUserKey.publicKey.equals(userDataFromChain.authority)) {
-      throw new Error("Unexpected public key found");
-    }
-    let txInfo = await getTransaction(provider, initUserTx);
-    let fee = txInfo["meta"]["fee"];
-    console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
-  };
-
   const testCreateTrack = async ({
     trackMetadata,
     newTrackKeypair,
@@ -122,7 +42,7 @@ describe("audius-data", () => {
       metadata: trackMetadata,
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
-    await confirmLogInTransaction(tx, trackMetadata);
+    await confirmLogInTransaction(provider, tx, trackMetadata);
     let assignedTrackId = await program.account.track.fetch(
       newTrackKeypair.publicKey
     );
@@ -180,31 +100,6 @@ describe("audius-data", () => {
     );
   };
 
-  const initTestConstants = () => {
-    const privKey = getRandomPrivateKey();
-    const pkString = Buffer.from(privKey).toString("hex");
-    const pubKey = EthWeb3.eth.accounts.privateKeyToAccount(pkString);
-    const testEthAddr = pubKey.address;
-    const testEthAddrBytes = ethAddressToArray(testEthAddr);
-    const handle = randomBytes(20).toString("hex");
-    const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-    // TODO: Verify this
-    const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
-    const metadata = randomCID();
-    const values = {
-      privKey,
-      pkString,
-      pubKey,
-      testEthAddr,
-      testEthAddrBytes,
-      handle,
-      handleBytes,
-      handleBytesArray,
-      metadata,
-    };
-    return values;
-  };
-
   it("Initializing admin account!", async () => {
     await initAdmin({
       provider: provider,
@@ -241,19 +136,22 @@ describe("audius-data", () => {
     let newUserAcctPDA = derivedAddress;
 
     await testInitUser(
+      provider,
+      program,
       baseAuthorityAccount,
       testEthAddr,
       testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA
+      newUserAcctPDA,
+      adminStgKeypair,
+      adminKeypair
     );
   });
 
   it("Initializing + claiming user!", async () => {
     let {
-      privKey,
       pkString,
       testEthAddr,
       testEthAddrBytes,
@@ -270,13 +168,17 @@ describe("audius-data", () => {
     let newUserAcctPDA = derivedAddress;
 
     await testInitUser(
+      provider,
+      program,
       baseAuthorityAccount,
       testEthAddr,
       testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA
+      newUserAcctPDA,
+      adminStgKeypair,
+      adminKeypair
     );
 
     // New sol key that will be used to permission user updates
@@ -287,9 +189,10 @@ describe("audius-data", () => {
     let message = newUserKey.publicKey.toString();
 
     await testInitUserSolPubkey({
+      provider,
+      program,
       message,
       pkString,
-      privKey,
       newUserKey,
       newUserAcctPDA,
     });
@@ -297,7 +200,6 @@ describe("audius-data", () => {
 
   it("Initializing + claiming + updating user!", async () => {
     let {
-      privKey,
       pkString,
       testEthAddr,
       testEthAddrBytes,
@@ -314,13 +216,17 @@ describe("audius-data", () => {
     let newUserAcctPDA = derivedAddress;
 
     await testInitUser(
+      provider,
+      program,
       baseAuthorityAccount,
       testEthAddr,
       testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA
+      newUserAcctPDA,
+      adminStgKeypair,
+      adminKeypair
     );
 
     // New sol key that will be used to permission user updates
@@ -331,9 +237,10 @@ describe("audius-data", () => {
     let message = newUserKey.publicKey.toString();
 
     await testInitUserSolPubkey({
+      provider,
+      program,
       message,
       pkString,
-      privKey,
       newUserKey,
       newUserAcctPDA,
     });
@@ -346,12 +253,11 @@ describe("audius-data", () => {
       },
       signers: [newUserKey],
     });
-    await confirmLogInTransaction(tx, updatedCID);
+    await confirmLogInTransaction(provider, tx, updatedCID);
   });
 
   it("Initializing + claiming user, creating + updating track", async () => {
     let {
-      privKey,
       pkString,
       testEthAddr,
       testEthAddrBytes,
@@ -368,13 +274,17 @@ describe("audius-data", () => {
     let newUserAcctPDA = derivedAddress;
 
     await testInitUser(
+      provider,
+      program,
       baseAuthorityAccount,
       testEthAddr,
       testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA
+      newUserAcctPDA,
+      adminStgKeypair,
+      adminKeypair
     );
 
     // New sol key that will be used to permission user updates
@@ -385,9 +295,10 @@ describe("audius-data", () => {
     let message = newUserKey.publicKey.toString();
 
     await testInitUserSolPubkey({
+      provider,
+      program,
       message,
       pkString,
-      privKey,
       newUserKey,
       newUserAcctPDA,
     });
@@ -431,12 +342,11 @@ describe("audius-data", () => {
       },
       signers: [newUserKey],
     });
-    await confirmLogInTransaction(tx3, updatedTrackMetadata);
+    await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
   });
 
   it("creating + deleting a track", async () => {
     let {
-      privKey,
       pkString,
       testEthAddr,
       testEthAddrBytes,
@@ -453,13 +363,17 @@ describe("audius-data", () => {
     let newUserAcctPDA = derivedAddress;
 
     await testInitUser(
+      provider,
+      program,
       baseAuthorityAccount,
       testEthAddr,
       testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA
+      newUserAcctPDA,
+      adminStgKeypair,
+      adminKeypair
     );
 
     // New sol key that will be used to permission user updates
@@ -470,9 +384,10 @@ describe("audius-data", () => {
     let message = newUserKey.publicKey.toString();
 
     await testInitUserSolPubkey({
+      provider,
+      program,
       message,
       pkString,
-      privKey,
       newUserKey,
       newUserAcctPDA,
     });
@@ -497,7 +412,6 @@ describe("audius-data", () => {
 
   it("create multiple tracks in parallel", async () => {
     let {
-      privKey,
       pkString,
       testEthAddr,
       testEthAddrBytes,
@@ -514,13 +428,17 @@ describe("audius-data", () => {
     let newUserAcctPDA = derivedAddress;
 
     await testInitUser(
+      provider,
+      program,
       baseAuthorityAccount,
       testEthAddr,
       testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA
+      newUserAcctPDA,
+      adminStgKeypair,
+      adminKeypair
     );
 
     // New sol key that will be used to permission user updates
@@ -531,9 +449,10 @@ describe("audius-data", () => {
     let message = newUserKey.publicKey.toString();
 
     await testInitUserSolPubkey({
+      provider,
+      program,
       message,
       pkString,
-      privKey,
       newUserKey,
       newUserAcctPDA,
     });
@@ -569,190 +488,5 @@ describe("audius-data", () => {
       }),
     ]);
     console.log(`Created 3 tracks in ${Date.now() - start}ms`);
-  });
-
-  describe('playlists', () => {
-    const testCreatePlaylist = async ({
-      newPlaylistKeypair,
-      playlistOwnerPDA,
-      userAuthorityKey,
-      adminStgKeypair,
-      playlistMetadata
-    }) => {
-      const tx = await createPlaylist({
-        provider,
-        program,
-        newPlaylistKeypair,
-        userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKey,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-        metadata: playlistMetadata
-      });
-      await confirmLogInTransaction(tx, playlistMetadata);
-      const createdPlaylist = await program.account.playlist.fetch(
-        newPlaylistKeypair.publicKey
-      );
-      console.log(
-        `playlist: ${playlistMetadata}, playlistId assigned = ${createdPlaylist.playlistId}`
-      );
-    };
-
-    const testUpdatePlaylist = async ({
-      playlistKeypair,
-      playlistOwnerPDA,
-      userAuthorityKey,
-      playlistMetadata
-    }) => {
-      const tx = await updatePlaylist({
-        provider,
-        program,
-        playlistKeypair,
-        userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKey,
-        metadata: playlistMetadata
-      });
-      await confirmLogInTransaction(tx, playlistMetadata);
-    };
-
-    const testDeletePlaylist = async ({
-      playlistKeypair,
-      playlistOwnerPDA,
-      userAuthorityKey,
-    }) => {
-      const initialPlaylistAcctBalance = await provider.connection.getBalance(
-        playlistKeypair.publicKey
-      );
-      const initialPayerBalance = await provider.connection.getBalance(
-        provider.wallet.publicKey
-      );
-
-      const tx = await deletePlaylist({
-        provider,
-        program,
-        playlistKeypair,
-        userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKey,
-      });
-
-      // Confirm that the account is zero'd out
-      // Note that there appears to be a delay in the propagation, hence the retries
-      let playlistAcctBalance = initialPlaylistAcctBalance;
-      let payerBalance = initialPayerBalance;
-      let retries = 20;
-      while (playlistAcctBalance > 0 && retries > 0) {
-        playlistAcctBalance = await provider.connection.getBalance(
-          playlistKeypair.publicKey
-        );
-        payerBalance = await provider.connection.getBalance(
-          provider.wallet.publicKey
-        );
-        retries--;
-      }
-
-      if (playlistAcctBalance > 0) {
-        throw new Error("Failed to deallocate track");
-      }
-
-      console.log(
-        `Track acct lamports ${initialPlaylistAcctBalance} -> ${playlistAcctBalance}`
-      );
-      console.log(
-        `Payer acct lamports ${initialPayerBalance} -> ${payerBalance}`
-      );
-    };
-
-    let newUserAcctPDA: anchor.web3.PublicKey;
-    let newUserKey: anchor.web3.Keypair;
-
-    beforeEach(async () => {
-      const {
-        privKey,
-        pkString,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        metadata
-      } = initTestConstants();
-
-      const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-        await findDerivedPair(
-          program.programId,
-          adminStgKeypair.publicKey,
-          Buffer.from(handleBytesArray)
-        );
-      newUserAcctPDA = derivedAddress;
-
-      await testInitUser(
-        baseAuthorityAccount,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        bumpSeed,
-        metadata,
-        newUserAcctPDA
-      );
-
-      // New sol key that will be used to permission user updates
-      newUserKey = anchor.web3.Keypair.generate();
-
-      // Generate signed SECP instruction
-      // Message as the incoming public key
-      const message = newUserKey.publicKey.toString();
-
-      await testInitUserSolPubkey({
-        message,
-        pkString,
-        privKey,
-        newUserKey,
-        newUserAcctPDA,
-      });
-    });
-
-    it('create playlist', async () => {
-      await testCreatePlaylist({
-        newPlaylistKeypair: anchor.web3.Keypair.generate(),
-        userAuthorityKey: newUserKey,
-        playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
-        playlistMetadata: randomCID(),
-      });
-    });
-
-    it('update playlist', async () => {
-      const newPlaylistKeypair = anchor.web3.Keypair.generate();
-
-      await testCreatePlaylist({
-        newPlaylistKeypair,
-        userAuthorityKey: newUserKey,
-        playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
-        playlistMetadata: randomCID(),
-      });
-
-      await testUpdatePlaylist({
-        playlistKeypair: newPlaylistKeypair,
-        userAuthorityKey: newUserKey,
-        playlistOwnerPDA: newUserAcctPDA,
-        playlistMetadata: randomCID(),
-      });
-    });
-
-    it('delete playlist', async () => {
-      const newPlaylistKeypair = anchor.web3.Keypair.generate();
-
-      await testCreatePlaylist({
-        newPlaylistKeypair,
-        userAuthorityKey: newUserKey,
-        playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
-        playlistMetadata: randomCID(),
-      });
-
-      await testDeletePlaylist({
-        playlistKeypair: newPlaylistKeypair,
-        userAuthorityKey: newUserKey,
-        playlistOwnerPDA: newUserAcctPDA,
-      });
-    });
   });
 });
