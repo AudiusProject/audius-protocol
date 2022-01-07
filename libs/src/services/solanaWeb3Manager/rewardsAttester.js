@@ -12,6 +12,8 @@ class BaseRewardsReporter {
   async reportAAORejection ({ userId, challengeId, amount, error }) {}
 }
 
+const SOLANA_BASED_CHALLENGE_IDS = new Set(['listen-streak'])
+
 /**
  * `RewardsAttester` is responsible for repeatedly attesting for completed rewards.
  *
@@ -165,7 +167,12 @@ class RewardsAttester {
 
     // Get undisbursed rewards
     let toAttest = this.undisbursedQueue.splice(0, this.parallelization)
-    const highestBlock = Math.max(...toAttest.map(e => e.completedBlocknumber))
+    // Get the highest block number, ignoring Solana based challenges (i.e. listens) which have a significantly higher
+    // slot and throw off this calculation.
+    // TODO: [AUD-1217] we should handle this in a less hacky way, possibly by
+    // attesting for Solana + POA challenges separately.
+    const poaAttestations = toAttest.filter(({ challengeId }) => !SOLANA_BASED_CHALLENGE_IDS.has(challengeId))
+    const highestBlock = poaAttestations.length ? Math.max(...poaAttestations.map(e => e.completedBlocknumber)) : null
 
     // Attempt to attest in a single sweep
     const results = await Promise.all(toAttest.map(this._performSingleAttestation))
@@ -202,7 +209,7 @@ class RewardsAttester {
     }
 
     // Set startingBlock and offset
-    this.startingBlock = highestBlock ? highestBlock - 1 : 0
+    this.startingBlock = highestBlock ? highestBlock - 1 : this.startingBlock
     this.offset = offset
     this.logger.info(`Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`)
 
