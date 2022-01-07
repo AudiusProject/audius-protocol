@@ -35,8 +35,7 @@ const actionEntityTypes = Object.freeze({
   User: 'User',
   Track: 'Track',
   Album: 'Album',
-  Playlist: 'Playlist',
-  Challenge: 'Challenge'
+  Playlist: 'Playlist'
 })
 
 const dayInHours = 24

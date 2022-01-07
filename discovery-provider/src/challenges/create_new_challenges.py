@@ -51,7 +51,7 @@ def get_challenges_dicts():
                 override = stage_challenges_map.get(challenge["id"])
                 if not override:
                     continue
-                for key in challenge.keys():
+                for key in ["id", "amount", "active", "starting_block", "step_count"]:
                     if key in override:
                         challenge[key] = override[key]
 
