@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from integration_tests.utils import populate_mock_db
 from src.models import AggregateIntervalPlay, TrackTrendingScore, TrendingParam
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
-from src.trending_strategies.aSPET_trending_tracks_strategy import (
-    TrendingTracksStrategyaSPET,
+from src.trending_strategies.ML51L_trending_tracks_strategy import (
+    TrendingTracksStrategyML51L,
 )
 from src.utils.db_session import get_db
 
@@ -25,12 +25,24 @@ def setup_trending(db):
                     "user_id": i + 1,
                     "handle": str(i + 1),
                     "wallet": str(i + 1),
+                    # Legacy users have profile_picture and cover_photo (versus _sizes)
                     "profile_picture": "Qm0123456789abcdef0123456789abcdef0123456789ab",
                     "cover_photo": "Qm0123456789abcdef0123456789abcdef0123456789ab",
                     "bio": "filled in",
                 }
-                for i in range(20)
-            ]
+                for i in range(5)
+            ],
+            *[
+                {
+                    "user_id": i + 1,
+                    "handle": str(i + 1),
+                    "wallet": str(i + 1),
+                    "profile_picture_sizes": "Qm0123456789abcdef0123456789abcdef0123456789ab",
+                    "cover_photo_sizes": "Qm0123456789abcdef0123456789abcdef0123456789ab",
+                    "bio": "filled in",
+                }
+                for i in range(15)
+            ],
         ],
         "tracks": [
             {"track_id": 1, "owner_id": 1},
@@ -331,7 +343,7 @@ def test_update_track_score_query(app):
 
     # setup
     setup_trending(db)
-    udpated_strategy = TrendingTracksStrategyaSPET()
+    udpated_strategy = TrendingTracksStrategyML51L()
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track")

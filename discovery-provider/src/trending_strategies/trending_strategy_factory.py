@@ -7,6 +7,15 @@ from src.trending_strategies.ePWJD_trending_playlists_strategy import (
 from src.trending_strategies.ePWJD_underground_trending_tracks_strategy import (
     UndergroundTrendingTracksStrategyePWJD,
 )
+from src.trending_strategies.ML51L_trending_playlists_strategy import (
+    TrendingPlaylistsStrategyML51L,
+)
+from src.trending_strategies.ML51L_trending_tracks_strategy import (
+    TrendingTracksStrategyML51L,
+)
+from src.trending_strategies.ML51L_underground_trending_tracks_strategy import (
+    UndergroundTrendingTracksStrategyML51L,
+)
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
     TrendingVersion,
@@ -25,11 +34,20 @@ class TrendingStrategyFactory:
             TrendingType.TRACKS: {
                 TrendingVersion.aSPET: TrendingTracksStrategyaSPET(),
             },
+            TrendingType.TRACKS: {
+                TrendingVersion.ML51L: TrendingTracksStrategyML51L(),
+            },
             TrendingType.UNDERGROUND_TRACKS: {
                 TrendingVersion.ePWJD: UndergroundTrendingTracksStrategyePWJD()
             },
+            TrendingType.UNDERGROUND_TRACKS: {
+                TrendingVersion.ML51L: UndergroundTrendingTracksStrategyML51L()
+            },
             TrendingType.PLAYLISTS: {
                 TrendingVersion.ePWJD: TrendingPlaylistsStrategyePWJD()
+            },
+            TrendingType.PLAYLISTS: {
+                TrendingVersion.ML51L: TrendingPlaylistsStrategyML51L()
             },
         }
 
