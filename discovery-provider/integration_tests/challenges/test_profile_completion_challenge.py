@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import redis
-from integration_tests.challenges.test_referral_challenge import BLOCK_NUMBER
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.models import Block, Follow, Repost, RepostType, Save, SaveType, User
