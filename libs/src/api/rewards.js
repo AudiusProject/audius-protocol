@@ -170,7 +170,8 @@ class Rewards extends Base {
         specifier,
         recipientEthAddress,
         oracleEthAddress,
-        tokenAmount: fullTokenAmount
+        tokenAmount: fullTokenAmount,
+        logger
       })
 
       if (evaluateErrorCode || evaluateError) {
