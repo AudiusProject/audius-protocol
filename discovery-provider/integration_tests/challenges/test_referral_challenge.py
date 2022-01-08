@@ -14,12 +14,13 @@ from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_NUMBER = 1
 
 
 def create_user(offset: int) -> User:
     return User(
         blockhash="0x1",
-        blocknumber=1,
+        blocknumber=BLOCK_NUMBER,
         txhash="xyz",
         user_id=offset,
         is_current=True,
@@ -38,7 +39,7 @@ def create_user_referral(referrer: int, referred_user_id: int) -> UserEvents:
     return UserEvents(
         user_id=referred_user_id,
         is_current=True,
-        blocknumber=1,
+        blocknumber=BLOCK_NUMBER,
         blockhash="0x1",
         referrer=referrer,
     )
@@ -52,11 +53,11 @@ def dispatch_new_user_signup(
     session.flush()
     bus.dispatch(
         ChallengeEvent.referral_signup,
-        1,
+        BLOCK_NUMBER,
         referrer,
         {"referred_user_id": referred_user_id},
     )
-    bus.dispatch(ChallengeEvent.referred_signup, 1, referred_user_id)
+    bus.dispatch(ChallengeEvent.referred_signup, BLOCK_NUMBER, referred_user_id)
 
 
 def test_referral_challenge(app):
@@ -65,10 +66,10 @@ def test_referral_challenge(app):
     with app.app_context():
         db = get_db()
 
-    block = Block(blockhash="0x1", number=1)
+    block = Block(blockhash="0x1", number=BLOCK_NUMBER)
     referrer = User(
         blockhash="0x1",
-        blocknumber=1,
+        blocknumber=BLOCK_NUMBER,
         txhash="xyz",
         user_id=1,
         is_current=True,
@@ -98,16 +99,16 @@ def test_referral_challenge(app):
         # set challenge as active for purposes of test
         session.query(Challenge).filter(
             or_(Challenge.id == "referred", Challenge.id == "referrals")
-        ).update({"active": True})
+        ).update({"active": True, "starting_block": BLOCK_NUMBER})
         dispatch_new_user_signup(referrer.user_id, 2, session, bus)
         for _ in range(0, 4):
             bus.dispatch(
                 ChallengeEvent.referral_signup,
-                1,
+                BLOCK_NUMBER,
                 referrer.user_id,
                 {"referred_user_id": 2},
             )
-            bus.dispatch(ChallengeEvent.referred_signup, 1, 2)
+            bus.dispatch(ChallengeEvent.referred_signup, BLOCK_NUMBER, 2)
         bus.flush()
         bus.process_events(session)
 
