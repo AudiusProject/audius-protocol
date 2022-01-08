@@ -68,6 +68,7 @@ export enum Name {
 
   // Social actions
   SHARE = 'Share',
+  SHARE_TO_TWITTER = 'Share to Twitter',
   REPOST = 'Repost',
   UNDO_REPOST = 'Undo Repost',
   FAVORITE = 'Favorite',
@@ -427,6 +428,15 @@ type Share = {
   id: string
   url: string
 }
+
+type ShareToTwitter = {
+  eventName: Name.SHARE_TO_TWITTER
+  kind: 'profile' | 'album' | 'playlist' | 'track'
+  source: ShareSource
+  id: number
+  url: string
+}
+
 type Repost = {
   eventName: Name.REPOST
   kind: PlayableType
@@ -954,6 +964,7 @@ export type AllTrackingEvents =
   | AccountHealthDownloadDesktop
   | AccountHealthCTABanner
   | Share
+  | ShareToTwitter
   | Repost
   | UndoRepost
   | Favorite

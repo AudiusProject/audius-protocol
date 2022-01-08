@@ -10,3 +10,11 @@
 .copyLinkAction svg path {
   fill: var(--secondary);
 }
+
+.shareToTwitterAction {
+  color: var(--static-twitter-blue);
+}
+
+.shareToTwitterAction g path {
+  fill: var(--static-twitter-blue);
+}
