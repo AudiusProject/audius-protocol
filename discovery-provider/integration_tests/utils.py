@@ -87,6 +87,9 @@ def populate_mock_db(db, entities, block_offset=0):
             max_block = (
                 session.query(models.Block).filter(models.Block.number == i).first()
             )
+            session.query(models.Block).filter(models.Block.is_current == True).update(
+                {"is_current": False}
+            )
             if not max_block:
                 block = models.Block(
                     blockhash=hex(i),
