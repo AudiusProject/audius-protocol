@@ -465,6 +465,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 
     return latest_block_num, latest_block_hash
 
+
 def get_latest_block_from_web3(web3):
     latest_block_num = None
     latest_block_hash = None
@@ -485,11 +486,14 @@ def get_latest_block_from_web3(web3):
 
     return latest_block_num, latest_block_hash
 
+
 def get_most_recent_indexed_block_from_redis(redis):
     return get_block_from_redis(redis, most_recent_indexed_block_redis_key, most_recent_indexed_block_hash_redis_key)
 
+
 def get_latest_block_from_redis(redis):
     return get_block_from_redis(redis, latest_block_redis_key, latest_block_hash_redis_key)
+
 
 def get_most_recent_indexed_ipld_block_from_redis(redis):
     return get_block_from_redis(
@@ -497,6 +501,7 @@ def get_most_recent_indexed_ipld_block_from_redis(redis):
         most_recent_indexed_ipld_block_redis_key,
         most_recent_indexed_ipld_block_hash_redis_key
     )
+
 
 def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
     """
@@ -532,6 +537,7 @@ def get_block_from_redis(redis, block_redis_key, block_hash_redis_key):
         )
 
     return block_num, block_hash
+
 
 def set_latest_block_in_redis(redis, latest_block_num, latest_block_hash):
     try:

@@ -502,6 +502,7 @@ def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
     assert error == True
     assert health_results["challenge_last_event_age_sec"] < int(time() - 49)
 
+
 def test_get_health_with_web3_req_failing(web3_mock, redis_mock, db_mock):
     """
     Tests that when redis is skipped and web3 requests are failing,
