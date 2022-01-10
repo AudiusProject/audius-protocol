@@ -5,7 +5,7 @@
 		"amount": "1",
 		"active": true,
 		"step_count": 7,
-		"starting_block": 25346436
+		"starting_block": 0
 	},
 	{
 		"id": "listen-streak",
