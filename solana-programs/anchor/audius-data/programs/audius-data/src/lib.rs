@@ -37,19 +37,23 @@ pub mod audius_data {
         ctx: Context<InitializeUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        _handle_seed: [u8; 16],
+        handle_seed: [u8; 16],
         _user_bump: u8,
         metadata: String,
     ) -> ProgramResult {
         msg!("Audius::InitUser");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = find_program_address_pubkey(ctx.accounts.admin.key(), ctx.program_id);
-
-        // todo: check that accounts.user.key === derived_address
-
         if derived_base != base {
             return Err(ErrorCode::Unauthorized.into());
         }
+
+        // Confirm that the derived pda from base is the same as the user storage account
+        let (derived_pda, _) = Pubkey::find_program_address(&[&derived_base.to_bytes()[..32], &handle_seed], ctx.program_id);
+        if derived_pda != ctx.accounts.user.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         if ctx.accounts.authority.key() != ctx.accounts.admin.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
