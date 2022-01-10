@@ -1,0 +1,48 @@
+[
+	{
+		"id": "listen-streak",
+		"active": true,
+		"starting_block": 0
+	},
+	{
+		"id": "track-upload",
+		"active": true,
+		"starting_block": 0
+	},
+	{
+		"id": "referrals",
+		"active": true,
+		"starting_block": 0
+
+	},
+	{
+		"id": "referred",
+		"active": true,
+		"starting_block": 0
+	},
+	{
+		"id": "connect-verified",
+		"active": true,
+		"starting_block": 0
+	},
+	{
+		"id": "mobile-install",
+		"active": true,
+		"starting_block": 0
+	},
+	{
+		"id": "trending-track",
+		"active": true,
+		"starting_block": 0
+	},
+	{
+		"id": "trending-underground-track",
+		"active": true,
+		"starting_block": 0
+	},
+	{
+		"id": "trending-playlist",
+		"active": true,
+		"starting_block": 0
+	}
+]
