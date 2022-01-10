@@ -155,13 +155,16 @@ module.exports = function (app) {
     })
   )
 
-  app.get('/ip_check', handleResponse(async (req, res) => {
-    let { ip } = req
+  app.get(
+    '/ip_check',
+    handleResponse(async (req, res) => {
+      let { ip } = req
 
-    return successResponse({
-      ip: ip || ''
+      return successResponse({
+        ip: ip || ''
+      })
     })
-  }))
+  )
 }
 
 function _formatBytes(bytes, decimals = 2) {
