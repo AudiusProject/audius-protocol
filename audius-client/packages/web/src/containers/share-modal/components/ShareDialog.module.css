@@ -11,15 +11,18 @@
 }
 
 .titleContainer {
-  font-size: var(--font-xl);
   display: flex;
   align-items: center;
 }
 
-.titleContainer svg {
+.titleIcon {
   height: var(--unit-6);
   width: var(--unit-6);
   margin-right: var(--unit-2);
+}
+
+.title {
+  font-size: var(--font-xl);
 }
 
 .modalContent {
@@ -70,7 +73,11 @@
 
 .tikTokActionItemText {
   composes: actionItemText;
-  color: var(--static-twitter-blue) !important;
+  color: black !important;
+}
+
+.tikTokActionItemTextDark {
+  color: var(--white);
 }
 
 .shareIcon path {

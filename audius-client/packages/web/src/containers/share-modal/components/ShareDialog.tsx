@@ -6,14 +6,20 @@ import {
   ButtonType,
   IconLink,
   IconShare,
-  IconTikTok,
   IconTwitterBird,
   Modal
 } from '@audius/stems'
+import cn from 'classnames'
+
+import { isDarkMode } from 'utils/theme/theme'
 
 import { messages } from '../messages'
+import { ShareProps } from '../types'
 
-import styles from './DesktopShareModal.module.css'
+import { IconTikTok } from './IconTikTok'
+import styles from './ShareDialog.module.css'
+
+const iconProps = { height: 24, width: 24 }
 
 type ShareActionListItemProps = ButtonProps
 
@@ -29,23 +35,16 @@ const ShareActionListItem = (props: ShareActionListItemProps) => {
   )
 }
 
-type DesktopShareModalProps = {
-  onShareToTwitter: () => void
-  onShareToTikTok: () => void
-  onCopyLink: () => void
-  isOpen: boolean
-  onClose: () => void
-  isOwner: boolean
-}
+type ShareDialogProps = ShareProps
 
-export const DesktopShareModal = ({
+export const ShareDialog = ({
   onShareToTwitter,
   onShareToTikTok,
   onCopyLink,
   isOpen,
   onClose,
   isOwner
-}: DesktopShareModalProps) => {
+}: ShareDialogProps) => {
   return (
     <Modal
       allowScroll={false}
@@ -56,10 +55,10 @@ export const DesktopShareModal = ({
       showTitleHeader
       showDismissButton
       title={
-        <h2 className={styles.titleContainer}>
-          <IconShare />
-          Share Track
-        </h2>
+        <div className={styles.titleContainer}>
+          <IconShare className={styles.titleIcon} />
+          <h2 className={styles.title}>{messages.modalTitle}</h2>
+        </div>
       }
     >
       <div className={styles.modalContent}>
@@ -68,7 +67,7 @@ export const DesktopShareModal = ({
         </p>
         <ul className={styles.actionList}>
           <ShareActionListItem
-            leftIcon={<IconTwitterBird height={24} width={24} />}
+            leftIcon={<IconTwitterBird {...iconProps} />}
             text={messages.twitter}
             onClick={onShareToTwitter}
             iconClassName={styles.twitterIcon}
@@ -76,14 +75,16 @@ export const DesktopShareModal = ({
           />
           {isOwner ? (
             <ShareActionListItem
-              leftIcon={<IconTikTok />}
+              leftIcon={<IconTikTok {...iconProps} />}
               text={messages.tikTok}
-              textClassName={styles.tikTokActionItemText}
+              textClassName={cn(styles.tikTokActionItemText, {
+                [styles.tikTokActionItemTextDark]: isDarkMode()
+              })}
               onClick={onShareToTikTok}
             />
           ) : null}
           <ShareActionListItem
-            leftIcon={<IconLink height={24} width={24} />}
+            leftIcon={<IconLink {...iconProps} />}
             iconClassName={styles.shareIcon}
             text={messages.copyLink}
             textClassName={styles.shareActionItemText}
