@@ -158,7 +158,7 @@ module.exports = function (app) {
   app.get(
     '/ip_check',
     handleResponse(async (req, res) => {
-      let { ip } = req
+      const { ip } = req
 
       return successResponse({
         ip: ip || ''
