@@ -280,21 +280,21 @@ describe('Test Send Notifications', function () {
     const notifs = [
       {
         title: challengeInfoMap['referred'].title,
-        msg: `You’ve received ${challengeInfoMap['referred'].amount} $AUDIO for being referred! Invite your friends to join to earn more!`,
+        msg: `You’ve received ${challengeInfoMap['referred'].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
       },
       ...([
-        'profile-completion','listen-streak','track-upload','referrals','connect-verified','mobile-install'
+        'profile-completion', 'listen-streak', 'track-upload', 'referrals', 'connect-verified', 'mobile-install'
       ].map(id => ({
         title: challengeInfoMap[id].title,
         msg: `You’ve earned ${challengeInfoMap[id].amount} $AUDIO for completing this challenge!`
-      })))  
+      })))
     ]
 
     for (const n of notifs) {
       console.log(n)
-      assert.deepStrictEqual(pushNotifications.some(queueNotif => 
+      assert.deepStrictEqual(pushNotifications.some(queueNotif =>
         queueNotif.notificationParams.title === n.title && queueNotif.notificationParams.message === n.msg), true)
       console.log('passed')
-      }
+    }
   })
 })
