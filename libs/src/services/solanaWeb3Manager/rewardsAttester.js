@@ -132,7 +132,7 @@ class RewardsAttester {
   async _awaitFeePayerBalance () {
     const getHasBalance = async () => this.libs.solanaWeb3Manager.hasBalance({ publicKey: this.libs.solanaWeb3Manager.feePayerKey })
     while (!(await getHasBalance())) {
-      this.logger.warning('No usable balance. Waiting...')
+      this.logger.warn('No usable balance. Waiting...')
       await this._delay(2000)
     }
   }
