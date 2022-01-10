@@ -41,7 +41,7 @@ def setup_trending(db):
                     "cover_photo_sizes": "Qm0123456789abcdef0123456789abcdef0123456789ab",
                     "bio": "filled in",
                 }
-                for i in range(15)
+                for i in range(5, 20)
             ],
         ],
         "tracks": [
