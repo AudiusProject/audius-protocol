@@ -288,6 +288,22 @@ class IdentityService {
     })
   }
 
+  async wormholeRelay ({
+    senderAddress,
+    permit,
+    transferTokens
+  }) {
+    return this._makeRequest({
+      url: '/wormhole_relay',
+      method: 'post',
+      data: {
+        senderAddress,
+        permit,
+        transferTokens
+      }
+    })
+  }
+
   /**
    * Gets the correct wallet that will relay a txn for `senderAddress`
    * @param {string} senderAddress wallet

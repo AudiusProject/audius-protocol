@@ -5,10 +5,12 @@ import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.models import Block, User
+from src.models.models import Challenge
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_NUMBER = 10
 logger = logging.getLogger(__name__)
 
 
@@ -18,10 +20,10 @@ def test_connect_verified_challenge(app):
     with app.app_context():
         db = get_db()
 
-    block = Block(blockhash="0x1", number=1)
+    block = Block(blockhash="0x1", number=BLOCK_NUMBER)
     user = User(
         blockhash="0x1",
-        blocknumber=1,
+        blocknumber=BLOCK_NUMBER,
         txhash="xyz",
         user_id=1,
         is_current=True,
@@ -37,6 +39,9 @@ def test_connect_verified_challenge(app):
 
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
+        session.query(Challenge).filter(Challenge.id == "connect-verified").update(
+            {"active": True, "starting_block": BLOCK_NUMBER}
+        )
 
         # Register events with the bus
         bus.register_listener(
@@ -50,7 +55,7 @@ def test_connect_verified_challenge(app):
 
         bus.dispatch(
             ChallengeEvent.connect_verified,
-            1,  # block_number
+            BLOCK_NUMBER,
             1,  # user_id
             {},
         )
