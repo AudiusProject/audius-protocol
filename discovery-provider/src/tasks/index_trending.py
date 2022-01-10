@@ -203,13 +203,17 @@ def set_last_trending_datetime(redis: Redis, timestamp: int):
     redis.set(last_trending_timestamp, timestamp)
 
 
-def foorTime(dt: datetime, roundTo: int):
+def floor_time(dt: datetime, interval_seconds: int):
     """
-    Round a datetime object to a time lapse in seconds
-    roundTo: Closest number of seconds to round to
+    Floor a datetime object to a time-span in seconds
+    interval_seconds: Closest number of seconds to floor to
+
+    For example, if floor_time is invoked with `interval_seconds` of 15,
+    the provided datetime is rounded down to the nearest 15 minute interval.
+    E.g. 10:48 rounds to 10:45, 11:02 rounds to 11:00, etc.
     """
     seconds = (dt.replace(tzinfo=None) - dt.min).seconds
-    rounding = seconds // roundTo * roundTo
+    rounding = seconds // interval_seconds * interval_seconds
     return dt + timedelta(0, rounding - seconds, -dt.microsecond)
 
 
@@ -219,8 +223,8 @@ def get_should_update_trending(
     """
     Checks if the trending job should re-run based off the last trending run's timestamp and
     the most recently indexed block's timestamp.
-    If the most recently indexed block (rounded down to the nearest interval) is 1 hr ahead of the last
-    trending job run, then the job should re-run
+    If the most recently indexed block (rounded down to the nearest interval) is `interval_seconds`
+    ahead of the last trending job run, then the job should re-run.
     The function returns the an int, representing the timestamp, if the jobs should re-run, else None
     """
     with db.scoped_session() as session:
@@ -229,7 +233,7 @@ def get_should_update_trending(
         )
         current_block = web3.eth.getBlock(current_db_block[0], True)
         current_timestamp = current_block["timestamp"]
-        block_datetime = foorTime(
+        block_datetime = floor_time(
             datetime.fromtimestamp(current_timestamp), interval_seconds
         )
 

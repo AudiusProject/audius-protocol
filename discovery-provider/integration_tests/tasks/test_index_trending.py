@@ -3,7 +3,7 @@ from datetime import datetime
 import redis
 from integration_tests.utils import populate_mock_db
 from src.tasks.index_trending import (
-    foorTime,
+    floor_time,
     get_should_update_trending,
     set_last_trending_datetime,
 )
@@ -28,23 +28,31 @@ class MockWeb3:
 
 
 def test_floor_time_60():
-    assert foorTime(datetime(2012, 3, 16, 0, 0), 60 * 60) == datetime(2012, 3, 16, 0, 0)
-    assert foorTime(datetime(2012, 3, 16, 0, 1), 60 * 60) == datetime(2012, 3, 16, 0, 0)
-    assert foorTime(datetime(2012, 3, 16, 0, 59), 60 * 60) == datetime(
+    assert floor_time(datetime(2012, 3, 16, 0, 0), 60 * 60) == datetime(
+        2012, 3, 16, 0, 0
+    )
+    assert floor_time(datetime(2012, 3, 16, 0, 1), 60 * 60) == datetime(
+        2012, 3, 16, 0, 0
+    )
+    assert floor_time(datetime(2012, 3, 16, 0, 59), 60 * 60) == datetime(
         2012, 3, 16, 0, 0
     )
 
 
 def test_floor_time_15():
-    assert foorTime(datetime(2012, 3, 16, 0, 0), 60 * 15) == datetime(2012, 3, 16, 0, 0)
-    assert foorTime(datetime(2012, 3, 16, 0, 1), 60 * 15) == datetime(2012, 3, 16, 0, 0)
-    assert foorTime(datetime(2012, 3, 16, 0, 14), 60 * 15) == datetime(
+    assert floor_time(datetime(2012, 3, 16, 0, 0), 60 * 15) == datetime(
         2012, 3, 16, 0, 0
     )
-    assert foorTime(datetime(2012, 3, 16, 0, 16), 60 * 15) == datetime(
+    assert floor_time(datetime(2012, 3, 16, 0, 1), 60 * 15) == datetime(
+        2012, 3, 16, 0, 0
+    )
+    assert floor_time(datetime(2012, 3, 16, 0, 14), 60 * 15) == datetime(
+        2012, 3, 16, 0, 0
+    )
+    assert floor_time(datetime(2012, 3, 16, 0, 16), 60 * 15) == datetime(
         2012, 3, 16, 0, 15
     )
-    assert foorTime(datetime(2012, 3, 16, 0, 31), 60 * 15) == datetime(
+    assert floor_time(datetime(2012, 3, 16, 0, 31), 60 * 15) == datetime(
         2012, 3, 16, 0, 30
     )
 
