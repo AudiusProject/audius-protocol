@@ -24,6 +24,8 @@ import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { isDarkMode } from 'utils/theme/theme'
 import { openTwitterLink } from 'utils/tweet'
 
+import { messages } from '../messages'
+
 import styles from './ShareDrawer.module.css'
 
 export const ShareDrawer = () => {
@@ -42,7 +44,7 @@ export const ShareDrawer = () => {
     const isOwner = account && artist && account.user_id === artist.user_id
 
     const shareToTwitterAction = {
-      text: 'Share to Twitter',
+      text: messages.twitter,
       icon: <IconTwitterBird height={20} width={26} />,
       className: styles.shareToTwitterAction,
       onClick: () => {
@@ -67,7 +69,7 @@ export const ShareDrawer = () => {
     }
 
     const shareToTikTokAction = {
-      text: 'Share Sound to TikTok',
+      text: messages.tikTok,
       icon: isDarkMode() ? (
         <IconTikTokInverted height={26} width={26} />
       ) : (
@@ -84,7 +86,7 @@ export const ShareDrawer = () => {
     }
 
     const copyLinkAction = {
-      text: 'Copy Link to Track',
+      text: messages.copyLink,
       icon: <IconLink height={26} width={26} />,
       className: styles.copyLinkAction,
       onClick: () => {

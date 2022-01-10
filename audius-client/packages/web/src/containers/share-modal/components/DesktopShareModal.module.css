@@ -1,0 +1,83 @@
+.headerContainer {
+  border-bottom-color: var(--neutral-light-8);
+}
+
+.modalBody {
+  display: flex;
+  overflow: hidden;
+  max-width: 528px;
+  width: 100%;
+  flex-direction: column;
+}
+
+.titleContainer {
+  font-size: var(--font-xl);
+  display: flex;
+  align-items: center;
+}
+
+.titleContainer svg {
+  height: var(--unit-6);
+  width: var(--unit-6);
+  margin-right: var(--unit-2);
+}
+
+.modalContent {
+  display: flex;
+  padding: 0px var(--unit-8) var(--unit-6);
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  justify-content: space-around;
+  font-weight: var(--font-bold);
+}
+
+.description {
+  margin: var(--unit-6) 0px;
+}
+
+.actionList {
+  width: 100%;
+}
+
+.actionListItem {
+  margin: var(--unit-3) 0px;
+}
+
+.actionItemIcon {
+  min-width: 44px;
+  display: inline-flex;
+}
+
+.actionButton {
+  width: 100%;
+}
+
+.actionItemText {
+  font-size: var(--font-l) !important;
+  font-weight: var(--font-heavy) !important;
+}
+
+.twitterIcon path {
+  fill: var(--static-twitter-blue) !important;
+}
+
+.twitterActionItemText {
+  composes: actionItemText;
+  color: var(--static-twitter-blue) !important;
+}
+
+.tikTokActionItemText {
+  composes: actionItemText;
+  color: var(--static-twitter-blue) !important;
+}
+
+.shareIcon path {
+  fill: var(--secondary) !important;
+}
+
+.shareActionItemText {
+  composes: actionItemText;
+  color: var(--secondary) !important;
+}
