@@ -113,8 +113,6 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         CASE
                         WHEN tp.owner_follower_count < :y
                             THEN 0
-                        WHEN EXTRACT(DAYS from now() - t.created_at) > :year
-                            THEN greatest(1.0/:q, pow(:q, greatest(-10, 1.0 - 1.0*EXTRACT(DAYS from now() - t.created_at)/:year))) * (:N * ap.count + :F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         ELSE (:N * ap.count + :F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as year_score,
                         now()
