@@ -183,7 +183,7 @@ const TopBar = ({ onClose, isOpen }: TopBarProps) => {
           onChangeText={onChangeText}
           underlineColorAndroid='transparent'
           style={inputStyles}
-          autoCompleteType={'off'}
+          autoComplete='off'
           autoCorrect={false}
           returnKeyType={'search'}
           onSubmitEditing={onSubmit}
