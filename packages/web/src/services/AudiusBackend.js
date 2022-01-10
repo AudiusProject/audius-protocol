@@ -2678,7 +2678,7 @@ class AudiusBackend {
   }) {
     await waitForLibsInit()
     try {
-      const res = await audiusLibs.Challenge.submitAndEvaluate({
+      const res = await audiusLibs.Rewards.submitAndEvaluate({
         challengeId,
         encodedUserId,
         handle,
