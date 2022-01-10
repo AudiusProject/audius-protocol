@@ -17,7 +17,7 @@ type Action = {
 
 type ActionSheetModalProps = {
   id?: string
-  didSelectRow: (index: number) => void
+  didSelectRow?: (index: number) => void
   actions: Action[]
   isOpen: boolean
   onClose: () => void
@@ -61,7 +61,7 @@ const ActionDrawer = ({
                   tabIndex={0}
                   onClick={event => {
                     onClick?.(event)
-                    didSelectRow(index)
+                    didSelectRow?.(index)
                   }}
                   className={cn(
                     styles.row,
