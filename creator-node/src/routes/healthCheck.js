@@ -158,10 +158,6 @@ module.exports = function (app) {
   app.get('/ip_check', handleResponse(async (req, res) => {
     let { ip } = req
 
-    if (ip && ip.substr(0, 7) === '::ffff:') {
-      ip = ip.substr(7)
-    }
-
     return successResponse({
       ip: ip || ''
     })
