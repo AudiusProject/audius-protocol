@@ -27,8 +27,7 @@ UPDATE_AGGREGATE_INTERVAL_PLAYS_QUERY = """
             tracks.genre as genre,
             tracks.created_at as created_at,
             COALESCE (week_listen_counts.count, 0) as week_listen_counts,
-            COALESCE (month_listen_counts.count, 0) as month_listen_counts,
-            COALESCE (year_listen_counts.count, 0) as year_listen_counts
+            COALESCE (month_listen_counts.count, 0) as month_listen_counts
         FROM
             tracks
         LEFT OUTER JOIN (
@@ -75,28 +74,6 @@ UPDATE_AGGREGATE_INTERVAL_PLAYS_QUERY = """
             AND plays.created_at > (now() - interval '1 month')
             GROUP BY plays.play_item_id
         ) as month_listen_counts ON month_listen_counts.play_item_id = tracks.track_id
-        LEFT OUTER JOIN (
-            SELECT
-                plays.play_item_id as play_item_id,
-                count(plays.id) as count
-            FROM
-                plays
-            WHERE
-                plays.id > (
-                    SELECT
-                        prev_id_checkpoint
-                    FROM
-                        aggregate_interval_plays_last_checkpoint
-                )
-            AND plays.id <= (
-                SELECT
-                    new_id_checkpoint
-                FROM
-                    aggregate_interval_plays_last_checkpoint
-            )
-            AND plays.created_at > (now() - interval '1 year')
-            GROUP BY plays.play_item_id
-        ) as year_listen_counts ON year_listen_counts.play_item_id = tracks.track_id
         WHERE
             tracks.is_current is True AND
             tracks.is_delete is False AND
@@ -104,16 +81,15 @@ UPDATE_AGGREGATE_INTERVAL_PLAYS_QUERY = """
             tracks.stem_of is Null
     )
     INSERT INTO
-        aggregate_interval_plays (track_id, genre, created_at, week_listen_counts, month_listen_counts, year_listen_counts)
+        aggregate_interval_plays (track_id, genre, created_at, week_listen_counts, month_listen_counts)
     SELECT
-        track_id, genre, created_at, week_listen_counts, month_listen_counts, year_listen_counts
+        track_id, genre, created_at, week_listen_counts, month_listen_counts
     FROM
         new_plays ON CONFLICT (track_id) DO
     UPDATE
     SET
         week_listen_counts = aggregate_interval_plays.week_listen_counts + EXCLUDED.week_listen_counts,
-        month_listen_counts = aggregate_interval_plays.month_listen_counts + EXCLUDED.month_listen_counts,
-        year_listen_counts = aggregate_interval_plays.year_listen_counts + EXCLUDED.year_listen_counts
+        month_listen_counts = aggregate_interval_plays.month_listen_counts + EXCLUDED.month_listen_counts
     """
 
 

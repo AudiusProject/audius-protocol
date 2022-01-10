@@ -68,13 +68,11 @@ def test_index_aggregate_interval_plays_populate(app):
         assert results[0].created_at == DATE_NOW
         assert results[0].week_listen_counts == 4
         assert results[0].month_listen_counts == 6
-        assert results[0].year_listen_counts == 7
 
         assert results[1].track_id == 2
         assert results[1].created_at == DATE_NOW
         assert results[1].week_listen_counts == 1
         assert results[1].month_listen_counts == 3
-        assert results[1].year_listen_counts == 4
 
         new_checkpoint: IndexingCheckpoints = (
             session.query(IndexingCheckpoints.last_checkpoint)
@@ -104,14 +102,12 @@ def test_index_aggregate_interval_plays_update(app):
                 "created_at": DATE_NOW,
                 "week_listen_counts": 4,
                 "month_listen_counts": 6,
-                "year_listen_counts": 7,
             },
             {
                 "track_id": 2,
                 "created_at": DATE_NOW,
                 "week_listen_counts": 1,
                 "month_listen_counts": 3,
-                "year_listen_counts": 4,
             },
         ],
         "indexing_checkpoints": [
@@ -143,13 +139,11 @@ def test_index_aggregate_interval_plays_update(app):
         assert results[0].created_at == DATE_NOW
         assert results[0].week_listen_counts == 4
         assert results[0].month_listen_counts == 6
-        assert results[0].year_listen_counts == 7
 
         assert results[1].track_id == 2
         assert results[1].created_at == DATE_NOW
         assert results[1].week_listen_counts == 4
         assert results[1].month_listen_counts == 6
-        assert results[1].year_listen_counts == 7
 
         new_checkpoint: IndexingCheckpoints = (
             session.query(IndexingCheckpoints.last_checkpoint)
@@ -179,14 +173,12 @@ def test_index_aggregate_interval_plays_same_checkpoint(app):
                 "created_at": DATE_NOW,
                 "week_listen_counts": 4,
                 "month_listen_counts": 6,
-                "year_listen_counts": 7,
             },
             {
                 "track_id": 2,
                 "created_at": DATE_NOW,
                 "week_listen_counts": 1,
                 "month_listen_counts": 3,
-                "year_listen_counts": 4,
             },
         ],
         "indexing_checkpoints": [
@@ -215,13 +207,11 @@ def test_index_aggregate_interval_plays_same_checkpoint(app):
         assert results[0].created_at == DATE_NOW
         assert results[0].week_listen_counts == 4
         assert results[0].month_listen_counts == 6
-        assert results[0].year_listen_counts == 7
 
         assert results[1].track_id == 2
         assert results[1].created_at == DATE_NOW
         assert results[1].week_listen_counts == 1
         assert results[1].month_listen_counts == 3
-        assert results[1].year_listen_counts == 4
 
         new_checkpoint: IndexingCheckpoints = (
             session.query(IndexingCheckpoints.last_checkpoint)

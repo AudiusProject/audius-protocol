@@ -231,9 +231,6 @@ def populate_mock_db(db, entities, block_offset=0):
                 month_listen_counts=aggregate_interval_play_meta.get(
                     "month_listen_counts", 0
                 ),
-                year_listen_counts=aggregate_interval_play_meta.get(
-                    "year_listen_counts", 0
-                ),
             )
             session.add(aggregate_interval_play)
 

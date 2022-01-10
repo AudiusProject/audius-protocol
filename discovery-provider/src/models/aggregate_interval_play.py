@@ -15,7 +15,6 @@ class AggregateIntervalPlay(Base):
     created_at = Column(Integer, nullable=False)
     week_listen_counts = Column(Integer, nullable=False)
     month_listen_counts = Column(Integer, nullable=False)
-    year_listen_counts = Column(Integer, nullable=False)
 
     def __repr__(self):
         return f"<AggregateIntervalPlay(\
@@ -24,5 +23,4 @@ genre={self.genre},\
 created_at={self.created_at},\
 week_listen_counts={self.week_listen_counts},\
 month_listen_counts={self.month_listen_counts},\
-year_listen_counts={self.year_listen_counts},\
 )>"

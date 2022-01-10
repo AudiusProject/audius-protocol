@@ -47,8 +47,7 @@ def upgrade():
                         tracks.genre as genre,
                         tracks.created_at as created_at,
                         COALESCE (week_listen_counts.count, 0) as week_listen_counts,
-                        COALESCE (month_listen_counts.count, 0) as month_listen_counts,
-                        COALESCE (year_listen_counts.count, 0) as year_listen_counts
+                        COALESCE (month_listen_counts.count, 0) as month_listen_counts
                     FROM
                         tracks
                     LEFT OUTER JOIN (
@@ -81,21 +80,6 @@ def upgrade():
                         )
                         GROUP BY plays.play_item_id
                     ) as month_listen_counts ON month_listen_counts.play_item_id = tracks.track_id
-                    LEFT OUTER JOIN (
-                        SELECT
-                            plays.play_item_id as play_item_id,
-                            count(plays.id) as count
-                        FROM
-                            plays
-                        WHERE
-                            plays.created_at > (now() - interval '1 year')
-                        AND plays.id <= (
-                            SELECT last_checkpoint
-                            FROM indexing_checkpoints
-                            WHERE tablename = 'aggregate_plays'
-                        )
-                        GROUP BY plays.play_item_id
-                    ) as year_listen_counts ON year_listen_counts.play_item_id = tracks.track_id
                     WHERE
                         tracks.is_current is True AND
                         tracks.is_delete is False AND
@@ -113,7 +97,6 @@ def upgrade():
                 CREATE UNIQUE INDEX IF NOT EXISTS interval_play_track_id_idx ON aggregate_interval_plays (track_id);
                 CREATE INDEX IF NOT EXISTS interval_play_week_count_idx ON aggregate_interval_plays (week_listen_counts);
                 CREATE INDEX IF NOT EXISTS interval_play_month_count_idx ON aggregate_interval_plays (month_listen_counts);
-                CREATE INDEX IF NOT EXISTS interval_play_year_count_idx ON aggregate_interval_plays (year_listen_counts);
 
             END IF;
         END
@@ -140,8 +123,7 @@ def downgrade():
             tracks.genre as genre,
             tracks.created_at as created_at,
             COALESCE (week_listen_counts.count, 0) as week_listen_counts,
-            COALESCE (month_listen_counts.count, 0) as month_listen_counts,
-            COALESCE (year_listen_counts.count, 0) as year_listen_counts
+            COALESCE (month_listen_counts.count, 0) as month_listen_counts
         FROM
             tracks
         LEFT OUTER JOIN (
