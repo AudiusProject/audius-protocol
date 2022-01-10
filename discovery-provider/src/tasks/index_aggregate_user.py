@@ -2,18 +2,17 @@ import logging
 import time
 
 import sqlalchemy as sa
-from src.queries.get_health import get_elapsed_time_redis
-from src.tasks.calculate_trending_challenges import get_latest_blocknumber
+from src.queries.get_health import get_elapsed_time_postgres, last_checkpoint
+from src.tasks.calculate_trending_challenges import get_latest_blocknumber_postgres
 from src.tasks.celery_app import celery
-from src.utils.redis_constants import (
-    index_aggregate_user_last_refresh_completion_redis_key,
-    most_recent_indexed_aggregate_user_block_redis_key,
-)
+from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
 
 logger = logging.getLogger(__name__)
 
 # Names of the aggregate tables to update
 AGGREGATE_USER = "aggregate_user"
+AGGREGATE_USER_BLOCK = "aggregate_user_block"
+AGGREGATE_USER_TIMESTAMP = "aggregate_user_timestamp"
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
 # (1,209,600 two weeks in seconds / 5 sec block_processing_interval_sec)
@@ -356,24 +355,21 @@ def update_aggregate_table(
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             start_time = time.time()
-            most_recent_indexed_aggregate_block = redis.get(
-                most_recent_indexed_aggregate_block_key
-            )
-            if most_recent_indexed_aggregate_block:
-                most_recent_indexed_aggregate_block = int(
-                    most_recent_indexed_aggregate_block
+            with db.scoped_session() as session:
+                most_recent_indexed_aggregate_block = last_checkpoint(
+                    session, AGGREGATE_USER_BLOCK
                 )
             logger.info(
                 f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
             )
 
-            elapsed_time = get_elapsed_time_redis(
-                redis, index_aggregate_user_last_refresh_completion_redis_key
+            elapsed_time = get_elapsed_time_postgres(
+                db, AGGREGATE_USER_TIMESTAMP
             )
 
             is_refreshed = False
             with db.scoped_session() as session:
-                latest_indexed_block_num = get_latest_blocknumber(session, redis)
+                latest_indexed_block_num = get_latest_blocknumber_postgres(session, AGGREGATE_USER_BLOCK)
 
                 if not most_recent_indexed_aggregate_block:
                     # repopulate entire table
@@ -400,13 +396,22 @@ def update_aggregate_table(
                 )
 
             if is_refreshed:
-                redis.set(
-                    index_aggregate_user_last_refresh_completion_redis_key,
-                    int(time.time()),
+                session.execute(
+                    sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
+                    {
+                        "tablename": AGGREGATE_USER_TIMESTAMP,
+                        "last_checkpoint": int(time.time()),
+                    },
                 )
 
             # set new block to be the lower bound for the next indexing
-            redis.set(most_recent_indexed_aggregate_block_key, latest_indexed_block_num)
+            session.execute(
+                sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
+                {
+                    "tablename": AGGREGATE_USER_BLOCK,
+                    "last_checkpoint": latest_indexed_block_num,
+                },
+            )
             logger.info(
                 f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec"""
             )
@@ -433,6 +438,6 @@ def update_aggregate_user(self):
         db,
         redis,
         AGGREGATE_USER,
-        most_recent_indexed_aggregate_user_block_redis_key,
+        AGGREGATE_USER_BLOCK,
         UPDATE_AGGREGATE_USER_QUERY,
     )
