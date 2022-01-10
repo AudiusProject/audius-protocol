@@ -1,4 +1,5 @@
 import concurrent.futures
+import json
 import logging
 import time
 from datetime import datetime
@@ -11,7 +12,10 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_transaction_types import TransactionInfoResult
+from src.solana.solana_transaction_types import (
+    ConfirmedSignatureForAddressResult,
+    TransactionInfoResult,
+)
 from src.tasks.celery_app import celery
 from src.tasks.index_listen_count_milestones import (
     CURRENT_PLAY_INDEXING,
@@ -33,6 +37,8 @@ TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 
+REDIS_TX_CACHE_QUEUE_PREFIX = "plays-tx-cache-queue"
+
 # The size of the tx signatures for the program coming from the RPC pool per batch
 TX_SIGNATURES_BATCH_SIZE = 1000
 
@@ -41,6 +47,11 @@ TX_SIGNATURES_MAX_BATCHES = 100
 
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 75
+
+# Number of signatures that are fetched from RPC and written at once
+# For example, in a batch of 1000 only 100 will be fetched and written in parallel
+# Intended to relieve RPC and DB pressure
+TX_SIGNATURES_PROCESSING_SIZE = 100
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +86,14 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
         user_id = int(decoded[user_id_start:user_id_end])
     except ValueError:
         # Deal with some python logging annoyances by pulling this out
-        log = f"Recording anonymous listen - failed to parse user_id from {decoded[user_id_start:user_id_end]!r}"
+        log = (
+            "Recording anonymous listen {!r}".format(
+                decoded[user_id_start:user_id_end]
+            ),
+        )
         logger.warning(
             log,
-            exc_info=True,
+            exc_info=False,
         )
 
     track_id_length = int.from_bytes(decoded[user_id_end : user_id_end + 4], "little")
@@ -93,7 +108,9 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     try:
         source = str(decoded[source_start:source_end], "utf-8")
     except ValueError:
-        log = f"Failed to parse source from {decoded[source_start:source_end]!r}"
+        log = (
+            "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
+        )
         logger.error(
             log,
             exc_info=True,
@@ -106,21 +123,26 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
 
 class PlayInfo(TypedDict):
     user_id: int
-    track_id: int
+    play_item_id: int
     created_at: datetime
+    updated_at: datetime
     source: str
     slot: int
-    tx_sig: str
+    signature: str
 
 
 # Cache the latest value committed to DB in redis
 # Used for quick retrieval in health check
+
+
 def cache_latest_sol_play_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
     cache_latest_sol_db_tx(redis, latest_sol_play_db_tx_key, latest_tx)
 
 
 # Check for both SECP and SignerGroup
 # Ensures that a signature recovery was performed within the expected SignerGroup
+
+
 def is_valid_tx(account_keys):
     if SECP_PROGRAM in account_keys and SIGNER_GROUP in account_keys:
         return True
@@ -130,10 +152,15 @@ def is_valid_tx(account_keys):
     return False
 
 
-def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_sig):
+def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_sig: str):
     try:
+        fetch_start_time = time.time()
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-        logger.info(f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}")
+        fetch_completion_time = time.time()
+        fetch_time = fetch_completion_time - fetch_start_time
+        logger.info(
+            f"index_solana_plays.py | Got transaction: {tx_sig} in {fetch_time}"
+        )
         meta = tx_info["result"]["meta"]
         error = meta["err"]
 
@@ -302,7 +329,6 @@ def parse_sol_tx_batch(
     This function also has a recursive retry upto a certain limit in case a future doesn't complete
     within the alloted time. It clears the futures thread queue and the batch is retried
     """
-    logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
     batch_start_time = time.time()
     challenge_bus_events = []
     plays = []
@@ -313,7 +339,7 @@ def parse_sol_tx_batch(
     challenge_bus = index_solana_plays.challenge_event_bus
 
     # Process each batch in parallel
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         parse_sol_tx_futures = {
             executor.submit(
                 parse_sol_play_transaction,
@@ -336,11 +362,12 @@ def parse_sol_tx_batch(
                     # from the rpc pool
                     play: PlayInfo = {
                         "user_id": user_id,
-                        "track_id": track_id,
+                        "play_item_id": track_id,
                         "created_at": created_at,
+                        "updated_at": datetime.now(),
                         "source": source,
                         "slot": slot,
-                        "tx_sig": tx_sig,
+                        "signature": tx_sig,
                     }
                     plays.append(play)
                     # Only enqueue a challenge event if it's *not*
@@ -376,39 +403,57 @@ def parse_sol_tx_batch(
         # if the thread pool executor completes successfully without raising an exception
         # the data is successfully fetched so we can add it to the db session and dispatch
         # events to challenge bus
-        with db.scoped_session() as session:
-            for play in plays:
-                session.add(
-                    Play(
-                        user_id=play.get("user_id"),
-                        play_item_id=play.get("track_id"),
-                        created_at=play.get("created_at"),
-                        source=play.get("source"),
-                        slot=play.get("slot"),
-                        signature=play.get("tx_sig"),
-                    )
-                )
-                if play.get("tx_sig") == last_tx_in_batch:
-                    # Cache the latest play from this batch
-                    # This reflects the ordering from chain
-                    most_recent_db_play = {
-                        "signature": play.get("tx_sig"),
-                        "slot": play.get("slot"),
-                        "timestamp": int(play.get("created_at").timestamp()),
-                    }
-                    cache_latest_sol_play_db_tx(redis, most_recent_db_play)
 
-        track_play_ids = [play["track_id"] for play in plays]
-        if track_play_ids:
-            redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
+    # Cache the latest play from this batch
+    # This reflects the ordering from chain
+    for play in plays:
+        if play.get("signature") == last_tx_in_batch:
+            most_recent_db_play = {
+                "signature": play.get("signature"),
+                "slot": play.get("slot"),
+                "timestamp": int(play.get("created_at").timestamp()),
+            }
+            cache_latest_sol_play_db_tx(redis, most_recent_db_play)
+            break
 
-        for event in challenge_bus_events:
-            challenge_bus.dispatch(
-                ChallengeEvent.track_listen,
-                event.get("slot"),
-                event.get("user_id"),
-                {"created_at": event.get("created_at")},
-            )
+    db_save_start = time.time()
+    logger.info(
+        f"index_solana_plays.py | DB | Saving test to DB, fetched batch tx details in {db_save_start - batch_start_time}"
+    )
+
+    with db.scoped_session() as session:
+        logger.info(
+            f"index_solana_plays.py | DB | Acquired session in {time.time() - db_save_start}"
+        )
+        session_execute_start = time.time()
+        # Save in bulk
+        session.execute(Play.__table__.insert().values(plays))
+        logger.info(
+            f"index_solana_plays.py | DB | Session execute completed in {time.time() - session_execute_start}"
+        )
+
+    logger.info(
+        f"index_solana_plays.py | DB | Saved to DB in {time.time() - db_save_start}"
+    )
+
+    track_play_ids = [play["play_item_id"] for play in plays]
+    if track_play_ids:
+        redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
+
+    logger.info("index_solana_plays.py | Dispatching listen events")
+    listen_dispatch_start = time.time()
+    for event in challenge_bus_events:
+        challenge_bus.dispatch(
+            ChallengeEvent.track_listen,
+            event.get("slot"),
+            event.get("user_id"),
+            {"created_at": event.get("created_at")},
+        )
+    listen_dispatch_end = time.time()
+    listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
+    logger.info(
+        f"index_solana_plays.py | Dispatched listen events in {listen_dispatch_diff}"
+    )
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
@@ -423,7 +468,40 @@ def split_list(list, n):
         yield list[i : i + n]
 
 
-def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
+# Push to head of array containing seen transactions
+# Used to avoid re-traversal from chain tail when slot diff > certain number
+def cache_traversed_tx(redis: Redis, tx: ConfirmedSignatureForAddressResult):
+    redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, json.dumps(tx))
+
+
+# Fetch the cached transaction from redis queue
+# Eliminates transactions one by one if they are < latest db slot
+def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: int):
+    cached_offset_tx_found = False
+    while not cached_offset_tx_found:
+        last_cached_tx_raw = redis.lrange(REDIS_TX_CACHE_QUEUE_PREFIX, 0, 1)
+        if last_cached_tx_raw:
+            last_cached_tx: ConfirmedSignatureForAddressResult = json.loads(
+                last_cached_tx_raw[0]
+            )
+            logger.info(
+                f"index_solana_plays.py | processing cached tx = {last_cached_tx}, latest_db_slot = {latest_db_slot}"
+            )
+            redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
+            # If a single element is remaining, clear the list to avoid dupe processing
+            if redis.llen(REDIS_TX_CACHE_QUEUE_PREFIX) == 1:
+                redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
+            # Return if a valid signature is found
+            if last_cached_tx["slot"] > latest_db_slot:
+                cached_offset_tx_found = True
+                last_tx_signature = last_cached_tx["signature"]
+                return last_tx_signature
+        else:
+            break
+    return None
+
+
+def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redis):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
     except ValueError:
@@ -439,6 +517,12 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     latest_processed_slot = get_latest_slot(db)
     logger.info(f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
 
+    # Utilize the cached tx to offset
+    cached_offset_tx = fetch_traversed_tx_from_cache(redis, latest_processed_slot)
+
+    # The 'before' value from where we start querying transactions
+    last_tx_signature = cached_offset_tx
+
     # Loop exit condition
     intersection_found = False
 
@@ -448,15 +532,13 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     # Current batch of transactions
     transaction_signature_batch = []
 
-    last_tx_signature = None
-
     # Current batch
     page_count = 0
 
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
         logger.info(
-            f"index_solana_plays.py | About to make request to get transactions before {last_tx_signature}"
+            f"index_solana_plays.py | Requesting transactions before {last_tx_signature}"
         )
         transactions_history = solana_client_manager.get_signatures_for_address(
             TRACK_LISTEN_PROGRAM,
@@ -464,7 +546,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
             limit=TX_SIGNATURES_BATCH_SIZE,
         )
         logger.info(
-            f"index_solana_plays.py | Finished making request to get transactions before {last_tx_signature}"
+            f"index_solana_plays.py | Retrieved transactions before {last_tx_signature}"
         )
         transactions_array = transactions_history["result"]
         if not transactions_array:
@@ -479,9 +561,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                 for tx in transactions_array:
                     tx_sig = tx["signature"]
                     slot = tx["slot"]
-                    logger.info(
-                        f"index_solana_plays.py | Processing tx, sig={tx_sig} slot={slot}"
-                    )
                     if tx["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx["slot"] <= latest_processed_slot:
@@ -504,6 +583,10 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
+
+                # Append to recently seen cache
+                cache_traversed_tx(redis, last_tx)
+
                 # Append batch of processed signatures
                 if transaction_signature_batch:
                     transaction_signatures.append(transaction_signature_batch)
@@ -529,18 +612,13 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
             page_count={page_count}"
         )
         page_count = page_count + 1
-        time.sleep(2)  # sleep to not overwhelm rpc pool
-
-    logger.info(
-        f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries"
-    )
 
     transaction_signatures.reverse()
 
-    logger.info(f"index_solana_plays.py | {transaction_signatures}")
-
     for tx_sig_batch in transaction_signatures:
-        for tx_sig_batch_records in split_list(tx_sig_batch, 50):
+        for tx_sig_batch_records in split_list(
+            tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
+        ):
             parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records)
 
     try:
@@ -561,7 +639,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
         raise e
 
 
-# ####### CELERY TASKS ####### #
 @celery.task(name="index_solana_plays", bind=True)
 def index_solana_plays(self):
     # Cache custom task class properties

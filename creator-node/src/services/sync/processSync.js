@@ -24,7 +24,8 @@ async function processSync(
   serviceRegistry,
   walletPublicKeys,
   creatorNodeEndpoint,
-  blockNumber = null
+  blockNumber = null,
+  forceResync = false
 ) {
   const { nodeConfig, redis } = serviceRegistry
 
@@ -36,6 +37,7 @@ async function processSync(
   )
 
   const start = Date.now()
+
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
   // object to track if the function errored, returned at the end of the function
@@ -62,11 +64,19 @@ async function processSync(
    * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
    */
   try {
-    // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
-    const cnodeUser = await models.CNodeUser.findOne({
-      where: { walletPublicKey: walletPublicKeys[0] }
-    })
-    const localMaxClockVal = cnodeUser ? cnodeUser.clock : -1
+    const wallet = walletPublicKeys[0]
+
+    let localMaxClockVal
+    if (forceResync) {
+      await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
+      localMaxClockVal = -1
+    } else {
+      // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
+      const cnodeUser = await models.CNodeUser.findOne({
+        where: { walletPublicKey: walletPublicKeys[0] }
+      })
+      localMaxClockVal = cnodeUser ? cnodeUser.clock : -1
+    }
 
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
@@ -256,7 +266,8 @@ async function processSync(
         })
 
         /**
-         * The first sync for a user will enter else case where no local cnodeUserRecord is found, creating a new entry.
+         * The first sync for a user will enter else case where no local cnodeUserRecord is found
+         *    creating a new entry with a new auto-generated cnodeUserUUID.
          * Every subsequent sync will enter the if case and update the existing local cnodeUserRecord.
          */
         if (cnodeUserRecord) {
@@ -545,7 +556,7 @@ async function processSync(
       }
     }
   } catch (e) {
-    // two conditions where we wipe the state on the secondary
+    // two errors where we wipe the state on the secondary
     // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
     // if the secondary gets into a weird state with constraints, wipe the records before future re-syncs
     if (

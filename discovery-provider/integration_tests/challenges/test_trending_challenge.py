@@ -21,6 +21,7 @@ from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_NUMBER = 10
 logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
@@ -252,7 +253,7 @@ def test_trending_challenge_job(app):
         + [{"item_id": 15} for _ in range(200)],
     }
 
-    populate_mock_db(db, test_entities)
+    populate_mock_db(db, test_entities, BLOCK_NUMBER + 1)
     bus = ChallengeEventBus(redis_conn)
 
     # Register events with the bus
@@ -296,7 +297,7 @@ def test_trending_challenge_job(app):
                 Challenge.id == "trending-track",
                 Challenge.id == "trending-underground-track",
             )
-        ).update({"active": True})
+        ).update({"active": True, "starting_block": BLOCK_NUMBER})
         bus.process_events(session)
         session.flush()
         trending_tracks = (
