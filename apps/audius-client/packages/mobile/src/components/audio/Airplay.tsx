@@ -67,7 +67,7 @@ const Airplay = ({ webRef }: OwnProps) => {
     }
   }, [webRef, listenerRef])
 
-  return <AirplayViewManager style={{ display: 'none' }} />
+  return <AirplayViewManager />
 }
 
 export default Airplay

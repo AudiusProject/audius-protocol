@@ -68,8 +68,16 @@ const ToastView = ({ content, timeout, type = 'info' }: ToastViewProps) => {
   const opacityAnim = useRef(new Animated.Value(0)).current
 
   const animOut = useCallback(() => {
-    Animated.spring(opacityAnim, { ...springConfig, toValue: 0 }).start()
-    Animated.spring(translationAnim, { ...springConfig, toValue: 0 }).start()
+    Animated.spring(opacityAnim, {
+      ...springConfig,
+      toValue: 0,
+      useNativeDriver: true
+    }).start()
+    Animated.spring(translationAnim, {
+      ...springConfig,
+      toValue: 0,
+      useNativeDriver: true
+    }).start()
   }, [translationAnim, opacityAnim])
 
   const animIn = useCallback(() => {
@@ -78,10 +86,15 @@ const ToastView = ({ content, timeout, type = 'info' }: ToastViewProps) => {
         animOut()
       }, timeout)
     }
-    Animated.spring(opacityAnim, { ...springConfig, toValue: 1 }).start()
+    Animated.spring(opacityAnim, {
+      ...springConfig,
+      toValue: 1,
+      useNativeDriver: true
+    }).start()
     Animated.spring(translationAnim, {
       ...springConfig,
-      toValue: DISTANCE_DOWN
+      toValue: DISTANCE_DOWN,
+      useNativeDriver: true
     }).start(callback)
   }, [translationAnim, opacityAnim, animOut, timeout])
 

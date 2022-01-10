@@ -524,7 +524,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                   underlineColorAndroid='transparent'
                   placeholder='Display Name'
                   keyboardType='default'
-                  autoCompleteType='off'
+                  autoComplete='off'
                   autoCorrect={false}
                   autoCapitalize='words'
                   enablesReturnKeyAutomatically={true}
@@ -555,7 +555,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                     underlineColorAndroid='transparent'
                     placeholder='Handle'
                     keyboardType='email-address'
-                    autoCompleteType='off'
+                    autoComplete='off'
                     autoCorrect={false}
                     autoCapitalize='none'
                     enablesReturnKeyAutomatically={true}

@@ -549,7 +549,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
           placeholderTextColor='#C2C0CC'
           underlineColorAndroid='transparent'
           placeholder='Password'
-          autoCompleteType='off'
+          autoComplete='off'
           autoCorrect={false}
           autoCapitalize='none'
           enablesReturnKeyAutomatically={true}
@@ -703,7 +703,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
               underlineColorAndroid='transparent'
               placeholder='Email'
               keyboardType='email-address'
-              autoCompleteType='off'
+              autoComplete='off'
               autoCorrect={false}
               autoCapitalize='none'
               enablesReturnKeyAutomatically={true}

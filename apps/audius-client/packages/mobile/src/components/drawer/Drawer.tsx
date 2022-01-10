@@ -496,7 +496,7 @@ const Drawer = ({
   })
 
   const renderBackground = () => {
-    const renderBackgroundView = (options?: { pointerEvents: string }) => (
+    const renderBackgroundView = (options?: { pointerEvents: 'none' }) => (
       <Animated.View
         pointerEvents={options?.pointerEvents}
         style={[styles.background, { opacity: backgroundOpacityAnim }]}
