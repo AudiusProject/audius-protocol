@@ -6,7 +6,7 @@ from src.tasks.calculate_trending_challenges import get_latest_blocknumber_postg
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     UPDATE_INDEXING_CHECKPOINTS_QUERY,
-    last_checkpoint
+    last_checkpoint,
 )
 
 logger = logging.getLogger(__name__)
@@ -360,7 +360,9 @@ def update_aggregate_table(
             )
 
             with db.scoped_session() as session:
-                latest_indexed_block_num = get_latest_blocknumber_postgres(session, most_recent_indexed_aggregate_block_key)
+                latest_indexed_block_num = get_latest_blocknumber_postgres(
+                    session, most_recent_indexed_aggregate_block_key
+                )
 
                 if not most_recent_indexed_aggregate_block:
                     # repopulate entire table

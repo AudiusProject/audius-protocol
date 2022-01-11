@@ -6,7 +6,7 @@ from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     UPDATE_INDEXING_CHECKPOINTS_QUERY,
-    last_checkpoint
+    last_checkpoint,
 )
 
 logger = logging.getLogger(__name__)
