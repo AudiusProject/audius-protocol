@@ -2,11 +2,11 @@ import logging
 import time
 
 import sqlalchemy as sa
-from src.tasks.calculate_trending_challenges import get_latest_blocknumber_postgres
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     UPDATE_INDEXING_CHECKPOINTS_QUERY,
     last_checkpoint,
+    get_latest_blocknumber_postgres,
 )
 
 logger = logging.getLogger(__name__)

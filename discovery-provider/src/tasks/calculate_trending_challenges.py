@@ -8,7 +8,6 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Block
-from src.queries.get_health import last_checkpoint
 from src.queries.get_trending_playlists import (
     GetTrendingPlaylistsArgs,
     _get_trending_playlists_with_session,
@@ -32,19 +31,6 @@ trending_strategy_factory = TrendingStrategyFactory()
 def get_latest_blocknumber(session: Session, redis: Redis) -> Optional[int]:
     # get latest db state from redis cache
     latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
-    if latest_indexed_block_num is not None:
-        return int(latest_indexed_block_num)
-    db_block_query = (
-        session.query(Block.number).filter(Block.is_current == True).first()
-    )
-    if db_block_query is None:
-        return None
-    return db_block_query[0]
-
-
-def get_latest_blocknumber_postgres(session: Session, tablename: str) -> Optional[int]:
-    # get latest db state from postgres cache
-    latest_indexed_block_num = last_checkpoint(session, tablename)
     if latest_indexed_block_num is not None:
         return int(latest_indexed_block_num)
     db_block_query = (

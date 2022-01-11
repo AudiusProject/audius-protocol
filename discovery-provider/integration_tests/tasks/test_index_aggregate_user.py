@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def test_index_aggregate_user_populate(app):
     """Test that we should populate plays from empty"""
 
-    date = datetime.now()
+    # date = datetime.now()
     # setup
     with app.app_context():
         db = get_db()
@@ -25,29 +25,74 @@ def test_index_aggregate_user_populate(app):
     # run
     entities = {
         "tracks": [
-            {"track_id": 0, "title": "track 0"},
-            {"track_id": 1, "title": "track 1"},
-            {"track_id": 2, "title": "track 2"},
-            {"track_id": 3, "title": "track 3"},
-            {"track_id": 4, "title": "track 4"},
+            {"track_id": 1, "owner_id": 1},
+            {"track_id": 2, "owner_id": 2},
+            {"track_id": 3, "owner_id": 3},
+            {"track_id": 4, "is_unlisted": True, "owner_id": 3},
         ],
-        "plays": [
-            # Current Plays
-            {"item_id": 0},
-            {"item_id": 0},
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 2},
-            {"item_id": 3},
-            # > 1 wk plays
-            {"item_id": 2, "created_at": date - timedelta(weeks=2)},
-            {"item_id": 2, "created_at": date - timedelta(weeks=2)},
-            {"item_id": 3, "created_at": date - timedelta(weeks=2)},
-            {"item_id": 3},
-            {"item_id": 3},
-            {"item_id": 4},
-            {"item_id": 4},
+        "playlists": [
+            {
+                "playlist_id": 1,
+                "playlist_owner_id": 1,
+                "playlist_name": "name",
+                "description": "description",
+                "playlist_contents": {
+                    "track_ids": [
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
+                    ]
+                },
+            },
+            {
+                "playlist_id": 3,
+                "is_album": True,
+                "playlist_owner_id": 3,
+                "playlist_name": "name",
+                "description": "description",
+                "playlist_contents": {
+                    "track_ids": [
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
+                    ]
+                },
+            },
         ],
+        "users": [
+            {"user_id": 1, "handle": "user1"},
+            {"user_id": 2, "handle": "user2"},
+            {"user_id": 3, "handle": "user3"},
+            {"user_id": 4, "handle": "user4"},
+            {"user_id": 5, "handle": "user5"},
+        ],
+        "follows": [
+            {
+                "follower_user_id": 1,
+                "followee_user_id": 2,
+                "created_at": datetime.now() - timedelta(days=8),
+            },
+            {
+                "follower_user_id": 1,
+                "followee_user_id": 3,
+                "created_at": datetime.now() - timedelta(days=8),
+            },
+            {
+                "follower_user_id": 2,
+                "followee_user_id": 3,
+                "created_at": datetime.now() - timedelta(days=8),
+            },
+        ],
+        "reposts": [
+            {"repost_item_id": 1, "repost_type": "track", "user_id": 2},
+            {"repost_item_id": 1, "repost_type": "playlist", "user_id": 2},
+        ],
+        "saves": [
+            {"save_item_id": 1, "save_type": "track", "user_id": 2},
+            {"save_item_id": 1, "save_type": "playlist", "user_id": 4},
+        ],
+        "plays": [{"item_id": 1} for _ in range(55)]
+        + [{"item_id": 2} for _ in range(60)],
     }
 
     populate_mock_db(db, entities)
