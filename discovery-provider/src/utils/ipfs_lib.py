@@ -8,7 +8,7 @@ import random
 import ipfshttpclient
 import requests
 from src.utils.helpers import get_valid_multiaddr_from_id_json
-from utils.eth_contracts_helpers import fetch_all_registered_content_nodes
+from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 # from src.tasks.index_network_peers import get_peers
 

@@ -3,7 +3,7 @@ import concurrent.futures
 from src.tasks.celery_app import celery
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 from src.models import User
-from utils.eth_contracts_helpers import fetch_all_registered_content_nodes
+from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 logger = logging.getLogger(__name__)
 
