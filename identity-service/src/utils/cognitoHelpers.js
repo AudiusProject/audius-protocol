@@ -1,6 +1,5 @@
 const crypto = require('crypto')
 const config = require('../config')
-const { logger } = require('../logging')
 
 const sign = (reference) => {
   const apiSecret = config.get('cognitoAPISecret')
@@ -15,7 +14,6 @@ const sign = (reference) => {
 const createDigest = async (data) => {
   const hasher = crypto.createHash('sha256')
   const result = hasher.update(data, 'utf-8').digest('base64')
-  // const base64 = Buffer.from(result).toString('base64')
   return `SHA-256=${result}`
 }
 
@@ -41,14 +39,13 @@ const createCognitoHeaders = async ({path, method, body}) => {
     `digest: ${digest}`
   ].join('\n')
   const signature = sign(signingString)
-  logger.error(signingString)
   return {
     Date: httpDate,
     Digest: digest,
     Authorization: `Signature keyId="${apiKey}",algorithm="hmac-sha256",headers="(request-target) date digest",signature="${signature}"`,
     'Content-Type': 'application/vnd.api+json',
     Accept: 'application/vnd.api+json',
-    'Cognito-Version': '2016-09-01'
+    'Cognito-Version': '2020-08-14'
   }
 }
 

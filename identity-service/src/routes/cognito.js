@@ -10,8 +10,7 @@ const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
 const { sign, createCognitoHeaders } = require('../utils/cognitoHelpers')
 const axios = require('axios')
 const axiosHttpAdapter = require('axios/lib/adapters/http')
-
-const COGNITO_API_BASE_URL = 'https://sandbox.cognitohq.com'
+const config = require('../config')
 
 module.exports = function (app) {
   app.get('/cognito_signature', authMiddleware, handleResponse(async (req) => {
@@ -77,7 +76,9 @@ module.exports = function (app) {
   }))
 
   app.post('/cognito_flow', authMiddleware, handleResponse(async (req) => {
-    const { user: { handle }, body: { template_id } } = req
+    const baseUrl = config.get('cognitoBaseUrl')
+    const template_id = config.get('cognitoTemplateId')
+    const { user: { handle } } = req
     const path = '/flow_sessions?idempotent=true'
     const method = 'POST'
     const body = JSON.stringify({
@@ -88,21 +89,21 @@ module.exports = function (app) {
       }
     })
     const headers = await createCognitoHeaders({path, method, body})
-    console.error(body)
-    logger.error(headers)
+    const url = `${baseUrl}${path}`
     try {
       const response = await axios({
         adapter: axiosHttpAdapter,
-        url: `${COGNITO_API_BASE_URL}${path}`,
+        url,
         method,
         headers,
-        body
+        data: body
       })
-      const json = await response.json()
-      return successResponse({ shareable_url: json.shareable_url })
+      return successResponse({ shareable_url: response?.data?.shareable_url })
     } catch (err) {
-      console.error({headers, body})
-      console.error({errr: err.response.data.errors})
+      logger.error(`Request failed to Cognito. Request=${JSON.stringify({ url, method, headers, body })} Error=${err.message}`)
+      if (err.response?.data?.errors) {
+        logger.error(`Cognito returned errors: ${JSON.stringify(err.response.data.errors)}`)
+      }
       return errorResponseServerError(err.message)
     }
   }))
