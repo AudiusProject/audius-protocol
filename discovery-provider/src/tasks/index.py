@@ -211,7 +211,7 @@ def fetch_tx_receipts(self, block_transactions):
 
 
 def fetch_ipfs_metadata(
-    db,
+    session,
     user_factory_txs,
     track_factory_txs,
     block_number,
@@ -231,44 +231,43 @@ def fetch_ipfs_metadata(
     cids = set()
     cid_type = {}
 
-    with db.scoped_session() as session:
-        for tx_receipt in user_factory_txs:
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            user_events_tx = getattr(
-                user_contract.events, user_event_types_lookup["update_multihash"]
-            )().processReceipt(tx_receipt)
-            for entry in user_events_tx:
-                metadata_multihash = helpers.multihash_digest_to_cid(
-                    entry["args"]._multihashDigest
-                )
-                if not is_blacklisted_ipld(session, metadata_multihash):
-                    cids.add((metadata_multihash, txhash))
-                    cid_type[metadata_multihash] = "user"
-                else:
-                    blacklisted_cids.add(metadata_multihash)
+    for tx_receipt in user_factory_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+        user_events_tx = getattr(
+            user_contract.events, user_event_types_lookup["update_multihash"]
+        )().processReceipt(tx_receipt)
+        for entry in user_events_tx:
+            metadata_multihash = helpers.multihash_digest_to_cid(
+                entry["args"]._multihashDigest
+            )
+            if not is_blacklisted_ipld(session, metadata_multihash):
+                cids.add((metadata_multihash, txhash))
+                cid_type[metadata_multihash] = "user"
+            else:
+                blacklisted_cids.add(metadata_multihash)
 
-        for tx_receipt in track_factory_txs:
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            for event_type in [
-                track_event_types_lookup["new_track"],
-                track_event_types_lookup["update_track"],
-            ]:
-                track_events_tx = getattr(
-                    track_contract.events, event_type
-                )().processReceipt(tx_receipt)
-                for entry in track_events_tx:
-                    event_args = entry["args"]
-                    track_metadata_digest = event_args._multihashDigest.hex()
-                    track_metadata_hash_fn = event_args._multihashHashFn
-                    buf = multihash.encode(
-                        bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
-                    )
-                    cid = multihash.to_b58_string(buf)
-                    if not is_blacklisted_ipld(session, cid):
-                        cids.add((cid, txhash))
-                        cid_type[cid] = "track"
-                    else:
-                        blacklisted_cids.add(cid)
+    for tx_receipt in track_factory_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+        for event_type in [
+            track_event_types_lookup["new_track"],
+            track_event_types_lookup["update_track"],
+        ]:
+            track_events_tx = getattr(
+                track_contract.events, event_type
+            )().processReceipt(tx_receipt)
+            for entry in track_events_tx:
+                event_args = entry["args"]
+                track_metadata_digest = event_args._multihashDigest.hex()
+                track_metadata_hash_fn = event_args._multihashHashFn
+                buf = multihash.encode(
+                    bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
+                )
+                cid = multihash.to_b58_string(buf)
+                if not is_blacklisted_ipld(session, cid):
+                    cids.add((cid, txhash))
+                    cid_type[cid] = "track"
+                else:
+                    blacklisted_cids.add(cid)
 
     ipfs_metadata = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
@@ -499,7 +498,7 @@ def index_blocks(self, db, blocks_list):
             # and track_state_update
             try:
                 ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
-                    db,
+                    session,
                     user_factory_txs,
                     track_factory_txs,
                     block_number,
