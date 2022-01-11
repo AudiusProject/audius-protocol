@@ -10,6 +10,7 @@ content_node_service_type = bytes("content-node", "utf-8")
 
 cnode_info_redis_ttl = 1800
 
+
 def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     sp_id_key = get_sp_id_key(sp_id)
     sp_info_cached = get_pickled_key(redis, sp_id_key)
