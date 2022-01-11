@@ -481,7 +481,9 @@ class BlacklistManager {
     try {
       // If the CID (and trackId if exists) are not in the blacklist, allow serve
       const CIDIsInBlacklist = await this.CIDIsInBlacklist(cid)
-      const trackIdIsInBlacklist = trackId ? (await this.trackIdIsInBlacklist(trackId)) : false
+      const trackIdIsInBlacklist = trackId
+        ? await this.trackIdIsInBlacklist(trackId)
+        : false
       if (!CIDIsInBlacklist && !trackIdIsInBlacklist) return true
 
       // If the CID is in the blacklist and an invalid trackId was passed in, do not serve
