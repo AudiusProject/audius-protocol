@@ -1,8 +1,14 @@
+from typing import TypedDict
+
 import sqlalchemy
 from src.utils import db_session
 
 
-def get_alembic_version():
+class AlembicVersion(TypedDict):
+    version_num: str
+
+
+def get_alembic_version() -> AlembicVersion:
     """
     Fetches the alembic version at head from the database
     """
@@ -11,8 +17,8 @@ def get_alembic_version():
         version = session.execute(
             sqlalchemy.text(
                 """
-            SELECT * FROM "alembic_version";
-            """
+                SELECT * FROM "alembic_version";
+                """
             )
         ).first()
         return dict(version)
