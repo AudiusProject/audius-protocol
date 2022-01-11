@@ -91,6 +91,33 @@ pub mod audius_data {
         Ok(())
     }
 
+    /// Functionality to create user without admin privileges
+    pub fn create_user(ctx: Context<CreateUser>, user_authority: PubKey) -> ProgramResult {
+        msg!("Audius::CreateUser");
+
+        let audius_user_acct = &mut ctx.accounts.user;
+        // TODO: Verify this is not already initialized
+
+        // Eth_address offset (12) + address (20) + signature (65) = 97
+        // TODO: Validate message contents
+        let eth_address_offset = 12;
+        let secp_data = sysvar::instructions::load_instruction_at_checked(
+            0,
+            &ctx.accounts.sysvar_program)?;
+
+        if secp_data.program_id != secp256k1_program::id() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        let instruction_signer =
+            secp_data.data[eth_address_offset..eth_address_offset + 20].to_vec();
+
+        audius_user_acct.eth_address = instruction_signer;
+        audius_user_acct.authority = user_authority;
+
+        Ok(())
+    }
+
     /// Permissioned function to log an update to User metadata
     pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> ProgramResult {
         msg!("Audius::UpdateUser");
@@ -204,6 +231,15 @@ pub struct InitializeUser<'info> {
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
 pub struct InitializeUserSolIdentity<'info> {
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    pub sysvar_program: AccountInfo<'info>
+}
+
+
+/// Instruction container to create a user account
+#[derive(Accounts)]
+pub struct CreateUser<'info> {
     #[account(mut)]
     pub user: Account<'info, User>,
     pub sysvar_program: AccountInfo<'info>
