@@ -2,7 +2,7 @@ import concurrent.futures
 import logging
 
 from src.utils.helpers import is_fqdn
-from src.utils.redis_cache import pickle_and_set, get_sp_id_key, get_pickled_key
+from src.utils.redis_cache import get_pickled_key, get_sp_id_key, pickle_and_set
 
 logger = logging.getLogger(__name__)
 
