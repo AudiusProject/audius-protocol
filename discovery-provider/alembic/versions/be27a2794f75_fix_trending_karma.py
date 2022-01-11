@@ -1,7 +1,7 @@
 """fix_trending_karma
 
 Revision ID: be27a2794f75
-Revises: 132955202f03
+Revises: 85680793a611
 Create Date: 2022-01-08 00:13:16.651769
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "be27a2794f75"
-down_revision = "132955202f03"
+down_revision = "85680793a611"
 branch_labels = None
 depends_on = None
 
