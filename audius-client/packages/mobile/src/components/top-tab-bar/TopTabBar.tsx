@@ -42,8 +42,14 @@ const createTabBarStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     tabBarContainer: {
       flexDirection: 'row',
+      marginBottom: -4,
       paddingBottom: 4,
-      position: 'relative'
+      position: 'relative',
+      zIndex: 100,
+      shadowColor: themeColors.neutralDark1,
+      shadowOpacity: 0.15,
+      shadowOffset: { height: 2, width: 0 },
+      shadowRadius: 5
     },
 
     tabContainer: {
