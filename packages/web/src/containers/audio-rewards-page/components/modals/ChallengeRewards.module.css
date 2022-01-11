@@ -86,6 +86,9 @@
   padding: 16px 24px;
   font-weight: var(--font-bold);
 }
+.progressDescription p {
+  line-height: 20px;
+}
 .progressDescription.mobile {
   width: 100%;
   padding: 0px 20px;
@@ -195,7 +198,7 @@
 .inviteButtonContainer {
   gap: 10px;
   cursor: pointer;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
   transform: scale3d(1, 1, 1);
 }
 .inviteButtonContainer.mobile {

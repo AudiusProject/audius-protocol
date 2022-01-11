@@ -52,7 +52,7 @@
   border-radius: 16px;
   margin: 8px;
   cursor: pointer;
-  transition: all .18s ease-in-out;
+  transition: all 0.18s ease-in-out;
 }
 .rewardPanelContainer.mobile {
   flex: 1 1 320px;
@@ -85,6 +85,7 @@
   color: var(--secondary);
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
+  line-height: 24px;
   margin-bottom: 24px;
   text-align: left;
 }
