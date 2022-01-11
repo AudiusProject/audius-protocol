@@ -47,6 +47,7 @@ class RewardsAttester {
    *    aaoEndpoint: string
    *    aaoAddress: string
    *    updateValues: function
+   *    getStartingBlockOverride: function
    *    maxRetries: number
    *    reporter: BaseRewardsReporter
    *    challengeIdsDenyList: Array<string>
@@ -60,13 +61,14 @@ class RewardsAttester {
    *    aaoEndpoint,
    *    aaoAddress,
    *    updateValues = ({ startingBlock, offset, successCount }) => {},
+   *    getStartingBlockOverride = () => null,
    *    maxRetries = 3,
    *    reporter,
    *    challengeIdsDenyList
    *  }
    * @memberof RewardsAttester
    */
-  constructor ({ libs, startingBlock, offset, parallelization, logger, quorumSize, aaoEndpoint, aaoAddress, updateValues = () => {}, maxRetries = 5, reporter, challengeIdsDenyList }) {
+  constructor ({ libs, startingBlock, offset, parallelization, logger, quorumSize, aaoEndpoint, aaoAddress, updateValues = () => {}, getStartingBlockOverride = () => null, maxRetries = 5, reporter, challengeIdsDenyList }) {
     this.libs = libs
     this.logger = logger
     this.parallelization = parallelization
@@ -94,6 +96,8 @@ class RewardsAttester {
     this.maxCooldownMsec = 15000
     // Maximum number of retries before moving on
     this.maxRetries = maxRetries
+    // Get override starting block for manually setting indexing start
+    this.getStartingBlockOverride = getStartingBlockOverride
 
     this._performSingleAttestation = this._performSingleAttestation.bind(this)
     this._disbursementToKey = this._disbursementToKey.bind(this)
@@ -116,6 +120,7 @@ class RewardsAttester {
     while (true) {
       try {
         await this._awaitFeePayerBalance()
+        await this._checkForStartingBlockOverride()
         await this._attestInParallel()
       } catch (e) {
         this.logger.error(`Got error: ${e}, sleeping`)
@@ -135,6 +140,21 @@ class RewardsAttester {
       this.logger.warn('No usable balance. Waiting...')
       await this._delay(2000)
     }
+  }
+
+
+  /**
+   * Escape hatch for manually setting starting block.
+   *
+   * @memberof RewardsAttester
+   */
+  async _checkForStartingBlockOverride() {
+    const override = await this.getStartingBlockOverride()
+    // Careful with 0...
+    if (override === null || override === undefined) return
+    this.logger.info(`Setting starting block override: ${override}`)
+    this.startingBlock = override
+    this.offset = 0
   }
 
   /**
