@@ -27,7 +27,7 @@ class IPFSClient:
         self._id = random.randrange(1, 1000)
         logger.info(f"IPFSCLIENT {self._id} | init @ {ipfs_peer_host}:{ipfs_peer_port}")
         # self._cnode_endpoints = get_peers()
-        self._cnode_endpoints = []
+        self._cnode_endpoints = ['https://creatornode.audius7.prod-us-west-2.staked.cloud', 'https://audius-content-8.figment.io', 'https://content-a.mainnet.audius.radar.tech', 'https://creatornode.audius.prod-us-west-2.staked.cloud', 'https://creatornode.audius3.prod-us-west-2.staked.cloud', 'https://content-gru02.audius.hashbeam.com', 'https://creatornode.audius.co', 'https://audius-content-4.figment.io', 'https://audius.prod.capturealpha.io', 'https://content-node.audius.co', 'https://creatornode.audius6.prod-us-west-2.staked.cloud', 'https://cn02.audius.endl.net', 'https://audius-content-11.figment.io', 'https://creatornode.audius2.prod-us-west-2.staked.cloud', 'https://creatornode2.audius.co', 'https://cn03.audius.endl.net', 'https://usermetadata.audius.co', 'https://cn04.audius.endl.net', 'https://audius-content-9.figment.io', 'https://audius-content-6.figment.io', 'https://audius-content-10.figment.io', 'https://creatornode.audius1.prod-us-west-2.staked.cloud', 'https://cn01.audius.endl.net', 'https://creatornode.audius5.prod-us-west-2.staked.cloud', 'https://audius-content-3.figment.io', 'https://creatornode.audius4.prod-us-west-2.staked.cloud', 'https://audius-content-7.figment.io', 'https://audius-content-5.figment.io', 'https://creatornode3.audius.co', 'https://audius-content-2.figment.io', 'https://audius-content-1.figment.io']
         self._ipfsid = self._api.id()
         self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
 
