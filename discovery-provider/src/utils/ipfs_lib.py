@@ -277,6 +277,7 @@ class IPFSClient:
             logger.error(e)
 
     def update_cnode_urls(self, cnode_endpoints):
+        global GLOBAL_CNODE_ENDPOINTS
         logger.info(
             f"IPFSCLIENT  {self._id}| update_cnode_urls with endpoints {cnode_endpoints}"
         )
