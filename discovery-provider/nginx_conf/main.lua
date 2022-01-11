@@ -165,8 +165,8 @@ function _M.limit_to_rps ()
     end
 
     local remaining = err
-    ngx.header["X-RateLimit-Limit"] = config.limit_to_rps
-    ngx.header["X-RateLimit-Remaining"] = remaining
+    ngx.header["X-Redirect-Limit"] = config.limit_to_rps
+    ngx.header["X-Redirect-Remaining"] = remaining
 end
 
 return _M
