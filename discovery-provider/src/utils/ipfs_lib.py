@@ -13,6 +13,7 @@ from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
 NEW_BLOCK_TIMEOUT_SECONDS = 5
+GLOBAL_CNODE_ENDPOINTS = []
 
 
 class IPFSClient:
@@ -179,7 +180,7 @@ class IPFSClient:
         logger.warning(
             f"IPFSCLIENT  {self._id}| get_metadata_from_gateway, {multihash} replica set: {user_replica_set}"
         )
-        gateway_endpoints = self._cnode_endpoints
+        gateway_endpoints = self._cnode_endpoints or GLOBAL_CNODE_ENDPOINTS
 
         # first attempt to first fetch metadata from user replica set, if provided & non-empty
         if user_replica_set and isinstance(user_replica_set, str):
@@ -277,6 +278,9 @@ class IPFSClient:
         )
         if len(cnode_endpoints):
             self._cnode_endpoints = cnode_endpoints
+
+        if len(GLOBAL_CNODE_ENDPOINTS) == 0:
+            GLOBAL_CNODE_ENDPOINTS = cnode_endpoints
 
     def ipfs_id_multiaddr(self):
         return self._multiaddr
