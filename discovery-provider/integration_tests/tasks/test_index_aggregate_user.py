@@ -4,15 +4,18 @@ from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.models import AggregatePlays
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
+from src.tasks.index_aggregate_user import update_aggregate_table
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
+
+redis = get_redis()
 
 logger = logging.getLogger(__name__)
 
 
 # Tests
-def test_index_aggregate_plays_populate(app):
+def test_index_aggregate_user_populate(app):
     """Test that we should populate plays from empty"""
 
     date = datetime.now()
@@ -51,7 +54,7 @@ def test_index_aggregate_plays_populate(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
+        update_aggregate_table(db, redis)
 
         results: List[AggregatePlays] = (
             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
@@ -70,7 +73,7 @@ def test_index_aggregate_plays_populate(app):
         assert results[4].count == 2
 
 
-def test_index_aggregate_plays_update(app):
+def test_index_aggregate_user_update(app):
     """Test that we should insert new play counts and update existing"""
     # setup
     with app.app_context():
@@ -84,14 +87,14 @@ def test_index_aggregate_plays_update(app):
             {"track_id": 3, "title": "track 3"},
             {"track_id": 4, "title": "track 4"},
         ],
-        "aggregate_plays": [
+        "aggregate_user": [
             # Current Plays
             {"play_item_id": 1, "count": 3},
             {"play_item_id": 2, "count": 3},
             {"play_item_id": 3, "count": 3},
         ],
         "indexing_checkpoints": [
-            {"tablename": "aggregate_plays", "last_checkpoint": 9}
+            {"tablename": "aggregate_user", "last_checkpoint": 9}
         ],
         "plays": [
             # Current Plays
@@ -116,7 +119,7 @@ def test_index_aggregate_plays_update(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
+        update_aggregate_table(db, redis)
 
         results: List[AggregatePlays] = (
             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
@@ -133,7 +136,7 @@ def test_index_aggregate_plays_update(app):
         assert results[3].count == 2
 
 
-def test_index_aggregate_plays_same_checkpoint(app):
+def test_index_aggregate_user_same_checkpoint(app):
     """Test that we should not update when last index is the same"""
     # setup
     with app.app_context():
@@ -147,14 +150,14 @@ def test_index_aggregate_plays_same_checkpoint(app):
             {"track_id": 3, "title": "track 3"},
             {"track_id": 4, "title": "track 4"},
         ],
-        "aggregate_plays": [
+        "aggregate_user": [
             # Current Plays
             {"play_item_id": 1, "count": 3},
             {"play_item_id": 2, "count": 3},
             {"play_item_id": 3, "count": 3},
         ],
         "indexing_checkpoints": [
-            {"tablename": "aggregate_plays", "last_checkpoint": 9}
+            {"tablename": "aggregate_user", "last_checkpoint": 9}
         ],
         "plays": [
             # Current Plays
@@ -173,7 +176,7 @@ def test_index_aggregate_plays_same_checkpoint(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
+        update_aggregate_table(db, redis)
 
         results: List[AggregatePlays] = (
             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
@@ -182,7 +185,7 @@ def test_index_aggregate_plays_same_checkpoint(app):
         assert len(results) == 3
 
 
-def test_index_aggregate_plays_no_plays(app):
+def test_index_aggregate_user_no_plays(app):
     """Raise exception when there are no plays"""
     # setup
     with app.app_context():
@@ -195,9 +198,9 @@ def test_index_aggregate_plays_no_plays(app):
 
     with db.scoped_session() as session:
         try:
-            _update_aggregate_plays(session)
+            update_aggregate_table(session)
             assert (
                 False
-            ), "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
+            ), "test_index_aggregate_user [test_index_aggregate_user_no_plays] failed"
         except Exception:
             assert True

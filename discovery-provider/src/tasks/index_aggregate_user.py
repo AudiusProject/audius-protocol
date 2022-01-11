@@ -339,9 +339,9 @@ UPDATE_AGGREGATE_USER_QUERY = """
 def update_aggregate_table(
     db,
     redis,
-    table_name,
-    most_recent_indexed_aggregate_block_key,
-    query,
+    table_name=AGGREGATE_USER,
+    most_recent_indexed_aggregate_block_key=AGGREGATE_USER_BLOCK,
+    query=UPDATE_AGGREGATE_USER_QUERY,
     timeout=DEFAULT_UPDATE_TIMEOUT,
 ):
     have_lock = False
@@ -353,14 +353,14 @@ def update_aggregate_table(
             start_time = time.time()
             with db.scoped_session() as session:
                 most_recent_indexed_aggregate_block = last_checkpoint(
-                    session, AGGREGATE_USER_BLOCK
+                    session, most_recent_indexed_aggregate_block_key
                 )
             logger.info(
                 f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
             )
 
             with db.scoped_session() as session:
-                latest_indexed_block_num = get_latest_blocknumber_postgres(session, AGGREGATE_USER_BLOCK)
+                latest_indexed_block_num = get_latest_blocknumber_postgres(session, most_recent_indexed_aggregate_block_key)
 
                 if not most_recent_indexed_aggregate_block:
                     # repopulate entire table
@@ -381,7 +381,7 @@ def update_aggregate_table(
             session.execute(
                 sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
                 {
-                    "tablename": AGGREGATE_USER_BLOCK,
+                    "tablename": most_recent_indexed_aggregate_block_key,
                     "last_checkpoint": latest_indexed_block_num,
                 },
             )
@@ -410,7 +410,4 @@ def update_aggregate_user(self):
     update_aggregate_table(
         db,
         redis,
-        AGGREGATE_USER,
-        AGGREGATE_USER_BLOCK,
-        UPDATE_AGGREGATE_USER_QUERY,
     )
