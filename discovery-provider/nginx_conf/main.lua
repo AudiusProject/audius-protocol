@@ -40,7 +40,7 @@ function verify_signature (discovery_provider, nonce, signature)
             "Signature verification failed: ",
             "discovery_provider=", discovery_provider,
             ", signature=", signature,
-            ", nonce=", nonce,
+            ", nonce=", nonce
         )
         return false
     end
@@ -52,7 +52,7 @@ function verify_signature (discovery_provider, nonce, signature)
             "Signature verification failed: ",
             "discovery_provider=", discovery_provider,
             ", signature=", signature,
-            ", nonce=", nonce,
+            ", nonce=", nonce
         )
         return false
     end
@@ -70,7 +70,7 @@ function verify_signature (discovery_provider, nonce, signature)
             "Signature verification failed: ",
             "discovery_provider=", discovery_provider,
             ", signature=", signature,
-            ", nonce=", nonce,
+            ", nonce=", nonce
         )
         return false
     end
@@ -95,7 +95,7 @@ function verify_signature (discovery_provider, nonce, signature)
             "Signature verification failed: ",
             "discovery_provider=", discovery_provider,
             ", signature=", signature,
-            ", nonce=", nonce,
+            ", nonce=", nonce
         )
     end
 
@@ -154,7 +154,7 @@ function _M.limit_to_rps ()
                 "Redirecting: ",
                 "target=", url,
                 ", signature=", args.openresty_redirect_sig,
-                ", nonce=", args.openresty_redirect_nonce,
+                ", nonce=", args.openresty_redirect_nonce
             )
             return ngx.redirect(url)
         end
