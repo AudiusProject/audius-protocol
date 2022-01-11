@@ -5,7 +5,6 @@ from typing import List
 from integration_tests.utils import populate_mock_db
 from src.models import AggregatePlays
 from src.tasks.index_aggregate_user import update_aggregate_table
-from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
@@ -204,4 +203,3 @@ def test_index_aggregate_user_populate(app):
 #             ), "test_index_aggregate_user [test_index_aggregate_user_no_plays] failed"
 #         except Exception:
 #             assert True
-`
