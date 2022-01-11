@@ -1,7 +1,6 @@
 import concurrent.futures
 import logging
 
-from src.app import get_eth_abi_values
 from src.models import User
 from src.tasks.celery_app import celery
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes

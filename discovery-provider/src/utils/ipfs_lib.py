@@ -16,7 +16,8 @@ NEW_BLOCK_TIMEOUT_SECONDS = 5
 class IPFSClient:
     """Helper class for Audius Discovery Provider + IPFS interaction"""
 
-    def __init__(self,
+    def __init__(
+        self,
         ipfs_peer_host,
         ipfs_peer_port,
         eth_web3=None,
@@ -27,7 +28,7 @@ class IPFSClient:
         self._api = ipfshttpclient.connect(
             f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
         )
-        logger.warning(f"IPFSCLIENT | initializing")
+        logger.warning("IPFSCLIENT | initializing")
 
         # Fetch list of registered content nodes to use during init. 
         # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty 
