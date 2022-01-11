@@ -8,6 +8,8 @@ const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
 const { sign, createCognitoHeaders } = require('../utils/cognitoHelpers')
+const axios = require('axios')
+const axiosHttpAdapter = require('axios/lib/adapters/http')
 
 const COGNITO_API_BASE_URL = 'https://sandbox.cognitohq.com'
 
@@ -86,8 +88,12 @@ module.exports = function (app) {
       }
     })
     const headers = await createCognitoHeaders({path, method, body})
+    console.error(body)
+    logger.error(headers)
     try {
-      const response = await fetch(`${COGNITO_API_BASE_URL}${path}`, {
+      const response = await axios({
+        adapter: axiosHttpAdapter,
+        url: `${COGNITO_API_BASE_URL}${path}`,
         method,
         headers,
         body
@@ -95,7 +101,8 @@ module.exports = function (app) {
       const json = await response.json()
       return successResponse({ shareable_url: json.shareable_url })
     } catch (err) {
-      console.error(err)
+      console.error({headers, body})
+      console.error({errr: err.response.data.errors})
       return errorResponseServerError(err.message)
     }
   }))

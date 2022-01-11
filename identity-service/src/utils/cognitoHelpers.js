@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const config = require('../config')
+const { logger } = require('../logging')
 
 const sign = (reference) => {
   const apiSecret = config.get('cognitoAPISecret')
@@ -11,11 +12,11 @@ const sign = (reference) => {
   return base64
 }
 
-const digestMessage = async (message) => {
-  const messageUint8 = new TextEncoder().encode(message)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', messageUint8)
-  const bytes = new Uint8Array(hashBuffer)
-  window.btoa(String.fromCharCode(...bytes))
+const createDigest = async (data) => {
+  const hasher = crypto.createHash('sha256')
+  const result = hasher.update(data, 'utf-8').digest('base64')
+  // const base64 = Buffer.from(result).toString('base64')
+  return `SHA-256=${result}`
 }
 
 const doesSignatureMatch = (authorizationHeader, signature) => {
@@ -29,9 +30,10 @@ const doesSignatureMatch = (authorizationHeader, signature) => {
  * @returns {{Date: string, Digest: string, Authorization: string}} the headers authorizing a Cognito API request
  */
 const createCognitoHeaders = async ({path, method, body}) => {
+  const apiKey = config.get('cognitoAPIKey')
   const httpDate = new Date().toUTCString()
   const requestTarget = `${method.toLowerCase()} ${path}`
-  const digest = await digestMessage(body)
+  const digest = await createDigest(body)
 
   const signingString = [
     `(request-target): ${requestTarget}`,
@@ -39,6 +41,7 @@ const createCognitoHeaders = async ({path, method, body}) => {
     `digest: ${digest}`
   ].join('\n')
   const signature = sign(signingString)
+  logger.error(signingString)
   return {
     Date: httpDate,
     Digest: digest,
