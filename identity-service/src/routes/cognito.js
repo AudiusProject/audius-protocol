@@ -75,20 +75,24 @@ module.exports = function (app) {
     }
   }))
 
+  /**
+   * Gets the shareable_url for a Flow, for use with a webview on mobile
+   * https://cognitohq.com/docs/flow/mobile-integration
+   */
   app.post('/cognito_flow', authMiddleware, handleResponse(async (req) => {
     const baseUrl = config.get('cognitoBaseUrl')
-    const template_id = config.get('cognitoTemplateId')
+    const templateId = config.get('cognitoTemplateId')
     const { user: { handle } } = req
     const path = '/flow_sessions?idempotent=true'
     const method = 'POST'
     const body = JSON.stringify({
       shareable: true,
-      template_id,
+      template_id: templateId,
       user: {
         customer_reference: handle
       }
     })
-    const headers = await createCognitoHeaders({path, method, body})
+    const headers = createCognitoHeaders({ path, method, body })
     const url = `${baseUrl}${path}`
     try {
       const response = await axios({
@@ -98,10 +102,10 @@ module.exports = function (app) {
         headers,
         data: body
       })
-      return successResponse({ shareable_url: response?.data?.shareable_url })
+      return successResponse({ shareable_url: response.data.shareable_url })
     } catch (err) {
       logger.error(`Request failed to Cognito. Request=${JSON.stringify({ url, method, headers, body })} Error=${err.message}`)
-      if (err.response?.data?.errors) {
+      if (err && err.response && err.response.data && err.response.data.errors) {
         logger.error(`Cognito returned errors: ${JSON.stringify(err.response.data.errors)}`)
       }
       return errorResponseServerError(err.message)

@@ -10,8 +10,12 @@ const sign = (reference) => {
   const base64 = Buffer.from(result).toString('base64')
   return base64
 }
-
-const createDigest = async (data) => {
+/**
+ * Hashes a string to SHA-256 and base64 encodes it
+ * @param {string} data The data to turn into a SHA-256 digest
+ * @returns a base64 encoded string of the hash prefixed with "SHA-256="
+ */
+const createDigest = (data) => {
   const hasher = crypto.createHash('sha256')
   const result = hasher.update(data, 'utf-8').digest('base64')
   return `SHA-256=${result}`
@@ -23,15 +27,28 @@ const doesSignatureMatch = (authorizationHeader, signature) => {
   return expectedHeader === authorizationHeader
 }
 /**
- * Gets headers required for authorizing a request to the Cognito API
- * @param {{method: string, path: string, body: string}} requestParams the HTTP method, URL path (including query string) and request body to send to Cognito
- * @returns {{Date: string, Digest: string, Authorization: string}} the headers authorizing a Cognito API request
+ * @typedef CognitoHeaders Required headers for an API request to the Cognito API
+ * @property {string} Date the current date, formatted for an HTTP request (UTC)
+ * @property {string} Digest a SHA-256 hash of the body of the request
+ * @property {string} Authorization the signature, using the API secret and HMAC SHA-256
+ * @property {'application/vnd.api+json'} Content-Type
+ * @property {'application/vnd.api+json'} Accept
+ * @property {'2020-08-14'} Cognito-Version
  */
-const createCognitoHeaders = async ({path, method, body}) => {
+/**
+ * Creates headers required for authenticating a request to the Cognito API given the request information
+ * https://cognitohq.com/docs/guides/authenticating
+ * @param {Object} requestInfo the request information used to generate the headers
+ * @param {string} requestInfo.method the HTTP method used in the request
+ * @param {string} requestInfo.path the relative path (including query string) of the resource
+ * @param {string} requestInfo.body the body of the HTTP request
+ * @returns {CognitoHeaders} the headers authenticating a Cognito API request
+ */
+const createCognitoHeaders = ({ path, method, body }) => {
   const apiKey = config.get('cognitoAPIKey')
   const httpDate = new Date().toUTCString()
   const requestTarget = `${method.toLowerCase()} ${path}`
-  const digest = await createDigest(body)
+  const digest = createDigest(body)
 
   const signingString = [
     `(request-target): ${requestTarget}`,
