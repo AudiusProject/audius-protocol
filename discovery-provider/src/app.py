@@ -528,6 +528,7 @@ def configure_celery(flask_app, celery, test_config=None):
                 db=db,
                 web3=web3,
                 abi_values=abi_values,
+                eth_abi_values=eth_abi_values,
                 shared_config=shared_config,
                 ipfs_client=ipfs_client,
                 redis=redis_inst,
