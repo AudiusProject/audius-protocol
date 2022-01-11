@@ -159,7 +159,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         session, False, False, track_ids, [SaveType.track], None, "week"
     )
 
-    karma_scores = get_karma(session, tuple(track_ids), None, False, xf)
+    karma_scores = get_karma(session, tuple(track_ids), strategy, None, False, xf)
 
     # Associate all the extra data
     for (track_id, repost_count) in repost_counts:
