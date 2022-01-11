@@ -1,6 +1,12 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 
-import { StyleSheet, TouchableHighlight, View } from 'react-native'
+import {
+  StyleSheet,
+  TextStyle,
+  TouchableHighlight,
+  View,
+  ViewStyle
+} from 'react-native'
 
 import Drawer from 'app/components/drawer'
 import Text from 'app/components/text'
@@ -14,6 +20,8 @@ import {
 
 export type ActionDrawerRow = {
   text: string
+  icon?: ReactNode
+  style?: TextStyle
   callback?: () => void
   isDestructive?: boolean
 }
@@ -24,6 +32,7 @@ type ActionSheetModalProps = {
   onClose: () => void
   title?: string
   renderTitle?: () => React.ReactNode
+  styles?: { row?: ViewStyle }
 }
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -38,6 +47,7 @@ const createStyles = (themeColors: ThemeColors) =>
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      flexDirection: 'row',
       borderBottomWidth: 1,
       borderBottomColor: themeColors.neutralLight8
     },
@@ -52,6 +62,11 @@ const createStyles = (themeColors: ThemeColors) =>
       color: themeColors.actionSheetText
     },
 
+    actionIcon: {
+      minWidth: 42,
+      display: 'flex'
+    },
+
     destructiveAction: {
       color: themeColors.accentRed
     }
@@ -63,7 +78,8 @@ const ActionDrawer = ({
   isOpen,
   onClose,
   title,
-  renderTitle
+  renderTitle,
+  styles: stylesProp = {}
 }: ActionSheetModalProps) => {
   const didSelectRow = (index: number) => {
     const { callback } = rows[index]
@@ -84,7 +100,7 @@ const ActionDrawer = ({
         {renderTitle
           ? renderTitle()
           : title && <Text style={[styles.row, styles.title]}>{title}</Text>}
-        {rows.map(({ text, isDestructive = false }, index) => (
+        {rows.map(({ text, isDestructive = false, icon, style }, index) => (
           <TouchableHighlight
             key={`${text}-${index}`}
             onPress={() => {
@@ -92,12 +108,14 @@ const ActionDrawer = ({
             }}
             underlayColor={neutralLight9}
           >
-            <View style={styles.row}>
+            <View style={[styles.row, stylesProp.row]}>
+              {icon ? <View style={styles.actionIcon}>{icon}</View> : null}
               <Text
                 style={[
                   styles.action,
                   isDestructive ? styles.destructiveAction : {},
-                  isDarkMode ? { color: staticWhite } : {}
+                  isDarkMode ? { color: staticWhite } : {},
+                  style
                 ]}
                 weight='demiBold'
               >
