@@ -270,7 +270,7 @@ def fetch_ipfs_metadata(
                         blacklisted_cids.add(cid)
 
     ipfs_metadata = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = []
         futures_map = {}
         for cid, txhash in cids:
