@@ -8,7 +8,8 @@ import random
 import ipfshttpclient
 import requests
 from src.utils.helpers import get_valid_multiaddr_from_id_json
-from src.tasks.index_network_peers import get_peers
+
+# from src.tasks.index_network_peers import get_peers
 
 logger = logging.getLogger(__name__)
 NEW_BLOCK_TIMEOUT_SECONDS = 5
