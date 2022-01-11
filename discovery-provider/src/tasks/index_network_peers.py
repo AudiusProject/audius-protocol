@@ -25,7 +25,9 @@ def retrieve_peers_from_eth_contracts(self):
     eth_web3 = update_network_peers.eth_web3
     redis = update_network_peers.redis
     eth_abi_values = update_network_peers.eth_abi_values
-    return fetch_all_registered_content_nodes(eth_web3, shared_config, redis, eth_abi_values)
+    return fetch_all_registered_content_nodes(
+        eth_web3, shared_config, redis, eth_abi_values
+    )
 
 
 # Determine the known set of distinct peers currently within a user replica set

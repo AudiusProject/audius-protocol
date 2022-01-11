@@ -31,7 +31,9 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     return cn_endpoint_info
 
 
-def fetch_all_registered_content_nodes(eth_web3, shared_config, redis, eth_abi_values) -> set:
+def fetch_all_registered_content_nodes(
+    eth_web3, shared_config, redis, eth_abi_values
+) -> set:
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -52,7 +54,8 @@ def fetch_all_registered_content_nodes(eth_web3, shared_config, redis, eth_abi_v
     # Given the total number of nodes in the network we can now fetch node info in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         fetch_cnode_futures = {
-            executor.submit(fetch_cnode_info, i, sp_factory_inst, redis): i for i in ids_list
+            executor.submit(fetch_cnode_info, i, sp_factory_inst, redis): i
+            for i in ids_list
         }
         for future in concurrent.futures.as_completed(fetch_cnode_futures):
             single_cnode_fetch_op = fetch_cnode_futures[future]

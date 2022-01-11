@@ -23,33 +23,30 @@ class IPFSClient:
         eth_web3=None,
         shared_config=None,
         redis=None,
-        eth_abi_values=None
+        eth_abi_values=None,
     ):
         self._api = ipfshttpclient.connect(
             f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
         )
         logger.warning("IPFSCLIENT | initializing")
 
-        # Fetch list of registered content nodes to use during init. 
-        # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty 
+        # Fetch list of registered content nodes to use during init.
+        # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty
         # it might fail to find content and throw an error. To prevent race conditions between
         # indexing starting and this getting populated, run this on init in the instance
         # in the celery worker
         if eth_web3 and shared_config and redis and eth_abi_values:
-            self._cnode_endpoints = list(fetch_all_registered_content_nodes(
-                eth_web3,
-                shared_config,
-                redis,
-                eth_abi_values
-            ))
+            self._cnode_endpoints = list(
+                fetch_all_registered_content_nodes(
+                    eth_web3, shared_config, redis, eth_abi_values
+                )
+            )
             logger.warning(
                 f"IPFSCLIENT | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
             )
         else:
             self._cnode_endpoints = []
-            logger.warning(
-                "IPFSCLIENT | couldn't fetch _cnode_endpoints on init"
-            )
+            logger.warning("IPFSCLIENT | couldn't fetch _cnode_endpoints on init")
 
         self._ipfsid = self._api.id()
         self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)

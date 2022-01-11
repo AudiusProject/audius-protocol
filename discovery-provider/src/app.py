@@ -518,7 +518,7 @@ def configure_celery(celery, test_config=None):
         eth_web3,
         shared_config,
         redis_inst,
-        eth_abi_values
+        eth_abi_values,
     )
 
     # Clear last scanned redis block on startup
