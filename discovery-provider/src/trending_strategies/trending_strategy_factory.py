@@ -33,21 +33,15 @@ class TrendingStrategyFactory:
         self.strategies = {
             TrendingType.TRACKS: {
                 TrendingVersion.aSPET: TrendingTracksStrategyaSPET(),
-            },
-            TrendingType.TRACKS: {
                 TrendingVersion.ML51L: TrendingTracksStrategyML51L(),
             },
             TrendingType.UNDERGROUND_TRACKS: {
-                TrendingVersion.ePWJD: UndergroundTrendingTracksStrategyePWJD()
-            },
-            TrendingType.UNDERGROUND_TRACKS: {
-                TrendingVersion.ML51L: UndergroundTrendingTracksStrategyML51L()
+                TrendingVersion.ePWJD: UndergroundTrendingTracksStrategyePWJD(),
+                TrendingVersion.ML51L: UndergroundTrendingTracksStrategyML51L(),
             },
             TrendingType.PLAYLISTS: {
-                TrendingVersion.ePWJD: TrendingPlaylistsStrategyePWJD()
-            },
-            TrendingType.PLAYLISTS: {
-                TrendingVersion.ML51L: TrendingPlaylistsStrategyML51L()
+                TrendingVersion.ePWJD: TrendingPlaylistsStrategyePWJD(),
+                TrendingVersion.ML51L: TrendingPlaylistsStrategyML51L(),
             },
         }
 
