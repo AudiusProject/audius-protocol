@@ -180,7 +180,11 @@ class IPFSClient:
         logger.warning(
             f"IPFSCLIENT  {self._id}| get_metadata_from_gateway, {multihash} replica set: {user_replica_set}"
         )
-        gateway_endpoints = self._cnode_endpoints or GLOBAL_CNODE_ENDPOINTS
+        gateway_endpoints = self._cnode_endpoints
+
+        if len(gateway_endpoints) == 0:
+            logger.info(f"IPFSCLIENT {self._id}| falling back to GLOBAL_CNODE_ENDPOINTS with {GLOBAL_CNODE_ENDPOINTS}")
+            gateway_endpoints = GLOBAL_CNODE_ENDPOINTS
 
         # first attempt to first fetch metadata from user replica set, if provided & non-empty
         if user_replica_set and isinstance(user_replica_set, str):
@@ -281,6 +285,7 @@ class IPFSClient:
 
         if len(GLOBAL_CNODE_ENDPOINTS) == 0:
             GLOBAL_CNODE_ENDPOINTS = cnode_endpoints
+            logger.info(f"IPFSCLIENT {self._id}| update GLOBAL_CNODE_ENDPOINTS with {GLOBAL_CNODE_ENDPOINTS}")
 
     def ipfs_id_multiaddr(self):
         return self._multiaddr
