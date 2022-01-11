@@ -24,16 +24,16 @@ class IPFSClient:
             f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
         )
         self._id = random.randrange(1, 1000)
-        logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | initializing")
+        logger.warn(f"IPFSCLIENT {hex(id(self))} {self._id} | initializing")
         # self._cnode_endpoints = get_peers()
         if eth_web3 and shared_config and redis and eth_abi_values:
             self._cnode_endpoints = fetch_all_registered_content_nodes(eth_web3, shared_config, redis, eth_abi_values)
-            logger.info(
+            logger.warn(
                 f"IPFSCLIENT {hex(id(self))} {self._id} | fetch cnode endpoints on init got {self._cnode_endpoints}"
             )
         else:
             self._cnode_endpoints = []
-            logger.info(
+            logger.warn(
                 f"IPFSCLIENT {hex(id(self))} {self._id} | couldn't fetch cndoe endpoints on init"
             )
 
