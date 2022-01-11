@@ -495,7 +495,7 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Initialize IPFS client for celery task context
     ipfs_client = IPFSClient(
-        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], eth_web3, shared_config, redis_inst
+        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], eth_web3, shared_config, redis_inst, eth_abi_values
     )
 
     # Clear last scanned redis block on startup

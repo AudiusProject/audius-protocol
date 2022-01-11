@@ -1,6 +1,5 @@
 import logging
 import concurrent.futures
-from src.app import eth_abi_values
 from src.utils.helpers import is_fqdn
 from src.utils.redis_cache import pickle_and_set, get_sp_id_key, get_pickled_key
 
@@ -29,7 +28,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     )
     return cn_endpoint_info
 
-def fetch_all_registered_content_nodes(eth_web3, shared_config, redis):
+def fetch_all_registered_content_nodes(eth_web3, shared_config, redis, eth_abi_values):
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )

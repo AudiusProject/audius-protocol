@@ -19,14 +19,14 @@ NEW_BLOCK_TIMEOUT_SECONDS = 5
 class IPFSClient:
     """Helper class for Audius Discovery Provider + IPFS interaction"""
 
-    def __init__(self, ipfs_peer_host, ipfs_peer_port, eth_web3=None, shared_config=None, redis=None):
+    def __init__(self, ipfs_peer_host, ipfs_peer_port, eth_web3=None, shared_config=None, redis=None, eth_abi_values=None):
         self._api = ipfshttpclient.connect(
             f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
         )
         self._id = random.randrange(1, 1000)
         logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | initializing")
         # self._cnode_endpoints = get_peers()
-        if eth_web3 and shared_config and redis:
+        if eth_web3 and shared_config and redis and eth_abi_values:
             self._cnode_endpoints = fetch_all_registered_content_nodes(eth_web3, shared_config, redis)
             logger.info(
                 f"IPFSCLIENT {hex(id(self))} {self._id} | fetch cnode endpoints on init got {self._cnode_endpoints}"
