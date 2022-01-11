@@ -27,7 +27,7 @@ class IPFSClient:
         logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | initializing")
         # self._cnode_endpoints = get_peers()
         if eth_web3 and shared_config and redis and eth_abi_values:
-            self._cnode_endpoints = fetch_all_registered_content_nodes(eth_web3, shared_config, redis)
+            self._cnode_endpoints = fetch_all_registered_content_nodes(eth_web3, shared_config, redis, eth_abi_values)
             logger.info(
                 f"IPFSCLIENT {hex(id(self))} {self._id} | fetch cnode endpoints on init got {self._cnode_endpoints}"
             )
