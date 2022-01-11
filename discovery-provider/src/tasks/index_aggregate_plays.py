@@ -2,7 +2,7 @@ import logging
 import time
 
 from sqlalchemy import func, text
-from src.models import IndexingCheckpoints, Play
+from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     UPDATE_INDEXING_CHECKPOINTS_QUERY,

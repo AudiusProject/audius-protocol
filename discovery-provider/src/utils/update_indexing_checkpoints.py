@@ -1,4 +1,3 @@
-from time import time
 from src.models import IndexingCheckpoints
 
 UPDATE_INDEXING_CHECKPOINTS_QUERY = """
