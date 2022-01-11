@@ -8,6 +8,7 @@ import random
 import ipfshttpclient
 import requests
 from src.utils.helpers import get_valid_multiaddr_from_id_json
+from utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 # from src.tasks.index_network_peers import get_peers
 
@@ -18,14 +19,15 @@ NEW_BLOCK_TIMEOUT_SECONDS = 5
 class IPFSClient:
     """Helper class for Audius Discovery Provider + IPFS interaction"""
 
-    def __init__(self, ipfs_peer_host, ipfs_peer_port):
+    def __init__(self, ipfs_peer_host, ipfs_peer_port, eth_web3, shared_config, redis):
+        logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | initializing")
         self._api = ipfshttpclient.connect(
             f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
         )
         self._id = random.randrange(1, 1000)
-        logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | init @ {ipfs_peer_host}:{ipfs_peer_port}")
         # self._cnode_endpoints = get_peers()
-        self._cnode_endpoints = []
+        self._cnode_endpoints = fetch_all_registered_content_nodes(eth_web3, shared_config, redis)
+        logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | fetch cnode endpoints on init got {self._cnode_endpoints}")
         self._ipfsid = self._api.id()
         self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
 

@@ -683,8 +683,8 @@ workflows:
           requires:
             - test-contracts
 
-      - test-eth-contracts:
-          name: test-eth-contracts
+      # - test-eth-contracts:
+      #     name: test-eth-contracts
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
@@ -718,8 +718,8 @@ workflows:
       - test-solana-programs:
           name: test-solana-programs
 
-      - test-mad-dog-e2e:
-          mad-dog-type: test
+      # - test-mad-dog-e2e:
+      #     mad-dog-type: test
       - hold-test-mad-dog-e2e-full:
           type: approval
       - test-mad-dog-e2e:
