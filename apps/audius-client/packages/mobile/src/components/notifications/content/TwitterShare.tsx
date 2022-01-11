@@ -18,6 +18,7 @@ import {
 } from 'app/store/notifications/types'
 import { BadgeTier } from 'app/utils/badgeTier'
 import { getUserRoute } from 'app/utils/routes'
+import { getTwitterLink } from 'app/utils/twitter'
 
 import { getEntityRoute } from '../routeUtil'
 
@@ -175,13 +176,6 @@ export const getTwitterButtonText = (notification: any) => {
     default:
       return ''
   }
-}
-
-const getTwitterLink = (url: string | null, text: string) => {
-  const textString = `?text=${encodeURIComponent(text)}`
-  const urlString = url ? `&url=${encodeURIComponent(url)}` : ''
-
-  return `http://twitter.com/share${textString}${urlString}`
 }
 
 const styles = StyleSheet.create({
