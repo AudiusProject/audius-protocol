@@ -223,30 +223,30 @@ export const createPlaylist = async (args: createPlaylistArgs) => {
 export type updatePlaylistArgs = {
   provider: Provider;
   program: Program<AudiusData>;
-  playlistKeypair: Keypair;
+  playlistPublicKey: anchor.web3.PublicKey;
   userStgAccountPDA: anchor.web3.PublicKey;
-  userAuthorityKey: Keypair;
+  userAuthorityKeypair: Keypair;
   metadata: string;
 };
 export const updatePlaylist = async (args: updatePlaylistArgs) => {
   const {
     provider,
     program,
-    playlistKeypair,
+    playlistPublicKey,
     userStgAccountPDA,
-    userAuthorityKey,
+    userAuthorityKeypair,
     metadata
   } = args;
   const tx = await program.rpc.updatePlaylist(
     metadata,
     {
       accounts: {
-        playlist: playlistKeypair.publicKey,
+        playlist: playlistPublicKey,
         user: userStgAccountPDA,
-        authority: userAuthorityKey.publicKey,
+        authority: userAuthorityKeypair.publicKey,
         payer: provider.wallet.publicKey
       },
-      signers: [userAuthorityKey]
+      signers: [userAuthorityKeypair]
     }
   );
   return tx;
@@ -256,27 +256,27 @@ export const updatePlaylist = async (args: updatePlaylistArgs) => {
 export type deletePlaylistArgs = {
   provider: Provider;
   program: Program<AudiusData>;
-  playlistKeypair: Keypair;
+  playlistPublicKey: anchor.web3.PublicKey;
   userStgAccountPDA: anchor.web3.PublicKey;
-  userAuthorityKey: Keypair;
+  userAuthorityKeypair: Keypair;
 };
 export const deletePlaylist = async (args: deletePlaylistArgs) => {
   const {
     provider,
     program,
-    playlistKeypair,
+    playlistPublicKey,
     userStgAccountPDA,
-    userAuthorityKey
+    userAuthorityKeypair
   } = args;
   const tx = await program.rpc.deletePlaylist(
     {
       accounts: {
-        playlist: playlistKeypair.publicKey,
+        playlist: playlistPublicKey,
         user: userStgAccountPDA,
-        authority: userAuthorityKey.publicKey,
+        authority: userAuthorityKeypair.publicKey,
         payer: provider.wallet.publicKey
       },
-      signers: [userAuthorityKey]
+      signers: [userAuthorityKeypair]
     }
   );
   return tx;

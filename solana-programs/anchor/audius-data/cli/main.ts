@@ -20,6 +20,10 @@ import {
   createTrackArgs,
   createPlaylistArgs,
   createPlaylist,
+  deletePlaylistArgs,
+  deletePlaylist,
+  updatePlaylist,
+  updatePlaylistArgs,
 } from "../lib/lib";
 
 import { Command } from "commander";
@@ -149,10 +153,10 @@ async function timeCreateTrack(args: createTrackArgs) {
       let tx = await createTrack({
         program: args.program,
         provider: args.provider,
-        metadata: randomCID(),
-        newTrackKeypair: anchor.web3.Keypair.generate(),
-        userAuthorityKeypair: userSolKeypair,
-        userStgAccountPDA: options.userStgPubkey,
+        metadata: args.metadata,
+        newTrackKeypair: args.newTrackKeypair,
+        userAuthorityKeypair: args.userAuthorityKeypair,
+        userStgAccountPDA: args.userStgAccountPDA,
         adminStgPublicKey: args.adminStgPublicKey,
       });
       let duration = Date.now() - start;
@@ -176,11 +180,62 @@ async function timeCreatePlaylist(args: createPlaylistArgs) {
       let tx = await createPlaylist({
         program: args.program,
         provider: args.provider,
-        newPlaylistKeypair: anchor.web3.Keypair.generate(),
-        userStgAccountPDA: options.userStgPubkey,
-        userAuthorityKeypair: userSolKeypair,
+        newPlaylistKeypair: args.newPlaylistKeypair,
+        userStgAccountPDA: args.userStgAccountPDA,
+        userAuthorityKeypair: args.userAuthorityKeypair,
         adminStgPublicKey: args.adminStgPublicKey,
         metadata: randomCID(),
+      });
+      let duration = Date.now() - start;
+      console.log(
+        `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
+      );
+      return tx;
+    } catch (e) {
+      err = e;
+    }
+  }
+  console.log(err);
+}
+
+async function timeUpdatePlaylist(args: updatePlaylistArgs) {
+  let retries = 5;
+  let err = null;
+  while (retries > 0) {
+    try {
+      let start = Date.now();
+      let tx = await updatePlaylist({
+        program: args.program,
+        provider: args.provider,
+        playlistPublicKey: args.playlistPublicKey,
+        userStgAccountPDA: args.userStgAccountPDA,
+        userAuthorityKeypair: args.userAuthorityKeypair,
+        metadata: args.metadata,
+      });
+      let duration = Date.now() - start;
+      console.log(
+        `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
+      );
+      return tx;
+    } catch (e) {
+      err = e;
+    }
+  }
+  console.log(err);
+}
+
+async function timeDeletePlaylist(args: deletePlaylistArgs) {
+  let retries = 5;
+  let err = null;
+  while (retries > 0) {
+    try {
+      let start = Date.now();
+      let tx = await deletePlaylist({
+        program: args.program,
+        provider: args.provider,
+        playlistPublicKey: args.playlistPublicKey,
+        userStgAccountPDA: args.userStgAccountPDA,
+        userAuthorityKeypair: args.userAuthorityKeypair,
       });
       let duration = Date.now() - start;
       console.log(
@@ -201,6 +256,8 @@ const functionTypes = Object.freeze({
   createTrack: "createTrack",
   getTrackId: "getTrackId",
   createPlaylist: "createPlaylist",
+  updatePlaylist: "updatePlaylist",
+  deletePlaylist: "deletePlaylist",
   getPlaylistId: "getPlaylistId",
 });
 
@@ -221,7 +278,8 @@ program
     "private key for message signing"
   )
   .option("--num-tracks <integer>", "number of tracks to generate")
-  .option("--num-playlists <integer>", "number of playlists to generate");
+  .option("--num-playlists <integer>", "number of playlists to generate")
+  .option("--playlist-pubkey <integer>", "number of playlists to generate");
 
 program.parse(process.argv);
 
@@ -309,7 +367,7 @@ switch (options.function) {
       }
       let start = Date.now();
       await Promise.all(promises);
-      console.log(`Processed ${numTracks} in ${Date.now() - start}ms`);
+      console.log(`Processed ${numTracks} tracks in ${Date.now() - start}ms`);
     })();
     break;
   case functionTypes.getTrackId:
@@ -347,13 +405,54 @@ switch (options.function) {
       }
       let start = Date.now();
       await Promise.all(promises);
-      console.log(`Processed ${numPlaylists} in ${Date.now() - start}ms`);
+      console.log(`Processed ${numPlaylists} playlists in ${Date.now() - start}ms`);
     })();
     break;
+  case functionTypes.updatePlaylist: {
+    const playlistPublicKey = options.playlistPubkey;
+    if (!playlistPublicKey) break;
+    console.log(
+      `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStgPubkey}`
+    );
+    (async () => {
+      const cliVars = initializeCLI(network, options.ownerKeypair);
+      const start = Date.now();
+      await timeUpdatePlaylist({
+        program: cliVars.program,
+        provider: cliVars.provider,
+        metadata: randomCID(),
+        playlistPublicKey,
+        userAuthorityKeypair: userSolKeypair,
+        userStgAccountPDA: options.userStgPubkey,
+      })
+      console.log(`Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`);
+    })();
+    break;
+  }
+  case functionTypes.deletePlaylist: {
+    const playlistPublicKey = options.playlistPubkey;
+    if (!playlistPublicKey) break;
+    console.log(
+      `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStgPubkey}`
+    );
+    (async () => {
+      const cliVars = initializeCLI(network, options.ownerKeypair);
+      const start = Date.now();
+      await timeDeletePlaylist({
+        program: cliVars.program,
+        provider: cliVars.provider,
+        playlistPublicKey,
+        userAuthorityKeypair: userSolKeypair,
+        userStgAccountPDA: options.userStgPubkey
+      })
+      console.log(`Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`);
+    })();
+    break;
+  }
   case functionTypes.getPlaylistId:
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
-      let info = await cliVars.program.account.audiusAdmin.fetch(
+      const info = await cliVars.program.account.audiusAdmin.fetch(
         adminStgKeypair.publicKey
       );
       console.log(`playlistID high:${info.playlistId}`);

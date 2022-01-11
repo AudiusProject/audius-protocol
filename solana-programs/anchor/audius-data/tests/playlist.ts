@@ -104,9 +104,9 @@ describe("playlist", () => {
       const tx = await updatePlaylist({
         provider,
         program,
-        playlistKeypair,
+        playlistPublicKey: playlistKeypair.publicKey,
         userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKey: userAuthorityKeypair,
+        userAuthorityKeypair,
         metadata: playlistMetadata
       });
       await confirmLogInTransaction(provider, tx, playlistMetadata);
@@ -127,9 +127,9 @@ describe("playlist", () => {
       const tx = await deletePlaylist({
         provider,
         program,
-        playlistKeypair,
+        playlistPublicKey: playlistKeypair.publicKey,
         userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKey: userAuthorityKeypair,
+        userAuthorityKeypair,
       });
 
       // Confirm that the account is zero'd out
