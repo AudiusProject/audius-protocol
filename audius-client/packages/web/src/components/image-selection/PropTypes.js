@@ -11,7 +11,7 @@ export const ImageSelectionProps = {
   // has started, even if image selection is async.
   onSelect: PropTypes.func.isRequired,
   // Source of the image selection (ProfilePicture, CoverPhoto, etc.)
-  source: PropTypes.oneOf('ProfilePicture', 'CoverPhoto', 'UploadArtwork')
+  source: PropTypes.oneOf(['ProfilePicture', 'CoverPhoto', 'UploadArtwork'])
 }
 
 export const ImageSelectionDefaults = {
