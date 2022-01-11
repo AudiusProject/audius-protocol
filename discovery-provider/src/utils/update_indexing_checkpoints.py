@@ -18,5 +18,7 @@ def last_checkpoint(session, tablename):
 
     if last_seen:
         last_seen = int(last_seen)
+    else:
+        last_seen = 0
 
     return last_seen

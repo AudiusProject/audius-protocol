@@ -16,11 +16,6 @@ AGGREGATE_USER = "aggregate_user"
 AGGREGATE_USER_BLOCK = "aggregate_user_block"
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
-# (1,209,600 two weeks in seconds / 5 sec block_processing_interval_sec)
-TWO_WEEKS_IN_BLOCKS = 241920
-
-TWO_WEEKS_IN_SECONDS = 1209600
-
 # UPDATE_AGGREGATE_USER_QUERY
 # Get a lower bound blocknumber to check for new entity counts for a user
 # Find a subset of users that have changed since that blocknumber
