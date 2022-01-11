@@ -1,6 +1,6 @@
 # pylint: disable=too-many-lines
 import logging
-from typing import List
+from typing import Tuple
 
 from flask import request
 from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
@@ -792,7 +792,7 @@ def get_repost_counts(
 
 def get_karma(
     session: Session,
-    ids: List[int],
+    ids: Tuple[int],
     strategy: TrendingVersion,
     time: str = None,
     is_playlist: bool = False,
