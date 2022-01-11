@@ -73,134 +73,135 @@ def test_index_aggregate_user_populate(app):
         assert results[4].count == 2
 
 
-def test_index_aggregate_user_update(app):
-    """Test that we should insert new play counts and update existing"""
-    # setup
-    with app.app_context():
-        db = get_db()
+# def test_index_aggregate_use`r_update(app):
+#     """Test that we should insert new play counts and update existing"""
+#     # setup
+#     with app.app_context():
+#         db = get_db()
 
-    # run
-    entities = {
-        "tracks": [
-            {"track_id": 1, "title": "track 1"},
-            {"track_id": 2, "title": "track 2"},
-            {"track_id": 3, "title": "track 3"},
-            {"track_id": 4, "title": "track 4"},
-        ],
-        "aggregate_user": [
-            # Current Plays
-            {"play_item_id": 1, "count": 3},
-            {"play_item_id": 2, "count": 3},
-            {"play_item_id": 3, "count": 3},
-        ],
-        "indexing_checkpoints": [
-            {"tablename": "aggregate_user", "last_checkpoint": 9}
-        ],
-        "plays": [
-            # Current Plays
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 2},
-            {"item_id": 2},
-            {"item_id": 2},
-            {"item_id": 3},
-            {"item_id": 3},
-            {"item_id": 3},
-            # New plays
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 2},
-            {"item_id": 4},
-            {"item_id": 4},
-        ],
-    }
+#     # run
+#     entities = {
+#         "tracks": [
+#             {"track_id": 1, "title": "track 1"},
+#             {"track_id": 2, "title": "track 2"},
+#             {"track_id": 3, "title": "track 3"},
+#             {"track_id": 4, "title": "track 4"},
+#         ],
+#         "aggregate_user": [
+#             # Current Plays
+#             {"play_item_id": 1, "count": 3},
+#             {"play_item_id": 2, "count": 3},
+#             {"play_item_id": 3, "count": 3},
+#         ],
+#         "indexing_checkpoints": [
+#             {"tablename": "aggregate_user", "last_checkpoint": 9}
+#         ],
+#         "plays": [
+#             # Current Plays
+#             {"item_id": 1},
+#             {"item_id": 1},
+#             {"item_id": 1},
+#             {"item_id": 2},
+#             {"item_id": 2},
+#             {"item_id": 2},
+#             {"item_id": 3},
+#             {"item_id": 3},
+#             {"item_id": 3},
+#             # New plays
+#             {"item_id": 1},
+#             {"item_id": 1},
+#             {"item_id": 2},
+#             {"item_id": 4},
+#             {"item_id": 4},
+#         ],
+#     }
 
-    populate_mock_db(db, entities)
+#     populate_mock_db(db, entities)
 
-    with db.scoped_session() as session:
-        update_aggregate_table(db, redis)
+#     with db.scoped_session() as session:
+#         update_aggregate_table(db, redis)
 
-        results: List[AggregatePlays] = (
-            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
-        )
+#         results: List[AggregatePlays] = (
+#             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
+#         )
 
-        assert len(results) == 4
-        assert results[0].play_item_id == 1
-        assert results[0].count == 5
-        assert results[1].play_item_id == 2
-        assert results[1].count == 4
-        assert results[2].play_item_id == 3
-        assert results[2].count == 3
-        assert results[3].play_item_id == 4
-        assert results[3].count == 2
-
-
-def test_index_aggregate_user_same_checkpoint(app):
-    """Test that we should not update when last index is the same"""
-    # setup
-    with app.app_context():
-        db = get_db()
-
-    # run
-    entities = {
-        "tracks": [
-            {"track_id": 1, "title": "track 1"},
-            {"track_id": 2, "title": "track 2"},
-            {"track_id": 3, "title": "track 3"},
-            {"track_id": 4, "title": "track 4"},
-        ],
-        "aggregate_user": [
-            # Current Plays
-            {"play_item_id": 1, "count": 3},
-            {"play_item_id": 2, "count": 3},
-            {"play_item_id": 3, "count": 3},
-        ],
-        "indexing_checkpoints": [
-            {"tablename": "aggregate_user", "last_checkpoint": 9}
-        ],
-        "plays": [
-            # Current Plays
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 2},
-            {"item_id": 2},
-            {"item_id": 2},
-            {"item_id": 3},
-            {"item_id": 3},
-            {"item_id": 3},
-        ],
-    }
-
-    populate_mock_db(db, entities)
-
-    with db.scoped_session() as session:
-        update_aggregate_table(db, redis)
-
-        results: List[AggregatePlays] = (
-            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
-        )
-
-        assert len(results) == 3
+#         assert len(results) == 4
+#         assert results[0].play_item_id == 1
+#         assert results[0].count == 5
+#         assert results[1].play_item_id == 2
+#         assert results[1].count == 4
+#         assert results[2].play_item_id == 3
+#         assert results[2].count == 3
+#         assert results[3].play_item_id == 4
+#         assert results[3].count == 2
 
 
-def test_index_aggregate_user_no_plays(app):
-    """Raise exception when there are no plays"""
-    # setup
-    with app.app_context():
-        db = get_db()
+# def test_index_aggregate_user_same_checkpoint(app):
+#     """Test that we should not update when last index is the same"""
+#     # setup
+#     with app.app_context():
+#         db = get_db()
 
-    # run
-    entities = {"plays": []}
+#     # run
+#     entities = {
+#         "tracks": [
+#             {"track_id": 1, "title": "track 1"},
+#             {"track_id": 2, "title": "track 2"},
+#             {"track_id": 3, "title": "track 3"},
+#             {"track_id": 4, "title": "track 4"},
+#         ],
+#         "aggregate_user": [
+#             # Current Plays
+#             {"play_item_id": 1, "count": 3},
+#             {"play_item_id": 2, "count": 3},
+#             {"play_item_id": 3, "count": 3},
+#         ],
+#         "indexing_checkpoints": [
+#             {"tablename": "aggregate_user", "last_checkpoint": 9}
+#         ],
+#         "plays": [
+#             # Current Plays
+#             {"item_id": 1},
+#             {"item_id": 1},
+#             {"item_id": 1},
+#             {"item_id": 2},
+#             {"item_id": 2},
+#             {"item_id": 2},
+#             {"item_id": 3},
+#             {"item_id": 3},
+#             {"item_id": 3},
+#         ],
+#     }
 
-    populate_mock_db(db, entities)
+#     populate_mock_db(db, entities)
 
-    with db.scoped_session() as session:
-        try:
-            update_aggregate_table(session)
-            assert (
-                False
-            ), "test_index_aggregate_user [test_index_aggregate_user_no_plays] failed"
-        except Exception:
-            assert True
+#     with db.scoped_session() as session:
+#         update_aggregate_table(db, redis)
+
+#         results: List[AggregatePlays] = (
+#             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
+#         )
+
+#         assert len(results) == 3
+
+
+# def test_index_aggregate_user_no_plays(app):
+#     """Raise exception when there are no plays"""
+#     # setup
+#     with app.app_context():
+#         db = get_db()
+
+#     # run
+#     entities = {"plays": []}
+
+#     populate_mock_db(db, entities)
+
+#     with db.scoped_session() as session:
+#         try:
+#             update_aggregate_table(session)
+#             assert (
+#                 False
+#             ), "test_index_aggregate_user [test_index_aggregate_user_no_plays] failed"
+#         except Exception:
+#             assert True
+`
