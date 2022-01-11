@@ -9,13 +9,6 @@ UPDATE_INDEXING_CHECKPOINTS_QUERY = """
     """
 
 
-def get_elapsed_time_postgres(db, tablename):
-    with db.scoped_session() as session:
-        last_seen = last_checkpoint(session, tablename)
-    elapsed_time_in_sec = (int(time()) - int(last_seen)) if last_seen else None
-    return elapsed_time_in_sec
-
-
 def last_checkpoint(session, tablename):
     last_seen = (
         session.query(IndexingCheckpoints.last_checkpoint).filter(

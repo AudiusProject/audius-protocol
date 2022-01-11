@@ -6,7 +6,6 @@ from src.tasks.calculate_trending_challenges import get_latest_blocknumber_postg
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     UPDATE_INDEXING_CHECKPOINTS_QUERY,
-    get_elapsed_time_postgres,
     last_checkpoint
 )
 
@@ -15,7 +14,6 @@ logger = logging.getLogger(__name__)
 # Names of the aggregate tables to update
 AGGREGATE_USER = "aggregate_user"
 AGGREGATE_USER_BLOCK = "aggregate_user_block"
-AGGREGATE_USER_TIMESTAMP = "aggregate_user_timestamp"
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
 # (1,209,600 two weeks in seconds / 5 sec block_processing_interval_sec)
@@ -366,11 +364,6 @@ def update_aggregate_table(
                 f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
             )
 
-            elapsed_time = get_elapsed_time_postgres(
-                db, AGGREGATE_USER_TIMESTAMP
-            )
-
-            is_refreshed = False
             with db.scoped_session() as session:
                 latest_indexed_block_num = get_latest_blocknumber_postgres(session, AGGREGATE_USER_BLOCK)
 
@@ -379,15 +372,6 @@ def update_aggregate_table(
                     logger.info(f"index_aggregate_user.py | Repopulating {table_name}")
                     most_recent_indexed_aggregate_block = 0
                     session.execute(f"TRUNCATE TABLE {table_name}")
-                    is_refreshed = True
-
-                elif not elapsed_time or elapsed_time > TWO_WEEKS_IN_SECONDS:
-                    # refresh the past two weeks for data accuracy
-                    logger.info(
-                        f"index_aggregate_user.py | Refreshing {table_name} for the past two weeks"
-                    )
-                    most_recent_indexed_aggregate_block -= max(TWO_WEEKS_IN_BLOCKS, 0)
-                    is_refreshed = True
 
                 logger.info(f"index_aggregate_user.py | Updating {table_name}")
                 upsert = sa.text(query)
@@ -395,15 +379,6 @@ def update_aggregate_table(
                     upsert,
                     {
                         "most_recent_indexed_aggregate_block": most_recent_indexed_aggregate_block
-                    },
-                )
-
-            if is_refreshed:
-                session.execute(
-                    sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
-                    {
-                        "tablename": AGGREGATE_USER_TIMESTAMP,
-                        "last_checkpoint": int(time.time()),
                     },
                 )
 
