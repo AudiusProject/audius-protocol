@@ -21,6 +21,7 @@ const trendingTrack = require('./mockNotifications/trendingTrack.json')
 const challengeReward = require('./mockNotifications/challengeReward.json')
 
 const mockAudiusLibs = require('./mockLibs')
+const { deviceType } = require('../../src/notifications/constants')
 
 describe('Test Send Notifications', function () {
   before(() => {
@@ -276,6 +277,7 @@ describe('Test Send Notifications', function () {
     let pushNotifications = pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER
 
     assert.deepStrictEqual(pushNotifications.length, 7)
+    console.log(pushNotifications)
 
     const notifs = [
       {
@@ -291,10 +293,13 @@ describe('Test Send Notifications', function () {
     ]
 
     for (const n of notifs) {
-      console.log(n)
       assert.deepStrictEqual(pushNotifications.some(queueNotif =>
         queueNotif.notificationParams.title === n.title && queueNotif.notificationParams.message === n.msg), true)
-      console.log('passed')
     }
+    assert.ok(pushNotifications.every(queueNotif => {
+      return queueNotif.types.length === 2 &&
+        queueNotif.types.some(t => t === deviceType.Browser) &&
+        queueNotif.types.some(t => t === deviceType.Mobile)
+    }))
   })
 })
