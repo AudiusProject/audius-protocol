@@ -11,10 +11,42 @@ const sign = (reference) => {
   return base64
 }
 
+const digestMessage = async (message) => {
+  const messageUint8 = new TextEncoder().encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', messageUint8)
+  const bytes = new Uint8Array(hashBuffer)
+  window.btoa(String.fromCharCode(...bytes))
+}
+
 const doesSignatureMatch = (authorizationHeader, signature) => {
   const apiKey = config.get('cognitoAPIKey')
   const expectedHeader = `Signature keyId="${apiKey}",algorithm="hmac-sha256",headers="(request-target) date digest",signature="${signature}"`
   return expectedHeader === authorizationHeader
+}
+/**
+ * Gets headers required for authorizing a request to the Cognito API
+ * @param {{method: string, path: string, body: string}} requestParams the HTTP method, URL path (including query string) and request body to send to Cognito
+ * @returns {{Date: string, Digest: string, Authorization: string}} the headers authorizing a Cognito API request
+ */
+const createCognitoHeaders = async ({path, method, body}) => {
+  const httpDate = new Date().toUTCString()
+  const requestTarget = `${method.toLowerCase()} ${path}`
+  const digest = await digestMessage(body)
+
+  const signingString = [
+    `(request-target): ${requestTarget}`,
+    `date: ${httpDate}`,
+    `digest: ${digest}`
+  ].join('\n')
+  const signature = sign(signingString)
+  return {
+    Date: httpDate,
+    Digest: digest,
+    Authorization: `Signature keyId="${apiKey}",algorithm="hmac-sha256",headers="(request-target) date digest",signature="${signature}"`,
+    'Content-Type': 'application/vnd.api+json',
+    Accept: 'application/vnd.api+json',
+    'Cognito-Version': '2016-09-01'
+  }
 }
 
 const isWebhookValid = (headers, path) => {
@@ -32,5 +64,6 @@ const isWebhookValid = (headers, path) => {
 
 module.exports = {
   sign,
-  isWebhookValid
+  isWebhookValid,
+  createCognitoHeaders
 }

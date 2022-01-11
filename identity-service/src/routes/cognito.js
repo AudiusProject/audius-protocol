@@ -7,7 +7,9 @@ const { logger } = require('../logging')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
-const { sign } = require('../utils/cognitoHelpers')
+const { sign, createCognitoHeaders } = require('../utils/cognitoHelpers')
+
+const COGNITO_API_BASE_URL = 'https://sandbox.cognitohq.com'
 
 module.exports = function (app) {
   app.get('/cognito_signature', authMiddleware, handleResponse(async (req) => {
@@ -66,6 +68,32 @@ module.exports = function (app) {
 
       // cognito flow requires the receiver to respond with 200, otherwise it'll retry with exponential backoff
       return successResponse({})
+    } catch (err) {
+      console.error(err)
+      return errorResponseServerError(err.message)
+    }
+  }))
+
+  app.post('/cognito_flow', authMiddleware, handleResponse(async (req) => {
+    const { user: { handle }, body: { template_id } } = req
+    const path = '/flow_sessions?idempotent=true'
+    const method = 'POST'
+    const body = JSON.stringify({
+      shareable: true,
+      template_id,
+      user: {
+        customer_reference: handle
+      }
+    })
+    const headers = await createCognitoHeaders({path, method, body})
+    try {
+      const response = await fetch(`${COGNITO_API_BASE_URL}${path}`, {
+        method,
+        headers,
+        body
+      })
+      const json = await response.json()
+      return successResponse({ shareable_url: json.shareable_url })
     } catch (err) {
       console.error(err)
       return errorResponseServerError(err.message)
