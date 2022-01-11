@@ -705,8 +705,6 @@ workflows:
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
-          requires:
-            - test-discovery-provider
 
       - test-identity-service:
           name: test-identity-service
@@ -723,7 +721,7 @@ workflows:
           repo: solana-programs
           requires:
             - test-solana-programs
-            
+
       - test-mad-dog-e2e:
           mad-dog-type: test
       - hold-test-mad-dog-e2e-full:
