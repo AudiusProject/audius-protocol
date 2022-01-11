@@ -9,6 +9,7 @@ from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_NUMBER = 10
 
 
 def test_mobile_install_challenge(app):
@@ -17,10 +18,10 @@ def test_mobile_install_challenge(app):
     with app.app_context():
         db = get_db()
 
-    block = Block(blockhash="0x1", number=1)
+    block = Block(blockhash="0x1", number=BLOCK_NUMBER)
     user = User(
         blockhash="0x1",
-        blocknumber=1,
+        blocknumber=BLOCK_NUMBER,
         txhash="xyz",
         user_id=1,
         is_current=True,
@@ -39,7 +40,7 @@ def test_mobile_install_challenge(app):
 
         # set challenge as active for purposes of test
         session.query(Challenge).filter(Challenge.id == "mobile-install").update(
-            {"active": True}
+            {"active": True, "starting_block": BLOCK_NUMBER}
         )
         bus.register_listener(
             ChallengeEvent.mobile_install, mobile_install_challenge_manager
@@ -48,8 +49,8 @@ def test_mobile_install_challenge(app):
         session.flush()
         session.add(user)
         session.flush()
-        bus.dispatch(ChallengeEvent.mobile_install, 1, user.user_id)
-        bus.dispatch(ChallengeEvent.mobile_install, 1, user.user_id)
+        bus.dispatch(ChallengeEvent.mobile_install, BLOCK_NUMBER, user.user_id)
+        bus.dispatch(ChallengeEvent.mobile_install, BLOCK_NUMBER, user.user_id)
         bus.flush()
         bus.process_events(session)
 

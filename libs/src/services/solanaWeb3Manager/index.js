@@ -288,7 +288,7 @@ class SolanaWeb3Manager {
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
-    await transferWAudioBalance({
+    return transferWAudioBalance({
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
       feePayerKey: this.feePayerKey,
@@ -362,12 +362,14 @@ class SolanaWeb3Manager {
    *    specifier: string,
    *    recipientEthAddress: string
    *    oracleEthAddress: string
+   *    logger: any
    * }} {
    *     challengeId,
    *     specifier,
    *     recipientEthAddress,
    *     oracleEthAddress,
-   *     tokenAmount
+   *     tokenAmount,
+   *     logger
    *   }
    * @memberof SolanaWeb3Manager
    */
@@ -376,7 +378,8 @@ class SolanaWeb3Manager {
     specifier,
     recipientEthAddress,
     oracleEthAddress,
-    tokenAmount
+    tokenAmount,
+    logger = console
   }) {
     return evaluateAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -389,7 +392,8 @@ class SolanaWeb3Manager {
       oracleEthAddress,
       feePayer: this.feePayerKey,
       tokenAmount,
-      transactionHandler: this.transactionHandler
+      transactionHandler: this.transactionHandler,
+      logger
     })
   }
 
