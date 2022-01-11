@@ -57,6 +57,7 @@ function verify_signature (discovery_provider, nonce, signature)
         return false
     end
 
+    -- Allow all discovery providers for now instead of just whitelisted ones
     -- reject if discovery provider is not in the accept_redirect_from set
     -- if not config.accept_redirect_from[discovery_provider] then
     --     return false
