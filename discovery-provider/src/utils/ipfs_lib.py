@@ -25,7 +25,7 @@ class IPFSClient:
             f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
         )
         self._id = random.randrange(1, 1000)
-        logger.info(f"IPFSCLIENT {self._id} | init @ {ipfs_peer_host}:{ipfs_peer_port}")
+        logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | init @ {ipfs_peer_host}:{ipfs_peer_port}")
         # self._cnode_endpoints = get_peers()
         self._cnode_endpoints = ['https://creatornode.audius7.prod-us-west-2.staked.cloud', 'https://audius-content-8.figment.io', 'https://content-a.mainnet.audius.radar.tech', 'https://creatornode.audius.prod-us-west-2.staked.cloud', 'https://creatornode.audius3.prod-us-west-2.staked.cloud', 'https://content-gru02.audius.hashbeam.com', 'https://creatornode.audius.co', 'https://audius-content-4.figment.io', 'https://audius.prod.capturealpha.io', 'https://content-node.audius.co', 'https://creatornode.audius6.prod-us-west-2.staked.cloud', 'https://cn02.audius.endl.net', 'https://audius-content-11.figment.io', 'https://creatornode.audius2.prod-us-west-2.staked.cloud', 'https://creatornode2.audius.co', 'https://cn03.audius.endl.net', 'https://usermetadata.audius.co', 'https://cn04.audius.endl.net', 'https://audius-content-9.figment.io', 'https://audius-content-6.figment.io', 'https://audius-content-10.figment.io', 'https://creatornode.audius1.prod-us-west-2.staked.cloud', 'https://cn01.audius.endl.net', 'https://creatornode.audius5.prod-us-west-2.staked.cloud', 'https://audius-content-3.figment.io', 'https://creatornode.audius4.prod-us-west-2.staked.cloud', 'https://audius-content-7.figment.io', 'https://audius-content-5.figment.io', 'https://creatornode3.audius.co', 'https://audius-content-2.figment.io', 'https://audius-content-1.figment.io']
         self._ipfsid = self._api.id()
@@ -54,7 +54,7 @@ class IPFSClient:
         """Retrieve file from IPFS or gateway, validating metadata requirements prior to
         returning an object with no missing entries
         """
-        logger.warning(f"IPFSCLIENT  {self._id}| get_metadata - {multihash}")
+        logger.warning(f"IPFSCLIENT  {hex(id(self))} {self._id}| get_metadata - {multihash}")
         api_metadata = default_metadata_fields
         retrieved_from_gateway = False
         retrieved_from_ipfs_node = False
@@ -84,7 +84,7 @@ class IPFSClient:
                     retrieved = api_metadata != default_metadata_fields
                     if retrieved:
                         logger.info(
-                            f"IPFSCLIENT  {self._id}| retrieved metadata successfully, \
+                            f"IPFSCLIENT  {hex(id(self))} {self._id}| retrieved metadata successfully, \
                             {api_metadata}, \
                             source: {metadata_fetch_source}"
                         )
@@ -96,7 +96,7 @@ class IPFSClient:
                         break  # use first returned result
                 except Exception as e:
                     logger.error(
-                        f"IPFSCLIENT  {self._id}| ipfs_lib.py | \
+                        f"IPFSCLIENT  {hex(id(self))} {self._id}| ipfs_lib.py | \
                         ERROR in metadata_futures parallel processing \
                         generated {e}, multihash: {multihash}, source: {metadata_fetch_source}",
                         exc_info=True,
@@ -107,19 +107,19 @@ class IPFSClient:
         # Ensure default values are not written into database.
         if not retrieved_metadata:
             logger.error(
-                f"IPFSCLIENT  {self._id}| Retrieved metadata: {retrieved_metadata}. "
+                f"IPFSCLIENT  {hex(id(self))} {self._id}| Retrieved metadata: {retrieved_metadata}. "
                 f"retrieved from gateway : {retrieved_from_gateway}, "
                 f"retrieved from local node : {retrieved_from_ipfs_node}"
             )
             logger.error(api_metadata)
             logger.error(default_metadata_fields)
             raise Exception(
-                f"IPFSCLIENT  {self._id}| Failed to retrieve metadata. Using default values for {multihash}"
+                f"IPFSCLIENT  {hex(id(self))} {self._id}| Failed to retrieve metadata. Using default values for {multihash}"
             )
 
         duration = time.time() - start_time
         logger.info(
-            f"IPFSCLIENT  {self._id}| get_metadata ${multihash} {duration} seconds \
+            f"IPFSCLIENT  {hex(id(self))} {self._id}| get_metadata ${multihash} {duration} seconds \
                 | from ipfs:{retrieved_from_ipfs_node} |from gateway:{retrieved_from_gateway}"
         )
 
@@ -131,7 +131,7 @@ class IPFSClient:
         validate_url = urlparse(url)
         if not validate_url.scheme:
             raise Exception(
-                f"IPFSCLIENT  {self._id}| Invalid URL from provided gateway addr - {url}"
+                f"IPFSCLIENT  {hex(id(self))} {self._id}| Invalid URL from provided gateway addr - {url}"
             )
         r = requests.get(url, timeout=max_timeout)
         return r
@@ -152,7 +152,7 @@ class IPFSClient:
                     r = future.result()
                     if r.status_code != 200:
                         logger.warning(
-                            f"IPFSCLIENT  {self._id}| {url} - {r.status_code}"
+                            f"IPFSCLIENT  {hex(id(self))} {self._id}| {url} - {r.status_code}"
                         )
                         raise Exception("Invalid status_code")
                     # Override with retrieved JSON value
@@ -160,12 +160,12 @@ class IPFSClient:
                         default_metadata_fields, r.json()
                     )
                     # Exit loop if dict is successfully retrieved
-                    logger.warning(f"IPFSCLIENT  {self._id}| Retrieved from {url}")
+                    logger.warning(f"IPFSCLIENT  {hex(id(self))} {self._id}| Retrieved from {url}")
                     self.force_clear_queue_and_stop_task_execution(executor)
                     break
                 except Exception as exc:
                     logger.error(
-                        f"IPFSClient  {self._id}| {url} generated an exception: {exc}"
+                        f"IPFSClient  {hex(id(self))} {self._id}| {url} generated an exception: {exc}"
                     )
         return formatted_json
 
@@ -179,7 +179,7 @@ class IPFSClient:
         # Default return initial metadata format
         gateway_metadata_json = default_metadata_fields
         logger.warning(
-            f"IPFSCLIENT  {self._id}| get_metadata_from_gateway, {multihash} replica set: {user_replica_set}"
+            f"IPFSCLIENT  {hex(id(self))} {self._id}| get_metadata_from_gateway, {multihash} replica set: {user_replica_set}"
         )
         gateway_endpoints = self._cnode_endpoints
 
@@ -210,7 +210,7 @@ class IPFSClient:
                 )
 
         logger.warning(
-            f"IPFSCLIENT  {self._id}| get_metadata_from_gateway, \
+            f"IPFSCLIENT  {hex(id(self))} {self._id}| get_metadata_from_gateway, \
                 \ncombined addresses: {gateway_endpoints}, \
                 \ncnode_endpoints: {self._cnode_endpoints}"
         )
@@ -219,14 +219,14 @@ class IPFSClient:
         data = self.query_ipfs_metadata_json(query_urls, default_metadata_fields)
         if data is None:
             raise Exception(
-                f"IPFSCLIENT  {self._id}| Failed to retrieve CID {multihash} from gateway"
+                f"IPFSCLIENT  {hex(id(self))} {self._id}| Failed to retrieve CID {multihash} from gateway"
             )
         gateway_metadata_json = data
         return gateway_metadata_json
 
     def get_metadata_from_ipfs_node(self, multihash, default_metadata_fields):
         logger.warning(
-            f"IPFSCLIENT  {self._id}| get_metadata_from_ipfs_node, {multihash}"
+            f"IPFSCLIENT  {hex(id(self))} {self._id}| get_metadata_from_ipfs_node, {multihash}"
         )
         try:
             res = self.cat(multihash)
@@ -235,22 +235,22 @@ class IPFSClient:
             # If an invalid response object is retrieved return empty values and log error
             if not isinstance(resp_val, dict):
                 raise Exception(
-                    f"IPFSCLIENT  {self._id}| Expected dict type for {multihash}, received {resp_val}"
+                    f"IPFSCLIENT  {hex(id(self))} {self._id}| Expected dict type for {multihash}, received {resp_val}"
                 )
 
         except ValueError as e:
             # Return default format if deserialization fails
             logger.error(
-                f"IPFSCLIENT  {self._id}| Failed to deserialize response for {multihash}. {e}"
+                f"IPFSCLIENT  {hex(id(self))} {self._id}| Failed to deserialize response for {multihash}. {e}"
             )
             raise e
         except Exception as e:
             logger.error(
-                f"IPFSCLIENT  {self._id}| Local Node Unknown exception retrieving {multihash}. {e}"
+                f"IPFSCLIENT  {hex(id(self))} {self._id}| Local Node Unknown exception retrieving {multihash}. {e}"
             )
             raise e
 
-        logger.info(f"IPFSCLIENT  {self._id}| Retrieved {multihash} from ipfs node")
+        logger.info(f"IPFSCLIENT  {hex(id(self))} {self._id}| Retrieved {multihash} from ipfs node")
         return self.get_metadata_from_json(default_metadata_fields, resp_val)
 
     def cat(self, multihash):
@@ -259,7 +259,7 @@ class IPFSClient:
             return res
         except:
             logger.error(
-                f"IPFSCLIENT  {self._id}| IPFS cat timed out after 1s for CID {multihash}"
+                f"IPFSCLIENT  {hex(id(self))} {self._id}| IPFS cat timed out after 1s for CID {multihash}"
             )
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
 
@@ -276,7 +276,7 @@ class IPFSClient:
     def update_cnode_urls(self, cnode_endpoints):
         traceback.print_stack(file=sys.stdout)
         logger.info(
-            f"IPFSCLIENT  {self._id}| update_cnode_urls with endpoints {cnode_endpoints}"
+            f"IPFSCLIENT  {hex(id(self))} {self._id}| update_cnode_urls with endpoints {cnode_endpoints}"
         )
         if len(cnode_endpoints):
             self._cnode_endpoints = cnode_endpoints
