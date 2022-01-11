@@ -4,6 +4,8 @@ import logging
 import time
 from urllib.parse import urljoin, urlparse
 import random
+import traceback
+import sys
 
 import ipfshttpclient
 import requests
@@ -13,7 +15,6 @@ from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
 NEW_BLOCK_TIMEOUT_SECONDS = 5
-GLOBAL_CNODE_ENDPOINTS = []
 
 
 class IPFSClient:
@@ -182,10 +183,6 @@ class IPFSClient:
         )
         gateway_endpoints = self._cnode_endpoints
 
-        if len(gateway_endpoints) == 0:
-            logger.info(f"IPFSCLIENT {self._id}| falling back to GLOBAL_CNODE_ENDPOINTS with {GLOBAL_CNODE_ENDPOINTS}")
-            gateway_endpoints = GLOBAL_CNODE_ENDPOINTS
-
         # first attempt to first fetch metadata from user replica set, if provided & non-empty
         if user_replica_set and isinstance(user_replica_set, str):
             user_replicas = user_replica_set.split(",")
@@ -277,16 +274,12 @@ class IPFSClient:
             logger.error(e)
 
     def update_cnode_urls(self, cnode_endpoints):
-        global GLOBAL_CNODE_ENDPOINTS
+        traceback.print_stack(file=sys.stdout)
         logger.info(
             f"IPFSCLIENT  {self._id}| update_cnode_urls with endpoints {cnode_endpoints}"
         )
         if len(cnode_endpoints):
             self._cnode_endpoints = cnode_endpoints
-
-        if len(GLOBAL_CNODE_ENDPOINTS) == 0:
-            GLOBAL_CNODE_ENDPOINTS = cnode_endpoints
-            logger.info(f"IPFSCLIENT {self._id}| update GLOBAL_CNODE_ENDPOINTS with {GLOBAL_CNODE_ENDPOINTS}")
 
     def ipfs_id_multiaddr(self):
         return self._multiaddr
