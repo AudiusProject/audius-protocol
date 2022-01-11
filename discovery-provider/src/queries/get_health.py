@@ -6,7 +6,7 @@ from typing import Dict, Optional, Tuple, TypedDict, cast
 
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
-from src.models import Block, IPLDBlacklistBlock, IndexingCheckpoints
+from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitor_names, monitors
 from src.queries.get_balances import (
     IMMEDIATE_REFRESH_REDIS_PREFIX,
@@ -57,28 +57,6 @@ def get_elapsed_time_redis(redis, redis_key):
     last_seen = redis.get(redis_key)
     elapsed_time_in_sec = (int(time.time()) - int(last_seen)) if last_seen else None
     return elapsed_time_in_sec
-
-
-def get_elapsed_time_postgres(db, tablename):
-    with db.scoped_session() as session:
-        last_seen = last_checkpoint(session, tablename)
-    elapsed_time_in_sec = (int(time.time()) - int(last_seen)) if last_seen else None
-    return elapsed_time_in_sec
-
-
-def last_checkpoint(session, tablename):
-    last_seen = (
-        session.query(IndexingCheckpoints.last_checkpoint).filter(
-            IndexingCheckpoints.tablename == tablename
-        )
-    ).scalar()
-
-    if last_seen:
-        last_seen = int(
-            last_seen
-        )
-
-    return last_seen
 
 
 # Returns DB block state & diff
