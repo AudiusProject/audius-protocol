@@ -489,13 +489,14 @@ def configure_celery(flask_app, celery, test_config=None):
     # Initialize DB object for celery task context
     db = SessionManager(database_url, engine_args_literal)
     logger.info("Database instance initialized!")
-    # Initialize IPFS client for celery task context
-    ipfs_client = IPFSClient(
-        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
-    )
 
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
+
+    # Initialize IPFS client for celery task context
+    ipfs_client = IPFSClient(
+        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], eth_web3, shared_config, redis_inst
+    )
 
     # Clear last scanned redis block on startup
     delete_last_scanned_eth_block_redis(redis_inst)

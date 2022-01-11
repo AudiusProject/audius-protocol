@@ -19,15 +19,24 @@ NEW_BLOCK_TIMEOUT_SECONDS = 5
 class IPFSClient:
     """Helper class for Audius Discovery Provider + IPFS interaction"""
 
-    def __init__(self, ipfs_peer_host, ipfs_peer_port, eth_web3, shared_config, redis):
-        logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | initializing")
+    def __init__(self, ipfs_peer_host, ipfs_peer_port, eth_web3=None, shared_config=None, redis=None):
         self._api = ipfshttpclient.connect(
             f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
         )
         self._id = random.randrange(1, 1000)
+        logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | initializing")
         # self._cnode_endpoints = get_peers()
-        self._cnode_endpoints = fetch_all_registered_content_nodes(eth_web3, shared_config, redis)
-        logger.info(f"IPFSCLIENT {hex(id(self))} {self._id} | fetch cnode endpoints on init got {self._cnode_endpoints}")
+        if eth_web3 and shared_config and redis:
+            self._cnode_endpoints = fetch_all_registered_content_nodes(eth_web3, shared_config, redis)
+            logger.info(
+                f"IPFSCLIENT {hex(id(self))} {self._id} | fetch cnode endpoints on init got {self._cnode_endpoints}"
+            )
+        else:
+            self._cnode_endpoints = []
+            logger.info(
+                f"IPFSCLIENT {hex(id(self))} {self._id} | couldn't fetch cndoe endpoints on init"
+            )
+
         self._ipfsid = self._api.id()
         self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
 
