@@ -11,7 +11,7 @@ from src.tasks.index_network_peers import (
 from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_cache import get_pickled_key, get_sp_id_key
-from src.utils.user_event_constants import (
+from src.utils.eth_contracts_helpers import (
     user_replica_set_manager_event_types_arr,
     user_replica_set_manager_event_types_lookup,
 )

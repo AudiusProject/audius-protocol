@@ -4,15 +4,11 @@ import logging
 from src.app import get_eth_abi_values
 from src.models import User
 from src.tasks.celery_app import celery
-from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
-from src.utils.redis_cache import get_pickled_key, get_sp_id_key, pickle_and_set
+from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
+from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 
 logger = logging.getLogger(__name__)
 
-sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
-content_node_service_type = bytes("content-node", "utf-8")
-
-cnode_info_redis_ttl = 1800
 
 # What is a "Peer" in this context?
 # A peer represents another known entity in the network
@@ -24,72 +20,13 @@ cnode_info_redis_ttl = 1800
 #   concept is very much distinct.
 
 
-# Perform eth web3 call to fetch endpoint info
-def fetch_cnode_info(sp_id, sp_factory_instance):
-    redis = update_network_peers.redis
-    sp_id_key = get_sp_id_key(sp_id)
-    sp_info_cached = get_pickled_key(redis, sp_id_key)
-    if sp_info_cached:
-        logger.info(
-            f"index_network_peers.py | Found cached value for spID={sp_id} - {sp_info_cached}"
-        )
-        return sp_info_cached
-
-    cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(
-        content_node_service_type, sp_id
-    ).call()
-    pickle_and_set(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl)
-    logger.info(
-        f"index_network_peers.py | Configured redis {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl}"
-    )
-    return cn_endpoint_info
-
-
 # Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
 def retrieve_peers_from_eth_contracts(self):
     shared_config = update_network_peers.shared_config
     eth_web3 = update_network_peers.eth_web3
-    eth_registry_address = update_network_peers.eth_web3.toChecksumAddress(
-        shared_config["eth_contracts"]["registry"]
-    )
-    eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
-    )
-    sp_factory_address = eth_registry_instance.functions.getContract(
-        sp_factory_registry_key
-    ).call()
-    sp_factory_inst = eth_web3.eth.contract(
-        address=sp_factory_address,
-        abi=get_eth_abi_values()["ServiceProviderFactory"]["abi"],
-    )
-    total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(
-        content_node_service_type
-    ).call()
-    ids_list = list(range(1, total_cn_type_providers + 1))
-    eth_cn_endpoints_set = set()
-    # Given the total number of nodes in the network we can now fetch node info in parallel
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        fetch_cnode_futures = {
-            executor.submit(fetch_cnode_info, i, sp_factory_inst): i for i in ids_list
-        }
-        for future in concurrent.futures.as_completed(fetch_cnode_futures):
-            single_cnode_fetch_op = fetch_cnode_futures[future]
-            try:
-                cn_endpoint_info = future.result()
-                # Validate the endpoint on chain
-                # As endpoints get deregistered, this peering system must not slow down with failed connections
-                #   or unanticipated load
-                eth_sp_endpoint = cn_endpoint_info[1]
-                valid_endpoint = is_fqdn(eth_sp_endpoint)
-                # Only valid FQDN strings are worth validating
-                if valid_endpoint:
-                    eth_cn_endpoints_set.add(cn_endpoint_info[1])
-            except Exception as exc:
-                logger.error(
-                    f"index_network_peers.py | ERROR in fetch_cnode_futures {single_cnode_fetch_op} generated {exc}"
-                )
-    # Return dictionary with key = endpoint, formatted as { endpoint: True }
-    return eth_cn_endpoints_set
+    redis = update_network_peers.redis
+    eth_abi_values = update_network_peers.eth_abi_values
+    return fetch_all_registered_content_nodes(eth_web3, shared_config, redis, eth_abi_values)
 
 
 # Determine the known set of distinct peers currently within a user replica set
