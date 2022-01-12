@@ -32,6 +32,7 @@ import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
+import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { PlaylistTileProps } from 'components/track/types'
 import { setFavorite } from 'containers/favorites-page/store/actions'
 import { setRepost } from 'containers/reposts-page/store/actions'
@@ -314,7 +315,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     shareCollection: (collectionId: ID) =>
-      dispatch(shareCollection(collectionId, ShareSource.TILE)),
+      dispatch(
+        requestOpenShareModal({
+          type: 'collection',
+          collectionId,
+          source: ShareSource.TILE
+        })
+      ),
     saveCollection: (collectionId: ID) =>
       dispatch(saveCollection(collectionId, FavoriteSource.TILE)),
     unsaveCollection: (collectionId: ID) =>

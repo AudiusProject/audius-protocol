@@ -38,6 +38,7 @@ import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
+import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { formatUrlName } from 'common/utils/formatUtil'
 import { Uid } from 'common/utils/uid'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
@@ -893,7 +894,11 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     shareCollection: (playlistId: number) =>
       dispatch(
-        socialCollectionsActions.shareCollection(playlistId, ShareSource.PAGE)
+        requestOpenShareModal({
+          type: 'collection',
+          collectionId: playlistId,
+          source: ShareSource.TILE
+        })
       ),
     repostTrack: (trackId: number) =>
       dispatch(
