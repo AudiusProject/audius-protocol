@@ -32,7 +32,8 @@ const messages = {
   description1: 'Complete tasks to earn $AUDIO tokens!',
   description2:
     'Opportunities to earn $AUDIO will change, so check back often for more chances to earn!',
-  completeLabel: 'COMPLETE'
+  completeLabel: 'COMPLETE',
+  claimReward: 'Claim Your Reward'
 }
 
 type RewardPanelProps = {
@@ -96,7 +97,11 @@ const RewardPanel = ({
       </div>
       <ButtonWithArrow
         className={wm(styles.panelButton)}
-        text={panelButtonText}
+        text={
+          challenge?.is_complete && !challenge?.is_disbursed
+            ? messages.claimReward
+            : panelButtonText
+        }
         onClick={openRewardModal}
         textClassName={styles.panelButtonText}
       />
