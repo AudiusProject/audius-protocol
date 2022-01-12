@@ -23,12 +23,16 @@ const iconProps = { height: 24, width: 24 }
 
 type ShareActionListItemProps = ButtonProps
 
-const ShareActionListItem = (props: ShareActionListItemProps) => {
+const ShareActionListItem = ({
+  textClassName,
+  ...props
+}: ShareActionListItemProps) => {
   return (
     <li className={styles.actionListItem}>
       <Button
         className={styles.actionButton}
         type={ButtonType.COMMON_ALT}
+        textClassName={cn(styles.actionButtonLabel, textClassName)}
         {...props}
       />
     </li>
@@ -72,15 +76,20 @@ export const ShareDialog = ({
             text={messages.twitter}
             onClick={onShareToTwitter}
             iconClassName={styles.twitterIcon}
-            textClassName={styles.twitterActionItemText}
+            textClassName={styles.twitterActionLabel}
           />
           {showTikTokShareAction ? (
             <ShareActionListItem
               leftIcon={<IconTikTok {...iconProps} />}
               text={messages.tikTok}
-              textClassName={cn(styles.tikTokActionItemText, {
-                [styles.tikTokActionItemTextDark]: isDarkMode()
-              })}
+              iconClassName={
+                isDarkMode() ? styles.tikTokIconDark : styles.tikTokIcon
+              }
+              textClassName={
+                isDarkMode()
+                  ? styles.tikTokActionLabelDark
+                  : styles.tikTokActionLabel
+              }
               onClick={onShareToTikTok}
             />
           ) : null}
@@ -88,7 +97,7 @@ export const ShareDialog = ({
             leftIcon={<IconLink {...iconProps} />}
             iconClassName={styles.shareIcon}
             text={messages.copyLink(shareType)}
-            textClassName={styles.shareActionItemText}
+            textClassName={styles.shareActionLabel}
             onClick={onCopyLink}
           />
         </ul>
