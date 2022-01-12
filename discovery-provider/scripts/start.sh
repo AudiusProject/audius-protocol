@@ -62,13 +62,6 @@ if [ -z "$audius_db_url" ]; then
     /wait
 fi
 
-if [ "$audius_db_run_migrations" != false ]; then
-    echo "Running alembic migrations"
-    export PYTHONPATH='.'
-    alembic upgrade head
-    echo "Finished running migrations"
-fi
-
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
