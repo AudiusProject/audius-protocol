@@ -21,7 +21,6 @@ const rowMessageMap = {
   [OverflowAction.FAVORITE]: 'Favorite',
   [OverflowAction.UNFAVORITE]: 'Unfavorite',
   [OverflowAction.SHARE]: 'Share',
-  [OverflowAction.SHARE_TO_TIKTOK]: 'Share To TikTok',
   [OverflowAction.ADD_TO_PLAYLIST]: 'Add To Playlist',
   [OverflowAction.EDIT_PLAYLIST]: 'Edit Playlist',
   [OverflowAction.DELETE_PLAYLIST]: 'Delete Playlist',
