@@ -230,6 +230,8 @@ def fetch_ipfs_metadata(
     blacklisted_cids = set()
     cids = set()
     cid_type = {}
+    # store cid to user replica set to make get_metadata lookup more efficient
+    cid_to_cnode_endpoints = {}
 
     with db.scoped_session() as session:
         for tx_receipt in user_factory_txs:
@@ -238,14 +240,21 @@ def fetch_ipfs_metadata(
                 user_contract.events, user_event_types_lookup["update_multihash"]
             )().processReceipt(tx_receipt)
             for entry in user_events_tx:
+                event_args = entry["args"]
                 metadata_multihash = helpers.multihash_digest_to_cid(
-                    entry["args"]._multihashDigest
+                    event_args._multihashDigest
                 )
                 if not is_blacklisted_ipld(session, metadata_multihash):
                     cids.add((metadata_multihash, txhash))
                     cid_type[metadata_multihash] = "user"
                 else:
                     blacklisted_cids.add(metadata_multihash)
+                user_id = event_args._userId
+                cid_to_cnode_endpoints[metadata_multihash] = (
+                    session.query(User.creator_node_endpoint)
+                    .filter(User.user_id == user_id, User.is_current == True)
+                    .first()
+                )
 
         for tx_receipt in track_factory_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -260,6 +269,7 @@ def fetch_ipfs_metadata(
                     event_args = entry["args"]
                     track_metadata_digest = event_args._multihashDigest.hex()
                     track_metadata_hash_fn = event_args._multihashHashFn
+                    track_owner_id = event_args._trackOwnerId
                     buf = multihash.encode(
                         bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                     )
@@ -269,6 +279,11 @@ def fetch_ipfs_metadata(
                         cid_type[cid] = "track"
                     else:
                         blacklisted_cids.add(cid)
+                    cid_to_cnode_endpoints[metadata_multihash] = (
+                        session.query(User.creator_node_endpoint)
+                        .filter(User.user_id == track_owner_id, User.is_current == True)
+                        .first()
+                    )
 
     ipfs_metadata = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
@@ -281,7 +296,7 @@ def fetch_ipfs_metadata(
                 track_metadata_format
                 if cid_type[cid] == "track"
                 else user_metadata_format,
-                None,
+                cid_to_cnode_endpoints[cid],
             )
             futures.append(future)
             futures_map[future] = [cid, txhash]
