@@ -1,9 +1,10 @@
 import { AccountInfo } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 
+import { FeatureFlags } from 'common/services/remote-config'
 import { Nullable } from 'common/utils/typeUtils'
-import AudiusLibs from 'services/audius-backend/AudiusLibsLazyLoader'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 // @ts-ignore
 const libs = () => window.audiusLibs
@@ -19,17 +20,27 @@ export const doesUserBankExist = async () => {
 
 export const createUserBank = async () => {
   await waitForLibsInit()
-  await libs().solanaWeb3Manager.createUserBank()
+  return libs().solanaWeb3Manager.createUserBank()
 }
 
 export const createUserBankIfNeeded = async () => {
   await waitForLibsInit()
+  const userbankEnabled = remoteConfigInstance.getFeatureEnabled(
+    FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP
+  )
+  if (!userbankEnabled) return
   try {
     const userbankExists = await doesUserBankExist()
     if (userbankExists) return
     console.warn(`Userbank doesn't exist, attempting to create...`)
-    await createUserBank()
-    console.log(`Successfully created userbank!`)
+    const { error, errorCode } = await createUserBank()
+    if (error || errorCode) {
+      console.error(
+        `Failed to create userbank, with err: ${error}, ${errorCode}`
+      )
+    } else {
+      console.log(`Successfully created userbank!`)
+    }
   } catch (err) {
     console.error(`Failed to create userbank, with err: ${err}`)
   }
