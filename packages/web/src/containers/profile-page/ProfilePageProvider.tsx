@@ -19,6 +19,7 @@ import {
   OverflowSource,
   OverflowAction
 } from 'common/store/ui/mobile-overflow-menu/types'
+import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { formatCount } from 'common/utils/formatUtil'
 import { makeKindId } from 'common/utils/uid'
 import { makeGetRelatedArtists } from 'containers/artist-recommendations/store/selectors'
@@ -1020,7 +1021,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
     onUnfollow: (userId: ID) =>
       dispatch(socialActions.unfollowUser(userId, FollowSource.PROFILE_PAGE)),
     onShare: (userId: ID) =>
-      dispatch(socialActions.shareUser(userId, ShareSource.PAGE)),
+      dispatch(
+        requestOpenShareModal({
+          type: 'profile',
+          profileId: userId,
+          source: ShareSource.PAGE
+        })
+      ),
     onConfirmUnfollow: (userId: ID) =>
       dispatch(unfollowConfirmationActions.setOpen(userId)),
     updateCurrentUserFollows: (follow: any) =>

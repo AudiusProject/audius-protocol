@@ -12,7 +12,6 @@ import PropTypes from 'prop-types'
 import FollowButton from 'components/general/FollowButton'
 import Stats from 'components/general/Stats'
 import SubscribeButton from 'components/general/SubscribeButton'
-import Toast from 'components/toast/Toast'
 import { ArtistRecommendationsPopup } from 'containers/artist-recommendations/ArtistRecommendationsPopup'
 
 import styles from './StatBanner.module.css'
@@ -22,8 +21,6 @@ const BUTTON_COLLAPSE_WIDTHS = {
   second: 1140
 }
 
-const SHARE_TIMEOUT = 1500
-
 const StatBanner = props => {
   let buttonOne, buttonTwo, subscribeButton
   const followButtonRef = useRef()
@@ -31,21 +28,14 @@ const StatBanner = props => {
   switch (props.mode) {
     case 'owner':
       buttonOne = (
-        <Toast
-          text={'Copied To Clipboard!'}
-          delay={SHARE_TIMEOUT}
-          fillParent={false}
-          placement='left'
-        >
-          <Button
-            size={ButtonSize.SMALL}
-            type={ButtonType.COMMON}
-            text='SHARE'
-            leftIcon={<IconShare />}
-            onClick={props.onShare}
-            widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
-          />
-        </Toast>
+        <Button
+          size={ButtonSize.SMALL}
+          type={ButtonType.COMMON}
+          text='SHARE'
+          leftIcon={<IconShare />}
+          onClick={props.onShare}
+          widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+        />
       )
       buttonTwo = (
         <Button
@@ -82,22 +72,14 @@ const StatBanner = props => {
       break
     default:
       buttonOne = (
-        <Toast
-          text={'Copied To Clipboard!'}
-          delay={SHARE_TIMEOUT}
-          fillParent={false}
-          requireAccount={false}
-          placement='left'
-        >
-          <Button
-            size={ButtonSize.SMALL}
-            type={ButtonType.COMMON}
-            text='SHARE'
-            leftIcon={<IconShare />}
-            onClick={props.onShare}
-            widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
-          />
-        </Toast>
+        <Button
+          size={ButtonSize.SMALL}
+          type={ButtonType.COMMON}
+          text='SHARE'
+          leftIcon={<IconShare />}
+          onClick={props.onShare}
+          widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+        />
       )
       buttonTwo = (
         <div ref={followButtonRef}>

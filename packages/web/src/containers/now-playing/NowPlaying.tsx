@@ -507,7 +507,11 @@ function mapDispatchToProps(dispatch: Dispatch) {
     },
     share: (trackId: ID) =>
       dispatch(
-        requestOpenShareModal({ trackId, source: ShareSource.NOW_PLAYING })
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.NOW_PLAYING
+        })
       ),
     save: (trackId: ID) =>
       dispatch(saveTrack(trackId, FavoriteSource.NOW_PLAYING)),
