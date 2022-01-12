@@ -156,13 +156,12 @@ class RewardsAttester {
     }
   }
 
-
   /**
    * Escape hatch for manually setting starting block.
    *
    * @memberof RewardsAttester
    */
-  async _checkForStartingBlockOverride() {
+  async _checkForStartingBlockOverride () {
     const override = await this.getStartingBlockOverride()
     // Careful with 0...
     if (override === null || override === undefined) return
