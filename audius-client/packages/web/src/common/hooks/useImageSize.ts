@@ -193,7 +193,7 @@ export const useTrackCoverArt = (
   trackId: number | null,
   coverArtSizes: CoverArtSizes | null,
   size: SquareSizes,
-  defaultImage: string = imageEmpty,
+  defaultImage: string = imageEmpty as string,
   onDemand = false,
   load = true
 ) =>
@@ -211,7 +211,7 @@ export const useCollectionCoverArt = (
   collectionId: number,
   coverArtSizes: CoverArtSizes | null,
   size: SquareSizes,
-  defaultImage: string = imageEmpty,
+  defaultImage: string = imageEmpty as string,
   onDemand = false,
   load = true
 ) =>
@@ -229,7 +229,7 @@ export const useUserProfilePicture = (
   userId: number | null,
   profilePictureSizes: ProfilePictureSizes | null,
   size: SquareSizes,
-  defaultImage: string = profilePicEmpty,
+  defaultImage: string = profilePicEmpty as string,
   onDemand = false,
   load = true
 ) =>
@@ -247,7 +247,7 @@ export const useUserCoverPhoto = (
   userId: number | null,
   coverPhotoSizes: CoverPhotoSizes | null,
   size: WidthSizes,
-  defaultImage: string = imageCoverPhotoBlank,
+  defaultImage: string = imageCoverPhotoBlank as string,
   onDemand = false,
   load = true
 ) =>
