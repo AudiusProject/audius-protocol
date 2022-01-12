@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, cast
 
 import sqlalchemy
 from src.utils import db_session
@@ -21,4 +21,4 @@ def get_alembic_version() -> AlembicVersion:
                 """
             )
         ).first()
-        return dict(version)
+        return cast(AlembicVersion, dict(version))
