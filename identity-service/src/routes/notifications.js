@@ -194,6 +194,14 @@ const formatTrendingTrack = (notification) => {
   }
 }
 
+const formatChallengeReward = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.ChallengeReward,
+    challengeId: notification.actions[0].actionEntityType
+  }
+}
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -220,7 +228,8 @@ const notificationResponseMap = {
   [NotificationType.MilestoneFollow]: formatMilestone,
   [NotificationType.RemixCreate]: formatRemixCreate,
   [NotificationType.RemixCosign]: formatRemixCosign,
-  [NotificationType.TrendingTrack]: formatTrendingTrack
+  [NotificationType.TrendingTrack]: formatTrendingTrack,
+  [NotificationType.ChallengeReward]: formatChallengeReward
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).

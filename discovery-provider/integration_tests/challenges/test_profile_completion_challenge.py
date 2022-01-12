@@ -4,10 +4,12 @@ import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.models import Block, Follow, Repost, RepostType, Save, SaveType, User
+from src.models.models import Challenge
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_NUMBER = 10
 
 
 def test_profile_completion_challenge(app):
@@ -18,10 +20,10 @@ def test_profile_completion_challenge(app):
     with app.app_context():
         db = get_db()
 
-    block = Block(blockhash="0x1", number=1)
+    block = Block(blockhash="0x1", number=BLOCK_NUMBER)
     user = User(
         blockhash="0x1",
-        blocknumber=1,
+        blocknumber=BLOCK_NUMBER,
         txhash="xyz",
         user_id=1,
         is_current=True,
@@ -38,6 +40,11 @@ def test_profile_completion_challenge(app):
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
 
+        # set challenge as active for purposes of test
+        session.query(Challenge).filter(Challenge.id == "profile-completion").update(
+            {"active": True, "starting_block": BLOCK_NUMBER}
+        )
+
         # Register events with the bus
         bus.register_listener(ChallengeEvent.profile_update, profile_challenge_manager)
         bus.register_listener(ChallengeEvent.repost, profile_challenge_manager)
@@ -49,7 +56,7 @@ def test_profile_completion_challenge(app):
         session.add(user)
 
         # Process dummy event just to get this thing initted
-        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -60,7 +67,7 @@ def test_profile_completion_challenge(app):
         # Do a repost
         repost = Repost(
             blockhash="0x1",
-            blocknumber=1,
+            blocknumber=BLOCK_NUMBER,
             user_id=1,
             repost_item_id=1,
             repost_type=RepostType.track,
@@ -70,7 +77,7 @@ def test_profile_completion_challenge(app):
         )
         session.add(repost)
         session.flush()
-        bus.dispatch(ChallengeEvent.repost, 1, 1)
+        bus.dispatch(ChallengeEvent.repost, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -79,7 +86,7 @@ def test_profile_completion_challenge(app):
         # Do a save
         save = Save(
             blockhash="0x1",
-            blocknumber=1,
+            blocknumber=BLOCK_NUMBER,
             user_id=1,
             save_item_id=1,
             save_type=SaveType.track,
@@ -89,7 +96,7 @@ def test_profile_completion_challenge(app):
         )
         session.add(save)
         session.flush()
-        bus.dispatch(ChallengeEvent.favorite, 1, 1)
+        bus.dispatch(ChallengeEvent.favorite, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         session.flush()
@@ -99,7 +106,7 @@ def test_profile_completion_challenge(app):
         # Do 1 follow, then 5 total follows
         follow = Follow(
             blockhash="0x1",
-            blocknumber=1,
+            blocknumber=BLOCK_NUMBER,
             is_current=True,
             is_delete=False,
             created_at=datetime.now(),
@@ -108,7 +115,7 @@ def test_profile_completion_challenge(app):
         )
         session.add(follow)
         session.flush()
-        bus.dispatch(ChallengeEvent.follow, 1, 1)
+        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         session.flush()
@@ -118,7 +125,7 @@ def test_profile_completion_challenge(app):
         follows = [
             Follow(
                 blockhash="0x1",
-                blocknumber=1,
+                blocknumber=BLOCK_NUMBER,
                 is_current=True,
                 is_delete=False,
                 created_at=datetime.now(),
@@ -127,7 +134,7 @@ def test_profile_completion_challenge(app):
             ),
             Follow(
                 blockhash="0x1",
-                blocknumber=1,
+                blocknumber=BLOCK_NUMBER,
                 is_current=True,
                 is_delete=False,
                 created_at=datetime.now(),
@@ -136,7 +143,7 @@ def test_profile_completion_challenge(app):
             ),
             Follow(
                 blockhash="0x1",
-                blocknumber=1,
+                blocknumber=BLOCK_NUMBER,
                 is_current=True,
                 is_delete=False,
                 created_at=datetime.now(),
@@ -145,7 +152,7 @@ def test_profile_completion_challenge(app):
             ),
             Follow(
                 blockhash="0x1",
-                blocknumber=1,
+                blocknumber=BLOCK_NUMBER,
                 is_current=True,
                 is_delete=False,
                 created_at=datetime.now(),
@@ -155,7 +162,7 @@ def test_profile_completion_challenge(app):
         ]
         session.add_all(follows)
         session.flush()
-        bus.dispatch(ChallengeEvent.follow, 1, 1)
+        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -166,7 +173,7 @@ def test_profile_completion_challenge(app):
             {"profile_picture": "profilepictureurl"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -177,7 +184,7 @@ def test_profile_completion_challenge(app):
             {"bio": "profiledescription"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -186,7 +193,7 @@ def test_profile_completion_challenge(app):
         # Undo it, ensure that our count goes down
         session.query(User).filter(User.user_id == 1).update({"bio": None})
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -197,7 +204,7 @@ def test_profile_completion_challenge(app):
             {"bio": "profiledescription", "cover_photo": "test_cover_photo"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -206,7 +213,7 @@ def test_profile_completion_challenge(app):
         # ensure that if we lose some data now that the thing is complete, we don't change the status of the challenge
         session.query(User).filter(User.user_id == 1).update({"cover_photo": None})
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]

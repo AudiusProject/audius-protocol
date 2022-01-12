@@ -14,7 +14,6 @@ from src.database_task import DatabaseTask
 from src.models import AssociatedWallet, User, UserEvents
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
-from src.tasks.metadata import user_metadata_format
 from src.utils import helpers
 from src.utils.indexing_errors import IndexingError
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
@@ -292,8 +291,6 @@ def parse_user_event(
     if event_type == user_event_types_lookup["update_multihash"]:
         # Look up metadata multihash in IPFS and override with metadata fields
         if ipfs_metadata:
-            # ipfs_metadata properties are defined in get_ipfs_metadata
-
             # Fields also stored on chain
             if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
                 user_record.profile_picture = ipfs_metadata["profile_picture"]
@@ -597,18 +594,6 @@ def recover_user_id_hash(web3, user_id, signature):
         message_hash, signature=signature
     )
     return wallet_address
-
-
-def get_ipfs_metadata(update_task, metadata_multihash, creator_node_endpoint):
-    user_metadata = user_metadata_format
-    if metadata_multihash:
-        user_metadata = update_task.ipfs_client.get_metadata(
-            metadata_multihash,
-            user_metadata_format,
-            creator_node_endpoint,
-        )
-        logger.info(f"index.py | users.py | {user_metadata}")
-    return user_metadata
 
 
 # Determine whether this user has identity established on the UserReplicaSetManager contract
