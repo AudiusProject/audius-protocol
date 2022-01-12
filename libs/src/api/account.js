@@ -141,11 +141,16 @@ class Account extends Base {
         }
       }
 
-      // Create a wAudio user bank address
+      // Create a wAudio user bank address.
+      // If userbank creation fails, we still proceed
+      // through signup
       if (createWAudioUserBank && this.solanaWeb3Manager) {
         phase = phases.SOLANA_USER_BANK_CREATION
-        // Create a user bank if the solana web3 manager is present
-        await this.solanaWeb3Manager.createUserBank()
+        try {
+          await this.solanaWeb3Manager.createUserBank()
+        } catch (err) {
+          console.error(`Got error creating userbank: ${err}, continuing...`)
+        }
       }
 
       // Add user to chain

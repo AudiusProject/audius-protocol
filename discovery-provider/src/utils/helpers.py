@@ -45,7 +45,7 @@ def redis_restore(redis, key):
         with open(filename, "rb") as f:
             dumped = f.read()
             redis.restore(key, 0, dumped)
-            logger.info(f"successfully restored redis value for key: {key}")
+            logger.debug(f"successfully restored redis value for key: {key}")
             return redis.get(key)
     except FileNotFoundError as not_found:
         logger.error(f"could not read redis dump file: {filename}")
@@ -88,7 +88,7 @@ def redis_dump(redis, key):
         filename = f"{key}_dump"
         with open(filename, "wb") as f:
             f.write(dumped)
-            logger.info(f"successfully performed redis dump for key: {key}")
+            logger.debug(f"successfully performed redis dump for key: {key}")
     except Exception as e:
         logger.error(f"could not perform redis dump for key: {key}")
         logger.error(e)

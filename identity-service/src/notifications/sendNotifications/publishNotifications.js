@@ -66,7 +66,8 @@ const alwaysSendNotifications = [
   notificationTypes.Create.base,
   notificationTypes.Create.track,
   notificationTypes.Create.playlist,
-  notificationTypes.Create.album
+  notificationTypes.Create.album,
+  notificationTypes.ChallengeReward
 ]
 
 const mapNotificationBaseTypeToSettings = {

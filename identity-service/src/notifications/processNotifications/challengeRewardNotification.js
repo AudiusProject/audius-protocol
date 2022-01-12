@@ -1,8 +1,5 @@
 const models = require('../../models')
-const {
-  notificationTypes,
-  actionEntityTypes
-} = require('../constants')
+const { notificationTypes } = require('../constants')
 
 /**
  * Process challenge reward notifications, note these notifications do not "stack" meaning that
@@ -31,8 +28,8 @@ async function processChallengeRewardNotifications (notifications, tx) {
       where: {
         slot,
         notificationId: notificationObj.id,
-        actionEntityType: actionEntityTypes.Challenge,
-        actionEntityId: challengeId
+        actionEntityType: challengeId,
+        actionEntityId: notification.initiator
       },
       transaction: tx
     })
