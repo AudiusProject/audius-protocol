@@ -57,34 +57,57 @@
   width: 100%;
 }
 
-.actionItemText {
-  font-size: var(--font-l) !important;
-  font-weight: 800 !important;
+/* The following have intentionally increased specificity to override stems button specificity */
+.actionButton .actionButtonLabel {
+  font-size: var(--font-l);
+  font-weight: 800;
 }
 
-.twitterIcon path {
-  fill: var(--static-twitter-blue) !important;
+.actionButton .twitterIcon path {
+  fill: var(--static-twitter-blue);
 }
 
-.twitterActionItemText {
-  composes: actionItemText;
-  color: var(--static-twitter-blue) !important;
+.actionButton .twitterActionLabel {
+  color: var(--static-twitter-blue);
 }
 
-.tikTokActionItemText {
-  composes: actionItemText;
-  color: black !important;
+/* Reconstructing TikTok icon styles due to stems button specificity */
+.actionButton .tikTokIcon path:nth-of-type(1) {
+  fill: #ee1d52;
 }
 
-.tikTokActionItemTextDark {
-  color: var(--white);
+.actionButton .tikTokIcon path:nth-of-type(2) {
+  fill: #000;
 }
 
-.shareIcon path {
+.actionButton .tikTokIcon path:nth-of-type(3) {
+  fill: #69c9d0;
+}
+
+.actionButton .tikTokIcon path:nth-of-type(4) {
+  fill: #69c9d0;
+}
+
+.actionButton .tikTokIcon path:nth-of-type(5) {
+  fill: #69c9d0;
+}
+
+.actionButton .tikTokIconDark path {
+  fill: var(--static-white);
+}
+
+.actionButton .tikTokActionLabel {
+  color: black;
+}
+
+.actionButton .tikTokActionLabelDark {
+  color: var(--static-white);
+}
+
+.actionButton .shareIcon path {
   fill: var(--secondary) !important;
 }
 
-.shareActionItemText {
-  composes: actionItemText;
-  color: var(--secondary) !important;
+.actionButton .shareActionLabel {
+  color: var(--secondary);
 }
