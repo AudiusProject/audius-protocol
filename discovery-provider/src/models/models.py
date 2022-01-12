@@ -1061,6 +1061,11 @@ repost_count={self.repost_count},\
 save_count={self.save_count})>"
 
 
+class SkippedTransactionLevel(str, enum.Enum):
+    node = "node"
+    network = "network"
+
+
 class SkippedTransaction(Base):
     __tablename__ = "skipped_transactions"
 
@@ -1072,6 +1077,7 @@ class SkippedTransaction(Base):
     updated_at = Column(
         DateTime, nullable=False, default=func.now(), onupdate=func.now()
     )
+    level = Column(Enum(SkippedTransactionLevel), nullable=False, default="node")
 
     def __repr__(self):
         return f"<SkippedTransaction(\
@@ -1079,6 +1085,7 @@ id={self.id},\
 blocknumber={self.blocknumber},\
 blockhash={self.blockhash},\
 txhash={self.txhash},\
+level={self.level},\
 created_at={self.created_at},\
 updated_at={self.updated_at})>"
 
