@@ -48,9 +48,9 @@ class DBManager {
     queryObj.clock = selectCNodeUserClockSubqueryLiteral
 
     // Create new Data table entry with queryObj using new CNodeUser.clock
-    const file = await sequelizeTableInstance.create(queryObj, { transaction })
+    const newDataRecord = await sequelizeTableInstance.create(queryObj, { transaction })
 
-    return file.dataValues
+    return newDataRecord.dataValues
   }
 
   /**

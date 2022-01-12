@@ -25,8 +25,15 @@ const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 const processSync = require('../src/services/sync/processSync')
 const { uploadTrack } = require('./lib/helpers')
+const primarySyncFromSecondary = require('../src/services/sync/primarySyncFromSecondary.js')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
+
+/**
+ * All CIDs in sample export json files should equal `DUMMY_CID` below
+ */
+const DUMMY_CID = 'QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE'
+const DUMMY_CID_DATA = 'audius is cool'
 const sampleExportDummyCIDPath = path.resolve(
   __dirname,
   'syncAssets/sampleExportDummyCID.json'
@@ -58,6 +65,21 @@ describe('test nodesync', async function () {
     server = appInfo.server
     app = appInfo.app
     mockServiceRegistry = appInfo.mockServiceRegistry
+  }
+
+  const unpackSampleExportData = (sampleExportFilePath) => {
+    const sampleExport = JSON.parse(fs.readFileSync(sampleExportFilePath))
+    const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
+    const { audiusUsers, tracks, files, clockRecords } = cnodeUser
+
+    return {
+      sampleExport,
+      cnodeUser,
+      audiusUsers,
+      tracks,
+      files,
+      clockRecords
+    }
   }
 
   /** Wipe DB + Redis */
@@ -692,7 +714,7 @@ describe('test nodesync', async function () {
     })
   })
 
-  describe.only('Test processSync function', async function () {
+  describe('Test processSync function', async function () {
     let serviceRegistryMock
 
     const TEST_ENDPOINT = 'http://test-cn.co'
@@ -734,21 +756,6 @@ describe('test nodesync', async function () {
       return session.cnodeUserUUID
     }
 
-    const unpackSampleExportData = (sampleExportFilePath) => {
-      const sampleExport = JSON.parse(fs.readFileSync(sampleExportFilePath))
-      const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
-      const { audiusUsers, tracks, files, clockRecords } = cnodeUser
-
-      return {
-        sampleExport,
-        cnodeUser,
-        audiusUsers,
-        tracks,
-        files,
-        clockRecords
-      }
-    }
-
     const setupMocks = (sampleExport) => {
       // Mock /export route response
       nock(TEST_ENDPOINT)
@@ -780,6 +787,7 @@ describe('test nodesync', async function () {
         .reply(200, 'audius is cool')
     }
 
+    // Ensure user data in CNodeUser table is as expected
     const verifyLocalCNodeUserStateForUser = async (exportedCnodeUser) => {
       exportedCnodeUser = _.pick(exportedCnodeUser, [
         'cnodeUserUUID',
@@ -1060,4 +1068,132 @@ describe('test nodesync', async function () {
       })
     })
   })
+})
+
+describe.only('Test primarySyncFromSecondary() with mocked export', async () => {
+  let server, app, serviceRegistryMock
+
+  const NODES = {
+    CN0: 'http://mock-cn0.audius.co',
+    CN1: 'http://mock-cn1.audius.co',
+    CN2: 'http://mock-cn2.audius.co',
+    CN3: 'http://mock-cn3.audius.co',
+    CN4: 'http://mock-cn4.audius.co'
+  }
+  const NODES_LIST = Object.keys(NODES)
+  const SELF = NODES.CN0
+  const SECONDARY = NODES.CN4
+  const USER_1_ID = 1
+  const SP_ID_1 = 1
+  const USER_1_WALLET = testEthereumConstants.pubKey.toLowerCase()
+
+  const unpackSampleExportData = (sampleExportFilePath) => {
+    const sampleExport = JSON.parse(fs.readFileSync(sampleExportFilePath))
+    const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
+    const { audiusUsers, tracks, files, clockRecords } = cnodeUser
+
+    return {
+      sampleExport,
+      cnodeUser,
+      audiusUsers,
+      tracks,
+      files,
+      clockRecords
+    }
+  }
+
+  /**
+   * Sets `/export` route response from `endpoint` to `exportData`
+   */
+  const setupExportMock = (endpoint, exportData) => {
+    nock(endpoint)
+      .persist()
+      .get((uri) => uri.includes('/export'))
+      .reply(200, exportData)
+  }
+
+  /**
+   * Sets `/ipfs` route responses for DUMMY_CID from all nodes to DUMMY_CID_DATA
+   */
+  const setupIPFSRouteMocks = () => {
+    const urlPath = `/ipfs/${DUMMY_CID}`
+    NODES_LIST.forEach(node => {
+      nock(node)
+      .persist()
+      .get((uri) => uri.includes(urlPath))
+      .reply(200, DUMMY_CID_DATA)
+    })
+  }
+
+  /**
+   * Reset nocks, DB, redis
+   * Setup mocks, deps
+   */
+  beforeEach(async () => {
+    nock.cleanAll()
+
+    try {
+      await destroyUsers()
+    } catch (e) {
+      // do nothing
+    }
+
+    await redisClient.flushdb()
+
+    // Mock ipfs.swarm.connect() function for test purposes
+    ipfsClient.ipfs.swarm.connect = async () => {
+      return { Strings: [] }
+    }
+
+    const appInfo = await getApp(
+      ipfsClient.ipfs,
+      libsMock,
+      BlacklistManager,
+      ipfsClient.ipfsLatest,
+      null,
+      SP_ID_1
+    )
+    server = appInfo.server
+    app = appInfo.app
+
+    serviceRegistryMock = getServiceRegistryMock(
+      ipfsClient.ipfs,
+      libsMock,
+      BlacklistManager,
+      ipfsClient.ipfsLatest
+    )
+  })
+
+  it.only('Primary correctly syncs from secondary when primary has no state', async () => {
+    const {
+      sampleExport,
+      cnodeUser: exportedCnodeUser,
+      audiusUsers: exportedAudiusUsers,
+      tracks: exportedTracks,
+      files: exportedFiles,
+      clockRecords: exportedClockRecords
+    } = unpackSampleExportData(sampleExportDummyCIDPath)
+
+    setupExportMock(SECONDARY, sampleExport)
+    // setupIPFSRouteMocks()
+
+    // Confirm local user state is empty before sync
+    const initialCNodeUserCount = await models.CNodeUser.count()
+    assert.strictEqual(initialCNodeUserCount, 0)
+
+    await primarySyncFromSecondary({
+      serviceRegistry: serviceRegistryMock,
+      secondary: SECONDARY,
+      wallet: USER_1_WALLET,
+      sourceEndpoint: SELF
+    })
+
+    // Assert on all user data
+  })
+
+  it('Primary correctly syncs from secondary when nodes have divergent state', async () => {})
+
+  it('Primary correctly syncs from secondary when primary has subset of secondary state', async () => {})
+
+  it('Primary correctly syncs from secondary when secondary has state requiring multiple syncs', async () => {})
 })

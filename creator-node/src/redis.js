@@ -22,6 +22,10 @@ class RedisLock {
   }
 }
 
+function getRedisKeyForWallet (wallet) {
+  return `WALLET.${wallet}`
+}
+
 function getNodeSyncRedisKey(wallet) {
   return `NODESYNC.${wallet}`
 }
@@ -29,3 +33,4 @@ function getNodeSyncRedisKey(wallet) {
 module.exports = redisClient
 module.exports.lock = RedisLock
 module.exports.getNodeSyncRedisKey = getNodeSyncRedisKey
+module.exports.getRedisKeyForWallet = getRedisKeyForWallet

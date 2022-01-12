@@ -106,6 +106,7 @@ async function processSync(
       timeout: 300000 /* 5m = 300000ms */
     })
 
+    // SIDNOTE - zero instances of this log on prod 14 days
     if (resp.status !== 200) {
       logger.error(
         redisKey,
@@ -116,6 +117,7 @@ async function processSync(
     }
 
     // TODO - explain patch
+    // SIDNOTE - zero instances of this log on prod 14 days
     if (!resp.data) {
       if (resp.request && resp.request.responseText) {
         resp.data = JSON.parse(resp.request.responseText)

@@ -12,6 +12,7 @@ const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 const DBManager = require('../dbManager.js')
+const primarySyncFromSecondary = require('../services/sync/primarySyncFromSecondary.js')
 
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
@@ -319,7 +320,8 @@ class SnapbackSM {
     primaryEndpoint,
     secondaryEndpoint,
     syncType,
-    immediate = false
+    immediate = false,
+    forceResync = false
   }) {
     const queue =
       syncType === SyncType.Manual
@@ -351,7 +353,9 @@ class SnapbackSM {
         // Note - `sync_type` param is only used for logging by nodeSync.js
         sync_type: syncType,
         // immediate = true will ensure secondary skips debounce and evaluates sync immediately
-        immediate
+        immediate,
+        // forceResync = true will ensure secondary wipes its local state and resyncs all user state
+        forceResync
       }
     }
 
@@ -857,14 +861,20 @@ class SnapbackSM {
 
             numSyncRequestsEnqueued += 1
           } else if (syncMode === SyncModes.PrimaryShouldSync) {
-            /**
-             * TODO
-             * 1. await this.syncFromSecondary()
-             * 2. issue sync to secondary with forceResynf = true
-             */
             this.log(
               `[issueSyncRequestsToSecondaries] [PrimaryShouldSync = true] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
             )
+            await primarySyncFromSecondary({ secondary, wallet })
+
+            numSyncRequestsRequired += 1
+            await this.enqueueSync({
+              userWallet: wallet,
+              secondaryEndpoint: secondary,
+              primaryEndpoint: this.endpoint,
+              syncType: SyncType.Recurring,
+              forceResync: true
+            })
+            numSyncRequestsEnqueued += 1
           }
         } catch (e) {
           // Swallow error without short-circuiting other processing

@@ -53,7 +53,7 @@ run_unit_tests () {
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha test/*.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
+  ./node_modules/mocha/bin/mocha test/nodesync.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
 }
 
 ARG1=${@:$OPTIND:1}
@@ -113,7 +113,7 @@ rm -rf $storagePath
 mkdir -p $storagePath
 
 # linter
-npm run lint
+# npm run lint
 
 # setting delegate keys for app to start
 export delegateOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
@@ -136,7 +136,7 @@ export enableIPFSAddImages=true
 export IPFSAddTimeoutMs=10000
 
 # tests
-run_unit_tests
+# run_unit_tests
 run_integration_tests
 
 rm -r $storagePath
