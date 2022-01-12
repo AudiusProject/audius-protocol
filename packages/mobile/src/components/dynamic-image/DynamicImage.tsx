@@ -7,6 +7,7 @@ import {
   Image,
   ImageSourcePropType,
   ImageStyle,
+  StyleProp,
   StyleSheet,
   View
 } from 'react-native'
@@ -18,7 +19,7 @@ export type DynamicImageProps = {
   // Image source
   image?: ImageSourcePropType
   // Style to apply to the image itself
-  style?: ImageStyle
+  style?: StyleProp<ImageStyle>
   // Whether or not to immediately animate
   immediate?: boolean
   // Whether or not to use the default placeholder

@@ -9,6 +9,7 @@ import React, {
 import ToastView, { ToastType } from './ToastView'
 
 const DEFAULT_TIMEOUT = 2000
+export const SHARE_TOAST_TIMEOUT = 1500
 
 type Toast = {
   content: ReactNode

@@ -1,3 +1,5 @@
+import { StringWei } from 'audius-client/src/common/models/Wallet'
+
 import { Nullable } from '../utils/typeUtils'
 
 import Color from './common/Color'
@@ -32,8 +34,8 @@ export type UserVerified = {
 }
 
 export type UserBalance = {
-  associated_wallets_balance: string
-  balance: string
+  associated_wallets_balance: StringWei
+  balance: StringWei
 }
 
 export type UserMetadata = UserName &

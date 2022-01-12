@@ -29,7 +29,6 @@ import {
   OverflowAction,
   OverflowActionCallbacks
 } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as openTikTokModal } from 'audius-client/src/common/store/ui/share-sound-to-tiktok-modal/slice'
 import { profilePage } from 'audius-client/src/utils/route'
 import { push } from 'connected-react-router'
 
@@ -68,8 +67,6 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       dispatchWeb(unsaveTrack(id, FavoriteSource.OVERFLOW)),
     [OverflowAction.SHARE]: () =>
       dispatchWeb(shareTrack(id, ShareSource.OVERFLOW)),
-    [OverflowAction.SHARE_TO_TIKTOK]: () =>
-      dispatchWeb(openTikTokModal({ id })),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
       dispatchWeb(openAddToPlaylistModal(id, title)),
     [OverflowAction.VIEW_TRACK_PAGE]: () =>

@@ -1,6 +1,5 @@
+import { User } from 'audius-client/src/common/models/User'
 import BN from 'bn.js'
-
-import { UserBalance } from '../models/User'
 
 export const WEI = new BN('1000000000000000000')
 
@@ -28,7 +27,9 @@ export const badgeTiers: { tier: BadgeTier; minAudio: BN }[] = [
   }
 ]
 
-export const getBadgeTier = (user: UserBalance) => {
+export const getBadgeTier = (
+  user: Pick<User, 'balance' | 'associated_wallets_balance'>
+) => {
   const totalBalance = new BN(user.balance ?? '0')
     .add(new BN(user.associated_wallets_balance ?? '0'))
     .div(WEI)

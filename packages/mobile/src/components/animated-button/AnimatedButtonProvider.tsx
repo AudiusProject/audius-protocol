@@ -8,7 +8,7 @@ import React, {
 } from 'react'
 
 import LottieView from 'lottie-react-native'
-import { TouchableHighlight, View, ViewStyle } from 'react-native'
+import { StyleProp, TouchableHighlight, View, ViewStyle } from 'react-native'
 
 import { useColor } from 'app/utils/theme'
 
@@ -17,8 +17,8 @@ export type BaseAnimatedButtonProps = {
   isActive?: boolean
   isDisabled?: boolean
   showUnderlay?: boolean
-  style?: ViewStyle
-  wrapperStyle?: ViewStyle
+  style?: StyleProp<ViewStyle>
+  wrapperStyle?: StyleProp<ViewStyle>
 }
 
 type IconJSON = any
