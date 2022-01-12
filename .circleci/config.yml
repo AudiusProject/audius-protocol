@@ -709,7 +709,7 @@ workflows:
       - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs
-
+            
       - test-mad-dog-e2e:
           mad-dog-type: test
       - hold-test-mad-dog-e2e-full:
