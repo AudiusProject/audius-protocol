@@ -1,3 +1,5 @@
+import { ShareType } from 'common/store/ui/share-modal/types'
+
 export type ShareProps = {
   onShareToTwitter: () => void
   onShareToTikTok: () => void
@@ -5,4 +7,5 @@ export type ShareProps = {
   isOpen: boolean
   onClose: () => void
   showTikTokShareAction?: boolean
+  shareType: ShareType
 }

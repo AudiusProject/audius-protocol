@@ -252,7 +252,13 @@ function mapStateToProps(state: AppState, ownProps: TrackTileProps) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     shareTrack: (trackId: ID) =>
-      dispatch(requestOpenShareModal({ trackId, source: ShareSource.TILE })),
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.TILE
+        })
+      ),
     saveTrack: (trackId: ID) =>
       dispatch(saveTrack(trackId, FavoriteSource.TILE)),
     unsaveTrack: (trackId: ID) =>
