@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { withRouter, NavLink } from 'react-router-dom'
+import { useLocation, withRouter, NavLink } from 'react-router-dom'
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
 
@@ -44,6 +44,8 @@ import ConnectedProfileCompletionPane from 'containers/profile-progress/Connecte
 import * as signOnActions from 'containers/sign-on/store/actions'
 import { resetState as resetUploadState } from 'containers/upload-page/store/actions'
 import UserBadges from 'containers/user-badges/UserBadges'
+import { NO_VISUALIZER_ROUTES } from 'containers/visualizer/Visualizer'
+import { toggleVisibility } from 'containers/visualizer/store/slice'
 import { make, useRecord } from 'store/analytics/actions'
 import { getDominantColorsByTrack } from 'store/application/ui/average-color/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
@@ -91,9 +93,11 @@ const NavColumn = ({
   goToSignUp: routeToSignup,
   goToSignIn,
   goToUpload,
+  toggleVisualizerVisibility,
   dominantColors
 }) => {
   const record = useRecord()
+  const { pathname } = useLocation()
   const goToSignUp = useCallback(
     source => {
       routeToSignup()
@@ -177,6 +181,12 @@ const NavColumn = ({
     const route = getTrackPageLink()
     if (route) goToRoute(route)
   }, [goToRoute, getTrackPageLink])
+
+  const onShowVisualizer = useCallback(() => {
+    if (NO_VISUALIZER_ROUTES.has(pathname)) return
+
+    toggleVisualizerVisibility()
+  }, [toggleVisualizerVisibility, pathname])
 
   const onClickUpload = useCallback(() => {
     if (!upload.uploading) resetUploadState()
@@ -394,6 +404,7 @@ const NavColumn = ({
           coverArtSizes={currentQueueItem.track?._cover_art_sizes ?? null}
           draggableLink={getTrackPageLink()}
           onClick={onClickArtwork}
+          onShowVisualizer={onShowVisualizer}
         />
       </div>
     </nav>
@@ -440,7 +451,8 @@ const mapDispatchToProps = dispatch => ({
   goToUpload: () => dispatch(pushRoute(UPLOAD_PAGE)),
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
-  goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true))
+  goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true)),
+  toggleVisualizerVisibility: () => dispatch(toggleVisibility())
 })
 
 export default withRouter(

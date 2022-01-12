@@ -4,6 +4,7 @@ import cn from 'classnames'
 import { animated, useSpring } from 'react-spring'
 
 import { useUserProfilePicture } from 'common/hooks/useImageSize'
+import Color from 'common/models/Color'
 import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -24,6 +25,8 @@ interface PlayingTrackInfoProps {
   artistUserId: ID
   artistName: string
   artistHandle: string
+  hasShadow: boolean
+  dominantColor?: Color
   onClickTrackTitle: () => void
   onClickArtistName: () => void
 }
@@ -47,7 +50,9 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
   onClickTrackTitle,
   onClickArtistName,
   isVerified,
-  isTrackUnlisted
+  isTrackUnlisted,
+  hasShadow,
+  dominantColor
 }) => {
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
   const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)
@@ -65,6 +70,13 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
     setTrackSpringProps(springProps)
   }, [trackTitle, setTrackSpringProps])
 
+  const boxShadowStyle =
+    hasShadow && dominantColor
+      ? {
+          boxShadow: `0px 3px 5px rgba(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b}, 0.5), 0px 3px 4px rgba(133, 129, 153, 0.25)`
+        }
+      : {}
+
   return (
     <div className={styles.info}>
       <div className={styles.profilePictureWrapper}>
@@ -74,6 +86,7 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
           className={cn(styles.profilePicture, {
             [styles.isDefault]: !!trackId
           })}
+          imageStyle={boxShadowStyle}
           initialOpacity={0.6}
           immediatelyLeave
           usePlaceholder={false}
@@ -89,7 +102,12 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
           link={fullTrackPage(trackPermalink)}
         >
           <animated.div style={trackSpringProps}>
-            <div className={styles.trackTitle} onClick={onClickTrackTitle}>
+            <div
+              className={cn(styles.trackTitle, {
+                [styles.textShadow]: hasShadow
+              })}
+              onClick={onClickTrackTitle}
+            >
               {trackTitle}
             </div>
           </animated.div>
@@ -98,7 +116,12 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
           className={styles.artistNameWrapper}
           style={artistSpringProps}
         >
-          <div className={styles.artistName} onClick={onClickArtistName}>
+          <div
+            className={cn(styles.artistName, {
+              [styles.textShadow]: hasShadow
+            })}
+            onClick={onClickArtistName}
+          >
             {artistName}
           </div>
           <UserBadges
