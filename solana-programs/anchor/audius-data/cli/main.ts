@@ -181,7 +181,7 @@ program
   .option("-e, --eth-address <string>", "user eth address")
   .option("-u, --user-solana-keypair <string>", "user admin sol keypair path")
   .option(
-    "-ustg, --user-stg-pubkey <string>",
+    "-ustg, --user-storage-pubkey <string>",
     "user sol handle-based PDA pubkey"
   )
   .option(
