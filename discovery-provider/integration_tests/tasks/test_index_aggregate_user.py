@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models import AggregatePlays
+from src.models import AggregateUser
 from src.tasks.index_aggregate_user import update_aggregate_table
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -100,21 +100,22 @@ def test_index_aggregate_user_populate(app):
     with db.scoped_session() as session:
         update_aggregate_table(db, redis)
 
-        results: List[AggregatePlays] = (
-            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
+        results: List[AggregateUser] = (
+            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
         assert len(results) == 5
-        assert results[0].play_item_id == 0
-        assert results[0].count == 2
-        assert results[1].play_item_id == 1
-        assert results[1].count == 2
-        assert results[2].play_item_id == 2
-        assert results[2].count == 3
-        assert results[3].play_item_id == 3
-        assert results[3].count == 4
-        assert results[4].play_item_id == 4
-        assert results[4].count == 2
+
+        assert results[0].user_id == 1
+        assert results[0].track_count == 1
+        assert results[0].playlist_count == 1
+        assert results[0].playlist_count == 1
+        assert results[0].album_count == 0
+        assert results[0].follower_count == 0
+        assert results[0].following_count == 2
+        assert results[0].repost_count == 0
+        assert results[0].track_save_count == 0
+
 
 
 # def test_index_aggregate_use`r_update(app):
