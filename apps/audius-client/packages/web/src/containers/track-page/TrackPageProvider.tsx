@@ -539,7 +539,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
     },
     pause: () => dispatch(tracksActions.pause()),
     shareTrack: (trackId: ID) =>
-      dispatch(requestOpenShareModal({ trackId, source: ShareSource.PAGE })),
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.PAGE
+        })
+      ),
     saveTrack: (trackId: ID) =>
       dispatch(
         socialTracksActions.saveTrack(trackId, FavoriteSource.TRACK_PAGE)

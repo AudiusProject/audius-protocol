@@ -43,7 +43,8 @@ export const ShareDialog = ({
   onCopyLink,
   isOpen,
   onClose,
-  showTikTokShareAction
+  showTikTokShareAction,
+  shareType
 }: ShareDialogProps) => {
   return (
     <Modal
@@ -57,7 +58,7 @@ export const ShareDialog = ({
       title={
         <div className={styles.titleContainer}>
           <IconShare className={styles.titleIcon} />
-          <h2 className={styles.title}>{messages.modalTitle}</h2>
+          <h2 className={styles.title}>{messages.modalTitle(shareType)}</h2>
         </div>
       }
     >
@@ -86,7 +87,7 @@ export const ShareDialog = ({
           <ShareActionListItem
             leftIcon={<IconLink {...iconProps} />}
             iconClassName={styles.shareIcon}
-            text={messages.copyLink}
+            text={messages.copyLink(shareType)}
             textClassName={styles.shareActionItemText}
             onClick={onCopyLink}
           />

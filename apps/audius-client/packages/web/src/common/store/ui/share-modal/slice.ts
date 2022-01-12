@@ -2,7 +2,10 @@ import { createSlice } from '@reduxjs/toolkit'
 
 import { ShareModalState, RequestOpenAction, OpenAction } from './types'
 
-const initialState: ShareModalState = {}
+const initialState: ShareModalState = {
+  source: null,
+  content: null
+}
 
 const slice = createSlice({
   name: 'applications/ui/shareModal',
@@ -10,8 +13,8 @@ const slice = createSlice({
   reducers: {
     requestOpen: (state, action: RequestOpenAction) => {},
     open: (state, action: OpenAction) => {
-      const { track, source } = action.payload
-      state.track = track
+      const { source, ...content } = action.payload
+      state.content = content
       state.source = source
     }
   }

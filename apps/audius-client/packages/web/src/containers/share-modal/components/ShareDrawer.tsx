@@ -22,7 +22,8 @@ export const ShareDrawer = ({
   onCopyLink,
   isOpen,
   onClose,
-  showTikTokShareAction
+  showTikTokShareAction,
+  shareType
 }: ShareDrawerProps) => {
   const getActions = useCallback(() => {
     const shareToTwitterAction = {
@@ -42,7 +43,7 @@ export const ShareDrawer = ({
     }
 
     const copyLinkAction = {
-      text: messages.copyLink,
+      text: messages.copyLink(shareType),
       icon: <IconLink {...iconSize} />,
       className: styles.copyLinkAction,
       onClick: onCopyLink
@@ -51,14 +52,20 @@ export const ShareDrawer = ({
     return showTikTokShareAction
       ? [shareToTwitterAction, shareToTikTokAction, copyLinkAction]
       : [shareToTwitterAction, copyLinkAction]
-  }, [showTikTokShareAction, onShareToTwitter, onShareToTikTok, onCopyLink])
+  }, [
+    showTikTokShareAction,
+    onShareToTwitter,
+    onShareToTikTok,
+    onCopyLink,
+    shareType
+  ])
 
   return (
     <ActionDrawer
       renderTitle={() => (
         <div className={styles.titleContainer}>
           <IconShare className={styles.titleIcon} />
-          <h2 className={styles.title}>{messages.modalTitle}</h2>
+          <h2 className={styles.title}>{messages.modalTitle(shareType)}</h2>
         </div>
       )}
       actions={getActions()}

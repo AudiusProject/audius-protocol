@@ -369,7 +369,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     shareTrack: (trackId: ID) =>
-      dispatch(requestOpenShareModal({ trackId, source: ShareSource.TILE })),
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.TILE
+        })
+      ),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.TILE)),
     undoRepostTrack: (trackId: ID) =>
