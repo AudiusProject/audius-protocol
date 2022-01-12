@@ -117,6 +117,8 @@ pub mod audius_data {
         // Set owner to user storage account
         ctx.accounts.track.owner = ctx.accounts.user.key();
         ctx.accounts.track.track_id = ctx.accounts.audius_admin.track_id;
+        // Increment global track ID after assignment to this track in particular
+        // Ensures each track has a unique numeric ID
         ctx.accounts.audius_admin.track_id = ctx.accounts.audius_admin.track_id + 1;
         msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
