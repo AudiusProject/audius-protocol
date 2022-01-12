@@ -570,6 +570,18 @@ const config = convict({
     env: 'cognitoAPIKey',
     default: ''
   },
+  cognitoBaseUrl: {
+    doc: 'Base URL for Cognito API',
+    format: String,
+    env: 'cognitoBaseUrl',
+    default: ''
+  },
+  cognitoTemplateId: {
+    doc: 'Template for using Cognito Flow API',
+    format: String,
+    env: 'cognitoTemplateId',
+    default: ''
+  },
   solanaEndpoint: {
     doc: 'The Solana RPC endpoint to make requests against',
     format: String,
