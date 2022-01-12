@@ -67,6 +67,7 @@ function setup_postgres() {
 function setup_python() {
     sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
     sudo apt install -y "python$PYTHON_VERSION"
+    sudo apt install -y "python$PYTHON_VERSION-dev"
     pip install wheel
 }
 
