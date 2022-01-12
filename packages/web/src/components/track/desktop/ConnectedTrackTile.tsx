@@ -173,7 +173,6 @@ const ConnectedTrackTile = memo(
         includeFavorite: false,
         includeRepost: false,
         includeShare: false,
-        includeShareToTikTok: !isUnlisted,
         includeTrackPage: true,
         isArtistPick: isArtistPick,
         isDeleted: is_delete || isOwnerDeactivated,
