@@ -230,8 +230,8 @@ def fetch_ipfs_metadata(
     blacklisted_cids = set()
     cids = set()
     cid_type = {}
-    # store cid to user replica set to make get_metadata lookup more efficient
-    cid_to_cnode_endpoints = {}
+    # cid -> user_id lookup to make fetching replica set more efficient
+    cid_to_user = {}
 
     with db.scoped_session() as session:
         for tx_receipt in user_factory_txs:
@@ -250,11 +250,7 @@ def fetch_ipfs_metadata(
                 else:
                     blacklisted_cids.add(metadata_multihash)
                 user_id = event_args._userId
-                cid_to_cnode_endpoints[metadata_multihash] = (
-                    session.query(User.creator_node_endpoint)
-                    .filter(User.user_id == user_id, User.is_current == True)
-                    .first()
-                )
+                cid_to_user[metadata_multihash] = user_id
 
         for tx_receipt in track_factory_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -279,11 +275,19 @@ def fetch_ipfs_metadata(
                         cid_type[cid] = "track"
                     else:
                         blacklisted_cids.add(cid)
-                    cid_to_cnode_endpoints[metadata_multihash] = (
-                        session.query(User.creator_node_endpoint)
-                        .filter(User.user_id == track_owner_id, User.is_current == True)
-                        .first()
-                    )
+                    cid_to_user[cid] = track_owner_id
+
+    # user -> creator_node_endpoint lookup to make, used to make user and track cid get_metadata fetches faster
+    user_to_cnode_endpoints = dict(
+        session.query(User.user_id, User.creator_node_endpoint)
+        .filter(
+            User.user_id == track_owner_id,
+            User.is_current == True,
+            User.user_id.in_(cid_to_user.values()),
+        )
+        .group_by(User.user_id)
+        .all()
+    )
 
     ipfs_metadata = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
@@ -296,7 +300,7 @@ def fetch_ipfs_metadata(
                 track_metadata_format
                 if cid_type[cid] == "track"
                 else user_metadata_format,
-                cid_to_cnode_endpoints[cid],
+                user_to_cnode_endpoints[cid_to_user[cid]],
             )
             futures.append(future)
             futures_map[future] = [cid, txhash]
