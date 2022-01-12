@@ -4,12 +4,15 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { Name } from 'common/models/Analytics'
+import { FeatureFlags } from 'common/services/remote-config'
 import { CommonState } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import { shareTrack } from 'common/store/social/tracks/actions'
 import { getSource, getTrack } from 'common/store/ui/share-modal/selectors'
+import { requestOpen as requestOpenTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { make, useRecord } from 'store/analytics/actions'
 import { isMobile } from 'utils/clientUtil'
 import { getCopyableLink } from 'utils/clipboardUtil'
@@ -23,6 +26,7 @@ const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export const ShareModal = () => {
   const [isOpen, setIsOpen] = useModalState('Share')
+
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const record = useRecord()
@@ -32,6 +36,10 @@ export const ShareModal = () => {
   )
   const account = useSelector(getAccountUser)
   const source = useSelector(getSource)
+
+  const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
+    FeatureFlags.SHARE_SOUND_TO_TIKTOK
+  )
 
   const isOwner = Boolean(
     account && artist && account.user_id === artist.user_id
@@ -89,13 +97,16 @@ export const ShareModal = () => {
     onShareToTwitter: handleShareToTwitter,
     onShareToTikTok: handleShareToTikTok,
     onCopyLink: handleCopyLink,
-    onClose: handleClose
+    onClose: handleClose,
+    showTikTokShareAction: Boolean(
+      isShareSoundToTikTokEnabled &&
+        isOwner &&
+        !track?.is_unlisted &&
+        !track?.is_delete
+    )
   }
 
   if (IS_NATIVE_MOBILE) return null
   if (isMobile()) return <ShareDrawer {...shareProps} />
   return <ShareDialog {...shareProps} />
-}
-function requestOpenTikTokModal(arg0: { id: number }): any {
-  throw new Error('Function not implemented.')
 }

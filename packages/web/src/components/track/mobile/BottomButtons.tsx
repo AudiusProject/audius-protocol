@@ -1,12 +1,9 @@
-import React, { memo, useContext } from 'react'
+import React, { memo } from 'react'
 
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import MoreButton from 'components/general/alt-button/MoreButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
 import ShareButton from 'components/general/alt-button/ShareButton'
-import { ToastContext } from 'components/toast/ToastContext'
-import { isShareToastDisabled } from 'utils/clipboardUtil'
-import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import styles from './BottomButtons.module.css'
 
@@ -24,13 +21,7 @@ type BottomButtonsProps = {
   isMatrixMode: boolean
 }
 
-const messages = {
-  copiedToast: 'Copied To Clipboard'
-}
-
 const BottomButtons = (props: BottomButtonsProps) => {
-  const { toast } = useContext(ToastContext)
-
   const repostButton = () => {
     return (
       <RepostButton
@@ -60,12 +51,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
   const shareButton = () => {
     return (
       <ShareButton
-        onClick={() => {
-          if (!isShareToastDisabled) {
-            toast(messages.copiedToast, SHARE_TOAST_TIMEOUT_MILLIS)
-          }
-          props.onShare()
-        }}
+        onClick={props.onShare}
         isDarkMode={props.isDarkMode}
         isMatrixMode={props.isMatrixMode}
         isShareHidden={props.isShareHidden}

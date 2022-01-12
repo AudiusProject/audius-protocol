@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from 'react'
+import React from 'react'
 
 import {
   IconShare,
@@ -11,12 +11,9 @@ import cn from 'classnames'
 import IconButton from 'components/general/IconButton'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
-import { ToastContext } from 'components/toast/ToastContext'
 import { Cast } from 'containers/settings-page/store/types'
 import { AirplayMessage } from 'services/native-mobile-interface/cast'
 import { ShowGoogleCastPickerMessage } from 'services/native-mobile-interface/googleCast'
-import { isShareToastDisabled } from 'utils/clipboardUtil'
-import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import styles from './ActionsBar.module.css'
 
@@ -53,15 +50,8 @@ const ActionsBar = ({
   isDarkMode,
   isMatrixMode
 }: ActionsBarProps) => {
-  const { toast } = useContext(ToastContext)
-  const handleShare = useCallback(() => {
-    if (!isShareToastDisabled) {
-      toast(messages.copiedToast, SHARE_TOAST_TIMEOUT_MILLIS)
-    }
-    onShare()
-  }, [onShare, toast])
-
   const isAirplay = castMethod === Cast.AIRPLAY
+
   return (
     <div className={styles.actionsBar}>
       {NATIVE_MOBILE && (
@@ -101,7 +91,7 @@ const ActionsBar = ({
       />
       <IconButton
         icon={<IconShare />}
-        onClick={handleShare}
+        onClick={onShare}
         className={styles.icon}
       />
       <IconButton

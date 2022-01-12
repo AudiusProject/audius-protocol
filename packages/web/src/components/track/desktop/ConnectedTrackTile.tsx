@@ -19,9 +19,9 @@ import {
   saveTrack,
   unsaveTrack,
   repostTrack,
-  undoRepostTrack,
-  shareTrack
+  undoRepostTrack
 } from 'common/store/social/tracks/actions'
+import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import { TrackArtwork } from 'components/track/desktop/Artwork'
 import Draggable from 'containers/dragndrop/Draggable'
@@ -369,9 +369,8 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
-
     shareTrack: (trackId: ID) =>
-      dispatch(shareTrack(trackId, ShareSource.TILE)),
+      dispatch(requestOpenShareModal({ trackId, source: ShareSource.TILE })),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.TILE)),
     undoRepostTrack: (trackId: ID) =>

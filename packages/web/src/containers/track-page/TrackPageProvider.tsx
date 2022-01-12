@@ -25,7 +25,7 @@ import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
-import { formatUrlName } from 'common/utils/formatUtil'
+import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { formatSeconds, formatDate } from 'common/utils/timeUtil'
 import { Uid } from 'common/utils/uid'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
@@ -539,7 +539,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     },
     pause: () => dispatch(tracksActions.pause()),
     shareTrack: (trackId: ID) =>
-      dispatch(socialTracksActions.shareTrack(trackId, ShareSource.PAGE)),
+      dispatch(requestOpenShareModal({ trackId, source: ShareSource.PAGE })),
     saveTrack: (trackId: ID) =>
       dispatch(
         socialTracksActions.saveTrack(trackId, FavoriteSource.TRACK_PAGE)

@@ -43,7 +43,7 @@ export const ShareDialog = ({
   onCopyLink,
   isOpen,
   onClose,
-  isOwner
+  showTikTokShareAction
 }: ShareDialogProps) => {
   return (
     <Modal
@@ -73,7 +73,7 @@ export const ShareDialog = ({
             iconClassName={styles.twitterIcon}
             textClassName={styles.twitterActionItemText}
           />
-          {isOwner ? (
+          {showTikTokShareAction ? (
             <ShareActionListItem
               leftIcon={<IconTikTok {...iconProps} />}
               text={messages.tikTok}
