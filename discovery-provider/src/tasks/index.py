@@ -277,15 +277,14 @@ def fetch_ipfs_metadata(
                         blacklisted_cids.add(cid)
                     cid_to_user[cid] = track_owner_id
 
-    # user -> creator_node_endpoint lookup to make, used to make user and track cid get_metadata fetches faster
+    # user -> creator_node_endpoint, used to make user and track cid get_metadata fetches faster
     user_to_cnode_endpoints = dict(
         session.query(User.user_id, User.creator_node_endpoint)
         .filter(
-            User.user_id == track_owner_id,
             User.is_current == True,
             User.user_id.in_(cid_to_user.values()),
         )
-        .group_by(User.user_id)
+        .group_by(User.user_id, User.creator_node_endpoint)
         .all()
     )
 
