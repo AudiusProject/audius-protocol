@@ -59,7 +59,7 @@
 
 .actionItemText {
   font-size: var(--font-l) !important;
-  font-weight: var(--font-heavy) !important;
+  font-weight: 800 !important;
 }
 
 .twitterIcon path {
