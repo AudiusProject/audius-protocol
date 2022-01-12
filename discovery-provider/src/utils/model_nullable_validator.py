@@ -5,13 +5,14 @@ Base: Any = declarative_base()
 
 
 def all_required_fields_present(model: Base, instance):
-    required_fields = [
-        col.name
-        for col in model.__table__.columns
-        if not col.nullable and not col.primary_key
-    ]
+    required_fields = [col.name for col in model.__table__.columns if not col.nullable]
+    print(f"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFff {instance}, {required_fields}")
+    print(f"{[getattr(instance, x) for x in required_fields]}")
     all_required_fields_present = all(
-        map(lambda x: bool(getattr(instance, x)), required_fields)
+        map(
+            lambda x: True if getattr(instance, x) is not None else False,
+            required_fields,
+        )
     )
 
     return all_required_fields_present
