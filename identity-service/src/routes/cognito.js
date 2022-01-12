@@ -7,7 +7,10 @@ const { logger } = require('../logging')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
-const { sign } = require('../utils/cognitoHelpers')
+const { sign, createCognitoHeaders } = require('../utils/cognitoHelpers')
+const axios = require('axios')
+const axiosHttpAdapter = require('axios/lib/adapters/http')
+const config = require('../config')
 
 module.exports = function (app) {
   app.get('/cognito_signature', authMiddleware, handleResponse(async (req) => {
@@ -68,6 +71,43 @@ module.exports = function (app) {
       return successResponse({})
     } catch (err) {
       console.error(err)
+      return errorResponseServerError(err.message)
+    }
+  }))
+
+  /**
+   * Gets the shareable_url for a Flow, for use with a webview on mobile
+   * https://cognitohq.com/docs/flow/mobile-integration
+   */
+  app.post('/cognito_flow', authMiddleware, handleResponse(async (req) => {
+    const baseUrl = config.get('cognitoBaseUrl')
+    const templateId = config.get('cognitoTemplateId')
+    const { user: { handle } } = req
+    const path = '/flow_sessions?idempotent=true'
+    const method = 'POST'
+    const body = JSON.stringify({
+      shareable: true,
+      template_id: templateId,
+      user: {
+        customer_reference: handle
+      }
+    })
+    const headers = createCognitoHeaders({ path, method, body })
+    const url = `${baseUrl}${path}`
+    try {
+      const response = await axios({
+        adapter: axiosHttpAdapter,
+        url,
+        method,
+        headers,
+        data: body
+      })
+      return successResponse({ shareable_url: response.data.shareable_url })
+    } catch (err) {
+      logger.error(`Request failed to Cognito. Request=${JSON.stringify({ url, method, headers, body })} Error=${err.message}`)
+      if (err && err.response && err.response.data && err.response.data.errors) {
+        logger.error(`Cognito returned errors: ${JSON.stringify(err.response.data.errors)}`)
+      }
       return errorResponseServerError(err.message)
     }
   }))
