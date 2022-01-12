@@ -24,7 +24,6 @@
 }
 .profilePicture.isDefault {
   background-color: var(--default-profile-picture-background);
-
 }
 
 .profilePicture:hover {
@@ -51,6 +50,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+}
+
+.textShadow {
+  text-shadow: 0px 1px 6px #00000033;
 }
 
 .trackTitle:hover,

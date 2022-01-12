@@ -184,7 +184,15 @@ let Visualizer1 = (function () {
   }
 
   function setDominantColors (colors) {
-    if (!colors || !colors[0]) return
+    const defaultDominantColors = [
+      {r: 82, g: 224, b: 224},
+      {r: 110, g: 82, b: 224},
+      {r: 224, g: 82, b: 167}
+    ]
+
+    if (!colors || !colors[0]) {
+      colors = defaultDominantColors
+    }
     
     // Pull out 3 colors
     const color1 = colors[0]

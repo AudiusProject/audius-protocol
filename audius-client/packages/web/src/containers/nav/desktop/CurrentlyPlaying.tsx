@@ -2,6 +2,7 @@ import React, { memo, useRef } from 'react'
 
 import cn from 'classnames'
 
+import { ReactComponent as IconVisualizer } from 'assets/img/iconVisualizer.svg'
 import { useTrackCoverArt } from 'common/hooks/useImageSize'
 import Color from 'common/models/Color'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
@@ -19,6 +20,7 @@ type CurrentlyPlayingProps = {
   coverArtColor: Color
   draggableLink: string
   onClick: () => void
+  onShowVisualizer: () => void
 }
 
 type ArtworkStyle = {
@@ -38,7 +40,8 @@ const CurrentlyPlaying = ({
   coverArtSizes,
   coverArtColor,
   draggableLink,
-  onClick
+  onClick,
+  onShowVisualizer
 }: CurrentlyPlayingProps) => {
   const previousTrackId = useRef(0)
 
@@ -98,7 +101,20 @@ const CurrentlyPlaying = ({
           immediate={newTrack}
           className={styles.artwork}
           imageStyle={artworkStyle}
-        />
+        >
+          <div
+            className={cn(styles.bottomRightContainer, {
+              [styles.hide]: !trackId
+            })}
+          >
+            <div
+              onClick={onShowVisualizer}
+              className={styles.visualizerIconContainer}
+            >
+              <IconVisualizer className={styles.visualizerIcon} />
+            </div>
+          </div>
+        </DynamicImage>
       </div>
     </Draggable>
   )
