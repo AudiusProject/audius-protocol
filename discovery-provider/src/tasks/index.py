@@ -14,6 +14,7 @@ from src.models import (
     Repost,
     Save,
     SkippedTransaction,
+    SkippedTransactionLevel,
     Track,
     TrackRoute,
     URSMContentNode,
@@ -343,7 +344,7 @@ def save_and_get_skip_tx_hash(session, redis):
     ):
         num_skipped_tx = (
             session.query(func.count(SkippedTransaction))
-            .filter(SkippedTransaction.level == "network")
+            .filter(SkippedTransaction.level == SkippedTransactionLevel.network)
             .scalar()
         )
         if num_skipped_tx >= MAX_SKIPPED_TX:
@@ -352,7 +353,7 @@ def save_and_get_skip_tx_hash(session, redis):
             blocknumber=indexing_error["blocknumber"],
             blockhash=indexing_error["blockhash"],
             txhash=indexing_error["txhash"],
-            level="network",
+            level=SkippedTransactionLevel.network,
         )
         session.add(skipped_tx)
         return indexing_error["txhash"]

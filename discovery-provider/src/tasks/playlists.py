@@ -1,16 +1,17 @@
 import logging
 from datetime import datetime
+
 from sqlalchemy.orm.session import make_transient
 from src.app import contract_addresses
+from src.models import Playlist, SkippedTransaction, SkippedTransactionLevel
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
-from src.models import Playlist, SkippedTransaction
+from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
+from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.playlist_event_constants import (
     playlist_event_types_arr,
     playlist_event_types_lookup,
 )
-from src.utils.model_nullable_validator import all_required_fields_present
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
-from src.utils.indexing_errors import IndexingError, EntityMissingRequiredFieldError
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +89,7 @@ def playlist_state_update(
                         blocknumber=block_number,
                         blockhash=blockhash,
                         txhash=txhash,
-                        level="node",
+                        level=SkippedTransactionLevel.node,
                     )
                     session.add(skipped_tx)
                     pass

@@ -1,8 +1,9 @@
 import random
 from datetime import datetime
 
+from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
 from src.challenges.challenge_event_bus import setup_challenge_bus
-from src.models import Playlist, SkippedTransaction
+from src.models import Block, Playlist, SkippedTransaction, SkippedTransactionLevel
 from src.tasks.playlists import (
     lookup_playlist_record,
     parse_playlist_event,
@@ -12,8 +13,6 @@ from src.utils import helpers
 from src.utils.db_session import get_db
 from src.utils.playlist_event_constants import playlist_event_types_lookup
 from web3 import Web3
-
-from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
@@ -353,22 +352,25 @@ def test_playlist_indexing_skip_tx(app, mocker):
     class TestPlaylistTransaction:
         pass
 
+    blessed_tx_hash = (
+        "0x34004dfaf5bb7cf9998eaf387b877d72d198c6508608e309df3f89e57def4db3"
+    )
     blessed_tx = TestPlaylistTransaction()
-    blessed_tx.transactionHash = update_task.web3.toBytes(
-        hexstr="0x34004dfaf5bb7cf9998eaf387b877d72d198c6508608e309df3f89e57def4db3"
+    blessed_tx.transactionHash = update_task.web3.toBytes(hexstr=blessed_tx_hash)
+    cursed_tx_hash = (
+        "0x5fe51d735309d3044ae30055ad29101018a1a399066f6c53ea23800225e3a3be"
     )
     cursed_tx = TestPlaylistTransaction()
-    cursed_tx.transactionHash = update_task.web3.toBytes(
-        hexstr="0x5fe51d735309d3044ae30055ad29101018a1a399066f6c53ea23800225e3a3be"
-    )
+    cursed_tx.transactionHash = update_task.web3.toBytes(hexstr=cursed_tx_hash)
     test_block_number = 25278765
     test_block_timestamp = 1
+    test_block_hash = update_task.web3.toHex(block_hash)
     test_playlist_factory_txs = [cursed_tx, blessed_tx]
-
+    test_timestamp = datetime.utcfromtimestamp(test_block_timestamp)
     blessed_playlist_record = Playlist(
-        blockhash="0x98496cf4a558c3a329c7459dbf352266cec75bb58e3989f20141b6be44f05e1c",
+        blockhash=test_block_hash,
         blocknumber=test_block_number,
-        txhash="0x34004dfaf5bb7cf9998eaf387b877d72d198c6508608e309df3f89e57def4db3",
+        txhash=blessed_tx_hash,
         playlist_id=91232,
         is_album=False,
         is_private=False,
@@ -381,14 +383,14 @@ def test_playlist_indexing_skip_tx(app, mocker):
         is_current=True,
         is_delete=True,
         last_added_to=None,
-        updated_at=1,
-        created_at=1,
+        updated_at=test_timestamp,
+        created_at=test_timestamp,
         playlist_owner_id=1,
     )
     cursed_playlist_record = Playlist(
-        blockhash="0x98496cf4a558c3a329c7459dbf352266cec75bb58e3989f20141b6be44f05e1c",
+        blockhash=test_block_hash,
         blocknumber=test_block_number,
-        txhash="0x5fe51d735309d3044ae30055ad29101018a1a399066f6c53ea23800225e3a3be",
+        txhash=cursed_tx_hash,
         playlist_id=91238,
         is_album=None,
         is_private=None,
@@ -400,7 +402,7 @@ def test_playlist_indexing_skip_tx(app, mocker):
         is_current=True,
         is_delete=True,
         last_added_to=None,
-        updated_at=1,
+        updated_at=test_timestamp,
         created_at=None,
     )
 
@@ -458,6 +460,13 @@ def test_playlist_indexing_skip_tx(app, mocker):
 
     with db.scoped_session() as session:
         try:
+            current_block = Block(
+                blockhash=test_block_hash,
+                parenthash=test_block_hash,
+                number=test_block_number,
+                is_current=True,
+            )
+            session.add(current_block)
             (total_changes, updated_playlist_ids_set) = playlist_state_update(
                 update_task,
                 update_task,
@@ -474,7 +483,10 @@ def test_playlist_indexing_skip_tx(app, mocker):
             assert total_changes == 1
             assert (
                 session.query(SkippedTransaction)
-                .filter(SkippedTransaction.txhash == cursed_playlist_record.txhash)
+                .filter(
+                    SkippedTransaction.txhash == cursed_playlist_record.txhash,
+                    SkippedTransaction.level == SkippedTransactionLevel.node,
+                )
                 .first()
             )
             assert (
