@@ -7,7 +7,8 @@ import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { FeatureFlags } from 'common/services/remote-config/feature-flags'
 import { getAccountUser } from 'common/store/account/selectors'
-import { formatWei, stringWeiToBN } from 'common/utils/wallet'
+import { getAccountTotalBalance } from 'common/store/wallet/selectors'
+import { formatWei } from 'common/utils/wallet'
 import { audioTierMapPng } from 'containers/user-badges/UserBadges'
 import { useSelectTierInfo } from 'containers/user-badges/hooks'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -28,8 +29,7 @@ const NavAudio = () => {
 
   const navigate = useNavigateToPage()
   const account = useSelector(getAccountUser)
-  const totalBalance =
-    account && account.balance ? stringWeiToBN(account.balance) : null
+  const totalBalance = useSelector(getAccountTotalBalance)
   const nonNullTotalBalance = totalBalance !== null
   const positiveTotalBalance =
     nonNullTotalBalance && totalBalance!.gt(new BN(0))
