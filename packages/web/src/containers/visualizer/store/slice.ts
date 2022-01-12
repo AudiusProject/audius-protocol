@@ -12,12 +12,16 @@ const slice = createSlice({
   reducers: {
     toggleVisibility: (state) => {
       state.isVisible = !state.isVisible
+    },
+    closeVisualizer: (state) => {
+      state.isVisible = false
     }
   }
 })
 
 export const {
-  toggleVisibility
+  toggleVisibility,
+  closeVisualizer
 } = slice.actions
 
 export default slice.reducer

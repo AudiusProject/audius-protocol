@@ -1,20 +1,68 @@
-.hideWrapper {
-  display: none;
-}
-
 .visualizer {
   /* Add z-index so it shows search bar and profile page elements. */
   z-index: 15;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+.visualizer.fade {
+  opacity: 1;
+}
+.visualizer.show {
+  display: block;
+}
+
+.closeButtonIcon {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.closeButtonIcon:hover {
+  transform: scale(1.10);
+}
+
+.closeButtonIcon g path {
+  fill: var(--static-white);
+}
+
+.logoWrapper {
+  position: absolute;
+  top: 9px; /* Want logo to be 25px from top, it has existing top-margin of 16px */
+  left: 0;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  display: block;
+  height: 25px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.infoOverlayTileShadow {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 400px;
+  height: 400px;
+  opacity: 0.5;
+  background: radial-gradient(95.31% 95.31% at 0.82% 100%, #000000 0%, rgba(0, 0, 0, 0) 100%);
 }
 
 .infoOverlayTile {
-  display: block;
-  opacity: 0.7;
-  padding: 24px !important;
+  padding-bottom: 20px;
   border-radius: 6px;
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   overflow: hidden;
   transition: all ease-in-out .18s, opacity ease-in-out 0.5s;
   position: absolute;
@@ -25,22 +73,25 @@
 }
 
 .artworkWrapper {
+  margin-left: 16px;
   position: relative;
+  cursor: pointer;
 }
 .artworkWrapper .artwork {
-  width: 64px;
-  height: 64px;
-  display: block;
+  width: 208px;
+  height: 208px;
   overflow: hidden;
-  border-radius: 4px;
+  border: 2px solid var(--currently-playing-border);
+  border-radius: 15px;
   box-shadow: 0 5px 16px -2px rgba(85, 84, 89,.5) !important;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
-.trackInfo {
-  margin: 16px;
+.trackInfoWrapper {
+  margin-top: 20px;
+  color: var(--static-white);
 }
 
 .visualizerDisabled {

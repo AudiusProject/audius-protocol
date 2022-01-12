@@ -340,6 +340,7 @@ class PlayBar extends Component {
               isTrackUnlisted={isTrackUnlisted}
               onClickTrackTitle={this.goToTrackPage}
               onClickArtistName={this.goToArtistPage}
+              hasShadow={false}
             />
           </div>
 
