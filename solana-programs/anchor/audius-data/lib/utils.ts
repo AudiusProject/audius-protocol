@@ -69,8 +69,8 @@ export const randomString = (size: number) => {
 
 /// Generate mock CID by appending `Qm` with a rand string
 export const randomCID = () => {
-  let randomSuffix = randomString(44);
-  let cid = `Qm${randomSuffix}`;
+  const randomSuffix = randomString(44);
+  const cid = `Qm${randomSuffix}`;
   return cid;
 };
 
@@ -92,8 +92,8 @@ export const findDerivedAddress = async (
   base: anchor.web3.PublicKey,
   seed: any
 ) => {
-  let finalSeed = [base.toBytes().slice(0, 32), seed];
-  let result = await PublicKey.findProgramAddress(finalSeed, programId);
+  const finalSeed = [base.toBytes().slice(0, 32), seed];
+  const result = await PublicKey.findProgramAddress(finalSeed, programId);
   return {
     seed: finalSeed,
     result,
