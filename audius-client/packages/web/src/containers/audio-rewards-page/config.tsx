@@ -100,7 +100,7 @@ export const challengeRewardsConfig: Record<
     fullDescription:
       'Get verified on Audius by linking your verified Twitter or Instagram account!',
     progressLabel: 'Not Linked',
-    amount: 10,
+    amount: 5,
     stepCount: 1,
     panelButtonText: 'Link Verified Account',
     modalButtonInfo: {
@@ -117,7 +117,7 @@ export const challengeRewardsConfig: Record<
     fullDescription:
       'Sign in and listen to at least one track every day for 7 days',
     progressLabel: '%0/%1 Days',
-    amount: 5,
+    amount: 1,
     stepCount: 7,
     panelButtonText: 'Trending on Audius',
     modalButtonInfo: {
@@ -134,7 +134,7 @@ export const challengeRewardsConfig: Record<
     fullDescription:
       'Install the Audius app for iPhone and Android and Sign in to your account!',
     progressLabel: 'Not Installed',
-    amount: 10,
+    amount: 1,
     stepCount: 1,
     panelButtonText: 'Get the App',
     modalButtonInfo: {
@@ -151,7 +151,7 @@ export const challengeRewardsConfig: Record<
     fullDescription:
       'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
     progressLabel: '%0/%1 Complete',
-    amount: 5,
+    amount: 1,
     stepCount: 7,
     panelButtonText: 'More Info',
     modalButtonInfo: {
@@ -167,7 +167,7 @@ export const challengeRewardsConfig: Record<
     description: 'Earn 5 $AUDIO',
     fullDescription: 'Upload 3 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
-    amount: 5,
+    amount: 1,
     stepCount: 3,
     panelButtonText: 'Upload Tracks',
     modalButtonInfo: {
