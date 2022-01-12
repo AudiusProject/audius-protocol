@@ -22,12 +22,9 @@ class TableOptionsButton extends Component {
       isOwner,
       isOwnerDeactivated,
       isArtistPick,
-      isReposted,
       onRemove,
       removeText,
-      hiddenUntilHover,
-      trackPermalink,
-      isUnlisted
+      hiddenUntilHover
     } = this.props
 
     const removeMenuItem = {
@@ -40,7 +37,6 @@ class TableOptionsButton extends Component {
         type: 'track',
         mount: 'page',
         includeShare: true,
-        includeShareToTikTok: !isUnlisted,
         isOwner,
         isOwnerDeactivated,
         isArtistPick,
