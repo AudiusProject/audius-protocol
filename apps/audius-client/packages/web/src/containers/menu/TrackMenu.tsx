@@ -12,7 +12,6 @@ import {
   CreatePlaylistSource
 } from 'common/models/Analytics'
 import { ID, PlayableType } from 'common/models/Identifiers'
-import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountOwnedPlaylists } from 'common/store/account/selectors'
 import {
   createPlaylist,
@@ -26,12 +25,10 @@ import {
   shareTrack
 } from 'common/store/social/tracks/actions'
 import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
-import { requestOpen as openTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ToastContext } from 'components/toast/ToastContext'
 import { getCollectionId } from 'containers/collection-page/store/selectors'
 import * as embedModalActions from 'containers/embed-modal/store/actions'
 import { newCollectionMetadata } from 'schemas'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
@@ -47,7 +44,6 @@ const messages = {
   reposted: 'Reposted!',
   setArtistPick: 'Set as Artist Pick',
   share: 'Share',
-  shareToTikTok: 'Share to TikTok',
   undoRepost: 'Undo Repost',
   unfavorite: 'Unfavorite',
   unreposted: 'Un-Reposted!',
@@ -67,7 +63,6 @@ export type OwnProps = {
   includeFavorite: boolean
   includeRepost: boolean
   includeShare: boolean
-  includeShareToTikTok: boolean
   includeTrackPage: boolean
   isArtistPick: boolean
   isDeleted: boolean
@@ -100,7 +95,6 @@ const TrackMenu = (props: TrackMenuProps) => {
       includeFavorite,
       includeRepost,
       includeShare,
-      includeShareToTikTok,
       includeTrackPage,
       isArtistPick,
       isDeleted,
@@ -111,7 +105,6 @@ const TrackMenu = (props: TrackMenuProps) => {
       openAddToPlaylistModal,
       openEditTrackModal,
       openEmbedModal,
-      openShareSoundToTikTokModal,
       repostTrack,
       saveTrack,
       setArtistPick,
@@ -192,10 +185,6 @@ const TrackMenu = (props: TrackMenuProps) => {
       text: messages.embed,
       onClick: () => openEmbedModal(trackId)
     }
-    const shareToTikTokMenuItem = {
-      text: messages.shareToTikTok,
-      onClick: () => openShareSoundToTikTokModal(trackId)
-    }
 
     const menu: { items: PopupMenuItem[] } = { items: [] }
 
@@ -232,17 +221,6 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
     if (includeEmbed && !isDeleted) {
       menu.items.push(embedMenuItem)
-    }
-    if (
-      includeShareToTikTok &&
-      remoteConfigInstance.getFeatureEnabled(
-        FeatureFlags.SHARE_SOUND_TO_TIKTOK
-      ) &&
-      trackId &&
-      isOwner &&
-      !isDeleted
-    ) {
-      menu.items.push(shareToTikTokMenuItem)
     }
 
     return menu
@@ -292,9 +270,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     openEditTrackModal: (trackId: ID) =>
       dispatch(editTrackModalActions.open(trackId)),
     openEmbedModal: (trackId: ID) =>
-      dispatch(embedModalActions.open(trackId, PlayableType.TRACK)),
-    openShareSoundToTikTokModal: (trackId: ID) =>
-      dispatch(openTikTokModal({ id: trackId }))
+      dispatch(embedModalActions.open(trackId, PlayableType.TRACK))
   }
 }
 
