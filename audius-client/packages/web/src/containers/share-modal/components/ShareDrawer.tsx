@@ -26,8 +26,8 @@ export const ShareDrawer = ({
 }: ShareDrawerProps) => {
   const getActions = useCallback(() => {
     const shareToTwitterAction = {
-      icon: <IconTwitterBird {...iconSize} />,
       text: messages.twitter,
+      icon: <IconTwitterBird {...iconSize} />,
       className: styles.shareToTwitterAction,
       onClick: onShareToTwitter
     }

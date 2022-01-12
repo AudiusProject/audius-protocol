@@ -26,8 +26,7 @@ import {
   repostTrack,
   undoRepostTrack,
   saveTrack,
-  unsaveTrack,
-  shareTrack
+  unsaveTrack
 } from 'common/store/social/tracks/actions'
 import {
   followUser,
@@ -40,7 +39,6 @@ import { setOpen as openDeletePlaylist } from 'common/store/ui/delete-playlist-c
 import { getMobileOverflowModal } from 'common/store/ui/mobile-overflow-menu/selectors'
 import { close } from 'common/store/ui/mobile-overflow-menu/slice'
 import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as openTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import {
   unsubscribeUser,
   hideNotification
@@ -75,8 +73,6 @@ const ConnectedMobileOverflowModal = ({
   title,
   permalink,
   isAlbum,
-  shareTrack,
-  shareTrackToTikTok,
   shareCollection,
   repostTrack,
   unrepostTrack,
@@ -107,7 +103,6 @@ const ConnectedMobileOverflowModal = ({
     onFavorite,
     onUnfavorite,
     onShare,
-    onShareToTikTok,
     onAddToPlaylist,
     onEditPlaylist,
     onPublishPlaylist,
@@ -125,7 +120,6 @@ const ConnectedMobileOverflowModal = ({
     onFavorite?: () => void
     onUnfavorite?: () => void
     onShare?: () => void
-    onShareToTikTok?: () => void
     onAddToPlaylist?: () => void
     onEditPlaylist?: () => void
     onPublishPlaylist?: () => void
@@ -147,8 +141,6 @@ const ConnectedMobileOverflowModal = ({
           onUnrepost: () => unrepostTrack(id as ID),
           onFavorite: () => saveTrack(id as ID),
           onUnfavorite: () => unsaveTrack(id as ID),
-          onShare: () => shareTrack(id as ID),
-          onShareToTikTok: () => shareTrackToTikTok(id as ID),
           onAddToPlaylist: () => addToPlaylist(id as ID, title),
           onVisitTrackPage: () =>
             permalink === undefined
@@ -215,7 +207,6 @@ const ConnectedMobileOverflowModal = ({
       onFavorite={onFavorite}
       onUnfavorite={onUnfavorite}
       onShare={onShare}
-      onShareToTikTok={onShareToTikTok}
       onAddToPlaylist={onAddToPlaylist}
       onVisitTrackPage={onVisitTrackPage}
       onEditPlaylist={onEditPlaylist}
@@ -311,10 +302,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
     onClose: () => dispatch(close()),
     // Tracks
-    shareTrack: (trackId: ID) =>
-      dispatch(shareTrack(trackId, ShareSource.OVERFLOW)),
-    shareTrackToTikTok: (trackId: ID) =>
-      dispatch(openTikTokModal({ id: trackId })),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
     unrepostTrack: (trackId: ID) =>

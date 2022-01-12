@@ -10,7 +10,6 @@ import { Name } from 'common/models/Analytics'
 import { CID, ID } from 'common/models/Identifiers'
 import { SquareSizes, CoverArtSizes } from 'common/models/ImageSizes'
 import { FieldVisibility, Remix } from 'common/models/Track'
-import { FeatureFlags } from 'common/services/remote-config'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { formatSeconds, formatDate } from 'common/utils/timeUtil'
@@ -20,7 +19,6 @@ import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import DownloadButtons from 'containers/download-buttons/DownloadButtons'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { make, useRecord } from 'store/analytics/actions'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { getCannonicalName } from 'utils/genres'
@@ -147,9 +145,6 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
-    FeatureFlags.SHARE_SOUND_TO_TIKTOK
-  )
   const image = useTrackCoverArt(
     trackId,
     coverArtSizes,
@@ -198,9 +193,6 @@ const TrackHeader = ({
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
       isUnlisted && !fieldVisibility.share ? null : OverflowAction.SHARE,
-      isShareSoundToTikTokEnabled && isOwner && !isUnlisted
-        ? OverflowAction.SHARE_TO_TIKTOK
-        : null,
       OverflowAction.ADD_TO_PLAYLIST,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST

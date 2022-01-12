@@ -80,10 +80,6 @@ const ConnectedTrackTile = memo(
     isTrending,
     showRankIcon
   }: ConnectedTrackTileProps) => {
-    const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
-      FeatureFlags.SHARE_SOUND_TO_TIKTOK
-    )
-
     const {
       is_delete,
       is_unlisted,
@@ -173,9 +169,6 @@ const ConnectedTrackTile = memo(
             : OverflowAction.FAVORITE
           : null,
         OverflowAction.SHARE,
-        isShareSoundToTikTokEnabled && isOwner && !is_unlisted
-          ? OverflowAction.SHARE_TO_TIKTOK
-          : null,
         OverflowAction.ADD_TO_PLAYLIST,
         OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE

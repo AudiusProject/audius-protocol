@@ -18,7 +18,6 @@ type MobileOverflowModalProps = {
   onFavorite?: () => void
   onUnfavorite?: () => void
   onShare?: () => void
-  onShareToTikTok?: () => void
   onAddToPlaylist?: () => void
   onEditPlaylist?: () => void
   onDeletePlaylist?: () => void
@@ -38,7 +37,6 @@ const rowMessageMap = {
   [OverflowAction.FAVORITE]: 'Favorite',
   [OverflowAction.UNFAVORITE]: 'Unfavorite',
   [OverflowAction.SHARE]: 'Share',
-  [OverflowAction.SHARE_TO_TIKTOK]: 'Share To TikTok',
   [OverflowAction.ADD_TO_PLAYLIST]: 'Add To Playlist',
   [OverflowAction.EDIT_PLAYLIST]: 'Edit Playlist',
   [OverflowAction.DELETE_PLAYLIST]: 'Delete Playlist',
@@ -67,7 +65,6 @@ const MobileOverflowModal = ({
   onFavorite,
   onUnfavorite,
   onShare,
-  onShareToTikTok,
   onAddToPlaylist,
   onEditPlaylist,
   onDeletePlaylist,
@@ -87,7 +84,6 @@ const MobileOverflowModal = ({
     [OverflowAction.FAVORITE]: onFavorite,
     [OverflowAction.UNFAVORITE]: onUnfavorite,
     [OverflowAction.SHARE]: onShare,
-    [OverflowAction.SHARE_TO_TIKTOK]: onShareToTikTok,
     [OverflowAction.ADD_TO_PLAYLIST]: onAddToPlaylist,
     [OverflowAction.EDIT_PLAYLIST]: onEditPlaylist,
     [OverflowAction.DELETE_PLAYLIST]: onDeletePlaylist,

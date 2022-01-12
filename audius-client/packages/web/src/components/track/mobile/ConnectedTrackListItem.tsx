@@ -6,7 +6,6 @@ import { Dispatch } from 'redux'
 
 import { FavoriteSource, RepostSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
-import { FeatureFlags } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { getUserFromTrack } from 'common/store/cache/users/selectors'
 import {
@@ -20,7 +19,6 @@ import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 
 import TrackListItem, { TrackListItemProps } from './TrackListItem'
@@ -32,20 +30,11 @@ type DispatchProps = ReturnType<typeof mapDispatchToProps>
 type ConnectedTrackListItemProps = OwnProps & StateProps & DispatchProps
 
 const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
-  const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
-    FeatureFlags.SHARE_SOUND_TO_TIKTOK
-  )
-
-  const isOwner = props.currentUserId === props.user?.user_id
-
   const onClickOverflow = () => {
     const overflowActions = [
       props.isReposted ? OverflowAction.UNREPOST : OverflowAction.REPOST,
       props.isSaved ? OverflowAction.UNFAVORITE : OverflowAction.FAVORITE,
       OverflowAction.SHARE,
-      isShareSoundToTikTokEnabled && isOwner
-        ? OverflowAction.SHARE_TO_TIKTOK
-        : null,
       OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
       OverflowAction.VIEW_ARTIST_PAGE
