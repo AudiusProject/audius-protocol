@@ -68,7 +68,21 @@ class RewardsAttester {
    *  }
    * @memberof RewardsAttester
    */
-  constructor ({ libs, startingBlock, offset, parallelization, logger, quorumSize, aaoEndpoint, aaoAddress, updateValues = () => {}, getStartingBlockOverride = () => null, maxRetries = 5, reporter, challengeIdsDenyList }) {
+  constructor ({
+    libs,
+    startingBlock,
+    offset,
+    parallelization,
+    logger,
+    quorumSize,
+    aaoEndpoint,
+    aaoAddress,
+    updateValues = () => {},
+    getStartingBlockOverride = () => null,
+    maxRetries = 5,
+    reporter,
+    challengeIdsDenyList
+  }) {
     this.libs = libs
     this.logger = logger
     this.parallelization = parallelization
