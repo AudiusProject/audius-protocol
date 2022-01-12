@@ -107,32 +107,18 @@ const TrackTile = memo(
       return (
         <Tooltip text={'Share'} disabled={isDisabled} placement={'bottom'}>
           <div
-            className={styles.iconButtonContainer}
+            className={cn(styles.iconButtonContainer, {
+              [styles.isHidden]: hideShare
+            })}
             onClick={onStopPropagation}
           >
-            <Toast
-              text={'Copied To Clipboard!'}
-              disabled={isDisabled}
-              requireAccount={false}
-              delay={SHARE_TOAST_TIMEOUT_MILLIS}
-              fillParent={false}
-              placement={ComponentPlacement.RIGHT}
-              mount={MountPlacement.PAGE}
-            >
-              <div
-                className={cn(styles.iconShareContainer, {
-                  [styles.isHidden]: hideShare
-                })}
-              >
-                <ShareButton
-                  onClick={onClickShare}
-                  isDarkMode={!!isDarkMode}
-                  className={styles.iconButton}
-                  stopPropagation={false}
-                  isMatrixMode={isMatrixMode}
-                />
-              </div>
-            </Toast>
+            <ShareButton
+              onClick={onClickShare}
+              isDarkMode={!!isDarkMode}
+              className={styles.iconButton}
+              stopPropagation={false}
+              isMatrixMode={isMatrixMode}
+            />
           </div>
         </Tooltip>
       )

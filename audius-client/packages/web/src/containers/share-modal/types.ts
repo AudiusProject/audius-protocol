@@ -4,5 +4,5 @@ export type ShareProps = {
   onCopyLink: () => void
   isOpen: boolean
   onClose: () => void
-  isOwner: boolean
+  showTikTokShareAction?: boolean
 }

@@ -314,7 +314,7 @@ const TrackHeader = ({
           showFavorite={!isUnlisted}
           showShare={!isUnlisted || fieldVisibility.share}
           showOverflow
-          shareToastDisabled={isShareToastDisabled}
+          shareToastDisabled
           isOwner={isOwner}
           isReposted={isReposted}
           isSaved={isSaved}

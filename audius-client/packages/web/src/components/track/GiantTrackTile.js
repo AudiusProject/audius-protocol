@@ -93,23 +93,15 @@ class GiantTrackTile extends PureComponent {
     const shouldShow = (!isUnlisted && !isPublishing) || fieldVisibility.share
     return (
       shouldShow && (
-        <Toast
-          placement='bottom'
-          text={'Copied To Clipboard!'}
-          delay={SHARE_TIMEOUT}
-          fillParent={false}
-          requireAccount={false}
-        >
-          <Button
-            className={styles.buttonFormatting}
-            textClassName={styles.buttonTextFormatting}
-            type={ButtonType.COMMON}
-            text='SHARE'
-            leftIcon={<IconShare />}
-            widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
-            onClick={onShare}
-          />
-        </Toast>
+        <Button
+          className={styles.buttonFormatting}
+          textClassName={styles.buttonTextFormatting}
+          type={ButtonType.COMMON}
+          text='SHARE'
+          leftIcon={<IconShare />}
+          widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+          onClick={onShare}
+        />
       )
     )
   }

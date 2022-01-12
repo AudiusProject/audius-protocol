@@ -53,14 +53,6 @@ const ActionButtonRow = ({
   onClickOverflow = () => {},
   darkMode
 }: ActionButtonRowProps) => {
-  const { toast } = useContext(ToastContext)
-  const handleOnShare = useCallback(() => {
-    if (!shareToastDisabled && isPublished) {
-      toast(messages.copied)
-    }
-    onShare()
-  }, [toast, onShare, isPublished, shareToastDisabled])
-
   const renderRepostButton = () => {
     return (
       <div className={styles.animatedIconWrapper}>
@@ -102,7 +94,7 @@ const ActionButtonRow = ({
           [styles.disabledButton]: !isPublished
         })}
         icon={<IconShare />}
-        onClick={isPublished ? handleOnShare : () => {}}
+        onClick={isPublished ? onShare : () => {}}
       />
     )
   }

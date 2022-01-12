@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { IconLink, IconShare, IconTwitterBird } from '@audius/stems'
-import cs from 'classnames'
+import cn from 'classnames'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { isDarkMode } from 'utils/theme/theme'
@@ -12,6 +12,8 @@ import { ShareProps } from '../types'
 import { IconTikTok } from './IconTikTok'
 import styles from './ShareDrawer.module.css'
 
+const iconSize = { height: 26, width: 26 }
+
 type ShareDrawerProps = ShareProps
 
 export const ShareDrawer = ({
@@ -20,11 +22,11 @@ export const ShareDrawer = ({
   onCopyLink,
   isOpen,
   onClose,
-  isOwner
+  showTikTokShareAction
 }: ShareDrawerProps) => {
   const getActions = useCallback(() => {
     const shareToTwitterAction = {
-      icon: <IconTwitterBird height={20} width={26} />,
+      icon: <IconTwitterBird {...iconSize} />,
       text: messages.twitter,
       className: styles.shareToTwitterAction,
       onClick: onShareToTwitter
@@ -32,8 +34,8 @@ export const ShareDrawer = ({
 
     const shareToTikTokAction = {
       text: messages.tikTok,
-      icon: <IconTikTok height={32} width={32} />,
-      className: cs(styles.shareToTikTokAction, {
+      icon: <IconTikTok {...iconSize} />,
+      className: cn(styles.shareToTikTokAction, {
         [styles.shareToTikTokActionDark]: isDarkMode()
       }),
       onClick: onShareToTikTok
@@ -41,15 +43,15 @@ export const ShareDrawer = ({
 
     const copyLinkAction = {
       text: messages.copyLink,
-      icon: <IconLink height={32} width={32} />,
+      icon: <IconLink {...iconSize} />,
       className: styles.copyLinkAction,
       onClick: onCopyLink
     }
 
-    return isOwner
+    return showTikTokShareAction
       ? [shareToTwitterAction, shareToTikTokAction, copyLinkAction]
       : [shareToTwitterAction, copyLinkAction]
-  }, [isOwner, onShareToTwitter, onShareToTikTok, onCopyLink])
+  }, [showTikTokShareAction, onShareToTwitter, onShareToTikTok, onCopyLink])
 
   return (
     <ActionDrawer

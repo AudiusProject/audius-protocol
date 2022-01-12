@@ -22,8 +22,7 @@ import {
   saveTrack,
   unsaveTrack,
   repostTrack,
-  undoRepostTrack,
-  shareTrack
+  undoRepostTrack
 } from 'common/store/social/tracks/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
@@ -31,6 +30,7 @@ import {
   OverflowActionCallbacks,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
+import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -293,10 +293,10 @@ const NowPlaying = g(
       track_id,
       owner_id,
       clickOverflow,
-      track,
-      isShareSoundToTikTokEnabled,
       has_current_user_saved,
       has_current_user_reposted,
+      isShareSoundToTikTokEnabled,
+      track,
       onClose
     ])
 
@@ -518,7 +518,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(shuffle({ enable }))
     },
     share: (trackId: ID) =>
-      dispatch(shareTrack(trackId, ShareSource.NOW_PLAYING)),
+      dispatch(
+        requestOpenShareModal({ trackId, source: ShareSource.NOW_PLAYING })
+      ),
     save: (trackId: ID) =>
       dispatch(saveTrack(trackId, FavoriteSource.NOW_PLAYING)),
     unsave: (trackId: ID) =>
