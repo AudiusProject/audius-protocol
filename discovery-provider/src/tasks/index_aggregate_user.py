@@ -5,8 +5,8 @@ import sqlalchemy as sa
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     UPDATE_INDEXING_CHECKPOINTS_QUERY,
-    last_checkpoint,
     get_latest_blocknumber_postgres,
+    last_checkpoint,
 )
 
 logger = logging.getLogger(__name__)

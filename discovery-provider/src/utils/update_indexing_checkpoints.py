@@ -1,4 +1,7 @@
-from src.models import IndexingCheckpoints
+from typing import Optional
+
+from sqlalchemy.orm.session import Session
+from src.models import Block, IndexingCheckpoints
 
 UPDATE_INDEXING_CHECKPOINTS_QUERY = """
     INSERT INTO indexing_checkpoints (tablename, last_checkpoint)
