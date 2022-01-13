@@ -12,7 +12,10 @@ from src.queries.query_helpers import (
 from src.tasks.generate_trending import generate_trending
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
-from src.trending_strategies.trending_type_and_version import TrendingType
+from src.trending_strategies.trending_type_and_version import (
+    TrendingType,
+    TrendingVersion,
+)
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import use_redis_cache
 
@@ -54,6 +57,8 @@ def generate_unpopulated_trending(
 def generate_unpopulated_trending_from_mat_views(
     session, genre, time_range, strategy, limit=TRENDING_LIMIT
 ):
+    if strategy.version.name == TrendingVersion.ML51L and time_range == "year":
+        time_range = "allTime"
 
     trending_track_ids_query = session.query(
         TrackTrendingScore.track_id, TrackTrendingScore.score
@@ -116,7 +121,7 @@ def _get_trending_tracks_with_session(
         args.get("genre"),
         args.get("time", "week"),
     )
-    time_range = "week" if time not in ["week", "month", "year"] else time
+    time_range = "week" if time not in ["week", "month", "allTime"] else time
     key = make_trending_cache_key(time_range, genre, strategy.version)
 
     # Will try to hit cached trending from task, falling back
