@@ -2,16 +2,22 @@ const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
+
+// Processing fns
 const {
   handleTrackContentRoute: trackContentUpload,
   handleTranscodeAndSegment: transcodeAndSegment
 } = require('./components/tracks/tracksComponentService')
+const {
+  processTrackTranscodeAndSegments
+} = require('./components/tracks/trackHandlingUtils')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
   trackContentUpload: 'trackContentUpload',
-  transcodeAndSegment: 'transcodeAndSegment'
+  transcodeAndSegment: 'transcodeAndSegment',
+  processTranscodeAndSegments: 'processTranscodeAndSegments'
 })
 const PROCESS_STATES = Object.freeze({
   IN_PROGRESS: 'IN_PROGRESS',
@@ -63,6 +69,33 @@ class FileProcessingQueue {
       }
     )
 
+    this.queue.process(
+      PROCESS_NAMES.transcodeAndSegment,
+      MAX_CONCURRENCY,
+      async (job, done) => {
+        const { trackContentUploadParams } = job.data
+
+        try {
+          const response = await this.monitorProgress(
+            PROCESS_NAMES.trackContentUpload,
+            trackContentUpload,
+            trackContentUploadParams
+          )
+          done(null, { response })
+        } catch (e) {
+          this.logError(
+            trackContentUploadParams.logContext,
+            `Could not process taskType=${
+              PROCESS_NAMES.trackContentUpload
+            } uuid=${
+              trackContentUploadParams.logContext.requestID
+            }: ${e.toString()}`
+          )
+          done(e.toString())
+        }
+      }
+    )
+
     this.getFileProcessingQueueJobs = this.getFileProcessingQueueJobs.bind(this)
   }
 
@@ -86,32 +119,24 @@ class FileProcessingQueue {
 
   // TODO: Will make this job a background process
   async addTrackContentUploadTask(trackContentUploadParams) {
-    const { logContext } = trackContentUploadParams
-    this.logStatus(
-      logContext,
-      `Adding ${PROCESS_NAMES.trackContentUpload} task! uuid=${logContext.requestID}}`
-    )
-
-    const job = await this.queue.add(PROCESS_NAMES.trackContentUpload, {
+    return this.addTask(
+      PROCESS_NAMES.trackContentUpload,
       trackContentUploadParams
-    })
-
-    return job
+    )
   }
 
-  async addTranscodeAndSegmentTask(transcodeAndSegmentParams, libs) {
-    const { logContext } = transcodeAndSegmentParams
-
-    this.logStatus(
-      logContext,
-      `Adding ${PROCESS_NAMES.transcodeAndSegment} task! uuid=${logContext.requestID}}`
-    )
-
-    const job = await this.queue.add(PROCESS_NAMES.transcodeAndSegment, {
+  async addTranscodeAndSegmentTask(transcodeAndSegmentParams) {
+    return this.addTask(
+      PROCESS_NAMES.transcodeAndSegment,
       transcodeAndSegmentParams
-    })
+    )
+  }
 
-    return job
+  async addProcessTranscodeAndSegmentTask(processTranscodeAndSegmentsParams) {
+    return this.addTask(
+      PROCESS_NAMES.processTranscodeAndSegments,
+      processTranscodeAndSegmentsParams
+    )
   }
 
   async monitorProgress(taskType, func, { logContext, req }) {
@@ -153,6 +178,18 @@ class FileProcessingQueue {
       waiting: waiting.length,
       active: active.length
     }
+  }
+
+  async addTask(task, params) {
+    const { logContext } = params
+    this.logStatus(
+      logContext,
+      `Adding ${task} task! uuid=${logContext.requestID}}`
+    )
+
+    const job = await this.queue.add(task, params)
+
+    return job
   }
 }
 

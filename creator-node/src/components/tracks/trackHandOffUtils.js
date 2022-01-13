@@ -46,8 +46,8 @@ async function handOffTrack({ sp, req }) {
 
   // TODO: PROBLEM IS THAT IT'S PASSING IN A NEW UUID SO CAUSING FILE CANNOT BE FOUND.
   logger.info({ sp, requestID }, 'BANANA polling time')
-  // const { fileName, transcodedFilePath, segmentFileNames, segmentFileNamesToPath } = await pollProcessingStatus(
-  const { transcodedFilePath, segmentFileNames } = await pollProcessingStatus({
+  // const { fileName, transcodeFilePath, segmentFileNames, segmentFileNamesToPath } = await pollProcessingStatus(
+  const { transcodeFilePath, segmentFileNames } = await pollProcessingStatus({
     logger,
     // FileProcessingQueue.PROCESS_NAMES.transcodeAndSegment, // ???? why is this an ampty obj
     taskType: 'transcodeAndSegment',
@@ -75,12 +75,17 @@ async function handOffTrack({ sp, req }) {
     fileNameNoExtension + '-dl.mp3'
   )
 
-  logger.info({ sp, transcodedFilePath }, 'BANANA getting transcode')
+  logger.info({ sp, transcodeFilePath }, 'BANANA getting transcode')
 
   res = await fetchTranscode(res, sp, fileNameNoExtension)
 
   // await pipeline(res.data, fs.createWriteStream(res.data, transcodeFilePath))
   await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
+
+  return {
+    transcodeFilePath,
+    segmentFileNames
+  }
 }
 
 async function selectRandomSPs(
