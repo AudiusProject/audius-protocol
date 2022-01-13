@@ -192,7 +192,6 @@ const TrackHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isUnlisted && !fieldVisibility.share ? null : OverflowAction.SHARE,
       OverflowAction.ADD_TO_PLAYLIST,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST

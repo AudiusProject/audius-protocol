@@ -38,11 +38,8 @@ export const ShareModal = () => {
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )
 
-  const isOwner = Boolean(
-    content?.type === 'track' &&
-      account &&
-      account.user_id === content.artist.user_id
-  )
+  const isOwner =
+    content?.type === 'track' && account?.user_id === content.artist.user_id
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -96,8 +93,8 @@ export const ShareModal = () => {
       content?.type === 'track' &&
         isShareSoundToTikTokEnabled &&
         isOwner &&
-        !content.track?.is_unlisted &&
-        !content.track?.is_delete
+        !content.track.is_unlisted &&
+        !content.track.is_delete
     ),
     shareType: content?.type ?? 'track'
   }

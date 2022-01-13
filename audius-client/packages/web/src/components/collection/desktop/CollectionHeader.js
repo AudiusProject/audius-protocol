@@ -45,10 +45,8 @@ const BUTTON_COLLAPSE_WIDTHS = {
 
 // Toast timeouts in ms
 const REPOST_TIMEOUT = 1000
-const SHARE_TIMEOUT = 1500
 
 const messages = {
-  copied: 'Copied To Clipboard!',
   shareButton: 'SHARE',
   repostButton: 'REPOST',
   repostButtonReposted: 'REPOSTED',
@@ -105,22 +103,15 @@ const ViewerHasTracksButtons = props => {
   return (
     <>
       <PlayButton playing={props.playing} onPlay={props.onPlay} />
-      <Toast
-        text={messages.copied}
-        delay={SHARE_TIMEOUT}
-        fillParent={false}
-        requireAccount={false}
-      >
-        <Button
-          className={cn(styles.buttonSpacing, styles.buttonFormatting)}
-          textClassName={styles.buttonTextFormatting}
-          type={ButtonType.COMMON}
-          text={messages.shareButton}
-          leftIcon={<IconShare />}
-          onClick={props.onShare}
-          widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-        />
-      </Toast>
+      <Button
+        className={cn(styles.buttonSpacing, styles.buttonFormatting)}
+        textClassName={styles.buttonTextFormatting}
+        type={ButtonType.COMMON}
+        text={messages.shareButton}
+        leftIcon={<IconShare />}
+        onClick={props.onShare}
+        widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+      />
       <Toast
         text={messages.reposted}
         disabled={props.isReposted}
@@ -337,22 +328,15 @@ const OwnerPublishedButtons = props => {
         firesOnClick={false}
         open={showShareableToast}
       >
-        <Toast
-          text={messages.copied}
-          delay={SHARE_TIMEOUT}
-          fillParent={false}
-          requireAccount={false}
-        >
-          <Button
-            className={cn(styles.buttonSpacing, styles.buttonFormatting)}
-            textClassName={styles.buttonTextFormatting}
-            type={ButtonType.COMMON}
-            text={messages.shareButton}
-            leftIcon={<IconShare />}
-            onClick={props.onShare}
-            widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          />
-        </Toast>
+        <Button
+          className={cn(styles.buttonSpacing, styles.buttonFormatting)}
+          textClassName={styles.buttonTextFormatting}
+          type={ButtonType.COMMON}
+          text={messages.shareButton}
+          leftIcon={<IconShare />}
+          onClick={props.onShare}
+          widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+        />
       </Toast>
       <Button
         className={cn(styles.buttonSpacing, styles.buttonFormatting)}

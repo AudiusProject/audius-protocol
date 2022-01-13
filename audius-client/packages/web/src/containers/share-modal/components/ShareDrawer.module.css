@@ -3,18 +3,22 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 8px 0px 16px;
+  padding: var(--unit-2) 0px var(--unit-4);
 }
 
 .titleIcon {
-  height: var(--unit-6);
-  width: var(--unit-6);
+  height: var(--unit-8);
+  width: var(--unit-8);
   margin-right: var(--unit-2);
+}
+
+.titleIcon path {
+  fill: var(--neutral);
 }
 
 .title {
   font-size: var(--font-l);
-  font-weight: 800;
+  font-weight: var(--font-bold);
 }
 
 .actionItem {
@@ -23,7 +27,7 @@
 }
 
 .action {
-  font-weight: var(--font-bold);
+  font-weight: var(--font-demi-bold);
 }
 
 .copyLinkAction {

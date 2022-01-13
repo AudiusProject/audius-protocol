@@ -119,7 +119,6 @@ const CollectionHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      !isPublished ? null : OverflowAction.SHARE,
       !isAlbum && isOwner ? OverflowAction.EDIT_PLAYLIST : null,
       isOwner && !isAlbum && !isPublished
         ? OverflowAction.PUBLISH_PLAYLIST

@@ -268,7 +268,6 @@ const NowPlaying = g(
             ? OverflowAction.UNFAVORITE
             : OverflowAction.FAVORITE
           : null,
-        OverflowAction.SHARE,
         OverflowAction.ADD_TO_PLAYLIST,
         OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE

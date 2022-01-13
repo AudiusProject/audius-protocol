@@ -34,7 +34,6 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     const overflowActions = [
       props.isReposted ? OverflowAction.UNREPOST : OverflowAction.REPOST,
       props.isSaved ? OverflowAction.UNFAVORITE : OverflowAction.FAVORITE,
-      OverflowAction.SHARE,
       OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
       OverflowAction.VIEW_ARTIST_PAGE

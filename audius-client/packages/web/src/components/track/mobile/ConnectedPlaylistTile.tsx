@@ -158,7 +158,6 @@ const ConnectedPlaylistTile = memo(
         collection.has_current_user_saved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE,
-        OverflowAction.SHARE,
         collection.is_album
           ? OverflowAction.VIEW_ALBUM_PAGE
           : OverflowAction.VIEW_PLAYLIST_PAGE,

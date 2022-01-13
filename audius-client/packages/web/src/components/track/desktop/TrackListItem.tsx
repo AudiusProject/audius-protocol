@@ -99,7 +99,7 @@ const TrackListItem = ({
     includeEdit: false,
     includeFavorite: true,
     includeRepost: true,
-    includeShare: true,
+    includeShare: false,
     includeTrackPage: true,
     isArtistPick: track.user._artist_pick === track.track_id,
     isDeleted: deleted,

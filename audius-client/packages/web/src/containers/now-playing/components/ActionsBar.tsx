@@ -33,10 +33,6 @@ type ActionsBarProps = {
   isMatrixMode: boolean
 }
 
-const messages = {
-  copiedToast: 'Copied To Clipboard'
-}
-
 const ActionsBar = ({
   castMethod,
   hasReposted,
