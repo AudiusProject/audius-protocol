@@ -12,7 +12,6 @@ class Account extends Base {
 
     this.User = userApi
 
-    this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
