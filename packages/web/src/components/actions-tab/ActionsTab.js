@@ -11,22 +11,17 @@ import { ShareSource, RepostSource } from 'common/models/Analytics'
 import { getUserHandle } from 'common/store/account/selectors'
 import {
   repostCollection,
-  undoRepostCollection,
-  shareCollection
+  undoRepostCollection
 } from 'common/store/social/collections/actions'
 import {
   repostTrack,
-  undoRepostTrack,
-  shareTrack
+  undoRepostTrack
 } from 'common/store/social/tracks/actions'
+import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import Menu from 'containers/menu/Menu'
-import { isShareToastDisabled } from 'utils/clipboardUtil'
-import {
-  REPOST_TOAST_TIMEOUT_MILLIS,
-  SHARE_TOAST_TIMEOUT_MILLIS
-} from 'utils/constants'
+import { REPOST_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import styles from './ActionsTab.module.css'
 
@@ -111,16 +106,9 @@ const ExpandedActionsTab = props => {
           className={styles.actionButton}
           onClick={isDisabled ? () => {} : onShare}
         >
-          <Toast
-            text={'Copied To Clipboard!'}
-            disabled={isHidden || isDisabled || isShareToastDisabled}
-            requireAccount={false}
-            delay={SHARE_TOAST_TIMEOUT_MILLIS}
-            containerClassName={styles.actionIconContainer}
-            placement={direction === 'horizontal' ? 'bottom' : 'right'}
-          >
+          <div className={styles.actionIconContainer}>
             <IconShare className={styles.iconShare} />
-          </Toast>
+          </div>
         </div>
       </Tooltip>
       <div className={cn(styles.actionButton, styles.menuKebabContainer)}>
@@ -289,9 +277,22 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => ({
-  shareTrack: trackId => dispatch(shareTrack(trackId, ShareSource.TILE)),
+  shareTrack: trackId =>
+    dispatch(
+      requestOpenShareModal({
+        type: 'track',
+        trackId,
+        source: ShareSource.TILE
+      })
+    ),
   shareCollection: collectionId =>
-    dispatch(shareCollection(collectionId, ShareSource.TILE)),
+    dispatch(
+      requestOpenShareModal({
+        type: 'collection',
+        collectionId,
+        source: ShareSource.TILE
+      })
+    ),
   repostTrack: trackId => dispatch(repostTrack(trackId, RepostSource.TILE)),
   undoRepostTrack: trackId =>
     dispatch(undoRepostTrack(trackId, RepostSource.TILE)),

@@ -11,7 +11,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import { isDarkMode } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { messages } from '../messages'
 import { ShareProps } from '../types'
@@ -50,6 +50,7 @@ export const ShareDialog = ({
   showTikTokShareAction,
   shareType
 }: ShareDialogProps) => {
+  const isLightMode = !(isDarkMode() || isMatrix())
   return (
     <Modal
       allowScroll={false}
@@ -83,12 +84,12 @@ export const ShareDialog = ({
               leftIcon={<IconTikTok {...iconProps} />}
               text={messages.tikTok}
               iconClassName={
-                isDarkMode() ? styles.tikTokIconDark : styles.tikTokIcon
+                isLightMode ? styles.tikTokIcon : styles.tikTokIconDark
               }
               textClassName={
-                isDarkMode()
-                  ? styles.tikTokActionLabelDark
-                  : styles.tikTokActionLabel
+                isLightMode
+                  ? styles.tikTokActionLabel
+                  : styles.tikTokActionLabelDark
               }
               onClick={onShareToTikTok}
             />
