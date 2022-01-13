@@ -178,8 +178,11 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
 
 async function indexTrendingTracks (audiusLibs, optimizelyClient, tx) {
   try {
-    const { trendingTracks, blocknumber } = await getTrendingTracks(optimizelyClient)
-    await processTrendingTracks(audiusLibs, blocknumber, trendingTracks, tx)
+    const trending = await getTrendingTracks(optimizelyClient)
+    if (trending) {
+      const { trendingTracks, blocknumber } = trending
+      await processTrendingTracks(audiusLibs, blocknumber, trendingTracks, tx)
+    }
   } catch (err) {
     logger.error(`Unable to process trending track notifications: ${err.message}`)
   }
