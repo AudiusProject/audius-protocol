@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src.app import contract_addresses
 from src.models import Playlist
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
@@ -12,7 +13,6 @@ from src.utils.playlist_event_constants import (
     playlist_event_types_arr,
     playlist_event_types_lookup,
 )
-from src.queries.skipped_transactions import add_node_level_skipped_transaction
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ def playlist_state_update(
             processedEntries = 0  # if record does not get added, do not count towards num_total_changes
             for entry in playlist_events_tx:
                 existing_playlist_record = None
-                playlist_id = get_tx_arg(entry, "_playlistId")
+                playlist_id = helpers.get_tx_arg(entry, "_playlistId")
                 try:
                     # look up or populate existing record
                     if playlist_id in playlist_events_lookup:
@@ -108,10 +108,6 @@ def playlist_state_update(
             session.add(value_obj["playlist"])
 
     return num_total_changes, playlist_ids
-
-
-def get_tx_arg(tx, arg_name):
-    return getattr(tx["args"], arg_name)
 
 
 def get_playlist_events_tx(update_task, event_type, tx_receipt):

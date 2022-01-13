@@ -14,6 +14,7 @@ def test_model_nullable_validator():
         pk_field = Column(Integer, nullable=False)
         required_field_1 = Column(String, nullable=False)
         required_field_2 = Column(Integer, nullable=False)
+        required_field_with_defaults = Column(Integer, nullable=False, default=False)
         optional_field_1 = Column(Boolean, nullable=True)
         optional_field_2 = Column(String, nullable=True)
 
