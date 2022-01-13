@@ -19,8 +19,40 @@ const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
 const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 / 3 // 3min/3
 const POLL_STATUS_INTERVAL_MS = 10000 / 10 // 10s/10
 
+async function handOffTrack(libs, req) {
+  const logger = genericLogger.child(req.logContext)
+  const sps = await selectRandomSPs(libs)
+
+  logger.info({ sps }, 'BANANA selected random sps')
+
+  let successfulHandOff = false
+  let sp, transcodeFilePath, segmentFileNames
+  for (sp of sps) {
+    if (successfulHandOff) break
+    // hard code cus lazy
+    sp = 'http://cn2_creator-node_1:4001'
+    try {
+      logger.info(`BANANA handing off to sp=${sp}`)(
+        ({ transcodeFilePath, segmentFileNames } =
+          await handOffTranscodeAndSegment({
+            sp,
+            req
+          }))
+      )
+      successfulHandOff = true
+    } catch (e) {
+      // delete tmp dir here if fails and continue
+      logger.warn(
+        `BANANA Could not hand off track to sp=${sp} err=${e.toString()}`
+      )
+    }
+  }
+
+  return { transcodeFilePath, segmentFileNames, sp }
+}
+
 // If any call fails -> throw error
-async function handOffTrack({ sp, req }) {
+async function handOffTranscodeAndSegment({ sp, req }) {
   const {
     logContext,
     fileDir,
@@ -70,20 +102,23 @@ async function handOffTrack({ sp, req }) {
   // Get transcode and write to tmp disk
   const transcodePath =
     fileManager.getTmpTrackUploadArtifactsWithCIDInPath(fileNameNoExtension)
-  const transcodeFilePath = path.join(
+  const transcodeFilePathWithExtension = path.join(
     transcodePath,
     fileNameNoExtension + '-dl.mp3'
   )
 
-  logger.info({ sp, transcodeFilePath }, 'BANANA getting transcode')
+  logger.info(
+    { sp, transcodeFilePath: transcodeFilePathWithExtension },
+    'BANANA getting transcode'
+  )
 
   res = await fetchTranscode(res, sp, fileNameNoExtension)
 
   // await pipeline(res.data, fs.createWriteStream(res.data, transcodeFilePath))
-  await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
+  await Utils.writeStreamToFileSystem(res.data, transcodeFilePathWithExtension)
 
   return {
-    transcodeFilePath,
+    transcodeFilePath: transcodeFilePathWithExtension,
     segmentFileNames
   }
 }
@@ -107,6 +142,36 @@ async function selectRandomSPs(
   }
 
   return Array.from(validSPs)
+}
+
+async function pollProcessingStatus({ logger, taskType, uuid, sp }) {
+  const start = Date.now()
+  while (Date.now() - start < MAX_TRACK_HANDOFF_TIMEOUT_MS) {
+    try {
+      const { status, resp } = await fetchTrackContentProcessingStatus(
+        sp,
+        uuid,
+        taskType
+      )
+      // Should have a body structure of:
+      //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
+      if (status && status === 'DONE') return resp
+      if (status && status === 'FAILED') {
+        throw new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`)
+      }
+    } catch (e) {
+      // Catch errors here and swallow them. Errors don't signify that the track
+      // upload has failed, just that we were unable to establish a connection to the node.
+      // This allows polling to retry
+      logger.error(`Failed to poll for processing status, ${e}`)
+    }
+
+    await Utils.timeout(POLL_STATUS_INTERVAL_MS)
+  }
+
+  throw new Error(
+    `${taskType} took over ${MAX_TRACK_HANDOFF_TIMEOUT_MS}ms. uuid=${uuid}`
+  )
 }
 
 async function sendTranscodeAndSegmentRequest({
@@ -146,36 +211,6 @@ async function createFormData(pathToFile) {
   formData.append('file', fs.createReadStream(pathToFile))
 
   return formData
-}
-
-async function pollProcessingStatus({ logger, taskType, uuid, sp }) {
-  const start = Date.now()
-  while (Date.now() - start < MAX_TRACK_HANDOFF_TIMEOUT_MS) {
-    try {
-      const { status, resp } = await fetchTrackContentProcessingStatus(
-        sp,
-        uuid,
-        taskType
-      )
-      // Should have a body structure of:
-      //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
-      if (status && status === 'DONE') return resp
-      if (status && status === 'FAILED') {
-        throw new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`)
-      }
-    } catch (e) {
-      // Catch errors here and swallow them. Errors don't signify that the track
-      // upload has failed, just that we were unable to establish a connection to the node.
-      // This allows polling to retry
-      logger.error(`Failed to poll for processing status, ${e}`)
-    }
-
-    await Utils.timeout(POLL_STATUS_INTERVAL_MS)
-  }
-
-  throw new Error(
-    `${taskType} took over ${MAX_TRACK_HANDOFF_TIMEOUT_MS}ms. uuid=${uuid}`
-  )
 }
 
 async function fetchHealthCheck(sp) {

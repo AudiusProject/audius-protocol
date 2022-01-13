@@ -1,6 +1,10 @@
 const path = require('path')
 
-const { getStartTime, logInfoWithDuration } = require('../../logging')
+const {
+  getStartTime,
+  logInfoWithDuration,
+  logger: genericLogger
+} = require('../../logging')
 const { getSegmentsDuration } = require('../../segmentDuration')
 
 const config = require('../../config.js')
@@ -35,16 +39,18 @@ const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
  *    source_file {string} : the filename of the uploaded artifact
  *  }
  */
-async function processTrackTranscodeAndSegments({
-  cnodeUserUUID,
-  fileName,
-  fileDir,
-  transcodeFilePath,
-  segmentFileNames,
-  fileDestination,
-  logContext,
-  logger
-}) {
+async function processTrackTranscodeAndSegments(
+  { logContext },
+  {
+    cnodeUserUUID,
+    fileName,
+    fileDir,
+    fileDestination,
+    transcodeFilePath,
+    segmentFileNames
+  }
+) {
+  const logger = genericLogger.child(logContext)
   let codeBlockTimeStart = getStartTime()
   const { segmentFileIPFSResps, transcodeFileIPFSResp } =
     await batchSaveFileToIPFSAndCopyFromFS({

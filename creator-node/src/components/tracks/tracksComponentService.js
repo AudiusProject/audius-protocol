@@ -3,10 +3,8 @@ const {
   logInfoWithDuration,
   getStartTime
 } = require('../../logging')
-const { getSegmentsDuration } = require('../../segmentDuration')
 
 const FileProcessingQueue = require('../../FileProcessingQueue')
-const FileManager = require('../../fileManager')
 const TrackHandOffUtils = require('./trackHandOffUtils')
 const TrackHandlingUtils = require('./trackHandlingUtils')
 
@@ -42,16 +40,17 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
     `Successfully re-encoded track file=${fileName}`
   )
 
-  const resp = await TrackHandlingUtils.processTrackTranscodeAndSegments({
-    cnodeUserUUID,
-    fileName,
-    fileDir,
-    logContext,
-    transcodeFilePath,
-    segmentFileNames,
-    logger,
-    fileDestination
-  })
+  const resp = await TrackHandlingUtils.processTrackTranscodeAndSegments(
+    { logContext },
+    {
+      cnodeUserUUID,
+      fileName,
+      fileDir,
+      transcodeFilePath,
+      segmentFileNames,
+      fileDestination
+    }
+  )
   logInfoWithDuration(
     { logger, startTime: routeTimeStart },
     `Successfully handled track content for file=${fileName}`
@@ -74,69 +73,49 @@ async function handleTranscodeAndSegment(
 async function handleTrackHandOff(req) {
   const { libs, logContext, fileName, fileDir, fileDestination } = req
   const { cnodeUserUUID } = req.session
-  const logger = genericLogger.child(logContext)
-  logger.info('BANANA seleting randaom sps')
 
-  const routeTimeStart = getStartTime()
+  const logger = genericLogger.child(logContext)
+
   let codeBlockTimeStart = getStartTime()
 
-  const sps = await TrackHandOffUtils.selectRandomSPs(libs)
+  const { transcodeFilePath, segmentFileNames, sp } =
+    await TrackHandOffUtils.handOffTrack(libs, req)
 
-  logger.info({ sps }, 'BANANA selected random sps')
-  let successfulHandOff = false
-  let sp, transcodeFilePath, segmentFileNames
-  for (sp of sps) {
-    if (successfulHandOff) break
-    // hard code cus lazy
-    sp = 'http://cn2_creator-node_1:4001'
-    try {
-      logger.info(`BANANA handing off to sp=${sp}`)(
-        ({ transcodeFilePath, segmentFileNames } =
-          await TrackHandOffUtils.handOffTrack({ sp, req }))
-      )
-      successfulHandOff = true
-    } catch (e) {
-      // delete tmp dir here if fails and continue
-      logger.warn(
-        `BANANA Could not hand off track to sp=${sp} err=${e.toString()}`
-      )
-    }
-  }
-
-  logInfoWithDuration(
-    { logger, startTime: codeBlockTimeStart },
-    `BANANA Succesfully handed off transcoding and segmenting to sp=${sp}`
-  )
-
-  codeBlockTimeStart = getStartTime()
-  if (!successfulHandOff) {
+  if (!transcodeFilePath || !segmentFileNames) {
     // Let current node handle the track if handoff fails
     await FileProcessingQueue.addTrackContentUploadTask({
-      logContext: req.logContext,
+      logContext,
       req: {
-        fileName: req.fileName,
-        fileDir: req.fileDir,
-        fileDestination: req.file.destination,
-        session: {
-          cnodeUserUUID: req.session.cnodeUserUUID
-        }
+        session: { cnodeUserUUID },
+        fileName,
+        fileDir,
+        fileDestination
       }
     })
+
+    logInfoWithDuration(
+      { logger, startTime: codeBlockTimeStart },
+      `BANANA Failed to hand off track. Retrying upload to current node..`
+    )
   } else {
-    await FileProcessingQueue.add
+    // Finish with the rest of track upload flow
+    await FileProcessingQueue.addProcessTrackTranscodeAndSegments({
+      logContext,
+      req: {
+        cnodeUserUUID,
+        fileName,
+        fileDir,
+        fileDestination,
+        transcodeFilePath,
+        segmentFileNames
+      }
+    })
+
+    logInfoWithDuration(
+      { logger, startTime: codeBlockTimeStart },
+      `BANANA Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
+    )
   }
-
-  // if (successfulHandOff) {
-  //   // do rest of track stuff
-  // } else {
-  //   // go back to primary
-  //   // throw error?
-  // }
-
-  // logInfoWithDuration(
-  //   { logger, startTime: routeTimeStart },
-  //   `Successfully handled track content for file=${fileName}`
-  // )
 }
 
 module.exports = {
