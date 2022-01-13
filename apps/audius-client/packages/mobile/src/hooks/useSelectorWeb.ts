@@ -1,5 +1,4 @@
 import { CommonState } from 'audius-client/src/common/store'
-import { isEmpty } from 'lodash'
 import { Selector, useSelector } from 'react-redux'
 
 // When mobile client is no longer dependent on the web client
@@ -8,6 +7,6 @@ export const useSelectorWeb = <ReturnValue>(
   selector: Selector<CommonState, ReturnValue>
 ) => {
   return useSelector((state: { clientStore: CommonState }) =>
-    isEmpty(state.clientStore) ? undefined : selector(state.clientStore)
+    selector(state.clientStore)
   )
 }
