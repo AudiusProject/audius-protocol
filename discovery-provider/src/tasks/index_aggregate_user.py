@@ -5,8 +5,8 @@ import sqlalchemy as sa
 from src.tasks.calculate_trending_challenges import get_latest_blocknumber_postgres
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
-    UPDATE_INDEXING_CHECKPOINTS_QUERY,
-    last_checkpoint,
+    get_last_indexed_checkpoint,
+    save_indexed_checkpoint,
 )
 
 logger = logging.getLogger(__name__)
@@ -350,24 +350,28 @@ def update_aggregate_table(
         if have_lock:
             start_time = time.time()
             with db.scoped_session() as session:
-                most_recent_indexed_aggregate_block = last_checkpoint(
+                most_recent_indexed_aggregate_block = get_last_indexed_checkpoint(
+                    session, table_name
+                )
+
+                latest_blocknumber = get_latest_blocknumber_postgres(
                     session, table_name
                 )
 
                 logger.info(
-                    f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
-                )
-
-                latest_indexed_block_num = get_latest_blocknumber_postgres(
-                    session, table_name
+                    f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block} | latest_blocknumber: {latest_blocknumber}"
                 )
 
                 if not most_recent_indexed_aggregate_block:
-                    # repopulate entire table
+                    # repopulate entire table, if last_checkpoint doesn't exist or last_checkpoint has been cleared
                     logger.info(f"index_aggregate_user.py | Repopulating {table_name}")
                     most_recent_indexed_aggregate_block = 0
                     session.execute(f"TRUNCATE TABLE {table_name}")
+                elif most_recent_indexed_aggregate_block == latest_blocknumber:
+                    # don't run the query if no new blocknumbers have been indexed
+                    return
 
+                # run the upsert query
                 logger.info(f"index_aggregate_user.py | Updating {table_name}")
                 upsert = sa.text(query)
                 session.execute(
@@ -378,13 +382,7 @@ def update_aggregate_table(
                 )
 
             # set new block to be the lower bound for the next indexing
-            session.execute(
-                sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
-                {
-                    "tablename": table_name,
-                    "last_checkpoint": latest_indexed_block_num,
-                },
-            )
+            save_indexed_checkpoint(session, table_name, latest_blocknumber)
             logger.info(
                 f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec"""
             )

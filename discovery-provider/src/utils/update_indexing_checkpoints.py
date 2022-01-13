@@ -1,5 +1,6 @@
 from typing import Optional
 
+import sqlalchemy as sa
 from sqlalchemy.orm.session import Session
 from src.models import Block, IndexingCheckpoints
 
@@ -11,7 +12,17 @@ UPDATE_INDEXING_CHECKPOINTS_QUERY = """
     """
 
 
-def last_checkpoint(session, tablename):
+def save_indexed_checkpoint(session, tablename, checkpoint):
+    session.execute(
+        sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
+        {
+            "tablename": tablename,
+            "last_checkpoint": checkpoint,
+        },
+    )
+
+
+def get_last_indexed_checkpoint(session, tablename):
     last_seen = (
         session.query(IndexingCheckpoints.last_checkpoint).filter(
             IndexingCheckpoints.tablename == tablename
