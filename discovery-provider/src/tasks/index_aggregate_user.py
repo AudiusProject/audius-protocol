@@ -353,11 +353,11 @@ def update_aggregate_table(
                 most_recent_indexed_aggregate_block = last_checkpoint(
                     session, table_name
                 )
-            logger.info(
-                f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
-            )
 
-            with db.scoped_session() as session:
+                logger.info(
+                    f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
+                )
+
                 latest_indexed_block_num = get_latest_blocknumber_postgres(
                     session, table_name
                 )
