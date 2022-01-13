@@ -2,10 +2,10 @@ import logging
 import time
 
 import sqlalchemy as sa
+from src.tasks.calculate_trending_challenges import get_latest_blocknumber_postgres
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     UPDATE_INDEXING_CHECKPOINTS_QUERY,
-    get_latest_blocknumber_postgres,
     last_checkpoint,
 )
 
@@ -381,7 +381,7 @@ def update_aggregate_table(
             session.execute(
                 sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
                 {
-                    "tablename": most_recent_indexed_aggregate_block_key,
+                    "tablename": table_name,
                     "last_checkpoint": latest_indexed_block_num,
                 },
             )

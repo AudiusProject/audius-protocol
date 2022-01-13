@@ -33,6 +33,11 @@ def get_latest_blocknumber(session: Session, redis: Redis) -> Optional[int]:
     latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
     if latest_indexed_block_num is not None:
         return int(latest_indexed_block_num)
+
+    return get_latest_blocknumber_postgres(session)
+
+
+def get_latest_blocknumber_postgres(session: Session) -> Optional[int]:
     db_block_query = (
         session.query(Block.number).filter(Block.is_current == True).first()
     )
