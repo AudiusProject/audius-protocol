@@ -146,7 +146,18 @@ class Account extends Base {
       if (createWAudioUserBank && this.solanaWeb3Manager) {
         phase = phases.SOLANA_USER_BANK_CREATION
         try {
-          await this.solanaWeb3Manager.createUserBank()
+          // Fire and forget createUserBank. In the case of failure, we will
+          // retry to create user banks in a later session before usage
+          (async () => {
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
+            if (error || errorCode) {
+              console.error(
+                `Failed to create userbank, with err: ${error}, ${errorCode}`
+              )
+            } else {
+              console.log(`Successfully created userbank!`)
+            }
+          })()
         } catch (err) {
           console.error(`Got error creating userbank: ${err}, continuing...`)
         }
