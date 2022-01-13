@@ -256,8 +256,7 @@ jobs:
           env: '.env.stage'
       - when:
           condition:
-            matches:
-              { pattern: '^release.*$', value: << pipeline.git.branch >> }
+            matches: { pattern: '^master$', value: << pipeline.git.branch >> }
           steps:
             - upload-ios:
                 bundle-id: 'co.audius.audiusmusic.bounce'
@@ -296,8 +295,7 @@ jobs:
           remote-directory: 'audius-mobile-staging'
       - when:
           condition:
-            matches:
-              { pattern: '^release.*$', value: << pipeline.git.branch >> }
+            matches: { pattern: '^master$', value: << pipeline.git.branch >> }
           steps:
             - upload-android:
                 upload-type: 'bounce'
