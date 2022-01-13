@@ -32,6 +32,10 @@ def playlist_state_update(
     skipped_tx_count = 0
     # This stores the playlist_ids created or updated in the set of transactions
     playlist_ids = set()
+    playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
+    playlist_contract = update_task.web3.eth.contract(
+        address=contract_addresses["playlist_factory"], abi=playlist_abi
+    )
 
     if not playlist_factory_txs:
         return num_total_changes, playlist_ids
@@ -41,35 +45,35 @@ def playlist_state_update(
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in playlist_event_types_arr:
             playlist_events_tx = get_playlist_events_tx(
-                update_task, event_type, tx_receipt
+                playlist_contract, event_type, tx_receipt
             )
             processedEntries = 0  # if record does not get added, do not count towards num_total_changes
             for entry in playlist_events_tx:
+                existing_playlist_record = None
+                playlist_id = get_tx_arg(entry, "_playlistId")
                 try:
-                    playlist_id = get_tx_arg(entry, "_playlistId")
-
-                    if playlist_id not in playlist_events_lookup:
-                        existing_playlist_entry = lookup_playlist_record(
+                    # look up or populate existing record
+                    if playlist_id in playlist_events_lookup:
+                        existing_playlist_record = playlist_events_lookup[playlist_id][
+                            "playlist"
+                        ]
+                    else:
+                        existing_playlist_record = lookup_playlist_record(
                             update_task, session, entry, block_number, txhash
                         )
-                    try:
-                        playlist_record = parse_playlist_event(
-                            self,
-                            update_task,
-                            entry,
-                            event_type,
-                            existing_playlist_entry,
-                            block_timestamp,
-                            session,
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Error parsing playlist id {playlist_id} with entity missing required field(s)"
-                        )
-                        raise EntityMissingRequiredFieldError(
-                            "playlist", block_number, blockhash, txhash, str(e)
-                        ) from e
 
+                    # parse playlist event to add metadata to record
+                    playlist_record = parse_playlist_event(
+                        self,
+                        update_task,
+                        entry,
+                        event_type,
+                        existing_playlist_record,
+                        block_timestamp,
+                        session,
+                    )
+
+                    # process playlist record
                     if playlist_record is not None:
                         if playlist_id not in playlist_events_lookup:
                             playlist_events_lookup[playlist_id] = {
@@ -95,7 +99,7 @@ def playlist_state_update(
                     raise IndexingError(
                         "playlist", block_number, blockhash, txhash, str(e)
                     ) from e
-                num_total_changes += processedEntries
+            num_total_changes += processedEntries
 
     logger.info(
         f"index.py | playlists.py | There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
@@ -114,11 +118,7 @@ def get_tx_arg(tx, arg_name):
     return getattr(tx["args"], arg_name)
 
 
-def get_playlist_events_tx(update_task, event_type, tx_receipt):
-    playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
-    playlist_contract = update_task.web3.eth.contract(
-        address=contract_addresses["playlist_factory"], abi=playlist_abi
-    )
+def get_playlist_events_tx(playlist_contract, event_type, tx_receipt):
     return getattr(playlist_contract.events, event_type)().processReceipt(tx_receipt)
 
 
@@ -350,6 +350,9 @@ def parse_playlist_event(
     playlist_record.updated_at = block_datetime
 
     if not all_required_fields_present(Playlist, playlist_record):
-        raise Exception(f"Missing required fields for Playlist in {playlist_record}")
+        logger.error(
+            f"Error parsing playlist {playlist_record} with entity missing required field(s)"
+        )
+        raise EntityMissingRequiredFieldError("playlist", playlist_record)
 
     return playlist_record
