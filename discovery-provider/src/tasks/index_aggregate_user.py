@@ -367,7 +367,9 @@ def update_aggregate_table(
                     session.execute(f"TRUNCATE TABLE {table_name}")
                 elif latest_blocknumber == most_recent_indexed_aggregate_block:
                     # don't run the query if no new blocknumbers have been indexed
-                    logger.info("Skipping index_aggregate_user since blocknumber isn't newer")
+                    logger.info(
+                        "Skipping index_aggregate_user since blocknumber isn't newer"
+                    )
                     return
 
                 # run the upsert query
