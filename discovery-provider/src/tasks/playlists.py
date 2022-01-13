@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy.orm.session import make_transient
 from src.app import contract_addresses
-from src.models import Playlist, SkippedTransaction, SkippedTransactionLevel
+from src.models import Playlist
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
@@ -12,6 +12,7 @@ from src.utils.playlist_event_constants import (
     playlist_event_types_arr,
     playlist_event_types_lookup,
 )
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
 
 logger = logging.getLogger(__name__)
 
@@ -83,15 +84,11 @@ def playlist_state_update(
                         playlist_ids.add(playlist_id)
                         processedEntries += 1
                 except EntityMissingRequiredFieldError as e:
-                    skipped_tx_count += 1
                     logger.warning(f"Skipping tx {txhash} with error {e}")
-                    skipped_tx = SkippedTransaction(
-                        blocknumber=block_number,
-                        blockhash=blockhash,
-                        txhash=txhash,
-                        level=SkippedTransactionLevel.node,
+                    skipped_tx_count += 1
+                    add_node_level_skipped_transaction(
+                        session, block_number, blockhash, txhash
                     )
-                    session.add(skipped_tx)
                     pass
                 except Exception as e:
                     logger.info("Error in parse playlist transaction")

@@ -2,7 +2,6 @@
 import concurrent.futures
 import logging
 
-from sqlalchemy import func
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -13,8 +12,6 @@ from src.models import (
     Playlist,
     Repost,
     Save,
-    SkippedTransaction,
-    SkippedTransactionLevel,
     Track,
     TrackRoute,
     URSMContentNode,
@@ -29,6 +26,7 @@ from src.queries.get_skipped_transactions import (
     get_indexing_error,
     set_indexing_error,
 )
+from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import track_metadata_format, user_metadata_format
@@ -65,9 +63,6 @@ default_config_start_hash = "0x0"
 
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
-
-# The maximum number of skipped transactions allowed
-MAX_SKIPPED_TX = 100
 
 
 def get_contract_info_if_exists(self, address):
@@ -342,20 +337,15 @@ def save_and_get_skip_tx_hash(session, redis):
         and "has_consensus" in indexing_error
         and indexing_error["has_consensus"]
     ):
-        num_skipped_tx = (
-            session.query(func.count(SkippedTransaction))
-            .filter(SkippedTransaction.level == SkippedTransactionLevel.network)
-            .scalar()
-        )
-        if num_skipped_tx >= MAX_SKIPPED_TX:
+        try:
+            add_network_level_skipped_transaction(
+                session,
+                indexing_error["blocknumber"],
+                indexing_error["blockhash"],
+                indexing_error["txhash"],
+            )
+        except Exception:
             return None
-        skipped_tx = SkippedTransaction(
-            blocknumber=indexing_error["blocknumber"],
-            blockhash=indexing_error["blockhash"],
-            txhash=indexing_error["txhash"],
-            level=SkippedTransactionLevel.network,
-        )
-        session.add(skipped_tx)
         return indexing_error["txhash"]
     return None
 
