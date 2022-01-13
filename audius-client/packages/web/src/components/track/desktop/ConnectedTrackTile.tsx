@@ -23,11 +23,11 @@ import {
 } from 'common/store/social/tracks/actions'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import ArtistPopover from 'components/artist/ArtistPopover'
+import Draggable from 'components/dragndrop/Draggable'
+import Menu from 'components/menu/Menu'
+import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/desktop/Artwork'
-import Draggable from 'containers/dragndrop/Draggable'
-import Menu from 'containers/menu/Menu'
-import { OwnProps as TrackMenuProps } from 'containers/menu/TrackMenu'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UserBadges from 'components/user-badges/UserBadges'
 import {
   setUsers,
   setVisibility

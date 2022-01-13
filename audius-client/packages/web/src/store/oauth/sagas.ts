@@ -5,7 +5,7 @@ import { StringKeys } from 'common/services/remote-config'
 import {
   formatInstagramProfile,
   formatTwitterProfile
-} from 'containers/sign-on/utils/formatSocialProfile'
+} from 'pages/sign-on/utils/formatSocialProfile'
 import {
   RequestInstagramAuthFailureMessage,
   RequestInstagramAuthMessage,

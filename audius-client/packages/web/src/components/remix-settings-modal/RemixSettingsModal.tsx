@@ -10,7 +10,7 @@ import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
 import Input from 'components/data-entry/Input'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UserBadges from 'components/user-badges/UserBadges'
 import { fullTrackPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 

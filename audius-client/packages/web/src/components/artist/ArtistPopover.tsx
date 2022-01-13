@@ -17,7 +17,7 @@ import { getUserId } from 'common/store/account/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import * as socialActions from 'common/store/social/users/actions'
 import { MountPlacement } from 'components/types'
-import { setNotificationSubscription } from 'containers/profile-page/store/actions'
+import { setNotificationSubscription } from 'pages/profile-page/store/actions'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 

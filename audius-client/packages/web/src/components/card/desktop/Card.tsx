@@ -17,11 +17,11 @@ import {
 import { pluralize } from 'common/utils/formatUtil'
 import ActionsTab from 'components/actions-tab/ActionsTab'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import Menu, { MenuOptionType } from 'components/menu/Menu'
 import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
-import Menu, { MenuOptionType } from 'containers/menu/Menu'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './Card.module.css'
 

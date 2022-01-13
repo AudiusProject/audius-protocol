@@ -15,11 +15,11 @@ import { getCollection } from 'common/store/cache/collections/selectors'
 import { getUserFromCollection } from 'common/store/cache/users/selectors'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import Menu, { MenuType } from 'components/menu/Menu'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
-import Menu, { MenuType } from 'containers/menu/Menu'
 import {
   setUsers,
   setVisibility

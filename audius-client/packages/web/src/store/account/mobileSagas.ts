@@ -3,7 +3,7 @@ import { takeEvery, put, call } from 'redux-saga/effects'
 
 import { User } from 'common/models/User'
 import * as accountActions from 'common/store/account/reducer'
-import { updateProfileAsync } from 'containers/profile-page/store/sagas'
+import { updateProfileAsync } from 'pages/profile-page/store/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import { FetchAccountFailed } from 'services/native-mobile-interface/lifecycle'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'

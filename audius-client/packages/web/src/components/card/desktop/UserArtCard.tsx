@@ -13,7 +13,7 @@ import { getUser } from 'common/store/cache/users/selectors'
 import { formatCount } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UserBadges from 'components/user-badges/UserBadges'
 import {
   setUsers,
   setVisibility

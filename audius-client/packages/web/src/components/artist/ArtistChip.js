@@ -8,7 +8,7 @@ import { SquareSizes } from 'common/models/ImageSizes'
 import { formatCount } from 'common/utils/formatUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './ArtistChip.module.css'
 

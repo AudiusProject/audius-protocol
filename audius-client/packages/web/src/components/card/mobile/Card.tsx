@@ -15,11 +15,11 @@ import {
 } from 'common/models/ImageSizes'
 import { pluralize } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UpdateDot from 'components/general/UpdateDot'
 import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UpdateDot from 'components/update-dot/UpdateDot'
+import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './Card.module.css'
 

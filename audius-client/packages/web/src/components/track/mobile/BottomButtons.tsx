@@ -1,9 +1,9 @@
 import React, { memo } from 'react'
 
-import FavoriteButton from 'components/general/alt-button/FavoriteButton'
-import MoreButton from 'components/general/alt-button/MoreButton'
-import RepostButton from 'components/general/alt-button/RepostButton'
-import ShareButton from 'components/general/alt-button/ShareButton'
+import FavoriteButton from 'components/alt-button/FavoriteButton'
+import MoreButton from 'components/alt-button/MoreButton'
+import RepostButton from 'components/alt-button/RepostButton'
+import ShareButton from 'components/alt-button/ShareButton'
 
 import styles from './BottomButtons.module.css'
 

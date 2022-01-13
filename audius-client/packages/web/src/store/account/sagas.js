@@ -25,8 +25,8 @@ import {
   setBrowserNotificationPermission,
   setBrowserNotificationEnabled,
   setBrowserNotificationSettingsOn
-} from 'containers/settings-page/store/actions'
-import * as uploadActions from 'containers/upload-page/store/actions'
+} from 'pages/settings-page/store/actions'
+import * as uploadActions from 'pages/upload-page/store/actions'
 import AudioManager from 'services/AudioManager'
 import AudiusBackend from 'services/AudiusBackend'
 import {

@@ -14,7 +14,7 @@ const NoConnectivityPage = lazy(() =>
   import('components/no-connectivity-page/NoConnectivityPage')
 )
 
-const PublicSite = lazy(() => import('./publicSite'))
+const PublicSite = lazy(() => import('./pages/PublicSite'))
 
 const validPublicSitePathnames = [
   '',

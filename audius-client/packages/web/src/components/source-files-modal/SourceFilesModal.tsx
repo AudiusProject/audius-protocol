@@ -11,10 +11,10 @@ import cn from 'classnames'
 
 import { StemCategory, stemCategoryFriendlyNames } from 'common/models/Stems'
 import { Track, Download } from 'common/models/Track'
-import IconButton from 'components/general/IconButton'
-import Switch from 'components/general/Switch'
+import IconButton from 'components/icon-button/IconButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
+import Switch from 'components/switch/Switch'
 import Dropzone from 'components/upload/Dropzone'
 
 import styles from './SourceFilesModal.module.css'
