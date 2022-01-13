@@ -7,7 +7,7 @@ import * as fragmentShader from '!raw-loader!glslify-loader!./shaders/visualizer
 import createLine from './gl-line-3d'
 import vignette from './gl-vignette-background'
 import GLAudioAnalyser from 'utils/visualizer/GLAudioAnalyser'
-import { webglSupported } from 'containers/visualizer/utils'
+import { webglSupported } from 'pages/visualizer/utils'
 
 const createOrbit = require('orbit-controls')
 const createCamera = require('perspective-camera')

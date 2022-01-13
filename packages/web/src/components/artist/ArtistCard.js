@@ -9,9 +9,9 @@ import {
 } from 'common/hooks/useImageSize'
 import { WidthSizes, SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import FollowButton from 'components/general/FollowButton'
-import Stats from 'components/general/Stats'
-import UserBadges from 'containers/user-badges/UserBadges'
+import FollowButton from 'components/follow-button/FollowButton'
+import Stats from 'components/stats/Stats'
+import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './ArtistCard.module.css'
 

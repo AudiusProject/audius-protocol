@@ -45,12 +45,12 @@ import {
 } from 'common/store/wallet/slice'
 import { Nullable } from 'common/utils/typeUtils'
 import { weiToString } from 'common/utils/wallet'
-import { CollectibleState } from 'containers/collectibles/types'
+import { CollectibleState } from 'components/collectibles/types'
+import { fetchServices } from 'components/service-selection/store/slice'
 import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
-} from 'containers/profile-page/store/sagas'
-import { fetchServices } from 'containers/service-selection/store/slice'
+} from 'pages/profile-page/store/sagas'
 import { newUserMetadata } from 'schemas'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient, {

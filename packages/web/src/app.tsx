@@ -4,11 +4,11 @@ import '@audius/stems/dist/stems.css'
 import { ConnectedRouter } from 'connected-react-router'
 import { Provider } from 'react-redux'
 
-import { MainContentContext } from 'containers/MainContentContext'
+import App from 'pages/App'
+import AppContext from 'pages/AppContext'
+import { MainContentContext } from 'pages/MainContentContext'
 import logger from 'utils/logger'
 
-import AppContext from './AppContext'
-import App from './containers/App'
 import configureStore from './store/configureStore'
 import history from './utils/history'
 

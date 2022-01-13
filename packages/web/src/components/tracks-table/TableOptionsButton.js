@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 
 import { ReactComponent as IconOptions } from 'assets/img/iconKebabHorizontal.svg'
 import stylesTab from 'components/actions-tab/ActionsTab.module.css'
-import Menu from 'containers/menu/Menu'
+import Menu from 'components/menu/Menu'
 
 import styles from './TableOptionsButton.module.css'
 

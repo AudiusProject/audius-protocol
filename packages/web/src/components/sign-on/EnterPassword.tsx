@@ -5,8 +5,8 @@ import cn from 'classnames'
 import commonPasswordList from 'fxa-common-password-list'
 
 import Input from 'components/data-entry/Input'
-import StatusMessage from 'components/general/StatusMessage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import StatusMessage from 'components/status-message/StatusMessage'
 
 import styles from './EnterPassword.module.css'
 

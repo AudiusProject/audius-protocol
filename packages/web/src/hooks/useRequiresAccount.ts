@@ -7,7 +7,7 @@ import { getAccountUser } from 'common/store/account/selectors'
 import {
   showRequiresAccountModal,
   updateRouteOnExit
-} from 'containers/sign-on/store/actions'
+} from 'pages/sign-on/store/actions'
 import { useSelector } from 'utils/reducer'
 import { SIGN_UP_PAGE } from 'utils/route'
 

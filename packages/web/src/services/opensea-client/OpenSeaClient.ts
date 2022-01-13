@@ -7,8 +7,8 @@ import {
   creationEventToCollectible,
   transferEventToCollectible,
   isNotFromNullAddress
-} from 'containers/collectibles/ethCollectibleHelpers'
-import { CollectibleState } from 'containers/collectibles/types'
+} from 'components/collectibles/ethCollectibleHelpers'
+import { CollectibleState } from 'components/collectibles/types'
 import {
   OpenSeaAsset,
   OpenSeaAssetExtended,

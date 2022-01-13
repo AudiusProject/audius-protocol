@@ -18,8 +18,8 @@ import {
 import {
   getSelectedServices,
   getStatus
-} from 'containers/service-selection/store/selectors'
-import { fetchServicesFailed } from 'containers/service-selection/store/slice'
+} from 'components/service-selection/store/selectors'
+import { fetchServicesFailed } from 'components/service-selection/store/slice'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   getAudiusAccountUser,

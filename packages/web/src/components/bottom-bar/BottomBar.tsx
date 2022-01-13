@@ -8,12 +8,12 @@ import React, {
 
 import { useLocation } from 'react-router-dom'
 
+import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import ExploreButton from 'components/bottom-bar/buttons/ExploreButton'
 import FavoritesButton from 'components/bottom-bar/buttons/FavoritesButton'
 import FeedButton from 'components/bottom-bar/buttons/FeedButton'
 import ProfileButton from 'components/bottom-bar/buttons/ProfileButton'
 import TrendingButton from 'components/bottom-bar/buttons/TrendingButton'
-import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
 import {
   FEED_PAGE,
   TRENDING_PAGE,
