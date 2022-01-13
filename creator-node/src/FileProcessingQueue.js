@@ -19,7 +19,7 @@ const PROCESS_STATES = Object.freeze({
   FAILED: 'FAILED'
 })
 
-function constructProcessKey (taskType, uuid) {
+function constructProcessKey(taskType, uuid) {
   return `${taskType}:::${uuid}`
 }
 
@@ -37,24 +37,26 @@ class FileProcessingQueue {
     })
 
     this.queue.process(
-      PROCESS_NAMES.transcode,
+      PROCESS_NAMES.trackContentUpload,
       MAX_CONCURRENCY,
       async (job, done) => {
-        const { transcodeParams } = job.data
+        const { trackContentUploadParams } = job.data
 
         try {
           const response = await this.monitorProgress(
-            PROCESS_NAMES.transcode,
-            transcodeFn,
-            transcodeParams
+            PROCESS_NAMES.trackContentUpload,
+            trackContentUpload,
+            trackContentUploadParams
           )
           done(null, { response })
         } catch (e) {
           this.logError(
-            `Could not process taskType=${PROCESS_NAMES.transcode} uuid=${
-              transcodeParams.logContext.requestID
-            }: ${e.toString()}`,
-            transcodeParams.logContext
+            trackContentUploadParams.logContext,
+            `Could not process taskType=${
+              PROCESS_NAMES.trackContentUpload
+            } uuid=${
+              trackContentUploadParams.logContext.requestID
+            }: ${e.toString()}`
           )
           done(e.toString())
         }
@@ -83,27 +85,31 @@ class FileProcessingQueue {
   }
 
   // TODO: Will make this job a background process
-  async addTrackContentUploadTask (trackContentUploadParams) {
+  async addTrackContentUploadTask(trackContentUploadParams) {
     const { logContext } = trackContentUploadParams
-    this.logStatus(logContext, `Adding ${PROCESS_NAMES.trackContentUpload} task! uuid=${logContext.requestID}}`)
-
-    const job = await this.queue.add(
-      PROCESS_NAMES.trackContentUpload,
-      { trackContentUploadParams }
+    this.logStatus(
+      logContext,
+      `Adding ${PROCESS_NAMES.trackContentUpload} task! uuid=${logContext.requestID}}`
     )
+
+    const job = await this.queue.add(PROCESS_NAMES.trackContentUpload, {
+      trackContentUploadParams
+    })
 
     return job
   }
 
-  async addTranscodeAndSegmentTask (transcodeAndSegmentParams, libs) {
+  async addTranscodeAndSegmentTask(transcodeAndSegmentParams, libs) {
     const { logContext } = transcodeAndSegmentParams
 
-    this.logStatus(logContext, `Adding ${PROCESS_NAMES.transcodeAndSegment} task! uuid=${logContext.requestID}}`)
-
-    const job = await this.queue.add(
-      PROCESS_NAMES.transcodeAndSegment,
-      { transcodeAndSegmentParams }
+    this.logStatus(
+      logContext,
+      `Adding ${PROCESS_NAMES.transcodeAndSegment} task! uuid=${logContext.requestID}}`
     )
+
+    const job = await this.queue.add(PROCESS_NAMES.transcodeAndSegment, {
+      transcodeAndSegmentParams
+    })
 
     return job
   }
