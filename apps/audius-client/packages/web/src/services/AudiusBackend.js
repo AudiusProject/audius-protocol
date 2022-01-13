@@ -462,9 +462,6 @@ class AudiusBackend {
           ? undefined
           : { siteKey: RECAPTCHA_SITE_KEY },
         isServer: false,
-        useTrackContentPolling: remoteConfigInstance.getFeatureEnabled(
-          FeatureFlags.USE_TRACK_CONTENT_POLLING
-        ),
         preferHigherPatchForPrimary: remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY
         ),
