@@ -44,7 +44,6 @@ module.exports = {
           ['assets', './src/assets'],
           ['common', './src/common'],
           ['components', './src/components'],
-          ['containers', './src/containers'],
           ['hooks', './src/hooks'],
           ['models', './src/models'],
           ['schemas', './src/schemas'],
@@ -53,7 +52,8 @@ module.exports = {
           ['stories', './src/stories'],
           ['types', './src/types'],
           ['utils', './src/utils'],
-          ['workers', './src/workers']
+          ['workers', './src/workers'],
+          ['pages', './src/pages']
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
       }

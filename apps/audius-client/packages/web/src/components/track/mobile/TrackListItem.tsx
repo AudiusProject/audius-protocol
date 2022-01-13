@@ -13,9 +13,9 @@ import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 import { useTrackCoverArt } from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
-import IconButton from 'components/general/IconButton'
+import IconButton from 'components/icon-button/IconButton'
 import TablePlayButton from 'components/tracks-table/TablePlayButton'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './TrackListItem.module.css'
 

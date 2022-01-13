@@ -1,4 +1,4 @@
-import { Notification } from 'containers/notification/store/types'
+import { Notification } from 'components/notification/store/types'
 
 import { NativeMobileMessage } from './helpers'
 import { MessageType } from './types'

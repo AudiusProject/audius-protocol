@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
 import Banner from 'components/banner/Banner'
-import Pill from 'components/general/Pill'
+import Pill from 'components/pill/Pill'
 
 import styles from './Web3ErrorBanner.module.css'
 

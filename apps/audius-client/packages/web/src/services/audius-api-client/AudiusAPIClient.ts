@@ -3,7 +3,7 @@ import TimeRange from 'common/models/TimeRange'
 import { StemTrackMetadata } from 'common/models/Track'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { Nullable, removeNullable } from 'common/utils/typeUtils'
-import { SearchKind } from 'containers/search-page/store/types'
+import { SearchKind } from 'pages/search-page/store/types'
 import AudiusBackend, { AuthHeaders } from 'services/AudiusBackend'
 import {
   getEagerDiscprov,

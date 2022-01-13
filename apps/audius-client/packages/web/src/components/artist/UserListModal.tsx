@@ -13,7 +13,7 @@ import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import * as socialActions from 'common/store/social/users/actions'
 import ArtistChip from 'components/artist/ArtistChip'
-import FollowButton from 'components/general/FollowButton'
+import FollowButton from 'components/follow-button/FollowButton'
 
 import styles from './UserListModal.module.css'
 

@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import FavoriteButton from 'components/general/FavoriteButton'
+import FavoriteButton from 'components/favorite-button/FavoriteButton'
 
 import styles from './TableFavoriteButton.module.css'
 

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import placeholderArt from 'common/assets/image/imageBlank2x.png'
 import Kind from 'common/models/Kind'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UserBadges from 'components/user-badges/UserBadges'
 import AudiusBackend from 'services/AudiusBackend'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 

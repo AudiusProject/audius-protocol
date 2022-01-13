@@ -1,6 +1,6 @@
 import { pick } from 'lodash'
 
-import { createRemixOfMetadata } from 'containers/upload-page/store/utils/remixes'
+import { createRemixOfMetadata } from 'pages/upload-page/store/utils/remixes'
 
 const trackMetadataSchema = {
   owner_id: null,

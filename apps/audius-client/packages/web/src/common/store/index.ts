@@ -90,12 +90,12 @@ export const sagas = {
 
   // TODO: pull in the following from audius-client
   // once AudiusBackend and dependencies are migrated
-  // containers/add-to-playlist/store/sagas.ts
-  // containers/share-sound-to-tiktok-modal/store/sagas.ts
+  // components/add-to-playlist/store/sagas.ts
+  // components/share-sound-to-tiktok-modal/store/sagas.ts
   // store/social/tracks/sagas.ts
   // store/social/users/sagas.ts
   // store/social/collections/sagas.ts
-  // containers/audio-rewards-page/store/sagas.ts
+  // pages/audio-rewards-page/store/sagas.ts
   // store/wallet/sagas.ts
 }
 
