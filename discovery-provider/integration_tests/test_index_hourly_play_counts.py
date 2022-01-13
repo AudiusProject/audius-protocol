@@ -314,3 +314,27 @@ def test_index_hourly_play_counts_no_change(app):
             .scalar()
         )
         assert new_checkpoint == 13
+
+
+def test_index_hourly_play_counts_empty_plays(app):
+    """Test that hourly play counts should skip indexing if there are no plays"""
+
+    # setup
+    with app.app_context():
+        db = get_db()
+
+    entities = {
+        "tracks": [
+            {"track_id": 1, "title": "track 0"},
+            {"track_id": 2, "title": "track 1"},
+            {"track_id": 3, "title": "track 2"},
+            {"track_id": 4, "title": "track 3"},
+        ],
+        "plays": [],
+    }
+
+    populate_mock_db(db, entities)
+
+    # run
+    with db.scoped_session() as session:
+        _index_hourly_play_counts(session)

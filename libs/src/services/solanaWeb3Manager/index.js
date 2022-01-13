@@ -12,7 +12,7 @@ const Utils = require('../../utils')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
 const { submitAttestations, evaluateAttestations, createSender } = require('./rewards')
-const { WAUDIO_DECMIALS } = require('../../constants')
+const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
 
@@ -20,6 +20,7 @@ const { PublicKey } = solanaWeb3
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
 // despite a remaining balance.
 const ZERO_SOL_EPSILON = 0.005
+const SOL_PER_LAMPORT = 0.000000001
 
 // Generous default connection confirmation timeout to better cope with RPC congestion
 const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
@@ -116,7 +117,7 @@ class SolanaWeb3Manager {
     this.solanaTokenAddress = solanaTokenAddress
     this.solanaTokenKey = newPublicKeyNullable(solanaTokenAddress)
 
-    this.feePayerAddress = feePayerAddress
+    this.feePayerAddress = feePayerAddress || feePayerKeypair.publicKey
     this.feePayerKey = newPublicKeyNullable(feePayerAddress || feePayerKeypair.publicKey)
 
     this.claimableTokenProgramKey = newPublicKeyNullable(claimableTokenProgramAddress)
@@ -138,7 +139,7 @@ class SolanaWeb3Manager {
     }
 
     const ethAddress = this.web3Manager.getWalletAddress()
-    await createUserBankFrom({
+    return createUserBankFrom({
       ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
       feePayerKey: this.feePayerKey,
@@ -221,11 +222,21 @@ class SolanaWeb3Manager {
    */
   async getWAudioBalance (solanaAddress) {
     try {
-      const tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
-      if (!tokenAccount) return null
+      let tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
+
+      // If the token account doesn't exist, check if solanaAddress is a root account
+      // if so, derive the associated token account & check that balance
+      if (!tokenAccount) {
+        const associatedTokenAccount = await this.findAssociatedTokenAddress(solanaAddress)
+        tokenAccount = await this.getAssociatedTokenAccountInfo(associatedTokenAccount.toString())
+        if (!tokenAccount) {
+          return null
+        }
+      }
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
-      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(WAUDIO_DECMIALS + 1, '0')))
+      const decimals = AUDIO_DECMIALS - WAUDIO_DECMIALS
+      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(decimals + 1, '0')))
     } catch (e) {
       return null
     }
@@ -277,7 +288,7 @@ class SolanaWeb3Manager {
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
-    await transferWAudioBalance({
+    return transferWAudioBalance({
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
       feePayerKey: this.feePayerKey,
@@ -351,12 +362,14 @@ class SolanaWeb3Manager {
    *    specifier: string,
    *    recipientEthAddress: string
    *    oracleEthAddress: string
+   *    logger: any
    * }} {
    *     challengeId,
    *     specifier,
    *     recipientEthAddress,
    *     oracleEthAddress,
-   *     tokenAmount
+   *     tokenAmount,
+   *     logger
    *   }
    * @memberof SolanaWeb3Manager
    */
@@ -365,7 +378,8 @@ class SolanaWeb3Manager {
     specifier,
     recipientEthAddress,
     oracleEthAddress,
-    tokenAmount
+    tokenAmount,
+    logger = console
   }) {
     return evaluateAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -378,7 +392,8 @@ class SolanaWeb3Manager {
       oracleEthAddress,
       feePayer: this.feePayerKey,
       tokenAmount,
-      transactionHandler: this.transactionHandler
+      transactionHandler: this.transactionHandler,
+      logger
     })
   }
 
@@ -410,7 +425,7 @@ class SolanaWeb3Manager {
   }
 
   /**
-   * Gets the balance of a PublicKey
+   * Gets the balance of a PublicKey, in SOL
    *
    * @param {{
    *  publicKey: PublicKey
@@ -419,7 +434,8 @@ class SolanaWeb3Manager {
    * @memberof SolanaWeb3Manager
    */
   async getBalance ({ publicKey }) {
-    return this.connection.getBalance(publicKey)
+    const lamports = await this.connection.getBalance(publicKey)
+    return lamports * SOL_PER_LAMPORT
   }
 
   /**

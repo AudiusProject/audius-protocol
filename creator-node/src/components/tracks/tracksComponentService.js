@@ -24,6 +24,8 @@ const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
  * @param {Object} logContext the context of the request used to create a generic logger
  * @param {Object} requestProps more request specific context, NOT the req object from Express
  * @returns a success or error server response
+ *
+ * upload track segment files and make avail - will later be associated with Audius track
  * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
  */
 const handleTrackContentRoute = async ({ logContext }, requestProps) => {

@@ -17,14 +17,20 @@ const DiskManager = require('../src/diskManager')
 const FileManager = require('../src/fileManager')
 
 const { getApp } = require('./lib/app')
-const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants } = require('./lib/dataSeeds')
+const {
+  createStarterCNodeUser,
+  testEthereumConstants
+} = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 const { saveFileToStorage } = require('./lib/helpers')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
-const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
+const testAudioFileWrongFormatPath = path.resolve(
+  __dirname,
+  'testTrackWrongFormat.jpg'
+)
 
 const TestAudiusTrackFileNumSegments = 32
 const TRACK_CONTENT_POLLING_ROUTE = '/track_content_async'
@@ -38,15 +44,48 @@ const logContext = {
   }
 }
 
+// Create the req context for handleTrackContentRoute
+function getReqObj(fileUUID, fileDir, session) {
+  return {
+    fileName: `${fileUUID}.mp3`,
+    fileDir,
+    fileDestination: fileDir,
+    session: {
+      cnodeUserUUID: session.cnodeUserUUID
+    }
+  }
+}
+
+/**
+ * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir
+ * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
+ */
+function _getTestSegmentFilePathAtIndex(index) {
+  let suffix = '000'
+
+  if (index >= 0 && index < 10) suffix += `0${index}`
+  else if (index >= 10 && index < 32) suffix += `${index}`
+  else throw new Error('Index must be [0, 32)')
+
+  return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
+}
+
 describe('test Polling Tracks with mocked IPFS', function () {
-  let app, server, ipfsMock, ipfsLatestMock, libsMock, handleTrackContentRoute, mockServiceRegistry
+  let app,
+    server,
+    ipfsMock,
+    ipfsLatestMock,
+    libsMock,
+    handleTrackContentRoute,
+    mockServiceRegistry
   let session, userId, userWallet
+
+  const spId = 1
 
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
     ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
-    libsMock.useTrackContentPolling = true
 
     userId = 1
     userWallet = testEthereumConstants.pubKey.toLowerCase()
@@ -54,7 +93,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
     process.env.enableIPFSAddTracks = true
 
     const { getApp } = require('./lib/app')
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
+    const appInfo = await getApp(
+      ipfsMock,
+      libsMock,
+      BlacklistManager,
+      ipfsLatestMock,
+      null,
+      spId
+    )
     await BlacklistManager.init()
 
     app = appInfo.app
@@ -63,17 +109,25 @@ describe('test Polling Tracks with mocked IPFS', function () {
     session = await createStarterCNodeUser(userId, userWallet)
 
     // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
-    ;({ handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
-      '../../fileManager': {
-        saveFileToIPFSFromFS: sinon.stub(FileManager, 'saveFileToIPFSFromFS').returns(new Promise((resolve, reject) => {
-          const multihash = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
-          return resolve({
-            multihash,
-            dstPath: DiskManager.computeFilePath(multihash)
-          })
-        }))
+    ;({ handleTrackContentRoute } = proxyquire(
+      '../src/components/tracks/tracksComponentService.js',
+      {
+        '../../fileManager': {
+          saveFileToIPFSFromFS: sinon
+            .stub(FileManager, 'saveFileToIPFSFromFS')
+            .returns(
+              new Promise((resolve, reject) => {
+                const multihash =
+                  'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+                return resolve({
+                  multihash,
+                  dstPath: DiskManager.computeFilePath(multihash)
+                })
+              })
+            )
+        }
       }
-    }))
+    ))
   })
 
   afterEach(async () => {
@@ -102,7 +156,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // Reset app
     await server.close()
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
+    const appInfo = await getApp(
+      ipfsMock,
+      libsMock,
+      BlacklistManager,
+      ipfsLatestMock,
+      null,
+      userId
+    )
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
@@ -111,7 +172,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     ipfsLatestMock.pin.add.exactly(32)
 
     // Confirm max audio file size is respected by multer
-    let file = fs.readFileSync(testAudioFilePath)
+    const file = fs.readFileSync(testAudioFilePath)
     await request(app)
       .post(TRACK_CONTENT_POLLING_ROUTE)
       .attach('file', file, { filename: 'fname.mp3' })
@@ -121,7 +182,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(400)
 
     // Reset max file limits
-    process.env.maxAudioFileSizeBytes = defaultConfig['maxAudioFileSizeBytes']
+    process.env.maxAudioFileSizeBytes = defaultConfig.maxAudioFileSizeBytes
   })
 
   it('fails to upload when maxMemoryFileSizeBytes exceeded', async function () {
@@ -130,7 +191,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     // Reset app
     await server.close()
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
+    const appInfo = await getApp(
+      ipfsMock,
+      libsMock,
+      BlacklistManager,
+      ipfsLatestMock,
+      null,
+      userId
+    )
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
@@ -139,7 +207,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     ipfsLatestMock.pin.add.exactly(32)
 
     // Confirm max audio file size is respected by multer
-    let file = fs.readFileSync(testAudioFileWrongFormatPath)
+    const file = fs.readFileSync(testAudioFileWrongFormatPath)
     await request(app)
       .post('/image_upload')
       .attach('file', file, { filename: 'fname.jpg' })
@@ -149,7 +217,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(500)
 
     // Reset max file limits
-    process.env.maxMemoryFileSizeBytes = defaultConfig['maxMemoryFileSizeBytes']
+    process.env.maxMemoryFileSizeBytes = defaultConfig.maxMemoryFileSizeBytes
   })
 
   it('uploads /track_content_async', async function () {
@@ -157,18 +225,29 @@ describe('test Polling Tracks with mocked IPFS', function () {
     ipfsLatestMock.pin.add.exactly(33)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
-    let resp = await handleTrackContentRoute(
+    const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
       mockServiceRegistry.blacklistManager
     )
 
-    const { track_segments: trackSegments, source_file: sourceFile, transcodedTrackCID, transcodedTrackUUID } = resp
+    const {
+      track_segments: trackSegments,
+      source_file: sourceFile,
+      transcodedTrackCID,
+      transcodedTrackUUID
+    } = resp
 
-    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(
+      trackSegments[0].multihash,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    )
     assert.deepStrictEqual(trackSegments.length, 32)
     assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
-    assert.deepStrictEqual(transcodedTrackCID, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(
+      transcodedTrackCID,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    )
     assert.deepStrictEqual(typeof transcodedTrackUUID, 'string')
   })
 
@@ -189,89 +268,133 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const wallet = session.walletPublicKey
 
     // Confirm /users/clock_status returns expected info
-    resp = await request(app)
-      .get(`/users/clock_status/${wallet}`)
-      .expect(200)
-    assert.deepStrictEqual(resp.body.data, { clockValue: numExpectedFilesForUser, syncInProgress: false })
+    resp = await request(app).get(`/users/clock_status/${wallet}`).expect(200)
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false
+    })
 
     // Confirm /users/clock_status returns expected info with returnSkipInfo flag
     resp = await request(app)
       .get(`/users/clock_status/${wallet}?returnSkipInfo=true`)
       .expect(200)
-    assert.deepStrictEqual(
-      resp.body.data,
-      { clockValue: numExpectedFilesForUser, syncInProgress: false, CIDSkipInfo: { numCIDs: numExpectedFilesForUser, numSkippedCIDs: 0 } }
-    )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      CIDSkipInfo: { numCIDs: numExpectedFilesForUser, numSkippedCIDs: 0 }
+    })
 
     // Update track DB entries to be skipped
-    const numAffectedRows = (await models.File.update(
-      { skipped: true },
-      {
-        where: {
-          cnodeUserUUID: session.cnodeUserUUID,
-          type: 'track'
+    const numAffectedRows = (
+      await models.File.update(
+        { skipped: true },
+        {
+          where: {
+            cnodeUserUUID: session.cnodeUserUUID,
+            type: 'track'
+          }
         }
-      }
-    ))[0]
+      )
+    )[0]
     assert.strictEqual(numAffectedRows, TestAudiusTrackFileNumSegments)
 
     // Confirm /users/clock_status returns expected info with returnSkipInfo flag when some entries are skipped
     resp = await request(app)
       .get(`/users/clock_status/${wallet}?returnSkipInfo=true`)
       .expect(200)
-    assert.deepStrictEqual(
-      resp.body.data,
-      { clockValue: numExpectedFilesForUser, syncInProgress: false, CIDSkipInfo: { numCIDs: numExpectedFilesForUser, numSkippedCIDs: TestAudiusTrackFileNumSegments } }
-    )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      CIDSkipInfo: {
+        numCIDs: numExpectedFilesForUser,
+        numSkippedCIDs: TestAudiusTrackFileNumSegments
+      }
+    })
 
-    const files = await models.File.findAll({ where: { cnodeUserUUID: session.cnodeUserUUID }})
+    const files = await models.File.findAll({
+      where: { cnodeUserUUID: session.cnodeUserUUID }
+    })
     const filesSorted = _.sortBy(files, ['clock'], ['asc'])
-    const multihashesSorted = filesSorted.map(file => file.multihash)
+    const multihashesSorted = filesSorted.map((file) => file.multihash)
 
     // Confirm /users/clock_status returns expected info with `returnFilesHash` flag
     const multihashStringFull = `{${multihashesSorted.join(',')}}`
-    const expectedFilesHashFull = crypto.createHash('md5').update(multihashStringFull).digest('hex')
+    const expectedFilesHashFull = crypto
+      .createHash('md5')
+      .update(multihashStringFull)
+      .digest('hex')
     resp = await request(app)
       .get(`/users/clock_status/${wallet}?returnFilesHash=true`)
       .expect(200)
-    assert.deepStrictEqual(resp.body.data, { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHashFull })
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull
+    })
 
     /** Confirm /users/clock_status returns expected info with `returnsFilesHash` and clock range specified */
     const clockMin = 3
     const clockMax = 8
 
     /** clockMin */
-    const multihashStringClockMin = `{${multihashesSorted.slice(clockMin - 1).join(',')}}`
-    const expectedFilesHashClockMin = crypto.createHash('md5').update(multihashStringClockMin).digest('hex')
+    const multihashStringClockMin = `{${multihashesSorted
+      .slice(clockMin - 1)
+      .join(',')}}`
+    const expectedFilesHashClockMin = crypto
+      .createHash('md5')
+      .update(multihashStringClockMin)
+      .digest('hex')
     resp = await request(app)
-      .get(`/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}`)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}`
+      )
       .expect(200)
-    assert.deepStrictEqual(
-      resp.body.data,
-      { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHashFull, filesHashForClockRange: expectedFilesHashClockMin }
-    )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: expectedFilesHashClockMin
+    })
 
     /** clockMax */
-    const multihashStringClockMax = `{${multihashesSorted.slice(0, clockMax - 1).join(',')}}`
-    const expectedFilesHashClockMax = crypto.createHash('md5').update(multihashStringClockMax).digest('hex')
+    const multihashStringClockMax = `{${multihashesSorted
+      .slice(0, clockMax - 1)
+      .join(',')}}`
+    const expectedFilesHashClockMax = crypto
+      .createHash('md5')
+      .update(multihashStringClockMax)
+      .digest('hex')
     resp = await request(app)
-      .get(`/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMax}`)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMax}`
+      )
       .expect(200)
-    assert.deepStrictEqual(
-      resp.body.data,
-      { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHashFull, filesHashForClockRange: expectedFilesHashClockMax }
-    )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: expectedFilesHashClockMax
+    })
 
     /** clockMin and clockMax */
-    const multihashStringClockRange = `{${multihashesSorted.slice(clockMin - 1, clockMax - 1).join(',')}}`
-    const expectedFilesHashClockRange = crypto.createHash('md5').update(multihashStringClockRange).digest('hex')
+    const multihashStringClockRange = `{${multihashesSorted
+      .slice(clockMin - 1, clockMax - 1)
+      .join(',')}}`
+    const expectedFilesHashClockRange = crypto
+      .createHash('md5')
+      .update(multihashStringClockRange)
+      .digest('hex')
     resp = await request(app)
-      .get(`/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMax}`)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMax}`
+      )
       .expect(200)
-    assert.deepStrictEqual(
-      resp.body.data,
-      { clockValue: numExpectedFilesForUser, syncInProgress: false, filesHash: expectedFilesHashFull, filesHashForClockRange: expectedFilesHashClockRange }
-    )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: expectedFilesHashClockRange
+    })
   })
 
   it('Confirms /users/batch_clock_status works with user and track state for 2 users', async () => {
@@ -280,7 +403,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
     /** Upload track for user 1 */
     ipfsLatestMock.add.exactly(numExpectedFilesForUser)
     ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
-    const { fileUUID: fileUUID1, fileDir: fileDir1 } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID: fileUUID1, fileDir: fileDir1 } =
+      saveFileToStorage(testAudioFilePath)
     await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID1, fileDir1, session),
@@ -295,7 +419,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
     /** Upload track for user 2 */
     ipfsLatestMock.add.exactly(numExpectedFilesForUser)
     ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
-    const { fileUUID: fileUUID2, fileDir: fileDir2 } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID: fileUUID2, fileDir: fileDir2 } =
+      saveFileToStorage(testAudioFilePath)
     await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID2, fileDir2, session2),
@@ -307,12 +432,12 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .post(`/users/batch_clock_status`)
       .send({ walletPublicKeys: [userWallet, pubKey2] })
       .expect(200)
-    assert.deepStrictEqual(batchClockResp.body.data,
-      { users: [
-        { walletPublicKey: userWallet, clock: numExpectedFilesForUser }
-        , { walletPublicKey: pubKey2, clock: numExpectedFilesForUser }
-      ] }
-    )
+    assert.deepStrictEqual(batchClockResp.body.data, {
+      users: [
+        { walletPublicKey: userWallet, clock: numExpectedFilesForUser },
+        { walletPublicKey: pubKey2, clock: numExpectedFilesForUser }
+      ]
+    })
   })
 
   // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
@@ -329,7 +454,10 @@ describe('test Polling Tracks with mocked IPFS', function () {
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp
-    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(
+      trackSegments[0].multihash,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    )
     assert.deepStrictEqual(trackSegments.length, 32)
     assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
@@ -347,7 +475,10 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYhusD7qFv7gxNqi9nyaoiqaRXYQvoCvVgXY75nSoydmy')
+    assert.deepStrictEqual(
+      trackMetadataResp.body.data.metadataMultihash,
+      'QmYhusD7qFv7gxNqi9nyaoiqaRXYQvoCvVgXY75nSoydmy'
+    )
   })
 
   // depends on "uploads /track_content_async"
@@ -365,7 +496,10 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp
 
-    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(
+      trackSegments[0].multihash,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    )
     assert.deepStrictEqual(trackSegments.length, 32)
     assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
@@ -398,14 +532,17 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp
 
-    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(
+      trackSegments[0].multihash,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    )
     assert.deepStrictEqual(trackSegments.length, 32)
     assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
       test: 'field1',
-      track_segments: [{ 'multihash': 'incorrectCIDLink', 'duration': 1000 }],
+      track_segments: [{ multihash: 'incorrectCIDLink', duration: 1000 }],
       owner_id: 1
     }
 
@@ -435,7 +572,12 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // creates Audius track
     const metadata = {
       test: 'field1',
-      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }]
+      track_segments: [
+        {
+          multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+          duration: 1000
+        }
+      ]
     }
 
     await request(app)
@@ -473,13 +615,20 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs')
+    assert.deepStrictEqual(
+      trackMetadataResp.body.data.metadataMultihash,
+      'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
+    )
 
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID })
+      .send({
+        blockchainTrackId: 1,
+        blockNumber: 10,
+        metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID
+      })
       .expect(200)
   })
 
@@ -497,14 +646,22 @@ describe('test Polling Tracks with mocked IPFS', function () {
     )
 
     const { track_segments: trackSegments } = resp
-    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(
+      trackSegments[0].multihash,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    )
     assert.deepStrictEqual(trackSegments.length, 32)
 
     // creates a downloadable Audius track with no track_id and no source_file
     const metadata = {
       test: 'field1',
       owner_id: 1,
-      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
+      track_segments: [
+        {
+          multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+          duration: 1000
+        }
+      ],
       download: {
         is_downloadable: true,
         requires_follow: false
@@ -534,7 +691,10 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp
 
-    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(
+      trackSegments[0].multihash,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    )
     assert.deepStrictEqual(trackSegments.length, 32)
     assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
@@ -544,9 +704,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
       track_segments: trackSegments,
       owner_id: 1,
       download: {
-        'is_downloadable': true,
-        'requires_follow': false,
-        'cid': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+        is_downloadable: true,
+        requires_follow: false,
+        cid: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       }
     }
 
@@ -557,19 +717,34 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmPjrvx9MBcvf495t43ZhiMpKWwu1JnqkcNUN3Z9EBWm49')
+    assert.deepStrictEqual(
+      trackMetadataResp.body.data.metadataMultihash,
+      'QmPjrvx9MBcvf495t43ZhiMpKWwu1JnqkcNUN3Z9EBWm49'
+    )
 
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID })
+      .send({
+        blockchainTrackId: 1,
+        blockNumber: 10,
+        metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID
+      })
       .expect(200)
   })
 })
 
 describe('test Polling Tracks with real IPFS', function () {
-  let app2, server, session, libsMock, ipfs, ipfsLatest, handleTrackContentRoute, mockServiceRegistry, userId
+  let app2,
+    server,
+    session,
+    libsMock,
+    ipfs,
+    ipfsLatest,
+    handleTrackContentRoute,
+    mockServiceRegistry,
+    userId
 
   /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
@@ -583,7 +758,14 @@ describe('test Polling Tracks with real IPFS', function () {
     process.env.enableIPFSAddTracks = true
 
     const { getApp } = require('./lib/app')
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)
+    const appInfo = await getApp(
+      ipfs,
+      libsMock,
+      BlacklistManager,
+      ipfsLatest,
+      null,
+      userId
+    )
     await BlacklistManager.init()
 
     app2 = appInfo.app
@@ -591,7 +773,8 @@ describe('test Polling Tracks with real IPFS', function () {
     mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId)
 
-    handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
+    handleTrackContentRoute =
+      require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
   })
 
   afterEach(async () => {
@@ -601,9 +784,16 @@ describe('test Polling Tracks with real IPFS', function () {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content_async TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('sends server error response if segmenting fails', async function () {
-    const { handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
-      '../../TranscodingQueue': { segment: sinon.stub(TranscodingQueue, 'segment').rejects(new Error('failed to segment')) }
-    })
+    const { handleTrackContentRoute } = proxyquire(
+      '../src/components/tracks/tracksComponentService.js',
+      {
+        '../../TranscodingQueue': {
+          segment: sinon
+            .stub(TranscodingQueue, 'segment')
+            .rejects(new Error('failed to segment'))
+        }
+      }
+    )
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     try {
@@ -619,9 +809,16 @@ describe('test Polling Tracks with real IPFS', function () {
   })
 
   it('sends server error response if transcoding fails', async function () {
-    const { handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
-      '../../TranscodingQueue': { transcode320: sinon.stub(TranscodingQueue, 'transcode320').rejects(new Error('failed to transcode')) }
-    })
+    const { handleTrackContentRoute } = proxyquire(
+      '../src/components/tracks/tracksComponentService.js',
+      {
+        '../../TranscodingQueue': {
+          transcode320: sinon
+            .stub(TranscodingQueue, 'transcode320')
+            .rejects(new Error('failed to transcode'))
+        }
+      }
+    )
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     try {
@@ -647,11 +844,17 @@ describe('test Polling Tracks with real IPFS', function () {
     const { track_segments: trackSegments, transcodedTrackCID } = resp
 
     // check that the generated transcoded track is the same as the transcoded track in /tests
-    const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
+    const transcodedTrackAssetPath = path.join(
+      __dirname,
+      'testTranscoded320Track.mp3'
+    )
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
     const transcodedTrackPath = DiskManager.computeFilePath(transcodedTrackCID)
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
-    assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
+    assert.deepStrictEqual(
+      transcodedTrackAssetBuf.compare(transcodedTrackTestBuf),
+      0
+    )
 
     // Ensure 32 segments are returned, each segment has a corresponding file on disk,
     //    and each segment disk file is exactly as expected
@@ -668,7 +871,10 @@ describe('test Polling Tracks with real IPFS', function () {
       const expectedSegmentFilePath = _getTestSegmentFilePathAtIndex(index)
       const expectedSegmentFileBuf = fs.readFileSync(expectedSegmentFilePath)
       const returnedSegmentFileBuf = fs.readFileSync(cidPath)
-      assert.deepStrictEqual(expectedSegmentFileBuf.compare(returnedSegmentFileBuf), 0)
+      assert.deepStrictEqual(
+        expectedSegmentFileBuf.compare(returnedSegmentFileBuf),
+        0
+      )
     })
   })
 
@@ -681,14 +887,22 @@ describe('test Polling Tracks with real IPFS', function () {
       .send({})
       .expect(400)
 
-    assert.deepStrictEqual(resp.body.error, 'Metadata object must include owner_id and non-empty track_segments array')
+    assert.deepStrictEqual(
+      resp.body.error,
+      'Metadata object must include owner_id and non-empty track_segments array'
+    )
   })
 
   it('should not throw an error if segment is blacklisted', async function () {
     sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
-      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
+      track_segments: [
+        {
+          multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+          duration: 1000
+        }
+      ],
       owner_id: 1
     }
 
@@ -704,7 +918,12 @@ describe('test Polling Tracks with real IPFS', function () {
     sinon.stub(ipfsClient, 'add').rejects(new Error('ipfs add failed!'))
     const metadata = {
       test: 'field1',
-      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
+      track_segments: [
+        {
+          multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+          duration: 1000
+        }
+      ],
       owner_id: 1
     }
 
@@ -719,7 +938,12 @@ describe('test Polling Tracks with real IPFS', function () {
   it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
     const metadata = sortKeys({
       test: 'field1',
-      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
+      track_segments: [
+        {
+          multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+          duration: 1000
+        }
+      ],
       owner_id: 1
     })
 
@@ -737,7 +961,9 @@ describe('test Polling Tracks with real IPFS', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    const metadataPath = DiskManager.computeFilePath(
+      resp.body.data.metadataMultihash
+    )
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -746,11 +972,13 @@ describe('test Polling Tracks with real IPFS', function () {
     assert.deepStrictEqual(metadataFileData, metadata)
 
     // check that the correct metadata file properties were written to db
-    const file = await models.File.findOne({ where: {
-      multihash: resp.body.data.metadataMultihash,
-      storagePath: metadataPath,
-      type: 'metadata'
-    } })
+    const file = await models.File.findOne({
+      where: {
+        multihash: resp.body.data.metadataMultihash,
+        storagePath: metadataPath,
+        type: 'metadata'
+      }
+    })
     assert.ok(file)
 
     // check that the metadata file is in IPFS
@@ -772,29 +1000,3 @@ describe('test Polling Tracks with real IPFS', function () {
 
   it.skip('TODO - parallel track upload', async function () {})
 })
-
-// Create the req context for handleTrackContentRoute
-function getReqObj (fileUUID, fileDir, session) {
-  return {
-    fileName: `${fileUUID}.mp3`,
-    fileDir,
-    fileDestination: fileDir,
-    session: {
-      cnodeUserUUID: session.cnodeUserUUID
-    }
-  }
-}
-
-/**
- * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir
- * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
-*/
-function _getTestSegmentFilePathAtIndex (index) {
-  let suffix = '000'
-
-  if (index >= 0 && index < 10) suffix += `0${index}`
-  else if (index >= 10 && index < 32) suffix += `${index}`
-  else throw new Error('Index must be [0, 32)')
-
-  return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
-}

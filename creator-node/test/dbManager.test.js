@@ -3,10 +3,15 @@ const proxyquire = require('proxyquire')
 const _ = require('lodash')
 const getUuid = require('uuid/v4')
 const crypto = require('crypto')
+const request = require('supertest')
+const path = require('path')
+const sinon = require('sinon')
 
 const models = require('../src/models')
 const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
+const FileManager = require('../src/fileManager')
+const DiskManager = require('../src/diskManager')
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -17,6 +22,9 @@ const {
 const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
+const { saveFileToStorage } = require('./lib/helpers')
+
+const TestAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 describe('Test createNewDataRecord()', async function () {
   const req = {
@@ -589,7 +597,7 @@ describe('Test ClockRecord model', async function () {
   })
 })
 
-describe('Test deleteSessionTokensFromDB when provided an Array of SessionTokens that all exist in the SessionToken table', async function () {
+describe('Test deleteSessionTokensFromDB() when provided an Array of SessionTokens that all exist in the SessionToken table', async function () {
   const initialClockVal = 0
   let cnodeUserUUID, server, token1, token2
 
@@ -628,7 +636,221 @@ describe('Test deleteSessionTokensFromDB when provided an Array of SessionTokens
   })
 })
 
-describe.skip('TODO - Test deleteAllCNodeUserData', async () => {})
+describe('Test deleteAllCNodeUserDataFromDB()', async () => {
+  const initialClockVal = 0
+  const userId = 1
+
+  // Create the req context for handleTrackContentRoute
+  function getReqObj(fileUUID, fileDir, session) {
+    return {
+      fileName: `${fileUUID}.mp3`,
+      fileDir,
+      fileDestination: fileDir,
+      session: {
+        cnodeUserUUID: session.cnodeUserUUID
+      }
+    }
+  }
+
+  let session,
+    app,
+    cnodeUser,
+    cnodeUserUUID,
+    server,
+    ipfsMock,
+    ipfsLatestMock,
+    libsMock,
+    mockServiceRegistry
+
+  /** Init server to run DB migrations */
+  before(async () => {
+    const spId = 1
+    ipfsMock = getIPFSMock()
+    ipfsLatestMock = getIPFSMock(true)
+    libsMock = getLibsMock()
+    const appInfo = await getApp(
+      ipfsMock,
+      libsMock,
+      BlacklistManager,
+      ipfsLatestMock,
+      null,
+      spId
+    )
+    server = appInfo.server
+    app = appInfo.app
+    mockServiceRegistry = appInfo.mockServiceRegistry
+  })
+
+  /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
+  beforeEach(async () => {
+    // Wipe all CNodeUsers + dependent data
+    await destroyUsers()
+    session = await createStarterCNodeUser(userId)
+    cnodeUserUUID = session.cnodeUserUUID
+
+    // Confirm initial clock val in DB
+    cnodeUser = await getCNodeUser(cnodeUserUUID)
+    assert.strictEqual(cnodeUser.clock, initialClockVal)
+  })
+
+  /** Wipe all CNodeUsers + dependent data */
+  after(async () => {
+    await destroyUsers()
+
+    await server.close()
+  })
+
+  it('Successfully deletes all state for CNodeUser with data in all tables', async () => {
+    const uploadAudiusUserState = async () => {
+      const audiusUserMetadata = { test: 'field1' }
+      const audiusUserMetadataResp = await request(app)
+        .post('/audius_users/metadata')
+        .set('X-Session-ID', session.sessionToken)
+        .set('User-Id', session.userId)
+        .send({ metadata: audiusUserMetadata })
+        .expect(200)
+      await request(app)
+        .post('/audius_users')
+        .set('X-Session-ID', session.sessionToken)
+        .set('User-Id', session.userId)
+        .send({
+          blockchainUserId: 1,
+          blockNumber: 10,
+          metadataFileUUID: audiusUserMetadataResp.body.data.metadataFileUUID
+        })
+        .expect(200)
+    }
+
+    const uploadTrackState = async () => {
+      // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
+      const MockSavefileMultihash =
+        'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+      const { handleTrackContentRoute } = proxyquire(
+        '../src/components/tracks/tracksComponentService.js',
+        {
+          '../../fileManager': {
+            saveFileToIPFSFromFS: sinon
+              .stub(FileManager, 'saveFileToIPFSFromFS')
+              .returns(
+                new Promise((resolve, reject) => {
+                  const multihash = MockSavefileMultihash
+                  return resolve({
+                    multihash,
+                    dstPath: DiskManager.computeFilePath(multihash)
+                  })
+                })
+              )
+          }
+        }
+      )
+
+      // Upload track content
+      const { fileUUID, fileDir } = saveFileToStorage(TestAudioFilePath)
+      const trackContentResp = await handleTrackContentRoute(
+        {},
+        getReqObj(fileUUID, fileDir, session),
+        mockServiceRegistry.blacklistManager
+      )
+
+      // Upload track metadata
+      const { track_segments: trackSegments, source_file: sourceFile } =
+        trackContentResp
+      const trackMetadata = {
+        test: 'field1',
+        track_segments: trackSegments,
+        owner_id: userId
+      }
+      const expectedTrackMetadataMultihash =
+        'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
+      const trackMetadataResp = await request(app)
+        .post('/tracks/metadata')
+        .set('X-Session-ID', session.sessionToken)
+        .set('User-Id', session.userId)
+        .send({ metadata: trackMetadata, sourceFile })
+        .expect(200)
+      assert.deepStrictEqual(
+        trackMetadataResp.body.data.metadataMultihash,
+        expectedTrackMetadataMultihash
+      )
+
+      // Complete track upload
+      await request(app)
+        .post('/tracks')
+        .set('X-Session-ID', session.sessionToken)
+        .set('User-Id', session.userId)
+        .send({
+          blockchainTrackId: 1,
+          blockNumber: 10,
+          metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID
+        })
+        .expect(200)
+    }
+
+    const getAllDBRecordsForUser = async (cnodeUserUUID) => {
+      const cnodeUserEntries = await models.CNodeUser.findAll({
+        where: { cnodeUserUUID }
+      })
+      const audiusUserEntries = await models.AudiusUser.findAll({
+        where: { cnodeUserUUID }
+      })
+      const trackEntries = await models.Track.findAll({
+        where: { cnodeUserUUID }
+      })
+      const fileEntries = await models.File.findAll({
+        where: { cnodeUserUUID }
+      })
+      const clockRecordEntries = await models.ClockRecord.findAll({
+        where: { cnodeUserUUID }
+      })
+
+      return {
+        cnodeUserEntries,
+        audiusUserEntries,
+        trackEntries,
+        fileEntries,
+        clockRecordEntries
+      }
+    }
+
+    await uploadAudiusUserState()
+    await uploadTrackState()
+
+    /** assert all tables non empty */
+    let {
+      cnodeUserEntries,
+      audiusUserEntries,
+      trackEntries,
+      fileEntries,
+      clockRecordEntries
+    } = await getAllDBRecordsForUser(cnodeUserUUID)
+    assert.ok(cnodeUserEntries.length > 0)
+    assert.ok(audiusUserEntries.length > 0)
+    assert.ok(trackEntries.length > 0)
+    assert.ok(fileEntries.length > 0)
+    assert.ok(clockRecordEntries.length > 0)
+
+    // delete all DB records
+    await DBManager.deleteAllCNodeUserDataFromDB({
+      lookupCnodeUserUUID: cnodeUserUUID
+    })
+
+    /** assert all tables empty */
+    ;({
+      cnodeUserEntries,
+      audiusUserEntries,
+      trackEntries,
+      fileEntries,
+      clockRecordEntries
+    } = await getAllDBRecordsForUser(cnodeUserUUID))
+    assert.strictEqual(cnodeUserEntries.length, 0)
+    assert.strictEqual(audiusUserEntries.length, 0)
+    assert.strictEqual(trackEntries.length, 0)
+    assert.strictEqual(fileEntries.length, 0)
+    assert.strictEqual(clockRecordEntries.length, 0)
+  })
+
+  it.skip('external & internal transaction', async () => {})
+})
 
 describe('Test fetchFilesHashFromDB()', async () => {
   const initialClockVal = 0

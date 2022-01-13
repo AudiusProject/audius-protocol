@@ -170,8 +170,8 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         ...notif,
         challengeId: notif.metadata.challenge_id,
         actions: [{
-          actionEntityType: actionEntityTypes.Challenge,
-          actionEntityId: notif.metadata.challenge_id,
+          actionEntityType: notif.metadata.challenge_id,
+          actionEntityId: notif.initiator,
           slot: notif.slot
         }],
         type: notificationTypes.ChallengeReward

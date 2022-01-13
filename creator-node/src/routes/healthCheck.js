@@ -154,6 +154,17 @@ module.exports = function (app) {
       }
     })
   )
+
+  app.get(
+    '/ip_check',
+    handleResponse(async (req, res) => {
+      const { ip } = req
+
+      return successResponse({
+        ip: ip || ''
+      })
+    })
+  )
 }
 
 function _formatBytes(bytes, decimals = 2) {

@@ -570,6 +570,18 @@ const config = convict({
     env: 'cognitoAPIKey',
     default: ''
   },
+  cognitoBaseUrl: {
+    doc: 'Base URL for Cognito API',
+    format: String,
+    env: 'cognitoBaseUrl',
+    default: ''
+  },
+  cognitoTemplateId: {
+    doc: 'Template for using Cognito Flow API',
+    format: String,
+    env: 'cognitoTemplateId',
+    default: ''
+  },
   solanaEndpoint: {
     doc: 'The Solana RPC endpoint to make requests against',
     format: String,
@@ -706,6 +718,42 @@ const config = convict({
     doc: 'The slack url to post messages for the rewards reporter',
     format: String,
     env: 'rewardsReporterSlackUrl',
+    default: ''
+  },
+  reporterSlackUrl: {
+    doc: 'The slack url to post messages for the general messages',
+    format: String,
+    env: 'reporterSlackUrl',
+    default: ''
+  },
+  wormholeRPCHosts: {
+    doc: 'Wormhole RPC Host',
+    format: String,
+    env: 'wormholeRPCHosts',
+    default: ''
+  },
+  solBridgeAddress: {
+    doc: 'Sol bridge address for wormhole',
+    format: String,
+    env: 'solBridgeAddress',
+    default: ''
+  },
+  solTokenBridgeAddress: {
+    doc: 'Sol token bridge address for wormhole',
+    format: String,
+    env: 'solTokenBridgeAddress',
+    default: ''
+  },
+  ethBridgeAddress: {
+    doc: 'Eth bridge address for wormhole',
+    format: String,
+    env: 'ethBridgeAddress',
+    default: ''
+  },
+  ethTokenBridgeAddress: {
+    doc: 'Eth token bridge address for wormhole',
+    format: String,
+    env: 'ethTokenBridgeAddress',
     default: ''
   }
 })
