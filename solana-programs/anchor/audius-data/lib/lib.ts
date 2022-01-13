@@ -146,6 +146,61 @@ export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
   return initUserTx;
 };
 
+/// Create a user account using given eth private key
+export type createUserArgs = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  privateKey: string;
+  message: string;
+  userSolPubkey: anchor.web3.PublicKey;
+  userStgAccount: anchor.web3.PublicKey;
+};
+
+export const createUser = async (args: createUserArgs) => {
+  const {
+    message,
+    privateKey,
+    provider,
+    program,
+    userSolPubkey,
+    userStgAccount,
+  } = args;
+  const signedBytes = signBytes(Buffer.from(message), privateKey);
+  const { signature, recoveryId } = signedBytes;
+  console.log(privateKey);
+  console.log(userStgAccount);
+  // Get the public key in a compressed format
+  const ethPubkey = secp256k1
+    .publicKeyCreate(Buffer.from(privateKey, "hex"), false)
+    .slice(1);
+  const secpTransactionInstruction =
+    Secp256k1Program.createInstructionWithPublicKey({
+      publicKey: Buffer.from(ethPubkey),
+      message: Buffer.from(message),
+      signature,
+      recoveryId,
+    });
+  let createUserTx = await provider.send(
+    (() => {
+      const tx = new Transaction();
+      tx.add(secpTransactionInstruction),
+        tx.add(
+          program.instruction.createUser(userSolPubkey, {
+            accounts: {
+              user: userStgAccount,
+              sysvarProgram: SystemSysVarProgramKey,
+            },
+          })
+        );
+      return tx;
+    })(),
+    [
+      // Signers
+    ]
+  );
+  return createUserTx;
+}
+
 /// Create a track
 export type createTrackArgs = {
   provider: Provider;
@@ -179,3 +234,4 @@ export const createTrack = async (args: createTrackArgs) => {
   });
   return tx;
 };
+ 

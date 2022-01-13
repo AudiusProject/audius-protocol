@@ -17,6 +17,7 @@ import {
   initAdmin,
   initUser,
   initUserSolPubkey,
+  createUser,
   createTrack,
 } from "../lib/lib";
 import { assert } from "chai";
@@ -113,6 +114,31 @@ describe("audius-data", () => {
     let fee = txInfo["meta"]["fee"];
     console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
   };
+
+  const testCreateUser = async ({
+    message,
+    pkString,
+    newUserKey,
+    newUserAcctPDA,
+  }) => {
+    let initUserTx = await createUser({
+      provider,
+      program,
+      privateKey: pkString,
+      message,
+      userSolPubkey: newUserKey.publicKey,
+      userStgAccount: newUserAcctPDA,
+    });
+
+    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
+    if (!newUserKey.publicKey.equals(userDataFromChain.authority)) {
+      throw new Error("Unexpected public key found");
+    }
+    let txInfo = await getTransaction(provider, initUserTx);
+    let fee = txInfo["meta"]["fee"];
+    console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
+  };
+
 
   const testCreateTrack = async ({
     trackMetadata,
@@ -288,6 +314,37 @@ describe("audius-data", () => {
       metadata,
       newUserAcctPDA
     );
+
+    // New sol key that will be used to permission user updates
+    let newUserKey = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKey.publicKey.toString();
+
+    await testInitUserSolPubkey({
+      message,
+      pkString,
+      privKey,
+      newUserKey,
+      newUserAcctPDA,
+    });
+  });
+
+  it("Creating a user!", async () => {
+    let {
+      privKey,
+      pkString,
+      handleBytesArray,
+    } = initTestConstants();
+
+    let { derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+    let newUserAcctPDA = derivedAddress;
 
     // New sol key that will be used to permission user updates
     let newUserKey = anchor.web3.Keypair.generate();

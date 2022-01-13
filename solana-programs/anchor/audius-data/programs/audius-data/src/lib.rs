@@ -237,7 +237,9 @@ pub struct InitializeUserSolIdentity<'info> {
 }
 
 
-/// Instruction container to create a user account
+/// Instruction container to create a user account.
+/// `user` is the target user PDA.
+/// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
 pub struct CreateUser<'info> {
     #[account(mut)]

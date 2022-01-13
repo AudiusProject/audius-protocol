@@ -168,6 +168,7 @@ const functionTypes = Object.freeze({
   initAdmin: "initAdmin",
   initUser: "initUser",
   initUserSolPubkey: "initUserSolPubkey",
+  createUser: "createUser",
   createTrack: "createTrack",
   getTrackId: "getTrackId",
 });
@@ -249,6 +250,9 @@ switch (options.function) {
         `initUserTx = ${tx}, userStgAccount = ${options.userStgPubkey}`
       );
     })();
+    break;
+  case functionTypes.createUser:
+    // TODO: handle this
     break;
   case functionTypes.createTrack:
     const numTracks = options.numTracks ? options.numTracks : 1;
