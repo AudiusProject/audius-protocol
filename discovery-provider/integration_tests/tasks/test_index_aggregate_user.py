@@ -123,8 +123,6 @@ def test_index_aggregate_user_populate(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        pprint(results)
-
         basic_tests(results)
 
 
@@ -204,8 +202,6 @@ def test_index_aggregate_user_empty_users(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        pprint(results)
-
         assert len(results) == 0
 
 
@@ -233,8 +229,6 @@ def test_index_aggregate_user_empty_activity(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-
-        pprint(results)
 
         assert len(results) == 1
 
@@ -267,8 +261,6 @@ def test_index_aggregate_user_empty_completely(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-
-        pprint(results)
 
         assert len(results) == 0
 
@@ -310,8 +302,6 @@ def test_index_aggregate_user_update(app):
             ],
         }
     )
-
-    pprint(entities)
 
     populate_mock_db(db, entities)
 
@@ -383,7 +373,6 @@ def test_index_aggregate_user_update_with_extra_user(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        pprint(results)
         assert len(results) == 0
 
     populate_mock_db(db, entities)
@@ -392,7 +381,6 @@ def test_index_aggregate_user_update_with_extra_user(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        pprint(results)
         # assert len(results) == 3
 
         # update_aggregate_table(db, redis)
