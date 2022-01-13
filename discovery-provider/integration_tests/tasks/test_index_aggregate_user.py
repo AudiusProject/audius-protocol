@@ -5,7 +5,7 @@ from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.models import AggregateUser
-from src.tasks.index_aggregate_user import update_aggregate_table
+from src.tasks.index_aggregate_user import AGGREGATE_USER, update_aggregate_table
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
@@ -300,7 +300,7 @@ def test_index_aggregate_user_update(app):
                 },
             ],
             "indexing_checkpoints": [
-                {"tablename": "aggregate_user", "last_checkpoint": 9}
+                {"tablename": AGGREGATE_USER, "last_checkpoint": 9}
             ],
         }
     )
@@ -368,7 +368,7 @@ def test_index_aggregate_user_update_with_extra_user(app):
                 },
             ],
             "indexing_checkpoints": [
-                {"tablename": "aggregate_user", "last_checkpoint": 9}
+                {"tablename": AGGREGATE_USER, "last_checkpoint": 9}
             ],
         }
     )
@@ -438,7 +438,7 @@ def test_index_aggregate_user_update_with_only_aggregate_users(app):
                 "track_save_count": 9,
             },
         ],
-        "indexing_checkpoints": [{"tablename": "aggregate_user", "last_checkpoint": 9}],
+        "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 9}],
     }
 
     populate_mock_db(db, entities)

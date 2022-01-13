@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 # Names of the aggregate tables to update
 AGGREGATE_USER = "aggregate_user"
-AGGREGATE_USER_BLOCK = "aggregate_user_block"
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
 # UPDATE_AGGREGATE_USER_QUERY
@@ -340,7 +339,6 @@ def update_aggregate_table(
     db,
     redis,
     table_name=AGGREGATE_USER,
-    most_recent_indexed_aggregate_block_key=AGGREGATE_USER_BLOCK,
     query=UPDATE_AGGREGATE_USER_QUERY,
     timeout=DEFAULT_UPDATE_TIMEOUT,
 ):
@@ -353,7 +351,7 @@ def update_aggregate_table(
             start_time = time.time()
             with db.scoped_session() as session:
                 most_recent_indexed_aggregate_block = last_checkpoint(
-                    session, most_recent_indexed_aggregate_block_key
+                    session, table_name
                 )
             logger.info(
                 f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
@@ -361,7 +359,7 @@ def update_aggregate_table(
 
             with db.scoped_session() as session:
                 latest_indexed_block_num = get_latest_blocknumber_postgres(
-                    session, most_recent_indexed_aggregate_block_key
+                    session, table_name
                 )
 
                 if not most_recent_indexed_aggregate_block:
