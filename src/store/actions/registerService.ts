@@ -21,8 +21,13 @@ function registerAudiusService(
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
     setStatus(Status.Loading)
+
+    const state = getState()
+    const wallet = getAccountWallet(state)
+
     try {
       let spID
+      // Register the service on chain (eth)
       if (!!delegateOwnerWallet) {
         const res = await aud.ServiceProviderClient.registerWithDelegate(
           serviceType,
@@ -39,9 +44,34 @@ function registerAudiusService(
         )
         spID = res.spID
       }
+
+      // Register the service on chain (solana)
+      try {
+        const senderEthAddress = delegateOwnerWallet || wallet
+        const createSenderPublicReceipt = await aud.libs.Rewards.createSenderPublic(
+          {
+            senderEthAddress,
+            operatorEthAddress: wallet,
+            senderEndpoint: endpoint
+          }
+        )
+        if (createSenderPublicReceipt.error) {
+          console.error(
+            `Received error with code ${createSenderPublicReceipt.errorCode}`,
+            createSenderPublicReceipt.error
+          )
+          throw new Error(createSenderPublicReceipt.errorCode)
+        }
+      } catch (e) {
+        // Unfortunately, we can't error here because the eth and solana registration
+        // is not atomic. Eth registration has already gone through and we should show
+        // the service as registered from the user persp.
+        // Good news is someone else could register this node as a sender since this
+        // mechanism is permissionless
+        console.error('Failed to create new solana sender', e)
+      }
+
       // Repull pending transactions
-      const state = getState()
-      const wallet = getAccountWallet(state)
       if (wallet) await dispatch(fetchUser(wallet))
       if (serviceType === ServiceType.DiscoveryProvider) {
         await dispatch(getDiscoveryProvider(spID))
