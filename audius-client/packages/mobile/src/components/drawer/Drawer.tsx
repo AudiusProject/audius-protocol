@@ -10,6 +10,9 @@ import {
   Animated,
   Dimensions,
   GestureResponderEvent,
+  Image,
+  ImageSourcePropType,
+  ImageStyle,
   LayoutChangeEvent,
   PanResponder,
   PanResponderGestureState,
@@ -65,7 +68,7 @@ const createStyles = (zIndex = 5) => (themeColors: ThemeColors) =>
       height: '100%'
     },
 
-    titleContainer: {
+    titleBarContainer: {
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
@@ -79,10 +82,23 @@ const createStyles = (zIndex = 5) => (themeColors: ThemeColors) =>
       left: 24
     },
 
+    titleContainer: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: 20
+    },
+
+    titleIcon: {
+      marginRight: 12,
+      height: 24,
+      width: 24
+    },
+
     titleLabel: {
       fontFamily: 'AvenirNextLTPro-Bold',
       fontSize: 18,
-      paddingTop: 20,
       color: themeColors.neutral
     },
 
@@ -135,6 +151,10 @@ export type DrawerProps = {
    * Header title if this drawer has a header
    */
   title?: string
+  /**
+   * Icon to display in the header next to the title (must also include title)
+   */
+  titleIcon?: ImageSourcePropType
   /**
    * Whether or not this is a fullscreen drawer with a dismiss button
    */
@@ -233,11 +253,13 @@ const attachToDy = (animation: Animated.Value, newValue: number) => (
 const DrawerHeader = ({
   onClose,
   title,
+  titleIcon,
   isFullscreen,
   zIndex
 }: {
   onClose: () => void
   title?: string
+  titleIcon?: ImageSourcePropType
   isFullscreen?: boolean
   zIndex?: number
 }) => {
@@ -245,7 +267,7 @@ const DrawerHeader = ({
   const closeColor = useColor('neutralLight4')
 
   return title || isFullscreen ? (
-    <View style={styles.titleContainer}>
+    <View style={styles.titleBarContainer}>
       {isFullscreen && (
         <TouchableOpacity
           activeOpacity={0.7}
@@ -255,19 +277,32 @@ const DrawerHeader = ({
           <IconRemove width={30} height={30} fill={closeColor} />
         </TouchableOpacity>
       )}
-      {title && <Text style={styles.titleLabel}>{title}</Text>}
+      {title && (
+        <View style={styles.titleContainer}>
+          {titleIcon && (
+            <Image style={styles.titleIcon as ImageStyle} source={titleIcon} />
+          )}
+          <Text style={styles.titleLabel}>{title}</Text>
+        </View>
+      )}
     </View>
   ) : (
     <View />
   )
 }
 
-const Drawer = ({
+// Only allow titleIcon with title
+type DrawerComponent = {
+  (props: DrawerProps & { title: string }): React.ReactElement
+  (props: Omit<DrawerProps, 'titleIcon'>): React.ReactElement
+}
+const Drawer: DrawerComponent = ({
   isOpen,
   children,
   onClose,
   onOpen,
   title,
+  titleIcon,
   isFullscreen,
   shouldBackgroundDim = true,
   isGestureSupported = true,
@@ -553,6 +588,7 @@ const Drawer = ({
           <DrawerHeader
             onClose={onClose}
             title={title}
+            titleIcon={titleIcon}
             isFullscreen={isFullscreen}
           />
           {children}
