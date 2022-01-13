@@ -135,15 +135,25 @@ export enableIPFSAddImages=true
 # 10s
 export IPFSAddTimeoutMs=10000
 
-# tests
-# run_unit_tests
-run_integration_tests
+
 
 rm -r $storagePath
 
 # remove test generated segments folder and .m3u8 file
 rm -rf "./test/segments"
 rm -rf "./test/testTrack.m3u8"
+
+
+
+# tests
+# run_unit_tests
+run_integration_tests
+
+# rm -r $storagePath
+
+# # remove test generated segments folder and .m3u8 file
+# rm -rf "./test/segments"
+# rm -rf "./test/testTrack.m3u8"
 
 if [ "$2" == "teardown" ]; then
   tear_down

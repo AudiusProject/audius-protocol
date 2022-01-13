@@ -102,7 +102,7 @@ describe('test nodesync', async function () {
     await server.close()
   })
 
-  describe.only('test /export route', async function () {
+  describe('test /export route', async function () {
     let cnodeUserUUID,
       sessionToken,
       metadataMultihash,
@@ -1130,16 +1130,31 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       .reply(200, exportData)
   }
 
+  const computeFilePathForCID = (CID) => {
+    const directoryID = CID.slice(-4, -1)
+    const parentDirPath = path.join(
+      __dirname,
+      'syncAssets/nodesync/test_file_storage',
+      directoryID
+    )
+    const filePath = path.join(parentDirPath, CID)
+    return filePath
+  }
+
   /**
    * Sets `/ipfs` route responses for DUMMY_CID from all nodes to DUMMY_CID_DATA
    */
   const setupIPFSRouteMocks = () => {
-    const urlPath = `/ipfs/${DUMMY_CID}`
     NODES_LIST.forEach(node => {
       nock(node)
       .persist()
-      .get((uri) => uri.includes(urlPath))
-      .reply(200, DUMMY_CID_DATA)
+      .get((uri) => uri.includes('/ipfs'))
+      .reply(200, (uri, requestbody) => {
+        const CID = uri.split('/ipfs/')[1].slice(0,46)
+        const CIDFilePath = computeFilePathForCID(CID)
+        const fileBuffer = fs.readFileSync(CIDFilePath)
+        return fileBuffer
+      })
     })
   }
 
@@ -1235,7 +1250,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     return session.cnodeUserUUID
   }
 
-  const createUserAndTrack = async () => {
+  const createUserAndTrack = async (testAssetsDirPath) => {
     // Create CNodeUser
     const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser(USER_1_ID, USER_1_WALLET)
 
@@ -1246,14 +1261,19 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       }
     }
 
+    // await fs.writeFile(
+    //   path.resolve(testAssetsDirPath, 'userMetadata.json'),
+    //   JSON.stringify(userMetadata, null, 2)
+    // )
+
     const userMetadataResp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', sessionToken)
       .set('User-Id', USER_1_ID)
       .send(userMetadata)
       .expect(200)
-    // metadataMultihash = userMetadataResp.body.data.metadataMultihash
-    // metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
+    const metadataMultihash = userMetadataResp.body.data.metadataMultihash
+    const metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
 
     // Associate user with with blockchain ID
     const associateRequest = {
@@ -1290,14 +1310,20 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       },
       source_file: sourceFile
     }
+
+    // await fs.writeFile(
+    //   path.resolve(testAssetsDirPath, 'trackMetadata.json'),
+    //   JSON.stringify(trackMetadata, null, 2)
+    // )
+
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', sessionToken)
       .set('User-Id', USER_1_ID)
       .send(trackMetadata)
       .expect(200)
-    // trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
-    // trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+    const trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
+    const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
     // associate track + track metadata with blockchain ID
     await request(app)
@@ -1310,6 +1336,12 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
         metadataFileUUID: trackMetadataFileUUID,
         transcodedTrackUUID
       })
+
+    const exportResp = await request(app).get(
+      `/export?wallet_public_key=${USER_1_WALLET}`
+    )
+    const exportOutputFilePath = path.resolve(testAssetsDirPath, 'realExport.json')
+    await fs.writeFile(exportOutputFilePath, JSON.stringify(exportResp.body, null, 2))
   }
 
   /**
@@ -1351,7 +1383,100 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     )
   })
 
-  it.only('Primary correctly syncs from secondary when primary has no state', async () => {
+  it.skip('test', async () => {
+    await createUserAndTrack(path.resolve(__dirname, 'syncAssets', 'nodesync'))
+  })
+
+  const exportFilePath = path.resolve(__dirname, 'syncAssets/nodesync/export.json')
+
+  it('NEW Primary correctly syncs from secondary when primary has no state', async () => {
+    const {
+      sampleExport,
+      cnodeUser: exportedCnodeUser,
+      audiusUsers: exportedAudiusUsers,
+      tracks: exportedTracks,
+      files: exportedFiles,
+      clockRecords: exportedClockRecords
+    } = unpackExportDataFromFile(exportFilePath)
+
+    setupExportMock(SECONDARY, sampleExport)
+    setupIPFSRouteMocks()
+
+    // Confirm local user state is empty before sync
+    let { cnodeUser: localCNodeUser } = await fetchDBStateForWallet(USER_1_WALLET)
+    assert.deepStrictEqual(localCNodeUser, null)
+
+    await primarySyncFromSecondary({
+      serviceRegistry: serviceRegistryMock,
+      secondary: SECONDARY,
+      wallet: USER_1_WALLET,
+      selfEndpoint: SELF
+    })
+
+    /**
+     * Verify DB state after sync
+     */
+    ;({
+      cnodeUser: localCNodeUser,
+      audiusUsers: localAudiusUsers,
+      tracks: localTracks,
+      files: localFiles,
+      clockRecords: localClockRecords
+    } = await fetchDBStateForWallet(USER_1_WALLET))
+
+    const comparisonOmittedFields = ['cnodeUserUUID', 'createdAt', 'updatedAt']
+
+    assert.deepStrictEqual(
+      _.omit(localCNodeUser, comparisonOmittedFields),
+      _.omit(exportedCnodeUser, comparisonOmittedFields)
+    )
+
+    assert.deepStrictEqual(
+      _.orderBy(
+        localAudiusUsers.map(audiusUser => _.omit(audiusUser, comparisonOmittedFields)),
+        ['clock'], ['asc']
+      ),
+      _.orderBy(
+        exportedAudiusUsers.map(audiusUser => _.omit(audiusUser, comparisonOmittedFields)),
+        ['clock'], ['asc']
+      )
+    )
+
+    assert.deepStrictEqual(
+      _.orderBy(
+        localTracks.map(track => _.omit(track, comparisonOmittedFields)),
+        ['clock'], ['asc']
+      ),
+      _.orderBy(
+        exportedTracks.map(track => _.omit(track, comparisonOmittedFields)),
+        ['clock'], ['asc']
+      )
+    )
+
+    assert.deepStrictEqual(
+      _.orderBy(
+        localFiles.map(file => _.omit(file, comparisonOmittedFields)),
+        ['clock'], ['asc']
+      ),
+      _.orderBy(
+        exportedFiles.map(file => _.omit(file, comparisonOmittedFields)),
+        ['clock'], ['asc']
+      )
+    )
+
+    assert.deepStrictEqual(
+      _.orderBy(
+        localClockRecords.map(clockRecord => _.omit(clockRecord, comparisonOmittedFields)),
+        ['clock'], ['asc']
+      ),
+      _.orderBy(
+        exportedClockRecords.map(clockRecord => _.omit(clockRecord, comparisonOmittedFields)),
+        ['clock'], ['asc']
+      )
+    )
+  })
+
+  it('OLD Primary correctly syncs from secondary when primary has no state', async () => {
     const {
       sampleExport,
       cnodeUser: exportedCnodeUser,
@@ -1438,7 +1563,9 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     )
   })
 
-  it('Primary correctly syncs from secondary when primary has no state', async () => {
+  it('Primary correctly syncs from secondary when primary has subset of secondary state', async () => {})
+
+  it.only('Primary correctly syncs from secondary when nodes have divergent state', async () => {
     const {
       sampleExport,
       cnodeUser: exportedCnodeUser,
@@ -1446,94 +1573,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(sampleExportDummyCIDPath)
-
-    setupExportMock(SECONDARY, sampleExport)
-    setupIPFSRouteMocks()
-
-    // Confirm local user state is empty before sync
-    let { cnodeUser: localCNodeUser } = await fetchDBStateForWallet(USER_1_WALLET)
-    assert.deepStrictEqual(localCNodeUser, null)
-
-    await primarySyncFromSecondary({
-      serviceRegistry: serviceRegistryMock,
-      secondary: SECONDARY,
-      wallet: USER_1_WALLET,
-      sourceEndpoint: SELF
-    })
-
-    /**
-     * Verify DB state after sync
-     */
-    ;({
-      cnodeUser: localCNodeUser,
-      audiusUsers: localAudiusUsers,
-      tracks: localTracks,
-      files: localFiles,
-      clockRecords: localClockRecords
-    } = await fetchDBStateForWallet(USER_1_WALLET))
-
-    const comparisonOmittedFields = ['cnodeUserUUID', 'createdAt', 'updatedAt']
-
-    assert.deepStrictEqual(
-      _.omit(localCNodeUser, comparisonOmittedFields),
-      _.omit(exportedCnodeUser, comparisonOmittedFields)
-    )
-
-    assert.deepStrictEqual(
-      _.orderBy(
-        localAudiusUsers.map(audiusUser => _.omit(audiusUser, comparisonOmittedFields)),
-        ['clock'], ['asc']
-      ),
-      _.orderBy(
-        exportedAudiusUsers.map(audiusUser => _.omit(audiusUser, comparisonOmittedFields)),
-        ['clock'], ['asc']
-      )
-    )
-
-    assert.deepStrictEqual(
-      _.orderBy(
-        localTracks.map(track => _.omit(track, comparisonOmittedFields)),
-        ['clock'], ['asc']
-      ),
-      _.orderBy(
-        exportedTracks.map(track => _.omit(track, comparisonOmittedFields)),
-        ['clock'], ['asc']
-      )
-    )
-
-    assert.deepStrictEqual(
-      _.orderBy(
-        localFiles.map(file => _.omit(file, comparisonOmittedFields)),
-        ['clock'], ['asc']
-      ),
-      _.orderBy(
-        exportedFiles.map(file => _.omit(file, comparisonOmittedFields)),
-        ['clock'], ['asc']
-      )
-    )
-
-    assert.deepStrictEqual(
-      _.orderBy(
-        localClockRecords.map(clockRecord => _.omit(clockRecord, comparisonOmittedFields)),
-        ['clock'], ['asc']
-      ),
-      _.orderBy(
-        exportedClockRecords.map(clockRecord => _.omit(clockRecord, comparisonOmittedFields)),
-        ['clock'], ['asc']
-      )
-    )
-  })
-
-  it('Primary correctly syncs from secondary when nodes have divergent state', async () => {
-    const {
-      sampleExport,
-      cnodeUser: exportedCnodeUser,
-      audiusUsers: exportedAudiusUsers,
-      tracks: exportedTracks,
-      files: exportedFiles,
-      clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(sampleExportDummyCIDPath)
+    } = unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, sampleExport)
     setupIPFSRouteMocks()
@@ -1636,8 +1676,6 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       )
     )
   })
-
-  it('Primary correctly syncs from secondary when primary has subset of secondary state', async () => {})
 
   it('Primary correctly syncs from secondary when secondary has state requiring multiple syncs', async () => {})
 })

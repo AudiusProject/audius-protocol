@@ -110,7 +110,7 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
      */
     await Promise.all(
       fetchedTrackFilesSlice.map(async (trackFile) => {
-        await saveFileForMultihashToFS(
+        const status = await saveFileForMultihashToFS(
           serviceRegistry,
           logger,
           trackFile.multihash,
@@ -119,6 +119,7 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
+        console.log(`SIDTEST SFFM MULTIHASH ${trackFile.multihash} STATUS ${status}`)
       })
     )
   }
@@ -163,9 +164,10 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
           }
 
           // If saveFile op failed, record CID for later processing
-          if (!success) {
-            CIDsThatFailedSaveFileOp.add(multihash)
-          }
+          // if (!success) {
+          //   CIDsThatFailedSaveFileOp.add(multihash)
+          // }
+          console.log(`SIDTEST SFFM MULTIHASH ${multihash} STATUS ${success}`)
         }
       })
     )
@@ -183,10 +185,9 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
   })
 
   if (localCNodeUser) {
-    // TODO
-    console.log('SIDTEST NO WHAT NO LOCALCNODEUSER')
+    console.log('SIDTEST LOCALCNODEUSER already present')
 
-    // IDENTIFY AND REMOVE DUPLICATES here - or should that be below?? makes sense to put in one TX
+    // do nothing here?
   } else {
     /**
      * Create CNodeUser DB record if not already present
@@ -211,7 +212,7 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
   allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
 
   for await (const { tableInstance, entry } of allEntries) {
-    if (await alreadyExistsInDB({ tableInstance, entry })) {
+    if (await alreadyExistsInDB({ tableInstance, entry, transaction })) {
       // TODO log
       continue
     }
@@ -282,6 +283,34 @@ async function releaseUserRedisLock({ redis, wallet }) {
   const redisLock = redis.lock
   const redisKey = redis.getRedisKeyForWallet(wallet)
   await redisLock.removeLock(redisKey)
+}
+
+async function alreadyExistsInDB({ tableInstance, entry, transaction }) {
+  let existingEntry
+  switch (tableInstance) {
+    case models.File: {
+      existingEntry = await tableInstance.findOne({
+        where: {
+          cnodeUserUUID, trackBlockchainId, sourceFile, fileName, dirMultihash, storagePath, type
+        }
+      })
+      break
+    }
+    case models.Track: {
+      break
+    }
+    case models.AudiusUser: {
+      break
+    }
+    default: {
+      // 
+    }
+    if (_.isEqual(entry, existingEntry)) {
+      console.log(`SIDTEST SKIP`)
+      return true
+    }
+    return false
+  }
 }
 
 /**
