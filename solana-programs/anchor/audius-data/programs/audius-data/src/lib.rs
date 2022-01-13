@@ -2,7 +2,7 @@
 //! Anchor framework
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 
 #[program]
 pub mod audius_data {
@@ -17,10 +17,12 @@ pub mod audius_data {
     use super::*;
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
-    pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey) -> ProgramResult {
+    /// track_id_offset is the starting point for uploaded tracks
+    pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey, track_id_offset: u64) -> ProgramResult {
         msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
+        audius_admin.track_id = track_id_offset;
         Ok(())
     }
 
@@ -109,11 +111,15 @@ pub mod audius_data {
     */
     pub fn create_track(ctx: Context<CreateTrack>, metadata: String) -> ProgramResult {
         msg!("Audius::CreateTrack");
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority.key() {
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
         // Set owner to user storage account
         ctx.accounts.track.owner = ctx.accounts.user.key();
+        ctx.accounts.track.track_id = ctx.accounts.audius_admin.track_id;
+        // Increment global track ID after assignment to this track in particular
+        // Ensures each track has a unique numeric ID
+        ctx.accounts.audius_admin.track_id = ctx.accounts.audius_admin.track_id + 1;
         msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
     }
@@ -148,12 +154,16 @@ pub mod audius_data {
     }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32;
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 
 /// Size of user account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
 pub const USER_ACCOUNT_SIZE: usize = 8 + 32 + 20;
+
+/// Size of track account
+/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track offset ID)
+pub const TRACK_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 
 /// Instructions
 #[derive(Accounts)]
@@ -219,12 +229,15 @@ pub struct UpdateUser<'info> {
 /// Payer is provided to facilitate an independent feepayer
 #[derive(Accounts)]
 pub struct CreateTrack<'info> {
-    #[account(init, payer = payer, space = 8 + 32)]
+    #[account(init, payer = payer, space = 8 + 32 + 8)]
     pub track: Account<'info, Track>,
     #[account(mut)]
     pub user: Account<'info, User>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    /// TEST PURPOSES - storing ID to be incremented here
+    #[account(mut)]
+    pub audius_admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>
@@ -265,6 +278,7 @@ pub struct DeleteTrack<'info> {
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
+    pub track_id: u64
 }
 
 /// User storage account
@@ -278,6 +292,7 @@ pub struct User {
 #[account]
 pub struct Track {
     pub owner: Pubkey,
+    pub track_id: u64
 }
 
 // Errors

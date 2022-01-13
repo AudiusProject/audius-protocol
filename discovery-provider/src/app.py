@@ -507,13 +507,19 @@ def configure_celery(celery, test_config=None):
         database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
     )
     logger.info("Database instance initialized!")
-    # Initialize IPFS client for celery task context
-    ipfs_client = IPFSClient(
-        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
-    )
 
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
+
+    # Initialize IPFS client for celery task context
+    ipfs_client = IPFSClient(
+        shared_config["ipfs"]["host"],
+        shared_config["ipfs"]["port"],
+        eth_web3,
+        shared_config,
+        redis_inst,
+        eth_abi_values,
+    )
 
     # Clear last scanned redis block on startup
     delete_last_scanned_eth_block_redis(redis_inst)
@@ -547,6 +553,7 @@ def configure_celery(celery, test_config=None):
                 db=db,
                 web3=web3,
                 abi_values=abi_values,
+                eth_abi_values=eth_abi_values,
                 shared_config=shared_config,
                 ipfs_client=ipfs_client,
                 redis=redis_inst,

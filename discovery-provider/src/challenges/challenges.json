@@ -43,7 +43,7 @@
 		"type": "boolean",
 		"amount": "5",
 		"active": true,
-		"starting_block": 25346436
+		"starting_block": 0
 	},
 	{
 		"id": "mobile-install",

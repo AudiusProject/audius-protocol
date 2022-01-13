@@ -3,6 +3,7 @@ from datetime import datetime
 
 from flask import Blueprint, request
 from src.api_helpers import success_response
+from src.queries.get_alembic_version import get_alembic_version
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
@@ -19,6 +20,12 @@ disc_prov_version = helpers.get_discovery_provider_version()
 @bp.route("/version", methods=["GET"])
 def version():
     return success_response(disc_prov_version, sign_response=False)
+
+
+@bp.route("/alembic_version", methods=["GET"])
+def alembic_version():
+    version = get_alembic_version()
+    return success_response(version)
 
 
 # Health check for server, db, and redis. Consumes latest block data from redis instead of chain.
