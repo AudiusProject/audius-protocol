@@ -186,7 +186,7 @@ class IPFSClient:
         return formatted_json
 
     def get_metadata_from_gateway(
-        self, multihash, default_metadata_fields, user_replica_set=None
+        self, multihash, default_metadata_fields, user_replica_set: str = None
     ):
         """Args:
         args.user_replica_set - comma-separated string of user's replica urls

@@ -3,7 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const contentDisposition = require('content-disposition')
 
-const { logger: genericLogger, logInfoWithDuration } = require('../logging')
+const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
@@ -110,7 +110,6 @@ const streamFromFileSystem = async (req, res, path) => {
       fileStream
         .on('open', () => fileStream.pipe(res))
         .on('end', () => {
-          logInfoWithDuration(req, 'Successfully served from fs!')
           res.end()
           resolve()
         })
@@ -269,7 +268,6 @@ const getCID = async (req, res) => {
           res.write(streamData)
         })
         .on('end', () => {
-          logInfoWithDuration(req, 'Successfully served from ipfs!')
           res.end()
           resolve()
         })
