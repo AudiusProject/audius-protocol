@@ -16,9 +16,13 @@
 }
 
 .titleIcon {
-  height: var(--unit-6);
-  width: var(--unit-6);
+  height: var(--unit-8);
+  width: var(--unit-8);
   margin-right: var(--unit-2);
+}
+
+.titleIcon path {
+  fill: var(--neutral);
 }
 
 .title {
@@ -38,6 +42,7 @@
 
 .description {
   margin: var(--unit-6) 0px;
+  font-weight: var(--font-demi-bold);
 }
 
 .actionList {
@@ -60,7 +65,7 @@
 /* The following have intentionally increased specificity to override stems button specificity */
 .actionButton .actionButtonLabel {
   font-size: var(--font-l);
-  font-weight: 800;
+  font-weight: var(--font-bold);
 }
 
 .actionButton .twitterIcon path {

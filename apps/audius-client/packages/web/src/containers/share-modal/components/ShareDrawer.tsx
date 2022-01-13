@@ -4,7 +4,7 @@ import { IconLink, IconShare, IconTwitterBird } from '@audius/stems'
 import cn from 'classnames'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
-import { isDarkMode } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { messages } from '../messages'
 import { ShareProps } from '../types'
@@ -37,7 +37,7 @@ export const ShareDrawer = ({
       text: messages.tikTok,
       icon: <IconTikTok {...iconSize} />,
       className: cn(styles.shareToTikTokAction, {
-        [styles.shareToTikTokActionDark]: isDarkMode()
+        [styles.shareToTikTokActionDark]: isDarkMode() || isMatrix()
       }),
       onClick: onShareToTikTok
     }
