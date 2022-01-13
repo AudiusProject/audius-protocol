@@ -65,14 +65,14 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction (instructions, recentBlockhash, skipPreflight = false) {
+  async _relayTransaction (instructions, recentBlockhash, skipPreflight) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
     recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash()).blockhash
 
     const transactionData = {
       recentBlockhash,
       instructions: relayable,
-      skipPreflight
+      skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight
     }
 
     try {
