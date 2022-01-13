@@ -32,7 +32,7 @@
       let results = await ipfs.bootstrap.add(targetPeerAddress)
       logger.debug(logPrefix, 'ipfs bootstrap add results:', results)
 
-      // Manually connect to peer.
+      // Manually connect to peer
       results = await ipfs.swarm.connect(targetPeerAddress)
       logger.debug(logPrefix, 'peer connection results:', results.Strings[0])
     }
