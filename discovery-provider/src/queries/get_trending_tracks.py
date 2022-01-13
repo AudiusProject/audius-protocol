@@ -121,7 +121,7 @@ def _get_trending_tracks_with_session(
         args.get("genre"),
         args.get("time", "week"),
     )
-    time_range = "week" if time not in ["week", "month", "allTime"] else time
+    time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
     key = make_trending_cache_key(time_range, genre, strategy.version)
 
     # Will try to hit cached trending from task, falling back
