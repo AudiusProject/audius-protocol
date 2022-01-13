@@ -496,7 +496,7 @@ class AudiusLibs {
     this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(this.User, ...services)
-    this.Rewards = new Rewards(...services)
+    this.Rewards = new Rewards(this.ServiceProvider, ...services)
   }
 }
 
