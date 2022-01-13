@@ -4,11 +4,11 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src.app import get_contract_addresses, get_eth_abi_values
 from src.models import URSMContentNode
-from src.tasks.index_network_peers import (
+from src.tasks.users import invalidate_old_user, lookup_user_record
+from src.utils.eth_contracts_helpers import (
     content_node_service_type,
     sp_factory_registry_key,
 )
-from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_cache import get_pickled_key, get_sp_id_key
 from src.utils.user_event_constants import (
