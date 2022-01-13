@@ -32,10 +32,6 @@ def playlist_state_update(
     skipped_tx_count = 0
     # This stores the playlist_ids created or updated in the set of transactions
     playlist_ids = set()
-    playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
-    playlist_contract = update_task.web3.eth.contract(
-        address=contract_addresses["playlist_factory"], abi=playlist_abi
-    )
 
     if not playlist_factory_txs:
         return num_total_changes, playlist_ids
@@ -45,7 +41,7 @@ def playlist_state_update(
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in playlist_event_types_arr:
             playlist_events_tx = get_playlist_events_tx(
-                playlist_contract, event_type, tx_receipt
+                update_task, event_type, tx_receipt
             )
             processedEntries = 0  # if record does not get added, do not count towards num_total_changes
             for entry in playlist_events_tx:
@@ -118,7 +114,11 @@ def get_tx_arg(tx, arg_name):
     return getattr(tx["args"], arg_name)
 
 
-def get_playlist_events_tx(playlist_contract, event_type, tx_receipt):
+def get_playlist_events_tx(update_task, event_type, tx_receipt):
+    playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
+    playlist_contract = update_task.web3.eth.contract(
+        address=contract_addresses["playlist_factory"], abi=playlist_abi
+    )
     return getattr(playlist_contract.events, event_type)().processReceipt(tx_receipt)
 
 
@@ -350,9 +350,10 @@ def parse_playlist_event(
     playlist_record.updated_at = block_datetime
 
     if not all_required_fields_present(Playlist, playlist_record):
-        logger.error(
-            f"Error parsing playlist {playlist_record} with entity missing required field(s)"
+        raise EntityMissingRequiredFieldError(
+            "playlist",
+            playlist_record,
+            "Error parsing playlist {playlist_record} with entity missing required field(s)",
         )
-        raise EntityMissingRequiredFieldError("playlist", playlist_record)
 
     return playlist_record

@@ -34,4 +34,3 @@ class EntityMissingRequiredFieldError(Exception):
         self.blocknumber = cursed_record.blocknumber
         self.blockhash = cursed_record.blockhash
         self.txhash = cursed_record.txhash
-        self.message = message
