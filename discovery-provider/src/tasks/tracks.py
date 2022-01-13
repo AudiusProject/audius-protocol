@@ -11,21 +11,15 @@ from src.database_task import DatabaseTask
 from src.models import Remix, Stem, Track, TrackRoute, User
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers, multihash
-from src.utils.indexing_errors import IndexingError
+from src.utils.indexing_errors import IndexingError, EntityMissingRequiredFieldError
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
+from src.utils.model_nullable_validator import all_required_fields_present
+from src.utils.track_event_constants import (
+    track_event_types_arr,
+    track_event_types_lookup,
+)
 
 logger = logging.getLogger(__name__)
-
-track_event_types_lookup = {
-    "new_track": "NewTrack",
-    "update_track": "UpdateTrack",
-    "delete_track": "TrackDeleted",
-}
-
-track_event_types_arr = [
-    track_event_types_lookup["new_track"],
-    track_event_types_lookup["update_track"],
-    track_event_types_lookup["delete_track"],
-]
 
 
 def track_state_update(
@@ -40,73 +34,69 @@ def track_state_update(
     block_hash,
 ):
     """Return int representing number of Track model state changes found in transaction."""
+    blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
-
+    skipped_tx_count = 0
     # This stores the track_ids created or updated in the set of transactions
     track_ids: Set[int] = set()
 
     if not track_factory_txs:
         return num_total_changes, track_ids
 
-    track_abi = update_task.abi_values["TrackFactory"]["abi"]
-    track_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["track_factory"], abi=track_abi
-    )
-
     pending_track_routes: List[TrackRoute] = []
     track_events = {}
     for tx_receipt in track_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in track_event_types_arr:
-            track_events_tx = getattr(
-                track_contract.events, event_type
-            )().processReceipt(tx_receipt)
+            track_events_tx = get_track_events_tx(update_task, event_type, tx_receipt)
             processedEntries = 0  # if record does not get added, do not count towards num_total_changes
             for entry in track_events_tx:
                 event_args = entry["args"]
                 track_id = (
-                    event_args._trackId if "_trackId" in event_args else event_args._id
+                    helpers.get_tx_arg(entry, "_trackId")
+                    if "_trackId" in event_args
+                    else helpers.get_tx_arg(entry, "_id")
                 )
-                track_ids.add(track_id)
-                blockhash = update_task.web3.toHex(entry.blockHash)
-
-                if track_id not in track_events:
-                    track_entry = lookup_track_record(
-                        update_task,
-                        session,
-                        entry,
-                        track_id,
-                        block_number,
-                        blockhash,
-                        txhash,
-                    )
-
-                    track_events[track_id] = {"track": track_entry, "events": []}
-
+                existing_track_record = None
                 track_metadata = None
-                if event_type in [
-                    track_event_types_lookup["new_track"],
-                    track_event_types_lookup["update_track"],
-                ]:
-                    track_metadata_digest = event_args._multihashDigest.hex()
-                    track_metadata_hash_fn = event_args._multihashHashFn
-                    buf = multihash.encode(
-                        bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
-                    )
-                    cid = multihash.to_b58_string(buf)
-                    # do not process entry if cid is blacklisted
-                    if cid in blacklisted_cids:
-                        continue
-                    track_metadata = ipfs_metadata[cid]
-
                 try:
+                    # look up or populate existing record
+                    if track_id in track_events:
+                        existing_track_record = track_events[track_id]["track"]
+                    else:
+                        existing_track_record = lookup_track_record(
+                            update_task,
+                            session,
+                            entry,
+                            track_id,
+                            block_number,
+                            block_timestamp,
+                            txhash,
+                        )
+
+                    # parse track event to add metadata to record
+                    if event_type in [
+                        track_event_types_lookup["new_track"],
+                        track_event_types_lookup["update_track"],
+                    ]:
+                        track_metadata_digest = event_args._multihashDigest.hex()
+                        track_metadata_hash_fn = event_args._multihashHashFn
+                        buf = multihash.encode(
+                            bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
+                        )
+                        cid = multihash.to_b58_string(buf)
+                        # do not process entry if cid is blacklisted
+                        if cid in blacklisted_cids:
+                            continue
+                        track_metadata = ipfs_metadata[cid]
+
                     parsed_track = parse_track_event(
                         self,
                         session,
                         update_task,
                         entry,
                         event_type,
-                        track_events[track_id]["track"],
+                        existing_track_record,
                         block_number,
                         block_timestamp,
                         track_metadata,
@@ -115,9 +105,23 @@ def track_state_update(
 
                     # If track record object is None, it has a blacklisted metadata CID
                     if parsed_track is not None:
+                        if track_id not in track_events:
+                            track_events[track_id] = {
+                                "track": parsed_track,
+                                "events": [],
+                            }
+                        else:
+                            track_events[track_id]["track"] = parsed_track
                         track_events[track_id]["events"].append(event_type)
-                        track_events[track_id]["track"] = parsed_track
+                        track_ids.add(track_id)
                         processedEntries += 1
+                except EntityMissingRequiredFieldError as e:
+                    logger.warning(f"Skipping tx {txhash} with error {e}")
+                    skipped_tx_count += 1
+                    add_node_level_skipped_transaction(
+                        session, block_number, blockhash, txhash
+                    )
+                    pass
                 except Exception as e:
                     logger.info("Error in parse track transaction")
                     blockhash = update_task.web3.toHex(block_hash)
@@ -128,7 +132,7 @@ def track_state_update(
             num_total_changes += processedEntries
 
     logger.info(
-        f"index.py | tracks.py | [track indexing] There are {num_total_changes} events processed."
+        f"index.py | tracks.py | [track indexing] There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
     )
 
     for track_id, value_obj in track_events.items():
@@ -138,6 +142,14 @@ def track_state_update(
             session.add(value_obj["track"])
 
     return num_total_changes, track_ids
+
+
+def get_track_events_tx(update_task, event_type, tx_receipt):
+    track_abi = update_task.abi_values["TrackFactory"]["abi"]
+    track_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()["track_factory"], abi=track_abi
+    )
+    getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_track_record(
@@ -392,15 +404,14 @@ def parse_track_event(
     pending_track_routes,
 ):
     challenge_bus = update_task.challenge_event_bus
-    event_args = entry["args"]
     # Just use block_timestamp as integer
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
     if event_type == track_event_types_lookup["new_track"]:
         track_record.created_at = block_datetime
 
-        track_metadata_digest = event_args._multihashDigest.hex()
-        track_metadata_hash_fn = event_args._multihashHashFn
+        track_metadata_digest = helpers.get_tx_arg(entry, "_multihashDigest").hex()
+        track_metadata_hash_fn = helpers.get_tx_arg(entry, "_multihashHashFn")
         buf = multihash.encode(
             bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
         )
@@ -409,7 +420,7 @@ def parse_track_event(
             f"index.py | tracks.py | track metadata ipld : {track_metadata_multihash}"
         )
 
-        owner_id = event_args._trackOwnerId
+        owner_id = helpers.get_tx_arg(entry, "_trackOwnerId")
         track_record.owner_id = owner_id
         track_record.is_delete = False
 
@@ -448,8 +459,8 @@ def parse_track_event(
         dispatch_challenge_track_upload(challenge_bus, block_number, track_record)
 
     if event_type == track_event_types_lookup["update_track"]:
-        upd_track_metadata_digest = event_args._multihashDigest.hex()
-        upd_track_metadata_hash_fn = event_args._multihashHashFn
+        upd_track_metadata_digest = helpers.get_tx_arg(entry, "_multihashDigest").hex()
+        upd_track_metadata_hash_fn = helpers.get_tx_arg(entry, "_multihashHashFn")
         update_buf = multihash.encode(
             bytes.fromhex(upd_track_metadata_digest), upd_track_metadata_hash_fn
         )
@@ -458,7 +469,7 @@ def parse_track_event(
             f"index.py | tracks.py | update track metadata ipld : {upd_track_metadata_multihash}"
         )
 
-        owner_id = event_args._trackOwnerId
+        owner_id = helpers.get_tx_arg(entry, "_trackOwnerId")
         track_record.owner_id = owner_id
         track_record.is_delete = False
 
@@ -502,6 +513,13 @@ def parse_track_event(
         logger.info(f"index.py | tracks.py | Removing track : {track_record.track_id}")
 
     track_record.updated_at = block_datetime
+
+    if not all_required_fields_present(Track, track_record):
+        raise EntityMissingRequiredFieldError(
+            "track",
+            track_record,
+            f"Error parsing track {track_record} with entity missing required field(s)",
+        )
 
     return track_record
 

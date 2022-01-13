@@ -4,12 +4,20 @@ from unittest.mock import patch
 
 from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
-from src.models import Block, TrackRoute, User
+from src.models import (
+    Block,
+    TrackRoute,
+    User,
+    Track,
+    SkippedTransaction,
+    SkippedTransactionLevel,
+)
 from src.tasks.index import revert_blocks
 from src.tasks.tracks import (
     lookup_track_record,
     parse_track_event,
     track_event_types_lookup,
+    track_state_update,
 )
 from src.utils import helpers
 from src.utils.db_session import get_db
@@ -196,6 +204,7 @@ def test_index_tracks(mock_index_task, app):
 
         block_number = random.randint(1, 10000)
         block_timestamp = 1585336422
+        updated_block_hash = f"0x{block_number}"
 
         # Some sqlalchemy user instance
         track_record = lookup_track_record(
@@ -204,7 +213,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             1,  # event track id
             block_number,
-            "0x",
+            updated_block_hash,
             "0x",  # txhash
         )
 
@@ -215,7 +224,6 @@ def test_index_tracks(mock_index_task, app):
         assert track_record.owner_id == None
         assert track_record.is_delete == False
 
-        updated_block_hash = f"0x{block_number}"
         # Create track's owner user before
         block = Block(
             blockhash=updated_block_hash, number=block_number, is_current=True
@@ -244,7 +252,7 @@ def test_index_tracks(mock_index_task, app):
         )
         track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
 
-        parse_track_event(
+        track_record = parse_track_event(
             None,  # self - not used
             session,
             update_task,  # only need the ipfs client for get_metadata
@@ -256,6 +264,7 @@ def test_index_tracks(mock_index_task, app):
             track_metadata,
             pending_track_routes,
         )
+        session.add(track_record)
 
         # updated_at should be updated every parse_track_event
         assert track_record.updated_at == datetime.utcfromtimestamp(block_timestamp)
@@ -513,3 +522,141 @@ def test_index_tracks(mock_index_task, app):
 
         # updated_at should be updated every parse_track_event
         assert track_record.is_delete == True
+
+
+def test_track_indexing_skip_tx(app, mocker):
+    """Tests that tracks skip cursed txs without throwing an error and are able to process other tx in block"""
+    with app.app_context():
+        db = get_db()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        web3 = Web3()
+        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
+
+    class TestTrackTransaction:
+        pass
+
+    blessed_tx_hash = (
+        "0x34004dfaf5bb7cf9998eaf387b877d72d198c6508608e309df3f89e57def4db3"
+    )
+    blessed_tx = TestTrackTransaction()
+    blessed_tx.transactionHash = update_task.web3.toBytes(hexstr=blessed_tx_hash)
+    cursed_tx_hash = (
+        "0x5fe51d735309d3044ae30055ad29101018a1a399066f6c53ea23800225e3a3be"
+    )
+    cursed_tx = TestTrackTransaction()
+    cursed_tx.transactionHash = update_task.web3.toBytes(hexstr=cursed_tx_hash)
+    test_block_number = 25278765
+    test_block_timestamp = 1
+    test_block_hash = update_task.web3.toHex(block_hash)
+    test_track_factory_txs = [cursed_tx, blessed_tx]
+    test_timestamp = datetime.utcfromtimestamp(test_block_timestamp)
+    blessed_track_record = Track(
+        blockhash=test_block_hash,
+        blocknumber=test_block_number,
+        txhash=blessed_tx_hash,
+        track_id=91232,
+        is_unlisted=False,
+        route_id="test",
+        track_segments=[
+            {
+                "duration": 6.016,
+                "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+            }
+        ],
+        is_current=True,
+        is_delete=True,
+        updated_at=test_timestamp,
+        created_at=test_timestamp,
+        owner_id=1,
+    )
+    cursed_track_record = Track(
+        blockhash=test_block_hash,
+        blocknumber=test_block_number,
+        txhash=cursed_tx_hash,
+        track_id=91238,
+        is_unlisted=None,
+        is_current=True,
+        is_delete=True,
+        updated_at=test_timestamp,
+        created_at=None,
+    )
+
+    mocker.patch(
+        "src.tasks.tracks.lookup_track_record",
+        side_effect=[cursed_track_record, blessed_track_record],
+        autospec=True,
+    )
+    mocker.patch(
+        "src.tasks.tracks.get_track_events_tx",
+        side_effect=[
+            [],  # no new track events
+            [],
+            [
+                {
+                    "args": {
+                        "_trackId": cursed_track_record.track_id,
+                    }
+                },
+            ],  # track deleted event
+            [],  # second tx processing loop
+            [],
+            [
+                {
+                    "args": {
+                        "_trackId": blessed_track_record.track_id,
+                    }
+                },
+            ],  # track deleted event
+        ],
+        autospec=True,
+    )
+    mocker.patch(
+        "src.utils.helpers.get_tx_arg",
+        side_effect=[
+            cursed_track_record.track_id,
+            blessed_track_record.track_id,
+        ],
+        autospec=True,
+    )
+
+    test_ipfs_metadata = {}
+    test_blacklisted_cids = {}
+
+    with db.scoped_session() as session, challenge_event_bus.use_scoped_dispatch_queue():
+        try:
+            current_block = Block(
+                blockhash=test_block_hash,
+                parenthash=test_block_hash,
+                number=test_block_number,
+                is_current=True,
+            )
+            session.add(current_block)
+            (total_changes, updated_track_ids_set) = track_state_update(
+                update_task,
+                update_task,
+                session,
+                test_ipfs_metadata,
+                test_blacklisted_cids,
+                test_track_factory_txs,
+                test_block_number,
+                test_block_timestamp,
+                block_hash,
+            )
+            assert len(updated_track_ids_set) == 1
+            assert list(updated_track_ids_set)[0] == blessed_track_record.track_id
+            assert total_changes == 1
+            assert (
+                session.query(SkippedTransaction)
+                .filter(
+                    SkippedTransaction.txhash == cursed_track_record.txhash,
+                    SkippedTransaction.level == SkippedTransactionLevel.node,
+                )
+                .first()
+            )
+            assert (
+                session.query(Track)
+                .filter(Track.track_id == blessed_track_record.track_id)
+                .first()
+            )
+        except Exception:
+            assert False
