@@ -121,7 +121,7 @@ def test_index_aggregate_user_populate(app):
         assert len(results) == 0
 
     # create db entries based on entities
-    populate_mock_db(db, basic_entities)
+    populate_mock_db(db, basic_entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         # trigger celery task
@@ -200,7 +200,7 @@ def test_index_aggregate_user_empty_users(app):
         ],
     }
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         update_aggregate_table(db, redis)
@@ -225,7 +225,7 @@ def test_index_aggregate_user_empty_activity(app):
         ],
     }
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         update_aggregate_table(db, redis)
@@ -247,7 +247,7 @@ def test_index_aggregate_user_empty_completely(app):
 
     entities = {}
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         update_aggregate_table(db, redis)
@@ -293,7 +293,7 @@ def test_index_aggregate_user_update(app):
         }
     )
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -366,7 +366,7 @@ def test_index_aggregate_user_update_with_extra_user(app):
         )
         assert len(results) == 0
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -426,7 +426,7 @@ def test_index_aggregate_user_entity_model(app):
         ],
     }
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -488,7 +488,7 @@ def test_index_aggregate_user_update_with_only_aggregate_users(app):
         "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 9}],
     }
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -522,7 +522,7 @@ def test_index_aggregate_user_same_checkpoint(app):
         }
     )
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, skip_aggregate_user=True)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
