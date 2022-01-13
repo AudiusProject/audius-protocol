@@ -144,7 +144,7 @@ type BodyProps = {
 }
 
 const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
-  const [modalType, _] = useRewardsModalType()
+  const [modalType] = useRewardsModalType()
   const userChallenges = useSelector(getUserChallenges)
   const userHandle = useSelector(getUserHandle)
   const dispatch = useDispatch()
@@ -348,7 +348,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 }
 
 export const ChallengeRewardsModal = () => {
-  const [modalType, _] = useRewardsModalType()
+  const [modalType] = useRewardsModalType()
   const [isOpen, setOpen] = useModalState('ChallengeRewardsExplainer')
   const wm = useWithMobileStyle(styles.mobile)
   const onClose = () => setOpen(false)

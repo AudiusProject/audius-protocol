@@ -14,7 +14,7 @@ import {
   getProfileFeedLineup,
   getProfileUserHandle
 } from 'pages/profile-page/store/selectors'
-import { getConfirmCalls, getResult } from 'store/confirmer/selectors'
+import { getConfirmCalls } from 'store/confirmer/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 
 import { retrieveUserReposts } from './retrieveUserReposts'

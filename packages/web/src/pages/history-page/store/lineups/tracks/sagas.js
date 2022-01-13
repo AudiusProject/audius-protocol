@@ -8,7 +8,6 @@ import {
   PREFIX,
   tracksActions
 } from 'pages/history-page/store/lineups/tracks/actions'
-import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { LineupSagas } from 'store/lineup/sagas'
 

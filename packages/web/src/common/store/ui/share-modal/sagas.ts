@@ -35,7 +35,7 @@ function* handleRequestOpen(action: RequestOpenAction) {
       break
     }
     case 'collection': {
-      const { collectionId, source, type } = action.payload
+      const { collectionId, source } = action.payload
       const collection: Collection = yield select(getCollection(collectionId))
       const owner: User = yield select(getUser(collection.playlist_owner_id))
       if (collection.is_album) {

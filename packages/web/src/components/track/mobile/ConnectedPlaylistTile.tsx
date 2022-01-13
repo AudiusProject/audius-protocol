@@ -24,8 +24,7 @@ import {
   saveCollection,
   unsaveCollection,
   repostCollection,
-  undoRepostCollection,
-  shareCollection
+  undoRepostCollection
 } from 'common/store/social/collections/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {

@@ -33,11 +33,10 @@ function* initProviders() {
 }
 
 function* trackLocation() {
-  let referrer = window.location.href
   while (true) {
     const {
       payload: {
-        location: { href, pathname }
+        location: { pathname }
       }
     } = yield take(LOCATION_CHANGE)
     if (pathname) {
@@ -58,7 +57,6 @@ function* trackLocation() {
         analyticsProvider.track(Name.PAGE_VIEW, { route: pathname })
       }
     }
-    referrer = href
   }
 }
 

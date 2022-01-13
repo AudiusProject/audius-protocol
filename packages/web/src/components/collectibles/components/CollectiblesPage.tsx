@@ -154,9 +154,7 @@ const CollectiblesPage: React.FC<{
     setCollectiblesMetadata
   ] = useState<CollectiblesMetadata | null>(null)
 
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useModalState(
-    'CollectibleDetails'
-  )
+  const [, setIsDetailsModalOpen] = useModalState('CollectibleDetails')
 
   const [isEditingPreferences, setIsEditingPreferences] = useState<boolean>(
     false

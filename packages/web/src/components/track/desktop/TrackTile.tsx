@@ -11,10 +11,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
 import Skeleton from 'components/skeleton/Skeleton'
-import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
-import { ComponentPlacement, MountPlacement } from 'components/types'
-import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 import {

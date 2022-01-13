@@ -1656,7 +1656,6 @@ class AudiusBackend {
    */
   static async setArtistPick(trackId = null) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
     try {
       const { data, signature } = await AudiusBackend.signData()
       await fetch(`${IDENTITY_SERVICE}/artist_pick`, {

@@ -188,7 +188,6 @@ const actionsMap = {
   },
   [INCREMENT](state, action) {
     const newEntries = { ...state.entries }
-    const newSubscriptions = { ...state.subscriptions }
 
     action.entries.forEach(e => {
       newEntries[e.id] = wrapEntry(
