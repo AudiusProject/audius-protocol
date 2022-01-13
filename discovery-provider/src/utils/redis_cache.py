@@ -31,14 +31,14 @@ def extract_key(path, arg_items, cache_prefix_override=None):
 def get_pickled_key(redis, key):
     cached_value = redis.get(key)
     if cached_value:
-        logger.info(f"Redis Cache - hit {key}")
+        logger.debug(f"Redis Cache - hit {key}")
         try:
             deserialized = pickle.loads(cached_value)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize cached response: {e}")
             return None
-    logger.info(f"Redis Cache - miss {key}")
+    logger.debug(f"Redis Cache - miss {key}")
     return None
 
 
@@ -63,14 +63,14 @@ def use_redis_cache(key, ttl_sec, work_func):
 def get_json_cached_key(redis, key):
     cached_value = redis.get(key)
     if cached_value:
-        logger.info(f"Redis Cache - hit {key}")
+        logger.debug(f"Redis Cache - hit {key}")
         try:
             deserialized = json.loads(cached_value)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize json cached response: {e}")
             return None
-    logger.info(f"Redis Cache - miss {key}")
+    logger.debug(f"Redis Cache - miss {key}")
     return None
 
 
@@ -130,7 +130,7 @@ def cache(**kwargs):
                 cached_resp = redis.get(key)
 
                 if cached_resp:
-                    logger.info(f"Redis Cache - hit {key}")
+                    logger.debug(f"Redis Cache - hit {key}")
                     try:
                         deserialized = pickle.loads(cached_resp)
                         if transform is not None:
@@ -139,7 +139,7 @@ def cache(**kwargs):
                     except Exception as e:
                         logger.warning(f"Unable to deserialize cached response: {e}")
 
-                logger.info(f"Redis Cache - miss {key}")
+                logger.debug(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
 
             if len(response) == 2:

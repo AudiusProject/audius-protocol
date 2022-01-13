@@ -66,18 +66,18 @@ def redis_get_json_cached_key_or_restore(redis, key):
     logger = logging.getLogger(__name__)
     cached_value = redis.get(key)
     if not cached_value:
-        logger.info(f"Redis Cache - miss {key}, restoring")
+        logger.debug(f"Redis Cache - miss {key}, restoring")
         cached_value = redis_restore(redis, key)
 
     if cached_value:
-        logger.info(f"Redis Cache - hit {key}")
+        logger.debug(f"Redis Cache - hit {key}")
         try:
             deserialized = json.loads(cached_value)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize json cached response: {e}")
             return None
-    logger.info(f"Redis Cache - miss {key}")
+    logger.debug(f"Redis Cache - miss {key}")
     return None
 
 
