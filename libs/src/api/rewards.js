@@ -54,6 +54,11 @@ const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECMIALS
  */
 
 class Rewards extends Base {
+  constructor (ServiceProvider, ...args) {
+    super(...args)
+    this.ServiceProvider = ServiceProvider
+  }
+
   /**
    *
    * Top level method to aggregate attestations, submit them to RewardsManager, and evalute the result.
@@ -224,10 +229,13 @@ class Rewards extends Base {
   async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null, logger = console }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
-    // If no endpoints array provided, select here
-    if (!endpoints) {
-      endpoints = await this.discoveryProvider.serviceSelector.findAll()
+    if (endpoints) {
+      endpoints = sampleSize(endpoints, quorumSize)
+    } else {
+      // If no endpoints array provided, select here
+      endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(quorumSize)
     }
+
     if (endpoints.length < quorumSize) {
       logger.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)
 
@@ -237,8 +245,6 @@ class Rewards extends Base {
         error: AggregateAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT
       }
     }
-
-    endpoints = sampleSize(endpoints, quorumSize)
 
     try {
       const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e, logger }))
