@@ -1,9 +1,8 @@
-/* globals fetch, File */
 import React, { useState, useCallback, useEffect } from 'react'
 
 import cn from 'classnames'
 
-import { InstagramProfile, TwitterProfile } from 'common/store/account/reducer'
+import { InstagramProfile } from 'common/store/account/reducer'
 import { MAIN_CONTENT_ID } from 'pages/App'
 import ProfileForm from 'pages/sign-on/components/ProfileForm'
 import TwitterOverlay from 'pages/sign-on/components/mobile/TwitterOverlay'

@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react'
+import React from 'react'
 
 import cn from 'classnames'
 import { connect } from 'react-redux'

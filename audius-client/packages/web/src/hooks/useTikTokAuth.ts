@@ -1,5 +1,3 @@
-import moment from 'moment'
-
 // Polyfills
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'

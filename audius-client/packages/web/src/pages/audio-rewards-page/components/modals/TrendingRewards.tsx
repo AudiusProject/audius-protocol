@@ -216,7 +216,7 @@ const TrendingRewardsBody = ({
 
 export const TrendingRewardsModal = () => {
   const [isOpen, setOpen] = useModalState('TrendingRewardsExplainer')
-  const [modalType, _] = useRewardsType()
+  const [modalType] = useRewardsType()
 
   return (
     <ModalDrawer

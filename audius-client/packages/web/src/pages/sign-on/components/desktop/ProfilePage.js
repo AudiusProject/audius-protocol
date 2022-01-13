@@ -1,8 +1,6 @@
-/* globals fetch, File */
 import React, { Component } from 'react'
 
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 
 import BackButton from 'components/back-button/BackButton'
 import ProfileForm from 'pages/sign-on/components/ProfileForm'
@@ -12,7 +10,6 @@ import {
   formatInstagramProfile,
   formatTwitterProfile
 } from 'pages/sign-on/utils/formatSocialProfile'
-import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 

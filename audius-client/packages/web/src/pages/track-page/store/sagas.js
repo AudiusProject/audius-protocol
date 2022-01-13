@@ -17,7 +17,6 @@ import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 
 import * as trackPageActions from './actions'
 import { tracksActions } from './lineups/tracks/actions'
-import { retrieveTrending } from './retrieveTrending'
 import { getTrack, getTrendingTrackRanks, getUser } from './selectors'
 
 export const TRENDING_BADGE_LIMIT = 10

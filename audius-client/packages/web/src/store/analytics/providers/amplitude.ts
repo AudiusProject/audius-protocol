@@ -5,10 +5,6 @@ import { Nullable } from 'common/utils/typeUtils'
 import { getSource } from './segment'
 
 const AMP_API_KEY = process.env.REACT_APP_AMPLITUDE_API_KEY
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
-
-const TRACK_LIMIT = 10000
 const AMPLITUDE_PROXY = 'metrics.audius.co'
 
 /**

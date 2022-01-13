@@ -11,7 +11,7 @@ import React, {
 
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
-import { Cancelable, throttle } from 'lodash'
+import { throttle } from 'lodash'
 import { animated, useTransition, useSpring } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 

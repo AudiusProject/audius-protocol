@@ -1,4 +1,3 @@
-import { Cluster, clusterApiUrl } from '@solana/web3.js'
 import Web3Modal, { IProviderOptions } from 'web3modal'
 
 import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
@@ -10,7 +9,6 @@ const WEB3_NETWORK_ID = parseInt(process.env.REACT_APP_ETH_NETWORK_ID || '')
 const ETH_PROVIDER_URLS = (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(
   ','
 )
-const SOLANA_WEB3_CLUSTER = process.env.REACT_APP_SOLANA_WEB3_CLUSTER
 
 declare global {
   interface Window {
@@ -48,13 +46,6 @@ export const loadWalletLink = async () => {
   return WalletLink
 }
 
-export const loadSolWallet = async () => {
-  const { default: SolWallet } = await import(
-    '@project-serum/sol-wallet-adapter'
-  )
-  return SolWallet
-}
-
 export const createSession = async (config: Config): Promise<any> => {
   try {
     const Web3 = window.Web3
@@ -62,7 +53,6 @@ export const createSession = async (config: Config): Promise<any> => {
     const WalletConnectProvider = await loadWalletConnect()
     const Bitski = await loadBitski()
     const WalletLink = await loadWalletLink()
-    const SolWallet = await loadSolWallet()
 
     const providerOptions: IProviderOptions = {}
     if (config.isBitSkiEnabled && BITSKI_CLIENT_ID && BITSKI_CALLBACK_URL) {

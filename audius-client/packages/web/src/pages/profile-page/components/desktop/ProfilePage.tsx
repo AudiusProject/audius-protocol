@@ -1,8 +1,5 @@
 import React, { useCallback, memo } from 'react'
 
-import { Button, ButtonSize, ButtonType, IconArrowWhite } from '@audius/stems'
-import { useHistory } from 'react-router'
-
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'

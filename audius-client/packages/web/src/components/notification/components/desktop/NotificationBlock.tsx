@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, MutableRefObject } from 'react'
+import React, { useState, useCallback, MutableRefObject } from 'react'
 
 import cn from 'classnames'
 

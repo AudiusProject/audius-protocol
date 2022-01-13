@@ -108,7 +108,7 @@ const isValidEthDestination = (wallet: WalletAddress) => {
 const isValidSolDestination = (wallet: SolanaWalletAddress) => {
   const solanaweb3 = window.audiusLibs.solanaWeb3Manager.solanaWeb3
   try {
-    const _ = new solanaweb3.PublicKey(wallet)
+    const ignored = new solanaweb3.PublicKey(wallet)
     return true
   } catch (err) {
     console.log(err)

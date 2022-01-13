@@ -91,7 +91,7 @@ const SignUpEmail = ({
   onEmailSubmitted,
   onViewSignIn
 }: SignUpEmailProps) => {
-  const { value: emailValue, status: emailStatus, error } = email
+  const { value: emailValue, error } = email
 
   const [attempted, setAttempted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)

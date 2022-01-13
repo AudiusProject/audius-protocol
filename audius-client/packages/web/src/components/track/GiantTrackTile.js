@@ -44,7 +44,6 @@ const BUTTON_COLLAPSE_WIDTHS = {
 
 // Toast timeouts in ms
 const REPOST_TIMEOUT = 1000
-const SHARE_TIMEOUT = 1500
 const SAVED_TIMEOUT = 1000
 
 const messages = {

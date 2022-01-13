@@ -21,11 +21,7 @@ import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-moda
 import Menu from 'components/menu/Menu'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
-import { isShareToastDisabled } from 'utils/clipboardUtil'
-import {
-  REPOST_TOAST_TIMEOUT_MILLIS,
-  SHARE_TOAST_TIMEOUT_MILLIS
-} from 'utils/constants'
+import { REPOST_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import styles from './ActionsTab.module.css'
 

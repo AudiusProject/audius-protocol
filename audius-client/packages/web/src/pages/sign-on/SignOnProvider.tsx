@@ -5,7 +5,7 @@ import {
   replace as replaceRoute,
   goBack
 } from 'connected-react-router'
-import { Location, UnregisterCallback } from 'history'
+import { UnregisterCallback } from 'history'
 import { sampleSize } from 'lodash'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -207,7 +207,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       const {
         signUp,
         recordCompleteProfile,
-        fields: { email, password, handle }
+        fields: { email, handle }
       } = this.props
 
       // Dispatch event to create account
@@ -349,7 +349,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     skipEdit?: boolean
   ) => {
     const {
-      fields: { email, handle }
+      fields: { email }
     } = this.props
     this.props.setTwitterProfile(twitterId, profile, profileImg, coverBannerImg)
     this.props.recordTwitterComplete(
@@ -379,7 +379,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     skipEdit?: boolean
   ) => {
     const {
-      fields: { email, handle }
+      fields: { email }
     } = this.props
     this.props.setInstagramProfile(instagramId, profile, profileImg)
     this.props.recordInstagramComplete(

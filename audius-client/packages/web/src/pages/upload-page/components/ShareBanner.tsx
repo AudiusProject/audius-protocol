@@ -136,7 +136,7 @@ const TOAST_DELAY = 3000
 const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
-  const [_, setIsTikTokModalOpen] = useModalState('ShareSoundToTikTok')
+  const [, setIsTikTokModalOpen] = useModalState('ShareSoundToTikTok')
   const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )

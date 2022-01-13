@@ -1,4 +1,4 @@
-import React, { useContext, useCallback } from 'react'
+import React from 'react'
 
 import { IconShare, IconKebabHorizontal } from '@audius/stems'
 import cn from 'classnames'
@@ -9,13 +9,8 @@ import AnimatedIconButton, {
   AnimatedIconType
 } from 'components/animated-button/AnimatedIconButton'
 import IconButton from 'components/icon-button/IconButton'
-import { ToastContext } from 'components/toast/ToastContext'
 
 import styles from './ActionButtonRow.module.css'
-
-const messages = {
-  copied: 'Copied To Clipboard!'
-}
 
 type ActionButtonRowProps = {
   isOwner: boolean

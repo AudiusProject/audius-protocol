@@ -24,5 +24,9 @@ module.exports = {
 
       return webpackConfig
     }
+  },
+  // Disabling for now while we upgrade eslint and improve our config
+  eslint: {
+    enable: false
   }
 }

@@ -20,7 +20,6 @@ import {
 import { close } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname, playlistPage } from 'utils/route'
-import zIndex from 'utils/zIndex'
 
 const messages = {
   edit: 'EDIT',
