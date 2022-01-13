@@ -28,20 +28,21 @@ logger = logging.getLogger(__name__)
 trending_strategy_factory = TrendingStrategyFactory()
 
 
-def get_latest_blocknumber(session: Session, redis: Redis) -> Optional[int]:
+def get_latest_blocknumber_via_redis(session: Session, redis: Redis) -> Optional[int]:
     # get latest db state from redis cache
     latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
     if latest_indexed_block_num is not None:
         return int(latest_indexed_block_num)
 
-    return get_latest_blocknumber_postgres(session)
+    return get_latest_blocknumber(session)
 
 
-def get_latest_blocknumber_postgres(session: Session) -> Optional[int]:
+def get_latest_blocknumber(session: Session) -> Optional[int]:
     db_block_query = (
         session.query(Block.number).filter(Block.is_current == True).first()
     )
     if db_block_query is None:
+        logger.error("Unable to get latest block number")
         return None
     return db_block_query[0]
 
@@ -84,7 +85,7 @@ def enqueue_trending_challenges(
     update_start = time.time()
     with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
 
-        latest_blocknumber = get_latest_blocknumber(session, redis)
+        latest_blocknumber = get_latest_blocknumber_via_redis(session, redis)
         if latest_blocknumber is None:
             logger.error(
                 "calculate_trending_challenges.py | Unable to get latest block number"

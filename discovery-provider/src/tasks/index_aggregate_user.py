@@ -2,7 +2,7 @@ import logging
 import time
 
 import sqlalchemy as sa
-from src.tasks.calculate_trending_challenges import get_latest_blocknumber_postgres
+from src.tasks.calculate_trending_challenges import get_latest_blocknumber
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
@@ -354,9 +354,7 @@ def update_aggregate_table(
                     session, table_name
                 )
 
-                latest_blocknumber = get_latest_blocknumber_postgres(
-                    session, table_name
-                )
+                latest_blocknumber = get_latest_blocknumber(session)
 
                 logger.info(
                     f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block} | latest_blocknumber: {latest_blocknumber}"
@@ -382,7 +380,8 @@ def update_aggregate_table(
                 )
 
             # set new block to be the lower bound for the next indexing
-            save_indexed_checkpoint(session, table_name, latest_blocknumber)
+            if latest_blocknumber:
+                save_indexed_checkpoint(session, table_name, latest_blocknumber)
             logger.info(
                 f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec"""
             )

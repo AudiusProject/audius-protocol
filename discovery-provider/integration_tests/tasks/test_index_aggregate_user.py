@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
+from sqlalchemy.sql.expression import true
 from src.models import AggregateUser
 from src.tasks.index_aggregate_user import AGGREGATE_USER, update_aggregate_table
 from src.utils.db_session import get_db
@@ -13,8 +14,13 @@ redis = get_redis()
 
 logger = logging.getLogger(__name__)
 
+
 # run
 basic_entities = {
+    "blocks": [
+        {"blockhash": "0", "number": 0, "parenthash": -1, "is_current": true},
+    ],
+    "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 9}],
     "tracks": [
         {"track_id": 1, "owner_id": 1},
         {"track_id": 2, "owner_id": 1},
