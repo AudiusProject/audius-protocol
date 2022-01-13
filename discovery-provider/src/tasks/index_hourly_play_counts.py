@@ -2,11 +2,14 @@ import logging
 import time
 from typing import List
 
-from sqlalchemy import desc, func, text
+from sqlalchemy import desc, func
 from src.models import Play
 from src.models.models import HourlyPlayCounts
 from src.tasks.celery_app import celery
-from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint, save_indexed_checkpoint
+from src.utils.update_indexing_checkpoints import (
+    get_last_indexed_checkpoint,
+    save_indexed_checkpoint,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +25,9 @@ UPSERT_HOURLY_PLAY_COUNTS_QUERY = """
 
 def _index_hourly_play_counts(session):
     # get checkpoints
-    prev_id_checkpoint = get_last_indexed_checkpoint(session, HOURLY_PLAY_COUNTS_TABLE_NAME)
+    prev_id_checkpoint = get_last_indexed_checkpoint(
+        session, HOURLY_PLAY_COUNTS_TABLE_NAME
+    )
 
     new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 

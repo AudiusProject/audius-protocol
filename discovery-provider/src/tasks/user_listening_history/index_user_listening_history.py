@@ -7,7 +7,10 @@ from src.models import Play
 from src.models.models import UserListeningHistory
 from src.tasks.celery_app import celery
 from src.tasks.user_listening_history.listen_history import ListenHistory
-from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint, save_indexed_checkpoint
+from src.utils.update_indexing_checkpoints import (
+    get_last_indexed_checkpoint,
+    save_indexed_checkpoint,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +30,9 @@ def sort_listening_history(deduped_history_dict, limit=1000):
 def _index_user_listening_history(session):
     # get the last updated id that counted towards user_listening_history
     # use as lower bound
-    prev_id_checkpoint = get_last_indexed_checkpoint(session, USER_LISTENING_HISTORY_TABLE_NAME)
+    prev_id_checkpoint = get_last_indexed_checkpoint(
+        session, USER_LISTENING_HISTORY_TABLE_NAME
+    )
 
     # get new plays since the last checkpoint
     new_plays = (

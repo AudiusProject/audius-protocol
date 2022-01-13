@@ -61,7 +61,9 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
 
 def _update_aggregate_plays(session):
     # get the last updated id that counted towards the current aggregate plays
-    prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_PLAYS_TABLE_NAME)
+    prev_id_checkpoint = get_last_indexed_checkpoint(
+        session, AGGREGATE_PLAYS_TABLE_NAME
+    )
 
     # get the new latest
     new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
