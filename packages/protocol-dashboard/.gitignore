@@ -18,6 +18,7 @@ eth-contracts-ganache-accounts.json
 .DS_Store
 .env.local
 .env.development.local
+.env.dev.local
 .env.test.local
 .env.production.local
 
