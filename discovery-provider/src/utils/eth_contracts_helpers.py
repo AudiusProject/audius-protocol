@@ -68,10 +68,9 @@ def fetch_all_registered_content_nodes(
                 valid_endpoint = is_fqdn(eth_sp_endpoint)
                 # Only valid FQDN strings are worth validating
                 if valid_endpoint:
-                    eth_cn_endpoints_set.add(cn_endpoint_info[1])
+                    eth_cn_endpoints_set.add(eth_sp_endpoint)
             except Exception as exc:
                 logger.error(
                     f"eth_contract_helpers.py | ERROR in fetch_cnode_futures {single_cnode_fetch_op} generated {exc}"
                 )
-    # Return dictionary with key = endpoint, formatted as { endpoint: True }
     return eth_cn_endpoints_set
