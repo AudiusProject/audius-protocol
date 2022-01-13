@@ -365,7 +365,7 @@ def test_update_track_score_query(app):
 
         week_scores = get_time_sorted("week")
         month_scores = get_time_sorted("month")
-        all_time_scores = get_time_sorted("all_time")
+        all_time_scores = get_time_sorted("allTime")
 
         assert len(week_scores) == 7
         assert len(month_scores) == 7
