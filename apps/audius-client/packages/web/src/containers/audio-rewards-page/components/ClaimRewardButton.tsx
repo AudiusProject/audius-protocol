@@ -235,7 +235,7 @@ const ClaimRewardButton = ({
     try {
       const { error } = await claimReward()
 
-      if (error) {
+      if (error && error !== FailureReason.ALREADY_DISBURSED) {
         switch (error) {
           case FailureReason.HCAPTCHA:
             triggerHCaptcha()
