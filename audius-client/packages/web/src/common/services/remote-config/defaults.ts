@@ -48,7 +48,8 @@ export const remoteConfigStringDefaults: {
   [StringKeys.PLAYLIST_TRENDING_EXPERIMENT]: null,
   [StringKeys.UNDERGROUND_TRENDING_EXPERIMENT]: null,
   [StringKeys.ORACLE_ETH_ADDRESS]: null,
-  [StringKeys.ORACLE_ENDPOINT]: null
+  [StringKeys.ORACLE_ENDPOINT]: null,
+  [StringKeys.REWARDS_ATTESTATION_ENDPOINTS]: null
 }
 export const remoteConfigDoubleDefaults: {
   [key in DoubleKeys]: number | null

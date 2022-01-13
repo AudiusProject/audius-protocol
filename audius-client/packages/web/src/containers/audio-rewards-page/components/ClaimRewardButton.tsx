@@ -62,6 +62,15 @@ const ClaimRewardButton = ({
   const quorumSize = useRemoteVar(IntKeys.ATTESTATION_QUORUM_SIZE)
   const oracleEthAddress = useRemoteVar(StringKeys.ORACLE_ETH_ADDRESS)
   const AAOEndpoint = useRemoteVar(StringKeys.ORACLE_ENDPOINT)
+  const rewardsAttestationEndpoints = useRemoteVar(
+    StringKeys.REWARDS_ATTESTATION_ENDPOINTS
+  )
+
+  // When endpoints is unset, `submitAndEvaluateAttestations` picks for us
+  let endpoints: string[] | null = null
+  if (rewardsAttestationEndpoints !== null) {
+    endpoints = rewardsAttestationEndpoints.split(',')
+  }
   const hasConfig = oracleEthAddress && AAOEndpoint && quorumSize > 0
 
   const handle = useSelector(getUserHandle)
@@ -92,6 +101,7 @@ const ClaimRewardButton = ({
       oracleEthAddress,
       amount,
       quorumSize,
+      endpoints,
       AAOEndpoint
     })
 
@@ -99,6 +109,7 @@ const ClaimRewardButton = ({
   }, [
     oracleEthAddress,
     AAOEndpoint,
+    endpoints,
     quorumSize,
     dispatch,
     currentUser,
