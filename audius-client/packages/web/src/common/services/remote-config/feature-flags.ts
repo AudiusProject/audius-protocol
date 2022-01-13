@@ -2,8 +2,6 @@
 export enum FeatureFlags {
   TRENDING_UNDERGROUND = 'trending_underground',
   SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
-  USE_TRACK_CONTENT_POLLING = 'use_track_content_polling',
-  USE_RESUMABLE_TRACK_UPLOAD = 'use_resumable_track_upload',
   PLAYLIST_UPDATES_ENABLED = 'playlist_updates_enabled',
   CREATE_WAUDIO_USER_BANK_ON_SIGN_UP = 'create_waudio_user_bank_on_sign_up',
   SHARE_SOUND_TO_TIKTOK = 'share_sound_to_tiktok',
@@ -25,9 +23,7 @@ export enum FeatureFlags {
  */
 export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.TRENDING_UNDERGROUND]: false,
-  [FeatureFlags.USE_TRACK_CONTENT_POLLING]: false,
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
-  [FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD]: false,
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false,
   [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]: false,
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
@@ -60,9 +56,7 @@ export enum FeatureFlagCohortType {
 export const flagCohortType: {
   [key in FeatureFlags]: FeatureFlagCohortType
 } = {
-  [FeatureFlags.USE_TRACK_CONTENT_POLLING]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: FeatureFlagCohortType.SESSION_ID,
-  [FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.SOLANA_COLLECTIBLES_ENABLED]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.TRENDING_UNDERGROUND]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: FeatureFlagCohortType.USER_ID,
