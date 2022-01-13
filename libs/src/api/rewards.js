@@ -1,10 +1,10 @@
 const axios = require('axios')
+const { sampleSize } = require('lodash')
+
 const { Base, Services } = require('./base')
 const BN = require('bn.js')
 const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
-const { shuffle } = require('lodash')
 const { WAUDIO_DECMIALS } = require('../constants')
-const { sampleSize } = require('lodash')
 const { decodeHashId } = require('../utils/utils')
 
 const GetAttestationError = Object.freeze({
