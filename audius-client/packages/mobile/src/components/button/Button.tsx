@@ -8,7 +8,8 @@ import {
   TextStyle,
   View,
   Animated,
-  StyleProp
+  StyleProp,
+  ColorValue
 } from 'react-native'
 
 import Text from 'app/components/text'
@@ -25,7 +26,9 @@ interface ButtonStyle {
   button: ViewStyle
   buttonContent: ViewStyle
   buttonText: TextStyle
-  icon: ViewStyle
+  icon: TextStyle
+  iconRight: ViewStyle
+  iconLeft: ViewStyle
   disabled: ViewStyle
 }
 
@@ -35,6 +38,9 @@ const buttonTypeStyles = {
       backgroundColor: themeColors.primary
     },
     buttonText: {
+      color: themeColors.staticWhite
+    },
+    icon: {
       color: themeColors.staticWhite
     }
   }),
@@ -74,6 +80,12 @@ const createStyles = (type: ButtonType = ButtonType.PRIMARY) => (
           fontFamily: 'AvenirNextLTPro-Bold'
         },
         icon: {
+          color: themeColors.neutralLight4
+        },
+        iconLeft: {
+          marginRight: 12
+        },
+        iconRight: {
           marginLeft: 12
         },
         disabled: {
@@ -88,7 +100,19 @@ export type ButtonProps = {
   title: string
   onPress: () => void
   type?: ButtonType
+  /**
+   * The element to render for the icon
+   * @deprecated use the `renderIcon` prop instead in order to ensure the proper color is used to style the icon.
+   */
   icon?: React.ReactElement
+  /**
+   * Callback accepting the themed color of the button text that returns the resulting icon element.
+   * Takes priority over the `icon` prop. Define the callback outside of a render function to prevent rerenders.
+   * @example
+   * const renderIconArrow = color => <IconArrow fill={color} />
+   * export const myComponent = () => <Button renderIcon={renderIconArrow} />
+   */
+  renderIcon?: (color: ColorValue) => React.ReactElement
   iconPosition?: 'left' | 'right'
   containerStyle?: StyleProp<ViewStyle>
   style?: StyleProp<ViewStyle>
@@ -103,6 +127,7 @@ const Button = ({
   onPress,
   type = ButtonType.PRIMARY,
   icon,
+  renderIcon,
   iconPosition = 'right',
   containerStyle,
   style,
@@ -111,7 +136,7 @@ const Button = ({
   ignoreDisabledStyle = false,
   underlayColor
 }: ButtonProps) => {
-  const styles = useThemedStyles(createStyles(type))
+  const styles: ButtonStyle = useThemedStyles(createStyles(type))
   const { primaryDark1 } = useThemeColors()
   const scale = useRef(new Animated.Value(1)).current
 
@@ -154,12 +179,16 @@ const Button = ({
         style={[styles.button, style]}
       >
         <View style={styles.buttonContent}>
-          {icon && iconPosition === 'left' ? (
-            <View style={styles.icon}>{icon}</View>
+          {(icon || renderIcon) && iconPosition === 'left' ? (
+            <View style={styles.iconLeft}>
+              {renderIcon ? renderIcon(styles.icon.color) : icon}
+            </View>
           ) : null}
           <Text style={[styles.buttonText, textStyle]}>{title}</Text>
-          {icon && iconPosition === 'right' ? (
-            <View style={styles.icon}>{icon}</View>
+          {(icon || renderIcon) && iconPosition === 'right' ? (
+            <View style={styles.iconRight}>
+              {renderIcon ? renderIcon(styles.icon.color) : icon}
+            </View>
           ) : null}
         </View>
       </TouchableHighlight>
