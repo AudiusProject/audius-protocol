@@ -38,6 +38,7 @@ import createStore from 'app/store'
 import { setup as setupAnalytics } from 'app/utils/analytics'
 
 import ErrorBoundary from './ErrorBoundary'
+import { WebAppManager } from './WebAppManager'
 import { ThemeContextProvider } from './components/theme/ThemeContext'
 
 Sentry.init({
@@ -111,21 +112,17 @@ const App = () => {
             <NavigationContainer>
               <Provider store={store}>
                 <WebRefContextProvider>
-                  <GoogleCast webRef={webRef} />
-                  <WebApp webRef={webRef} />
-                  {/*
-                Note: it is very important that components are rendered after WebApp.
-                On Android, regardless of position: absolute, WebApp will steal all of
-                touch targets and onPress will not work.
-              */}
-                  <AppNavigator />
-                  <Search />
-                  <Notifications webRef={webRef} />
-                  <Drawers />
-                  <Modals />
-                  <Audio webRef={webRef} />
-                  <OAuth webRef={webRef} />
-                  <Airplay webRef={webRef} />
+                  <WebAppManager webApp={<WebApp webRef={webRef} />}>
+                    <GoogleCast webRef={webRef} />
+                    <AppNavigator />
+                    <Search />
+                    <Notifications webRef={webRef} />
+                    <Drawers />
+                    <Modals />
+                    <Audio webRef={webRef} />
+                    <OAuth webRef={webRef} />
+                    <Airplay webRef={webRef} />
+                  </WebAppManager>
                 </WebRefContextProvider>
               </Provider>
             </NavigationContainer>
