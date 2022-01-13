@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 

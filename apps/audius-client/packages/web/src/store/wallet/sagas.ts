@@ -4,7 +4,7 @@ import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 
 import { Name } from 'common/models/Analytics'
 import { Chain } from 'common/models/Chain'
-import { BNWei, StringWei } from 'common/models/Wallet'
+import { BNWei } from 'common/models/Wallet'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
 import {

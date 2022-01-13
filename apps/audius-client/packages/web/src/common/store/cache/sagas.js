@@ -9,7 +9,7 @@ import { CACHE_PRUNE_MIN } from 'common/store/cache/config'
 import { getCache } from 'common/store/cache/selectors'
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
-import { makeUids, makeKindId, getIdFromKindId } from 'common/utils/uid'
+import { makeUids, getIdFromKindId } from 'common/utils/uid'
 import { getConfirmCalls } from 'store/confirmer/selectors'
 import * as persistentCache from 'utils/persistentCache'
 

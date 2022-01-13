@@ -1,17 +1,12 @@
 import { Name } from 'common/models/Analytics'
 import { MobileOS } from 'models/OS'
 import {
-  SetAnalyticsUser,
-  TrackAnalyticsEvent
-} from 'services/native-mobile-interface/analytics'
-import {
   isMobile as getIsMobile,
   isElectron as getIsElectron,
   getMobileOS
 } from 'utils/clientUtil'
 // Segment Analytics
 
-const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export const getSource = () => {

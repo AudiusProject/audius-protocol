@@ -127,7 +127,7 @@ export const assetToCollectible = async (
   let threeDUrl = null
   let gifUrl = null
 
-  const { animation_url, animation_original_url, name } = asset
+  const { animation_url, animation_original_url } = asset
   const imageUrls = [
     asset.image_url,
     asset.image_original_url,
