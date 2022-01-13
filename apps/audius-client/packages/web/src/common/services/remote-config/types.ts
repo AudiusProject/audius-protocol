@@ -212,7 +212,10 @@ export enum StringKeys {
   ORACLE_ETH_ADDRESS = 'ORACLE_ETH_ADDRESS',
 
   /** Endpoint of oracle */
-  ORACLE_ENDPOINT = 'ORACLE_ENDPOINT'
+  ORACLE_ENDPOINT = 'ORACLE_ENDPOINT',
+
+  /** Endpoints to use for rewards attestations */
+  REWARDS_ATTESTATION_ENDPOINTS = 'REWARDS_ATTESTATION_ENDPOINTS'
 }
 
 export type AllRemoteConfigKeys =
