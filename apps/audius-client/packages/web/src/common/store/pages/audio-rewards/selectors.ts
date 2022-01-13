@@ -26,3 +26,9 @@ export const getHCaptchaStatus = (state: CommonState) =>
 
 export const getCognitoFlowStatus = (state: CommonState) =>
   state.pages.audioRewards.cognitoFlowStatus
+
+export const getCognitoFlowUrl = (state: CommonState) =>
+  state.pages.audioRewards.cognitoFlowUrl
+
+export const getCognitoFlowUrlStatus = (state: CommonState) =>
+  state.pages.audioRewards.cognitoFlowUrlStatus
