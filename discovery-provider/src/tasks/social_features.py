@@ -7,10 +7,24 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import Follow, Playlist, Repost, RepostType
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.index_related_artists import queue_related_artist_calculation
-from src.utils.indexing_errors import IndexingError
+from src.utils import helpers
+from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
+from src.utils.model_nullable_validator import all_required_fields_present
 
 logger = logging.getLogger(__name__)
+
+
+def get_social_feature_factory_tx(update_task, event_type, tx_receipt):
+    social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
+    social_feature_factory_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()["social_feature_factory"],
+        abi=social_feature_factory_abi,
+    )
+    return getattr(social_feature_factory_contract.events, event_type)().processReceipt(
+        tx_receipt
+    )
 
 
 def social_feature_state_update(
@@ -23,16 +37,12 @@ def social_feature_state_update(
     block_hash,
 ):
     """Return int representing number of social feature related state changes in this transaction"""
-
+    blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
+    skipped_tx_count = 0
     if not social_feature_factory_txs:
         return num_total_changes
 
-    social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
-    social_feature_factory_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["social_feature_factory"],
-        abi=social_feature_factory_abi,
-    )
     challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
@@ -45,10 +55,10 @@ def social_feature_state_update(
     follow_state_changes: Dict[int, Dict[int, Follow]] = {}
 
     for tx_receipt in social_feature_factory_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         try:
             add_track_repost(
                 self,
-                social_feature_factory_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -58,7 +68,6 @@ def social_feature_state_update(
             )
             delete_track_repost(
                 self,
-                social_feature_factory_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -68,7 +77,6 @@ def social_feature_state_update(
             )
             add_playlist_repost(
                 self,
-                social_feature_factory_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -78,7 +86,6 @@ def social_feature_state_update(
             )
             delete_playlist_repost(
                 self,
-                social_feature_factory_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -88,7 +95,6 @@ def social_feature_state_update(
             )
             add_follow(
                 self,
-                social_feature_factory_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -98,7 +104,6 @@ def social_feature_state_update(
             )
             delete_follow(
                 self,
-                social_feature_factory_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -106,10 +111,13 @@ def social_feature_state_update(
                 block_datetime,
                 follow_state_changes,
             )
+        except EntityMissingRequiredFieldError as e:
+            logger.warning(f"Skipping tx {txhash} with error {e}")
+            skipped_tx_count += 1
+            add_node_level_skipped_transaction(session, block_number, blockhash, txhash)
+            pass
         except Exception as e:
             logger.info("Error in parse track transaction")
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            blockhash = update_task.web3.toHex(block_hash)
             raise IndexingError(
                 "social_feature", block_number, blockhash, txhash, str(e)
             ) from e
@@ -195,7 +203,6 @@ def invalidate_old_follow(session, follower_user_id, followee_user_id):
 
 def add_track_repost(
     self,
-    social_feature_factory_contract,
     update_task,
     session,
     tx_receipt,
@@ -204,15 +211,12 @@ def add_track_repost(
     track_repost_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_track_repost_events = (
-        social_feature_factory_contract.events.TrackRepostAdded().processReceipt(
-            tx_receipt
-        )
+    new_track_repost_events = get_social_feature_factory_tx(
+        update_task, "TrackRepostAdded", tx_receipt
     )
     for event in new_track_repost_events:
-        event_args = event["args"]
-        repost_user_id = event_args._userId
-        repost_track_id = event_args._trackId
+        repost_user_id = helpers.get_tx_arg(event, "_userId")
+        repost_track_id = helpers.get_tx_arg(event, "_trackId")
 
         if (repost_user_id in track_repost_state_changes) and (
             repost_track_id in track_repost_state_changes[repost_user_id]
@@ -232,6 +236,12 @@ def add_track_repost(
                 is_delete=False,
                 created_at=block_datetime,
             )
+            if not all_required_fields_present(Repost, repost):
+                raise EntityMissingRequiredFieldError(
+                    "repost",
+                    repost,
+                    f"Error parsing repost {repost} with entity missing required field(s)",
+                )
             if repost_user_id in track_repost_state_changes:
                 track_repost_state_changes[repost_user_id][repost_track_id] = repost
             else:
@@ -240,7 +250,6 @@ def add_track_repost(
 
 def delete_track_repost(
     self,
-    social_feature_factory_contract,
     update_task,
     session,
     tx_receipt,
@@ -249,15 +258,12 @@ def delete_track_repost(
     track_repost_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_repost_events = (
-        social_feature_factory_contract.events.TrackRepostDeleted().processReceipt(
-            tx_receipt
-        )
+    new_repost_events = get_social_feature_factory_tx(
+        update_task, "TrackRepostDeleted", tx_receipt
     )
     for event in new_repost_events:
-        event_args = event["args"]
-        repost_user_id = event_args._userId
-        repost_track_id = event_args._trackId
+        repost_user_id = helpers.get_tx_arg(event, "_userId")
+        repost_track_id = helpers.get_tx_arg(event, "_trackId")
 
         if (repost_user_id in track_repost_state_changes) and (
             repost_track_id in track_repost_state_changes[repost_user_id]
@@ -275,6 +281,12 @@ def delete_track_repost(
                 is_delete=True,
                 created_at=block_datetime,
             )
+            if not all_required_fields_present(Repost, repost):
+                raise EntityMissingRequiredFieldError(
+                    "repost",
+                    repost,
+                    f"Error parsing repost {repost} with entity missing required field(s)",
+                )
             if repost_user_id in track_repost_state_changes:
                 track_repost_state_changes[repost_user_id][repost_track_id] = repost
             else:
@@ -283,7 +295,6 @@ def delete_track_repost(
 
 def add_playlist_repost(
     self,
-    social_feature_factory_contract,
     update_task,
     session,
     tx_receipt,
@@ -292,15 +303,12 @@ def add_playlist_repost(
     playlist_repost_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_playlist_repost_events = (
-        social_feature_factory_contract.events.PlaylistRepostAdded().processReceipt(
-            tx_receipt
-        )
+    new_playlist_repost_events = get_social_feature_factory_tx(
+        update_task, "PlaylistRepostAdded", tx_receipt
     )
     for event in new_playlist_repost_events:
-        event_args = event["args"]
-        repost_user_id = event_args._userId
-        repost_playlist_id = event_args._playlistId
+        repost_user_id = helpers.get_tx_arg(event, "_userId")
+        repost_playlist_id = helpers.get_tx_arg(event, "_playlistId")
         repost_type = RepostType.playlist
 
         playlist_entries = (
@@ -332,6 +340,12 @@ def add_playlist_repost(
                 is_delete=False,
                 created_at=block_datetime,
             )
+            if not all_required_fields_present(Repost, repost):
+                raise EntityMissingRequiredFieldError(
+                    "repost",
+                    repost,
+                    f"Error parsing repost {repost} with entity missing required field(s)",
+                )
             if repost_user_id in playlist_repost_state_changes:
                 playlist_repost_state_changes[repost_user_id][
                     repost_playlist_id
@@ -344,7 +358,6 @@ def add_playlist_repost(
 
 def delete_playlist_repost(
     self,
-    social_feature_factory_contract,
     update_task,
     session,
     tx_receipt,
@@ -353,15 +366,12 @@ def delete_playlist_repost(
     playlist_repost_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_playlist_repost_events = (
-        social_feature_factory_contract.events.PlaylistRepostDeleted().processReceipt(
-            tx_receipt
-        )
+    new_playlist_repost_events = get_social_feature_factory_tx(
+        update_task, "PlaylistRepostDeleted", tx_receipt
     )
     for event in new_playlist_repost_events:
-        event_args = event["args"]
-        repost_user_id = event_args._userId
-        repost_playlist_id = event_args._playlistId
+        repost_user_id = helpers.get_tx_arg(event, "_userId")
+        repost_playlist_id = helpers.get_tx_arg(event, "_playlistId")
         repost_type = RepostType.playlist
 
         playlist_entries = (
@@ -393,6 +403,12 @@ def delete_playlist_repost(
                 is_delete=True,
                 created_at=block_datetime,
             )
+            if not all_required_fields_present(Repost, repost):
+                raise EntityMissingRequiredFieldError(
+                    "repost",
+                    repost,
+                    f"Error parsing repost {repost} with entity missing required field(s)",
+                )
             if repost_user_id in playlist_repost_state_changes:
                 playlist_repost_state_changes[repost_user_id][
                     repost_playlist_id
@@ -405,7 +421,6 @@ def delete_playlist_repost(
 
 def add_follow(
     self,
-    social_feature_factory_contract,
     update_task,
     session,
     tx_receipt,
@@ -414,16 +429,12 @@ def add_follow(
     follow_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_follow_events = (
-        social_feature_factory_contract.events.UserFollowAdded().processReceipt(
-            tx_receipt
-        )
+    new_follow_events = get_social_feature_factory_tx(
+        update_task, "UserFollowAdded", tx_receipt
     )
-
     for entry in new_follow_events:
-        event_args = entry["args"]
-        follower_user_id = event_args._followerUserId
-        followee_user_id = event_args._followeeUserId
+        follower_user_id = helpers.get_tx_arg(entry, "_followerUserId")
+        followee_user_id = helpers.get_tx_arg(entry, "_followeeUserId")
 
         if (follower_user_id in follow_state_changes) and (
             followee_user_id in follow_state_changes[follower_user_id]
@@ -440,6 +451,12 @@ def add_follow(
                 is_delete=False,
                 created_at=block_datetime,
             )
+            if not all_required_fields_present(Follow, follow):
+                raise EntityMissingRequiredFieldError(
+                    "follow",
+                    follow,
+                    f"Error parsing follow {follow} with entity missing required field(s)",
+                )
             if follower_user_id in follow_state_changes:
                 follow_state_changes[follower_user_id][followee_user_id] = follow
             else:
@@ -448,7 +465,6 @@ def add_follow(
 
 def delete_follow(
     self,
-    social_feature_factory_contract,
     update_task,
     session,
     tx_receipt,
@@ -457,16 +473,13 @@ def delete_follow(
     follow_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_follow_events = (
-        social_feature_factory_contract.events.UserFollowDeleted().processReceipt(
-            tx_receipt
-        )
+    new_follow_events = get_social_feature_factory_tx(
+        update_task, "UserFollowDeleted", tx_receipt
     )
 
     for entry in new_follow_events:
-        event_args = entry["args"]
-        follower_user_id = event_args._followerUserId
-        followee_user_id = event_args._followeeUserId
+        follower_user_id = helpers.get_tx_arg(entry, "_followerUserId")
+        followee_user_id = helpers.get_tx_arg(entry, "_followeeUserId")
 
         if (follower_user_id in follow_state_changes) and (
             followee_user_id in follow_state_changes[follower_user_id]
@@ -483,6 +496,12 @@ def delete_follow(
                 is_delete=True,
                 created_at=block_datetime,
             )
+            if not all_required_fields_present(Follow, follow):
+                raise EntityMissingRequiredFieldError(
+                    "follow",
+                    follow,
+                    f"Error parsing follow {follow} with entity missing required field(s)",
+                )
             if follower_user_id in follow_state_changes:
                 follow_state_changes[follower_user_id][followee_user_id] = follow
             else:

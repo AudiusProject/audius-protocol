@@ -149,7 +149,7 @@ def get_track_events_tx(update_task, event_type, tx_receipt):
     track_contract = update_task.web3.eth.contract(
         address=get_contract_addresses()["track_factory"], abi=track_abi
     )
-    getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
+    return getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_track_record(

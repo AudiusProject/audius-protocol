@@ -349,7 +349,7 @@ def parse_playlist_event(
         raise EntityMissingRequiredFieldError(
             "playlist",
             playlist_record,
-            "Error parsing playlist {playlist_record} with entity missing required field(s)",
+            f"Error parsing playlist {playlist_record} with entity missing required field(s)",
         )
 
     return playlist_record

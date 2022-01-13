@@ -159,7 +159,7 @@ def get_user_events_tx(update_task, event_type, tx_receipt):
     user_contract = update_task.web3.eth.contract(
         address=get_contract_addresses()["user_factory"], abi=user_abi
     )
-    getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
+    return getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_user_record(
