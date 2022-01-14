@@ -367,8 +367,8 @@ class NotificationProcessor {
       time = Date.now()
 
       // actually send out push notifications
-      await drainPublishedMessages(logger)
-      logger.info(`notifications main indexAll job - drainPublishedMessages complete in ${Date.now() - time}ms`)
+      const numProcessedNotifs = await drainPublishedMessages(logger)
+      logger.info(`notifications main indexAll job - drainPublishedMessages complete - processed ${numProcessedNotifs} notifs in ${Date.now() - time}ms`)
 
       const endTime = process.hrtime(startTime)
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
@@ -416,8 +416,8 @@ class NotificationProcessor {
       await tx.commit()
 
       // actually send out push notifications
-      await drainPublishedSolanaMessages(logger)
-      logger.info(`${logLabel} - drainPublishedMessages complete`)
+      const numProcessedNotifs = await drainPublishedSolanaMessages(logger)
+      logger.info(`${logLabel} - drainPublishedSolanaMessages complete - processed ${numProcessedNotifs}`)
 
       const endTime = process.hrtime(startTime)
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
