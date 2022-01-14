@@ -658,6 +658,12 @@ const config = convict({
     format: 'BooleanCustom',
     env: 'openRestyCacheCIDEnabled',
     default: false
+  },
+  minimumTranscodingSlotsAvailable: {
+    doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',
+    format: 'nat',
+    env: 'minimumTranscodingSlotsAvailable',
+    default: 1
   }
 
   /**
