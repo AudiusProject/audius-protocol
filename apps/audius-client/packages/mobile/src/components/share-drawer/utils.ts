@@ -1,6 +1,6 @@
+import { UserCollection } from 'audius-client/src/common/models/Collection'
 import { ShareModalContent } from 'audius-client/src/common/store/ui/share-modal/types'
 
-import { UserCollection } from 'app/models/Collection'
 import {
   getCollectionRoute,
   getTrackRoute,

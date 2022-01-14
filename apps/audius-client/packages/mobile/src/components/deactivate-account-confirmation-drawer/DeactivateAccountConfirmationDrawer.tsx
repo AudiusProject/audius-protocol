@@ -4,7 +4,7 @@ import {
   getModalVisibility,
   setVisibility
 } from 'audius-client/src/common/store/ui/modals/slice'
-import { deactivateAccount } from 'audius-client/src/containers/deactivate-account-page/store/slice'
+import { deactivateAccount } from 'audius-client/src/pages/deactivate-account-page/store/slice'
 import { StyleSheet, View } from 'react-native'
 
 import Text from 'app/components/text'

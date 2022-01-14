@@ -8,6 +8,7 @@ import React, {
 } from 'react'
 
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import Theme from 'audius-client/src/common/models/Theme'
 import {
   Platform,
   NativeSyntheticEvent,
@@ -30,7 +31,6 @@ import { Dispatch } from 'redux'
 import useAppState from 'app/hooks/useAppState'
 import useKeyboardListeners from 'app/hooks/useKeyboardListeners'
 import { Message, MessageType, handleMessage } from 'app/message'
-import Theme from 'app/models/Theme'
 import { AppState } from 'app/store'
 import { getTrack, getIndex } from 'app/store/audio/selectors'
 import { getIsOnFirstPage, getIsSignedIn } from 'app/store/lifecycle/selectors'

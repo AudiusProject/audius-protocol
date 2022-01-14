@@ -1,21 +1,19 @@
+import { Repost } from 'audius-client/src/common/models/Repost'
 import { TrackSegment } from 'audius-client/src/common/models/Track'
+import { User } from 'audius-client/src/common/models/User'
 
 import { CollectionImage } from 'app/models/Collection'
-import Repost from 'app/models/Repost'
 import { TrackImage } from 'app/models/Track'
-import {
-  UserImage,
-  UserMultihash,
-  UserBalance,
-  UserName,
-  UserVerified
-} from 'app/models/User'
+import { UserImage, UserMultihash } from 'app/models/User'
+
+type BaseUser = Pick<
+  User,
+  'name' | 'is_verified' | 'associated_wallets_balance' | 'balance'
+>
 
 export type SearchUser = UserMultihash &
   UserImage &
-  UserBalance &
-  UserName &
-  UserVerified & {
+  BaseUser & {
     album_count: null
     bio: string
     followee_count: null

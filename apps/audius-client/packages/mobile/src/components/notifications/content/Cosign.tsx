@@ -1,8 +1,8 @@
 import React from 'react'
 
+import { Track } from 'audius-client/src/common/models/Track'
 import { StyleSheet, Text, View } from 'react-native'
 
-import Track from 'app/models/Track'
 import {
   RemixCosign as CosignNotification,
   Entity as EntityType
