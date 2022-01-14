@@ -18,6 +18,7 @@ export type Modals =
   | 'AudioBreakdown'
   | 'CollectibleDetails'
   | 'DeactivateAccountConfirmation'
+  | 'Cognito'
 
 export type ModalsState = { [modal in Modals]: boolean }
 
@@ -36,7 +37,8 @@ const initialState: ModalsState = {
   BrowserPushPermissionConfirmation: false,
   AudioBreakdown: false,
   CollectibleDetails: false,
-  DeactivateAccountConfirmation: false
+  DeactivateAccountConfirmation: false,
+  Cognito: false
 }
 
 const slice = createSlice({
