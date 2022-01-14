@@ -112,7 +112,7 @@ def user_replica_set_state_update(
                         )
                         if user_id not in user_replica_set_events_lookup:
                             user_replica_set_events_lookup[user_id] = {
-                                "track": parsed_user_record,
+                                "user": parsed_user_record,
                                 "events": [],
                             }
                         else:
@@ -138,7 +138,7 @@ def user_replica_set_state_update(
                         )
                         if cnode_sp_id not in cnode_events_lookup:
                             cnode_events_lookup[cnode_sp_id] = {
-                                "track": parsed_cnode_record,
+                                "content_node": parsed_cnode_record,
                                 "events": [],
                             }
                         else:
