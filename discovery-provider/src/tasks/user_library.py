@@ -177,7 +177,7 @@ def add_track_save(
             )
             if not all_required_fields_present(Save, save):
                 raise EntityMissingRequiredFieldError(
-                    "save",
+                    "user_library",
                     save,
                     f"Error parsing save {save} with entity missing required field(s)",
                 )
@@ -236,7 +236,7 @@ def add_playlist_save(
             )
             if not all_required_fields_present(Save, save):
                 raise EntityMissingRequiredFieldError(
-                    "save",
+                    "user_library",
                     save,
                     f"Error parsing save {save} with entity missing required field(s)",
                 )
@@ -281,7 +281,7 @@ def delete_track_save(
             )
             if not all_required_fields_present(Save, save):
                 raise EntityMissingRequiredFieldError(
-                    "save",
+                    "user_library",
                     save,
                     f"Error parsing save {save} with entity missing required field(s)",
                 )

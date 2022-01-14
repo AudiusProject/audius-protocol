@@ -332,7 +332,7 @@ def parse_ursm_cnode_record(update_task, entry, cnode_record):
 
     if not all_required_fields_present(URSMContentNode, cnode_record):
         raise EntityMissingRequiredFieldError(
-            "content_node",
+            "user_replica_set",
             cnode_record,
             f"Error parsing content node {cnode_record} with entity missing required field(s)",
         )
@@ -358,9 +358,9 @@ def parse_user_record(update_task, entry, user_record, block_timestamp):
 
     if not all_required_fields_present(User, user_record):
         raise EntityMissingRequiredFieldError(
-            "user",
+            "user_replica_set",
             user_record,
-            f"Error parsing user {user_record} with entity missing required field(s)",
+            f"Error parsing user for user replica set change {user_record} with entity missing required field(s)",
         )
 
     return user_record

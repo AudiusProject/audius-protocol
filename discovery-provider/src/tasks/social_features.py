@@ -237,7 +237,7 @@ def add_track_repost(
             )
             if not all_required_fields_present(Repost, repost):
                 raise EntityMissingRequiredFieldError(
-                    "repost",
+                    "social_features",
                     repost,
                     f"Error parsing repost {repost} with entity missing required field(s)",
                 )
@@ -282,7 +282,7 @@ def delete_track_repost(
             )
             if not all_required_fields_present(Repost, repost):
                 raise EntityMissingRequiredFieldError(
-                    "repost",
+                    "social_features",
                     repost,
                     f"Error parsing repost {repost} with entity missing required field(s)",
                 )
@@ -341,7 +341,7 @@ def add_playlist_repost(
             )
             if not all_required_fields_present(Repost, repost):
                 raise EntityMissingRequiredFieldError(
-                    "repost",
+                    "social_features",
                     repost,
                     f"Error parsing repost {repost} with entity missing required field(s)",
                 )
@@ -404,7 +404,7 @@ def delete_playlist_repost(
             )
             if not all_required_fields_present(Repost, repost):
                 raise EntityMissingRequiredFieldError(
-                    "repost",
+                    "social_features",
                     repost,
                     f"Error parsing repost {repost} with entity missing required field(s)",
                 )
@@ -452,7 +452,7 @@ def add_follow(
             )
             if not all_required_fields_present(Follow, follow):
                 raise EntityMissingRequiredFieldError(
-                    "follow",
+                    "social_features",
                     follow,
                     f"Error parsing follow {follow} with entity missing required field(s)",
                 )
@@ -497,7 +497,7 @@ def delete_follow(
             )
             if not all_required_fields_present(Follow, follow):
                 raise EntityMissingRequiredFieldError(
-                    "follow",
+                    "social_features",
                     follow,
                     f"Error parsing follow {follow} with entity missing required field(s)",
                 )
