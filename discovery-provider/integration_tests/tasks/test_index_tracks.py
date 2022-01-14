@@ -593,28 +593,24 @@ def test_track_indexing_skip_tx(app, mocker):
             [],
             [
                 {
-                    "args": {
-                        "_trackId": cursed_track_record.track_id,
-                    }
+                    "args": AttrDict(
+                        {
+                            "_trackId": cursed_track_record.track_id,
+                        }
+                    )
                 },
             ],  # track deleted event
             [],  # second tx processing loop
             [],
             [
                 {
-                    "args": {
-                        "_trackId": blessed_track_record.track_id,
-                    }
+                    "args": AttrDict(
+                        {
+                            "_trackId": blessed_track_record.track_id,
+                        }
+                    )
                 },
             ],  # track deleted event
-        ],
-        autospec=True,
-    )
-    mocker.patch(
-        "src.utils.helpers.get_tx_arg",
-        side_effect=[
-            cursed_track_record.track_id,
-            blessed_track_record.track_id,
         ],
         autospec=True,
     )

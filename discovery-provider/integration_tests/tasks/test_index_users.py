@@ -602,10 +602,12 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
             [],
             [
                 {
-                    "args": {
-                        "_userId": cursed_user_record.user_id,
-                        "_name": cursed_user_record.name.encode("utf-8"),
-                    }
+                    "args": AttrDict(
+                        {
+                            "_userId": cursed_user_record.user_id,
+                            "_name": cursed_user_record.name.encode("utf-8"),
+                        }
+                    )
                 },
             ],  # update name event
             [],
@@ -619,10 +621,12 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
             [],
             [
                 {
-                    "args": {
-                        "_userId": blessed_user_record.user_id,
-                        "_name": blessed_user_record.name.encode("utf-8"),
-                    }
+                    "args": AttrDict(
+                        {
+                            "_userId": blessed_user_record.user_id,
+                            "_name": blessed_user_record.name.encode("utf-8"),
+                        }
+                    )
                 },
             ],  # update name event
             [],
@@ -633,18 +637,6 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
             [],
             [],
         ],
-        autospec=True,
-    )
-
-    def get_tx_arg_mock(entry, arg_name):
-        if arg_name == "_userId":
-            return entry["args"]["_userId"]
-        else:
-            return entry["args"]["_name"]
-
-    mocker.patch(
-        "src.utils.helpers.get_tx_arg",
-        side_effect=get_tx_arg_mock,
         autospec=True,
     )
     test_ipfs_metadata = {}

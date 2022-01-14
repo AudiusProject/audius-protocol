@@ -417,9 +417,11 @@ def test_playlist_indexing_skip_tx(app, mocker):
             [],  # no playlist created events
             [
                 {
-                    "args": {
-                        "_playlistId": cursed_playlist_record.playlist_id,
-                    }
+                    "args": AttrDict(
+                        {
+                            "_playlistId": cursed_playlist_record.playlist_id,
+                        }
+                    )
                 },
             ],  # playlist deleted event
             [],
@@ -433,9 +435,11 @@ def test_playlist_indexing_skip_tx(app, mocker):
             [],  # second tx receipt
             [
                 {
-                    "args": {
-                        "_playlistId": blessed_playlist_record.playlist_id,
-                    }
+                    "args": AttrDict(
+                        {
+                            "_playlistId": blessed_playlist_record.playlist_id,
+                        }
+                    )
                 },
             ],  # playlist deleted event
             [],
@@ -446,14 +450,6 @@ def test_playlist_indexing_skip_tx(app, mocker):
             [],
             [],
             [],
-        ],
-        autospec=True,
-    )
-    mocker.patch(
-        "src.utils.helpers.get_tx_arg",
-        side_effect=[
-            cursed_playlist_record.playlist_id,
-            blessed_playlist_record.playlist_id,
         ],
         autospec=True,
     )
