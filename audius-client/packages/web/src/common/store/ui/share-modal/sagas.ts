@@ -1,9 +1,6 @@
-import { takeEvery, put, select } from 'redux-saga/effects'
+import { takeEvery, put, select } from 'typed-redux-saga/macro'
 
-import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
 import { CommonState } from 'common/store'
 import { getCollection as getCollectionBase } from 'common/store/cache/collections/selectors'
 import { getTrack as getTrackBase } from 'common/store/cache/tracks/selectors'
@@ -23,21 +20,26 @@ function* handleRequestOpen(action: RequestOpenAction) {
   switch (action.payload.type) {
     case 'track': {
       const { trackId, source, type } = action.payload
-      const track: Track = yield select(getTrack(trackId))
-      const artist: User = yield select(getUser(track.owner_id))
+      const track = yield* select(getTrack(trackId))
+      if (!track) return
+      const artist = yield* select(getUser(track.owner_id))
+      if (!artist) return
       yield put(open({ type, track, source, artist }))
       break
     }
     case 'profile': {
       const { profileId, source, type } = action.payload
-      const profile: User = yield select(getUser(profileId))
+      const profile = yield* select(getUser(profileId))
+      if (!profile) return
       yield put(open({ type, profile, source }))
       break
     }
     case 'collection': {
       const { collectionId, source } = action.payload
-      const collection: Collection = yield select(getCollection(collectionId))
-      const owner: User = yield select(getUser(collection.playlist_owner_id))
+      const collection = yield* select(getCollection(collectionId))
+      if (!collection) return
+      const owner = yield* select(getUser(collection.playlist_owner_id))
+      if (!owner) return
       if (collection.is_album) {
         yield put(
           open({ type: 'album', album: collection, artist: owner, source })
