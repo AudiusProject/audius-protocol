@@ -7,7 +7,7 @@ import { StyleSheet, View } from 'react-native'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
 
-import { TabInfo } from './TabInfo'
+import { TabInfo } from '../components/TabInfo'
 
 const messages = {
   infoHeader: 'Featured Playlists'
