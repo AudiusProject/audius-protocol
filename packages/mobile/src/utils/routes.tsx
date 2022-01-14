@@ -1,8 +1,9 @@
+import { UserCollection } from 'audius-client/src/common/models/Collection'
+import { TrackMetadata } from 'audius-client/src/common/models/Track'
+import { User } from 'audius-client/src/common/models/User'
 import Config from 'react-native-config'
 
-import { UserCollection } from '../models/Collection'
-import { TrackMetadata } from '../models/Track'
-import { UserHandle } from '../models/User'
+type UserHandle = Pick<User, 'handle'>
 
 /**
  * Formats a URL name for routing.
