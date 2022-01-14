@@ -39,10 +39,9 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { encodeHashId } from 'utils/route/hashIds'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILEconst
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const HCAPTCHA_MODAL_NAME = 'HCaptcha'
-// TODO: Restore when Cognito modal is added
-// const COGNITO_MODAL_NAME = 'Cognito'
+const COGNITO_MODAL_NAME = 'Cognito'
 const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewardsExplainer'
 
 function* retryClaimChallengeReward(errorResolved: boolean) {
@@ -128,10 +127,9 @@ function* claimChallengeRewardAsync(
             )
             break
           case FailureReason.COGNITO_FLOW:
-            // TODO: Uncomment once Cognito Modal is added
-            // yield put(
-            //   setVisibility({ modal: COGNITO_MODAL_NAME, visible: true })
-            // )
+            yield put(
+              setVisibility({ modal: COGNITO_MODAL_NAME, visible: true })
+            )
             break
           case FailureReason.BLOCKED:
             throw new Error('User is blocked from claiming')
