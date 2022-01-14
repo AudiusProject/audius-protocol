@@ -363,6 +363,8 @@ class NotificationProcessor {
 
       // Commit
       await tx.commit()
+      logger.info(`notifications main indexAll job - dbCommit complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       // actually send out push notifications
       await drainPublishedMessages()
