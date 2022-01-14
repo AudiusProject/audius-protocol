@@ -185,7 +185,7 @@ def test_index_aggregate_plays_same_checkpoint(app):
 
 
 def test_index_aggregate_plays_no_plays(app):
-    """Raise exception when there are no plays"""
+    """Tests that aggregate_plays should skip indexing if there are no plays"""
     # setup
     with app.app_context():
         db = get_db()
@@ -196,10 +196,4 @@ def test_index_aggregate_plays_no_plays(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        try:
-            _update_aggregate_plays(session)
-            assert (
-                False
-            ), "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
-        except Exception:
-            assert True
+        _update_aggregate_plays(session)
