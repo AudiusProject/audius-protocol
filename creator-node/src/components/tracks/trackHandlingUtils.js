@@ -39,17 +39,18 @@ const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
  *    source_file {string} : the filename of the uploaded artifact
  *  }
  */
-async function processTrackTranscodeAndSegments(
+async function processTranscodeAndSegments(
   { logContext },
   {
-    cnodeUserUUID,
+    session,
     fileName,
     fileDir,
     fileDestination,
     transcodeFilePath,
-    segmentFileNames
+    segmentFileNames,
   }
 ) {
+  const { cnodeUserUUID } = session
   const logger = genericLogger.child(logContext)
   let codeBlockTimeStart = getStartTime()
   const { segmentFileIPFSResps, transcodeFileIPFSResp } =
@@ -116,9 +117,7 @@ async function processTrackTranscodeAndSegments(
  * @returns the transcode and segment paths
  */
 async function transcodeAndSegment({ logContext }, { fileName, fileDir }) {
-  let transcodeFilePath
-  let segmentFileNames
-  let segmentFileNamesToPath
+  let transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path
   try {
     const transcode = await Promise.all([
       TranscodingQueue.segment(fileDir, fileName, { logContext }),
@@ -126,8 +125,9 @@ async function transcodeAndSegment({ logContext }, { fileName, fileDir }) {
     ])
     // this is misleading, not actually paths but the segment file names.
     // refactor to return the segment path
-    segmentFileNames = transcode[0].fileNames
-    segmentFileNamesToPath = transcode[0].fileNamesToPath
+    segmentFileNames = transcode[0].segments.fileNames
+    segmentFilePaths = transcode[0].segments.filePaths
+    m3u8Path = transcode[0].segments.m3u8Path
     transcodeFilePath = transcode[1].filePath
   } catch (err) {
     // Prune upload artifacts
@@ -140,7 +140,8 @@ async function transcodeAndSegment({ logContext }, { fileName, fileDir }) {
   return {
     transcodeFilePath,
     segmentFileNames,
-    segmentFileNamesToPath,
+    segmentFilePaths,
+    m3u8Path,
     fileName
   }
 }
@@ -310,7 +311,7 @@ async function batchSaveFileToIPFSAndCopyFromFS({
 }
 
 module.exports = {
-  processTrackTranscodeAndSegments,
+  processTranscodeAndSegments,
   transcodeAndSegment,
   addFilesToDb,
   createSegmentToDurationMap,

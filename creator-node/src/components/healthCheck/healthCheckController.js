@@ -18,7 +18,6 @@ const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
-const { FileProcessingQueue } = require('../../FileProcessingQueue')
 
 const { recoverWallet } = require('../../apiSigning')
 const {
@@ -40,12 +39,13 @@ const numberOfCPUs = os.cpus().length
  */
 const healthCheckVerifySignature = (req, res, next) => {
   const { timestamp, randomBytes, signature } = req.query
-  if (!timestamp || !randomBytes || !signature)
+  if (!timestamp || !randomBytes || !signature) {
     return sendResponse(
       req,
       res,
       errorResponseBadRequest('Missing required query parameters')
     )
+  }
 
   const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
   const recoveredPublicWallet = recoverWallet(
@@ -91,6 +91,8 @@ const healthCheckController = async (req) => {
 
   const { randomBytesToSign } = req.query
 
+  const FileProcessingQueue = serviceRegistry.fileProcessingQueue
+
   const logger = req.logger
   const response = await healthCheck(
     serviceRegistry,
@@ -134,6 +136,8 @@ const healthCheckVerboseController = async (req) => {
   if (config.get('isReadOnlyMode')) {
     return errorResponseServerError()
   }
+
+  const FileProcessingQueue = serviceRegistry.fileProcessingQueue
 
   const logger = req.logger
   const healthCheckResponse = await healthCheckVerbose(

@@ -42,7 +42,6 @@ const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
 const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
@@ -519,10 +518,17 @@ module.exports = function (app) {
     '/track_content_status',
     handleResponse(async (req, res) => {
       // for backwards compat, default to trackContentUpload
-      const taskType =
-        PROCESS_NAMES[req.query.taskType] || PROCESS_NAMES.trackContentUpload
+      const FileProcessingQueue =
+        req.app.get('serviceRegistry').fileProcessingQueue
 
-      const redisKey = constructProcessKey(taskType, req.query.uuid)
+      const taskType =
+        FileProcessingQueue.PROCESS_NAMES[req.query.taskType] ||
+        FileProcessingQueue.PROCESS_NAMES.trackContentUpload
+
+      const redisKey = FileProcessingQueue.constructProcessKey(
+        taskType,
+        req.query.uuid
+      )
       const value = (await redisClient.get(redisKey)) || '{}'
 
       return successResponse(JSON.parse(value))

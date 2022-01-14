@@ -34,7 +34,6 @@ const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const {
   handleTrackHandOff
 } = require('../components/tracks/tracksComponentService')
-const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const BlacklistManager = require('../blacklistManager')
@@ -56,6 +55,9 @@ module.exports = function (app) {
     syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
+      const FileProcessingQueue =
+        req.app.get('serviceRegistry').fileProcessingQueue
+
       if (req.fileSizeError || req.fileFilterError) {
         removeTrackFolder({ logContext: req.logContext }, req.fileDir)
         return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
@@ -83,10 +85,16 @@ module.exports = function (app) {
           fileName: req.fileName,
           fileDir: req.fileDir,
           fileNameNoExtension: req.fileNameNoExtension,
+          fileDestination: req.file.destination,
+          session: {
+            cnodeUserUUID: req.session.cnodeUserUUID
+          },
           uuid: req.logContext.requestID,
           headers: req.headers,
           libs: req.app.get('audiusLibs'),
-          handOffTrack: true
+          FileProcessingQueue:
+            req.app.get('serviceRegistry').fileProcessingQueue,
+          handOffTrack: true // for deleting artifacts later potentially
         })
       }
 
@@ -105,9 +113,15 @@ module.exports = function (app) {
     '/transcode_and_segment',
     handleTrackContentUpload,
     /* important middleware ... */ handleResponse(async (req, res) => {
+      const FileProcessingQueue =
+        req.app.get('serviceRegistry').fileProcessingQueue
+
       await FileProcessingQueue.addTranscodeAndSegmentTask(
         {
-          logContext: req.logContext,
+          logContext: {
+            ...req.logContext,
+            requestID: req.headers['x-request-id']
+          },
           req: {
             fileName: req.fileName,
             fileDir: req.fileDir,
@@ -118,7 +132,7 @@ module.exports = function (app) {
         req.app.get('audiusLibs')
       )
       // TODO: hm... make sure this is ths same request id during this entire flow
-      return successResponse({ uuid: req.logContext.requestID })
+      return successResponse({ uuid: req.headers['x-request-id'] })
     })
   )
 
@@ -146,6 +160,8 @@ module.exports = function (app) {
         pathToFile = path.join(basePath, fileName)
       } else if (fileType === 'segment') {
         pathToFile = path.join(basePath, 'segments', fileName)
+      } else if (fileType === 'm3u8') {
+        pathToFile = path.join(basePath, fileName)
       }
 
       try {

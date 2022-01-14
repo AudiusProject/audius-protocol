@@ -11,12 +11,12 @@ const {
   getStartTime
 } = require('../../logging')
 const fileManager = require('../../fileManager')
-const FileProcessingQueue = require('../../FileProcessingQueue')
 const Utils = require('../../utils')
 
 const SELF_ENDPOINT = config.get('creatorNodeEndpoint')
 const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
 const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 / 3 // 3min/3
+
 const POLL_STATUS_INTERVAL_MS = 10000 / 10 // 10s/10
 
 async function handOffTrack(libs, req) {
@@ -25,21 +25,19 @@ async function handOffTrack(libs, req) {
 
   logger.info({ sps }, 'BANANA selected random sps')
 
-  let successfulHandOff = false
-  let sp, transcodeFilePath, segmentFileNames
-  for (sp of sps) {
-    if (successfulHandOff) break
+  for (let sp of sps) {
     // hard code cus lazy
     sp = 'http://cn2_creator-node_1:4001'
     try {
-      logger.info(`BANANA handing off to sp=${sp}`)(
-        ({ transcodeFilePath, segmentFileNames } =
-          await handOffTranscodeAndSegment({
-            sp,
-            req
-          }))
-      )
-      successfulHandOff = true
+      logger.info(`BANANA handing off to sp=${sp}`)
+
+      const { transcodeFilePath, segmentFileNames } =
+        await handOffTranscodeAndSegment({
+          sp,
+          req
+        })
+
+      return { transcodeFilePath, segmentFileNames, sp }
     } catch (e) {
       // delete tmp dir here if fails and continue
       logger.warn(
@@ -47,8 +45,6 @@ async function handOffTrack(libs, req) {
       )
     }
   }
-
-  return { transcodeFilePath, segmentFileNames, sp }
 }
 
 // If any call fails -> throw error
@@ -58,7 +54,8 @@ async function handOffTranscodeAndSegment({ sp, req }) {
     fileDir,
     fileName,
     fileNameNoExtension,
-    uuid: requestID
+    uuid: requestID,
+    FileProcessingQueue
   } = req
   const logger = genericLogger.child(logContext)
 
@@ -79,47 +76,49 @@ async function handOffTranscodeAndSegment({ sp, req }) {
   // TODO: PROBLEM IS THAT IT'S PASSING IN A NEW UUID SO CAUSING FILE CANNOT BE FOUND.
   logger.info({ sp, requestID }, 'BANANA polling time')
   // const { fileName, transcodeFilePath, segmentFileNames, segmentFileNamesToPath } = await pollProcessingStatus(
-  const { transcodeFilePath, segmentFileNames } = await pollProcessingStatus({
+  const pollResp = await pollProcessingStatus({
     logger,
-    // FileProcessingQueue.PROCESS_NAMES.transcodeAndSegment, // ???? why is this an ampty obj
-    taskType: 'transcodeAndSegment',
+    taskType: FileProcessingQueue.PROCESS_NAMES.transcodeAndSegment, // ???? why is this an ampty obj
     uuid: requestID,
     sp
   })
 
+  const { transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path } =
+    pollResp
+
   let res
 
-  // Get segments and write to tmp disk
-  for (let segmentFileName of segmentFileNames) {
-    logger.info({ sp, segmentFileName }, 'BANANA getting segments')
+  for (let i = 0; i < segmentFileNames.length; i++) {
+    const segmentFileName = segmentFileNames[i]
+    const segmentFilePath = segmentFilePaths[i]
+
+    logger.info(
+      { sp, segmentFileName, segmentFilePath },
+      'BANANA getting segments'
+    )
 
     res = await fetchSegment(res, sp, segmentFileName, fileNameNoExtension)
 
-    // await pipeline(res.data, fs.createWriteStream(res.data, segmentFileName))
-    await Utils.writeStreamToFileSystem(res.data, segmentFileName)
+    await Utils.writeStreamToFileSystem(res.data, segmentFilePath)
   }
 
   // Get transcode and write to tmp disk
-  const transcodePath =
-    fileManager.getTmpTrackUploadArtifactsWithCIDInPath(fileNameNoExtension)
-  const transcodeFilePathWithExtension = path.join(
-    transcodePath,
-    fileNameNoExtension + '-dl.mp3'
-  )
+  logger.info({ sp, transcodeFilePath }, 'BANANA getting transcode')
+  const transcodeFileName = fileNameNoExtension + '-dl.mp3'
+  res = await fetchTranscode(res, sp, transcodeFileName, fileNameNoExtension)
+  await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
 
-  logger.info(
-    { sp, transcodeFilePath: transcodeFilePathWithExtension },
-    'BANANA getting transcode'
-  )
+  // Get m3u8 file and write to tmp disk
+  logger.info({ sp, m3u8Path }, 'BANANA getting m3u8')
+  const m3u8FileName = fileNameNoExtension + '.m3u8'
+  res = await fetchM3U8File(res, sp, m3u8FileName, fileNameNoExtension)
+  await Utils.writeStreamToFileSystem(res.data, m3u8Path)
 
-  res = await fetchTranscode(res, sp, fileNameNoExtension)
-
-  // await pipeline(res.data, fs.createWriteStream(res.data, transcodeFilePath))
-  await Utils.writeStreamToFileSystem(res.data, transcodeFilePathWithExtension)
-
+  logger.info('BANANAZ WE ARE DONE')
   return {
-    transcodeFilePath: transcodeFilePathWithExtension,
-    segmentFileNames
+    transcodeFilePath,
+    segmentFileNames,
+    m3u8Path
   }
 }
 
@@ -238,19 +237,6 @@ async function fetchTrackContentProcessingStatus(sp, uuid, taskType) {
   return body.data
 }
 
-async function fetchTranscode(res, sp, fileNameNoExtension) {
-  return axios({
-    url: `${sp}/transcode_and_segment`,
-    method: 'get',
-    params: {
-      fileName: fileNameNoExtension + '-dl.mp3',
-      fileType: 'transcode',
-      cidInPath: fileNameNoExtension
-    },
-    responseType: 'stream'
-  })
-}
-
 async function fetchSegment(res, sp, segmentFileName, fileNameNoExtension) {
   return axios({
     url: `${sp}/transcode_and_segment`,
@@ -259,6 +245,32 @@ async function fetchSegment(res, sp, segmentFileName, fileNameNoExtension) {
       fileName: segmentFileName,
       fileType: 'segment',
       cidInPath: fileNameNoExtension
+    },
+    responseType: 'stream'
+  })
+}
+
+async function fetchTranscode(res, sp, transcodeFileName, fileNameNoExtension) {
+  return axios({
+    url: `${sp}/transcode_and_segment`,
+    method: 'get',
+    params: {
+      fileName: transcodeFileName,
+      fileType: 'transcode',
+      cidInPath: fileNameNoExtension
+    },
+    responseType: 'stream'
+  })
+}
+
+async function fetchM3U8File(res, sp, m3u8FileName, fileNameNoExtension) {
+  return axios({
+    url: `${sp}/transcode_and_segment`,
+    method: 'get',
+    params: {
+      fileName: m3u8FileName,
+      fileType: 'm3u8',
+      cidInPath: fileNameNoExtension // TODO: rename this key bvar
     },
     responseType: 'stream'
   })

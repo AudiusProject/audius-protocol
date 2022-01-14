@@ -9,7 +9,7 @@ const {
   handleTranscodeAndSegment: transcodeAndSegment
 } = require('./components/tracks/tracksComponentService')
 const {
-  processTrackTranscodeAndSegments
+  processTranscodeAndSegments
 } = require('./components/tracks/trackHandlingUtils')
 
 const MAX_CONCURRENCY = 100
@@ -25,10 +25,6 @@ const PROCESS_STATES = Object.freeze({
   FAILED: 'FAILED'
 })
 
-function constructProcessKey(taskType, uuid) {
-  return `${taskType}:::${uuid}`
-}
-
 class FileProcessingQueue {
   constructor() {
     this.queue = new Bull('fileProcessing', {
@@ -43,26 +39,29 @@ class FileProcessingQueue {
     })
 
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
-      const { params } = job.data
-      const { logContext, task } = params
+      const { logContext, task } = job.data
 
       const func = this.getFn(task)
 
       try {
-        const response = await this.monitorProgress(task, func, params)
+        const response = await this.monitorProgress(task, func, job.data)
         done(null, { response })
       } catch (e) {
         this.logError(
-          logContext,
           `Could not process taskType=${task} uuid=${
             logContext.requestID
-          }: ${e.toString()}`
+          }: ${e.toString()}`,
+          logContext
         )
         done(e.toString())
       }
     })
 
     this.getFileProcessingQueueJobs = this.getFileProcessingQueueJobs.bind(this)
+    this.constructProcessKey = this.constructProcessKey.bind(this)
+
+    this.PROCESS_NAMES = PROCESS_NAMES
+    this.PROCESS_STATES = PROCESS_STATES
   }
 
   async logStatus(message, logContext = {}) {
@@ -104,8 +103,8 @@ class FileProcessingQueue {
     const { logContext, task } = params
 
     this.logStatus(
-      logContext,
-      `Adding ${task} task! uuid=${logContext.requestID}}`
+      `Adding ${task} task! uuid=${logContext.requestID}}`,
+      logContext
     )
 
     const job = await this.queue.add(params)
@@ -127,7 +126,7 @@ class FileProcessingQueue {
       case PROCESS_NAMES.transcodeAndSegment:
         return transcodeAndSegment
       case PROCESS_NAMES.processTranscodeAndSegments:
-        return processTrackTranscodeAndSegments
+        return processTranscodeAndSegments
       default:
         return null
     }
@@ -144,7 +143,7 @@ class FileProcessingQueue {
    */
   async monitorProgress(task, func, { logContext, req }) {
     const uuid = logContext.requestID
-    const redisKey = constructProcessKey(task, uuid)
+    const redisKey = this.constructProcessKey(task, uuid)
 
     let state = { status: PROCESS_STATES.IN_PROGRESS }
     this.logStatus(`Starting ${task}, uuid=${uuid}`, logContext)
@@ -180,10 +179,10 @@ class FileProcessingQueue {
       active: active.length
     }
   }
+
+  constructProcessKey(taskType, uuid) {
+    return `${taskType}:::${uuid}`
+  }
 }
 
-module.exports = {
-  FileProcessingQueue: new FileProcessingQueue(),
-  PROCESS_NAMES,
-  constructProcessKey
-}
+module.exports = FileProcessingQueue

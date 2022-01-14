@@ -4,7 +4,6 @@ const {
   getStartTime
 } = require('../../logging')
 
-const FileProcessingQueue = require('../../FileProcessingQueue')
 const TrackHandOffUtils = require('./trackHandOffUtils')
 const TrackHandlingUtils = require('./trackHandlingUtils')
 
@@ -30,7 +29,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
 
   // Create track transcode and segments, and save all to disk
   let codeBlockTimeStart = getStartTime()
-  const { transcodeFilePath, segmentFileNames, segmentFileNamesToPath } =
+  const { transcodeFilePath, segmentFileNames } =
     await TrackHandlingUtils.transcodeAndSegment(
       { logContext },
       { fileName, fileDir }
@@ -40,10 +39,10 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
     `Successfully re-encoded track file=${fileName}`
   )
 
-  const resp = await TrackHandlingUtils.processTrackTranscodeAndSegments(
+  const resp = await TrackHandlingUtils.processTranscodeAndSegments(
     { logContext },
     {
-      cnodeUserUUID,
+      session: { cnodeUserUUID },
       fileName,
       fileDir,
       transcodeFilePath,
@@ -77,9 +76,12 @@ async function handleTrackHandOff(req) {
     fileName,
     fileDir,
     fileDestination,
-    cnodeUserUUID
+    FileProcessingQueue,
+    session,
+    uuid // this is the original requestid that will be polled
   } = req
 
+  const { cnodeUserUUID } = session
   const logger = genericLogger.child(logContext)
 
   let codeBlockTimeStart = getStartTime()
@@ -87,10 +89,15 @@ async function handleTrackHandOff(req) {
   const { transcodeFilePath, segmentFileNames, sp } =
     await TrackHandOffUtils.handOffTrack(libs, req)
 
+  logInfoWithDuration(
+    { logger, startTime: codeBlockTimeStart },
+    `PIKACHU..... did you get here ${transcodeFilePath} ${segmentFileNames} ${sp}`
+  )
+
   if (!transcodeFilePath || !segmentFileNames) {
     // Let current node handle the track if handoff fails
     await FileProcessingQueue.addTrackContentUploadTask({
-      logContext,
+      logContext, // request id here is same as uuid
       req: {
         session: { cnodeUserUUID },
         fileName,
@@ -105,10 +112,10 @@ async function handleTrackHandOff(req) {
     )
   } else {
     // Finish with the rest of track upload flow
-    await FileProcessingQueue.addProcessTrackTranscodeAndSegments({
+    await FileProcessingQueue.addProcessTranscodeAndSegmentTask({
       logContext,
       req: {
-        cnodeUserUUID,
+        session: { cnodeUserUUID },
         fileName,
         fileDir,
         fileDestination,

@@ -2,15 +2,17 @@ const AudiusLibs = require('@audius/libs')
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
-const MonitoringQueue = require('./monitors/MonitoringQueue')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
+
+const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
+const FileProcessingQueue = require('./FileProcessingQueue')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -27,6 +29,7 @@ const SessionExpirationQueue = require('./services/SessionExpirationQueue')
  *  - `nodeConfig`: exposes config object
  *  - `snapbackSM`: SnapbackStateMachine is responsible for recurring sync and reconfig operations
  *  - `URSMRegistrationManager`: registers node on L2 URSM contract, no-ops afterward
+ *  - `fileProcessingQueue`: queue that processes jobs and adds job responses into redis
  *
  * `initServices` must be called prior to consuming services from the registry.
  */
@@ -39,6 +42,7 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
+    this.fileProcessingQueue = new FileProcessingQueue()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null

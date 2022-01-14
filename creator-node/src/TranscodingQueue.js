@@ -50,7 +50,7 @@ class TranscodingQueue {
         try {
           this.logStatus(`Segmenting ${fileDir} ${fileName}`, logContext)
 
-          const filePaths = await ffmpeg.segmentFile(fileDir, fileName, {
+          const segments = await ffmpeg.segmentFile(fileDir, fileName, {
             logContext
           })
           this.logStatus(
@@ -59,7 +59,7 @@ class TranscodingQueue {
             }ms`,
             logContext
           )
-          done(null, { filePaths })
+          done(null, { segments })
         } catch (e) {
           this.logStatus(
             `Segment Job Error ${e} in duration ${Date.now() - start}ms`,

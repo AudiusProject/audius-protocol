@@ -49,13 +49,15 @@ function segmentFile(fileDir, fileName, { logContext }) {
     proc.on('close', (code) => {
       if (code === 0) {
         const segmentFileNames = fs.readdirSync(fileDir + '/segments')
-        const segmentFileNameToPath = {}
+        const segmentFilePaths = segmentFileNames.map((filename) =>
+          path.resolve(fileDir, 'segments', filename)
+        )
 
-        segmentFileNames.forEach(filename => {
-          segmentFileNameToPath[filename] = path.resolve(fileDir, 'segments', filename)
+        resolve({
+          fileNames: segmentFileNames,
+          filePaths: segmentFilePaths,
+          m3u8Path: path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
         })
-
-        resolve({ fileNames: segmentFileNames, fileNamesToPath: segmentFileNameToPath })
       } else {
         logger.error('Error when processing file with ffmpeg')
         logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
