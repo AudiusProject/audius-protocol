@@ -27,8 +27,6 @@ logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
 
-def date_to_week(date: datetime) -> str:
-    return date.strftime('%Y-%m-%d')
 
 def get_latest_blocknumber(session: Session, redis: Redis) -> Optional[int]:
     # get latest db state from redis cache
@@ -67,7 +65,7 @@ def dispatch_trending_challenges(
                 "rank": idx + 1,
                 "type": str(type),
                 "version": str(version),
-                "week": date_to_week(date),
+                "week": str(date),
             },
         )
 
@@ -163,7 +161,7 @@ def enqueue_trending_challenges(
                         "rank": idx + 1,
                         "type": str(TrendingType.PLAYLISTS),
                         "version": str(version),
-                        "week": date_to_week(date),
+                        "week": str(date),
                     },
                 )
 

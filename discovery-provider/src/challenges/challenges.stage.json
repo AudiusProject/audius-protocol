@@ -31,17 +31,17 @@
 		"starting_block": 0
 	},
 	{
-		"id": "tt",
+		"id": "trending-track",
 		"active": true,
 		"starting_block": 0
 	},
 	{
-		"id": "tut",
+		"id": "trending-underground-track",
 		"active": true,
 		"starting_block": 0
 	},
 	{
-		"id": "tp",
+		"id": "trending-playlist",
 		"active": true,
 		"starting_block": 0
 	}
