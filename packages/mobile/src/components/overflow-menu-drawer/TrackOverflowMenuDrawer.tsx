@@ -1,5 +1,3 @@
-import React from 'react'
-
 import {
   FavoriteSource,
   FollowSource,
@@ -36,7 +34,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 type Props = {
-  render: (callbacks: OverflowActionCallbacks) => React.ReactNode
+  render: (callbacks: OverflowActionCallbacks) => JSX.Element
 }
 
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
@@ -44,13 +42,17 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { id: modalId } = useSelectorWeb(getMobileOverflowModal)
   const id = modalId as ID
 
-  const { owner_id, title, permalink } = useSelectorWeb((state: CommonState) =>
-    getTrack(state, { id })
+  const track = useSelectorWeb((state: CommonState) => getTrack(state, { id }))
+
+  const user = useSelectorWeb((state: CommonState) =>
+    getUser(state, { id: track?.owner_id })
   )
 
-  const { handle } = useSelectorWeb((state: CommonState) =>
-    getUser(state, { id: owner_id })
-  )
+  if (!track || !user) {
+    return null
+  }
+  const { owner_id, title, permalink } = track
+  const { handle } = user
 
   if (!id || !owner_id || !handle || !title) {
     return null

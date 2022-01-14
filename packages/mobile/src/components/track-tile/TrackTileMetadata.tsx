@@ -98,7 +98,7 @@ type Props = {
   isLoaded: boolean
   isPlaying: boolean
   setArtworkLoaded: (loaded: boolean) => void
-  showSkeleton: boolean
+  showSkeleton?: boolean
   title: string
   user: User
 }

@@ -285,7 +285,11 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
 
   const validateHandle = useCallback(
     (type: 'twitter' | 'instagram') => {
-      const { profile } = type === 'twitter' ? twitterInfo : instagramInfo
+      const info = type === 'twitter' ? twitterInfo : instagramInfo
+      if (!info) {
+        return
+      }
+      const { profile } = info
       const handle = type === 'twitter' ? profile.screen_name : profile.username
       const verified =
         type === 'twitter' ? profile.verified : profile.is_verified
@@ -302,7 +306,12 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
 
   const trackOAuthComplete = useCallback(
     (type: 'twitter' | 'instagram') => {
-      const { profile } = type === 'twitter' ? twitterInfo : instagramInfo
+      const info = type === 'twitter' ? twitterInfo : instagramInfo
+      if (!info) {
+        return
+      }
+      const { profile } = info
+
       const handle = type === 'twitter' ? profile.screen_name : profile.username
       const isVerified =
         type === 'twitter' ? profile.verified : profile.is_verified

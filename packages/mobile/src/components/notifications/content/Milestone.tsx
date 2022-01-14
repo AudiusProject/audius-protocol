@@ -30,7 +30,7 @@ const Milestone = ({ notification, onGoToRoute }: MilestoneProps) => {
   if (notification.achievement === Achievement.Followers) {
     body = (
       <Text>
-        {`You have reached over ${formatCount(notification.value)} ${
+        {`You have reached over ${formatCount(notification.value ?? 0)} ${
           notification.achievement
         }`}
       </Text>
@@ -52,7 +52,7 @@ const Milestone = ({ notification, onGoToRoute }: MilestoneProps) => {
         />
         <Text>
           {` has reached over ${formatCount(
-            notification.value
+            notification.value ?? 0
           )} ${achievementText}`}
         </Text>
       </>

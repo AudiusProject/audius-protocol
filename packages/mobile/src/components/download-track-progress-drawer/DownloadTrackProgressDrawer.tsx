@@ -73,7 +73,7 @@ const DownloadTrackProgressDrawer = () => {
   const fileName = useSelector(getFileName)
 
   const handleClose = useCallback(() => {
-    fetchCancel()
+    fetchCancel?.()
     setIsOpen(false)
   }, [fetchCancel, setIsOpen])
 

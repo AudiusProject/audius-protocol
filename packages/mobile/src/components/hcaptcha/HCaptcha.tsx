@@ -18,6 +18,11 @@ type HCaptchaMessage = {
   data: string
 }
 
+type HCaptchaRef = {
+  show: () => void
+  hide: () => void
+}
+
 const siteKey = Config.HCAPTCHA_SITE_KEY
 const baseUrl = Config.HCAPTCHA_BASE_URL
 
@@ -36,7 +41,7 @@ const HCaptchaModal = () => {
     getModalVisibility(state, HCAPTCHA_MODAL_NAME)
   )
   const hCaptchaStatus = useSelectorWeb(getHCaptchaStatus)
-  const ref = useRef(null)
+  const ref = useRef<HCaptchaRef>(null)
   const [hasCode, setHasCode] = useState(false)
 
   useEffect(() => {
@@ -94,7 +99,7 @@ const HCaptchaModal = () => {
 
   return isOpen ? (
     <HCaptcha
-      ref={_ref => (ref.current = _ref)}
+      ref={ref}
       siteKey={siteKey}
       baseUrl={baseUrl}
       onMessage={onMessage}

@@ -1,3 +1,4 @@
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { Platform, Share } from 'react-native'
 import RNFetchBlob, { FetchBlobResponse, StatefulPromise } from 'rn-fetch-blob'
 
@@ -10,7 +11,7 @@ import {
 } from 'app/store/download/slice'
 import { setVisibility } from 'app/store/drawers/slice'
 
-let fetchTask: StatefulPromise<FetchBlobResponse> = null
+let fetchTask: Nullable<StatefulPromise<FetchBlobResponse>> = null
 
 const cancelDownloadTask = () => {
   if (fetchTask) {

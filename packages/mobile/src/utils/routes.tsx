@@ -1,5 +1,4 @@
 import { UserCollection } from 'audius-client/src/common/models/Collection'
-import { TrackMetadata } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import Config from 'react-native-config'
 
@@ -39,7 +38,10 @@ export const encodeUrlName = (name: string) => {
 
 const AUDIUS_URL = Config.AUDIUS_URL
 
-export const getTrackRoute = (track: TrackMetadata, fullUrl = false) => {
+export const getTrackRoute = (
+  track: { permalink: string },
+  fullUrl = false
+) => {
   const route = track.permalink
   return fullUrl ? `${AUDIUS_URL}${route}` : route
 }

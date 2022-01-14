@@ -22,8 +22,8 @@ const INDICATOR_STRETCH_FACTOR = 0.35
 const INDICATOR_ANIM_GRANULARITY = 10
 
 const getSinAnimationRanges = (len: number) => {
-  const inputRange = []
-  const outputRange = []
+  const inputRange: number[] = []
+  const outputRange: number[] = []
 
   let i = 0
   while (i < len) {

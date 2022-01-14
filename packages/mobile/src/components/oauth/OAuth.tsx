@@ -228,7 +228,7 @@ const OAuth = ({ webRef }: Props) => {
 
         if (isNativeOAuth) {
           dispatch(setCredentials(payload as Credentials))
-        } else {
+        } else if (messageType) {
           postMessage(webRef.current, {
             type: messageType,
             id: messageId,
@@ -240,7 +240,7 @@ const OAuth = ({ webRef }: Props) => {
     }
   }
   const onClose = useCallback(() => {
-    if (webRef.current) {
+    if (webRef.current && messageType) {
       postMessage(webRef.current, {
         type: messageType,
         id: messageId,

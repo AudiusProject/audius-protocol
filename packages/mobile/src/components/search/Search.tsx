@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { StyleSheet, Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -128,7 +129,7 @@ const Search = () => {
   const hasResults = Object.values(searchResults).some(
     result => result && result.length > 0
   )
-  let body = null
+  let body: Nullable<JSX.Element> = null
   if (!!searchQuery && hasResults) {
     body = <SearchResults />
   } else if (!!searchQuery && !!searchResultQuery && !hasResults) {

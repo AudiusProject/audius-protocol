@@ -44,7 +44,7 @@ const TopTabNavigator = ({ initialScreen, screens }: TopTabsProps) => {
           }
         }}
       >
-        {screens.map(screen => (
+        {(screens ?? []).map(screen => (
           <Tab.Screen
             name={screen.name}
             key={screen.name}
