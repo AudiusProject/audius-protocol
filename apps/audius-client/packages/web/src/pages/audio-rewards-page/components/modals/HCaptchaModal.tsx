@@ -23,15 +23,15 @@ export const HCaptchaModal = () => {
   const [isOpen, setOpen] = useModalState('HCaptcha')
   const dispatch = useDispatch()
 
-  // here, we can also instead use a prop e.g. onClose to handle re-opening the reward modal if we want to decouple rewards and hcaptcha
-  const [, setRewardModalOpen] = useModalState('ChallengeRewardsExplainer')
-
-  const handleClose = useCallback(() => {
-    if (isOpen) {
-      setRewardModalOpen(true)
+  const handleClose = useCallback(
+    (userInitiated = true) => {
+      if (userInitiated) {
+        dispatch(setHCaptchaStatus({ status: HCaptchaStatus.USER_CLOSED }))
+      }
       setOpen(false)
-    }
-  }, [setRewardModalOpen, isOpen, setOpen])
+    },
+    [setOpen, dispatch]
+  )
 
   const onVerify = useCallback(
     async (token: string) => {
@@ -41,7 +41,7 @@ export const HCaptchaModal = () => {
       } else {
         dispatch(setHCaptchaStatus({ status: HCaptchaStatus.SUCCESS }))
       }
-      handleClose()
+      handleClose(false)
     },
     [dispatch, handleClose]
   )
@@ -49,10 +49,7 @@ export const HCaptchaModal = () => {
   return sitekey ? (
     <ModalDrawer
       isOpen={isOpen}
-      onClose={() => {
-        dispatch(setHCaptchaStatus({ status: HCaptchaStatus.USER_CLOSED }))
-        handleClose()
-      }}
+      onClose={handleClose}
       title={messages.title}
       showTitleHeader
       dismissOnClickOutside
