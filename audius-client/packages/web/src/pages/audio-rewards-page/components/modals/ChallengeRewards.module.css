@@ -152,10 +152,6 @@
   font-size: var(--font-l) !important;
   letter-spacing: 0px !important;
 }
-.button.disabled:hover {
-  transform: none;
-  background: var(--neutral-light-7);
-}
 .button.mobile {
   width: 100%;
 }
