@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { Name } from 'common/models/Analytics'
+import Theme from 'common/models/Theme'
 import * as accountActions from 'common/store/account/reducer'
 import {
   getAccountVerified,
@@ -17,7 +18,6 @@ import {
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { show } from 'components/music-confetti/store/slice'
 import { makeGetTierAndVerifiedForUser } from 'components/user-badges/utils'
-import Theme from 'models/Theme'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { setTheme } from 'store/application/ui/theme/actions'
 import { getTheme } from 'store/application/ui/theme/selectors'

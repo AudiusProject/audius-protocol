@@ -1,7 +1,7 @@
 import React from 'react'
 
+import { Playable } from 'common/models/Playable'
 import { User } from 'common/models/User'
-import { Playable } from 'models/Playable'
 import { useIsMobile } from 'utils/clientUtil'
 
 import DeletedPageProvider from './DeletedPageProvider'

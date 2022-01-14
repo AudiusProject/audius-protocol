@@ -1,4 +1,4 @@
-import Theme from 'models/Theme'
+import Theme from 'common/models/Theme'
 
 export interface ThemeState {
   theme: Theme | null

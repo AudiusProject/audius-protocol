@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 
 import { connect } from 'react-redux'
 
-import Client from 'models/Client'
+import Client from 'common/models/Client'
 import SearchPageProvider from 'pages/search-page/SearchPageProvider'
 import DesktopSearchPageContent from 'pages/search-page/components/desktop/SearchPageContent'
 import MobileSearchPageContent from 'pages/search-page/components/mobile/SearchPageContent'

@@ -8,8 +8,10 @@ import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
 import { Name } from 'common/models/Analytics'
+import Client from 'common/models/Client'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import Status from 'common/models/Status'
+import Theme from 'common/models/Theme'
 import {
   getHasAccount,
   getAccountStatus,
@@ -35,8 +37,6 @@ import ConnectedReachabilityBar from 'components/reachability-bar/ReachabilityBa
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
-import Client from 'models/Client'
-import Theme from 'models/Theme'
 import AnnouncementPage from 'pages/announcement-page/AnnoucementPage'
 import ArtistDashboardPage from 'pages/artist-dashboard-page/ArtistDashboardPage'
 import AudioRewardsPage from 'pages/audio-rewards-page/AudioRewardsPage'

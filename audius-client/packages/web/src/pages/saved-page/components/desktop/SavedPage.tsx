@@ -5,6 +5,7 @@ import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ID, UID } from 'common/models/Identifiers'
+import { Lineup } from 'common/models/Lineup'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
 import Card from 'components/card/desktop/Card'
@@ -16,7 +17,6 @@ import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import useTabs from 'hooks/useTabs/useTabs'
-import { Lineup } from 'models/common/Lineup'
 import {
   Tabs as ProfileTabs,
   TrackRecord,

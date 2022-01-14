@@ -1,6 +1,6 @@
 /* global fetch */
 
-import { OS } from 'models/OS'
+import { OS } from 'common/models/OS'
 
 const APP_DOWNLOAD_URL = 'https://download.audius.co'
 

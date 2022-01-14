@@ -7,7 +7,7 @@ import { Dispatch } from 'redux'
 
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
 import { Name } from 'common/models/Analytics'
-import Theme from 'models/Theme'
+import Theme from 'common/models/Theme'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { track } from 'store/analytics/providers'
 import { getTheme } from 'store/application/ui/theme/selectors'

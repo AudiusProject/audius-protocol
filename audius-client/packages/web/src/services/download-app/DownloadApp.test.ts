@@ -1,6 +1,6 @@
 import fetchMock from 'fetch-mock'
 
-import { OS } from 'models/OS'
+import { OS } from 'common/models/OS'
 
 import { getDownloadLinkForSystem } from './DownloadApp'
 

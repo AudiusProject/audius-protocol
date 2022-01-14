@@ -1,6 +1,7 @@
 import React, { useEffect, useContext } from 'react'
 
 import { CID, ID } from 'common/models/Identifiers'
+import { LineupState } from 'common/models/Lineup'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
@@ -15,7 +16,6 @@ import NavContext, {
 } from 'components/nav/store/context'
 import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkConnectivityMonitor'
 import SectionButton from 'components/section-button/SectionButton'
-import { LineupState } from 'models/common/Lineup'
 import { tracksActions } from 'pages/track-page/store/lineups/tracks/actions'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 import { QueueItem } from 'store/queue/types'

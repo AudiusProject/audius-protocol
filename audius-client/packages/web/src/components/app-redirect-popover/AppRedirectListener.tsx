@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { MobileOS } from 'models/OS'
+import { MobileOS } from 'common/models/OS'
 import { getMobileOS } from 'utils/clientUtil'
 import { APP_REDIRECT } from 'utils/route'
 

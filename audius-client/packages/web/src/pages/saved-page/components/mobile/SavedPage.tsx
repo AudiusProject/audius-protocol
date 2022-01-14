@@ -10,6 +10,7 @@ import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { Name } from 'common/models/Analytics'
 import { ID, UID } from 'common/models/Identifiers'
+import { Lineup } from 'common/models/Lineup'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
 import Card from 'components/card/mobile/Card'
@@ -22,7 +23,6 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useArePlaylistUpdatesEnabled } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
-import { Lineup } from 'models/common/Lineup'
 import {
   Tabs,
   SavedPageTrack,
