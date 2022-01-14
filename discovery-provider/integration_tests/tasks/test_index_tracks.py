@@ -654,5 +654,10 @@ def test_track_indexing_skip_tx(app, mocker):
                 .filter(Track.track_id == blessed_track_record.track_id)
                 .first()
             )
+            assert (
+                session.query(Track)
+                .filter(Track.track_id == cursed_track_record.track_id)
+                .first()
+            ) == None
         except Exception:
             assert False

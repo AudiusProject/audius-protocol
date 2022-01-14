@@ -678,5 +678,10 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                 .filter(User.user_id == blessed_user_record.user_id)
                 .first()
             )
+            assert (
+                session.query(User)
+                .filter(User.user_id == cursed_user_record.user_id)
+                .first()
+            ) == None
         except Exception:
             assert False

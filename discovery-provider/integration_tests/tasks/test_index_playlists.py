@@ -490,5 +490,10 @@ def test_playlist_indexing_skip_tx(app, mocker):
                 .filter(Playlist.playlist_id == blessed_playlist_record.playlist_id)
                 .first()
             )
+            assert (
+                session.query(Playlist)
+                .filter(Playlist.playlist_id == cursed_playlist_record.playlist_id)
+                .first()
+            ) == None
         except Exception:
             assert False
