@@ -21,6 +21,9 @@ export const getUserChallengesLoading = (state: CommonState) =>
 export const getClaimStatus = (state: CommonState) =>
   state.pages.audioRewards.claimStatus
 
+export const getClaimToRetry = (state: CommonState) =>
+  state.pages.audioRewards.claimToRetry
+
 export const getHCaptchaStatus = (state: CommonState) =>
   state.pages.audioRewards.hCaptchaStatus
 
