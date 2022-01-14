@@ -268,7 +268,7 @@ def test_trending_challenge_job(app):
         ChallengeEvent.trending_playlist, trending_playlist_challenge_manager
     )
 
-    trending_date = date.fromisoformat("2021-08-20")
+    trending_date = datetime.fromisoformat("2021-08-20")
 
     with db.scoped_session() as session:
         _update_aggregate_plays(session)
