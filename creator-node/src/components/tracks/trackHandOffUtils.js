@@ -31,11 +31,10 @@ async function handOffTrack(libs, req) {
     try {
       logger.info(`BANANA handing off to sp=${sp}`)
 
-      const { transcodeFilePath, segmentFileNames } =
-        await handOffTranscodeAndSegment({
-          sp,
-          req
-        })
+      const { transcodeFilePath, segmentFileNames } = await _handOffTrack({
+        sp,
+        req
+      })
 
       return { transcodeFilePath, segmentFileNames, sp }
     } catch (e) {
@@ -48,14 +47,14 @@ async function handOffTrack(libs, req) {
 }
 
 // If any call fails -> throw error
-async function handOffTranscodeAndSegment({ sp, req }) {
+async function _handOffTrack({ sp, req }) {
   const {
     logContext,
     fileDir,
     fileName,
     fileNameNoExtension,
     uuid: requestID,
-    FileProcessingQueue
+    AsyncProcessingQueue
   } = req
   const logger = genericLogger.child(logContext)
 
@@ -64,7 +63,7 @@ async function handOffTranscodeAndSegment({ sp, req }) {
   )
   await fetchHealthCheck(sp)
 
-  await sendTranscodeAndSegmentRequest({
+  const transcodeAndSegmentUUID = await sendTranscodeAndSegmentRequest({
     requestID,
     logger,
     sp,
@@ -78,8 +77,8 @@ async function handOffTranscodeAndSegment({ sp, req }) {
   // const { fileName, transcodeFilePath, segmentFileNames, segmentFileNamesToPath } = await pollProcessingStatus(
   const pollResp = await pollProcessingStatus({
     logger,
-    taskType: FileProcessingQueue.PROCESS_NAMES.transcodeAndSegment, // ???? why is this an ampty obj
-    uuid: requestID,
+    taskType: AsyncProcessingQueue.PROCESS_NAMES.transcodeAndSegment, // ???? why is this an ampty obj
+    uuid: transcodeAndSegmentUUID,
     sp
   })
 
@@ -184,20 +183,26 @@ async function sendTranscodeAndSegmentRequest({
   const originalTrackFormData = await createFormData(fileDir + '/' + fileName)
   logger.info({ sp }, 'BANANA posting t/s')
 
-  await axios.post(`${sp}/transcode_and_segment`, originalTrackFormData, {
-    headers: {
-      ...originalTrackFormData.getHeaders(),
-      'X-Request-ID': requestID
-    },
-    params: {
-      use_cid_in_path: fileNameNoExtension
-    },
-    adapter: require('axios/lib/adapters/http'),
-    // Set content length headers (only applicable in server/node environments).
-    // See: https://github.com/axios/axios/issues/1362
-    maxContentLength: Infinity,
-    maxBodyLength: Infinity
-  })
+  const resp = await axios.post(
+    `${sp}/transcode_and_segment`,
+    originalTrackFormData,
+    {
+      headers: {
+        ...originalTrackFormData.getHeaders()
+        // 'X-Request-ID': requestID
+      },
+      params: {
+        use_cid_in_path: fileNameNoExtension
+      },
+      adapter: require('axios/lib/adapters/http'),
+      // Set content length headers (only applicable in server/node environments).
+      // See: https://github.com/axios/axios/issues/1362
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
+    }
+  )
+
+  return resp.data.data.uuid
 }
 
 async function createFormData(pathToFile) {

@@ -55,8 +55,8 @@ module.exports = function (app) {
     syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
-      const FileProcessingQueue =
-        req.app.get('serviceRegistry').fileProcessingQueue
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
 
       if (req.fileSizeError || req.fileFilterError) {
         removeTrackFolder({ logContext: req.logContext }, req.fileDir)
@@ -66,7 +66,7 @@ module.exports = function (app) {
       let handOffTrack = false
       const isTranscodeQueueAvailable = false // await TranscodingQueue.isAvailable()
       if (isTranscodeQueueAvailable) {
-        await FileProcessingQueue.addTrackContentUploadTask({
+        await AsyncProcessingQueue.addTrackContentUploadTask({
           logContext: req.logContext,
           req: {
             fileName: req.fileName,
@@ -92,13 +92,13 @@ module.exports = function (app) {
           uuid: req.logContext.requestID,
           headers: req.headers,
           libs: req.app.get('audiusLibs'),
-          FileProcessingQueue:
-            req.app.get('serviceRegistry').fileProcessingQueue,
+          AsyncProcessingQueue:
+            req.app.get('serviceRegistry').asyncProcessingQueue,
           handOffTrack: true // for deleting artifacts later potentially
         })
       }
 
-      return successResponse({ uuid: req.logContext.requestID })
+      return successResponse({ uuid: req.logContext.requestID, handOffTrack })
     })
   )
 
@@ -113,15 +113,12 @@ module.exports = function (app) {
     '/transcode_and_segment',
     handleTrackContentUpload,
     /* important middleware ... */ handleResponse(async (req, res) => {
-      const FileProcessingQueue =
-        req.app.get('serviceRegistry').fileProcessingQueue
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
 
-      await FileProcessingQueue.addTranscodeAndSegmentTask(
+      await AsyncProcessingQueue.addTranscodeAndSegmentTask(
         {
-          logContext: {
-            ...req.logContext,
-            requestID: req.headers['x-request-id']
-          },
+          logContext: req.logContext,
           req: {
             fileName: req.fileName,
             fileDir: req.fileDir,
@@ -132,7 +129,7 @@ module.exports = function (app) {
         req.app.get('audiusLibs')
       )
       // TODO: hm... make sure this is ths same request id during this entire flow
-      return successResponse({ uuid: req.headers['x-request-id'] })
+      return successResponse({ uuid: req.logContext.requestID })
     })
   )
 

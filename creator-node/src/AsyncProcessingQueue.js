@@ -25,7 +25,7 @@ const PROCESS_STATES = Object.freeze({
   FAILED: 'FAILED'
 })
 
-class FileProcessingQueue {
+class AsyncProcessingQueue {
   constructor() {
     this.queue = new Bull('fileProcessing', {
       redis: {
@@ -69,7 +69,7 @@ class FileProcessingQueue {
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
     logger.info(
-      `FileProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+      `AsyncProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
     )
   }
 
@@ -78,7 +78,7 @@ class FileProcessingQueue {
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
     logger.error(
-      `FileProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
+      `AsyncProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
     )
   }
 
@@ -185,4 +185,4 @@ class FileProcessingQueue {
   }
 }
 
-module.exports = FileProcessingQueue
+module.exports = AsyncProcessingQueue

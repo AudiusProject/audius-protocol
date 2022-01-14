@@ -76,7 +76,7 @@ async function handleTrackHandOff(req) {
     fileName,
     fileDir,
     fileDestination,
-    FileProcessingQueue,
+    AsyncProcessingQueue,
     session,
     uuid // this is the original requestid that will be polled
   } = req
@@ -96,7 +96,7 @@ async function handleTrackHandOff(req) {
 
   if (!transcodeFilePath || !segmentFileNames) {
     // Let current node handle the track if handoff fails
-    await FileProcessingQueue.addTrackContentUploadTask({
+    await AsyncProcessingQueue.addTrackContentUploadTask({
       logContext, // request id here is same as uuid
       req: {
         session: { cnodeUserUUID },
@@ -112,7 +112,7 @@ async function handleTrackHandOff(req) {
     )
   } else {
     // Finish with the rest of track upload flow
-    await FileProcessingQueue.addProcessTranscodeAndSegmentTask({
+    await AsyncProcessingQueue.addProcessTranscodeAndSegmentTask({
       logContext,
       req: {
         session: { cnodeUserUUID },

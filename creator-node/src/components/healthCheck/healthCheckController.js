@@ -91,7 +91,7 @@ const healthCheckController = async (req) => {
 
   const { randomBytesToSign } = req.query
 
-  const FileProcessingQueue = serviceRegistry.fileProcessingQueue
+  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
 
   const logger = req.logger
   const response = await healthCheck(
@@ -100,7 +100,7 @@ const healthCheckController = async (req) => {
     sequelize,
     getMonitors,
     TranscodingQueue.getTranscodeQueueJobs,
-    FileProcessingQueue.getFileProcessingQueueJobs,
+    AsyncProcessingQueue.getFileProcessingQueueJobs,
     numberOfCPUs,
     randomBytesToSign
   )
@@ -137,7 +137,7 @@ const healthCheckVerboseController = async (req) => {
     return errorResponseServerError()
   }
 
-  const FileProcessingQueue = serviceRegistry.fileProcessingQueue
+  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
 
   const logger = req.logger
   const healthCheckResponse = await healthCheckVerbose(
@@ -147,7 +147,7 @@ const healthCheckVerboseController = async (req) => {
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
-    FileProcessingQueue.getFileProcessingQueueJobs
+    AsyncProcessingQueue.getFileProcessingQueueJobs
   )
 
   return successResponse({

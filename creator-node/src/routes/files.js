@@ -518,14 +518,14 @@ module.exports = function (app) {
     '/track_content_status',
     handleResponse(async (req, res) => {
       // for backwards compat, default to trackContentUpload
-      const FileProcessingQueue =
-        req.app.get('serviceRegistry').fileProcessingQueue
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
 
       const taskType =
-        FileProcessingQueue.PROCESS_NAMES[req.query.taskType] ||
-        FileProcessingQueue.PROCESS_NAMES.trackContentUpload
+        AsyncProcessingQueue.PROCESS_NAMES[req.query.taskType] ||
+        AsyncProcessingQueue.PROCESS_NAMES.trackContentUpload
 
-      const redisKey = FileProcessingQueue.constructProcessKey(
+      const redisKey = AsyncProcessingQueue.constructProcessKey(
         taskType,
         req.query.uuid
       )

@@ -12,7 +12,7 @@ const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
-const FileProcessingQueue = require('./FileProcessingQueue')
+const AsyncProcessingQueue = require('./AsyncProcessingQueue')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -29,7 +29,7 @@ const FileProcessingQueue = require('./FileProcessingQueue')
  *  - `nodeConfig`: exposes config object
  *  - `snapbackSM`: SnapbackStateMachine is responsible for recurring sync and reconfig operations
  *  - `URSMRegistrationManager`: registers node on L2 URSM contract, no-ops afterward
- *  - `fileProcessingQueue`: queue that processes jobs and adds job responses into redis
+ *  - `asyncProcessingQueue`: queue that processes jobs and adds job responses into redis
  *
  * `initServices` must be called prior to consuming services from the registry.
  */
@@ -42,7 +42,7 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
-    this.fileProcessingQueue = new FileProcessingQueue()
+    this.asyncProcessingQueue = new AsyncProcessingQueue()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
