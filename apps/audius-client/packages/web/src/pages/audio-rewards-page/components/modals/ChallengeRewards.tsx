@@ -65,7 +65,8 @@ const messages = {
   inviteLink: 'audius.co/signup?ref=%0',
   qrText: 'Download the App',
   qrSubtext: 'Scan This QR Code with Your Phone Camera',
-  rewardClaimed: 'Reward claimed successfully!'
+  rewardClaimed: 'Reward claimed successfully!',
+  claimError: 'Oops, something’s gone wrong'
 }
 
 type InviteLinkProps = {
@@ -163,8 +164,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const currentStepCount = challenge?.current_step_count || 0
   const isIncomplete = currentStepCount === 0
-  const isInProgress = currentStepCount > 0 && currentStepCount !== stepCount
-  const isComplete = currentStepCount === stepCount
+  const isComplete = challenge?.is_complete
+  const isInProgress = currentStepCount > 0 && !isComplete
   const isDisbursed = challenge?.is_disbursed ?? false
   const specifier = challenge?.specifier ?? ''
 
@@ -341,7 +342,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         )}
       </div>
       {displayClaimError && (
-        <div className={styles.claimError}>Oops, something’s gone wrong</div>
+        <div className={styles.claimError}>{messages.claimError}</div>
       )}
     </div>
   )
