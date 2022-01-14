@@ -189,7 +189,6 @@ class ChallengeEventBus:
     def _json_to_event(self, event_json) -> InternalEvent:
         return json.loads(event_json)
 
-
 def setup_challenge_bus():
     redis = get_redis()
     bus = ChallengeEventBus(redis)

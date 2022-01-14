@@ -48,19 +48,19 @@ class TrendingChallengeUpdater(ChallengeUpdater):
         session.add_all(trending_results)
 
     def generate_specifier(self, user_id: int, extra: Dict) -> str:
-        return f"{extra['week']}:{extra['rank']}"
+        return f"{extra['week'].strftime('%Y-%m-%d')}:{extra['rank']}"
 
 
 trending_track_challenge_manager = ChallengeManager(
-    "trending-track", TrendingChallengeUpdater()
+    "tt", TrendingChallengeUpdater()
 )
 
 trending_underground_track_challenge_manager = ChallengeManager(
-    "trending-underground-track", TrendingChallengeUpdater()
+    "tut", TrendingChallengeUpdater()
 )
 
 trending_playlist_challenge_manager = ChallengeManager(
-    "trending-playlist", TrendingChallengeUpdater()
+    "tp", TrendingChallengeUpdater()
 )
 
 
