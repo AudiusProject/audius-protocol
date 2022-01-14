@@ -1,5 +1,5 @@
 import { ID } from 'common/models/Identifiers'
-import { LineupState } from 'models/common/Lineup'
+import { LineupState } from 'common/models/Lineup'
 
 export default interface TrackPageState {
   trackId: ID | null

@@ -4,7 +4,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
-import Client from 'models/Client'
+import Client from 'common/models/Client'
 import { AppState } from 'store/types'
 import { getClient } from 'utils/clientUtil'
 

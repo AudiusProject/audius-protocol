@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
-import Client from 'models/Client'
-import { OS, MobileOS } from 'models/OS'
+import Client from 'common/models/Client'
+import { OS, MobileOS } from 'common/models/OS'
 
 declare global {
   interface Window {

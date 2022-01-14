@@ -1,4 +1,4 @@
-import Theme from 'models/Theme'
+import Theme from 'common/models/Theme'
 import { getIsIOS } from 'utils/browser'
 
 import DarkTheme from './dark'

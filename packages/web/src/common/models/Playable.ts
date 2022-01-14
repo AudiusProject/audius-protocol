@@ -1,6 +1,6 @@
-import { Collection } from '../common/models/Collection'
-import { PlayableType } from '../common/models/Identifiers'
-import { Track } from '../common/models/Track'
+import { Collection } from './Collection'
+import { PlayableType } from './Identifiers'
+import { Track } from './Track'
 
 export type Playable =
   | {

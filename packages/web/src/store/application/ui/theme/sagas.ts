@@ -1,7 +1,7 @@
 import { eventChannel } from 'redux-saga'
 import { put, call, spawn, takeEvery } from 'redux-saga/effects'
 
-import Theme from 'models/Theme'
+import Theme from 'common/models/Theme'
 import { PrefersColorSchemeMessage } from 'services/native-mobile-interface/android/theme'
 import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
 import { getIsIOS } from 'utils/browser'
