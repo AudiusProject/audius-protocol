@@ -3,8 +3,8 @@ import React, { useCallback } from 'react'
 // Importing directly from audius-client temporarily until
 // settings page is migrated because we still need push notification logic to work
 // on settings page and it doesn't necessarily make sense in common
-import { togglePushNotificationSetting } from 'audius-client/src/containers/settings-page/store/actions'
-import { PushNotificationSetting } from 'audius-client/src/containers/settings-page/store/types'
+import { togglePushNotificationSetting } from 'audius-client/src/pages/settings-page/store/actions'
+import { PushNotificationSetting } from 'audius-client/src/pages/settings-page/store/types'
 import { StyleSheet, View } from 'react-native'
 
 import IconCoSign from 'app/assets/images/iconCoSign.svg'

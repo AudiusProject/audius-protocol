@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 
+import Theme from 'audius-client/src/common/models/Theme'
 import { StringKeys } from 'audius-client/src/common/services/remote-config'
 import { getTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/selectors'
 import {
@@ -37,7 +38,6 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import Theme from 'app/models/Theme'
 import { ThemeColors, useThemeVariant } from 'app/utils/theme'
 
 const TRENDING_REWARDS_DRAWER_NAME = 'TrendingRewardsExplainer'

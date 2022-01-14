@@ -1,7 +1,6 @@
+import Theme from 'audius-client/src/common/models/Theme'
 import { Platform } from 'react-native'
 import { Dispatch } from 'redux'
-
-import Theme from 'app/models/Theme'
 
 import { AnalyticsMessage } from '../types/analytics'
 

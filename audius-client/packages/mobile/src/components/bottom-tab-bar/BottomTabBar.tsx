@@ -3,12 +3,12 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
 // TODO: move these into /common
-import { setTab } from 'audius-client/src/containers/explore-page/store/actions'
-import { Tabs } from 'audius-client/src/containers/explore-page/store/types'
+import { setTab } from 'audius-client/src/pages/explore-page/store/actions'
+import { Tabs } from 'audius-client/src/pages/explore-page/store/types'
 import {
   openSignOn as _openSignOn,
   showRequiresAccountModal
-} from 'audius-client/src/containers/sign-on/store/actions'
+} from 'audius-client/src/pages/sign-on/store/actions'
 import {
   FEED_PAGE,
   TRENDING_PAGE,

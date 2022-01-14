@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
 
+import { Track } from 'audius-client/src/common/models/Track'
+import { User } from 'audius-client/src/common/models/User'
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import Track from 'app/models/Track'
-import User from 'app/models/User'
 import {
   Achievement,
   ChallengeReward,

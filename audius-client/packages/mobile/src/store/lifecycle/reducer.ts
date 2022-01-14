@@ -1,4 +1,4 @@
-import User from 'app/models/User'
+import { User } from 'audius-client/src/common/models/User'
 
 import {
   LifecycleActions,

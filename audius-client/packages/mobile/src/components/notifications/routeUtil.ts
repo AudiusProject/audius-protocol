@@ -1,6 +1,6 @@
+import { Track } from 'audius-client/src/common/models/Track'
 import Config from 'react-native-config'
 
-import Track from 'app/models/Track'
 import {
   Achievement,
   Entity,

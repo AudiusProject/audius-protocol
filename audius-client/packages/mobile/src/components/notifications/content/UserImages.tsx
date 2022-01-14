@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 
+import { User } from 'audius-client/src/common/models/User'
 import {
   Image,
   ImageSourcePropType,
@@ -9,7 +10,6 @@ import {
 } from 'react-native'
 import Config from 'react-native-config'
 
-import User from 'app/models/User'
 import { Notification } from 'app/store/notifications/types'
 import { getUserRoute } from 'app/utils/routes'
 import { useTheme } from 'app/utils/theme'
