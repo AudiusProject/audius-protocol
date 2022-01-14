@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 import redis
 from integration_tests.utils import populate_mock_db
