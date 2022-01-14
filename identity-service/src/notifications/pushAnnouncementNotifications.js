@@ -24,7 +24,7 @@ async function pushAnnouncementNotifications () {
     await tx.commit()
 
     // Drain pending announcements
-    await drainPublishedAnnouncements()
+    await drainPublishedAnnouncements(logger)
   } catch (e) {
     logger.error(`pushAnnouncementNotifications error: ${e}`)
     await tx.rollback() // abort the tx

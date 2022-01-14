@@ -116,8 +116,7 @@ class CreatorNode {
     schemas,
     passList = null,
     blockList = null,
-    monitoringCallbacks = {},
-    useTrackContentPolling
+    monitoringCallbacks = {}
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
@@ -135,8 +134,6 @@ class CreatorNode {
     this.passList = passList
     this.blockList = blockList
     this.monitoringCallbacks = monitoringCallbacks
-
-    this.useTrackContentPolling = useTrackContentPolling
   }
 
   async init () {
@@ -363,23 +360,12 @@ class CreatorNode {
    * @return {Object} response body
    */
   async uploadTrackAudio (file, onProgress) {
-    if (this.useTrackContentPolling) {
-      // multer + worker queue + polling
-      return this.handleAsyncAndNotResumableTrackUpload(file, onProgress)
-    }
-
-    // multer + direct response from /track_content
-    return this.handleSynchronousAndNotResumableTrackUpload(file, onProgress)
+    return this.handleAsyncTrackUpload(file, onProgress)
   }
 
-  async handleAsyncAndNotResumableTrackUpload (file, onProgress) {
+  async handleAsyncTrackUpload (file, onProgress) {
     const { data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress)
     return this.pollProcessingStatus('transcode', uuid)
-  }
-
-  async handleSynchronousAndNotResumableTrackUpload (file, onProgress) {
-    const { data: body } = await this._uploadFile(file, '/track_content', onProgress)
-    return body
   }
 
   async pollProcessingStatus (taskType, uuid) {

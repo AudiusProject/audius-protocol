@@ -258,8 +258,8 @@ async function submitAttestations ({
     return acc
   }, [[]])
 
-  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction(i, RewardsManagerError, null, logger)))
-  logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results, null, 2)}`)
+  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction({ instructions: i, errorMapping: RewardsManagerError, logger, skipPreflight: false })))
+  logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results)}`)
 
   // If there's any error in any of the transactions, just return that one
   for (const res of results) {
@@ -300,8 +300,6 @@ async function createSender ({
   feePayer,
   operatorEthAddress,
   attestations,
-  identityService,
-  connection,
   transactionHandler
 }) {
   const [rewardManagerAuthority] = await SolanaUtils.findProgramAddressFromPubkey(
@@ -334,7 +332,7 @@ async function createSender ({
   })
 
   const instructions = [...signerInstructions, createSenderInstruction]
-  return transactionHandler.handleTransaction(instructions, RewardsManagerError)
+  return transactionHandler.handleTransaction({ instructions, errorMapping: RewardsManagerError })
 }
 
 /**
@@ -353,6 +351,7 @@ async function createSender ({
  *   tokenAmount: BN
  *   tokenAmount: BN,
  *   transactionHandler: TransactionHandler,
+ *   logger: any
  * }} {
  *   rewardManagerProgramId,
  *   rewardManagerAccount,
@@ -364,7 +363,8 @@ async function createSender ({
  *   oracleEthAddress,
  *   feePayer,
  *   tokenAmount,
- *   transactionHandler
+ *   transactionHandler,
+ *   logger
  * }
  */
 const evaluateAttestations = async ({
@@ -378,7 +378,8 @@ const evaluateAttestations = async ({
   oracleEthAddress,
   feePayer,
   tokenAmount,
-  transactionHandler
+  transactionHandler,
+  logger = console
 }) => {
   // Get transfer ID
   const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
@@ -504,7 +505,7 @@ const evaluateAttestations = async ({
     data: serializedInstructionEnum
   })
 
-  return transactionHandler.handleTransaction([transferInstruction], RewardsManagerError)
+  return transactionHandler.handleTransaction({ instructions: [transferInstruction], errorMapping: RewardsManagerError, logger, skipPreflight: false })
 }
 
 // Helpers

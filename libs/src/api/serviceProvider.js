@@ -1,3 +1,5 @@
+const { sampleSize } = require('lodash')
+
 const { Base } = require('./base')
 const { timeRequests } = require('../utils/network')
 const { CreatorNodeSelection } = require('../services/creatorNode/CreatorNodeSelection')
@@ -109,6 +111,36 @@ class ServiceProvider extends Base {
 
   async listDiscoveryProviders () {
     return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_NODE_SERVICE_NAME)
+  }
+
+  /**
+   * Returns a list of discovery nodes of size `quorumSize` that belong to
+   * unique service operators.
+   * Throws if unable to find a large enough list.
+   * @param {number} quorumSize
+   */
+  async getUniquelyOwnedDiscoveryNodes (quorumSize) {
+    const selectable = await this.discoveryProvider.serviceSelector.findAll({ verbose: true })
+
+    // Group nodes by owner
+    const grouped = selectable.reduce((acc, curr) => {
+      if (curr.owner in acc) {
+        acc[curr.owner].push(curr)
+      } else {
+        acc[curr.owner] = [ curr ]
+      }
+      return acc
+    }, {})
+
+    if (Object.keys(grouped) < quorumSize) {
+      throw new Error('Not enough unique owners to choose from')
+    }
+
+    // Select quorumSize owners from the groups
+    const owners = sampleSize(Object.keys(grouped), quorumSize)
+
+    // Select 1 node from each owner selected
+    return owners.map(owner => sampleSize(grouped[owner], 1)[0].endpoint)
   }
 }
 

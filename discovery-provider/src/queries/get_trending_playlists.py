@@ -181,7 +181,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
                 ] = follower_count
 
     # Add karma
-    karma_scores = get_karma(session, tuple(playlist_ids), None, True, xf)
+    karma_scores = get_karma(session, tuple(playlist_ids), strategy, None, True, xf)
     for (playlist_id, karma) in karma_scores:
         playlist_map[playlist_id]["karma"] = karma
 

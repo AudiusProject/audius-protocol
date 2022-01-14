@@ -292,8 +292,6 @@ class AudiusLibs {
     captchaConfig,
     isServer,
     isDebug = false,
-    useTrackContentPolling = false,
-    useResumableTrackUpload = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true
   }) {
@@ -334,8 +332,6 @@ class AudiusLibs {
     this.File = null
     this.Rewards = null
 
-    this.useTrackContentPolling = useTrackContentPolling
-    this.useResumableTrackUpload = useResumableTrackUpload
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
 
@@ -462,8 +458,7 @@ class AudiusLibs {
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
-        this.creatorNodeConfig.monitoringCallbacks,
-        this.useTrackContentPolling
+        this.creatorNodeConfig.monitoringCallbacks
       )
       await this.creatorNode.init()
     }
@@ -501,7 +496,7 @@ class AudiusLibs {
     this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(this.User, ...services)
-    this.Rewards = new Rewards(...services)
+    this.Rewards = new Rewards(this.ServiceProvider, ...services)
   }
 }
 
