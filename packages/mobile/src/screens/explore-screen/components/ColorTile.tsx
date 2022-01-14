@@ -143,11 +143,11 @@ export const ColorTile = ({
         style={styles.gradientContainer}
       >
         <TouchableOpacity
-          style={[styles.colorTile, emoji && styles.hasEmoji]}
+          style={[styles.colorTile, !!emoji && styles.hasEmoji]}
           onPress={() => goToRoute(link)}
         >
           <View style={{ backgroundColor: 'transparent' }}>
-            <Text style={[styles.title, emoji && styles.emojiTitle]}>
+            <Text style={[styles.title, !!emoji && styles.emojiTitle]}>
               {title}
             </Text>
             <Text style={styles.description}>{description}</Text>
