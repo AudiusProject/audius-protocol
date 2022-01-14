@@ -8,10 +8,10 @@ import { PushNotificationSetting } from 'audius-client/src/pages/settings-page/s
 import { StyleSheet, View } from 'react-native'
 
 import IconCoSign from 'app/assets/images/iconCoSign.svg'
-import IconExploreNewReleases from 'app/assets/images/iconExploreNewReleases.svg'
 import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconNotification from 'app/assets/images/iconGradientNotification.svg'
 import IconHeart from 'app/assets/images/iconHeart.svg'
+import IconNewReleases from 'app/assets/images/iconNewReleases.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import Button from 'app/components/button'
@@ -58,7 +58,7 @@ const actions = [
   },
   {
     label: messages.newReleases,
-    icon: IconExploreNewReleases
+    icon: IconNewReleases
   }
 ]
 
