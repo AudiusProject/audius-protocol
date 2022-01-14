@@ -86,7 +86,7 @@ const initializeApp = (port, serviceRegistry) => {
 
   // Increase from 2min default to accommodate long-lived requests.
   server.setTimeout(config.get('setTimeout'), () => {
-    logger.warn(`Server socket timeout hit`)
+    logger.debug(`Server socket timeout hit`)
   })
   server.timeout = config.get('timeout')
   server.keepAliveTimeout = config.get('keepAliveTimeout')
