@@ -307,7 +307,7 @@ const Drawer: DrawerComponent = ({
   shouldBackgroundDim = true,
   isGestureSupported = true,
   animationStyle = DrawerAnimationStyle.STIFF,
-  initialOffsetPosition,
+  initialOffsetPosition = 0,
   isOpenToInitialOffset,
   shouldHaveRoundedBordersAtInitialOffset = false,
   zIndex,

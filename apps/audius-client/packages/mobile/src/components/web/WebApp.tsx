@@ -83,7 +83,7 @@ const getAllFiles = async (
   folderPath: string,
   path: string
 ): Promise<Array<string>> => {
-  const filePaths = []
+  const filePaths: string[] = []
   const assetDirItems = await RNFS.readDirAssets(path)
   for (const dirItem of assetDirItems) {
     if (dirItem.isFile()) {
@@ -539,7 +539,7 @@ const WebApp = ({
             // On iOS, when the webview is in the background for a long time
             // it becomes blank. Reload when this happens
             // See: https://github.com/react-native-webview/react-native-webview/issues/2199
-            webRef.current.reload()
+            webRef.current?.reload()
           }}
         />
       </PullToRefresh>

@@ -1,12 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 
 export type DownloadState = typeof initialState
 
 type State = {
   downloadedPercentage: number
-  fetchCancel: () => void
-  trackName: string
-  fileName: string
+  fetchCancel: Nullable<() => void>
+  trackName: Nullable<string>
+  fileName: Nullable<string>
 }
 
 const initialState: State = {

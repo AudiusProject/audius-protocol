@@ -1,10 +1,11 @@
 import React, { useContext, useEffect } from 'react'
 
 import * as Sentry from '@sentry/react-native'
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 
 import { ToastContext } from './components/toast/ToastContext'
 
-const ErrorToast = ({ error }: { error: string }) => {
+const ErrorToast = ({ error }: { error: Nullable<string> }) => {
   // Do nothing other than trigger a toast when error changes
   const { toast } = useContext(ToastContext)
   useEffect(() => {
@@ -23,7 +24,7 @@ class ErrorBoundary extends React.PureComponent {
 
   componentDidCatch(error: Error | null, errorInfo: any) {
     // On catch set the error state so it triggers a toast
-    this.setState({ error: error.message })
+    this.setState({ error: error?.message })
     Sentry.withScope(scope => {
       scope.setExtras(errorInfo)
       Sentry.captureException(error)

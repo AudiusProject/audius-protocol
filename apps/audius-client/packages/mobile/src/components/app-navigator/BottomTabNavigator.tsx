@@ -109,7 +109,7 @@ const BottomTabNavigator = ({
 
   if (state) {
     let currentState: any = state
-    const routePath = []
+    const routePath: string[] = []
 
     while (
       currentState?.routeNames?.length > 0 &&

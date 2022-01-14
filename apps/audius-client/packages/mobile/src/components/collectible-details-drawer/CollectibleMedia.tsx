@@ -60,13 +60,13 @@ export const CollectibleMedia: React.FC<{
     // TODO: Implement 3D model viewing on mobile
     [CollectibleMediaType.THREE_D]: () => (
       <AutoSizeImage
-        source={{ uri: gifUrl }}
+        source={{ uri: gifUrl ?? undefined }}
         style={styles.container as ImageStyle}
       />
     ),
     [CollectibleMediaType.GIF]: () => (
       <AutoSizeImage
-        source={{ uri: gifUrl }}
+        source={{ uri: gifUrl ?? undefined }}
         style={styles.container as ImageStyle}
       />
     ),
@@ -78,7 +78,7 @@ export const CollectibleMedia: React.FC<{
             ignoreSilentSwitch={'ignore'}
             fullscreen={false}
             muted={isMuted}
-            source={{ uri: videoUrl }}
+            source={{ uri: videoUrl ?? undefined }}
             style={styles.container}
           />
           <View style={styles.volumeIconContainer}>
@@ -94,7 +94,7 @@ export const CollectibleMedia: React.FC<{
     ),
     [CollectibleMediaType.IMAGE]: () => (
       <AutoSizeImage
-        source={{ uri: imageUrl }}
+        source={{ uri: imageUrl ?? undefined }}
         style={styles.container as ImageStyle}
       />
     )

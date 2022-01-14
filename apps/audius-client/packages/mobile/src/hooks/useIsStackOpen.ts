@@ -15,7 +15,7 @@ const useIsStackOpen = () => {
   }
 
   const activeRoute = state.routes[state.index]
-  return activeRoute.state?.index > 0
+  return activeRoute.state?.index
 }
 
 export default useIsStackOpen

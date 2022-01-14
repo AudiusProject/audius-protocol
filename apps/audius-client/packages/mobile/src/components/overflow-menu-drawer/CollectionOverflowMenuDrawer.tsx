@@ -45,15 +45,19 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const { id: modalId } = useSelectorWeb(getMobileOverflowModal)
   const id = modalId as ID
 
-  const {
-    playlist_owner_id,
-    playlist_name,
-    is_album
-  } = useSelectorWeb((state: CommonState) => getCollection(state, { id: id }))
-
-  const { handle } = useSelectorWeb((state: CommonState) =>
-    getUser(state, { id: playlist_owner_id })
+  const playlist = useSelectorWeb((state: CommonState) =>
+    getCollection(state, { id: id })
   )
+
+  const user = useSelectorWeb((state: CommonState) =>
+    getUser(state, { id: playlist?.playlist_owner_id })
+  )
+
+  if (!playlist || !user) {
+    return null
+  }
+  const { playlist_name, is_album } = playlist
+  const { handle } = user
 
   if (!id || !handle || !playlist_name || is_album === undefined) {
     return null

@@ -1,8 +1,9 @@
 import { NavigationState } from '@react-navigation/native'
+import { Maybe } from 'audius-client/src/common/utils/typeUtils'
 
 export const getNavigationStateAtRoute = (routeSegments: string[]) => (
   state?: NavigationState
-) => {
+): Maybe<NavigationState> => {
   if (!state) {
     return undefined
   }
