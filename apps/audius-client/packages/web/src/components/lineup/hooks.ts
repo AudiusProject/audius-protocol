@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 
 import { useDispatch } from 'react-redux'
 
+import { LineupState } from 'common/models/Lineup'
 import { LineupVariant } from 'components/lineup/types'
-import { LineupState } from 'models/common/Lineup'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getBuffering, getPlaying } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'

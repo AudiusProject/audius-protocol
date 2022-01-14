@@ -1,5 +1,5 @@
 import { Name } from 'common/models/Analytics'
-import { MobileOS } from 'models/OS'
+import { MobileOS } from 'common/models/OS'
 import {
   isMobile as getIsMobile,
   isElectron as getIsElectron,

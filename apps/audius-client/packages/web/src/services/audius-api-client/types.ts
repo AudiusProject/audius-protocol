@@ -171,7 +171,7 @@ export type APIPlaylist = {
   tracks: APITrack[]
   track_count: number
   cover_art: Nullable<string>
-  cover_art_sies: Nullable<string>
+  cover_art_sizes: Nullable<string>
 }
 
 export type APISearchPlaylist = Omit<

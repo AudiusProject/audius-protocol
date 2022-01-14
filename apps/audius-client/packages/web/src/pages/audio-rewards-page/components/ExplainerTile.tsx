@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import cn from 'classnames'
 
 import TokenStill from 'assets/img/tokenSpinStill.png'
+import Theme from 'common/models/Theme'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import Theme from 'models/Theme'
 import { isMobile } from 'utils/clientUtil'
 import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
 

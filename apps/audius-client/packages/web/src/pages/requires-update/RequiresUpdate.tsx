@@ -4,7 +4,7 @@ import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import Spin from 'antd/lib/spin'
 
 import tileBackground from 'assets/img/notFoundTiledBackround.png'
-import Theme from 'models/Theme'
+import Theme from 'common/models/Theme'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './RequiresUpdate.module.css'

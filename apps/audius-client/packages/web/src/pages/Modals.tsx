@@ -1,5 +1,6 @@
 import React from 'react'
 
+import Client from 'common/models/Client'
 import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
@@ -18,7 +19,6 @@ import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/Un
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
-import Client from 'models/Client'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import RewardsModals from 'pages/audio-rewards-page/components/modals/RewardsModals'
 import { getClient } from 'utils/clientUtil'

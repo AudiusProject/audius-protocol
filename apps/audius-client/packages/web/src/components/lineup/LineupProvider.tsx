@@ -11,6 +11,7 @@ import { Dispatch } from 'redux'
 import { Name, PlaybackSource } from 'common/models/Analytics'
 import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
+import { Lineup } from 'common/models/Lineup'
 import Status from 'common/models/Status'
 import {
   TrackTileProps,
@@ -18,7 +19,6 @@ import {
   TrackTileSize,
   TileProps
 } from 'components/track/types'
-import { Lineup } from 'models/common/Lineup'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { LineupActions } from 'store/lineup/actions'
 import { AppState } from 'store/types'
