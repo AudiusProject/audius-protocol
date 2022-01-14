@@ -5,12 +5,12 @@ import { MessageType, Message } from 'services/native-mobile-interface/types'
 
 function* watchPushRoute() {
   yield takeEvery(MessageType.PUSH_ROUTE, function* (action: Message) {
-    const { route, fromPage } = action
+    const { route, fromPage, fromNativeNotifications = true } = action
     if (route) {
       yield put(
         pushRoute(route, {
           noAnimation: true,
-          fromNativeNotifications: true,
+          fromNativeNotifications,
           fromPage
         })
       )
