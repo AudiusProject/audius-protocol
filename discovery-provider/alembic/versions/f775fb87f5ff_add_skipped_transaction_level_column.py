@@ -24,9 +24,11 @@ def upgrade():
         sa.Column(
             "level",
             sa.Enum("node", "network", name="skippedtransactionlevel"),
-            nullable=False,
+            nullable=True,
         ),
     )
+    op.execute("UPDATE skipped_transactions SET level = network")
+    op.alter_column("skipped_transactions", "level", nullable=False)
 
 
 def downgrade():

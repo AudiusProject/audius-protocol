@@ -1077,7 +1077,11 @@ class SkippedTransaction(Base):
     updated_at = Column(
         DateTime, nullable=False, default=func.now(), onupdate=func.now()
     )
-    level = Column(Enum(SkippedTransactionLevel), nullable=False, default="node")
+    level = Column(
+        Enum(SkippedTransactionLevel),
+        nullable=False,
+        default=SkippedTransactionLevel.node,
+    )
 
     def __repr__(self):
         return f"<SkippedTransaction(\
