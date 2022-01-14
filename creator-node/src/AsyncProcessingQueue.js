@@ -57,7 +57,8 @@ class AsyncProcessingQueue {
       }
     })
 
-    this.getFileProcessingQueueJobs = this.getFileProcessingQueueJobs.bind(this)
+    this.getAsyncProcessingQueueJobs =
+      this.getAsyncProcessingQueueJobs.bind(this)
     this.constructProcessKey = this.constructProcessKey.bind(this)
 
     this.PROCESS_NAMES = PROCESS_NAMES
@@ -168,7 +169,7 @@ class AsyncProcessingQueue {
     return response
   }
 
-  async getFileProcessingQueueJobs() {
+  async getAsyncProcessingQueueJobs() {
     const queue = this.queue
     const [waiting, active] = await Promise.all([
       queue.getJobs(['waiting']),

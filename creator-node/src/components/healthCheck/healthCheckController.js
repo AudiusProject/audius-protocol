@@ -100,7 +100,7 @@ const healthCheckController = async (req) => {
     sequelize,
     getMonitors,
     TranscodingQueue.getTranscodeQueueJobs,
-    AsyncProcessingQueue.getFileProcessingQueueJobs,
+    AsyncProcessingQueue.getAsyncProcessingQueueJobs,
     numberOfCPUs,
     randomBytesToSign
   )
@@ -147,7 +147,7 @@ const healthCheckVerboseController = async (req) => {
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
-    AsyncProcessingQueue.getFileProcessingQueueJobs
+    AsyncProcessingQueue.getAsyncProcessingQueueJobs
   )
 
   return successResponse({
