@@ -2,16 +2,8 @@ const { deviceType } = require('./constants')
 const { drainMessageObject: sendAwsSns } = require('../awsSNS')
 const { sendBrowserNotification, sendSafariNotification } = require('../webPush')
 const racePromiseWithTimeout = require('../utils/racePromiseWithTimeout.js')
-const { logger } = require('../logging')
 
-// guessed a value
-const SEND_NOTIF_TIMEOUT_MS = 5000 // 5 sec
-
-const SEND_NOTIF_FUNCTIONS = {
-  'SEND_AWS_SNS': sendAwsSns,
-  'SEND_BROWSER_NOTIF': sendBrowserNotification,
-  'SEND_SAFARI_NOTIF': sendSafariNotification
-}
+const SEND_NOTIF_TIMEOUT_MS = 20000 // 20 sec
 
 // TODO (DM) - move this into redis
 const pushNotificationQueue = {
@@ -48,13 +40,14 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
   buffer.push(bufferObj)
 }
 
-async function _sendNotification (notifFunctionName, bufferObj) {
-  const logPrefix = `[notificationQueue:sendNotification] [${notifFunctionName}] [userId ${bufferObj.userId}]`
+async function _sendNotification (notifFn, bufferObj, logger) {
+  const logPrefix = `[notificationQueue:sendNotification] [${notifFn.name}] [userId ${bufferObj.userId}]`
+
   try {
     const start = Date.now()
 
     await racePromiseWithTimeout(
-      SEND_NOTIF_FUNCTIONS[notifFunctionName](bufferObj),
+      notifFn(bufferObj),
       SEND_NOTIF_TIMEOUT_MS,
       `Timed out in ${SEND_NOTIF_TIMEOUT_MS}ms`
     )
@@ -66,17 +59,17 @@ async function _sendNotification (notifFunctionName, bufferObj) {
   }
 }
 
-async function drainPublishedMessages () {
+async function drainPublishedMessages (logger) {
   logger.info(`[notificationQueue:drainPublishedMessages] Beginning processing of ${pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length} notifications...`)
 
   for (let bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      await _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_AWS_SNS, bufferObj)
+      await _sendNotification(sendAwsSns, bufferObj, logger)
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
       await Promise.all([
-        _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_BROWSER_NOTIF, bufferObj),
-        _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_SAFARI_NOTIF, bufferObj)
+        _sendNotification(sendBrowserNotification, bufferObj, logger),
+        _sendNotification(sendSafariNotification, bufferObj, logger)
       ])
     }
   }
@@ -84,17 +77,17 @@ async function drainPublishedMessages () {
   pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
 }
 
-async function drainPublishedSolanaMessages () {
+async function drainPublishedSolanaMessages (logger) {
   logger.info(`[notificationQueue:drainPublishedSolanaMessages] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`)
 
   for (let bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      await _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_AWS_SNS, bufferObj)
+      await _sendNotification(sendAwsSns, bufferObj, logger)
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
       await Promise.all([
-        _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_BROWSER_NOTIF, bufferObj),
-        _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_SAFARI_NOTIF, bufferObj)
+        _sendNotification(sendBrowserNotification, bufferObj, logger),
+        _sendNotification(sendSafariNotification, bufferObj, logger)
       ])
     }
   }
@@ -102,14 +95,14 @@ async function drainPublishedSolanaMessages () {
   pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER = []
 }
 
-async function drainPublishedAnnouncements () {
+async function drainPublishedAnnouncements (logger) {
   logger.info(`[notificationQueue:drainPublishedAnnouncements] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`)
 
   for (let bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
     await Promise.all([
-      _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_AWS_SNS, bufferObj),
-      _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_BROWSER_NOTIF, bufferObj),
-      _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_SAFARI_NOTIF, bufferObj)
+      _sendNotification(sendAwsSns, bufferObj, logger),
+      _sendNotification(sendBrowserNotification, bufferObj, logger),
+      _sendNotification(sendSafariNotification, bufferObj, logger)
     ])
   }
 
