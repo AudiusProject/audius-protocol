@@ -506,3 +506,7 @@ def time_method(func):
         return result
 
     return wrapper
+
+
+def get_tx_arg(tx, arg_name):
+    return getattr(tx["args"], arg_name)
