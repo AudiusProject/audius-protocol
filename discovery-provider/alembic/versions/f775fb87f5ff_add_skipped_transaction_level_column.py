@@ -27,7 +27,7 @@ def upgrade():
             nullable=True,
         ),
     )
-    op.execute("UPDATE skipped_transactions SET level = network")
+    op.execute("UPDATE skipped_transactions SET level = 'network'")
     op.alter_column("skipped_transactions", "level", nullable=False)
 
 
