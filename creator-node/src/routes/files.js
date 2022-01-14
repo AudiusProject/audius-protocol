@@ -517,16 +517,10 @@ module.exports = function (app) {
   app.get(
     '/track_content_status',
     handleResponse(async (req, res) => {
-      // for backwards compat, default to trackContentUpload
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
 
-      const taskType =
-        AsyncProcessingQueue.PROCESS_NAMES[req.query.taskType] ||
-        AsyncProcessingQueue.PROCESS_NAMES.trackContentUpload
-
-      const redisKey = AsyncProcessingQueue.constructProcessKey(
-        taskType,
+      const redisKey = AsyncProcessingQueue.constructAsyncProcessingKey(
         req.query.uuid
       )
       const value = (await redisClient.get(redisKey)) || '{}'

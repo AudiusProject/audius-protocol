@@ -47,7 +47,7 @@ async function processTranscodeAndSegments(
     fileDir,
     fileDestination,
     transcodeFilePath,
-    segmentFileNames,
+    segmentFileNames
   }
 ) {
   const { cnodeUserUUID } = session
@@ -173,7 +173,7 @@ async function addFilesToDb({
       multihash: transcodeFileIPFSResp.multihash,
       sourceFile: fileName,
       storagePath: transcodeFileIPFSResp.dstPath,
-      type: models.File.copy320
+      type: models.File.Types.copy320
     }
     const file = await DBManager.createNewDataRecord(
       createTranscodeFileQueryObj,
@@ -190,7 +190,7 @@ async function addFilesToDb({
         multihash,
         sourceFile: fileName,
         storagePath: dstPath,
-        type: models.File.track
+        type: models.File.Types.track
       }
       await DBManager.createNewDataRecord(
         createSegmentFileQueryObj,

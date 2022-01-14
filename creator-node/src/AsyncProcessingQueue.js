@@ -59,7 +59,7 @@ class AsyncProcessingQueue {
 
     this.getAsyncProcessingQueueJobs =
       this.getAsyncProcessingQueueJobs.bind(this)
-    this.constructProcessKey = this.constructProcessKey.bind(this)
+    this.constructProcessKey = this.constructAsyncProcessingKey.bind(this)
 
     this.PROCESS_NAMES = PROCESS_NAMES
     this.PROCESS_STATES = PROCESS_STATES
@@ -144,7 +144,7 @@ class AsyncProcessingQueue {
    */
   async monitorProgress(task, func, { logContext, req }) {
     const uuid = logContext.requestID
-    const redisKey = this.constructProcessKey(task, uuid)
+    const redisKey = this.constructAsyncProcessingKey(uuid)
 
     let state = { status: PROCESS_STATES.IN_PROGRESS }
     this.logStatus(`Starting ${task}, uuid=${uuid}`, logContext)
@@ -181,8 +181,8 @@ class AsyncProcessingQueue {
     }
   }
 
-  constructProcessKey(taskType, uuid) {
-    return `${taskType}:::${uuid}`
+  constructAsyncProcessingKey(uuid) {
+    return `async:::${uuid}`
   }
 }
 

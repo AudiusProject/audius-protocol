@@ -44,6 +44,8 @@ async function handOffTrack(libs, req) {
       )
     }
   }
+
+  return {}
 }
 
 // If any call fails -> throw error
@@ -232,10 +234,7 @@ async function fetchHealthCheck(sp) {
 async function fetchTrackContentProcessingStatus(sp, uuid, taskType) {
   const { data: body } = await axios({
     url: `${sp}/track_content_status`,
-    params: {
-      uuid,
-      taskType
-    },
+    params: { uuid },
     method: 'get'
   })
 
