@@ -83,7 +83,7 @@ class AsyncProcessingQueue {
     )
   }
 
-  // TODO: Make these jobs a background process
+  // TODO: Make these jobs background processes
 
   async addTrackContentUploadTask(params) {
     params.task = PROCESS_NAMES.trackContentUpload
