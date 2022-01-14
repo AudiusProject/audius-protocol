@@ -72,5 +72,5 @@ export const getTwitterShareText = (content: ShareModalContent) => {
 export const getTwitterShareUrl = (content: ShareModalContent) => {
   const url = getContentUrl(content)
   const shareText = getTwitterShareText(content)
-  return getTwitterLink(url, shareText)
+  return getTwitterLink(url ?? null, shareText)
 }

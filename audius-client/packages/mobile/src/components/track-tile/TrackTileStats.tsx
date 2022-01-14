@@ -61,8 +61,8 @@ type Props = {
   hidePlays: boolean
   id: ID
   index: number
-  isTrending: boolean
-  isUnlisted: boolean
+  isTrending?: boolean
+  isUnlisted?: boolean
   listenCount: number
   makeGoToFavoritesPage: (trackId: ID) => GestureResponderHandler
   makeGoToRepostsPage: (trackId: ID) => GestureResponderHandler

@@ -110,7 +110,7 @@ export type TrackTileProps = TileProps & {
   isArtistPick?: boolean
 
   /** Number of listens */
-  listenCount?: number
+  listenCount: number
 
   /** Function to call when overflow icon is clicked */
   onClickOverflow?: (trackId: ID) => void

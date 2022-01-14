@@ -74,15 +74,15 @@ type Props = {
   /**
    * Whether or not the track is the artist pick
    */
-  isArtistPick: boolean
+  isArtistPick?: boolean
   /**
    * Whether or not the track is unlisted (hidden)
    */
-  isUnlisted: boolean
+  isUnlisted?: boolean
   /**
    * Whether or not to show the artist pick icon
    */
-  showArtistPick: boolean
+  showArtistPick?: boolean
 }
 
 export const TrackTileTopRight = ({

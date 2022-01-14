@@ -427,7 +427,12 @@ const SignOn = ({ navigation }: SignOnProps) => {
   useEffect(() => {
     processReferrerFromClipboard()
   }, [processReferrerFromClipboard])
-  useAppState(processReferrerFromClipboard, () => {})
+  useAppState(
+    () => {
+      processReferrerFromClipboard()
+    },
+    () => {}
+  )
 
   const { staticWhite } = useThemeColors()
 

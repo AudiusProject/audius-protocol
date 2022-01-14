@@ -29,9 +29,14 @@ const ProfileOverflowMenuDrawer = ({ render }: Props) => {
   const dispatchWeb = useDispatchWeb()
   const { id: modalId } = useSelectorWeb(getMobileOverflowModal)
   const id = modalId as ID
-  const { handle, name } = useSelectorWeb((state: CommonState) =>
+  const user = useSelectorWeb((state: CommonState) =>
     getUser(state, { id: id })
   )
+
+  if (!user) {
+    return null
+  }
+  const { handle, name } = user
 
   if (!id || !handle || !name) {
     return null

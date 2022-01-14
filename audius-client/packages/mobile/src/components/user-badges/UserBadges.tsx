@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { User } from 'audius-client/src/common/models/User'
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { StyleSheet, View, Text } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
@@ -34,7 +35,7 @@ const styles = StyleSheet.create({
   }
 })
 
-export const badgeByTier: Record<BadgeTier, React.FC<SvgProps>> = {
+export const badgeByTier: Record<BadgeTier, Nullable<React.FC<SvgProps>>> = {
   none: null,
   bronze: IconBronzeBadge,
   silver: IconSilverBadge,

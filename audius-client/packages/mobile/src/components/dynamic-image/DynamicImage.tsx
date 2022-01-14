@@ -95,7 +95,7 @@ const DynamicImage = ({
       return
     }
 
-    setPrevImage(image)
+    setPrevImage(image ?? null)
 
     if (isFirstImageActive) {
       setIsFirstImageActive(false)

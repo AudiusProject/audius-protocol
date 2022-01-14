@@ -159,7 +159,7 @@ const Button = ({
   }
 
   const underlay =
-    type === ButtonType.PRIMARY ? underlayColor || primaryDark1 : null
+    type === ButtonType.PRIMARY ? underlayColor || primaryDark1 : undefined
 
   return (
     <Animated.View
@@ -181,13 +181,13 @@ const Button = ({
         <View style={styles.buttonContent}>
           {(icon || renderIcon) && iconPosition === 'left' ? (
             <View style={styles.iconLeft}>
-              {renderIcon ? renderIcon(styles.icon.color) : icon}
+              {renderIcon ? renderIcon(styles.icon.color!) : icon}
             </View>
           ) : null}
           <Text style={[styles.buttonText, textStyle]}>{title}</Text>
           {(icon || renderIcon) && iconPosition === 'right' ? (
             <View style={styles.iconRight}>
-              {renderIcon ? renderIcon(styles.icon.color) : icon}
+              {renderIcon ? renderIcon(styles.icon.color!) : icon}
             </View>
           ) : null}
         </View>
