@@ -601,7 +601,6 @@ def index_blocks(self, db, blocks_list):
                     block_number,
                     block_timestamp,
                     block_hash,
-                    redis,
                 )
                 user_replica_set_state_changed = total_user_replica_set_changes > 0
                 logger.info(

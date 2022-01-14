@@ -30,7 +30,6 @@ def user_replica_set_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    redis,
 ):
     """Return int representing number of User model state changes found in transaction and set of user_id values"""
     event_blockhash = update_task.web3.toHex(block_hash)
@@ -313,26 +312,27 @@ def get_sp_factory_inst(update_task):
 
 # Update cnode_record with event arguments
 def parse_ursm_cnode_record(update_task, entry, cnode_record):
-    event_args = entry["args"]
-    cnode_record.delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet
-    cnode_record.owner_wallet = event_args._cnodeOwnerWallet
-    cnode_record.proposer_1_delegate_owner_wallet = (
-        event_args._proposer1DelegateOwnerWallet
+    cnode_record.delegate_owner_wallet = helpers.get_tx_arg(
+        entry, "_cnodeDelegateOwnerWallet"
     )
-    cnode_record.proposer_2_delegate_owner_wallet = (
-        event_args._proposer2DelegateOwnerWallet
+    cnode_record.owner_wallet = helpers.get_tx_arg(entry, "_cnodeOwnerWallet")
+    cnode_record.proposer_1_delegate_owner_wallet = helpers.get_tx_arg(
+        entry, "_proposer1DelegateOwnerWallet"
     )
-    cnode_record.proposer_3_delegate_owner_wallet = (
-        event_args._proposer3DelegateOwnerWallet
+    cnode_record.proposer_2_delegate_owner_wallet = helpers.get_tx_arg(
+        entry, "_proposer2DelegateOwnerWallet"
     )
-    cnode_record.proposer_sp_ids = event_args._proposerSpIds
+    cnode_record.proposer_3_delegate_owner_wallet = helpers.get_tx_arg(
+        entry, "_proposer3DelegateOwnerWallet"
+    )
+    cnode_record.proposer_sp_ids = helpers.get_tx_arg(entry, "_proposerSpIds")
     # Retrieve endpoint from eth contracts
-    cnode_sp_id = event_args._cnodeSpId
+    cnode_sp_id = helpers.get_tx_arg(entry, "_cnodeSpId")
     cnode_record.endpoint = get_ursm_cnode_endpoint(update_task, cnode_sp_id)
 
     if not all_required_fields_present(URSMContentNode, cnode_record):
         raise EntityMissingRequiredFieldError(
-            "user_replica_set",
+            "content_node",
             cnode_record,
             f"Error parsing content node {cnode_record} with entity missing required field(s)",
         )
