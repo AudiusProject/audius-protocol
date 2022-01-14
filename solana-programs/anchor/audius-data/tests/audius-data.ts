@@ -109,6 +109,7 @@ describe("audius-data", () => {
     if (!newUserKey.publicKey.equals(userDataFromChain.authority)) {
       throw new Error("Unexpected public key found");
     }
+
     let txInfo = await getTransaction(provider, initUserTx);
     let fee = txInfo["meta"]["fee"];
     console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
@@ -121,9 +122,6 @@ describe("audius-data", () => {
     trackOwnerPDA,
     adminStgKeypair,
   }) => {
-    let trackId = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
-    );
     let tx = await createTrack({
       provider,
       program,
@@ -579,5 +577,87 @@ describe("audius-data", () => {
       }),
     ]);
     console.log(`Created 3 tracks in ${Date.now() - start}ms`);
+  });
+
+  it("follow user", async () => {
+    let constants1 = initTestConstants();
+    let constants2 = initTestConstants();
+    let handleBytesArray1 = constants1.handleBytesArray;
+    let handleBytesArray2 = constants2.handleBytesArray;
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray1)
+      );
+    let derivedInfo2 = await findDerivedPair(
+      program.programId,
+      adminStgKeypair.publicKey,
+      Buffer.from(handleBytesArray2)
+    );
+
+    let newUserAcct1PDA = derivedAddress;
+    let newUserAcct2PDA = derivedInfo2.derivedAddress;
+
+    await testInitUser(
+      baseAuthorityAccount,
+      constants1.testEthAddr,
+      constants1.testEthAddrBytes,
+      handleBytesArray1,
+      bumpSeed,
+      constants1.metadata,
+      newUserAcct1PDA
+    );
+
+    await testInitUser(
+      baseAuthorityAccount,
+      constants2.testEthAddr,
+      constants2.testEthAddrBytes,
+      handleBytesArray2,
+      derivedInfo2.bumpSeed,
+      constants2.metadata,
+      newUserAcct2PDA
+    );
+
+    // New sol keys that will be used to permission user updates
+    let newUser1Key = anchor.web3.Keypair.generate();
+    let newUser2Key = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message1 = newUser1Key.publicKey.toString();
+    let message2 = newUser2Key.publicKey.toString();
+    await testInitUserSolPubkey({
+      message: message1,
+      pkString: constants1.pkString,
+      privKey: constants1.privKey,
+      newUserKey: newUser1Key,
+      newUserAcctPDA: newUserAcct1PDA,
+    });
+    await testInitUserSolPubkey({
+      message: message2,
+      pkString: constants2.pkString,
+      privKey: constants2.privKey,
+      newUserKey: newUser2Key,
+      newUserAcctPDA: newUserAcct2PDA,
+    });
+
+    // Submit a tx where user 1 follows user 2
+    let followTx = await program.rpc.followUser(
+      handleBytesArray1,
+      handleBytesArray2,
+      {
+        accounts: {
+          audiusAdmin: adminStgKeypair.publicKey,
+          payer: provider.wallet.publicKey,
+          authority: newUser1Key.publicKey,
+          followerUserStg: newUserAcct1PDA,
+          followeeUserStg: newUserAcct2PDA,
+        },
+        signers: [newUser1Key],
+      }
+    );
+    console.log(followTx);
   });
 });

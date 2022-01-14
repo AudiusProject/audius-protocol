@@ -152,6 +152,30 @@ pub mod audius_data {
         ctx.accounts.track.owner = dummy_owner_field;
         Ok(())
     }
+
+    pub fn follow_user(ctx: Context<FollowUser>, follower_handle_seed: [u8; 16], followee_handle_seed: [u8;16]) -> ProgramResult {
+        msg!("Audius::FollowUser");
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+
+        let (base, _bump) = Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+
+        // Confirm the follower is part of this audius instance
+        let (derived_follower_pda, _) = Pubkey::find_program_address(&[&base.to_bytes()[..32], &follower_handle_seed], ctx.program_id);
+        // Confirm the authority for this follower has signed the transaction
+        if derived_follower_pda != ctx.accounts.follower_user_stg.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if ctx.accounts.follower_user_stg.authority != ctx.accounts.authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        let (derived_followee_pda, _) = Pubkey::find_program_address(&[&base.to_bytes()[..32], &followee_handle_seed], ctx.program_id);
+
+        if derived_followee_pda != ctx.accounts.followee_user_stg.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        Ok(())
+    }
 }
 
 /// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
@@ -235,7 +259,6 @@ pub struct CreateTrack<'info> {
     pub user: Account<'info, User>,
     #[account(mut)]
     pub authority: Signer<'info>,
-    /// TEST PURPOSES - storing ID to be incremented here
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
@@ -252,6 +275,7 @@ pub struct UpdateTrack<'info> {
     #[account(mut)]
     pub user: Account<'info, User>,
     #[account(mut)]
+    // User update authority field
     pub authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -266,10 +290,28 @@ pub struct DeleteTrack<'info> {
     pub track: Account<'info, Track>,
     #[account(mut)]
     pub user: Account<'info, User>,
+    // User update authority field
     #[account(mut)]
     pub authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
+}
+
+/// Instruction container for follow
+#[derive(Accounts)]
+#[instruction(follower_handle_seed: [u8;16], followee_handle_seed: [u8;16])]
+pub struct FollowUser<'info> {
+    #[account(mut)]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(mut)]
+    pub follower_user_stg: Account<'info, User>,
+    #[account(mut)]
+    pub followee_user_stg: Account<'info, User>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    // User update authority field
+    #[account(mut)]
+    pub authority: Signer<'info>,
 }
 
 // END Instructions
