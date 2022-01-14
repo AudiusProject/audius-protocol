@@ -1,6 +1,17 @@
 const { deviceType } = require('./constants')
 const { drainMessageObject: sendAwsSns } = require('../awsSNS')
 const { sendBrowserNotification, sendSafariNotification } = require('../webPush')
+const racePromiseWithTimeout = require('../utils/racePromiseWithTimeout.js')
+const { logger } = require('../logging')
+
+// guessed a value
+const SEND_NOTIF_TIMEOUT_MS = 5000 // 5 sec
+
+const SEND_NOTIF_FUNCTIONS = {
+  'SEND_AWS_SNS': sendAwsSns,
+  'SEND_BROWSER_NOTIF': sendBrowserNotification,
+  'SEND_SAFARI_NOTIF': sendSafariNotification
+}
 
 // TODO (DM) - move this into redis
 const pushNotificationQueue = {
@@ -37,44 +48,71 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
   buffer.push(bufferObj)
 }
 
+async function _sendNotification (notifFunctionName, bufferObj) {
+  const logPrefix = `[notificationQueue:sendNotification] [${notifFunctionName}] [userId ${bufferObj.userId}]`
+  try {
+    const start = Date.now()
+
+    await racePromiseWithTimeout(
+      SEND_NOTIF_FUNCTIONS[notifFunctionName](bufferObj),
+      SEND_NOTIF_TIMEOUT_MS,
+      `Timed out in ${SEND_NOTIF_TIMEOUT_MS}ms`
+    )
+
+    logger.debug(`${logPrefix} Succeeded in ${Date.now() - start}`)
+  } catch (e) {
+    // Swallow error - log and continue
+    logger.error(`${logPrefix} ERROR ${e.message}`)
+  }
+}
+
 async function drainPublishedMessages () {
+  logger.info(`[notificationQueue:drainPublishedMessages] Beginning processing of ${pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length} notifications...`)
+
   for (let bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      await sendAwsSns(bufferObj)
+      await _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_AWS_SNS, bufferObj)
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
       await Promise.all([
-        sendBrowserNotification(bufferObj),
-        sendSafariNotification(bufferObj)
+        _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_BROWSER_NOTIF, bufferObj),
+        _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_SAFARI_NOTIF, bufferObj)
       ])
     }
   }
+
   pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
 }
 
 async function drainPublishedSolanaMessages () {
+  logger.info(`[notificationQueue:drainPublishedSolanaMessages] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`)
+
   for (let bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      await sendAwsSns(bufferObj)
+      await _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_AWS_SNS, bufferObj)
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
       await Promise.all([
-        sendBrowserNotification(bufferObj),
-        sendSafariNotification(bufferObj)
+        _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_BROWSER_NOTIF, bufferObj),
+        _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_SAFARI_NOTIF, bufferObj)
       ])
     }
   }
+
   pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER = []
 }
 
 async function drainPublishedAnnouncements () {
+  logger.info(`[notificationQueue:drainPublishedAnnouncements] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`)
+
   for (let bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
     await Promise.all([
-      sendAwsSns(bufferObj),
-      sendBrowserNotification(bufferObj),
-      sendSafariNotification(bufferObj)
+      _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_AWS_SNS, bufferObj),
+      _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_BROWSER_NOTIF, bufferObj),
+      _sendNotification(SEND_NOTIF_FUNCTIONS.SEND_SAFARI_NOTIF, bufferObj)
     ])
   }
+
   pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER = []
 }
 
