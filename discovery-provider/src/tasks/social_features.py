@@ -16,17 +16,6 @@ from src.utils.model_nullable_validator import all_required_fields_present
 logger = logging.getLogger(__name__)
 
 
-def get_social_feature_factory_tx(update_task, event_type, tx_receipt):
-    social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
-    social_feature_factory_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["social_feature_factory"],
-        abi=social_feature_factory_abi,
-    )
-    return getattr(social_feature_factory_contract.events, event_type)().processReceipt(
-        tx_receipt
-    )
-
-
 def social_feature_state_update(
     self,
     update_task: DatabaseTask,
@@ -37,6 +26,7 @@ def social_feature_state_update(
     block_hash,
 ):
     """Return int representing number of social feature related state changes in this transaction"""
+
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
     skipped_tx_count = 0
@@ -160,6 +150,15 @@ def social_feature_state_update(
 
 
 # ####### HELPERS ####### #
+def get_social_feature_factory_tx(update_task, event_type, tx_receipt):
+    social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
+    social_feature_factory_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()["social_feature_factory"],
+        abi=social_feature_factory_abi,
+    )
+    return getattr(social_feature_factory_contract.events, event_type)().processReceipt(
+        tx_receipt
+    )
 
 
 def dispatch_challenge_repost(bus: ChallengeEventBus, repost, block_number):

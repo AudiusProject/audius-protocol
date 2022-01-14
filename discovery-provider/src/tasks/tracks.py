@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import functions, null
@@ -9,10 +9,10 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import Remix, Stem, Track, TrackRoute, User
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers, multihash
-from src.utils.indexing_errors import IndexingError, EntityMissingRequiredFieldError
-from src.queries.skipped_transactions import add_node_level_skipped_transaction
+from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.track_event_constants import (
     track_event_types_arr,
@@ -44,7 +44,7 @@ def track_state_update(
         return num_total_changes, track_ids
 
     pending_track_routes: List[TrackRoute] = []
-    track_events = {}
+    track_events: Dict[int, Dict[str, Any]] = {}
     for tx_receipt in track_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in track_event_types_arr:

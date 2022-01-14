@@ -7,7 +7,10 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import Playlist, Save, SaveType
-from src.utils.indexing_errors import IndexingError
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
+from src.utils import helpers
+from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
+from src.utils.model_nullable_validator import all_required_fields_present
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +26,12 @@ def user_library_state_update(
 ):
     """Return int representing number of User Library model state changes found in transaction."""
 
+    blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
+    skipped_tx_count = 0
     if not user_library_factory_txs:
         return num_total_changes
 
-    user_library_abi = update_task.abi_values["UserLibraryFactory"]["abi"]
-    user_library_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["user_library_factory"], abi=user_library_abi
-    )
     challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
@@ -38,10 +39,10 @@ def user_library_state_update(
     playlist_save_state_changes: Dict[int, Dict[int, Save]] = {}
 
     for tx_receipt in user_library_factory_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         try:
             add_track_save(
                 self,
-                user_library_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -52,7 +53,6 @@ def user_library_state_update(
 
             add_playlist_save(
                 self,
-                user_library_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -63,7 +63,6 @@ def user_library_state_update(
 
             delete_track_save(
                 self,
-                user_library_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -74,7 +73,6 @@ def user_library_state_update(
 
             delete_playlist_save(
                 self,
-                user_library_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -82,10 +80,13 @@ def user_library_state_update(
                 block_datetime,
                 playlist_save_state_changes,
             )
+        except EntityMissingRequiredFieldError as e:
+            logger.warning(f"Skipping tx {txhash} with error {e}")
+            skipped_tx_count += 1
+            add_node_level_skipped_transaction(session, block_number, blockhash, txhash)
+            pass
         except Exception as e:
             logger.info("Error in user library transaction")
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            blockhash = update_task.web3.toHex(block_hash)
             raise IndexingError(
                 "user_library", block_number, blockhash, txhash, str(e)
             ) from e
@@ -113,6 +114,14 @@ def user_library_state_update(
 
 
 # ####### HELPERS ####### #
+def get_user_library_factory_tx(update_task, event_type, tx_receipt):
+    user_library_abi = update_task.abi_values["UserLibraryFactory"]["abi"]
+    user_library_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()["user_library_factory"], abi=user_library_abi
+    )
+    return getattr(user_library_contract.events, event_type)().processReceipt(
+        tx_receipt
+    )
 
 
 def dispatch_favorite(bus: ChallengeEventBus, save, block_number):
@@ -135,7 +144,6 @@ def invalidate_old_save(session, user_id, playlist_id, save_type):
 
 def add_track_save(
     self,
-    user_library_contract,
     update_task,
     session,
     tx_receipt,
@@ -144,14 +152,12 @@ def add_track_save(
     track_state_changes: Dict[int, Dict[int, Save]],
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_add_track_events = user_library_contract.events.TrackSaveAdded().processReceipt(
-        tx_receipt
+    new_add_track_events = get_user_library_factory_tx(
+        update_task, "TrackSaveAdded", tx_receipt
     )
-
     for event in new_add_track_events:
-        event_args = event["args"]
-        save_user_id = event_args._userId
-        save_track_id = event_args._trackId
+        save_user_id = helpers.get_tx_arg(event, "_userId")
+        save_track_id = helpers.get_tx_arg(event, "_trackId")
 
         if (save_user_id in track_state_changes) and (
             save_track_id in track_state_changes[save_user_id]
@@ -169,6 +175,12 @@ def add_track_save(
                 is_current=True,
                 is_delete=False,
             )
+            if not all_required_fields_present(Save, save):
+                raise EntityMissingRequiredFieldError(
+                    "save",
+                    save,
+                    f"Error parsing save {save} with entity missing required field(s)",
+                )
             if save_user_id in track_state_changes:
                 track_state_changes[save_user_id][save_track_id] = save
             else:
@@ -177,7 +189,6 @@ def add_track_save(
 
 def add_playlist_save(
     self,
-    user_library_contract,
     update_task,
     session,
     tx_receipt,
@@ -186,14 +197,13 @@ def add_playlist_save(
     playlist_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_add_playlist_events = (
-        user_library_contract.events.PlaylistSaveAdded().processReceipt(tx_receipt)
+    new_add_playlist_events = get_user_library_factory_tx(
+        update_task, "PlaylistSaveAdded", tx_receipt
     )
 
     for event in new_add_playlist_events:
-        event_args = event["args"]
-        save_user_id = event_args._userId
-        save_playlist_id = event_args._playlistId
+        save_user_id = helpers.get_tx_arg(event, "_userId")
+        save_playlist_id = helpers.get_tx_arg(event, "_playlistId")
         save_type = SaveType.playlist
 
         playlist_entry = (
@@ -224,6 +234,12 @@ def add_playlist_save(
                 is_current=True,
                 is_delete=False,
             )
+            if not all_required_fields_present(Save, save):
+                raise EntityMissingRequiredFieldError(
+                    "save",
+                    save,
+                    f"Error parsing save {save} with entity missing required field(s)",
+                )
             if save_user_id in playlist_state_changes:
                 playlist_state_changes[save_user_id][save_playlist_id] = save
             else:
@@ -232,7 +248,6 @@ def add_playlist_save(
 
 def delete_track_save(
     self,
-    user_library_contract,
     update_task,
     session,
     tx_receipt,
@@ -241,13 +256,12 @@ def delete_track_save(
     track_state_changes: Dict[int, Dict[int, Save]],
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_delete_track_events = (
-        user_library_contract.events.TrackSaveDeleted().processReceipt(tx_receipt)
+    new_delete_track_events = get_user_library_factory_tx(
+        update_task, "TrackSaveDeleted", tx_receipt
     )
     for event in new_delete_track_events:
-        event_args = event["args"]
-        save_user_id = event_args._userId
-        save_track_id = event_args._trackId
+        save_user_id = helpers.get_tx_arg(event, "_userId")
+        save_track_id = helpers.get_tx_arg(event, "_trackId")
 
         if (save_user_id in track_state_changes) and (
             save_track_id in track_state_changes[save_user_id]
@@ -265,6 +279,12 @@ def delete_track_save(
                 is_current=True,
                 is_delete=True,
             )
+            if not all_required_fields_present(Save, save):
+                raise EntityMissingRequiredFieldError(
+                    "save",
+                    save,
+                    f"Error parsing save {save} with entity missing required field(s)",
+                )
             if save_user_id in track_state_changes:
                 track_state_changes[save_user_id][save_track_id] = save
             else:
@@ -273,7 +293,6 @@ def delete_track_save(
 
 def delete_playlist_save(
     self,
-    user_library_contract,
     update_task,
     session,
     tx_receipt,
@@ -282,20 +301,19 @@ def delete_playlist_save(
     playlist_state_changes: Dict[int, Dict[int, Save]],
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_add_playlist_events = (
-        user_library_contract.events.PlaylistSaveDeleted().processReceipt(tx_receipt)
+    new_delete_playlist_events = get_user_library_factory_tx(
+        update_task, "PlaylistSaveDeleted", tx_receipt
     )
 
-    for event in new_add_playlist_events:
-        event_args = event["args"]
-        save_user_id = event_args._userId
-        save_playlist_id = event_args._playlistId
+    for event in new_delete_playlist_events:
+        save_user_id = helpers.get_tx_arg(event, "_userId")
+        deleted_playlist_id = helpers.get_tx_arg(event, "_playlistId")
         save_type = SaveType.playlist
 
         playlist_entry = (
             session.query(Playlist)
             .filter(
-                Playlist.is_current == True, Playlist.playlist_id == save_playlist_id
+                Playlist.is_current == True, Playlist.playlist_id == deleted_playlist_id
             )
             .all()
         )
@@ -305,22 +323,28 @@ def delete_playlist_save(
                 save_type = SaveType.album
 
         if (save_user_id in playlist_state_changes) and (
-            save_playlist_id in playlist_state_changes[save_user_id]
+            deleted_playlist_id in playlist_state_changes[save_user_id]
         ):
-            playlist_state_changes[save_user_id][save_playlist_id].is_delete = True
+            playlist_state_changes[save_user_id][deleted_playlist_id].is_delete = True
         else:
             save = Save(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
                 txhash=txhash,
                 user_id=save_user_id,
-                save_item_id=save_playlist_id,
+                save_item_id=deleted_playlist_id,
                 save_type=save_type,
                 created_at=block_datetime,
                 is_current=True,
                 is_delete=True,
             )
+            if not all_required_fields_present(Save, save):
+                raise EntityMissingRequiredFieldError(
+                    "save",
+                    save,
+                    f"Error parsing save {save} with entity missing required field(s)",
+                )
             if save_user_id in playlist_state_changes:
-                playlist_state_changes[save_user_id][save_playlist_id] = save
+                playlist_state_changes[save_user_id][deleted_playlist_id] = save
             else:
-                playlist_state_changes[save_user_id] = {save_playlist_id: save}
+                playlist_state_changes[save_user_id] = {deleted_playlist_id: save}

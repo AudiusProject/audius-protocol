@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Set, Tuple, TypedDict
+from typing import Any, Dict, Set, Tuple, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
@@ -48,7 +48,7 @@ def user_state_update(
     # before it gets committed to the db
     # Data format is {"user_id": {"user", "events": []}}
     # NOTE - events are stored only for debugging purposes and not used or persisted anywhere
-    user_events_lookup = {}
+    user_events_lookup: Dict[int, Dict[str, Any]] = {}
 
     # for each user factory transaction, loop through every tx
     # loop through all audius event types within that tx and get all event logs

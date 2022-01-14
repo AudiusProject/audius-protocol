@@ -6,11 +6,11 @@ from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, Upd
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models import (
     Block,
-    TrackRoute,
-    User,
-    Track,
     SkippedTransaction,
     SkippedTransactionLevel,
+    Track,
+    TrackRoute,
+    User,
 )
 from src.tasks.index import revert_blocks
 from src.tasks.tracks import (
