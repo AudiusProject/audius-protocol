@@ -53,23 +53,22 @@ from src.utils.redis_constants import (
 )
 from src.utils.session_manager import SessionManager
 
-(
-    USER_FACTORY,
-    TRACK_FACTORY,
-    SOCIAL_FEATURE_FACTORY,
-    PLAYLIST_FACTORY,
-    USER_LIBRARY_FACTORY,
-    USER_REPLICA_SET_MANAGER,
-) = itemgetter(
-    "USER_FACTORY",
-    "TRACK_FACTORY",
-    "SOCIAL_FEATURE_FACTORY",
-    "PLAYLIST_FACTORY",
-    "USER_LIBRARY_FACTORY",
-    "USER_REPLICA_SET_MANAGER",
-)(
-    CONTRACT_TYPES
-)
+USER_FACTORY = CONTRACT_TYPES.USER_FACTORY.value
+TRACK_FACTORY = CONTRACT_TYPES.TRACK_FACTORY.value
+SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY.value
+PLAYLIST_FACTORY = CONTRACT_TYPES.PLAYLIST_FACTORY.value
+USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
+USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
+
+TX_TYPE_TO_HANDLER_MAP = {
+    USER_FACTORY: user_state_update,
+    TRACK_FACTORY: track_state_update,
+    SOCIAL_FEATURE_FACTORY: social_feature_state_update,
+    PLAYLIST_FACTORY: playlist_state_update,
+    USER_LIBRARY_FACTORY: user_library_state_update,
+    USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
+}
+
 logger = logging.getLogger(__name__)
 
 
@@ -377,7 +376,7 @@ def update_ursm_address(self):
             )
 
 
-def save_and_get_skip_tx_hash(session, redis):
+def get_tx_hash_to_skip(session, redis):
     """Fetch if there is a tx_hash to be skipped because of continuous errors"""
     indexing_error = get_indexing_error(redis)
     if (
@@ -385,19 +384,29 @@ def save_and_get_skip_tx_hash(session, redis):
         and "has_consensus" in indexing_error
         and indexing_error["has_consensus"]
     ):
-        try:
-            add_network_level_skipped_transaction(
-                session,
-                indexing_error["blocknumber"],
-                indexing_error["blockhash"],
-                indexing_error["txhash"],
-            )
-        except Exception:
-            return None
         return indexing_error["txhash"]
-    return None
+    else:
+        return None
 
 
+def save_skipped_tx(session, redis):
+    indexing_error = get_indexing_error(redis)
+    try:
+        add_network_level_skipped_transaction(
+            session,
+            indexing_error["blocknumber"],
+            indexing_error["blockhash"],
+            indexing_error["txhash"],
+        )
+    except Exception:
+        logger.warning(
+            f"index.py | save_skipped_tx: Failed to add_network_level_skipped_transaction for {indexing_error}"
+        )
+
+
+# Append tx to list of txs of its contract type.
+# Used to sort tx into groups before processing them for db insert.
+# Returns a map of grouped txs with the tx sorted into one of the lists.
 def group_transaction_by_type(tx_type_to_grouped_lists_map, tx, tx_receipt):
     tx_target_contract_address = tx["to"]
     for tx_type, tx_list in tx_type_to_grouped_lists_map.items():
@@ -410,6 +419,7 @@ def group_transaction_by_type(tx_type_to_grouped_lists_map, tx, tx_receipt):
             )
             tx_list.append(tx_receipt)
             break
+    return tx_type_to_grouped_lists_map
 
 
 def add_indexed_block_to_db(db_session, block):
@@ -436,7 +446,7 @@ def add_indexed_block_to_redis(block, redis):
     redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
 
 
-def bulk_process_state_changes(
+def process_state_changes(
     main_indexing_task,
     session,
     ipfs_metadata,
@@ -448,14 +458,6 @@ def bulk_process_state_changes(
         "number", "hash", "timestamp"
     )(block)
 
-    TX_TYPE_TO_HANDLER_MAP = {
-        USER_FACTORY: user_state_update,
-        TRACK_FACTORY: track_state_update,
-        SOCIAL_FEATURE_FACTORY: social_feature_state_update,
-        PLAYLIST_FACTORY: playlist_state_update,
-        USER_LIBRARY_FACTORY: user_library_state_update,
-        USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
-    }
     changed_entity_ids_map = {
         USER_FACTORY: [],
         TRACK_FACTORY: [],
@@ -541,15 +543,16 @@ def index_blocks(self, db, blocks_list):
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
-            skip_tx_hash = save_and_get_skip_tx_hash(session, redis)
+            skip_tx_hash = get_tx_hash_to_skip(session, redis)
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
             if skip_whole_block:
                 logger.info(
                     f"index.py | Skipping all txs in block {block.hash} {block.number}"
                 )
+                save_skipped_tx(session, redis)
                 add_indexed_block_to_db(session, block)
             else:
-                TXS_GROUPED_BY_TYPE = {
+                txs_grouped_by_type = {
                     USER_FACTORY: [],
                     TRACK_FACTORY: [],
                     SOCIAL_FEATURE_FACTORY: [],
@@ -578,18 +581,19 @@ def index_blocks(self, db, blocks_list):
                             logger.info(
                                 f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
                             )
+                            save_skipped_tx(session, redis)
                             continue
                         else:
-                            group_transaction_by_type(
-                                TXS_GROUPED_BY_TYPE, tx, tx_receipt
+                            txs_grouped_by_type = group_transaction_by_type(
+                                txs_grouped_by_type, tx, tx_receipt
                             )
 
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
                     ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
                         db,
-                        TXS_GROUPED_BY_TYPE[USER_FACTORY],
-                        TXS_GROUPED_BY_TYPE[TRACK_FACTORY],
+                        txs_grouped_by_type[USER_FACTORY],
+                        txs_grouped_by_type[TRACK_FACTORY],
                         block_number,
                         block_hash,
                     )
@@ -599,12 +603,12 @@ def index_blocks(self, db, blocks_list):
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit
-                    changed_entity_ids_map = bulk_process_state_changes(
+                    changed_entity_ids_map = process_state_changes(
                         self,
                         session,
                         ipfs_metadata,
                         blacklisted_cids,
-                        TXS_GROUPED_BY_TYPE,
+                        txs_grouped_by_type,
                         block,
                     )
                 except IndexingError as err:
