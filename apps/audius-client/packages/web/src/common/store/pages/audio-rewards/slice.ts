@@ -166,7 +166,10 @@ const slice = createSlice({
     },
     fetchCognitoFlowUrlFailed: state => {
       state.cognitoFlowUrlStatus = Status.ERROR
-    }
+    },
+    refreshUserChallenges: () => {},
+    refreshUserBalance: () => {},
+    reset: () => {}
   }
 })
 
@@ -189,7 +192,10 @@ export const {
   setCognitoFlowStatus,
   fetchCognitoFlowUrl,
   fetchCognitoFlowUrlFailed,
-  fetchCognitoFlowUrlSucceeded
+  fetchCognitoFlowUrlSucceeded,
+  refreshUserChallenges,
+  refreshUserBalance,
+  reset
 } = slice.actions
 
 export default slice
