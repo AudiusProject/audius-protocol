@@ -56,7 +56,7 @@ def populate_mock_db_blocks(db, min, max):
             session.flush()
 
 
-def populate_mock_db(db, entities, block_offset=0, calculate_aggregate_user=True):
+def populate_mock_db(db, entities, block_offset=0):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows
 
@@ -315,8 +315,3 @@ def populate_mock_db(db, entities, block_offset=0, calculate_aggregate_user=True
             session.add(user_challenge)
 
         session.flush()
-
-        if calculate_aggregate_user:
-            session.execute(
-                UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
-            )

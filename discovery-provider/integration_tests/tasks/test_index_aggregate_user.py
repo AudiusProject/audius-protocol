@@ -106,39 +106,52 @@ def basic_tests(results):
     assert results[1].track_save_count == 1
 
 
+def created_entity_tests(results, count):
+    assert len(results) == count, "Test that the entities were created"
+
+    for i in range(count):
+        assert results[i].user_id == i + 1, "Test that the entities were created"
+        assert results[i].track_count == 9, "Test that the entities were created"
+
+
 def test_index_aggregate_user_populate(app):
-    """Test that we should populate plays from empty"""
+    """Test that we should populate users from empty"""
 
     with app.app_context():
         db = get_db()
 
-    # confirm nothing exists before populate_mock_db()
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        assert len(results) == 0
+        assert (
+            len(results) == 0
+        ), "Test aggregate_user is empty before populate_mock_db()"
 
     # create db entries based on entities
-    populate_mock_db(db, basic_entities, skip_aggregate_user=True)
+    populate_mock_db(db, basic_entities)
 
     with db.scoped_session() as session:
         # confirm nothing exists before _update_aggregate_table()
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        assert len(results) == 0
+        assert (
+            len(results) == 0
+        ), "Test aggregate_user is empty before _update_aggregate_table()"
 
         # trigger celery task
         _update_aggregate_table(session)
 
+    with db.scoped_session() as session:
         # read from aggregate_user table
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
         # run basic tests against basic_entities
+        pprint(results)
         basic_tests(results)
 
 
@@ -206,7 +219,7 @@ def test_index_aggregate_user_empty_users(app):
         ],
     }
 
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         _update_aggregate_table(session)
@@ -231,7 +244,7 @@ def test_index_aggregate_user_empty_activity(app):
         ],
     }
 
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         _update_aggregate_table(session)
@@ -255,7 +268,7 @@ def test_index_aggregate_user_empty_completely(app):
 
     entities = {}
 
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         _update_aggregate_table(session)
@@ -301,18 +314,13 @@ def test_index_aggregate_user_update(app):
         }
     )
 
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        assert len(results) == 2
-
-        assert results[0].user_id == 1
-        assert results[0].track_count == 9
-        assert results[1].user_id == 2
-        assert results[1].track_count == 9
+        created_entity_tests(results, 2)
 
         _update_aggregate_table(session)
 
@@ -377,7 +385,7 @@ def test_index_aggregate_user_update_with_extra_user(app):
         )
         assert len(results) == 0
 
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -435,21 +443,13 @@ def test_index_aggregate_user_entity_model(app):
         ],
     }
 
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-
-        assert len(results) == 3
-
-        assert results[0].user_id == 1
-        assert results[0].track_count == 9
-        assert results[1].user_id == 2
-        assert results[1].track_count == 9
-        assert results[2].user_id == 3
-        assert results[2].track_count == 9
+        created_entity_tests(results, 3)
 
 
 # TODO: test with block.number being 0 in order to activate truncation
@@ -495,7 +495,7 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
         "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 9}],
     }
 
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -509,18 +509,22 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        assert len(results) == 3, "Test zero-modifications since last_checkpoint is in the future"
+        assert (
+            len(results) == 3
+        ), "Test zero-modifications since last_checkpoint is in the future"
 
     entities = {
         "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 0}],
     }
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        assert len(results) == 3, "Test that entities exist as expected, even though checkpoint has been reset"
+        assert (
+            len(results) == 3
+        ), "Test that entities exist as expected, even though checkpoint has been reset"
 
         _update_aggregate_table(session)
 
@@ -528,7 +532,9 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        assert len(results) == 0, "Test that aggregate_user has been truncated due to reset checkpoint"
+        assert (
+            len(results) == 0
+        ), "Test that aggregate_user has been truncated due to reset checkpoint"
 
 
 def test_index_aggregate_user_same_checkpoint(app):
@@ -547,7 +553,7 @@ def test_index_aggregate_user_same_checkpoint(app):
         }
     )
 
-    populate_mock_db(db, entities, calculate_aggregate_user=False)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
