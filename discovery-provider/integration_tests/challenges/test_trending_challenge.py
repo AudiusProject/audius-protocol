@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 import redis
 from integration_tests.utils import populate_mock_db
@@ -268,7 +268,7 @@ def test_trending_challenge_job(app):
         ChallengeEvent.trending_playlist, trending_playlist_challenge_manager
     )
 
-    trending_date = date.fromisoformat("2021-08-20")
+    trending_date = datetime.fromisoformat("2021-08-20")
 
     with db.scoped_session() as session:
         _update_aggregate_plays(session)
@@ -293,9 +293,9 @@ def test_trending_challenge_job(app):
     with db.scoped_session() as session:
         session.query(Challenge).filter(
             or_(
-                Challenge.id == "trending-playlist",
-                Challenge.id == "trending-track",
-                Challenge.id == "trending-underground-track",
+                Challenge.id == "tp",
+                Challenge.id == "tt",
+                Challenge.id == "tut",
             )
         ).update({"active": True, "starting_block": BLOCK_NUMBER})
         bus.process_events(session)
@@ -309,7 +309,7 @@ def test_trending_challenge_job(app):
 
         user_trending_tracks_challenges = (
             session.query(UserChallenge)
-            .filter(UserChallenge.challenge_id == "trending-track")
+            .filter(UserChallenge.challenge_id == "tt")
             .all()
         )
         assert len(user_trending_tracks_challenges) == 5

@@ -53,21 +53,21 @@
 		"starting_block": 25346436
 	},
 	{
-		"id": "trending-track",
+		"id": "tt",
 		"type": "trending",
 		"amount": "100",
 		"active": true,
 		"starting_block": 25346436
 	},
 	{
-		"id": "trending-underground-track",
+		"id": "tut",
 		"type": "trending",
 		"amount": "100",
 		"active": true,
 		"starting_block": 25346436
 	},
 	{
-		"id": "trending-playlist",
+		"id": "tp",
 		"type": "trending",
 		"amount": "100",
 		"active": true,
