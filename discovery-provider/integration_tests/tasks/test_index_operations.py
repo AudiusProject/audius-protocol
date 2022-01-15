@@ -244,6 +244,7 @@ def test_index_operations_metadata_fetch_error(
                 )
         assert False
     except IndexingError as error:
+        error = get_indexing_error(redis)
         errored_block_in_db_results = (
             session.query(Block).filter_by(number=error["blocknumber"]).all()
         )  # should not exist
@@ -266,8 +267,14 @@ def test_index_operations_tx_receipts_fetch_error(
     web3 = celery_app_contracts["web3"]
 
     # patch tx receipts fetch event to raise an exception
-    def fetch_tx_receipts_stub(*_):
-        raise Exception("Broken tx receipt fetch")
+    def fetch_tx_receipts_stub(self, block):
+        raise IndexingError(
+            blocknumber=block.number,
+            blockhash=web3.toHex(block.hash),
+            txhash=None,
+            type="tx",
+            message="Broken tx receipt fetch",
+        )
 
     mocker.patch(
         "src.tasks.index.fetch_tx_receipts",
@@ -425,16 +432,9 @@ def test_index_operations_indexing_error_on_commit(
         assert error["txhash"] == "commit"
 
 
-def test_index_operations_skip_tx(celery_app, celery_app_contracts, mocker):
-    """
-    Confirm indexer skips tx when there is consensus
-    """
-    print("wip")
-
-
 def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
     """
-    Confirm indexer skips block when there is consensus
+    Confirm indexer skips block when session commit fails
     """
     task = celery_app.celery.tasks["update_discovery_provider"]
     db = task.db
@@ -445,17 +445,23 @@ def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
     # patch save_and_get_skip_tx_hash to raise an exception
     class MockSkipOnlyOneBlock:
         skipped = False
+        skipped_block_number = None
 
-        def save_and_get_skip_tx_hash_stub(self, *_):
+        def save_and_get_skip_tx_hash_stub(self, session, redis):
             if not self.skipped:
+                self.skipped_block_number = (
+                    session.query(Block).filter_by(is_current=True).first().number
+                )
                 self.skipped = True
                 return "commit"
             else:
                 return None
 
+    skip_block_helper = MockSkipOnlyOneBlock()
+
     mocker.patch(
         "src.tasks.index.save_and_get_skip_tx_hash",
-        side_effect=MockSkipOnlyOneBlock().save_and_get_skip_tx_hash_stub,
+        side_effect=skip_block_helper.save_and_get_skip_tx_hash_stub,
         autospec=True,
     )
 
@@ -470,7 +476,6 @@ def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
             current_block_query[0].number if len(current_block_query) > 0 else 0
         )
         latest_block = web3.eth.getBlock("latest", True)
-        total_blocks = latest_block.number - current_block + 2
         while current_block < latest_block.number:
             # Process a bunch of blocks to make sure we covered everything
             task.run()
@@ -478,5 +483,12 @@ def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
             current_block = (
                 current_block_query[0].number if len(current_block_query) > 0 else 0
             )
-        skipped_block_was_added = len(session.query(Block).all()) == total_blocks
+        skipped_block_was_added = (
+            len(
+                session.query(Block)
+                .filter_by(number=skip_block_helper.skipped_block_number)
+                .all()
+            )
+            == 1
+        )
         assert skipped_block_was_added

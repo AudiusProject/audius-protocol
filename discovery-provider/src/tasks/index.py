@@ -3,7 +3,6 @@ import concurrent.futures
 import logging
 from operator import itemgetter
 
-from sqlalchemy import func
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -203,7 +202,10 @@ def fetch_tx_receipt(transaction):
     return response
 
 
-def fetch_tx_receipts(self, block_transactions):
+def fetch_tx_receipts(self, block):
+    block_hash = self.web3.toHex(block.hash)
+    block_number = block.number
+    block_transactions = block.transactions
     block_tx_with_receipts = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         future_to_tx_receipt = {
@@ -220,8 +222,12 @@ def fetch_tx_receipts(self, block_transactions):
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
     if num_processed_txs != num_submitted_txs:
-        raise Exception(
-            f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}"
+        raise IndexingError(
+            type="tx",
+            blocknumber=block_number,
+            blockhash=block_hash,
+            txhash=None,
+            message=f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}",
         )
     return block_tx_with_receipts
 
@@ -504,6 +510,18 @@ def remove_updated_entities_from_cache(redis, changed_entity_type_to_updated_ids
             clear_cache_handler(redis, changed_entity_ids)
 
 
+def create_and_raise_indexing_error(err, redis):
+    logger.info(
+        f"index.py | Error in the indexing task at"
+        f" block={err.blocknumber} and hash={err.txhash}"
+    )
+    set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
+    confirm_indexing_transaction_error(
+        redis, err.blocknumber, err.blockhash, err.txhash, err.message
+    )
+    raise err
+
+
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
@@ -540,7 +558,7 @@ def index_blocks(self, db, blocks_list):
                     USER_REPLICA_SET_MANAGER: [],
                 }
                 try:
-                    tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
+                    tx_receipt_dict = fetch_tx_receipts(self, block)
 
                     # Sort transactions by hash
                     sorted_txs = sorted(
@@ -590,17 +608,7 @@ def index_blocks(self, db, blocks_list):
                         block,
                     )
                 except IndexingError as err:
-                    logger.info(
-                        f"index.py | Error in the indexing task at"
-                        f" block={err.blocknumber} and hash={err.txhash}"
-                    )
-                    set_indexing_error(
-                        redis, err.blocknumber, err.blockhash, err.txhash, err.message
-                    )
-                    confirm_indexing_transaction_error(
-                        redis, err.blocknumber, err.blockhash, err.txhash, err.message
-                    )
-                    raise err
+                    create_and_raise_indexing_error(err, redis)
 
             try:
                 session.commit()
@@ -612,9 +620,10 @@ def index_blocks(self, db, blocks_list):
                 # We're at a point where the whole block can't be added to the database, so
                 # we should skip it in favor of making progress
                 blockhash = update_task.web3.toHex(block_hash)
-                raise IndexingError(
+                indexing_error = IndexingError(
                     "session.commit", block_number, blockhash, "commit", str(e)
-                ) from e
+                )
+                create_and_raise_indexing_error(indexing_error, redis)
             try:
                 # Check the last block's timestamp for updating the trending challenge
                 [should_update, date] = should_trending_challenge_update(
@@ -630,8 +639,8 @@ def index_blocks(self, db, blocks_list):
                     f"index.py | Error in calling update trending challenge {e}",
                     exc_info=True,
                 )
-        if skip_tx_hash:
-            clear_indexing_error(redis)
+            if skip_tx_hash:
+                clear_indexing_error(redis)
 
         if changed_entity_ids_map:
             remove_updated_entities_from_cache(redis, changed_entity_ids_map)
