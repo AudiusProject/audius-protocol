@@ -437,7 +437,6 @@ def bulk_process_state_changes(
     blacklisted_cids,
     tx_type_to_grouped_lists_map,
     block,
-    redis,
 ):
     block_number, block_hash, block_timestamp = itemgetter(
         "number", "hash", "timestamp"
@@ -471,7 +470,6 @@ def bulk_process_state_changes(
             block_hash,
             ipfs_metadata,
             blacklisted_cids,
-            redis,
         ]
 
         (
@@ -590,7 +588,6 @@ def index_blocks(self, db, blocks_list):
                         blacklisted_cids,
                         TXS_GROUPED_BY_TYPE,
                         block,
-                        redis,
                     )
                 except IndexingError as err:
                     logger.info(

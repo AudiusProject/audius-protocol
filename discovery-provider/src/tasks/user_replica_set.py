@@ -4,20 +4,14 @@ from typing import Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_contract_addresses, get_eth_abi_values
+from src.database_task import DatabaseTask
 from src.models import URSMContentNode, User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils import helpers
 from src.utils.eth_contracts_helpers import (
-    DatabaseTask,
-    URSMContentNode,
     content_node_service_type,
-    from,
-    import,
     sp_factory_registry_key,
-    src.database_task,
-    src.models,
-    src.tasks.index_network_peers,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present

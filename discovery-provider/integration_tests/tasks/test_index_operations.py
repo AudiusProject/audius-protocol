@@ -243,8 +243,7 @@ def test_index_operations_metadata_fetch_error(
                     current_block_query[0].number if len(current_block_query) > 0 else 0
                 )
         assert False
-    except IndexingError:
-        error = get_indexing_error(redis)
+    except IndexingError as error:
         errored_block_in_db_results = (
             session.query(Block).filter_by(number=error["blocknumber"]).all()
         )  # should not exist
