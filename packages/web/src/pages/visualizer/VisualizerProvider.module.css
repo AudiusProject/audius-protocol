@@ -3,7 +3,7 @@
   z-index: 15;
   display: none;
   opacity: 0;
-  transition: opacity 0.3s ease-in;
+  transition: opacity 0.4s ease-in-out;
 }
 .visualizer.fade {
   opacity: 1;
@@ -75,7 +75,6 @@
 .artworkWrapper {
   margin-left: 16px;
   position: relative;
-  cursor: pointer;
 }
 .artworkWrapper .artwork {
   width: 208px;
@@ -88,10 +87,19 @@
   background-position: center;
   background-repeat: no-repeat;
 }
+.playing {
+  cursor: pointer;
+}
 
 .trackInfoWrapper {
   margin-top: 20px;
   color: var(--static-white);
+}
+
+.emptyTrackInfoWrapper {
+  width: 100%;
+  height: 68px;
+  opacity: 0;
 }
 
 .visualizerDisabled {
