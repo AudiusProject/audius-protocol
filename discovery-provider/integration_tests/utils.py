@@ -78,7 +78,7 @@ def populate_mock_db(db, entities, block_offset=0, calculate_aggregate_user=True
         user_challenges = entities.get("user_challenges", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
-        aggregate_users = entities.get("aggregate_users", [])
+        aggregate_user = entities.get("aggregate_user", [])
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
@@ -222,8 +222,8 @@ def populate_mock_db(db, entities, block_offset=0, calculate_aggregate_user=True
             )
             session.add(aggregate_play)
 
-        for i, aggregate_user_meta in enumerate(aggregate_users):
-            aggregate_user = models.AggregateUsers(
+        for i, aggregate_user_meta in enumerate(aggregate_user):
+            user = models.AggregateUser(
                 user_id=aggregate_user_meta.get("user_id", i),
                 track_count=aggregate_user_meta.get("track_count", 0),
                 playlist_count=aggregate_user_meta.get("playlist_count", 0),
@@ -233,7 +233,7 @@ def populate_mock_db(db, entities, block_offset=0, calculate_aggregate_user=True
                 repost_count=aggregate_user_meta.get("repost_count", 0),
                 track_save_count=aggregate_user_meta.get("track_save_count", 0),
             )
-            session.add(aggregate_user)
+            session.add(user)
 
         for i, user_listening_history_meta in enumerate(user_listening_history):
             user_listening_history = models.UserListeningHistory(

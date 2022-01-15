@@ -21,6 +21,10 @@ basic_entities = {
         {"blockhash": "0", "number": 2, "parenthash": -1, "is_current": true},
     ],
     "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 1}],
+    "users": [
+        {"user_id": 1, "handle": "user1", "blocknumber": 2},
+        {"user_id": 2, "handle": "user2", "blocknumber": 2},
+    ],
     "tracks": [
         {"track_id": 1, "owner_id": 1},
         {"track_id": 2, "owner_id": 1},
@@ -54,10 +58,6 @@ basic_entities = {
                 ]
             },
         },
-    ],
-    "users": [
-        {"user_id": 1, "handle": "user1"},
-        {"user_id": 2, "handle": "user2"},
     ],
     "follows": [
         {
@@ -236,12 +236,14 @@ def test_index_aggregate_user_empty_activity(app):
     with db.scoped_session() as session:
         _update_aggregate_table(session)
 
+    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
         # TODO: why does only user2 exist?
         # assert len(results) == 0
+        pprint(results)
         assert len(results) == 1  # TODO: remove this line required for lint
 
 
@@ -266,7 +268,7 @@ def test_index_aggregate_user_empty_completely(app):
 
 
 def test_index_aggregate_user_update(app):
-    """Test that the aggregate_users data is overwritten"""
+    """Test that the aggregate_user data is overwritten"""
 
     with app.app_context():
         db = get_db()
@@ -305,13 +307,16 @@ def test_index_aggregate_user_update(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
+        assert len(results) == 2
 
-        # TODO: check why this assertion fails
-        pprint(results)
-        # assert len(results) == 0
+        assert results[0].user_id == 1
+        assert results[0].track_count == 9
+        assert results[1].user_id == 2
+        assert results[1].track_count == 9
 
         _update_aggregate_table(session)
 
+    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
@@ -378,16 +383,14 @@ def test_index_aggregate_user_update_with_extra_user(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
+        assert len(results) == 3
 
-        # TODO: check why this assertion fails and why update_aggregate_table() isn't needed
-        pprint(results)
-        # assert len(results) == 3
-        # _update_aggregate_table(session)
+        _update_aggregate_table(session)
 
+    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-
         basic_tests(results)
 
 
@@ -439,20 +442,18 @@ def test_index_aggregate_user_entity_model(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        # TODO: why is len(results) == 0?
-        # assert len(results) == 3
-        assert len(results) == 0  # TODO: remove this line required for lint
+        assert len(results) == 3
 
-        # assert results[0].user_id == 1
-        # assert results[0].track_count == 9
-        # assert results[1].user_id == 2
-        # assert results[1].track_count == 9
-        # assert results[2].user_id == 3
-        # assert results[2].track_count == 9
+        assert results[0].user_id == 1
+        assert results[0].track_count == 9
+        assert results[1].user_id == 2
+        assert results[1].track_count == 9
+        assert results[2].user_id == 3
+        assert results[2].track_count == 9
 
 
 # TODO: test with block.number being 0 in order to activate truncation
-def test_index_aggregate_user_update_with_only_aggregate_users(app):
+def test_index_aggregate_user_update_with_only_aggregate_user(app):
     """Test that aggregate_user will be truncated even when no other data"""
 
     with app.app_context():
@@ -500,17 +501,34 @@ def test_index_aggregate_user_update_with_only_aggregate_users(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-
-        # TODO: why is this empty?
-        assert len(results) == 0
+        assert len(results) == 3, "Test that entities exist as expected"
 
         _update_aggregate_table(session)
 
+    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
+        assert len(results) == 3, "Test zero-modifications since last_checkpoint is in the future"
 
-        assert len(results) == 0
+    entities = {
+        "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 0}],
+    }
+    populate_mock_db(db, entities, calculate_aggregate_user=False)
+
+    with db.scoped_session() as session:
+        results: List[AggregateUser] = (
+            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
+        )
+        assert len(results) == 3, "Test that entities exist as expected, even though checkpoint has been reset"
+
+        _update_aggregate_table(session)
+
+    with db.scoped_session() as session:
+        results: List[AggregateUser] = (
+            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
+        )
+        assert len(results) == 0, "Test that aggregate_user has been truncated due to reset checkpoint"
 
 
 def test_index_aggregate_user_same_checkpoint(app):
@@ -520,10 +538,11 @@ def test_index_aggregate_user_same_checkpoint(app):
         db = get_db()
 
     entities = deepcopy(basic_entities)
+    current_blocknumber = basic_entities["blocks"][0]["number"]
     entities.update(
         {
             "indexing_checkpoints": [
-                {"tablename": AGGREGATE_USER, "last_checkpoint": 2}
+                {"tablename": AGGREGATE_USER, "last_checkpoint": current_blocknumber}
             ],
         }
     )
@@ -534,16 +553,12 @@ def test_index_aggregate_user_same_checkpoint(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-
-        # TODO: check why this assertion fails
-        pprint(results)
-        # assert len(results) == 0
+        assert len(results) == 0
 
         _update_aggregate_table(session)
 
+    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-
-        # TODO: check why this assertion fails
-        # assert len(results) == 0
+        assert len(results) == 0

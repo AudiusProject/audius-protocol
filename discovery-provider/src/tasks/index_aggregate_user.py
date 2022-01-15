@@ -381,9 +381,7 @@ def update_aggregate_user(self):
     have_lock = False
     # Define redis lock object
     lock = f"update_aggregate_table:{AGGREGATE_USER}"
-    update_lock = redis.lock(
-        lock, timeout=DEFAULT_UPDATE_TIMEOUT
-    )
+    update_lock = redis.lock(lock, timeout=DEFAULT_UPDATE_TIMEOUT)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -397,9 +395,7 @@ def update_aggregate_user(self):
                 f"""index_aggregate_user.py | Finished updating {AGGREGATE_USER} in: {time.time()-start_time} sec"""
             )
         else:
-            logger.info(
-                f"index_aggregate_user.py | Failed to acquire lock {lock}"
-            )
+            logger.info(f"index_aggregate_user.py | Failed to acquire lock {lock}")
     except Exception as e:
         logger.error(
             "index_aggregate_user.py | Fatal error in main loop", exc_info=True
