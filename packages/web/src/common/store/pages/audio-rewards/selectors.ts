@@ -12,8 +12,8 @@ export const getUserChallenges = (state: CommonState) =>
 
 export const getUserChallenge = (
   state: CommonState,
-  challengeId: ChallengeRewardID
-) => state.pages.audioRewards.userChallenges[challengeId]
+  props: { challengeId: ChallengeRewardID }
+) => state.pages.audioRewards.userChallenges[props.challengeId]
 
 export const getUserChallengesLoading = (state: CommonState) =>
   state.pages.audioRewards.loading
