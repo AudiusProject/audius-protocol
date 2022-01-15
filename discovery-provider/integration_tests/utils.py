@@ -56,7 +56,7 @@ def populate_mock_db_blocks(db, min, max):
             session.flush()
 
 
-def populate_mock_db(db, entities, block_offset=0, skip_aggregate_user=False):
+def populate_mock_db(db, entities, block_offset=0, calculate_aggregate_user=True):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows
 
@@ -223,7 +223,7 @@ def populate_mock_db(db, entities, block_offset=0, skip_aggregate_user=False):
             session.add(aggregate_play)
 
         for i, aggregate_user_meta in enumerate(aggregate_users):
-            aggregate_user = models.AggregatePlays(
+            aggregate_user = models.AggregateUsers(
                 user_id=aggregate_user_meta.get("user_id", i),
                 track_count=aggregate_user_meta.get("track_count", 0),
                 playlist_count=aggregate_user_meta.get("playlist_count", 0),
@@ -316,7 +316,7 @@ def populate_mock_db(db, entities, block_offset=0, skip_aggregate_user=False):
 
         session.flush()
 
-        if not skip_aggregate_user:
+        if calculate_aggregate_user:
             session.execute(
                 UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
             )

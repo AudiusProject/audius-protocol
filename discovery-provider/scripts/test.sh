@@ -67,8 +67,10 @@ docker-compose \
 
 sleep 5
 
-# Unit tests
-pytest src
+if [ -z ${SKIP_TESTS+x} ]; then
+  # Unit tests
+  pytest src
 
-# Integration tests
-pytest integration_tests
+  # Integration tests
+  pytest integration_tests
+fi
