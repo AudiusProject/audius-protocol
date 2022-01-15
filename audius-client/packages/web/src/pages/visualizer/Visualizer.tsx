@@ -30,14 +30,6 @@ const Visualizer = ({
     // Begins preload when this component mounts
     VisualizerProvider.preload()
   }, [])
-
-  // Whether or not the visualizer has been displayed ever
-  const [hasDisplayed, setHasDisplayed] = useState(false)
-
-  useEffect(() => {
-    if (isVisible && !hasDisplayed) setHasDisplayed(true)
-  }, [isVisible, hasDisplayed, setHasDisplayed])
-
   const { pathname } = useLocation()
 
   const onToggleVisibility = useCallback(() => {
@@ -58,9 +50,7 @@ const Visualizer = ({
 
   return (
     <Suspense fallback={<div className={styles.fallback} />}>
-      {hasDisplayed &&
-        <VisualizerProvider visualizerVisible={isVisible} onClose={onCloseVisualizer} />
-      }
+      <VisualizerProvider isVisible={isVisible} onClose={onCloseVisualizer} />
     </Suspense>
   )
 }

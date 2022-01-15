@@ -15,13 +15,17 @@ const slice = createSlice({
     },
     closeVisualizer: (state) => {
       state.isVisible = false
+    },
+    openVisualizer: (state) => {
+      state.isVisible = true
     }
   }
 })
 
 export const {
   toggleVisibility,
-  closeVisualizer
+  closeVisualizer,
+  openVisualizer,
 } = slice.actions
 
 export default slice.reducer

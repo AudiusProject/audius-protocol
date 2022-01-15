@@ -45,7 +45,7 @@ import UserBadges from 'components/user-badges/UserBadges'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import { resetState as resetUploadState } from 'pages/upload-page/store/actions'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
-import { toggleVisibility } from 'pages/visualizer/store/slice'
+import { openVisualizer } from 'pages/visualizer/store/slice'
 import { make, useRecord } from 'store/analytics/actions'
 import { getDominantColorsByTrack } from 'store/application/ui/average-color/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
@@ -93,7 +93,7 @@ const NavColumn = ({
   goToSignUp: routeToSignup,
   goToSignIn,
   goToUpload,
-  toggleVisualizerVisibility,
+  showVisualizer,
   dominantColors
 }) => {
   const record = useRecord()
@@ -185,8 +185,8 @@ const NavColumn = ({
   const onShowVisualizer = useCallback(() => {
     if (NO_VISUALIZER_ROUTES.has(pathname)) return
 
-    toggleVisualizerVisibility()
-  }, [toggleVisualizerVisibility, pathname])
+    showVisualizer()
+  }, [showVisualizer, pathname])
 
   const onClickUpload = useCallback(() => {
     if (!upload.uploading) resetUploadState()
@@ -452,7 +452,7 @@ const mapDispatchToProps = dispatch => ({
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
   goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true)),
-  toggleVisualizerVisibility: () => dispatch(toggleVisibility())
+  showVisualizer: () => dispatch(openVisualizer())
 })
 
 export default withRouter(
