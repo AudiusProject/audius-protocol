@@ -1,7 +1,7 @@
 """Drop old trending challenges
 
 Revision ID: 7104383ac0fe
-Revises: be27a2794f75
+Revises: f775fb87f5ff
 Create Date: 2022-01-14 21:07:15.939210
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "7104383ac0fe"
-down_revision = "be27a2794f75"
+down_revision = "f775fb87f5ff"
 branch_labels = None
 depends_on = None
 
