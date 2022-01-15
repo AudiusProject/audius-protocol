@@ -27,7 +27,7 @@
   background-color: var(--neutral-light-8);
 }
 
-.playing .artwork {
+.playing {
   cursor: pointer;
 }
 
@@ -47,17 +47,18 @@
   background-color: var(--static-white);
   border-radius: 50%;
   cursor: pointer;
+  transition: transform 0.2s;
+}
+.visualizerIconContainer:hover {
+  transform: scale(1.10);
+}
+.visualizerIconContainer:hover path {
+  fill: var(--primary)
 }
 
 .visualizerIcon {
   width: 22px;
   height: 22px;
-}
-.visualizerIcon:hover {
-  transform: scale(1.10);
-}
-.visualizerIcon:hover path {
-  fill: var(--primary)
 }
 
 .hide {

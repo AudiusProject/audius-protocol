@@ -1,8 +1,7 @@
-import React, { Component } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { push as pushRoute } from 'connected-react-router'
 import { AppState } from 'store/types'
 import { Dispatch } from 'redux'
-import { ID } from 'common/models/Identifiers'
 import { connect } from 'react-redux'
 import cn from 'classnames'
 
@@ -29,20 +28,6 @@ import { getDominantColorsByTrack } from 'store/application/ui/average-color/sli
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 
-type VisualizerProps = {
-  visualizerVisible: boolean,
-  onClose: () => void
-} & ReturnType<typeof mapDispatchToProps> &
-  ReturnType<ReturnType<typeof makeMapStateToProps>>
-
-type VisualizerState = {
-  trackId: ID | null
-  trackSegment: any
-  toastText: string
-  fadeVisualizer: boolean // Used to fadeIn/Out the visualizer (opacity 0 -> 1) through a css class
-  showVisualizer: boolean // Used to show/hide the visualizer (display: block/none) through a css class
-}
-
 const Artwork = ({ track }: { track?: Track | null }) => {
   const { track_id, _cover_art_sizes } = track || {}
 
@@ -54,62 +39,37 @@ const Artwork = ({ track }: { track?: Track | null }) => {
   return <DynamicImage wrapperClassName={styles.artwork} image={image} />
 }
 
+type VisualizerProps = {
+  isVisible: boolean,
+  onClose: () => void
+} & ReturnType<typeof mapDispatchToProps> &
+  ReturnType<ReturnType<typeof makeMapStateToProps>>
+
+
 const webGLExists = webglSupported()
+const messages = (browser: string) => ({
+  notSupported: `Heads Up! Visualizer is not fully supported in ${browser} 😢 Please switch to a different browser like Chrome to view!`
+})
 
-class Visualizer extends Component<VisualizerProps, VisualizerState> {
-  state = {
-    trackId: null,
-    trackSegment: null,
-    toastText: '',
-    fadeVisualizer: false,
-    showVisualizer: false,
-  }
+const Visualizer = ({
+  isVisible,
+  currentQueueItem,
+  audio,
+  playing,
+  theme,
+  dominantColors,
+  onClose,
+  recordOpen,
+  recordClose,
+  goToRoute,
+}: VisualizerProps) => {
+  const [toastText, setToastText] = useState('')
+  // Used to fadeIn/Out the visualizer (opacity 0 -> 1) through a css class
+  const [fadeVisualizer, setFadeVisualizer] = useState(false)
+  // Used to show/hide the visualizer (display: block/none) through a css class
+  const [showVisualizer, setShowVisualizer] = useState(false)
 
-  messages = (browser: string) => ({
-    text: `Heads Up! Visualizer is not fully supported in ${browser} 😢 Please switch to a different browser like Chrome to view!`
-  })
-
-  updateVisibility() {
-    if (!webGLExists) return
-    const { theme, recordOpen, recordClose, visualizerVisible } = this.props
-    // Set visibility for the visualizer
-    if (visualizerVisible) {
-      if (!Visualizer1?.isShowing()) {
-        const darkMode = shouldShowDark(theme)
-        Visualizer1?.show(darkMode)
-        recordOpen()
-      }
-      this.setState({ showVisualizer: true })
-      setImmediate(() => {
-        this.setState({ fadeVisualizer: true })
-      })
-    } else {
-      if (Visualizer1?.isShowing()) {
-        Visualizer1?.hide()
-        recordClose()
-      }
-      this.setState({ fadeVisualizer: false })
-      setTimeout(() => {
-        this.setState({ showVisualizer: false })
-      }, 300)
-    }
-  }
-
-  updateAudioStream() {
-    if (!webGLExists) return
-    const { audio, playing } = this.props
-    if ((audio as AudioStream).audioCtx && playing) Visualizer1?.bind(audio)
-  }
-
-  updateDominantColors() {
-    if (!webGLExists) return
-    const { dominantColors } = this.props
-    if (Visualizer1) {
-      Visualizer1.setDominantColors(dominantColors)
-    }
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     if (!(window as any).AudioContext) {
       let browser
       if ((window as any).webkitAudioContext) {
@@ -119,67 +79,70 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
       } else {
         browser = 'your browser'
       }
-      this.setState({ toastText: this.messages(browser).text })
+      setToastText(messages(browser).notSupported)
     }
+  }, [])
 
-    this.updateVisibility()
-    this.updateAudioStream()
-    this.updateDominantColors()
+  if(!webGLExists) {
+    return null
   }
 
-  componentWillUnmount() {
-    Visualizer1?.stop()
-  }
-
-  componentDidUpdate(prevProps: VisualizerProps, prevState: VisualizerState) {
-    if (this.props.theme !== prevProps.theme
-      || this.props.visualizerVisible !== prevProps.visualizerVisible
-      ) {
-      this.updateVisibility()
-      this.updateAudioStream()
-      this.updateDominantColors()
-      return
-    } 
-     
-    if (this.props.audio !== prevProps.audio
-      || this.props.playing !== prevProps.playing
-    ) {
-      this.updateAudioStream()
-    } else if (this.props.dominantColors !== prevProps.dominantColors) {
-      this.updateDominantColors()
+  // Update Colors
+  useEffect(() => {
+    if(dominantColors !== null) {
+      Visualizer1?.setDominantColors(dominantColors)
     }
-  }
+  }, [isVisible, dominantColors, playing, currentQueueItem])
 
-  goToTrackPage = () => {
-    const {
-      currentQueueItem: { track, user },
-      goToRoute
-    } = this.props
+  // Rebind audio
+  useEffect(() => {
+    if (audio && (audio as AudioStream).audioCtx && playing) Visualizer1?.bind(audio)
+  }, [isVisible, playing, audio, currentQueueItem])
 
+  useEffect(() => {
+    if (isVisible) {
+      const darkMode = shouldShowDark(theme)
+      Visualizer1?.show(darkMode)
+      recordOpen()
+      setShowVisualizer(true)
+      setImmediate(() => {
+        setFadeVisualizer(true)
+      })
+    } else {
+      setFadeVisualizer(false)
+    }
+  }, [isVisible, theme])
+
+  // On Closing of visualizer -> fadeOut
+  // Wait some time before removing the wrapper DOM element to allow time for fading out animation.
+  useEffect(() => {
+    if (!fadeVisualizer) {
+      setTimeout(() => {
+        setShowVisualizer(false)
+        Visualizer1?.hide()
+        recordClose()
+      }, 400)
+    }
+  }, [fadeVisualizer])
+
+  
+  const goToTrackPage = useCallback(() => {
+    const { track, user } = currentQueueItem
     if (track && user) {
       goToRoute(track.permalink)
     }
-  }
+  }, [currentQueueItem])
 
-  goToArtistPage = () => {
-    const {
-      currentQueueItem: { user },
-      goToRoute
-    } = this.props
-
+  const goToArtistPage = useCallback(() => {
+    const { user } = currentQueueItem
     if (user) {
       goToRoute(profilePage(user.handle))
     }
-  }
+  }, [currentQueueItem])
 
-  renderTrackInfo = () => {
-    const {
-      currentQueueItem: { uid, track, user },
-      onClose,
-      dominantColors,
-    } = this.props
+  const renderTrackInfo = () => {
+    const { uid, track, user } = currentQueueItem
     const dominantColor = dominantColors ? dominantColors[0] : { r: 0, g: 0, b: 0 }
-
     return track && user && uid ?
       (
         <div className={styles.trackInfoWrapper}>
@@ -195,11 +158,11 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
             isVerified={user.is_verified}
             isTrackUnlisted={track.is_unlisted}
             onClickTrackTitle={() => {
-              this.goToTrackPage()
+              goToTrackPage()
               onClose()
             }}
             onClickArtistName={() => {
-              this.goToArtistPage()
+              goToArtistPage()
               onClose()
             }}
             hasShadow={true}
@@ -207,58 +170,51 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
           />
         </div>
       )
-      : null
+      : <div className={styles.emptyTrackInfoWrapper}></div>
   }
 
-  render() {
-    const {
-      currentQueueItem: { track },
-      visualizerVisible,
-      onClose,
-    } = this.props
-    const { toastText, fadeVisualizer, showVisualizer } = this.state
 
-    if (!webGLExists) return null
-
-    return (
-      <div
-        className={cn(
-          styles.visualizer,
-          {
-            [styles.fade]: fadeVisualizer,
-            [styles.show]: showVisualizer,
-          },
-        )}
-      >
-        <div className='visualizer' />
-        <div className={styles.logoWrapper}>
-          <AudiusLogoHorizontal className={styles.logo} />
-        </div>
-        <IconRemove
-          className={styles.closeButtonIcon}
-          onClick={onClose} />
-        <div className={styles.infoOverlayTileShadow}></div>
-        <div className={styles.infoOverlayTile}>
-          <div className={styles.artworkWrapper}
-            onClick={() => {
-              this.goToTrackPage()
-              onClose()
-            }}>
-            <Artwork track={track} />
-          </div>
-          {this.renderTrackInfo()}
-        </div>
-        <Toast
-          useCaret={false}
-          mount={MountPlacement.BODY}
-          placement={ComponentPlacement.BOTTOM}
-          overlayClassName={styles.visualizerDisabled}
-          open={visualizerVisible && !!toastText}
-          text={toastText || ''}
-        />
+  const { track } = currentQueueItem
+  return (
+    <div
+      className={cn(
+        styles.visualizer,
+        {
+          [styles.fade]: fadeVisualizer,
+          [styles.show]: showVisualizer,
+        },
+      )}
+    >
+      <div className='visualizer' />
+      <div className={styles.logoWrapper}>
+        <AudiusLogoHorizontal className={styles.logo} />
       </div>
-    )
-  }
+      <IconRemove
+        className={styles.closeButtonIcon}
+        onClick={onClose} />
+      <div className={styles.infoOverlayTileShadow}></div>
+      <div className={styles.infoOverlayTile}>
+        <div className={cn(styles.artworkWrapper, {
+          [styles.playing]: track,
+        })}
+          onClick={() => {
+            goToTrackPage()
+            onClose()
+          }}>
+          <Artwork track={track} />
+        </div>
+        {renderTrackInfo()}
+      </div>
+      <Toast
+        useCaret={false}
+        mount={MountPlacement.BODY}
+        placement={ComponentPlacement.BOTTOM}
+        overlayClassName={styles.visualizerDisabled}
+        open={isVisible && !!toastText}
+        text={toastText || ''}
+      />
+    </div>
+  );
 }
 
 const makeMapStateToProps = () => {
@@ -288,4 +244,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   goToRoute: (route: string) => dispatch(pushRoute(route))
 })
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(Visualizer)
+export default connect(
+  makeMapStateToProps,
+  mapDispatchToProps
+)(Visualizer)
