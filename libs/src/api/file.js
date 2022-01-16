@@ -8,8 +8,10 @@ const retry = require('async-retry')
 
 // Public gateways to send requests to, ordered by precidence.
 const publicGateways = [
-  'https://ipfs.io/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/'
+  // Users may elect to use public gateways to fetch content, by re-enabling
+  // the following options, or adding their own.
+  // 'https://ipfs.io/ipfs/',
+  // 'https://cloudflare-ipfs.com/ipfs/'
 ]
 
 /**

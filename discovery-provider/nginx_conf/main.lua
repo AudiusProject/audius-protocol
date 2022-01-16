@@ -35,22 +35,44 @@ end
 function verify_signature (discovery_provider, nonce, signature)
     -- reject if one of the parameter is not provided
     if discovery_provider == nil or nonce == nil or signature == nil then
+        ngx.log(
+            ngx.WARN,
+            "Signature verification failed: ",
+            "discovery_provider=", discovery_provider,
+            ", signature=", signature,
+            ", nonce=", nonce
+        )
         return false
     end
 
     -- reject if nonce was already used
     if ngx.shared.nonce_store:get(discovery_provider .. ";" .. nonce) then
+        ngx.log(
+            ngx.WARN,
+            "Signature verification failed: ",
+            "discovery_provider=", discovery_provider,
+            ", signature=", signature,
+            ", nonce=", nonce
+        )
         return false
     end
 
+    -- Allow all discovery providers for now instead of just whitelisted ones
     -- reject if discovery provider is not in the accept_redirect_from set
-    if not config.accept_redirect_from[discovery_provider] then
-        return false
-    end
+    -- if not config.accept_redirect_from[discovery_provider] then
+    --     return false
+    -- end
 
     local public_key, err = get_cached_public_key(discovery_provider)
     if not public_key then
         ngx.log(ngx.ERR, "failed to get rsa key: ", err)
+        ngx.log(
+            ngx.WARN,
+            "Signature verification failed: ",
+            "discovery_provider=", discovery_provider,
+            ", signature=", signature,
+            ", nonce=", nonce
+        )
         return false
     end
 
@@ -69,7 +91,13 @@ function verify_signature (discovery_provider, nonce, signature)
         -- set nonce as used for discovery provider for next 60 seconds
         ngx.shared.nonce_store:set(discovery_provider .. ";" .. nonce, true, 60)
     else
-        ngx.log(ngx.ERR, "invalid signature: signature=", signature, ", nonce=", nonce, ", discovery_provider=", discovery_provider)
+        ngx.log(
+            ngx.WARN,
+            "Signature verification failed: ",
+            "discovery_provider=", discovery_provider,
+            ", signature=", signature,
+            ", nonce=", nonce
+        )
     end
 
     return ok
@@ -122,12 +150,23 @@ function _M.limit_to_rps ()
             args.openresty_redirect_from, args.openresty_redirect_nonce, args.openresty_redirect_sig = get_redirect_args()
             ngx.req.set_uri_args(args)
             local url = get_redirect_target() .. ngx.var.request_uri
+            ngx.log(
+                ngx.INFO,
+                "Redirecting: ",
+                "target=", url,
+                ", signature=", args.openresty_redirect_sig,
+                ", nonce=", args.openresty_redirect_nonce
+            )
             return ngx.redirect(url)
         end
 
         ngx.log(ngx.ERR, "failed to limit req: ", err)
         return ngx.exit(500)
     end
+
+    local remaining = err
+    ngx.header["X-Redirect-Limit"] = config.limit_to_rps
+    ngx.header["X-Redirect-Remaining"] = remaining
 end
 
 return _M

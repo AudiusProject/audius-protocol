@@ -363,9 +363,11 @@ class NotificationProcessor {
 
       // Commit
       await tx.commit()
+      logger.info(`notifications main indexAll job - dbCommit complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       // actually send out push notifications
-      await drainPublishedMessages()
+      await drainPublishedMessages(logger)
       logger.info(`notifications main indexAll job - drainPublishedMessages complete in ${Date.now() - time}ms`)
 
       const endTime = process.hrtime(startTime)
@@ -414,7 +416,7 @@ class NotificationProcessor {
       await tx.commit()
 
       // actually send out push notifications
-      await drainPublishedSolanaMessages()
+      await drainPublishedSolanaMessages(logger)
       logger.info(`${logLabel} - drainPublishedMessages complete`)
 
       const endTime = process.hrtime(startTime)

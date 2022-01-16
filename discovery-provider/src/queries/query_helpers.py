@@ -1,8 +1,11 @@
 # pylint: disable=too-many-lines
 import logging
+from typing import Tuple
 
 from flask import request
 from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
+from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.expression import or_
 from src import exceptions
 from src.models import (
     AggregatePlaylist,
@@ -22,6 +25,7 @@ from src.models import (
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
+from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
 
 logger = logging.getLogger(__name__)
@@ -786,7 +790,14 @@ def get_repost_counts(
     return repost_counts_query.all()
 
 
-def get_karma(session, ids, time=None, is_playlist=False, xf=False):
+def get_karma(
+    session: Session,
+    ids: Tuple[int],
+    strategy: TrendingVersion,
+    time: str = None,
+    is_playlist: bool = False,
+    xf: bool = False,
+):
     """Gets the total karma for provided ids (track or playlist)"""
 
     repost_type = RepostType.playlist if is_playlist else RepostType.track
@@ -823,12 +834,20 @@ def get_karma(session, ids, time=None, is_playlist=False, xf=False):
             )
             .select_from(saves_and_reposts)
             .join(User, saves_and_reposts.c.user_id == User.user_id)
-            .filter(
+        )
+        if strategy == TrendingVersion.ML51L:
+            saves_and_reposts = saves_and_reposts.filter(
+                or_(User.cover_photo != None, User.cover_photo_sizes != None),
+                or_(User.profile_picture != None, User.profile_picture_sizes != None),
+                User.bio != None,
+            )
+        else:
+            saves_and_reposts = saves_and_reposts.filter(
                 User.cover_photo != None,
                 User.profile_picture != None,
                 User.bio != None,
             )
-        ).subquery()
+        saves_and_reposts = saves_and_reposts.subquery()
 
     query = (
         session.query(
