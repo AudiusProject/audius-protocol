@@ -65,15 +65,15 @@ async function drainPublishedMessages (logger) {
   let numProcessedNotifs = 0
   for (let bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      await _sendNotification(sendAwsSns, bufferObj, logger)
-      numProcessedNotifs++
+      const numSentNotifs = await _sendNotification(sendAwsSns, bufferObj, logger)
+      numProcessedNotifs += numSentNotifs
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
-      await Promise.all([
+      const numSentNotifsArr = await Promise.all([
         _sendNotification(sendBrowserNotification, bufferObj, logger),
         _sendNotification(sendSafariNotification, bufferObj, logger)
       ])
-      numProcessedNotifs += 2
+      numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
     }
   }
 
@@ -88,15 +88,15 @@ async function drainPublishedSolanaMessages (logger) {
   let numProcessedNotifs = 0
   for (let bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      await _sendNotification(sendAwsSns, bufferObj, logger)
-      numProcessedNotifs++
+      const numSentNotifs = await _sendNotification(sendAwsSns, bufferObj, logger)
+      numProcessedNotifs += numSentNotifs
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
-      await Promise.all([
+      const numSentNotifsArr = await Promise.all([
         _sendNotification(sendBrowserNotification, bufferObj, logger),
         _sendNotification(sendSafariNotification, bufferObj, logger)
       ])
-      numProcessedNotifs += 2
+      numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
     }
   }
 
@@ -110,12 +110,12 @@ async function drainPublishedAnnouncements (logger) {
 
   let numProcessedNotifs = 0
   for (let bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
-    await Promise.all([
+    const numSentNotifsArr = await Promise.all([
       _sendNotification(sendAwsSns, bufferObj, logger),
       _sendNotification(sendBrowserNotification, bufferObj, logger),
       _sendNotification(sendSafariNotification, bufferObj, logger)
     ])
-    numProcessedNotifs += 3
+    numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
   }
 
   pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER = []

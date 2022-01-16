@@ -130,6 +130,8 @@ const deleteEndpoint = _promisifySNS('deleteEndpoint')
 // DON'T throw errors in this function because it stops execution,
 // we want it to continue
 async function drainMessageObject (bufferObj) {
+  let numSentNotifs = 0
+
   const { userId } = bufferObj
   const { message, title, playSound } = bufferObj.notificationParams
 
@@ -163,6 +165,8 @@ async function drainMessageObject (bufferObj) {
       if (formattedMessage) {
         logger.debug(`Publishing SNS message: ${JSON.stringify(formattedMessage)}`)
         await publishPromisified(formattedMessage)
+
+        numSentNotifs++
       }
     } catch (e) {
       if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
@@ -189,6 +193,8 @@ async function drainMessageObject (bufferObj) {
       }
     }
   }))
+
+  return numSentNotifs
 }
 
 module.exports = {
