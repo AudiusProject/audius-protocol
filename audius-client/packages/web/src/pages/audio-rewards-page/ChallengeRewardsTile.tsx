@@ -72,7 +72,7 @@ const RewardPanel = ({
     ? currentStepCountOverride!
     : challenge?.current_step_count || 0
   const isComplete = shouldOverrideCurrentStepCount
-    ? currentStepCountOverride >= stepCount
+    ? currentStepCountOverride! >= stepCount
     : !!challenge?.is_complete
 
   return (
