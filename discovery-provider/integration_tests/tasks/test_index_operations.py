@@ -442,12 +442,12 @@ def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
 
     seed_contract_data(task, celery_app_contracts, web3)
 
-    # patch save_and_get_skip_tx_hash to raise an exception
+    # patch get_tx_hash_to_skip to raise an exception
     class MockSkipOnlyOneBlock:
         skipped = False
         skipped_block_number = None
 
-        def save_and_get_skip_tx_hash_stub(self, session, redis):
+        def get_tx_hash_to_skip_stub(self, session, redis):
             if not self.skipped:
                 self.skipped_block_number = (
                     session.query(Block).filter_by(is_current=True).first().number
@@ -460,8 +460,8 @@ def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
     skip_block_helper = MockSkipOnlyOneBlock()
 
     mocker.patch(
-        "src.tasks.index.save_and_get_skip_tx_hash",
-        side_effect=skip_block_helper.save_and_get_skip_tx_hash_stub,
+        "src.tasks.index.get_tx_hash_to_skip",
+        side_effect=skip_block_helper.get_tx_hash_to_skip_stub,
         autospec=True,
     )
 
