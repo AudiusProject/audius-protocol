@@ -10,7 +10,8 @@ import { getNavigationStateAtRoute } from 'app/utils/navigation'
 const useIsStackOpen = () => {
   const state = useNavigationState(getNavigationStateAtRoute(['main']))
 
-  if (!state) {
+  // state.index is potentially undefined, but this isn't specified in it's type
+  if (!state || state.index === undefined) {
     return false
   }
 
