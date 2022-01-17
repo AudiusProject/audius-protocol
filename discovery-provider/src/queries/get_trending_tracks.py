@@ -57,7 +57,9 @@ def generate_unpopulated_trending(
 def generate_unpopulated_trending_from_mat_views(
     session, genre, time_range, strategy, limit=TRENDING_LIMIT
 ):
-    if strategy.version.name == TrendingVersion.ML51L and time_range == "year":
+
+    # use all time instead of year for version ML51L
+    if strategy.version == TrendingVersion.ML51L and time_range == "year":
         time_range = "allTime"
 
     trending_track_ids_query = session.query(
