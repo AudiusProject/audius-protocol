@@ -98,7 +98,6 @@ const getPublishTypes = (userId, baseNotificationType, userNotificationSettings)
   return types
 }
 
-
 /**
  * Checks if a notification type is enabled with optimizely
  * @param {string} notificationType
