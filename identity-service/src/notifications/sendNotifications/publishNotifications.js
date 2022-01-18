@@ -103,12 +103,12 @@ const getPublishTypes = (userId, baseNotificationType, userNotificationSettings)
  * @param {string} notificationType
  * @param {*} optimizelyClient Optimizely client
  */
-const shouldFilterNotification = (notificationType, optimizelyClient) => {
+const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
   if (!optimizelyClient) {
     return false
   }
   if (notificationType === notificationTypes.ChallengeReward) {
-    return getFeatureFlag(optimizelyClient, FEATURE_FLAGS.REWARDS_NOTIFICATIONS_ENABLED)
+    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.REWARDS_NOTIFICATIONS_ENABLED)
   }
   return false
 }
@@ -138,7 +138,7 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
     if (metadata.users[userId] && metadata.users[userId].is_deactivated) {
       continue
     }
-    const shouldFilter = shouldFilterNotification(notification.type, optimizelyClient)
+    const shouldFilter = shouldFilterOutNotification(notification.type, optimizelyClient)
     if (shouldFilter) {
       continue
     }
