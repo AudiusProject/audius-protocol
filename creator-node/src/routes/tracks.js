@@ -25,7 +25,8 @@ const {
   ensurePrimaryMiddleware,
   syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
-  ensureStorageMiddleware
+  ensureStorageMiddleware,
+  ensureValidSPMiddleware
 } = require('../middlewares')
 
 const { getCID, streamFromFileSystem } = require('./files')
@@ -55,6 +56,7 @@ module.exports = function (app) {
     syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
+      // TODO: make into component
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -89,12 +91,10 @@ module.exports = function (app) {
           session: {
             cnodeUserUUID: req.session.cnodeUserUUID
           },
-          uuid: req.logContext.requestID,
           headers: req.headers,
           libs: req.app.get('audiusLibs'),
           AsyncProcessingQueue:
-            req.app.get('serviceRegistry').asyncProcessingQueue,
-          handOffTrack: true // for deleting artifacts later potentially
+            req.app.get('serviceRegistry').asyncProcessingQueue
         })
       }
 
@@ -104,13 +104,14 @@ module.exports = function (app) {
 
   /**
    * TODO: (Needs to)
-   * - validate requester is a valid SP
-   * - make sure current node has enough storage
-   * - upload the file (DONE)
-   * - submit transcode and segment request
+   * - validate requester is a valid SP (auth)
+   * - make sure current node has enough storage (DONE)
+   * - submit transcode and segment request (DONE)
    */
   app.post(
     '/transcode_and_segment',
+    ensureValidSPMiddleware,
+    ensureStorageMiddleware,
     handleTrackContentUpload,
     /* important middleware ... */ handleResponse(async (req, res) => {
       const AsyncProcessingQueue =
@@ -128,17 +129,18 @@ module.exports = function (app) {
         },
         req.app.get('audiusLibs')
       )
-      // TODO: hm... make sure this is ths same request id during this entire flow
+
       return successResponse({ uuid: req.logContext.requestID })
     })
   )
 
   /**
    * TODO: (Needs to)
-   * - validate requester is a valid SP
+   * - validate requester is a valid SP (auth)
    */
   app.get(
     '/transcode_and_segment',
+    ensureValidSPMiddleware,
     /* important middleware ... */ async (req, res) => {
       const fileName = req.query.fileName
       const fileType = req.query.fileType

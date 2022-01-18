@@ -71,16 +71,14 @@ async function handleTranscodeAndSegment(
 // { logContext, fileName, fileDir, uuid, headers, libs }
 async function handleTrackHandOff(req) {
   const {
-    libs,
     logContext,
     fileName,
     fileDir,
     fileDestination,
-    AsyncProcessingQueue,
     session,
-    uuid // this is the original requestid that will be polled
+    libs,
+    AsyncProcessingQueue
   } = req
-
   const { cnodeUserUUID } = session
   const logger = genericLogger.child(logContext)
 

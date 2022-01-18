@@ -6,9 +6,11 @@ const FormData = require('form-data')
 const config = require('../../config.js')
 const { logger: genericLogger } = require('../../logging')
 const Utils = require('../../utils')
+const { generateTimestampAndSignature } = require('apiSigning.js')
 
-const SELF_ENDPOINT = config.get('creatorNodeEndpoint')
-
+const CREATOR_NODE_ENDPOINT = config.get('creatorNodeEndpoint')
+const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
+const SP_ID = config.get('spID')
 const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
 const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 // 3min
 const POLL_STATUS_INTERVAL_MS = 10000 // 10s
@@ -120,7 +122,7 @@ async function selectRandomSPs(
     const index = Utils.getRandomInt(allSPs.length)
     const currentSP = allSPs[index]
     // do not pick self or a node that has already been chosen
-    if (currentSP === SELF_ENDPOINT || validSPs.has(currentSP)) {
+    if (currentSP === CREATOR_NODE_ENDPOINT || validSPs.has(currentSP)) {
       continue
     }
     validSPs.add(currentSP)
@@ -144,7 +146,7 @@ async function pollProcessingStatus({ logger, taskType, uuid, sp }) {
     } catch (e) {
       // Catch errors here and swallow them. Errors don't signify that the track
       // upload has failed, just that we were unable to establish a connection to the node.
-      // This allows polling to retry
+      // This allows p olling to retry
       logger.error(`Failed to poll for processing status, ${e}`)
     }
 
@@ -163,6 +165,11 @@ async function sendTranscodeAndSegmentRequest({
   fileNameNoExtension
 }) {
   const originalTrackFormData = await createFormData(fileDir + '/' + fileName)
+  const dataToSign = fileDir + fileName // TODO: design data better?
+  const { timestamp, signature } = generateTimestampAndSignature(
+    dataToSign,
+    DELEGATE_PRIVATE_KEY
+  )
 
   const resp = await axios.post(
     `${sp}/transcode_and_segment`,
@@ -172,7 +179,10 @@ async function sendTranscodeAndSegmentRequest({
         ...originalTrackFormData.getHeaders()
       },
       params: {
-        use_cid_in_path: fileNameNoExtension
+        use_uuid_in_path: fileNameNoExtension,
+        timestamp,
+        signature,
+        spID: SP_ID
       },
       adapter: require('axios/lib/adapters/http'),
       // Set content length headers (only applicable in server/node environments).
