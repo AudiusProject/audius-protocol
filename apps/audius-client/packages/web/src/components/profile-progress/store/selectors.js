@@ -4,7 +4,7 @@ import { getAccountUser } from 'common/store/account/selectors'
 export const getProfileDescriptionExists = state => {
   const curUser = getAccountUser(state)
   if (!curUser) return false
-  return !!curUser.bio
+  return curUser.bio !== null && curUser.bio !== undefined
 }
 
 export const getHasFavoritedItem = state => {

@@ -764,11 +764,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       ? moment(profile.created_at).format('YYYY')
       : moment().format('YYYY')
 
-    const name = profile
-      ? updatedName !== null
-        ? updatedName
-        : profile.name || ''
-      : ''
+    const name = profile ? updatedName || profile.name || '' : ''
     const bio = profile
       ? updatedBio !== null
         ? updatedBio
