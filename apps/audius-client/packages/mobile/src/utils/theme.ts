@@ -1,7 +1,6 @@
 import { useContext } from 'react'
 
 import { StatusBar } from 'react-native'
-import { useDarkMode } from 'react-native-dark-mode'
 
 import { ThemeContext } from 'app/components/theme/ThemeContext'
 
@@ -178,9 +177,8 @@ const themeColorsByThemeVariant = {
 }
 
 export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
-  const { getTheme } = useContext(ThemeContext)
+  const { isSystemDarkMode, getTheme } = useContext(ThemeContext)
   const theme = getTheme()
-  const isSystemDarkMode = useDarkMode()
 
   const systemTheme = isSystemDarkMode ? Theme.DARK : Theme.DEFAULT
   return theme === Theme.AUTO ? systemTheme : theme
