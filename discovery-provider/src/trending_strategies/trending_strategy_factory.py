@@ -22,7 +22,7 @@ from src.trending_strategies.trending_type_and_version import (
 )
 
 DEFAULT_TRENDING_VERSIONS = {
-    TrendingType.TRACKS: TrendingVersion.ML51L,
+    TrendingType.TRACKS: TrendingVersion.aSPET,
     TrendingType.UNDERGROUND_TRACKS: TrendingVersion.ePWJD,
     TrendingType.PLAYLISTS: TrendingVersion.ePWJD,
 }
