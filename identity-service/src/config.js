@@ -755,6 +755,12 @@ const config = convict({
     format: String,
     env: 'ethTokenBridgeAddress',
     default: ''
+  },
+  websiteHost: {
+    doc: 'Audius website host',
+    format: String,
+    env: 'websiteHost',
+    default: 'https://audius.co'
   }
 })
 

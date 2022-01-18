@@ -368,8 +368,8 @@ class NotificationProcessor {
       time = Date.now()
 
       // actually send out push notifications
-      await drainPublishedMessages(logger)
-      logger.info(`notifications main indexAll job - drainPublishedMessages complete in ${Date.now() - time}ms`)
+      const numProcessedNotifs = await drainPublishedMessages(logger)
+      logger.info(`notifications main indexAll job - drainPublishedMessages complete - processed ${numProcessedNotifs} notifs in ${Date.now() - time}ms`)
 
       const endTime = process.hrtime(startTime)
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
@@ -392,6 +392,7 @@ class NotificationProcessor {
   async indexAllSolanaNotifications (audiusLibs, optimizelyClient, minSlot, oldMaxSlot) {
     const startDate = Date.now()
     const startTime = process.hrtime()
+    let time = startDate
     const logLabel = 'notifications main indexAllSolanaNotifications job'
 
     logger.info(`${logLabel} - minSlot: ${minSlot}, oldMaxSlot: ${oldMaxSlot}, startDate: ${startDate}, startTime: ${startTime}`)
@@ -401,25 +402,30 @@ class NotificationProcessor {
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     const { info: metadata, notifications } = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
-    logger.info(`${logLabel} - query solana notifications from discovery node complete`)
+    logger.info(`${logLabel} - query solana notifications from discovery node complete in ${Date.now() - time}ms`)
+    time = Date.now()
 
     // Use a single transaction
     const tx = await models.sequelize.transaction()
     try {
       // Insert the solana notifications into the DB
       const processedNotifications = await processNotifications(notifications, tx)
-      logger.info(`${logLabel} - processNotifications complete`)
+      logger.info(`${logLabel} - processNotifications complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, processedNotifications, tx, optimizelyClient)
-      logger.info(`${logLabel} - sendNotifications complete`)
+      logger.info(`${logLabel} - sendNotifications complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       // Commit
       await tx.commit()
+      logger.info(`${logLabel} - dbCommit complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       // actually send out push notifications
-      await drainPublishedSolanaMessages(logger)
-      logger.info(`${logLabel} - drainPublishedMessages complete`)
+      const numProcessedNotifs = await drainPublishedSolanaMessages(logger)
+      logger.info(`${logLabel} - drainPublishedSolanaMessages complete - processed ${numProcessedNotifs} notifs in ${Date.now() - time}ms`)
 
       const endTime = process.hrtime(startTime)
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
