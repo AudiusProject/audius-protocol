@@ -86,3 +86,38 @@ yarn run ts-node cli/main.ts -f createTrack \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx
 ```
+
+## 4. Creating a playlist
+
+Similar to playlist information. The metadata (currently randomly generated) points to a CID which contains playlist related information.
+
+```
+yarn run ts-node cli/main.ts -f createPlaylist \
+-k ~/.config/solana/id.json \
+--user-solana-keypair $PWD/userKeypair.json \
+--user-storage-pubkey BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx
+```
+
+## 4. Updating a playlist
+
+Update a given playlist denoted by its public key.
+
+```
+yarn run ts-node cli/main.ts -f updatePlaylist \
+-k ~/.config/solana/id.json \
+--user-solana-keypair $PWD/userKeypair.json \
+--user-storage-pubkey BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx
+--playlist-pubkey AZZbBaE4aa85kp6ihzZJxuXtdP7xq59aLg7cmwJYpuTe
+```
+
+## 4. Delete a playlist
+
+Delete a given playlist denoted by its public key. This one does not take a metadata argument.
+
+```
+yarn run ts-node cli/main.ts -f deletePlaylist \
+-k ~/.config/solana/id.json \
+--user-solana-keypair $PWD/userKeypair.json \
+--user-storage-pubkey BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx
+--playlist-pubkey AZZbBaE4aa85kp6ihzZJxuXtdP7xq59aLg7cmwJYpuTe
+```

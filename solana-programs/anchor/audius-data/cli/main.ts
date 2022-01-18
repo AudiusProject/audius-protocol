@@ -5,14 +5,11 @@ import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 import {
-  getTransaction,
-  getRandomPrivateKey,
   ethAddressToArray,
   randomCID,
   findDerivedPair,
 } from "../lib/utils";
 import {
-  initUserSolPubkeyArgs,
   initAdmin,
   initUser,
   initUserSolPubkey,
@@ -279,7 +276,7 @@ program
   )
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
-  .option("--playlist-pubkey <integer>", "number of playlists to generate");
+  .option("--playlist-pubkey <integer>", "playlist to update or delete");
 
 program.parse(process.argv);
 

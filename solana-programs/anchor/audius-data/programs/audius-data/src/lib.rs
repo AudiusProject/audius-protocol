@@ -49,8 +49,8 @@ pub mod audius_data {
         }
 
         // Confirm that the derived pda from base is the same as the user storage account
-        let (derived_pda, _) = Pubkey::find_program_address(&[&derived_base.to_bytes()[..32], &handle_seed], ctx.program_id);
-        if derived_pda != ctx.accounts.user.key() {
+        let (derived_user_acct, _) = Pubkey::find_program_address(&[&derived_base.to_bytes()[..32], &handle_seed], ctx.program_id);
+        if derived_user_acct != ctx.accounts.user.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -67,7 +67,7 @@ pub mod audius_data {
     }
 
     /// Functionality to confirm signed object and add a Solana Pubkey to a user's account.
-    /// Performs instruction introspection and expects a minimum of 2 instructions [secp, currentinstruction].
+    /// Performs instruction introspection and expects a minimum of 2 instructions [secp, current instruction].
     pub fn init_user_sol(ctx: Context<InitializeUserSolIdentity>, user_authority: Pubkey) -> ProgramResult {
         msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
