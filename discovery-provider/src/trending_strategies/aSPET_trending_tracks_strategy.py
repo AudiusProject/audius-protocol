@@ -80,7 +80,7 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         ELSE (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as week_score,
                         now()
-                    from trending_params_aSPET tp 
+                    from trending_params_aspet tp 
                     inner join aggregate_interval_plays aip 
                         on tp.track_id = aip.track_id;
                 INSERT INTO track_trending_scores 
