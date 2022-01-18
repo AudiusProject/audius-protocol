@@ -67,7 +67,8 @@ const RewardPanel = ({
   const openRewardModal = () => openModal(id)
 
   const challenge = userChallenges[id]
-  const shouldOverrideCurrentStepCount = currentStepCountOverride !== undefined
+  const shouldOverrideCurrentStepCount =
+    !challenge?.is_complete && currentStepCountOverride !== undefined
   const currentStepCount = shouldOverrideCurrentStepCount
     ? currentStepCountOverride!
     : challenge?.current_step_count || 0
