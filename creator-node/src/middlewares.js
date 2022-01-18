@@ -13,7 +13,7 @@ const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
-const { verifyRequesterIsValidSP } = require('apiSigning')
+const { verifyRequesterIsValidSP } = require('./apiSigning')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -799,7 +799,6 @@ async function getReplicaSetSpIDs({
 async function ensureValidSPMiddleware(req, res, next) {
   try {
     const { timestamp, signature, spID } = req.query
-
     if (!timestamp || !signature || !spID) {
       throw new Error(
         `Missing values: timestamp=${timestamp}, signature=${signature}, and/or spID=${spID}`

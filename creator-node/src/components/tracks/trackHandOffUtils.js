@@ -6,7 +6,7 @@ const FormData = require('form-data')
 const config = require('../../config.js')
 const { logger: genericLogger } = require('../../logging')
 const Utils = require('../../utils')
-const { generateTimestampAndSignature } = require('apiSigning.js')
+const { generateTimestampAndSignature } = require('../../apiSigning')
 
 const CREATOR_NODE_ENDPOINT = config.get('creatorNodeEndpoint')
 const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
@@ -165,6 +165,7 @@ async function sendTranscodeAndSegmentRequest({
   fileNameNoExtension
 }) {
   const originalTrackFormData = await createFormData(fileDir + '/' + fileName)
+
   const dataToSign = fileDir + fileName // TODO: design data better?
   const { timestamp, signature } = generateTimestampAndSignature(
     dataToSign,
@@ -221,9 +222,15 @@ async function fetchHealthCheck(sp) {
  * @returns the status, and the success or failed response if the task is complete
  */
 async function fetchTrackContentProcessingStatus(sp, uuid) {
+  const dataToSign = sp + uuid
+  const { timestamp, signature } = generateTimestampAndSignature(
+    dataToSign,
+    DELEGATE_PRIVATE_KEY
+  )
+
   const { data: body } = await axios({
     url: `${sp}/track_content_status`,
-    params: { uuid },
+    params: { uuid, timestamp, signature, spID: SP_ID },
     method: 'get'
   })
 
@@ -231,39 +238,66 @@ async function fetchTrackContentProcessingStatus(sp, uuid) {
 }
 
 async function fetchSegment(sp, segmentFileName, fileNameNoExtension) {
+  const dataToSign = sp + segmentFileName
+  const { timestamp, signature } = generateTimestampAndSignature(
+    dataToSign,
+    DELEGATE_PRIVATE_KEY
+  )
+
   return axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',
     params: {
       fileName: segmentFileName,
       fileType: 'segment',
-      uuidInPath: fileNameNoExtension
+      uuidInPath: fileNameNoExtension,
+      timestamp,
+      signature,
+      spID: SP_ID
     },
     responseType: 'stream'
   })
 }
 
 async function fetchTranscode(sp, transcodeFileName, fileNameNoExtension) {
+  const dataToSign = sp + transcodeFileName
+  const { timestamp, signature } = generateTimestampAndSignature(
+    dataToSign,
+    DELEGATE_PRIVATE_KEY
+  )
+
   return axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',
     params: {
       fileName: transcodeFileName,
       fileType: 'transcode',
-      uuidInPath: fileNameNoExtension
+      uuidInPath: fileNameNoExtension,
+      timestamp,
+      signature,
+      spID: SP_ID
     },
     responseType: 'stream'
   })
 }
 
 async function fetchM3U8File(sp, m3u8FileName, fileNameNoExtension) {
+  const dataToSign = sp + m3u8FileName
+  const { timestamp, signature } = generateTimestampAndSignature(
+    dataToSign,
+    DELEGATE_PRIVATE_KEY
+  )
+
   return axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',
     params: {
       fileName: m3u8FileName,
       fileType: 'm3u8',
-      uuidInPath: fileNameNoExtension // TODO: rename this key bvar
+      uuidInPath: fileNameNoExtension,
+      timestamp,
+      signature,
+      spID: SP_ID
     },
     responseType: 'stream'
   })

@@ -65,7 +65,6 @@ module.exports = function (app) {
         return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
       }
 
-      let handOffTrack = false
       const isTranscodeQueueAvailable = false // await TranscodingQueue.isAvailable()
       if (isTranscodeQueueAvailable) {
         await AsyncProcessingQueue.addTrackContentUploadTask({
@@ -81,21 +80,22 @@ module.exports = function (app) {
           }
         })
       } else {
-        handOffTrack = true
-        handleTrackHandOff({
-          logContext: req.logContext,
-          fileName: req.fileName,
-          fileDir: req.fileDir,
-          fileNameNoExtension: req.fileNameNoExtension,
-          fileDestination: req.file.destination,
-          session: {
-            cnodeUserUUID: req.session.cnodeUserUUID
-          },
-          headers: req.headers,
-          libs: req.app.get('audiusLibs'),
-          AsyncProcessingQueue:
-            req.app.get('serviceRegistry').asyncProcessingQueue
-        })
+        handleTrackHandOff(
+          { logContext: req.logContext },
+          {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            fileNameNoExtension: req.fileNameNoExtension,
+            fileDestination: req.file.destination,
+            session: {
+              cnodeUserUUID: req.session.cnodeUserUUID
+            },
+            headers: req.headers,
+            libs: req.app.get('audiusLibs'),
+            AsyncProcessingQueue:
+              req.app.get('serviceRegistry').asyncProcessingQueue
+          }
+        )
       }
 
       return successResponse({ uuid: req.logContext.requestID, handOffTrack })
@@ -106,6 +106,7 @@ module.exports = function (app) {
    * TODO: (Needs to)
    * - validate requester is a valid SP (auth)
    * - make sure current node has enough storage (DONE)
+   * - upload track (DONE)
    * - submit transcode and segment request (DONE)
    */
   app.post(
