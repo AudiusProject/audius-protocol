@@ -16,3 +16,21 @@ class IndexingError(Exception):
         self.blockhash = blockhash
         self.txhash = txhash
         self.message = message
+
+
+class EntityMissingRequiredFieldError(Exception):
+    """Exception raised for errors when processing transactions and a non-nullable field on a created entity is set to null.
+    Attributes:
+        type -- One of 'user', 'user_replica_set', 'user_library', 'tracks', 'social_features', 'playlists'
+        cursed_record -- record number of error
+        blockhash -- block hash of error
+        txhash -- transaction hash of error
+        message -- error message
+    """
+
+    def __init__(self, type, cursed_record, message):
+        super().__init__(message)
+        self.type = type
+        self.blocknumber = cursed_record.blocknumber
+        self.blockhash = cursed_record.blockhash
+        self.txhash = cursed_record.txhash

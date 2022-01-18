@@ -70,6 +70,12 @@ def _update_aggregate_plays(session):
     # get the new latest
     new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
+    if not new_id_checkpoint or new_id_checkpoint == prev_id_checkpoint:
+        logger.info(
+            "index_aggregate_plays.py | Skip update because there are no new plays"
+        )
+        return
+
     # update aggregate plays with new plays that came after the prev_id_checkpoint
     logger.info(f"index_aggregate_plays.py | Updating {AGGREGATE_PLAYS_TABLE_NAME}")
 
