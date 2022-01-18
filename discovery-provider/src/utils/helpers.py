@@ -419,7 +419,7 @@ def create_track_route_id(title, handle):
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
 
-    if not title or handle:
+    if not title or not handle:
         return None
 
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
