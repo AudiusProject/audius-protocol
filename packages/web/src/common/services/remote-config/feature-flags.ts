@@ -15,7 +15,8 @@ export enum FeatureFlags {
   ARTIST_RECOMMENDATIONS_ENABLED = 'artist_recommendations_enabled',
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
   PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
-  PREFER_HIGHER_PATCH_FOR_SECONDARIES = 'prefer_higher_patch_for_secondaries'
+  PREFER_HIGHER_PATCH_FOR_SECONDARIES = 'prefer_higher_patch_for_secondaries',
+  REWARDS_NOTIFICATIONS_ENABLED = 'rewards_notifications_enabled'
 }
 
 /**
@@ -37,7 +38,8 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: false,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,
-  [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]: true
+  [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]: true,
+  [FeatureFlags.REWARDS_NOTIFICATIONS_ENABLED]: false
 }
 
 export enum FeatureFlagCohortType {
@@ -77,5 +79,6 @@ export const flagCohortType: {
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]:
     FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]:
-    FeatureFlagCohortType.SESSION_ID
+    FeatureFlagCohortType.SESSION_ID,
+  [FeatureFlags.REWARDS_NOTIFICATIONS_ENABLED]: FeatureFlagCohortType.SESSION_ID
 }

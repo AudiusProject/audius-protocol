@@ -1839,7 +1839,7 @@ class AudiusBackend {
     }
   }
 
-  static async getNotifications(limit, timeOffset) {
+  static async getNotifications({ limit, timeOffset, withRewards }) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -1850,8 +1850,10 @@ class AudiusBackend {
         : ''
       const limitQuery = `&limit=${limit}`
       const handleQuery = `&handle=${account.handle}`
+      const withRewardsQuery = withRewards ? `&withRewards=true` : ''
+      // TODO: withRemix and withTrending are always true and should be removed in a future release
       const notifications = await fetch(
-        `${IDENTITY_SERVICE}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}&withRemix=true&withTrendingTrack=true`,
+        `${IDENTITY_SERVICE}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}${withRewardsQuery}&withRemix=true&withTrendingTrack=true`,
         {
           headers: {
             'Content-Type': 'application/json',
