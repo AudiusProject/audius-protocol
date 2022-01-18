@@ -193,7 +193,8 @@ class NotificationProcessor {
           logger.debug('solana notification queue processing error - tried to process a minSlot < oldMaxSlot', minSlot, oldMaxSlot)
           maxSlot = oldMaxSlot
         } else {
-          maxSlot = await this.indexAllSolanaNotifications(audiusLibs, minSlot, oldMaxSlot)
+          const optimizelyClient = expressApp.get('optimizelyClient')
+          maxSlot = await this.indexAllSolanaNotifications(audiusLibs, optimizelyClient, minSlot, oldMaxSlot)
         }
 
         // Update cached max slot number
@@ -348,7 +349,7 @@ class NotificationProcessor {
       time = Date.now()
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
-      await sendNotifications(audiusLibs, notifications, tx)
+      await sendNotifications(audiusLibs, notifications, tx, optimizelyClient)
       logger.info(`notifications main indexAll job - sendNotifications complete in ${Date.now() - time}ms`)
       time = Date.now()
 
@@ -384,10 +385,11 @@ class NotificationProcessor {
   /**
    * Doing the solana notification things
    * @param {AudiusLibs} audiusLibs
+   * @param {OptimizelyClient} optimizelyClient
    * @param {number} minSlot min slot number to start querying discprov for new notifications
    * @param {number} oldMaxSlot last max slot number seen
    */
-  async indexAllSolanaNotifications (audiusLibs, minSlot, oldMaxSlot) {
+  async indexAllSolanaNotifications (audiusLibs, optimizelyClient, minSlot, oldMaxSlot) {
     const startDate = Date.now()
     const startTime = process.hrtime()
     const logLabel = 'notifications main indexAllSolanaNotifications job'
@@ -409,7 +411,7 @@ class NotificationProcessor {
       logger.info(`${logLabel} - processNotifications complete`)
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
-      await sendNotifications(audiusLibs, processedNotifications, tx)
+      await sendNotifications(audiusLibs, processedNotifications, tx, optimizelyClient)
       logger.info(`${logLabel} - sendNotifications complete`)
 
       // Commit
