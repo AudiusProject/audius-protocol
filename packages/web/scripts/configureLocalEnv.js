@@ -1,6 +1,7 @@
 const AUDIUS_CONFIG = '.audius/config.json'
 const AUDIUS_SOL_CONFIG = '.audius/solana-program-config.json'
 const AUDIUS_ETH_CONFIG = '.audius/eth-config.json'
+const AAO_CONFIG = '.audius/aao-config.json'
 
 const fs = require('fs')
 const path = require('path')
@@ -20,6 +21,7 @@ try {
   const configFile = require(path.join(homeDir, AUDIUS_CONFIG))
   const ethConfigFile = require(path.join(homeDir, AUDIUS_ETH_CONFIG))
   const solConfigFile = require(path.join(homeDir, AUDIUS_SOL_CONFIG))
+  const aaoConfigFile = require(path.join(homeDir, AAO_CONFIG))
 
   const REACT_APP_ENVIRONMENT = 'development'
   const REACT_APP_EAGER_DISCOVERY_NODES = 'http://dn1_web-server_1:5000'
@@ -48,6 +50,9 @@ try {
   const REACT_APP_SOLANA_CLUSTER_ENDPOINT = `http://${HOST}:8899`
   const REACT_APP_WAUDIO_MINT_ADDRESS = solConfigFile.splToken
   const REACT_APP_SOLANA_FEE_PAYER_ADDRESS = solConfigFile.feePayerWalletPubkey
+
+  const REACT_APP_ORACLE_ETH_ADDRESSES = aaoConfigFile.join(',')
+  const REACT_APP_AAO_ENDPOINT = `http://${HOST}:8000`
 
   const REACT_APP_METADATA_PROGRAM_ID =
     'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
@@ -98,6 +103,9 @@ try {
   REACT_APP_B_ITEMS_URL=
 
   REACT_APP_METADATA_PROGRAM_ID=${REACT_APP_METADATA_PROGRAM_ID}
+
+  REACT_APP_ORACLE_ETH_ADDRESSES=${REACT_APP_ORACLE_ETH_ADDRESSES}
+  REACT_APP_AAO_ENDPOINT=${REACT_APP_AAO_ENDPOINT}
   `
 
   // Note .env.dev.local takes precidence over .env.dev
