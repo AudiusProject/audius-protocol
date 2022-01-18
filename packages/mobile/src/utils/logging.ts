@@ -14,13 +14,14 @@ export const handleWebAppLog = (level: LOG_LEVEL, message: string) => {
       console.log(formatted)
       break
     case 'WARNING':
+    case 'ERROR':
+      // console.error triggers an exception and an unpreventable
+      // fullscreen LogBox. Logging web app
+      // errors as a warning to prevent this
       console.warn(formatted)
       break
     case 'DEBUG':
       console.debug(formatted)
-      break
-    case 'ERROR':
-      console.error(formatted)
       break
   }
 }
