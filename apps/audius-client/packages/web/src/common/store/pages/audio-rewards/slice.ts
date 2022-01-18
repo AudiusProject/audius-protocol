@@ -64,10 +64,7 @@ const slice = createSlice({
   name: 'rewards-page',
   initialState,
   reducers: {
-    fetchUserChallenges: state => {
-      state.userChallenges = {}
-      state.loading = true
-    },
+    fetchUserChallenges: state => {},
     fetchUserChallengesSucceeded: (
       state,
       action: PayloadAction<UserChallengesPayload>
