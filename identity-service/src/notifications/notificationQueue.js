@@ -40,13 +40,21 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
   buffer.push(bufferObj)
 }
 
+/**
+ * Wrapper function to call `notifFn` inside `racePromiseWithTimeout()`
+ *
+ * @notice swallows any error to ensure execution continues
+ * @notice assumes `notifFn` always returns integer indicationg number of sent notifications
+ * @returns numSentNotifs
+ */
 async function _sendNotification (notifFn, bufferObj, logger) {
   const logPrefix = `[notificationQueue:sendNotification] [${notifFn.name}] [userId ${bufferObj.userId}]`
 
+  let numSentNotifs = 0
   try {
     const start = Date.now()
 
-    await racePromiseWithTimeout(
+    numSentNotifs = await racePromiseWithTimeout(
       notifFn(bufferObj),
       SEND_NOTIF_TIMEOUT_MS,
       `Timed out in ${SEND_NOTIF_TIMEOUT_MS}ms`
@@ -57,6 +65,8 @@ async function _sendNotification (notifFn, bufferObj, logger) {
     // Swallow error - log and continue
     logger.error(`${logPrefix} ERROR ${e.message}`)
   }
+
+  return numSentNotifs
 }
 
 async function drainPublishedMessages (logger) {

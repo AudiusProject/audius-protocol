@@ -124,11 +124,13 @@ const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
 const deleteEndpoint = _promisifySNS('deleteEndpoint')
 
-// Actually send the messages from the buffer to SNS
-// If a device token is invalid attempt to remove it
-//
-// DON'T throw errors in this function because it stops execution,
-// we want it to continue
+/**
+ * Actually send the messages from the buffer to SNS
+ *
+ * @notice If a device token is invalid attempt to remove it
+ * @notice never throws error since we never want to stop execution of calling function
+ * @returns {Number} numSentNotifs
+ */
 async function drainMessageObject (bufferObj) {
   let numSentNotifs = 0
 
