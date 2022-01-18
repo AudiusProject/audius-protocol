@@ -22,26 +22,26 @@ import {
   getUserChallenge
 } from 'common/store/pages/audio-rewards/selectors'
 import {
-  HCaptchaStatus,
-  setHCaptchaStatus,
-  updateHCaptchaScore,
+  claimChallengeReward,
+  claimChallengeRewardFailed,
+  claimChallengeRewardSucceeded,
+  claimChallengeRewardWaitForRetry,
+  ClaimStatus,
+  CognitoFlowStatus,
   fetchUserChallenges,
   fetchUserChallengesFailed,
   fetchUserChallengesSucceeded,
-  ClaimStatus,
-  CognitoFlowStatus,
-  setCognitoFlowStatus,
-  setUserChallengeDisbursed,
-  claimChallengeRewardFailed,
-  claimChallengeRewardSucceeded,
-  claimChallengeReward,
-  claimChallengeRewardWaitForRetry,
-  reset,
+  HCaptchaStatus,
+  refreshUserBalance,
   refreshUserChallenges,
-  refreshUserBalance
+  reset,
+  setCognitoFlowStatus,
+  setHCaptchaStatus,
+  setUserChallengeDisbursed,
+  updateHCaptchaScore
 } from 'common/store/pages/audio-rewards/slice'
 import { setVisibility } from 'common/store/ui/modals/slice'
-import { increaseBalance, getBalance } from 'common/store/wallet/slice'
+import { getBalance, increaseBalance } from 'common/store/wallet/slice'
 import { stringAudioToStringWei } from 'common/utils/wallet'
 import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
 import AudiusBackend from 'services/AudiusBackend'
@@ -51,10 +51,34 @@ import { waitForBackendSetup } from 'store/backend/sagas'
 import { encodeHashId } from 'utils/route/hashIds'
 import { doEvery, waitForValue } from 'utils/sagaHelpers'
 
+const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
+const REACT_APP_ORACLE_ETH_ADDRESSES =
+  process.env.REACT_APP_ORACLE_ETH_ADDRESSES
+const REACT_APP_AAO_ENDPOINT = process.env.REACT_APP_AAO_ENDPOINT
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const HCAPTCHA_MODAL_NAME = 'HCaptcha'
 const COGNITO_MODAL_NAME = 'Cognito'
 const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewardsExplainer'
+
+function getOracleConfig() {
+  let oracleEthAddress = remoteConfigInstance.getRemoteVar(
+    StringKeys.ORACLE_ETH_ADDRESS
+  )
+  let AAOEndpoint = remoteConfigInstance.getRemoteVar(
+    StringKeys.ORACLE_ENDPOINT
+  )
+  if (ENVIRONMENT === 'development') {
+    const oracleEthAddresses = (REACT_APP_ORACLE_ETH_ADDRESSES || '').split(',')
+    if (oracleEthAddresses.length > 0) {
+      oracleEthAddress = oracleEthAddresses[0]
+    }
+    if (REACT_APP_AAO_ENDPOINT) {
+      AAOEndpoint = REACT_APP_AAO_ENDPOINT
+    }
+  }
+
+  return { oracleEthAddress, AAOEndpoint }
+}
 
 function* retryClaimChallengeReward(errorResolved: boolean) {
   const claimStatus: ClaimStatus = yield select(getClaimStatus)
@@ -96,12 +120,7 @@ function* claimChallengeRewardAsync(
   const quorumSize = remoteConfigInstance.getRemoteVar(
     IntKeys.ATTESTATION_QUORUM_SIZE
   )
-  const oracleEthAddress = remoteConfigInstance.getRemoteVar(
-    StringKeys.ORACLE_ETH_ADDRESS
-  )
-  const AAOEndpoint = remoteConfigInstance.getRemoteVar(
-    StringKeys.ORACLE_ENDPOINT
-  )
+  const { oracleEthAddress, AAOEndpoint } = getOracleConfig()
 
   const rewardsAttestationEndpoints = remoteConfigInstance.getRemoteVar(
     StringKeys.REWARDS_ATTESTATION_ENDPOINTS
