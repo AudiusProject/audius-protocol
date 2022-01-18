@@ -427,6 +427,12 @@ def parse_track_event(
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
         )[0]
+        if not handle:
+            raise EntityMissingRequiredFieldError(
+                "track",
+                track_record,
+                f"No user found for {track_record}",
+            )
 
         update_track_routes_table(
             session, track_record, track_metadata, pending_track_routes
@@ -476,6 +482,12 @@ def parse_track_event(
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
         )[0]
+        if not handle:
+            raise EntityMissingRequiredFieldError(
+                "track",
+                track_record,
+                f"No user found for {track_record}",
+            )
 
         update_track_routes_table(
             session, track_record, track_metadata, pending_track_routes
