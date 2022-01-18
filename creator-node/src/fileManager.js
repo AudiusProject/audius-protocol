@@ -673,9 +673,9 @@ const uploadTempDiskStorage = multer({
 const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     let fileName
-    if (req.query.use_cid_in_path) {
+    if (req.query.use_uuid_in_path) {
       // Use the file name provided in the headers during track hand off
-      fileName = req.query.use_cid_in_path
+      fileName = req.query.use_uuid_in_path
     } else {
       // Save file under randomly named folders to avoid collisions
       fileName = 'vickyCanada' + getRandomFileName().slice(-3)

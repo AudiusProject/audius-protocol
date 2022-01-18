@@ -13,6 +13,7 @@ const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
+const { verifyRequesterIsValidSP } = require('apiSigning')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -795,6 +796,33 @@ async function getReplicaSetSpIDs({
   return userReplicaSetSpIDs
 }
 
+async function ensureValidSPMiddleware(req, res, next) {
+  try {
+    const { timestamp, signature, spID } = req.query
+
+    if (!timestamp || !signature || !spID) {
+      throw new Error(
+        `Missing values: timestamp=${timestamp}, signature=${signature}, and/or spID=${spID}`
+      )
+    }
+
+    await verifyRequesterIsValidSP({
+      audiusLibs: req.app.get('audiusLibs'),
+      spID,
+      reqTimestamp: timestamp,
+      reqSignature: signature
+    })
+  } catch (e) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseUnauthorized(`Request unauthorized -- ${e.message}`)
+    )
+  }
+
+  next()
+}
+
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
 function _isFQDN(url) {
   if (config.get('creatorNodeIsDebug')) return true
@@ -808,6 +836,7 @@ module.exports = {
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
+  ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
   syncLockMiddleware,
   getOwnEndpoint,

@@ -13,7 +13,7 @@ const {
 } = require('./components/tracks/trackHandlingUtils')
 
 const MAX_CONCURRENCY = 100
-const EXPIRATION = 86400 // 24 hours in seconds
+const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
   trackContentUpload: 'trackContentUpload',
   transcodeAndSegment: 'transcodeAndSegment',
@@ -27,7 +27,7 @@ const PROCESS_STATES = Object.freeze({
 
 class AsyncProcessingQueue {
   constructor() {
-    this.queue = new Bull('fileProcessing', {
+    this.queue = new Bull('asyncProcessing', {
       redis: {
         host: config.get('redisHost'),
         port: config.get('redisPort')
@@ -57,12 +57,12 @@ class AsyncProcessingQueue {
       }
     })
 
+    this.PROCESS_NAMES = PROCESS_NAMES
+    this.PROCESS_STATES = PROCESS_STATES
+
     this.getAsyncProcessingQueueJobs =
       this.getAsyncProcessingQueueJobs.bind(this)
     this.constructProcessKey = this.constructAsyncProcessingKey.bind(this)
-
-    this.PROCESS_NAMES = PROCESS_NAMES
-    this.PROCESS_STATES = PROCESS_STATES
   }
 
   async logStatus(message, logContext = {}) {
@@ -148,21 +148,37 @@ class AsyncProcessingQueue {
 
     let state = { status: PROCESS_STATES.IN_PROGRESS }
     this.logStatus(`Starting ${task}, uuid=${uuid}`, logContext)
-    await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
+    await redisClient.set(
+      redisKey,
+      JSON.stringify(state),
+      'EX',
+      EXPIRATION_SECONDS
+    )
 
     let response
     try {
       response = await func({ logContext }, req)
       state = { status: PROCESS_STATES.DONE, resp: response }
       this.logStatus(`Successful ${task}, uuid=${uuid}`, logContext)
-      await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
+      await redisClient.set(
+        redisKey,
+        JSON.stringify(state),
+        'EX',
+        EXPIRATION_SECONDS
+      )
     } catch (e) {
       state = { status: PROCESS_STATES.FAILED, resp: e.message }
       this.logError(
         `Error with ${task}. uuid=${uuid}} resp=${JSON.stringify(e.message)}`,
         logContext
       )
-      await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
+      await redisClient.set(
+        redisKey,
+        JSON.stringify(state),
+        'EX',
+        EXPIRATION_SECONDS
+      )
+
       throw e
     }
 
