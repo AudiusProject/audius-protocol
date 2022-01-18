@@ -1,16 +1,10 @@
-const path = require('path')
 const axios = require('axios')
 const fs = require('fs')
 const fsExtra = require('fs-extra')
 const FormData = require('form-data')
 
 const config = require('../../config.js')
-const {
-  logger: genericLogger,
-  logInfoWithDuration,
-  getStartTime
-} = require('../../logging')
-const fileManager = require('../../fileManager')
+const { logger: genericLogger } = require('../../logging')
 const Utils = require('../../utils')
 
 const SELF_ENDPOINT = config.get('creatorNodeEndpoint')
@@ -29,7 +23,7 @@ async function handOffTrack(libs, req) {
     try {
       logger.info(`Handing track off to sp=${sp}`)
 
-      const { transcodeFilePath, segmentFileNames } = await _handOffTrack({
+      const { transcodeFilePath, segmentFileNames } = await handOffTrackHelper({
         sp,
         req
       })
@@ -37,9 +31,7 @@ async function handOffTrack(libs, req) {
       return { transcodeFilePath, segmentFileNames, sp }
     } catch (e) {
       // TODO: delete tmp dir in external SP if fails and continue
-      logger.warn(
-        `BANANA Could not hand off track to sp=${sp} err=${e.toString()}`
-      )
+      logger.warn(`Could not hand off track to sp=${sp} err=${e.toString()}`)
     }
   }
 
@@ -47,7 +39,7 @@ async function handOffTrack(libs, req) {
 }
 
 // If any call fails -> throw error
-async function _handOffTrack({ sp, req }) {
+async function handOffTrackHelper({ sp, req }) {
   const {
     logContext,
     fileDir,
@@ -72,8 +64,8 @@ async function _handOffTrack({ sp, req }) {
 
   // TODO: use logWithDuration?
   logger.info(
-    { sp, requestID },
-    `Polling for transcode and segments with uuid=${uuid}...`
+    { sp },
+    `Polling for transcode and segments with uuid=${transcodeAndSegmentUUID}...`
   )
   const { transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path } =
     await pollProcessingStatus({
@@ -85,8 +77,9 @@ async function _handOffTrack({ sp, req }) {
 
   let res
 
-  // Get segments and write to tmp disk
   // TODO: parallelize?
+
+  // Get segments and write to tmp disk
   logger.info({ sp }, `Fetching ${segmentFileNames.length} segments...`)
   for (let i = 0; i < segmentFileNames.length; i++) {
     const segmentFileName = segmentFileNames[i]
@@ -164,7 +157,6 @@ async function pollProcessingStatus({ logger, taskType, uuid, sp }) {
 }
 
 async function sendTranscodeAndSegmentRequest({
-  logger,
   sp,
   fileDir,
   fileName,
@@ -235,7 +227,7 @@ async function fetchSegment(sp, segmentFileName, fileNameNoExtension) {
     params: {
       fileName: segmentFileName,
       fileType: 'segment',
-      cidInPath: fileNameNoExtension
+      uuidInPath: fileNameNoExtension
     },
     responseType: 'stream'
   })
@@ -248,7 +240,7 @@ async function fetchTranscode(sp, transcodeFileName, fileNameNoExtension) {
     params: {
       fileName: transcodeFileName,
       fileType: 'transcode',
-      cidInPath: fileNameNoExtension
+      uuidInPath: fileNameNoExtension
     },
     responseType: 'stream'
   })
@@ -261,7 +253,7 @@ async function fetchM3U8File(sp, m3u8FileName, fileNameNoExtension) {
     params: {
       fileName: m3u8FileName,
       fileType: 'm3u8',
-      cidInPath: fileNameNoExtension // TODO: rename this key bvar
+      uuidInPath: fileNameNoExtension // TODO: rename this key bvar
     },
     responseType: 'stream'
   })

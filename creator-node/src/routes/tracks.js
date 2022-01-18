@@ -151,7 +151,7 @@ module.exports = function (app) {
 
       let pathToFile
       let basePath = getTmpTrackUploadArtifactsWithCIDInPath(
-        req.query.cidInPath
+        req.query.uuidInPath
       )
       if (fileType === 'transcode') {
         pathToFile = path.join(basePath, fileName)
