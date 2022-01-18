@@ -418,6 +418,10 @@ def create_track_route_id(title, handle):
     Constructs a track's route_id from an unsanitized title and handle.
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
+
+    if not title or handle:
+        return None
+
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
