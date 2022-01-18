@@ -38,10 +38,11 @@ def test_parse_transfer_instruction_id():
     parsed_id = parse_transfer_instruction_id(transfer_id)
     assert parsed_id == None
 
-    # Returns none on invalid transfer_id
-    transfer_id = "profile-completion:123456789:"
+    # Handles trending
+    transfer_id = "tt:12-12-21:1"
     parsed_id = parse_transfer_instruction_id(transfer_id)
-    assert parsed_id == None
+    assert parsed_id[0] == "tt"
+    assert parsed_id[1] == "12-12-21:1"
 
 
 mock_tx_info = {

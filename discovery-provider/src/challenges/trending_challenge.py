@@ -51,17 +51,13 @@ class TrendingChallengeUpdater(ChallengeUpdater):
         return f"{extra['week']}:{extra['rank']}"
 
 
-trending_track_challenge_manager = ChallengeManager(
-    "trending-track", TrendingChallengeUpdater()
-)
+trending_track_challenge_manager = ChallengeManager("tt", TrendingChallengeUpdater())
 
 trending_underground_track_challenge_manager = ChallengeManager(
-    "trending-underground-track", TrendingChallengeUpdater()
+    "tut", TrendingChallengeUpdater()
 )
 
-trending_playlist_challenge_manager = ChallengeManager(
-    "trending-playlist", TrendingChallengeUpdater()
-)
+trending_playlist_challenge_manager = ChallengeManager("tp", TrendingChallengeUpdater())
 
 
 def is_dst(zonename, dt):
