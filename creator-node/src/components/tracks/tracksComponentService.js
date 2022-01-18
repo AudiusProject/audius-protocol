@@ -83,7 +83,7 @@ async function handleTrackHandOff({ logContext }, requestProps) {
   let codeBlockTimeStart = getStartTime()
 
   const { transcodeFilePath, segmentFileNames, sp } =
-    await TrackHandOffUtils.handOffTrack(libs, req)
+    await TrackHandOffUtils.handOffTrack(libs, requestProps)
 
   if (!transcodeFilePath || !segmentFileNames) {
     // Let current node handle the track if handoff fails

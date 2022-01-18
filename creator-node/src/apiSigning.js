@@ -95,6 +95,10 @@ const sortKeys = (x) => {
     .reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
 
+const generateTimestampAndSignatureForSPVerification = (spID, privateKey) => {
+  return generateTimestampAndSignature({ spID }, privateKey)
+}
+
 /**
  * Wrapper fn to perform basic validation that the requester is a valid SP and that the request came
  * from the SP node itself. Uses the {spID, timestamp} as the input data to recover.
@@ -195,6 +199,7 @@ function validateSPId(spID) {
 module.exports = {
   generateTimestampAndSignature,
   generateListenTimestampAndSignature,
+  generateTimestampAndSignatureForSPVerification,
   recoverWallet,
   sortKeys,
   MAX_SIGNATURE_AGE_MS,

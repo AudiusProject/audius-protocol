@@ -75,8 +75,7 @@ module.exports = function (app) {
             fileDestination: req.file.destination,
             session: {
               cnodeUserUUID: req.session.cnodeUserUUID
-            },
-            handOffTrack
+            }
           }
         })
       } else {
@@ -98,7 +97,7 @@ module.exports = function (app) {
         )
       }
 
-      return successResponse({ uuid: req.logContext.requestID, handOffTrack })
+      return successResponse({ uuid: req.logContext.requestID })
     })
   )
 
