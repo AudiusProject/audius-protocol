@@ -14,22 +14,20 @@ const fileManager = require('../../fileManager')
 const Utils = require('../../utils')
 
 const SELF_ENDPOINT = config.get('creatorNodeEndpoint')
-const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
-const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 / 3 // 3min/3
 
-const POLL_STATUS_INTERVAL_MS = 10000 / 10 // 10s/10
+const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
+const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 // 3min
+const POLL_STATUS_INTERVAL_MS = 10000 // 10s
 
 async function handOffTrack(libs, req) {
   const logger = genericLogger.child(req.logContext)
   const sps = await selectRandomSPs(libs)
 
-  logger.info({ sps }, 'BANANA selected random sps')
-
   for (let sp of sps) {
-    // hard code cus lazy
+    // hard code for testing
     sp = 'http://cn2_creator-node_1:4001'
     try {
-      logger.info(`BANANA handing off to sp=${sp}`)
+      logger.info(`Handing track off to sp=${sp}`)
 
       const { transcodeFilePath, segmentFileNames } = await _handOffTrack({
         sp,
@@ -38,7 +36,7 @@ async function handOffTrack(libs, req) {
 
       return { transcodeFilePath, segmentFileNames, sp }
     } catch (e) {
-      // delete tmp dir here if fails and continue
+      // TODO: delete tmp dir in external SP if fails and continue
       logger.warn(
         `BANANA Could not hand off track to sp=${sp} err=${e.toString()}`
       )
@@ -60,11 +58,9 @@ async function _handOffTrack({ sp, req }) {
   } = req
   const logger = genericLogger.child(logContext)
 
-  logger.info(
-    `the tHINGS fileDir=${fileDir} fileName=${fileName} noExtension=${fileNameNoExtension} uuid for req=${requestID}`
-  )
   await fetchHealthCheck(sp)
 
+  logger.info({ sp }, `Sending off transcode and segmenting request...`)
   const transcodeAndSegmentUUID = await sendTranscodeAndSegmentRequest({
     requestID,
     logger,
@@ -74,48 +70,44 @@ async function _handOffTrack({ sp, req }) {
     fileNameNoExtension
   })
 
-  // TODO: PROBLEM IS THAT IT'S PASSING IN A NEW UUID SO CAUSING FILE CANNOT BE FOUND.
-  logger.info({ sp, requestID }, 'BANANA polling time')
-  // const { fileName, transcodeFilePath, segmentFileNames, segmentFileNamesToPath } = await pollProcessingStatus(
-  const pollResp = await pollProcessingStatus({
-    logger,
-    taskType: AsyncProcessingQueue.PROCESS_NAMES.transcodeAndSegment, // ???? why is this an ampty obj
-    uuid: transcodeAndSegmentUUID,
-    sp
-  })
-
+  // TODO: use logWithDuration?
+  logger.info(
+    { sp, requestID },
+    `Polling for transcode and segments with uuid=${uuid}...`
+  )
   const { transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path } =
-    pollResp
+    await pollProcessingStatus({
+      logger,
+      taskType: AsyncProcessingQueue.PROCESS_NAMES.transcodeAndSegment,
+      uuid: transcodeAndSegmentUUID,
+      sp
+    })
 
   let res
 
+  // Get segments and write to tmp disk
+  // TODO: parallelize?
+  logger.info({ sp }, `Fetching ${segmentFileNames.length} segments...`)
   for (let i = 0; i < segmentFileNames.length; i++) {
     const segmentFileName = segmentFileNames[i]
     const segmentFilePath = segmentFilePaths[i]
 
-    logger.info(
-      { sp, segmentFileName, segmentFilePath },
-      'BANANA getting segments'
-    )
-
-    res = await fetchSegment(res, sp, segmentFileName, fileNameNoExtension)
-
+    res = await fetchSegment(sp, segmentFileName, fileNameNoExtension)
     await Utils.writeStreamToFileSystem(res.data, segmentFilePath)
   }
 
   // Get transcode and write to tmp disk
-  logger.info({ sp, transcodeFilePath }, 'BANANA getting transcode')
+  logger.info({ sp, transcodeFilePath }, 'Fetching transcode...')
   const transcodeFileName = fileNameNoExtension + '-dl.mp3'
-  res = await fetchTranscode(res, sp, transcodeFileName, fileNameNoExtension)
+  res = await fetchTranscode(sp, transcodeFileName, fileNameNoExtension)
   await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
 
   // Get m3u8 file and write to tmp disk
-  logger.info({ sp, m3u8Path }, 'BANANA getting m3u8')
+  logger.info({ sp, m3u8Path }, 'Fetching m3u8...')
   const m3u8FileName = fileNameNoExtension + '.m3u8'
-  res = await fetchM3U8File(res, sp, m3u8FileName, fileNameNoExtension)
+  res = await fetchM3U8File(sp, m3u8FileName, fileNameNoExtension)
   await Utils.writeStreamToFileSystem(res.data, m3u8Path)
 
-  logger.info('BANANAZ WE ARE DONE')
   return {
     transcodeFilePath,
     segmentFileNames,
@@ -144,15 +136,12 @@ async function selectRandomSPs(
   return Array.from(validSPs)
 }
 
+// TODO: this is the same polling fn in libs. consider initializing libs to use, or copy over fn
 async function pollProcessingStatus({ logger, taskType, uuid, sp }) {
   const start = Date.now()
   while (Date.now() - start < MAX_TRACK_HANDOFF_TIMEOUT_MS) {
     try {
-      const { status, resp } = await fetchTrackContentProcessingStatus(
-        sp,
-        uuid,
-        taskType
-      )
+      const { status, resp } = await fetchTrackContentProcessingStatus(sp, uuid)
       // Should have a body structure of:
       //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
       if (status && status === 'DONE') return resp
@@ -175,7 +164,6 @@ async function pollProcessingStatus({ logger, taskType, uuid, sp }) {
 }
 
 async function sendTranscodeAndSegmentRequest({
-  requestID,
   logger,
   sp,
   fileDir,
@@ -183,7 +171,6 @@ async function sendTranscodeAndSegmentRequest({
   fileNameNoExtension
 }) {
   const originalTrackFormData = await createFormData(fileDir + '/' + fileName)
-  logger.info({ sp }, 'BANANA posting t/s')
 
   const resp = await axios.post(
     `${sp}/transcode_and_segment`,
@@ -191,7 +178,6 @@ async function sendTranscodeAndSegmentRequest({
     {
       headers: {
         ...originalTrackFormData.getHeaders()
-        // 'X-Request-ID': requestID
       },
       params: {
         use_cid_in_path: fileNameNoExtension
@@ -228,10 +214,11 @@ async function fetchHealthCheck(sp) {
 
 /**
  * Gets the task progress given the task type and uuid associated with the task
+ * @param {string} sp the current sp selected for track processing
  * @param {string} uuid the uuid of the track transcoding task
  * @returns the status, and the success or failed response if the task is complete
  */
-async function fetchTrackContentProcessingStatus(sp, uuid, taskType) {
+async function fetchTrackContentProcessingStatus(sp, uuid) {
   const { data: body } = await axios({
     url: `${sp}/track_content_status`,
     params: { uuid },
@@ -241,7 +228,7 @@ async function fetchTrackContentProcessingStatus(sp, uuid, taskType) {
   return body.data
 }
 
-async function fetchSegment(res, sp, segmentFileName, fileNameNoExtension) {
+async function fetchSegment(sp, segmentFileName, fileNameNoExtension) {
   return axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',
@@ -254,7 +241,7 @@ async function fetchSegment(res, sp, segmentFileName, fileNameNoExtension) {
   })
 }
 
-async function fetchTranscode(res, sp, transcodeFileName, fileNameNoExtension) {
+async function fetchTranscode(sp, transcodeFileName, fileNameNoExtension) {
   return axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',
@@ -267,7 +254,7 @@ async function fetchTranscode(res, sp, transcodeFileName, fileNameNoExtension) {
   })
 }
 
-async function fetchM3U8File(res, sp, m3u8FileName, fileNameNoExtension) {
+async function fetchM3U8File(sp, m3u8FileName, fileNameNoExtension) {
   return axios({
     url: `${sp}/transcode_and_segment`,
     method: 'get',

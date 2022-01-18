@@ -89,13 +89,13 @@ async function handleTrackHandOff(req) {
   const { transcodeFilePath, segmentFileNames, sp } =
     await TrackHandOffUtils.handOffTrack(libs, req)
 
-  logInfoWithDuration(
-    { logger, startTime: codeBlockTimeStart },
-    `PIKACHU..... did you get here ${transcodeFilePath} ${segmentFileNames} ${sp}`
-  )
-
   if (!transcodeFilePath || !segmentFileNames) {
     // Let current node handle the track if handoff fails
+    logInfoWithDuration(
+      { logger, startTime: codeBlockTimeStart },
+      `Failed to hand off track. Retrying upload to current node..`
+    )
+
     await AsyncProcessingQueue.addTrackContentUploadTask({
       logContext, // request id here is same as uuid
       req: {
@@ -105,13 +105,13 @@ async function handleTrackHandOff(req) {
         fileDestination
       }
     })
-
-    logInfoWithDuration(
-      { logger, startTime: codeBlockTimeStart },
-      `BANANA Failed to hand off track. Retrying upload to current node..`
-    )
   } else {
     // Finish with the rest of track upload flow
+    logInfoWithDuration(
+      { logger, startTime: codeBlockTimeStart },
+      `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
+    )
+
     await AsyncProcessingQueue.addProcessTranscodeAndSegmentTask({
       logContext,
       req: {
@@ -123,11 +123,6 @@ async function handleTrackHandOff(req) {
         segmentFileNames
       }
     })
-
-    logInfoWithDuration(
-      { logger, startTime: codeBlockTimeStart },
-      `BANANA Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
-    )
   }
 }
 

@@ -62,7 +62,7 @@ function getStartTime() {
 
 function loggingMiddleware(req, res, next) {
   const providedRequestID = req.header('X-Request-ID')
-  const requestID = providedRequestID || shortid.generate()
+  const requestID = 'vicky_requestid_' + shortid.generate().slice(-3) //providedRequestID || shortid.generate()
   res.set('CN-Request-ID', requestID)
 
   req.logContext = getRequestLoggingContext(req, requestID)
