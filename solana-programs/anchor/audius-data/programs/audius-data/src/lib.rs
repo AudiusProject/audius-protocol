@@ -18,11 +18,13 @@ pub mod audius_data {
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
     /// track_id_offset is the starting point for uploaded tracks
-    pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey, track_id_offset: u64) -> ProgramResult {
+    /// playlist_id_offset is the starting point for uploaded playlists
+    pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey, track_id_offset: u64, playlist_id_offset: u64) -> ProgramResult {
         msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         audius_admin.track_id = track_id_offset;
+        audius_admin.playlist_id = playlist_id_offset;
         Ok(())
     }
 
@@ -35,17 +37,23 @@ pub mod audius_data {
         ctx: Context<InitializeUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        _handle_seed: [u8; 16],
+        handle_seed: [u8; 16],
         _user_bump: u8,
         metadata: String,
     ) -> ProgramResult {
         msg!("Audius::InitUser");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = find_program_address_pubkey(ctx.accounts.admin.key(), ctx.program_id);
-
         if derived_base != base {
             return Err(ErrorCode::Unauthorized.into());
         }
+
+        // Confirm that the derived pda from base is the same as the user storage account
+        let (derived_user_acct, _) = Pubkey::find_program_address(&[&derived_base.to_bytes()[..32], &handle_seed], ctx.program_id);
+        if derived_user_acct != ctx.accounts.user.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         if ctx.accounts.authority.key() != ctx.accounts.admin.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
@@ -59,7 +67,7 @@ pub mod audius_data {
     }
 
     /// Functionality to confirm signed object and add a Solana Pubkey to a user's account.
-    /// Performs instruction introspection and expects a minimum of 2 instructions [secp, currenttinstruction].
+    /// Performs instruction introspection and expects a minimum of 2 instructions [secp, current instruction].
     pub fn init_user_sol(ctx: Context<InitializeUserSolIdentity>, user_authority: Pubkey) -> ProgramResult {
         msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
@@ -124,7 +132,6 @@ pub mod audius_data {
         Ok(())
     }
 
-    // pub fn update_track
     pub fn update_track(ctx: Context<UpdateTrack>, metadata: String) -> ProgramResult {
         msg!("Audius::UpdateTrack");
         if ctx.accounts.user.key() != ctx.accounts.track.owner.key() {
@@ -137,7 +144,6 @@ pub mod audius_data {
         Ok(())
     }
 
-    // pub fn delete_track
     pub fn delete_track(ctx: Context<DeleteTrack>) -> ProgramResult {
         msg!("Audius::DeleteTrack");
         if ctx.accounts.user.key() != ctx.accounts.track.owner.key() {
@@ -152,10 +158,53 @@ pub mod audius_data {
         ctx.accounts.track.owner = dummy_owner_field;
         Ok(())
     }
+
+    /*
+        Playlist related functions
+    */
+    pub fn create_playlist(ctx: Context<CreatePlaylist>, metadata: String) -> ProgramResult {
+        msg!("Audius::CreatePlaylist");
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Set owner to user storage account
+        ctx.accounts.playlist.owner = ctx.accounts.user.key();
+        ctx.accounts.playlist.playlist_id = ctx.accounts.audius_admin.playlist_id;
+        ctx.accounts.audius_admin.playlist_id = ctx.accounts.audius_admin.playlist_id + 1;
+        msg!("AudiusPlaylistMetadata = {:?}", metadata);
+        Ok(())
+    }
+
+    pub fn update_playlist(ctx: Context<UpdatePlaylist>, metadata: String) -> ProgramResult {
+        msg!("Audius::UpdatePlaylist");
+        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        msg!("AudiusPlaylistMetadata = {:?}", metadata);
+        Ok(())
+    }
+
+    pub fn delete_playlist(ctx: Context<DeletePlaylist>) -> ProgramResult {
+        msg!("Audius::DeletePlaylist");
+        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Manually overwrite owner field
+        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
+        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+        ctx.accounts.playlist.owner = dummy_owner_field;
+        Ok(())
+    }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8;
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8 + 8;
 
 /// Size of user account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
@@ -164,6 +213,10 @@ pub const USER_ACCOUNT_SIZE: usize = 8 + 32 + 20;
 /// Size of track account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track offset ID)
 pub const TRACK_ACCOUNT_SIZE: usize = 8 + 32 + 8;
+
+/// Size of playlist account
+/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
+pub const PLAYLIST_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 
 /// Instructions
 #[derive(Accounts)]
@@ -229,7 +282,7 @@ pub struct UpdateUser<'info> {
 /// Payer is provided to facilitate an independent feepayer
 #[derive(Accounts)]
 pub struct CreateTrack<'info> {
-    #[account(init, payer = payer, space = 8 + 32 + 8)]
+    #[account(init, payer = payer, space = TRACK_ACCOUNT_SIZE)]
     pub track: Account<'info, Track>,
     #[account(mut)]
     pub user: Account<'info, User>,
@@ -272,13 +325,61 @@ pub struct DeleteTrack<'info> {
     pub payer: Signer<'info>,
 }
 
+/// Instruction container for playlist creation
+/// Confirms that user.authority matches signer authority field
+/// Payer is provided to facilitate an independent feepayer
+#[derive(Accounts)]
+pub struct CreatePlaylist<'info> {
+    #[account(init, payer = payer, space = PLAYLIST_ACCOUNT_SIZE)]
+    pub playlist: Account<'info, Playlist>,
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>
+}
+
+/// Instruction container for playlist updates
+/// Confirm that the user authority matches signer authority field
+#[derive(Accounts)]
+pub struct UpdatePlaylist<'info> {
+    #[account()]
+    pub playlist: Account<'info, Playlist>,
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
+/// Instruction container for playlist deletes
+/// Removes playlist storage account entirely
+#[derive(Accounts)]
+pub struct DeletePlaylist<'info> {
+    // Return funds to the payer of this transaction
+    #[account(mut, close = payer)]
+    pub playlist: Account<'info, Playlist>,
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
 // END Instructions
 
 /// Audius root account
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
-    pub track_id: u64
+    pub track_id: u64,
+    pub playlist_id: u64
 }
 
 /// User storage account
@@ -293,6 +394,13 @@ pub struct User {
 pub struct Track {
     pub owner: Pubkey,
     pub track_id: u64
+}
+
+/// Playlist storage account
+#[account]
+pub struct Playlist {
+    pub owner: Pubkey,
+    pub playlist_id: u64
 }
 
 // Errors
