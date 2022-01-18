@@ -1,17 +1,20 @@
-const moment = require('moment')
 const assert = require('assert')
+const moment = require('moment')
+const nock = require('nock')
 const models = require('../../src/models')
 const {
   processTrendingTracks,
   getTimeGenreActionType,
   TRENDING_TIME,
-  TRENDING_GENRE
+  TRENDING_GENRE,
+  getTrendingTracks
 } = require('../../src/notifications/trendingTrackProcessing')
 const {
   notificationTypes
 } = require('../../src/notifications/constants')
 
 const { clearDatabase, runMigrations } = require('../lib/app')
+const { encodeHashId } = require('../../src/notifications/utils')
 
 /**
  * Track id 100 owned by user id 1 is #1 trending
@@ -85,13 +88,82 @@ const additionalNotifications = [
   }
 ]
 
-describe('Test Trending Track Notification', function () {
+const makeTrendingResponse = (ids) => {
+  const data = ids.map(id => ({
+    title: `Track ${id}`,
+    description: `Track description ${id}`,
+    genre: 'Electronic',
+    id: encodeHashId(id),
+    user: {
+      id: encodeHashId(id)
+    }
+  }))
+  return ({
+    data,
+    latest_indexed_block: 100 
+  })
+}
+
+describe('Test Trending Track Notification', () => {
   beforeEach(async () => {
     await clearDatabase()
     await runMigrations()
   })
 
-  it('should insert rows into notifications and notifications actions tables', async function () {
+  it('should query discovery nodes for consensus', async () => {
+    const endpoints = [
+      'https://discoverya.com',
+      'https://discoveryb.com',
+      'https://discoveryc.com'
+    ]
+    nock(endpoints[0])
+      .get('/v1/full/tracks/trending?time=week&limit=10')
+      .reply(200, makeTrendingResponse([1, 8, 6, 4, 5, 3, 2, 9, 10, 7]))
+    nock(endpoints[1])
+      .get('/v1/full/tracks/trending?time=week&limit=10')
+      .reply(200, makeTrendingResponse([1, 8, 6, 4, 5, 3, 2, 9, 10, 7]))
+    nock(endpoints[2])
+      .get('/v1/full/tracks/trending?time=week&limit=10')
+      .reply(200, makeTrendingResponse([1, 8, 6, 4, 5, 3, 2, 9, 10, 7]))
+
+    const { trendingTracks, blocknumber } = await getTrendingTracks('', endpoints)
+    assert.deepStrictEqual(blocknumber, 100)
+    assert.deepStrictEqual(trendingTracks, [
+      { trackId: 1, rank: 1, userId: 1 },
+      { trackId: 8, rank: 2, userId: 8 },
+      { trackId: 6, rank: 3, userId: 6 },
+      { trackId: 4, rank: 4, userId: 4 },
+      { trackId: 5, rank: 5, userId: 5 },
+      { trackId: 3, rank: 6, userId: 3 },
+      { trackId: 2, rank: 7, userId: 2 },
+      { trackId: 9, rank: 8, userId: 9 },
+      { trackId: 10, rank: 9, userId: 10 },
+      { trackId: 7, rank: 10, userId: 7 },
+    ])
+  })
+
+  it('should fail to notify when not reaching consensus', async () => {
+    const endpoints = [
+      'https://discoverya.com',
+      'https://discoveryb.com',
+      'https://discoveryc.com'
+    ]
+    nock(endpoints[0])
+      .get('/v1/full/tracks/trending?time=week&limit=10')
+      .reply(200, makeTrendingResponse([1, 8, 6, 4, 5, 3, 2, 9, 10, 7]))
+    nock(endpoints[1])
+      .get('/v1/full/tracks/trending?time=week&limit=10')
+      // Note: items 2 & 3 are flipped here
+      .reply(200, makeTrendingResponse([1, 8, 6, 4, 5, 2, 3, 9, 10, 7]))
+    nock(endpoints[2])
+      .get('/v1/full/tracks/trending?time=week&limit=10')
+      .reply(200, makeTrendingResponse([1, 8, 6, 4, 5, 3, 2, 9, 10, 7]))
+
+    const result = await getTrendingTracks('', endpoints)
+    assert.deepStrictEqual(result, null)
+  })
+
+  it('should insert rows into notifications and notifications actions tables', async () => {
     // ======================================= Process initial Notifications =======================================
     const tx1 = await models.sequelize.transaction()
     await processTrendingTracks(null, 1, initialNotifications, tx1)

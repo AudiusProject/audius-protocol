@@ -1,5 +1,6 @@
 const axios = require('axios')
 const moment = require('moment')
+const { sampleSize, isEqual } = require('lodash')
 
 const models = require('../models')
 const { logger } = require('../logging')
@@ -40,38 +41,76 @@ const TRENDING_INTERVAL_HOURS = 3
 // The highest rank for which a notification will be sent
 const MAX_TOP_TRACK_RANK = 10
 
-async function getTrendingTracks (optimizelyClient) {
-  const trendingExperiment = getRemoteVar(optimizelyClient, REMOTE_VARS.TRENDING_EXPERIMENT)
+// The number of discovery nodes to test and verify that trending
+// is consistent
+const NUM_DISCOVERY_NODES_FOR_CONSENSUS = 3
 
-  try {
-    // The owner info is then used to target listenCount milestone notifications
-    let params = new URLSearchParams()
-    params.append('time', TRENDING_TIME.WEEK)
-    params.append('limit', MAX_TOP_TRACK_RANK)
+let SELECTED_DISCOVERY_NODES = null
+setInterval(async () => {
+  SELECTED_DISCOVERY_NODES = await getDiscoveryNodes()
+}, 5 * 60 * 60 /* re-run on the 5-minute */)
 
-    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-    const baseUrl = `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending`
-    const url = trendingExperiment
-      ? `${baseUrl}/${trendingExperiment}?time=week`
-      : `${baseUrl}?time=week`
+const getDiscoveryNodes = async () => {
+  const libs = await audiusLibsWrapper.getAudiusLibsAsync()
+  const discoveryNodes = await audiusLibs.discoveryProvider.serviceSelector.findAll()
+  logger.debug(`Updating discovery nodes for trendingTrackProcessing to ${discoveryNodes}`)
+  return sampleSize(discoveryNodes, NUM_DISCOVERY_NODES_FOR_CONSENSUS)
+}
 
-    const trendingTracksResponse = await axios({
-      method: 'get',
-      url,
-      params,
-      timeout: 10000
-    })
-    const trendingTracks = trendingTracksResponse.data.data.map((track, idx) => ({
-      trackId: decodeHashId(track.id),
-      rank: idx + 1,
-      userId: decodeHashId(track.user.id)
-    }))
-    const blocknumber = trendingTracksResponse.data.latest_indexed_block
-    return { trendingTracks, blocknumber }
-  } catch (err) {
-    logger.error(`Unable to fetch trending tracks: ${err}`)
+async function getTrendingTracks (trendingExperiment, discoveryNodes) {
+  const results = await Promise.all(discoveryNodes.map(async node => {
+    try {
+      // The owner info is then used to target listenCount milestone notifications
+      let params = new URLSearchParams()
+      params.append('time', TRENDING_TIME.WEEK)
+      params.append('limit', MAX_TOP_TRACK_RANK)
+  
+      const baseUrl = `${node}/v1/full/tracks/trending`
+      const url = trendingExperiment
+        ? `${baseUrl}/${trendingExperiment}`
+        : `${baseUrl}`
+  
+      const trendingTracksResponse = await axios({
+        method: 'get',
+        url,
+        params,
+        timeout: 10000
+      })
+      const trendingTracks = trendingTracksResponse.data.data.map((track, idx) => ({
+        trackId: decodeHashId(track.id),
+        rank: idx + 1,
+        userId: decodeHashId(track.user.id)
+      }))
+      const blocknumber = trendingTracksResponse.data.latest_indexed_block
+      return { trendingTracks, blocknumber }
+    } catch (err) {
+      logger.error(`Unable to fetch trending tracks: ${err}`)
+      return null
+    }
+  }))
+
+  // Make sure we had no errors
+  if (results.some(res => res === null)) {
+    logger.error(`Unable to fetch trending tracks from all nodes`)
     return null
   }
+
+  // Make sure trending is consistent between nodes
+  const { trendingTracks, blocknumber } = results[0]
+  for (const result of results.slice(1)) {
+    const {
+      trendingTracks: otherTrendingTracks
+    } = result
+    if (!isEqual(trendingTracks, otherTrendingTracks)) {
+      const ids = trendingTracks.map(t => t.trackId)
+      const otherIds = otherTrendingTracks.map(t => t.trackId)
+      logger.error(`Trending results diverged ${ids} versus ${otherIds}`)
+      return null
+    }
+  }
+
+  logger.debug(`Trending results converged with ${trendingTracks.map(t => t.trackId)}`)
+  return { trendingTracks, blocknumber }
 }
 
 /**
@@ -178,7 +217,10 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
 
 async function indexTrendingTracks (audiusLibs, optimizelyClient, tx) {
   try {
-    const { trendingTracks, blocknumber } = await getTrendingTracks(optimizelyClient)
+    const trendingExperiment = getRemoteVar(optimizelyClient, REMOTE_VARS.TRENDING_EXPERIMENT)
+    if (!SELECTED_DISCOVERY_NODES) return
+
+    const { trendingTracks, blocknumber } = await getTrendingTracks(trendingExperiment, SELECTED_DISCOVERY_NODES)
     await processTrendingTracks(audiusLibs, blocknumber, trendingTracks, tx)
   } catch (err) {
     logger.error(`Unable to process trending track notifications: ${err.message}`)
@@ -190,5 +232,6 @@ module.exports = {
   TRENDING_GENRE,
   getTimeGenreActionType,
   indexTrendingTracks,
+  getTrendingTracks,
   processTrendingTracks
 }
