@@ -76,7 +76,7 @@ export const ShareDrawer = () => {
   const styles = useThemedStyles(createStyles)
   const { secondary, neutral, staticTwitterBlue } = useThemeColors()
   const themeVariant = useThemeVariant()
-  const isDarkMode = themeVariant === Theme.DARK
+  const isLightMode = themeVariant === Theme.DEFAULT
   const dispatchWeb = useDispatchWeb()
   const isOpen = useSelectorWeb(state => getModalVisibility(state, 'Share'))
   const { content, source } = useSelectorWeb(getShareState)
@@ -116,9 +116,9 @@ export const ShareDrawer = () => {
     if (!content) return
     const link = getContentUrl(content)
     Clipboard.setString(link)
-    toast({ content: 'Copied Link to Track', type: 'info' })
+    toast({ content: messages.toast(shareType), type: 'info' })
     handleClose()
-  }, [toast, content, handleClose])
+  }, [toast, content, handleClose, shareType])
 
   const handleOpenShareSheet = useCallback(() => {
     if (!source || !content) return
@@ -155,14 +155,14 @@ export const ShareDrawer = () => {
       callback: handleShareToTwitter
     }
 
-    const TikTokIcon = isDarkMode ? IconTikTokInverted : IconTikTok
+    const TikTokIcon = isLightMode ? IconTikTok : IconTikTokInverted
 
     const shareToTikTokAction = {
       text: messages.tikTok,
       icon: <TikTokIcon height={26} width={26} />,
-      style: isDarkMode
-        ? styles.shareToTikTokActionDark
-        : styles.shareToTikTokAction,
+      style: isLightMode
+        ? styles.shareToTikTokAction
+        : styles.shareToTikTokActionDark,
       callback: handleShareToTikTok
     }
 
@@ -192,7 +192,7 @@ export const ShareDrawer = () => {
     staticTwitterBlue,
     styles,
     handleShareToTwitter,
-    isDarkMode,
+    isLightMode,
     handleShareToTikTok,
     secondary,
     handleCopyLink,
