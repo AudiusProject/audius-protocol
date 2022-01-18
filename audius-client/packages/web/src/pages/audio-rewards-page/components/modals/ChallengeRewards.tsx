@@ -166,7 +166,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const currentStepCountOverrides = useOptimisticChallengeCompletionStepCounts()
   const currentStepCountOverride = currentStepCountOverrides[modalType]
-  const shouldOverrideCurrentStepCount = currentStepCountOverride !== undefined
+  const shouldOverrideCurrentStepCount =
+    !challenge?.is_complete && currentStepCountOverride !== undefined
   const currentStepCount = shouldOverrideCurrentStepCount
     ? currentStepCountOverride!
     : challenge?.current_step_count || 0
