@@ -13,6 +13,7 @@ import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { Lineup } from 'common/models/Lineup'
 import Status from 'common/models/Status'
+import { LineupActions } from 'common/store/lineup/actions'
 import {
   TrackTileProps,
   PlaylistTileProps,
@@ -20,7 +21,6 @@ import {
   TileProps
 } from 'components/track/types'
 import { TrackEvent, make } from 'store/analytics/actions'
-import { LineupActions } from 'store/lineup/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 

@@ -30,6 +30,10 @@ import {
   publishPlaylist,
   deletePlaylist
 } from 'common/store/cache/collections/actions'
+import {
+  makeGetTableMetadatas,
+  makeGetLineupOrder
+} from 'common/store/lineup/selectors'
 import * as socialCollectionsActions from 'common/store/social/collections/actions'
 import * as socialTracksActions from 'common/store/social/tracks/actions'
 import * as socialUsersActions from 'common/store/social/users/actions'
@@ -57,10 +61,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import {
-  makeGetTableMetadatas,
-  makeGetLineupOrder
-} from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'

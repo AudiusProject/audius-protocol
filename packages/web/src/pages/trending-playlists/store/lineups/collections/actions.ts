@@ -1,4 +1,4 @@
-import { LineupActions } from 'store/lineup/actions'
+import { LineupActions } from 'common/store/lineup/actions'
 
 export const PREFIX = 'TRENDING_PLAYLISTS'
 

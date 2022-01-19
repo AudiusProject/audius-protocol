@@ -1,11 +1,11 @@
 import FeedFilter from 'common/models/FeedFilter'
+import { asLineup } from 'common/store/lineup/reducer'
 import {
   SET_SUGGESTED_FOLLOWS,
   SET_FEED_FILTER
 } from 'pages/feed-page/store/actions'
 import { PREFIX as FeedPrefix } from 'pages/feed-page/store/lineups/feed/actions'
 import feedReducer from 'pages/feed-page/store/lineups/feed/reducer'
-import { asLineup } from 'store/lineup/reducer'
 
 const initialState = {
   suggestedFollows: [],

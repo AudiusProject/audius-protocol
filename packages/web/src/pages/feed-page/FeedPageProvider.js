@@ -9,6 +9,7 @@ import { withRouter, matchPath } from 'react-router-dom'
 
 import { Name } from 'common/models/Analytics'
 import { getHasAccount } from 'common/store/account/selectors'
+import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import {
   getDiscoverFeedLineup,
   makeGetSuggestedFollows,
@@ -16,7 +17,6 @@ import {
 } from 'pages/feed-page/store/selectors'
 import { openSignOn } from 'pages/sign-on/store/actions'
 import { make } from 'store/analytics/actions'
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { isMobile } from 'utils/clientUtil'

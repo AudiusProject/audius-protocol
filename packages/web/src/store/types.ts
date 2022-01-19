@@ -2,6 +2,7 @@ import { RouterState } from 'connected-react-router'
 
 import { CommonState } from 'common/store'
 import RemoteConfigReducer from 'common/store/remote-config/slice'
+import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
 import ArtistRecommendationsReducer from 'components/artist-recommendations/store/slice'
 import { ChangePasswordState } from 'components/change-password/store/slice'
 import { EmbedModalState } from 'components/embed-modal/store/types'
@@ -34,7 +35,6 @@ import { SearchPageState } from 'pages/search-page/store/types'
 import SettingsPageState from 'pages/settings-page/store/types'
 import SignOnPageState from 'pages/sign-on/store/types'
 import { SmartCollectionState } from 'pages/smart-collection/store/slice'
-import TrackPageState from 'pages/track-page/store/types'
 import TrendingPageState from 'pages/trending-page/store/types'
 import trendingPlaylistsReducer from 'pages/trending-playlists/store/slice'
 import trendingUndergroundReducer from 'pages/trending-underground/store/slice'
@@ -47,8 +47,6 @@ import { AudioManagerState } from 'store/audio-manager/slice'
 import PlayerReducer from 'store/player/slice'
 import PlaylistLibraryReducer from 'store/playlist-library/slice'
 import QueueReducer from 'store/queue/slice'
-
-import { CreatePlaylistModalState } from '../common/store/ui/createPlaylistModal/types'
 
 import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
@@ -135,7 +133,6 @@ export type AppState = CommonState & {
   searchBar: SearchBarState
   search: SearchPageState
   collection: CollectionsPageState
-  track: TrackPageState
   notification: NotificationState
 
   // Playback

@@ -1,4 +1,4 @@
-import { LineupActions } from 'store/lineup/actions'
+import { LineupActions } from 'common/store/lineup/actions'
 
 export const PREFIX = 'DISCOVER_TRENDING'
 export const TRENDING_WEEK_PREFIX = 'DISCOVER_TRENDING_WEEK'
