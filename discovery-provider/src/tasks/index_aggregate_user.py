@@ -335,7 +335,7 @@ UPDATE_AGGREGATE_USER_QUERY = """
     """
 
 
-def _update_aggregate_table(session):
+def _update_aggregate_user(session):
     most_recent_indexed_aggregate_block = get_last_indexed_checkpoint(
         session, AGGREGATE_USER
     )
@@ -389,7 +389,7 @@ def update_aggregate_user(self):
             start_time = time.time()
 
             with db.scoped_session() as session:
-                _update_aggregate_table(session)
+                _update_aggregate_user(session)
 
             logger.info(
                 f"""index_aggregate_user.py | Finished updating {AGGREGATE_USER} in: {time.time()-start_time} sec"""

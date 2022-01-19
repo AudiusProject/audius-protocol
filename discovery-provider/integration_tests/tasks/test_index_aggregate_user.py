@@ -5,7 +5,7 @@ from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.models import AggregateUser
-from src.tasks.index_aggregate_user import AGGREGATE_USER, _update_aggregate_table
+from src.tasks.index_aggregate_user import AGGREGATE_USER, _update_aggregate_user
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
@@ -137,16 +137,16 @@ def test_index_aggregate_user_populate(app):
     populate_mock_db(db, basic_entities, block_offset=3)
 
     with db.scoped_session() as session:
-        # confirm nothing exists before _update_aggregate_table()
+        # confirm nothing exists before _update_aggregate_user()
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
         assert (
             len(results) == 0
-        ), "Test aggregate_user is empty before _update_aggregate_table()"
+        ), "Test aggregate_user is empty before _update_aggregate_user()"
 
         # trigger celery task
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
         # read from aggregate_user table
         results: List[AggregateUser] = (
@@ -225,7 +225,7 @@ def test_index_aggregate_user_empty_users(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
@@ -254,7 +254,7 @@ def test_index_aggregate_user_empty_activity(app):
     populate_mock_db(db, entities, block_offset=3)
 
     with db.scoped_session() as session:
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
@@ -271,7 +271,7 @@ def test_index_aggregate_user_empty_activity(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
@@ -293,7 +293,7 @@ def test_index_aggregate_user_empty_completely(app):
     populate_mock_db(db, entities, block_offset=3)
 
     with db.scoped_session() as session:
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
@@ -346,7 +346,7 @@ def test_index_aggregate_user_update(app):
         )
         created_entity_tests(results, 2)
 
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -417,7 +417,7 @@ def test_index_aggregate_user_update_with_extra_user(app):
         )
         assert len(results) == 3, "Test that aggregate_user entities are populated"
 
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -526,7 +526,7 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
         )
         assert len(results) == 3, "Test that entities exist as expected"
 
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
@@ -548,7 +548,7 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
             len(results) == 3
         ), "Test that entities exist as expected, even though checkpoint has been reset"
 
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
@@ -582,7 +582,7 @@ def test_index_aggregate_user_same_checkpoint(app):
         )
         assert len(results) == 0
 
-        _update_aggregate_table(session)
+        _update_aggregate_user(session)
 
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
