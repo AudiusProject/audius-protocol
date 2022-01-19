@@ -1,4 +1,4 @@
-import React, { memo, useRef } from 'react'
+import React, { memo, useRef, MouseEvent } from 'react'
 
 import cn from 'classnames'
 
@@ -20,7 +20,7 @@ type CurrentlyPlayingProps = {
   coverArtColor: Color
   draggableLink: string
   onClick: () => void
-  onShowVisualizer: () => void
+  onShowVisualizer: (e: MouseEvent) => void
 }
 
 type ArtworkStyle = {
@@ -108,7 +108,7 @@ const CurrentlyPlaying = ({
             })}
           >
             <div
-              onClick={onShowVisualizer}
+              onClick={e => onShowVisualizer(e)}
               className={styles.visualizerIconContainer}
             >
               <IconVisualizer className={styles.visualizerIcon} />

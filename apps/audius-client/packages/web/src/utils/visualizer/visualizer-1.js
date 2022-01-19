@@ -145,7 +145,7 @@ let Visualizer1 = (function () {
 
   function show (darkMode) {
     if (darkMode) {
-      settings.gradient = [ '#000000', '#4F4F4F' ]
+      settings.gradient = [ '#323232', '#111111' ]
       settings.color = '#FFF'
     } else {
       settings.gradient = [ '#FFFFFF', '#4F4F4F' ]
