@@ -21,6 +21,7 @@ set -e
 pip3 install -r requirements.txt
 sleep 5
 set +e
+set -x
 
 # Reset local blockchain for deterministic test results
 cd_contracts_repo
@@ -66,8 +67,10 @@ docker-compose \
 
 sleep 5
 
-# Unit tests
-pytest src
+if [ -z ${SKIP_TESTS+x} ]; then
+  # Unit tests
+  pytest src
 
-# Integration tests
-pytest integration_tests
+  # Integration tests
+  pytest integration_tests
+fi
