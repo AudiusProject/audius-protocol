@@ -480,7 +480,7 @@ class RewardsAttester {
     return new Promise(resolve => setTimeout(resolve, waitTime))
   }
 
-  async _addRecentlyDisbursed(challenges) {
+  async _addRecentlyDisbursed (challenges) {
     const ids = challenges.map(this._disbursementToKey)
     this.recentlyDisbursedQueue.push(...ids)
     if (this.recentlyDisbursedQueue.length > MAX_DISBURSED_CACHE_SIZE) {
