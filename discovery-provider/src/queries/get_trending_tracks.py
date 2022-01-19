@@ -61,6 +61,8 @@ def generate_unpopulated_trending_from_mat_views(
     # use all time instead of year for version ML51L
     if strategy.version == TrendingVersion.ML51L and time_range == "year":
         time_range = "allTime"
+    elif strategy.version != TrendingVersion.ML51L and time_range == "allTime":
+        time_range = "year"
 
     trending_track_ids_query = session.query(
         TrackTrendingScore.track_id, TrackTrendingScore.score
