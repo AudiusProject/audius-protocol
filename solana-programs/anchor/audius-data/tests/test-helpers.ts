@@ -103,7 +103,6 @@ export const testInitUserSolPubkey = async ({
   }
   let txInfo = await getTransaction(provider, initUserTx);
   let fee = txInfo["meta"]["fee"];
-  console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
 };
 
 export const confirmLogInTransaction = async (

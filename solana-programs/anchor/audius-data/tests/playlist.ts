@@ -13,6 +13,7 @@ import {
   confirmLogInTransaction,
   initTestConstants,
   testInitUser,
+  testInitUserSolPubkey,
 } from "./test-helpers";
 
 describe("playlist", () => {
@@ -28,30 +29,6 @@ describe("playlist", () => {
 
   let adminKeypair = anchor.web3.Keypair.generate();
   let adminStgKeypair = anchor.web3.Keypair.generate();
-
-  const testInitUserSolPubkey = async ({
-    message,
-    pkString,
-    newUserKeypair,
-    newUserAcctPDA,
-  }) => {
-    let initUserTx = await initUserSolPubkey({
-      provider,
-      program,
-      privateKey: pkString,
-      message,
-      userSolPubkey: newUserKeypair.publicKey,
-      userStgAccount: newUserAcctPDA,
-    });
-
-    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
-    if (!newUserKeypair.publicKey.equals(userDataFromChain.authority)) {
-      throw new Error("Unexpected public key found");
-    }
-    let txInfo = await getTransaction(provider, initUserTx);
-    let fee = txInfo["meta"]["fee"];
-    console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
-  };
 
   it("Initializing admin account!", async () => {
     await initAdmin({
@@ -97,9 +74,9 @@ describe("playlist", () => {
       const createdPlaylist = await program.account.playlist.fetch(
         newPlaylistKeypair.publicKey
       );
-      console.log(
-        `playlist: ${playlistMetadata}, playlistId assigned = ${createdPlaylist.playlistId}`
-      );
+      // console.log(
+      //   `playlist: ${playlistMetadata}, playlistId assigned = ${createdPlaylist.playlistId}`
+      // );
     };
 
     const testUpdatePlaylist = async ({
@@ -209,6 +186,8 @@ describe("playlist", () => {
       const message = newUserKeypair.publicKey.toString();
 
       await testInitUserSolPubkey({
+        provider,
+        program,
         message,
         pkString,
         newUserKeypair,
