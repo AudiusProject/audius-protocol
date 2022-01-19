@@ -172,6 +172,7 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
       })
     )
   }
+  console.log(`SIDTEST SFFM ALL DONE, starting DB`)
 
   /**
    * Write all records to DB
@@ -200,7 +201,10 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
     console.log(`SIDTEST CREATED CNODEUSER`)
   }
 
+  console.log(`SIDTEST LOCALCNODEUSER: ${JSON.stringify(localCNodeUser)}`)
+
   const cnodeUserUUID = localCNodeUser.cnodeUserUUID
+  console.log(`SIDTEST cnodeUserUUID: ${cnodeUserUUID}`)
 
   // Aggregate all entries into single array, sorted by clock asc to preserve original insert order
   let allEntries = _.concat(
@@ -211,7 +215,9 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
   )
   allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
 
-  for await (const { tableInstance, entry } of allEntries) {
+  for await (const entryInfo of allEntries) {
+    console.log(`SIDTEST ENTRYINFO ${JSON.stringify(entryInfo)}`)
+    const { tableInstance, entry } = entryInfo
     if (await alreadyExistsInDB({ tableInstance, entry, transaction })) {
       // TODO log
       continue
@@ -286,31 +292,36 @@ async function releaseUserRedisLock({ redis, wallet }) {
 }
 
 async function alreadyExistsInDB({ tableInstance, entry, transaction }) {
-  let existingEntry
-  switch (tableInstance) {
-    case models.File: {
-      existingEntry = await tableInstance.findOne({
-        where: {
-          cnodeUserUUID, trackBlockchainId, sourceFile, fileName, dirMultihash, storagePath, type
-        }
-      })
-      break
-    }
-    case models.Track: {
-      break
-    }
-    case models.AudiusUser: {
-      break
-    }
-    default: {
-      // 
-    }
-    if (_.isEqual(entry, existingEntry)) {
-      console.log(`SIDTEST SKIP`)
-      return true
-    }
+  // TODO throw on invalid tableInstance??
+
+  console.log(`CHECKING ALREADYEXISTSINDB ${tableInstance} entry ${JSON.stringify(entry)}`)
+
+  let searchFields, existingEntry
+  if (tableInstance === models.File) {
+    searchFields = [
+      'cnodeUserUUID', 'trackBlockchainId', 'multihash', 'sourceFile', 'fileName', 'dirMultihash', 'storagePath', 'type'
+    ]
+    const searchObj = _.pick(entry, searchFields)
+    existingEntry = await tableInstance.findOne({ where: searchObj, transaction })
+  } else if (tableInstance === models.Track) {
+    searchFields = ['cnodeUserUUID', 'blockchainId', 'metadataJSON']
+    const searchObj = _.pick(entry, searchFields)
+    existingEntry = await tableInstance.findOne({ where: searchObj, transaction })
+  } else if (tableInstance === models.AudiusUser) {
+    searchFields = ['cnodeUserUUID', 'blockchainId', 'metadataJSON']
+    const searchObj = _.pick(entry, searchFields)
+    existingEntry = await tableInstance.findOne({ where: searchObj, transaction })
+  } else {
+    // log
     return false
   }
+
+  const searchObj = _.pick(entry, searchFields)
+  const existingEntry = await tableInstance.findOne({ where: searchObj, transaction })
+
+  const status = _.isEqual(entry, existingEntry) // boolean
+  console.log(`ALREADYEXISTSINDB CHECK STATUS ${status}`)
+  return status
 }
 
 /**
@@ -368,7 +379,7 @@ async function primarySyncFromSecondary({
     }
 
   } catch (e) {
-    console.log(`SIDTEST ERROR ${e}`)
+    console.log(`SIDTEST ERROR ${e}, ${e.stack}`)
     // TODO syncHistoryAggregator??
   } finally {
     await releaseUserRedisLock({ redis, wallet })

@@ -53,7 +53,7 @@ run_unit_tests () {
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha test/nodesync.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
+  ./node_modules/mocha/bin/mocha test/sync.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
 }
 
 ARG1=${@:$OPTIND:1}
