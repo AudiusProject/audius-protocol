@@ -1,14 +1,15 @@
 //! The Audius Data Program is intended to bring all user data functionality to Solana through the
 //! Anchor framework
+
 use anchor_lang::prelude::*;
 
 declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 
 #[program]
 pub mod audius_data {
-    use std::str::FromStr;
-    use anchor_lang::solana_program::sysvar;
     use anchor_lang::solana_program::secp256k1_program;
+    use anchor_lang::solana_program::sysvar;
+    use std::str::FromStr;
 
     /*
         User & Admin Functions
@@ -18,7 +19,11 @@ pub mod audius_data {
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
     /// track_id_offset is the starting point for uploaded tracks
-    pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey, track_id_offset: u64) -> ProgramResult {
+    pub fn init_admin(
+        ctx: Context<Initialize>,
+        authority: Pubkey,
+        track_id_offset: u64,
+    ) -> ProgramResult {
         msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
@@ -41,7 +46,10 @@ pub mod audius_data {
     ) -> ProgramResult {
         msg!("Audius::InitUser");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
-        let (derived_base, _) = Pubkey::find_program_address(&[&ctx.accounts.admin.key().to_bytes()[..32]], ctx.program_id);
+        let (derived_base, _) = Pubkey::find_program_address(
+            &[&ctx.accounts.admin.key().to_bytes()[..32]],
+            ctx.program_id,
+        );
 
         if derived_base != base {
             return Err(ErrorCode::Unauthorized.into());
@@ -60,12 +68,14 @@ pub mod audius_data {
 
     /// Functionality to confirm signed object and add a Solana Pubkey to a user's account.
     /// Performs instruction introspection and expects a minimum of 2 instructions [secp, currenttinstruction].
-    pub fn init_user_sol(ctx: Context<InitializeUserSolIdentity>, user_authority: Pubkey) -> ProgramResult {
+    pub fn init_user_sol(
+        ctx: Context<InitializeUserSolIdentity>,
+        user_authority: Pubkey,
+    ) -> ProgramResult {
         msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
-        let index_current_instruction = sysvar::instructions::load_current_index_checked(
-            &ctx.accounts.sysvar_program
-        )?;
+        let index_current_instruction =
+            sysvar::instructions::load_current_index_checked(&ctx.accounts.sysvar_program)?;
 
         // Instruction must contain at least one prior
         if index_current_instruction < 1 {
@@ -75,9 +85,8 @@ pub mod audius_data {
         // Eth_address offset (12) + address (20) + signature (65) = 97
         // TODO: Validate message contents
         let eth_address_offset = 12;
-        let secp_data = sysvar::instructions::load_instruction_at_checked(
-            0,
-            &ctx.accounts.sysvar_program)?;
+        let secp_data =
+            sysvar::instructions::load_instruction_at_checked(0, &ctx.accounts.sysvar_program)?;
 
         if secp_data.program_id != secp256k1_program::id() {
             return Err(ErrorCode::Unauthorized.into());
@@ -153,13 +162,30 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn follow_user(ctx: Context<FollowUser>, follower_handle_seed: [u8; 16], followee_handle_seed: [u8;16]) -> ProgramResult {
-        msg!("Audius::FollowUser");
+    pub fn follow_user(
+        ctx: Context<FollowUser>,
+        user_action: UserAction,
+        follower_handle_seed: [u8; 16],
+        followee_handle_seed: [u8; 16],
+    ) -> ProgramResult {
+        match user_action {
+            UserAction::FollowUser => {
+                msg!("Audius::FollowUser");
+            }
+            UserAction::UnfollowUser => {
+                msg!("Audius::UnfollowUser");
+            }
+        };
+
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
-        let (base_pda, _bump) = Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
         // Confirm the follower is part of this audius instance
-        let (derived_follower_pda, _) = Pubkey::find_program_address(&[&base_pda.to_bytes()[..32], &follower_handle_seed], ctx.program_id);
+        let (derived_follower_pda, _) = Pubkey::find_program_address(
+            &[&base_pda.to_bytes()[..32], &follower_handle_seed],
+            ctx.program_id,
+        );
         // Confirm the follower PDA matches the expected value provided the target handle
         if derived_follower_pda != ctx.accounts.follower_user_stg.key() {
             return Err(ErrorCode::Unauthorized.into());
@@ -170,7 +196,10 @@ pub mod audius_data {
         }
 
         // Confirm the follower PDA matches the expected value
-        let (derived_followee_pda, _) = Pubkey::find_program_address(&[&base_pda.to_bytes()[..32], &followee_handle_seed], ctx.program_id);
+        let (derived_followee_pda, _) = Pubkey::find_program_address(
+            &[&base_pda.to_bytes()[..32], &followee_handle_seed],
+            ctx.program_id,
+        );
 
         // Confirm the follower PDA matches the expected value provided the target handle
         if derived_followee_pda != ctx.accounts.followee_user_stg.key() {
@@ -235,7 +264,7 @@ pub struct InitializeUser<'info> {
 pub struct InitializeUserSolIdentity<'info> {
     #[account(mut)]
     pub user: Account<'info, User>,
-    pub sysvar_program: AccountInfo<'info>
+    pub sysvar_program: AccountInfo<'info>,
 }
 
 /// Instruction container to allow updates to a given User account.
@@ -248,7 +277,6 @@ pub struct UpdateUser<'info> {
     #[account(mut)]
     pub user_authority: Signer<'info>,
 }
-
 
 /// Instruction container for track creation
 /// Confirms that user.authority matches signer authority field
@@ -265,7 +293,7 @@ pub struct CreateTrack<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
     pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>
+    pub system_program: Program<'info, System>,
 }
 
 /// Instruction container for track updates
@@ -301,7 +329,7 @@ pub struct DeleteTrack<'info> {
 
 /// Instruction container for follow
 #[derive(Accounts)]
-#[instruction(follower_handle_seed: [u8;16], followee_handle_seed: [u8;16])]
+#[instruction(user_instr:UserAction, follower_handle_seed: [u8;16], followee_handle_seed: [u8;16])]
 pub struct FollowUser<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
@@ -322,7 +350,7 @@ pub struct FollowUser<'info> {
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
-    pub track_id: u64
+    pub track_id: u64,
 }
 
 /// User storage account
@@ -336,7 +364,7 @@ pub struct User {
 #[account]
 pub struct Track {
     pub owner: Pubkey,
-    pub track_id: u64
+    pub track_id: u64,
 }
 
 // Errors
@@ -346,4 +374,10 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("Signature verification failed.")]
     SignatureVerification,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum UserAction {
+    FollowUser,
+    UnfollowUser,
 }

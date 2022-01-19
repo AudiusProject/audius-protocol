@@ -646,6 +646,7 @@ describe("audius-data", () => {
     });
 
     // Submit a tx where user 1 follows user 2
+    // let newUser1Key = anchor.web3.Keypair.generate();
     let followArgs = {
       accounts: {
         audiusAdmin: adminStgKeypair.publicKey,
@@ -657,6 +658,7 @@ describe("audius-data", () => {
       signers: [newUser1Key],
     };
     let followTx = await program.rpc.followUser(
+      { followUser: {} },
       handleBytesArray1,
       handleBytesArray2,
       followArgs
