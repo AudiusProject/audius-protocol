@@ -471,7 +471,6 @@ def test_index_aggregate_user_entity_model(app):
         created_entity_tests(results, 3)
 
 
-# TODO: test with block.number being 0 in order to activate truncation
 def test_index_aggregate_user_update_with_only_aggregate_user(app):
     """Test that aggregate_user will be truncated even when no other data"""
 
