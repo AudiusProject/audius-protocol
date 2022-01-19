@@ -9,7 +9,7 @@ import {
 } from 'redux-saga/effects'
 
 import { Name } from 'common/models/Analytics'
-import { DefaultSizes } from 'common/models/ImageSizes'
+import { DefaultSizes, SquareSizes } from 'common/models/ImageSizes'
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
 import {
@@ -408,7 +408,17 @@ function* watchFetchCoverArt() {
         cacheActions.update(Kind.TRACKS, [{ id: trackId, metadata: track }])
       )
 
-      const dominantColors = yield call(dominantColor, url)
+      let smallImageUrl = url
+      if (coverArtSize !== SquareSizes.SIZE_150_BY_150) {
+        smallImageUrl = yield call(
+          AudiusBackend.getImageUrl,
+          multihash,
+          SquareSizes.SIZE_150_BY_150,
+          gateways
+        )
+      }
+      const dominantColors = yield call(dominantColor, smallImageUrl)
+
       yield put(
         setDominantColors({
           multihash,

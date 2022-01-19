@@ -34,7 +34,7 @@ const Artwork = ({ track }: { track?: Track | null }) => {
   const image = useTrackCoverArt(
     track_id || -1,
     _cover_art_sizes || null,
-    SquareSizes.SIZE_150_BY_150
+    SquareSizes.SIZE_480_BY_480
   )
   return <DynamicImage wrapperClassName={styles.artwork} image={image} />
 }
