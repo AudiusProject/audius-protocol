@@ -482,7 +482,7 @@ class RewardsAttester {
 
   async _addRecentlyDisbursed(challenges) {
     const ids = challenges.map(this._disbursementToKey)
-    this.recentlyDisbursedQueue.push(ids)
+    this.recentlyDisbursedQueue.push(...ids)
     if (this.recentlyDisbursedQueue.length > MAX_DISBURSED_CACHE_SIZE) {
       this.recentlyDisbursedQueue.splice(0, this.recentlyDisbursedQueue.length - MAX_DISBURSED_CACHE_SIZE)
     }
