@@ -100,7 +100,7 @@ const makeTrendingResponse = (ids) => {
   }))
   return ({
     data,
-    latest_indexed_block: 100 
+    latest_indexed_block: 100
   })
 }
 
@@ -138,7 +138,7 @@ describe('Test Trending Track Notification', () => {
       { trackId: 2, rank: 7, userId: 2 },
       { trackId: 9, rank: 8, userId: 9 },
       { trackId: 10, rank: 9, userId: 10 },
-      { trackId: 7, rank: 10, userId: 7 },
+      { trackId: 7, rank: 10, userId: 7 }
     ])
   })
 

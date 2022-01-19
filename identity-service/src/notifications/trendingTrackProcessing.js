@@ -52,7 +52,7 @@ setInterval(async () => {
 
 const getDiscoveryNodes = async () => {
   const libs = await audiusLibsWrapper.getAudiusLibsAsync()
-  const discoveryNodes = await audiusLibs.discoveryProvider.serviceSelector.findAll()
+  const discoveryNodes = await libs.discoveryProvider.serviceSelector.findAll()
   logger.debug(`Updating discovery nodes for trendingTrackProcessing to ${discoveryNodes}`)
   return sampleSize(discoveryNodes, NUM_DISCOVERY_NODES_FOR_CONSENSUS)
 }
@@ -64,12 +64,12 @@ async function getTrendingTracks (trendingExperiment, discoveryNodes) {
       let params = new URLSearchParams()
       params.append('time', TRENDING_TIME.WEEK)
       params.append('limit', MAX_TOP_TRACK_RANK)
-  
+
       const baseUrl = `${node}/v1/full/tracks/trending`
       const url = trendingExperiment
         ? `${baseUrl}/${trendingExperiment}`
         : `${baseUrl}`
-  
+
       const trendingTracksResponse = await axios({
         method: 'get',
         url,
