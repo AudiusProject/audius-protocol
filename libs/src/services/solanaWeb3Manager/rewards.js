@@ -258,7 +258,7 @@ async function submitAttestations ({
     return acc
   }, [[]])
 
-  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction(i, RewardsManagerError, null, logger, false)))
+  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction({ instructions: i, errorMapping: RewardsManagerError, logger, skipPreflight: false })))
   logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results)}`)
 
   // If there's any error in any of the transactions, just return that one
@@ -332,7 +332,7 @@ async function createSender ({
   })
 
   const instructions = [...signerInstructions, createSenderInstruction]
-  return transactionHandler.handleTransaction(instructions, RewardsManagerError)
+  return transactionHandler.handleTransaction({ instructions, errorMapping: RewardsManagerError })
 }
 
 /**
@@ -505,7 +505,7 @@ const evaluateAttestations = async ({
     data: serializedInstructionEnum
   })
 
-  return transactionHandler.handleTransaction([transferInstruction], RewardsManagerError, null, logger, false)
+  return transactionHandler.handleTransaction({ instructions: [transferInstruction], errorMapping: RewardsManagerError, logger, skipPreflight: false })
 }
 
 // Helpers
