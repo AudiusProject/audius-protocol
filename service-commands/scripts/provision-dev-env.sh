@@ -69,6 +69,7 @@ function setup_python() {
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
     pip install wheel
+    pip install pre-commit==2.16.0
 }
 
 function setup_docker() {
