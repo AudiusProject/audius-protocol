@@ -82,6 +82,7 @@
     "react-native-radial-gradient": "1.0.8",
     "react-native-safe-area-context": "3.3.2",
     "react-native-screens": "3.6.0",
+    "react-native-shadow-2": "6.0.1",
     "react-native-static-server": "git@github.com:futurepress/react-native-static-server.git#034c04e7a2999ae11a799fb68266c94389fc61bf",
     "react-native-svg": "12.1.1",
     "react-native-svg-transformer": "0.14.3",

@@ -22,12 +22,11 @@ import NotificationBlock from './NotificationBlock'
 
 const styles = StyleSheet.create({
   list: {
-    paddingTop: 2,
-    paddingLeft: 10,
-    paddingRight: 10
+    paddingTop: 2
   },
   itemContainer: {
-    marginTop: 8
+    marginTop: 8,
+    paddingHorizontal: 10
   },
   footer: {
     marginTop: 20,
