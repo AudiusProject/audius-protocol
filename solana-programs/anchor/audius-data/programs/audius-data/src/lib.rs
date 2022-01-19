@@ -162,6 +162,12 @@ pub mod audius_data {
         Ok(())
     }
 
+    /// Follow a user, transaction sent from 1 known valid user to another
+    /// Both User accounts are re-derived from the handle seed and validated
+    /// Only the follower must have already claimed their solana public key -
+    /// in order to facilitate the scenario where an 'initialized' user follows an 'unitialized' user
+    /// Note that both follow and unfollow are handled in this single function through an enum, with identical
+    /// validation for both paths.
     pub fn follow_user(
         ctx: Context<FollowUser>,
         user_action: UserAction,
@@ -171,7 +177,7 @@ pub mod audius_data {
         match user_action {
             UserAction::FollowUser => {
                 msg!("Audius::FollowUser");
-            }
+            },
             UserAction::UnfollowUser => {
                 msg!("Audius::UnfollowUser");
             }
@@ -195,7 +201,7 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        // Confirm the follower PDA matches the expected value
+        // Confirm the followee PDA matches the expected value
         let (derived_followee_pda, _) = Pubkey::find_program_address(
             &[&base_pda.to_bytes()[..32], &followee_handle_seed],
             ctx.program_id,
@@ -376,6 +382,7 @@ pub enum ErrorCode {
     SignatureVerification,
 }
 
+// User actions enum, used to follow/unfollow based on function arguments
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub enum UserAction {
     FollowUser,

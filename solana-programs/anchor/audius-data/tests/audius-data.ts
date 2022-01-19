@@ -580,7 +580,7 @@ describe("audius-data", () => {
     console.log(`Created 3 tracks in ${Date.now() - start}ms`);
   });
 
-  it("Follow user", async () => {
+  it("Follow/Unfollow user", async () => {
     // Initialize 2 users
     let constants1 = initTestConstants();
     let constants2 = initTestConstants();
@@ -646,7 +646,6 @@ describe("audius-data", () => {
     });
 
     // Submit a tx where user 1 follows user 2
-    // let newUser1Key = anchor.web3.Keypair.generate();
     let followArgs = {
       accounts: {
         audiusAdmin: adminStgKeypair.publicKey,
@@ -682,5 +681,28 @@ describe("audius-data", () => {
     );
     assert.equal(user1Handle, instructionFollowerHandle);
     assert.equal(user2Handle, instructionFolloweeHandle);
+    let unfollowTx = await program.rpc.followUser(
+      { unfollowUser: {} },
+      handleBytesArray1,
+      handleBytesArray2,
+      followArgs
+    );
+    let unFollowtxInfo = await confirmLogInTransaction(
+      unfollowTx,
+      "Audius::UnfollowUser"
+    );
+    const unFollowdecodedInstruction = program.coder.instruction.decode(
+      unFollowtxInfo.transaction.message.instructions[0].data,
+      "base58"
+    );
+    const unfollowInstructions = decodedInstruction.data;
+    const unfInstructionFollowerHandle = String.fromCharCode(
+      ...unfollowInstructions["followerHandleSeed"]
+    );
+    const unfInstructionFolloweeHandle = String.fromCharCode(
+      ...unfollowInstructions["followeeHandleSeed"]
+    );
+    assert.equal(user1Handle, unfInstructionFollowerHandle);
+    assert.equal(user2Handle, unfInstructionFolloweeHandle);
   });
 });
