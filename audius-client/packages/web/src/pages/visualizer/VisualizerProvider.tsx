@@ -105,9 +105,11 @@ const Visualizer = ({
       Visualizer1?.show(darkMode)
       recordOpen()
       setShowVisualizer(true)
-      setImmediate(() => {
+      // Fade in after a 50ms delay because setting showVisualizer() and fadeVisualizer() at the 
+      // same time leads to a race condition resulting in the animation not fading in sometimes
+      setTimeout(() => {
         setFadeVisualizer(true)
-      })
+      }, 50)
     } else {
       setFadeVisualizer(false)
     }
