@@ -1,11 +1,9 @@
 import logging
 from copy import deepcopy
 from datetime import datetime, timedelta
-from pprint import pprint
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from sqlalchemy.sql.expression import true
 from src.models import AggregateUser
 from src.tasks.index_aggregate_user import AGGREGATE_USER, _update_aggregate_table
 from src.utils.db_session import get_db
@@ -18,17 +16,23 @@ logger = logging.getLogger(__name__)
 
 basic_entities = {
     "blocks": [
-        {"blockhash": "0", "number": 2, "parenthash": -1, "is_current": true},
+        {"blockhash": "0", "number": 4, "parenthash": -1, "is_current": True},
     ],
-    "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 1}],
+    "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 2}],
     "users": [
-        {"user_id": 1, "handle": "user1", "blocknumber": 2},
-        {"user_id": 2, "handle": "user2", "blocknumber": 2},
+        {"user_id": 1, "handle": "user1", "is_current": True},
+        {"user_id": 2, "handle": "user2", "is_current": True},
     ],
     "tracks": [
-        {"track_id": 1, "owner_id": 1},
-        {"track_id": 2, "owner_id": 1},
-        {"track_id": 3, "is_unlisted": True, "owner_id": 1},
+        {"track_id": 1, "owner_id": 1, "is_current": True},
+        {"track_id": 2, "owner_id": 1, "is_current": True},
+        {
+            "track_id": 3,
+            "owner_id": 1,
+            "is_current": True,
+            "is_unlisted": True,
+        },
+        {"track_id": 4, "owner_id": 2, "is_current": True},
     ],
     "playlists": [
         {
@@ -97,7 +101,7 @@ def basic_tests(results):
     assert results[0].track_save_count == 0
 
     assert results[1].user_id == 2
-    assert results[1].track_count == 0
+    assert results[1].track_count == 1
     assert results[1].playlist_count == 0
     assert results[1].album_count == 0
     assert results[1].follower_count == 1
@@ -130,7 +134,7 @@ def test_index_aggregate_user_populate(app):
         ), "Test aggregate_user is empty before populate_mock_db()"
 
     # create db entries based on entities
-    populate_mock_db(db, basic_entities)
+    populate_mock_db(db, basic_entities, block_offset=3)
 
     with db.scoped_session() as session:
         # confirm nothing exists before _update_aggregate_table()
@@ -144,14 +148,12 @@ def test_index_aggregate_user_populate(app):
         # trigger celery task
         _update_aggregate_table(session)
 
-    with db.scoped_session() as session:
         # read from aggregate_user table
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
         # run basic tests against basic_entities
-        pprint(results)
         basic_tests(results)
 
 
@@ -242,6 +244,25 @@ def test_index_aggregate_user_empty_activity(app):
             {"user_id": 1, "handle": "user1"},
             {"user_id": 2, "handle": "user2"},
         ],
+        "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 5}],
+    }
+
+    # create user1 and user2 in blocknumbers 3 and 4, respectively
+    populate_mock_db(db, entities, block_offset=3)
+
+    with db.scoped_session() as session:
+        _update_aggregate_table(session)
+
+        results: List[AggregateUser] = (
+            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
+        )
+
+        assert (
+            len(results) == 0
+        ), "Test that users updated on blocks previous to '5' will not be targeted"
+
+    entities = {
+        "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 1}],
     }
 
     populate_mock_db(db, entities)
@@ -249,15 +270,13 @@ def test_index_aggregate_user_empty_activity(app):
     with db.scoped_session() as session:
         _update_aggregate_table(session)
 
-    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        # TODO: why does only user2 exist?
-        # assert len(results) == 0
-        pprint(results)
-        assert len(results) == 1  # TODO: remove this line required for lint
+        assert (
+            len(results) == 2
+        ), "Test that users updated on blocks after '1' will be targeted"
 
 
 def test_index_aggregate_user_empty_completely(app):
@@ -268,7 +287,7 @@ def test_index_aggregate_user_empty_completely(app):
 
     entities = {}
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, block_offset=3)
 
     with db.scoped_session() as session:
         _update_aggregate_table(session)
@@ -314,7 +333,7 @@ def test_index_aggregate_user_update(app):
         }
     )
 
-    populate_mock_db(db, entities)
+    populate_mock_db(db, entities, block_offset=3)
 
     with db.scoped_session() as session:
         results: List[AggregateUser] = (
@@ -505,7 +524,6 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
 
         _update_aggregate_table(session)
 
-    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
@@ -528,7 +546,6 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
 
         _update_aggregate_table(session)
 
-    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
@@ -563,7 +580,6 @@ def test_index_aggregate_user_same_checkpoint(app):
 
         _update_aggregate_table(session)
 
-    with db.scoped_session() as session:
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
