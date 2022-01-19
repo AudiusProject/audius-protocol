@@ -32,6 +32,8 @@ if (vapidKeys.publicKey && vapidKeys.privateKey && browserPushGCMAPIKey) {
  * If there is an error sending b/c of an invalid token/endpoint, delete the subscription
 */
 const sendBrowserNotification = async ({ userId, notificationParams }) => {
+  let numSentNotifs = 0
+
   try {
     if (!webPushIsConfigured) return
     const { message, title } = notificationParams
@@ -46,6 +48,7 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
       }
       try {
         await webpush.sendNotification(pushSubscription, JSON.stringify({ message, title: `${title} • Audius` }))
+        numSentNotifs++
       } catch (err) {
         if (err.statusCode === 410) {
           // If the send Notification response was not successful
@@ -57,6 +60,8 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
   } catch (err) {
     logger.error(`Error in sending Push API browser notifications`)
   }
+
+  return numSentNotifs
 }
 
 // Configure APN for browser push notifs to safari
@@ -91,6 +96,8 @@ if (apnConfig.token.keyId && apnConfig.token.teamId && fs.existsSync(apnConfig.t
  * If there is a BadTokenDevice error, remove the browser devicetoken
 */
 const sendSafariNotification = async ({ userId, notificationParams }) => {
+  let numSentNotifs = 0
+
   try {
     if (!apnProvider) return
     const note = new apn.Notification()
@@ -123,6 +130,8 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
               })
             }
           }
+        } else {
+          numSentNotifs++
         }
       } catch (err) {
         logger.error(`Error sending browser notification to APNs w/ device token: ${notificationDevice.deviceToken}`)
@@ -131,6 +140,8 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
   } catch (err) {
     logger.error(`Error in sending safari push notifications`)
   }
+
+  return numSentNotifs
 }
 
 module.exports.sendBrowserNotification = sendBrowserNotification
