@@ -19,17 +19,18 @@ const AsyncProcessingQueue = require('./AsyncProcessingQueue')
  * services for use throughout CreatorNode.
  *
  * Services:
+ *  - `nodeConfig`: exposes config object
  *  - `redis`: Redis Client
  *  - `ipfs`: IPFS Client
  *  - `ipfsLatest`: IPFS Client, latest version
  *  - `blackListManager`: responsible for handling blacklisted content
- *  - `libs`: an instance of Audius Libs
  *  - `monitoringQueue`: recurring job to monitor node state & performance metrics
  *  - `sessionExpirationQueue`: recurring job to clear expired session tokens from Redis and DB
- *  - `nodeConfig`: exposes config object
+ *  - `asyncProcessingQueue`: queue that processes jobs and adds job responses into redis
+ *
+ *  - `libs`: an instance of Audius Libs
  *  - `snapbackSM`: SnapbackStateMachine is responsible for recurring sync and reconfig operations
  *  - `URSMRegistrationManager`: registers node on L2 URSM contract, no-ops afterward
- *  - `asyncProcessingQueue`: queue that processes jobs and adds job responses into redis
  *
  * `initServices` must be called prior to consuming services from the registry.
  */
