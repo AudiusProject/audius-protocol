@@ -1,10 +1,10 @@
 const axios = require('axios')
+const { sampleSize } = require('lodash')
+
 const { Base, Services } = require('./base')
 const BN = require('bn.js')
 const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
-const { shuffle } = require('lodash')
 const { WAUDIO_DECMIALS } = require('../constants')
-const { sampleSize } = require('lodash')
 const { decodeHashId } = require('../utils/utils')
 
 const GetAttestationError = Object.freeze({
@@ -54,6 +54,11 @@ const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECMIALS
  */
 
 class Rewards extends Base {
+  constructor (ServiceProvider, ...args) {
+    super(...args)
+    this.ServiceProvider = ServiceProvider
+  }
+
   /**
    *
    * Top level method to aggregate attestations, submit them to RewardsManager, and evalute the result.
@@ -170,7 +175,8 @@ class Rewards extends Base {
         specifier,
         recipientEthAddress,
         oracleEthAddress,
-        tokenAmount: fullTokenAmount
+        tokenAmount: fullTokenAmount,
+        logger
       })
 
       if (evaluateErrorCode || evaluateError) {
@@ -223,10 +229,13 @@ class Rewards extends Base {
   async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null, logger = console }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
-    // If no endpoints array provided, select here
-    if (!endpoints) {
-      endpoints = await this.discoveryProvider.serviceSelector.findAll()
+    if (endpoints) {
+      endpoints = sampleSize(endpoints, quorumSize)
+    } else {
+      // If no endpoints array provided, select here
+      endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(quorumSize)
     }
+
     if (endpoints.length < quorumSize) {
       logger.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)
 
@@ -236,8 +245,6 @@ class Rewards extends Base {
         error: AggregateAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT
       }
     }
-
-    endpoints = sampleSize(endpoints, quorumSize)
 
     try {
       const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e, logger }))
@@ -460,12 +467,13 @@ class Rewards extends Base {
     endpoints,
     numAttestations = 3
   }) {
-    if (!endpoints) {
-      endpoints = await this.discoveryProvider.serviceSelector.findAll()
+    let attestEndpoints
+    if (endpoints) {
+      attestEndpoints = sampleSize(endpoints, numAttestations)
+    } else {
+      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(numAttestations)
     }
-    const attestEndpoints = shuffle(
-      endpoints
-    ).filter(s => s !== senderEndpoint).slice(0, numAttestations)
+
     if (attestEndpoints.length < numAttestations) {
       throw new Error(`Not enough other nodes found, need ${numAttestations}, found ${attestEndpoints.length}`)
     }

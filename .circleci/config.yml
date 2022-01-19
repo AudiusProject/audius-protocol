@@ -650,13 +650,6 @@ jobs:
             # 3. 'latest', which is the default
             echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
-          name: Check whether new tag should be built and pushed for << parameters.repo >>
-          command: |
-              if [[ !`git diff --exit-code << parameters.repo >>` ]]; then
-                echo "No changes detected in << parameters.repo >>; exiting docker-build-and-push job early"
-                circleci-agent step halt
-              fi
-      - run:
           name: Docker login
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
@@ -680,57 +673,43 @@ workflows:
       - docker-build-and-push:
           name: build-libs
           repo: libs
-          requires:
-            - test-libs
 
       - test-contracts:
           name: test-contracts
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
-          requires:
-            - test-contracts
 
       - test-eth-contracts:
           name: test-eth-contracts
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
-          requires:
-            - test-eth-contracts
 
       - test-creator-node:
           name: test-creator-node
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
-          requires:
-            - test-creator-node
 
       - test-discovery-provider:
           name: test-discovery-provider
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
-          requires:
-            - test-discovery-provider
 
       - test-identity-service:
           name: test-identity-service
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
-          requires:
-            - test-identity-service
 
       - test-solana-programs:
           name: test-solana-programs
       - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs
-          requires:
-            - test-solana-programs
-            
+
       - test-mad-dog-e2e:
           mad-dog-type: test
       - hold-test-mad-dog-e2e-full:

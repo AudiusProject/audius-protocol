@@ -88,20 +88,23 @@ def populate_mock_db(db, entities, block_offset=0):
             max_block = (
                 session.query(models.Block).filter(models.Block.number == i).first()
             )
+            session.query(models.Block).filter(models.Block.is_current == True).update(
+                {"is_current": False}
+            )
             if not max_block:
                 block = models.Block(
                     blockhash=hex(i),
                     number=i,
                     parenthash="0x01",
-                    is_current=(i == 0),
+                    is_current=(i == block_offset + num_blocks - 1),
                 )
                 session.add(block)
                 session.flush()
 
         for i, track_meta in enumerate(tracks):
             track = models.Track(
-                blockhash=hex(i),
-                blocknumber=i,
+                blockhash=hex(i + block_offset),
+                blocknumber=i + block_offset,
                 track_id=track_meta.get("track_id", i),
                 title=track_meta.get("title", f"track_{i}"),
                 is_current=track_meta.get("is_current", True),
@@ -119,8 +122,8 @@ def populate_mock_db(db, entities, block_offset=0):
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
             playlist = models.Playlist(
-                blockhash=hex(i),
-                blocknumber=i,
+                blockhash=hex(i + block_offset),
+                blocknumber=i + block_offset,
                 playlist_id=playlist_meta.get("playlist_id", i),
                 is_current=playlist_meta.get("is_current", True),
                 is_delete=playlist_meta.get("is_delete", False),
@@ -146,8 +149,8 @@ def populate_mock_db(db, entities, block_offset=0):
 
         for i, user_meta in enumerate(users):
             user = models.User(
-                blockhash=hex(i),
-                blocknumber=i,
+                blockhash=hex(i + block_offset),
+                blocknumber=i + block_offset,
                 user_id=user_meta.get("user_id", i),
                 is_current=True,
                 handle=user_meta.get("handle", str(i)),
@@ -165,8 +168,8 @@ def populate_mock_db(db, entities, block_offset=0):
 
         for i, follow_meta in enumerate(follows):
             follow = models.Follow(
-                blockhash=hex(i),
-                blocknumber=follow_meta.get("blocknumber", i),
+                blockhash=hex(i + block_offset),
+                blocknumber=follow_meta.get("blocknumber", i + block_offset),
                 follower_user_id=follow_meta.get("follower_user_id", i + 1),
                 followee_user_id=follow_meta.get("followee_user_id", i),
                 is_current=follow_meta.get("is_current", True),
@@ -176,8 +179,8 @@ def populate_mock_db(db, entities, block_offset=0):
             session.add(follow)
         for i, repost_meta in enumerate(reposts):
             repost = models.Repost(
-                blockhash=hex(i),
-                blocknumber=repost_meta.get("blocknumber", i),
+                blockhash=hex(i + block_offset),
+                blocknumber=repost_meta.get("blocknumber", i + block_offset),
                 user_id=repost_meta.get("user_id", i + 1),
                 repost_item_id=repost_meta.get("repost_item_id", i),
                 repost_type=repost_meta.get("repost_type", "track"),
@@ -188,8 +191,8 @@ def populate_mock_db(db, entities, block_offset=0):
             session.add(repost)
         for i, save_meta in enumerate(saves):
             save = models.Save(
-                blockhash=hex(i),
-                blocknumber=save_meta.get("blocknumber", i),
+                blockhash=hex(i + block_offset),
+                blocknumber=save_meta.get("blocknumber", i + block_offset),
                 user_id=save_meta.get("user_id", i + 1),
                 save_item_id=save_meta.get("save_item_id", i),
                 save_type=save_meta.get("save_type", "track"),
@@ -267,8 +270,8 @@ def populate_mock_db(db, entities, block_offset=0):
             route = models.TrackRoute(
                 slug=route_meta.get("slug", ""),
                 title_slug=route_meta.get("title_slug", ""),
-                blockhash=hex(i),
-                blocknumber=route_meta.get("blocknumber", i),
+                blockhash=hex(i + block_offset),
+                blocknumber=route_meta.get("blocknumber", i + block_offset),
                 owner_id=route_meta.get("owner_id", i + 1),
                 track_id=route_meta.get("track_id", i + 1),
                 is_current=route_meta.get("is_current", True),
@@ -307,7 +310,7 @@ def populate_mock_db(db, entities, block_offset=0):
                 specifier=user_challenge_meta.get("specifier", ""),
                 is_complete=user_challenge_meta.get("is_complete", False),
                 completed_blocknumber=user_challenge_meta.get(
-                    "completed_blocknumber", 1
+                    "completed_blocknumber", 1 + block_offset
                 ),
                 current_step_count=user_challenge_meta.get("current_step_count", None),
             )

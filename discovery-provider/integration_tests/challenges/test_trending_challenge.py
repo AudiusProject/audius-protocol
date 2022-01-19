@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 import redis
 from integration_tests.utils import populate_mock_db
@@ -22,6 +22,7 @@ from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_NUMBER = 10
 logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
@@ -253,7 +254,7 @@ def test_trending_challenge_job(app):
         + [{"item_id": 15} for _ in range(200)],
     }
 
-    populate_mock_db(db, test_entities)
+    populate_mock_db(db, test_entities, BLOCK_NUMBER + 1)
     bus = ChallengeEventBus(redis_conn)
 
     # Register events with the bus
@@ -268,7 +269,7 @@ def test_trending_challenge_job(app):
         ChallengeEvent.trending_playlist, trending_playlist_challenge_manager
     )
 
-    trending_date = date.fromisoformat("2021-08-20")
+    trending_date = datetime.fromisoformat("2021-08-20")
 
     with db.scoped_session() as session:
         _update_aggregate_plays(session)
@@ -293,11 +294,11 @@ def test_trending_challenge_job(app):
     with db.scoped_session() as session:
         session.query(Challenge).filter(
             or_(
-                Challenge.id == "trending-playlist",
-                Challenge.id == "trending-track",
-                Challenge.id == "trending-underground-track",
+                Challenge.id == "tp",
+                Challenge.id == "tt",
+                Challenge.id == "tut",
             )
-        ).update({"active": True})
+        ).update({"active": True, "starting_block": BLOCK_NUMBER})
         bus.process_events(session)
         session.flush()
         trending_tracks = (
@@ -309,7 +310,7 @@ def test_trending_challenge_job(app):
 
         user_trending_tracks_challenges = (
             session.query(UserChallenge)
-            .filter(UserChallenge.challenge_id == "trending-track")
+            .filter(UserChallenge.challenge_id == "tt")
             .all()
         )
         assert len(user_trending_tracks_challenges) == 5

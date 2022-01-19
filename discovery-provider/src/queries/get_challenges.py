@@ -18,6 +18,7 @@ class ChallengeResponse(TypedDict):
     current_step_count: Optional[int]
     max_steps: Optional[int]
     challenge_type: str
+    amount: str
     metadata: Dict
 
 
@@ -47,6 +48,7 @@ def rollup_aggregates(
         "challenge_type": parent_challenge.type,
         "is_active": parent_challenge.active,
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
+        "amount": parent_challenge.amount,
         "metadata": {},
     }
     return response_dict
@@ -68,6 +70,7 @@ def to_challenge_response(
         "challenge_type": challenge.type,
         "is_active": challenge.active,
         "is_disbursed": disbursement is not None,
+        "amount": challenge.amount,
         "metadata": metadata,
     }
 
@@ -87,6 +90,7 @@ def create_empty_user_challenges(
             "challenge_type": challenge.type,
             "is_active": challenge.active,
             "is_disbursed": False,
+            "amount": challenge.amount,
             "metadata": metadatas[i],
         }
         user_challenges.append(user_challenge)

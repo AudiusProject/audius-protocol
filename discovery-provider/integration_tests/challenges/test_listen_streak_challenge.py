@@ -10,6 +10,7 @@ from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_NUMBER = 10
 
 
 def create_play(offset: int) -> Play:
@@ -31,17 +32,17 @@ def dispatch_play(offset: int, session: Session, bus: ChallengeEventBus):
     session.flush()
     bus.dispatch(
         ChallengeEvent.track_listen,
-        1,
+        BLOCK_NUMBER,
         1,
         {"created_at": play.created_at.timestamp()},
     )
 
 
 def setup_challenges(session):
-    block = Block(blockhash="0x1", number=1)
+    block = Block(blockhash="0x1", number=BLOCK_NUMBER)
     user = User(
         blockhash="0x1",
-        blocknumber=1,
+        blocknumber=BLOCK_NUMBER,
         txhash="xyz",
         user_id=1,
         is_current=True,
@@ -59,7 +60,7 @@ def setup_challenges(session):
     session.add(user)
     session.flush()
     session.query(Challenge).filter(Challenge.id == "listen-streak").update(
-        {"active": True}
+        {"active": True, "starting_block": BLOCK_NUMBER}
     )
 
 
@@ -185,7 +186,7 @@ def test_anon_listen(app):
         with bus.use_scoped_dispatch_queue():
             bus.dispatch(
                 ChallengeEvent.track_listen,
-                0,
+                BLOCK_NUMBER,
                 None,
                 {"created_at": datetime.now()},
             )

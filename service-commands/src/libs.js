@@ -123,7 +123,6 @@ function LibsWrapper (walletIndex = 0) {
       creatorNodeConfig,
       isServer: true,
       enableUserReplicaSetManagerContract: true,
-      useTrackContentPolling: true,
       preferHigherPatchForPrimary: true,
       preferHigherPatchForSecondaries: true
     })

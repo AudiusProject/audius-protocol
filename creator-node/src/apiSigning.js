@@ -80,6 +80,9 @@ const signatureHasExpired = (signatureTimestamp) => {
   return signatureAge >= MAX_SIGNATURE_AGE_MS
 }
 
+/**
+ * Recursively sorts keys of object or object array
+ */
 const sortKeys = (x) => {
   if (typeof x !== 'object' || !x) {
     return x

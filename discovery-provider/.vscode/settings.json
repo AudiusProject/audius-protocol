@@ -1,8 +1,11 @@
 {
   "editor.formatOnSave": true,
+  "python.analysis.typeCheckingMode": "off",
   "python.formatting.provider": "black",
+  "python.languageServer": "Pylance",
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
+  "python.linting.lintOnSave": true,
   "python.linting.mypyEnabled": true,
   "python.testing.nosetestsEnabled": false,
   "python.testing.pytestArgs": [
@@ -12,11 +15,12 @@
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
   "python.sortImports.args": [
-      "--profile", "black"
+    "--profile",
+    "black"
   ],
   "[python]": {
-      "editor.codeActionsOnSave": {
-          "source.organizeImports": true
-      }
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
   }
 }

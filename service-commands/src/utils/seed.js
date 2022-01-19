@@ -67,7 +67,6 @@ const getLibsConfig = overrideConfig => {
     }),
     isServer: true,
     enableUserReplicaSetManagerContract: true,
-    useTrackContentPolling: true
   }
   return _.merge(audiusLibsConfig, overrideConfig)
 }

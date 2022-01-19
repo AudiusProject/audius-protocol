@@ -51,6 +51,21 @@ const getMode = () => {
   return arg
 }
 
+/**
+ * Setting a different port is necessary for OpenResty to work. If OpenResty
+ * is enabled, have the app run on port 3000. Else, run on its configured port.
+ * @returns the port number to configure the Content Node app
+ */
+const getPort = () => {
+  const openRestyCacheCIDEnabled = config.get('openRestyCacheCIDEnabled')
+
+  if (openRestyCacheCIDEnabled) {
+    return 3000
+  }
+
+  return config.get('port')
+}
+
 const startApp = async () => {
   logger.info('Configuring service...')
 
@@ -95,7 +110,7 @@ const startApp = async () => {
     await serviceRegistry.initServices()
     logger.info(`Initialized services (Node running in ${nodeMode})`)
 
-    appInfo = initializeApp(config.get('port'), serviceRegistry)
+    appInfo = initializeApp(getPort(), serviceRegistry)
     logger.info('Initialized app and server')
 
     await pinCID(serviceRegistry.ipfsLatest)

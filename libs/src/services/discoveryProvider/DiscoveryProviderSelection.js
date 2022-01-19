@@ -25,10 +25,10 @@ class DiscoveryProviderSelection extends ServiceSelection {
        * Gets the "current" expected service version as well as
        * the list of registered providers from chain
        */
-      getServices: async () => {
+      getServices: async ({ verbose = false } = {}) => {
         this.currentVersion = await ethContracts.getCurrentVersion(DISCOVERY_SERVICE_NAME)
         const services = await this.ethContracts.getServiceProviderList(DISCOVERY_SERVICE_NAME)
-        return services.map(e => e.endpoint)
+        return verbose ? services : services.map(e => e.endpoint)
       },
       ...config
     })
