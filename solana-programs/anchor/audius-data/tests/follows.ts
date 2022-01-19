@@ -31,7 +31,7 @@ describe("follows", () => {
   let adminKeypair = anchor.web3.Keypair.generate();
   let adminStgKeypair = anchor.web3.Keypair.generate();
 
-  it("Initializing admin account!", async () => {
+  it("follows - Initializing admin account!", async () => {
     await initAdmin({
       provider: provider,
       program: program,
@@ -54,7 +54,7 @@ describe("follows", () => {
     }
   });
 
-  describe("follow / unfollow", () => {
+  describe("follow / unfollow tests", () => {
     let constants1;
     let constants2;
     let handleBytesArray1;
@@ -150,8 +150,8 @@ describe("follows", () => {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
-          followerUserStg: userStorageAccount1,
-          followeeUserStg: newUserAcct2PDA,
+          followerUserStorage: userStorageAccount1,
+          followeeUserStorage: newUserAcct2PDA,
         },
         signers: [newUser1Key],
       };
@@ -218,8 +218,8 @@ describe("follows", () => {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
-          followerUserStg: userStorageAccount1,
-          followeeUserStg: newUserAcct2PDA,
+          followerUserStorage: userStorageAccount1,
+          followeeUserStorage: newUserAcct2PDA,
         },
         signers: [newUser1Key],
       };

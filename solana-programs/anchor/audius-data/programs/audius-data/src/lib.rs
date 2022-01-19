@@ -246,11 +246,11 @@ pub mod audius_data {
             ctx.program_id,
         );
         // Confirm the follower PDA matches the expected value provided the target handle
-        if derived_follower_pda != ctx.accounts.follower_user_stg.key() {
+        if derived_follower_pda != ctx.accounts.follower_user_storage.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
         // Confirm the authority for this follower has signed the transaction
-        if ctx.accounts.follower_user_stg.authority != ctx.accounts.authority.key() {
+        if ctx.accounts.follower_user_storage.authority != ctx.accounts.authority.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -261,7 +261,7 @@ pub mod audius_data {
         );
 
         // Confirm the follower PDA matches the expected value provided the target handle
-        if derived_followee_pda != ctx.accounts.followee_user_stg.key() {
+        if derived_followee_pda != ctx.accounts.followee_user_storage.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
         Ok(())
@@ -397,9 +397,9 @@ pub struct FollowUser<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
-    pub follower_user_stg: Account<'info, User>,
+    pub follower_user_storage: Account<'info, User>,
     #[account(mut)]
-    pub followee_user_stg: Account<'info, User>,
+    pub followee_user_storage: Account<'info, User>,
     #[account(mut)]
     pub payer: Signer<'info>,
     // User update authority field
