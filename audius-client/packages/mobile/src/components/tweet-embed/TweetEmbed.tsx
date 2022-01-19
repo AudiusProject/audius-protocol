@@ -74,7 +74,11 @@ const TweetEmbed = ({ options, tweetId }: Props) => {
           onShouldStartLoadWithRequest={request => {
             // Open subsequent links in browser
             if (!isLoading) {
-              Linking.openURL(request.url)
+              Linking.canOpenURL(request.url).then(supported => {
+                if (supported) {
+                  Linking.openURL(request.url)
+                }
+              })
             }
             return isLoading
           }}
