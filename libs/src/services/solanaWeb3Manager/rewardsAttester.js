@@ -463,8 +463,8 @@ class RewardsAttester {
     }
   }
 
-  _disbursementToKey ({ challengeId, userId }) {
-    return `${challengeId}_${userId}`
+  _disbursementToKey ({ challengeId, userId, specifier }) {
+    return `${challengeId}_${userId}_${specifier}`
   }
 
   async _backoff (retryCount) {
