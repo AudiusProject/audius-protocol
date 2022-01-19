@@ -44,6 +44,7 @@ class TransactionHandler {
    *  Will be a string if `errorMapping` is passed to the handler.
    * @property {string|number} [error_code=null] the optional error code.
    * @property {string} [recentBlockhash=null] optional recent blockhash to prefer over fetching
+   * @property {boolean} [skipPreflight=null] optional per transaction override to skipPreflight
    * @property {any} [logger=console] optional logger
    *
    * @param {Array<TransactionInstruction>} instructions an array of `TransactionInstructions`
@@ -51,12 +52,12 @@ class TransactionHandler {
    * @returns {Promise<HandleTransactionReturn>}
    * @memberof TransactionHandler
    */
-  async handleTransaction (instructions, errorMapping = null, recentBlockhash = null, logger = console) {
+  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null }) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, recentBlockhash)
+      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight)
     } else {
-      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger)
+      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight)
     }
     if (result.error && result.errorCode !== null && errorMapping) {
       result.errorCode = errorMapping.fromErrorCode(result.errorCode)
@@ -64,13 +65,14 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction (instructions, recentBlockhash) {
+  async _relayTransaction (instructions, recentBlockhash, skipPreflight) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
     recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash()).blockhash
 
     const transactionData = {
       recentBlockhash,
-      instructions: relayable
+      instructions: relayable,
+      skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight
     }
 
     try {
@@ -83,7 +85,7 @@ class TransactionHandler {
     }
   }
 
-  async _locallyConfirmTransaction (instructions, recentBlockhash, logger) {
+  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight) {
     if (!this.feePayerKeypair) {
       console.error('Local feepayer keys missing for direct confirmation!')
       return {
@@ -106,7 +108,7 @@ class TransactionHandler {
         tx,
         [this.feePayerKeypair],
         {
-          skipPreflight: this.skipPreflight,
+          skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
           commitment: 'processed',
           preflightCommitment: 'processed'
         }

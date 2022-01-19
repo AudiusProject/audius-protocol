@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+if [ "$audius_db_run_migrations" != false ]; then
+    echo "Running alembic migrations"
+    export PYTHONPATH='.'
+    alembic upgrade head
+    echo "Finished running migrations"
+fi
+
 # Audius Discovery Provider / Flask
 # Exports environment variables necessary for Flask app
 

@@ -25,7 +25,7 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
   const libs = req.app.get('audiusLibs')
 
-  let { instructions = [] } = req.body
+  let { instructions = [], skipPreflight } = req.body
 
   const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
 
@@ -43,7 +43,7 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   })
 
   const transactionHandler = libs.solanaWeb3Manager.transactionHandler
-  const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction(instructions)
+  const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({ instructions, skipPreflight })
 
   if (error) {
     // if the tx fails, store it in redis with a 24 hour expiration
