@@ -165,6 +165,7 @@ def test_index_aggregate_user_empty_users(app):
 
     entities = {
         "users": [],
+        "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 0}],
         "tracks": [
             {"track_id": 1, "owner_id": 1},
             {"track_id": 2, "owner_id": 1},
@@ -230,7 +231,7 @@ def test_index_aggregate_user_empty_users(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        assert len(results) == 0
+        assert len(results) == 0, "Test that without Users there will be no AggregateUsers"
 
 
 def test_index_aggregate_user_empty_activity(app):
@@ -296,7 +297,7 @@ def test_index_aggregate_user_empty_completely(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        assert len(results) == 0
+        assert len(results) == 0, "Test that empty entities won't generate AggregateUsers"
 
 
 def test_index_aggregate_user_update(app):
@@ -402,7 +403,7 @@ def test_index_aggregate_user_update_with_extra_user(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        assert len(results) == 0
+        assert len(results) == 0, "Test that we start with clean tables"
 
     populate_mock_db(db, entities)
 
@@ -410,7 +411,7 @@ def test_index_aggregate_user_update_with_extra_user(app):
         results: List[AggregateUser] = (
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
-        assert len(results) == 3
+        assert len(results) == 3, "Test that aggregate_user entities are populated"
 
         _update_aggregate_table(session)
 
