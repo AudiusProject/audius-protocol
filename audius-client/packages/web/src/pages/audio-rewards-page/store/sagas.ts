@@ -2,6 +2,7 @@ import { User } from '@sentry/browser'
 import {
   call,
   put,
+  race,
   select,
   take,
   takeEvery,
@@ -22,6 +23,7 @@ import {
   getUserChallenge
 } from 'common/store/pages/audio-rewards/selectors'
 import {
+  resetAndCancelClaimReward,
   claimChallengeReward,
   claimChallengeRewardFailed,
   claimChallengeRewardSucceeded,
@@ -220,7 +222,16 @@ function* watchSetCognitoFlowStatus() {
 }
 
 function* watchClaimChallengeReward() {
-  yield takeLatest(claimChallengeReward.type, claimChallengeRewardAsync)
+  yield takeLatest(claimChallengeReward.type, function* (
+    args: ReturnType<typeof claimChallengeReward>
+  ) {
+    // Race the claim against the user clicking "close" on the modal,
+    // so that the claim saga gets canceled if the modal is closed
+    yield race({
+      task: call(claimChallengeRewardAsync, args),
+      cancel: take(resetAndCancelClaimReward.type)
+    })
+  })
 }
 
 export function* watchFetchUserChallenges() {

@@ -107,13 +107,6 @@ const slice = createSlice({
       const { modalType } = action.payload
       state.challengeRewardsModalType = modalType
     },
-    setClaimStatus: (state, action: PayloadAction<{ status: ClaimStatus }>) => {
-      const { status } = action.payload
-      state.claimStatus = status
-    },
-    resetClaimStatus: state => {
-      state.claimStatus = ClaimStatus.NONE
-    },
     setHCaptchaStatus: (
       state,
       action: PayloadAction<{ status: HCaptchaStatus }>
@@ -128,6 +121,9 @@ const slice = createSlice({
       state,
       action: PayloadAction<{ token: string }>
     ) => {},
+    resetAndCancelClaimReward: state => {
+      state.claimStatus = ClaimStatus.NONE
+    },
     claimChallengeReward: (
       state,
       _action: PayloadAction<{
@@ -176,9 +172,8 @@ export const {
   fetchUserChallengesFailed,
   setTrendingRewardsModalType,
   setChallengeRewardsModalType,
-  setClaimStatus,
   setUserChallengeDisbursed,
-  resetClaimStatus,
+  resetAndCancelClaimReward,
   setHCaptchaStatus,
   resetHCaptchaStatus,
   updateHCaptchaScore,
