@@ -2,6 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
+const readFile = promisify(fs.readFile)
 
 const config = require('../config.js')
 const models = require('../models')
@@ -28,20 +29,19 @@ const {
   ensureStorageMiddleware,
   ensureValidSPMiddleware
 } = require('../middlewares')
-
-const { getCID, streamFromFileSystem } = require('./files')
 const { decode } = require('../hashids.js')
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const { getCID, streamFromFileSystem } = require('./files')
+const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const {
   handleTrackHandOff
 } = require('../components/tracks/tracksComponentService')
+
+const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
-const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const BlacklistManager = require('../blacklistManager')
+const TranscodingQueue = require('../TranscodingQueue')
 
 const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
-
-const readFile = promisify(fs.readFile)
 
 module.exports = function (app) {
   /**
