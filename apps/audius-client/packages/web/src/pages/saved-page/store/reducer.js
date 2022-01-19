@@ -1,3 +1,4 @@
+import { asLineup } from 'common/store/lineup/reducer'
 import {
   FETCH_SAVES_SUCCEEDED,
   FETCH_SAVES_FAILED,
@@ -5,7 +6,6 @@ import {
   REMOVE_LOCAL_SAVE
 } from 'pages/saved-page/store/actions'
 import tracksReducer from 'pages/saved-page/store/lineups/tracks/reducer'
-import { asLineup } from 'store/lineup/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 

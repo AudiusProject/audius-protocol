@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 
-import { asLineup } from 'store/lineup/reducer'
+import { asLineup } from 'common/store/lineup/reducer'
 
 import { PREFIX as moreByPrefix } from './lineups/more-by/actions'
 import moreByTracksReducer from './lineups/more-by/reducer'

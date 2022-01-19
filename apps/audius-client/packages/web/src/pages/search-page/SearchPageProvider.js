@@ -7,13 +7,13 @@ import { withRouter } from 'react-router-dom'
 
 import { Name } from 'common/models/Analytics'
 import { getUserId } from 'common/store/account/selectors'
+import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import {
   makeGetSearchArtists,
   makeGetSearchPlaylists,
   makeGetSearchAlbums
 } from 'pages/search-page/store/selectors'
 import { make } from 'store/analytics/actions'
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import {

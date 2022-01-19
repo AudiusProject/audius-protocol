@@ -1,6 +1,5 @@
+import * as socialUserActions from 'common/store/social/users/actions'
 import createErrorSagas from 'common/utils/errorSagas'
-
-import * as socialUserActions from '../../../common/store/social/users/actions'
 
 type UserErrors =
   | ReturnType<typeof socialUserActions.followUserFailed>

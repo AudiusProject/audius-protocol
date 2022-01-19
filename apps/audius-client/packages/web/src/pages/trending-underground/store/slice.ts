@@ -1,6 +1,6 @@
 import { combineReducers, createSlice } from '@reduxjs/toolkit'
 
-import { asLineup } from 'store/lineup/reducer'
+import { asLineup } from 'common/store/lineup/reducer'
 
 import { PREFIX } from './lineups/tracks/actions'
 import trendingReducer from './lineups/tracks/reducer'

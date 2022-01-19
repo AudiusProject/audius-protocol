@@ -4,21 +4,22 @@ import { LineupState } from 'common/models/Lineup'
 import { getTracksByUid } from 'common/store/cache/tracks/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { removeNullable } from 'common/utils/typeUtils'
-import { AppState } from 'store/types'
 
 // Some lineups can have additional properties (T)
 // e.g. collections have dateAdded in entries
-type LineupSelector<T> = (state: AppState) => LineupState<T>
+type LineupSelector<T, State> = (state: State) => LineupState<T>
 
-export const getLineupHasTracks = <T>(
-  selector: LineupSelector<T>,
-  state: AppState
+export const getLineupHasTracks = <T, State>(
+  selector: LineupSelector<T, State>,
+  state: State
 ) => {
   const lineup = selector(state)
   return lineup && lineup.entries.length > 0
 }
 
-export const makeGetTableMetadatas = <T>(lineupSelector: LineupSelector<T>) => {
+export const makeGetTableMetadatas = <T, State>(
+  lineupSelector: LineupSelector<T, State>
+) => {
   return createSelector(
     lineupSelector,
     getTracksByUid,
@@ -60,15 +61,17 @@ export const makeGetTableMetadatas = <T>(lineupSelector: LineupSelector<T>) => {
   )
 }
 
-export const makeGetLineupMetadatas = <T>(
-  lineupSelector: LineupSelector<T>
+export const makeGetLineupMetadatas = <T, State>(
+  lineupSelector: LineupSelector<T, State>
 ) => {
   return createSelector([lineupSelector], lineup => {
     return lineup
   })
 }
 
-export const makeGetLineupOrder = <T>(lineupSelector: LineupSelector<T>) =>
+export const makeGetLineupOrder = <T, State>(
+  lineupSelector: LineupSelector<T, State>
+) =>
   createSelector([lineupSelector], lineup => {
     return lineup.order
   })
