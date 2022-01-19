@@ -36,7 +36,7 @@ class Utils {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
-  static getRandomInt (max) {
+  static getRandomInt(max) {
     return Math.floor(Math.random() * max)
   }
 }

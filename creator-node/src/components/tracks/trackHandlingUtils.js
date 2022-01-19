@@ -75,7 +75,7 @@ async function processTranscodeAndSegments(
     `Successfully retrieved segment duration for file=${fileName}`
   )
 
-  let trackSegments = createSegmentToDurationMap({
+  const trackSegments = createSegmentToDurationMap({
     segmentFileIPFSResps,
     segmentDurations,
     logContext,
@@ -83,7 +83,7 @@ async function processTranscodeAndSegments(
   })
 
   codeBlockTimeStart = getStartTime()
-  let transcodeFileUUID = await addFilesToDb({
+  const transcodeFileUUID = await addFilesToDb({
     transcodeFileIPFSResp,
     fileName,
     fileDir,

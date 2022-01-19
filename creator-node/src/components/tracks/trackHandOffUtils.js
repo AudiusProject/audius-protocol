@@ -202,7 +202,7 @@ async function createFormData(pathToFile) {
     throw new Error(`File does not exist at path=${pathToFile}`)
   }
 
-  let formData = new FormData()
+  const formData = new FormData()
   formData.append('file', fs.createReadStream(pathToFile))
 
   return formData

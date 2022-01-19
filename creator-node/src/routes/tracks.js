@@ -65,7 +65,8 @@ module.exports = function (app) {
         return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
       }
 
-      const isTranscodeQueueAvailable = false // await TranscodingQueue.isAvailable()
+      const isTranscodeQueueAvailable = await TranscodingQueue.isAvailable()
+
       if (isTranscodeQueueAvailable) {
         await AsyncProcessingQueue.addTrackContentUploadTask({
           logContext: req.logContext,
@@ -151,10 +152,10 @@ module.exports = function (app) {
         )
       }
 
-      let pathToFile
-      let basePath = getTmpTrackUploadArtifactsWithCIDInPath(
+      const basePath = getTmpTrackUploadArtifactsWithCIDInPath(
         req.query.uuidInPath
       )
+      let pathToFile
       if (fileType === 'transcode') {
         pathToFile = path.join(basePath, fileName)
       } else if (fileType === 'segment') {

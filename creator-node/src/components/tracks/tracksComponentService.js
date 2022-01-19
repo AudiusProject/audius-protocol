@@ -28,7 +28,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const routeTimeStart = getStartTime()
 
   // Create track transcode and segments, and save all to disk
-  let codeBlockTimeStart = getStartTime()
+  const codeBlockTimeStart = getStartTime()
   const { transcodeFilePath, segmentFileNames } =
     await TrackHandlingUtils.transcodeAndSegment(
       { logContext },
@@ -80,7 +80,7 @@ async function handleTrackHandOff({ logContext }, requestProps) {
   const { cnodeUserUUID } = session
   const logger = genericLogger.child(logContext)
 
-  let codeBlockTimeStart = getStartTime()
+  const codeBlockTimeStart = getStartTime()
 
   const { transcodeFilePath, segmentFileNames, sp } =
     await TrackHandOffUtils.handOffTrack(libs, requestProps)
