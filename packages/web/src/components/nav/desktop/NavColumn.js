@@ -182,11 +182,14 @@ const NavColumn = ({
     if (route) goToRoute(route)
   }, [goToRoute, getTrackPageLink])
 
-  const onShowVisualizer = useCallback(() => {
-    if (NO_VISUALIZER_ROUTES.has(pathname)) return
-
-    showVisualizer()
-  }, [showVisualizer, pathname])
+  const onShowVisualizer = useCallback(
+    e => {
+      if (NO_VISUALIZER_ROUTES.has(pathname)) return
+      showVisualizer()
+      e.stopPropagation()
+    },
+    [showVisualizer, pathname]
+  )
 
   const onClickUpload = useCallback(() => {
     if (!upload.uploading) resetUploadState()
