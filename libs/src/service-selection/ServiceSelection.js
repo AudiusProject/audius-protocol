@@ -34,8 +34,8 @@ class ServiceSelection {
    * @param config
    * @param {Set<string>} config.blacklist services from this list should not be picked
    * @param {Set<string>} config.whitelist only services from this list are allowed to be picked
-   * @param {() => Promise<String[]>} conffig.getServices an (async) method to get a list of services
-   * to choose from
+   * @param {{verbose}?: {verbose: boolean}) => Promise<String[]> | Promise<Object[]>} config.getServices an (async) method to get a
+   * list of services to choose from. Optionally may return a verbose object with service metadata
    * @param {number} config.maxConcurrentRequests the maximum number of requests allowed to fire at
    * once. Tweaking this value may impact browser performance
    * @param {number} config.requestTimeout the timeout at which to give up on a service
@@ -159,19 +159,25 @@ class ServiceSelection {
    * Finds all selectable services (respecting whitelist, health checks & timeouts).
    * Note: this method is potentially slow.
    * If you need just a single service, prefer calling `.select()`
+   * @param {boolean} verbose whether or not to return full services metadata
    */
-  async findAll () {
+  async findAll ({ verbose = false } = {}) {
     // Get all the services
-    let services = await this.getServices()
+    let services = await this.getServices({ verbose })
 
     // If a whitelist is provided, filter down to it
     if (this.whitelist) {
-      services = this.filterToWhitelist(services)
+      if (verbose) {
+        services = services.filter(s => this.whitelist.has(s.endpoint))
+      } else {
+        services = this.filterToWhitelist(services)
+      }
     }
 
     // Key the services by their health check endpoint
     const map = services.reduce((acc, s) => {
-      acc[ServiceSelection.getHealthCheckEndpoint(s)] = s
+      const serviceEndpoint = verbose ? s.endpoint : s
+      acc[ServiceSelection.getHealthCheckEndpoint(serviceEndpoint)] = s
       return acc
     }, {})
 

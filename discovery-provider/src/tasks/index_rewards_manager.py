@@ -123,7 +123,7 @@ def parse_transfer_instruction_id(transfer_id: str) -> Optional[List[str]]:
     """Parses the transfer instruction id into [challenge_id, specifier]
     The id in the transfer instruction is formatted as "<CHALLENGE_ID>:<SPECIFIER>"
     """
-    id_parts = transfer_id.split(":")
+    id_parts = transfer_id.split(":", 1)
     if len(id_parts) != 2:
         logger.error(
             "index_rewards_manager.py | Unable to parse transfer instruction id"

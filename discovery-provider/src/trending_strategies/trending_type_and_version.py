@@ -10,3 +10,4 @@ class TrendingType(Enum):
 class TrendingVersion(Enum):
     ePWJD = "ePWJD"
     aSPET = "aSPET"
+    ML51L = "ML51L"

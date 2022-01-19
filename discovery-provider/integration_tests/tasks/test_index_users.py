@@ -4,9 +4,16 @@ from unittest import mock
 from integration_tests.challenges.index_helpers import AttrDict, IPFSClient
 from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
-from src.models import AssociatedWallet, UserEvents
+from src.models import (
+    AssociatedWallet,
+    Block,
+    SkippedTransaction,
+    SkippedTransactionLevel,
+    User,
+    UserEvents,
+)
 from src.tasks.metadata import user_metadata_format
-from src.tasks.users import lookup_user_record, parse_user_event
+from src.tasks.users import lookup_user_record, parse_user_event, user_state_update
 from src.utils import helpers
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -230,7 +237,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -260,7 +266,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -283,7 +288,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -306,7 +310,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -329,7 +332,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -356,7 +358,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -382,7 +383,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -406,7 +406,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -433,7 +432,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -456,7 +454,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
             None,  # tx_receipt - not used
@@ -535,3 +532,156 @@ def test_index_users(bus_mock: mock.MagicMock, app):
             ),
         ]
         bus_mock.assert_has_calls(calls, any_order=True)
+
+
+@mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
+def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
+    """Tests that users skip cursed txs without throwing an error and are able to process other tx in block"""
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+        web3 = Web3()
+        bus_mock(redis)
+        update_task = DatabaseTask(
+            ipfs_client=ipfs_client,
+            web3=web3,
+            challenge_event_bus=bus_mock,
+            redis=redis,
+        )
+
+    class TestUserTransaction:
+        pass
+
+    blessed_tx_hash = (
+        "0x34004dfaf5bb7cf9998eaf387b877d72d198c6508608e309df3f89e57def4db3"
+    )
+    blessed_tx = TestUserTransaction()
+    blessed_tx.transactionHash = update_task.web3.toBytes(hexstr=blessed_tx_hash)
+    cursed_tx_hash = (
+        "0x5fe51d735309d3044ae30055ad29101018a1a399066f6c53ea23800225e3a3be"
+    )
+    cursed_tx = TestUserTransaction()
+    cursed_tx.transactionHash = update_task.web3.toBytes(hexstr=cursed_tx_hash)
+    test_block_number = 25278765
+    test_block_timestamp = 1
+    test_block_hash = update_task.web3.toHex(block_hash)
+    test_user_factory_txs = [cursed_tx, blessed_tx]
+    test_timestamp = datetime.utcfromtimestamp(test_block_timestamp)
+    blessed_user_record = User(
+        blockhash=test_block_hash,
+        blocknumber=test_block_number,
+        txhash=blessed_tx_hash,
+        user_id=91232,
+        name="tobey maguire",
+        is_creator=False,
+        is_current=True,
+        updated_at=test_timestamp,
+        created_at=test_timestamp,
+    )
+    cursed_user_record = User(
+        blockhash=test_block_hash,
+        blocknumber=test_block_number,
+        txhash=cursed_tx_hash,
+        user_id=91238,
+        name="birb",
+        is_current=None,
+        is_creator=None,
+        updated_at=test_timestamp,
+        created_at=None,
+    )
+
+    mocker.patch(
+        "src.tasks.users.lookup_user_record",
+        side_effect=[cursed_user_record, blessed_user_record],
+        autospec=True,
+    )
+    mocker.patch(
+        "src.tasks.users.get_user_events_tx",
+        side_effect=[
+            [],  # no user added events
+            [],
+            [
+                {
+                    "args": AttrDict(
+                        {
+                            "_userId": cursed_user_record.user_id,
+                            "_name": cursed_user_record.name.encode("utf-8"),
+                        }
+                    )
+                },
+            ],  # update name event
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],  # second tx receipt
+            [],
+            [
+                {
+                    "args": AttrDict(
+                        {
+                            "_userId": blessed_user_record.user_id,
+                            "_name": blessed_user_record.name.encode("utf-8"),
+                        }
+                    )
+                },
+            ],  # update name event
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+        ],
+        autospec=True,
+    )
+    test_ipfs_metadata = {}
+    test_blacklisted_cids = {}
+
+    with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
+        try:
+            current_block = Block(
+                blockhash=test_block_hash,
+                parenthash=test_block_hash,
+                number=test_block_number,
+                is_current=True,
+            )
+            session.add(current_block)
+            (total_changes, updated_user_ids_set) = user_state_update(
+                update_task,
+                update_task,
+                session,
+                test_ipfs_metadata,
+                test_blacklisted_cids,
+                test_user_factory_txs,
+                test_block_number,
+                test_block_timestamp,
+                block_hash,
+            )
+            assert len(updated_user_ids_set) == 1
+            assert list(updated_user_ids_set)[0] == blessed_user_record.user_id
+            assert total_changes == 1
+            assert (
+                session.query(SkippedTransaction)
+                .filter(
+                    SkippedTransaction.txhash == cursed_user_record.txhash,
+                    SkippedTransaction.level == SkippedTransactionLevel.node,
+                )
+                .first()
+            )
+            assert (
+                session.query(User)
+                .filter(User.user_id == blessed_user_record.user_id)
+                .first()
+            )
+            assert (
+                session.query(User)
+                .filter(User.user_id == cursed_user_record.user_id)
+                .first()
+            ) == None
+        except Exception:
+            assert False

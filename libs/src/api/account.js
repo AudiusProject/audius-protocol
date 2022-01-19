@@ -12,7 +12,6 @@ class Account extends Base {
 
     this.User = userApi
 
-    this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
@@ -141,11 +140,27 @@ class Account extends Base {
         }
       }
 
-      // Create a wAudio user bank address
+      // Create a wAudio user bank address.
+      // If userbank creation fails, we still proceed
+      // through signup
       if (createWAudioUserBank && this.solanaWeb3Manager) {
         phase = phases.SOLANA_USER_BANK_CREATION
-        // Create a user bank if the solana web3 manager is present
-        await this.solanaWeb3Manager.createUserBank()
+        try {
+          // Fire and forget createUserBank. In the case of failure, we will
+          // retry to create user banks in a later session before usage
+          (async () => {
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
+            if (error || errorCode) {
+              console.error(
+                `Failed to create userbank, with err: ${error}, ${errorCode}`
+              )
+            } else {
+              console.log(`Successfully created userbank!`)
+            }
+          })()
+        } catch (err) {
+          console.error(`Got error creating userbank: ${err}, continuing...`)
+        }
       }
 
       // Add user to chain
