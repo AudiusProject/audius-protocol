@@ -9,11 +9,7 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import {
-  ChallengeRewardID,
-  FailureReason,
-  UserChallenge
-} from 'common/models/AudioRewards'
+import { FailureReason, UserChallenge } from 'common/models/AudioRewards'
 import { StringAudio } from 'common/models/Wallet'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
@@ -23,6 +19,7 @@ import {
   getUserChallenge
 } from 'common/store/pages/audio-rewards/selectors'
 import {
+  Claim,
   resetAndCancelClaimReward,
   claimChallengeReward,
   claimChallengeRewardFailed,
@@ -84,11 +81,7 @@ function getOracleConfig() {
 
 function* retryClaimChallengeReward(errorResolved: boolean) {
   const claimStatus: ClaimStatus = yield select(getClaimStatus)
-  const claim: {
-    challengeId: ChallengeRewardID
-    amount: number
-    specifier: string
-  } = yield select(getClaimToRetry)
+  const claim: Claim = yield select(getClaimToRetry)
   if (claimStatus === ClaimStatus.WAITING_FOR_RETRY) {
     // Restore the challenge rewards modal if necessary
     yield put(

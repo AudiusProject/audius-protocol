@@ -2,6 +2,11 @@ import React, { ReactNode } from 'react'
 
 import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
 
+import {
+  amounts,
+  ChallengeRewardID,
+  TrendingRewardID
+} from 'common/models/AudioRewards'
 import { Nullable } from 'common/utils/typeUtils'
 import {
   profilePage,
@@ -9,11 +14,6 @@ import {
   TRENDING_PAGE,
   UPLOAD_PAGE
 } from 'utils/route'
-
-import {
-  ChallengeRewardID,
-  TrendingRewardID
-} from '../../common/models/AudioRewards'
 
 type LinkButtonType =
   | 'trackUpload'
@@ -58,8 +58,8 @@ type ChallengeRewardsInfo = {
   id: ChallengeRewardID
   title: string
   icon: ReactNode
-  description: string
-  fullDescription: string
+  description: (amount: string | undefined) => string
+  fullDescription: (amount: string | undefined) => string
   progressLabel: string
   amount: number
   stepCount: number
@@ -71,15 +71,6 @@ type ChallengeRewardsInfo = {
   }
 }
 
-const amounts: Record<ChallengeRewardID, number> = {
-  referrals: 1,
-  'connect-verified': 5,
-  'listen-streak': 1,
-  'mobile-install': 1,
-  'profile-completion': 1,
-  'track-upload': 1
-}
-
 export const challengeRewardsConfig: Record<
   ChallengeRewardID,
   ChallengeRewardsInfo
@@ -88,8 +79,9 @@ export const challengeRewardsConfig: Record<
     id: 'referrals' as ChallengeRewardID,
     title: 'Invite your Friends',
     icon: <i className='emoji large incoming-envelope' />,
-    description: `Earn ${amounts.referrals} $AUDIO, for you and your friend`,
-    fullDescription: `Invite your Friends! You’ll earn ${amounts.referrals} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
+    description: amount => `Earn ${amount} $AUDIO, for you and your friend`,
+    fullDescription: amount =>
+      `Invite your Friends! You’ll earn ${amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
     progressLabel: '%0/%1 Invites',
     amount: amounts.referrals,
     stepCount: 5,
@@ -104,8 +96,9 @@ export const challengeRewardsConfig: Record<
     id: 'connect-verified' as ChallengeRewardID,
     title: 'Link Verified Accounts',
     icon: <i className='emoji large white-heavy-check-mark' />,
-    description: `Link your verified social media accounts to earn ${amounts['connect-verified']} $AUDIO`,
-    fullDescription:
+    description: amount =>
+      `Link your verified social media accounts to earn ${amount} $AUDIO`,
+    fullDescription: () =>
       'Get verified on Audius by linking your verified Twitter or Instagram account!',
     progressLabel: 'Not Linked',
     amount: amounts['connect-verified'],
@@ -121,8 +114,9 @@ export const challengeRewardsConfig: Record<
     id: 'listen-streak' as ChallengeRewardID,
     title: 'Listening Streak: 7 Days',
     icon: <i className='emoji large headphone' />,
-    description: `Listen to one track a day for seven days to earn ${amounts['listen-streak']} $AUDIO`,
-    fullDescription:
+    description: amount =>
+      `Listen to one track a day for seven days to earn ${amount} $AUDIO`,
+    fullDescription: () =>
       'Sign in and listen to at least one track every day for 7 days',
     progressLabel: '%0/%1 Days',
     amount: amounts['listen-streak'],
@@ -138,8 +132,8 @@ export const challengeRewardsConfig: Record<
     id: 'mobile-install' as ChallengeRewardID,
     title: 'Get the Audius Mobile App',
     icon: <i className='emoji large mobile-phone-with-arrow' />,
-    description: `Earn ${amounts['mobile-install']} $AUDIO`,
-    fullDescription:
+    description: amount => `Earn ${amount} $AUDIO`,
+    fullDescription: () =>
       'Install the Audius app for iPhone and Android and Sign in to your account!',
     progressLabel: 'Not Installed',
     amount: amounts['mobile-install'],
@@ -155,8 +149,9 @@ export const challengeRewardsConfig: Record<
     id: 'profile-completion' as ChallengeRewardID,
     title: 'Complete Your Profile',
     icon: <i className='emoji large white-heavy-check-mark' />,
-    description: `Complete your Audius profile to earn ${amounts['profile-completion']} $AUDIO`,
-    fullDescription:
+    description: amount =>
+      `Complete your Audius profile to earn ${amount} $AUDIO`,
+    fullDescription: () =>
       'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
     progressLabel: '%0/%1 Complete',
     amount: amounts['profile-completion'],
@@ -172,8 +167,8 @@ export const challengeRewardsConfig: Record<
     id: 'track-upload' as ChallengeRewardID,
     title: 'Upload 3 Tracks',
     icon: <i className='emoji large multiple-musical-notes' />,
-    description: `Earn ${amounts['track-upload']} $AUDIO`,
-    fullDescription: 'Upload 3 tracks to your profile',
+    description: amount => `Earn ${amount} $AUDIO`,
+    fullDescription: () => 'Upload 3 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
     amount: amounts['track-upload'],
     stepCount: 3,

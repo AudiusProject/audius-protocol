@@ -10,6 +10,7 @@ export type UserChallenge = {
   max_steps: number
   specifier: string
   user_id: string
+  amount: string
 }
 
 export type ChallengeRewardID =
@@ -79,3 +80,16 @@ export type FlowSessionEvent =
   | FlowSessionResumeEvent
   | FlowSessionPassEvent
   | FlowSessionFailEvent
+
+/**
+ * Needed for notifications for now as UserChallenges might not be loaded yet
+ * @deprecated amounts should be pulled in directly from user challenges instead
+ */
+export const amounts: Record<ChallengeRewardID, number> = {
+  referrals: 1,
+  'connect-verified': 5,
+  'listen-streak': 1,
+  'mobile-install': 1,
+  'profile-completion': 1,
+  'track-upload': 1
+}
