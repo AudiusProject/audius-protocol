@@ -92,6 +92,24 @@ export const challengeRewardsConfig: Record<
       complete: null
     }
   },
+  // This is used just for the notifications
+  referred: {
+    id: 'referrals' as ChallengeRewardID,
+    title: 'Invite your Friends',
+    icon: <i className='emoji large incoming-envelope' />,
+    description: amount => `Earn ${amount} $AUDIO, for you and your friend`,
+    fullDescription: amount =>
+      `Invite your Friends! You’ll earn ${amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
+    progressLabel: '%0/%1 Invites',
+    amount: amounts.referrals,
+    stepCount: 1,
+    panelButtonText: 'Invite your Friends',
+    modalButtonInfo: {
+      incomplete: null,
+      inProgress: null,
+      complete: null
+    }
+  },
   'connect-verified': {
     id: 'connect-verified' as ChallengeRewardID,
     title: 'Link Verified Accounts',
