@@ -283,12 +283,10 @@ def process_batch_sol_reward_manager_txs(
                     f"index_rewards_manager.py | Challenge specifier {specifier} not found"
                     "while processing disbursement"
                 )
-                continue
             if eth_recipient not in users_map:
                 logger.error(
                     f"index_rewards_manager.py | eth_recipient {eth_recipient} not found while processing disbursement"
                 )
-                continue
 
             user_id = users_map[eth_recipient]
             logger.info(
