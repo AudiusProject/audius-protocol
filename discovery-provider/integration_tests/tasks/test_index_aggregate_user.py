@@ -239,6 +239,9 @@ def test_index_aggregate_user_empty_users(app):
             len(results) == 0
         ), "Test that without Users there will be no AggregateUsers"
 
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+        assert prev_id_checkpoint == 2
+
 
 def test_index_aggregate_user_empty_activity(app):
     """Test that a populated users table without activity won't break"""
@@ -268,6 +271,9 @@ def test_index_aggregate_user_empty_activity(app):
             len(results) == 0
         ), "Test that users updated on blocks previous to '5' will not be targeted"
 
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+        assert prev_id_checkpoint == 4
+
     entities = {
         "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 1}],
     }
@@ -284,6 +290,9 @@ def test_index_aggregate_user_empty_activity(app):
         assert (
             len(results) == 2
         ), "Test that users updated on blocks after '1' will be targeted"
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+        assert prev_id_checkpoint == 4
 
 
 def test_index_aggregate_user_empty_completely(app):
@@ -306,6 +315,9 @@ def test_index_aggregate_user_empty_completely(app):
         assert (
             len(results) == 0
         ), "Test that empty entities won't generate AggregateUsers"
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+        assert prev_id_checkpoint == 0
 
 
 def test_index_aggregate_user_update(app):
@@ -532,6 +544,9 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
             len(results) == 3
         ), "Test zero-modifications since last_checkpoint is in the future"
 
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+        assert prev_id_checkpoint == 9
+
     entities = {
         "indexing_checkpoints": [{"tablename": AGGREGATE_USER, "last_checkpoint": 0}],
     }
@@ -553,6 +568,9 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
         assert (
             len(results) == 0
         ), "Test that aggregate_user has been truncated due to reset checkpoint"
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+        assert prev_id_checkpoint == 0
 
 
 def test_index_aggregate_user_same_checkpoint(app):
@@ -585,3 +603,6 @@ def test_index_aggregate_user_same_checkpoint(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
         assert len(results) == 0
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+        assert prev_id_checkpoint == 3
