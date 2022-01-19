@@ -172,6 +172,48 @@ pub mod audius_data {
         ctx.accounts.track.owner = dummy_owner_field;
         Ok(())
     }
+    /*
+        Playlist related functions
+    */
+    pub fn create_playlist(ctx: Context<CreatePlaylist>, metadata: String) -> ProgramResult {
+        msg!("Audius::CreatePlaylist");
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Set owner to user storage account
+        ctx.accounts.playlist.owner = ctx.accounts.user.key();
+        ctx.accounts.playlist.playlist_id = ctx.accounts.audius_admin.playlist_id;
+        ctx.accounts.audius_admin.playlist_id = ctx.accounts.audius_admin.playlist_id + 1;
+        msg!("AudiusPlaylistMetadata = {:?}", metadata);
+        Ok(())
+    }
+
+    pub fn update_playlist(ctx: Context<UpdatePlaylist>, metadata: String) -> ProgramResult {
+        msg!("Audius::UpdatePlaylist");
+        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        msg!("AudiusPlaylistMetadata = {:?}", metadata);
+        Ok(())
+    }
+
+    pub fn delete_playlist(ctx: Context<DeletePlaylist>) -> ProgramResult {
+        msg!("Audius::DeletePlaylist");
+        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Manually overwrite owner field
+        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
+        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+        ctx.accounts.playlist.owner = dummy_owner_field;
+        Ok(())
+    }
 
     /// Follow a user, transaction sent from 1 known valid user to another
     /// Both User accounts are re-derived from the handle seed and validated
@@ -222,48 +264,6 @@ pub mod audius_data {
         if derived_followee_pda != ctx.accounts.followee_user_stg.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
-        Ok(())
-    }
-    /*
-        Playlist related functions
-    */
-    pub fn create_playlist(ctx: Context<CreatePlaylist>, metadata: String) -> ProgramResult {
-        msg!("Audius::CreatePlaylist");
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // Set owner to user storage account
-        ctx.accounts.playlist.owner = ctx.accounts.user.key();
-        ctx.accounts.playlist.playlist_id = ctx.accounts.audius_admin.playlist_id;
-        ctx.accounts.audius_admin.playlist_id = ctx.accounts.audius_admin.playlist_id + 1;
-        msg!("AudiusPlaylistMetadata = {:?}", metadata);
-        Ok(())
-    }
-
-    pub fn update_playlist(ctx: Context<UpdatePlaylist>, metadata: String) -> ProgramResult {
-        msg!("Audius::UpdatePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        msg!("AudiusPlaylistMetadata = {:?}", metadata);
-        Ok(())
-    }
-
-    pub fn delete_playlist(ctx: Context<DeletePlaylist>) -> ProgramResult {
-        msg!("Audius::DeletePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // Manually overwrite owner field
-        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
-        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
-        ctx.accounts.playlist.owner = dummy_owner_field;
         Ok(())
     }
 }
