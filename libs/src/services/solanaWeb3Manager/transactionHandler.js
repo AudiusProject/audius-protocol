@@ -52,10 +52,10 @@ class TransactionHandler {
    * @returns {Promise<HandleTransactionReturn>}
    * @memberof TransactionHandler
    */
-  async handleTransaction (instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null) {
+  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null }) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, recentBlockhash)
+      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight)
     } else {
       result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight)
     }
@@ -65,13 +65,14 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction (instructions, recentBlockhash) {
+  async _relayTransaction (instructions, recentBlockhash, skipPreflight) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
     recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash()).blockhash
 
     const transactionData = {
       recentBlockhash,
-      instructions: relayable
+      instructions: relayable,
+      skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight
     }
 
     try {

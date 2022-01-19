@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
 from redis import Redis
@@ -18,6 +18,7 @@ from src.queries.get_underground_trending import (
 from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils.config import shared_config
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
@@ -26,9 +27,10 @@ from web3 import Web3
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
 
-# Time in seconds between trending updates - set to 1 hr
-# NOTE: The trending timestamp is rounded to the hour mark
-UPDATE_TRENDING_DURATION_DIFF_SEC = 60 * 60
+# Time in seconds between trending updates
+UPDATE_TRENDING_DURATION_DIFF_SEC = int(
+    shared_config["discprov"]["trending_refresh_seconds"]
+)
 
 genre_allowlist = {
     "Acoustic",
@@ -201,14 +203,28 @@ def set_last_trending_datetime(redis: Redis, timestamp: int):
     redis.set(last_trending_timestamp, timestamp)
 
 
+def floor_time(dt: datetime, interval_seconds: int):
+    """
+    Floor a datetime object to a time-span in seconds
+    interval_seconds: Closest number of seconds to floor to
+
+    For example, if floor_time is invoked with `interval_seconds` of 15,
+    the provided datetime is rounded down to the nearest 15 minute interval.
+    E.g. 10:48 rounds to 10:45, 11:02 rounds to 11:00, etc.
+    """
+    seconds = (dt.replace(tzinfo=None) - dt.min).seconds
+    rounding = seconds // interval_seconds * interval_seconds
+    return dt + timedelta(0, rounding - seconds, -dt.microsecond)
+
+
 def get_should_update_trending(
-    db: SessionManager, web3: Web3, redis: Redis
+    db: SessionManager, web3: Web3, redis: Redis, interval_seconds: int
 ) -> Optional[int]:
     """
     Checks if the trending job should re-run based off the last trending run's timestamp and
     the most recently indexed block's timestamp.
-    If the most recently indexed block (rounded down to the hour mark) is 1 hr ahead of the last
-    trending job run, then the job should re-run
+    If the most recently indexed block (rounded down to the nearest interval) is `interval_seconds`
+    ahead of the last trending job run, then the job should re-run.
     The function returns the an int, representing the timestamp, if the jobs should re-run, else None
     """
     with db.scoped_session() as session:
@@ -217,8 +233,8 @@ def get_should_update_trending(
         )
         current_block = web3.eth.getBlock(current_db_block[0], True)
         current_timestamp = current_block["timestamp"]
-        block_datetime = datetime.fromtimestamp(current_timestamp).replace(
-            minute=0, second=0, microsecond=0
+        block_datetime = floor_time(
+            datetime.fromtimestamp(current_timestamp), interval_seconds
         )
 
         last_trending_datetime = get_last_trending_datetime(redis)
@@ -226,10 +242,7 @@ def get_should_update_trending(
             return int(block_datetime.timestamp())
 
         duration_since_last_index = block_datetime - last_trending_datetime
-        if (
-            duration_since_last_index.total_seconds()
-            >= UPDATE_TRENDING_DURATION_DIFF_SEC
-        ):
+        if duration_since_last_index.total_seconds() >= interval_seconds:
             return int(block_datetime.timestamp())
 
     return None
@@ -245,7 +258,9 @@ def index_trending_task(self):
     have_lock = False
     update_lock = redis.lock("index_trending_lock", timeout=7200)
     try:
-        should_update_timestamp = get_should_update_trending(db, web3, redis)
+        should_update_timestamp = get_should_update_trending(
+            db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
+        )
         have_lock = update_lock.acquire(blocking=False)
         if should_update_timestamp and have_lock:
             index_trending(self, db, redis, should_update_timestamp)

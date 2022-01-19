@@ -28,6 +28,10 @@ logger = logging.getLogger(__name__)
 trending_strategy_factory = TrendingStrategyFactory()
 
 
+def date_to_week(date: datetime) -> str:
+    return date.strftime("%Y-%m-%d")
+
+
 def get_latest_blocknumber_via_redis(session: Session, redis: Redis) -> Optional[int]:
     # get latest db state from redis cache
     latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
@@ -71,7 +75,7 @@ def dispatch_trending_challenges(
                 "rank": idx + 1,
                 "type": str(type),
                 "version": str(version),
-                "week": str(date),
+                "week": date_to_week(date),
             },
         )
 
@@ -167,7 +171,7 @@ def enqueue_trending_challenges(
                         "rank": idx + 1,
                         "type": str(TrendingType.PLAYLISTS),
                         "version": str(version),
-                        "week": str(date),
+                        "week": date_to_week(date),
                     },
                 )
 
@@ -185,6 +189,8 @@ def calculate_trending_challenges_task(self, date=None):
     if date is None:
         logger.error("calculate_trending_challenges.py | Must be called with a date")
         return
+    # Celery gives this to us formatted as '2022-01-01T00:00:00', need to parse into datetime
+    date = datetime.fromisoformat(date)
     db = calculate_trending_challenges_task.db
     redis = calculate_trending_challenges_task.redis
     challenge_bus = calculate_trending_challenges_task.challenge_event_bus

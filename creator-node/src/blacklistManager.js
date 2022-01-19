@@ -479,6 +479,13 @@ class BlacklistManager {
 
   static async isServable(cid, trackId = null) {
     try {
+      // if the trackId is on the blacklist, do not serve
+      const trackIdIsInBlacklist =
+        trackId && Number.isInteger(trackId)
+          ? await this.trackIdIsInBlacklist(trackId)
+          : false
+      if (trackIdIsInBlacklist) return false
+
       // If the CID is not in the blacklist, allow serve
       const CIDIsInBlacklist = await this.CIDIsInBlacklist(cid)
       if (!CIDIsInBlacklist) return true
