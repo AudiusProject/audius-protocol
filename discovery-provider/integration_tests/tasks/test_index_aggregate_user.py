@@ -6,9 +6,9 @@ from typing import List
 from integration_tests.utils import populate_mock_db
 from src.models import AggregateUser
 from src.tasks.index_aggregate_user import AGGREGATE_USER, _update_aggregate_user
-from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
+from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 
 redis = get_redis()
 
