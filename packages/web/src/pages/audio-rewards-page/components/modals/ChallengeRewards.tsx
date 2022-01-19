@@ -156,7 +156,6 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const challenge = userChallenges[modalType]
 
   const {
-    amount,
     fullDescription,
     progressLabel,
     stepCount,
@@ -199,14 +198,14 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const progressDescription = (
     <div className={wm(styles.progressDescription)}>
       <h3>Task</h3>
-      <p>{fullDescription}</p>
+      <p>{fullDescription(challenge?.amount)}</p>
     </div>
   )
 
   const progressReward = (
     <div className={wm(styles.progressReward)}>
       <h3>Reward</h3>
-      <h2>{amount}</h2>
+      <h2>{challenge?.amount}</h2>
       <h4>$AUDIO</h4>
     </div>
   )
@@ -246,13 +245,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           claim: {
             challengeId: challenge.challenge_id,
             specifier,
-            amount
+            amount: challenge.amount
           },
           retryOnFailure: true
         })
       )
     }
-  }, [dispatch, challenge, specifier, amount])
+  }, [dispatch, challenge, specifier])
 
   useEffect(() => {
     if (claimStatus === ClaimStatus.SUCCESS) {
