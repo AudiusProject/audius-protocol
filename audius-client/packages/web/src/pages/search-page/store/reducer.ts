@@ -1,4 +1,5 @@
 import Status from 'common/models/Status'
+import { asLineup } from 'common/store/lineup/reducer'
 import {
   FETCH_SEARCH_PAGE_RESULTS,
   FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED,
@@ -10,7 +11,6 @@ import {
 } from 'pages/search-page/store/actions'
 import { PREFIX } from 'pages/search-page/store/lineups/tracks/actions'
 import tracksReducer from 'pages/search-page/store/lineups/tracks/reducer'
-import { asLineup } from 'store/lineup/reducer'
 import { ActionsMap } from 'utils/reducer'
 
 import { SearchPageState } from './types'

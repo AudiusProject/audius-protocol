@@ -1,9 +1,8 @@
 import { takeEvery, put } from 'redux-saga/effects'
 
 import { fetchSavedPlaylists } from 'common/store/account/reducer'
+import * as actions from 'common/store/ui/add-to-playlist/actions'
 import { requiresAccount } from 'utils/sagaHelpers'
-
-import * as actions from '../../../common/store/ui/add-to-playlist/actions'
 
 function* handlRequestOpen(action: ReturnType<typeof actions.requestOpen>) {
   yield put(fetchSavedPlaylists())

@@ -12,6 +12,11 @@ import {
   addTrackToPlaylist,
   createPlaylist
 } from 'common/store/cache/collections/actions'
+import { close } from 'common/store/ui/add-to-playlist/actions'
+import {
+  getTrackId,
+  getTrackTitle
+} from 'common/store/ui/add-to-playlist/selectors'
 import Card from 'components/card/mobile/Card'
 import CardLineup from 'components/lineup/CardLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
@@ -24,12 +29,6 @@ import { newCollectionMetadata } from 'schemas'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
-
-import { close } from '../../../common/store/ui/add-to-playlist/actions'
-import {
-  getTrackId,
-  getTrackTitle
-} from '../../../common/store/ui/add-to-playlist/selectors'
 
 import styles from './AddToPlaylist.module.css'
 

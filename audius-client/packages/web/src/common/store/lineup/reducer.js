@@ -10,7 +10,7 @@ import {
   UPDATE_LINEUP_ORDER,
   SET_PAGE,
   stripPrefix
-} from 'store/lineup/actions'
+} from 'common/store/lineup/actions'
 
 export const initialLineupState = {
   // Contains identifiers for cache entries as well as retained metadata.

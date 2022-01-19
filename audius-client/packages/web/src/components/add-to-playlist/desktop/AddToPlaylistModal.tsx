@@ -15,6 +15,12 @@ import {
   addTrackToPlaylist,
   createPlaylist
 } from 'common/store/cache/collections/actions'
+import { close } from 'common/store/ui/add-to-playlist/actions'
+import {
+  getIsOpen,
+  getTrackId,
+  getTrackTitle
+} from 'common/store/ui/add-to-playlist/selectors'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -23,13 +29,6 @@ import { getCollectionId } from 'pages/collection-page/store/selectors'
 import { newCollectionMetadata } from 'schemas'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
-
-import { close } from '../../../common/store/ui/add-to-playlist/actions'
-import {
-  getIsOpen,
-  getTrackId,
-  getTrackTitle
-} from '../../../common/store/ui/add-to-playlist/selectors'
 
 import styles from './AddToPlaylistModal.module.css'
 

@@ -12,6 +12,7 @@ import {
   PlaybackSource
 } from 'common/models/Analytics'
 import { getUserId } from 'common/store/account/selectors'
+import { getLineupHasTracks } from 'common/store/lineup/selectors'
 import {
   repostTrack,
   undoRepostTrack,
@@ -30,7 +31,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { make } from 'store/analytics/actions'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
-import { getLineupHasTracks } from 'store/lineup/selectors'
 import {
   getAudio,
   getPlaying,

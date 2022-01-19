@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
-import { asLineup } from 'store/lineup/reducer'
+import { asLineup } from 'common/store/lineup/reducer'
 
 import { PREFIX as remixesTracksPrefix } from './lineups/tracks/actions'
 import remixesTracksReducer from './lineups/tracks/reducer'

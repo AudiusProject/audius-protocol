@@ -18,6 +18,18 @@ import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
+import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
+import * as trackPageActions from 'common/store/pages/track/actions'
+import { tracksActions } from 'common/store/pages/track/lineup/actions'
+import {
+  getUser,
+  getLineup,
+  getTrackRank,
+  getTrack,
+  getRemixParentTrack,
+  getStatus,
+  getSourceSelector
+} from 'common/store/pages/track/selectors'
 import * as socialTracksActions from 'common/store/social/tracks/actions'
 import * as socialUsersActions from 'common/store/social/users/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/slice'
@@ -33,15 +45,6 @@ import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { setFavorite } from 'pages/favorites-page/store/actions'
 import { setRepost } from 'pages/reposts-page/store/actions'
 import { RepostType } from 'pages/reposts-page/store/types'
-import {
-  getUser,
-  getLineup,
-  getTrackRank,
-  getTrack,
-  getRemixParentTrack,
-  getStatus,
-  getSourceSelector
-} from 'pages/track-page/store/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
 import {
   setUsers,
@@ -51,7 +54,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
@@ -74,8 +76,6 @@ import { getTrackPageTitle, getTrackPageDescription } from 'utils/seo'
 import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
-import * as trackPageActions from './store/actions'
-import { tracksActions } from './store/lineups/tracks/actions'
 import { TRENDING_BADGE_LIMIT } from './store/sagas'
 
 const getRemixParentTrackId = (track: Track | null) =>
