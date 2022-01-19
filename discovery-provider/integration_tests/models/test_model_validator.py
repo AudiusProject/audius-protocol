@@ -5,7 +5,8 @@ from src.model_validator import ModelValidator
 
 logger = logging.getLogger("model_validator")
 
-###### Testing field validation with variation of instances ######
+
+# ##### Testing field validation with variation of instances ##### #
 def test_one_field_schema_pass():
     track = {"title": "ok"}
     try:
@@ -63,7 +64,7 @@ def test_one_field_schema_empty_object():
         assert True
 
 
-##### Testing field validation with variation of schemas ######
+# #### Testing field validation with variation of schemas ##### #
 def test_schema_missing():
     try:
         ModelValidator.validate(to_validate={}, field="title", model="non-existant")

@@ -334,6 +334,7 @@ const pushNotificationMessagesMap = {
 }
 
 module.exports = {
+  challengeInfoMap,
   getRankSuffix,
   formatNotificationProps,
   notificationResponseMap,

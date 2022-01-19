@@ -1,16 +1,14 @@
 import logging
 import time
-
 from datetime import datetime
+
 from dateutil.parser import parse
 from sqlalchemy.sql import text
-
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
     TrendingVersion,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +24,7 @@ i = 0.01
 q = 100000.0
 T = {"day": 1, "week": 7, "month": 30, "year": 365, "allTime": 100000}
 y = 3
+
 
 def z(time, track):
     # pylint: disable=W,C,R
@@ -49,13 +48,15 @@ def z(time, track):
         Q = a((1.0 / q), (M(q, (1 - k / L))))
     return {"score": H * Q, **track}
 
+
 class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
     def __init__(self):
         super().__init__(TrendingType.TRACKS, TrendingVersion.aSPET, True)
 
     def get_track_score(self, time_range, track):
-        logger.error(f"get_track_score not implemented for Trending Tracks Strategy with version {TrendingVersion.aSPET}")
-        return None
+        logger.error(
+            f"get_track_score not implemented for Trending Tracks Strategy with version {TrendingVersion.aSPET}"
+        )
 
     def update_track_score_query(self, session):
         start_time = time.time()
@@ -63,15 +64,15 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
             """
             begin;
                 DELETE FROM track_trending_scores WHERE type=:type AND version=:version;
-                INSERT INTO track_trending_scores 
+                INSERT INTO track_trending_scores
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select 
+                    select
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
                         :week_time_range,
-                        CASE 
+                        CASE
                         WHEN tp.owner_follower_count < :y
                             THEN 0
                         WHEN EXTRACT(DAYS from now() - aip.created_at) > :week
@@ -79,18 +80,18 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         ELSE (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as week_score,
                         now()
-                    from trending_params tp 
-                    inner join aggregate_interval_plays aip 
+                    from trending_params_aSPET tp
+                    inner join aggregate_interval_plays aip
                         on tp.track_id = aip.track_id;
-                INSERT INTO track_trending_scores 
+                INSERT INTO track_trending_scores
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select 
+                    select
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
                         :month_time_range,
-                        CASE 
+                        CASE
                         WHEN tp.owner_follower_count < :y
                             THEN 0
                         WHEN EXTRACT(DAYS from now() - aip.created_at) > :month
@@ -98,18 +99,18 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         ELSE (:N * aip.month_listen_counts + :F * tp.repost_month_count + :O * tp.save_month_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as month_score,
                         now()
-                    from trending_params tp 
-                    inner join aggregate_interval_plays aip 
+                    from trending_params_aSPET tp
+                    inner join aggregate_interval_plays aip
                         on tp.track_id = aip.track_id;
-                INSERT INTO track_trending_scores 
+                INSERT INTO track_trending_scores
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select 
+                    select
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
                         :year_time_range,
-                        CASE 
+                        CASE
                         WHEN tp.owner_follower_count < :y
                             THEN 0
                         WHEN EXTRACT(DAYS from now() - aip.created_at) > :year
@@ -117,8 +118,8 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         ELSE (:N * aip.year_listen_counts + :F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as year_score,
                         now()
-                    from trending_params tp 
-                    inner join aggregate_interval_plays aip 
+                    from trending_params_aSPET tp
+                    inner join aggregate_interval_plays aip
                         on tp.track_id = aip.track_id;
             commit;
         """

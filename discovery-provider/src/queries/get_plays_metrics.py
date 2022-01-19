@@ -1,15 +1,17 @@
-from typing import TypedDict
 import logging
 import time
-from sqlalchemy import func, desc
+from typing import TypedDict
+
+from sqlalchemy import desc, func
 from sqlalchemy.orm.session import Session
 from src.models import HourlyPlayCounts
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
+
 class GetPlayMetricsArgs(TypedDict):
-     # A date_trunc operation to aggregate timestamps by
+    # A date_trunc operation to aggregate timestamps by
     bucket_size: int
 
     # The max number of responses to return
@@ -17,6 +19,7 @@ class GetPlayMetricsArgs(TypedDict):
 
     # The max number of responses to return
     limit: int
+
 
 def get_plays_metrics(args: GetPlayMetricsArgs):
     """
@@ -36,18 +39,23 @@ def get_plays_metrics(args: GetPlayMetricsArgs):
 def _get_plays_metrics(session: Session, args: GetPlayMetricsArgs):
     metrics_query = (
         session.query(
-            func.date_trunc(args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp).label(
-                "timestamp"
-            ),
+            func.date_trunc(
+                args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp
+            ).label("timestamp"),
             func.sum(HourlyPlayCounts.play_count).label("count"),
         )
         .filter(HourlyPlayCounts.hourly_timestamp > args.get("start_time"))
-        .group_by(func.date_trunc(args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp))
+        .group_by(
+            func.date_trunc(args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp)
+        )
         .order_by(desc("timestamp"))
         .limit(args.get("limit"))
     )
 
     metrics = metrics_query.all()
 
-    metrics = [{"timestamp": int(time.mktime(metric[0].timetuple())), "count": metric[1]} for metric in metrics]
+    metrics = [
+        {"timestamp": int(time.mktime(metric[0].timetuple())), "count": metric[1]}
+        for metric in metrics
+    ]
     return metrics

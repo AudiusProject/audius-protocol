@@ -1,7 +1,7 @@
-from contextlib import contextmanager
 import json
 import logging
 from collections import defaultdict
+from contextlib import contextmanager
 from typing import Any, DefaultDict, Dict, List, Tuple, TypedDict
 
 from sqlalchemy.orm.session import Session
@@ -17,9 +17,9 @@ from src.challenges.referral_challenge import (
 )
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.challenges.trending_challenge import (
+    trending_playlist_challenge_manager,
     trending_track_challenge_manager,
     trending_underground_track_challenge_manager,
-    trending_playlist_challenge_manager,
 )
 from src.utils.redis_connection import get_redis
 
@@ -56,7 +56,7 @@ class ChallengeEventBus:
     def register_listener(self, event: ChallengeEvent, listener: ChallengeManager):
         """Registers a listener (`ChallengeManager`) to listen for a particular event type."""
         self._listeners[event].append(listener)
-        if not listener.challenge_id in self._managers:
+        if listener.challenge_id not in self._managers:
             self._managers[listener.challenge_id] = listener
 
     def get_manager(self, challenge_id: str) -> ChallengeManager:

@@ -1,25 +1,25 @@
 from datetime import datetime
 from typing import List, Optional
+
 import redis
 from sqlalchemy.orm import Session
-from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.models.models import User
-from src.utils.db_session import get_db
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import (
+    Block,
     Challenge,
+    ChallengeDisbursement,
     ChallengeType,
     UserChallenge,
-    ChallengeDisbursement,
-    Block,
 )
+from src.models.models import User
 from src.queries.get_challenges import get_challenges
 from src.utils.config import shared_config
-
+from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
 DEFAULT_EVENT = ""

@@ -1,45 +1,44 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
-from typing import TypedDict, Optional, Any
+from typing import Any, Optional, TypedDict
+
 import redis
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
-
-from src.trending_strategies.trending_type_and_version import TrendingType
-
-from src.utils.db_session import get_db_read_replica
-from src.utils.helpers import decode_string_id
-from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
+from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 from src.models import (
-    Track,
-    RepostType,
-    Follow,
-    SaveType,
-    User,
     AggregatePlays,
     AggregateUser,
-)
-from src.queries.query_helpers import get_karma, get_repost_counts, get_save_counts
-from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
-from src.queries.query_helpers import (
-    populate_track_metadata,
-    get_users_ids,
-    get_users_by_id,
-)
-from src.api.v1.helpers import (
-    extend_track,
-    format_offset,
-    format_limit,
-    to_dict,
+    Follow,
+    RepostType,
+    SaveType,
+    Track,
+    User,
 )
 from src.queries.get_trending_tracks import (
-    make_trending_cache_key,
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
+    make_trending_cache_key,
 )
-from src.utils.redis_cache import get_pickled_key
-from src.utils.config import shared_config
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
+from src.queries.query_helpers import (
+    get_karma,
+    get_repost_counts,
+    get_save_counts,
+    get_users_by_id,
+    get_users_ids,
+    populate_track_metadata,
+)
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
+from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils.config import shared_config
+from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import decode_string_id
+from src.utils.redis_cache import (
+    get_pickled_key,
+    get_trending_cache_key,
+    use_redis_cache,
+)
 
 redis_url = shared_config["redis"]["url"]
 redis_conn = redis.Redis.from_url(url=redis_url)
@@ -160,7 +159,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         session, False, False, track_ids, [SaveType.track], None, "week"
     )
 
-    karma_scores = get_karma(session, tuple(track_ids), None, False, xf)
+    karma_scores = get_karma(session, tuple(track_ids), strategy, None, False, xf)
 
     # Associate all the extra data
     for (track_id, repost_count) in repost_counts:
@@ -205,16 +204,18 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
 
     return wrapped
 
+
 class GetUndergroundTrendingTrackcArgs(TypedDict, total=False):
     current_user_id: Optional[Any]
     offset: int
     limit: int
 
+
 def _get_underground_trending_with_session(
     session: Session,
     args: GetUndergroundTrendingTrackcArgs,
     strategy,
-    use_request_context=True
+    use_request_context=True,
 ):
     current_user_id = args.get("current_user_id", None)
     limit, offset = args.get("limit"), args.get("offset")
@@ -249,6 +250,7 @@ def _get_underground_trending(args: GetUndergroundTrendingTrackcArgs, strategy):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         return _get_underground_trending_with_session(session, args, strategy)
+
 
 def get_underground_trending(request, args, strategy):
     offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)

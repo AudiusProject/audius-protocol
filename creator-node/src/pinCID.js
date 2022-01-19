@@ -15,15 +15,16 @@ const IPFS_PIN_TIMEOUT = 30 /* sec */ * 1000 /* ms */
 const pinCID = async (ipfs) => {
   try {
     logger.info(`Starting Pin CID`)
-    const addCIDs = config.get('pinAddCIDs')
+    const addCIDs = config
+      .get('pinAddCIDs')
       .split(',')
-      .filter(cid => cid !== '')
-      .map(cid => new CID(cid))
+      .filter((cid) => cid !== '')
+      .map((cid) => new CID(cid))
     const removeCIDs = []
 
     // Build list of CIDs currently pinned that are not in addCIDs list list for future removal
     for await (const { cid } of ipfs.pin.ls({ type: 'recursive' })) {
-      if (!addCIDs.some(addCID => addCID.equals(cid))) {
+      if (!addCIDs.some((addCID) => addCID.equals(cid))) {
         removeCIDs.push(cid)
       }
     }
@@ -34,7 +35,9 @@ const pinCID = async (ipfs) => {
         await ipfs.pin.add(cid, { recursive: true, timeout: IPFS_PIN_TIMEOUT })
         logger.info(`Pin CID: ${cid.toString()}`)
       } catch (err) {
-        logger.error(`Unable to pin CID: ${cid.toString()} with err: ${err.message}`)
+        logger.error(
+          `Unable to pin CID: ${cid.toString()} with err: ${err.message}`
+        )
       }
     }
 
@@ -44,7 +47,9 @@ const pinCID = async (ipfs) => {
         await ipfs.pin.rm(cid, { recursive: true, timeout: IPFS_PIN_TIMEOUT })
         logger.info(`Remove pin CID: ${cid.toString()}`)
       } catch (err) {
-        logger.error(`Unable to remove pin CID: ${cid.toString()} with err: ${err.message}`)
+        logger.error(
+          `Unable to remove pin CID: ${cid.toString()} with err: ${err.message}`
+        )
       }
     }
 

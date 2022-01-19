@@ -1,15 +1,16 @@
 from datetime import datetime, timedelta
+
 import redis
 from sqlalchemy.orm.session import Session
-
-from src.models.models import Challenge
-from src.models import User, Block, Play
-from src.utils.db_session import get_db
+from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
-from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
+from src.models import Block, Play, User
+from src.models.models import Challenge
 from src.utils.config import shared_config
+from src.utils.db_session import get_db
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_NUMBER = 10
 
 
 def create_play(offset: int) -> Play:
@@ -31,17 +32,17 @@ def dispatch_play(offset: int, session: Session, bus: ChallengeEventBus):
     session.flush()
     bus.dispatch(
         ChallengeEvent.track_listen,
-        1,
+        BLOCK_NUMBER,
         1,
         {"created_at": play.created_at.timestamp()},
     )
 
 
 def setup_challenges(session):
-    block = Block(blockhash="0x1", number=1)
+    block = Block(blockhash="0x1", number=BLOCK_NUMBER)
     user = User(
         blockhash="0x1",
-        blocknumber=1,
+        blocknumber=BLOCK_NUMBER,
         txhash="xyz",
         user_id=1,
         is_current=True,
@@ -59,7 +60,7 @@ def setup_challenges(session):
     session.add(user)
     session.flush()
     session.query(Challenge).filter(Challenge.id == "listen-streak").update(
-        {"active": True}
+        {"active": True, "starting_block": BLOCK_NUMBER}
     )
 
 
@@ -85,8 +86,11 @@ def test_listen_streak_challenge(app):
 
     with db.scoped_session() as session:
         setup_challenges(session)
+
         # wrapped dispatch play
-        dp = lambda offset: dispatch_play(offset, session, bus)
+        def dp(offset):
+            return dispatch_play(offset, session, bus)
+
         scope_and_process = make_scope_and_process(bus, session)
 
         # Make sure plays increment the step count
@@ -144,7 +148,9 @@ def test_multiple_listens(app):
         # make sure empty to start
         assert len(state) == 0
 
-        dp = lambda offset: dispatch_play(offset, session, bus)
+        def dp(offset):
+            return dispatch_play(offset, session, bus)
+
         scope_and_process = make_scope_and_process(bus, session)
         scope_and_process(lambda: dp(1))
         state = listen_streak_challenge_manager.get_user_challenge_state(
@@ -180,7 +186,7 @@ def test_anon_listen(app):
         with bus.use_scoped_dispatch_queue():
             bus.dispatch(
                 ChallengeEvent.track_listen,
-                0,
+                BLOCK_NUMBER,
                 None,
                 {"created_at": datetime.now()},
             )

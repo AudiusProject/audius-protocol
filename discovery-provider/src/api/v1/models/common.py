@@ -1,5 +1,4 @@
 from flask_restx import Namespace, fields
-from flask_restx.fields import MarshallingError
 
 # Make a common namespace for all the models
 ns = Namespace("Models")

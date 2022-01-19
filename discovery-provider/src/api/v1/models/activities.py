@@ -1,9 +1,10 @@
 from flask_restx import fields
 from flask_restx.fields import MarshallingError
 from flask_restx.marshalling import marshal
+
 from .common import ns
+from .playlists import full_playlist_model, playlist_model
 from .tracks import track, track_full
-from .playlists import playlist_model, full_playlist_model
 
 
 class ItemType(fields.Raw):
@@ -22,8 +23,8 @@ class ActivityItem(fields.Raw):
                 return marshal(value, track)
             if value.get("playlist_id"):
                 return marshal(value, playlist_model)
-        except:
-            raise MarshallingError("Unable to marshal as activity item")
+        except Exception as e:
+            raise MarshallingError("Unable to marshal as activity item") from e
 
 
 class FullActivityItem(fields.Raw):
@@ -33,8 +34,8 @@ class FullActivityItem(fields.Raw):
                 return marshal(value, track_full)
             if value.get("playlist_id"):
                 return marshal(value, full_playlist_model)
-        except:
-            raise MarshallingError("Unable to marshal as activity item")
+        except Exception as e:
+            raise MarshallingError("Unable to marshal as activity item") from e
 
 
 activity_model = ns.model(

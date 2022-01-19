@@ -1,13 +1,12 @@
 import logging  # pylint: disable=C0302
 
 from src.models import User
+from src.queries.query_helpers import add_query_pagination
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import (
-    add_query_pagination
-)
 
 logger = logging.getLogger(__name__)
+
 
 def get_user_history(args):
     user_id = args.get("user_id")
@@ -22,11 +21,7 @@ def get_user_history(args):
             .order_by(User.updated_at.asc())
         )
 
-        user_history = add_query_pagination(
-            user_history_query,
-            limit,
-            offset
-        ).all()
+        user_history = add_query_pagination(user_history_query, limit, offset).all()
 
         if not user_history:
             return None

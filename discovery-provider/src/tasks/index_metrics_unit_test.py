@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
+
 from sqlalchemy import func
-from src.models import RouteMetrics, AppNameMetrics
+from src.models import AppNameMetrics, RouteMetrics
 from src.tasks.index_metrics import (
-    process_route_keys,
     process_app_name_keys,
+    process_route_keys,
     sweep_metrics,
 )
 from src.utils.redis_metrics import datetime_format

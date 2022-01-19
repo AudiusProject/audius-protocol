@@ -123,9 +123,12 @@ alias top='htop'
 alias python='python3'
 alias pip='python -m pip'
 alias gssh='gcloud compute ssh'
+function gip () {
+    gcloud compute instances describe $1 --format 'get(networkInterfaces[0].accessConfigs[0].natIP)'
+}
 
 ## docker aliases
-alias docker-prune="docker rm $(docker ps --all -q -f status=dead); docker network prune; ocker system prune"
+alias docker-prune="docker rm $(docker ps --all -q -f status=dead); docker network prune; docker system prune"
 alias docker-port-nuke-linux="sudo systemctl stop docker; sudo rm -rf /var/lib/docker/containers/*; sudo systemctl start docker"
 
 if [[ $(uname) = "Darwin" ]]; then
@@ -135,4 +138,29 @@ if [[ $(uname) = "Darwin" ]]; then
     alias chrome='open -a Google\ Chrome'
 fi
 
-# }}}
+function ports () {
+  sudo netstat -tulpn | grep $1
+}
+
+function killport () {
+  sudo kill $(lsof -t -i :${1})
+}
+
+function start-ui () {
+  (
+    cd ${PROTOCOL_DIR}/../audius-client
+    nohup npm run start:dev:cloud \
+      > ${PROTOCOL_DIR}/../audius-client.out 2>&1 &
+  )
+}
+
+alias tail-ui='tail -f ${PROTOCOL_DIR}/../audius-client.out'
+
+alias ap='cd ${PROTOCOL_DIR}'
+alias cn='cd ${PROTOCOL_DIR}/creator-node'
+alias dp='cd ${PROTOCOL_DIR}/discovery-provider'
+alias libs='cd ${PROTOCOL_DIR}/libs'
+alias is='cd ${PROTOCOL_DIR}/identity-service'
+alias sc='cd ${PROTOCOL_DIR}/service-commands'
+alias maddog='cd ${PROTOCOL_DIR}/mad-dog'
+alias dapp='cd ${PROTOCOL_DIR}/../audius-client'

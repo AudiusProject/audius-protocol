@@ -1,5 +1,6 @@
 from datetime import date, timedelta
-from src.models import AggregateDailyUniqueUsersMetrics, AggregateDailyTotalUsersMetrics
+
+from src.models import AggregateDailyTotalUsersMetrics, AggregateDailyUniqueUsersMetrics
 from src.queries.get_trailing_metrics import _get_aggregate_route_metrics_trailing_month
 from src.utils.db_session import get_db
 

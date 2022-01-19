@@ -1,48 +1,50 @@
 import logging
-from flask_restx import Resource, Namespace, fields, reqparse, inputs
-from src.queries.get_genre_metrics import get_genre_metrics
-from src.queries.get_plays_metrics import get_plays_metrics
+
+from flask_restx import Namespace, Resource, fields, inputs, reqparse
 from src.api.v1.helpers import (
+    abort_bad_path_param,
+    abort_bad_request_param,
+    format_limit,
     make_response,
-    success_response,
     parse_bool_param,
     parse_unix_epoch_param,
     parse_unix_epoch_param_non_utc,
-    abort_bad_request_param,
-    abort_bad_path_param,
-    format_limit,
-)
-from src.queries.get_route_metrics import (
-    get_route_metrics,
-    get_aggregate_route_metrics,
-    get_historical_route_metrics,
+    success_response,
 )
 from src.queries.get_app_name_metrics import (
-    get_app_name_metrics,
     get_aggregate_app_metrics,
+    get_app_name_metrics,
     get_historical_app_metrics,
 )
 from src.queries.get_app_names import get_app_names
+from src.queries.get_genre_metrics import get_genre_metrics
+from src.queries.get_plays_metrics import get_plays_metrics
+from src.queries.get_route_metrics import (
+    get_aggregate_route_metrics,
+    get_historical_route_metrics,
+    get_route_metrics,
+)
 from src.queries.get_trailing_metrics import (
+    get_aggregate_route_metrics_trailing_month,
     get_monthly_trailing_route_metrics,
     get_trailing_app_metrics,
-    get_aggregate_route_metrics_trailing_month,
 )
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import (
-    get_redis_route_metrics,
-    get_redis_app_metrics,
     get_aggregate_metrics_info,
+    get_redis_app_metrics,
+    get_redis_route_metrics,
     get_summed_unique_metrics,
 )
+
 from .models.metrics import (
-    route_metric,
-    app_name_metric,
     app_name,
-    plays_metric,
-    genre_metric,
-    route_trailing_metric,
+    app_name_metric,
     app_name_trailing_metric,
+    genre_metric,
+    plays_metric,
+    route_metric,
+    route_trailing_metric,
 )
 
 logger = logging.getLogger(__name__)

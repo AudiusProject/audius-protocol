@@ -1,18 +1,17 @@
-from sqlalchemy import func, desc, case, and_
-
 from flask.globals import request
+from sqlalchemy import and_, case, desc, func
 from src import exceptions
-from src.models import Track, Repost, RepostType, Save, SaveType, Remix
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
+from src.models import Remix, Repost, RepostType, Save, SaveType, Track
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
-    populate_track_metadata,
     add_query_pagination,
     add_users_to_tracks,
-    create_save_count_subquery,
     create_repost_count_subquery,
+    create_save_count_subquery,
+    populate_track_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import extract_key, use_redis_cache
 
 UNPOPULATED_REMIXES_CACHE_DURATION_SEC = 10

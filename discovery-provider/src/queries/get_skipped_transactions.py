@@ -1,8 +1,8 @@
 import logging
-import redis
 
-from src.models import SkippedTransaction, Block
-from src.utils import helpers, db_session
+import redis
+from src.models import Block, SkippedTransaction
+from src.utils import db_session, helpers
 from src.utils.config import shared_config
 from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
 
@@ -11,6 +11,7 @@ REDIS = redis.Redis.from_url(url=REDIS_URL)
 
 INDEXING_ERROR_KEY = "indexing:error"
 logger = logging.getLogger(__name__)
+
 
 # returns the recorded skipped transactions in the db during indexing
 # filters by blocknumber, blockhash, or transaction hash if they are not null
@@ -71,10 +72,8 @@ def get_transaction_status(blocknumber, blockhash, txhash):
         )
         if len(skipped_transactions_results) > 1:
             raise Exception(
-                "Expected no more than 1 row for skipped indexing transaction with \
-                blocknumber={}, blockhash={}, txhash={}".format(
-                    blocknumber, blockhash, txhash
-                )
+                f"Expected no more than 1 row for skipped indexing transaction with \
+                blocknumber={blocknumber}, blockhash={blockhash}, txhash={txhash}"
             )
         if len(skipped_transactions_results) == 1:
             return "FAILED"
@@ -86,9 +85,7 @@ def get_transaction_status(blocknumber, blockhash, txhash):
         )
         if len(block_transaction_results) > 1:
             raise Exception(
-                "Expected no more than 1 row for blocknumber={}, blockhash={}".format(
-                    blocknumber, blockhash
-                )
+                f"Expected no more than 1 row for blocknumber={blocknumber}, blockhash={blockhash}"
             )
         if len(block_transaction_results) == 1:
             return "PASSED"

@@ -1,14 +1,19 @@
 import logging
+
 from flask import Blueprint, request
+from sqlalchemy import func
+from src.api_helpers import error_response, success_response
+from src.models import SkippedTransaction, SkippedTransactionLevel
 from src.queries.get_skipped_transactions import (
     get_skipped_transactions,
     get_transaction_status,
 )
-from src.api_helpers import error_response, success_response
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("indexing", __name__)
+
+MAX_NETWORK_LEVEL_SKIPPED_TX = 100
 
 
 @bp.route("/indexing/skipped_transactions", methods=["GET"])
@@ -48,3 +53,33 @@ def check_transaction_status():
     except Exception as e:
         return error_response(e)
     return success_response(transaction_status)
+
+
+def add_node_level_skipped_transaction(session, blocknumber, blockhash, txhash):
+    skipped_tx = SkippedTransaction(
+        blocknumber=blocknumber,
+        blockhash=blockhash,
+        txhash=txhash,
+        level=SkippedTransactionLevel.node,
+    )
+    session.add(skipped_tx)
+
+
+def add_network_level_skipped_transaction(session, blocknumber, blockhash, txhash):
+    num_skipped_tx = (
+        session.query(func.count(SkippedTransaction))
+        .filter(SkippedTransaction.level == SkippedTransactionLevel.network)
+        .scalar()
+    )
+    if num_skipped_tx >= MAX_NETWORK_LEVEL_SKIPPED_TX:
+        logger.warning(
+            f"skipped_transactions.py | Not skipping tx {txhash} as {num_skipped_tx} >= {MAX_NETWORK_LEVEL_SKIPPED_TX}"
+        )
+        raise
+    skipped_tx = SkippedTransaction(
+        blocknumber=blocknumber,
+        blockhash=blockhash,
+        txhash=txhash,
+        level=SkippedTransactionLevel.network,
+    )
+    session.add(skipped_tx)
