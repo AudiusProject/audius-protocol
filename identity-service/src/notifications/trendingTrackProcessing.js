@@ -58,14 +58,14 @@ const getDiscoveryNodes = async () => {
 }
 
 async function getTrendingTracks (trendingExperiment, discoveryNodes) {
-  const results = await Promise.all(discoveryNodes.map(async node => {
+  const results = await Promise.all(discoveryNodes.map(async discoveryNode => {
     try {
       // The owner info is then used to target listenCount milestone notifications
       let params = new URLSearchParams()
       params.append('time', TRENDING_TIME.WEEK)
       params.append('limit', MAX_TOP_TRACK_RANK)
 
-      const baseUrl = `${node}/v1/full/tracks/trending`
+      const baseUrl = `${discoveryNode}/v1/full/tracks/trending`
       const url = trendingExperiment
         ? `${baseUrl}/${trendingExperiment}`
         : `${baseUrl}`
