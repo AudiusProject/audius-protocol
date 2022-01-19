@@ -6,6 +6,7 @@ from typing import List
 from integration_tests.utils import populate_mock_db
 from src.models import AggregateUser
 from src.tasks.index_aggregate_user import AGGREGATE_USER, _update_aggregate_user
+from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
@@ -86,8 +87,13 @@ basic_entities = {
 }
 
 
-def basic_tests(results):
+def basic_tests(session, last_checkpoint=6):
     """Helper for testing the basic_entities as is"""
+
+    # read from aggregate_user table
+    results: List[AggregateUser] = (
+        session.query(AggregateUser).order_by(AggregateUser.user_id).all()
+    )
 
     assert len(results) == 2
 
@@ -108,6 +114,9 @@ def basic_tests(results):
     assert results[1].following_count == 1
     assert results[1].repost_count == 2
     assert results[1].track_save_count == 1
+
+    prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+    assert prev_id_checkpoint == last_checkpoint
 
 
 def created_entity_tests(results, count):
@@ -148,13 +157,8 @@ def test_index_aggregate_user_populate(app):
         # trigger celery task
         _update_aggregate_user(session)
 
-        # read from aggregate_user table
-        results: List[AggregateUser] = (
-            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
-        )
-
         # run basic tests against basic_entities
-        basic_tests(results)
+        basic_tests(session)
 
 
 def test_index_aggregate_user_empty_users(app):
@@ -349,11 +353,7 @@ def test_index_aggregate_user_update(app):
         _update_aggregate_user(session)
 
     with db.scoped_session() as session:
-        results: List[AggregateUser] = (
-            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
-        )
-
-        basic_tests(results)
+        basic_tests(session)
 
 
 def test_index_aggregate_user_update_with_extra_user(app):
@@ -420,10 +420,7 @@ def test_index_aggregate_user_update_with_extra_user(app):
         _update_aggregate_user(session)
 
     with db.scoped_session() as session:
-        results: List[AggregateUser] = (
-            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
-        )
-        basic_tests(results)
+        basic_tests(session, last_checkpoint=3)
 
 
 def test_index_aggregate_user_entity_model(app):
