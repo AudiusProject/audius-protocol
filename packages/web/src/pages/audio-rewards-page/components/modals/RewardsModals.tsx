@@ -20,7 +20,7 @@ const RewardsModals = () => {
   return (
     <>
       <TrendingRewardsModal />
-      <ChallengeRewardsModal />
+      {!IS_NATIVE_MOBILE && <ChallengeRewardsModal />}
       <VerifiedUpload />
       <TopAPIModal />
       {!IS_NATIVE_MOBILE && (
