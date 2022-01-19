@@ -197,7 +197,9 @@ def generate_trending(session, time, genre, limit, offset, strategy):
         if save_type == SaveType.track
     }
 
-    karma_query = get_karma(session, tuple(track_ids), None, False, xf)
+    karma_query = get_karma(
+        session, tuple(track_ids), strategy, None, False, xf, strategy
+    )
     karma_counts_for_id = dict(karma_query)
 
     trending_tracks = []

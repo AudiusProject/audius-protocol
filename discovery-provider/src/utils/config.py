@@ -35,7 +35,8 @@ def env_config_update(config, section_name, key):
     env_var_base = f"{section_name}_{key}"
     env_var_name = f"audius_{env_var_base}"
     env_var_value = os.environ.get(env_var_name)
-    env_var_exists = env_var_value != None
+    # Don't allow empty strings to override default_ini
+    env_var_exists = env_var_value != None and env_var_value != ""
     if env_var_exists:
         # Override any config values with environment variables if present
         # Variables are formatted as audius_<section_name>_<key>

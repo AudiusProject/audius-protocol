@@ -66,7 +66,7 @@ module.exports.handleResponseWithHeartbeat = (func) => {
 
 const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   const duration = getDuration(req)
-  let logger = setFieldsInChildLogger(req, resp, {
+  let logger = setFieldsInChildLogger(req, {
     duration,
     statusCode: resp.statusCode
   })
@@ -103,7 +103,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
 const sendResponseWithHeartbeatTerminator =
   (module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
     const duration = getDuration(req)
-    let logger = setFieldsInChildLogger(req, resp, {
+    let logger = setFieldsInChildLogger(req, {
       duration,
       statusCode: resp.statusCode
     })
