@@ -52,6 +52,7 @@ describe("audius-data", () => {
       console.log(logs);
       throw new Error(`Failed to find ${log} in tx=${tx}`);
     }
+    return info;
   };
 
   const testInitUser = async (
@@ -579,7 +580,8 @@ describe("audius-data", () => {
     console.log(`Created 3 tracks in ${Date.now() - start}ms`);
   });
 
-  it("follow user", async () => {
+  it("Follow user", async () => {
+    // Initialize 2 users
     let constants1 = initTestConstants();
     let constants2 = initTestConstants();
     let handleBytesArray1 = constants1.handleBytesArray;
@@ -644,20 +646,39 @@ describe("audius-data", () => {
     });
 
     // Submit a tx where user 1 follows user 2
+    let followArgs = {
+      accounts: {
+        audiusAdmin: adminStgKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+        authority: newUser1Key.publicKey,
+        followerUserStg: newUserAcct1PDA,
+        followeeUserStg: newUserAcct2PDA,
+      },
+      signers: [newUser1Key],
+    };
     let followTx = await program.rpc.followUser(
       handleBytesArray1,
       handleBytesArray2,
-      {
-        accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
-          payer: provider.wallet.publicKey,
-          authority: newUser1Key.publicKey,
-          followerUserStg: newUserAcct1PDA,
-          followeeUserStg: newUserAcct2PDA,
-        },
-        signers: [newUser1Key],
-      }
+      followArgs
     );
-    console.log(followTx);
+    let txInfo = await confirmLogInTransaction(followTx, "Audius::FollowUser");
+    const decodedInstruction = program.coder.instruction.decode(
+      txInfo.transaction.message.instructions[0].data,
+      "base58"
+    );
+    // Validate deserialized instructions match input
+    // Confirms user handles passed on chain validation
+    // Can be used during indexing or external tx inspection
+    const instructions = decodedInstruction.data;
+    const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
+    const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
+    const instructionFollowerHandle = String.fromCharCode(
+      ...instructions["followerHandleSeed"]
+    );
+    const instructionFolloweeHandle = String.fromCharCode(
+      ...instructions["followeeHandleSeed"]
+    );
+    assert.equal(user1Handle, instructionFollowerHandle);
+    assert.equal(user2Handle, instructionFolloweeHandle);
   });
 });

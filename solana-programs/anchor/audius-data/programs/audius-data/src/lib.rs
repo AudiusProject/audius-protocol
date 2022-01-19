@@ -41,7 +41,7 @@ pub mod audius_data {
     ) -> ProgramResult {
         msg!("Audius::InitUser");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
-        let (derived_base, _) = find_program_address_pubkey(ctx.accounts.admin.key(), ctx.program_id);
+        let (derived_base, _) = Pubkey::find_program_address(&[&ctx.accounts.admin.key().to_bytes()[..32]], ctx.program_id);
 
         if derived_base != base {
             return Err(ErrorCode::Unauthorized.into());
@@ -156,21 +156,23 @@ pub mod audius_data {
     pub fn follow_user(ctx: Context<FollowUser>, follower_handle_seed: [u8; 16], followee_handle_seed: [u8;16]) -> ProgramResult {
         msg!("Audius::FollowUser");
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
-
-        let (base, _bump) = Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+        let (base_pda, _bump) = Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
         // Confirm the follower is part of this audius instance
-        let (derived_follower_pda, _) = Pubkey::find_program_address(&[&base.to_bytes()[..32], &follower_handle_seed], ctx.program_id);
-        // Confirm the authority for this follower has signed the transaction
+        let (derived_follower_pda, _) = Pubkey::find_program_address(&[&base_pda.to_bytes()[..32], &follower_handle_seed], ctx.program_id);
+        // Confirm the follower PDA matches the expected value provided the target handle
         if derived_follower_pda != ctx.accounts.follower_user_stg.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
+        // Confirm the authority for this follower has signed the transaction
         if ctx.accounts.follower_user_stg.authority != ctx.accounts.authority.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        let (derived_followee_pda, _) = Pubkey::find_program_address(&[&base.to_bytes()[..32], &followee_handle_seed], ctx.program_id);
+        // Confirm the follower PDA matches the expected value
+        let (derived_followee_pda, _) = Pubkey::find_program_address(&[&base_pda.to_bytes()[..32], &followee_handle_seed], ctx.program_id);
 
+        // Confirm the follower PDA matches the expected value provided the target handle
         if derived_followee_pda != ctx.accounts.followee_user_stg.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
@@ -344,9 +346,4 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("Signature verification failed.")]
     SignatureVerification,
-}
-
-// Util functions
-pub fn find_program_address_pubkey(base_pubkey : Pubkey, program_id: &Pubkey) -> (Pubkey, u8) {
-    Pubkey::find_program_address(&[&base_pubkey.to_bytes()[..32]], program_id)
 }
