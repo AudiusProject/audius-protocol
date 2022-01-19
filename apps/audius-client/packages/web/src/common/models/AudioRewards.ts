@@ -16,6 +16,7 @@ export type UserChallenge = {
 export type ChallengeRewardID =
   | 'track-upload'
   | 'referrals'
+  | 'referred'
   | 'mobile-install'
   | 'connect-verified'
   | 'listen-streak'
@@ -87,6 +88,7 @@ export type FlowSessionEvent =
  */
 export const amounts: Record<ChallengeRewardID, number> = {
   referrals: 1,
+  referred: 1,
   'connect-verified': 5,
   'listen-streak': 1,
   'mobile-install': 1,
