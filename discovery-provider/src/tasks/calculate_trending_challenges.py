@@ -7,7 +7,6 @@ from redis import Redis
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import Block
 from src.queries.get_trending_playlists import (
     GetTrendingPlaylistsArgs,
     _get_trending_playlists_with_session,
@@ -18,6 +17,7 @@ from src.queries.get_underground_trending import (
     _get_underground_trending_with_session,
 )
 from src.tasks.celery_app import celery
+from src.tasks.index_aggregate_user import get_latest_blocknumber
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
@@ -39,16 +39,6 @@ def get_latest_blocknumber_via_redis(session: Session, redis: Redis) -> Optional
         return int(latest_indexed_block_num)
 
     return get_latest_blocknumber(session)
-
-
-def get_latest_blocknumber(session: Session) -> Optional[int]:
-    db_block_query = (
-        session.query(Block.number).filter(Block.is_current == True).first()
-    )
-    if db_block_query is None:
-        logger.error("Unable to get latest block number")
-        return None
-    return db_block_query[0]
 
 
 # The number of users to recieve the trending rewards

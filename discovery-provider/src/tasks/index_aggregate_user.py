@@ -1,8 +1,10 @@
 import logging
 import time
+from typing import Optional
 
 from sqlalchemy import text
-from src.tasks.calculate_trending_challenges import get_latest_blocknumber
+from sqlalchemy.orm.session import Session
+from src.models import Block
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
@@ -333,6 +335,16 @@ UPDATE_AGGREGATE_USER_QUERY = """
             repost_count = EXCLUDED.repost_count,
             track_save_count = EXCLUDED.track_save_count
     """
+
+
+def get_latest_blocknumber(session: Session) -> Optional[int]:
+    db_block_query = (
+        session.query(Block.number).filter(Block.is_current == True).first()
+    )
+    if db_block_query is None:
+        logger.error("Unable to get latest block number")
+        return None
+    return db_block_query[0]
 
 
 def _update_aggregate_user(session):
