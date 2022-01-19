@@ -8,6 +8,7 @@ import {
   Animated,
   Platform
 } from 'react-native'
+import { Shadow } from 'react-native-shadow-2'
 import { SvgProps } from 'react-native-svg'
 
 import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
@@ -97,9 +98,6 @@ const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
 const styles = StyleSheet.create({
   item: {
     borderRadius: 8,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1.0,
-    elevation: 1,
     padding: 12,
     paddingTop: 16,
     paddingBottom: 16,
@@ -195,39 +193,46 @@ const NotificationBlock = ({
         delayPressIn={50}
         activeOpacity={notificationRoute && IS_IOS ? 0.8 : 1}
       >
-        <View
-          style={[
-            itemStyles,
-            {
-              borderColor: notification.isViewed ? 'none' : highlight,
-              borderWidth: notification.isViewed ? 0 : 2
-            }
-          ]}
+        <Shadow
+          offset={[2, 2]}
+          viewStyle={{ alignSelf: 'stretch' }}
+          distance={5}
+          startColor='#0000000F'
         >
-          <View style={styles.top}>
-            <Icon
-              {...iconProps}
-              fill={notification.isViewed ? lowlight : highlight}
-            />
-            <Text
-              style={[
-                styles.title,
-                {
-                  color: notification.isViewed ? lowlight : highlight
-                }
-              ]}
-            >
-              {title}
-            </Text>
+          <View
+            style={[
+              itemStyles,
+              {
+                borderColor: notification.isViewed ? 'none' : highlight,
+                borderWidth: notification.isViewed ? 0 : 2
+              }
+            ]}
+          >
+            <View style={styles.top}>
+              <Icon
+                {...iconProps}
+                fill={notification.isViewed ? lowlight : highlight}
+              />
+              <Text
+                style={[
+                  styles.title,
+                  {
+                    color: notification.isViewed ? lowlight : highlight
+                  }
+                ]}
+              >
+                {title}
+              </Text>
+            </View>
+            <View style={styles.body}>
+              <NotificationContent
+                notification={notification}
+                onGoToRoute={onGoToRoute}
+              />
+              <Text style={timestampStyles}>{notification.timeLabel}</Text>
+            </View>
           </View>
-          <View style={styles.body}>
-            <NotificationContent
-              notification={notification}
-              onGoToRoute={onGoToRoute}
-            />
-            <Text style={timestampStyles}>{notification.timeLabel}</Text>
-          </View>
-        </View>
+        </Shadow>
       </TouchableOpacity>
     </Animated.View>
   )
