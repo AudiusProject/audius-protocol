@@ -1,6 +1,6 @@
 from integration_tests.utils import populate_mock_db
-from src.tasks.index_aggregate_user import _update_aggregate_table
 from src.queries.get_user_signals import _get_user_signals
+from src.tasks.index_aggregate_user import _update_aggregate_table
 from src.utils.db_session import get_db
 
 

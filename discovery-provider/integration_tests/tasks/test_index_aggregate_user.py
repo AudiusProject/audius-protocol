@@ -231,7 +231,9 @@ def test_index_aggregate_user_empty_users(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        assert len(results) == 0, "Test that without Users there will be no AggregateUsers"
+        assert (
+            len(results) == 0
+        ), "Test that without Users there will be no AggregateUsers"
 
 
 def test_index_aggregate_user_empty_activity(app):
@@ -297,7 +299,9 @@ def test_index_aggregate_user_empty_completely(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
 
-        assert len(results) == 0, "Test that empty entities won't generate AggregateUsers"
+        assert (
+            len(results) == 0
+        ), "Test that empty entities won't generate AggregateUsers"
 
 
 def test_index_aggregate_user_update(app):
