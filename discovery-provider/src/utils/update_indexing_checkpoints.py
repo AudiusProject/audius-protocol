@@ -1,4 +1,4 @@
-import sqlalchemy as sa
+from sqlalchemy import text
 from src.models import IndexingCheckpoints
 
 UPDATE_INDEXING_CHECKPOINTS_QUERY = """
@@ -11,7 +11,7 @@ UPDATE_INDEXING_CHECKPOINTS_QUERY = """
 
 def save_indexed_checkpoint(session, tablename, checkpoint):
     session.execute(
-        sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
+        text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
         {
             "tablename": tablename,
             "last_checkpoint": checkpoint,
