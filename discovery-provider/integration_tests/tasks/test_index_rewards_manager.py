@@ -264,7 +264,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
         try:
             process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
             assert False
-        except MissingEthRecipientError as e:
+        except MissingEthRecipientError:
             disbursments = session.query(ChallengeDisbursement).all()
             assert len(disbursments) == 0
             reward_manager_tx_1 = (
