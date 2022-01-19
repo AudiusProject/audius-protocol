@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useContext } from 'react'
+import React, { useCallback, useEffect, useContext } from 'react'
 
 import { Button, ButtonType, ProgressBar, IconCheck } from '@audius/stems'
 import cn from 'classnames'
@@ -20,8 +20,7 @@ import {
   ChallengeRewardsModalType,
   setChallengeRewardsModalType,
   ClaimStatus,
-  resetClaimStatus,
-  resetHCaptchaStatus,
+  resetAndCancelClaimReward,
   CognitoFlowStatus,
   claimChallengeReward
 } from 'common/store/pages/audio-rewards/slice'
@@ -236,15 +235,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const { toast } = useContext(ToastContext)
   const claimStatus = useSelector(getClaimStatus)
-  const [displayClaimError, setDisplayClaimError] = useState(false)
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
-
-  const resetClaimState = useCallback(() => {
-    dispatch(resetClaimStatus())
-    dispatch(resetHCaptchaStatus())
-  }, [dispatch])
 
   const onClaimRewardClicked = useCallback(() => {
     if (challenge) {
@@ -262,24 +255,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }, [dispatch, challenge, specifier, amount])
 
   useEffect(() => {
-    switch (claimStatus) {
-      case ClaimStatus.ERROR:
-        // attestation failed both the first claim attempt and the attempt after hCaptcha/flow verification
-        resetClaimState()
-        setDisplayClaimError(true)
-        break
-      case ClaimStatus.SUCCESS:
-        // attestation succeeded and reward was disbursed
-        resetClaimState()
-        toast(messages.rewardClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
-        setTimeout(resetClaimState, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
-        break
-      case ClaimStatus.CLAIMING:
-      case ClaimStatus.NONE:
-      default:
-        break
+    if (claimStatus === ClaimStatus.SUCCESS) {
+      toast(messages.rewardClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
     }
-  }, [claimStatus, resetClaimState, setDisplayClaimError, toast])
+  }, [claimStatus, toast])
 
   return (
     <div className={wm(styles.container)}>
@@ -368,7 +347,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           />
         )}
       </div>
-      {displayClaimError && (
+      {claimStatus === ClaimStatus.ERROR && (
         <div className={styles.claimError}>{messages.claimError}</div>
       )}
     </div>
@@ -378,8 +357,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 export const ChallengeRewardsModal = () => {
   const [modalType] = useRewardsModalType()
   const [isOpen, setOpen] = useModalState('ChallengeRewardsExplainer')
+  const dispatch = useDispatch()
   const wm = useWithMobileStyle(styles.mobile)
-  const onClose = () => setOpen(false)
+  const onClose = useCallback(() => {
+    setOpen(false)
+    // Cancel any claims on close so that the state is fresh for other rewards
+    dispatch(resetAndCancelClaimReward())
+  }, [dispatch, setOpen])
   const [isHCaptchaModalOpen] = useModalState('HCaptcha')
   const cognitoFlowStatus = useSelector(getCognitoFlowStatus)
 
