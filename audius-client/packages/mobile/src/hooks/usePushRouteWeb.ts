@@ -7,12 +7,13 @@ import { useDispatchWeb } from './useDispatchWeb'
 export const usePushRouteWeb = (onLeave?: () => void) => {
   const dispatchWeb = useDispatchWeb()
   return useCallback(
-    (route: string, fromPage: string) => {
+    (route: string, fromPage: string, fromNativeNotifications = true) => {
       if (onLeave) onLeave()
       dispatchWeb({
         type: MessageType.PUSH_ROUTE,
         route,
-        fromPage
+        fromPage,
+        fromNativeNotifications
       })
     },
     [dispatchWeb, onLeave]
