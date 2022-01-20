@@ -128,10 +128,12 @@ except (KeyError, RuntimeError) as e:
     ) from e
 
 try:
-    # get latitude longitude
+    # get latitude longitude and country
     ip_info_url = "https://ipinfo.io"
     ip_info_response = requests.get(ip_info_url)
-    latitude, longitude = ip_info_response.json()["loc"].split(",")
+    response_data = ip_info_response.json()
+    shared_config["serviceLocation"]["serviceCountry"] = response_data["country"]
+    latitude, longitude = response_data["loc"].split(",")
     shared_config["serviceLocation"]["serviceLatitude"] = latitude
     shared_config["serviceLocation"]["serviceLongitude"] = longitude
 
