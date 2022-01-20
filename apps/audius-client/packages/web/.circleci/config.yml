@@ -70,7 +70,7 @@ jobs:
 
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
 
-      - run: npm install --ignore-scripts
+      - run: npm ci --ignore-scripts
 
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
@@ -188,7 +188,7 @@ jobs:
           name: install probers dependencies
           command: |
             cd probers
-            npm install
+            npm ci
       - save_cache:
           key: probers-dependency-cache-{{ checksum "probers/package.json" }}
           paths:
