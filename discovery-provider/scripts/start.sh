@@ -67,16 +67,16 @@ export PYTHONUNBUFFERED=1
 audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
-    stdbuf -oL ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
+    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        stdbuf -oL celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) worker.log &
-        stdbuf -oL celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) beat.log &
+        celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) worker.log &
+        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) beat.log &
     fi
 else
-    stdbuf -oL ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
+    ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        stdbuf -oL celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
-        stdbuf -oL celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
+        celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
