@@ -1,4 +1,4 @@
-import React, { useContext, useCallback, useRef } from 'react'
+import React, { useContext, useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
@@ -7,6 +7,7 @@ import LinearGradient from 'react-native-linear-gradient'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import Text from 'app/components/text'
+import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
@@ -71,24 +72,7 @@ export const ReferralLinkCopyButton = () => {
   }, [referralUrl, toast])
 
   // Button animation
-  const scale = useRef(new Animated.Value(1)).current
-  const handlePressIn = () => {
-    Animated.timing(scale, {
-      toValue: 0.97,
-      duration: 100,
-      delay: 0,
-      useNativeDriver: true
-    }).start()
-  }
-  const handlePressOut = () => {
-    Animated.timing(scale, {
-      toValue: 1,
-      duration: 100,
-      delay: 0,
-      useNativeDriver: true
-    }).start()
-  }
-
+  const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation()
   return (
     <Animated.View
       style={[styles.copyPromptContainer, { transform: [{ scale }] }]}

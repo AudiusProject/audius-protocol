@@ -18,6 +18,7 @@ import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconWand from 'app/assets/images/iconWand.svg'
 import Button from 'app/components/button'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { MessageType } from 'app/message/types'
 import {
   setFollowArtistsCategory,
@@ -456,16 +457,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
   const Pill = ({ category }: { category: FollowArtistsCategory }) => {
     const dispatch = useDispatch()
     const isActive = selectedCategory === category
-    const scalePill = new Animated.Value(1)
-
-    const animatePill = (type: 'in' | 'out') => {
-      Animated.timing(scalePill, {
-        toValue: type === 'in' ? 0.9 : 1,
-        duration: 100,
-        delay: 0,
-        useNativeDriver: true
-      }).start()
-    }
+    const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
 
     const updateSelectedCategory = useCallback(async () => {
       if (!isActive) {
@@ -479,13 +471,13 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
 
     return (
       <Animated.View
-        style={[styles.animatedPillView, { transform: [{ scale: scalePill }] }]}
+        style={[styles.animatedPillView, { transform: [{ scale }] }]}
       >
         <TouchableOpacity
           style={[styles.pill, isActive ? styles.pillActive : {}]}
           activeOpacity={1}
-          onPressIn={() => animatePill('in')}
-          onPressOut={() => animatePill('out')}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
           onPress={updateSelectedCategory}
         >
           <Text

@@ -1,9 +1,10 @@
-import React, { useRef } from 'react'
+import React from 'react'
 
 import { Animated, StyleProp, View, ViewStyle } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
 
+import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useThemeColors } from 'app/utils/theme'
 
 export type IconButtonProps = {
@@ -32,26 +33,8 @@ const IconButton = ({
   isActive,
   isDisabled
 }: IconButtonProps) => {
-  const scale = useRef(new Animated.Value(1)).current
+  const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
   const { neutral, neutralLight4, primary } = useThemeColors()
-
-  const handlePressIn = () => {
-    Animated.timing(scale, {
-      toValue: 0.9,
-      duration: 100,
-      delay: 0,
-      useNativeDriver: true
-    }).start()
-  }
-
-  const handlePressOut = () => {
-    Animated.timing(scale, {
-      toValue: 1,
-      duration: 100,
-      delay: 0,
-      useNativeDriver: true
-    }).start()
-  }
 
   let fill = neutral
   if (isActive) {

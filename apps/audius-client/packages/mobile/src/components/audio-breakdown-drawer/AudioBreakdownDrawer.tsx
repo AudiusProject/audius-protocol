@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback } from 'react'
 
 import { Chain } from 'audius-client/src/common/models/Chain'
 import { BNWei } from 'audius-client/src/common/models/Wallet'
@@ -30,6 +30,7 @@ import Drawer from 'app/components/drawer'
 import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 import share from 'app/utils/share'
@@ -316,7 +317,7 @@ const Wallet = ({ chain, address, balance }: WalletProps) => {
   const solWalletAudioEnabled = false
   const styles = useThemedStyles(createStyles)
 
-  const scale = useRef(new Animated.Value(1)).current
+  const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.98)
 
   const displayAddress =
     chain === Chain.Eth ? shortenEthAddress : shortenSPLAddress
@@ -324,24 +325,6 @@ const Wallet = ({ chain, address, balance }: WalletProps) => {
   const handleCopy = useCallback(() => {
     share({ url: address })
   }, [address])
-
-  const handlePressIn = () => {
-    Animated.timing(scale, {
-      toValue: 0.98,
-      duration: 100,
-      delay: 0,
-      useNativeDriver: true
-    }).start()
-  }
-
-  const handlePressOut = () => {
-    Animated.timing(scale, {
-      toValue: 1,
-      duration: 100,
-      delay: 0,
-      useNativeDriver: true
-    }).start()
-  }
 
   return (
     <View style={styles.walletRow}>
