@@ -68,6 +68,8 @@ const BASE_EMBED_URL = `${BASE_GA_URL}/embed`
 
 const VISIBLE_COLLECTIBLES_DROPPABLE_ID = 'visible-collectibles-droppable'
 
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
 export const collectibleMessages = {
   title: 'COLLECTIBLES',
   subtitlePrefix: 'A collection of NFT collectibles owned and created by ',
@@ -762,20 +764,22 @@ const CollectiblesPage: React.FC<{
         </div>
       </Modal>
 
-      <Drawer
-        isOpen={showUseDesktopDrawer}
-        onClose={() => setShowUseDesktopDrawer(false)}
-      >
-        <div className={styles.editDrawer}>
-          <IconGradientCollectibles className={styles.editDrawerIcon} />
-          <div className={styles.editDrawerTitle}>
-            {collectibleMessages.editCollectibles}
+      {!NATIVE_MOBILE ? (
+        <Drawer
+          isOpen={showUseDesktopDrawer}
+          onClose={() => setShowUseDesktopDrawer(false)}
+        >
+          <div className={styles.editDrawer}>
+            <IconGradientCollectibles className={styles.editDrawerIcon} />
+            <div className={styles.editDrawerTitle}>
+              {collectibleMessages.editCollectibles}
+            </div>
+            <div className={styles.editDrawerContent}>
+              {collectibleMessages.editInBrowser}
+            </div>
           </div>
-          <div className={styles.editDrawerContent}>
-            {collectibleMessages.editInBrowser}
-          </div>
-        </div>
-      </Drawer>
+        </Drawer>
+      ) : null}
     </div>
   )
 }

@@ -10,6 +10,7 @@ export type Modals =
   | 'APIRewardsExplainer'
   | 'TransferAudioMobileWarning'
   | 'MobileConnectWalletsDrawer'
+  | 'MobileEditCollectiblesDrawer'
   | 'Share'
   | 'ShareSoundToTikTok'
   | 'HCaptcha'
@@ -30,6 +31,7 @@ const initialState: ModalsState = {
   APIRewardsExplainer: false,
   TransferAudioMobileWarning: false,
   MobileConnectWalletsDrawer: false,
+  MobileEditCollectiblesDrawer: false,
   Share: false,
   ShareSoundToTikTok: false,
   HCaptcha: false,
