@@ -55,7 +55,6 @@ import RepostsPage from 'pages/reposts-page/RepostsPage'
 import RequiresUpdate from 'pages/requires-update/RequiresUpdate'
 import SavedPage from 'pages/saved-page/SavedPage'
 import SearchPage from 'pages/search-page/SearchPage'
-import SignOn from 'pages/sign-on/SignOn'
 import {
   openSignOn,
   updateRouteOnCompletion as updateRouteOnSignUpCompletion
@@ -167,6 +166,8 @@ import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
+
+const SignOn = React.lazy(() => import('pages/sign-on/SignOn'))
 
 const SettingsPage = lazyWithPreload(
   () => import('pages/settings-page/SettingsPage'),
