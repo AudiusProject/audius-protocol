@@ -9,7 +9,6 @@ const SchemaValidator = require('../schemaValidator')
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const POLL_STATUS_INTERVAL = 3000 // 3s
 const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
-const TRACK_CONTENT_UPLOAD_TASK_NAME = 'trackContentUpload'
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {
