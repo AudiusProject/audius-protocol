@@ -307,7 +307,6 @@ async function saveFileForMultihashToFS(
         }
 
         // Write file to disk
-        // TODO: USE THIS USE THIS
         await Utils.writeStreamToFileSystem(response.data, expectedStoragePath)
         fileFound = true
 
