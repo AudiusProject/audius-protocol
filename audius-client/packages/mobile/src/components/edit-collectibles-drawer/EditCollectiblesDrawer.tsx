@@ -14,12 +14,12 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
 
-const MODAL_NAME = 'MobileConnectWalletsDrawer'
+const MODAL_NAME = 'MobileEditCollectiblesDrawer'
 
 const messages = {
-  title: 'Connect Wallets',
+  title: 'Edit Collectibles',
   text:
-    'To connect additional wallets please visit audius.co from a desktop browser'
+    'Visit audius.co from a desktop browser to hide and sort your NFT collectibles.'
 }
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -42,7 +42,7 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-const ConnectWalletsDrawer = () => {
+export const EditCollectiblesDrawer = () => {
   const styles = useThemedStyles(createStyles)
   const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
   const dispatchWeb = useDispatchWeb()
@@ -62,5 +62,3 @@ const ConnectWalletsDrawer = () => {
     </Drawer>
   )
 }
-
-export default ConnectWalletsDrawer
