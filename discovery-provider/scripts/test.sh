@@ -21,7 +21,10 @@ set -e
 pip3 install -r requirements.txt
 sleep 5
 set +e
-set -x
+
+if [ -n "${VERBOSE}" ]; then
+  set -x
+fi
 
 # Reset local blockchain for deterministic test results
 cd_contracts_repo
