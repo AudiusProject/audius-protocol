@@ -1,5 +1,6 @@
 const Bull = require('bull')
 const os = require('os')
+
 const config = require('./config')
 const ffmpeg = require('./ffmpeg')
 const { logger: genericLogger } = require('./logging')
@@ -12,6 +13,8 @@ const MAX_CONCURRENCY =
   transcodingMaxConcurrency !== -1
     ? transcodingMaxConcurrency
     : os.cpus().length
+
+const MIN_SLOTS_AVAILABLE = config.get('minimumTranscodingSlotsAvailable')
 
 const PROCESS_NAMES = Object.freeze({
   segment: 'segment',
@@ -45,7 +48,7 @@ class TranscodingQueue {
         try {
           this.logStatus(`Segmenting ${fileDir} ${fileName}`, logContext)
 
-          const filePaths = await ffmpeg.segmentFile(fileDir, fileName, {
+          const segments = await ffmpeg.segmentFile(fileDir, fileName, {
             logContext
           })
           this.logStatus(
@@ -54,7 +57,7 @@ class TranscodingQueue {
             }ms`,
             logContext
           )
-          done(null, { filePaths })
+          done(null, { segments })
         } catch (e) {
           this.logStatus(
             `Segment Job Error ${e} in duration ${Date.now() - start}ms`,
@@ -202,6 +205,20 @@ class TranscodingQueue {
       waiting: waiting.length,
       active: active.length
     }
+  }
+
+  /**
+   * The max number of transcode jobs that can run at a given moment is correlated to
+   * the number of cores available. If the remaining slots number is greater than the
+   * minimum slots necessary, mark the transcode queue as available.
+   *
+   * @returns boolean flag if the transcode queue can accept more jobs
+   */
+  async isAvailable() {
+    const { active, waiting } = await this.getTranscodeQueueJobs()
+    const remainingSlots = MAX_CONCURRENCY - active - waiting
+
+    return remainingSlots >= MIN_SLOTS_AVAILABLE
   }
 }
 

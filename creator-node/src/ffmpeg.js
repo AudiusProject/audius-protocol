@@ -48,9 +48,16 @@ function segmentFile(fileDir, fileName, { logContext }) {
 
     proc.on('close', (code) => {
       if (code === 0) {
-        const segmentFilePaths = fs.readdirSync(fileDir + '/segments')
-        logger.info(`Segmented file ${absolutePath}`)
-        resolve(segmentFilePaths)
+        const segmentFileNames = fs.readdirSync(fileDir + '/segments')
+        const segmentFilePaths = segmentFileNames.map((filename) =>
+          path.resolve(fileDir, 'segments', filename)
+        )
+
+        resolve({
+          fileNames: segmentFileNames,
+          filePaths: segmentFilePaths,
+          m3u8Path: path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
+        })
       } else {
         logger.error('Error when processing file with ffmpeg')
         logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
@@ -65,6 +72,7 @@ function transcodeFileTo320(fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     const sourcePath = path.resolve(fileDir, fileName)
+    // TODO: is it always mp3?
     const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
     logger.info(`Transcoding file ${sourcePath}...`)
 

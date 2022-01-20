@@ -59,7 +59,7 @@ async function saveFileFromBufferToIPFSAndDisk(
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIPFSFromFS(
+async function saveFileToIPFSAndCopyFromFS(
   { logContext },
   cnodeUserUUID,
   srcPath,
@@ -80,7 +80,19 @@ async function saveFileToIPFSFromFS(
     enableIPFSAdd
   )
 
-  // store file copy by multihash for future retrieval
+  const dstPath = await copyFileToFs(multihash, srcPath, logger)
+
+  return { multihash, dstPath }
+}
+
+/**
+ * Store file copy by multihash for future retrieval
+ * @param {String} multihash ipfs add multihash response
+ * @param {String} srcPath path to content to copy
+ * @param {Object} logger
+ * @returns the destination path of where the content was copied to
+ */
+async function copyFileToFs(multihash, srcPath, logger) {
   const dstPath = DiskManager.computeFilePath(multihash)
 
   try {
@@ -96,7 +108,7 @@ async function saveFileToIPFSFromFS(
     throw e
   }
 
-  return { multihash, dstPath }
+  return dstPath
 }
 
 /**
@@ -814,7 +826,7 @@ async function removeFile(storagePath) {
 
 module.exports = {
   saveFileFromBufferToIPFSAndDisk,
-  saveFileToIPFSFromFS,
+  saveFileToIPFSAndCopyFromFS,
   saveFileForMultihashToFS,
   removeTrackFolder,
   upload,
