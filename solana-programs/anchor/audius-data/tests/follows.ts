@@ -63,7 +63,7 @@ describe("follows", () => {
     let newUser1Key;
     let newUser2Key;
     let userStorageAccount1;
-    let newUserAcct2PDA;
+    let userStorageAccount2;
     let baseAuthorityAccount;
     let handle1DerivedInfo;
     let handle2DerivedInfo;
@@ -92,7 +92,7 @@ describe("follows", () => {
       );
 
       userStorageAccount1 = derivedAddress;
-      newUserAcct2PDA = handle2DerivedInfo.derivedAddress;
+      userStorageAccount2 = handle2DerivedInfo.derivedAddress;
 
       await testInitUser({
         provider,
@@ -117,7 +117,7 @@ describe("follows", () => {
         handleBytesArray: handleBytesArray2,
         bumpSeed: handle2DerivedInfo.bumpSeed,
         metadata: constants2.metadata,
-        userStgAccount: newUserAcct2PDA,
+        userStgAccount: userStorageAccount2,
         adminKeypair,
         adminStgKeypair,
       });
@@ -145,7 +145,7 @@ describe("follows", () => {
         message: message2,
         pkString: constants2.pkString,
         newUserKeypair: newUser2Key,
-        newUserAcctPDA: newUserAcct2PDA,
+        newUserAcctPDA: userStorageAccount2,
       });
     });
 
@@ -157,7 +157,7 @@ describe("follows", () => {
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
-          followeeUserStorage: newUserAcct2PDA,
+          followeeUserStorage: userStorageAccount2,
         },
         signers: [newUser1Key],
       };
@@ -204,7 +204,7 @@ describe("follows", () => {
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
-          followeeUserStorage: newUserAcct2PDA,
+          followeeUserStorage: userStorageAccount2,
         },
         signers: [newUser1Key],
       };
@@ -248,7 +248,7 @@ describe("follows", () => {
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
-          followeeUserStorage: newUserAcct2PDA,
+          followeeUserStorage: userStorageAccount2,
         },
         signers: [newUser1Key],
       };
@@ -269,6 +269,62 @@ describe("follows", () => {
         if (index > 0) expectedErrorFound = true;
       }
       assert.equal(expectedErrorFound, true, "Unable to infer src variant");
+    });
+
+    it("follow invalid user", async () => {
+      // Submit a tx where user 1 follows user 2
+      // and user 2 account is not a PDA
+      let wrongUserKeypair = anchor.web3.Keypair.generate();
+      let followArgs = {
+        accounts: {
+          audiusAdmin: adminStgKeypair.publicKey,
+          payer: provider.wallet.publicKey,
+          authority: newUser1Key.publicKey,
+          followerUserStorage: userStorageAccount1,
+          followeeUserStorage: wrongUserKeypair.publicKey,
+        },
+        signers: [newUser1Key],
+      };
+      let expectedErrorFound = false;
+      let expectedErrorString = "account is not owned by the executing program";
+      try {
+        await program.rpc.followUser(
+          baseAuthorityAccount,
+          UserActionEnumValues.followUser,
+          handleBytesArray1,
+          handle1DerivedInfo.bumpSeed,
+          handleBytesArray2,
+          handle2DerivedInfo.bumpSeed,
+          followArgs
+        );
+      } catch (e: any) {
+        let index = e.toString().indexOf(expectedErrorString);
+        if (index > 0) expectedErrorFound = true;
+      }
+      assert.equal(expectedErrorFound, true, expectedErrorString);
+      expectedErrorFound = false;
+      expectedErrorString = "seeds constraint was violated";
+      // https://github.com/project-serum/anchor/blob/77043131c210cf14a34386cadd9242b1a65daa6e/lang/syn/src/codegen/accounts/constraints.rs#L355
+      // Next, submit mismatched arguments
+      // followArgs will contain followee target user 2 storage PDA
+      // Instructions will point to followee target user 1 storage PDA
+      followArgs.accounts.followeeUserStorage = userStorageAccount2;
+      try {
+        await program.rpc.followUser(
+          baseAuthorityAccount,
+          UserActionEnumValues.followUser,
+          handleBytesArray1,
+          handle1DerivedInfo.bumpSeed,
+          // Note the intentionally incorrect handle bytes below for followee target PDA
+          handleBytesArray1,
+          handle1DerivedInfo.bumpSeed,
+          followArgs
+        );
+      } catch (e: any) {
+        let index = e.toString().indexOf(expectedErrorString);
+        if (index > 0) expectedErrorFound = true;
+      }
+      assert.equal(expectedErrorFound, true, expectedErrorString);
     });
   });
 });
