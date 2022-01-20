@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
+const urljoin = require('url-join')
 
 const config = require('./config')
 const Utils = require('./utils')
@@ -134,12 +135,11 @@ async function saveFileForMultihashToFS(
 
   try {
     // will be modified to directory compatible route later if directory
-    // TODO - don't concat url's by hand like this, use module like urljoin
-    // ..replace(/\/$/, "") removes trailing slashes
-
     let gatewayUrlsMapped = gatewaysToTry.map((endpoint) => {
-      let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
-      if (trackId) baseUrl += `?trackId=${trackId}`
+      let baseUrl
+      if (trackId)
+        baseUrl = urljoin(endpoint, 'ipfs', multihash, `?trackId=${trackId}`)
+      else baseUrl = urljoin(endpoint, 'ipfs', multihash)
 
       return baseUrl
     })

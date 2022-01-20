@@ -98,7 +98,7 @@ class Account extends Base {
    * @param {string} password
    * @param {Object} metadata
    * @param {?File} [profilePictureFile] an optional file to upload as the profile picture
-   * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
+   * @param {?File} [coverPhotoFile] an optional file to upload as the cover photo
    * @param {?boolean} [hasWallet]
    * @param {?boolean} [host] The host url used for the recovery email
    */

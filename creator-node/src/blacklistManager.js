@@ -79,6 +79,33 @@ class BlacklistManager {
     return { trackIdsToBlacklist, userIdsToBlacklist, segmentsToBlacklist }
   }
 
+  static async fetchCIDs ({ trackIds, userIds, segments }) {
+    // RB= Either remove or blacklist
+    // Get all tracks from users and combine with explicit trackIds to BL
+     const tracksFromUsers = await this.getTracksFromUsers(userIds)
+    const allTrackIdsToRB = trackIds.concat(
+      tracksFromUsers.map((track) => track.blockchainId)
+    )
+
+    // Dedupe trackIds
+    const allTrackIdsToRBSet = new Set(allTrackIdsToRB)
+
+    // Retrieves CIDs from deduped trackIds
+    const { segmentCIDs: segmentsFromTrackIds, trackIdToSegments } =
+      await this.getCIDsToBlacklist({
+        allTrackIds: [...allTrackIdsToRBSet],
+        explicitTrackIds: new Set(trackIds)
+      })
+    
+    let segmentCIDsToRB =
+      segmentsFromTrackIds.concat(segments)
+    const segmentCIDsToRBSet = new Set(segmentCIDsToRB)
+
+    segmentCIDsToRB = [...segmentCIDsToRBSet]
+
+    return { allTrackIdsToRBSet, segmentCIDsToRB, trackIdToSegments }
+  }
+
   /**
    * 1. Given trackIds and userIds to blacklist, fetch all segmentCIDs, and then add the ultimate set of segments to redis.
    * 2. Add the trackIds and userIds to redis as sets.
@@ -89,28 +116,15 @@ class BlacklistManager {
     userIdsToBlacklist = [],
     segmentsToBlacklist = []
   }) {
-    // Get all tracks from users and combine with explicit trackIds to BL
-    const tracksFromUsers = await this.getTracksFromUsers(userIdsToBlacklist)
-    const allTrackIdsToBlacklist = trackIdsToBlacklist.concat(
-      tracksFromUsers.map((track) => track.blockchainId)
-    )
 
-    // Dedupe trackIds
-    const allTrackIdsToBlacklistSet = new Set(allTrackIdsToBlacklist)
-
-    // Retrieves CIDs from deduped trackIds
-    const { segmentCIDs: segmentsFromTrackIds, trackIdToSegments } =
-      await this.getCIDsToBlacklist({
-        allTrackIds: [...allTrackIdsToBlacklistSet],
-        explicitTrackIds: new Set(trackIdsToBlacklist)
-      })
-    let segmentCIDsToBlacklist =
-      segmentsFromTrackIds.concat(segmentsToBlacklist)
-    const segmentCIDsToBlacklistSet = new Set(segmentCIDsToBlacklist)
-    // Filter out whitelisted CID's from the segments to remove
-    ;[...CID_WHITELIST].forEach((cid) => segmentCIDsToBlacklistSet.delete(cid))
-
-    segmentCIDsToBlacklist = [...segmentCIDsToBlacklistSet]
+    // Get CIDs of all tracks, segments, and a mapping of trackID to segment to blacklist
+    const { allTrackIdsToBlacklist, segmentCIDsToBlacklist, trackIdToSegments } = this.fetchCIDs({ trackIdsToBlacklist, userIdsToBlacklist, segmentsToBlacklist })
+    
+     ;[...CID_WHITELIST].forEach((cid) => {
+      const index = segmentCIDsToBlacklist.indexOf(cid)
+      if (index > -1) segmentCIDsToBlacklist.splice(cid, 1)
+    })
+    
     try {
       await this.addToRedis(
         REDIS_SET_BLACKLIST_TRACKID_KEY,
@@ -143,25 +157,9 @@ class BlacklistManager {
     userIdsToRemove = [],
     segmentsToRemove = []
   }) {
-    // Get all tracks from users and combine with explicit trackIds to BL
-    const tracksFromUsers = await this.getTracksFromUsers(userIdsToRemove)
-    const allTrackIdsToBlacklist = trackIdsToRemove.concat(
-      tracksFromUsers.map((track) => track.blockchainId)
-    )
 
-    // Dedupe trackIds
-    const allTrackIdsToBlacklistSet = new Set(allTrackIdsToBlacklist)
-
-    // Retrieves CIDs from deduped trackIds
-    const { segmentCIDs: segmentsFromTrackIds, trackIdToSegments } =
-      await this.getCIDsToBlacklist({
-        allTrackIds: [...allTrackIdsToBlacklistSet],
-        explicitTrackIds: new Set(trackIdsToRemove)
-      })
-
-    let segmentCIDsToRemove = segmentsFromTrackIds.concat(segmentsToRemove)
-    const segmentCIDsToRemoveSet = new Set(segmentCIDsToRemove)
-    segmentCIDsToRemove = [...segmentCIDsToRemoveSet]
+    // Get CIDs of all tracks, segments, and a mapping of trackID to segment to remove from blacklist
+    const { allTrackIdsToBlacklist, segmentCIDsToRemove, trackIdToSegments } = this.fetchCIDs({ trackIdsToRemove, userIdsToRemove, segmentsToRemove })
 
     try {
       await this.removeFromRedis(

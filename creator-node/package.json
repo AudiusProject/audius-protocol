@@ -64,6 +64,7 @@
     "systeminformation": "^5.7.6",
     "ts-node": "^10.4.0",
     "umzug": "^2.3.0",
+    "url-join": "^4.0.1",
     "uuid": "3.3.2",
     "web3": "1.2.7"
   },

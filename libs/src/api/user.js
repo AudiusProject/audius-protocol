@@ -279,7 +279,7 @@ class Users extends Base {
    * Util to upload profile picture and cover photo images and update
    * a metadata object. This method inherently calls triggerSecondarySyncs().
    * @param {?File} profilePictureFile an optional file to upload as the profile picture
-   * @param {?File} coverPhotoFile an optional file to upload as the cover phtoo
+   * @param {?File} coverPhotoFile an optional file to upload as the cover photo
    * @param {Object} metadata to update
    * @returns {Object} the passed in metadata object with profile_picture and cover_photo fields added
    */
