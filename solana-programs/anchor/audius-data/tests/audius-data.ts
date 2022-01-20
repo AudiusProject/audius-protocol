@@ -6,7 +6,7 @@ import {
 } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { confirmLogInTransaction, initTestConstants, testInitUser, testInitUserSolPubkey } from "./test-helpers";
+import { confirmLogInTransaction, initTestConstants, testInitUser, testCreateUser, testInitUserSolPubkey } from "./test-helpers";
 
 const { PublicKey } = anchor.web3;
 
@@ -343,6 +343,36 @@ describe("audius-data", () => {
       signers: [newUserKeypair],
     });
     await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
+  });
+
+  it("Creating User!", async () => {
+    let {
+      pkString,
+      handleBytesArray,
+    } = initTestConstants();
+
+    let { derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+    let newUserAcctPDA = derivedAddress;
+
+    let newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKeypair.publicKey.toString();
+
+    await testCreateUser({
+      provider,
+      program,
+      pkString,
+      message,
+      newUserKeypair,
+      newUserAcctPDA,
+    });
   });
 
   it("creating + deleting a track", async () => {

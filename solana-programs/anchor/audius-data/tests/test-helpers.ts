@@ -3,7 +3,7 @@ import { Program } from "@project-serum/anchor";
 import { ethAddressToArray, getRandomPrivateKey, getTransaction, randomCID } from "../lib/utils";
 import ethWeb3 from "web3";
 import { randomBytes } from "crypto";
-import { initUser, initUserSolPubkey } from "../lib/lib";
+import { createUser, initUser, initUserSolPubkey } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
 const { PublicKey } = anchor.web3;
@@ -99,6 +99,32 @@ export const testInitUserSolPubkey = async ({
   let txInfo = await getTransaction(provider, initUserTx);
   let fee = txInfo["meta"]["fee"];
   console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
+};
+
+export const testCreateUser = async ({
+  provider,
+  program,
+  pkString,
+  message,
+  newUserKeypair,
+  newUserAcctPDA,
+}) => {
+  let tx = await createUser({
+    provider,
+    program,
+    privateKey: pkString,
+    message,
+    userSolPubkey: newUserKeypair.publicKey,
+    userStgAccount: newUserAcctPDA,
+  });
+
+  let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
+  if (!newUserKeypair.publicKey.equals(userDataFromChain.authority)) {
+    throw new Error("Unexpected public key found");
+  }
+  let txInfo = await getTransaction(provider, tx);
+  let fee = txInfo["meta"]["fee"];
+  console.log(`createuser tx = ${tx} fee = ${fee}`);
 };
 
 export const confirmLogInTransaction = async (provider: anchor.Provider, tx: string, log: string) => {
