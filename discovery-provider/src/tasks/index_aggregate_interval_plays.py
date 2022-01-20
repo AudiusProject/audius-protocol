@@ -88,8 +88,8 @@ UPDATE_AGGREGATE_INTERVAL_PLAYS_QUERY = """
         new_plays ON CONFLICT (track_id) DO
     UPDATE
     SET
-        week_listen_counts = aggregate_interval_plays.week_listen_counts + EXCLUDED.week_listen_counts,
-        month_listen_counts = aggregate_interval_plays.month_listen_counts + EXCLUDED.month_listen_counts
+        week_listen_counts = EXCLUDED.week_listen_counts,
+        month_listen_counts = EXCLUDED.month_listen_counts
     """
 
 

@@ -1,7 +1,7 @@
 """replace aggregate interval plays mat view with table
 
 Revision ID: 568a809b9951
-Revises: a41727360622
+Revises: 7104383ac0fe
 Create Date: 2021-12-27 18:51:26.264035
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "568a809b9951"
-down_revision = "a41727360622"
+down_revision = "7104383ac0fe"
 branch_labels = None
 depends_on = None
 

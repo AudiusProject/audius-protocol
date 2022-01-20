@@ -100,24 +100,29 @@ def test_index_aggregate_interval_plays_update(app):
             {
                 "track_id": 1,
                 "created_at": DATE_NOW,
-                "week_listen_counts": 4,
-                "month_listen_counts": 6,
+                "week_listen_counts": 0,
+                "month_listen_counts": 2,
             },
             {
                 "track_id": 2,
                 "created_at": DATE_NOW,
-                "week_listen_counts": 1,
-                "month_listen_counts": 3,
+                "week_listen_counts": 0,
+                "month_listen_counts": 2,
             },
         ],
         "indexing_checkpoints": [
             {"tablename": AGGREGATE_INTERVAL_PLAYS_TABLE_NAME, "last_checkpoint": 13}
         ],
         "plays": [
-            # <= week
+            # <week
             {"id": 14, "item_id": 2, "created_at": DATE_NOW},
             {"id": 15, "item_id": 2, "created_at": DATE_NOW},
-            {"id": 16, "item_id": 2, "created_at": DATE_NOW},
+            # < month
+            {"id": 13, "item_id": 2, "created_at": DATE_NOW - timedelta(weeks=2)},
+            {"id": 12, "item_id": 2, "created_at": DATE_NOW - timedelta(weeks=3)},
+            # > month
+            {"id": 11, "item_id": 1, "created_at": DATE_NOW - timedelta(weeks=6)},
+            {"id": 10, "item_id": 1, "created_at": DATE_NOW - timedelta(weeks=8)},
         ],
     }
 
@@ -137,13 +142,13 @@ def test_index_aggregate_interval_plays_update(app):
 
         assert results[0].track_id == 1
         assert results[0].created_at == DATE_NOW
-        assert results[0].week_listen_counts == 4
-        assert results[0].month_listen_counts == 6
+        assert results[0].week_listen_counts == 0
+        assert results[0].month_listen_counts == 0
 
         assert results[1].track_id == 2
         assert results[1].created_at == DATE_NOW
-        assert results[1].week_listen_counts == 4
-        assert results[1].month_listen_counts == 6
+        assert results[1].week_listen_counts == 2
+        assert results[1].month_listen_counts == 2
 
         new_checkpoint: IndexingCheckpoints = (
             session.query(IndexingCheckpoints.last_checkpoint)
@@ -153,7 +158,7 @@ def test_index_aggregate_interval_plays_update(app):
             .scalar()
         )
 
-        assert new_checkpoint == 16
+        assert new_checkpoint == 15
 
 
 def test_index_aggregate_interval_plays_same_checkpoint(app):
@@ -225,7 +230,7 @@ def test_index_aggregate_interval_plays_same_checkpoint(app):
 
 
 def test_index_aggregate_interval_plays_no_plays(app):
-    """Raise exception when there are no plays"""
+    """Test indexing doesn't update when there are no plays"""
     # setup
     with app.app_context():
         db = get_db()
