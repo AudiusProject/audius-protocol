@@ -241,7 +241,7 @@ class App {
 
     const endpoints = (
       (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS) || '')
-      .split(',')
+        .split(',')
     )
 
     // Fetch the last saved offset and startingBLock from the DB,
