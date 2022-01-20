@@ -73,9 +73,9 @@ describe("playlist", () => {
       const createdPlaylist = await program.account.playlist.fetch(
         newPlaylistKeypair.publicKey
       );
-      // console.log(
-      //   `playlist: ${playlistMetadata}, playlistId assigned = ${createdPlaylist.playlistId}`
-      // );
+      console.log(
+        `playlist: ${playlistMetadata}, playlistId assigned = ${createdPlaylist.playlistId}`
+      );
     };
 
     const testUpdatePlaylist = async ({
