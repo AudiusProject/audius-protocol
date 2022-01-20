@@ -85,7 +85,7 @@ class RewardsAttester {
     maxRetries = 5,
     reporter,
     challengeIdsDenyList,
-    endpoints = [],
+    endpoints = []
   }) {
     this.libs = libs
     this.logger = logger
