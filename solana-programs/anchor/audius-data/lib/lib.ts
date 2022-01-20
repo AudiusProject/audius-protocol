@@ -190,6 +190,7 @@ export const createUser = async (args: createUserArgs) => {
           program.instruction.createUser(userSolPubkey, {
             accounts: {
               user: userStgAccount,
+              payer: provider.wallet.publicKey,
               sysvarProgram: SystemSysVarProgramKey,
             },
           })

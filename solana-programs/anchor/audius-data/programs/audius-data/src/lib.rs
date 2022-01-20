@@ -104,8 +104,19 @@ pub mod audius_data {
     pub fn create_user(ctx: Context<CreateUser>, user_authority: PubKey) -> ProgramResult {
         msg!("Audius::CreateUser");
 
+        // Confirm that the base used for user account seed is derived from this Audius admin storage account
+        let (derived_base, _) = find_program_address_pubkey(ctx.accounts.admin.key(), ctx.program_id);
+        if derived_base != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Confirm that the derived pda from base is the same as the user storage account
+        let (derived_user_acct, _) = Pubkey::find_program_address(&[&derived_base.to_bytes()[..32], &handle_seed], ctx.program_id);
+        if derived_user_acct != ctx.accounts.user.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         let audius_user_acct = &mut ctx.accounts.user;
-        // TODO: Verify this is not already initialized
 
         // Eth_address offset (12) + address (20) + signature (65) = 97
         // TODO: Validate message contents
@@ -284,11 +295,14 @@ pub struct InitializeUser<'info> {
 
 /// Instruction container to allow a user to add their Solana public key as part of their identity.
 /// `user` is the target user PDA.
+/// `payer` is the account responsible for the lamports required to allocate this account.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
 pub struct InitializeUserSolIdentity<'info> {
-    #[account(mut)]
+    #[account(init, payer = payer, space = USER_ACCOUNT_SIZE)]
     pub user: Account<'info, User>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
     pub sysvar_program: AccountInfo<'info>
 }
 
