@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, PrimaryKeyConstraint
+from sqlalchemy import Column, Integer
 
 from .models import Base
 
