@@ -12,6 +12,7 @@ import AppNavigator from 'app/components/app-navigator/AppNavigator'
 // import AudioBreakdownDrawer from 'app/components/audio-breakdown-drawer'
 import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
+import { ChallengeRewardsDrawerProvider } from 'app/components/challenge-rewards-drawer/ChallengeRewardsDrawerProvider'
 import CollectibleDetailsDrawer from 'app/components/collectible-details-drawer'
 import ConnectWalletsDrawer from 'app/components/connect-wallets-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer/DeactivateAccountConfirmationDrawer'
@@ -40,6 +41,7 @@ import { setup as setupAnalytics } from 'app/utils/analytics'
 
 import ErrorBoundary from './ErrorBoundary'
 import { WebAppManager } from './WebAppManager'
+import { CognitoDrawer } from './components/cognito-drawer/CognitoDrawer'
 import { ThemeContextProvider } from './components/theme/ThemeContext'
 
 Sentry.init({
@@ -72,6 +74,8 @@ const Drawers = () => {
       <TrendingRewardsDrawer />
       <ApiRewardsDrawer />
       <ShareToTiktokDrawer />
+      <ChallengeRewardsDrawerProvider />
+      <CognitoDrawer />
       <ShareDrawer />
       {/* Disable the audio breakdown drawer until we get
       the feature flags to work for native mobile */}
