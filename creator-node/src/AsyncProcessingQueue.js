@@ -146,7 +146,7 @@ class AsyncProcessingQueue {
     const uuid = logContext.requestID
     const redisKey = this.constructAsyncProcessingKey(uuid)
 
-    let state = { status: PROCESS_STATES.IN_PROGRESS }
+    let state = { task, status: PROCESS_STATES.IN_PROGRESS }
     this.logStatus(`Starting ${task}, uuid=${uuid}`, logContext)
     await redisClient.set(
       redisKey,
@@ -158,7 +158,7 @@ class AsyncProcessingQueue {
     let response
     try {
       response = await func({ logContext }, req)
-      state = { status: PROCESS_STATES.DONE, resp: response }
+      state = { task, status: PROCESS_STATES.DONE, resp: response }
       this.logStatus(`Successful ${task}, uuid=${uuid}`, logContext)
       await redisClient.set(
         redisKey,
@@ -167,7 +167,7 @@ class AsyncProcessingQueue {
         EXPIRATION_SECONDS
       )
     } catch (e) {
-      state = { status: PROCESS_STATES.FAILED, resp: e.message }
+      state = { task, status: PROCESS_STATES.FAILED, resp: e.message }
       this.logError(
         `Error with ${task}. uuid=${uuid}} resp=${JSON.stringify(e.message)}`,
         logContext
