@@ -287,7 +287,6 @@ def test_update_interval_plays(app):
         track_plays = get_track_plays(1)
         assert track_plays.week_listen_counts == 10
         assert track_plays.month_listen_counts == 20
-        assert track_plays.year_listen_counts == 30
 
 
 def test_update_trending_params(app):
