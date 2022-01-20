@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, PrimaryKeyConstraint
 
 from .models import Base
 
@@ -13,8 +13,8 @@ class AggregateIntervalPlay(Base):
     track_id = Column(Integer, nullable=False, primary_key=True)
     genre = Column(Integer, nullable=False)
     created_at = Column(Integer, nullable=False)
-    week_listen_counts = Column(Integer, nullable=False)
-    month_listen_counts = Column(Integer, nullable=False)
+    week_listen_counts = Column(Integer, nullable=False, index=True)
+    month_listen_counts = Column(Integer, nullable=False, index=True)
 
     def __repr__(self):
         return f"<AggregateIntervalPlay(\

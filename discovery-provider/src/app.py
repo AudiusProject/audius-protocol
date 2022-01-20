@@ -367,6 +367,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
             "src.tasks.index_aggregate_plays",
+            "src.tasks.index_aggregate_interval_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.index_network_peers",
@@ -419,6 +420,10 @@ def configure_celery(celery, test_config=None):
             "update_aggregate_plays": {
                 "task": "update_aggregate_plays",
                 "schedule": timedelta(seconds=15),
+            },
+            "update_aggregate_interval_plays": {
+                "task": "update_aggregate_interval_plays",
+                "schedule": timedelta(seconds=10),  # same interval as trending
             },
             "index_hourly_play_counts": {
                 "task": "index_hourly_play_counts",
@@ -543,6 +548,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
+    redis_inst.delete("index_aggregate_interval_plays_lock")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object

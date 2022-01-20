@@ -93,8 +93,10 @@ def upgrade():
                 -- rename table to replace mat view
                 ALTER TABLE aggregate_interval_plays_table RENAME TO aggregate_interval_plays;
 
+                -- create primary key
+                ALTER TABLE aggregate_interval_plays ADD PRIMARY KEY (track_id);
+
                 -- create indexes
-                CREATE UNIQUE INDEX IF NOT EXISTS interval_play_track_id_idx ON aggregate_interval_plays (track_id);
                 CREATE INDEX IF NOT EXISTS interval_play_week_count_idx ON aggregate_interval_plays (week_listen_counts);
                 CREATE INDEX IF NOT EXISTS interval_play_month_count_idx ON aggregate_interval_plays (month_listen_counts);
 
