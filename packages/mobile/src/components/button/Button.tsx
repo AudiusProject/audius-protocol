@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 
 import { merge } from 'lodash'
 import {
@@ -13,6 +13,7 @@ import {
 } from 'react-native'
 
 import Text from 'app/components/text'
+import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -138,25 +139,7 @@ const Button = ({
 }: ButtonProps) => {
   const styles: ButtonStyle = useThemedStyles(createStyles(type))
   const { primaryDark1 } = useThemeColors()
-  const scale = useRef(new Animated.Value(1)).current
-
-  const handlePressIn = () => {
-    Animated.timing(scale, {
-      toValue: 0.97,
-      duration: 100,
-      delay: 0,
-      useNativeDriver: true
-    }).start()
-  }
-
-  const handlePressOut = () => {
-    Animated.timing(scale, {
-      toValue: 1,
-      duration: 100,
-      delay: 0,
-      useNativeDriver: true
-    }).start()
-  }
+  const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation()
 
   const underlay =
     type === ButtonType.PRIMARY ? underlayColor || primaryDark1 : undefined
