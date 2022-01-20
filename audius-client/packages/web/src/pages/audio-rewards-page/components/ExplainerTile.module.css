@@ -25,7 +25,6 @@
 }
 
 .explainerTile.mobile {
-  margin-top: 34px;
   flex-direction: column;
   flex-wrap: unset;
   display: flex;

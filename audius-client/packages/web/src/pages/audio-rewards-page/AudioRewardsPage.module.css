@@ -2,10 +2,6 @@
   user-select: none;
 }
 
-.mobile {
-  margin-bottom: 24px !important;
-}
-
 .contentContainer {
   display: inline-flex;
   flex-direction: column;
@@ -23,10 +19,10 @@
 
 .cryptoContentContainer.mobile {
   flex-wrap: wrap;
+  margin-top: 22px;
 }
 
 .pageContainer .explainerTile {
-  margin-bottom: 32px;
   height: auto;
 }
 
