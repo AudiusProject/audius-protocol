@@ -41,7 +41,7 @@ const messages = {
 type RewardPanelProps = {
   title: string
   icon: ReactNode
-  description: (amount: string | undefined) => string
+  description: (amount: number | undefined) => string
   panelButtonText: string
   progressLabel: string
   stepCount: number
