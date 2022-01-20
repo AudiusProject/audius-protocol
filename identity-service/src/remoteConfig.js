@@ -3,7 +3,8 @@ const REMOTE_CONFIG_FEATURE = 'remote_config'
 // Declaration of remote config variables set in optimizely
 const REMOTE_VARS = Object.freeze({
   TRENDING_EXPERIMENT: 'TRENDING_EXPERIMENT',
-  CHALLENGE_IDS_DENY_LIST: 'CHALLENGE_IDS_DENY_LIST'
+  CHALLENGE_IDS_DENY_LIST: 'CHALLENGE_IDS_DENY_LIST',
+  REWARDS_ATTESTATION_ENDPOINTS: 'REWARDS_ATTESTATION_ENDPOINTS'
 })
 
 // Default values for remote vars while optimizely has not loaded

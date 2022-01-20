@@ -17,7 +17,7 @@
     "lint:fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/libs": "1.2.51",
+    "@audius/libs": "1.2.56",
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
     "@optimizely/optimizely-sdk": "^4.6.0",
     "@sentry/node": "^6.2.5",
