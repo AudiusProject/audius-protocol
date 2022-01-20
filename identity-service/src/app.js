@@ -238,11 +238,8 @@ class App {
       (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.CHALLENGE_IDS_DENY_LIST) || '')
         .split(',')
     )
-
-    const endpoints = (
-      (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS) || '')
-        .split(',')
-    )
+    const endpointsString = getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
+    const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : []
 
     // Fetch the last saved offset and startingBLock from the DB,
     // or create them if necessary.
