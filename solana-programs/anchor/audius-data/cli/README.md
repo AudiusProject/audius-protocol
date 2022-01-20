@@ -72,7 +72,7 @@ yarn run ts-node cli/main.ts -f initUserSolPubkey \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --admin-storage-keypair $PWD/adminStgKeypair.json \
---user-stg-pubkey BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx \
+--user-storage-pubkey BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx \
 --eth-private-key d540....
 ```
 
@@ -84,5 +84,5 @@ Finally, using the parameters known from above, we can call createTrack - it is 
 yarn run ts-node cli/main.ts -f createTrack \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
---user-stg-pubkey BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx
+--user-storage-pubkey BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx
 ```

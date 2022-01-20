@@ -535,7 +535,7 @@ def update_personal_metrics(key, old_timestamp, timestamp, value, metric_type):
     }
     if updated_metrics:
         redis_set_and_dump(REDIS, key, json.dumps(updated_metrics))
-    logger.info(f"updated cached personal {metric_type} metrics")
+    logger.debug(f"updated cached personal {metric_type} metrics")
 
 
 def update_summed_unique_metrics(now, ip):

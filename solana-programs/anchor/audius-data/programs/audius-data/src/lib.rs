@@ -17,6 +17,7 @@ pub mod audius_data {
     use super::*;
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
+    /// track_id_offset is the starting point for uploaded tracks
     pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey, track_id_offset: u64) -> ProgramResult {
         msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
@@ -143,6 +144,8 @@ pub mod audius_data {
         // Set owner to user storage account
         ctx.accounts.track.owner = ctx.accounts.user.key();
         ctx.accounts.track.track_id = ctx.accounts.audius_admin.track_id;
+        // Increment global track ID after assignment to this track in particular
+        // Ensures each track has a unique numeric ID
         ctx.accounts.audius_admin.track_id = ctx.accounts.audius_admin.track_id + 1;
         msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
@@ -186,7 +189,7 @@ pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 pub const USER_ACCOUNT_SIZE: usize = 8 + 32 + 20;
 
 /// Size of track account
-/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
+/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track offset ID)
 pub const TRACK_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 
 /// Instructions

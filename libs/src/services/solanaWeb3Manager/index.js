@@ -139,7 +139,7 @@ class SolanaWeb3Manager {
     }
 
     const ethAddress = this.web3Manager.getWalletAddress()
-    await createUserBankFrom({
+    return createUserBankFrom({
       ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
       feePayerKey: this.feePayerKey,
@@ -222,8 +222,17 @@ class SolanaWeb3Manager {
    */
   async getWAudioBalance (solanaAddress) {
     try {
-      const tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
-      if (!tokenAccount) return null
+      let tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
+
+      // If the token account doesn't exist, check if solanaAddress is a root account
+      // if so, derive the associated token account & check that balance
+      if (!tokenAccount) {
+        const associatedTokenAccount = await this.findAssociatedTokenAddress(solanaAddress)
+        tokenAccount = await this.getAssociatedTokenAccountInfo(associatedTokenAccount.toString())
+        if (!tokenAccount) {
+          return null
+        }
+      }
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
       const decimals = AUDIO_DECMIALS - WAUDIO_DECMIALS
@@ -279,7 +288,7 @@ class SolanaWeb3Manager {
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
-    await transferWAudioBalance({
+    return transferWAudioBalance({
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
       feePayerKey: this.feePayerKey,
@@ -353,12 +362,14 @@ class SolanaWeb3Manager {
    *    specifier: string,
    *    recipientEthAddress: string
    *    oracleEthAddress: string
+   *    logger: any
    * }} {
    *     challengeId,
    *     specifier,
    *     recipientEthAddress,
    *     oracleEthAddress,
-   *     tokenAmount
+   *     tokenAmount,
+   *     logger
    *   }
    * @memberof SolanaWeb3Manager
    */
@@ -367,7 +378,8 @@ class SolanaWeb3Manager {
     specifier,
     recipientEthAddress,
     oracleEthAddress,
-    tokenAmount
+    tokenAmount,
+    logger = console
   }) {
     return evaluateAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -380,7 +392,8 @@ class SolanaWeb3Manager {
       oracleEthAddress,
       feePayer: this.feePayerKey,
       tokenAmount,
-      transactionHandler: this.transactionHandler
+      transactionHandler: this.transactionHandler,
+      logger
     })
   }
 

@@ -35,6 +35,7 @@ const { REMOTE_VARS, getRemoteVar } = require('./remoteConfig')
 
 const DOMAIN = 'mail.audius.co'
 const REDIS_ATTEST_HEALTH_KEY = 'last-attestation-time'
+const REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY = 'attestation-start-block-override'
 
 class App {
   constructor (port) {
@@ -278,6 +279,30 @@ class App {
         if (successCount > 0) {
           await this.redisClient.set(REDIS_ATTEST_HEALTH_KEY, Date.now())
         }
+      },
+      getStartingBlockOverride: async () => {
+        // Retrieve a starting block override from redis (that is set externally, CLI, or otherwise)
+        // return that starting block so that the rewards attester changes its
+        // starting block, and then delete the value from redis as to stop re-reading it
+        const startBlock = await this.redisClient.get(REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY)
+        if (startBlock === undefined || startBlock === null) {
+          return null
+        }
+
+        const parsedStartBlock = parseInt(startBlock, 10)
+        // Regardless if we were able to parse the start block override, clear it now
+        // so that subsequent runs don't pick it up again.
+        await this.redisClient.del(REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY)
+
+        if (
+          parsedStartBlock !== undefined &&
+          parsedStartBlock !== null &&
+          !isNaN(parsedStartBlock)
+        ) {
+          return parsedStartBlock
+        }
+        // In the case of failing to parse from redis, just return null
+        return null
       }
     })
     attester.start()
