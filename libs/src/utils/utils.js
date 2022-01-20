@@ -75,6 +75,11 @@ class Utils {
     return FQDN.test(url)
   }
 
+  static isHttps(url) {
+    const https = /^https:\/\//;
+    return https.test(url);
+  }
+
   // Function to check if the endpont/health_check returns JSON object [ {'healthy':true} ]
   static async isHealthy (url) {
     try {
