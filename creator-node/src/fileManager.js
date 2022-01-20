@@ -190,12 +190,9 @@ async function saveFileForMultihashToFS(
       // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
       // in the case of a directory, override the gatewayUrlsMapped array to look like
       // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
-      // ..replace(/\/$/, "") removes trailing slashes
       gatewayUrlsMapped = gatewaysToTry.map(
         (endpoint) =>
-          `${endpoint.replace(/\/$/, '')}/ipfs/${
-            matchObj.outer
-          }/${fileNameForImage}`
+          urljoin(endpoint, 'ipfs', matchObj.outer, fileNameForImage)
       )
       decisionTree.push({
         stage: 'Updated gatewayUrlsMapped',
@@ -236,7 +233,6 @@ async function saveFileForMultihashToFS(
     if (gatewayUrlsMapped.length > 0) {
       try {
         let response
-        // ..replace(/\/$/, "") removes trailing slashes
         logger.debug(
           `Attempting to fetch multihash ${multihash} by racing replica set endpoints`
         )
