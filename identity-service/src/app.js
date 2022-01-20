@@ -239,6 +239,11 @@ class App {
         .split(',')
     )
 
+    const endpoints = (
+      (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS) || '')
+      .split(',')
+    )
+
     // Fetch the last saved offset and startingBLock from the DB,
     // or create them if necessary.
     let initialVals = await models.RewardAttesterValues.findOne()
@@ -266,6 +271,7 @@ class App {
       offset: initialVals.offset,
       challengeIdsDenyList,
       reporter: rewardsReporter,
+      endpoints,
       updateValues: async ({ startingBlock, offset, successCount }) => {
         childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
 
