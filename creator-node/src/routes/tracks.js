@@ -9,7 +9,7 @@ const models = require('../models')
 const {
   saveFileFromBufferToIPFSAndDisk,
   removeTrackFolder,
-  getTmpTrackUploadArtifactsWithCIDInPath,
+  getTmpTrackUploadArtifactsWithUUIDInPath,
   handleTrackContentUpload
 } = require('../fileManager')
 const {
@@ -152,7 +152,7 @@ module.exports = function (app) {
         )
       }
 
-      const basePath = getTmpTrackUploadArtifactsWithCIDInPath(
+      const basePath = getTmpTrackUploadArtifactsWithUUIDInPath(
         req.query.uuidInPath
       )
       let pathToFile

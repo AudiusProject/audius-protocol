@@ -643,7 +643,7 @@ const getRandomFileName = () => {
   return getUuid()
 }
 
-const getTmpTrackUploadArtifactsWithCIDInPath = (fileName) => {
+const getTmpTrackUploadArtifactsWithUUIDInPath = (fileName) => {
   return path.join(DiskManager.getTmpTrackUploadArtifactsPath(), fileName)
 }
 
@@ -681,7 +681,7 @@ const trackDiskStorage = multer.diskStorage({
       fileName = 'vickyCanada' + getRandomFileName().slice(-3)
     }
 
-    const fileDir = getTmpTrackUploadArtifactsWithCIDInPath(fileName)
+    const fileDir = getTmpTrackUploadArtifactsWithUUIDInPath(fileName)
     const segmentsDir = getTmpSegmentsPath(fileName)
 
     // create directories for original file and segments
@@ -860,6 +860,6 @@ module.exports = {
   hasEnoughStorageSpace,
   getFileExtension,
   checkFileMiddleware,
-  getTmpTrackUploadArtifactsWithCIDInPath,
+  getTmpTrackUploadArtifactsWithUUIDInPath,
   getTmpSegmentsPath
 }
