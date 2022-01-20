@@ -52,6 +52,7 @@ class RewardsAttester {
    *    maxRetries: number
    *    reporter: BaseRewardsReporter
    *    challengeIdsDenyList: Array<string>
+   *    endpoints?: Array<string>
    * }} {
    *    libs,
    *    startingBlock,
@@ -65,7 +66,8 @@ class RewardsAttester {
    *    getStartingBlockOverride = () => null,
    *    maxRetries = 3,
    *    reporter,
-   *    challengeIdsDenyList
+   *    challengeIdsDenyList,
+   *    endpoints
    *  }
    * @memberof RewardsAttester
    */
@@ -82,7 +84,8 @@ class RewardsAttester {
     getStartingBlockOverride = () => null,
     maxRetries = 5,
     reporter,
-    challengeIdsDenyList
+    challengeIdsDenyList,
+    endpoints = []
   }) {
     this.libs = libs
     this.logger = logger
@@ -93,7 +96,9 @@ class RewardsAttester {
     this.aaoEndpoint = aaoEndpoint
     this.aaoAddress = aaoAddress
     this.reporter = reporter || new BaseRewardsReporter()
-    this.endpoints = []
+    this.endpoints = endpoints
+    // If passed endpoints, override the automatic reselection process
+    this.overrideEndpointSelection = !!endpoints.length
     this.maxRetries = maxRetries
     this.updateValues = updateValues
     this.challengeIdsDenyList = new Set(...challengeIdsDenyList)
@@ -130,7 +135,8 @@ class RewardsAttester {
       quorum size: ${this.quorumSize}, \
       parallelization: ${this.parallelization} \
       AAO endpoint: ${this.aaoEndpoint} \
-      AAO address: ${this.aaoAddress}
+      AAO address: ${this.aaoAddress} \
+      endpoints: ${this.endpoints}
     `)
     await this._selectDiscoveryNodes()
 
@@ -358,6 +364,7 @@ class RewardsAttester {
   }
 
   async _selectDiscoveryNodes () {
+    if (this.overrideEndpointSelection) return
     this.logger.info(`Selecting discovery nodes`)
     const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll()
     this.endpoints = sampleSize(endpoints, this.quorumSize)
