@@ -18,7 +18,7 @@ export enum ClaimStatus {
 export type Claim = {
   challengeId: ChallengeRewardID
   specifier: string
-  amount: string
+  amount: number
 }
 
 export enum HCaptchaStatus {

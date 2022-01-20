@@ -10,7 +10,7 @@ export type UserChallenge = {
   max_steps: number
   specifier: string
   user_id: string
-  amount: string
+  amount: number
 }
 
 export type ChallengeRewardID =

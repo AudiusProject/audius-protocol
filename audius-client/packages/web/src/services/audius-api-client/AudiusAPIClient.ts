@@ -316,7 +316,21 @@ type GetUserChallengesArgs = {
   userID: number
 }
 
-type UserChallengesResponse = {}
+type UserChallengesResponse = [
+  {
+    challenge_id: string
+    user_id: string
+    specifier: string
+    is_complete: boolean
+    is_active: boolean
+    is_disbursed: boolean
+    current_step_count: number
+    max_steps: number
+    challenge_type: string
+    amount: string
+    metadata: object
+  }
+]
 
 export type GetSocialFeedArgs = QueryParams & {
   filter: string
@@ -1192,7 +1206,14 @@ class AudiusAPIClient {
     )
 
     if (!userChallenges) return null
-    return userChallenges.data
+    // DN may have amount as a string
+    const challenges = userChallenges.data.map(challenge => {
+      return {
+        ...challenge,
+        amount: Number(challenge.amount)
+      }
+    })
+    return challenges
   }
 
   async getBlockConfirmation(blockhash: string, blocknumber: number) {

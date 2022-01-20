@@ -58,8 +58,8 @@ type ChallengeRewardsInfo = {
   id: ChallengeRewardID
   title: string
   icon: ReactNode
-  description: (amount: string | undefined) => string
-  fullDescription: (amount: string | undefined) => string
+  description: (amount: number | undefined) => string
+  fullDescription: (amount: number | undefined) => string
   progressLabel: string
   amount: number
   stepCount: number
