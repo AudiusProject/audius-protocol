@@ -22,11 +22,11 @@ const cancelDownloadTask = () => {
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.DOWNLOAD_TRACK]: async ({ message }) => {
     const fileUrl = message.urls.find(url => url !== null && url !== undefined)
-    const fileExtension = fileUrl.split('.').pop()
-    const fileName = message.title + '.' + fileExtension
+    const fileName = message.filename
+    const trackName = fileName.split('.').slice(0, -1).join('')
 
     dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: true }))
-    dispatch(setFileInfo({ trackName: message.title, fileName: fileName }))
+    dispatch(setFileInfo({ trackName, fileName }))
     dispatch(setFetchCancel(cancelDownloadTask))
 
     if (Platform.OS === 'ios') {
@@ -66,8 +66,8 @@ export const messageHandlers: Partial<MessageHandlers> = {
             useDownloadManager: true,
             notification: true,
             mediaScannable: true,
-            title: message.title + 'download successful!',
-            description: message.title,
+            title: trackName + 'download successful!',
+            description: trackName,
             path: filePath,
             mime: 'audio/mpeg'
           }
