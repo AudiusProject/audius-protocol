@@ -10,6 +10,7 @@ class DatabaseTask(Task):
         db=None,
         web3=None,
         abi_values=None,
+        eth_abi_values=None,
         shared_config=None,
         ipfs_client=None,
         redis=None,
@@ -20,6 +21,7 @@ class DatabaseTask(Task):
         self._db = db
         self._web3_provider = web3
         self._abi_values = abi_values
+        self._eth_abi_values = eth_abi_values
         self._shared_config = shared_config
         self._ipfs_client = ipfs_client
         self._redis = redis
@@ -30,6 +32,10 @@ class DatabaseTask(Task):
     @property
     def abi_values(self):
         return self._abi_values
+
+    @property
+    def eth_abi_values(self):
+        return self._eth_abi_values
 
     @property
     def web3(self):

@@ -5,6 +5,7 @@ const {
   pushNotificationMessagesMap
 } = require('../formatNotificationMetadata')
 const { publish, publishSolanaNotification } = require('../notificationQueue')
+const { getFeatureFlag, FEATURE_FLAGS } = require('../../featureFlag')
 
 // Maps a notification type to it's base notification
 const getPublishNotifBaseType = (notification) => {
@@ -98,6 +99,21 @@ const getPublishTypes = (userId, baseNotificationType, userNotificationSettings)
 }
 
 /**
+ * Checks if a notification type is enabled with optimizely
+ * @param {string} notificationType
+ * @param {*} optimizelyClient Optimizely client
+ */
+const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
+  if (!optimizelyClient) {
+    return false
+  }
+  if (notificationType === notificationTypes.ChallengeReward) {
+    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.REWARDS_NOTIFICATIONS_ENABLED)
+  }
+  return false
+}
+
+/**
  * Takes a list of notifications, populates them with extra metadata, checks their notification settings
  * and publishes it to the notification queue to be sent out.
  * @param {Array<Object>} notifications
@@ -105,7 +121,7 @@ const getPublishTypes = (userId, baseNotificationType, userNotificationSettings)
  * @param {Object} userNotificationSettings A map of userID to their mobile & browser notification settings
  * @param {*} tx Transction for DB queries
  */
-const publishNotifications = async (notifications, metadata, userNotificationSettings, tx) => {
+const publishNotifications = async (notifications, metadata, userNotificationSettings, tx, optimizelyClient) => {
   for (const notification of notifications) {
     const mapNotification = notificationResponseMap[notification.type]
     const populatedNotification = {
@@ -120,6 +136,10 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
 
     // Don't publish events for deactivated users
     if (metadata.users[userId] && metadata.users[userId].is_deactivated) {
+      continue
+    }
+    const shouldFilter = shouldFilterOutNotification(notification.type, optimizelyClient)
+    if (shouldFilter) {
       continue
     }
 

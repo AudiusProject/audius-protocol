@@ -2,7 +2,6 @@
 import concurrent.futures
 import logging
 
-from sqlalchemy import func
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -13,7 +12,6 @@ from src.models import (
     Playlist,
     Repost,
     Save,
-    SkippedTransaction,
     Track,
     TrackRoute,
     URSMContentNode,
@@ -28,6 +26,7 @@ from src.queries.get_skipped_transactions import (
     get_indexing_error,
     set_indexing_error,
 )
+from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import track_metadata_format, user_metadata_format
@@ -64,9 +63,6 @@ default_config_start_hash = "0x0"
 
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
-
-# The maximum number of skipped transactions allowed
-MAX_SKIPPED_TX = 100
 
 
 def get_contract_info_if_exists(self, address):
@@ -230,6 +226,8 @@ def fetch_ipfs_metadata(
     blacklisted_cids = set()
     cids = set()
     cid_type = {}
+    # cid -> user_id lookup to make fetching replica set more efficient
+    cid_to_user_id = {}
 
     with db.scoped_session() as session:
         for tx_receipt in user_factory_txs:
@@ -238,14 +236,15 @@ def fetch_ipfs_metadata(
                 user_contract.events, user_event_types_lookup["update_multihash"]
             )().processReceipt(tx_receipt)
             for entry in user_events_tx:
-                metadata_multihash = helpers.multihash_digest_to_cid(
-                    entry["args"]._multihashDigest
-                )
-                if not is_blacklisted_ipld(session, metadata_multihash):
-                    cids.add((metadata_multihash, txhash))
-                    cid_type[metadata_multihash] = "user"
+                event_args = entry["args"]
+                cid = helpers.multihash_digest_to_cid(event_args._multihashDigest)
+                if not is_blacklisted_ipld(session, cid):
+                    cids.add((cid, txhash))
+                    cid_type[cid] = "user"
                 else:
-                    blacklisted_cids.add(metadata_multihash)
+                    blacklisted_cids.add(cid)
+                user_id = event_args._userId
+                cid_to_user_id[cid] = user_id
 
         for tx_receipt in track_factory_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -260,6 +259,7 @@ def fetch_ipfs_metadata(
                     event_args = entry["args"]
                     track_metadata_digest = event_args._multihashDigest.hex()
                     track_metadata_hash_fn = event_args._multihashHashFn
+                    track_owner_id = event_args._trackOwnerId
                     buf = multihash.encode(
                         bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                     )
@@ -269,19 +269,37 @@ def fetch_ipfs_metadata(
                         cid_type[cid] = "track"
                     else:
                         blacklisted_cids.add(cid)
+                    cid_to_user_id[cid] = track_owner_id
+
+    # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
+    user_to_replica_set = dict(
+        session.query(User.user_id, User.creator_node_endpoint)
+        .filter(
+            User.is_current == True,
+            User.user_id.in_(cid_to_user_id.values()),
+        )
+        .group_by(User.user_id, User.creator_node_endpoint)
+        .all()
+    )
 
     ipfs_metadata = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         futures = []
         futures_map = {}
         for cid, txhash in cids:
+            metadata_format = (
+                track_metadata_format
+                if cid_type[cid] == "track"
+                else user_metadata_format
+            )
+            user_replica_set = user_to_replica_set[
+                cid_to_user_id[cid]
+            ]  # user or track owner's replica set
             future = executor.submit(
                 update_task.ipfs_client.get_metadata,
                 cid,
-                track_metadata_format
-                if cid_type[cid] == "track"
-                else user_metadata_format,
-                None,
+                metadata_format,
+                user_replica_set,
             )
             futures.append(future)
             futures_map[future] = [cid, txhash]
@@ -341,15 +359,15 @@ def save_and_get_skip_tx_hash(session, redis):
         and "has_consensus" in indexing_error
         and indexing_error["has_consensus"]
     ):
-        num_skipped_tx = session.query(func.count(SkippedTransaction.id)).scalar()
-        if num_skipped_tx >= MAX_SKIPPED_TX:
+        try:
+            add_network_level_skipped_transaction(
+                session,
+                indexing_error["blocknumber"],
+                indexing_error["blockhash"],
+                indexing_error["txhash"],
+            )
+        except Exception:
             return None
-        skipped_tx = SkippedTransaction(
-            blocknumber=indexing_error["blocknumber"],
-            blockhash=indexing_error["blockhash"],
-            txhash=indexing_error["txhash"],
-        )
-        session.add(skipped_tx)
         return indexing_error["txhash"]
     return None
 
@@ -389,8 +407,8 @@ def index_blocks(self, db, blocks_list):
                 current_block_query.count() == 1
             ), "Expected single row marked as current"
 
-            former_current_block = current_block_query.first()
-            former_current_block.is_current = False
+            previous_block = current_block_query.first()
+            previous_block.is_current = False
             session.add(block_model)
 
             user_factory_txs = []
@@ -495,31 +513,29 @@ def index_blocks(self, db, blocks_list):
                     )
                     user_replica_set_manager_txs.append(tx_receipt)
 
-        # pre-fetch cids asynchronously to not have it block in user_state_update
-        # and track_state_update
-        try:
-            ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
-                db,
-                user_factory_txs,
-                track_factory_txs,
-                block_number,
-                block_hash,
-            )
-        except IndexingError as err:
-            logger.info(
-                f"index.py | Error in the indexing task at"
-                f" block={err.blocknumber} and hash={err.txhash}"
-            )
-            set_indexing_error(
-                redis, err.blocknumber, err.blockhash, err.txhash, err.message
-            )
-            confirm_indexing_transaction_error(
-                redis, err.blocknumber, err.blockhash, err.txhash, err.message
-            )
-            raise err
+            # pre-fetch cids asynchronously to not have it block in user_state_update
+            # and track_state_update
+            try:
+                ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
+                    db,
+                    user_factory_txs,
+                    track_factory_txs,
+                    block_number,
+                    block_hash,
+                )
+            except IndexingError as err:
+                logger.info(
+                    f"index.py | Error in the indexing task at"
+                    f" block={err.blocknumber} and hash={err.txhash}"
+                )
+                set_indexing_error(
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                )
+                confirm_indexing_transaction_error(
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                )
+                raise err
 
-        # Handle each block in a distinct transaction
-        with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             try:
                 # bulk process operations once all tx's for block have been parsed
                 total_user_changes, user_ids = user_state_update(
@@ -585,7 +601,6 @@ def index_blocks(self, db, blocks_list):
                     block_number,
                     block_timestamp,
                     block_hash,
-                    redis,
                 )
                 user_replica_set_state_changed = total_user_replica_set_changes > 0
                 logger.info(

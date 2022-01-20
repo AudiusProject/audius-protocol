@@ -13,6 +13,7 @@ class BaseRewardsReporter {
 }
 
 const SOLANA_BASED_CHALLENGE_IDS = new Set(['listen-streak'])
+const MAX_DISBURSED_CACHE_SIZE = 100
 
 /**
  * `RewardsAttester` is responsible for repeatedly attesting for completed rewards.
@@ -51,6 +52,7 @@ class RewardsAttester {
    *    maxRetries: number
    *    reporter: BaseRewardsReporter
    *    challengeIdsDenyList: Array<string>
+   *    endpoints?: Array<string>
    * }} {
    *    libs,
    *    startingBlock,
@@ -64,7 +66,8 @@ class RewardsAttester {
    *    getStartingBlockOverride = () => null,
    *    maxRetries = 3,
    *    reporter,
-   *    challengeIdsDenyList
+   *    challengeIdsDenyList,
+   *    endpoints
    *  }
    * @memberof RewardsAttester
    */
@@ -81,7 +84,8 @@ class RewardsAttester {
     getStartingBlockOverride = () => null,
     maxRetries = 5,
     reporter,
-    challengeIdsDenyList
+    challengeIdsDenyList,
+    endpoints = []
   }) {
     this.libs = libs
     this.logger = logger
@@ -92,7 +96,9 @@ class RewardsAttester {
     this.aaoEndpoint = aaoEndpoint
     this.aaoAddress = aaoAddress
     this.reporter = reporter || new BaseRewardsReporter()
-    this.endpoints = []
+    this.endpoints = endpoints
+    // If passed endpoints, override the automatic reselection process
+    this.overrideEndpointSelection = !!endpoints.length
     this.maxRetries = maxRetries
     this.updateValues = updateValues
     this.challengeIdsDenyList = new Set(...challengeIdsDenyList)
@@ -100,7 +106,9 @@ class RewardsAttester {
     this.undisbursedQueue = []
     // Stores a set of identifiers representing
     // recently disbursed challenges.
-    this.recentlyDisbursedSet = new Set()
+    // Stored as an array to make it simpler to prune
+    // old entries
+    this.recentlyDisbursedQueue = []
     // How long wait wait before retrying
     this.cooldownMsec = 2000
     // How much we increase the cooldown between attempts:
@@ -127,7 +135,8 @@ class RewardsAttester {
       quorum size: ${this.quorumSize}, \
       parallelization: ${this.parallelization} \
       AAO endpoint: ${this.aaoEndpoint} \
-      AAO address: ${this.aaoAddress}
+      AAO address: ${this.aaoAddress} \
+      endpoints: ${this.endpoints}
     `)
     await this._selectDiscoveryNodes()
 
@@ -247,7 +256,7 @@ class RewardsAttester {
     this.logger.info(`Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`)
 
     // Set the recently disbursed set
-    this.recentlyDisbursedSet = new Set(results.map(this._disbursementToKey))
+    this._addRecentlyDisbursed(results)
 
     // run the `updateValues` callback
     await this.updateValues({ startingBlock: this.startingBlock, offset: this.offset, successCount })
@@ -355,6 +364,7 @@ class RewardsAttester {
   }
 
   async _selectDiscoveryNodes () {
+    if (this.overrideEndpointSelection) return
     this.logger.info(`Selecting discovery nodes`)
     const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll()
     this.endpoints = sampleSize(endpoints, this.quorumSize)
@@ -370,7 +380,7 @@ class RewardsAttester {
   async _refillQueueIfNecessary () {
     if (this.undisbursedQueue.length) return {}
 
-    this.logger.info(`Refilling queue, recently disbursed: ${JSON.stringify(this.recentlyDisbursedSet)}`)
+    this.logger.info(`Refilling queue, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`)
     const { success: disbursable, error } = await this.libs.Rewards.getUndisbursedChallenges({ offset: this.offset, completedBlockNumber: this.startingBlock, logger: this.logger })
 
     if (error) {
@@ -397,7 +407,7 @@ class RewardsAttester {
         wallet,
         completedBlocknumber: completed_blocknumber
       }))
-      .filter(d => !(this.challengeIdsDenyList.has(d.challengeId) || this.recentlyDisbursedSet.has(this._disbursementToKey(d))))
+      .filter(d => !(this.challengeIdsDenyList.has(d.challengeId) || (new Set(this.recentlyDisbursedQueue)).has(this._disbursementToKey(d))))
 
     this.logger.info(`Got ${disbursable.length} undisbursed challenges${this.undisbursedQueue.length !== disbursable.length ? `, filtered out [${disbursable.length - this.undisbursedQueue.length}] recently disbursed challenges.` : '.'}`)
     return {}
@@ -463,8 +473,8 @@ class RewardsAttester {
     }
   }
 
-  _disbursementToKey ({ challengeId, userId }) {
-    return `${challengeId}_${userId}`
+  _disbursementToKey ({ challengeId, userId, specifier }) {
+    return `${challengeId}_${userId}_${specifier}`
   }
 
   async _backoff (retryCount) {
@@ -475,6 +485,14 @@ class RewardsAttester {
 
   async _delay (waitTime) {
     return new Promise(resolve => setTimeout(resolve, waitTime))
+  }
+
+  async _addRecentlyDisbursed (challenges) {
+    const ids = challenges.map(this._disbursementToKey)
+    this.recentlyDisbursedQueue.push(...ids)
+    if (this.recentlyDisbursedQueue.length > MAX_DISBURSED_CACHE_SIZE) {
+      this.recentlyDisbursedQueue.splice(0, this.recentlyDisbursedQueue.length - MAX_DISBURSED_CACHE_SIZE)
+    }
   }
 }
 
