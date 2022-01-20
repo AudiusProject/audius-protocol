@@ -39,7 +39,6 @@ export const RewardsContent = () => {
   useRequiresAccount(TRENDING_PAGE)
   return (
     <>
-      <ExplainerTile className={wm(styles.explainerTile)} />
       <WalletModal />
       <div className={wm(styles.cryptoContentContainer)}>
         <BalanceTile className={wm(styles.balanceTile)} />
@@ -50,6 +49,7 @@ export const RewardsContent = () => {
       )}
       <TrendingRewardsTile className={styles.mobile} />
       <Tiers />
+      <ExplainerTile className={wm(styles.explainerTile)} />
     </>
   )
 }
