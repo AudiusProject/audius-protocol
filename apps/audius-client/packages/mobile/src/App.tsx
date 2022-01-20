@@ -16,6 +16,7 @@ import CollectibleDetailsDrawer from 'app/components/collectible-details-drawer'
 import ConnectWalletsDrawer from 'app/components/connect-wallets-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer/DeactivateAccountConfirmationDrawer'
 import DownloadTrackProgressDrawer from 'app/components/download-track-progress-drawer'
+import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import EnablePushNotificationsDrawer from 'app/components/enable-push-notifications-drawer'
 import HCaptcha from 'app/components/hcaptcha'
 import MobileUploadDrawer from 'app/components/mobile-upload-drawer'
@@ -63,6 +64,7 @@ const Drawers = () => {
       <EnablePushNotificationsDrawer />
       <CollectibleDetailsDrawer />
       <ConnectWalletsDrawer />
+      <EditCollectiblesDrawer />
       <OverflowMenuDrawer />
       <DeactivateAccountConfirmationDrawer />
       <DownloadTrackProgressDrawer />
