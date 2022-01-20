@@ -678,7 +678,7 @@ const trackDiskStorage = multer.diskStorage({
       fileName = req.query.use_uuid_in_path
     } else {
       // Save file under randomly named folders to avoid collisions
-      fileName = 'vickyCanada' + getRandomFileName().slice(-3)
+      fileName = getRandomFileName()
     }
 
     const fileDir = getTmpTrackUploadArtifactsWithUUIDInPath(fileName)
