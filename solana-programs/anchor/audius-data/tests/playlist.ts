@@ -4,10 +4,9 @@ import {
   createPlaylist,
   deletePlaylist,
   initAdmin,
-  initUserSolPubkey,
   updatePlaylist,
 } from "../lib/lib";
-import { findDerivedPair, getTransaction, randomCID } from "../lib/utils";
+import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   confirmLogInTransaction,

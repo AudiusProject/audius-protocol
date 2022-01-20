@@ -64,6 +64,9 @@ describe("follows", () => {
     let newUser2Key;
     let userStorageAccount1;
     let newUserAcct2PDA;
+    let baseAuthorityAccount;
+    let handle1DerivedInfo;
+    let handle2DerivedInfo;
 
     // Initialize user for each test
     beforeEach(async () => {
@@ -73,20 +76,23 @@ describe("follows", () => {
       handleBytesArray1 = constants1.handleBytesArray;
       handleBytesArray2 = constants2.handleBytesArray;
 
-      let { baseAuthorityAccount, bumpSeed, derivedAddress } =
-        await findDerivedPair(
-          program.programId,
-          adminStgKeypair.publicKey,
-          Buffer.from(handleBytesArray1)
-        );
-      let derivedInfo2 = await findDerivedPair(
+      handle1DerivedInfo = await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray1)
+      );
+      let derivedAddress = handle1DerivedInfo.derivedAddress;
+      let bumpSeed = handle1DerivedInfo.bumpSeed;
+      baseAuthorityAccount = handle1DerivedInfo.baseAuthorityAccount;
+
+      handle2DerivedInfo = await findDerivedPair(
         program.programId,
         adminStgKeypair.publicKey,
         Buffer.from(handleBytesArray2)
       );
 
       userStorageAccount1 = derivedAddress;
-      newUserAcct2PDA = derivedInfo2.derivedAddress;
+      newUserAcct2PDA = handle2DerivedInfo.derivedAddress;
 
       await testInitUser({
         provider,
@@ -109,7 +115,7 @@ describe("follows", () => {
         testEthAddr: constants2.testEthAddr,
         testEthAddrBytes: constants2.testEthAddrBytes,
         handleBytesArray: handleBytesArray2,
-        bumpSeed: derivedInfo2.bumpSeed,
+        bumpSeed: handle2DerivedInfo.bumpSeed,
         metadata: constants2.metadata,
         userStgAccount: newUserAcct2PDA,
         adminKeypair,
@@ -143,7 +149,7 @@ describe("follows", () => {
       });
     });
 
-    it("follow + unfollow user", async () => {
+    it("follow user", async () => {
       // Submit a tx where user 1 follows user 2
       let followArgs = {
         accounts: {
@@ -156,9 +162,12 @@ describe("follows", () => {
         signers: [newUser1Key],
       };
       let followTx = await program.rpc.followUser(
+        baseAuthorityAccount,
         UserActionEnumValues.followUser,
         handleBytesArray1,
+        handle1DerivedInfo.bumpSeed,
         handleBytesArray2,
+        handle2DerivedInfo.bumpSeed,
         followArgs
       );
       let txInfo = await confirmLogInTransaction(
@@ -184,10 +193,28 @@ describe("follows", () => {
       );
       assert.equal(user1Handle, instructionFollowerHandle);
       assert.equal(user2Handle, instructionFolloweeHandle);
+      return;
+    });
+
+    it("unfollow user", async () => {
+      // Submit a tx where user 1 follows user 2
+      let followArgs = {
+        accounts: {
+          audiusAdmin: adminStgKeypair.publicKey,
+          payer: provider.wallet.publicKey,
+          authority: newUser1Key.publicKey,
+          followerUserStorage: userStorageAccount1,
+          followeeUserStorage: newUserAcct2PDA,
+        },
+        signers: [newUser1Key],
+      };
       let unfollowTx = await program.rpc.followUser(
+        baseAuthorityAccount,
         UserActionEnumValues.unfollowUser,
         handleBytesArray1,
+        handle1DerivedInfo.bumpSeed,
         handleBytesArray2,
+        handle2DerivedInfo.bumpSeed,
         followArgs
       );
       let unFollowtxInfo = await confirmLogInTransaction(
@@ -199,13 +226,15 @@ describe("follows", () => {
         unFollowtxInfo.transaction.message.instructions[0].data,
         "base58"
       );
-      const unfollowInstructions = decodedInstruction.data;
+      const unfollowInstructions = unFollowdecodedInstruction.data;
       const unfInstructionFollowerHandle = String.fromCharCode(
         ...unfollowInstructions["followerHandleSeed"]
       );
       const unfInstructionFolloweeHandle = String.fromCharCode(
         ...unfollowInstructions["followeeHandleSeed"]
       );
+      const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
+      const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
       assert.equal(user1Handle, unfInstructionFollowerHandle);
       assert.equal(user2Handle, unfInstructionFolloweeHandle);
     });
@@ -225,12 +254,16 @@ describe("follows", () => {
       };
       try {
         // Use invalid enum value and confirm failure
-        await program.rpc.followUser(
+        let txHash = await program.rpc.followUser(
+          baseAuthorityAccount,
           UserActionEnumValues.invalidEnumValue,
           handleBytesArray1,
+          handle1DerivedInfo.bumpSeed,
           handleBytesArray2,
+          handle2DerivedInfo.bumpSeed,
           followArgs
         );
+        console.log(`invalid follow txHash=${txHash}`);
       } catch (e: any) {
         let index = e.toString().indexOf("unable to infer src variant");
         if (index > 0) expectedErrorFound = true;

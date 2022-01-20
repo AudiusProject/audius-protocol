@@ -223,9 +223,12 @@ pub mod audius_data {
     /// validation for both paths.
     pub fn follow_user(
         ctx: Context<FollowUser>,
+        base: Pubkey,
         user_action: UserAction,
-        follower_handle_seed: [u8; 16],
-        followee_handle_seed: [u8; 16],
+        _follower_handle_seed: [u8; 16],
+        _follower_bump: u8,
+        _followee_handle_seed: [u8; 16],
+        _followee_bump: u8,
     ) -> ProgramResult {
         match user_action {
             UserAction::FollowUser => {
@@ -240,30 +243,16 @@ pub mod audius_data {
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
-        // Confirm the follower is part of this audius instance
-        let (derived_follower_pda, _) = Pubkey::find_program_address(
-            &[&base_pda.to_bytes()[..32], &follower_handle_seed],
-            ctx.program_id,
-        );
-        // Confirm the follower PDA matches the expected value provided the target handle
-        if derived_follower_pda != ctx.accounts.follower_user_storage.key() {
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
             return Err(ErrorCode::Unauthorized.into());
         }
+
         // Confirm the authority for this follower has signed the transaction
         if ctx.accounts.follower_user_storage.authority != ctx.accounts.authority.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        // Confirm the followee PDA matches the expected value
-        let (derived_followee_pda, _) = Pubkey::find_program_address(
-            &[&base_pda.to_bytes()[..32], &followee_handle_seed],
-            ctx.program_id,
-        );
-
-        // Confirm the follower PDA matches the expected value provided the target handle
-        if derived_followee_pda != ctx.accounts.followee_user_storage.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
         Ok(())
     }
 }
@@ -392,13 +381,15 @@ pub struct DeleteTrack<'info> {
 
 /// Instruction container for follow
 #[derive(Accounts)]
-#[instruction(user_instr:UserAction, follower_handle_seed: [u8;16], followee_handle_seed: [u8;16])]
+#[instruction(base: Pubkey, user_instr:UserAction, follower_handle_seed: [u8;16], follower_handle_bump:u8, followee_handle_seed: [u8;16], followee_handle_bump:u8)]
 pub struct FollowUser<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(mut)]
+    // Confirm the follower PDA matches the expected value provided the target handle and base
+    #[account(mut, seeds = [&base.to_bytes()[..32], follower_handle_seed.as_ref()], bump = follower_handle_bump)]
     pub follower_user_storage: Account<'info, User>,
-    #[account(mut)]
+    // Confirm the followee PDA matches the expected value provided the target handle and base
+    #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle_seed.as_ref()], bump = followee_handle_bump)]
     pub followee_user_storage: Account<'info, User>,
     #[account(mut)]
     pub payer: Signer<'info>,
