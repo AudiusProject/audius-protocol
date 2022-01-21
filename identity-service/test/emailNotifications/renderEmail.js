@@ -224,7 +224,6 @@ describe('Test Render Email Notification', function () {
       timeBeforeEmailNotifications,
       5
     )
-    console.log(notificationProps)
 
     assert.deepStrictEqual(notificationCount, 3)
     // assert some notification props
@@ -262,7 +261,6 @@ describe('Test Render Email Notification', function () {
       timeBeforeEmailNotifications,
       5
     )
-    console.log(notificationProps)
 
     assert.deepStrictEqual(notificationCount, 3)
     // assert some notification props
