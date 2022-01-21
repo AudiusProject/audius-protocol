@@ -181,8 +181,8 @@ class SyncHistoryAggregator {
   static async getLatestSyncData(logContext = {}) {
     const logger = genericLogger.child(logContext)
     const currentLatestSyncData = {
-      success: 0,
-      fail: 0
+      success: '',
+      fail: ''
     }
 
     try {

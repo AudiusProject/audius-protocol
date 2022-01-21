@@ -11,7 +11,10 @@ enum SYNC_STATES {
  * @param {Number} days number of historical days to get data for
  * @returns {Number} number of syncs per wallet per day that met the status
  */
-const _getRollingSyncCount = async (status: SYNC_STATES, days: number) => {
+const _getRollingSyncCount = async (
+  status: SYNC_STATES,
+  days: number
+): Promise<number> => {
   // Get the start and end dates of the rolling window
   const today = new Date()
   const rollingWindowStartDate = new Date(today.setDate(today.getDate() - days))
@@ -36,30 +39,30 @@ const _getRollingSyncCount = async (status: SYNC_STATES, days: number) => {
   return rollingSyncStatusCount
 }
 
-const get30DayRollingSyncSuccessCount = async () => {
+const get30DayRollingSyncSuccessCount = async (): Promise<number> => {
   return _getRollingSyncCount(SYNC_STATES.success, 30)
 }
 
-const get30DayRollingSyncFailCount = async () => {
+const get30DayRollingSyncFailCount = async (): Promise<number> => {
   return _getRollingSyncCount(SYNC_STATES.fail, 30)
 }
 
-const getDailySyncSuccessCount = async () => {
+const getDailySyncSuccessCount = async (): Promise<number> => {
   const { success } = await SyncHistoryAggregator.getDailyWalletSyncData()
   return success
 }
 
-const getDailySyncFailCount = async () => {
+const getDailySyncFailCount = async (): Promise<number> => {
   const { fail } = await SyncHistoryAggregator.getDailyWalletSyncData()
   return fail
 }
 
-const getLatestSyncSuccessTimestamp = async () => {
+const getLatestSyncSuccessTimestamp = async (): Promise<string> => {
   const { success } = await SyncHistoryAggregator.getLatestSyncData()
   return success
 }
 
-const getLatestSyncFailTimestamp = async () => {
+const getLatestSyncFailTimestamp = async (): Promise<string> => {
   const { fail } = await SyncHistoryAggregator.getLatestSyncData()
   return fail
 }
