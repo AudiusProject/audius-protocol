@@ -10,7 +10,7 @@ const solClient = require('../solana-client.js')
 const config = require('../config.js')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
-async function getListenHour() {
+async function getListenHour () {
   let listenDate = new Date()
   listenDate.setMinutes(0)
   listenDate.setSeconds(0)

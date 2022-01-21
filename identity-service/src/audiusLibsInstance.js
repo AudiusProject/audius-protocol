@@ -8,11 +8,11 @@ const web3ProviderUrl = config.get('web3Provider')
 const SOLANA_TOKEN_ADDRESS = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 
 class AudiusLibsWrapper {
-  constructor() {
+  constructor () {
     this.audiusLibsInstance = null
   }
 
-  async init() {
+  async init () {
     const dataWeb3 = await AudiusLibs.Utils.configureWeb3(web3ProviderUrl, null, false)
     if (!dataWeb3) throw new Error('Web3 incorrectly configured')
 
@@ -75,14 +75,14 @@ class AudiusLibsWrapper {
     this.audiusLibsInstance = audiusInstance
   }
 
-  getAudiusLibs() {
+  getAudiusLibs () {
     return this.audiusLibsInstance
   }
 
   /**
    * Async getter for libs. Resolves when libs is initialized.
    */
-  async getAudiusLibsAsync() {
+  async getAudiusLibsAsync () {
     if (this.audiusLibsInstance) {
       return this.audiusLibsInstance
     }
