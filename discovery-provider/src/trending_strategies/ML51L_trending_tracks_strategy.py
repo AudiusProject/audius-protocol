@@ -64,15 +64,15 @@ class TrendingTracksStrategyML51L(BaseTrendingStrategy):
             """
             begin;
                 DELETE FROM track_trending_scores WHERE type=:type AND version=:version;
-                INSERT INTO track_trending_scores
+                INSERT INTO track_trending_scores 
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select
+                    select 
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
                         :week_time_range,
-                        CASE
+                        CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
                         WHEN EXTRACT(DAYS from now() - aip.created_at) > :week
@@ -80,18 +80,18 @@ class TrendingTracksStrategyML51L(BaseTrendingStrategy):
                         ELSE (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as week_score,
                         now()
-                    from trending_params tp
-                    inner join aggregate_interval_plays aip
+                    from trending_params tp 
+                    inner join aggregate_interval_plays aip 
                         on tp.track_id = aip.track_id;
-                INSERT INTO track_trending_scores
+                INSERT INTO track_trending_scores 
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select
+                    select 
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
                         :month_time_range,
-                        CASE
+                        CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
                         WHEN EXTRACT(DAYS from now() - aip.created_at) > :month
@@ -99,33 +99,28 @@ class TrendingTracksStrategyML51L(BaseTrendingStrategy):
                         ELSE (:N * aip.month_listen_counts + :F * tp.repost_month_count + :O * tp.save_month_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as month_score,
                         now()
-                    from trending_params tp
-                    inner join aggregate_interval_plays aip
+                    from trending_params tp 
+                    inner join aggregate_interval_plays aip 
                         on tp.track_id = aip.track_id;
-                INSERT INTO track_trending_scores
+                INSERT INTO track_trending_scores 
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select
+                    select 
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
-                        :all_time_time_range,
-                        CASE
+                        :year_time_range,
+                        CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
-                        ELSE (:N * ap.count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
-                        END as all_time_score,
+                        WHEN EXTRACT(DAYS from now() - aip.created_at) > :year
+                            THEN greatest(1.0/:q, pow(:q, greatest(-10, 1.0 - 1.0*EXTRACT(DAYS from now() - aip.created_at)/:year))) * (:N * aip.year_listen_counts + :F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
+                        ELSE (:N * aip.year_listen_counts + :F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
+                        END as year_score,
                         now()
-                    from trending_params tp
-                    inner join aggregate_plays ap
-                        on tp.track_id = ap.play_item_id
-                    inner join tracks t
-                        on ap.play_item_id = t.track_id
-                    where -- same filtering for aggregate_interval_plays
-                        t.is_current is True AND
-                        t.is_delete is False AND
-                        t.is_unlisted is False AND
-                        t.stem_of is Null;
+                    from trending_params tp 
+                    inner join aggregate_interval_plays aip 
+                        on tp.track_id = aip.track_id;
             commit;
         """
         )
@@ -134,6 +129,7 @@ class TrendingTracksStrategyML51L(BaseTrendingStrategy):
             {
                 "week": T["week"],
                 "month": T["month"],
+                "year": T["year"],
                 "N": N,
                 "F": F,
                 "O": O,
@@ -145,7 +141,7 @@ class TrendingTracksStrategyML51L(BaseTrendingStrategy):
                 "version": self.version.name,
                 "week_time_range": "week",
                 "month_time_range": "month",
-                "all_time_time_range": "allTime",
+                "year_time_range": "year",
             },
         )
         duration = time.time() - start_time
