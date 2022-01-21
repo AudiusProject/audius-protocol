@@ -14,8 +14,6 @@ const MAX_CONCURRENCY =
     ? transcodingMaxConcurrency
     : os.cpus().length
 
-const MIN_SLOTS_AVAILABLE = config.get('minimumTranscodingSlotsAvailable')
-
 const PROCESS_NAMES = Object.freeze({
   segment: 'segment',
   transcode320: 'transcode_320'
