@@ -208,7 +208,7 @@ class SyncHistoryAggregator {
    * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
    * @param {Object?} logContext the log context off of the Express req object
    * @returns an object of the current day's aggregate sync count like
-   *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
+   *     {success: <int>, fail: <int>}
    */
   static async getDailyWalletSyncData(
     date = new Date().toISOString().split('T')[0],
@@ -234,7 +234,7 @@ class SyncHistoryAggregator {
         `syncHistoryAggregator - getDailyWalletSyncData() error - ${e.toString()}`
       )
     }
-    // Structure: {success: <int>, fail: <int>}
+
     return perWalletSyncData
   }
 

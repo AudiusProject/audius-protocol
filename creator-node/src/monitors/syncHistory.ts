@@ -1,5 +1,9 @@
-const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
-const { SYNC_STATES } = require('../snapbackSM/syncHistoryAggregator')
+import SyncHistoryAggregator from 'snapbackSM/syncHistoryAggregator'
+
+enum SYNC_STATES {
+  success = 'success',
+  fail = 'fail'
+}
 
 /**
  * Get the total number of syncs that met 'status' per wallet per day for the given number of days
@@ -7,12 +11,7 @@ const { SYNC_STATES } = require('../snapbackSM/syncHistoryAggregator')
  * @param {Number} days number of historical days to get data for
  * @returns {Number} number of syncs per wallet per day that met the status
  */
-const _getRollingSyncCount = async (status, days) => {
-  if (status !== SYNC_STATES.success && status !== SYNC_STATES.fail)
-    throw new Error(
-      'Invalid status for _getRollingSyncCount: must be valid state from SYNC_STATES'
-    )
-
+const _getRollingSyncCount = async (status: SYNC_STATES, days: number) => {
   // Get the start and end dates of the rolling window
   const today = new Date()
   const rollingWindowStartDate = new Date(today.setDate(today.getDate() - days))
@@ -28,7 +27,7 @@ const _getRollingSyncCount = async (status, days) => {
     const resp = await SyncHistoryAggregator.getDailyWalletSyncData(
       redisDateKeySuffix
     )
-    rollingSyncStatusCount += parseInt(resp[status], 10) || 0
+    rollingSyncStatusCount += resp[status] || 0
 
     // Set the date to the next day
     date.setDate(date.getDate() + 1)
