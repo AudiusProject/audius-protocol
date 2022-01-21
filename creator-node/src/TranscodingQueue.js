@@ -48,7 +48,7 @@ class TranscodingQueue {
         try {
           this.logStatus(`Segmenting ${fileDir} ${fileName}`, logContext)
 
-          const segments = await ffmpeg.segmentFile(fileDir, fileName, {
+          const response = await ffmpeg.segmentFile(fileDir, fileName, {
             logContext
           })
           this.logStatus(
@@ -57,7 +57,7 @@ class TranscodingQueue {
             }ms`,
             logContext
           )
-          done(null, { segments })
+          done(null, response)
         } catch (e) {
           this.logStatus(
             `Segment Job Error ${e} in duration ${Date.now() - start}ms`,
@@ -81,16 +81,20 @@ class TranscodingQueue {
             logContext
           )
 
-          const filePath = await ffmpeg.transcodeFileTo320(fileDir, fileName, {
-            logContext
-          })
+          const transcodeFilePath = await ffmpeg.transcodeFileTo320(
+            fileDir,
+            fileName,
+            {
+              logContext
+            }
+          )
           this.logStatus(
             `Successfully completed Transcode320 job ${fileDir} ${fileName} in duration ${
               Date.now() - start
             }ms`,
             logContext
           )
-          done(null, { filePath })
+          done(null, { transcodeFilePath })
         } catch (e) {
           this.logStatus(
             `Transcode320 Job Error ${e} in duration ${Date.now() - start}`,

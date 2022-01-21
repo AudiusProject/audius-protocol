@@ -14,6 +14,8 @@ function segmentFile(fileDir, fileName, { logContext }) {
     const absolutePath = path.resolve(fileDir, fileName)
     logger.info(`Segmenting file ${absolutePath}...`)
 
+    const m3u8FilePath = path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
+
     // https://ffmpeg.org/ffmpeg-formats.html#hls-2
     const args = [
       '-i',
@@ -35,7 +37,7 @@ function segmentFile(fileDir, fileName, { logContext }) {
       // "-vn" flag required to allow track uploading with album art
       // https://stackoverflow.com/questions/20193065/how-to-remove-id3-audio-tag-image-or-metadata-from-mp3-with-ffmpeg
       '-vn', // skip inclusion of video, process only the audio file without "video"
-      path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
+      m3u8FilePath
     ]
     logger.info(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
@@ -54,9 +56,11 @@ function segmentFile(fileDir, fileName, { logContext }) {
         )
 
         resolve({
-          fileNames: segmentFileNames,
-          filePaths: segmentFilePaths,
-          m3u8Path: path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
+          segments: {
+            fileNames: segmentFileNames,
+            filePaths: segmentFilePaths
+          },
+          m3u8FilePath
         })
       } else {
         logger.error('Error when processing file with ffmpeg')
