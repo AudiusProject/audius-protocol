@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
+import * as Sentry from '@sentry/react-native'
 import {
   StyleSheet,
   View,
@@ -24,6 +25,7 @@ import IconTrending from 'app/assets/images/iconTrending.svg'
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
 import {
+  Entity as EntityType,
   Notification,
   NotificationType,
   TierChange
@@ -140,6 +142,18 @@ const NotificationBlock = ({
   const Icon = typeIconMap[notification.type](notification)
   const title = typeTitleMap[notification.type](notification)
   const notificationRoute = getNotificationRoute(notification)
+
+  useEffect(() => {
+    const { id, entity, entityId, entityType, type } = notification as any
+    // Adding this to help debug https://sentry.io/share/issue/1ffbb982b2234e5981bd00b6e95ad926/
+    if (entityType === EntityType.Track && !entity) {
+      Sentry.captureException(
+        new Error(
+          `Notification Track entity does not exist. entityId: ${entityId} notificationType: ${type} notificationId: ${id}`
+        )
+      )
+    }
+  }, [notification])
 
   const onPress = useCallback(() => {
     if (notificationRoute) {
