@@ -366,11 +366,11 @@ def test_update_track_score_query(app):
 
         week_scores = get_time_sorted("week")
         month_scores = get_time_sorted("month")
-        all_time_scores = get_time_sorted("allTime")
+        year_scores = get_time_sorted("year")
 
         assert len(week_scores) == 7
         assert len(month_scores) == 7
-        assert len(all_time_scores) == 7
+        assert len(year_scores) == 7
 
         # Check that the type and version fields are correct
         for score in scores:
