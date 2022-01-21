@@ -20,26 +20,14 @@ import { ERROR_PAGE } from 'utils/route'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
-const onSagaError = (error, extraInfo) => {
-  console.error(`Caught saga error: ${error} ${extraInfo}`)
+const onSagaError = (error, errorInfo) => {
+  console.error(`Caught saga error: ${error} ${errorInfo}`)
   store.dispatch(replaceRoute(ERROR_PAGE))
 
-  // Get sagaStack if it exists, attaching
-  // to sentry extra info + logging it
-  let extra = extraInfo || {}
-  if (error.sagaStack) {
-    console.error(`Saga stack: ${error.sagaStack}`)
-    extra = {
-      ...extra,
-      sagaStack: error.sagaStack
-    }
-  }
-
-  // Send to sentry if not on localhost
   if (!getIsDeployedOnHost()) return
   try {
     Sentry.withScope(scope => {
-      scope.setExtras(extra)
+      scope.setExtras(errorInfo)
       Sentry.captureException(error)
     })
   } catch {

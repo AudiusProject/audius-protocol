@@ -107,7 +107,7 @@ function* watchFetchNotificationsSuccess() {
   yield takeEvery(notificationActions.FETCH_NOTIFICATIONS_SUCCEEDED, function* (
     action: notificationActions.FetchNotificationsSucceeded
   ) {
-    const connectedNotifications = yield connectNotifications(
+    const connectedNotifications: ConnectedNotification[] = yield connectNotifications(
       action.notifications
     )
     const message = new FetchNotificationsSuccessMessage(connectedNotifications)
@@ -119,7 +119,7 @@ function* watchFetchSetNotifications() {
   yield takeEvery(notificationActions.SET_NOTIFICATIONS, function* (
     action: notificationActions.SetNotifications
   ) {
-    const connectedNotifications = yield connectNotifications(
+    const connectedNotifications: ConnectedNotification[] = yield connectNotifications(
       action.notifications
     )
     const message = new FetchNotificationsReplaceMessage(connectedNotifications)

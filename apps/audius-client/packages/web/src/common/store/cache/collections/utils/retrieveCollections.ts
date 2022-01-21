@@ -110,6 +110,7 @@ export function* retrieveCollections(
   fetchTracks = false,
   requiresAllTracks = false
 ) {
+  // @ts-ignore retrieve should be refactored to ts first
   const { entries, uids } = yield call(retrieve, {
     ids: collectionIds,
     selectFromCache: function* (ids: ID[]) {
