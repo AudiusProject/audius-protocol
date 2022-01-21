@@ -27,7 +27,7 @@ import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
 import { challengeRewardsConfig } from './config'
-import { useOptimisticChallengeCompletionStepCounts } from './hooks'
+import { useOptimisticUserChallenge } from './hooks'
 
 const messages = {
   title: '$AUDIO REWARDS',
@@ -47,7 +47,6 @@ type RewardPanelProps = {
   stepCount: number
   openModal: (modalType: ChallengeRewardsModalType) => void
   id: ChallengeRewardID
-  currentStepCountOverride?: number
 }
 
 const RewardPanel = ({
@@ -58,23 +57,14 @@ const RewardPanel = ({
   openModal,
   progressLabel,
   icon,
-  stepCount,
-  currentStepCountOverride
+  stepCount
 }: RewardPanelProps) => {
   const wm = useWithMobileStyle(styles.mobile)
   const userChallenges = useSelector(getUserChallenges)
 
   const openRewardModal = () => openModal(id)
 
-  const challenge = userChallenges[id]
-  const shouldOverrideCurrentStepCount =
-    !challenge?.is_complete && currentStepCountOverride !== undefined
-  const currentStepCount = shouldOverrideCurrentStepCount
-    ? currentStepCountOverride!
-    : challenge?.current_step_count || 0
-  const isComplete = shouldOverrideCurrentStepCount
-    ? currentStepCountOverride! >= stepCount
-    : !!challenge?.is_complete
+  const challenge = useOptimisticUserChallenge(userChallenges[id])
 
   return (
     <div className={wm(styles.rewardPanelContainer)} onClick={openRewardModal}>
@@ -88,21 +78,21 @@ const RewardPanel = ({
       <div className={wm(styles.rewardProgress)}>
         <p
           className={cn(styles.rewardProgressLabel, {
-            [styles.complete]: isComplete
+            [styles.complete]: challenge?.state === 'completed'
           })}
         >
-          {isComplete
+          {challenge?.state === 'completed'
             ? messages.completeLabel
             : fillString(
                 progressLabel,
-                currentStepCount.toString(),
+                challenge?.current_step_count?.toString() ?? '',
                 stepCount.toString()
               )}
         </p>
         {stepCount > 1 && (
           <ProgressBar
             className={styles.rewardProgressBar}
-            value={currentStepCount}
+            value={challenge?.current_step_count ?? 0}
             max={stepCount}
           />
         )}
@@ -110,7 +100,7 @@ const RewardPanel = ({
       <ButtonWithArrow
         className={wm(styles.panelButton)}
         text={
-          challenge?.is_complete && !challenge?.is_disbursed
+          challenge?.state === 'completed'
             ? messages.claimReward
             : panelButtonText
         }
@@ -150,7 +140,6 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const dispatch = useDispatch()
   const rewardIds = useRewardIds()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
-  const currentStepCountOverrides = useOptimisticChallengeCompletionStepCounts()
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
 
   useEffect(() => {
@@ -176,12 +165,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const rewardsTiles = rewardIds
     .map(id => challengeRewardsConfig[id])
     .map(props => (
-      <RewardPanel
-        {...props}
-        currentStepCountOverride={currentStepCountOverrides[props.id]}
-        openModal={openModal}
-        key={props.id}
-      />
+      <RewardPanel {...props} openModal={openModal} key={props.id} />
     ))
 
   const wm = useWithMobileStyle(styles.mobile)
