@@ -210,20 +210,6 @@ class TranscodingQueue {
       active: active.length
     }
   }
-
-  /**
-   * The max number of transcode jobs that can run at a given moment is correlated to
-   * the number of cores available. If the remaining slots number is greater than the
-   * minimum slots necessary, mark the transcode queue as available.
-   *
-   * @returns boolean flag if the transcode queue can accept more jobs
-   */
-  async isAvailable() {
-    const { active, waiting } = await this.getTranscodeQueueJobs()
-    const remainingSlots = MAX_CONCURRENCY - active - waiting
-
-    return remainingSlots >= MIN_SLOTS_AVAILABLE
-  }
 }
 
 module.exports = new TranscodingQueue()

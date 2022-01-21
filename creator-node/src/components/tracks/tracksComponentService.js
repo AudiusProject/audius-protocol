@@ -61,17 +61,6 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   return resp
 }
 
-async function handleTranscodeAndSegment(
-  { logContext },
-  { fileName, fileDir }
-) {
-  return TrackContentUploadManager.transcodeAndSegment(
-    { logContext },
-    { fileName, fileDir }
-  )
-}
-
 module.exports = {
-  handleTrackContentRoute,
-  handleTranscodeAndSegment
+  handleTrackContentRoute
 }
