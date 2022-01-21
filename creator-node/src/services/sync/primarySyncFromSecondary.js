@@ -8,6 +8,7 @@ const DBManager = require('../../dbManager.js')
 const { getCreatorNodeEndpoints } = require('../../middlewares.js')
 const initBootstrapAndRefreshPeers = require('./initBootstrapAndRefreshPeers.js')
 const { saveFileForMultihashToFS } = require('../../fileManager.js')
+const { FileWatcherEventKind } = require('typescript')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
@@ -64,43 +65,27 @@ async function fetchExportFromSecondary({
 }
 
 /**
- * TODO doc
+ * Fetch data for all files & save to disk
  *
- * fetch all Files, diff all against local DB
- * write data for all diffed files to disk
- * write all DB state in TX
+ * - These ops are performed before DB ops to minimize DB TX lifespan
+ * - `saveFileForMultihashToFS` will exit early if files already exist on disk
+ * - Performed in batches to limit concurrent load
  */
-async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegistry, logger }) {
-  const { nodeConfig } = serviceRegistry
+async function saveFilesToDisk ({ files, userReplicaSet, serviceRegistry, logger }) {
+  const FileSaveMaxConcurrency = serviceRegistry.nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
 
-  const {
-    walletPublicKey,
-    audiusUsers: fetchedAudiusUsers,
-    tracks: fetchedTracks,
-    files: fetchedFiles
-  } = fetchedCNodeUser
-
-  /**
-   * Fetch data for all files & save to disk
-   *
-   * - These ops are performed before DB ops to minimize DB TX lifespan
-   * - `saveFileForMultihashToFS` will exit early if files already exist on disk
-   * - Performed in batches to limit concurrent load
-   */
-
-  const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
-  const fetchedTrackFiles = fetchedFiles.filter((file) =>
+  const trackFiles = files.filter((file) =>
     models.File.TrackTypes.includes(file.type)
   )
-  const fetchedNonTrackFiles = fetchedFiles.filter((file) =>
+  const nonTrackFiles = files.filter((file) =>
     models.File.NonTrackTypes.includes(file.type)
   )
 
   /**
    * Save all Track files to disk
    */
-  for (let i = 0; i < fetchedTrackFiles.length; i += FileSaveMaxConcurrency) {
-    const fetchedTrackFilesSlice = fetchedTrackFiles.slice(i, i + FileSaveMaxConcurrency)
+   for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
+    const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
 
     /**
      * Fetch content for each CID + save to FS
@@ -109,7 +94,7 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
      * - `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
      */
     await Promise.all(
-      fetchedTrackFilesSlice.map(async (trackFile) => {
+      trackFilesSlice.map(async (trackFile) => {
         const status = await saveFileForMultihashToFS(
           serviceRegistry,
           logger,
@@ -127,11 +112,11 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
   /**
    * Save all non-Track files to disk
    */
-  for (let i = 0; i < fetchedNonTrackFiles.length; i += FileSaveMaxConcurrency) {
-    const fetchedNonTrackFilesSlice = fetchedNonTrackFiles.slice(i, i + FileSaveMaxConcurrency)
+   for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
+    const nonTrackFilesSlice = nonTrackFiles.slice(i, i + FileSaveMaxConcurrency)
 
     await Promise.all(
-      fetchedNonTrackFilesSlice.map(async (nonTrackFile) => {
+      nonTrackFilesSlice.map(async (nonTrackFile) => {
         // Skip over directories since there's no actual content to sync
         // The files inside the directory are synced separately
         if (nonTrackFile.type !== 'dir') {
@@ -172,7 +157,55 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
       })
     )
   }
+
   console.log(`SIDTEST SFFM ALL DONE, starting DB`)
+}
+
+async function filterOutAlreadyPresentDBEntries ({
+  cnodeUserUUID, tableInstance, fetchedEntries, transaction, comparisonFields
+}) {
+  const localEntries = await tableInstance.findAll({
+    where: { cnodeUserUUID },
+    transaction
+  })
+
+  console.log(`FETCHEDENTRIES: ${JSON.stringify(fetchedEntries)}`)
+  console.log(`localEntries: ${JSON.stringify(localEntries)}`)
+
+  const filteredEntries = fetchedEntries.filter(fetchedEntry => {
+    let alreadyPresent = false
+    localEntries.forEach(localEntry => {
+      let obj1 = _.pick(fetchedEntry, comparisonFields)
+      let obj2 = _.pick(localEntry, comparisonFields)
+      let isEqual = _.isEqual(obj1,obj2)
+      console.log(`SIDTEST COMPARE: ${JSON.stringify(obj1)} - ${JSON.stringify(obj2)} - isequal: ${isEqual}`)
+      if (isEqual) {
+        alreadyPresent = true
+      }
+    })
+    return !alreadyPresent
+  })
+
+  console.log(`FILTEROUTALREADYPRESENT FOUND ${fetchedEntries.length - filteredEntries.length} DUPES`)
+  return filteredEntries
+}
+
+/**
+ * TODO doc
+ *
+ * fetch all Files, diff all against local DB
+ * write data for all diffed files to disk
+ * write all DB state in TX
+ */
+async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegistry, logger }) {
+  let {
+    walletPublicKey,
+    audiusUsers: fetchedAudiusUsers,
+    tracks: fetchedTracks,
+    files: fetchedFiles
+  } = fetchedCNodeUser
+
+  await saveFilesToDisk({ files: fetchedFiles, userReplicaSet, serviceRegistry, logger })  
 
   /**
    * Write all records to DB
@@ -185,10 +218,38 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
     transaction
   })
 
+  let cnodeUserUUID
   if (localCNodeUser) {
     console.log('SIDTEST LOCALCNODEUSER already present')
 
-    // do nothing here?
+    cnodeUserUUID = localCNodeUser.cnodeUserUUID
+
+    const audiusUserComparisonFields = ['blockchainId', 'metadataFileUUID', 'metadataJSON', 'coverArtFileUUID', 'profilePicFileUUID']
+    fetchedAudiusUsers = await filterOutAlreadyPresentDBEntries({ 
+      cnodeUserUUID,
+      tableInstance: models.AudiusUser,
+      fetchedEntries: fetchedAudiusUsers,
+      transaction,
+      comparisonFields: audiusUserComparisonFields
+    })
+
+    const trackComparisonFields = ['blockchainId', 'metadataFileUUID', 'metadataJSON', 'coverArtFileUUID']
+    fetchedTracks = await filterOutAlreadyPresentDBEntries({ 
+      cnodeUserUUID,
+      tableInstance: models.Track,
+      fetchedEntries: fetchedTracks,
+      transaction,
+      comparisonFields: trackComparisonFields
+    })
+
+    const fileComparisonFields = ['fileUUID']
+    fetchedFiles = await filterOutAlreadyPresentDBEntries({ 
+      cnodeUserUUID,
+      tableInstance: models.File,
+      fetchedEntries: fetchedFiles,
+      transaction,
+      comparisonFields: fileComparisonFields
+    })
   } else {
     /**
      * Create CNodeUser DB record if not already present
@@ -199,12 +260,10 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
       { returning: true, transaction }
     )
     console.log(`SIDTEST CREATED CNODEUSER`)
+
+    cnodeUserUUID = localCNodeUser.cnodeUserUUID
   }
-
   console.log(`SIDTEST LOCALCNODEUSER: ${JSON.stringify(localCNodeUser)}`)
-
-  const cnodeUserUUID = localCNodeUser.cnodeUserUUID
-  console.log(`SIDTEST cnodeUserUUID: ${cnodeUserUUID}`)
 
   // Aggregate all entries into single array, sorted by clock asc to preserve original insert order
   let allEntries = _.concat(
@@ -215,13 +274,8 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
   )
   allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
 
-  for await (const entryInfo of allEntries) {
-    console.log(`SIDTEST ENTRYINFO ${JSON.stringify(entryInfo)}`)
-    const { tableInstance, entry } = entryInfo
-    if (await alreadyExistsInDB({ tableInstance, entry, transaction })) {
-      // TODO log
-      continue
-    }
+  console.log(`SIDTEST SAVEEXPORTEDDATA num entries to insert: ${allEntries.length}`)
+  for await (const { tableInstance, entry } of allEntries) {
     const dataValues = await DBManager.createNewDataRecord(
       _.omit(entry, ['cnodeUserUUID']),
       cnodeUserUUID,
@@ -232,6 +286,7 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
   }
 
   await transaction.commit()
+  console.log(`SIDTEST DONE WITH saveexportedata`)
 }
 
 async function getUserReplicaSet({ serviceRegistry, logger, wallet, selfEndpoint }) {
@@ -289,39 +344,6 @@ async function releaseUserRedisLock({ redis, wallet }) {
   const redisLock = redis.lock
   const redisKey = redis.getRedisKeyForWallet(wallet)
   await redisLock.removeLock(redisKey)
-}
-
-async function alreadyExistsInDB({ tableInstance, entry, transaction }) {
-  // TODO throw on invalid tableInstance??
-
-  console.log(`CHECKING ALREADYEXISTSINDB ${tableInstance} entry ${JSON.stringify(entry)}`)
-
-  let searchFields, existingEntry
-  if (tableInstance === models.File) {
-    searchFields = [
-      'cnodeUserUUID', 'trackBlockchainId', 'multihash', 'sourceFile', 'fileName', 'dirMultihash', 'storagePath', 'type'
-    ]
-    const searchObj = _.pick(entry, searchFields)
-    existingEntry = await tableInstance.findOne({ where: searchObj, transaction })
-  } else if (tableInstance === models.Track) {
-    searchFields = ['cnodeUserUUID', 'blockchainId', 'metadataJSON']
-    const searchObj = _.pick(entry, searchFields)
-    existingEntry = await tableInstance.findOne({ where: searchObj, transaction })
-  } else if (tableInstance === models.AudiusUser) {
-    searchFields = ['cnodeUserUUID', 'blockchainId', 'metadataJSON']
-    const searchObj = _.pick(entry, searchFields)
-    existingEntry = await tableInstance.findOne({ where: searchObj, transaction })
-  } else {
-    // log
-    return false
-  }
-
-  const searchObj = _.pick(entry, searchFields)
-  const existingEntry = await tableInstance.findOne({ where: searchObj, transaction })
-
-  const status = _.isEqual(entry, existingEntry) // boolean
-  console.log(`ALREADYEXISTSINDB CHECK STATUS ${status}`)
-  return status
 }
 
 /**
@@ -385,6 +407,7 @@ async function primarySyncFromSecondary({
     await releaseUserRedisLock({ redis, wallet })
 
     // TODO logging
+    console.log(`SIDTEST DONE WITH PRIMARYSYNCFROMSECONDARY`)
   }
 }
 

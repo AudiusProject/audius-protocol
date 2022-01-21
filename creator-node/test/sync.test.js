@@ -1347,7 +1347,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
   }
 
   /**
-   * Reset nocks, DB, redis
+   * Reset nocks, DB, redis, file storage
    * Setup mocks, deps
    */
   beforeEach(async () => {
@@ -1357,9 +1357,15 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       await destroyUsers()
     } catch (e) {
       // do nothing
+      console.log(`SIDTEST ERROR: ${e}`)
     }
 
     await redisClient.flushdb()
+
+    // Clear storagePath
+    const storagePath = config.get('storagePath')
+    const absoluteStoragePath = path.resolve(storagePath)
+    await fs.emptyDir(path.resolve(absoluteStoragePath))
 
     // Mock ipfs.swarm.connect() function for test purposes
     ipfsClient.ipfs.swarm.connect = async () => {
@@ -1395,7 +1401,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     await createUserAndTrack(testAssetsDirPath)
   })
 
-  it.only('NEW Primary correctly syncs from secondary when primary has no state', async () => {
+  it.only('Primary correctly syncs from secondary when primary has no state', async () => {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1482,7 +1488,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     )
   })
 
-  it('Primary correctly syncs from secondary when nodes have divergent state', async () => {
+  it.only('Primary correctly syncs from secondary when nodes have divergent state', async () => {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1500,29 +1506,64 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     assert.deepStrictEqual(localCNodeUser, null)
 
     // Add some local user state
-    const localCNodeUserUUID = await createUser(USER_1_ID, USER_1_WALLET, USER_1_BLOCKNUMBER)
+    await createUser(USER_1_ID, USER_1_WALLET, USER_1_BLOCKNUMBER)
 
     // Confirm local user state is non-empty before sync
     ;({
-      cnodeUser: localCNodeUser,
-      audiusUsers: localAudiusUsers,
-      tracks: localTracks,
-      files: localFiles,
-      clockRecords: localClockRecords
+      cnodeUser: localInitialCNodeUser,
+      audiusUsers: localInitialAudiusUsers,
+      tracks: localInitialTracks,
+      files: localInitialFiles,
+      clockRecords: localInitialClockRecords
     } = await fetchDBStateForWallet(USER_1_WALLET))
+
+    let cnodeUserComparisonFields = ['walletPublicKey', 'clock', 'latestBlockNumber']
     assert.deepStrictEqual(
-      _.omit(localCNodeUser, ['cnodeUserUUID', 'lastLogin', 'createdAt', 'updatedAt']),
+      _.pick(localInitialCNodeUser, cnodeUserComparisonFields),
       {
         walletPublicKey: USER_1_WALLET,
         clock: 2,
         latestBlockNumber: USER_1_BLOCKNUMBER
       }
     )
-    // TODO all other asserts
 
-    
+    let audiusUserComparisonFields = ['blockchainId', 'metadataJSON', 'clock']
+    assert.deepStrictEqual(
+      _.orderBy(
+        localInitialAudiusUsers.map(file => _.pick(file, audiusUserComparisonFields)),
+        ['clock'], ['asc']
+      ),
+      _.orderBy(
+        exportedAudiusUsers.map(file => _.pick(file, audiusUserComparisonFields)),
+        ['clock'], ['asc']
+      )
+    )
 
-    return
+    assert.deepStrictEqual(localInitialTracks, [])
+
+    let fileComparisonFields = ['trackBlockchainId', 'multihash', 'sourceFile', 'fileName', 'dirMultihash', 'storagePath', 'type', 'clock']
+    assert.deepStrictEqual(
+      _.orderBy(
+        localInitialFiles.map(file => _.pick(file, fileComparisonFields)),
+        ['clock'], ['asc']
+      ),
+      _.orderBy(
+        exportedFiles.map(file => _.pick(file, fileComparisonFields)),
+        ['clock'], ['asc']
+      ).slice(0,1)
+    )
+
+    let clockRecordComparisonFields = ['clock', 'sourceTable']
+    assert.deepStrictEqual(
+      _.orderBy(
+        localInitialClockRecords.map(clockRecord => _.pick(clockRecord, clockRecordComparisonFields)),
+        ['clock', 'asc']
+      ),
+      _.orderBy(
+        exportedClockRecords.map(clockRecord => _.pick(clockRecord, clockRecordComparisonFields)),
+        ['clock', 'asc']
+      ).slice(0,2)
+    )
 
     await primarySyncFromSecondary({
       serviceRegistry: serviceRegistryMock,
@@ -1531,70 +1572,81 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       sourceEndpoint: SELF
     })
 
-    return
-
     /**
      * Verify DB state after sync
      */
     ;({
-      cnodeUser: localCNodeUser,
-      audiusUsers: localAudiusUsers,
-      tracks: localTracks,
-      files: localFiles,
-      clockRecords: localClockRecords
+      cnodeUser: localFinalCNodeUser,
+      audiusUsers: localFinalAudiusUsers,
+      tracks: localFinalTracks,
+      files: localFinalFiles,
+      clockRecords: localFinalClockRecords
     } = await fetchDBStateForWallet(USER_1_WALLET))
 
+    cnodeUserComparisonFields = ['walletPublicKey', 'latestBlockNumber', 'clock']
     assert.deepStrictEqual(
-      _.omit(localCNodeUser, comparisonOmittedFields),
-      _.omit(exportedCnodeUser, comparisonOmittedFields)
+      _.pick(localFinalCNodeUser, cnodeUserComparisonFields),
+      _.pick(
+        { ...exportedCnodeUser, clock: exportedCnodeUser.clock + 2 },
+        cnodeUserComparisonFields
+      )
     )
 
+    audiusUserComparisonFields = ['blockchainId', 'metadataJSON', 'clock', 'metadataFileUUID', 'coverArtFileUUID', 'profilePicFileUUID']
     assert.deepStrictEqual(
       _.orderBy(
-        localAudiusUsers.map(audiusUser => _.omit(audiusUser, comparisonOmittedFields)),
+        localFinalAudiusUsers.map(audiusUser => _.pick(audiusUser, audiusUserComparisonFields)),
         ['clock'], ['asc']
       ),
       _.orderBy(
-        exportedAudiusUsers.map(audiusUser => _.omit(audiusUser, comparisonOmittedFields)),
+        _.concat(localInitialAudiusUsers, exportedAudiusUsers.map(audiusUser => ({ ...audiusUser, clock: audiusUser.clock + 2 })))
+        .map(audiusUser => _.pick(audiusUser, audiusUserComparisonFields)),
         ['clock'], ['asc']
       )
     )
 
+    let trackComparisonFields = ['blockchainId', 'metadataJSON', 'metadataFileUUID', 'coverArtFileUUID']
     assert.deepStrictEqual(
       _.orderBy(
-        localTracks.map(track => _.omit(track, comparisonOmittedFields)),
+        localFinalTracks.map(track => _.pick(track, trackComparisonFields)),
         ['clock'], ['asc']
       ),
       _.orderBy(
-        exportedTracks.map(track => _.omit(track, comparisonOmittedFields)),
+        exportedTracks.map(track => _.pick(track, trackComparisonFields)),
         ['clock'], ['asc']
       )
     )
 
+    fileComparisonFields = ['trackBlockchainId', 'multihash', 'sourceFile', 'fileName', 'dirMultihash', 'storagePath', 'type', 'clock']
     assert.deepStrictEqual(
       _.orderBy(
-        localFiles.map(file => _.omit(file, comparisonOmittedFields)),
+        localFinalFiles.map(file => _.pick(file, fileComparisonFields)),
         ['clock'], ['asc']
       ),
       _.orderBy(
-        exportedFiles.map(file => _.omit(file, comparisonOmittedFields)),
+        _.concat(localInitialFiles, exportedFiles.map(file => ({ ...file, clock: file.clock + 2 })))
+        .map(file => _.pick(file, fileComparisonFields)),
         ['clock'], ['asc']
       )
     )
 
+    clockRecordComparisonFields = ['clock', 'sourceTable']
     assert.deepStrictEqual(
       _.orderBy(
-        localClockRecords.map(clockRecord => _.omit(clockRecord, comparisonOmittedFields)),
+        localFinalClockRecords.map(clockRecord => _.pick(clockRecord, clockRecordComparisonFields)),
         ['clock'], ['asc']
       ),
       _.orderBy(
-        exportedClockRecords.map(clockRecord => _.omit(clockRecord, comparisonOmittedFields)),
+        _.concat(localInitialClockRecords, exportedClockRecords.map(clockRecord => ({ ...clockRecord, clock: clockRecord.clock + 2 })))
+        .map(clockRecord => _.pick(clockRecord, clockRecordComparisonFields)),
         ['clock'], ['asc']
       )
     )
   })
 
   it('Primary correctly syncs from secondary when primary has subset of secondary state', async () => {})
+
+  // TODO primary already has all data - confirm no sync
 
   it('Primary correctly syncs from secondary when secondary has state requiring multiple syncs', async () => {})
 })
