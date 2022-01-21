@@ -24,14 +24,21 @@ class TrackContentUploadManager {
   /**
    * Create track transcode and segments, and save all to disk. Removes temp file dir of track data if failed to
    * segment or transcode.
+   * @param {Object} logContext
    * @param {Object} transcodeAndSegmentParams
    * @param {string} transcodeAndSegmentParams.fileName the file name of the uploaded track (<cid>.<file type extension>)
    * @param {string} transcodeAndSegmentParams.fileDir the dir path of the temp track artifacts
-   * @param {Object} transcodeAndSegmentParams.logContext
-   * @returns the transcode and segment paths
+   * @returns an Object with the structure: 
+   * {
+      transcodeFilePath {string}: the path to the transcode file,
+      segmentFileNames {string[]}: a list of segment file names; will have the structure `segment<number>.ts`,
+      segmentFilePaths {string[]}: a list of segment file paths,
+      m3u8FilePath {string}: the path to the m3u8 file,
+      fileName {string}: the original upload track file name
+    } 
    */
   static async transcodeAndSegment({ logContext }, { fileName, fileDir }) {
-    let transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path
+    let transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8FilePath
     try {
       const response = await Promise.all([
         TranscodingQueue.segment(fileDir, fileName, { logContext }),
@@ -40,7 +47,7 @@ class TrackContentUploadManager {
 
       segmentFileNames = response[0].segments.fileNames
       segmentFilePaths = response[0].segments.filePaths
-      m3u8Path = response[0].m3u8FilePath
+      m3u8FilePath = response[0].m3u8FilePath
       transcodeFilePath = response[1].transcodeFilePath
     } catch (err) {
       // Prune upload artifacts
@@ -53,7 +60,7 @@ class TrackContentUploadManager {
       transcodeFilePath,
       segmentFileNames,
       segmentFilePaths,
-      m3u8Path,
+      m3u8FilePath,
       fileName
     }
   }
@@ -63,14 +70,14 @@ class TrackContentUploadManager {
    * 2. Fetches segment duration to build a map of <segment CID: duration>
    * 3. Adds transcode and segments to DB in Files table
    * 4. Removes the upload artifacts after successful processing
-   * @param {string} cnodeUserUUID the current user's uuid
-   * @param {string} fileName the filename of the uploaded artifact
-   * @param {string} fileDir the directory of where the filename is uploaded
-   * @param {string} transcodeFilePath the path of where the transcode exists
-   * @param {string[]} segmentFileNames a list of segment file names from the segmenting job
-   * @param {string} fileDestination the folder to which the uploaded file has been saved	to
    * @param {Object} logContext
-   * @param {Object} logger
+   * @param {Object} param
+   * @param {Object} param.session an object that will contain {cnodeUserUUID {string}: the current user's cnodeUserUUID}
+   * @param {string} param.fileName the filename of the uploaded artifact
+   * @param {string} param.fileDir the directory of where the filename is uploaded
+   * @param {string} param.fileDestination the folder to which the uploaded file has been saved	to
+   * @param {string} param.transcodeFilePath the path of where the transcode exists
+   * @param {string[]} param.segmentFileNames a list of segment file names from the segmenting job
    * @returns {Object}
    *  returns
    *  {
@@ -230,8 +237,8 @@ class TrackContentUploadManager {
   static createSegmentToDurationMap({
     segmentFileIPFSResps,
     segmentDurations,
-    logContext,
-    fileDir
+    fileDir,
+    logContext
   }) {
     let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
       return {
@@ -260,7 +267,6 @@ class TrackContentUploadManager {
    * Save transcode and segment files (in parallel batches) to ipfs and copy to disk.
    * @param {Object} batchParams
    * @param {string} batchParams.cnodeUserUUID the observed user's uuid
-   * @param {string} batchParams.fileName the file name of the uploaded track (<cid>.<file type extension>)
    * @param {string} batchParams.fileDir the dir path of the temp track artifacts
    * @param {Object} batchParams.logContext
    * @param {string} batchParams.transcodeFilePath the transcoded track path
