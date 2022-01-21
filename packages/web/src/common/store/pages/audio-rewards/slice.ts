@@ -42,6 +42,9 @@ type RewardsUIState = {
   trendingRewardsModalType: TrendingRewardsModalType
   challengeRewardsModalType: ChallengeRewardsModalType
   userChallenges: Partial<Record<ChallengeRewardID, UserChallenge>>
+  userChallengesOverrides: Partial<
+    Record<ChallengeRewardID, Partial<UserChallenge>>
+  >
   claimStatus: ClaimStatus
   claimToRetry?: Claim
   hCaptchaStatus: HCaptchaStatus
@@ -54,6 +57,7 @@ const initialState: RewardsUIState = {
   trendingRewardsModalType: 'tracks',
   challengeRewardsModalType: 'track-upload',
   userChallenges: {},
+  userChallengesOverrides: {},
   loading: true,
   claimStatus: ClaimStatus.NONE,
   hCaptchaStatus: HCaptchaStatus.NONE,
@@ -88,9 +92,9 @@ const slice = createSlice({
       action: PayloadAction<{ challengeId: ChallengeRewardID }>
     ) => {
       const { challengeId } = action.payload
-      const challenge = state.userChallenges[challengeId]
-      if (challenge !== undefined) {
-        challenge.is_disbursed = true
+      state.userChallengesOverrides[challengeId] = {
+        ...state.userChallengesOverrides[challengeId],
+        is_disbursed: true
       }
     },
     setTrendingRewardsModalType: (
