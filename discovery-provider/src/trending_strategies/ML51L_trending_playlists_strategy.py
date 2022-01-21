@@ -1,5 +1,5 @@
-from src.trending_strategies.aSPET_trending_tracks_strategy import z
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
+from src.trending_strategies.ML51L_trending_tracks_strategy import z
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
     TrendingVersion,
