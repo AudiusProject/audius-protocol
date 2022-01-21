@@ -1,5 +1,6 @@
 import React from 'react'
 import clsx from 'clsx'
+import ReactCountryFlag from 'react-country-flag'
 import { NodeService, ContentNode, DiscoveryProvider } from 'types'
 import styles from './ServiceTable.module.css'
 import Table from 'components/Table'
@@ -46,6 +47,10 @@ const ServiceTable: React.FC<ServiceTableProps> = ({
     return (
       <div className={styles.rowContainer}>
         <div className={clsx(styles.rowCol, styles.colEndpoint)}>
+          <ReactCountryFlag
+            className={styles.countryFlag}
+            countryCode={data.country}
+          />
           {data.endpoint}
         </div>
         <div className={clsx(styles.rowCol, styles.colVersion)}>
