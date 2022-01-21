@@ -1,14 +1,12 @@
 from typing import TypedDict
+
 from sqlalchemy.orm.session import Session
 from src.models import Track
 from src.models.models import UserListeningHistory
+from src.queries import response_name_constants
+from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries import response_name_constants
-from src.queries.query_helpers import (
-    populate_track_metadata,
-    add_users_to_tracks,
-)
 
 
 class GetUserListeningHistoryArgs(TypedDict):
