@@ -26,7 +26,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
     ),
     new_track AS (
         SELECT
-            t.track_id
+            t.track_id AS track_id
         FROM
             tracks t
         WHERE
@@ -105,7 +105,19 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         COALESCE(track_repost.repost_count, 0) AS repost_count,
         COALESCE(track_save.save_count, 0) AS save_count
     FROM
-        tracks t
+        t AS (
+            SELECT
+                t.track_id
+            FROM
+                tracks t
+            WHERE
+                t.is_current IS TRUE
+                AND t.is_delete IS FALSE
+                AND t.is_unlisted IS FALSE
+                AND t.stem_of IS NULL
+            GROUP BY
+                t.track_id
+        )
         LEFT OUTER JOIN (
             SELECT
                 r.repost_item_id AS track_id,
