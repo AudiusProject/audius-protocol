@@ -835,18 +835,11 @@ def get_karma(
             .select_from(saves_and_reposts)
             .join(User, saves_and_reposts.c.user_id == User.user_id)
         )
-        if strategy == TrendingVersion.ML51L:
-            saves_and_reposts = saves_and_reposts.filter(
-                or_(User.cover_photo != None, User.cover_photo_sizes != None),
-                or_(User.profile_picture != None, User.profile_picture_sizes != None),
-                User.bio != None,
-            )
-        else:
-            saves_and_reposts = saves_and_reposts.filter(
-                User.cover_photo != None,
-                User.profile_picture != None,
-                User.bio != None,
-            )
+        saves_and_reposts = saves_and_reposts.filter(
+            or_(User.cover_photo != None, User.cover_photo_sizes != None),
+            or_(User.profile_picture != None, User.profile_picture_sizes != None),
+            User.bio != None,
+        )
         saves_and_reposts = saves_and_reposts.subquery()
 
     query = (
