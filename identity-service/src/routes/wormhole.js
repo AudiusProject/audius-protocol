@@ -91,11 +91,11 @@ const relayWormhole = async (
 module.exports = function (app) {
   app.post('/wormhole_relay', async (req, res, next) => {
     const audiusLibs = req.app.get('audiusLibs')
-    const slackReporter = req.app.get('slackReporter')
+    const slackAudioErrorReporter = req.app.get('slackAudioErrorReporter')
     const body = req.body
     const reportError = async (errorData) => {
-      const message = slackReporter.getJsonSlackMessage(errorData)
-      await slackReporter.postToSlack({ message })
+      const message = slackAudioErrorReporter.getJsonSlackMessage(errorData)
+      await slackAudioErrorReporter.postToSlack({ message })
     }
 
     try {
