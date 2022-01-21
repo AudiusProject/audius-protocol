@@ -723,7 +723,7 @@ const config = convict({
   successAudioReporterSlackUrl: {
     doc: 'The slack url to post messages for success in audio / rewards events',
     format: String,
-    env: 'successRewardsReporterSlackUrl',
+    env: 'successAudioReporterSlackUrl',
     default: ''
   },
   errorRewardsReporterSlackUrl: {
