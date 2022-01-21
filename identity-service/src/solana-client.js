@@ -91,10 +91,6 @@ const instructionSchema = new Map([
   ]
 ])
 
-const SOLANA_CONFIRMATION_TIMEOUT_MS = 60 * 1000
-const solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'), {
-  confirmTransactionInitialTimeout: SOLANA_CONFIRMATION_TIMEOUT_MS
-})
 let feePayer
 
 function getFeePayer() {
@@ -105,6 +101,7 @@ function getFeePayer() {
 }
 
 async function createAndVerifyMessage(
+  connection,
   validSigner,
   privateKey,
   userId,
@@ -117,7 +114,7 @@ async function createAndVerifyMessage(
   let pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
 
   let validSignerPubK = new solanaWeb3.PublicKey(validSigner)
-  let accInfo = await solanaConnection.getAccountInfo(validSignerPubK)
+  let accInfo = await connection.getAccountInfo(validSignerPubK)
   let signerGroup = new solanaWeb3.PublicKey(
     accInfo.data.toJSON().data.slice(1, 33)
   ) // cut off version and eth address from valid signer data
@@ -178,7 +175,7 @@ async function createAndVerifyMessage(
   let feePayerAccount = getFeePayer()
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
-    solanaConnection,
+    connection,
     transaction,
     [feePayerAccount],
     {
@@ -191,6 +188,5 @@ async function createAndVerifyMessage(
   return signature
 }
 
-exports.solanaConnection = solanaConnection
 exports.createAndVerifyMessage = createAndVerifyMessage
 exports.getFeePayer = getFeePayer

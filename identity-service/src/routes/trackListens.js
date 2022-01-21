@@ -207,6 +207,8 @@ const getTrendingTracks = async (
 
 module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
+    const libs = req.app.get('audiusLibs')
+    const connection = libs.solanaWeb3Manager.connection
     const trackId = parseInt(req.params.id)
     const userId = req.body.userId
     if (!userId || !trackId) {
@@ -222,6 +224,7 @@ module.exports = function (app) {
       logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}`)
       const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
+          connection,
           null,
           config.get('solanaSignerPrivateKey'),
           userId.toString(),

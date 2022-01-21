@@ -45,7 +45,7 @@ class AudiusLibs {
    * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
    * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
    */
-  static configDiscoveryProvider (
+  static configDiscoveryProvider(
     whitelist = null,
     blacklist = null,
     reselectTimeout = null,
@@ -72,7 +72,7 @@ class AudiusLibs {
    * @param {string} url
    * @param {boolean?} useHedgehogLocalStorage whether or not to read hedgehog entropy in local storage
    */
-  static configIdentityService (url, useHedgehogLocalStorage = true) {
+  static configIdentityService(url, useHedgehogLocalStorage = true) {
     return { url, useHedgehogLocalStorage }
   }
 
@@ -80,7 +80,7 @@ class AudiusLibs {
    * Configures an identity service wrapper
    * @param {string} url
    */
-  static configComstock (url) {
+  static configComstock(url) {
     return { url }
   }
 
@@ -95,7 +95,7 @@ class AudiusLibs {
    * @param {function} monitoringCallbacks.request
    * @param {function} monitoringCallbacks.healthCheck
    */
-  static configCreatorNode (
+  static configCreatorNode(
     fallbackUrl,
     lazyConnect = false,
     passList = null,
@@ -113,7 +113,7 @@ class AudiusLibs {
    * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
    * @param {?number} walletIndex if using a wallet returned from web3, pick the wallet at this index
    */
-  static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null) {
+  static async configExternalWeb3(registryAddress, web3Provider, networkId, walletOverride = null) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
       throw new Error('External web3 incorrectly configured')
@@ -133,7 +133,7 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
-  static configInternalWeb3 (registryAddress, providers, privateKey) {
+  static configInternalWeb3(registryAddress, providers, privateKey) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -164,7 +164,7 @@ class AudiusLibs {
    * @param {string?} claimDistributionContractAddress
    * @param {string?} wormholeContractAddress
    */
-  static configEthWeb3 (
+  static configEthWeb3(
     tokenAddress,
     registryAddress,
     providers,
@@ -202,7 +202,7 @@ class AudiusLibs {
    * @param {string} config.ethBridgeAddress
    * @param {string} config.ethTokenBridgeAddress
    */
-  static configWormhole ({
+  static configWormhole({
     rpcHosts,
     solBridgeAddress,
     solTokenBridgeAddress,
@@ -242,7 +242,7 @@ class AudiusLibs {
    * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
    * @param {Uint8Array} [feePayerSecretKey] optional fee payer secret key, if not using relay
    */
-  static configSolanaWeb3 ({
+  static configSolanaWeb3({
     solanaClusterEndpoint,
     mintAddress,
     solanaTokenAddress,
@@ -253,7 +253,8 @@ class AudiusLibs {
     rewardsManagerProgramPDA,
     rewardsManagerTokenPDA,
     useRelay,
-    feePayerSecretKey = null
+    feePayerSecretKey = null,
+    confirmationTimeout
   }) {
     return {
       solanaClusterEndpoint,
@@ -266,7 +267,8 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null
+      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null,
+      confirmationTimeout
     }
   }
 
@@ -280,7 +282,7 @@ class AudiusLibs {
    *  })
    *  await audius.init()
    */
-  constructor ({
+  constructor({
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
@@ -342,7 +344,7 @@ class AudiusLibs {
   }
 
   /** Init services based on presence of a relevant config. */
-  async init () {
+  async init() {
     this.userStateManager = new UserStateManager()
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config

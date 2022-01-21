@@ -654,6 +654,12 @@ const config = convict({
     default: '',
     env: 'solanaRewardsManagerTokenPDA'
   },
+  solanaConfirmationTimeout: {
+    doc: 'The timeout used to send solana transactions through solanaWeb3 connection',
+    format: Number,
+    default: '60',
+    env: 'solanaConfirmationTimeout'
+  },
   rewardsParallelization: {
     doc: 'How many requests to perform in parallel when disbursing rewards',
     format: Number,
