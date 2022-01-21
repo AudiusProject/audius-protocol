@@ -1,21 +1,64 @@
-const config = require('./config')
+import config from './config'
+import { Request, Response } from 'express'
 
-const {
+import {
   requestNotExcludedFromLogging,
   getDuration,
   setFieldsInChildLogger
-} = require('./logging')
-const { generateTimestampAndSignature } = require('./apiSigning')
+} from './logging'
+import { generateTimestampAndSignature } from './apiSigning'
 
-module.exports.handleResponse = (func) => {
+
+// constants
+const HEARTBEAT_INTERVAL: number = 5000
+
+const StatusCode = {
+  OK: 200,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  REQUESTED_RANGE_NOT_SATISFIABLE: 416,
+  INTERNAL_SERVER_ERROR: 500
+} as const
+
+// function types
+type VoidResponseHandler = (req: Request, res: Response, next: Function) => Promise<void>
+
+type ResponseHandler = (req: Request, res: Response, next: Function) => Promise<AudiusApiResponse>
+
+type VoidMiddleware = (req: Request, res: Response, resp: AudiusApiResponse) => void
+
+type Responder = (payload: object) => AudiusApiResponse
+
+type ErrorResponder = (message: string) => AudiusApiResponse
+
+// data 
+type AudiusApiResponse {
+  statusCode: number
+  object: any
+}
+
+type CNodeResponse {
+  data: CNodeResponseData
+}
+
+type CNodeResponseData {
+  data: object
+  signer: string
+  timestamp: string
+  signature: string
+}
+
+type ParsedCNodeResponse {
+  responseData: object
+  signatureData: object
+}
+
+export const handleResponse = (responseHandler: ResponseHandler): VoidResponseHandler => {
   return async function (req, res, next) {
     try {
-      const resp = await func(req, res, next)
-
-      if (!isValidResponse(resp)) {
-        throw new Error('Invalid response returned by function')
-      }
-
+      const resp = await responseHandler(req, res, next)
       sendResponse(req, res, resp)
       next()
     } catch (error) {
@@ -30,7 +73,8 @@ module.exports.handleResponse = (func) => {
  * `res.write` as a piece of the JSON result
  * @param {() => void} func returns the response JSON
  */
-module.exports.handleResponseWithHeartbeat = (func) => {
+
+export const handleResponseWithHeartbeat = (responseHandler: ResponseHandler): VoidResponseHandler => {
   return async function (req, res, next) {
     try {
       // First declare our content type since we will be sending heartbeats back
@@ -45,15 +89,13 @@ module.exports.handleResponseWithHeartbeat = (func) => {
       res.write('{"_h":"')
 
       // Fire up an interval that will append a single char to the res
-      const heartbeatInterval = setInterval(() => {
-        if (!res.finished) {
+      const heartbeatInterval = setInterval((): void => {
+        if (!res.writableEnded) {
           res.write('1')
         }
-      }, 5000)
+      }, HEARTBEAT_INTERVAL)
 
-      // Await the work of the endpoint
-      const resp = await func(req, res, next)
-
+      const resp: AudiusApiResponse = await responseHandler(req, res, next)
       clearInterval(heartbeatInterval)
 
       sendResponseWithHeartbeatTerminator(req, res, resp)
@@ -64,14 +106,14 @@ module.exports.handleResponseWithHeartbeat = (func) => {
   }
 }
 
-const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
+export const sendResponse: VoidMiddleware = (req, res, resp) => {
   const duration = getDuration(req)
   let logger = setFieldsInChildLogger(req, {
     duration,
     statusCode: resp.statusCode
   })
 
-  if (resp.statusCode === 200) {
+  if (resp.statusCode === StatusCode.OK) {
     if (requestNotExcludedFromLogging(req.originalUrl)) {
       logger.info('Success')
     }
@@ -98,77 +140,68 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   res.set('Access-Control-Expose-Headers', 'CN-Request-ID')
 
   res.status(resp.statusCode).send(resp.object)
-})
+}
 
-const sendResponseWithHeartbeatTerminator =
-  (module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
-    const duration = getDuration(req)
-    let logger = setFieldsInChildLogger(req, {
-      duration,
-      statusCode: resp.statusCode
+export const sendResponseWithHeartbeatTerminator: VoidMiddleware = (req, res, resp) => {
+  const duration = getDuration(req)
+  let logger = setFieldsInChildLogger(req, {
+    duration,
+    statusCode: resp.statusCode
+  })
+  if (resp.statusCode === StatusCode.OK) {
+    if (requestNotExcludedFromLogging(req.originalUrl)) {
+      logger.info('Success')
+    }
+  } else {
+    logger = logger.child({
+      errorMessage: resp.object.error
     })
-    if (resp.statusCode === 200) {
-      if (requestNotExcludedFromLogging(req.originalUrl)) {
-        logger.info('Success')
-      }
+    if (req && req.body) {
+      logger.info(
+        'Error processing request:',
+        resp.object.error,
+        '|| Request Body:',
+        req.body
+      )
     } else {
-      logger = logger.child({
-        errorMessage: resp.object.error
-      })
-      if (req && req.body) {
-        logger.info(
-          'Error processing request:',
-          resp.object.error,
-          '|| Request Body:',
-          req.body
-        )
-      } else {
-        logger.info('Error processing request:', resp.object.error)
-      }
-
-      // Converts the error object into an object that JSON.stringify can parse
-      if (resp.object.error) {
-        resp.object.error = Object.getOwnPropertyNames(
-          resp.object.error
-        ).reduce((acc, cur) => {
-          acc[cur] = resp.object.error[cur]
-          return acc
-        }, {})
-      }
+      logger.info('Error processing request:', resp.object.error)
     }
 
-    // Construct the remainder of the JSON response
-    let response = '",'
-    // Replace the first '{' since we already have that
-    response += JSON.stringify(resp.object).replace('{', '')
-
-    // Terminate the response
-    res.end(response)
-  })
-
-const isValidResponse = (module.exports.isValidResponse = (resp) => {
-  if (!resp || !resp.statusCode || !resp.object) {
-    return false
+    // Converts the error object into an object that JSON.stringify can parse
+    if (resp.object.error) {
+      resp.object.error = Object.getOwnPropertyNames(
+        resp.object.error
+      ).reduce((acc, cur) => {
+        acc[cur] = resp.object.error[cur]
+        return acc
+      }, {})
+    }
   }
 
-  return true
-})
+  // Construct the remainder of the JSON response
+  let response = '",'
+  // Replace the first '{' since we already have that
+  response += JSON.stringify(resp.object).replace('{', '')
 
-module.exports.successResponse = (obj = {}) => {
+  // Terminate the response
+  res.end(response)
+}
+
+export const successResponse: Responder = (payload = {}) => {
   const toSignData = {
     data: {
-      ...obj
+      ...payload
     },
     signer: config.get('delegateOwnerWallet')
   }
 
-  const { timestamp, signature } = generateTimestampAndSignature(
+  const { timestamp, signature }: { timestamp: string, signature: string } = generateTimestampAndSignature(
     toSignData,
     config.get('delegatePrivateKey')
   )
 
   return {
-    statusCode: 200,
+    statusCode: StatusCode.OK,
     object: {
       ...toSignData,
       timestamp,
@@ -177,40 +210,40 @@ module.exports.successResponse = (obj = {}) => {
   }
 }
 
-const errorResponse = (module.exports.errorResponse = (statusCode, message) => {
+export const errorResponse = (statusCode: number, message: string): AudiusApiResponse => {
   return {
-    statusCode: statusCode,
+    statusCode,
     object: { error: message }
   }
-})
-
-module.exports.errorResponseUnauthorized = (message) => {
-  return errorResponse(401, message)
 }
 
-module.exports.errorResponseForbidden = (message) => {
-  return errorResponse(403, message)
+export const errorResponseUnauthorized: ErrorResponder = (message) => {
+  return errorResponse(StatusCode.UNAUTHORIZED, message)
 }
 
-module.exports.errorResponseBadRequest = (message) => {
-  return errorResponse(400, message)
+export const errorResponseForbidden: ErrorResponder = (message) => {
+  return errorResponse(StatusCode.FORBIDDEN, message)
 }
 
-module.exports.errorResponseRangeNotSatisfiable = (message) => {
-  return errorResponse(416, message)
+export const errorResponseBadRequest: ErrorResponder = (message) => {
+  return errorResponse(StatusCode.BAD_REQUEST, message)
 }
 
-module.exports.errorResponseServerError = (message) => {
-  return errorResponse(500, message)
+export const errorResponseRangeNotSatisfiable: ErrorResponder = (message) => {
+  return errorResponse(StatusCode.REQUESTED_RANGE_NOT_SATISFIABLE, message)
 }
 
-module.exports.errorResponseNotFound = (message) => {
-  return errorResponse(404, message)
+export const errorResponseServerError: ErrorResponder = (message) => {
+  return errorResponse(StatusCode.INTERNAL_SERVER_ERROR, message)
 }
 
-module.exports.errorResponseSocketTimeout = (socketTimeout) => {
+export const errorResponseNotFound: ErrorResponder = (message) => {
+  return errorResponse(StatusCode.NOT_FOUND, message)
+}
+
+export const errorResponseSocketTimeout = (socketTimeout: any) => {
   return errorResponse(
-    500,
+    StatusCode.INTERNAL_SERVER_ERROR,
     `${socketTimeout} socket timeout exceeded for request`
   )
 }
@@ -219,11 +252,11 @@ module.exports.errorResponseSocketTimeout = (socketTimeout) => {
  * Define custom api error subclasses to be thrown in components and handled in route controllers
  */
 
-class ErrorBadRequest extends Error {}
+class ErrorBadRequest extends Error { }
 Object.defineProperty(ErrorBadRequest.prototype, 'name', {
   value: 'ErrorBadRequest'
 })
-class ErrorServerError extends Error {}
+class ErrorServerError extends Error { }
 Object.defineProperty(ErrorServerError.prototype, 'name', {
   value: 'ErrorServerError'
 })
@@ -235,7 +268,7 @@ module.exports.ErrorServerError = ErrorServerError
  * Given an error instance, returns the corresponding error response to request
  * @param {Error} error instance of error class or subclass
  */
-module.exports.handleApiError = (error) => {
+module.exports.handleApiError = (error: Error) => {
   switch (error) {
     case ErrorBadRequest:
       return this.errorResponseBadRequest(error.message)
@@ -255,7 +288,7 @@ module.exports.handleApiError = (error) => {
  * @param {Object} respObj original response object from axios request to content node
  * @param {string[]} requiredFields
  */
-module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
+module.exports.parseCNodeResponse = (respObj: CNodeResponse, requiredFields: string[] = []): ParsedCNodeResponse => {
   if (!respObj.data || !respObj.data.data) {
     throw new Error('Unexpected respObj format')
   }
