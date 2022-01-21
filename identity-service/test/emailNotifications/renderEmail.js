@@ -171,7 +171,7 @@ describe('Test Render Email Notification', function () {
     await runMigrations()
   })
 
-  it('should order the email notification actions from most recent to least', async function () {
+  it('should render poa actions to an email', async function () {
     // ======================================= Process initial Notifications =======================================
     const tx1 = await models.sequelize.transaction()
     await processNotifications(notifications, tx1)
@@ -197,7 +197,7 @@ describe('Test Render Email Notification', function () {
       subject: 'Email Subject'
     }
 
-    const testEmailPath = path.join(__dirname, './testEmail.html')
+    const testEmailPath = path.join(__dirname, './renderedEmails/testEmail.html')
 
     const emailRendered = fs.readFileSync(testEmailPath, 'utf-8')
     const notifHtml = renderNotificationsEmail(renderProps)
