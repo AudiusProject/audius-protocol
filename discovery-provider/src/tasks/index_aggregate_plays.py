@@ -1,10 +1,8 @@
 import logging
-import time
 
-from sqlalchemy import func, text
-from src.models import IndexingCheckpoints, Play
-from src.tasks.celery_app import celery
-from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
+from sqlalchemy import func
+from src.models import Play
+from src.tasks.celery_app import aggregate_worker, celery, celery_worker
 
 logger = logging.getLogger(__name__)
 
@@ -57,43 +55,15 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
 
 
 def _update_aggregate_plays(session):
-    # get the last updated id that counted towards the current aggregate plays
-    prev_id_checkpoint = (
-        session.query(IndexingCheckpoints.last_checkpoint).filter(
-            IndexingCheckpoints.tablename == AGGREGATE_PLAYS_TABLE_NAME
-        )
-    ).scalar()
-
-    if not prev_id_checkpoint:
-        prev_id_checkpoint = 0
-
-    # get the new latest
     new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
-    if not new_id_checkpoint or new_id_checkpoint == prev_id_checkpoint:
-        logger.info(
-            "index_aggregate_plays.py | Skip update because there are no new plays"
-        )
-        return
-
-    # update aggregate plays with new plays that came after the prev_id_checkpoint
-    logger.info(f"index_aggregate_plays.py | Updating {AGGREGATE_PLAYS_TABLE_NAME}")
-
-    session.execute(
-        text(UPDATE_AGGREGATE_PLAYS_QUERY),
-        {
-            "prev_id_checkpoint": prev_id_checkpoint,
-            "new_id_checkpoint": new_id_checkpoint,
-        },
-    )
-
-    # update indexing_checkpoints with the new id
-    session.execute(
-        text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
-        {
-            "tablename": AGGREGATE_PLAYS_TABLE_NAME,
-            "last_checkpoint": new_id_checkpoint,
-        },
+    aggregate_worker(
+        logger,
+        session,
+        AGGREGATE_PLAYS_TABLE_NAME,
+        UPDATE_AGGREGATE_PLAYS_QUERY,
+        "id_checkpoint",
+        new_id_checkpoint,
     )
 
 
@@ -105,32 +75,7 @@ def update_aggregate_plays(self):
     # Custom Task definition can be found in src/app.py
     db = update_aggregate_plays.db
     redis = update_aggregate_plays.redis
-    # Define lock acquired boolean
-    have_lock = False
-    # Define redis lock object
-    update_lock = redis.lock("index_aggregate_plays_lock", timeout=60 * 10)
-    try:
-        # Attempt to acquire lock - do not block if unable to acquire
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            start_time = time.time()
 
-            with db.scoped_session() as session:
-                _update_aggregate_plays(session)
-
-            logger.info(
-                f"index_aggregate_plays.py | Finished updating \
-                {AGGREGATE_PLAYS_TABLE_NAME} in: {time.time()-start_time} sec"
-            )
-        else:
-            logger.info(
-                "index_aggregate_plays.py | Failed to acquire update_aggregate_plays"
-            )
-    except Exception as e:
-        logger.error(
-            "index_aggregate_plays.py | Fatal error in main loop", exc_info=True
-        )
-        raise e
-    finally:
-        if have_lock:
-            update_lock.release()
+    celery_worker(
+        logger, db, redis, AGGREGATE_PLAYS_TABLE_NAME, _update_aggregate_plays
+    )

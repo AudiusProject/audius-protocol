@@ -1,13 +1,7 @@
 import logging
-import time
 
-from sqlalchemy import text
-from src.tasks.celery_app import celery
+from src.tasks.celery_app import aggregate_worker, celery, celery_worker
 from src.tasks.index_aggregate_user import get_latest_blocknumber
-from src.utils.update_indexing_checkpoints import (
-    get_last_indexed_checkpoint,
-    save_indexed_checkpoint,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -195,31 +189,16 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
 
 
 def _update_aggregate_track(session):
-    # get the last updated id that counted towards the current aggregate track
-    prev_blocknumber = get_last_indexed_checkpoint(session, AGGREGATE_TRACK_TABLE_NAME)
-
-    # get the new latest
     current_blocknumber = get_latest_blocknumber(session)
 
-    if not current_blocknumber or current_blocknumber == prev_blocknumber:
-        logger.info(
-            "index_aggregate_track.py | Skip update because there are no new tracks"
-        )
-        return
-
-    # update aggregate track with new tracks that came after the prev_blocknumber
-    logger.info(f"index_aggregate_track.py | Updating {AGGREGATE_TRACK_TABLE_NAME}")
-
-    session.execute(
-        text(UPDATE_AGGREGATE_TRACK_QUERY),
-        {
-            "prev_blocknumber": prev_blocknumber,
-            "current_blocknumber": current_blocknumber,
-        },
+    aggregate_worker(
+        logger,
+        session,
+        AGGREGATE_TRACK_TABLE_NAME,
+        UPDATE_AGGREGATE_TRACK_QUERY,
+        "blocknumber",
+        current_blocknumber,
     )
-
-    # update indexing_checkpoints with the new id
-    save_indexed_checkpoint(session, AGGREGATE_TRACK_TABLE_NAME, current_blocknumber)
 
 
 # ####### CELERY TASKS ####### #
@@ -230,32 +209,7 @@ def update_aggregate_track(self):
     # Custom Task definition can be found in src/app.py
     db = update_aggregate_track.db
     redis = update_aggregate_track.redis
-    # Define lock acquired boolean
-    have_lock = False
-    # Define redis lock object
-    update_lock = redis.lock("index_aggregate_track_lock", timeout=60 * 10)
-    try:
-        # Attempt to acquire lock - do not block if unable to acquire
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            start_time = time.time()
 
-            with db.scoped_session() as session:
-                _update_aggregate_track(session)
-
-            logger.info(
-                f"index_aggregate_track.py | Finished updating \
-                {AGGREGATE_TRACK_TABLE_NAME} in: {time.time()-start_time} sec"
-            )
-        else:
-            logger.info(
-                "index_aggregate_track.py | Failed to acquire index_aggregate_track_lock"
-            )
-    except Exception as e:
-        logger.error(
-            "index_aggregate_track.py | Fatal error in main loop", exc_info=True
-        )
-        raise e
-    finally:
-        if have_lock:
-            update_lock.release()
+    celery_worker(
+        logger, db, redis, AGGREGATE_TRACK_TABLE_NAME, _update_aggregate_track
+    )
