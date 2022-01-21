@@ -64,15 +64,15 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
             """
             begin;
                 DELETE FROM track_trending_scores WHERE type=:type AND version=:version;
-                INSERT INTO track_trending_scores
+                INSERT INTO track_trending_scores 
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select
+                    select 
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
                         :week_time_range,
-                        CASE
+                        CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
                         WHEN EXTRACT(DAYS from now() - aip.created_at) > :week
@@ -80,18 +80,18 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         ELSE (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as week_score,
                         now()
-                    from trending_params_aSPET tp
-                    inner join aggregate_interval_plays aip
+                    from trending_params_aSPET tp 
+                    inner join aggregate_interval_plays aip 
                         on tp.track_id = aip.track_id;
-                INSERT INTO track_trending_scores
+                INSERT INTO track_trending_scores 
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select
+                    select 
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
                         :month_time_range,
-                        CASE
+                        CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
                         WHEN EXTRACT(DAYS from now() - aip.created_at) > :month
@@ -99,18 +99,18 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         ELSE (:N * aip.month_listen_counts + :F * tp.repost_month_count + :O * tp.save_month_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as month_score,
                         now()
-                    from trending_params_aSPET tp
-                    inner join aggregate_interval_plays aip
+                    from trending_params_aSPET tp 
+                    inner join aggregate_interval_plays aip 
                         on tp.track_id = aip.track_id;
-                INSERT INTO track_trending_scores
+                INSERT INTO track_trending_scores 
                     (track_id, genre, type, version, time_range, score, created_at)
-                    select
+                    select 
                         tp.track_id,
                         tp.genre,
                         :type,
                         :version,
                         :year_time_range,
-                        CASE
+                        CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
                         WHEN EXTRACT(DAYS from now() - aip.created_at) > :year
@@ -118,8 +118,8 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         ELSE (:F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as year_score,
                         now()
-                    from trending_params_aSPET tp
-                    inner join aggregate_interval_plays aip
+                    from trending_params_aSPET tp 
+                    inner join aggregate_interval_plays aip 
                         on tp.track_id = aip.track_id;
             commit;
         """
