@@ -1,4 +1,4 @@
-import { fork } from 'redux-saga/effects'
+import { all, fork } from 'redux-saga/effects'
 
 import collectionsSagas from 'common/store/cache/collections/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
@@ -151,5 +151,5 @@ export default function* rootSaga() {
   if (NATIVE_MOBILE) {
     sagas.push(initInterface)
   }
-  yield sagas.map(fork)
+  yield all(sagas.map(fork))
 }

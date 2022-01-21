@@ -1,7 +1,7 @@
 import { merge } from 'lodash'
-import { delay } from 'redux-saga'
 import {
   call,
+  delay,
   fork,
   all,
   put,

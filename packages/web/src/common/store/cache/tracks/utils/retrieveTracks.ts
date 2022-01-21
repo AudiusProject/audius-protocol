@@ -48,6 +48,7 @@ export function* retrieveTrackByHandleAndSlug({
 }: RetrieveTrackByHandleAndSlugArgs) {
   const permalink = `/${handle}/${slug}`
   const tracks: { entries: { [permalink: string]: Track } } = yield call(
+    // @ts-ignore retrieve should be refactored to ts first
     retrieve,
     {
       ids: [permalink],
@@ -188,6 +189,7 @@ export function* retrieveTracks({
     })
   }
 
+  // @ts-ignore retrieve should be refactored to ts first
   const tracks: { entries: { [id: number]: Track } } = yield call(retrieve, {
     ids,
     selectFromCache: function* (ids: ID[]) {

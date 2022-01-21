@@ -3,6 +3,7 @@ import { call, select, takeEvery, put } from 'redux-saga/effects'
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
+import { User } from 'common/models/User'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
@@ -235,7 +236,7 @@ export function* watchShareUser() {
     action: ReturnType<typeof socialActions.shareUser>
   ) {
     const { userId, source } = action
-    const user = yield select(getUser, { id: userId })
+    const user: User = yield select(getUser, { id: userId })
     const link = profilePage(user.handle)
     share(link, user.name)
 

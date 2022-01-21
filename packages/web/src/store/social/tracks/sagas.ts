@@ -538,7 +538,7 @@ export function* watchRecordListen() {
   ) {
     if (NATIVE_MOBILE) return
     console.debug('Listen recorded for track', action.trackId)
-    const userId = yield select(getUserId)
+    const userId: ReturnType<typeof getUserId> = yield select(getUserId)
     const track: Track = yield select(getTrack, { id: action.trackId })
 
     if (userId !== track.owner_id || track.play_count < 10) {
@@ -620,7 +620,7 @@ function* watchShareTrack() {
   ) {
     const { trackId } = action
     const track = yield select(getTrack, { id: trackId })
-    const user = yield select(getUser, { id: track.owner_id })
+    const user: User = yield select(getUser, { id: track.owner_id })
     const link = track.permalink
     share(link, formatShareText(track.title, user.name))
 
