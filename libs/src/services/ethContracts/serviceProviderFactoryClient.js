@@ -26,7 +26,6 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
     const sanitizedEndpoint = endpoint.replace(/\/$/, '')
 
-
     if (!this.isDebug && !Utils.isHttps(sanitizedEndpoint)) {
       throw new Error('Domain name not using https protocol!')
     }
