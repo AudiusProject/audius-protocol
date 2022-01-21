@@ -1,6 +1,7 @@
 from flask_restx import fields
-from .users import user_model, user_model_full
+
 from .common import favorite, ns, repost
+from .users import user_model, user_model_full
 
 track_artwork = ns.model(
     "track_artwork",

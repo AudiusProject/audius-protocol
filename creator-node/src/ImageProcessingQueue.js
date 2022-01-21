@@ -3,7 +3,9 @@ const os = require('os')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 
-const imageProcessingMaxConcurrency = config.get('imageProcessingMaxConcurrency')
+const imageProcessingMaxConcurrency = config.get(
+  'imageProcessingMaxConcurrency'
+)
 
 const PROCESS_NAMES = Object.freeze({
   resizeImage: 'resizeImage'
@@ -11,25 +13,23 @@ const PROCESS_NAMES = Object.freeze({
 
 // Maximum concurrency set to config var if provided
 // Otherwise, uses the number of CPU cores available to node
-const MAX_CONCURRENCY = imageProcessingMaxConcurrency !== -1
-  ? imageProcessingMaxConcurrency
-  : os.cpus().length
+const MAX_CONCURRENCY =
+  imageProcessingMaxConcurrency !== -1
+    ? imageProcessingMaxConcurrency
+    : os.cpus().length
 
 class ImageProcessingQueue {
-  constructor () {
-    this.queue = new Bull(
-      'image-processing-queue',
-      {
-        redis: {
-          port: config.get('redisPort'),
-          host: config.get('redisHost')
-        },
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true
-        }
+  constructor() {
+    this.queue = new Bull('image-processing-queue', {
+      redis: {
+        port: config.get('redisPort'),
+        host: config.get('redisHost')
+      },
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true
       }
-    )
+    })
 
     /**
      * Queue will process tasks concurrently if provided a concurrency number and a
@@ -51,7 +51,7 @@ class ImageProcessingQueue {
    * @param {object} logContext to create a logger.child(logContext) from
    * @param {string} message
    */
-  async logStatus (logContext, message) {
+  async logStatus(logContext, message) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
     logger.info(`Image Processing Queue: ${message}`)
@@ -82,17 +82,14 @@ class ImageProcessingQueue {
    *     }
    *   ]
    */
-  async resizeImage ({
-    file,
-    fileName,
-    sizes,
-    square,
-    logContext
-  }) {
-    const job = await this.queue.add(
-      PROCESS_NAMES.resizeImage,
-      { file, fileName, sizes, square, logContext }
-    )
+  async resizeImage({ file, fileName, sizes, square, logContext }) {
+    const job = await this.queue.add(PROCESS_NAMES.resizeImage, {
+      file,
+      fileName,
+      sizes,
+      square,
+      logContext
+    })
     const result = await job.finished()
     return result
   }

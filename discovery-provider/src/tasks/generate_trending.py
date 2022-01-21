@@ -1,15 +1,15 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 from urllib.parse import unquote
-from sqlalchemy import func, desc
 
-from src.models import AggregatePlays, Track, RepostType, Follow, SaveType, Play
+from sqlalchemy import desc, func
+from src.models import AggregatePlays, Follow, Play, RepostType, SaveType, Track
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
+    get_genre_list,
     get_karma,
     get_repost_counts,
     get_save_counts,
-    get_genre_list,
 )
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,7 @@ time_delta_map = {
     "week": timedelta(weeks=1),
     "day": timedelta(days=1),
 }
+
 
 # Returns listens counts for tracks, subject to time and
 # genre restrictions.
@@ -196,7 +197,9 @@ def generate_trending(session, time, genre, limit, offset, strategy):
         if save_type == SaveType.track
     }
 
-    karma_query = get_karma(session, tuple(track_ids), None, False, xf)
+    karma_query = get_karma(
+        session, tuple(track_ids), strategy, None, False, xf, strategy
+    )
     karma_counts_for_id = dict(karma_query)
 
     trending_tracks = []

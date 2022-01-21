@@ -67,7 +67,9 @@ function setup_postgres() {
 function setup_python() {
     sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
     sudo apt install -y "python$PYTHON_VERSION"
+    sudo apt install -y "python$PYTHON_VERSION-dev"
     pip install wheel
+    pip install pre-commit==2.16.0
 }
 
 function setup_docker() {
@@ -110,6 +112,11 @@ function setup_profile() {
     echo "nvm use $NODE_VERSION" >> $HOME/.profile
     echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> $HOME/.profile
     echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> $HOME/.profile
+    echo 'export AAO_DIR=$HOME/anti-abuse-oracle' >> $HOME/.profile
+}
+
+function silence_motd() {
+    touch ~/.hushlogin
 }
 
 function setup_audius_repos() {
@@ -145,6 +152,7 @@ function setup() {
         setup_mad_dog
         setup_node
         setup_profile
+        silence_motd
     fi
     setup_audius_repos $1 $2
 }

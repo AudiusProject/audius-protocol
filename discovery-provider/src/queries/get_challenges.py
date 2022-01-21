@@ -1,11 +1,11 @@
-from functools import reduce
 from collections import defaultdict
-from typing import List, DefaultDict, Optional, TypedDict, Tuple, cast, Dict
+from functools import reduce
+from typing import DefaultDict, Dict, List, Optional, Tuple, TypedDict, cast
+
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import UserChallenge, Challenge, ChallengeType, ChallengeDisbursement
+from src.models import Challenge, ChallengeDisbursement, ChallengeType, UserChallenge
 
 
 class ChallengeResponse(TypedDict):
@@ -18,6 +18,7 @@ class ChallengeResponse(TypedDict):
     current_step_count: Optional[int]
     max_steps: Optional[int]
     challenge_type: str
+    amount: str
     metadata: Dict
 
 
@@ -47,6 +48,7 @@ def rollup_aggregates(
         "challenge_type": parent_challenge.type,
         "is_active": parent_challenge.active,
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
+        "amount": parent_challenge.amount,
         "metadata": {},
     }
     return response_dict
@@ -68,6 +70,7 @@ def to_challenge_response(
         "challenge_type": challenge.type,
         "is_active": challenge.active,
         "is_disbursed": disbursement is not None,
+        "amount": challenge.amount,
         "metadata": metadata,
     }
 
@@ -87,6 +90,7 @@ def create_empty_user_challenges(
             "challenge_type": challenge.type,
             "is_active": challenge.active,
             "is_disbursed": False,
+            "amount": challenge.amount,
             "metadata": metadatas[i],
         }
         user_challenges.append(user_challenge)

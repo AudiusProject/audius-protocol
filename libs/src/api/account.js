@@ -12,7 +12,6 @@ class Account extends Base {
 
     this.User = userApi
 
-    this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
@@ -141,11 +140,27 @@ class Account extends Base {
         }
       }
 
-      // Create a wAudio user bank address
+      // Create a wAudio user bank address.
+      // If userbank creation fails, we still proceed
+      // through signup
       if (createWAudioUserBank && this.solanaWeb3Manager) {
         phase = phases.SOLANA_USER_BANK_CREATION
-        // Create a user bank if the solana web3 manager is present
-        await this.solanaWeb3Manager.createUserBank()
+        try {
+          // Fire and forget createUserBank. In the case of failure, we will
+          // retry to create user banks in a later session before usage
+          (async () => {
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
+            if (error || errorCode) {
+              console.error(
+                `Failed to create userbank, with err: ${error}, ${errorCode}`
+              )
+            } else {
+              console.log(`Successfully created userbank!`)
+            }
+          })()
+        } catch (err) {
+          console.error(`Got error creating userbank: ${err}, continuing...`)
+        }
       }
 
       // Add user to chain
@@ -436,6 +451,29 @@ class Account extends Base {
   }
 
   /**
+   * Sends Eth `amount` tokens to `solanaAccount` on the identity service
+   * by way of the wormhole.
+   */
+  async proxySendTokensFromEthToSol (amount, solanaAccount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const myWalletAddress = this.web3Manager.getWalletAddress()
+    const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    const permitMethod = await this.getPermitProxySendTokensMethod(myWalletAddress, wormholeAddress, amount)
+    const permit = await this.ethWeb3Manager.getRelayMethodParams(this.ethContracts.AudiusTokenClient.contractAddress, permitMethod, selectedEthWallet)
+    const transferTokensMethod = await this.wormholeClient.getTransferTokensToEthWormholeMethod(
+
+      myWalletAddress, amount, solanaAccount, selectedEthWallet
+    )
+    const transferTokens = await this.ethWeb3Manager.getRelayMethodParams(this.ethContracts.WormholeClient.contractAddress, transferTokensMethod, selectedEthWallet)
+    return this.identityService.wormholeRelay({
+      senderAddress: myWalletAddress,
+      permit,
+      transferTokens
+    })
+  }
+
+  /**
    * Sends `amount` tokens to `ethAccount` by way of the wormhole
    * 1.) Creates a solana root wallet
    * 2.) Sends the tokens from the user bank account to the solana wallet
@@ -448,10 +486,7 @@ class Account extends Base {
     return { error, logs, phase }
   }
 
-  /**
-   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
-   */
-  async permitProxySendTokens (owner, relayerAddress, amount) {
+  async _getPermitProxySendTokensParams (owner, relayerAddress, amount) {
     const web3 = this.ethWeb3Manager.getWeb3()
     const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
     const chainId = await new Promise(resolve => web3.eth.getChainId((_, chainId) => resolve(chainId)))
@@ -475,6 +510,20 @@ class Account extends Base {
       deadline
     )
     let result = sign(digest, myPrivateKey)
+    return {
+      result,
+      deadline
+    }
+  }
+
+  /**
+   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   */
+  async permitProxySendTokens (owner, relayerAddress, amount) {
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
     const tx = await this.ethContracts.AudiusTokenClient.permit(
       owner,
       relayerAddress,
@@ -482,10 +531,29 @@ class Account extends Base {
       deadline,
       result.v,
       result.r,
-      result.s,
-      { from: owner }
+      result.s
     )
     return tx
+  }
+
+  /**
+   * Gets the permit method to proxy send tokens `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   */
+  async getPermitProxySendTokensMethod (owner, relayerAddress, amount) {
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
+    const contractMethod = this.ethContracts.AudiusTokenClient.AudiusTokenContract.methods.permit(
+      owner,
+      relayerAddress,
+      amount,
+      deadline,
+      result.v,
+      result.r,
+      result.s
+    )
+    return contractMethod
   }
 
   /**

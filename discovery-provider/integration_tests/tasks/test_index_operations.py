@@ -1,13 +1,14 @@
-from contextlib import contextmanager
 import json
 import secrets
-import pytest
+from contextlib import contextmanager
+
 import ipfshttpclient
+import pytest
+import src.utils.multihash
 from chance import chance
 from integration_tests.utils import to_bytes
 from src.models.models import Block, Track, User
 from src.queries.get_skipped_transactions import get_indexing_error
-import src.utils.multihash
 from src.utils.helpers import remove_test_file
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_connection import get_redis
@@ -16,6 +17,7 @@ redis = get_redis()
 
 test_file = "integration_tests/res/test_audio_file.mp3"
 track_metadata_json_file = "integration_tests/res/test_track_metadata.json"
+
 
 def seed_contract_data(task, contracts, web3):
     user_factory_contract = contracts["user_factory_contract"]
@@ -29,37 +31,33 @@ def seed_contract_data(task, contracts, web3):
     chain_id = web3.net.version
 
     # Give the user some randomness so repeat tests can succeed
-    new_user_handle = 'troybarnes' + secrets.token_hex(2)
-    new_user_nonce = '0x' + secrets.token_hex(32)
+    new_user_handle = "troybarnes" + secrets.token_hex(2)
+    new_user_nonce = "0x" + secrets.token_hex(32)
 
     new_user_signature_data = {
         "types": {
             "EIP712Domain": [
-                { "name": 'name', "type": 'string' },
-                { "name": 'version', "type": 'string' },
-                { "name": 'chainId', "type": 'uint256' },
-                { "name": 'verifyingContract', "type": 'address' }
+                {"name": "name", "type": "string"},
+                {"name": "version", "type": "string"},
+                {"name": "chainId", "type": "uint256"},
+                {"name": "verifyingContract", "type": "address"},
             ],
             "AddUserRequest": [
-                { "name": 'handle', "type": 'bytes16' },
-                { "name": 'nonce', "type": 'bytes32' }
-            ]
+                {"name": "handle", "type": "bytes16"},
+                {"name": "nonce", "type": "bytes32"},
+            ],
         },
         "domain": {
             "name": "User Factory",
             "version": "1",
             "chainId": chain_id,
-            "verifyingContract": user_factory_contract.address
+            "verifyingContract": user_factory_contract.address,
         },
         "primaryType": "AddUserRequest",
-        "message": {
-            "handle": new_user_handle,
-            "nonce": new_user_nonce
-        }
+        "message": {"handle": new_user_handle, "nonce": new_user_nonce},
     }
     new_user_signature = web3.eth.signTypedData(
-        web3.eth.defaultAccount,
-        new_user_signature_data
+        web3.eth.defaultAccount, new_user_signature_data
     )
 
     # Add creator to blockchain
@@ -67,7 +65,7 @@ def seed_contract_data(task, contracts, web3):
         web3.eth.defaultAccount,
         to_bytes(new_user_handle, 16),
         new_user_nonce,
-        new_user_signature
+        new_user_signature,
     ).transact()
 
     # parse chain transaction results
@@ -109,32 +107,32 @@ def seed_contract_data(task, contracts, web3):
     metadata_decoded = src.utils.multihash.from_b58_string(metadata_hash)
     metadata_decoded_multihash = src.utils.multihash.decode(metadata_decoded)
 
-    new_track_nonce = '0x' + secrets.token_hex(32)
-    new_track_multihash_digest = '0x' + metadata_decoded_multihash['digest'].hex()
-    new_track_multihash_hash_fn = int(metadata_decoded_multihash['code'])
-    new_track_multihash_size = int(metadata_decoded_multihash['length'])
+    new_track_nonce = "0x" + secrets.token_hex(32)
+    new_track_multihash_digest = "0x" + metadata_decoded_multihash["digest"].hex()
+    new_track_multihash_hash_fn = int(metadata_decoded_multihash["code"])
+    new_track_multihash_size = int(metadata_decoded_multihash["length"])
 
     new_track_signature_data = {
         "types": {
             "EIP712Domain": [
-                { "name": 'name', "type": 'string' },
-                { "name": 'version', "type": 'string' },
-                { "name": 'chainId', "type": 'uint256' },
-                { "name": 'verifyingContract', "type": 'address' }
+                {"name": "name", "type": "string"},
+                {"name": "version", "type": "string"},
+                {"name": "chainId", "type": "uint256"},
+                {"name": "verifyingContract", "type": "address"},
             ],
             "AddTrackRequest": [
-                { "name": "trackOwnerId", "type": "uint" },
-                { "name": "multihashDigest", "type": "bytes32" },
-                { "name": "multihashHashFn", "type": "uint8" },
-                { "name": "multihashSize", "type": "uint8" },
-                { "name": "nonce", "type": "bytes32" }
-            ]
+                {"name": "trackOwnerId", "type": "uint"},
+                {"name": "multihashDigest", "type": "bytes32"},
+                {"name": "multihashHashFn", "type": "uint8"},
+                {"name": "multihashSize", "type": "uint8"},
+                {"name": "nonce", "type": "bytes32"},
+            ],
         },
         "domain": {
             "name": "Track Factory",
             "version": "1",
             "chainId": chain_id,
-            "verifyingContract": track_factory_contract.address
+            "verifyingContract": track_factory_contract.address,
         },
         "primaryType": "AddTrackRequest",
         "message": {
@@ -142,13 +140,12 @@ def seed_contract_data(task, contracts, web3):
             "multihashDigest": new_track_multihash_digest,
             "multihashHashFn": new_track_multihash_hash_fn,
             "multihashSize": new_track_multihash_size,
-            "nonce": new_track_nonce
-        }
+            "nonce": new_track_nonce,
+        },
     }
 
     new_track_signature = web3.eth.signTypedData(
-        web3.eth.defaultAccount,
-        new_track_signature_data
+        web3.eth.defaultAccount, new_track_signature_data
     )
 
     # add track to blockchain
@@ -158,13 +155,11 @@ def seed_contract_data(task, contracts, web3):
         new_track_multihash_hash_fn,
         new_track_multihash_size,
         new_track_nonce,
-        new_track_signature
+        new_track_signature,
     ).transact()
 
-    return {
-        "new_user_handle": new_user_handle,
-        "new_user_id": user_id_from_event
-    }
+    return {"new_user_handle": new_user_handle, "new_user_id": user_id_from_event}
+
 
 @pytest.fixture(autouse=True)
 def cleanup():
@@ -187,25 +182,21 @@ def test_index_operations(celery_app, celery_app_contracts):
     with db.scoped_session() as session:
         # Catch up the indexer
         current_block_query = session.query(Block).filter_by(is_current=True).all()
-        current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+        current_block = (
+            current_block_query[0].number if len(current_block_query) > 0 else 0
+        )
         latest_block = web3.eth.getBlock("latest", True)
         while current_block < latest_block.number:
             # Process a bunch of blocks to make sure we covered everything
             task.run()
             current_block_query = session.query(Block).filter_by(is_current=True).all()
-            current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+            current_block = (
+                current_block_query[0].number if len(current_block_query) > 0 else 0
+            )
 
         # Make sure the data we added is there
-        users = (
-            session.query(User)
-            .filter(User.handle == new_user_handle)
-            .all()
-        )
-        tracks = (
-            session.query(Track)
-            .filter(Track.owner_id == new_user_id)
-            .all()
-        )
+        users = session.query(User).filter(User.handle == new_user_handle).all()
+        tracks = session.query(Track).filter(Track.owner_id == new_user_id).all()
 
         assert len(users) > 0
         assert len(tracks) > 0
@@ -220,31 +211,50 @@ def test_index_operations_indexing_error(celery_app, celery_app_contracts, monke
     web3 = celery_app_contracts["web3"]
 
     # Monkeypatch parse track event to raise an exception
+    # Here it does not matter which part of the indexing flow throws an exception; the expected behavior is the same
     def parse_track_event(*_):
         raise Exception("Broken parser")
+
     monkeypatch.setattr(src.tasks.tracks, "parse_track_event", parse_track_event)
 
     seed_contract_data(task, celery_app_contracts, web3)
 
+    current_block = None
+    latest_block = None
     try:
         with db.scoped_session() as session:
             # Catch up the indexer
             current_block_query = session.query(Block).filter_by(is_current=True).all()
-            current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+            current_block = (
+                current_block_query[0].number if len(current_block_query) > 0 else 0
+            )
             latest_block = web3.eth.getBlock("latest", True)
             while current_block < latest_block.number:
                 # Process a bunch of blocks to make sure we covered everything
                 task.run()
-                current_block_query = session.query(Block).filter_by(is_current=True).all()
-                current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+                current_block_query = (
+                    session.query(Block).filter_by(is_current=True).all()
+                )
+                current_block = (
+                    current_block_query[0].number if len(current_block_query) > 0 else 0
+                )
         assert False
     except IndexingError:
         error = get_indexing_error(redis)
+        errored_block_in_db_results = (
+            session.query(Block).filter_by(number=error["blocknumber"]).all()
+        )  # should not exist
+        errored_block_in_db = len(errored_block_in_db_results) != 0
+        # when errored block is in db, it breaks the consensus mechanism
+        # for discovery nodes staying in sync
+        assert not errored_block_in_db
         assert error["message"] == "Broken parser"
         assert error["count"] == 1
 
 
-def test_index_operations_indexing_error_on_commit(celery_app, celery_app_contracts, monkeypatch):
+def test_index_operations_indexing_error_on_commit(
+    celery_app, celery_app_contracts, monkeypatch
+):
     """
     Confirm indexer throws IndexingError when db session "commit" throws an error
     """
@@ -262,8 +272,10 @@ def test_index_operations_indexing_error_on_commit(celery_app, celery_app_contra
         # Don't mock out the implicit commit
         # at the end of a `with db.scoped_session as session` context.
         implicit_commit = session.commit
+
         def _raise():
-            raise Exception('Broken session.commit')
+            raise Exception("Broken session.commit")
+
         session.commit = _raise
         try:
             yield session
@@ -273,23 +285,28 @@ def test_index_operations_indexing_error_on_commit(celery_app, celery_app_contra
             raise
         finally:
             session.close()
+
     monkeypatch.setattr(
-        src.utils.session_manager.SessionManager,
-        "scoped_session",
-        mock_scoped_session
+        src.utils.session_manager.SessionManager, "scoped_session", mock_scoped_session
     )
 
     try:
         with db.scoped_session() as session:
             # Catch up the indexer
             current_block_query = session.query(Block).filter_by(is_current=True).all()
-            current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+            current_block = (
+                current_block_query[0].number if len(current_block_query) > 0 else 0
+            )
             latest_block = web3.eth.getBlock("latest", True)
             while current_block < latest_block.number:
                 # Process a bunch of blocks to make sure we covered everything
                 task.run()
-                current_block_query = session.query(Block).filter_by(is_current=True).all()
-                current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+                current_block_query = (
+                    session.query(Block).filter_by(is_current=True).all()
+                )
+                current_block = (
+                    current_block_query[0].number if len(current_block_query) > 0 else 0
+                )
         assert False
     except IndexingError:
         error = get_indexing_error(redis)

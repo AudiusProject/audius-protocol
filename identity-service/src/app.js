@@ -19,7 +19,7 @@ const { generateETHWalletLockKey } = require('./relay/ethTxRelay.js')
 const { RewardsAttester } = require('@audius/libs')
 const models = require('./models')
 
-const { RewardsReporter } = require('./utils/rewardsReporter')
+const { SlackReporter, RewardsReporter } = require('./utils/rewardsReporter')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
@@ -35,6 +35,7 @@ const { REMOTE_VARS, getRemoteVar } = require('./remoteConfig')
 
 const DOMAIN = 'mail.audius.co'
 const REDIS_ATTEST_HEALTH_KEY = 'last-attestation-time'
+const REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY = 'attestation-start-block-override'
 
 class App {
   constructor (port) {
@@ -100,6 +101,7 @@ class App {
         cluster.fork({ 'WORKER_TYPE': 'notifications' })
 
         await this.configureRewardsAttester(audiusInstance)
+        await this.configureReporter()
 
         // Fork extra web server workers
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
@@ -143,6 +145,7 @@ class App {
     } else {
       // if it's not the master worker in the cluster
       const audiusInstance = await this.configureAudiusInstance()
+      await this.configureReporter()
 
       if (process.env['WORKER_TYPE'] === 'notifications') {
         await this.notificationProcessor.init(
@@ -200,6 +203,14 @@ class App {
     return optimizelyClientInstance
   }
 
+  configureReporter () {
+    const slackReporter = new SlackReporter({
+      slackUrl: config.get('reporterSlackUrl'),
+      childLogger: logger
+    })
+    this.express.set('slackReporter', slackReporter)
+  }
+
   async configureAudiusInstance () {
     await audiusLibsWrapper.init()
     const audiusInstance = audiusLibsWrapper.getAudiusLibs()
@@ -227,6 +238,8 @@ class App {
       (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.CHALLENGE_IDS_DENY_LIST) || '')
         .split(',')
     )
+    const endpointsString = getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
+    const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : []
 
     // Fetch the last saved offset and startingBLock from the DB,
     // or create them if necessary.
@@ -255,6 +268,7 @@ class App {
       offset: initialVals.offset,
       challengeIdsDenyList,
       reporter: rewardsReporter,
+      endpoints,
       updateValues: async ({ startingBlock, offset, successCount }) => {
         childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
 
@@ -268,6 +282,30 @@ class App {
         if (successCount > 0) {
           await this.redisClient.set(REDIS_ATTEST_HEALTH_KEY, Date.now())
         }
+      },
+      getStartingBlockOverride: async () => {
+        // Retrieve a starting block override from redis (that is set externally, CLI, or otherwise)
+        // return that starting block so that the rewards attester changes its
+        // starting block, and then delete the value from redis as to stop re-reading it
+        const startBlock = await this.redisClient.get(REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY)
+        if (startBlock === undefined || startBlock === null) {
+          return null
+        }
+
+        const parsedStartBlock = parseInt(startBlock, 10)
+        // Regardless if we were able to parse the start block override, clear it now
+        // so that subsequent runs don't pick it up again.
+        await this.redisClient.del(REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY)
+
+        if (
+          parsedStartBlock !== undefined &&
+          parsedStartBlock !== null &&
+          !isNaN(parsedStartBlock)
+        ) {
+          return parsedStartBlock
+        }
+        // In the case of failing to parse from redis, just return null
+        return null
       }
     })
     attester.start()

@@ -5,7 +5,9 @@ const cors = require('cors')
 const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
-const { readOnlyMiddleware } = require('./middlewares/readOnly/readOnlyMiddleware')
+const {
+  readOnlyMiddleware
+} = require('./middlewares/readOnly/readOnlyMiddleware')
 const {
   userReqLimiter,
   trackReqLimiter,
@@ -46,7 +48,7 @@ app.use('/', healthCheckRoutes)
 app.use('/', contentBlacklistRoutes)
 app.use('/', replicaSetRoutes)
 
-function errorHandler (err, req, res, next) {
+function errorHandler(err, req, res, next) {
   req.logger.error('Internal server error')
   req.logger.error(err.stack)
   sendResponse(req, res, errorResponseServerError('Internal server error'))
@@ -78,11 +80,13 @@ const initializeApp = (port, serviceRegistry) => {
   // https://expressjs.com/en/guide/behind-proxies.html
   app.set('trust proxy', true)
 
-  const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
+  const server = app.listen(port, () =>
+    logger.info(`Listening on port ${port}...`)
+  )
 
   // Increase from 2min default to accommodate long-lived requests.
   server.setTimeout(config.get('setTimeout'), () => {
-    logger.warn(`Server socket timeout hit`)
+    logger.debug(`Server socket timeout hit`)
   })
   server.timeout = config.get('timeout')
   server.keepAliveTimeout = config.get('keepAliveTimeout')

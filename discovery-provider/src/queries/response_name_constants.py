@@ -45,6 +45,7 @@ balance = "balance"
 total_balance = "total_balance"
 associated_wallets_balance = "associated_wallets_balance"
 associated_sol_wallets_balance = "associated_sol_wallets_balance"
+waudio_balance = "waudio_balance"
 
 # current user specific
 # boolean - does current user follow given user

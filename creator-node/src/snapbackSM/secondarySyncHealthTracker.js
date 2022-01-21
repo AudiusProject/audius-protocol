@@ -8,7 +8,8 @@ const { logger } = require('../logging')
 
 const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
 
-const DailyRedisKeyExpirationSec = 90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
+const DailyRedisKeyExpirationSec =
+  90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
 
 const Outcomes = Object.freeze({
   SUCCESS: 'Success',
@@ -20,7 +21,7 @@ const Utils = {
    * Given redis key pattern, returns all keys matching pattern and associated values
    * Returns map of key-value pairs
    */
-  async _getMetricsMatchingPattern (pattern) {
+  async _getMetricsMatchingPattern(pattern) {
     const keys = await Utils._getAllKeysMatchingPattern(pattern)
 
     // Short-circuit here since redis `mget` throws if array param has 0-length
@@ -47,18 +48,20 @@ const Utils = {
    *
    * @returns array | Error
    */
-  async _getAllKeysMatchingPattern (pattern) {
+  async _getAllKeysMatchingPattern(pattern) {
     const stream = redisClient.scanStream({ match: pattern })
 
-    let keySet = new Set()
+    const keySet = new Set()
     return new Promise((resolve, reject) => {
       stream.on('data', async (keys = []) => {
-        keys.forEach(key => { keySet.add(key) })
+        keys.forEach((key) => {
+          keySet.add(key)
+        })
       })
       stream.on('end', () => {
         resolve(Array.from(keySet).filter(Boolean))
       })
-      stream.on('error', e => {
+      stream.on('error', (e) => {
         reject(e)
       })
     })
@@ -68,23 +71,34 @@ const Utils = {
    * Builds redis key pattern given params
    * Key pattern string can map to one or multiple keys
    */
-  _getRedisKeyPattern ({ secondary = '*', wallet = '*', syncType = '*', outcome = '*', date = null }) {
+  _getRedisKeyPattern({
+    secondary = '*',
+    wallet = '*',
+    syncType = '*',
+    outcome = '*',
+    date = null
+  }) {
     // format: YYYY-MM-DD
     date = date || new Date().toISOString().split('T')[0]
 
     return `${RedisKeyPrefix}:::${secondary}:::${wallet}:::${syncType}:::${date}:::${outcome}`
   },
 
-  _parseRedisKeyIntoComponents (key) {
+  _parseRedisKeyIntoComponents(key) {
     const components = key.split(':::')
     const [, secondary, wallet, syncType, outcome, date] = components
     return { secondary, wallet, syncType, outcome, date }
   },
 
-  async _recordSyncRequestOutcome (secondary, wallet, syncType, success = true) {
+  async _recordSyncRequestOutcome(secondary, wallet, syncType, success = true) {
     try {
       const outcome = success ? Outcomes.SUCCESS : Outcomes.FAILURE
-      const redisKey = Utils._getRedisKeyPattern({ secondary, wallet, syncType, outcome })
+      const redisKey = Utils._getRedisKeyPattern({
+        secondary,
+        wallet,
+        syncType,
+        outcome
+      })
 
       // incr() will create key with value 0 if non-existent
       await redisClient.incr(redisKey)
@@ -92,21 +106,25 @@ const Utils = {
       // Set key expiration time (sec) in case it hasn't already been set (prob not most efficient)
       await redisClient.expire(redisKey, DailyRedisKeyExpirationSec)
 
-      logger.info(`SecondarySyncHealthTracker:_recordSyncRequestOutcome || Recorded ${redisKey}`)
+      logger.info(
+        `SecondarySyncHealthTracker:_recordSyncRequestOutcome || Recorded ${redisKey}`
+      )
 
       // Swallow error + log
     } catch (e) {
-      logger.error(`SecondarySyncHealthTracker:_recordSyncRequestOutcome Error || ${e.message}`)
+      logger.error(
+        `SecondarySyncHealthTracker:_recordSyncRequestOutcome Error || ${e.message}`
+      )
     }
   }
 }
 
 const Setters = {
-  async recordSuccess (secondary, wallet, syncType) {
+  async recordSuccess(secondary, wallet, syncType) {
     await Utils._recordSyncRequestOutcome(secondary, wallet, syncType, true)
   },
 
-  async recordFailure (secondary, wallet, syncType) {
+  async recordFailure(secondary, wallet, syncType) {
     await Utils._recordSyncRequestOutcome(secondary, wallet, syncType, false)
   }
 }
@@ -119,15 +137,16 @@ const Getters = {
    * @param {Array} secondaries
    * @returns {Object} { secondary1: { 'successCount' : _, 'failureCount': _, 'successRate': _ }, ... }
    */
-  async computeUserSecondarySyncSuccessRates (wallet, secondaries) {
+  async computeUserSecondarySyncSuccessRates(wallet, secondaries) {
     // Initialize sync success and failure counts for every secondary to 0
-    let secondarySyncMetrics = {}
-    secondaries.forEach(secondary => {
-      secondarySyncMetrics[secondary] = { 'successCount': 0, 'failureCount': 0 }
+    const secondarySyncMetrics = {}
+    secondaries.forEach((secondary) => {
+      secondarySyncMetrics[secondary] = { successCount: 0, failureCount: 0 }
     })
 
     // Retrieve map of all SyncRequestOutcome keys and daily counts for user from all secondaries
-    const userSecondarySyncHealthOutcomes = await Getters.getSyncRequestOutcomeMetrics({ wallet })
+    const userSecondarySyncHealthOutcomes =
+      await Getters.getSyncRequestOutcomeMetrics({ wallet })
 
     // Aggregate all daily SyncRequest outcome counts by secondary
     for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
@@ -140,17 +159,18 @@ const Getters = {
       }
 
       if (outcome === Outcomes.SUCCESS) {
-        secondarySyncMetrics[secondary]['successCount'] += count
+        secondarySyncMetrics[secondary].successCount += count
       } else if (outcome === Outcomes.FAILURE) {
-        secondarySyncMetrics[secondary]['failureCount'] += count
+        secondarySyncMetrics[secondary].failureCount += count
       }
       // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
     }
 
     // For each secondary, compute and store successRate
-    Object.keys(secondarySyncMetrics).forEach(secondary => {
+    Object.keys(secondarySyncMetrics).forEach((secondary) => {
       const { successCount, failureCount } = secondarySyncMetrics[secondary]
-      secondarySyncMetrics[secondary]['successRate'] = (failureCount === 0) ? 1 : (successCount / (successCount + failureCount))
+      secondarySyncMetrics[secondary].successRate =
+        failureCount === 0 ? 1 : successCount / (successCount + failureCount)
     })
 
     return secondarySyncMetrics
@@ -161,12 +181,14 @@ const Getters = {
    * @param {Object} filters object specifying any of above filters
    * @returns {Object} map from every key matching pattern with above filters to associated value
    */
-  async getSyncRequestOutcomeMetrics (filters) {
+  async getSyncRequestOutcomeMetrics(filters) {
     try {
       const pattern = Utils._getRedisKeyPattern(filters)
       return Utils._getMetricsMatchingPattern(pattern)
     } catch (e) {
-      logger.error(`SecondarySyncHealthTracker - getSyncRequestOutcomeMetrics() Error || ${e.message}`)
+      logger.error(
+        `SecondarySyncHealthTracker - getSyncRequestOutcomeMetrics() Error || ${e.message}`
+      )
       return {}
     }
   },
@@ -175,7 +197,7 @@ const Getters = {
    * Returns single int representing SyncRequestOutcome for secondary, wallet, syncType, date=today, and Outcome=Failure
    * Only one redis key should exist for above params, but takes 1st value if multiple are found
    */
-  async getSecondaryUserSyncFailureCountForToday (secondary, wallet, syncType) {
+  async getSecondaryUserSyncFailureCountForToday(secondary, wallet, syncType) {
     const resp = await Getters.getSyncRequestOutcomeMetrics({
       secondary,
       wallet,
@@ -202,9 +224,11 @@ const SecondarySyncHealthTracker = {
   recordFailure: Setters.recordFailure,
 
   // Getters
-  computeUserSecondarySyncSuccessRates: Getters.computeUserSecondarySyncSuccessRates,
+  computeUserSecondarySyncSuccessRates:
+    Getters.computeUserSecondarySyncSuccessRates,
   getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics,
-  getSecondaryUserSyncFailureCountForToday: Getters.getSecondaryUserSyncFailureCountForToday
+  getSecondaryUserSyncFailureCountForToday:
+    Getters.getSecondaryUserSyncFailureCountForToday
 }
 
 module.exports = SecondarySyncHealthTracker

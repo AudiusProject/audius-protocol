@@ -1,31 +1,28 @@
 from typing import Tuple
 
-from web3 import Web3
-from eth_utils.conversions import to_bytes
 from eth_keys import keys
+from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
+from solana.publickey import PublicKey
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
-from solana.publickey import PublicKey
-from src.models.models import (
-    Challenge,
-    ChallengeDisbursement,
-    User,
-    UserChallenge,
-)
+from src.models.models import Challenge, ChallengeDisbursement, User, UserChallenge
 from src.solana.constants import WAUDIO_DECIMALS
-from src.utils.redis_connection import get_redis
+from src.tasks.index_oracles import (
+    get_oracle_addresses_from_chain,
+    oracle_addresses_key,
+)
 from src.utils.config import shared_config
 from src.utils.get_all_other_nodes import get_all_other_nodes
-from src.tasks.index_oracles import (
-    oracle_addresses_key,
-    get_oracle_addresses_from_chain,
-)
+from src.utils.redis_connection import get_redis
+from web3 import Web3
 
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
     REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = PublicKey(REWARDS_MANAGER_ACCOUNT)
+
+
 class Attestation:
     """Represents DN attesting to a user completing a given challenge"""
 
@@ -79,6 +76,7 @@ ALREADY_DISBURSED = "ALREADY_DISBURSED"
 INVALID_ORACLE = "INVALID_ORACLE"
 MISSING_CHALLENGES = "MISSING_CHALLENGES"
 INVALID_INPUT = "INVALID_INPUT"
+USER_NOT_FOUND = "USER_NOT_FOUND"
 
 
 class AttestationError(Exception):
@@ -161,11 +159,12 @@ def get_attestation(
         .filter(
             User.is_current == True,
             User.user_id == user_id,
+            User.is_deactivated == False,
         )
         .one_or_none()
     )
     if not user_eth_address:
-        raise Exception("Unexpectedly missing eth_address")
+        raise AttestationError(USER_NOT_FOUND)
     user_address = str(user_eth_address[0])
 
     attestation = Attestation(

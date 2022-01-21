@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
+from src.models import AggregatePlays, Block, Play, Track
 from src.tasks.generate_trending import get_listen_counts
-from src.models import AggregatePlays, Track, Block, Play
+
 
 # Setup trending from simplified metadata
 def setup_trending(db, date):
@@ -90,8 +91,9 @@ def setup_trending(db, date):
 
 # Helper to sort results before validating
 def validate_results(actual, expected):
-    sorter = lambda x: x["track_id"]
-    assert sorted(actual, key=sorter) == sorted(expected, key=sorter)
+    assert sorted(actual, key=lambda x: x["track_id"]) == sorted(
+        expected, key=lambda x: x["track_id"]
+    )
 
 
 # Tests

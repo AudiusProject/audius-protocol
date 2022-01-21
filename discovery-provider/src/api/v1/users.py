@@ -1,62 +1,63 @@
 import logging
-from flask_restx import Resource, Namespace, fields, reqparse
-from src.queries.get_top_users import get_top_users
-from src.queries.get_related_artists import get_related_artists
-from src.utils.auth_middleware import auth_middleware
-from src.utils.helpers import encode_int_id
-from src.challenges.challenge_event_bus import setup_challenge_bus
-from src.api.v1.playlists import get_tracks_for_playlist
-from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
-from src.api.v1.models.common import favorite
-from src.api.v1.models.users import (
-    user_model,
-    user_model_full,
-    associated_wallets,
-    encoded_user_id,
-    user_replica_set,
-    challenge_response,
-)
 
-from src.queries.get_saves import get_saves
-from src.queries.get_users import get_users
-from src.queries.search_queries import SearchKind, search
-from src.queries.get_tracks import get_tracks
-from src.queries.get_save_tracks import get_save_tracks
-from src.queries.get_user_listening_history import (
-    get_user_listening_history,
-    GetUserListeningHistoryArgs,
-)
-from src.queries.get_followees_for_user import get_followees_for_user
-from src.queries.get_followers_for_user import get_followers_for_user
-from src.queries.get_top_user_track_tags import get_top_user_track_tags
-from src.queries.get_associated_user_wallet import get_associated_user_wallet
-from src.queries.get_associated_user_id import get_associated_user_id
-from src.queries.get_users_cnode import get_users_cnode, ReplicaType
-from src.utils.redis_cache import cache
-from src.utils.redis_metrics import record_metrics
-from src.queries.get_top_genre_users import get_top_genre_users
-from src.queries.get_challenges import get_challenges
-from src.utils.db_session import get_db_read_replica
+from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
+    abort_bad_request_param,
     abort_not_found,
     decode_with_abort,
     extend_activity,
+    extend_challenge_response,
     extend_favorite,
     extend_track,
     extend_user,
     format_limit,
     format_offset,
     get_current_user_id,
+    get_default_max,
     make_full_response,
     make_response,
     search_parser,
     success_response,
-    abort_bad_request_param,
-    get_default_max,
-    extend_challenge_response,
 )
-from .models.tracks import track, track_full
+from src.api.v1.models.common import favorite
+from src.api.v1.models.users import (
+    associated_wallets,
+    challenge_response,
+    encoded_user_id,
+    user_model,
+    user_model_full,
+    user_replica_set,
+)
+from src.api.v1.playlists import get_tracks_for_playlist
+from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.queries.get_associated_user_id import get_associated_user_id
+from src.queries.get_associated_user_wallet import get_associated_user_wallet
+from src.queries.get_challenges import get_challenges
+from src.queries.get_followees_for_user import get_followees_for_user
+from src.queries.get_followers_for_user import get_followers_for_user
+from src.queries.get_related_artists import get_related_artists
+from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
+from src.queries.get_save_tracks import get_save_tracks
+from src.queries.get_saves import get_saves
+from src.queries.get_top_genre_users import get_top_genre_users
+from src.queries.get_top_user_track_tags import get_top_user_track_tags
+from src.queries.get_top_users import get_top_users
+from src.queries.get_tracks import get_tracks
+from src.queries.get_user_listening_history import (
+    GetUserListeningHistoryArgs,
+    get_user_listening_history,
+)
+from src.queries.get_users import get_users
+from src.queries.get_users_cnode import ReplicaType, get_users_cnode
+from src.queries.search_queries import SearchKind, search
+from src.utils.auth_middleware import auth_middleware
+from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import encode_int_id
+from src.utils.redis_cache import cache
+from src.utils.redis_metrics import record_metrics
+
 from .models.activities import activity_model, activity_model_full
+from .models.tracks import track, track_full
 
 logger = logging.getLogger(__name__)
 

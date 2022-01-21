@@ -1,9 +1,10 @@
 import logging
-from src.trending_strategies.trending_type_and_version import TrendingType
-from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
-from src.utils.redis_cache import extract_key, use_redis_cache
+
 from src.queries.get_trending import get_trending
 from src.queries.get_trending_tracks import TRENDING_TTL_SEC
+from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
+from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils.redis_cache import extract_key, use_redis_cache
 
 logger = logging.getLogger(__name__)
 
