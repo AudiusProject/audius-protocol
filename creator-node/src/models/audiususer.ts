@@ -1,5 +1,5 @@
 'use strict'
-module.exports = (sequelize, DataTypes) => {
+module.exports = (sequelize: any, DataTypes: any) => {
   const AudiusUser = sequelize.define(
     'AudiusUser',
     {
@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       ]
     }
   )
-  AudiusUser.associate = function (models) {
+  AudiusUser.associate = function (models: any) {
     AudiusUser.belongsTo(models.CNodeUser, {
       foreignKey: 'cnodeUserUUID',
       sourceKey: 'cnodeUserUUID',

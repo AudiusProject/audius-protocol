@@ -20,6 +20,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@audius/libs": "1.2.37",
+    "@types/sequelize": "^4.28.11",
     "JSONStream": "^1.3.5",
     "axios": "^0.19.2",
     "base64-url": "^2.3.3",
