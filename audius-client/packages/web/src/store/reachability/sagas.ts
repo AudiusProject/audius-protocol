@@ -1,5 +1,4 @@
-import { delay } from 'redux-saga'
-import { takeEvery, call, put, race, select } from 'redux-saga/effects'
+import { takeEvery, call, put, race, select, delay } from 'redux-saga/effects'
 
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import { isMobile } from 'utils/clientUtil'

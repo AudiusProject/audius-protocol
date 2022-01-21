@@ -1,7 +1,8 @@
 import moment from 'moment'
-import { delay, eventChannel } from 'redux-saga'
+import { eventChannel } from 'redux-saga'
 import {
   call,
+  delay,
   fork,
   all,
   take,

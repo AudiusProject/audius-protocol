@@ -130,12 +130,12 @@ function* fetchBalanceAsync() {
   const [currentEthAudioWeiBalance, currentSolAudioWeiBalance]: [
     BNWei,
     BNWei
-  ] = yield [
+  ] = yield all([
     call(() =>
       walletClient.getCurrentBalance(/* bustCache */ localBalanceChange)
     ),
     call(() => walletClient.getCurrentWAudioBalance())
-  ]
+  ])
 
   const associatedWalletBalance: BNWei = yield call(() =>
     walletClient.getAssociatedWalletBalance(

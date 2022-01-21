@@ -212,7 +212,7 @@ describe('watchNext', () => {
       initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
     )
     effects.put
-      .map(x => x.PUT.action)
+      .map(x => x.payload.action)
       .forEach(action => expect(action.type).not.toEqual('queue/add'))
   })
 
@@ -236,7 +236,7 @@ describe('watchNext', () => {
     )
     expect(repeatAllStoreState.queue.index).toEqual(initialQueue.index + 1)
     repeatAllEffects.put
-      .map(x => x.PUT.action)
+      .map(x => x.payload.action)
       .forEach(action => expect(action.type).not.toEqual('queue/add'))
 
     initialQueue = makeInitialQueue({ index: 0, repeat: RepeatMode.SINGLE })
@@ -260,7 +260,7 @@ describe('watchNext', () => {
       initialQueue.index
     )
     repeatSingleAndSkipEffects.put
-      .map(x => x.PUT.action)
+      .map(x => x.payload.action)
       .forEach(action => expect(action.type).not.toEqual('queue/add'))
   })
 

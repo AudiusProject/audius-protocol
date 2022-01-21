@@ -1,7 +1,16 @@
-import { delay, eventChannel, END } from 'redux-saga'
-import { select, take, call, put, spawn, takeLatest } from 'redux-saga/effects'
+import { eventChannel, END } from 'redux-saga'
+import {
+  select,
+  take,
+  call,
+  put,
+  spawn,
+  takeLatest,
+  delay
+} from 'redux-saga/effects'
 
 import Kind from 'common/models/Kind'
+import { Track } from 'common/models/Track'
 import { StringKeys } from 'common/services/remote-config'
 import * as cacheActions from 'common/store/cache/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
@@ -34,6 +43,7 @@ import { encodeHashId } from 'utils/route/hashIds'
 import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
+import { AudioState } from './types'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -73,12 +83,14 @@ export function* watchPlay() {
       )
     }
 
-    const audio = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
 
     if (trackId) {
       // Load and set end action.
-      const track = yield select(getTrack, { id: trackId })
-      const owner = yield select(getUser, { id: track.owner_id })
+      const track: Track = yield select(getTrack, { id: trackId })
+      const owner: ReturnType<typeof getUser> = yield select(getUser, {
+        id: track.owner_id
+      })
       const gateways = owner
         ? getCreatorNodeIPFSGateways(owner.creator_node_endpoint)
         : []
@@ -97,6 +109,7 @@ export function* watchPlay() {
               emitter(onEnd({}))
             }
           },
+          // @ts-ignore a few issues with typing here...
           [track._first_segment],
           gateways,
           {
@@ -125,7 +138,7 @@ export function* watchPause() {
   yield takeLatest(pause.type, function* (action: ReturnType<typeof pause>) {
     const { onlySetState } = action.payload
 
-    const audio = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
     if (onlySetState) return
     audio.pause()
   })
@@ -135,7 +148,7 @@ export function* watchReset() {
   yield takeLatest(reset.type, function* (action: ReturnType<typeof reset>) {
     const { shouldAutoplay } = action.payload
 
-    const audio = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
     audio.seek(0)
     if (!shouldAutoplay) {
       audio.pause()
@@ -162,7 +175,7 @@ export function* watchStop() {
         { uid: PLAYER_SUBSCRIBER_NAME, id }
       ])
     )
-    const audio = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
     audio.stop()
   })
 }
@@ -171,7 +184,7 @@ export function* watchSeek() {
   yield takeLatest(seek.type, function* (action: ReturnType<typeof seek>) {
     const { seconds } = action.payload
 
-    const audio = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
     audio.seek(seconds)
   })
 }

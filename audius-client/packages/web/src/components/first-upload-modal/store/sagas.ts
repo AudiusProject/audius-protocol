@@ -1,5 +1,4 @@
-import { delay } from 'redux-saga'
-import { takeEvery, put } from 'redux-saga/effects'
+import { delay, takeEvery, put } from 'redux-saga/effects'
 
 import { openWithDelay, setVisibility } from './slice'
 
