@@ -128,15 +128,21 @@ export function getWei(amount: BigNumber) {
   return amount.mul(Utils.toBN('1000000000000000000'))
 }
 
-export async function getNodeVersion(endpoint: string): Promise<string> {
+type NodeMetadata = {
+  version: string
+  country: string
+}
+
+export async function getNodeMetadata(endpoint: string): Promise<NodeMetadata> {
   try {
-    const version = await fetchWithTimeout(`${endpoint}/health_check`).then(
-      r => r.data.version
+    const { data } = await fetchWithTimeout(
+      `${endpoint}/health_check?verbose=true`
     )
-    return version
+    const { version, country } = data
+    return { version, country }
   } catch (e) {
     console.error(e)
     // Return no version if we couldn't find one, so we don't hold everything up
-    return ''
+    return { version: '', country: '' }
   }
 }

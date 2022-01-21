@@ -31,3 +31,7 @@
 .error > * {
   padding: 0;
 }
+
+.countryFlag {
+  margin: var(--unit-2);
+}

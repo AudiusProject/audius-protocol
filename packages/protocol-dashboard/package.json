@@ -20,6 +20,7 @@
     "numeral": "2.0.6",
     "react": "16.13.1",
     "react-chartjs-2": "2.10.0",
+    "react-country-flag": "3.0.2",
     "react-custom-scrollbars": "4.2.1",
     "react-dom": "16.13.1",
     "react-helmet": "6.1.0",
