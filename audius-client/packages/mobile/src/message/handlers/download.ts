@@ -1,6 +1,10 @@
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { Platform, Share } from 'react-native'
-import RNFetchBlob, { FetchBlobResponse, StatefulPromise } from 'rn-fetch-blob'
+import RNFetchBlob, {
+  FetchBlobResponse,
+  RNFetchBlobConfig,
+  StatefulPromise
+} from 'rn-fetch-blob'
 
 import { dispatch } from 'app/App'
 import { MessageType, MessageHandlers } from 'app/message/types'
@@ -19,6 +23,52 @@ const cancelDownloadTask = () => {
   }
 }
 
+/**
+ * Download a file via RNFetchBlob
+ */
+const download = async ({
+  fileUrl,
+  fileName,
+  directory,
+  getFetchConfig,
+  onFetchComplete
+}: {
+  fileUrl: string
+  fileName: string
+  directory: string
+  getFetchConfig: (filePath: string) => RNFetchBlobConfig
+  onFetchComplete?: (response: FetchBlobResponse) => Promise<void>
+}) => {
+  const filePath = directory + '/' + fileName
+
+  try {
+    fetchTask = RNFetchBlob.config(getFetchConfig(filePath)).fetch(
+      'GET',
+      fileUrl
+    )
+
+    // Do this while download is occuring
+    // TODO: The RNFetchBlob library is currently broken for download progress events on Android.
+    fetchTask.progress({ interval: 250 }, (received, total) => {
+      dispatch(setDownloadedPercentage((received / total) * 100))
+    })
+
+    const fetchRes = await fetchTask
+
+    // Do this after download is done
+    dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: false }))
+
+    await onFetchComplete?.(fetchRes)
+  } catch (err) {
+    console.error(err)
+
+    // On failure attempt to delete the file
+    try {
+      await RNFetchBlob.fs.unlink(filePath)
+    } catch {}
+  }
+}
+
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.DOWNLOAD_TRACK]: async ({ message }) => {
     const fileUrl = message.urls.find(url => url !== null && url !== undefined)
@@ -30,63 +80,41 @@ export const messageHandlers: Partial<MessageHandlers> = {
     dispatch(setFetchCancel(cancelDownloadTask))
 
     if (Platform.OS === 'ios') {
-      const filePath = RNFetchBlob.fs.dirs.DocumentDir + '/' + fileName
-      // On iOS fetch & cache the track, let user choose where to download it
-      // with the share sheet, then delete the cached copy of the track
-      try {
-        fetchTask = RNFetchBlob.config({
+      download({
+        fileUrl,
+        fileName,
+        directory: RNFetchBlob.fs.dirs.DocumentDir,
+        getFetchConfig: filePath => ({
+          // On iOS fetch & cache the track, let user choose where to download it
+          // with the share sheet, then delete the cached copy of the track.
           fileCache: true,
           path: filePath
-        }).fetch('GET', fileUrl)
-
-        // Do this while download is occuring
-        fetchTask.progress({ interval: 250 }, (received, total) => {
-          dispatch(setDownloadedPercentage((received / total) * 100))
-        })
-
-        // Do this after download is done
-        const fetchRes = await fetchTask
-        dispatch(
-          setVisibility({ drawer: 'DownloadTrackProgress', visible: false })
-        )
-        await Share.share({
-          url: fetchRes.path()
-        })
-        fetchRes.flush()
-      } catch (err) {
-        console.error(err)
-        await RNFetchBlob.fs.unlink(filePath) // On failure delete the file
-      }
+        }),
+        onFetchComplete: async fetchRes => {
+          await Share.share({
+            url: fetchRes.path()
+          })
+          fetchRes.flush()
+        }
+      })
     } else {
-      // On android save to FS and trigger notification that it is saved
-      const filePath = RNFetchBlob.fs.dirs.DownloadDir + '/' + fileName
-      try {
-        const fetchTask = RNFetchBlob.config({
+      download({
+        fileUrl,
+        fileName,
+        directory: RNFetchBlob.fs.dirs.DownloadDir,
+        getFetchConfig: filePath => ({
+          // On android save to FS and trigger notification that it is saved
           addAndroidDownloads: {
-            useDownloadManager: true,
-            notification: true,
-            mediaScannable: true,
-            title: trackName + 'download successful!',
             description: trackName,
+            mediaScannable: true,
+            mime: 'audio/mpeg',
+            notification: true,
             path: filePath,
-            mime: 'audio/mpeg'
+            title: trackName,
+            useDownloadManager: true
           }
-        }).fetch('GET', fileUrl)
-
-        // Do this while download is occuring
-        // TODO: The RNFetchBlob library is currently broken for download progress events on Android.
-        fetchTask.progress({ interval: 250 }, (received, total) => {
-          dispatch(setDownloadedPercentage((received / total) * 100))
         })
-
-        await fetchTask
-        dispatch(
-          setVisibility({ drawer: 'DownloadTrackProgress', visible: false })
-        )
-      } catch (err) {
-        console.error(err)
-        await RNFetchBlob.fs.unlink(filePath) // On failure delete the file
-      }
+      })
     }
   }
 }
