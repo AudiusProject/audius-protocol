@@ -19,7 +19,7 @@ const CLOCK_PROGRAM = new solanaWeb3.PublicKey(
 )
 
 class TrackData {
-  constructor ({ userId, trackId, source, timestamp }) {
+  constructor({ userId, trackId, source, timestamp }) {
     this.userId = userId
     this.trackId = trackId
     this.source = source
@@ -28,7 +28,7 @@ class TrackData {
 }
 
 class InstructionArgs {
-  constructor ({ trackData, signature, recoveryId }) {
+  constructor({ trackData, signature, recoveryId }) {
     this.trackData = trackData
     this.signature = signature
     this.recoveryId = recoveryId
@@ -36,7 +36,7 @@ class InstructionArgs {
 }
 
 class InstructionEnum {
-  constructor ({ instruction, choose }) {
+  constructor({ instruction, choose }) {
     this.instruction = instruction
     this.choose = choose
   }
@@ -91,20 +91,20 @@ const instructionSchema = new Map([
   ]
 ])
 
-const SOLANA_CONFIRMATION_TIMEOUT_MS = 180 * 1000
+const SOLANA_CONFIRMATION_TIMEOUT_MS = 60 * 1000
 const solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'), {
   confirmTransactionInitialTimeout: SOLANA_CONFIRMATION_TIMEOUT_MS
 })
 let feePayer
 
-function getFeePayer () {
+function getFeePayer() {
   if (!feePayer) {
     feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
   }
   return feePayer
 }
 
-async function createAndVerifyMessage (
+async function createAndVerifyMessage(
   validSigner,
   privateKey,
   userId,
