@@ -67,7 +67,7 @@ export const getFilteredNodes = ({
 // -------------------------------- Helpers  --------------------------------
 
 const processNode = async (node: Node, aud: Audius): Promise<ContentNode> => {
-  const version = await Audius.getNodeVersion(node.endpoint)
+  const { country, version } = await Audius.getNodeMetadata(node.endpoint)
   const isDeregistered = node.endpoint === ''
   let previousInfo = {}
   if (isDeregistered) {
@@ -76,11 +76,13 @@ const processNode = async (node: Node, aud: Audius): Promise<ContentNode> => {
       node.spID
     )
   }
+
   return {
     ...node,
     ...previousInfo,
     type: ServiceType.ContentNode,
     version,
+    country,
     isDeregistered
   }
 }

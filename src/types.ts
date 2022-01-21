@@ -29,6 +29,7 @@ export type Node = {
   type: ServiceType
   blockNumber: BlockNumber
   delegateOwnerWallet: Wallet
+  country: string
 }
 
 export type DiscoveryProvider = {
