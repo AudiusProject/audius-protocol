@@ -35,7 +35,7 @@ def upgrade():
         ),
         new_track AS (
             SELECT
-                t.track_id
+                t.track_id AS track_id
             FROM
                 tracks t
             WHERE
@@ -111,10 +111,22 @@ def upgrade():
             aggregate_track (track_id, repost_count, save_count)
         SELECT
             DISTINCT(t.track_id),
-            COALESCE (track_repost.repost_count, 0) AS repost_count,
-            COALESCE (track_save.save_count, 0) AS save_count
+            COALESCE(track_repost.repost_count, 0) AS repost_count,
+            COALESCE(track_save.save_count, 0) AS save_count
         FROM
-            tracks t
+            t AS (
+                SELECT
+                    t.track_id
+                FROM
+                    tracks t
+                WHERE
+                    t.is_current IS TRUE
+                    AND t.is_delete IS FALSE
+                    AND t.is_unlisted IS FALSE
+                    AND t.stem_of IS NULL
+                GROUP BY
+                    t.track_id
+            )
             LEFT OUTER JOIN (
                 SELECT
                     r.repost_item_id AS track_id,
