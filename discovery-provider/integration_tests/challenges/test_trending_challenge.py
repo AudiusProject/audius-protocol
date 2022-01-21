@@ -64,7 +64,7 @@ def test_trending_challenge_should_update(app):
                 rank=1,
                 id="1",
                 type="tracks",
-                version="ePWJD",
+                version="ML51L",
                 week="2021-08-20",
             )
         )

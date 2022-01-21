@@ -174,9 +174,10 @@ class RewardsAttester {
     const override = await this.getStartingBlockOverride()
     // Careful with 0...
     if (override === null || override === undefined) return
-    this.logger.info(`Setting starting block override: ${override}`)
+    this.logger.info(`Setting starting block override: ${override}, emptying recent disbursed queue`)
     this.startingBlock = override
     this.offset = 0
+    this.recentlyDisbursedQueue = []
   }
 
   /**
