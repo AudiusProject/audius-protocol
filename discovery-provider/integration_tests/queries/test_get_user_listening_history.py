@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+
+from integration_tests.utils import populate_mock_db
+from src.queries import response_name_constants
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     _get_user_listening_history,
@@ -7,8 +10,6 @@ from src.tasks.user_listening_history.index_user_listening_history import (
     _index_user_listening_history,
 )
 from src.utils.db_session import get_db
-from src.queries import response_name_constants
-from integration_tests.utils import populate_mock_db
 
 TIMESTAMP = datetime(2011, 1, 1)
 
