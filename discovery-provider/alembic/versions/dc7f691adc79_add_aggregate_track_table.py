@@ -1,0 +1,255 @@
+"""add aggregate track table
+
+Revision ID: dc7f691adc79
+Revises: 7104383ac0fe
+Create Date: 2022-01-20 18:21:40.504845
+
+"""
+from alembic import op
+import sqlalchemy as sa
+
+
+# revision identifiers, used by Alembic.
+revision = "dc7f691adc79"
+down_revision = "7104383ac0fe"
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    connection = op.get_bind()
+    connection.execute(
+        """
+      begin;
+        CREATE TABLE aggregate_track (
+            track_id     integer NOT NULL UNIQUE PRIMARY KEY,
+            repost_count integer NOT NULL,
+            save_count   integer NOT NULL
+        );
+        CREATE INDEX aggregate_track_idx ON aggregate_track (track_id);
+
+        WITH aggregate_track_checkpoints AS (
+            SELECT
+                :prev_blocknumber AS prev_blocknumber,
+                :current_blocknumber AS current_blocknumber
+        ),
+        new_track AS (
+            SELECT
+                t.track_id
+            FROM
+                tracks t
+            WHERE
+                t.is_current IS TRUE
+                -- AND t.is_delete IS FALSE
+                -- AND t.is_unlisted IS FALSE
+                -- AND t.stem_of IS NULL
+                AND r.blocknumber > (
+                    SELECT
+                        prev_blocknumber
+                    FROM
+                        aggregate_track_checkpoints
+                )
+                AND r.blocknumber <= (
+                    SELECT
+                        current_blocknumber
+                    FROM
+                        aggregate_track_checkpoints
+                )
+            GROUP BY
+                t.track_id
+            UNION
+            ALL (
+                SELECT
+                    r.repost_item_id AS track_id,
+                FROM
+                    reposts r
+                WHERE
+                    r.is_current IS TRUE
+                    AND r.repost_type = 'track'
+                    -- AND r.is_delete IS FALSE
+                    AND r.blocknumber > (
+                        SELECT
+                            prev_blocknumber
+                        FROM
+                            aggregate_track_checkpoints
+                    )
+                    AND r.blocknumber <= (
+                        SELECT
+                            current_blocknumber
+                        FROM
+                            aggregate_track_checkpoints
+                    )
+                GROUP BY
+                    r.repost_item_id
+            )
+            UNION
+            ALL (
+                SELECT
+                    s.save_item_id AS track_id,
+                FROM
+                    saves s
+                WHERE
+                    s.is_current IS TRUE
+                    AND s.repost_type = 'track'
+                    AND s.blocknumber > (
+                        SELECT
+                            prev_blocknumber
+                        FROM
+                            aggregate_track_checkpoints
+                    )
+                    AND s.blocknumber <= (
+                        SELECT
+                            current_blocknumber
+                        FROM
+                            aggregate_track_checkpoints
+                    )
+                GROUP BY
+                    s.save_item_id
+            )
+        )
+        INSERT INTO
+            aggregate_track (track_id, repost_count, save_count)
+        SELECT
+            DISTINCT(t.track_id),
+            COALESCE (track_repost.repost_count, 0) AS repost_count,
+            COALESCE (track_save.save_count, 0) AS save_count
+        FROM
+            tracks t
+            LEFT OUTER JOIN (
+                SELECT
+                    r.repost_item_id AS track_id,
+                    count(r.repost_item_id) AS repost_count
+                FROM
+                    reposts r
+                WHERE
+                    r.is_current IS TRUE
+                    AND r.repost_type = 'track'
+                    AND r.is_delete IS FALSE
+                    AND r.repost_item_id IN (
+                        SELECT
+                            track_id
+                        FROM
+                            new_track
+                    )
+                    AND r.blocknumber > (
+                        SELECT
+                            prev_blocknumber
+                        FROM
+                            aggregate_track_checkpoints
+                    )
+                    AND r.blocknumber <= (
+                        SELECT
+                            current_blocknumber
+                        FROM
+                            aggregate_track_checkpoints
+                    )
+                GROUP BY
+                    r.repost_item_id
+            ) AS track_repost ON track_repost.track_id = t.track_id
+            LEFT OUTER JOIN (
+                SELECT
+                    s.save_item_id AS track_id,
+                    count(s.save_item_id) AS save_count
+                FROM
+                    saves s
+                WHERE
+                    s.is_current IS TRUE
+                    AND s.repost_type = 'track'
+                    AND s.is_delete IS FALSE
+                    AND s.save_item_id IN (
+                        SELECT
+                            track_id
+                        FROM
+                            new_track
+                    )
+                    AND s.blocknumber > (
+                        SELECT
+                            prev_blocknumber
+                        FROM
+                            aggregate_track_checkpoints
+                    )
+                    AND s.blocknumber <= (
+                        SELECT
+                            current_blocknumber
+                        FROM
+                            aggregate_track_checkpoints
+                    )
+                GROUP BY
+                    s.save_item_id
+            ) AS track_save ON track_save.user_id = t.track_id
+        WHERE
+            t.track_id in (
+                SELECT
+                    track_id
+                FROM
+                    new_track
+            ) ON CONFLICT (track_id) DO
+        UPDATE
+        SET
+            repost_count = aggregate_track.repost_count + EXCLUDED.repost_count
+            save_count = aggregate_track.save_count + EXCLUDED.save_count
+      commit;
+    """
+    )
+
+    connection.execute(
+        """
+      begin;
+        DROP INDEX IF EXISTS aggregate_track_idx;
+        DROP MATERIALIZED VIEW aggregate_track;
+      commit;
+    """
+    )
+
+
+def downgrade():
+    connection = op.get_bind()
+    connection.execute(
+        """
+      begin;
+        DROP TABLE IF EXISTS aggregate_track;
+
+        DROP MATERIALIZED VIEW IF EXISTS aggregate_track;
+        DROP INDEX IF EXISTS aggregate_track_idx;
+
+        CREATE MATERIALIZED VIEW aggregate_track as
+        SELECT
+          t.track_id,
+          COALESCE (track_repost.repost_count, 0) as repost_count,
+          COALESCE (track_save.save_count, 0) as save_count
+        FROM 
+          tracks t
+        -- inner join on subquery for reposts
+        LEFT OUTER JOIN (
+          SELECT
+            r.repost_item_id as track_id,
+            count(r.repost_item_id) as repost_count
+          FROM
+            reposts r
+          WHERE
+            r.is_current is True AND
+            r.repost_type = 'track' AND
+            r.is_delete is False
+          GROUP BY r.repost_item_id
+        ) track_repost ON track_repost.track_id = t.track_id
+        -- inner join on subquery for track saves
+        LEFT OUTER JOIN (
+          SELECT
+            s.save_item_id as track_id,
+            count(s.save_item_id) as save_count
+          FROM
+            saves s
+          WHERE
+            s.is_current is True AND
+            s.save_type = 'track' AND
+            s.is_delete is False
+          GROUP BY s.save_item_id
+        ) track_save ON track_save.track_id = t.track_id
+        WHERE
+          t.is_current is True AND
+          t.is_delete is False;
+
+        CREATE UNIQUE INDEX aggregate_track_idx ON aggregate_track (track_id);
+      commit;
+    """
+    )

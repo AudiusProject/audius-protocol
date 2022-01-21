@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from integration_tests.utils import populate_mock_db
 from src.models import AggregateIntervalPlay, TrackTrendingScore, TrendingParam
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
+from src.tasks.index_aggregate_track import _update_aggregate_track
 from src.trending_strategies.ML51L_trending_tracks_strategy import (
     TrendingTracksStrategyML51L,
 )
@@ -299,7 +300,7 @@ def test_update_trending_params(app):
     setup_trending(db)
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        _update_aggregate_track(session)
         _update_aggregate_plays(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
@@ -346,7 +347,7 @@ def test_update_track_score_query(app):
     udpated_strategy = TrendingTracksStrategyML51L()
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        _update_aggregate_track(session)
         _update_aggregate_plays(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")

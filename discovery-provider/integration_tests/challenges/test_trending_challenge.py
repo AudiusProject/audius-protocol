@@ -15,6 +15,7 @@ from src.models import TrendingResult
 from src.models.models import Challenge, UserChallenge
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
+from src.tasks.index_aggregate_track import _update_aggregate_track
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
@@ -272,7 +273,7 @@ def test_trending_challenge_job(app):
 
     with db.scoped_session() as session:
         _update_aggregate_plays(session)
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        _update_aggregate_track(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
