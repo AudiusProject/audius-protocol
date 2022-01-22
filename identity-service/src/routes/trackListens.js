@@ -10,7 +10,7 @@ const solClient = require('../solana-client.js')
 const config = require('../config.js')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
-async function getListenHour () {
+async function getListenHour() {
   let listenDate = new Date()
   listenDate.setMinutes(0)
   listenDate.setSeconds(0)
@@ -237,9 +237,9 @@ module.exports = function (app) {
         })
       }, {
         // Retry function 5x by default
-        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
         minTimeout: 500,
-        maxTimeout: 4000,
+        maxTimeout: 8000,
         factor: 3,
         retries: 3,
         onRetry: (err, i) => {
