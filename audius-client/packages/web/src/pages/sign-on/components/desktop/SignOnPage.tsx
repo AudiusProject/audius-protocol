@@ -25,7 +25,7 @@ import { EmailPage } from 'pages/sign-on/components/desktop/EmailPage'
 import FollowPage from 'pages/sign-on/components/desktop/FollowPage'
 import PasswordPage from 'pages/sign-on/components/desktop/PasswordPage'
 import ProfilePage from 'pages/sign-on/components/desktop/ProfilePage'
-import SignInPage from 'pages/sign-on/components/desktop/SignInPage'
+import { SignInPage } from 'pages/sign-on/components/desktop/SignInPage'
 import StartPlatformPage from 'pages/sign-on/components/desktop/StartPlatformPage'
 import { getStatus } from 'pages/sign-on/store/selectors'
 import { Pages, FollowArtistsCategory } from 'pages/sign-on/store/types'
@@ -220,6 +220,7 @@ const SignOnProvider = ({
           onSignUp={onViewSignUp}
           onPasswordChange={onPasswordChange}
           onEmailChange={onEmailChange}
+          isMobile={false}
         />
       </animated.div>
     ),

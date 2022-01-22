@@ -12,12 +12,14 @@ import StatusMessage from 'components/status-message/StatusMessage'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
 
 import styles from './EmailPage.module.css'
+import { ForgotPasswordHelper } from './ForgotPasswordHelper'
 import { MetaMaskOption } from './MetaMaskOption'
 
 const messages = {
   title: 'Sign Up For Audius',
   header1: 'Stream the music you love.',
-  header2: 'Support the artists you care about.'
+  header2: 'Support the artists you care about.',
+  forgotPasswordText: 'Forgot your password?'
 }
 
 export const statusState = Object.freeze({
@@ -56,6 +58,7 @@ export const EmailPage = ({
 }: EmailPageProps) => {
   const [showValidation, setShowValidation] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const onBlur = () => {
     setShowValidation(true)
@@ -194,6 +197,20 @@ export const EmailPage = ({
             onClick={onSignIn}
           />
         </div>
+        <div className={styles.forgotPasswordTextContainer}>
+          <span
+            onClick={() => {
+              setShowForgotPassword(true)
+            }}
+            className={styles.forgotPasswordText}
+          >
+            {messages.forgotPasswordText}
+          </span>
+        </div>
+        <ForgotPasswordHelper
+          isOpen={showForgotPassword}
+          onClose={() => setShowForgotPassword(false)}
+        />
       </div>
     </div>
   )

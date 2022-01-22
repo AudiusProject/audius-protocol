@@ -4,8 +4,8 @@
   font-size: var(--font-s);
   font-weight: var(--font-bold);
   text-align: center;
-  margin-top: 24px;
-  margin-bottom: 10px;
+  margin-top: 12px;
+  margin-bottom: 12px;
   height: 52px !important;
   padding-left: 16px !important;
   padding-right: 16px !important;
@@ -35,7 +35,7 @@
 
 /* Not recommended */
 .subText {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   color: var(--neutral);
   font-size: var(--font-s);
   font-weight: var(--font-medium);
