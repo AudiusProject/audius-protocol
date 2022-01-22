@@ -45,11 +45,16 @@ basic_entities = {
     ],
     "saves": [
         {"save_item_id": 1, "save_type": "track", "user_id": 2},
+        {"save_item_id": 3, "save_type": "track", "user_id": 8},
+        {"save_item_id": 4, "save_type": "track", "user_id": 2},
+        {"save_item_id": 4, "save_type": "track", "user_id": 4},
+        {"save_item_id": 4, "save_type": "track", "user_id": 6},
+        {"save_item_id": 4, "save_type": "track", "user_id": 8},
     ],
 }
 
 
-def basic_tests(session, last_checkpoint=7):
+def basic_tests(session, last_checkpoint=8):
     """Helper for testing the basic_entities as is"""
 
     # read from aggregate_track table
@@ -70,7 +75,7 @@ def basic_tests(session, last_checkpoint=7):
 
     assert results[2].track_id == 4
     assert results[2].repost_count == 0
-    assert results[2].save_count == 0
+    assert results[2].save_count == 4
 
     assert results[3].track_id == 5
     assert results[3].repost_count == 0
