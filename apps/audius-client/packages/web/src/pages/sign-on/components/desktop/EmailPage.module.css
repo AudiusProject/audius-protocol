@@ -100,12 +100,16 @@
 .buttonsContainer {
   display: flex;
   flex-direction: column;
-  flex: 1;
 }
 
 /* Sign In Button */
+.metaMask .signInButton {
+  margin-bottom: 0px;
+}
+
 .signInButton {
   width: 100%;
+  margin-bottom: 12px;
 }
 
 .signInButton .signInButtonText {
@@ -113,16 +117,15 @@
   font-weight: var(--font-bold);
 }
 
+.metaMask .hasAccount {
+  margin-bottom: 12px;
+}
+
 .hasAccount {
   flex: 1;
   display: flex;
   align-items: flex-end;
   margin-bottom: 24px;
-}
-
-.metaMask .hasAccountErrMetaMask {
-  margin-top: 8px;
-  margin-bottom: 8px;
 }
 
 .hasAccount.hasAccountErr {
@@ -270,4 +273,22 @@
 
 .spinner g path {
   stroke: var(--white) !important;
+}
+
+.forgotPasswordTextContainer {
+  font-size: var(--font-s);
+  font-weight: var(--font-regular);
+  line-height: 22px;
+  margin-bottom: 24px;
+}
+
+.forgotPasswordText {
+  color: var(--secondary);
+  cursor: pointer;
+}
+
+.forgotPasswordText:hover {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-light-2);
 }
