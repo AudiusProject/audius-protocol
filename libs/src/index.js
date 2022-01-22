@@ -241,6 +241,7 @@ class AudiusLibs {
    * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
    * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
    * @param {Uint8Array} [feePayerSecretKey] optional fee payer secret key, if not using relay
+   * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
