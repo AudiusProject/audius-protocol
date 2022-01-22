@@ -5,7 +5,7 @@ from src.tasks.index_aggregate_user import get_latest_blocknumber
 
 logger = logging.getLogger(__name__)
 
-AGGREGATE_TRACK_TABLE_NAME = "aggregate_track"
+AGGREGATE_TRACK = "aggregate_track"
 
 # UPDATE_AGGREGATE_TRACK_QUERY
 # Get a lower/higher bound blocknumber to check for new save/repost activity
@@ -28,13 +28,13 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             -- AND t.is_delete IS FALSE
             -- AND t.is_unlisted IS FALSE
             -- AND t.stem_of IS NULL
-            AND r.blocknumber > (
+            AND t.blocknumber > (
                 SELECT
                     prev_blocknumber
                 FROM
                     aggregate_track_checkpoints
             )
-            AND r.blocknumber <= (
+            AND t.blocknumber <= (
                 SELECT
                     current_blocknumber
                 FROM
@@ -45,7 +45,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         UNION
         ALL (
             SELECT
-                r.repost_item_id AS track_id,
+                r.repost_item_id AS track_id
             FROM
                 reposts r
             WHERE
@@ -70,12 +70,12 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         UNION
         ALL (
             SELECT
-                s.save_item_id AS track_id,
+                s.save_item_id AS track_id
             FROM
                 saves s
             WHERE
                 s.is_current IS TRUE
-                AND s.repost_type = 'track'
+                AND s.save_type = 'track'
                 AND s.blocknumber > (
                     SELECT
                         prev_blocknumber
@@ -99,7 +99,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         COALESCE(track_repost.repost_count, 0) AS repost_count,
         COALESCE(track_save.save_count, 0) AS save_count
     FROM
-        t AS (
+        (
             SELECT
                 t.track_id
             FROM
@@ -107,11 +107,10 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             WHERE
                 t.is_current IS TRUE
                 AND t.is_delete IS FALSE
-                AND t.is_unlisted IS FALSE
                 AND t.stem_of IS NULL
             GROUP BY
                 t.track_id
-        )
+        ) AS t
         LEFT OUTER JOIN (
             SELECT
                 r.repost_item_id AS track_id,
@@ -151,7 +150,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 saves s
             WHERE
                 s.is_current IS TRUE
-                AND s.repost_type = 'track'
+                AND s.save_type = 'track'
                 AND s.is_delete IS FALSE
                 AND s.save_item_id IN (
                     SELECT
@@ -173,7 +172,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 )
             GROUP BY
                 s.save_item_id
-        ) AS track_save ON track_save.user_id = t.track_id
+        ) AS track_save ON track_save.track_id = t.track_id
     WHERE
         t.track_id in (
             SELECT
@@ -183,7 +182,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         ) ON CONFLICT (track_id) DO
     UPDATE
     SET
-        repost_count = aggregate_track.repost_count + EXCLUDED.repost_count
+        repost_count = aggregate_track.repost_count + EXCLUDED.repost_count,
         save_count = aggregate_track.save_count + EXCLUDED.save_count
     """
 
@@ -194,7 +193,7 @@ def _update_aggregate_track(session):
     aggregate_worker(
         logger,
         session,
-        AGGREGATE_TRACK_TABLE_NAME,
+        AGGREGATE_TRACK,
         UPDATE_AGGREGATE_TRACK_QUERY,
         "blocknumber",
         current_blocknumber,
@@ -211,5 +210,5 @@ def update_aggregate_track(self):
     redis = update_aggregate_track.redis
 
     celery_worker(
-        logger, db, redis, AGGREGATE_TRACK_TABLE_NAME, _update_aggregate_track
+        logger, db, redis, AGGREGATE_TRACK, _update_aggregate_track
     )
