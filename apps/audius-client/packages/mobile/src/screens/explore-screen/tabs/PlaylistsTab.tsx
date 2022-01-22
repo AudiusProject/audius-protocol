@@ -2,7 +2,7 @@ import React from 'react'
 
 import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
@@ -23,7 +23,22 @@ const createStyles = (themeColors: ThemeColors) =>
       display: 'flex'
     },
     contentContainer: {
-      display: 'flex'
+      display: 'flex',
+      // TODO: Fix this
+      marginBottom: 240
+    },
+    cardContainer: {
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-evenly',
+      padding: 12,
+      paddingTop: 24
+    },
+    card: {
+      flex: 1,
+      flexBasis: '40%',
+      marginBottom: 8
     }
   })
 
@@ -31,9 +46,11 @@ export const PlaylistsTab = ({ navigation }: Props) => {
   const styles = useThemedStyles(createStyles)
 
   return (
-    <View style={styles.tabContainer}>
+    <ScrollView style={styles.tabContainer}>
       <TabInfo header={messages.infoHeader} />
-      <View style={styles.contentContainer} />
-    </View>
+      <View style={styles.contentContainer}>
+        <View style={styles.cardContainer} />
+      </View>
+    </ScrollView>
   )
 }

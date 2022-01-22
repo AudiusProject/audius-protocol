@@ -1,8 +1,8 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 
 import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { Button, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
@@ -23,23 +23,34 @@ const createStyles = (themeColors: ThemeColors) =>
       display: 'flex'
     },
     contentContainer: {
-      display: 'flex'
+      display: 'flex',
+      // TODO: Fix this
+      marginBottom: 240
+    },
+    cardContainer: {
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-evenly',
+      padding: 12,
+      paddingTop: 24
+    },
+    card: {
+      flex: 1,
+      flexBasis: '40%',
+      marginBottom: 8
     }
   })
 
 export const ArtistsTab = ({ navigation }: Props) => {
   const styles = useThemedStyles(createStyles)
 
-  const handlePress = useCallback(() => {
-    navigation.navigate('profile', { id: 1 })
-  }, [navigation])
-
   return (
-    <View style={styles.tabContainer}>
+    <ScrollView style={styles.tabContainer}>
       <TabInfo header={messages.infoHeader} />
       <View style={styles.contentContainer}>
-        <Button title='Go to single artist view' onPress={handlePress} />
+        <View style={styles.cardContainer} />
       </View>
-    </View>
+    </ScrollView>
   )
 }
