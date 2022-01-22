@@ -22,12 +22,18 @@ def upgrade():
         """
         begin;
 
-        -- First, update challenge_profile_completion rows to account for playlist saves.
-        -- Joining against the saves table for all playlist saves gets us just the records
-        -- that exist in the saves table and modifies that favorites challenge
+        -- This migration serves to repair missing state in
+        -- challenge_profile_completion where previously playlist favorites (saves)
+        -- did not update the challenge.
         --
-        -- Second, use that result to update user_challenges that were updated by
-        -- checking playlists
+        -- First, update challenge_profile_completion rows to account
+        -- for playlist saves.
+        -- By joining against the saves table for all playlist saves,
+        -- we can achieve this and only modify rows where users have done
+        -- a playlist save.
+        --
+        -- Second, use that result to update (recalculate) user_challenges
+        -- for users that were updated in the first step.
         --
         with updated as (
             update challenge_profile_completion
