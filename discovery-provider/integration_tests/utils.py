@@ -78,6 +78,7 @@ def populate_mock_db(db, entities, block_offset=0):
         user_challenges = entities.get("user_challenges", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
+        aggregate_track = entities.get("aggregate_track", [])
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
@@ -220,6 +221,14 @@ def populate_mock_db(db, entities, block_offset=0):
                 count=aggregate_play_meta.get("count", 0),
             )
             session.add(aggregate_play)
+
+        for i, aggregate_track_meta in enumerate(aggregate_track):
+            aggregate_track = models.AggregateTrack(
+                track_id=aggregate_track_meta.get("track_id", i),
+                repost_count=aggregate_track_meta.get("repost_count", 0),
+                save_count=aggregate_track_meta.get("save_count", 0),
+            )
+            session.add(aggregate_track)
 
         for i, user_listening_history_meta in enumerate(user_listening_history):
             user_listening_history = models.UserListeningHistory(

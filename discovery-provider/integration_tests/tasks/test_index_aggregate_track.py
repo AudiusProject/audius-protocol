@@ -54,7 +54,7 @@ basic_entities = {
 }
 
 
-def basic_tests(session, last_checkpoint=8):
+def basic_tests(session, last_checkpoint=8, previous_count=0):
     """Helper for testing the basic_entities as is"""
 
     # read from aggregate_track table
@@ -66,20 +66,20 @@ def basic_tests(session, last_checkpoint=8):
     assert len(results) == 4
 
     assert results[0].track_id == 1
-    assert results[0].repost_count == 3
-    assert results[0].save_count == 1
+    assert results[0].repost_count == previous_count + 3
+    assert results[0].save_count == previous_count + 1
 
     assert results[1].track_id == 2
-    assert results[1].repost_count == 0
-    assert results[1].save_count == 0
+    assert results[1].repost_count == previous_count + 0
+    assert results[1].save_count == previous_count + 0
 
     assert results[2].track_id == 4
-    assert results[2].repost_count == 0
-    assert results[2].save_count == 4
+    assert results[2].repost_count == previous_count + 0
+    assert results[2].save_count == previous_count + 4
 
     assert results[3].track_id == 5
-    assert results[3].repost_count == 0
-    assert results[3].save_count == 0
+    assert results[3].repost_count == previous_count + 0
+    assert results[3].save_count == previous_count + 0
 
     prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
     assert prev_id_checkpoint == last_checkpoint
@@ -90,11 +90,12 @@ def created_entity_tests(results, count):
 
     for i in range(count):
         assert results[i].track_id == i + 1, "Test that the entities were created"
-        assert results[i].track_count == 9, "Test that the entities were created"
+        assert results[i].repost_count == 9, "Test that the entities were created"
+        assert results[i].save_count == 9, "Test that the entities were created"
 
 
 def test_index_aggregate_track_populate(app):
-    """Test that we should populate users from empty"""
+    """Test that we should populate tracks from empty"""
 
     with app.app_context():
         db = get_db()
@@ -127,211 +128,184 @@ def test_index_aggregate_track_populate(app):
         basic_tests(session)
 
 
-# def test_index_aggregate_track_empty_users(app):
-#     """Test that user metadata without users table won't break"""
+def test_index_aggregate_track_empty_tracks(app):
+    """Test that track metadata without tracks table won't break"""
 
-#     with app.app_context():
-#         db = get_db()
+    with app.app_context():
+        db = get_db()
 
-#     entities = {
-#         "users": [],
-#         "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 0}],
-#         "tracks": [
-#             {"track_id": 1, "owner_id": 1},
-#             {"track_id": 2, "owner_id": 1},
-#             {"track_id": 3, "is_unlisted": True, "owner_id": 1},
-#         ],
-#         "playlists": [
-#             {
-#                 "playlist_id": 1,
-#                 "playlist_owner_id": 1,
-#                 "playlist_name": "name",
-#                 "description": "description",
-#                 "playlist_contents": {
-#                     "track_ids": [
-#                         {"track": 1, "time": 1},
-#                         {"track": 2, "time": 2},
-#                         {"track": 3, "time": 3},
-#                     ]
-#                 },
-#             },
-#             {
-#                 "playlist_id": 2,
-#                 "is_album": True,
-#                 "playlist_owner_id": 1,
-#                 "playlist_name": "name",
-#                 "description": "description",
-#                 "playlist_contents": {
-#                     "track_ids": [
-#                         {"track": 1, "time": 1},
-#                         {"track": 2, "time": 2},
-#                         {"track": 3, "time": 3},
-#                     ]
-#                 },
-#             },
-#         ],
-#         "follows": [
-#             {
-#                 "follower_track_id": 1,
-#                 "followee_track_id": 2,
-#                 "created_at": datetime.now() - timedelta(days=8),
-#             },
-#             {
-#                 "follower_track_id": 2,
-#                 "followee_track_id": 1,
-#                 "created_at": datetime.now() - timedelta(days=8),
-#             },
-#         ],
-#         "reposts": [
-#             {"repost_item_id": 1, "repost_type": "track", "track_id": 1},
-#             {"repost_item_id": 1, "repost_type": "playlist", "track_id": 1},
-#         ],
-#         "saves": [
-#             {"save_item_id": 1, "save_type": "track", "track_id": 1},
-#             {"save_item_id": 1, "save_type": "playlist", "track_id": 1},
-#         ],
-#     }
+    entities = {
+        "users": [],
+        "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 0}],
+        "tracks": [],
+        "reposts": [
+            {"repost_item_id": 1, "repost_type": "track", "track_id": 1},
+            {"repost_item_id": 1, "repost_type": "playlist", "track_id": 1},
+        ],
+        "saves": [
+            {"save_item_id": 1, "save_type": "track", "track_id": 1},
+            {"save_item_id": 1, "save_type": "playlist", "track_id": 1},
+        ],
+    }
 
-#     populate_mock_db(db, entities)
+    populate_mock_db(db, entities)
 
-#     with db.scoped_session() as session:
-#         _update_aggregate_track(session)
+    with db.scoped_session() as session:
+        _update_aggregate_track(session)
 
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
 
-#         assert (
-#             len(results) == 0
-#         ), "Test that without Users there will be no AggregateTracks"
+        assert (
+            len(results) == 0
+        ), "Test that without Tracks there will be no AggregateTracks"
 
-#         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-#         assert prev_id_checkpoint == 2
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == 1
 
 
-# def test_index_aggregate_track_empty_activity(app):
-#     """Test that a populated users table without activity won't break"""
+def test_index_aggregate_track_empty_activity(app):
+    """Test that a populated tracks table without activity won't break"""
 
-#     with app.app_context():
-#         db = get_db()
+    with app.app_context():
+        db = get_db()
 
-#     entities = {
-#         "users": [
-#             {"track_id": 1, "handle": "user1"},
-#             {"track_id": 2, "handle": "user2"},
-#         ],
-#         "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 5}],
-#     }
+    entities = {
+        "tracks": [
+            {"track_id": 1, "owner_id": 1, "is_current": True},
+            {"track_id": 2, "owner_id": 1, "is_current": True},
+            {
+                "track_id": 3,
+                "owner_id": 1,
+                "is_current": True,
+                "is_delete": True,
+            },
+            {"track_id": 4, "owner_id": 2, "is_current": True},
+            {
+                "track_id": 5,
+                "owner_id": 1,
+                "is_current": True,
+                "is_unlisted": True,
+            },
+        ],
+        "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 10}],
+    }
 
-#     # create user1 and user2 in blocknumbers 3 and 4, respectively
-#     populate_mock_db(db, entities, block_offset=3)
+    populate_mock_db(db, entities, block_offset=6)
 
-#     with db.scoped_session() as session:
-#         _update_aggregate_track(session)
+    with db.scoped_session() as session:
+        _update_aggregate_track(session)
 
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        pprint(results)
 
-#         assert (
-#             len(results) == 0
-#         ), "Test that users updated on blocks previous to '5' will not be targeted"
+        assert (
+            len(results) == 0
+        ), "Test that tracks updated on blocks previous to '10' will not be targeted"
 
-#         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-#         assert prev_id_checkpoint == 4
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == 10
 
-#     entities = {
-#         "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 1}],
-#     }
+    entities = {
+        "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 1}],
+    }
 
-#     populate_mock_db(db, entities)
+    populate_mock_db(db, entities)
 
-#     with db.scoped_session() as session:
-#         _update_aggregate_track(session)
+    with db.scoped_session() as session:
+        _update_aggregate_track(session)
 
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
 
-#         assert (
-#             len(results) == 2
-#         ), "Test that users updated on blocks after '1' will be targeted"
+        assert (
+            len(results) == 4
+        ), "Test that tracks updated on blocks after '1' will be targeted"
 
-#         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-#         assert prev_id_checkpoint == 4
-
-
-# def test_index_aggregate_track_empty_completely(app):
-#     """Test a completely empty database won't break"""
-
-#     with app.app_context():
-#         db = get_db()
-
-#     entities = {}
-
-#     populate_mock_db(db, entities, block_offset=3)
-
-#     with db.scoped_session() as session:
-#         _update_aggregate_track(session)
-
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-
-#         assert (
-#             len(results) == 0
-#         ), "Test that empty entities won't generate AggregateTracks"
-
-#         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-#         assert prev_id_checkpoint == 0
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == 10
 
 
-# def test_index_aggregate_track_update(app):
-#     """Test that the aggregate_track data is overwritten"""
+def test_index_aggregate_track_empty_completely(app):
+    """Test a completely empty database won't break"""
 
-#     with app.app_context():
-#         db = get_db()
+    with app.app_context():
+        db = get_db()
 
-#     entities = deepcopy(basic_entities)
-#     entities.update(
-#         {
-#             "aggregate_track": [
-#                 {
-#                     "track_id": 1,
-#                     "track_count": 9,
-#                     "playlist_count": 9,
-#                     "album_count": 9,
-#                     "follower_count": 9,
-#                     "following_count": 9,
-#                     "repost_count": 9,
-#                     "track_save_count": 9,
-#                 },
-#                 {
-#                     "track_id": 2,
-#                     "track_count": 9,
-#                     "playlist_count": 9,
-#                     "album_count": 9,
-#                     "follower_count": 9,
-#                     "following_count": 9,
-#                     "repost_count": 9,
-#                     "track_save_count": 9,
-#                 },
-#             ],
-#         }
-#     )
+    entities = {}
 
-#     populate_mock_db(db, entities, block_offset=3)
+    populate_mock_db(db, entities, block_offset=3)
 
-#     with db.scoped_session() as session:
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         created_entity_tests(results, 2)
+    with db.scoped_session() as session:
+        _update_aggregate_track(session)
 
-#         _update_aggregate_track(session)
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
 
-#     with db.scoped_session() as session:
-#         basic_tests(session)
+        assert (
+            len(results) == 0
+        ), "Test that empty entities won't generate AggregateTracks"
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == 0
+
+
+def test_index_aggregate_track_update(app):
+    """Test that the aggregate_track data is continously added to"""
+
+    with app.app_context():
+        db = get_db()
+
+    entities = deepcopy(basic_entities)
+    entities.update(
+        {
+            "aggregate_track": [
+                {
+                    "track_id": 1,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+                {
+                    "track_id": 2,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+                {
+                    "track_id": 4,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+                {
+                    "track_id": 5,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+            ],
+        }
+    )
+
+    populate_mock_db(db, entities, block_offset=3)
+
+    with db.scoped_session() as session:
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+
+        assert len(results) == 4, "Test that the entities were created"
+        for i, n in enumerate((0, 1, 3, 4)):
+            assert results[i].track_id == n + 1, "Test that the entities were created"
+            assert results[i].repost_count == 9, "Test that the entities were created"
+            assert results[i].save_count == 9, "Test that the entities were created"
+
+        _update_aggregate_track(session)
+
+    with db.scoped_session() as session:
+        basic_tests(session, previous_count=9)
 
 
 # def test_index_aggregate_track_update_with_extra_user(app):
@@ -528,7 +502,7 @@ def test_index_aggregate_track_populate(app):
 
 #         _update_aggregate_track(session)
 
-    #         results: List[AggregateTrack] = (
+#         results: List[AggregateTrack] = (
 #             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
 #         )
 #         assert (
