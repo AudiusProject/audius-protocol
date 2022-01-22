@@ -73,7 +73,7 @@ class ChallengeUpdater(ABC):
         return str(user_id)
 
     def should_create_new_challenge(
-        self, event: str, user_id: int, extra: Dict
+        self, session, event: str, user_id: int, extra: Dict
     ) -> bool:
         """Optional method called for aggregate challenges to allow for overriding default
         behavior of creating a new UserChallenge whenever 1) we see a relevant event and
@@ -211,7 +211,10 @@ class ChallengeManager:
                     if self._step_count and completion_count >= self._step_count:
                         continue
                     if not self._updater.should_create_new_challenge(
-                        event_type, new_metadata["user_id"], new_metadata["extra"]
+                        session,
+                        event_type,
+                        new_metadata["user_id"],
+                        new_metadata["extra"],
                     ):
                         continue
                     new_user_challenges_specifiers[user_id].add(
