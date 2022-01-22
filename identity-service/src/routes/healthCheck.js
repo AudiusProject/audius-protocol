@@ -4,7 +4,6 @@ const { handleResponse, successResponse, errorResponseServerError } = require('.
 const { sequelize } = require('../models')
 const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
-const { solanaConnection } = require('../solana-client')
 const solanaWeb3 = require('@solana/web3.js')
 const Web3 = require('web3')
 const audiusLibsWrapper = require('../audiusLibsInstance')
@@ -280,13 +279,15 @@ module.exports = function (app) {
   app.get('/sol_balance_check', handleResponse(async (req, res) => {
     const minimumBalance = parseFloat(req.query.minimumBalance || config.get('solMinimumBalance'))
     const solanaFeePayerWallet = config.get('solanaFeePayerWallet')
+    const libs = req.app.get('audiusLibs')
+    const connection = libs.solanaWeb3Manager.connection
 
     let solanaFeePayerPublicKey = null
     let balance = 0
 
     if (solanaFeePayerWallet) {
       solanaFeePayerPublicKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
-      balance = await solanaConnection.getBalance(solanaFeePayerPublicKey)
+      balance = await connection.getBalance(solanaFeePayerPublicKey)
     }
 
     const sol = Math.floor(balance / (10 ** 9))
