@@ -185,7 +185,6 @@ def test_referral_challenge(app):
         #   for referrer credit
         # - Ensure that a verified user challenge exists
 
-        print("DOING THE LAST ONE!")
         verified_user = User(
             blockhash="0x1",
             blocknumber=BLOCK_NUMBER,

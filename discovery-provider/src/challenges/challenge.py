@@ -63,7 +63,9 @@ class ChallengeUpdater(ABC):
         already completed state, this method can be left as is.
         """
 
-    def on_after_challenge_creation(self, session, metadatas: List[FullEventMetadata]):
+    def on_after_challenge_creation(
+        self, session: Session, metadatas: List[FullEventMetadata]
+    ):
         """Optional method to do some work after the `ChallengeManager` creates new challenges.
         If a challenge is backed by it's own table, for instance, create those rows here.
         """
@@ -73,12 +75,16 @@ class ChallengeUpdater(ABC):
         return str(user_id)
 
     def should_create_new_challenge(
-        self, session, event: str, user_id: int, extra: Dict
+        self, session: Session, event: str, user_id: int, extra: Dict
     ) -> bool:
         """Optional method called for aggregate challenges to allow for overriding default
         behavior of creating a new UserChallenge whenever 1) we see a relevant event and
         2) the parent challenge is not yet complete.
         """
+        return True
+
+    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
+        """Optional method to show/hide a challenge for a particular user."""
         return True
 
     def get_metadata(self, session: Session, specifiers: List[str]) -> List[Dict]:
@@ -310,6 +316,10 @@ class ChallengeManager:
     def get_default_metadata(self):
         """Gets default metadata for an challenge with no progress."""
         return self._updater.get_default_metadata()
+
+    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
+        """Optional method to show/hide a challenge for a particular user."""
+        return self._updater.should_show_challenge_for_user(session, user_id)
 
     # Helpers
 

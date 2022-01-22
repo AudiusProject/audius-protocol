@@ -14,6 +14,21 @@ def generate_referral_specifier(user_id: int, extra: Dict) -> str:
     return f"{user_id}=>{extra['referred_user_id']}"
 
 
+def does_user_exist_with_verification_status(
+    session, user_id: int, is_verified: bool
+) -> bool:
+    user: Optional[Tuple[int]] = (
+        session.query(User.user_id)
+        .filter(
+            User.user_id == user_id,
+            User.is_current == True,
+            User.is_verified == is_verified,
+        )
+        .one_or_none()
+    )
+    return bool(user)
+
+
 class ReferralChallengeUpdater(ChallengeUpdater):
     def generate_specifier(self, user_id: int, extra: Dict) -> str:
         return generate_referral_specifier(user_id, extra)
@@ -21,17 +36,10 @@ class ReferralChallengeUpdater(ChallengeUpdater):
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
     ) -> bool:
-        # Only create challenges for unverified users
-        unverified_user: Optional[Tuple[int]] = (
-            session.query(User.user_id)
-            .filter(
-                User.user_id == user_id,
-                User.is_current == True,
-                User.is_verified == False,
-            )
-            .one_or_none()
-        )
-        return bool(unverified_user)
+        return does_user_exist_with_verification_status(session, user_id, False)
+
+    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
+        return does_user_exist_with_verification_status(session, user_id, False)
 
 
 class VerifiedReferralChallengeUpdater(ChallengeUpdater):
@@ -41,17 +49,10 @@ class VerifiedReferralChallengeUpdater(ChallengeUpdater):
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
     ) -> bool:
-        # Only create challenges for verified users
-        verified_user: Optional[Tuple[int]] = (
-            session.query(User.user_id)
-            .filter(
-                User.user_id == user_id,
-                User.is_current == True,
-                User.is_verified == True,
-            )
-            .one_or_none()
-        )
-        return bool(verified_user)
+        return does_user_exist_with_verification_status(session, user_id, True)
+
+    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
+        return does_user_exist_with_verification_status(session, user_id, True)
 
 
 class ReferredChallengeUpdater(ChallengeUpdater):
