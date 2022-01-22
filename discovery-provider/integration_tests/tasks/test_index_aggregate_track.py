@@ -375,174 +375,149 @@ def test_index_aggregate_track_update(app):
 #         basic_tests(session, last_checkpoint=3)
 
 
-# def test_index_aggregate_track_entity_model(app):
-#     """Test that aggregate_track will return information when using seeded entities"""
+def test_index_aggregate_track_entity_model(app):
+    """Test that aggregate_track will return information when using seeded entities"""
 
-#     with app.app_context():
-#         db = get_db()
+    with app.app_context():
+        db = get_db()
 
-#     entities = {
-#         "aggregate_track": [
-#             {
-#                 "track_id": 1,
-#                 "track_count": 9,
-#                 "playlist_count": 9,
-#                 "album_count": 9,
-#                 "follower_count": 9,
-#                 "following_count": 9,
-#                 "repost_count": 9,
-#                 "track_save_count": 9,
-#             },
-#             {
-#                 "track_id": 2,
-#                 "track_count": 9,
-#                 "playlist_count": 9,
-#                 "album_count": 9,
-#                 "follower_count": 9,
-#                 "following_count": 9,
-#                 "repost_count": 9,
-#                 "track_save_count": 9,
-#             },
-#             {
-#                 "track_id": 3,
-#                 "track_count": 9,
-#                 "playlist_count": 9,
-#                 "album_count": 9,
-#                 "follower_count": 9,
-#                 "following_count": 9,
-#                 "repost_count": 9,
-#                 "track_save_count": 9,
-#             },
-#         ],
-#     }
+    entities = {
+        "aggregate_track": [
+            {
+                "track_id": 1,
+                "repost_count": 9,
+                "save_count": 9,
+            },
+            {
+                "track_id": 2,
+                "repost_count": 9,
+                "save_count": 9,
+            },
+            {
+                "track_id": 3,
+                "repost_count": 9,
+                "save_count": 9,
+            },
+            {
+                "track_id": 4,
+                "repost_count": 9,
+                "save_count": 9,
+            },
+        ],
+    }
 
-#     populate_mock_db(db, entities)
+    populate_mock_db(db, entities)
 
-#     with db.scoped_session() as session:
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         created_entity_tests(results, 3)
+    with db.scoped_session() as session:
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        created_entity_tests(results, 4)
 
 
-# def test_index_aggregate_track_update_with_only_aggregate_track(app):
-#     """Test that aggregate_track will be truncated even when no other data"""
+def test_index_aggregate_track_update_with_only_aggregate_track(app):
+    """Test that aggregate_track will be truncated even when no other data"""
 
-#     with app.app_context():
-#         db = get_db()
+    with app.app_context():
+        db = get_db()
 
-#     entities = {
-#         "aggregate_track": [
-#             {
-#                 "track_id": 1,
-#                 "track_count": 9,
-#                 "playlist_count": 9,
-#                 "album_count": 9,
-#                 "follower_count": 9,
-#                 "following_count": 9,
-#                 "repost_count": 9,
-#                 "track_save_count": 9,
-#             },
-#             {
-#                 "track_id": 2,
-#                 "track_count": 9,
-#                 "playlist_count": 9,
-#                 "album_count": 9,
-#                 "follower_count": 9,
-#                 "following_count": 9,
-#                 "repost_count": 9,
-#                 "track_save_count": 9,
-#             },
-#             {
-#                 "track_id": 3,
-#                 "track_count": 9,
-#                 "playlist_count": 9,
-#                 "album_count": 9,
-#                 "follower_count": 9,
-#                 "following_count": 9,
-#                 "repost_count": 9,
-#                 "track_save_count": 9,
-#             },
-#         ],
-#         "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 9}],
-#     }
+    entities = {
+        "aggregate_track": [
+            {
+                "track_id": 1,
+                "repost_count": 9,
+                "save_count": 9,
+            },
+            {
+                "track_id": 2,
+                "repost_count": 9,
+                "save_count": 9,
+            },
+            {
+                "track_id": 3,
+                "repost_count": 9,
+                "save_count": 9,
+            },
+        ],
+        "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 9}],
+    }
 
-#     populate_mock_db(db, entities)
+    populate_mock_db(db, entities)
 
-#     with db.scoped_session() as session:
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         assert len(results) == 3, "Test that entities exist as expected"
+    with db.scoped_session() as session:
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        assert len(results) == 3, "Test that entities exist as expected"
 
-#         _update_aggregate_track(session)
+        _update_aggregate_track(session)
 
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         assert (
-#             len(results) == 3
-#         ), "Test zero-modifications since last_checkpoint is in the future"
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        assert (
+            len(results) == 3
+        ), "Test zero-modifications since last_checkpoint is in the future"
 
-#         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-#         assert prev_id_checkpoint == 9
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == 9
 
-#     entities = {
-#         "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 0}],
-#     }
-#     populate_mock_db(db, entities)
+    # entities = {
+    #     "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 0}],
+    # }
+    # populate_mock_db(db, entities)
 
-#     with db.scoped_session() as session:
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         assert (
-#             len(results) == 3
-#         ), "Test that entities exist as expected, even though checkpoint has been reset"
+    # with db.scoped_session() as session:
+    #     results: List[AggregateTrack] = (
+    #         session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+    #     )
+    #     assert (
+    #         len(results) == 3
+    #     ), "Test that entities exist as expected, even though checkpoint has been reset"
 
-#         _update_aggregate_track(session)
+    #     _update_aggregate_track(session)
 
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         assert (
-#             len(results) == 0
-#         ), "Test that aggregate_track has been truncated due to reset checkpoint"
+    #     results: List[AggregateTrack] = (
+    #         session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+    #     )
+    #     assert (
+    #         len(results) == 0
+    #     ), "Test that aggregate_track has been truncated due to reset checkpoint"
 
-#         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-#         assert prev_id_checkpoint == 0
+    #     prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+    #     assert prev_id_checkpoint == 0
 
 
-# def test_index_aggregate_track_same_checkpoint(app):
-#     """Test that we should not update when last index is the same"""
+def test_index_aggregate_track_same_checkpoint(app):
+    """Test that we should not update when last index is the same"""
 
-#     with app.app_context():
-#         db = get_db()
+    with app.app_context():
+        db = get_db()
 
-#     entities = deepcopy(basic_entities)
-#     current_blocknumber = basic_entities["blocks"][0]["number"]
-#     entities.update(
-#         {
-#             "indexing_checkpoints": [
-#                 {"tablename": AGGREGATE_TRACK, "last_checkpoint": current_blocknumber}
-#             ],
-#         }
-#     )
+    entities = deepcopy(basic_entities)
+    current_blocknumber = basic_entities["blocks"][0]["number"] = 10
+    entities.update(
+        {
+            "indexing_checkpoints": [
+                {"tablename": AGGREGATE_TRACK, "last_checkpoint": current_blocknumber}
+            ],
+        }
+    )
 
-#     populate_mock_db(db, entities)
+    populate_mock_db(db, entities)
 
-#     with db.scoped_session() as session:
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         assert len(results) == 0
+    with db.scoped_session() as session:
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        assert len(results) == 0
 
-#         _update_aggregate_track(session)
+        _update_aggregate_track(session)
 
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         assert len(results) == 0
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        assert len(results) == 0
 
-#         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-#         assert prev_id_checkpoint == 3
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == 5
