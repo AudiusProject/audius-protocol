@@ -21,10 +21,6 @@ basic_entities = {
         {"blockhash": "0", "number": 4, "parenthash": -1, "is_current": True},
     ],
     "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 2}],
-    "users": [
-        {"user_id": 1, "handle": "user1", "is_current": True},
-        {"user_id": 2, "handle": "user2", "is_current": True},
-    ],
     "tracks": [
         {"track_id": 1, "owner_id": 1, "is_current": True},
         {"track_id": 2, "owner_id": 1, "is_current": True},
@@ -44,6 +40,8 @@ basic_entities = {
     ],
     "reposts": [
         {"repost_item_id": 1, "repost_type": "track", "user_id": 2},
+        {"repost_item_id": 1, "repost_type": "track", "user_id": 3},
+        {"repost_item_id": 1, "repost_type": "track", "user_id": 4},
     ],
     "saves": [
         {"save_item_id": 1, "save_type": "track", "user_id": 2},
@@ -63,7 +61,7 @@ def basic_tests(session, last_checkpoint=7):
     assert len(results) == 4
 
     assert results[0].track_id == 1
-    assert results[0].repost_count == 1
+    assert results[0].repost_count == 3
     assert results[0].save_count == 1
 
     assert results[1].track_id == 2
