@@ -33,6 +33,7 @@ import { remindUserToTurnOnNotifications } from 'app/components/notification-rem
 import useAppState from 'app/hooks/useAppState'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { MessageType } from 'app/message/types'
+import { setVisibility } from 'app/store/drawers/slice'
 import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
 import { getIsSignedIn, getDappLoaded } from 'app/store/lifecycle/selectors'
 import * as signonActions from 'app/store/signon/actions'
@@ -88,7 +89,6 @@ const styles = StyleSheet.create({
     width: '100%',
     zIndex: 4,
     alignItems: 'center',
-    justifyContent: 'space-evenly',
     paddingBottom: 20
   },
   containerBack: {
@@ -137,12 +137,11 @@ const styles = StyleSheet.create({
   },
   signupCTAContainer: {
     flex: 1,
-    marginTop: 32
+    marginTop: 16
   },
   signupCTA: {
     resizeMode: 'contain',
     flex: 1,
-    marginTop: 32,
     width: windowWidth - 64
   },
   input: {
@@ -204,15 +203,26 @@ const styles = StyleSheet.create({
     height: 24
   },
   switchFormBtn: {
-    height: 32,
     width: '100%',
     alignItems: 'center',
-    marginTop: 38
+    marginTop: 16
   },
   switchFormBtnTitle: {
     color: 'white',
     fontSize: 14,
     fontFamily: 'AvenirNextLTPro-Medium'
+  },
+  forgotPasswordButton: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 32
+  },
+  forgotPasswordButtonTitle: {
+    color: 'white',
+    fontSize: 14,
+    fontFamily: 'AvenirNextLTPro-Medium',
+    textDecorationLine: 'underline'
   },
   errorText: {
     flex: 1,
@@ -255,7 +265,8 @@ const messages = {
   signIn: 'Sign In',
   newToAudius: 'New to Audius?',
   createAccount: 'Create an Account',
-  hasAccountAlready: 'Already have an account?'
+  hasAccountAlready: 'Already have an account?',
+  forgotPassword: 'Forgot your password?'
 }
 
 const errorMessages = {
@@ -500,7 +511,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     )
   }
 
-  const FormSwitchButton = () => {
+  const renderFormSwitchButton = () => {
     return (
       <Text style={styles.switchFormBtnTitle}>
         {isSignin ? `${messages.newToAudius}` : `${messages.hasAccountAlready}`}
@@ -508,6 +519,19 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Text style={{ textDecorationLine: 'underline' }}>
           {isSignin ? `${messages.createAccount}` : `${messages.signIn}`}
         </Text>
+      </Text>
+    )
+  }
+
+  const renderForgotPasswordButton = () => {
+    return (
+      <Text
+        style={styles.forgotPasswordButtonTitle}
+        onPress={() => {
+          dispatch(setVisibility({ drawer: 'ForgotPassword', visible: true }))
+        }}
+      >
+        {messages.forgotPassword}
       </Text>
     )
   }
@@ -764,7 +788,13 @@ const SignOn = ({ navigation }: SignOnProps) => {
               switchForm()
             }}
           >
-            <FormSwitchButton />
+            {renderFormSwitchButton()}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.forgotPasswordButton}
+            activeOpacity={0.6}
+          >
+            {renderForgotPasswordButton()}
           </TouchableOpacity>
         </Animated.View>
       </View>
