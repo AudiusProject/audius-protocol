@@ -726,10 +726,10 @@ const config = convict({
     env: 'successAudioReporterSlackUrl',
     default: ''
   },
-  errorRewardsReporterSlackUrl: {
+  errorAudioReporterSlackUrl: {
     doc: 'The slack url to post messages for errors in audio / rewards events',
     format: String,
-    env: 'errorRewardsReporterSlackUrl',
+    env: 'errorAudioReporterSlackUrl',
     default: ''
   },
   wormholeRPCHosts: {
