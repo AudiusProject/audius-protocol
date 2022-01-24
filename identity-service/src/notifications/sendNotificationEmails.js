@@ -38,7 +38,7 @@ const getUserIdsWithUnseenNotifications = async ({ userIds, gtTimeStamp }) => {
       where: {
         isViewed: false,
         userId: { [ models.Sequelize.Op.in ]: userIds },
-        timestamp: { [models.Sequelize.Op.gt]: gtTimeStamp }
+        createdAt: { [models.Sequelize.Op.gt]: gtTimeStamp }
       },
       group: ['userId']
     })
