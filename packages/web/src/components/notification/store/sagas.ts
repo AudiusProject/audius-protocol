@@ -557,7 +557,7 @@ function* notificationPollingDaemon() {
         lastHidden = document.hidden
       }, 500)
     } else {
-      document.addEventListener('visibilitychange ', () => {
+      document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           emitter(true)
         }
