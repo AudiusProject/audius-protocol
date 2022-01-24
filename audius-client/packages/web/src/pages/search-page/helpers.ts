@@ -4,7 +4,7 @@ import { getPathname } from 'utils/route'
 
 import { SearchKind } from './store/types'
 
-const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING
+const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING === 'true'
 
 type matchParams = {
   category?: string
