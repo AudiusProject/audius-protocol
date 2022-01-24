@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import text
 from src.tasks.celery_app import celery
-from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
 
 logger = logging.getLogger(__name__)
 
