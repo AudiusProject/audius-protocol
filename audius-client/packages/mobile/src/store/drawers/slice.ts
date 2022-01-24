@@ -4,6 +4,7 @@ export type Drawer =
   | 'EnablePushNotifications'
   | 'DeactivateAccountConfirmation'
   | 'DownloadTrackProgress'
+  | 'ForgotPassword'
   | 'NowPlaying'
 
 export type DrawersState = { [drawer in Drawer]: boolean }
@@ -12,6 +13,7 @@ const initialState: DrawersState = {
   EnablePushNotifications: false,
   DeactivateAccountConfirmation: false,
   DownloadTrackProgress: false,
+  ForgotPassword: false,
   NowPlaying: false
 }
 
