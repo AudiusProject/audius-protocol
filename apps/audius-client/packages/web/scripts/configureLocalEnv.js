@@ -106,6 +106,8 @@ try {
 
   REACT_APP_ORACLE_ETH_ADDRESSES=${REACT_APP_ORACLE_ETH_ADDRESSES}
   REACT_APP_AAO_ENDPOINT=${REACT_APP_AAO_ENDPOINT}
+
+  REACT_APP_USE_HASH_ROUTING=false
   `
 
   // Note .env.dev.local takes precidence over .env.dev

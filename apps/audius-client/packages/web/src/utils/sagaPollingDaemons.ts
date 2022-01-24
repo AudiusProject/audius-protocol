@@ -1,6 +1,6 @@
 import { Action } from 'redux'
-import { delay, eventChannel } from 'redux-saga'
-import { select, put, take } from 'redux-saga/effects'
+import { eventChannel } from 'redux-saga'
+import { select, put, take, delay } from 'redux-saga/effects'
 
 import { getLocationPathname } from 'store/routing/selectors'
 
