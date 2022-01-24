@@ -17,6 +17,7 @@
     "ios:device:bounce": "react-native run-ios --scheme 'Bounce' --configuration Release --device",
     "ios:dev": "react-native run-ios --scheme 'Dev'",
     "ios:device:dev": "react-native run-ios --scheme 'Dev' --device",
+    "ios:update-signing-cert": "cd ios && fastlane match development -a co.audius.audiusmusic,co.audius.audiusmusic.bounce && cd..",
     "bundle:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'",
     "build:ios": "xcodebuild -workspace ios/AudiusReactNative.xcworkspace -scheme AudiusReactNative -sdk iphoneos -configuration AppStoreDistribution archive -archivePath $PWD/build/AudiusReactNative.xcarchive",
     "build:ios:bounce": "xcodebuild -workspace ios/AudiusReactNative.xcworkspace -scheme Bounce -sdk iphoneos -configuration AppStoreDistribution archive -archivePath $PWD/build/AudiusReactNative.xcarchive",
