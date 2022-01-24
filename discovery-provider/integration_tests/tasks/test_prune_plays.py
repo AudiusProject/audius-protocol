@@ -43,7 +43,11 @@ def test_prune_plays_old_date(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _prune_plays(session, CURRENT_TIMESTAMP)
+        _prune_plays(
+            session,
+            CURRENT_TIMESTAMP,
+            cutoff_timestamp=datetime.now() - timedelta(weeks=6),
+        )
         # verify plays
         plays_result: List[Play] = session.query(Play).order_by(Play.id).all()
         assert len(plays_result) == 2

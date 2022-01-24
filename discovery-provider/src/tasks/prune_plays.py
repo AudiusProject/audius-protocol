@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy import text
 from src.tasks.celery_app import celery
@@ -56,10 +56,12 @@ PRUNE_PLAYS_QUERY = """
     """
 
 # Prune up to the cutoff date
-DEFAULT_CUTOFF_TIMESTAMP = datetime.now() - timedelta(weeks=6)
+# start at all plays before 2020 (328751 total)
+# TODO move to a sliding window
+DEFAULT_CUTOFF_TIMESTAMP = datetime.fromisoformat("2020-01-01")
 
 # max number of plays to prune per run
-DEFAULT_MAX_BATCH = 100000
+DEFAULT_MAX_BATCH = 80000
 
 
 def _prune_plays(
