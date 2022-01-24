@@ -59,7 +59,7 @@ PRUNE_PLAYS_QUERY = """
 DEFAULT_CUTOFF_TIMESTAMP = datetime.now() - timedelta(weeks=6)
 
 # max number of plays to prune per run
-DEFAULT_MAX_BATCH = 20000
+DEFAULT_MAX_BATCH = 100000
 
 
 def _prune_plays(
@@ -91,17 +91,17 @@ def _prune_plays(
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="update_plays_archive", bind=True)
-def update_plays_archive(self):
+@celery.task(name="prune_plays", bind=True)
+def prune_plays(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
-    db = update_plays_archive.db
-    redis = update_plays_archive.redis
+    db = prune_plays.db
+    redis = prune_plays.redis
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("index_plays_archive_lock", timeout=60 * 10)
+    update_lock = redis.lock("prune_plays_lock", timeout=60 * 10)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -112,15 +112,13 @@ def update_plays_archive(self):
                 _prune_plays(session, datetime.now())
 
             logger.info(
-                f"index_plays_archive.py | Finished updating \
+                f"prune_plays.py | Finished archiving \
                 {PLAYS_ARCHIVE_TABLE_NAME} in: {time.time()-start_time} sec"
             )
         else:
-            logger.info(
-                "index_plays_archive.py | Failed to acquire update_plays_archive"
-            )
+            logger.info("prune_plays.py | Failed to acquire prune_plays_lock")
     except Exception as e:
-        logger.error("index_plays_archive.py | Fatal error in main loop", exc_info=True)
+        logger.error("prune_plays.py | Fatal error in main loop", exc_info=True)
         raise e
     finally:
         if have_lock:
