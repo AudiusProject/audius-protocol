@@ -206,7 +206,7 @@ type ChallengeRewardsDrawerProps = {
   /** The number of steps the user has to complete in total */
   stepCount?: number
   /** The amount of $AUDIO that is rewarded to the user for completing the challenge */
-  amount: string
+  amount: number
   /** The label to use for the in-progress status */
   progressLabel: string
   /** Whether the challenge reward has already been disbursed */
