@@ -66,7 +66,7 @@ async function authMiddleware(req, res, next) {
     }
   }
 
-  const userBlacklisted = BlacklistManager.userIdIsInBlacklist(userId)
+  const userBlacklisted = await BlacklistManager.userIdIsInBlacklist(userId)
   if (userBlacklisted) {
     return sendResponse(
       req,
