@@ -1,6 +1,7 @@
 const Bull = require('bull')
 const axios = require('axios')
 const _ = require('lodash')
+const retry = require('async-retry')
 
 const utils = require('../utils')
 const models = require('../models')
@@ -75,7 +76,10 @@ const RECONFIG_MODES = Object.freeze({
 
 const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
-const SyncModes = Object.freeze({
+/**
+ * Sync mode for a (primary, secondary) pair for a user
+ */
+const SyncMode = Object.freeze({
   None: 'NONE',
   SecondaryShouldSync: 'SECONDARY_SHOULD_SYNC',
   PrimaryShouldSync: 'PRIMARY_SHOULD_SYNC'
@@ -749,41 +753,72 @@ class SnapbackSM {
     return replicasToUserInfoMap
   }
 
-  async computeSyncModeForUser({
+  /**
+   * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
+   * @notice Is used when both replicas are running version >= 0.3.50
+   * @param {Object} param
+   * @param {string} param.wallet user wallet
+   * @param {number} param.primaryClock clock value on user's primary
+   * @param {number} param.secondaryClock clock value on user's secondary
+   * @param {string} param.primaryFilesHash filesHash on user's primary
+   * @param {string} param.secondaryFilesHash filesHash on user's secondary
+   * @returns {SyncMode} syncMode one of None, SecondaryShouldSync, PrimaryShouldSync
+   */
+  async computeSyncModeForUserAndReplica({
     wallet,
     primaryClock,
     secondaryClock,
     primaryFilesHash,
     secondaryFilesHash
   }) {
-    let syncMode = SyncModes.None
+    if (
+      !(primaryClock && primaryClock !== 0)
+      || !(secondaryClock && secondaryClock !== 0)
+      || !primaryFilesHash || !secondaryFilesHash
+    ) {
+      throw new Error(`[computeSyncModeForUserAndReplica] Error: All params must be defined`)
+    }
+
+    let syncMode = SyncMode.None
 
     if (primaryClock === secondaryClock) {
       if (primaryFilesHash === secondaryFilesHash) {
-        syncMode = SyncModes.None
+        syncMode = SyncMode.None
+
       } /* primaryFilesHash !== secondaryFilesHash */ else {
-        syncMode = SyncModes.PrimaryShouldSync
+        syncMode = SyncMode.PrimaryShouldSync
+
       }
-    } /* primaryClock !== secondaryClock */ else {
-      if (primaryClock < secondaryClock) {
-        syncMode = SyncModes.PrimaryShouldSync
-      } /* primaryClock > secondaryClock */ else {
-        if (!secondaryFilesHash) {
-          syncMode = SyncModes.SecondaryShouldSync
-        } /* secondaryFilesHash is defined */ else {
-          // fetch primary filesHash for clockRange [0, secondaryClock]
-          const primaryFilesHashForRange = await DBManager.fetchFilesHashFromDB(
-            {
-              lookupKey: { lookupWallet: wallet },
-              clockMin: 0,
-              clockMax: secondaryClock + 1
-            }
+    } else if (primaryClock < secondaryClock) {
+      syncMode = SyncMode.PrimaryShouldSync
+
+    } /* primaryClock > secondaryClock */ else {
+      if (!secondaryFilesHash) {
+        syncMode = SyncMode.SecondaryShouldSync
+
+      } /* secondaryFilesHash is defined */ else {
+        // fetch primary filesHash for clockRange [0, secondaryClock]
+        try {
+          const FetchFilesHashNumRetries = 3
+          const primaryFilesHashForRange = await retry(
+            async () => {
+              return DBManager.fetchFilesHashFromDB({
+                lookupKey: { lookupWallet: wallet },
+                clockMin: 0,
+                clockMax: secondaryClock + 1
+              })
+            }, { retries: FetchFilesHashNumRetries }
           )
-          if (primaryFilesHashForRange === secondaryFilesHash) {
-            syncMode = SyncModes.SecondaryShouldSync
-          } else {
-            syncMode = SyncModes.PrimaryShouldSync
-          }
+
+          syncMode = (primaryFilesHashForRange === secondaryFilesHash)
+            ? SyncMode.SecondaryShouldSync
+            : SyncMode.PrimaryShouldSync
+
+        } catch (e) {
+          // With sufficient retries, this should never happen, log and skip
+          syncMode = SyncMode.None
+
+          this.logError(`[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`)
         }
       }
     }
@@ -791,11 +826,20 @@ class SnapbackSM {
     return syncMode
   }
 
-  computeSyncModeForUserLegacy({ primaryClock, secondaryClock }) {
+  /**
+   * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
+   * @notice Is used when at least 1 replica is running version < 0.3.50
+   * @param {Object} param
+   * @param {string} param.wallet user wallet
+   * @param {number} param.primaryClock clock value on user's primary
+   * @param {number} param.secondaryClock clock value on user's secondary
+   * @returns {SyncMode} syncMode one of None, SecondaryShouldSync, PrimaryShouldSync
+   */
+  computeSyncModeForUserAndReplicaLegacy({ primaryClock, secondaryClock }) {
     if (primaryClock > secondaryClock) {
-      return SyncModes.SecondaryShouldSync
+      return SyncMode.SecondaryShouldSync
     } else {
-      return SyncModes.None
+      return SyncMode.None
     }
   }
 
@@ -817,7 +861,7 @@ class SnapbackSM {
       (userReplicaSet) => userReplicaSet.primary === this.endpoint
     )
 
-    // TODO change to sequential?
+    // TODO change to sequential or batched parallel?
     await Promise.all(
       userReplicaSets.map(async (user) => {
         try {
@@ -828,15 +872,15 @@ class SnapbackSM {
           const { secondaryClock, secondaryFilesHash } =
             replicasToUserInfoMap[secondary][wallet]
 
-          let syncMode = SyncModes.None
+          let syncMode = SyncMode.None
+          // filesHash value will be undefined if at least 1 replica is running version < 0.3.50
           if (!primaryFilesHash || !secondaryFilesHash) {
-            // filesHash value will be undefined if node is running behind version 0.3.50
-            syncMode = this.computeSyncModeForUserLegacy({
+            syncMode = this.computeSyncModeForUserAndReplicaLegacy({
               primaryClock,
               secondaryClock
             })
           } else {
-            syncMode = await this.computeSyncModeForUser({
+            syncMode = await this.computeSyncModeForUserAndReplica({
               wallet,
               primaryClock,
               secondaryClock,
@@ -845,7 +889,7 @@ class SnapbackSM {
             })
           }
 
-          if (syncMode === SyncModes.SecondaryShouldSync) {
+          if (syncMode === SyncMode.SecondaryShouldSync) {
             numSyncRequestsRequired += 1
 
             await this.enqueueSync({
@@ -856,8 +900,9 @@ class SnapbackSM {
             })
 
             numSyncRequestsEnqueued += 1
-          } else if (syncMode === SyncModes.PrimaryShouldSync) {
+          } else if (syncMode === SyncMode.PrimaryShouldSync) {
             /**
+             * Log as placeholder
              * TODO
              * 1. await this.syncFromSecondary()
              * 2. issue sync to secondary with forceResynf = true
