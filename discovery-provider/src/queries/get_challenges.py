@@ -201,10 +201,17 @@ def get_challenges(
         rolled_up.append(rollup_aggregates(challenges, parent_challenge))
 
     # Return empty user challenges for active challenges that are non-hidden
+    # and visible for the current user
     active_non_hidden_challenges: List[Challenge] = [
         challenge
         for challenge in all_challenges
-        if (challenge.active and not challenge.type == ChallengeType.trending)
+        if (
+            challenge.active
+            and not challenge.type == ChallengeType.trending
+            and event_bus.get_manager(challenge.id).should_show_challenge_for_user(
+                session, user_id
+            )
+        )
     ]
     existing_challenge_ids = {
         user_challenge.challenge_id for user_challenge in existing_user_challenges

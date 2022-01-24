@@ -720,16 +720,16 @@ const config = convict({
     env: 'minSolanaNotificationSlot',
     default: 105400000
   },
-  rewardsReporterSlackUrl: {
-    doc: 'The slack url to post messages for the rewards reporter',
+  successAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for success in audio / rewards events',
     format: String,
-    env: 'rewardsReporterSlackUrl',
+    env: 'successAudioReporterSlackUrl',
     default: ''
   },
-  reporterSlackUrl: {
-    doc: 'The slack url to post messages for the general messages',
+  errorAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in audio / rewards events',
     format: String,
-    env: 'reporterSlackUrl',
+    env: 'errorAudioReporterSlackUrl',
     default: ''
   },
   wormholeRPCHosts: {
