@@ -13,10 +13,8 @@ import {
 } from 'common/store/pages/audio-rewards/selectors'
 import {
   ChallengeRewardsModalType,
-  setChallengeRewardsModalType,
-  reset,
-  refreshUserBalance,
-  refreshUserChallenges
+  fetchUserChallenges,
+  setChallengeRewardsModalType
 } from 'common/store/pages/audio-rewards/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -148,13 +146,9 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
     }
   }, [userChallengesLoading, haveChallengesLoaded])
 
-  // poll for user challenges and user balance to refresh
   useEffect(() => {
-    dispatch(refreshUserChallenges())
-    dispatch(refreshUserBalance())
-    return () => {
-      dispatch(reset())
-    }
+    // Refresh user challenges on page visit
+    dispatch(fetchUserChallenges())
   }, [dispatch])
 
   const openModal = (modalType: ChallengeRewardsModalType) => {
