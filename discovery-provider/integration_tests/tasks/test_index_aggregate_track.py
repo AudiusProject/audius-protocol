@@ -305,7 +305,7 @@ def test_index_aggregate_track_update(app):
         _update_aggregate_track(session)
 
     with db.scoped_session() as session:
-        basic_tests(session, previous_count=9)
+        basic_tests(session)
 
 
 # def test_index_aggregate_track_update_with_extra_user(app):
@@ -495,7 +495,7 @@ def test_index_aggregate_track_same_checkpoint(app):
         db = get_db()
 
     entities = deepcopy(basic_entities)
-    current_blocknumber = basic_entities["blocks"][0]["number"] = 10
+    current_blocknumber = basic_entities["blocks"][0]["number"] = 5
     entities.update(
         {
             "indexing_checkpoints": [

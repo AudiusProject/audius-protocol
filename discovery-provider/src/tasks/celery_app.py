@@ -55,7 +55,7 @@ def aggregate_worker(
     logger, session, table_name, query, checkpoint_name, current_checkpoint
 ):
     # get name of the caller function
-    worker_name = currentframe().f_back.f_code.co_name
+    worker_name = f"{currentframe().f_back.f_code.co_name}()"
 
     # get the last updated id that counted towards the current aggregate track
     prev_checkpoint = get_last_indexed_checkpoint(session, table_name)
@@ -65,7 +65,7 @@ def aggregate_worker(
         return
 
     # update aggregate track with new tracks that came after the prev_checkpoint
-    logger.info(f"{worker_name} | Updating {table_name}")
+    logger.info(f"{worker_name} | Updating {table_name} | checkpoint: ({prev_checkpoint}, {current_checkpoint}]")
 
     session.execute(
         text(query),

@@ -15,7 +15,6 @@ AGGREGATE_TRACK = "aggregate_track"
 UPDATE_AGGREGATE_TRACK_QUERY = """
     WITH aggregate_track_checkpoints AS (
         SELECT
-            :prev_blocknumber AS prev_blocknumber,
             :current_blocknumber AS current_blocknumber
     ),
     new_track AS (
@@ -28,12 +27,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             -- AND t.is_delete IS FALSE
             -- AND t.is_unlisted IS FALSE
             -- AND t.stem_of IS NULL
-            AND t.blocknumber > (
-                SELECT
-                    prev_blocknumber
-                FROM
-                    aggregate_track_checkpoints
-            )
             AND t.blocknumber <= (
                 SELECT
                     current_blocknumber
@@ -52,12 +45,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 r.is_current IS TRUE
                 AND r.repost_type = 'track'
                 -- AND r.is_delete IS FALSE
-                AND r.blocknumber > (
-                    SELECT
-                        prev_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
                 AND r.blocknumber <= (
                     SELECT
                         current_blocknumber
@@ -76,12 +63,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             WHERE
                 s.is_current IS TRUE
                 AND s.save_type = 'track'
-                AND s.blocknumber > (
-                    SELECT
-                        prev_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
                 AND s.blocknumber <= (
                     SELECT
                         current_blocknumber
@@ -127,12 +108,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                     FROM
                         new_track
                 )
-                AND r.blocknumber > (
-                    SELECT
-                        prev_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
                 AND r.blocknumber <= (
                     SELECT
                         current_blocknumber
@@ -158,12 +133,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                     FROM
                         new_track
                 )
-                AND s.blocknumber > (
-                    SELECT
-                        prev_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
                 AND s.blocknumber <= (
                     SELECT
                         current_blocknumber
@@ -182,8 +151,8 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         ) ON CONFLICT (track_id) DO
     UPDATE
     SET
-        repost_count = aggregate_track.repost_count + EXCLUDED.repost_count,
-        save_count = aggregate_track.save_count + EXCLUDED.save_count
+        repost_count = EXCLUDED.repost_count,
+        save_count = EXCLUDED.save_count
     """
 
 
