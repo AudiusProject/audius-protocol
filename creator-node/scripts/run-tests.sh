@@ -137,7 +137,7 @@ export IPFSAddTimeoutMs=10000
 
 # tests
 run_unit_tests
-# run_integration_tests
+run_integration_tests
 
 rm -r $storagePath
 
