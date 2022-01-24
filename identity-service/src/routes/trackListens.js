@@ -221,7 +221,7 @@ module.exports = function (app) {
 
     // Dedicated listen flow
     if (solanaListen) {
-      logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}`)
+      req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}`)
       const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
           connection,
@@ -231,7 +231,7 @@ module.exports = function (app) {
           trackId.toString(),
           'relay' // Static source value to indicate relayed listens
         )
-        logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+        req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
         return successResponse({
           solTxSignature
         })
@@ -244,7 +244,7 @@ module.exports = function (app) {
         retries: 3,
         onRetry: (err, i) => {
           if (err) {
-            console.error(`TrackListens tx retry error, trackId=${trackId} userId=${userId} : ${err}`)
+            req.logger.error(`TrackListens tx retry error, trackId=${trackId} userId=${userId} : ${err}`)
           }
         }
       })
