@@ -16,10 +16,10 @@ export class LoadingPage extends PureComponent {
       <div className={styles.container}>
         <div className={cn(styles.header)}>
           <Spin className={styles.spinner} size='large' />
-          <div className={styles.title}>
+          <h2 className={styles.title}>
             {messages.title} <i className='emoji xl sign-of-the-horns' />
-          </div>
-          <div className={styles.subTitle}>{messages.subTitle}</div>
+          </h2>
+          <p className={styles.subTitle}>{messages.subTitle}</p>
         </div>
       </div>
     )

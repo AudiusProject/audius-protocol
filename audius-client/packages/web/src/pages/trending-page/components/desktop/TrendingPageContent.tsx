@@ -199,14 +199,14 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
   }
 
   const trendingLineups = [
-    <div key='week' className={styles.lineupContainer}>
+    <div key='weekly-trending-tracks' className={styles.lineupContainer}>
       {trendingGenre === null ? (
         <div className={styles.bannerContainer}>
           <RewardsBanner bannerType='tracks' />
         </div>
       ) : null}
       <Lineup
-        key='trendingWeek'
+        aria-label='weekly trending tracks'
         ordered
         rankIconCount={trendingGenre === null ? RANK_ICON_COUNT : undefined}
         {...weekProps}
@@ -224,9 +224,9 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         {...mainLineupProps}
       />
     </div>,
-    <div key='month' className={styles.lineupContainer}>
+    <div key='monthly-trending-tracks' className={styles.lineupContainer}>
       <Lineup
-        key='trendingMonth'
+        aria-label='monthly trending tracks'
         ordered
         {...monthProps}
         setInView={makeSetInView(TimeRange.MONTH)}
@@ -243,9 +243,9 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         {...mainLineupProps}
       />
     </div>,
-    <div key='year' className={styles.lineupContainer}>
+    <div key='all-time-trending-tracks' className={styles.lineupContainer}>
       <Lineup
-        key='trendingYear'
+        aria-label='all-time trending tracks'
         ordered
         {...yearProps}
         setInView={makeSetInView(TimeRange.YEAR)}

@@ -96,8 +96,8 @@ export const FollowPage = (props: FollowPageProps) => {
   return (
     <div className={cn(styles.container)}>
       <div className={cn(styles.header)}>
-        <div className={styles.title}>{messages.title}</div>
-        <div className={styles.subTitle}>{messages.subTitle}</div>
+        <h2 className={styles.title}>{messages.title}</h2>
+        <p className={styles.subTitle}>{messages.subTitle}</p>
       </div>
       <div className={styles.pillSection}>
         <SelectablePills {...seletablePillProps} />
@@ -115,26 +115,28 @@ export const FollowPage = (props: FollowPageProps) => {
             {messages.pickForMe}
           </div>
         </div>
-        <div
+        <ul
           className={cn(styles.cards, {
             [styles.hide]: isTransitioning,
             [styles.show]: !isTransitioning
           })}
+          aria-label='profile selection'
         >
-          {users.map((user, idx) => (
-            <UserCard
-              key={`${selectedCategory}-${idx}`}
-              isMobile={false}
-              name={user.name}
-              id={user.user_id}
-              imageSizes={user._profile_picture_sizes}
-              selected={followedArtists.includes(user.user_id)}
-              className={cn(styles.userCard)}
-              followers={user.follower_count}
-              onClick={onToggleSelect(user.user_id)}
-            />
+          {users.map(user => (
+            <li key={user.user_id}>
+              <UserCard
+                isMobile={false}
+                name={user.name}
+                id={user.user_id}
+                imageSizes={user._profile_picture_sizes}
+                selected={followedArtists.includes(user.user_id)}
+                className={cn(styles.userCard)}
+                followers={user.follower_count}
+                onClick={onToggleSelect(user.user_id)}
+              />
+            </li>
           ))}
-        </div>
+        </ul>
       </SimpleBar>
       <Button
         text='Continue'

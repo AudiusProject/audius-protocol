@@ -31,7 +31,7 @@ const Title = ({
 }: {
   children: React.ReactNode
   className?: string
-}) => <div className={cn(styles.title, className)}>{children}</div>
+}) => <h2 className={cn(styles.title, className)}>{children}</h2>
 
 const Subtitle = ({
   children,

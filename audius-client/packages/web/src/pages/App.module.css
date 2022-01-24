@@ -39,7 +39,7 @@ body {
   left: var(--nav-width);
   right: 0;
   height: 88px;
-  background: rgba(0,0,0,0);
+  background: rgba(0, 0, 0, 0);
   opacity: 0;
   -webkit-app-region: drag;
 }

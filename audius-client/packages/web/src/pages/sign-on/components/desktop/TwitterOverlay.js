@@ -31,7 +31,7 @@ const messages = {
       <div className={styles.ifApplicable}>{'(if applicable)'}</div>
     </div>
   ],
-  manual: 'I’d rather fill out my profile manually'
+  manual: "I'd rather fill out my profile manually"
 }
 
 const TwitterOverlay = props => {
@@ -117,12 +117,12 @@ const TwitterOverlay = props => {
                   </div>
                 </div>
                 <div className={styles.divider}></div>
-                <div
+                <button
                   className={styles.manualText}
                   onClick={props.onToggleTwitterOverlay}
                 >
                   {messages.manual}
-                </div>
+                </button>
               </div>
             )}
           </div>

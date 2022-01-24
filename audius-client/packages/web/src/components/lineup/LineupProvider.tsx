@@ -99,6 +99,7 @@ const getInitPage = (
 }
 
 export interface LineupProviderProps {
+  'aria-label'?: string
   // Tile components
   trackTile: React.ComponentType<TrackTileProps> | any
   playlistTile: React.ComponentType<PlaylistTileProps> | any
@@ -753,6 +754,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             this.props.emptyElement
           ) : (
             <InfiniteScroll
+              aria-label={this.props['aria-label']}
               pageStart={0}
               loadMore={lineup.hasMore ? this.loadMore : () => {}}
               hasMore={lineup.hasMore && canLoadMore}
@@ -762,8 +764,11 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
               initialLoad={false}
               getScrollParent={() => scrollParent}
               threshold={loadMoreThreshold}
+              element='ol'
             >
-              {tiles}
+              {tiles.map((tile, index) => (
+                <li key={index}>{tile}</li>
+              ))}
             </InfiniteScroll>
           )}
         </div>

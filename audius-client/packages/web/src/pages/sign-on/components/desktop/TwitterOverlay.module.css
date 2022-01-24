@@ -6,8 +6,8 @@
   align-items: center;
   flex-direction: column;
   padding-top: 32px;
-  background-color: rgba(255,255,255,0.75);
-  transition: all .07s ease-in-out;
+  background-color: rgba(255, 255, 255, 0.75);
+  transition: all 0.07s ease-in-out;
 }
 
 .twitterButton {
@@ -16,7 +16,8 @@
   width: 320px !important;
   border-radius: 6px;
   background-color: var(--static-twitter-blue);
-  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.5), 0 2px 8px -2px rgba(27,161,241,0.25);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.5),
+    0 2px 8px -2px rgba(27, 161, 241, 0.25);
 }
 .twitterButton svg {
   height: 42px !important;
@@ -34,7 +35,6 @@
   height: 48px;
   width: 48px;
 }
-
 
 .instagramButton {
   height: 80px !important;
@@ -55,7 +55,7 @@
   width: 14px;
 }
 
-.ifApplicable  {
+.ifApplicable {
   margin-top: 6px;
   margin-bottom: -18px;
   font-weight: var(--font-medium);
@@ -63,7 +63,6 @@
   text-align: left;
   color: var(--neutral-light-4);
 }
-
 
 /* Checklist  */
 
@@ -133,6 +132,7 @@
 /* manual */
 
 .manualText {
+  all: unset;
   color: var(--secondary-light-2);
   font-size: var(--font-s);
   font-weight: var(--font-medium);
@@ -159,4 +159,3 @@
   height: 48px;
   width: 48px;
 }
-

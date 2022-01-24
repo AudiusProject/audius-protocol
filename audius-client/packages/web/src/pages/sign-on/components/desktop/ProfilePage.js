@@ -164,7 +164,7 @@ export class ProfilePage extends Component {
       >
         {isMobile ? null : (
           <>
-            <div className={styles.header}>{messages.header}</div>
+            <h2 className={styles.header}>{messages.header}</h2>
             <BackButton
               light
               onClickBack={this.onToggleTwitterOverlay}

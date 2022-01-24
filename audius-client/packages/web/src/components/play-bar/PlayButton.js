@@ -110,6 +110,9 @@ class PlayButton extends Component {
   }
 
   render() {
+    const { status } = this.props
+    const { playState } = this.state
+
     // Listen for completion and bump the state again.
     const eventListeners = [
       {
@@ -118,9 +121,11 @@ class PlayButton extends Component {
       }
     ]
 
+    const isLoading = status === 'load'
+
     let data, isPaused
     let loop = false
-    if (this.props.status === 'load') {
+    if (isLoading) {
       data = pbLoadingSpinner
       isPaused = false
       loop = true
@@ -137,6 +142,8 @@ class PlayButton extends Component {
     const animation = (
       <div className={styles.animation}>
         <Lottie
+          ariaRole={null}
+          ariaLabel={null}
           options={animationOptions}
           eventListeners={eventListeners}
           isPaused={isPaused}
@@ -144,10 +151,19 @@ class PlayButton extends Component {
       </div>
     )
 
+    const ariaLabel = isLoading
+      ? 'track loading'
+      : playState === PlayStates.PLAY
+      ? 'play track'
+      : 'pause track'
+
     return (
       <button
+        aria-label={ariaLabel}
         className={cn(styles.button, styles.playButton)}
         onClick={this.onClick}
+        disabled={isLoading}
+        aria-busy={isLoading}
       >
         {animation}
       </button>
