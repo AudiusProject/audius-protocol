@@ -52,6 +52,7 @@ class Input extends Component {
   render() {
     const {
       className,
+      id,
       name,
       autoComplete,
       characterLimit,
@@ -109,15 +110,16 @@ class Input extends Component {
     return (
       <div className={cn(styles.input, style, className)}>
         {variant === 'elevatedPlaceholder' ? (
-          <div
+          <label
+            htmlFor={id}
             className={cn('placeholder', styles.placeholder, {
               focus: focused || value !== ''
             })}
           >
             {placeholder}
-          </div>
+          </label>
         ) : null}
-        <input {...inputProps} />
+        <input id={id} {...inputProps} />
         {showCharacterLimit && (
           <div className={styles.characterCount}>
             {value.length}/{characterLimit}
@@ -130,6 +132,7 @@ class Input extends Component {
 
 Input.propTypes = {
   className: PropTypes.string,
+  id: PropTypes.string,
   placeholder: PropTypes.string,
   defaultValue: PropTypes.string,
   value: PropTypes.string,

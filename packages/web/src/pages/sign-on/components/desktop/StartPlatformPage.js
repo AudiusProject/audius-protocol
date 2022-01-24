@@ -9,7 +9,7 @@ import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'
 import styles from './StartPlatformPage.module.css'
 
 const messages = {
-  title: 'It’s Time To Start Your Audius Journey!',
+  title: "It's Time To Start Your Audius Journey!",
   subTitle: 'Audius is a platform for both artists and listeners.',
   uploadMusic: {
     button: 'Upload Track',
@@ -32,9 +32,9 @@ export class StartPlatformPage extends Component {
       <div className={styles.container}>
         <div className={styles.contentContainer}>
           <div className={cn(styles.header)}>
-            <div className={styles.title}>
+            <h2 className={styles.title}>
               {messages.title} <i className='emoji large party-popper' />
-            </div>
+            </h2>
             <div className={styles.subTitle}>{messages.subTitle}</div>
           </div>
           <div className={styles.optionSection}>

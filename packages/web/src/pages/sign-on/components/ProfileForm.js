@@ -24,7 +24,6 @@ import {
 import styles from './ProfileForm.module.css'
 
 const messages = {
-  manual: 'I’d rather fill out my profile manually',
   uploadProfilePicture: 'Upload a profile picture',
   errors: {
     tooLong: 'Sorry, handle is too long',
@@ -98,6 +97,7 @@ const ProfileForm = props => {
         <Input
           placeholder='Display Name'
           name='name'
+          id='name-input'
           autoComplete='off'
           size='medium'
           variant={props.isMobile ? 'normal' : 'elevatedPlaceholder'}
@@ -115,6 +115,7 @@ const ProfileForm = props => {
             placeholder='Handle'
             size='medium'
             name='nickname'
+            id='nickname-input'
             autoComplete='off'
             value={handle.value}
             disabled={!props.canUpdateHandle || handle.status === 'disabled'}
@@ -217,6 +218,7 @@ const ProfileForm = props => {
           )
         }
         type={profileValid ? ButtonType.PRIMARY_ALT : ButtonType.DISABLED}
+        isDisabled={!profileValid}
         onClick={onContinue}
         textClassName={styles.continueButtonText}
         className={cn(styles.continueButton, {

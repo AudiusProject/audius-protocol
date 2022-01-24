@@ -25,12 +25,12 @@ type BrowserPushConfirmationModal = ReturnType<typeof mapStateToProps> &
 
 const messages = {
   title: (
-    <span>
-      {'DON’T MISS A THING! '}
+    <h2>
+      {"DON'T MISS A THING! "}
       <span className={styles.bell}>
         <i className='emoji bell' />
       </span>
-    </span>
+    </h2>
   ),
   description:
     'Turn on browser notifications to be notified when your favorite artists release new content!',
