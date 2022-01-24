@@ -96,12 +96,8 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         aggregate_track (track_id, repost_count, save_count)
     SELECT
         DISTINCT(t.track_id),
-        COALESCE(track_repost.repost_count, 0)
-            - COALESCE(track_removed_repost.removed_repost_count, 0)
-            AS repost_count,
-        COALESCE(track_save.save_count, 0)
-            - COALESCE(track_removed_save.removed_save_count, 0)
-            AS save_count
+        COALESCE(track_repost.repost_count, 0) AS repost_count,
+        COALESCE(track_save.save_count, 0) AS save_count
     FROM
         (
             SELECT
@@ -148,37 +144,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         ) AS track_repost ON track_repost.track_id = t.track_id
         LEFT OUTER JOIN (
             SELECT
-                rr.repost_item_id AS track_id,
-                count(rr.repost_item_id) AS removed_repost_count
-            FROM
-                reposts rr
-            WHERE
-                rr.is_current IS TRUE
-                AND rr.repost_type = 'track'
-                AND rr.is_delete IS TRUE
-                AND rr.repost_item_id IN (
-                    SELECT
-                        track_id
-                    FROM
-                        new_track
-                )
-                AND rr.blocknumber > (
-                    SELECT
-                        prev_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
-                AND rr.blocknumber <= (
-                    SELECT
-                        current_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
-            GROUP BY
-                rr.repost_item_id
-        ) AS track_removed_repost ON track_removed_repost.track_id = t.track_id
-        LEFT OUTER JOIN (
-            SELECT
                 s.save_item_id AS track_id,
                 count(s.save_item_id) AS save_count
             FROM
@@ -208,37 +173,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             GROUP BY
                 s.save_item_id
         ) AS track_save ON track_save.track_id = t.track_id
-        LEFT OUTER JOIN (
-            SELECT
-                rs.save_item_id AS track_id,
-                count(rs.save_item_id) AS removed_save_count
-            FROM
-                saves rs
-            WHERE
-                rs.is_current IS TRUE
-                AND rs.save_type = 'track'
-                AND rs.is_delete IS TRUE
-                AND rs.save_item_id IN (
-                    SELECT
-                        track_id
-                    FROM
-                        new_track
-                )
-                AND rs.blocknumber > (
-                    SELECT
-                        prev_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
-                AND rs.blocknumber <= (
-                    SELECT
-                        current_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
-            GROUP BY
-                rs.save_item_id
-        ) AS track_removed_save ON track_removed_save.track_id = t.track_id
     WHERE
         t.track_id in (
             SELECT
