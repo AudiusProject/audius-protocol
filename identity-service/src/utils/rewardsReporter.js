@@ -36,6 +36,7 @@ class RewardsReporter {
   }) {
     this.successReporter = new SlackReporter({ slackUrl: successSlackUrl, childLogger })
     this.errorReporter = new SlackReporter({ slackUrl: errorSlackUrl, childLogger })
+    this.childLogger = childLogger
   }
 
   async reportSuccess ({ userId, challengeId, amount }) {
