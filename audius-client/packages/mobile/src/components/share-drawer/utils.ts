@@ -18,7 +18,7 @@ export const getContentUrl = (content: ShareModalContent) => {
     }
     case 'profile': {
       const { profile } = content
-      return getUserRoute(profile)
+      return getUserRoute(profile, true)
     }
     case 'album': {
       const { album, artist } = content
