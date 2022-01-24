@@ -772,11 +772,14 @@ class SnapbackSM {
     secondaryFilesHash
   }) {
     if (
-      !(primaryClock && primaryClock !== 0)
-      || !(secondaryClock && secondaryClock !== 0)
-      || !primaryFilesHash || !secondaryFilesHash
+      !(primaryClock && primaryClock !== 0) ||
+      !(secondaryClock && secondaryClock !== 0) ||
+      !primaryFilesHash ||
+      !secondaryFilesHash
     ) {
-      throw new Error(`[computeSyncModeForUserAndReplica] Error: All params must be defined`)
+      throw new Error(
+        `[computeSyncModeForUserAndReplica] Error: All params must be defined`
+      )
     }
 
     let syncMode = SyncMode.None
@@ -784,18 +787,14 @@ class SnapbackSM {
     if (primaryClock === secondaryClock) {
       if (primaryFilesHash === secondaryFilesHash) {
         syncMode = SyncMode.None
-
       } /* primaryFilesHash !== secondaryFilesHash */ else {
         syncMode = SyncMode.PrimaryShouldSync
-
       }
     } else if (primaryClock < secondaryClock) {
       syncMode = SyncMode.PrimaryShouldSync
-
     } /* primaryClock > secondaryClock */ else {
       if (!secondaryFilesHash) {
         syncMode = SyncMode.SecondaryShouldSync
-
       } /* secondaryFilesHash is defined */ else {
         // fetch primary filesHash for clockRange [0, secondaryClock]
         try {
@@ -807,18 +806,21 @@ class SnapbackSM {
                 clockMin: 0,
                 clockMax: secondaryClock + 1
               })
-            }, { retries: FetchFilesHashNumRetries }
+            },
+            { retries: FetchFilesHashNumRetries }
           )
 
-          syncMode = (primaryFilesHashForRange === secondaryFilesHash)
-            ? SyncMode.SecondaryShouldSync
-            : SyncMode.PrimaryShouldSync
-
+          syncMode =
+            primaryFilesHashForRange === secondaryFilesHash
+              ? SyncMode.SecondaryShouldSync
+              : SyncMode.PrimaryShouldSync
         } catch (e) {
           // With sufficient retries, this should never happen, log and skip
           syncMode = SyncMode.None
 
-          this.logError(`[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`)
+          this.logError(
+            `[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`
+          )
         }
       }
     }
