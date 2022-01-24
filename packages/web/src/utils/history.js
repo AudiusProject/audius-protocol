@@ -1,6 +1,6 @@
 import { createBrowserHistory, createHashHistory } from 'history'
 
-const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING
+const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING === 'true'
 const basename = process.env.PUBLIC_URL
 
 const createHistory = USE_HASH_ROUTING
