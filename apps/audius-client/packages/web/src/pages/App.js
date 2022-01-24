@@ -34,6 +34,7 @@ import NotificationPage from 'components/notification/NotificationPage'
 import PinnedTrackConfirmation from 'components/pin-track-confirmation/PinTrackConfirmation'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
 import ConnectedReachabilityBar from 'components/reachability-bar/ReachabilityBar'
+import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaimedToast'
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
@@ -927,6 +928,11 @@ class App extends Component {
         {
           <Suspense fallback={null}>
             <ConnectedMusicConfetti />
+          </Suspense>
+        }
+        {
+          <Suspense fallback={null}>
+            <RewardClaimedToast />
           </Suspense>
         }
 

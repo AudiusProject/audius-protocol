@@ -51,6 +51,7 @@ type RewardsUIState = {
   cognitoFlowStatus: CognitoFlowStatus
   cognitoFlowUrlStatus?: Status
   cognitoFlowUrl?: string
+  showRewardClaimedToast: boolean
 }
 
 const initialState: RewardsUIState = {
@@ -61,7 +62,8 @@ const initialState: RewardsUIState = {
   loading: true,
   claimStatus: ClaimStatus.NONE,
   hCaptchaStatus: HCaptchaStatus.NONE,
-  cognitoFlowStatus: CognitoFlowStatus.CLOSED
+  cognitoFlowStatus: CognitoFlowStatus.CLOSED,
+  showRewardClaimedToast: false
 }
 
 const slice = createSlice({
@@ -164,9 +166,12 @@ const slice = createSlice({
     fetchCognitoFlowUrlFailed: state => {
       state.cognitoFlowUrlStatus = Status.ERROR
     },
-    refreshUserChallenges: () => {},
-    refreshUserBalance: () => {},
-    reset: () => {}
+    showRewardClaimedToast: state => {
+      state.showRewardClaimedToast = true
+    },
+    resetRewardClaimedToast: state => {
+      state.showRewardClaimedToast = false
+    }
   }
 })
 
@@ -189,9 +194,8 @@ export const {
   fetchCognitoFlowUrl,
   fetchCognitoFlowUrlFailed,
   fetchCognitoFlowUrlSucceeded,
-  refreshUserChallenges,
-  refreshUserBalance,
-  reset
+  showRewardClaimedToast,
+  resetRewardClaimedToast
 } = slice.actions
 
 export default slice

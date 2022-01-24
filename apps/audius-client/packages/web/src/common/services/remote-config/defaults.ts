@@ -17,8 +17,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES]: 5,
   [IntKeys.ATTESTATION_QUORUM_SIZE]: 0,
   [IntKeys.MIN_AUDIO_SEND_AMOUNT]: 5,
-  [IntKeys.CHALLENGE_REFRESH_INTERVAL_MS]: 5000,
-  [IntKeys.REWARDS_WALLET_BALANCE_POLLING_FREQ_MS]: 5000
+  [IntKeys.CHALLENGE_REFRESH_INTERVAL_MS]: 15000,
+  [IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS]: 5000
 }
 
 export const remoteConfigStringDefaults: {
