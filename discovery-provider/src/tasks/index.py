@@ -54,12 +54,12 @@ from src.utils.redis_constants import (
 from src.utils.session_manager import SessionManager
 
 # These are kebab_cased - eg user_library_factory
-USER_FACTORY = CONTRACT_TYPES.USER_FACTORY.value
-TRACK_FACTORY = CONTRACT_TYPES.TRACK_FACTORY.value
-SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY.value
-PLAYLIST_FACTORY = CONTRACT_TYPES.PLAYLIST_FACTORY.value
-USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
-USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
+USER_FACTORY = CONTRACT_TYPES["USER_FACTORY"]
+TRACK_FACTORY = CONTRACT_TYPES["TRACK_FACTORY"]
+SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES["SOCIAL_FEATURE_FACTORY"]
+PLAYLIST_FACTORY = CONTRACT_TYPES["PLAYLIST_FACTORY"]
+USER_LIBRARY_FACTORY = CONTRACT_TYPES["USER_LIBRARY_FACTORY"]
+USER_REPLICA_SET_MANAGER = CONTRACT_TYPES["USER_REPLICA_SET_MANAGER"]
 
 # These are PascalCased - eg UserLibraryFactory
 USER_FACTORY_CONTRACT = CONTRACT_NAMES[USER_FACTORY]
@@ -70,12 +70,12 @@ USER_LIBRARY_FACTORY_CONTRACT = CONTRACT_NAMES[USER_LIBRARY_FACTORY]
 USER_REPLICA_SET_MANAGER_CONTRACT = CONTRACT_NAMES[USER_REPLICA_SET_MANAGER]
 
 TX_TYPE_TO_HANDLER_MAP = {
-    USER_FACTORY_CONTRACT: user_state_update,
-    TRACK_FACTORY_CONTRACT: track_state_update,
-    SOCIAL_FEATURE_FACTORY_CONTRACT: social_feature_state_update,
-    PLAYLIST_FACTORY_CONTRACT: playlist_state_update,
-    USER_LIBRARY_FACTORY_CONTRACT: user_library_state_update,
-    USER_REPLICA_SET_MANAGER_CONTRACT: user_replica_set_state_update,
+    USER_FACTORY: user_state_update,
+    TRACK_FACTORY: track_state_update,
+    SOCIAL_FEATURE_FACTORY: social_feature_state_update,
+    PLAYLIST_FACTORY: playlist_state_update,
+    USER_LIBRARY_FACTORY: user_library_state_update,
+    USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
 }
 
 logger = logging.getLogger(__name__)
@@ -418,9 +418,12 @@ def get_contract_name_for_tx(tx, tx_receipt):
     contract_name = None
     tx_target_contract_address = tx["to"]
     for tx_type in CONTRACT_TYPES.values():
+        logger.error(f"AAAAAAAAAA ADDRESS {tx_target_contract_address}")
         tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
+        logger.error(f"AAAAAAAAAA TX_IS_TYPE {tx_is_type}")
         if tx_is_type:
             contract_name = CONTRACT_NAMES[tx_type]
+            logger.error(f"AAAAAAAAAA NAME {contract_name}")
             logger.info(
                 f"index.py | {contract_name} contract addr: {tx_target_contract_address}"
                 f" tx from block - {tx}, receipt - {tx_receipt}"
@@ -458,7 +461,7 @@ def process_state_changes(
     session,
     ipfs_metadata,
     blacklisted_cids,
-    contract_type_to_grouped_lists_map,
+    contract_name_to_grouped_lists_map,
     block,
 ):
     block_number, block_hash, block_timestamp = itemgetter(
@@ -477,7 +480,7 @@ def process_state_changes(
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
         contract_name = CONTRACT_NAMES[tx_type]
-        txs_to_process = contract_type_to_grouped_lists_map[contract_name]
+        txs_to_process = contract_name_to_grouped_lists_map[contract_name]
         tx_processing_args = [
             main_indexing_task,
             update_task,
@@ -506,7 +509,7 @@ def process_state_changes(
     return changed_entity_ids_map
 
 
-def remove_updated_entities_from_cache(redis, changed_entity_type_to_updated_ids_map):
+def remove_updated_entities_from_cache(redis, contract_name_to_changed_entity_ids):
     CONTRACT_NAME_TO_CLEAR_CACHE_HANDLERS = {
         USER_FACTORY_CONTRACT: remove_cached_user_ids,
         USER_REPLICA_SET_MANAGER_CONTRACT: remove_cached_user_ids,
@@ -514,10 +517,10 @@ def remove_updated_entities_from_cache(redis, changed_entity_type_to_updated_ids
         PLAYLIST_FACTORY_CONTRACT: remove_cached_playlist_ids,
     }
     for (
-        contract_type,
+        contract_name,
         clear_cache_handler,
     ) in CONTRACT_NAME_TO_CLEAR_CACHE_HANDLERS.items():
-        changed_entity_ids = changed_entity_type_to_updated_ids_map[contract_type]
+        changed_entity_ids = contract_name_to_changed_entity_ids[contract_name]
         if changed_entity_ids:
             clear_cache_handler(redis, changed_entity_ids)
 
@@ -563,12 +566,12 @@ def index_blocks(self, db, blocks_list):
                 add_indexed_block_to_db(session, block)
             else:
                 txs_grouped_by_contract = {
-                    USER_FACTORY: [],
-                    TRACK_FACTORY: [],
-                    SOCIAL_FEATURE_FACTORY: [],
-                    PLAYLIST_FACTORY: [],
-                    USER_LIBRARY_FACTORY: [],
-                    USER_REPLICA_SET_MANAGER: [],
+                    USER_FACTORY_CONTRACT: [],
+                    TRACK_FACTORY_CONTRACT: [],
+                    SOCIAL_FEATURE_FACTORY_CONTRACT: [],
+                    PLAYLIST_FACTORY_CONTRACT: [],
+                    USER_LIBRARY_FACTORY_CONTRACT: [],
+                    USER_REPLICA_SET_MANAGER_CONTRACT: [],
                 }
                 try:
                     tx_receipt_dict = fetch_tx_receipts(self, block)
@@ -577,7 +580,7 @@ def index_blocks(self, db, blocks_list):
                     sorted_txs = sorted(
                         block.transactions, key=lambda entry: entry["hash"]
                     )
-
+                    logger.error(f"TXXXXXXX, {sorted_txs}")
                     # Parse tx events in each block
                     for tx in sorted_txs:
                         tx_hash = web3.toHex(tx["hash"])
@@ -594,7 +597,7 @@ def index_blocks(self, db, blocks_list):
                             save_skipped_tx(session, redis)
                         else:
                             contract_name = get_contract_name_for_tx(tx, tx_receipt)
-                            txs_grouped_by_contract[contract_name] = tx_receipt
+                            txs_grouped_by_contract[contract_name].append(tx_receipt)
 
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
