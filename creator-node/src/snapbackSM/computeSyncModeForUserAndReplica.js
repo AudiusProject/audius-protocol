@@ -1,5 +1,3 @@
-const retry = require('async-retry')
-
 const DBManager = require('../dbManager.js')
 
 /**

@@ -8,7 +8,7 @@ const {
   SyncMode,
   computeSyncModeForUserAndReplica
 } = require('./computeSyncModeForUserAndReplica.js')
-describe.only('Test computeSyncModeForUserAndReplica()', () => {
+describe('Test computeSyncModeForUserAndReplica()', () => {
   let primaryClock,
     secondaryClock,
     primaryFilesHash,
