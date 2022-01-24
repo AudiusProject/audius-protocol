@@ -1,7 +1,6 @@
 const Bull = require('bull')
 const axios = require('axios')
 const _ = require('lodash')
-const retry = require('async-retry')
 
 const utils = require('../utils')
 const models = require('../models')
@@ -12,7 +11,11 @@ const PeerSetManager = require('./peerSetManager')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
-const DBManager = require('../dbManager.js')
+const {
+  SyncMode,
+  computeSyncModeForUserAndReplica,
+  computeSyncModeForUserAndReplicaLegacy
+} = require('./computeSyncModeForUserAndReplica.js')
 
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
@@ -75,15 +78,6 @@ const RECONFIG_MODES = Object.freeze({
 })
 
 const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
-
-/**
- * Sync mode for a (primary, secondary) pair for a user
- */
-const SyncMode = Object.freeze({
-  None: 'NONE',
-  SecondaryShouldSync: 'SECONDARY_SHOULD_SYNC',
-  PrimaryShouldSync: 'PRIMARY_SHOULD_SYNC'
-})
 
 /*
   SnapbackSM aka Snapback StateMachine
@@ -720,6 +714,7 @@ class SnapbackSM {
         axiosReqParams.params = { spID: this.spID, timestamp, signature }
 
         // Make axios request with retries
+        // TODO replace with async-retry
         let userClockValuesResp = []
         let userClockFetchAttempts = 0
         let errorMsg
@@ -743,7 +738,11 @@ class SnapbackSM {
 
         // Else, add response data to output aggregate map
         userClockValuesResp.forEach((userClockValueResp) => {
-          // If node is running behind version 0.3.50, `filesHash` value will be undefined
+          /**
+           * @notice `filesHash` will be undefined if node is running version < 0.3.50
+           * @notice `filesHash` will be null if node is running version >= 0.3.50 but has no files for user
+           *    - Note this can happen even if clock > 0
+           */
           const { walletPublicKey, clock, filesHash } = userClockValueResp
           replicasToUserInfoMap[replica][walletPublicKey] = { clock, filesHash }
         })
@@ -751,98 +750,6 @@ class SnapbackSM {
     )
 
     return replicasToUserInfoMap
-  }
-
-  /**
-   * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
-   * @notice Is used when both replicas are running version >= 0.3.50
-   * @param {Object} param
-   * @param {string} param.wallet user wallet
-   * @param {number} param.primaryClock clock value on user's primary
-   * @param {number} param.secondaryClock clock value on user's secondary
-   * @param {string} param.primaryFilesHash filesHash on user's primary
-   * @param {string} param.secondaryFilesHash filesHash on user's secondary
-   * @returns {SyncMode} syncMode one of None, SecondaryShouldSync, PrimaryShouldSync
-   */
-  async computeSyncModeForUserAndReplica({
-    wallet,
-    primaryClock,
-    secondaryClock,
-    primaryFilesHash,
-    secondaryFilesHash
-  }) {
-    if (
-      !(primaryClock && primaryClock !== 0) ||
-      !(secondaryClock && secondaryClock !== 0) ||
-      !primaryFilesHash ||
-      !secondaryFilesHash
-    ) {
-      throw new Error(
-        `[computeSyncModeForUserAndReplica] Error: All params must be defined`
-      )
-    }
-
-    let syncMode = SyncMode.None
-
-    if (primaryClock === secondaryClock) {
-      if (primaryFilesHash === secondaryFilesHash) {
-        syncMode = SyncMode.None
-      } /* primaryFilesHash !== secondaryFilesHash */ else {
-        syncMode = SyncMode.PrimaryShouldSync
-      }
-    } else if (primaryClock < secondaryClock) {
-      syncMode = SyncMode.PrimaryShouldSync
-    } /* primaryClock > secondaryClock */ else {
-      if (!secondaryFilesHash) {
-        syncMode = SyncMode.SecondaryShouldSync
-      } /* secondaryFilesHash is defined */ else {
-        // fetch primary filesHash for clockRange [0, secondaryClock]
-        try {
-          const FetchFilesHashNumRetries = 3
-          const primaryFilesHashForRange = await retry(
-            async () => {
-              return DBManager.fetchFilesHashFromDB({
-                lookupKey: { lookupWallet: wallet },
-                clockMin: 0,
-                clockMax: secondaryClock + 1
-              })
-            },
-            { retries: FetchFilesHashNumRetries }
-          )
-
-          syncMode =
-            primaryFilesHashForRange === secondaryFilesHash
-              ? SyncMode.SecondaryShouldSync
-              : SyncMode.PrimaryShouldSync
-        } catch (e) {
-          // With sufficient retries, this should never happen, log and skip
-          syncMode = SyncMode.None
-
-          this.logError(
-            `[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`
-          )
-        }
-      }
-    }
-
-    return syncMode
-  }
-
-  /**
-   * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
-   * @notice Is used when at least 1 replica is running version < 0.3.50
-   * @param {Object} param
-   * @param {string} param.wallet user wallet
-   * @param {number} param.primaryClock clock value on user's primary
-   * @param {number} param.secondaryClock clock value on user's secondary
-   * @returns {SyncMode} syncMode one of None, SecondaryShouldSync, PrimaryShouldSync
-   */
-  computeSyncModeForUserAndReplicaLegacy({ primaryClock, secondaryClock }) {
-    if (primaryClock > secondaryClock) {
-      return SyncMode.SecondaryShouldSync
-    } else {
-      return SyncMode.None
-    }
   }
 
   /**
@@ -877,12 +784,12 @@ class SnapbackSM {
           let syncMode = SyncMode.None
           // filesHash value will be undefined if at least 1 replica is running version < 0.3.50
           if (!primaryFilesHash || !secondaryFilesHash) {
-            syncMode = this.computeSyncModeForUserAndReplicaLegacy({
+            syncMode = computeSyncModeForUserAndReplicaLegacy({
               primaryClock,
               secondaryClock
             })
           } else {
-            syncMode = await this.computeSyncModeForUserAndReplica({
+            syncMode = await computeSyncModeForUserAndReplica({
               wallet,
               primaryClock,
               secondaryClock,
@@ -1881,4 +1788,10 @@ class SnapbackSM {
   }
 }
 
-module.exports = { SnapbackSM, SyncType, RECONFIG_MODE_KEYS, RECONFIG_MODES }
+module.exports = {
+  SnapbackSM,
+  SyncType,
+  SyncMode,
+  RECONFIG_MODE_KEYS,
+  RECONFIG_MODES
+}
