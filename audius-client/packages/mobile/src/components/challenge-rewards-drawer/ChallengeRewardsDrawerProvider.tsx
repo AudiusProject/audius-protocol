@@ -210,7 +210,7 @@ export const ChallengeRewardsDrawerProvider = () => {
         claim: {
           challengeId: modalType,
           specifier: challenge?.specifier ?? '',
-          amount: challenge?.amount ?? '0'
+          amount: challenge?.amount ?? 0
         },
         retryOnFailure: true
       })
