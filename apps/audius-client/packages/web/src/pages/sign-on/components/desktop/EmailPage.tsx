@@ -127,6 +127,7 @@ export const EmailPage = ({
         placeholder='Email'
         type='email'
         name='email'
+        id='email-input'
         variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
         size='medium'
         value={email.value}
