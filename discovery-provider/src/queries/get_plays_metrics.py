@@ -1,22 +1,32 @@
 import logging
 import time
+from typing import TypedDict
 
 from sqlalchemy import desc, func
-from src.models import Play
+from sqlalchemy.orm.session import Session
+from src.models import HourlyPlayCounts
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
 
-def get_plays_metrics(args):
+class GetPlayMetricsArgs(TypedDict):
+    # A date_trunc operation to aggregate timestamps by
+    bucket_size: int
+
+    # The max number of responses to return
+    start_time: int
+
+    # The max number of responses to return
+    limit: int
+
+
+def get_plays_metrics(args: GetPlayMetricsArgs):
     """
     Returns metrics for play counts
 
     Args:
-        args: dict The parsed args from the request
-        args.start_time: date The start of the query
-        args.limit: number The max number of responses to return
-        args.bucket_size: string A date_trunc operation to aggregate timestamps by
+        args: GetPlayMetrics the parsed args from the request
 
     Returns:
         Array of dictionaries with the play counts and timestamp
@@ -26,16 +36,18 @@ def get_plays_metrics(args):
         return _get_plays_metrics(session, args)
 
 
-def _get_plays_metrics(session, args):
+def _get_plays_metrics(session: Session, args: GetPlayMetricsArgs):
     metrics_query = (
         session.query(
-            func.date_trunc(args.get("bucket_size"), Play.created_at).label(
-                "timestamp"
-            ),
-            func.count(Play.id).label("count"),
+            func.date_trunc(
+                args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp
+            ).label("timestamp"),
+            func.sum(HourlyPlayCounts.play_count).label("count"),
         )
-        .filter(Play.created_at > args.get("start_time"))
-        .group_by(func.date_trunc(args.get("bucket_size"), Play.created_at))
+        .filter(HourlyPlayCounts.hourly_timestamp > args.get("start_time"))
+        .group_by(
+            func.date_trunc(args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp)
+        )
         .order_by(desc("timestamp"))
         .limit(args.get("limit"))
     )
@@ -43,7 +55,7 @@ def _get_plays_metrics(session, args):
     metrics = metrics_query.all()
 
     metrics = [
-        {"timestamp": int(time.mktime(m[0].timetuple())), "count": m[1]}
-        for m in metrics
+        {"timestamp": int(time.mktime(metric[0].timetuple())), "count": metric[1]}
+        for metric in metrics
     ]
     return metrics

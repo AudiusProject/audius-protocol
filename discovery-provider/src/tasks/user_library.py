@@ -109,7 +109,9 @@ def user_library_state_update(
                 playlist_id,
                 playlist_ids[playlist_id].save_type,
             )
-            session.add(playlist_ids[playlist_id])
+            save = playlist_ids[playlist_id]
+            session.add(save)
+            dispatch_favorite(challenge_bus, save, block_number)
         num_total_changes += len(playlist_ids)
 
     return num_total_changes, empty_set

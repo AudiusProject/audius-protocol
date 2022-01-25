@@ -74,6 +74,7 @@ def get_undisbursed_challenges(
             UserChallenge.is_complete == True,
             Challenge.active == True,
             User.is_current == True,
+            User.is_deactivated == False,
         )
         .order_by(
             asc(UserChallenge.completed_blocknumber),

@@ -42,8 +42,11 @@ from src.queries.get_saves import get_saves
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
-from src.queries.get_track_history import get_track_history
 from src.queries.get_tracks import get_tracks
+from src.queries.get_user_listening_history import (
+    GetUserListeningHistoryArgs,
+    get_user_listening_history,
+)
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
 from src.queries.search_queries import SearchKind, search
@@ -527,18 +530,15 @@ class TrackHistoryFull(Resource):
         args = history_route_parser.parse_args()
         decoded_id = decode_with_abort(user_id, ns)
         current_user_id = get_current_user_id(args)
-
         offset = format_offset(args)
         limit = format_limit(args)
-        get_tracks_args = {
-            "filter_deleted": False,
-            "user_id": decoded_id,
-            "current_user_id": current_user_id,
-            "limit": limit,
-            "offset": offset,
-            "with_users": True,
-        }
-        track_history = get_track_history(get_tracks_args)
+        get_tracks_args = GetUserListeningHistoryArgs(
+            user_id=decoded_id,
+            current_user_id=current_user_id,
+            limit=limit,
+            offset=offset,
+        )
+        track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
         return success_response(tracks)
 
@@ -816,7 +816,9 @@ class UsersByContentNode(Resource):
         """New route to call get_users_cnode with replica_type param (only consumed by content node)
         - Leaving `/users/creator_node` above untouched for backwards-compatibility
 
-        Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID }
+        Response = array of objects of schema {
+            user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID
+        }
         """
         args = users_by_content_node_route_parser.parse_args()
 
