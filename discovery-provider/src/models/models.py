@@ -585,20 +585,6 @@ class PlaysArchive(Base):
         DateTime, nullable=False, default=func.now(), onupdate=func.now()
     )
 
-    Index("plays_archive_created_at_idx", "created_at")
-    Index("plays_archive_play_item_id_idx", "play_item_id")
-    Index("plays_archive_play_item_id_idx", "play_item_id")
-    Index(
-        "plays_archive_play_item_id_user_id_created_at_idx",
-        "play_item_id",
-        "user_id",
-        "created_at",
-    )
-    Index("plays_archive_play_item_id_user_id_idx", "play_item_id", "play_item_id")
-    Index("plays_archive_signature_idx", "signature")
-    Index("plays_archive_slot_idx", "slot")
-    Index("plays_archive_updated_at_idx", "updated_at")
-
     def __repr__(self):
         return f"<Play(\
 id={self.id},\

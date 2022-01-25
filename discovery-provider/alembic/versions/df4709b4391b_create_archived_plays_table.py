@@ -17,11 +17,29 @@ depends_on = None
 def upgrade():
     conn = op.get_bind()
     query = """
-    CREATE TABLE IF NOT EXISTS plays_archive (LIKE plays INCLUDING ALL);
+        DO
+        $do$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT
+                FROM
+                    information_schema.tables
+                WHERE
+                    table_name = 'plays_archive'
+            ) THEN -- update indexing checkpoints based on current plays
+            CREATE TABLE plays_archive (LIKE plays);
 
-    -- add column for archive date
-    ALTER TABLE plays_archive ADD COLUMN archived_at timestamp;
-    """
+            -- add column for archive date
+            ALTER TABLE
+                plays_archive
+            ADD
+                COLUMN archived_at timestamp;
+
+            END IF;
+
+        END
+        $do$
+        """
     conn.execute(query)
 
 
