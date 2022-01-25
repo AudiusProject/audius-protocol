@@ -1189,7 +1189,7 @@ class AudiusAPIClient {
     return encodedUserId ? decodeHashId(encodedUserId.toString()) : null
   }
 
-  async getUserChallenges({ userID }: GetUserChallengesArgs) {
+  getUserChallenges = async ({ userID }: GetUserChallengesArgs) => {
     this._assertInitialized()
     const encodedCurrentUserId = encodeHashId(userID)
     if (encodedCurrentUserId === null) return null // throw error
