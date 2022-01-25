@@ -1,6 +1,5 @@
 import logging
 from copy import deepcopy
-from pprint import pprint
 from typing import List
 
 from integration_tests.utils import populate_mock_db
@@ -88,7 +87,7 @@ basic_entities = {
             "save_item_id": 2,
             "save_type": "track",
             "user_id": 10,
-            "is_current": False,
+            "is_current": True,
             "is_delete": True,
         },
     ],
@@ -103,7 +102,6 @@ def basic_tests(session, last_checkpoint=12, previous_count=0):
         session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
     )
 
-    pprint(results)
     assert len(results) == 4
 
     assert results[0].track_id == 1
@@ -241,7 +239,6 @@ def test_index_aggregate_track_empty_activity(app):
         results: List[AggregateTrack] = (
             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
         )
-        pprint(results)
 
         assert (
             len(results) == 0
