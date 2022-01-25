@@ -210,21 +210,21 @@ const getTrendingTracks = async (
 
 const getTrackingListenKeys = (suffix) => {
   return {
-      submission: `listens-tx-submission::${suffix}`,
-      success: `listens-tx-success::${suffix}`
+    submission: `listens-tx-submission::${suffix}`,
+    success: `listens-tx-success::${suffix}`
   }
 }
 
 const initializeExpiringRedisKey = async (redis, key, expiry) => {
-    let getResp = await redis.get(key)
-    logger.info(`TrackListen tx getResp ${getResp}`)
+  let getResp = await redis.get(key)
+  logger.info(`TrackListen tx getResp ${getResp}`)
 
-    if (!getResp) {
-      logger.info(`TrackListen tx getResp ${getResp} NOT FOUND, setting value`)
-      await redis.set(key, 0, 'ex', expiry)
-    } else {
-      logger.info(`TrackListen tx getResp ${getResp} FOUND, NOT setting value`)
-    }
+  if (!getResp) {
+    logger.info(`TrackListen tx getResp ${getResp} NOT FOUND, setting value`)
+    await redis.set(key, 0, 'ex', expiry)
+  } else {
+    logger.info(`TrackListen tx getResp ${getResp} FOUND, NOT setting value`)
+  }
 }
 
 module.exports = function (app) {
@@ -236,7 +236,7 @@ module.exports = function (app) {
     let submission = 0
     // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
     for (var entry of results) {
-      let split = entry.split("::")
+      let split = entry.split('::')
       if (split.length >= 2) {
         let hourSuffix = split[1]
         let trackingRedisKeys = getTrackingListenKeys(hourSuffix)
