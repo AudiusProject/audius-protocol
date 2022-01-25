@@ -1034,3 +1034,13 @@ class CONTRACT_TYPES(Enum):
     PLAYLIST_FACTORY = "playlist_factory"
     USER_LIBRARY_FACTORY = "user_library_factory"
     USER_REPLICA_SET_MANAGER = "user_replica_set_manager"
+
+
+CONTRACT_NAMES = {
+    CONTRACT_TYPES.USER_FACTORY: "UserFactory",
+    CONTRACT_TYPES.TRACK_FACTORY: "TrackFactory",
+    CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY: "SocialFeatureFactory",
+    CONTRACT_TYPES.PLAYLIST_FACTORY: "PlaylistFactory",
+    CONTRACT_TYPES.USER_LIBRARY_FACTORY: "UserLibraryFactory",
+    CONTRACT_TYPES.USER_REPLICA_SET_MANAGER: "UserReplicaSetManager",
+}
