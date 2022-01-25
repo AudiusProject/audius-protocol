@@ -714,7 +714,7 @@ class SnapbackSM {
         axiosReqParams.params = { spID: this.spID, timestamp, signature }
 
         // Make axios request with retries
-        // TODO replace with async-retry
+        // TODO replace with asyncRetry
         let userClockValuesResp = []
         let userClockFetchAttempts = 0
         let errorMsg
@@ -1791,7 +1791,6 @@ class SnapbackSM {
 module.exports = {
   SnapbackSM,
   SyncType,
-  SyncMode,
   RECONFIG_MODE_KEYS,
   RECONFIG_MODES
 }

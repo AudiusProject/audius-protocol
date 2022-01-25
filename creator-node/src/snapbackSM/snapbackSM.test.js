@@ -1,14 +1,16 @@
+/** Unit tests for SnapbackSM module */
+
 const assert = require('assert')
-const DBManager = require('../dbManager.js')
 const proxyquire = require('proxyquire')
 
+const DBManager = require('../dbManager.js')
 const { logger } = require('../logging.js')
 
 const {
   SyncMode,
   computeSyncModeForUserAndReplica
 } = require('./computeSyncModeForUserAndReplica.js')
-describe('Test computeSyncModeForUserAndReplica()', () => {
+describe.only('Test computeSyncModeForUserAndReplica()', () => {
   let primaryClock,
     secondaryClock,
     primaryFilesHash,

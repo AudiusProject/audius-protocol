@@ -1,4 +1,5 @@
 const DBManager = require('../dbManager.js')
+const { asyncRetry } = require('../utils.js')
 
 /**
  * Sync mode for a (primary, secondary) pair for a user
@@ -9,7 +10,7 @@ const SyncMode = Object.freeze({
   PrimaryShouldSync: 'PRIMARY_SHOULD_SYNC'
 })
 
-const FetchFilesHashNumAttempts = 4
+const FetchFilesHashNumRetries = 3
 
 /**
  * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
@@ -56,25 +57,18 @@ async function computeSyncModeForUserAndReplica({
     if (secondaryFilesHash === null) {
       syncMode = SyncMode.SecondaryShouldSync
     } /* secondaryFilesHash is defined */ else {
-      // fetch primary filesHash for clockRange [0, secondaryClock]
+      // Need to compare filesHashes from same clock ranges
       try {
-        let primaryFilesHashForRange
-        let error
-        let attemptNum = 1
-        while (attemptNum++ < FetchFilesHashNumAttempts) {
-          try {
-            primaryFilesHashForRange = await DBManager.fetchFilesHashFromDB({
+        // Throws error if failure after all retries
+        const primaryFilesHashForRange = await asyncRetry(
+          async () =>
+            DBManager.fetchFilesHashFromDB({
               lookupKey: { lookupWallet: wallet },
               clockMin: 0,
               clockMax: secondaryClock + 1
-            })
-          } catch (e) {
-            error = e
-          }
-        }
-        if (primaryFilesHashForRange === undefined) {
-          throw new Error(error)
-        }
+            }),
+          { retries: FetchFilesHashNumRetries }
+        )
 
         if (primaryFilesHashForRange === secondaryFilesHash) {
           syncMode = SyncMode.SecondaryShouldSync
@@ -82,7 +76,7 @@ async function computeSyncModeForUserAndReplica({
           syncMode = SyncMode.PrimaryShouldSync
         }
       } catch (e) {
-        // With sufficient retries, this should never happen, log and skip
+        // Log and skip
         syncMode = SyncMode.None
 
         logger.error(
