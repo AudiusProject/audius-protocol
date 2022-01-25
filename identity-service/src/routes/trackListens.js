@@ -205,7 +205,52 @@ const getTrendingTracks = async (
   return parsedListenCounts
 }
 
+const getTrackingListenKeys = (suffix) => {
+  return {
+      submission: `listens-tx-submission::${suffix}`,
+      success: `listens-tx-success::${suffix}`
+  }
+}
+
+const initializeExpiringRedisKey = async (redis, key, expiry) => {
+    let getResp = await redis.get(key)
+    logger.info(`TrackListen tx getResp ${getResp}`)
+
+    if (!getResp) {
+      logger.info(`TrackListen tx getResp ${getResp} NOT FOUND, setting value`)
+      await redis.set(key, 0, 'ex', expiry)
+    } else {
+      logger.info(`TrackListen tx getResp ${getResp} FOUND, NOT setting value`)
+    }
+}
+
 module.exports = function (app) {
+  app.get('/tracks/listen/solana/status', handleResponse(async (req, res) => {
+    const redis = req.app.get('redis')
+    let results = await redis.keys('listens-tx-*')
+    let hourlyResponseData = {}
+    let success, submission = 0
+    // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
+    for (var entry of results) {
+      let split = entry.split("::")
+      if (split.length >= 2) {
+        let suffix = split[1]
+        let trackingRedisKeys = getTrackingListenKeys(suffix)
+
+        if (!hourlyResponseData.hasOwnProperty(suffix)) {
+          hourlyResponseData[suffix] = {
+            submission: await redis.get(trackingRedisKeys.submission),
+            success: await redis.get(trackingRedisKeys.success)
+          }
+          submission += Number(hourlyResponseData[suffix].submission)
+          success += Number(hourlyResponseData[suffix].success)
+        }
+      }
+    }
+
+    return successResponse({ success, submission, hourlyResponseData })
+  }))
+
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
     const libs = req.app.get('audiusLibs')
     const connection = libs.solanaWeb3Manager.connection
@@ -221,16 +266,21 @@ module.exports = function (app) {
     const solanaListen = req.body.solanaListen || isSolanaListenEnabled || false
 
     let currentHour = await getListenHour()
-    let trackingRedisKeys = {
-      submission: `listens-tx-submission-${currentHour.toString()}`,
-      success: `listens-tx-success-${currentHour.toString()}`,
-      error: `listens-tx-error-${currentHour.toString()}`
-    }
-
     // Dedicated listen flow
     if (solanaListen) {
-      req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}`)
-      await redis.increment(trackingRedisKeys.success)
+      let suffix = currentHour.toISOString()
+
+      // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
+      let trackingRedisKeys = getTrackingListenKeys(suffix)
+      // Initialize expiring redis keys
+      const redisTxTrackingExpiry = 300
+      await initializeExpiringRedisKey(redis, trackingRedisKeys.submission, redisTxTrackingExpiry)
+      await initializeExpiringRedisKey(redis, trackingRedisKeys.success, redisTxTrackingExpiry)
+
+      req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}, ${JSON.stringify(trackingRedisKeys)}`)
+
+      await redis.incr(trackingRedisKeys.submission)
+
       const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
           connection,
@@ -241,7 +291,10 @@ module.exports = function (app) {
           'relay' // Static source value to indicate relayed listens
         )
         req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
-        await redis.increment(trackingRedisKeys.success)
+
+        // Increment success tracker
+        await redis.incr(trackingRedisKeys.success)
+
         return successResponse({
           solTxSignature
         })
