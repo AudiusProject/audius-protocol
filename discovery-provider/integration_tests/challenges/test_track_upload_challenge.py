@@ -106,6 +106,25 @@ def test_track_upload_challenge(app):
         updated_at=today,
     )
 
+    stem = Track(
+        blockhash="0x3",
+        blocknumber=30000001,
+        txhash="stem",
+        owner_id=1,
+        track_id=6,
+        route_id="6",
+        track_segments=[],
+        is_unlisted=False,
+        is_current=True,
+        is_delete=False,
+        created_at=today,
+        updated_at=today,
+        stem_of={
+            "parent_track_id": 4,
+            "category": "bass"
+        }
+    )
+
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
 
@@ -150,14 +169,18 @@ def test_track_upload_challenge(app):
         assert user_challenge.current_step_count == 1
         assert not user_challenge.is_complete
 
-        # Ensure unlisted track is not counted
+        # Ensure unlisted tracks and stems are not counted
         session.add(unlisted_track)
-        bus.dispatch(ChallengeEvent.track_upload, 30000000, 1)
+        bus.dispatch(ChallengeEvent.track_upload, 30000001, 1)
+        session.add(stem)
+        bus.dispatch(ChallengeEvent.track_upload, 30000001, 1)
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
             session, ["1"]
         )[0]
+
+        # Ensure stem is not counted
 
         assert user_challenge.current_step_count == 1
 
