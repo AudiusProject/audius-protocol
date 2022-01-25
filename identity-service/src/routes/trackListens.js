@@ -30,6 +30,9 @@ const maxLimit = 500
 const defaultOffset = 0
 const minOffset = 0
 
+// Duration for listen tracking redis keys prior to expiry (in seconds)
+const redisTxTrackingExpiry = 36000
+
 const getPaginationVars = (limit, offset) => {
   if (!limit) limit = defaultLimit
   if (!offset) offset = defaultOffset
@@ -273,8 +276,6 @@ module.exports = function (app) {
 
       // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
       let trackingRedisKeys = getTrackingListenKeys(suffix)
-      // Initialize expiring redis keys
-      const redisTxTrackingExpiry = 300
       await initializeExpiringRedisKey(redis, trackingRedisKeys.submission, redisTxTrackingExpiry)
       await initializeExpiringRedisKey(redis, trackingRedisKeys.success, redisTxTrackingExpiry)
 
