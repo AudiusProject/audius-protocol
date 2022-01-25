@@ -65,7 +65,9 @@ def aggregate_worker(
         return
 
     # update aggregate track with new tracks that came after the prev_checkpoint
-    logger.info(f"{worker_name} | Updating {table_name} | checkpoint: ({prev_checkpoint}, {current_checkpoint}]")
+    logger.info(
+        f"{worker_name} | Updating {table_name} | checkpoint: ({prev_checkpoint}, {current_checkpoint}]"
+    )
 
     session.execute(
         text(query),

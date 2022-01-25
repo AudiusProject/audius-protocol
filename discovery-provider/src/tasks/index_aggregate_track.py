@@ -178,6 +178,4 @@ def update_aggregate_track(self):
     db = update_aggregate_track.db
     redis = update_aggregate_track.redis
 
-    celery_worker(
-        logger, db, redis, AGGREGATE_TRACK, _update_aggregate_track
-    )
+    celery_worker(logger, db, redis, AGGREGATE_TRACK, _update_aggregate_track)

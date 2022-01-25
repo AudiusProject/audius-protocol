@@ -1,6 +1,5 @@
 import logging
 from copy import deepcopy
-from datetime import datetime, timedelta
 from pprint import pprint
 from typing import List
 
@@ -42,11 +41,32 @@ basic_entities = {
         {"repost_item_id": 1, "repost_type": "track", "user_id": 2},
         {"repost_item_id": 1, "repost_type": "track", "user_id": 3},
         {"repost_item_id": 1, "repost_type": "track", "user_id": 4},
-
-        {"repost_item_id": 2, "repost_type": "track", "user_id": 5, "is_current": False},
-        {"repost_item_id": 2, "repost_type": "track", "user_id": 5, "is_current": False, "is_delete": True},
-        {"repost_item_id": 2, "repost_type": "track", "user_id": 5, "is_current": False},
-        {"repost_item_id": 2, "repost_type": "track", "user_id": 5, "is_current": True, "is_delete": True},
+        {
+            "repost_item_id": 2,
+            "repost_type": "track",
+            "user_id": 5,
+            "is_current": False,
+        },
+        {
+            "repost_item_id": 2,
+            "repost_type": "track",
+            "user_id": 5,
+            "is_current": False,
+            "is_delete": True,
+        },
+        {
+            "repost_item_id": 2,
+            "repost_type": "track",
+            "user_id": 5,
+            "is_current": False,
+        },
+        {
+            "repost_item_id": 2,
+            "repost_type": "track",
+            "user_id": 5,
+            "is_current": True,
+            "is_delete": True,
+        },
     ],
     "saves": [
         {"save_item_id": 1, "save_type": "track", "user_id": 2},
@@ -55,11 +75,22 @@ basic_entities = {
         {"save_item_id": 4, "save_type": "track", "user_id": 4},
         {"save_item_id": 4, "save_type": "track", "user_id": 6},
         {"save_item_id": 4, "save_type": "track", "user_id": 8},
-
         {"save_item_id": 2, "save_type": "track", "user_id": 10, "is_current": False},
-        {"save_item_id": 2, "save_type": "track", "user_id": 10, "is_current": False, "is_delete": True},
+        {
+            "save_item_id": 2,
+            "save_type": "track",
+            "user_id": 10,
+            "is_current": False,
+            "is_delete": True,
+        },
         {"save_item_id": 2, "save_type": "track", "user_id": 10, "is_current": False},
-        {"save_item_id": 2, "save_type": "track", "user_id": 10, "is_current": False, "is_delete": True},
+        {
+            "save_item_id": 2,
+            "save_type": "track",
+            "user_id": 10,
+            "is_current": False,
+            "is_delete": True,
+        },
     ],
 }
 
@@ -394,9 +425,15 @@ def test_index_aggregate_track_update_with_extra_user(app):
         assert results[1].repost_count == 0
         assert results[1].save_count == 0
 
-        assert results[2].track_id == 3, "Test that #3 is not overwritten since #3 is marked as deleted"
-        assert results[2].repost_count == 9, "Test that #3 is not overwritten since #3 is marked as deleted"
-        assert results[2].save_count == 9, "Test that #3 is not overwritten since #3 is marked as deleted"
+        assert (
+            results[2].track_id == 3
+        ), "Test that #3 is not overwritten since #3 is marked as deleted"
+        assert (
+            results[2].repost_count == 9
+        ), "Test that #3 is not overwritten since #3 is marked as deleted"
+        assert (
+            results[2].save_count == 9
+        ), "Test that #3 is not overwritten since #3 is marked as deleted"
 
         assert results[3].track_id == 4
         assert results[3].repost_count == 0
@@ -519,8 +556,12 @@ def test_index_aggregate_track_update_with_only_aggregate_track(app):
             len(results) == 3
         ), "Test that aggregate_track has not been changed due to lack of track data"
         for result in results:
-            assert result.repost_count == 9, "Test that aggregate_track has not been changed due to lack of track data"
-            assert result.save_count == 9, "Test that aggregate_track has not been changed due to lack of track data"
+            assert (
+                result.repost_count == 9
+            ), "Test that aggregate_track has not been changed due to lack of track data"
+            assert (
+                result.save_count == 9
+            ), "Test that aggregate_track has not been changed due to lack of track data"
 
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
         assert prev_id_checkpoint == 0
