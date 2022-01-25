@@ -1,7 +1,7 @@
 """add aggregate track table
 
 Revision ID: dc7f691adc79
-Revises: a6d2e50a8efa
+Revises: 8e4dda8255fd
 Create Date: 2022-01-20 18:21:40.504845
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "dc7f691adc79"
-down_revision = "a6d2e50a8efa"
+down_revision = "8e4dda8255fd"
 branch_labels = None
 depends_on = None
 
