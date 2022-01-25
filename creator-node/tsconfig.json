@@ -4,7 +4,9 @@
     "pretty": true,
     "target": "es2020",
     "module": "es2020",
-    "lib": ["es2020"],
+    "lib": [
+      "es2020"
+    ],
     "outDir": "./build",
     "allowJs": true,
     "downlevelIteration": true,
@@ -16,9 +18,16 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["./types", "./node_modules/@types"],
-    "useUnknownInCatchVariables": false
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
   },
-  "include": ["src", "sequelize"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src",
+    "sequelize"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
