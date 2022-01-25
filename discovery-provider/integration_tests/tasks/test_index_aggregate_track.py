@@ -308,71 +308,96 @@ def test_index_aggregate_track_update(app):
         basic_tests(session)
 
 
-# def test_index_aggregate_track_update_with_extra_user(app):
-#     """Test that the entire aggregate_track table is truncated"""
+def test_index_aggregate_track_update_with_extra_user(app):
+    """Test that the aggregate_track only modifies non-deleted tracks"""
 
-#     with app.app_context():
-#         db = get_db()
+    with app.app_context():
+        db = get_db()
 
-#     entities = deepcopy(basic_entities)
-#     entities.update(
-#         {
-#             "indexing_checkpoints": [
-#                 {"tablename": AGGREGATE_TRACK, "last_checkpoint": 0}
-#             ],
-#             "aggregate_track": [
-#                 {
-#                     "track_id": 1,
-#                     "track_count": 9,
-#                     "playlist_count": 9,
-#                     "album_count": 9,
-#                     "follower_count": 9,
-#                     "following_count": 9,
-#                     "repost_count": 9,
-#                     "track_save_count": 9,
-#                 },
-#                 {
-#                     "track_id": 2,
-#                     "track_count": 9,
-#                     "playlist_count": 9,
-#                     "album_count": 9,
-#                     "follower_count": 9,
-#                     "following_count": 9,
-#                     "repost_count": 9,
-#                     "track_save_count": 9,
-#                 },
-#                 {
-#                     "track_id": 3,
-#                     "track_count": 9,
-#                     "playlist_count": 9,
-#                     "album_count": 9,
-#                     "follower_count": 9,
-#                     "following_count": 9,
-#                     "repost_count": 9,
-#                     "track_save_count": 9,
-#                 },
-#             ],
-#         }
-#     )
+    entities = deepcopy(basic_entities)
+    entities.update(
+        {
+            "indexing_checkpoints": [
+                {"tablename": AGGREGATE_TRACK, "last_checkpoint": 0}
+            ],
+            "aggregate_track": [
+                {
+                    "track_id": 1,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+                {
+                    "track_id": 2,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+                {
+                    "track_id": 3,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+                {
+                    "track_id": 4,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+                {
+                    "track_id": 5,
+                    "repost_count": 9,
+                    "save_count": 9,
+                },
+            ],
+        }
+    )
 
-#     with db.scoped_session() as session:
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         assert len(results) == 0, "Test that we start with clean tables"
+    with db.scoped_session() as session:
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        assert len(results) == 0, "Test that we start with clean tables"
 
-#     populate_mock_db(db, entities)
+    populate_mock_db(db, entities)
 
-#     with db.scoped_session() as session:
-#         results: List[AggregateTrack] = (
-#             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-#         )
-#         assert len(results) == 3, "Test that aggregate_track entities are populated"
+    with db.scoped_session() as session:
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        assert len(results) == 5, "Test that aggregate_track entities are populated"
+        for result in results:
+            assert result.repost_count == 9, "Test entities were populated correctly"
+            assert result.save_count == 9, "Test entities were populated correctly"
 
-#         _update_aggregate_track(session)
+        _update_aggregate_track(session)
 
-#     with db.scoped_session() as session:
-#         basic_tests(session, last_checkpoint=3)
+    with db.scoped_session() as session:
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+
+        assert len(results) == 5
+
+        assert results[0].track_id == 1
+        assert results[0].repost_count == 3
+        assert results[0].save_count == 1
+
+        assert results[1].track_id == 2
+        assert results[1].repost_count == 0
+        assert results[1].save_count == 0
+
+        assert results[2].track_id == 3, "Test that #3 is not overwritten since #3 is marked as deleted"
+        assert results[2].repost_count == 9, "Test that #3 is not overwritten since #3 is marked as deleted"
+        assert results[2].save_count == 9, "Test that #3 is not overwritten since #3 is marked as deleted"
+
+        assert results[3].track_id == 4
+        assert results[3].repost_count == 0
+        assert results[3].save_count == 4
+
+        assert results[4].track_id == 5
+        assert results[4].repost_count == 0
+        assert results[4].save_count == 0
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == 5
 
 
 def test_index_aggregate_track_entity_model(app):
