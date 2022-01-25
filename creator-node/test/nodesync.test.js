@@ -692,7 +692,7 @@ describe('test nodesync', async function () {
     })
   })
 
-  describe.only('Test processSync function', async function () {
+  describe('Test processSync function', async function () {
     let serviceRegistryMock
 
     const TEST_ENDPOINT = 'http://test-cn.co'

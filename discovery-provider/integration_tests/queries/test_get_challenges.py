@@ -9,6 +9,10 @@ from src.challenges.challenge import (
     FullEventMetadata,
 )
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.referral_challenge import (
+    referral_challenge_manager,
+    verified_referral_challenge_manager,
+)
 from src.models import (
     Block,
     Challenge,
@@ -432,3 +436,90 @@ def test_extra_metadata(app):
             challenge_2 = [r for r in res if r["challenge_id"] == "numeric_2"][0]
             assert challenge_1["metadata"] == {"default_state": True}
             assert challenge_2["metadata"] == {"special_metadata": "1"}
+
+
+# Testing getting verified/unverified referral challenges
+
+
+def setup_verified_test(session):
+    # Setup
+    blocks = [
+        Block(blockhash="0x1", number=1, parenthash="", is_current=False),
+        Block(blockhash="0x2", number=2, parenthash="", is_current=True),
+    ]
+    users = [
+        User(
+            blockhash="0x1",
+            blocknumber=1,
+            user_id=1,
+            is_current=True,
+            wallet="0xFakeWallet1",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            is_verified=False,
+        ),
+        User(
+            blockhash="0x2",
+            blocknumber=2,
+            user_id=2,
+            is_current=True,
+            wallet="0xFakeWallet2",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            is_verified=True,
+        ),
+    ]
+
+    challenges = [
+        Challenge(
+            id="referrals",
+            type=ChallengeType.aggregate,
+            active=True,
+            amount="1",
+            step_count=5,
+        ),
+        Challenge(
+            id="referrals-verified",
+            type=ChallengeType.aggregate,
+            active=True,
+            amount="1",
+            step_count=500,
+        ),
+    ]
+
+    # Wipe any existing challenges in the DB from running migrations, etc
+    session.query(Challenge).delete()
+    session.commit()
+    session.add_all(blocks)
+    session.commit()
+    session.add_all(users)
+    session.add_all(challenges)
+    session.commit()
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    bus = ChallengeEventBus(redis_conn)
+    bus.register_listener(DEFAULT_EVENT, referral_challenge_manager)
+    bus.register_listener(DEFAULT_EVENT, verified_referral_challenge_manager)
+    return bus
+
+
+def test_nonverified_referrals_invisible_to_verified_user(app):
+    with app.app_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            bus = setup_verified_test(session)
+
+            non_verified = get_challenges(1, False, session, bus)
+            assert len(non_verified) == 1
+            assert non_verified[0]["challenge_id"] == "referrals"
+
+
+def test_verified_referrals_invisible_to_nonverified_user(app):
+    with app.app_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            bus = setup_verified_test(session)
+
+            verified = get_challenges(2, False, session, bus)
+            assert len(verified) == 1
+            assert verified[0]["challenge_id"] == "referrals-verified"

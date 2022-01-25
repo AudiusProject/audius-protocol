@@ -13,7 +13,11 @@
 		"id": "referrals",
 		"active": true,
 		"starting_block": 0
-
+	},
+	{
+		"id": "referrals-verified",
+		"active": true,
+		"starting_block": 0
 	},
 	{
 		"id": "referred",

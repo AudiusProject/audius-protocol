@@ -35,7 +35,8 @@ class AudiusLibsWrapper {
       rewardsManagerTokenPDA: config.get('solanaRewardsManagerTokenPDA'),
       // Never use the relay path in identity
       useRelay: false,
-      feePayerSecretKey
+      feePayerSecretKey,
+      confirmationTimeout: config.get('solanaConfirmationTimeout')
     })
 
     const wormholeConfig = AudiusLibs.configWormhole({

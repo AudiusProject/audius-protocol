@@ -1,6 +1,11 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { ethAddressToArray, getRandomPrivateKey, getTransaction, randomCID } from "../lib/utils";
+import {
+  ethAddressToArray,
+  getRandomPrivateKey,
+  getTransaction,
+  randomCID,
+} from "../lib/utils";
 import ethWeb3 from "web3";
 import { randomBytes } from "crypto";
 import { initUser, initUserSolPubkey } from "../lib/lib";
@@ -36,19 +41,19 @@ export const initTestConstants = () => {
   return values;
 };
 
-export const testInitUser = async (
-  provider: anchor.Provider,
-  program: Program<AudiusData>,
-  baseAuthorityAccount: anchor.web3.PublicKey,
-  testEthAddr: string,
-  testEthAddrBytes: Uint8Array,
-  handleBytesArray: number[],
-  bumpSeed: number,
-  metadata: string,
-  userStgAccount: anchor.web3.PublicKey,
-  adminStgKeypair: anchor.web3.Keypair,
-  adminKeypair: anchor.web3.Keypair,
-) => {
+export const testInitUser = async ({
+  provider,
+  program,
+  baseAuthorityAccount,
+  testEthAddr,
+  testEthAddrBytes,
+  handleBytesArray,
+  bumpSeed,
+  metadata,
+  userStgAccount,
+  adminStgKeypair,
+  adminKeypair,
+}) => {
   let tx = await initUser({
     provider,
     program,
@@ -98,10 +103,13 @@ export const testInitUserSolPubkey = async ({
   }
   let txInfo = await getTransaction(provider, initUserTx);
   let fee = txInfo["meta"]["fee"];
-  console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
 };
 
-export const confirmLogInTransaction = async (provider: anchor.Provider, tx: string, log: string) => {
+export const confirmLogInTransaction = async (
+  provider: anchor.Provider,
+  tx: string,
+  log: string
+) => {
   let info = await getTransaction(provider, tx);
   let logs = info.meta.logMessages;
   let stringFound = false;
@@ -114,4 +122,5 @@ export const confirmLogInTransaction = async (provider: anchor.Provider, tx: str
     console.log(logs);
     throw new Error(`Failed to find ${log} in tx=${tx}`);
   }
+  return info;
 };

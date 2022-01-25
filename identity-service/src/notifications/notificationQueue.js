@@ -32,7 +32,7 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
   }
   let existingEntriesCheck = buffer.filter(
     entry => (
-      (entry.userId === userId) && (entry.notificationParams.message === message)
+      (entry.userId === userId) && entry.notificationParams.message === message && entry.notificationParams.title === title
     )
   )
   // Ensure no dups are added
