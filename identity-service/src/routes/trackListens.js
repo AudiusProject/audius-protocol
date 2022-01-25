@@ -229,21 +229,22 @@ module.exports = function (app) {
     const redis = req.app.get('redis')
     let results = await redis.keys('listens-tx-*')
     let hourlyResponseData = {}
-    let success, submission = 0
+    let success = 0
+    let submission = 0
     // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
     for (var entry of results) {
       let split = entry.split("::")
       if (split.length >= 2) {
-        let suffix = split[1]
-        let trackingRedisKeys = getTrackingListenKeys(suffix)
+        let hourSuffix = split[1]
+        let trackingRedisKeys = getTrackingListenKeys(hourSuffix)
 
-        if (!hourlyResponseData.hasOwnProperty(suffix)) {
-          hourlyResponseData[suffix] = {
-            submission: await redis.get(trackingRedisKeys.submission),
-            success: await redis.get(trackingRedisKeys.success)
+        if (!hourlyResponseData.hasOwnProperty(hourSuffix)) {
+          hourlyResponseData[hourSuffix] = {
+            submission: Number(await redis.get(trackingRedisKeys.submission)),
+            success: Number(await redis.get(trackingRedisKeys.success))
           }
-          submission += Number(hourlyResponseData[suffix].submission)
-          success += Number(hourlyResponseData[suffix].success)
+          submission += hourlyResponseData[hourSuffix].submission
+          success += hourlyResponseData[hourSuffix].success
         }
       }
     }
