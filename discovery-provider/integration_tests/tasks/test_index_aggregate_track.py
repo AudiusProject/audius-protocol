@@ -42,6 +42,11 @@ basic_entities = {
         {"repost_item_id": 1, "repost_type": "track", "user_id": 2},
         {"repost_item_id": 1, "repost_type": "track", "user_id": 3},
         {"repost_item_id": 1, "repost_type": "track", "user_id": 4},
+
+        {"repost_item_id": 2, "repost_type": "track", "user_id": 5, "is_current": False},
+        {"repost_item_id": 2, "repost_type": "track", "user_id": 5, "is_current": False, "is_delete": True},
+        {"repost_item_id": 2, "repost_type": "track", "user_id": 5, "is_current": False},
+        {"repost_item_id": 2, "repost_type": "track", "user_id": 5, "is_current": True, "is_delete": True},
     ],
     "saves": [
         {"save_item_id": 1, "save_type": "track", "user_id": 2},
@@ -50,11 +55,16 @@ basic_entities = {
         {"save_item_id": 4, "save_type": "track", "user_id": 4},
         {"save_item_id": 4, "save_type": "track", "user_id": 6},
         {"save_item_id": 4, "save_type": "track", "user_id": 8},
+
+        {"save_item_id": 2, "save_type": "track", "user_id": 10, "is_current": False},
+        {"save_item_id": 2, "save_type": "track", "user_id": 10, "is_current": False, "is_delete": True},
+        {"save_item_id": 2, "save_type": "track", "user_id": 10, "is_current": False},
+        {"save_item_id": 2, "save_type": "track", "user_id": 10, "is_current": False, "is_delete": True},
     ],
 }
 
 
-def basic_tests(session, last_checkpoint=8, previous_count=0):
+def basic_tests(session, last_checkpoint=12, previous_count=0):
     """Helper for testing the basic_entities as is"""
 
     # read from aggregate_track table
@@ -397,7 +407,7 @@ def test_index_aggregate_track_update_with_extra_user(app):
         assert results[4].save_count == 0
 
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-        assert prev_id_checkpoint == 5
+        assert prev_id_checkpoint == 9
 
 
 def test_index_aggregate_track_entity_model(app):
@@ -487,30 +497,33 @@ def test_index_aggregate_track_update_with_only_aggregate_track(app):
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
         assert prev_id_checkpoint == 9
 
-    # entities = {
-    #     "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 0}],
-    # }
-    # populate_mock_db(db, entities)
+    entities = {
+        "indexing_checkpoints": [{"tablename": AGGREGATE_TRACK, "last_checkpoint": 0}],
+    }
+    populate_mock_db(db, entities)
 
-    # with db.scoped_session() as session:
-    #     results: List[AggregateTrack] = (
-    #         session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-    #     )
-    #     assert (
-    #         len(results) == 3
-    #     ), "Test that entities exist as expected, even though checkpoint has been reset"
+    with db.scoped_session() as session:
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        assert (
+            len(results) == 3
+        ), "Test that entities exist as expected, even though checkpoint has been reset"
 
-    #     _update_aggregate_track(session)
+        _update_aggregate_track(session)
 
-    #     results: List[AggregateTrack] = (
-    #         session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-    #     )
-    #     assert (
-    #         len(results) == 0
-    #     ), "Test that aggregate_track has been truncated due to reset checkpoint"
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+        assert (
+            len(results) == 3
+        ), "Test that aggregate_track has not been changed due to lack of track data"
+        for result in results:
+            assert result.repost_count == 9, "Test that aggregate_track has not been changed due to lack of track data"
+            assert result.save_count == 9, "Test that aggregate_track has not been changed due to lack of track data"
 
-    #     prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-    #     assert prev_id_checkpoint == 0
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == 0
 
 
 def test_index_aggregate_track_same_checkpoint(app):
@@ -520,7 +533,7 @@ def test_index_aggregate_track_same_checkpoint(app):
         db = get_db()
 
     entities = deepcopy(basic_entities)
-    current_blocknumber = basic_entities["blocks"][0]["number"] = 5
+    current_blocknumber = basic_entities["blocks"][0]["number"] = 9
     entities.update(
         {
             "indexing_checkpoints": [
@@ -545,4 +558,4 @@ def test_index_aggregate_track_same_checkpoint(app):
         assert len(results) == 0
 
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-        assert prev_id_checkpoint == 5
+        assert prev_id_checkpoint == current_blocknumber
