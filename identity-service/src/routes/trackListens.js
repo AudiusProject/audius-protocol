@@ -209,6 +209,7 @@ module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
     const libs = req.app.get('audiusLibs')
     const connection = libs.solanaWeb3Manager.connection
+    const redis = req.app.get('redis')
     const trackId = parseInt(req.params.id)
     const userId = req.body.userId
     if (!userId || !trackId) {
@@ -219,9 +220,17 @@ module.exports = function (app) {
     const isSolanaListenEnabled = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_LISTEN_ENABLED_SERVER)
     const solanaListen = req.body.solanaListen || isSolanaListenEnabled || false
 
+    let currentHour = await getListenHour()
+    let trackingRedisKeys = {
+      submission: `listens-tx-submission-${currentHour.toString()}`,
+      success: `listens-tx-success-${currentHour.toString()}`,
+      error: `listens-tx-error-${currentHour.toString()}`
+    }
+
     // Dedicated listen flow
     if (solanaListen) {
       req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}`)
+      await redis.increment(trackingRedisKeys.success)
       const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
           connection,
@@ -232,6 +241,7 @@ module.exports = function (app) {
           'relay' // Static source value to indicate relayed listens
         )
         req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+        await redis.increment(trackingRedisKeys.success)
         return successResponse({
           solTxSignature
         })
@@ -251,7 +261,6 @@ module.exports = function (app) {
       return response
     }
 
-    let currentHour = await getListenHour()
     // TODO: Make all of this conditional based on request parameters
     let trackListenRecord = await models.TrackListenCount.findOrCreate(
       {
