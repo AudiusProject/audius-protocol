@@ -510,7 +510,3 @@ def time_method(func):
 
 def get_tx_arg(tx, arg_name):
     return getattr(tx["args"], arg_name)
-
-
-def snake_to_pascal(snake_case_name):
-    return snake_case_name.replace("_", " ").title().replace(" ", "")

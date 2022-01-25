@@ -38,7 +38,7 @@ from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
-from src.utils.constants import CONTRACT_TYPES, CONTRACT_NAMES
+from src.utils.constants import CONTRACT_NAMES, CONTRACT_TYPES
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
@@ -412,8 +412,6 @@ def group_transaction_by_type(tx_type_to_grouped_lists_map, tx, tx_receipt):
     for tx_type, tx_list in tx_type_to_grouped_lists_map.items():
         tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
         if tx_is_type:
-            print('tx_type', tx_type)
-            # contract_name = helpers.snake_to_pascal(tx_type)
             contract_name = CONTRACT_NAMES.get(CONTRACT_TYPES(tx_type).name)
             logger.info(
                 f"index.py | {contract_name} contract addr: {tx_target_contract_address}"
