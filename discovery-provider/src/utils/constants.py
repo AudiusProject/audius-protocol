@@ -1,5 +1,3 @@
-from enum import Enum
-
 # pylint: disable=too-many-lines, arguments-differ
 """
 Constants required for multihash implementation
