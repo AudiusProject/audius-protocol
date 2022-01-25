@@ -10,6 +10,11 @@ from integration_tests.conftest import DB_URL
 from sqlalchemy_utils import create_database, database_exists, drop_database
 from src.utils.session_manager import SessionManager
 
+# The starting migration to run the tests in this file from.
+# Prior to this migration, lots of migrations are not idempotent.
+# While they could be fixed, they would not reflect the state of
+# production, so probably should not change. Migrations from this change
+# on, should be replayable (or noted as an exception).
 START_MIGRATION = "f775fb87f5ff"
 
 
@@ -64,22 +69,22 @@ def test_migration_idempotency():
         return None
 
     versions = list(filter(None, map(get_version, versions.split("\n"))))
-    versions.reverse()
-    # Now versions is an ordered (chronological) list of all alembic revisions
+    # Ordered (chronological) list of all alembic revisions
+    versions_in_chronological_order = list(reversed(versions))
 
     alembic_config.stdout = sys.stdout
 
     # Find migration to start at
     start_index = 0
-    for i in range(len(versions)):
-        if versions[i] == START_MIGRATION:
+    for i in range(len(versions_in_chronological_order)):
+        if versions_in_chronological_order[i] == START_MIGRATION:
             start_index = i
             break
 
     # Apply migrations 1 by 1, each time resetting the stored alembic version
     # in the database and replaying the migration twice to test it's idempotency
     prev_version = START_MIGRATION
-    for version in versions[start_index:]:
+    for version in versions_in_chronological_order[start_index:]:
         print(f"Running migration {version}")
         alembic.command.upgrade(alembic_config, version)
 
