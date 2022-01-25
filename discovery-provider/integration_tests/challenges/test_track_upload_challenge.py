@@ -91,6 +91,21 @@ def test_track_upload_challenge(app):
         updated_at=today,
     )
 
+    unlisted_track = Track(
+        blockhash="0x3",
+        blocknumber=30000001,
+        txhash="cba",
+        owner_id=1,
+        track_id=5,
+        route_id="5",
+        track_segments=[],
+        is_unlisted=True,
+        is_current=True,
+        is_delete=False,
+        created_at=today,
+        updated_at=today,
+    )
+
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
 
@@ -134,6 +149,17 @@ def test_track_upload_challenge(app):
         # We should have completed a single step (one track upload)
         assert user_challenge.current_step_count == 1
         assert not user_challenge.is_complete
+
+        # Ensure unlisted track is not counted
+        session.add(unlisted_track)
+        bus.dispatch(ChallengeEvent.track_upload, 30000000, 1)
+        bus.flush()
+        bus.process_events(session)
+        user_challenge = track_upload_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
+
+        assert user_challenge.current_step_count == 1
 
         # Process two more dummy events to reach the step count (i.e. 3) for completion
         session.add(track3)
