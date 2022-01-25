@@ -19,6 +19,7 @@ import {
   getConnectivityFailure,
   getUserHandle
 } from 'common/store/account/selectors'
+import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import AppRedirectPopover from 'components/app-redirect-popover/components/AppRedirectPopover'
 import MobileDesktopBanner from 'components/banner/CTABanner'
@@ -160,7 +161,6 @@ import Notice from '../components/notice/Notice'
 import styles from './App.module.css'
 import { DeactivateAccountPage } from './deactivate-account-page/DeactivateAccountPage'
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
-import { ExploreCollectionsVariant } from './explore-page/store/types'
 import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'

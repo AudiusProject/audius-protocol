@@ -19,8 +19,6 @@ import ArtistDashboardState from 'pages/artist-dashboard-page/store/types'
 import { CollectionsPageState } from 'pages/collection-page/store/types'
 import { DeactivateAccountState } from 'pages/deactivate-account-page/store/slice'
 import DeletedPageReducer from 'pages/deleted-page/store/slice'
-import { CollectionsState as ExploreCollectionsState } from 'pages/explore-page/store/collections/slice'
-import ExplorePageState from 'pages/explore-page/store/types'
 import { FavoritesPageState } from 'pages/favorites-page/store/types'
 import FeedPageState from 'pages/feed-page/store/types'
 import { FollowersPageState } from 'pages/followers-page/store/types'
@@ -103,7 +101,6 @@ export type AppState = CommonState & {
       visualizer: ReturnType<typeof VisualizerReducer>
     }
     pages: {
-      explore: ExplorePageState
       settings: SettingsPageState
       reposts: RepostsPageState
       favorites: FavoritesPageState
@@ -113,7 +110,6 @@ export type AppState = CommonState & {
       unfollowConfirmation: UnfollowConfirmationModalState
       nowPlaying: NowPlayingState
       smartCollection: SmartCollectionState
-      exploreCollections: ExploreCollectionsState
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
       trendingPlaylists: ReturnType<typeof trendingPlaylistsReducer>

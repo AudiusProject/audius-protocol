@@ -8,6 +8,12 @@ import { Dispatch } from 'redux'
 
 import { FavoriteType } from 'common/models/Favorite'
 import { ID } from 'common/models/Identifiers'
+import {
+  getCollections,
+  getStatus
+} from 'common/store/pages/explore/exploreCollections/selectors'
+import { fetch } from 'common/store/pages/explore/exploreCollections/slice'
+import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import { setFavorite } from 'pages/favorites-page/store/actions'
 import { setRepost } from 'pages/reposts-page/store/actions'
 import { RepostType } from 'pages/reposts-page/store/types'
@@ -35,9 +41,6 @@ import {
 } from './collections'
 import { CollectionsPageProps as DesktopCollectionsPageProps } from './components/desktop/CollectionsPage'
 import { CollectionsPageProps as MobileCollectionsPageProps } from './components/mobile/CollectionsPage'
-import { getCollections, getStatus } from './store/collections/selectors'
-import { fetch } from './store/collections/slice'
-import { ExploreCollectionsVariant } from './store/types'
 
 type OwnProps = {
   isMobile: boolean
