@@ -10,6 +10,7 @@ import {
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
+import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
 import UserArtCard from 'components/card/desktop/UserArtCard'
 import Header from 'components/header/desktop/Header'
@@ -31,7 +32,6 @@ import {
   PROVOKING_PLAYLISTS,
   INTIMATE_PLAYLISTS
 } from 'pages/explore-page/collections'
-import { ExploreCollectionsVariant } from 'pages/explore-page/store/types'
 import {
   HEAVY_ROTATION,
   BEST_NEW_RELEASES,

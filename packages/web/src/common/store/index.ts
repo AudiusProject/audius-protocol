@@ -16,6 +16,8 @@ import usersReducer from 'common/store/cache/users/reducer'
 import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
+import exploreCollectionsReducer from 'common/store/pages/explore/exploreCollections/slice'
+import explorePageReducer from 'common/store/pages/explore/reducer'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
@@ -78,6 +80,8 @@ export const reducers = {
   // Pages
   pages: combineReducers({
     audioRewards: audioRewardsSlice.reducer,
+    explore: explorePageReducer,
+    exploreCollections: exploreCollectionsReducer,
     tokenDashboard: tokenDashboardSlice.reducer,
     track
   })
@@ -93,6 +97,8 @@ export const sagas = {
 
   // TODO: pull in the following from audius-client
   // once AudiusBackend and dependencies are migrated
+  // common/store/pages/explore/exploreCollections/sagas.ts
+  // common/store/pages/explore/sagas.ts
   // components/add-to-playlist/store/sagas.ts
   // components/share-sound-to-tiktok-modal/store/sagas.ts
   // store/social/tracks/sagas.ts
@@ -131,6 +137,8 @@ export type CommonState = {
 
   pages: {
     audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
+    explore: ReturnType<typeof explorePageReducer>
+    exploreCollections: ReturnType<typeof exploreCollectionsReducer>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     track: TrackPageState
   }

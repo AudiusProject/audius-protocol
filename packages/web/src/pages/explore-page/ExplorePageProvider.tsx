@@ -6,13 +6,13 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { getAccountUser } from 'common/store/account/selectors'
+import { fetchExplore } from 'common/store/pages/explore/actions'
+import { makeGetExplore } from 'common/store/pages/explore/selectors'
 import { formatCount } from 'common/utils/formatUtil'
 import { AppState } from 'store/types'
 
 import { ExplorePageProps as DesktopExplorePageProps } from './components/desktop/ExplorePage'
 import { ExplorePageProps as MobileExplorePageProps } from './components/mobile/ExplorePage'
-import { fetchExplore } from './store/actions'
-import { makeGetExplore } from './store/selectors'
 
 const messages = {
   title: 'Explore',

@@ -1,16 +1,15 @@
 import { Collection } from 'common/models/Collection'
 import Status from 'common/models/Status'
+import { CommonState } from 'common/store'
 import { getCollections as getCachedCollections } from 'common/store/cache/collections/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
-import { AppState } from 'store/types'
 
 import { ExploreCollectionsVariant } from '../types'
 
-const getBaseState = (state: AppState) =>
-  state.application.pages.exploreCollections
+const getBaseState = (state: CommonState) => state.pages.exploreCollections
 
 export const getStatus = (
-  state: AppState,
+  state: CommonState,
   { variant }: { variant: ExploreCollectionsVariant }
 ) => {
   const baseState = getBaseState(state)[variant]
@@ -18,7 +17,7 @@ export const getStatus = (
 }
 
 export const getCollections = (
-  state: AppState,
+  state: CommonState,
   { variant }: { variant: ExploreCollectionsVariant }
 ) => {
   const baseState = getBaseState(state)[variant]

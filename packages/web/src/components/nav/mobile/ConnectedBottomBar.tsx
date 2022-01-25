@@ -6,9 +6,9 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { getUserHandle } from 'common/store/account/selectors'
+import { setTab } from 'common/store/pages/explore/actions'
+import { Tabs } from 'common/store/pages/explore/types'
 import BottomBar from 'components/bottom-bar/BottomBar'
-import { setTab } from 'pages/explore-page/store/actions'
-import { Tabs } from 'pages/explore-page/store/types'
 import {
   openSignOn,
   showRequiresAccountModal

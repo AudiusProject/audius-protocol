@@ -3,11 +3,11 @@ import { createSelector } from 'reselect'
 import { UserCollection } from 'common/models/Collection'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
+import { CommonState } from 'common/store'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
-import { AppState } from 'store/types'
 
-const getExplore = (state: AppState) => state.application.pages.explore
+const getExplore = (state: CommonState) => state.pages.explore
 
 export type GetExplore = {
   playlists: UserCollection[]
@@ -38,4 +38,4 @@ export const makeGetExplore = () => {
   )
 }
 
-export const getTab = (state: AppState) => state.application.pages.explore.tab
+export const getTab = (state: CommonState) => state.pages.explore.tab

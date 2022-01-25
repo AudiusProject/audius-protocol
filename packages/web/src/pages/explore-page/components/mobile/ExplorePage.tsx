@@ -22,6 +22,12 @@ import {
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
+import { setTab } from 'common/store/pages/explore/actions'
+import { getTab } from 'common/store/pages/explore/selectors'
+import {
+  Tabs as ExploreTabs,
+  ExploreCollectionsVariant
+} from 'common/store/pages/explore/types'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -39,12 +45,6 @@ import {
   ExploreCollection,
   ExploreMoodCollection
 } from 'pages/explore-page/collections'
-import { setTab } from 'pages/explore-page/store/actions'
-import { getTab } from 'pages/explore-page/store/selectors'
-import {
-  Tabs as ExploreTabs,
-  ExploreCollectionsVariant
-} from 'pages/explore-page/store/types'
 import { REMIXABLES } from 'pages/smart-collection/smartCollections'
 import {
   playlistPage,
