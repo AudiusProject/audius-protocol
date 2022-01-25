@@ -14,7 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 var WrapComponent = function WrapComponent(props) {
   var renderedChildren = _server["default"].renderToStaticMarkup(props.children);
 
-  return _react["default"].createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement("div", {
     dangerouslySetInnerHTML: {
       __html: "\n    <!--[if ".concat(props["if"], "]>").concat(props.extraWrapper, "<![endif]-->\n    ").concat(renderedChildren, "\n    <!--[if ").concat(props["if"], "]>").concat(props.endExtraWrapper, "</td></tr></table></center><![endif]-->\n  ")
     }
