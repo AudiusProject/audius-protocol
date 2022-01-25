@@ -291,9 +291,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         </div>
       )}
 
-      {userHandle && modalType === 'referrals' && (
-        <InviteLink handle={userHandle} />
-      )}
+      {userHandle &&
+        (modalType === 'referrals' || modalType === 'referrals-verified') && (
+          <InviteLink handle={userHandle} />
+        )}
       {modalType === 'mobile-install' && (
         <div className={wm(styles.qrContainer)}>
           <img className={styles.qr} src={QRCode} alt='QR Code' />
