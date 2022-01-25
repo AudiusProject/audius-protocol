@@ -24,7 +24,9 @@ import styles from './TrackTile.module.css'
 const messages = {
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,
   artistPick: 'Artist Pick',
-  hiddenTrack: 'Hidden Track'
+  hiddenTrack: 'Hidden Track',
+  repostLabel: 'Repost',
+  unrepostLabel: 'Unrepost'
 }
 
 const RankAndIndexIndicator = ({
@@ -120,6 +122,10 @@ const TrackTile = memo(
         </Tooltip>
       )
     }
+
+    const repostLabel = isReposted
+      ? messages.unrepostLabel
+      : messages.repostLabel
 
     return (
       <div
@@ -244,7 +250,7 @@ const TrackTile = memo(
             {!isLoading && showIconButtons && !isUnlisted && (
               <div className={styles.iconButtons}>
                 <Tooltip
-                  text={isReposted ? 'Unrepost' : 'Repost'}
+                  text={repostLabel}
                   disabled={isDisabled || isOwner}
                   placement={'bottom'}
                 >
@@ -255,6 +261,7 @@ const TrackTile = memo(
                     })}
                   >
                     <RepostButton
+                      aria-label={repostLabel}
                       onClick={onClickRepost}
                       isActive={isReposted}
                       isDisabled={isOwner}

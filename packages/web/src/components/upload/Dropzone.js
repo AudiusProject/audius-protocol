@@ -62,6 +62,7 @@ const Dropzone = ({
       accept={
         type === 'image' ? ALLOWED_IMAGE_FILE_TYPES.join(', ') : 'audio/*'
       }
+      data-testid='upload-dropzone'
     >
       <div className={styles.hoverBoundingBox}>
         <span className={styles.contentWrapper}>
