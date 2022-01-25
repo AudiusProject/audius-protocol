@@ -242,8 +242,8 @@ const notificationResponseMap = {
 function mergeAudiusAnnoucements (announcements, notifications) {
   const allNotifications = announcements.concat(notifications)
   allNotifications.sort((a, b) => {
-    let aDate = moment(a.datePublished || a.timestamp)
-    let bDate = moment(b.datePublished || b.timestamp)
+    let aDate = moment(a.datePublished || a.timestamp || a.createdAt)
+    let bDate = moment(b.datePublished || b.timestamp || b.createdAt)
     return bDate - aDate
   })
   return allNotifications
