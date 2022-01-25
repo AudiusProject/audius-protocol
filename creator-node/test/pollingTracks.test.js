@@ -378,16 +378,63 @@ describe('test Polling Tracks with mocked IPFS', function () {
     })
 
     /** clockMin and clockMax */
-    const multihashStringClockRange = `{${multihashesSorted
+    let multihashStringClockRange = `{${multihashesSorted
       .slice(clockMin - 1, clockMax - 1)
       .join(',')}}`
-    const expectedFilesHashClockRange = crypto
+    let expectedFilesHashClockRange = crypto
       .createHash('md5')
       .update(multihashStringClockRange)
       .digest('hex')
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMax}`
+      )
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: expectedFilesHashClockRange
+    })
+
+    /** clockMinTooHigh */
+    const clockMinTooHigh = numExpectedFilesForUser + 5
+    resp = await request(app)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMinTooHigh}`
+      )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: null
+    })
+
+    /** clockMaxTooLow */
+    const clockMaxTooLow = -5
+    resp = await request(app)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMaxTooLow}`
+      )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: null
+    })
+
+    /** partially overlapping clockrange */
+    const clockMaxTooHigh = numExpectedFilesForUser + 5
+    multihashStringClockRange = `{${multihashesSorted
+      .slice(clockMin - 1, clockMaxTooHigh - 1)
+      .join(',')}}`
+    expectedFilesHashClockRange = crypto
+      .createHash('md5')
+      .update(multihashStringClockRange)
+      .digest('hex')
+    resp = await request(app)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMaxTooHigh}`
       )
       .expect(200)
     assert.deepStrictEqual(resp.body.data, {
