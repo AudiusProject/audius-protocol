@@ -59,7 +59,7 @@ class TrackUploadChallengeUpdater(ChallengeUpdater):
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
-                Track.stem_of == None
+                Track.stem_of == None,
             )
             .all()
         )

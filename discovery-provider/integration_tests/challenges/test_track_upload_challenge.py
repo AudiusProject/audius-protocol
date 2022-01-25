@@ -119,10 +119,7 @@ def test_track_upload_challenge(app):
         is_delete=False,
         created_at=today,
         updated_at=today,
-        stem_of={
-            "parent_track_id": 4,
-            "category": "bass"
-        }
+        stem_of={"parent_track_id": 4, "category": "bass"},
     )
 
     with db.scoped_session() as session:
