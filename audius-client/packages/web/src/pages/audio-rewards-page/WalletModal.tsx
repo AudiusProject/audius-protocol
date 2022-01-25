@@ -8,7 +8,7 @@ import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { Chain } from 'common/models/Chain'
 import { BNWei, StringWei, WalletAddress } from 'common/models/Wallet'
-import { BooleanKeys } from 'common/services/remote-config'
+import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   getHasAssociatedWallets,
@@ -46,7 +46,7 @@ import SendInputSuccess from './components/SendInputSuccess'
 import SendingModalBody from './components/SendingModalBody'
 import ModalDrawer from './components/modals/ModalDrawer'
 
-const { getRemoteVar } = remoteConfigInstance
+const { getFeatureEnabled } = remoteConfigInstance
 const DISCORD_URL = ' https://discord.gg/audius'
 
 const messages = {
@@ -98,7 +98,9 @@ const titlesMap = {
   },
   RECEIVE: {
     KEY_DISPLAY: () => {
-      const useSolSPLAudio = getRemoteVar(BooleanKeys.USE_SPL_AUDIO) as boolean
+      const useSolSPLAudio = getFeatureEnabled(
+        FeatureFlags.ENABLE_SPL_AUDIO
+      ) as boolean
       return (
         <TitleWrapper
           label={useSolSPLAudio ? messages.receiveSPL : messages.receive}
@@ -198,7 +200,9 @@ const ModalContent = ({
   const account = useSelector(getAccountUser)
   const amountPendingTransfer = useSelector(getSendData)
   const discordCode = useSelector(getDiscordCode)
-  const useSolSPLAudio = getRemoteVar(BooleanKeys.USE_SPL_AUDIO) as boolean
+  const useSolSPLAudio = getFeatureEnabled(
+    FeatureFlags.ENABLE_SPL_AUDIO
+  ) as boolean
 
   if (!modalState || !account || (useSolSPLAudio && !account.userBank)) {
     return null

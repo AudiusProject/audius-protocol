@@ -18,7 +18,7 @@ import {
   StringWei,
   WalletAddress
 } from 'common/models/Wallet'
-import { BooleanKeys, IntKeys } from 'common/services/remote-config'
+import { FeatureFlags, IntKeys } from 'common/services/remote-config'
 import { convertFloatToWei } from 'common/utils/formatUtil'
 import { Nullable } from 'common/utils/typeUtils'
 import {
@@ -35,7 +35,7 @@ import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 import DashboardTokenValueSlider from './DashboardTokenValueSlider'
 import styles from './SendInputBody.module.css'
 
-const { getRemoteVar } = remoteConfigInstance
+const { getRemoteVar, getFeatureEnabled } = remoteConfigInstance
 
 const messages = {
   warningTitle: 'PROCEED WITH CAUTION',
@@ -220,7 +220,9 @@ const SendInputBody = ({
     [addressError, setAddressError, setDestinationAddress]
   )
 
-  const useSolSPLAudio = getRemoteVar(BooleanKeys.USE_SPL_AUDIO) as boolean
+  const useSolSPLAudio = getFeatureEnabled(
+    FeatureFlags.ENABLE_SPL_AUDIO
+  ) as boolean
   const minAudioSendAmount = getRemoteVar(
     IntKeys.MIN_AUDIO_SEND_AMOUNT
   ) as number
