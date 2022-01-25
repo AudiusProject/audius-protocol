@@ -10,6 +10,7 @@ sbuttons {
 }
 
 .continueButton {
+  all: unset;
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -17,7 +18,7 @@ sbuttons {
   font-size: var(--font-s);
   font-weight: var(--font-bold);
   text-align: right;
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
   opacity: 1;
   transform: scale3d(1, 1, 1);
   backface-visibility: hidden;
@@ -65,7 +66,7 @@ sbuttons {
   text-align: center;
   white-space: nowrap;
   width: 80px;
-  transition: color .2s ease-in-out;
+  transition: color 0.2s ease-in-out;
 }
 
 .uploadText.uploadComplete {

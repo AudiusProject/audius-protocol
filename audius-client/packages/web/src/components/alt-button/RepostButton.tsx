@@ -25,6 +25,7 @@ type RepostButtonProps = {
   stopPropagation?: boolean
   iconMode?: boolean // should it behave as a static icon?
   altVariant?: boolean
+  'aria-label'?: string
 }
 
 const iconMap = {
@@ -71,7 +72,8 @@ const RepostButton = ({
   isUnlisted = false,
   stopPropagation = true,
   iconMode = false,
-  altVariant = false
+  altVariant = false,
+  'aria-label': ariaLabel
 }: RepostButtonProps) => {
   const icon =
     iconMap[isMatrixMode ? 'matrix' : isDarkMode ? 'dark' : 'light'][
@@ -81,8 +83,10 @@ const RepostButton = ({
   const [isDepressed, setIsDepressed] = useState(false)
 
   return (
-    <div
+    <button
+      aria-label={ariaLabel}
       className={cn(
+        styles.button,
         { [styles.depress]: isDepressed, [styles.isHidden]: isUnlisted },
         wrapperClassName
       )}
@@ -108,7 +112,7 @@ const RepostButton = ({
           setIsSpinning(false)
         }}
       />
-    </div>
+    </button>
   )
 }
 

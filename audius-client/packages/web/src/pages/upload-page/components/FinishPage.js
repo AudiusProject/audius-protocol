@@ -336,7 +336,7 @@ class FinishPage extends Component {
           )}
           {content}
           <div className={styles.buttons}>
-            <div
+            <button
               name='viewMedia'
               onClick={inProgress ? undefined : onContinue}
               className={cn(styles.continueButton, {
@@ -345,7 +345,7 @@ class FinishPage extends Component {
             >
               <div>{continueText}</div>
               <IconArrow className={styles.iconArrow} />
-            </div>
+            </button>
           </div>
         </div>
       </Toast>

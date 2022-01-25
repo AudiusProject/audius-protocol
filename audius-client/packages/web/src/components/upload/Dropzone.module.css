@@ -45,16 +45,27 @@
   border-bottom: 1px solid var(--primary);
 }
 
-.iconUpload, .iconUpload g path {
-  transition: all .20s ease-out !important;
+.iconUpload,
+.iconUpload g path {
+  transition: all 0.2s ease-out !important;
 }
 .hoverBoundingBox:hover .iconUpload {
-  transform: scale3d(1.2,1.2,1.2);
+  transform: scale3d(1.2, 1.2, 1.2);
 }
 .hoverBoundingBox:hover .iconUpload g path {
-  fill: var(--neutral-light-2)
+  fill: var(--neutral-light-2);
 }
 
 .hoverBoundingBox:active .iconUpload {
   transform: scale(0.95);
+}
+
+.dropzoneButton {
+  background: 0 0;
+  border: transparent;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
 }

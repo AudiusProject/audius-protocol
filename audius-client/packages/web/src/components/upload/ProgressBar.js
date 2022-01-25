@@ -18,7 +18,13 @@ class ProgressBar extends Component {
           [styles.complete]: !isError && percent >= 100
         })}
       >
-        <Progress percent={percent} status={status} showInfo={false} />
+        <Progress
+          role='progressbar'
+          aria-valuenow={percent || 0}
+          percent={percent}
+          status={status}
+          showInfo={false}
+        />
       </div>
     )
   }
