@@ -14,7 +14,7 @@ const FetchFilesHashNumRetries = 3
 
 /**
  * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
- * @notice Is used when both replicas are running version >= 0.3.50
+ * @notice Is used when both replicas are running version >= 0.3.51
  * @param {Object} param
  * @param {string} param.wallet user wallet
  * @param {number} param.primaryClock clock value on user's primary
@@ -91,7 +91,7 @@ async function computeSyncModeForUserAndReplica({
 
 /**
  * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
- * @notice Is used when at least 1 replica is running version < 0.3.50
+ * @notice Is used when at least 1 replica is running version < 0.3.51
  * @param {Object} param
  * @param {string} param.wallet user wallet
  * @param {number} param.primaryClock clock value on user's primary

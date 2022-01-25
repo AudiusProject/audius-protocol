@@ -739,8 +739,8 @@ class SnapbackSM {
         // Else, add response data to output aggregate map
         userClockValuesResp.forEach((userClockValueResp) => {
           /**
-           * @notice `filesHash` will be undefined if node is running version < 0.3.50
-           * @notice `filesHash` will be null if node is running version >= 0.3.50 but has no files for user
+           * @notice `filesHash` will be undefined if node is running version < 0.3.51
+           * @notice `filesHash` will be null if node is running version >= 0.3.51 but has no files for user
            *    - Note this can happen even if clock > 0
            */
           const { walletPublicKey, clock, filesHash } = userClockValueResp
@@ -782,8 +782,9 @@ class SnapbackSM {
             replicasToUserInfoMap[secondary][wallet]
 
           let syncMode = SyncMode.None
-          // filesHash value will be undefined if at least 1 replica is running version < 0.3.50
-          if (!primaryFilesHash || !secondaryFilesHash) {
+
+          // filesHash value will be undefined if at least 1 replica is running version < 0.3.51
+          if (primaryFilesHash === undefined || secondaryFilesHash === undefined) {
             syncMode = computeSyncModeForUserAndReplicaLegacy({
               primaryClock,
               secondaryClock
