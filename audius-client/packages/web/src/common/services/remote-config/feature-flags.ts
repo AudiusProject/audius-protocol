@@ -73,7 +73,7 @@ export const flagCohortType: {
   [FeatureFlags.REMIXABLES_WEB]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]:
     FeatureFlagCohortType.USER_ID,
-  [FeatureFlags.CHALLENGE_REWARDS_UI]: FeatureFlagCohortType.USER_ID,
+  [FeatureFlags.CHALLENGE_REWARDS_UI]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.NFT_IMAGE_PICKER_TAB]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: FeatureFlagCohortType.USER_ID,
