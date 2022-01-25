@@ -163,6 +163,7 @@
 
 .buttonFormatting {
   padding: 0 16px;
+  text-transform: uppercase;
 }
 
 .buttonFormatting .buttonTextFormatting {
@@ -224,10 +225,10 @@
 }
 
 .downloadButtonsContainer {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 6px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 6px;
 }
 
 .verified {
