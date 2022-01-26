@@ -114,8 +114,6 @@ export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
   } = args;
   const signedBytes = signBytes(Buffer.from(message), privateKey);
   const { signature, recoveryId } = signedBytes;
-  console.log(privateKey);
-  console.log(userStgAccount);
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
     .publicKeyCreate(Buffer.from(privateKey, "hex"), false)
@@ -148,7 +146,7 @@ export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
   return initUserTx;
 };
 
-/// Create a user account using given eth private key
+/// Create a user's account using given eth private key
 export type createUserArgs = {
   provider: Provider;
   program: Program<AudiusData>;
@@ -169,8 +167,6 @@ export const createUser = async (args: createUserArgs) => {
   } = args;
   const signedBytes = signBytes(Buffer.from(message), privateKey);
   const { signature, recoveryId } = signedBytes;
-  console.log(privateKey);
-  console.log(userStgAccount);
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
     .publicKeyCreate(Buffer.from(privateKey, "hex"), false)
@@ -190,7 +186,6 @@ export const createUser = async (args: createUserArgs) => {
           program.instruction.createUser(userSolPubkey, {
             accounts: {
               user: userStgAccount,
-              payer: provider.wallet.publicKey,
               sysvarProgram: SystemSysVarProgramKey,
             },
           })
@@ -202,7 +197,7 @@ export const createUser = async (args: createUserArgs) => {
     ]
   );
   return createUserTx;
-}
+};
 
 /// Create a track
 export type createTrackArgs = {
@@ -256,22 +251,19 @@ export const createPlaylist = async (args: createPlaylistArgs) => {
     userStgAccountPDA,
     userAuthorityKeypair,
     adminStgPublicKey,
-    metadata
-  } = args;
-  const tx = await program.rpc.createPlaylist(
     metadata,
-    {
-      accounts: {
-        playlist: newPlaylistKeypair.publicKey,
-        user: userStgAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-        audiusAdmin: adminStgPublicKey,
-        payer: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId
-      },
-      signers: [newPlaylistKeypair, userAuthorityKeypair]
-    }
-  );
+  } = args;
+  const tx = await program.rpc.createPlaylist(metadata, {
+    accounts: {
+      playlist: newPlaylistKeypair.publicKey,
+      user: userStgAccountPDA,
+      authority: userAuthorityKeypair.publicKey,
+      audiusAdmin: adminStgPublicKey,
+      payer: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId,
+    },
+    signers: [newPlaylistKeypair, userAuthorityKeypair],
+  });
   return tx;
 };
 
@@ -291,20 +283,17 @@ export const updatePlaylist = async (args: updatePlaylistArgs) => {
     playlistPublicKey,
     userStgAccountPDA,
     userAuthorityKeypair,
-    metadata
-  } = args;
-  const tx = await program.rpc.updatePlaylist(
     metadata,
-    {
-      accounts: {
-        playlist: playlistPublicKey,
-        user: userStgAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-        payer: provider.wallet.publicKey
-      },
-      signers: [userAuthorityKeypair]
-    }
-  );
+  } = args;
+  const tx = await program.rpc.updatePlaylist(metadata, {
+    accounts: {
+      playlist: playlistPublicKey,
+      user: userStgAccountPDA,
+      authority: userAuthorityKeypair.publicKey,
+      payer: provider.wallet.publicKey,
+    },
+    signers: [userAuthorityKeypair],
+  });
   return tx;
 };
 
@@ -322,18 +311,16 @@ export const deletePlaylist = async (args: deletePlaylistArgs) => {
     program,
     playlistPublicKey,
     userStgAccountPDA,
-    userAuthorityKeypair
+    userAuthorityKeypair,
   } = args;
-  const tx = await program.rpc.deletePlaylist(
-    {
-      accounts: {
-        playlist: playlistPublicKey,
-        user: userStgAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-        payer: provider.wallet.publicKey
-      },
-      signers: [userAuthorityKeypair]
-    }
-  );
+  const tx = await program.rpc.deletePlaylist({
+    accounts: {
+      playlist: playlistPublicKey,
+      user: userStgAccountPDA,
+      authority: userAuthorityKeypair.publicKey,
+      payer: provider.wallet.publicKey,
+    },
+    signers: [userAuthorityKeypair],
+  });
   return tx;
 };

@@ -1,12 +1,17 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
+import { assert } from "chai";
 import ethWeb3 from "web3";
-import {
-  createTrack, initAdmin
-} from "../lib/lib";
+import { createTrack, initAdmin } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { confirmLogInTransaction, initTestConstants, testInitUser, testCreateUser, testInitUserSolPubkey } from "./test-helpers";
+import {
+  confirmLogInTransaction,
+  initTestConstants,
+  testCreateUser,
+  testInitUser,
+  testInitUserSolPubkey,
+} from "./test-helpers";
 
 const { PublicKey } = anchor.web3;
 
@@ -135,7 +140,7 @@ describe("audius-data", () => {
       );
     let newUserAcctPDA = derivedAddress;
 
-    await testInitUser(
+    await testInitUser({
       provider,
       program,
       baseAuthorityAccount,
@@ -144,10 +149,10 @@ describe("audius-data", () => {
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA,
+      userStgAccount: newUserAcctPDA,
       adminStgKeypair,
-      adminKeypair
-    );
+      adminKeypair,
+    });
   });
 
   it("Initializing + claiming user!", async () => {
@@ -167,7 +172,7 @@ describe("audius-data", () => {
       );
     let newUserAcctPDA = derivedAddress;
 
-    await testInitUser(
+    await testInitUser({
       provider,
       program,
       baseAuthorityAccount,
@@ -176,10 +181,10 @@ describe("audius-data", () => {
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA,
+      userStgAccount: newUserAcctPDA,
       adminStgKeypair,
-      adminKeypair
-    );
+      adminKeypair,
+    });
 
     // New sol key that will be used to permission user updates
     let newUserKeypair = anchor.web3.Keypair.generate();
@@ -215,7 +220,7 @@ describe("audius-data", () => {
       );
     let newUserAcctPDA = derivedAddress;
 
-    await testInitUser(
+    await testInitUser({
       provider,
       program,
       baseAuthorityAccount,
@@ -224,10 +229,10 @@ describe("audius-data", () => {
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA,
+      userStgAccount: newUserAcctPDA,
       adminStgKeypair,
-      adminKeypair
-    );
+      adminKeypair,
+    });
 
     // New sol key that will be used to permission user updates
     let newUserKeypair = anchor.web3.Keypair.generate();
@@ -273,7 +278,7 @@ describe("audius-data", () => {
       );
     let newUserAcctPDA = derivedAddress;
 
-    await testInitUser(
+    await testInitUser({
       provider,
       program,
       baseAuthorityAccount,
@@ -282,10 +287,10 @@ describe("audius-data", () => {
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA,
+      userStgAccount: newUserAcctPDA,
       adminStgKeypair,
-      adminKeypair
-    );
+      adminKeypair,
+    });
 
     // New sol key that will be used to permission user updates
     let newUserKeypair = anchor.web3.Keypair.generate();
@@ -318,7 +323,9 @@ describe("audius-data", () => {
     // Expected signature validation failure
     let newTrackKeypair2 = anchor.web3.Keypair.generate();
     let wrongUserKeypair = anchor.web3.Keypair.generate();
-    console.log(`Expecting error with public key ${wrongUserKeypair.publicKey}`);
+    console.log(
+      `Expecting error with public key ${wrongUserKeypair.publicKey}`
+    );
     try {
       await testCreateTrack({
         trackMetadata,
@@ -328,7 +335,7 @@ describe("audius-data", () => {
         adminStgKeypair,
       });
     } catch (e) {
-      console.log(`ERROR FOUND AS EXPECTED ${e}`);
+      console.log(`Error found as expected ${e}`);
     }
 
     let updatedTrackMetadata = randomCID();
@@ -345,7 +352,7 @@ describe("audius-data", () => {
     await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
   });
 
-  it("Creating User!", async () => {
+  it("Creating user!", async () => {
     let {
       pkString,
       handleBytesArray,
@@ -368,8 +375,8 @@ describe("audius-data", () => {
     await testCreateUser({
       provider,
       program,
-      pkString,
       message,
+      pkString,
       newUserKeypair,
       newUserAcctPDA,
     });
@@ -392,7 +399,7 @@ describe("audius-data", () => {
       );
     let newUserAcctPDA = derivedAddress;
 
-    await testInitUser(
+    await testInitUser({
       provider,
       program,
       baseAuthorityAccount,
@@ -401,10 +408,10 @@ describe("audius-data", () => {
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA,
+      userStgAccount: newUserAcctPDA,
       adminStgKeypair,
-      adminKeypair
-    );
+      adminKeypair,
+    });
 
     // New sol key that will be used to permission user updates
     let newUserKeypair = anchor.web3.Keypair.generate();
@@ -457,7 +464,7 @@ describe("audius-data", () => {
       );
     let newUserAcctPDA = derivedAddress;
 
-    await testInitUser(
+    await testInitUser({
       provider,
       program,
       baseAuthorityAccount,
@@ -466,10 +473,10 @@ describe("audius-data", () => {
       handleBytesArray,
       bumpSeed,
       metadata,
-      newUserAcctPDA,
+      userStgAccount: newUserAcctPDA,
       adminStgKeypair,
-      adminKeypair
-    );
+      adminKeypair,
+    });
 
     // New sol key that will be used to permission user updates
     let newUserKeypair = anchor.web3.Keypair.generate();
