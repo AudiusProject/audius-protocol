@@ -208,22 +208,27 @@ const getTrendingTracks = async (
   return parsedListenCounts
 }
 
-const getTrackingListenKeys = (suffix) => {
+/**
+ * Generate the redis keys required for tracking listen submission vs success
+ * @param {string} hour formatted as such - 2022-01-25T21:00:00.000Z
+ */
+const getTrackingListenKeys = (hour) => {
   return {
-    submission: `listens-tx-submission::${suffix}`,
-    success: `listens-tx-success::${suffix}`
+    submission: `listens-tx-submission::${hour}`,
+    success: `listens-tx-success::${hour}`
   }
 }
 
+/**
+ * Initialize a key that expires after a certain number of seconds
+ * @param {Object} redis connection
+ * @param {String} key that will be initialized
+ * @param {number} seconds number of seconds after which the key will expire
+ */
 const initializeExpiringRedisKey = async (redis, key, expiry) => {
-  let getResp = await redis.get(key)
-  logger.info(`TrackListen tx getResp ${getResp}`)
-
-  if (!getResp) {
-    logger.info(`TrackListen tx getResp ${getResp} NOT FOUND, setting value`)
+  let value = await redis.get(key)
+  if (!value) {
     await redis.set(key, 0, 'ex', expiry)
-  } else {
-    logger.info(`TrackListen tx getResp ${getResp} FOUND, NOT setting value`)
   }
 }
 
