@@ -16,12 +16,12 @@ from src.models import (
     UserChallenge,
 )
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.constants import (
     TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH
+    TX_SIGNATURES_RESIZE_LENGTH,
 )
+from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,

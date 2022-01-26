@@ -12,14 +12,13 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.models import User, UserBankAccount, UserBankTransaction
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_helpers import SPL_TOKEN_ID_PK, get_address_pair
 from src.solana.constants import (
     TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH
+    TX_SIGNATURES_RESIZE_LENGTH,
 )
-
+from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_helpers import SPL_TOKEN_ID_PK, get_address_pair
 from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
