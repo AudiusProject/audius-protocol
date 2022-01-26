@@ -715,19 +715,19 @@ class SnapbackSM {
 
         // Make axios request with retries
         // TODO replace with asyncRetry
-        let userClockValuesResp = []
+        let batchClockStatusResp = []
         let userClockFetchAttempts = 0
         let errorMsg
         while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
           try {
-            userClockValuesResp = (await axios(axiosReqParams)).data.data.users
+            batchClockStatusResp = (await axios(axiosReqParams)).data.data.users
           } catch (e) {
             errorMsg = e
           }
         }
 
         // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
-        if (userClockValuesResp.length === 0) {
+        if (batchClockStatusResp.length === 0) {
           this.logError(
             `[retrieveUserInfoFromReplicaSet] Could not fetch clock values for wallets=${walletsOnReplica} on replica node=${replica} ${
               errorMsg ? ': ' + errorMsg.toString() : ''
@@ -737,13 +737,13 @@ class SnapbackSM {
         }
 
         // Else, add response data to output aggregate map
-        userClockValuesResp.forEach((userClockValueResp) => {
+        batchClockStatusResp.forEach((clockStatusResp) => {
           /**
            * @notice `filesHash` will be undefined if node is running version < 0.3.51
            * @notice `filesHash` will be null if node is running version >= 0.3.51 but has no files for user
            *    - Note this can happen even if clock > 0
            */
-          const { walletPublicKey, clock, filesHash } = userClockValueResp
+          const { walletPublicKey, clock, filesHash } = clockStatusResp
           replicasToUserInfoMap[replica][walletPublicKey] = { clock, filesHash }
         })
       })
@@ -789,7 +789,7 @@ class SnapbackSM {
             secondaryFilesHash === undefined
           ) {
             this.logWarn(
-              `[issueSyncRequestsToSecondaries] Falling back to computeSyncModeForUserAndReplicaLegacy() [primaryFilesHash: ${primaryFilesHash}] secondaryFilesHash: ${secondaryFilesHash} `
+              `[issueSyncRequestsToSecondaries] Falling back to computeSyncModeForUserAndReplicaLegacy() [primaryFilesHash: ${primaryFilesHash}] secondaryFilesHash: ${secondaryFilesHash}`
             )
             syncMode = computeSyncModeForUserAndReplicaLegacy({
               primaryClock,
