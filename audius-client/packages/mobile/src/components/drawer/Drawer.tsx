@@ -29,7 +29,7 @@ import IconRemove from 'app/assets/images/iconRemove.svg'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useColor } from 'app/utils/theme'
 
-const MAX_SHADOW_OPACITY = 0.4
+const MAX_SHADOW_OPACITY = 0.15
 const ON_MOVE_RESPONDER_DY = 10
 const MOVE_CUTOFF_CLOSE = 0.8
 const BORDER_RADIUS = 40
@@ -38,7 +38,9 @@ const BACKGROUND_OPACITY = 0.5
 // Controls the amount of friction in swiping when overflowing up or down
 const OVERFLOW_FRICTION = 4
 
-const createStyles = (zIndex = 5) => (themeColors: ThemeColors) =>
+const createStyles = (zIndex = 5, shouldAnimateShadow = true) => (
+  themeColors: ThemeColors
+) =>
   StyleSheet.create({
     drawer: {
       backgroundColor: themeColors.neutralLight10,
@@ -48,8 +50,8 @@ const createStyles = (zIndex = 5) => (themeColors: ThemeColors) =>
       width: '100%',
       elevation: zIndex,
       zIndex: zIndex,
-      shadowOpacity: 0,
-      shadowRadius: 40,
+      shadowOpacity: shouldAnimateShadow ? 0 : MAX_SHADOW_OPACITY,
+      shadowRadius: 15,
       borderTopRightRadius: BORDER_RADIUS,
       borderTopLeftRadius: BORDER_RADIUS,
       overflow: 'hidden'
@@ -168,6 +170,11 @@ export type DrawerProps = {
    */
   shouldBackgroundDim?: boolean
   /**
+   * Whether or not to animate the shadow on top of the drawer.
+   * Default to true.
+   */
+  shouldAnimateShadow?: boolean
+  /**
    * The style that controls slideIn and slideOut animations
    */
   animationStyle?: DrawerAnimationStyle
@@ -210,7 +217,7 @@ export type DrawerProps = {
   drawerStyle?: ViewStyle
 }
 
-const springToValue = (
+export const springToValue = (
   animation: Animated.Value,
   value: number,
   animationStyle: DrawerAnimationStyle,
@@ -224,8 +231,8 @@ const springToValue = (
       friction = 25
       break
     case DrawerAnimationStyle.SPRINGY:
-      tension = 160
-      friction = 15
+      tension = 70
+      friction = 10
       break
   }
   Animated.spring(animation, {
@@ -312,10 +319,11 @@ const Drawer: DrawerComponent = ({
   shouldHaveRoundedBordersAtInitialOffset = false,
   zIndex,
   drawerStyle,
+  shouldAnimateShadow,
   onPercentOpen,
   onPanResponderMove
 }: DrawerProps) => {
-  const styles = useThemedStyles(createStyles(zIndex))
+  const styles = useThemedStyles(createStyles(zIndex, shouldAnimateShadow))
 
   const { height } = Dimensions.get('window')
   const [drawerHeight, setDrawerHeight] = useState(height)
@@ -564,7 +572,9 @@ const Drawer: DrawerComponent = ({
           drawerStyle,
           ...(isFullscreen ? [styles.fullDrawer] : []),
           {
-            shadowOpacity: shadowAnim,
+            shadowOpacity: shouldAnimateShadow
+              ? shadowAnim
+              : MAX_SHADOW_OPACITY,
             transform: [
               {
                 translateY: translationAnim
