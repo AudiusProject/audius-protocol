@@ -23,12 +23,7 @@ def upgrade():
       begin;
         DROP INDEX IF EXISTS aggregate_track_idx;
         DROP MATERIALIZED VIEW aggregate_track CASCADE;
-      commit;
-    """
-    )
-    connection.execute(
-        """
-      begin;
+
         CREATE TABLE aggregate_track (
             track_id     integer NOT NULL UNIQUE PRIMARY KEY,
             repost_count integer NOT NULL,
