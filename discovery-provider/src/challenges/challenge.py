@@ -95,6 +95,12 @@ class ChallengeUpdater(ABC):
         """Optional method to provide default metadata for an challenge with no progress."""
         return {}
 
+    def get_override_challenge_step_count(
+        self, session: Session, user_id: int
+    ) -> Optional[int]:
+        """Optional method to override the step count value"""
+        return None
+
 
 class ChallengeManager:
     """`ChallengeManager` is responsible for handling shared logic between updating different challenges.

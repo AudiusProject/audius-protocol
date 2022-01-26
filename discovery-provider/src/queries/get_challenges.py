@@ -1,9 +1,11 @@
 from collections import defaultdict
+from datetime import datetime
 from functools import reduce
 from typing import DefaultDict, Dict, List, Optional, Tuple, TypedDict, cast
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
+from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Challenge, ChallengeDisbursement, ChallengeType, UserChallenge
 
@@ -186,6 +188,12 @@ def get_challenges(
                 and not user_challenge.is_complete
             ):
                 continue
+
+            override_step_count = event_bus.get_manager(
+                parent_challenge.id
+            ).get_override_challenge_step_count(session, user_id)
+            if override_step_count is not None:
+                user_challenge.current_step_count = override_step_count
             regular_user_challenges.append(
                 to_challenge_response(
                     user_challenge,
