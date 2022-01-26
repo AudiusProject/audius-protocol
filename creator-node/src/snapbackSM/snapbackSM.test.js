@@ -10,7 +10,7 @@ const {
   SyncMode,
   computeSyncModeForUserAndReplica
 } = require('./computeSyncModeForUserAndReplica.js')
-describe('Test computeSyncModeForUserAndReplica()', () => {
+describe.only('Test computeSyncModeForUserAndReplica()', () => {
   let primaryClock,
     secondaryClock,
     primaryFilesHash,
@@ -142,7 +142,7 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
       secondaryClock = 5
       primaryFilesHash = '0x123'
       secondaryFilesHash = '0x456'
-      primaryFilesHashMock = '789'
+      primaryFilesHashMock = '0x789'
 
       // Mock DBManager.fetchFilesHashFromDB() to return different filesHash for clock range
       const DBManagerMock = DBManager
@@ -164,7 +164,7 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
       assert.strictEqual(syncMode, SyncMode.PrimaryShouldSync)
     })
 
-    it("Returns SyncMode.None if primaryFilesHashForRange can't be retrieved", async () => {
+    it("Throws error primaryFilesHashForRange can't be retrieved", async () => {
       primaryClock = 10
       secondaryClock = 5
       primaryFilesHash = '0x123'
@@ -179,16 +179,18 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
         '../dbManager.js': DBManagerMock
       })
 
-      const syncMode = await computeSyncModeForUserAndReplica({
-        wallet,
-        primaryClock,
-        secondaryClock,
-        primaryFilesHash,
-        secondaryFilesHash,
-        logger
-      })
-
-      assert.strictEqual(syncMode, SyncMode.None)
+      try {
+        await computeSyncModeForUserAndReplica({
+          wallet,
+          primaryClock,
+          secondaryClock,
+          primaryFilesHash,
+          secondaryFilesHash,
+          logger
+        })
+      } catch (e) {
+        assert.strictEqual(e.message, '[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - Mock - Failed to fetch filesHash')
+      }
     })
   })
 })
