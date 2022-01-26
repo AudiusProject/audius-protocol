@@ -700,7 +700,7 @@ class SnapbackSM {
 
         const axiosReqParams = {
           baseURL: replica,
-          url: '/users/batch_clock_status',
+          url: '/users/batch_clock_status?returnFilesHash=true',
           method: 'post',
           data: { walletPublicKeys: walletsOnReplica },
           timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
@@ -776,15 +776,21 @@ class SnapbackSM {
         try {
           const { wallet, primary, endpoint: secondary } = user
 
-          const { primaryClock, primaryFilesHash } =
+          const { clock: primaryClock, filesHash: primaryFilesHash } =
             replicasToUserInfoMap[primary][wallet]
-          const { secondaryClock, secondaryFilesHash } =
+          const { clock: secondaryClock, filesHash: secondaryFilesHash } =
             replicasToUserInfoMap[secondary][wallet]
 
           let syncMode = SyncMode.None
 
           // filesHash value will be undefined if at least 1 replica is running version < 0.3.51
-          if (primaryFilesHash === undefined || secondaryFilesHash === undefined) {
+          if (
+            primaryFilesHash === undefined ||
+            secondaryFilesHash === undefined
+          ) {
+            this.logWarn(
+              `[issueSyncRequestsToSecondaries] Falling back to computeSyncModeForUserAndReplicaLegacy() [primaryFilesHash: ${primaryFilesHash}] secondaryFilesHash: ${secondaryFilesHash} `
+            )
             syncMode = computeSyncModeForUserAndReplicaLegacy({
               primaryClock,
               secondaryClock
@@ -795,7 +801,8 @@ class SnapbackSM {
               primaryClock,
               secondaryClock,
               primaryFilesHash,
-              secondaryFilesHash
+              secondaryFilesHash,
+              logger
             })
           }
 
