@@ -84,12 +84,13 @@ def prune_plays(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             start_time = time.time()
+            logger.info(f"prune_plays.py | Started pruning plays")
 
             with db.scoped_session() as session:
                 _prune_plays(session, datetime.now())
 
             logger.info(
-                f"prune_plays.py | Finished archiving \
+                f"prune_plays.py | Finished pruning and archiving to \
                 {PLAYS_ARCHIVE_TABLE_NAME} in: {time.time()-start_time} sec"
             )
         else:
