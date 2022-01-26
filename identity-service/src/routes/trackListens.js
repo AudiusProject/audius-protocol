@@ -31,7 +31,7 @@ const defaultOffset = 0
 const minOffset = 0
 
 // Duration for listen tracking redis keys prior to expiry (in seconds)
-const redisTxTrackingExpiry = 36000
+const redisTxTrackingExpirySeconds = 10 * 60 * 60
 
 const getPaginationVars = (limit, offset) => {
   if (!limit) limit = defaultLimit
