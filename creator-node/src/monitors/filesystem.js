@@ -14,6 +14,9 @@ const getStoragePathUsed = async () => {
   return total - available
 }
 
+// We first check '/var/k8s' in case the service operator has elected to
+// mount an external volume for k8s data. Otherwise, default to the root path at '/'
+
 const getFilesystemSize = async () => {
   const fsSizes = await si.fsSize()
 

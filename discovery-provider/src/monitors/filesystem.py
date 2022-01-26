@@ -1,5 +1,7 @@
 import psutil
 
+# We first check '/var/k8s' in case the service operator has elected to
+# mount an external volume for k8s data. Otherwise, default to the root path at '/'
 
 def get_filesystem_size(**kwargs):
     """
