@@ -1,5 +1,5 @@
 const DBManager = require('../dbManager.js')
-const { asyncRetry } = require('../utils.js')
+const retry = require('async-retry')
 
 /**
  * Sync mode for a (primary, secondary) pair for a user
@@ -68,7 +68,7 @@ async function computeSyncModeForUserAndReplica({
        */
       try {
         // Throws error if failure after all retries
-        const primaryFilesHashForRange = await asyncRetry(
+        const primaryFilesHashForRange = await retry(
           async () =>
             DBManager.fetchFilesHashFromDB({
               lookupKey: { lookupWallet: wallet },
