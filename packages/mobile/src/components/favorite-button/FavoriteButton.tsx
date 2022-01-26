@@ -23,13 +23,14 @@ type FavoriteButtonProps = Omit<
   'iconLightJSON' | 'iconDarkJSON' | 'isDarkMode'
 >
 
-const FavoriteButton = (props: FavoriteButtonProps) => {
+const FavoriteButton = ({ isActive, ...props }: FavoriteButtonProps) => {
   const themeVariant = useThemeVariant()
   const isDarkMode = themeVariant === Theme.DARK
 
   return (
     <AnimatedButtonProvider
       {...props}
+      iconIndex={isActive ? 1 : 0}
       isDarkMode={isDarkMode}
       iconLightJSON={[IconFavoriteOnLight, IconFavoriteOffLight]}
       iconDarkJSON={[IconFavoriteOnDark, IconFavoriteOffDark]}
