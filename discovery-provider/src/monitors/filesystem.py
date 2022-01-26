@@ -3,6 +3,7 @@ import psutil
 # We first check '/var/k8s' in case the service operator has elected to
 # mount an external volume for k8s data. Otherwise, default to the root path at '/'
 
+
 def get_filesystem_size(**kwargs):
     """
     Gets the size of the entire filesystem (bytes)
@@ -16,7 +17,7 @@ def get_filesystem_size(**kwargs):
         disk = psutil.disk_usage("/var/k8s")
     except:    
         disk = psutil.disk_usage("/")
-        
+       
     return disk.total
 
 
@@ -33,5 +34,5 @@ def get_filesystem_used(**kwargs):
         disk = psutil.disk_usage("/var/k8s")
     except:    
         disk = psutil.disk_usage("/")
-        
+
     return disk.used
