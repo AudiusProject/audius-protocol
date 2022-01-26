@@ -1,4 +1,4 @@
-from src.utils.helpers import create_track_slug
+from src.utils.helpers import create_track_slug, is_fqdn
 
 
 def test_create_track_slug_normal_title():
@@ -55,3 +55,10 @@ def test_create_track_slug_trailing_spaces():
     assert create_track_slug(" some track title ", 0, 0) == "some-track-title"
     assert create_track_slug("some ( original mix )", 0, 0) == "some-original-mix"
     assert create_track_slug("( some track title )", 0, 0) == "some-track-title"
+
+
+def test_is_fqdn_url():
+    assert is_fqdn("https://validurl1.domain.com") == True
+    assert is_fqdn("http://validurl2.subdomain.domain.com") == True
+    assert is_fqdn("http://cn2_creator-node_1:4001") == True
+    assert is_fqdn("http://www.example.$com\and%26here.html") == False

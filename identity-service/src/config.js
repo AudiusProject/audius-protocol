@@ -570,6 +570,18 @@ const config = convict({
     env: 'cognitoAPIKey',
     default: ''
   },
+  cognitoBaseUrl: {
+    doc: 'Base URL for Cognito API',
+    format: String,
+    env: 'cognitoBaseUrl',
+    default: ''
+  },
+  cognitoTemplateId: {
+    doc: 'Template for using Cognito Flow API',
+    format: String,
+    env: 'cognitoTemplateId',
+    default: ''
+  },
   solanaEndpoint: {
     doc: 'The Solana RPC endpoint to make requests against',
     format: String,
@@ -642,6 +654,12 @@ const config = convict({
     default: '',
     env: 'solanaRewardsManagerTokenPDA'
   },
+  solanaConfirmationTimeout: {
+    doc: 'The timeout used to send solana transactions through solanaWeb3 connection in ms',
+    format: Number,
+    default: '60000',
+    env: 'solanaConfirmationTimeout'
+  },
   rewardsParallelization: {
     doc: 'How many requests to perform in parallel when disbursing rewards',
     format: Number,
@@ -702,16 +720,16 @@ const config = convict({
     env: 'minSolanaNotificationSlot',
     default: 105400000
   },
-  rewardsReporterSlackUrl: {
-    doc: 'The slack url to post messages for the rewards reporter',
+  successAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for success in audio / rewards events',
     format: String,
-    env: 'rewardsReporterSlackUrl',
+    env: 'successAudioReporterSlackUrl',
     default: ''
   },
-  reporterSlackUrl: {
-    doc: 'The slack url to post messages for the general messages',
+  errorAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in audio / rewards events',
     format: String,
-    env: 'reporterSlackUrl',
+    env: 'errorAudioReporterSlackUrl',
     default: ''
   },
   wormholeRPCHosts: {
@@ -743,6 +761,12 @@ const config = convict({
     format: String,
     env: 'ethTokenBridgeAddress',
     default: ''
+  },
+  websiteHost: {
+    doc: 'Audius website host',
+    format: String,
+    env: 'websiteHost',
+    default: 'https://audius.co'
   }
 })
 

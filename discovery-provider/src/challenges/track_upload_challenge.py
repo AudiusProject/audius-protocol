@@ -58,6 +58,8 @@ class TrackUploadChallengeUpdater(ChallengeUpdater):
                 Track.blocknumber >= block_number,
                 Track.is_current == True,
                 Track.is_delete == False,
+                Track.is_unlisted == False,
+                Track.stem_of == None,
             )
             .all()
         )

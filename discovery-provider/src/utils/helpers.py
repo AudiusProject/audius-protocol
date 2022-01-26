@@ -66,18 +66,18 @@ def redis_get_json_cached_key_or_restore(redis, key):
     logger = logging.getLogger(__name__)
     cached_value = redis.get(key)
     if not cached_value:
-        logger.info(f"Redis Cache - miss {key}, restoring")
+        logger.debug(f"Redis Cache - miss {key}, restoring")
         cached_value = redis_restore(redis, key)
 
     if cached_value:
-        logger.info(f"Redis Cache - hit {key}")
+        logger.debug(f"Redis Cache - hit {key}")
         try:
             deserialized = json.loads(cached_value)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize json cached response: {e}")
             return None
-    logger.info(f"Redis Cache - miss {key}")
+    logger.debug(f"Redis Cache - miss {key}")
     return None
 
 
@@ -124,7 +124,7 @@ def bytes32_to_str(bytes32input):
 
 # Regex used to verify valid FQDN
 fqdn_regex = re.compile(
-    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
+    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
 )
 
 
@@ -506,3 +506,7 @@ def time_method(func):
         return result
 
     return wrapper
+
+
+def get_tx_arg(tx, arg_name):
+    return getattr(tx["args"], arg_name)

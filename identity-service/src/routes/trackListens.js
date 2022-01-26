@@ -207,6 +207,8 @@ const getTrendingTracks = async (
 
 module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
+    const libs = req.app.get('audiusLibs')
+    const connection = libs.solanaWeb3Manager.connection
     const trackId = parseInt(req.params.id)
     const userId = req.body.userId
     if (!userId || !trackId) {
@@ -219,29 +221,30 @@ module.exports = function (app) {
 
     // Dedicated listen flow
     if (solanaListen) {
-      logger.info(`Sending Track listen transaction trackId=${trackId} userId=${userId}`)
+      req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}`)
       const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
+          connection,
           null,
           config.get('solanaSignerPrivateKey'),
           userId.toString(),
           trackId.toString(),
           'relay' // Static source value to indicate relayed listens
         )
-        logger.info(`Track listen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+        req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
         return successResponse({
           solTxSignature
         })
       }, {
         // Retry function 5x by default
-        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
         minTimeout: 500,
-        maxTimeout: 4000,
+        maxTimeout: 8000,
         factor: 3,
         retries: 3,
         onRetry: (err, i) => {
           if (err) {
-            console.error(`TrackListens: retry error : ${err}`)
+            req.logger.error(`TrackListens tx retry error, trackId=${trackId} userId=${userId} : ${err}`)
           }
         }
       })

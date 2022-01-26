@@ -2,9 +2,12 @@ import logging
 import time
 
 from sqlalchemy import func, text
-from src.models import IndexingCheckpoints, Play
+from src.models import Play
 from src.tasks.celery_app import celery
-from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
+from src.utils.update_indexing_checkpoints import (
+    get_last_indexed_checkpoint,
+    save_indexed_checkpoint,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,17 +61,18 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
 
 def _update_aggregate_plays(session):
     # get the last updated id that counted towards the current aggregate plays
-    prev_id_checkpoint = (
-        session.query(IndexingCheckpoints.last_checkpoint).filter(
-            IndexingCheckpoints.tablename == AGGREGATE_PLAYS_TABLE_NAME
-        )
-    ).scalar()
-
-    if not prev_id_checkpoint:
-        prev_id_checkpoint = 0
+    prev_id_checkpoint = get_last_indexed_checkpoint(
+        session, AGGREGATE_PLAYS_TABLE_NAME
+    )
 
     # get the new latest
     new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
+
+    if not new_id_checkpoint or new_id_checkpoint == prev_id_checkpoint:
+        logger.info(
+            "index_aggregate_plays.py | Skip update because there are no new plays"
+        )
+        return
 
     # update aggregate plays with new plays that came after the prev_id_checkpoint
     logger.info(f"index_aggregate_plays.py | Updating {AGGREGATE_PLAYS_TABLE_NAME}")
@@ -82,13 +86,7 @@ def _update_aggregate_plays(session):
     )
 
     # update indexing_checkpoints with the new id
-    session.execute(
-        text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
-        {
-            "tablename": AGGREGATE_PLAYS_TABLE_NAME,
-            "last_checkpoint": new_id_checkpoint,
-        },
-    )
+    save_indexed_checkpoint(session, AGGREGATE_PLAYS_TABLE_NAME, new_id_checkpoint)
 
 
 # ####### CELERY TASKS ####### #
