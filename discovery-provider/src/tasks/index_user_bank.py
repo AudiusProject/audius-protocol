@@ -14,6 +14,12 @@ from src.models import User, UserBankAccount, UserBankTransaction
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import SPL_TOKEN_ID_PK, get_address_pair
+from src.solana.constants import (
+    TX_SIGNATURES_BATCH_SIZE,
+    TX_SIGNATURES_MAX_BATCHES,
+    TX_SIGNATURES_RESIZE_LENGTH
+)
+
 from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
@@ -46,12 +52,6 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
-
-# Maximum number of batches to process at once
-TX_SIGNATURES_MAX_BATCHES = 3
-
-# Last N entries present in tx_signatures array during processing
-TX_SIGNATURES_RESIZE_LENGTH = 3
 
 
 # Recover ethereum public key from bytes array
@@ -286,7 +286,7 @@ def process_user_bank_txs():
         logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
         while not intersection_found:
             transactions_history = solana_client_manager.get_signatures_for_address(
-                USER_BANK_ADDRESS, before=last_tx_signature, limit=100
+                USER_BANK_ADDRESS, before=last_tx_signature, limit=TX_SIGNATURES_BATCH_SIZE
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:

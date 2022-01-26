@@ -16,6 +16,11 @@ from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
     TransactionInfoResult,
 )
+from src.solana.constants import (
+    TX_SIGNATURES_BATCH_SIZE,
+    TX_SIGNATURES_MAX_BATCHES,
+    TX_SIGNATURES_RESIZE_LENGTH
+)
 from src.tasks.celery_app import celery
 from src.tasks.index_listen_count_milestones import (
     CURRENT_PLAY_INDEXING,
@@ -38,15 +43,6 @@ SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 
 REDIS_TX_CACHE_QUEUE_PREFIX = "plays-tx-cache-queue"
-
-# The size of the tx signatures for the program coming from the RPC pool per batch
-TX_SIGNATURES_BATCH_SIZE = 1000
-
-# Maximum number of batches to process at once
-TX_SIGNATURES_MAX_BATCHES = 100
-
-# Last N entries present in tx_signatures array during processing
-TX_SIGNATURES_RESIZE_LENGTH = 75
 
 # Number of signatures that are fetched from RPC and written at once
 # For example, in a batch of 1000 only 100 will be fetched and written in parallel

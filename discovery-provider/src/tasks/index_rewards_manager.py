@@ -17,6 +17,11 @@ from src.models import (
 )
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.constants import (
+    TX_SIGNATURES_BATCH_SIZE,
+    TX_SIGNATURES_MAX_BATCHES,
+    TX_SIGNATURES_RESIZE_LENGTH
+)
 from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
@@ -45,12 +50,6 @@ logger = logging.getLogger(__name__)
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 MIN_SLOT = int(shared_config["solana"]["rewards_manager_min_slot"])
-
-# Maximum number of batches to process at once
-TX_SIGNATURES_MAX_BATCHES = 20
-
-# Last N entries present in tx_signatures array during processing
-TX_SIGNATURES_RESIZE_LENGTH = 10
 
 
 def check_valid_rewards_manager_program():
@@ -383,7 +382,7 @@ def get_transaction_signatures(
         latest_processed_slot = get_latest_slot(session)
         while not intersection_found:
             transactions_history = solana_client_manager.get_signatures_for_address(
-                program, before=last_tx_signature, limit=100
+                program, before=last_tx_signature, limit=TX_SIGNATURES_BATCH_SIZE
             )
 
             transactions_array = transactions_history["result"]
