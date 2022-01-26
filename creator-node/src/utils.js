@@ -648,17 +648,22 @@ async function runShellCommand(command, args, logger) {
 /**
  * Calls `fn` with retries; throws error if failed after all, else returns `fn`'s return value
  * @notice Added as an alternative to `async-retry` npm package due to consumption issue
+ * @notice Takes `retries` as param for consistency with `async-retry`
  */
 async function asyncRetry(fn, { retries }) {
-  try {
-    return fn()
-  } catch (e) {
-    if (retries > 0) {
-      return asyncRetry(fn, { retries: retries - 1 })
-    } else {
-      throw e
+  const maxAttempts = retries - 1
+  let error
+  let attemptNum = 0
+  while (attemptNum++ <= maxAttempts) {
+    try {
+      const resp = await fn()
+      return resp
+    } catch (e) {
+      error = e
     }
   }
+
+  throw error
 }
 
 module.exports = Utils
