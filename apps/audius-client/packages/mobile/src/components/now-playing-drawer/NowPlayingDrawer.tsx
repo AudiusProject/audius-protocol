@@ -6,27 +6,31 @@ import {
   Animated,
   GestureResponderEvent,
   PanResponderGestureState,
-  StatusBar
+  StatusBar,
+  Dimensions
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import Drawer from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 
-import { DrawerAnimationStyle } from '../drawer/Drawer'
+import { DrawerAnimationStyle, springToValue } from '../drawer/Drawer'
 
-import ActionsBar from './ActionsBar'
-import AudioControls from './AudioControls'
-import PlayBar from './PlayBar'
+import { ActionsBar } from './ActionsBar'
+import { AudioControls } from './AudioControls'
+import { Logo } from './Logo'
+import { PlayBar } from './PlayBar'
 
-const PLAY_BAR_HEIGHT = 100
+const PLAY_BAR_HEIGHT = 82
 const STATUS_BAR_FADE_CUTOFF = 0.6
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
     paddingTop: 0,
-    height: '100%'
+    height: Dimensions.get('window').height - PLAY_BAR_HEIGHT
+  },
+  controls: {
+    padding: 24
   }
 })
 
@@ -59,6 +63,10 @@ const NowPlayingDrawer = ({
 
   const [isOpen, setIsOpen] = useDrawer('NowPlaying')
   const [isPlayBarShowing, setIsPlayBarShowing] = useState(true)
+  // Set animation opacity for the play bar as the now playing drawer is
+  // opened. The top of the now playing drawer (Audius logo)
+  // animates in opposite the play bar animating out while dragging up.
+  const playBarOpacityAnim = useRef(new Animated.Value(1)).current
 
   useEffect(() => {
     if (isOpen) {
@@ -69,16 +77,18 @@ const NowPlayingDrawer = ({
   }, [isOpen])
 
   const onDrawerClose = useCallback(() => {
+    springToValue(playBarOpacityAnim, 1, DrawerAnimationStyle.SPRINGY)
     setIsOpen(false)
     setIsPlayBarShowing(true)
     onClose()
-  }, [setIsOpen, setIsPlayBarShowing, onClose])
+  }, [setIsOpen, setIsPlayBarShowing, onClose, playBarOpacityAnim])
 
   const onDrawerOpen = useCallback(() => {
+    springToValue(playBarOpacityAnim, 0, DrawerAnimationStyle.SPRINGY)
     setIsOpen(true)
     setIsPlayBarShowing(false)
     onOpen()
-  }, [setIsOpen, setIsPlayBarShowing, onOpen])
+  }, [setIsOpen, setIsPlayBarShowing, onOpen, playBarOpacityAnim])
 
   const drawerPercentOpen = useRef(0)
   const onDrawerPercentOpen = useCallback(
@@ -99,6 +109,7 @@ const NowPlayingDrawer = ({
             bottomBarTranslationAnim,
             drawerPercentOpen.current * 100
           )(e)
+          attachToDy(playBarOpacityAnim, 1 - drawerPercentOpen.current)(e)
         }
       } else if (gestureState.dy < 0) {
         // Delta is upwards
@@ -107,6 +118,7 @@ const NowPlayingDrawer = ({
             bottomBarTranslationAnim,
             drawerPercentOpen.current * 100
           )(e)
+          attachToDy(playBarOpacityAnim, 1 - drawerPercentOpen.current)(e)
         }
       }
 
@@ -122,7 +134,7 @@ const NowPlayingDrawer = ({
         }
       }
     },
-    [drawerPercentOpen, bottomBarTranslationAnim, isOpen]
+    [drawerPercentOpen, bottomBarTranslationAnim, playBarOpacityAnim, isOpen]
   )
 
   return (
@@ -136,14 +148,18 @@ const NowPlayingDrawer = ({
       isOpenToInitialOffset={isPlayBarShowing}
       animationStyle={DrawerAnimationStyle.SPRINGY}
       shouldBackgroundDim={false}
+      shouldAnimateShadow={false}
       drawerStyle={{ top: -1 * insets.top, overflow: 'visible' }}
       onPercentOpen={onDrawerPercentOpen}
       onPanResponderMove={onPanResponderMove}
     >
       <View style={styles.container}>
-        <PlayBar onPress={onDrawerOpen} />
-        <AudioControls />
-        <ActionsBar />
+        <PlayBar onPress={onDrawerOpen} opacityAnim={playBarOpacityAnim} />
+        <Logo opacityAnim={playBarOpacityAnim} />
+        <View style={styles.controls}>
+          <AudioControls />
+          <ActionsBar />
+        </View>
       </View>
     </Drawer>
   )
