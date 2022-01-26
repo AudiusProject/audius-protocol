@@ -8,10 +8,10 @@ logger = logging.getLogger(__name__)
 AGGREGATE_TRACK = "aggregate_track"
 
 # UPDATE_AGGREGATE_TRACK_QUERY
-# Get a lower/higher bound blocknumber to check for new save/repost activity
-# Find a subset of tracks that have changed within that blocknumber range
-# For that subset of tracks add the play/repost counts to the existing counts
-# Insert that count for new users or update it to an existing row
+# Get a higher bound blocknumber to check for new save/repost activity
+# Find a subset of tracks that have changed after that blocknumber
+# For that subset of tracks calculate the play/repost total counts
+# Insert that count for new users or update an existing row
 UPDATE_AGGREGATE_TRACK_QUERY = """
     WITH aggregate_track_checkpoints AS (
         SELECT
@@ -22,17 +22,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             t.track_id AS track_id
         FROM
             tracks t
-        WHERE
-            t.is_current IS TRUE
-            -- AND t.is_delete IS FALSE
-            -- AND t.is_unlisted IS FALSE
-            -- AND t.stem_of IS NULL
-            AND t.blocknumber <= (
-                SELECT
-                    current_blocknumber
-                FROM
-                    aggregate_track_checkpoints
-            )
         GROUP BY
             t.track_id
         UNION
@@ -44,7 +33,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             WHERE
                 r.is_current IS TRUE
                 AND r.repost_type = 'track'
-                -- AND r.is_delete IS FALSE
+                AND r.is_delete IS FALSE
                 AND r.blocknumber <= (
                     SELECT
                         current_blocknumber
@@ -63,6 +52,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             WHERE
                 s.is_current IS TRUE
                 AND s.save_type = 'track'
+                AND s.is_delete IS FALSE
                 AND s.blocknumber <= (
                     SELECT
                         current_blocknumber
@@ -85,10 +75,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 t.track_id
             FROM
                 tracks t
-            WHERE
-                t.is_current IS TRUE
-                AND t.is_delete IS FALSE
-                AND t.stem_of IS NULL
             GROUP BY
                 t.track_id
         ) AS t
