@@ -35,7 +35,7 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
   let numSentNotifs = 0
 
   try {
-    if (!webPushIsConfigured) return
+    if (!webPushIsConfigured) return numSentNotifs
     const { message, title } = notificationParams
     const notificationBrowsers = await models.NotificationBrowserSubscription.findAll({ where: { userId, enabled: true } })
     await Promise.all(notificationBrowsers.map(async (notificationBrowser) => {
@@ -99,7 +99,7 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
   let numSentNotifs = 0
 
   try {
-    if (!apnProvider) return
+    if (!apnProvider) return numSentNotifs
     const note = new apn.Notification()
 
     const { message, title } = notificationParams
