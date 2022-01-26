@@ -84,7 +84,7 @@ def prune_plays(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             start_time = time.time()
-            logger.info(f"prune_plays.py | Started pruning plays")
+            logger.info("prune_plays.py | Started pruning plays")
 
             with db.scoped_session() as session:
                 _prune_plays(session, datetime.now())
