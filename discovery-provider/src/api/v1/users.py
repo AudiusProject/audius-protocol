@@ -19,7 +19,7 @@ from src.api.v1.helpers import (
     search_parser,
     success_response,
 )
-from src.api.v1.models.common import favorite
+from src.api.v1.models.favorites import favorite_with_playlist, favorite_with_track
 from src.api.v1.models.users import (
     associated_wallets,
     challenge_response,
@@ -415,9 +415,16 @@ class HandleFullRepostList(Resource):
         return success_response(activities)
 
 
-favorites_response = make_response(
-    "favorites_response", ns, fields.List(fields.Nested(favorite))
+favorites_with_tracks_response = make_response(
+    "favorites_response", ns, fields.List(fields.Nested(favorite_with_track))
 )
+favorites_with_playlists_response = make_response(
+    "favorites_response", ns, fields.List(fields.Nested(favorite_with_playlist))
+)
+favorites_req_parser = reqparse.RequestParser()
+favorites_req_parser.add_argument("user_id", required=False, type=str)
+favorites_req_parser.add_argument("limit", required=False, type=int)
+favorites_req_parser.add_argument("offset", required=False, type=int)
 
 
 @ns.route("/<string:user_id>/favorites")
@@ -428,12 +435,63 @@ class FavoritedTracks(Resource):
         params={"user_id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.marshal_with(favorites_response)
+    @ns.marshal_with(favorites_with_tracks_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch favorited tracks for a user."""
+        args = favorite_route_parser.parse_args()
         decoded_id = decode_with_abort(user_id, ns)
-        favorites = get_saves("tracks", decoded_id)
+        current_user_id = get_current_user_id(args)
+        favorites = get_saves(
+            "tracks", decoded_id, current_user_id, include_save_items=True
+        )
+        favorites = list(map(extend_favorite, favorites))
+        return success_response(favorites)
+
+
+@ns.route("/<string:user_id>/favorites/tracks")
+class FavoritedTracks2(FavoritedTracks):
+    pass
+
+
+@ns.route("/<string:user_id>/favorites/albums")
+class FavoritedAlbums(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User's Favorite Albums""",
+        params={"user_id": "The User ID of the User"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(favorites_with_playlists_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        args = favorite_route_parser.parse_args()
+        decoded_id = decode_with_abort(user_id, ns)
+        current_user_id = get_current_user_id(args)
+        favorites = get_saves(
+            "albums", decoded_id, current_user_id, include_save_items=True
+        )
+        favorites = list(map(extend_favorite, favorites))
+        return success_response(favorites)
+
+
+@ns.route("/<string:user_id>/favorites/playlists")
+class FavoritedPlaylists(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User's Favorite Playlists""",
+        params={"user_id": "The User ID of the User"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(favorites_with_playlists_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        args = favorite_route_parser.parse_args()
+        decoded_id = decode_with_abort(user_id, ns)
+        current_user_id = get_current_user_id(args)
+        favorites = get_saves(
+            "playlists", decoded_id, current_user_id, include_save_items=True
+        )
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
 
