@@ -66,7 +66,7 @@ async function _sendNotification (notifFn, bufferObj, logger) {
     logger.error(`${logPrefix} ERROR ${e.message}`)
   }
 
-  return numSentNotifs
+  return numSentNotifs || 0
 }
 
 async function drainPublishedMessages (logger) {
