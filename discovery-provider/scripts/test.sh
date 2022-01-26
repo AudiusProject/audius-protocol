@@ -21,6 +21,7 @@ set -e
 pip3 install -r requirements.txt
 sleep 5
 set +e
+
 if [ -n "${VERBOSE}" ]; then
   set -x
 fi
