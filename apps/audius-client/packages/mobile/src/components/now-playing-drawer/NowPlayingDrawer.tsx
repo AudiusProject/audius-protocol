@@ -10,9 +10,11 @@ import {
   Dimensions
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 
 import Drawer from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { getPlaying } from 'app/store/audio/selectors'
 
 import { DrawerAnimationStyle, springToValue } from '../drawer/Drawer'
 
@@ -21,7 +23,7 @@ import { AudioControls } from './AudioControls'
 import { Logo } from './Logo'
 import { PlayBar } from './PlayBar'
 
-const PLAY_BAR_HEIGHT = 82
+const PLAY_BAR_HEIGHT = 84
 const STATUS_BAR_FADE_CUTOFF = 0.6
 
 const styles = StyleSheet.create({
@@ -62,7 +64,16 @@ const NowPlayingDrawer = ({
   const insets = useSafeAreaInsets()
 
   const [isOpen, setIsOpen] = useDrawer('NowPlaying')
-  const [isPlayBarShowing, setIsPlayBarShowing] = useState(true)
+  const isPlaying = useSelector(getPlaying)
+  const [isPlayBarShowing, setIsPlayBarShowing] = useState(false)
+
+  // When audio starts playing, open the playbar to the initial offset
+  useEffect(() => {
+    if (isPlaying && !isPlayBarShowing) {
+      setIsPlayBarShowing(true)
+    }
+  }, [isPlaying, isPlayBarShowing])
+
   // Set animation opacity for the play bar as the now playing drawer is
   // opened. The top of the now playing drawer (Audius logo)
   // animates in opposite the play bar animating out while dragging up.
