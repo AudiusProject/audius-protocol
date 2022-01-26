@@ -1,5 +1,5 @@
 const DBManager = require('../dbManager.js')
-const { asyncRetry } = require('../utils.js')
+const asyncRetry = require('async-retry')
 
 /**
  * Sync mode for a (primary, secondary) pair for a user
@@ -75,7 +75,10 @@ async function computeSyncModeForUserAndReplica({
               clockMin: 0,
               clockMax: secondaryClock + 1
             }),
-          { retries: FetchFilesHashNumRetries }
+          {
+            retries: FetchFilesHashNumRetries,
+            minTimeout: 0
+          }
         )
 
         if (primaryFilesHashForRange === secondaryFilesHash) {

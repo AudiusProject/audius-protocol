@@ -645,22 +645,6 @@ async function runShellCommand(command, args, logger) {
   })
 }
 
-/**
- * Calls `fn` with retries; throws error if failed after all, else returns `fn`'s return value
- * @notice Added as an alternative to `async-retry` npm package due to consumption issue
- */
-async function asyncRetry(fn, { retries }) {
-  try {
-    return fn()
-  } catch (e) {
-    if (retries > 0) {
-      return asyncRetry(fn, { retries: retries - 1 })
-    } else {
-      throw e
-    }
-  }
-}
-
 module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
@@ -676,4 +660,3 @@ module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
-module.exports.asyncRetry = asyncRetry
