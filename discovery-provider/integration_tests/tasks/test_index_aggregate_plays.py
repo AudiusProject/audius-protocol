@@ -5,10 +5,7 @@ from typing import List
 from integration_tests.utils import populate_mock_db
 from src.models import AggregatePlays
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
-from src.utils.config import shared_config
 from src.utils.db_session import get_db
-
-REDIS_URL = shared_config["redis"]["url"]
 
 logger = logging.getLogger(__name__)
 
