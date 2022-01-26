@@ -287,7 +287,7 @@ def process_user_bank_txs():
             transactions_history = solana_client_manager.get_signatures_for_address(
                 USER_BANK_ADDRESS,
                 before=last_tx_signature,
-                limit=TX_SIGNATURES_BATCH_SIZE,
+                limit=TX_SIGNATURES_BATCH_SIZE
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:
