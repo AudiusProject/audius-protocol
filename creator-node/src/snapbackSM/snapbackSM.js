@@ -741,7 +741,7 @@ class SnapbackSM {
           /**
            * @notice `filesHash` will be undefined if node is running version < 0.3.51
            * @notice `filesHash` will be null if node is running version >= 0.3.51 but has no files for user
-           *    - Note this can happen even if clock > 0
+           *    - Note this can happen even if clock > 0 if user has AudiusUser or Track table records without any File table records
            */
           const { walletPublicKey, clock, filesHash } = clockStatusResp
           replicasToUserInfoMap[replica][walletPublicKey] = { clock, filesHash }
@@ -825,7 +825,7 @@ class SnapbackSM {
              * 2. issue sync to secondary with forceResync = true
              */
             this.log(
-              `[issueSyncRequestsToSecondaries] [PrimaryShouldSync = true] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
+              `[issueSyncRequestsToSecondaries] [PrimaryShouldSync = true] [SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
             )
           }
         } catch (e) {

@@ -32,10 +32,9 @@ async function computeSyncModeForUserAndReplica({
   logger
 }) {
   if (
-    // clock value must be number
-    !(primaryClock && primaryClock !== 0) ||
-    !(secondaryClock && secondaryClock !== 0) ||
-    // `null` is a valid filesHash value
+    !Number.isInteger(primaryClock) ||
+    !Number.isInteger(secondaryClock) ||
+    // `null` is a valid filesHash value; `undefined` is not
     primaryFilesHash === undefined ||
     secondaryFilesHash === undefined
   ) {
@@ -50,6 +49,11 @@ async function computeSyncModeForUserAndReplica({
     if (primaryFilesHash === secondaryFilesHash) {
       syncMode = SyncMode.None
     } /* primaryFilesHash !== secondaryFilesHash */ else {
+      /**
+       * If clocks are same but filesHashes are not, this means secondary and primary states for user
+       *    have diverged. To fix this issue, primary should sync content from secondary and
+       *    subsequently force secondary to resync state from primary.
+       */
       syncMode = SyncMode.PrimaryShouldSync
     }
   } else if (primaryClock < secondaryClock) {
@@ -59,7 +63,9 @@ async function computeSyncModeForUserAndReplica({
     if (secondaryFilesHash === null) {
       syncMode = SyncMode.SecondaryShouldSync
     } /* secondaryFilesHash is defined */ else {
-      // Need to compare filesHashes from same clock ranges
+      /**
+       * If primaryClock > secondaryClock, need to check that nodes have same content for each clock value. To do this, we compute filesHash from primary matching clock range from secondary.
+       */
       try {
         // Throws error if failure after all retries
         const primaryFilesHashForRange = await asyncRetry(
