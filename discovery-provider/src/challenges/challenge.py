@@ -327,6 +327,12 @@ class ChallengeManager:
         """Optional method to show/hide a challenge for a particular user."""
         return self._updater.should_show_challenge_for_user(session, user_id)
 
+    def get_override_challenge_step_count(
+        self, session: Session, user_id: int
+    ) -> Optional[int]:
+        """Optional method to override a challenge step count for a particular user."""
+        return self._updater.get_override_challenge_step_count(session, user_id)
+
     # Helpers
 
     def _init_challenge(self, session):
