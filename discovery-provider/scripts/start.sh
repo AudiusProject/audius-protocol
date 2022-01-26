@@ -66,14 +66,38 @@ export PYTHONUNBUFFERED=1
 
 audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 
+PORT=5000
+if [[ "$audius_openresty_enable" == true ]]; then
+    openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
+    tail -f /usr/local/openresty/logs/access.log | python3 scripts/openresty_log_convertor.py INFO | tee >(logger -t openresty) &
+    tail -f /usr/local/openresty/logs/error.log | python3 scripts/openresty_log_convertor.py ERROR | tee >(logger -t openresty) &
+    PORT=3000
+fi
+
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
-    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
+    export FLASK_APP=src.app
+    export FLASK_ENV=development
+
+    exec flask run --host=0.0.0.0 --port $PORT | tee >(logger -t server) server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) worker.log &
         celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) beat.log &
     fi
 else
-    ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
+    WORKER_CLASS="${audius_gunicorn_worker_class:-sync}"
+    WORKERS="${audius_gunicorn_workers:-2}"
+    THREADS="${audius_gunicorn_threads:-8}"
+
+    exec gunicorn \
+        -b ":$PORT" \
+        --access-logfile - \
+        --error-logfile - \
+        --log-level=$audius_disprov_loglevel \
+        --worker-class=$WORKER_CLASS \
+        --workers=$WORKERS \
+        --threads=$THREADS \
+        src.wsgi:app | tee >(logger -t server) &
+
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
         celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
