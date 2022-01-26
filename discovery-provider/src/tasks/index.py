@@ -53,21 +53,21 @@ from src.utils.redis_constants import (
 )
 from src.utils.session_manager import SessionManager
 
-# These are kebab_cased - eg user_library_factory
-USER_FACTORY = CONTRACT_TYPES["USER_FACTORY"]
-TRACK_FACTORY = CONTRACT_TYPES["TRACK_FACTORY"]
-SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES["SOCIAL_FEATURE_FACTORY"]
-PLAYLIST_FACTORY = CONTRACT_TYPES["PLAYLIST_FACTORY"]
-USER_LIBRARY_FACTORY = CONTRACT_TYPES["USER_LIBRARY_FACTORY"]
-USER_REPLICA_SET_MANAGER = CONTRACT_TYPES["USER_REPLICA_SET_MANAGER"]
+USER_FACTORY = CONTRACT_TYPES.USER_FACTORY.value
+TRACK_FACTORY = CONTRACT_TYPES.TRACK_FACTORY.value
+SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY.value
+PLAYLIST_FACTORY = CONTRACT_TYPES.PLAYLIST_FACTORY.value
+USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
+USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
 
-# These are PascalCased - eg UserLibraryFactory
-USER_FACTORY_CONTRACT = CONTRACT_NAMES[USER_FACTORY]
-TRACK_FACTORY_CONTRACT = CONTRACT_NAMES[TRACK_FACTORY]
-SOCIAL_FEATURE_FACTORY_CONTRACT = CONTRACT_NAMES[SOCIAL_FEATURE_FACTORY]
-PLAYLIST_FACTORY_CONTRACT = CONTRACT_NAMES[PLAYLIST_FACTORY]
-USER_LIBRARY_FACTORY_CONTRACT = CONTRACT_NAMES[USER_LIBRARY_FACTORY]
-USER_REPLICA_SET_MANAGER_CONTRACT = CONTRACT_NAMES[USER_REPLICA_SET_MANAGER]
+USER_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.USER_FACTORY]
+TRACK_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.TRACK_FACTORY]
+SOCIAL_FEATURE_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY]
+PLAYLIST_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.PLAYLIST_FACTORY]
+USER_LIBRARY_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.USER_LIBRARY_FACTORY]
+USER_REPLICA_SET_MANAGER_CONTRACT = CONTRACT_NAMES[
+    CONTRACT_TYPES.USER_REPLICA_SET_MANAGER
+]
 
 TX_TYPE_TO_HANDLER_MAP = {
     USER_FACTORY: user_state_update,
@@ -249,7 +249,7 @@ def fetch_ipfs_metadata(
 ):
     track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT]["abi"]
     track_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[TRACK_FACTORY], abi=track_abi
+        address=get_contract_addresses()["track_factory"], abi=track_abi
     )
 
     user_abi = update_task.abi_values[USER_FACTORY_CONTRACT]["abi"]
@@ -413,22 +413,19 @@ def save_skipped_tx(session, redis):
         )
 
 
-# Returns tx contract name
-def get_contract_name_for_tx(tx, tx_receipt):
-    contract_name = None
+def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     tx_target_contract_address = tx["to"]
-    for tx_type in CONTRACT_TYPES.values():
-        logger.error(f"AAAAAAAAAA ADDRESS {tx_target_contract_address}")
+    contract_type = None
+    for tx_type in tx_type_to_grouped_lists_map.keys():
         tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
-        logger.error(f"AAAAAAAAAA TX_IS_TYPE {tx_is_type}")
         if tx_is_type:
-            contract_name = CONTRACT_NAMES.get(CONTRACT_TYPES(tx_type).name)
+            contract_type = tx_type
             logger.info(
-                f"index.py | {contract_name} contract addr: {tx_target_contract_address}"
+                f"index.py | {tx_type} contract addr: {tx_target_contract_address}"
                 f" tx from block - {tx}, receipt - {tx_receipt}"
             )
             break
-    return contract_name
+    return contract_type
 
 
 def add_indexed_block_to_db(db_session, block):
@@ -460,7 +457,7 @@ def process_state_changes(
     session,
     ipfs_metadata,
     blacklisted_cids,
-    contract_name_to_grouped_lists_map,
+    tx_type_to_grouped_lists_map,
     block,
 ):
     block_number, block_hash, block_timestamp = itemgetter(
@@ -468,18 +465,15 @@ def process_state_changes(
     )(block)
 
     changed_entity_ids_map = {
-        USER_FACTORY_CONTRACT: [],
-        TRACK_FACTORY_CONTRACT: [],
-        PLAYLIST_FACTORY_CONTRACT: [],
-        USER_REPLICA_SET_MANAGER_CONTRACT: [],
-        # user library and social feature factory are not
-        # in this list because they don't require
-        # cache invalidation after processing
+        USER_FACTORY: [],
+        TRACK_FACTORY: [],
+        PLAYLIST_FACTORY: [],
+        USER_REPLICA_SET_MANAGER: [],
     }
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
-        contract_name = CONTRACT_NAMES[tx_type]
-        txs_to_process = contract_name_to_grouped_lists_map[contract_name]
+
+        txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
             main_indexing_task,
             update_task,
@@ -497,8 +491,8 @@ def process_state_changes(
             changed_entity_ids,
         ) = bulk_processor(*tx_processing_args)
 
-        if contract_name in changed_entity_ids_map.keys():
-            changed_entity_ids_map[contract_name] = changed_entity_ids
+        if tx_type in changed_entity_ids_map.keys():
+            changed_entity_ids_map[tx_type] = changed_entity_ids
 
         logger.info(
             f"index.py | {bulk_processor.__name__} completed"
@@ -508,18 +502,18 @@ def process_state_changes(
     return changed_entity_ids_map
 
 
-def remove_updated_entities_from_cache(redis, contract_name_to_changed_entity_ids):
-    CONTRACT_NAME_TO_CLEAR_CACHE_HANDLERS = {
-        USER_FACTORY_CONTRACT: remove_cached_user_ids,
-        USER_REPLICA_SET_MANAGER_CONTRACT: remove_cached_user_ids,
-        TRACK_FACTORY_CONTRACT: remove_cached_track_ids,
-        PLAYLIST_FACTORY_CONTRACT: remove_cached_playlist_ids,
+def remove_updated_entities_from_cache(redis, changed_entity_type_to_updated_ids_map):
+    CONTRACT_TYPE_TO_CLEAR_CACHE_HANDLERS = {
+        USER_FACTORY: remove_cached_user_ids,
+        USER_REPLICA_SET_MANAGER: remove_cached_user_ids,
+        TRACK_FACTORY: remove_cached_track_ids,
+        PLAYLIST_FACTORY: remove_cached_playlist_ids,
     }
     for (
-        contract_name,
+        contract_type,
         clear_cache_handler,
-    ) in CONTRACT_NAME_TO_CLEAR_CACHE_HANDLERS.items():
-        changed_entity_ids = contract_name_to_changed_entity_ids[contract_name]
+    ) in CONTRACT_TYPE_TO_CLEAR_CACHE_HANDLERS.items():
+        changed_entity_ids = changed_entity_type_to_updated_ids_map[contract_type]
         if changed_entity_ids:
             clear_cache_handler(redis, changed_entity_ids)
 
@@ -548,7 +542,9 @@ def index_blocks(self, db, blocks_list):
         update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
-        block_number, block_hash = itemgetter("number", "hash")(block)
+        block_number, block_hash, latest_block_timestamp = itemgetter(
+            "number", "hash", "timestamp"
+        )(block)
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
@@ -564,13 +560,13 @@ def index_blocks(self, db, blocks_list):
                 save_skipped_tx(session, redis)
                 add_indexed_block_to_db(session, block)
             else:
-                txs_grouped_by_contract = {
-                    USER_FACTORY_CONTRACT: [],
-                    TRACK_FACTORY_CONTRACT: [],
-                    SOCIAL_FEATURE_FACTORY_CONTRACT: [],
-                    PLAYLIST_FACTORY_CONTRACT: [],
-                    USER_LIBRARY_FACTORY_CONTRACT: [],
-                    USER_REPLICA_SET_MANAGER_CONTRACT: [],
+                txs_grouped_by_type = {
+                    USER_FACTORY: [],
+                    TRACK_FACTORY: [],
+                    SOCIAL_FEATURE_FACTORY: [],
+                    PLAYLIST_FACTORY: [],
+                    USER_LIBRARY_FACTORY: [],
+                    USER_REPLICA_SET_MANAGER: [],
                 }
                 try:
                     tx_receipt_dict = fetch_tx_receipts(self, block)
@@ -579,11 +575,13 @@ def index_blocks(self, db, blocks_list):
                     sorted_txs = sorted(
                         block.transactions, key=lambda entry: entry["hash"]
                     )
-                    logger.error(f"TXXXXXXX, {sorted_txs}")
+
                     # Parse tx events in each block
                     for tx in sorted_txs:
                         tx_hash = web3.toHex(tx["hash"])
-                        tx_target_contract_address = tx["to"]
+                        tx_target_contract_address = (
+                            tx["to"] if tx["to"] else zero_address
+                        )
                         tx_receipt = tx_receipt_dict[tx_hash]
                         should_skip_tx = (
                             tx_target_contract_address == zero_address
@@ -594,16 +592,20 @@ def index_blocks(self, db, blocks_list):
                                 f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
                             )
                             save_skipped_tx(session, redis)
+                            continue
                         else:
-                            contract_name = get_contract_name_for_tx(tx, tx_receipt)
-                            txs_grouped_by_contract[contract_name].append(tx_receipt)
+                            contract_type = get_contract_type_for_tx(
+                                txs_grouped_by_type, tx, tx_receipt
+                            )
+                            if contract_type:
+                                txs_grouped_by_type[contract_type].append(tx_receipt)
 
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
                     ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
                         db,
-                        txs_grouped_by_contract[USER_FACTORY_CONTRACT],
-                        txs_grouped_by_contract[TRACK_FACTORY_CONTRACT],
+                        txs_grouped_by_type[USER_FACTORY],
+                        txs_grouped_by_type[TRACK_FACTORY],
                         block_number,
                         block_hash,
                     )
@@ -618,7 +620,7 @@ def index_blocks(self, db, blocks_list):
                         session,
                         ipfs_metadata,
                         blacklisted_cids,
-                        txs_grouped_by_contract,
+                        txs_grouped_by_type,
                         block,
                     )
                 except IndexingError as err:
@@ -658,7 +660,6 @@ def index_blocks(self, db, blocks_list):
 
         if changed_entity_ids_map:
             remove_updated_entities_from_cache(redis, changed_entity_ids_map)
-            changed_entity_ids_map = {}
 
         logger.info(
             f"index.py | redis cache clean operations complete for block=${block_number}"

@@ -1,4 +1,6 @@
 # pylint: disable=too-many-lines, arguments-differ
+from enum import Enum
+
 """
 Constants required for multihash implementation
 Ported from https://github.com/hareeshnagaraj/py-multihash
