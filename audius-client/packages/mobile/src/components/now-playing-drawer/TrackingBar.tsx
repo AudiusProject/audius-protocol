@@ -22,7 +22,7 @@ const createStyles = (themeColors: ThemeColors) =>
 type TrackingBarProps = {
   /**
    * Percentage "complete" the tracker should render to be
-   * (i.e. song % completion).
+   * (i.e. song % completion). Expressed as a number [0, 1]
    */
   percentComplete: number
   /**
@@ -60,7 +60,7 @@ export const TrackingBar = ({
         style={[
           styles.tracker,
           {
-            width: `${percentComplete}%`
+            width: `${percentComplete * 100}%`
           }
         ]}
       >

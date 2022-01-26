@@ -1,5 +1,14 @@
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
+import { useTrackCoverArt } from 'audius-client/src/common/hooks/useImageSize'
+import { FavoriteSource } from 'audius-client/src/common/models/Analytics'
+import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
+import { Track } from 'audius-client/src/common/models/Track'
+import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
+import {
+  saveTrack,
+  unsaveTrack
+} from 'audius-client/src/common/store/social/tracks/actions'
 import {
   StyleSheet,
   TouchableOpacity,
@@ -7,17 +16,28 @@ import {
   View,
   Dimensions
 } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/animations/iconPause.json'
 import IconPlay from 'app/assets/animations/iconPlay.json'
+import DynamicImage from 'app/components/dynamic-image'
 import FavoriteButton from 'app/components/favorite-button'
 import Text from 'app/components/text'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { pause, play } from 'app/store/audio/actions'
+import {
+  getPlaying,
+  getTrack as getNativeTrack
+} from 'app/store/audio/selectors'
 import { Theme, ThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import AnimatedButtonProvider from '../animated-button/AnimatedButtonProvider'
 
 import { TrackingBar } from './TrackingBar'
+
+const SEEK_INTERVAL = 1000
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -55,7 +75,8 @@ const createStyles = (themeColors: ThemeColors) =>
       marginLeft: 12,
       height: 26,
       width: 26,
-      backgroundColor: 'blue',
+      overflow: 'hidden',
+      backgroundColor: themeColors.neutralLight7,
       borderRadius: 2
     },
     trackText: {
@@ -90,20 +111,52 @@ type PlayBarProps = {
   opacityAnim: Animated.Value
 }
 
+const PlayBarArtwork = ({ track }: { track: Track }) => {
+  const image = useTrackCoverArt(
+    track.track_id,
+    track._cover_art_sizes,
+    SquareSizes.SIZE_150_BY_150
+  )
+  return <DynamicImage image={{ uri: image }} />
+}
+
 export const PlayBar = ({ onPress, opacityAnim }: PlayBarProps) => {
   const styles = useThemedStyles(createStyles)
   const themeVariant = useThemeVariant()
-  const isDarkMode = themeVariant === Theme.DARK
+  const dispatch = useDispatch()
+  const dispatchWeb = useDispatchWeb()
 
-  const renderFavoriteButton = () => {
-    return (
-      <FavoriteButton
-        onPress={() => {}}
-        style={styles.button}
-        wrapperStyle={styles.icon}
-      />
-    )
-  }
+  const isDarkMode = themeVariant === Theme.DARK
+  const [percentComplete, setPercentComplete] = useState(0)
+
+  // TODO: As we move away from the audio store slice in mobile-client
+  // in favor of player/queue selectors in common, getNativeTrack calls
+  // should be replaced
+  const trackInfo = useSelector(getNativeTrack)
+  const track = useSelectorWeb(state =>
+    getTrack(state, trackInfo ? { id: trackInfo.trackId } : {})
+  )
+
+  useEffect(() => {
+    setInterval(() => {
+      const { currentTime, playableDuration } = global.progress
+      if (playableDuration !== undefined) {
+        setPercentComplete(currentTime / playableDuration)
+      } else {
+        setPercentComplete(0)
+      }
+    }, SEEK_INTERVAL)
+  }, [setPercentComplete])
+
+  const isPlaying = useSelector(getPlaying)
+
+  const onPressPlayButton = useCallback(() => {
+    if (isPlaying) {
+      dispatch(pause())
+    } else {
+      dispatch(play())
+    }
+  }, [isPlaying, dispatch])
 
   const renderPlayButton = () => {
     return (
@@ -111,9 +164,31 @@ export const PlayBar = ({ onPress, opacityAnim }: PlayBarProps) => {
         isDarkMode={isDarkMode}
         iconLightJSON={[IconPlay, IconPause]}
         iconDarkJSON={[IconPlay, IconPause]}
-        onPress={() => {}}
+        onPress={onPressPlayButton}
+        isActive={isPlaying}
         style={styles.button}
         wrapperStyle={styles.playIcon}
+      />
+    )
+  }
+
+  const onPressFavoriteButton = useCallback(() => {
+    if (track) {
+      if (track.has_current_user_saved) {
+        dispatchWeb(unsaveTrack(track?.track_id, FavoriteSource.PLAYBAR))
+      } else {
+        dispatchWeb(saveTrack(track?.track_id, FavoriteSource.PLAYBAR))
+      }
+    }
+  }, [dispatchWeb, track])
+
+  const renderFavoriteButton = () => {
+    return (
+      <FavoriteButton
+        onPress={onPressFavoriteButton}
+        isActive={track?.has_current_user_saved ?? false}
+        style={styles.button}
+        wrapperStyle={styles.icon}
       />
     )
   }
@@ -132,7 +207,10 @@ export const PlayBar = ({ onPress, opacityAnim }: PlayBarProps) => {
         }
       ]}
     >
-      <TrackingBar percentComplete={50} opacityAnim={opacityAnim} />
+      <TrackingBar
+        percentComplete={percentComplete}
+        opacityAnim={opacityAnim}
+      />
       <View style={styles.container}>
         {renderFavoriteButton()}
         <TouchableOpacity
@@ -140,16 +218,18 @@ export const PlayBar = ({ onPress, opacityAnim }: PlayBarProps) => {
           style={styles.trackInfo}
           onPress={onPress}
         >
-          <View style={styles.artwork} />
+          <View style={styles.artwork}>
+            {track && <PlayBarArtwork track={track} />}
+          </View>
           <View style={styles.trackText}>
             <Text numberOfLines={1} weight='bold' style={styles.title}>
-              Crazy
+              {trackInfo?.title ?? ''}
             </Text>
             <Text weight='bold' style={styles.separator}>
               •
             </Text>
             <Text numberOfLines={1} weight='medium' style={styles.artist}>
-              Gnarles Barkley
+              {trackInfo?.artist ?? ''}
             </Text>
           </View>
         </TouchableOpacity>
