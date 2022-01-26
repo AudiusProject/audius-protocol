@@ -5,7 +5,8 @@ from integration_tests.utils import populate_mock_db
 from src.models import AggregateIntervalPlay, TrackTrendingScore, TrendingParam
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.tasks.index_aggregate_track import _update_aggregate_track
-from src.trending_strategies.ML51L_trending_tracks_strategy import (
+from src.tasks.index_aggregate_user import _update_aggregate_user
+from src.trending_strategies.EJ57D_trending_tracks_strategy import (
     TrendingTracksStrategyEJ57D,
 )
 from src.utils.db_session import get_db
@@ -302,6 +303,7 @@ def test_update_trending_params(app):
     with db.scoped_session() as session:
         _update_aggregate_track(session)
         _update_aggregate_plays(session)
+        _update_aggregate_user(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
         trending_params = session.query(TrendingParam).all()
