@@ -49,7 +49,7 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-const AudioControls = () => {
+export const AudioControls = () => {
   const styles = useThemedStyles(createStyles)
   const themeVariant = useThemeVariant()
   const isDarkMode = themeVariant === Theme.DARK
@@ -126,5 +126,3 @@ const AudioControls = () => {
     </View>
   )
 }
-
-export default AudioControls

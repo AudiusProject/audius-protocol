@@ -41,7 +41,7 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-const ActionsBar = () => {
+export const ActionsBar = () => {
   const styles = useThemedStyles(createStyles)
   const themeVariant = useThemeVariant()
   const isDarkMode = themeVariant === Theme.DARK
@@ -118,5 +118,3 @@ const ActionsBar = () => {
     </View>
   )
 }
-
-export default ActionsBar
