@@ -10,7 +10,7 @@ const {
   SyncMode,
   computeSyncModeForUserAndReplica
 } = require('./computeSyncModeForUserAndReplica.js')
-describe.only('Test computeSyncModeForUserAndReplica()', () => {
+describe('Test computeSyncModeForUserAndReplica()', () => {
   let primaryClock,
     secondaryClock,
     primaryFilesHash,
@@ -189,7 +189,10 @@ describe.only('Test computeSyncModeForUserAndReplica()', () => {
           logger
         })
       } catch (e) {
-        assert.strictEqual(e.message, '[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - Mock - Failed to fetch filesHash')
+        assert.strictEqual(
+          e.message,
+          '[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - Mock - Failed to fetch filesHash'
+        )
       }
     })
   })
