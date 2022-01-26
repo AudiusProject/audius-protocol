@@ -51,6 +51,14 @@ function get_cached_public_key (discovery_provider)
 end
 
 function get_redirect_target ()
+    -- This works by allocating redirect_weights[endpoint] slots for every endpoint
+    -- then generating a random number between 1 and total number of slots and finally
+    -- returns the endpoint for the corresponding slot. This is done to favor redirecting
+    -- to nodes with lower load
+    -- Eg. if we have 2 endpoints with weights 5 and 10, then the total number of slots
+    -- will be 15 and the random number will be between 1 and 15. If the random number is
+    -- between 1 and 5, then the endpoint for slot 1 will be returned. If the random number
+    -- is between 6 and 15, then the endpoint for slot 2 will be returned.
     local total = 0
     for endpoint, weight in pairs(redirect_weights) do
         total = total + weight
