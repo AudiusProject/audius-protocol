@@ -179,7 +179,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
       </div>
       <div className={styles.rewardsContainer}>
         {userChallengesLoading && !haveChallengesLoaded ? (
-          <LoadingSpinner />
+          <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
         ) : (
           rewardsTiles
         )}
