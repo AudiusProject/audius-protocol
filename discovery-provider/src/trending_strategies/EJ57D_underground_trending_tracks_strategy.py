@@ -18,9 +18,9 @@ oi = 20
 nb = 750
 
 
-class UndergroundTrendingTracksStrategyePWJD(BaseTrendingStrategy):
+class UndergroundTrendingTracksStrategyEJ57D(BaseTrendingStrategy):
     def __init__(self):
-        super().__init__(TrendingType.UNDERGROUND_TRACKS, TrendingVersion.ePWJD)
+        super().__init__(TrendingType.UNDERGROUND_TRACKS, TrendingVersion.EJ57D)
 
     def get_track_score(self, time_range, track):
         # pylint: disable=W,C,R

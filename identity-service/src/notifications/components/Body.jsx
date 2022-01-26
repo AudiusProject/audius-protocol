@@ -95,6 +95,9 @@ const snippetMap = {
     const { parentTrackUser, parentTracks } = notification
     const parentTrack = parentTracks.find(t => t.ownerId === parentTrackUser.userId)
     return `${parentTrackUser.name} Co-signed your Remix of ${parentTrack.title}`
+  },
+  [NotificationType.ChallengeReward] (notification) {
+    return `You've earned $AUDIO for completing challenges`
   }
 }
 

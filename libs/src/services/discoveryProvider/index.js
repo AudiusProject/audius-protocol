@@ -574,6 +574,7 @@ class DiscoveryProvider {
   async getUndisbursedChallenges (limit = null, offset = null, completedBlockNumber = null, encodedUserId = null) {
     const req = Requests.getUndisbursedChallenges(limit, offset, completedBlockNumber, encodedUserId)
     const res = await this._makeRequest(req)
+    if (!res) return []
     return res.map(r => ({ ...r, amount: parseInt(r.amount) }))
   }
 

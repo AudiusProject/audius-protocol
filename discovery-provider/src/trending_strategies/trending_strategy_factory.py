@@ -1,11 +1,11 @@
-from src.trending_strategies.aSPET_trending_tracks_strategy import (
-    TrendingTracksStrategyaSPET,
+from src.trending_strategies.EJ57D_trending_playlists_strategy import (
+    TrendingPlaylistsStrategyEJ57D,
 )
-from src.trending_strategies.ePWJD_trending_playlists_strategy import (
-    TrendingPlaylistsStrategyePWJD,
+from src.trending_strategies.EJ57D_trending_tracks_strategy import (
+    TrendingTracksStrategyEJ57D,
 )
-from src.trending_strategies.ePWJD_underground_trending_tracks_strategy import (
-    UndergroundTrendingTracksStrategyePWJD,
+from src.trending_strategies.EJ57D_underground_trending_tracks_strategy import (
+    UndergroundTrendingTracksStrategyEJ57D,
 )
 from src.trending_strategies.ML51L_trending_playlists_strategy import (
     TrendingPlaylistsStrategyML51L,
@@ -22,9 +22,9 @@ from src.trending_strategies.trending_type_and_version import (
 )
 
 DEFAULT_TRENDING_VERSIONS = {
-    TrendingType.TRACKS: TrendingVersion.aSPET,
-    TrendingType.UNDERGROUND_TRACKS: TrendingVersion.ePWJD,
-    TrendingType.PLAYLISTS: TrendingVersion.ePWJD,
+    TrendingType.TRACKS: TrendingVersion.ML51L,
+    TrendingType.UNDERGROUND_TRACKS: TrendingVersion.ML51L,
+    TrendingType.PLAYLISTS: TrendingVersion.ML51L,
 }
 
 
@@ -32,16 +32,16 @@ class TrendingStrategyFactory:
     def __init__(self):
         self.strategies = {
             TrendingType.TRACKS: {
-                TrendingVersion.aSPET: TrendingTracksStrategyaSPET(),
                 TrendingVersion.ML51L: TrendingTracksStrategyML51L(),
+                TrendingVersion.EJ57D: TrendingTracksStrategyEJ57D(),
             },
             TrendingType.UNDERGROUND_TRACKS: {
-                TrendingVersion.ePWJD: UndergroundTrendingTracksStrategyePWJD(),
                 TrendingVersion.ML51L: UndergroundTrendingTracksStrategyML51L(),
+                TrendingVersion.EJ57D: UndergroundTrendingTracksStrategyEJ57D(),
             },
             TrendingType.PLAYLISTS: {
-                TrendingVersion.ePWJD: TrendingPlaylistsStrategyePWJD(),
                 TrendingVersion.ML51L: TrendingPlaylistsStrategyML51L(),
+                TrendingVersion.EJ57D: TrendingPlaylistsStrategyEJ57D(),
             },
         }
 

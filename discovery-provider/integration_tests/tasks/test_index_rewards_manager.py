@@ -1,6 +1,7 @@
 from unittest.mock import create_autospec
 
 from integration_tests.utils import populate_mock_db
+from src.exceptions import MissingEthRecipientError
 from src.models import ChallengeDisbursement, RewardManagerTransaction
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.index_rewards_manager import (
@@ -249,40 +250,43 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     assert parsed_tx["tx_sig"] == first_tx_sig
     assert parsed_tx["slot"] == 72131741
 
-    test_entries = {
+    test_user_entries = {
         "users": [
             {
                 "user_id": 1,
                 "handle": "piazza",
                 "wallet": "0x0403be3560116a12b467855cb29a393174a59876",
             },
-        ],
-        "user_challenges": [
-            {
-                "challenge_id": "profile-completion",
-                "user_id": 1,
-                "specifier": "123456789",
-            }
-        ],
+        ]
     }
+
+    with db.scoped_session() as session:
+        try:
+            process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
+            assert False
+        except MissingEthRecipientError:
+            disbursments = session.query(ChallengeDisbursement).all()
+            assert len(disbursments) == 0
+            reward_manager_tx_1 = (
+                session.query(RewardManagerTransaction)
+                .filter(RewardManagerTransaction.signature == first_tx_sig)
+                .all()
+            )
+            assert len(reward_manager_tx_1) == 1
+            assert True
+
+    populate_mock_db(db, test_user_entries)
+    parsed_tx["tx_sig"] = second_tx_sig
     with db.scoped_session() as session:
         process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
         disbursments = session.query(ChallengeDisbursement).all()
-        assert len(disbursments) == 0
         reward_manager_tx_1 = (
             session.query(RewardManagerTransaction)
-            .filter(RewardManagerTransaction.signature == first_tx_sig)
+            .filter(RewardManagerTransaction.signature == second_tx_sig)
             .all()
         )
         assert len(reward_manager_tx_1) == 1
 
-    # Update tx sig as the prior should already be present in database
-    parsed_tx["tx_sig"] = second_tx_sig
-
-    populate_mock_db(db, test_entries)
-    with db.scoped_session() as session:
-        process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
-        disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 1
         disbursment = disbursments[0]
         assert disbursment.challenge_id == "profile-completion"
