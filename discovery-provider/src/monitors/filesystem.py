@@ -15,7 +15,7 @@ def get_filesystem_size(**kwargs):
     disk = None
     try:
         disk = psutil.disk_usage("/var/k8s")
-    except:    
+    except:
         disk = psutil.disk_usage("/")
 
     return disk.total
@@ -32,7 +32,7 @@ def get_filesystem_used(**kwargs):
     disk = None
     try:
         disk = psutil.disk_usage("/var/k8s")
-    except:    
+    except:
         disk = psutil.disk_usage("/")
 
     return disk.used
