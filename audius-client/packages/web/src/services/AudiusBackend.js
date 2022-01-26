@@ -2066,26 +2066,6 @@ class AudiusBackend {
     }
   }
 
-  static async getCognitoSignature() {
-    await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
-    try {
-      const { data, signature } = await AudiusBackend.signData()
-      const response = await fetch(`${IDENTITY_SERVICE}/cognito_signature`, {
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        }
-      }).then(res => res.json())
-      return response
-    } catch (e) {
-      console.error(e)
-      return {}
-    }
-  }
-
   static async signData() {
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const data = `Click sign to authenticate with identity service: ${unixTs}`

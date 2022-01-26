@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { getAccountUser } from 'common/store/account/selectors'
 import { useScript } from 'hooks/useScript'
-import AudiusBackend from 'services/AudiusBackend'
+import { getCognitoSignature } from 'services/audius-backend/Cognito'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
 
@@ -37,7 +37,16 @@ const CheckPage = () => {
     if (user && scriptLoaded && !didOpen) {
       setDidOpen(true)
       const run = async () => {
-        const { signature } = await AudiusBackend.getCognitoSignature()
+        let signature = null
+        try {
+          const response = await getCognitoSignature()
+          signature = response.signature
+        } catch (e) {
+          console.error('COGNITO: Failed to get Cognito signature', e)
+        }
+        if (!signature) {
+          return
+        }
         const flow = new window.Flow({
           publishableKey: COGNITO_KEY,
           templateId: COGNITO_TEMPLATE_ID,

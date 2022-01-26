@@ -15,7 +15,7 @@ import {
   setCognitoFlowStatus
 } from 'common/store/pages/audio-rewards/slice'
 import { useScript } from 'hooks/useScript'
-import AudiusBackend from 'services/AudiusBackend'
+import { getCognitoSignature } from 'services/audius-backend/Cognito'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
 
@@ -35,9 +35,14 @@ export const CognitoModal = () => {
   const handle = useSelector(getUserHandle)
 
   const triggerFlow = useCallback(async () => {
-    const { signature } = await AudiusBackend.getCognitoSignature()
+    let signature = null
+    try {
+      const response = await getCognitoSignature()
+      signature = response.signature
+    } catch (e) {
+      console.error('COGNITO: Failed to get Cognito signature', e)
+    }
     if (!signature) {
-      console.error('COGNITO: Failed to get Cognito signature')
       return
     }
     const flow = new window.Flow({
