@@ -112,7 +112,7 @@ class TranscodingQueue {
 
   /**
    * Logs a successful status message and includes current queue info
-   * @param {object} logContext to create a logger.child(logContext) from
+   * @param {Object} logContext to create a logger.child(logContext) from
    * @param {string} message
    */
   async logStatus(message, logContext = {}) {
@@ -142,7 +142,14 @@ class TranscodingQueue {
    * Adds a task to the queue that segments up an audio file
    * @param {string} fileDir
    * @param {string} fileName
-   * @param {object} logContext to create a logger.child(logContext) from
+   * @param {Object} logContext to create a logger.child(logContext) from
+   * @returns {Object} response in the structure {
+          segments: {
+            fileNames: segmentFileNames {string[]}: the segment file names only, 
+            filePaths: segmentFilePaths {string[]}: the segment file paths 
+          },
+          m3u8FilePath {string}: the m3u8 file path 
+        }}
    */
   async segment(fileDir, fileName, { logContext }) {
     this.logStatus(
@@ -171,7 +178,8 @@ class TranscodingQueue {
    * Adds a task to the queue that transcodes an audio file to 320kpbs mp3
    * @param {string} fileDir
    * @param {string} fileName
-   * @param {object} logContext to create a logger.child(logContext) from
+   * @param {Object} logContext to create a logger.child(logContext) from
+   * @returns {Object} { transcodeFilePath {string}: where the transcode exists in the fs }
    */
   async transcode320(fileDir, fileName, { logContext }) {
     this.logStatus(
