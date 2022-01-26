@@ -436,6 +436,7 @@ class FavoritedTracks(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(favorites_with_tracks_response)
+    @ns.expect(favorites_req_parser)
     @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch favorited tracks for a user."""
@@ -462,6 +463,7 @@ class FavoritedAlbums(Resource):
         params={"user_id": "The User ID of the User"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(favorites_req_parser)
     @ns.marshal_with(favorites_with_playlists_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
@@ -483,6 +485,7 @@ class FavoritedPlaylists(Resource):
         params={"user_id": "The User ID of the User"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(favorites_req_parser)
     @ns.marshal_with(favorites_with_playlists_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
