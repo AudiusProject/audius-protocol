@@ -160,6 +160,7 @@ class Account extends Base {
               )
               handleUserBankOutcomes('Create User Bank: Failure', { error, errorCode })
             } else {
+              console.log(`Successfully created userbank!`)
               handleUserBankOutcomes('Create User Bank: Success')
             }
           } catch (err) {
