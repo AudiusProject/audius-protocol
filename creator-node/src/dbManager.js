@@ -259,12 +259,6 @@ class DBManager {
       )
 
       const filesHash = filesHashResp[0][0].md5
-
-      if (!filesHash)
-        throw new Error(
-          '[fetchFilesHashFromDB] Error: Failed to retrieve filesHash'
-        )
-
       return filesHash
     } catch (e) {
       throw new Error(e.message)

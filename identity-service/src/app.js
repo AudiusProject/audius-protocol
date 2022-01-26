@@ -204,11 +204,11 @@ class App {
   }
 
   configureReporter () {
-    const slackReporter = new SlackReporter({
-      slackUrl: config.get('reporterSlackUrl'),
+    const slackAudioErrorReporter = new SlackReporter({
+      slackUrl: config.get('successAudioReporterSlackUrl'),
       childLogger: logger
     })
-    this.express.set('slackReporter', slackReporter)
+    this.express.set('slackAudioErrorReporter', slackAudioErrorReporter)
   }
 
   async configureAudiusInstance () {
@@ -238,6 +238,8 @@ class App {
       (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.CHALLENGE_IDS_DENY_LIST) || '')
         .split(',')
     )
+    const endpointsString = getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
+    const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : []
 
     // Fetch the last saved offset and startingBLock from the DB,
     // or create them if necessary.
@@ -250,7 +252,8 @@ class App {
     }
 
     const rewardsReporter = new RewardsReporter({
-      slackUrl: config.get('rewardsReporterSlackUrl'),
+      successSlackUrl: config.get('successAudioReporterSlackUrl'),
+      errorSlackUrl: config.get('errorAudioReporterSlackUrl'),
       childLogger
     })
 
@@ -266,6 +269,7 @@ class App {
       offset: initialVals.offset,
       challengeIdsDenyList,
       reporter: rewardsReporter,
+      endpoints,
       updateValues: async ({ startingBlock, offset, successCount }) => {
         childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
 
