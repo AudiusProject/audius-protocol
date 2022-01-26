@@ -9,7 +9,12 @@ def get_filesystem_size(**kwargs):
         db: global database instance
         redis: global redis instance
     """
-    disk = psutil.disk_usage("/")
+    disk = None
+    try:
+        disk = psutil.disk_usage("/var/k8s")
+    except:    
+        disk = psutil.disk_usage("/")
+        
     return disk.total
 
 
@@ -21,5 +26,10 @@ def get_filesystem_used(**kwargs):
         db: global database instance
         redis: global redis instance
     """
-    disk = psutil.disk_usage("/")
+    disk = None
+    try:
+        disk = psutil.disk_usage("/var/k8s")
+    except:    
+        disk = psutil.disk_usage("/")
+        
     return disk.used

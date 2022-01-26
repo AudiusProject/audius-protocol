@@ -15,13 +15,25 @@ const getStoragePathUsed = async () => {
 }
 
 const getFilesystemSize = async () => {
-  const fsSize = await si.fsSize()
-  return fsSize[0].size
+  const fsSizes = await si.fsSize()
+
+  let fsSize = fsSizes.find((fsSize) => fsSize.mount === '/var/k8s')
+  if (!fsSize) {
+    fsSize = fsSizes.find((fsSize) => fsSize.mount === '/')
+  }
+
+  return fsSize.size
 }
 
 const getFilesystemUsed = async () => {
-  const fsSize = await si.fsSize()
-  return fsSize[0].used
+  const fsSizes = await si.fsSize()
+
+  let fsSize = fsSizes.find((fsSize) => fsSize.mount === '/var/k8s')
+  if (!fsSize) {
+    fsSize = fsSizes.find((fsSize) => fsSize.mount === '/')
+  }
+
+  return fsSize.used
 }
 
 // TODO: Determine how to compute IOPS -- `systeminformation`
