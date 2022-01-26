@@ -51,6 +51,11 @@ function get_cached_public_key (discovery_provider)
 end
 
 function get_redirect_target ()
+    local total = 0
+    for endpoint, weight in pairs(redirect_weights) do
+        total = total + weight
+    end
+
     local rand = math.random(1, total)
     local current = 0
     for endpoint, weight in pairs(redirect_weights) do
