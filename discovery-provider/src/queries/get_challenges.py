@@ -186,6 +186,12 @@ def get_challenges(
                 and not user_challenge.is_complete
             ):
                 continue
+
+            override_step_count = event_bus.get_manager(
+                parent_challenge.id
+            ).get_override_challenge_step_count(session, user_id)
+            if override_step_count is not None:
+                user_challenge.current_step_count = override_step_count
             regular_user_challenges.append(
                 to_challenge_response(
                     user_challenge,
