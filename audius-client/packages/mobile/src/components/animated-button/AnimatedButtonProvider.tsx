@@ -13,6 +13,7 @@ import { StyleProp, TouchableHighlight, View, ViewStyle } from 'react-native'
 import { useColor } from 'app/utils/theme'
 
 export type BaseAnimatedButtonProps = {
+  iconIndex?: number
   onPress: () => void
   isActive?: boolean
   isDisabled?: boolean
@@ -28,6 +29,7 @@ type AnimatedButtonProps = {
 } & BaseAnimatedButtonProps
 
 const AnimatedButton = ({
+  iconIndex: i = 0,
   iconJSON,
   onPress,
   isActive,
@@ -36,10 +38,16 @@ const AnimatedButton = ({
   style,
   wrapperStyle
 }: AnimatedButtonProps) => {
-  const [iconIndex, setIconIndex] = useState(0)
+  const [iconIndex, setIconIndex] = useState<number>(i)
   const [isPlaying, setIsPlaying] = useState(false)
   const underlayColor = useColor('neutralLight8')
   const animationRef = useRef<LottieView | null>()
+
+  useEffect(() => {
+    if (!isPlaying) {
+      setIconIndex(i)
+    }
+  }, [i, setIconIndex, isPlaying])
 
   const hasMultipleStates = Array.isArray(iconJSON)
   let source: IconJSON
@@ -54,28 +62,28 @@ const AnimatedButton = ({
       setIconIndex(iconIndex => (iconIndex + 1) % iconJSON.length)
     }
     setIsPlaying(false)
-  }, [setIsPlaying, hasMultipleStates, setIconIndex, iconJSON])
+  }, [hasMultipleStates, setIconIndex, setIsPlaying, iconJSON])
 
   const handleClick = useCallback(() => {
     if (isDisabled) {
       return
     }
 
-    if (!isActive) {
+    if (hasMultipleStates || !isActive) {
       setIsPlaying(true)
       animationRef.current?.play()
     }
 
     onPress()
-  }, [isDisabled, onPress, isActive, setIsPlaying])
+  }, [isDisabled, onPress, isActive, setIsPlaying, hasMultipleStates])
 
   const progress = useMemo(() => {
-    if (isPlaying) {
+    if (hasMultipleStates || isPlaying) {
       return undefined
     }
 
     return isActive ? 1 : 0
-  }, [isPlaying, isActive])
+  }, [isPlaying, isActive, hasMultipleStates])
 
   return (
     <TouchableHighlight

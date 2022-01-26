@@ -23,13 +23,14 @@ type RepostButtonProps = Omit<
   'iconLightJSON' | 'iconDarkJSON' | 'isDarkMode'
 >
 
-const RepostButton = (props: RepostButtonProps) => {
+const RepostButton = ({ isActive, ...props }: RepostButtonProps) => {
   const themeVariant = useThemeVariant()
   const isDarkMode = themeVariant === Theme.DARK
 
   return (
     <AnimatedButtonProvider
       {...props}
+      iconIndex={isActive ? 1 : 0}
       isDarkMode={isDarkMode}
       iconLightJSON={[IconRepostOnLight, IconRepostOffLight]}
       iconDarkJSON={[IconRepostOnDark, IconRepostOffDark]}
