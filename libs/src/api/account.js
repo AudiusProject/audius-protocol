@@ -101,6 +101,8 @@ class Account extends Base {
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
    * @param {?boolean} [host] The host url used for the recovery email
+   * @param {?boolean} [createWAudioUserBank] an optional flag to create the solana user bank account
+   * @param {?Function} [handleUserBankOutcomes] an optional callback to record user bank outcomes
    */
   async signUp (
     email,
@@ -110,7 +112,8 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    createWAudioUserBank = false
+    createWAudioUserBank = false,
+    handleUserBankOutcomes = () => {}
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -145,22 +148,25 @@ class Account extends Base {
       // through signup
       if (createWAudioUserBank && this.solanaWeb3Manager) {
         phase = phases.SOLANA_USER_BANK_CREATION
-        try {
-          // Fire and forget createUserBank. In the case of failure, we will
-          // retry to create user banks in a later session before usage
-          (async () => {
+        // Fire and forget createUserBank. In the case of failure, we will
+        // retry to create user banks in a later session before usage
+        (async () => {
+          try {
+            handleUserBankOutcomes('Create User Bank: Request')
             const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
             if (error || errorCode) {
               console.error(
                 `Failed to create userbank, with err: ${error}, ${errorCode}`
               )
+              handleUserBankOutcomes('Create User Bank: Failure', { error, errorCode })
             } else {
-              console.log(`Successfully created userbank!`)
+              handleUserBankOutcomes('Create User Bank: Success')
             }
-          })()
-        } catch (err) {
-          console.error(`Got error creating userbank: ${err}, continuing...`)
-        }
+          } catch (err) {
+            console.error(`Got error creating userbank: ${err}, continuing...`)
+            handleUserBankOutcomes('Create User Bank: Failure', { error: err.toString() })
+          }
+        })()
       }
 
       // Add user to chain
