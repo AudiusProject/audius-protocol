@@ -822,7 +822,7 @@ class SnapbackSM {
              * Log as placeholder
              * TODO
              * 1. await this.syncFromSecondary()
-             * 2. issue sync to secondary with forceResynf = true
+             * 2. issue sync to secondary with forceResync = true
              */
             this.log(
               `[issueSyncRequestsToSecondaries] [PrimaryShouldSync = true] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`

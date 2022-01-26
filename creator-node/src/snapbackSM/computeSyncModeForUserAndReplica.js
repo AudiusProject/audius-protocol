@@ -32,8 +32,10 @@ async function computeSyncModeForUserAndReplica({
   logger
 }) {
   if (
+    // clock value must be number
     !(primaryClock && primaryClock !== 0) ||
     !(secondaryClock && secondaryClock !== 0) ||
+    // `null` is a valid filesHash value
     primaryFilesHash === undefined ||
     secondaryFilesHash === undefined
   ) {
@@ -76,12 +78,9 @@ async function computeSyncModeForUserAndReplica({
           syncMode = SyncMode.PrimaryShouldSync
         }
       } catch (e) {
-        // Log and skip
-        syncMode = SyncMode.None
-
-        logger.error(
-          `[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`
-        )
+        const errorMsg = `[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`
+        logger.error(errorMsg)
+        throw new Error(errorMsg)
       }
     }
   }

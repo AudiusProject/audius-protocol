@@ -661,7 +661,7 @@ async function asyncRetry(fn, { retries }) {
     }
   }
 
-  throw new Error(error)
+  throw error
 }
 
 module.exports = Utils

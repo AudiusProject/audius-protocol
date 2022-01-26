@@ -42,23 +42,6 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
     }
   })
 
-  it('Returns SyncMode.None if all data is equal', async () => {
-    primaryClock = 10
-    secondaryClock = primaryClock
-    primaryFilesHash = '0x123'
-    secondaryFilesHash = primaryFilesHash
-
-    const syncMode = await computeSyncModeForUserAndReplica({
-      wallet,
-      primaryClock,
-      secondaryClock,
-      primaryFilesHash,
-      secondaryFilesHash
-    })
-
-    assert.strictEqual(syncMode, SyncMode.None)
-  })
-
   it('Returns SyncMode.None if clocks and filesHashes equal', async () => {
     primaryClock = 10
     secondaryClock = primaryClock
@@ -74,23 +57,6 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
     })
 
     assert.strictEqual(syncMode, SyncMode.None)
-  })
-
-  it('Returns SyncMode.PrimaryShouldSync if clocks equal and filesHashes unequal', async () => {
-    primaryClock = 10
-    secondaryClock = primaryClock
-    primaryFilesHash = '0x123'
-    secondaryFilesHash = '0x456'
-
-    const syncMode = await computeSyncModeForUserAndReplica({
-      wallet,
-      primaryClock,
-      secondaryClock,
-      primaryFilesHash,
-      secondaryFilesHash
-    })
-
-    assert.strictEqual(syncMode, SyncMode.PrimaryShouldSync)
   })
 
   it('Returns SyncMode.PrimaryShouldSync if clocks equal and filesHashes unequal', async () => {
