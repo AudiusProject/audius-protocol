@@ -1590,6 +1590,7 @@ class SnapbackSM {
 
     const userWallet = syncRequestParameters.data.wallet[0]
     const secondaryEndpoint = syncRequestParameters.baseURL
+    const forceResync = syncRequestParameters.forceResync
 
     const logMsgString = `(${syncType}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
 
@@ -1651,7 +1652,8 @@ class SnapbackSM {
         userWallet,
         primaryEndpoint: this.endpoint,
         secondaryEndpoint,
-        syncType
+        syncType,
+        forceResync
       })
     }
 
