@@ -68,7 +68,6 @@ def get_saves(save_type, user_id, current_user_id=None, include_save_items=False
             Save.is_delete == False,
             Save.save_type == save_query_type,
         )
-        # filter out saves for deleted entries
         if save_type == "albums":
             if include_save_items:
                 query = query.add_entity(Playlist)
@@ -76,7 +75,6 @@ def get_saves(save_type, user_id, current_user_id=None, include_save_items=False
                 Playlist, Playlist.playlist_id == Save.save_item_id
             ).filter(
                 Playlist.is_current == True,
-                Playlist.is_delete == False,
                 Playlist.is_album == True,
             )
         elif save_type == "playlists":
@@ -86,14 +84,13 @@ def get_saves(save_type, user_id, current_user_id=None, include_save_items=False
                 Playlist, Playlist.playlist_id == Save.save_item_id
             ).filter(
                 Playlist.is_current == True,
-                Playlist.is_delete == False,
                 Playlist.is_album == False,
             )
         elif save_type == "tracks":
             if include_save_items:
                 query = query.add_entity(Track)
             query = query.join(Track, Track.track_id == Save.save_item_id).filter(
-                Track.is_current == True, Track.is_delete == False
+                Track.is_current == True
             )
 
         query_results = paginate_query(query).all()
