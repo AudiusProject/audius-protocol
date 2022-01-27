@@ -10,7 +10,7 @@ const {
   SyncMode,
   computeSyncModeForUserAndReplica
 } = require('./computeSyncModeForUserAndReplica.js')
-describe('Test computeSyncModeForUserAndReplica()', () => {
+describe('Test computeSyncModeForUserAndReplica()', function () {
   let primaryClock,
     secondaryClock,
     primaryFilesHash,
@@ -20,7 +20,7 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
   // Can be anything for test purposes
   const wallet = 'wallet'
 
-  it('Throws if missing or invalid params', async () => {
+  it('Throws if missing or invalid params', async function () {
     primaryClock = 10
     secondaryClock = 10
     primaryFilesHash = undefined
@@ -42,7 +42,7 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
     }
   })
 
-  it('Returns SyncMode.None if clocks and filesHashes equal', async () => {
+  it('Returns SyncMode.None if clocks and filesHashes equal', async function () {
     primaryClock = 10
     secondaryClock = primaryClock
     primaryFilesHash = '0x123'
@@ -59,7 +59,7 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
     assert.strictEqual(syncMode, SyncMode.None)
   })
 
-  it('Returns SyncMode.PrimaryShouldSync if clocks equal and filesHashes unequal', async () => {
+  it('Returns SyncMode.PrimaryShouldSync if clocks equal and filesHashes unequal', async function () {
     primaryClock = 10
     secondaryClock = primaryClock
     primaryFilesHash = '0x123'
@@ -76,7 +76,7 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
     assert.strictEqual(syncMode, SyncMode.PrimaryShouldSync)
   })
 
-  it('Returns SyncMode.PrimaryShouldSync if primaryClock < secondaryClock', async () => {
+  it('Returns SyncMode.PrimaryShouldSync if primaryClock < secondaryClock', async function () {
     primaryClock = 5
     secondaryClock = 10
     primaryFilesHash = '0x123'
@@ -93,7 +93,7 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
     assert.strictEqual(syncMode, SyncMode.PrimaryShouldSync)
   })
 
-  it('Returns SyncMode.SecondaryShouldSync if primaryClock > secondaryClock & secondaryFilesHash === null', async () => {
+  it('Returns SyncMode.SecondaryShouldSync if primaryClock > secondaryClock & secondaryFilesHash === null', async function () {
     primaryClock = 10
     secondaryClock = 5
     primaryFilesHash = '0x123'
@@ -110,8 +110,8 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
     assert.strictEqual(syncMode, SyncMode.SecondaryShouldSync)
   })
 
-  describe('primaryClock > secondaryClock', () => {
-    it('Returns SyncMode.SecondaryShouldSync if primaryFilesHashForRange = secondaryFilesHash', async () => {
+  describe('primaryClock > secondaryClock', function () {
+    it('Returns SyncMode.SecondaryShouldSync if primaryFilesHashForRange = secondaryFilesHash', async function () {
       primaryClock = 10
       secondaryClock = 5
       primaryFilesHash = '0x123'
@@ -137,7 +137,7 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
       assert.strictEqual(syncMode, SyncMode.SecondaryShouldSync)
     })
 
-    it('Returns SyncMode.PrimaryShouldSync if primaryFilesHashForRange != secondaryFilesHash', async () => {
+    it('Returns SyncMode.PrimaryShouldSync if primaryFilesHashForRange != secondaryFilesHash', async function () {
       primaryClock = 10
       secondaryClock = 5
       primaryFilesHash = '0x123'
@@ -164,7 +164,10 @@ describe('Test computeSyncModeForUserAndReplica()', () => {
       assert.strictEqual(syncMode, SyncMode.PrimaryShouldSync)
     })
 
-    it("Throws error primaryFilesHashForRange can't be retrieved", async () => {
+    it("Throws error primaryFilesHashForRange can't be retrieved", async function () {
+      // Increase mocha test timeout from default 2s to accommodate `async-retry` runtime
+      this.timeout(30000) // 30s
+
       primaryClock = 10
       secondaryClock = 5
       primaryFilesHash = '0x123'
