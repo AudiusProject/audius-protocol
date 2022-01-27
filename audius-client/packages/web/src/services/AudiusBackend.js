@@ -1146,11 +1146,11 @@ class AudiusBackend {
       }
 
       if (
-        newMetadata.twitter_handle ||
-        newMetadata.instagram_handle ||
-        newMetadata.tiktok_handle ||
-        newMetadata.website ||
-        newMetadata.donation
+        typeof newMetadata.twitter_handle === 'string' ||
+        typeof newMetadata.instagram_handle === 'string' ||
+        typeof newMetadata.tiktok_handle === 'string' ||
+        typeof newMetadata.website === 'string' ||
+        typeof newMetadata.donation === 'string'
       ) {
         const { data, signature } = await AudiusBackend.signData()
         await fetch(`${IDENTITY_SERVICE}/social_handles`, {
@@ -1201,12 +1201,12 @@ class AudiusBackend {
         )
         newMetadata.cover_photo_sizes = resp.dirCID
       }
-
       if (
-        newMetadata.twitter_handle ||
-        newMetadata.instagram_handle ||
-        newMetadata.website ||
-        newMetadata.donation
+        typeof newMetadata.twitter_handle === 'string' ||
+        typeof newMetadata.instagram_handle === 'string' ||
+        typeof newMetadata.tiktok_handle === 'string' ||
+        typeof newMetadata.website === 'string' ||
+        typeof newMetadata.donation === 'string'
       ) {
         await fetch(`${IDENTITY_SERVICE}/social_handles`, {
           method: 'POST',
