@@ -241,6 +241,13 @@ class App {
     const endpointsString = getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
     const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : []
 
+    const aaoEndpoint = getRemoteVar(
+      this.optimizelyClientInstance, REMOTE_VARS.ORACLE_ENDPOINT
+    ) || config.get('aaoEndpoint')
+    const aaoAddress = getRemoteVar(
+      this.optimizelyClientInstance, REMOTE_VARS.ORACLE_ETH_ADDRESS
+    ) || config.get('aaoAddress')
+
     // Fetch the last saved offset and startingBLock from the DB,
     // or create them if necessary.
     let initialVals = await models.RewardAttesterValues.findOne()
@@ -263,8 +270,8 @@ class App {
       logger: childLogger,
       parallelization: config.get('rewardsParallelization'),
       quorumSize: config.get('rewardsQuorumSize'),
-      aaoEndpoint: config.get('aaoEndpoint'),
-      aaoAddress: config.get('aaoAddress'),
+      aaoEndpoint,
+      aaoAddress,
       startingBlock: initialVals.startingBlock,
       offset: initialVals.offset,
       challengeIdsDenyList,
