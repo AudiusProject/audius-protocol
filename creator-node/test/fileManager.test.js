@@ -12,7 +12,8 @@ const ipfsAdd = require('../src/ipfsAdd')
 const {
   saveFileToIPFSFromFS,
   removeTrackFolder,
-  saveFileFromBufferToIPFSAndDisk
+  saveFileFromBufferToIPFSAndDisk,
+  copyMultihashToFs
 } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
@@ -176,9 +177,8 @@ describe('test fileManager', () => {
             logContext: { requestID }
           }
         )
-        assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'Failed to copy files!!')
+        assert.fail('Error should not have been thrown', e)
       }
 
       // 1 segment should be saved in <storagePath>/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd
