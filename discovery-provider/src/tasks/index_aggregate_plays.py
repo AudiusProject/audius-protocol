@@ -64,7 +64,7 @@ def _update_aggregate_plays(session):
         UPDATE_AGGREGATE_PLAYS_QUERY,
         "id_checkpoint",
         new_id_checkpoint,
-        current_prefix="new_"
+        current_prefix="new_",
     )
 
 

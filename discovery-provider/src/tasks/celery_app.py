@@ -52,8 +52,13 @@ def celery_worker(logger, db, redis, table_name, aggregate_func):
 
 
 def aggregate_worker(
-    logger, session, table_name, query, checkpoint_name, current_checkpoint,
-    current_prefix="current_"
+    logger,
+    session,
+    table_name,
+    query,
+    checkpoint_name,
+    current_checkpoint,
+    current_prefix="current_",
 ):
     # get name of the caller function
     worker_name = f"{currentframe().f_back.f_code.co_name}()"
