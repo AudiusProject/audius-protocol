@@ -2,6 +2,7 @@ import React from 'react'
 
 import { Name } from 'common/models/Analytics'
 import FeedFilter from 'common/models/FeedFilter'
+import { feedActions } from 'common/store/pages/feed/lineup/actions'
 import Header from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -12,7 +13,6 @@ import {
 import { LineupVariant } from 'components/lineup/types'
 import Page from 'components/page/Page'
 import EmptyFeed from 'pages/feed-page/components/EmptyFeed'
-import { feedActions } from 'pages/feed-page/store/lineups/feed/actions'
 import { FeedPageContentProps } from 'pages/feed-page/types'
 import { make, useRecord } from 'store/analytics/actions'
 

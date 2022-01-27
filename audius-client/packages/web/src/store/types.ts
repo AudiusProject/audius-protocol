@@ -20,7 +20,6 @@ import { CollectionsPageState } from 'pages/collection-page/store/types'
 import { DeactivateAccountState } from 'pages/deactivate-account-page/store/slice'
 import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import { FavoritesPageState } from 'pages/favorites-page/store/types'
-import FeedPageState from 'pages/feed-page/store/types'
 import { FollowersPageState } from 'pages/followers-page/store/types'
 import { FollowingPageState } from 'pages/following-page/store/types'
 import HistoryPageState from 'pages/history-page/store/types'
@@ -122,7 +121,6 @@ export type AppState = CommonState & {
   profile: ProfilePageState
   dashboard: ArtistDashboardState
   signOn: SignOnPageState
-  feed: FeedPageState
   trending: TrendingPageState
   history: HistoryPageState
   saved: SavesPageState

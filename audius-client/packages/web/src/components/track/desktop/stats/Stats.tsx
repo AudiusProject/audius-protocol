@@ -11,7 +11,7 @@ import { Repost } from 'common/models/Repost'
 import { CommonState } from 'common/store'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { formatCount } from 'common/utils/formatUtil'
-import { createShallowSelector } from 'utils/selectorHelpers'
+import { createShallowSelector } from 'common/utils/selectorHelpers'
 
 import ProfileImage from './ProfileImage'
 import styles from './Stats.module.css'

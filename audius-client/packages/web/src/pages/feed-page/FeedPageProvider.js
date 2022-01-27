@@ -10,20 +10,19 @@ import { withRouter, matchPath } from 'react-router-dom'
 import { Name } from 'common/models/Analytics'
 import { getHasAccount } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
+import * as discoverPageAction from 'common/store/pages/feed/actions'
+import { feedActions } from 'common/store/pages/feed/lineup/actions'
 import {
   getDiscoverFeedLineup,
   makeGetSuggestedFollows,
   getFeedFilter
-} from 'pages/feed-page/store/selectors'
+} from 'common/store/pages/feed/selectors'
 import { openSignOn } from 'pages/sign-on/store/actions'
 import { make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_PAGE } from 'utils/route'
-
-import * as discoverPageAction from './store/actions'
-import { feedActions } from './store/lineups/feed/actions'
 
 const messages = {
   feedTitle: 'Feed',

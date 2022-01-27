@@ -20,7 +20,6 @@ import collection from 'pages/collection-page/store/reducer'
 import deactivateAccount from 'pages/deactivate-account-page/store/slice'
 import deleted from 'pages/deleted-page/store/slice'
 import favorites from 'pages/favorites-page/store/reducers'
-import feed from 'pages/feed-page/store/reducer'
 import followers from 'pages/followers-page/store/reducers'
 import following from 'pages/following-page/store/reducers'
 import history from 'pages/history-page/store/reducer'
@@ -83,7 +82,6 @@ const createRootReducer = routeHistory =>
     profile,
     dashboard,
     signOn,
-    feed,
     trending,
     history,
     saved,
