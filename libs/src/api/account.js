@@ -103,7 +103,8 @@ class Account extends Base {
    * @param {?boolean} [host] The host url used for the recovery email
    * @param {?boolean} [createWAudioUserBank] an optional flag to create the solana user bank account
    * @param {?Function} [handleUserBankOutcomes] an optional callback to record user bank outcomes
-   */
+   * @param {?Object} [userBankOutcomes] an optional object with request, succes, and failure keys to record user bank outcomes
+  */
   async signUp (
     email,
     password,
@@ -113,7 +114,8 @@ class Account extends Base {
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
     createWAudioUserBank = false,
-    handleUserBankOutcomes = () => {}
+    handleUserBankOutcomes = () => {},
+    userBankOutcomes = {}
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -147,25 +149,25 @@ class Account extends Base {
       // If userbank creation fails, we still proceed
       // through signup
       if (createWAudioUserBank && this.solanaWeb3Manager) {
-        phase = phases.SOLANA_USER_BANK_CREATION
+        phase = phases.SOLANA_USER_BANK_CREATION;
         // Fire and forget createUserBank. In the case of failure, we will
         // retry to create user banks in a later session before usage
         (async () => {
           try {
-            handleUserBankOutcomes('Create User Bank: Request')
+            handleUserBankOutcomes(userBankOutcomes.Request)
             const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
             if (error || errorCode) {
               console.error(
                 `Failed to create userbank, with err: ${error}, ${errorCode}`
               )
-              handleUserBankOutcomes('Create User Bank: Failure', { error, errorCode })
+              handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
             } else {
               console.log(`Successfully created userbank!`)
               handleUserBankOutcomes('Create User Bank: Success')
             }
           } catch (err) {
             console.error(`Got error creating userbank: ${err}, continuing...`)
-            handleUserBankOutcomes('Create User Bank: Failure', { error: err.toString() })
+            handleUserBankOutcomes(userBankOutcomes.Failure, { error: err.toString() })
           }
         })()
       }
