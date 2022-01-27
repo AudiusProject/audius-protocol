@@ -15,6 +15,7 @@ const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
 const DiskManager = require('../src/diskManager')
 const FileManager = require('../src/fileManager')
+const DBManager = require('../src/dbManager.js')
 
 const { getApp } = require('./lib/app')
 const {
@@ -377,10 +378,10 @@ describe('test Polling Tracks with mocked IPFS', function () {
     })
 
     /** clockMin and clockMax */
-    const multihashStringClockRange = `{${multihashesSorted
+    let multihashStringClockRange = `{${multihashesSorted
       .slice(clockMin - 1, clockMax - 1)
       .join(',')}}`
-    const expectedFilesHashClockRange = crypto
+    let expectedFilesHashClockRange = crypto
       .createHash('md5')
       .update(multihashStringClockRange)
       .digest('hex')
@@ -394,6 +395,73 @@ describe('test Polling Tracks with mocked IPFS', function () {
       syncInProgress: false,
       filesHash: expectedFilesHashFull,
       filesHashForClockRange: expectedFilesHashClockRange
+    })
+
+    /** clockMinTooHigh */
+    const clockMinTooHigh = numExpectedFilesForUser + 5
+    resp = await request(app)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMinTooHigh}`
+      )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: null
+    })
+
+    /** clockMaxTooLow */
+    const clockMaxTooLow = -5
+    resp = await request(app)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMaxTooLow}`
+      )
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: null
+    })
+
+    /** partially overlapping clockrange */
+    const clockMaxTooHigh = numExpectedFilesForUser + 5
+    multihashStringClockRange = `{${multihashesSorted
+      .slice(clockMin - 1, clockMaxTooHigh - 1)
+      .join(',')}}`
+    expectedFilesHashClockRange = crypto
+      .createHash('md5')
+      .update(multihashStringClockRange)
+      .digest('hex')
+    resp = await request(app)
+      .get(
+        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMaxTooHigh}`
+      )
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: numExpectedFilesForUser,
+      syncInProgress: false,
+      filesHash: expectedFilesHashFull,
+      filesHashForClockRange: expectedFilesHashClockRange
+    })
+
+    /** Non-existent user */
+    const invalidWallet = 'asdf'
+    resp = await request(app)
+      .get(`/users/clock_status/${invalidWallet}`)
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: -1,
+      syncInProgress: false
+    })
+
+    /** Non-existent user, returnFilesHash = true */
+    resp = await request(app)
+      .get(`/users/clock_status/${invalidWallet}?returnFilesHash=true`)
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, {
+      clockValue: -1,
+      syncInProgress: false,
+      filesHash: null
     })
   })
 
@@ -411,6 +479,11 @@ describe('test Polling Tracks with mocked IPFS', function () {
       mockServiceRegistry.blacklistManager
     )
 
+    // Compute expected filesHash for user1
+    const expectedUser1FilesHash = await DBManager.fetchFilesHashFromDB({
+      lookupKey: { lookupWallet: userWallet }
+    })
+
     // Create user 2
     const userId2 = 2
     const pubKey2 = '0xadD36bad12002f1097Cdb7eE24085C28e9random'
@@ -427,15 +500,56 @@ describe('test Polling Tracks with mocked IPFS', function () {
       mockServiceRegistry.blacklistManager
     )
 
+    const expectedUser2FilesHash = await DBManager.fetchFilesHashFromDB({
+      lookupKey: { lookupWallet: pubKey2 }
+    })
+
     // Confirm /users/batch_clock_status returns expected info
-    const batchClockResp = await request(app)
+    let resp = await request(app)
       .post(`/users/batch_clock_status`)
       .send({ walletPublicKeys: [userWallet, pubKey2] })
       .expect(200)
-    assert.deepStrictEqual(batchClockResp.body.data, {
+    assert.deepStrictEqual(resp.body.data, {
       users: [
         { walletPublicKey: userWallet, clock: numExpectedFilesForUser },
         { walletPublicKey: pubKey2, clock: numExpectedFilesForUser }
+      ]
+    })
+
+    /** Non-existent user */
+    const invalidWallet = 'asdf'
+    resp = await request(app)
+      .post(`/users/batch_clock_status`)
+      .send({ walletPublicKeys: [userWallet, invalidWallet] })
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, {
+      users: [
+        { walletPublicKey: userWallet, clock: numExpectedFilesForUser },
+        { walletPublicKey: invalidWallet, clock: -1 }
+      ]
+    })
+
+    /** returnFilesHash = true */
+    resp = await request(app)
+      .post(`/users/batch_clock_status?returnFilesHash=true`)
+      .send({ walletPublicKeys: [userWallet, pubKey2] })
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, {
+      users: [
+        { walletPublicKey: userWallet, clock: numExpectedFilesForUser, filesHash: expectedUser1FilesHash },
+        { walletPublicKey: pubKey2, clock: numExpectedFilesForUser, filesHash: expectedUser2FilesHash }
+      ]
+    })
+
+    /** returnFilesHash = true, invalid user */
+    resp = await request(app)
+      .post(`/users/batch_clock_status?returnFilesHash=true`)
+      .send({ walletPublicKeys: [userWallet, invalidWallet] })
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, {
+      users: [
+        { walletPublicKey: userWallet, clock: numExpectedFilesForUser, filesHash: expectedUser1FilesHash },
+        { walletPublicKey: invalidWallet, clock: -1, filesHash: null }
       ]
     })
   })

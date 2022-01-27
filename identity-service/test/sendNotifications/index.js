@@ -192,7 +192,6 @@ describe('Test Send Notifications', function () {
     await tx1.commit()
 
     const pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
-    console.log(pushNotifications.length)
 
     assert.deepStrictEqual(pushNotifications.length, 3)
 
@@ -275,9 +274,8 @@ describe('Test Send Notifications', function () {
     await tx1.commit()
 
     let pushNotifications = pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER
-
-    assert.deepStrictEqual(pushNotifications.length, 7)
     console.log(pushNotifications)
+    assert.deepStrictEqual(pushNotifications.length, 7)
 
     const notifs = [
       {

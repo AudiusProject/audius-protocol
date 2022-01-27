@@ -136,10 +136,12 @@ function formatRemixCosign (notification, metadata) {
   }
 }
 
-function formatChallengeReward (notification, metadata) {
+function formatChallengeReward (notification) {
+  const challengeId = notification.actions[0].actionEntityType
   return {
     type: NotificationType.ChallengeReward,
-    challengeId: notification.challengeId
+    challengeId,
+    rewardAmount: challengeInfoMap[challengeId].amount
   }
 }
 
@@ -227,15 +229,15 @@ const RemixCosignTitle = 'New Track Co-Sign! 🔥'
 const challengeInfoMap = {
   'profile-completion': {
     title: '✅️ Complete your Profile',
-    amount: 5
+    amount: 1
   },
   'listen-streak': {
     title: '🎧 Listening Streak: 7 Days',
-    amount: 5
+    amount: 1
   },
   'track-upload': {
     title: '🎶 Upload 5 Tracks',
-    amount: 5
+    amount: 1
   },
   'referrals': {
     title: '📨 Invite your Friends',
@@ -247,11 +249,11 @@ const challengeInfoMap = {
   },
   'connect-verified': {
     title: '✅️ Link Verified Accounts',
-    amount: 10
+    amount: 5
   },
   'mobile-install': {
     title: '📲 Get the App',
-    amount: 10
+    amount: 1
   }
 }
 

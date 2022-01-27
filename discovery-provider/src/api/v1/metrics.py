@@ -265,7 +265,7 @@ class RouteMetrics(Resource):
 
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         if args.get("exact") is not None:
@@ -327,7 +327,7 @@ class AppNameListMetrics(Resource):
             args["offset"] = 0
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         app_names = get_app_names(args)
@@ -386,7 +386,7 @@ class AppNameMetrics(Resource):
 
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         if args.get("bucket_size") is None:
@@ -429,7 +429,7 @@ class PlaysMetrics(Resource):
 
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         if args.get("bucket_size") is None:
@@ -473,7 +473,7 @@ class GenreMetrics(Resource):
             args["offset"] = 0
         try:
             args["start_time"] = parse_unix_epoch_param(args.get("start_time"), 0)
-        except:
+        except Exception:
             abort_bad_request_param("start_time", ns)
 
         genre_metrics = get_genre_metrics(args)

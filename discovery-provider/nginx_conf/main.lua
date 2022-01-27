@@ -1,5 +1,7 @@
 require "resty.core"
 
+local cjson = require "cjson"
+
 local limit_count = require "resty.limit.count"
 local resty_http = require "resty.http"
 local resty_random = require "resty.random"
@@ -12,6 +14,26 @@ local utils = require "utils"
 math.randomseed(string.byte(resty_random.bytes(1)))
 
 local _M = {}
+
+local redirect_weights = {}
+
+function update_redirect_weights (premature)
+    if premature then
+        return
+    end
+
+    local httpc = resty_http.new()
+    local res = httpc:request_uri(config.public_url .. "/redirect_weights", { method = "GET" })
+
+    for endpoint, weight in pairs(cjson.decode(res.body)) do
+        redirect_weights[endpoint] = weight
+    end
+end
+
+function _M.start_update_redirect_weights_timer ()
+    update_redirect_weights ()
+    ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
+end
 
 function get_cached_public_key (discovery_provider)
     local public_key = ngx.shared.rsa_public_key_store:get(discovery_provider)
@@ -29,7 +51,27 @@ function get_cached_public_key (discovery_provider)
 end
 
 function get_redirect_target ()
-    return config.redirect_targets[math.random(1, #config.redirect_targets)]
+    -- This works by allocating redirect_weights[endpoint] slots for every endpoint
+    -- then generating a random number between 1 and total number of slots and finally
+    -- returns the endpoint for the corresponding slot. This is done to favor redirecting
+    -- to nodes with lower load
+    -- Eg. if we have 2 endpoints with weights 5 and 10, then the total number of slots
+    -- will be 15 and the random number will be between 1 and 15. If the random number is
+    -- between 1 and 5, then the endpoint for slot 1 will be returned. If the random number
+    -- is between 6 and 15, then the endpoint for slot 2 will be returned.
+    local total = 0
+    for endpoint, weight in pairs(redirect_weights) do
+        total = total + weight
+    end
+
+    local rand = math.random(1, total)
+    local current = 0
+    for endpoint, weight in pairs(redirect_weights) do
+        current = current + weight
+        if rand <= current then
+            return endpoint
+        end
+    end
 end
 
 function verify_signature (discovery_provider, nonce, signature)
@@ -167,6 +209,21 @@ function _M.limit_to_rps ()
     local remaining = err
     ngx.header["X-Redirect-Limit"] = config.limit_to_rps
     ngx.header["X-Redirect-Remaining"] = remaining
+end
+
+function _M.mark_request_processing ()
+    local rcount_key = "request-count"
+    local rcount_step_value = 1
+    local rcount_init_value = 0
+    ngx.shared.request_count:incr(rcount_key, rcount_step_value, rcount_init_value)
+end
+
+
+function _M.mark_request_processed ()
+    local rcount_key = "request-count"
+    local rcount_step_value = -1
+    local rcount_init_value = 0
+    ngx.shared.request_count:incr(rcount_key, rcount_step_value, rcount_init_value)
 end
 
 return _M

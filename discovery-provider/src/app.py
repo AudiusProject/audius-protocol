@@ -22,6 +22,7 @@ from src.database_task import DatabaseTask
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.queries import (
     block_confirmation,
+    get_redirect_weights,
     health_check,
     notifications,
     queries,
@@ -320,6 +321,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+    app.register_blueprint(get_redirect_weights.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
     app.register_blueprint(user_signals.bp)

@@ -59,6 +59,29 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       limit
     })
 
+    const { rows: solanaNotifications } = await models.SolanaNotification.findAndCountAll({
+      where: {
+        userId,
+        isViewed: false,
+        isRead: false,
+        isHidden: false,
+        createdAt: {
+          [models.Sequelize.Op.gt]: fromTime.toDate()
+        }
+      },
+      order: [
+        ['createdAt', 'DESC'],
+        ['entityId', 'ASC'],
+        [{ model: models.SolanaNotificationAction, as: 'actions' }, 'createdAt', 'DESC']
+      ],
+      include: [{
+        model: models.SolanaNotificationAction,
+        required: true,
+        as: 'actions'
+      }],
+      limit
+    })
+
     let notifCountQuery = await models.Notification.findAll({
       where: {
         userId,
@@ -73,9 +96,25 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
       group: ['Notification.id']
     })
-    const notificationCount = notifCountQuery.length
+
+    const solanaNotifCountQuery = await models.SolanaNotification.findAll({
+      where: {
+        userId,
+        isViewed: false,
+        isRead: false,
+        isHidden: false,
+        createdAt: {
+          [models.Sequelize.Op.gt]: fromTime.toDate()
+        }
+      },
+      include: [{ model: models.SolanaNotificationAction, as: 'actions', required: true, attributes: [] }],
+      attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
+      group: ['SolanaNotification.id']
+    })
+
+    const notificationCount = notifCountQuery.length + solanaNotifCountQuery.length
     const announcementIds = new Set(announcements.map(({ entityId }) => entityId))
-    const filteredNotifications = notifications.filter(({ id }) => !announcementIds.has(id))
+    const filteredNotifications = notifications.concat(solanaNotifications).filter(({ id }) => !announcementIds.has(id))
 
     let tenDaysAgo = moment().subtract(10, 'days')
 
