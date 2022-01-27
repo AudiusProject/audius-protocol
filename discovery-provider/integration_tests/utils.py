@@ -87,6 +87,7 @@ def populate_mock_db(db, entities, block_offset=None):
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
         aggregate_track = entities.get("aggregate_track", [])
+        aggregate_monthly_plays = entities.get("aggregate_monthly_plays", [])
         aggregate_user = entities.get("aggregate_user", [])
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
         user_listening_history = entities.get("user_listening_history", [])
@@ -238,6 +239,14 @@ def populate_mock_db(db, entities, block_offset=None):
                 save_count=aggregate_track_meta.get("save_count", 0),
             )
             session.add(aggregate_track)
+
+        for i, aggregate_monthly_play_meta in enumerate(aggregate_monthly_plays):
+            aggregate_monthly_play = models.AggregateMonthlyPlays(
+                play_item_id=aggregate_monthly_play_meta.get("play_item_id", i),
+                timestamp=aggregate_monthly_play_meta.get("timestamp", i),
+                count=aggregate_monthly_play_meta.get("count", 0),
+            )
+            session.add(aggregate_monthly_play)
 
         for i, aggregate_user_meta in enumerate(aggregate_user):
             user = models.AggregateUser(
