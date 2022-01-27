@@ -80,9 +80,6 @@ async function saveFileToIPFSFromFS(
     enableIPFSAdd
   )
 
-  // const dstPath = await copyMultihashToFs(multihash, srcPath, logger)
-
-  // return { multihash, dstPath }
   return multihash
 }
 

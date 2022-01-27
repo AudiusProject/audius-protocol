@@ -853,7 +853,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   })
 })
 
-describe.only('test Polling Tracks with real IPFS', function () {
+describe('test Polling Tracks with real IPFS', function () {
   let app2,
     server,
     session,
