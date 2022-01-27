@@ -74,6 +74,13 @@ if [[ "$audius_openresty_enable" == true ]]; then
     PORT=3000
 fi
 
+if [ "$audius_db_run_migrations" != false ]; then
+    echo "Running alembic migrations"
+    export PYTHONPATH='.'
+    alembic upgrade head
+    echo "Finished running migrations"
+fi
+
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     export FLASK_APP=src.app
     export FLASK_ENV=development
