@@ -204,11 +204,11 @@ class App {
   }
 
   configureReporter () {
-    const slackReporter = new SlackReporter({
-      slackUrl: config.get('reporterSlackUrl'),
+    const slackAudioErrorReporter = new SlackReporter({
+      slackUrl: config.get('successAudioReporterSlackUrl'),
       childLogger: logger
     })
-    this.express.set('slackReporter', slackReporter)
+    this.express.set('slackAudioErrorReporter', slackAudioErrorReporter)
   }
 
   async configureAudiusInstance () {
@@ -252,7 +252,8 @@ class App {
     }
 
     const rewardsReporter = new RewardsReporter({
-      slackUrl: config.get('rewardsReporterSlackUrl'),
+      successSlackUrl: config.get('successAudioReporterSlackUrl'),
+      errorSlackUrl: config.get('errorAudioReporterSlackUrl'),
       childLogger
     })
 

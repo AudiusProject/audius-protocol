@@ -186,6 +186,12 @@ def get_challenges(
                 and not user_challenge.is_complete
             ):
                 continue
+
+            override_step_count = event_bus.get_manager(
+                parent_challenge.id
+            ).get_override_challenge_step_count(session, user_id)
+            if override_step_count is not None:
+                user_challenge.current_step_count = override_step_count
             regular_user_challenges.append(
                 to_challenge_response(
                     user_challenge,
@@ -201,10 +207,17 @@ def get_challenges(
         rolled_up.append(rollup_aggregates(challenges, parent_challenge))
 
     # Return empty user challenges for active challenges that are non-hidden
+    # and visible for the current user
     active_non_hidden_challenges: List[Challenge] = [
         challenge
         for challenge in all_challenges
-        if (challenge.active and not challenge.type == ChallengeType.trending)
+        if (
+            challenge.active
+            and not challenge.type == ChallengeType.trending
+            and event_bus.get_manager(challenge.id).should_show_challenge_for_user(
+                session, user_id
+            )
+        )
     ]
     existing_challenge_ids = {
         user_challenge.challenge_id for user_challenge in existing_user_challenges
