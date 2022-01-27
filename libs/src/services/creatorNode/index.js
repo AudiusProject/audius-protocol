@@ -365,10 +365,10 @@ class CreatorNode {
 
   async handleAsyncTrackUpload (file, onProgress) {
     const { data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress)
-    return this.pollProcessingStatus('transcode', uuid)
+    return this.pollProcessingStatus(uuid)
   }
 
-  async pollProcessingStatus (taskType, uuid) {
+  async pollProcessingStatus (uuid) {
     const route = this.creatorNodeEndpoint + '/track_content_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
@@ -378,7 +378,7 @@ class CreatorNode {
         //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
         if (status && status === 'DONE') return resp
         if (status && status === 'FAILED') {
-          await this._handleErrorHelper(new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`), route, uuid)
+          await this._handleErrorHelper(new Error(`Track upload failed: uuid=${uuid}, error=${resp}`), route, uuid)
         }
       } catch (e) {
         // Catch errors here and swallow them. Errors don't signify that the track
