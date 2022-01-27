@@ -15,6 +15,8 @@ import {
   UPLOAD_PAGE
 } from 'utils/route'
 
+import { OptimisticUserChallenge } from './hooks'
+
 type LinkButtonType =
   | 'trackUpload'
   | 'profile'
@@ -58,8 +60,8 @@ type ChallengeRewardsInfo = {
   id: ChallengeRewardID
   title: string
   icon: ReactNode
-  description: (amount: number | undefined) => string
-  fullDescription: (amount: number | undefined) => string
+  description: (amount: OptimisticUserChallenge | undefined) => string
+  fullDescription: (amount: OptimisticUserChallenge | undefined) => string
   progressLabel: string
   amount: number
   stepCount: number
@@ -69,6 +71,7 @@ type ChallengeRewardsInfo = {
     inProgress: LinkButtonInfo | null
     complete: LinkButtonInfo | null
   }
+  verifiedChallenge?: boolean
 }
 
 export const challengeRewardsConfig: Record<
@@ -79,9 +82,10 @@ export const challengeRewardsConfig: Record<
     id: 'referrals' as ChallengeRewardID,
     title: 'Invite your Friends',
     icon: <i className='emoji large incoming-envelope' />,
-    description: amount => `Earn ${amount} $AUDIO, for you and your friend`,
-    fullDescription: amount =>
-      `Invite your Friends! You’ll earn ${amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
+    description: challenge =>
+      `Earn ${challenge?.amount} $AUDIO, for you and your friend`,
+    fullDescription: challenge =>
+      `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
     progressLabel: '%0/%1 Invites',
     amount: amounts.referrals,
     stepCount: 5,
@@ -94,29 +98,31 @@ export const challengeRewardsConfig: Record<
   },
   'referrals-verified': {
     id: 'referrals-verified' as ChallengeRewardID,
-    title: 'Invite your Friends',
+    title: 'Invite your Fans',
     icon: <i className='emoji large incoming-envelope' />,
-    description: amount => `Earn ${amount} $AUDIO, for you and your friend`,
-    fullDescription: amount =>
-      `Invite your Friends! You’ll earn ${amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
+    description: challenge => `Earn up to ${challenge?.totalAmount} $AUDIO`,
+    fullDescription: challenge =>
+      `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
     progressLabel: '%0/%1 Invites',
     amount: amounts.referrals,
     stepCount: 500,
-    panelButtonText: 'Invite your Friends',
+    panelButtonText: 'Invite your Fans',
     modalButtonInfo: {
       incomplete: null,
       inProgress: null,
       complete: null
-    }
+    },
+    verifiedChallenge: true
   },
   // This is used just for the notifications
   referred: {
     id: 'referrals' as ChallengeRewardID,
     title: 'Invite your Friends',
     icon: <i className='emoji large incoming-envelope' />,
-    description: amount => `Earn ${amount} $AUDIO, for you and your friend`,
-    fullDescription: amount =>
-      `Invite your Friends! You’ll earn ${amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
+    description: challenge =>
+      `Earn ${challenge?.amount} $AUDIO, for you and your friend`,
+    fullDescription: challenge =>
+      `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
     progressLabel: '%0/%1 Invites',
     amount: amounts.referrals,
     stepCount: 1,
@@ -131,8 +137,8 @@ export const challengeRewardsConfig: Record<
     id: 'connect-verified' as ChallengeRewardID,
     title: 'Link Verified Accounts',
     icon: <i className='emoji large white-heavy-check-mark' />,
-    description: amount =>
-      `Link your verified social media accounts to earn ${amount} $AUDIO`,
+    description: challenge =>
+      `Link your verified social media accounts to earn ${challenge?.amount} $AUDIO`,
     fullDescription: () =>
       'Get verified on Audius by linking your verified Twitter or Instagram account!',
     progressLabel: 'Not Linked',
@@ -149,8 +155,8 @@ export const challengeRewardsConfig: Record<
     id: 'listen-streak' as ChallengeRewardID,
     title: 'Listening Streak: 7 Days',
     icon: <i className='emoji large headphone' />,
-    description: amount =>
-      `Listen to one track a day for seven days to earn ${amount} $AUDIO`,
+    description: challenge =>
+      `Listen to one track a day for seven days to earn ${challenge?.amount} $AUDIO`,
     fullDescription: () =>
       'Sign in and listen to at least one track every day for 7 days',
     progressLabel: '%0/%1 Days',
@@ -167,7 +173,7 @@ export const challengeRewardsConfig: Record<
     id: 'mobile-install' as ChallengeRewardID,
     title: 'Get the Audius Mobile App',
     icon: <i className='emoji large mobile-phone-with-arrow' />,
-    description: amount => `Earn ${amount} $AUDIO`,
+    description: challenge => `Earn ${challenge?.amount} $AUDIO`,
     fullDescription: () =>
       'Install the Audius app for iPhone and Android and Sign in to your account!',
     progressLabel: 'Not Installed',
@@ -184,8 +190,8 @@ export const challengeRewardsConfig: Record<
     id: 'profile-completion' as ChallengeRewardID,
     title: 'Complete Your Profile',
     icon: <i className='emoji large white-heavy-check-mark' />,
-    description: amount =>
-      `Complete your Audius profile to earn ${amount} $AUDIO`,
+    description: challenge =>
+      `Complete your Audius profile to earn ${challenge?.amount} $AUDIO`,
     fullDescription: () =>
       'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
     progressLabel: '%0/%1 Complete',
@@ -202,7 +208,7 @@ export const challengeRewardsConfig: Record<
     id: 'track-upload' as ChallengeRewardID,
     title: 'Upload 3 Tracks',
     icon: <i className='emoji large multiple-musical-notes' />,
-    description: amount => `Earn ${amount} $AUDIO`,
+    description: challenge => `Earn ${challenge?.amount} $AUDIO`,
     fullDescription: () => 'Upload 3 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
     amount: amounts['track-upload'],

@@ -8,7 +8,7 @@
   padding: 24px 42px;
   display: inline-flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .mobile.container {

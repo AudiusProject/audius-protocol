@@ -7,7 +7,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import styles from './PurpleBox.module.css'
 
 type PurpleBoxProps = {
-  label: ReactNode
+  label?: ReactNode
   text: ReactNode
   className?: string
   onClick?: () => void
@@ -28,7 +28,7 @@ const PurpleBox = ({
       className={wm(styles.container, { [className!]: !!className })}
       onClick={onClick}
     >
-      <div className={wm(styles.label)}>{label}</div>
+      {label && <div className={wm(styles.label)}>{label}</div>}
       <div className={cn(wm(styles.text), { [styles.compact]: isCompact })}>
         {text}
       </div>

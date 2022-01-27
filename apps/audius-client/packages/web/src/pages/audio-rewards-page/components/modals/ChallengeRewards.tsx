@@ -1,6 +1,13 @@
-import React, { useCallback, useEffect, useContext } from 'react'
+import React, { useCallback, useEffect, useContext, useMemo } from 'react'
 
-import { Button, ButtonType, ProgressBar, IconCheck } from '@audius/stems'
+import {
+  Button,
+  ButtonType,
+  ProgressBar,
+  IconCheck,
+  IconVerified,
+  IconTwitterBird
+} from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,6 +44,7 @@ import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import fillString from 'utils/fillString'
+import { openTwitterLink } from 'utils/tweet'
 
 import PurpleBox from '../PurpleBox'
 
@@ -61,22 +69,25 @@ export const useRewardsModalType = (): [
 const messages = {
   copyLabel: 'Copy to Clipboard',
   copiedLabel: 'Copied to Clipboard',
-  inviteLabel: 'Copy Invite Link',
+  inviteLabel: 'Copy Invite to Clipboard',
   inviteLink: 'audius.co/signup?ref=%0',
   qrText: 'Download the App',
   qrSubtext: 'Scan This QR Code with Your Phone Camera',
   rewardClaimed: 'Reward claimed successfully!',
   claimError: 'Oops, something’s gone wrong',
-  claimYourReward: 'Claim Your Reward'
+  claimYourReward: 'Claim Your Reward',
+  twitterShare: (modalType: 'referrals' | 'referrals-verified') =>
+    `Share Invite With Your ${modalType === 'referrals' ? 'Friends' : 'Fans'}`,
+  twitterCopy: `Come support me on @audiusproject! Use my link and we both earn $AUDIO when you sign up.\n\n #audius #audiorewards\n\n`,
+  verifiedChallenge: 'VERIFIED CHALLENGE'
 }
 
 type InviteLinkProps = {
   className?: string
-  handle: string
+  inviteLink: string
 }
 
-const InviteLink = ({ className, handle }: InviteLinkProps) => {
-  const inviteLink = fillString(messages.inviteLink, handle)
+const InviteLink = ({ className, inviteLink }: InviteLinkProps) => {
   const wm = useWithMobileStyle(styles.mobile)
 
   const onButtonClick = useCallback(() => {
@@ -85,7 +96,7 @@ const InviteLink = ({ className, handle }: InviteLinkProps) => {
 
   return (
     <Tooltip text={messages.copyLabel} placement={'top'} mount={'parent'}>
-      <div className={cn(styles.toastContainer, { [className!]: !!className })}>
+      <div className={wm(styles.toastContainer, { [className!]: !!className })}>
         <Toast
           text={messages.copiedLabel}
           delay={2000}
@@ -94,19 +105,41 @@ const InviteLink = ({ className, handle }: InviteLinkProps) => {
           mount={MountPlacement.PARENT}
         >
           <PurpleBox
-            label={messages.inviteLabel}
             className={wm(styles.inviteButtonContainer)}
             onClick={onButtonClick}
             text={
               <div className={styles.inviteLinkContainer}>
-                <div className={styles.inviteLink}>{inviteLink}</div>
                 <IconCopy className={wm(styles.inviteIcon)} />
+                <div className={styles.inviteLink}>{messages.inviteLabel}</div>
               </div>
             }
           />
         </Toast>
       </div>
     </Tooltip>
+  )
+}
+
+type TwitterShareButtonProps = {
+  modalType: 'referrals' | 'referrals-verified'
+  inviteLink: string
+}
+
+const TwitterShareButton = ({
+  modalType,
+  inviteLink
+}: TwitterShareButtonProps) => {
+  const wm = useWithMobileStyle(styles.mobile)
+  return (
+    <Button
+      type={ButtonType.PRIMARY_ALT}
+      text={messages.twitterShare(modalType)}
+      leftIcon={<IconTwitterBird />}
+      onClick={() => openTwitterLink(inviteLink, messages.twitterCopy)}
+      className={wm(styles.twitterButton)}
+      textClassName={styles.twitterText}
+      iconClassName={styles.twitterIcon}
+    />
   )
 }
 
@@ -159,7 +192,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     fullDescription,
     progressLabel,
     stepCount,
-    modalButtonInfo
+    modalButtonInfo,
+    verifiedChallenge
   } = challengeRewardsConfig[modalType]
 
   const currentStepCount = challenge?.current_step_count || 0
@@ -184,15 +218,24 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const progressDescription = (
     <div className={wm(styles.progressDescription)}>
-      <h3>Task</h3>
-      <p>{fullDescription(challenge?.amount)}</p>
+      <h3>
+        {verifiedChallenge ? (
+          <div className={styles.verifiedChallenge}>
+            <IconVerified />
+            {messages.verifiedChallenge}
+          </div>
+        ) : (
+          'Task'
+        )}
+      </h3>
+      <p>{fullDescription(challenge)}</p>
     </div>
   )
 
   const progressReward = (
     <div className={wm(styles.progressReward)}>
       <h3>Reward</h3>
-      <h2>{challenge?.amount}</h2>
+      <h2>{challenge?.totalAmount}</h2>
       <h4>$AUDIO</h4>
     </div>
   )
@@ -250,6 +293,11 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     }
   }, [claimStatus, toast])
 
+  const inviteLink = useMemo(
+    () => (userHandle ? fillString(messages.inviteLink, userHandle) : ''),
+    [userHandle]
+  )
+
   return (
     <div className={wm(styles.container)}>
       {displayMobileContent ? (
@@ -293,7 +341,11 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
       {userHandle &&
         (modalType === 'referrals' || modalType === 'referrals-verified') && (
-          <InviteLink handle={userHandle} />
+          <div className={wm(styles.buttonContainer)}>
+            <TwitterShareButton modalType={modalType} inviteLink={inviteLink} />
+            <div className={styles.buttonSpacer} />
+            <InviteLink inviteLink={inviteLink} />
+          </div>
         )}
       {modalType === 'mobile-install' && (
         <div className={wm(styles.qrContainer)}>
