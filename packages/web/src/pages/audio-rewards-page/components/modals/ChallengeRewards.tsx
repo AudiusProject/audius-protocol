@@ -245,13 +245,15 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       className={cn(styles.progressStatus, {
         [styles.incomplete]: challenge?.state === 'incomplete',
         [styles.inProgress]: challenge?.state === 'in_progress',
-        [styles.complete]: challenge?.state === 'completed'
+        [styles.complete]:
+          challenge?.state === 'completed' || challenge?.state === 'disbursed'
       })}
     >
       {challenge?.state === 'incomplete' && (
         <h3 className={styles.incomplete}>Incomplete</h3>
       )}
-      {challenge?.state === 'completed' && (
+      {(challenge?.state === 'completed' ||
+        challenge?.state === 'disbursed') && (
         <h3 className={styles.complete}>Complete</h3>
       )}
       {challenge?.state === 'in_progress' && (
