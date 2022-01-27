@@ -733,9 +733,21 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
               .stub(FileManager, 'saveFileToIPFSFromFS')
               .returns(
                 new Promise((resolve, reject) => {
-                  return resolve(MockSavefileMultihash)
+                  const multihash = MockSavefileMultihash
+                  return resolve(multihash)
                 })
-              )
+              ),
+            copyMultihashToFs: sinon
+              .stub(FileManager, 'copyMultihashToFs')
+              .returns(
+                new Promise((resolve) => {
+                  const dstPath = DiskManager.computeFilePath(
+                    MockSavefileMultihash
+                  )
+                  return resolve(dstPath)
+                })
+              ),
+            '@global': true
           }
         }
       )
