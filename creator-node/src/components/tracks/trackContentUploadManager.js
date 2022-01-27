@@ -18,7 +18,7 @@ const SAVE_FILE_TO_IPFS_CONCURRENCY_LIMIT = 10
 const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
 
 /**
- * Manages track content upload in IFPS, the DB, and the file system
+ * Manages track content upload in IPFS, the DB, and the file system
  */
 class TrackContentUploadManager {
   /**
