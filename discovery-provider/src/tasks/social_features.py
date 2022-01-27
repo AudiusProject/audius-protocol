@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Set, Tuple
 
+from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -16,17 +17,19 @@ logger = logging.getLogger(__name__)
 def social_feature_state_update(
     self,
     update_task: DatabaseTask,
-    session,
+    session: Session,
     social_feature_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
-):
-    """Return int representing number of social feature related state changes in this transaction"""
-
+    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
+) -> Tuple[int, Set]:
+    """Return Tuple containing int representing number of social feature related state changes in this transaction and empty Set (to align with other _state_update function signatures)"""
+    empty_set: Set[int] = set()
     num_total_changes = 0
     if not social_feature_factory_txs:
-        return num_total_changes
+        return num_total_changes, empty_set
 
     social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
     social_feature_factory_contract = update_task.web3.eth.contract(
@@ -147,8 +150,7 @@ def social_feature_state_update(
             dispatch_challenge_follow(challenge_bus, follow, block_number)
             queue_related_artist_calculation(update_task.redis, followee_user_id)
         num_total_changes += len(followee_user_ids)
-
-    return num_total_changes
+    return num_total_changes, empty_set
 
 
 # ####### HELPERS ####### #

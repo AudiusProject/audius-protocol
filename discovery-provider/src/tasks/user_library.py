@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Set, Tuple
 
+from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -15,17 +16,19 @@ logger = logging.getLogger(__name__)
 def user_library_state_update(
     self,
     update_task: DatabaseTask,
-    session,
+    session: Session,
     user_library_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
-):
-    """Return int representing number of User Library model state changes found in transaction."""
-
+    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
+) -> Tuple[int, Set]:
+    """Return Tuple containing int representing number of User Library model state changes found in transaction and empty Set (to align with fn signature of other _state_update functions."""
+    empty_set: Set[int] = set()
     num_total_changes = 0
     if not user_library_factory_txs:
-        return num_total_changes
+        return num_total_changes, empty_set
 
     user_library_abi = update_task.abi_values["UserLibraryFactory"]["abi"]
     user_library_contract = update_task.web3.eth.contract(
@@ -111,7 +114,7 @@ def user_library_state_update(
             dispatch_favorite(challenge_bus, save, block_number)
         num_total_changes += len(playlist_ids)
 
-    return num_total_changes
+    return num_total_changes, empty_set
 
 
 # ####### HELPERS ####### #
