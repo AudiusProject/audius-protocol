@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from sqlalchemy.orm.session import make_transient
+from sqlalchemy.orm.session import Session, make_transient
 from sqlalchemy.sql import functions, null
 from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 def track_state_update(
     self,
     update_task: DatabaseTask,
-    session,
+    session: Session,
     track_factory_txs,
     block_number,
     block_timestamp,

@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from typing import Dict, Set, Tuple
 
+from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 def social_feature_state_update(
     self,
     update_task: DatabaseTask,
-    session,
+    session: Session,
     social_feature_factory_txs,
     block_number,
     block_timestamp,

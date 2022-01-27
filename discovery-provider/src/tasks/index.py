@@ -38,7 +38,7 @@ from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
-from src.utils.constants import CONTRACT_NAMES, CONTRACT_TYPES
+from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
@@ -60,12 +60,18 @@ PLAYLIST_FACTORY = CONTRACT_TYPES.PLAYLIST_FACTORY.value
 USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
 USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
 
-USER_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.USER_FACTORY]
-TRACK_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.TRACK_FACTORY]
-SOCIAL_FEATURE_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY]
-PLAYLIST_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.PLAYLIST_FACTORY]
-USER_LIBRARY_FACTORY_CONTRACT = CONTRACT_NAMES[CONTRACT_TYPES.USER_LIBRARY_FACTORY]
-USER_REPLICA_SET_MANAGER_CONTRACT = CONTRACT_NAMES[
+USER_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.USER_FACTORY]
+TRACK_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.TRACK_FACTORY]
+SOCIAL_FEATURE_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
+    CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY
+]
+PLAYLIST_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
+    CONTRACT_TYPES.PLAYLIST_FACTORY
+]
+USER_LIBRARY_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
+    CONTRACT_TYPES.USER_LIBRARY_FACTORY
+]
+USER_REPLICA_SET_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
     CONTRACT_TYPES.USER_REPLICA_SET_MANAGER
 ]
 
@@ -247,12 +253,12 @@ def fetch_ipfs_metadata(
     block_number,
     block_hash,
 ):
-    track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT]["abi"]
+    track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]
     track_contract = update_task.web3.eth.contract(
         address=get_contract_addresses()["track_factory"], abi=track_abi
     )
 
-    user_abi = update_task.abi_values[USER_FACTORY_CONTRACT]["abi"]
+    user_abi = update_task.abi_values[USER_FACTORY_CONTRACT_NAME]["abi"]
     user_contract = update_task.web3.eth.contract(
         address=get_contract_addresses()[USER_FACTORY], abi=user_abi
     )
@@ -374,7 +380,7 @@ def update_ursm_address(self):
             address=registry_address, abi=abi_values["Registry"]["abi"]
         )
         user_replica_set_manager_address = registry_instance.functions.getContract(
-            bytes(USER_REPLICA_SET_MANAGER_CONTRACT, "utf-8")
+            bytes(USER_REPLICA_SET_MANAGER_CONTRACT_NAME, "utf-8")
         ).call()
         if user_replica_set_manager_address != zero_address:
             get_contract_addresses()[USER_REPLICA_SET_MANAGER] = web3.toChecksumAddress(
