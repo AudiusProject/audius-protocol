@@ -19,12 +19,7 @@ AGGREGATE_MONTHLY_PLAYS_TABLE_NAME = "aggregate_monthly_plays"
 # For new play item ids, insert those aggregate counts
 # For existing play item ids, add the new aggregate count to the existing aggregate count
 UPSERT_AGGREGATE_MONTHLY_PLAYS_QUERY = """
-    with aggregate_monthly_plays_last_checkpoint as (
-        select
-            :prev_id_checkpoint as prev_id_checkpoint,
-            :new_id_checkpoint as new_id_checkpoint
-    ),
-    new_plays as (
+    with new_plays as (
         select
             play_item_id,
             date_trunc('month', created_at) as timestamp,
@@ -32,18 +27,8 @@ UPSERT_AGGREGATE_MONTHLY_PLAYS_QUERY = """
         from
             plays p
         where
-            p.id > (
-                select
-                    prev_id_checkpoint
-                from
-                    aggregate_monthly_plays_last_checkpoint
-            )
-            and p.id <= (
-                select
-                    new_id_checkpoint
-                from
-                    aggregate_monthly_plays_last_checkpoint
-            )
+            p.id > :prev_id_checkpoint
+            and p.id <= :new_id_checkpoint
         group by
             play_item_id, date_trunc('month', created_at)
     )
