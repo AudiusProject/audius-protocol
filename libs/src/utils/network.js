@@ -197,7 +197,7 @@ async function raceRequests (
     return { response: response.blob, errored }
   }
 
-  return { respone: null, errored }
+  return { response: null, errored }
 }
 
 /**

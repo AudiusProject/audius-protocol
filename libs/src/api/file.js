@@ -70,11 +70,11 @@ class File extends Base {
 
     return retry(async () => {
       try {
-        const { response } = await raceRequests(urls, callback, {
+        const { response, errored } = await raceRequests(urls, callback, {
           method: 'get',
           responseType
         }, /* timeout */ null)
-        if (!response) throw new Error(`Could not fetch ${cid}`)
+        if (!response) throw new Error(`Could not fetch ${cid}. ${errored}`)
         return response
       } catch (e) {
         // TODO: Remove this fallback logic when no more users/tracks/playlists
@@ -97,7 +97,7 @@ class File extends Base {
         }
 
         // Throw so we can retry
-        throw new Error(`Failed to retrieve ${cid}`)
+        throw new Error(`Failed to retrieve ${cid}. ${e}`)
       }
     }, {
       minTimeout: 500,
