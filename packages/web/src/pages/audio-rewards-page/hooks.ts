@@ -13,12 +13,13 @@ type UserChallengeState =
   | 'in_progress'
   | 'completed'
   | 'disbursed'
-type OptimisticUserChallenge = Omit<
+export type OptimisticUserChallenge = Omit<
   UserChallenge,
   'is_complete' | 'is_active' | 'is_disbursed'
 > & {
   __isOptimistic: true
   state: UserChallengeState
+  totalAmount: number
 }
 /**
  * Gets the state of a user challenge, with the most progress dominating
@@ -80,7 +81,17 @@ export const useOptimisticUserChallenge = (
   const userChallengeOverrides =
     userChallengesOverrides[challenge?.challenge_id]
 
-  const challengeOverridden = { ...challenge, ...userChallengeOverrides }
+  const challengeOverridden = {
+    ...challenge,
+    ...userChallengeOverrides,
+    // For aggregate challenges, we show the total amount
+    // you'd get when completing every step of the challenge
+    // -- i.e. for referrals, show 1 audio x 5 steps = 5 audio
+    totalAmount:
+      challenge.challenge_type === 'aggregate'
+        ? challenge.amount * challenge.max_steps
+        : challenge.amount
+  }
 
   // The client is more up to date than Discovery Nodes, so override whenever possible.
   // Don't override if the challenge is already marked as completed on Discovery.
