@@ -3,7 +3,7 @@ import { ID } from 'common/models/Identifiers'
 import { LineupState } from 'common/models/Lineup'
 import TimeRange from 'common/models/TimeRange'
 
-export default interface DiscoveryPageState {
+export type FeedPageState = {
   suggestedFollows: ID[]
   feed: LineupState<{ id: ID; activityTimestamp: number }>
   trendingWeek: LineupState<{ id: ID }>
