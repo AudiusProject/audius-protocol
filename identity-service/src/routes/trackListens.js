@@ -235,7 +235,7 @@ const initializeExpiringRedisKey = async (redis, key, expiry) => {
 module.exports = function (app) {
   app.get('/tracks/listen/solana/status', handleResponse(async (req, res) => {
     const redis = req.app.get('redis')
-    let results = await redis.keys('listens-tx-*')
+    const results = await redis.keys('listens-tx-*')
     let hourlyResponseData = {}
     let success = 0
     let submission = 0
@@ -259,15 +259,10 @@ module.exports = function (app) {
     }
 
     // Sort response in descending time order
-    let keys = Object.keys(hourlyResponseData)
-    let sortedKeys = []
-    let data = []
-    if (keys) {
-      sortedKeys = keys.sort((a, b) => (new Date(b) - new Date(a)))
-      for (var sortedKey of sortedKeys) {
-        data.push(hourlyResponseData[sortedKey])
-      }
-    }
+    const data =
+      Object.keys(hourlyResponseData)
+        .sort((a, b) => (new Date(b) - new Date(a)))
+        .map(key => hourlyResponseData[key])
     return successResponse({ success, submission, data })
   }))
 
