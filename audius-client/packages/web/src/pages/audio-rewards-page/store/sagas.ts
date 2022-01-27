@@ -21,6 +21,7 @@ import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import {
   getClaimStatus,
   getClaimToRetry,
+  getPendingAutoClaims,
   getUserChallenge,
   getUserChallenges,
   getUserChallengesOverrides
@@ -42,7 +43,9 @@ import {
   setHCaptchaStatus,
   setUserChallengeDisbursed,
   updateHCaptchaScore,
-  showRewardClaimedToast
+  showRewardClaimedToast,
+  addPendingAutoClaim,
+  removePendingAutoClaim
 } from 'common/store/pages/audio-rewards/slice'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { getBalance, increaseBalance } from 'common/store/wallet/slice'
@@ -258,10 +261,16 @@ export function* watchFetchUserChallenges() {
         ChallengeRewardID,
         UserChallenge
       >> = yield select(getUserChallengesOverrides)
+      const pendingAutoClaims: Partial<Record<
+        ChallengeRewardID,
+        number
+      >> = yield select(getPendingAutoClaims)
       let newDisbursement = false
       for (const challenge of userChallenges) {
         const prevChallenge = prevChallenges[challenge.challenge_id]
         const challengeOverrides = challengesOverrides[challenge.challenge_id]
+        const pendingAutoClaim = pendingAutoClaims[challenge.challenge_id]
+        // Check for new disbursements
         if (
           challenge.is_disbursed &&
           prevChallenge &&
@@ -269,6 +278,19 @@ export function* watchFetchUserChallenges() {
           (!challengeOverrides || !challengeOverrides.is_disbursed) // we didn't claim this session
         ) {
           newDisbursement = true
+          if (pendingAutoClaim) {
+            yield put(removePendingAutoClaim(challenge.challenge_id))
+          }
+        }
+        // Check for newly completed, undisbursed challenges
+        else if (
+          challenge.is_complete &&
+          prevChallenge &&
+          !prevChallenge.is_complete &&
+          !challenge.is_disbursed &&
+          (!challengeOverrides || !challengeOverrides.is_disbursed)
+        ) {
+          yield put(addPendingAutoClaim(challenge.challenge_id))
         }
       }
       if (newDisbursement) {

@@ -41,3 +41,6 @@ export const getCognitoFlowUrlStatus = (state: CommonState) =>
 
 export const getShowRewardClaimedToast = (state: CommonState) =>
   state.pages.audioRewards.showRewardClaimedToast
+
+export const getPendingAutoClaims = (state: CommonState) =>
+  state.pages.audioRewards.pendingAutoClaims

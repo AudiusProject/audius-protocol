@@ -10,7 +10,7 @@
   width: 20px;
   height: 20px;
   position: absolute;
-  background-color:var(--neutral-light-4);
+  background-color: var(--neutral-light-4);
   left: -40px;
   border-radius: 4px;
 }
@@ -22,14 +22,6 @@
   height: 16px;
   transition: opacity ease-in-out 0.5s;
   opacity: 1;
-}
-
-.audio.show .earnAudio:hover {
-  transform: scale(1.03);
-}
-
-.audio.show .earnAudio:active {
-  transform: scale(.97);
 }
 
 .audio.hasBalance {
@@ -49,7 +41,14 @@
   color: var(--neutral-light-3);
 }
 
-.earnAudio {
+.bubbleContainer {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.actionBubble {
   display: flex;
   align-items: center;
   margin-left: 12px;
@@ -57,18 +56,33 @@
   color: var(--static-white);
   background: var(--secondary);
   border-radius: 16px;
+  text-transform: uppercase;
   font-size: var(--font-2xs);
   font-weight: var(--font-bold);
   letter-spacing: 0.1em;
   transition: all 0.07s ease-in-out;
+  position: absolute;
 }
 
-.earnAudioCaret {
+.actionBubble:hover {
+  cursor: pointer;
+  transform: scale3d(1.03, 1.03, 1.03);
+}
+
+.actionBubble:active {
+  transform: scale3d(0.97, 0.97, 0.97);
+}
+
+.actionBubble.claimRewards {
+  background: var(--static-accent-green);
+}
+
+.actionCaret {
   margin-left: 2px;
   height: 12px;
   width: 10px;
 }
 
-.earnAudioCaret path {
+.actionCaret path {
   fill: var(--static-white);
 }
