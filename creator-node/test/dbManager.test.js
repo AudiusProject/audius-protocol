@@ -756,8 +756,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
       const { fileUUID, fileDir } = saveFileToStorage(TestAudioFilePath)
       const trackContentResp = await handleTrackContentRoute(
         {},
-        getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.blacklistManager
+        getReqObj(fileUUID, fileDir, session)
       )
 
       // Upload track metadata
