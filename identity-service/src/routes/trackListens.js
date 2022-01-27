@@ -257,7 +257,17 @@ module.exports = function (app) {
       }
     }
 
-    return successResponse({ success, submission, hourlyResponseData })
+    // Sort response in descending time order
+    let keys = Object.keys(hourlyResponseData)
+    let sortedKeys = []
+    let data = []
+    if (keys) {
+      sortedKeys = keys.sort((a, b) => (new Date(b) - new Date(a)))
+      for (var sortedKey of sortedKeys) {
+        data.push({ time: sortedKey, info: hourlyResponseData[sortedKey] })
+      }
+    }
+    return successResponse({ success, submission, data })
   }))
 
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
