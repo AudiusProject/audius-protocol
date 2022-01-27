@@ -124,6 +124,9 @@ def celery_app():
     celery_app = create_celery(TEST_CONFIG_OVERRIDE)
 
     yield celery_app
+    if database_exists(DB_URL):
+        drop_database(DB_URL)
+    redis.flushall()
 
 
 @pytest.fixture

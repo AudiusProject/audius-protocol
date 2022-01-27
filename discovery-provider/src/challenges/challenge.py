@@ -95,6 +95,12 @@ class ChallengeUpdater(ABC):
         """Optional method to provide default metadata for an challenge with no progress."""
         return {}
 
+    def get_override_challenge_step_count(
+        self, session: Session, user_id: int
+    ) -> Optional[int]:
+        """Optional method to override the step count value"""
+        return None
+
 
 class ChallengeManager:
     """`ChallengeManager` is responsible for handling shared logic between updating different challenges.
@@ -320,6 +326,12 @@ class ChallengeManager:
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
         """Optional method to show/hide a challenge for a particular user."""
         return self._updater.should_show_challenge_for_user(session, user_id)
+
+    def get_override_challenge_step_count(
+        self, session: Session, user_id: int
+    ) -> Optional[int]:
+        """Optional method to override a challenge step count for a particular user."""
+        return self._updater.get_override_challenge_step_count(session, user_id)
 
     # Helpers
 

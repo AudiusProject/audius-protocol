@@ -655,12 +655,12 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                 update_task,
                 update_task,
                 session,
-                test_ipfs_metadata,
-                test_blacklisted_cids,
                 test_user_factory_txs,
                 test_block_number,
                 test_block_timestamp,
                 block_hash,
+                test_ipfs_metadata,
+                test_blacklisted_cids,
             )
             assert len(updated_user_ids_set) == 1
             assert list(updated_user_ids_set)[0] == blessed_user_record.user_id
