@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from src import models
+from src.tasks.index_aggregate_user import get_latest_blocknumber
 from src.utils import helpers
 from src.utils.db_session import get_db
 
@@ -55,7 +56,7 @@ def populate_mock_db_blocks(db, min, max):
             session.flush()
 
 
-def populate_mock_db(db, entities, block_offset=0):
+def populate_mock_db(db, entities, block_offset=None):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows
 
@@ -64,6 +65,14 @@ def populate_mock_db(db, entities, block_offset=0):
         entities - dict of keys tracks, users, plays of arrays of metadata
     """
     with db.scoped_session() as session:
+        # check if blocknumber already exists for longer running tests
+        if block_offset is None:
+            block_offset = get_latest_blocknumber(session)
+            if block_offset:
+                block_offset += 1
+            else:
+                block_offset = 0
+
         tracks = entities.get("tracks", [])
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])

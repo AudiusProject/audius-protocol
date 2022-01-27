@@ -102,7 +102,7 @@ def basic_tests(session, last_checkpoint=12, previous_count=0):
         session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
     )
 
-    assert len(results) == 4
+    assert len(results) == 5
 
     assert results[0].track_id == 1
     assert results[0].repost_count == previous_count + 3
@@ -112,13 +112,17 @@ def basic_tests(session, last_checkpoint=12, previous_count=0):
     assert results[1].repost_count == previous_count + 0
     assert results[1].save_count == previous_count + 0
 
-    assert results[2].track_id == 4
+    assert results[2].track_id == 3
     assert results[2].repost_count == previous_count + 0
-    assert results[2].save_count == previous_count + 4
+    assert results[2].save_count == previous_count + 1
 
-    assert results[3].track_id == 5
+    assert results[3].track_id == 4
     assert results[3].repost_count == previous_count + 0
-    assert results[3].save_count == previous_count + 0
+    assert results[3].save_count == previous_count + 4
+
+    assert results[4].track_id == 5
+    assert results[4].repost_count == previous_count + 0
+    assert results[4].save_count == previous_count + 0
 
     prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
     assert prev_id_checkpoint == last_checkpoint
@@ -261,7 +265,7 @@ def test_index_aggregate_track_empty_activity(app):
         )
 
         assert (
-            len(results) == 4
+            len(results) == 5
         ), "Test that tracks updated on blocks after '1' will be targeted"
 
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
@@ -408,40 +412,7 @@ def test_index_aggregate_track_update_with_extra_user(app):
         _update_aggregate_track(session)
 
     with db.scoped_session() as session:
-        results: List[AggregateTrack] = (
-            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-        )
-
-        assert len(results) == 5
-
-        assert results[0].track_id == 1
-        assert results[0].repost_count == 3
-        assert results[0].save_count == 1
-
-        assert results[1].track_id == 2
-        assert results[1].repost_count == 0
-        assert results[1].save_count == 0
-
-        assert (
-            results[2].track_id == 3
-        ), "Test that #3 is not overwritten since #3 is marked as deleted"
-        assert (
-            results[2].repost_count == 9
-        ), "Test that #3 is not overwritten since #3 is marked as deleted"
-        assert (
-            results[2].save_count == 9
-        ), "Test that #3 is not overwritten since #3 is marked as deleted"
-
-        assert results[3].track_id == 4
-        assert results[3].repost_count == 0
-        assert results[3].save_count == 4
-
-        assert results[4].track_id == 5
-        assert results[4].repost_count == 0
-        assert results[4].save_count == 0
-
-        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
-        assert prev_id_checkpoint == 9
+        basic_tests(session, last_checkpoint=9)
 
 
 def test_index_aggregate_track_entity_model(app):

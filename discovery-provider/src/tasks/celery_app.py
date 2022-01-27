@@ -52,7 +52,8 @@ def celery_worker(logger, db, redis, table_name, aggregate_func):
 
 
 def aggregate_worker(
-    logger, session, table_name, query, checkpoint_name, current_checkpoint
+    logger, session, table_name, query, checkpoint_name, current_checkpoint,
+    current_prefix="current_"
 ):
     # get name of the caller function
     worker_name = f"{currentframe().f_back.f_code.co_name}()"
@@ -61,19 +62,23 @@ def aggregate_worker(
     prev_checkpoint = get_last_indexed_checkpoint(session, table_name)
 
     if not current_checkpoint or current_checkpoint == prev_checkpoint:
-        logger.info(f"{worker_name} | Skip update because there are no new blocks")
+        logger.info(
+            f"{worker_name} | Skip update because there are no new blocks"
+            f" | checkpoint: ({prev_checkpoint}, {current_checkpoint}]"
+        )
         return
 
     # update aggregate track with new tracks that came after the prev_checkpoint
     logger.info(
-        f"{worker_name} | Updating {table_name} | checkpoint: ({prev_checkpoint}, {current_checkpoint}]"
+        f"{worker_name} | Updating {table_name}"
+        f" | checkpoint: ({prev_checkpoint}, {current_checkpoint}]"
     )
 
     session.execute(
         text(query),
         {
             f"prev_{checkpoint_name}": prev_checkpoint,
-            f"current_{checkpoint_name}": current_checkpoint,
+            f"{current_prefix}{checkpoint_name}": current_checkpoint,
         },
     )
 
