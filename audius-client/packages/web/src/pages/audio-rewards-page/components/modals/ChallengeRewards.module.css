@@ -242,11 +242,6 @@
   width: 100%;
 }
 
-.toast {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
 /* Profile Tasks Styles */
 .profileTaskContainer {
   display: flex;
