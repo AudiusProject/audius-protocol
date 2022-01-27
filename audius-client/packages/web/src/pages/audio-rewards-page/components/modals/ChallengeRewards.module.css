@@ -196,10 +196,13 @@
   cursor: pointer;
   transition: all 0.07s ease-in-out;
   transform: scale3d(1, 1, 1);
+  min-width: unset;
+  min-height: 60px;
+  padding: unset;
 }
 .inviteButtonContainer.mobile {
-  min-height: 76px;
   padding: 16px;
+  margin-top: 8px;
 }
 .inviteButtonContainer:hover {
   transform: scale3d(1.03, 1.03, 1.03);
@@ -217,16 +220,13 @@
 
 .inviteLink {
   min-width: 0;
+  font-size: var(--font-m);
 }
 
 .inviteIcon {
   height: 24px;
   flex: 0 0 24px;
-  margin-left: 12px;
-}
-.inviteIcon.mobile {
-  height: 20px;
-  margin-left: 8px;
+  margin-right: 8px;
 }
 
 .inviteIcon path {
@@ -234,8 +234,11 @@
 }
 
 .toastContainer {
-  margin-top: 32px;
   position: relative;
+  flex: 1;
+}
+
+.toastContainer.mobile {
   width: 100%;
 }
 
@@ -305,4 +308,58 @@
   margin-top: 18px;
   color: var(--accent-red);
   font-weight: 500;
+}
+
+.verifiedChallenge {
+  display: flex;
+  align-items: center;
+}
+
+.verifiedChallenge svg {
+  height: 24px;
+  width: 24px;
+  margin-right: 10px;
+  margin-top: -3px;
+}
+
+.buttonContainer {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  margin-top: 32px;
+}
+
+.buttonContainer.mobile {
+  flex-direction: column;
+}
+
+.twitterButton {
+  min-height: 60px;
+  flex: 1;
+  padding: unset;
+  background-color: var(--static-twitter-blue);
+  border-radius: 6px;
+}
+
+.twitterButton.mobile {
+  width: 100%;
+}
+
+.twitterButton:hover {
+  background-color: var(--static-twitter-blue) !important;
+}
+
+.twitterButton .twitterText {
+  font-size: var(--font-m);
+}
+.twitterButton .twitterIcon {
+  margin-right: 8px !important;
+}
+.twitterButton .twitterIcon svg {
+  width: 24px;
+  height: 18px;
+}
+
+.buttonSpacer {
+  width: 10px;
 }

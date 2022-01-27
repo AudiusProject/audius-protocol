@@ -26,7 +26,7 @@ import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
 import { challengeRewardsConfig } from './config'
-import { useOptimisticUserChallenge } from './hooks'
+import { OptimisticUserChallenge, useOptimisticUserChallenge } from './hooks'
 
 const messages = {
   title: '$AUDIO REWARDS',
@@ -40,7 +40,7 @@ const messages = {
 type RewardPanelProps = {
   title: string
   icon: ReactNode
-  description: (amount: number | undefined) => string
+  description: (challenge?: OptimisticUserChallenge) => string
   panelButtonText: string
   progressLabel: string
   stepCount: number
@@ -72,7 +72,7 @@ const RewardPanel = ({
         {title}
       </span>
       <span className={wm(styles.rewardDescription)}>
-        {description(challenge?.amount)}
+        {description(challenge)}
       </span>
       <div className={wm(styles.rewardProgress)}>
         <p
