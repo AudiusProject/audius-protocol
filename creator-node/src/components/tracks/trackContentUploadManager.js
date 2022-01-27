@@ -280,12 +280,18 @@ async function batchSaveFileToIPFSAndCopyFromFS({
   transcodeFilePath,
   segmentFileNames
 }) {
-  const transcodeFileIPFSResp = await FileManager.saveFileToIPFSAndCopyFromFS(
+  const multihash = await FileManager.saveFileToIPFSFromFS(
     { logContext },
     cnodeUserUUID,
     transcodeFilePath,
     ENABLE_IPFS_ADD_TRACKS
   )
+  const dstPath = await FileManager.copyMultihashToFs(
+    multihash,
+    transcodeFilePath,
+    logContext
+  )
+  const transcodeFileIPFSResp = { multihash, dstPath }
 
   let segmentFileIPFSResps = []
   for (
@@ -305,13 +311,17 @@ async function batchSaveFileToIPFSAndCopyFromFS({
           'segments',
           segmentFileName
         )
-        const { multihash, dstPath } =
-          await FileManager.saveFileToIPFSAndCopyFromFS(
-            { logContext: logContext },
-            cnodeUserUUID,
-            segmentAbsolutePath,
-            ENABLE_IPFS_ADD_TRACKS
-          )
+        const multihash = await FileManager.saveFileToIPFSFromFS(
+          { logContext: logContext },
+          cnodeUserUUID,
+          segmentAbsolutePath,
+          ENABLE_IPFS_ADD_TRACKS
+        )
+        const dstPath = await FileManager.copyMultihashToFs(
+          multihash,
+          segmentAbsolutePath,
+          logContext
+        )
         return { multihash, srcPath: segmentFileName, dstPath }
       })
     )

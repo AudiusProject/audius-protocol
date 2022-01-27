@@ -119,10 +119,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
               new Promise((resolve, reject) => {
                 const multihash =
                   'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
-                return resolve({
-                  multihash,
-                  dstPath: DiskManager.computeFilePath(multihash)
-                })
+                return resolve(multihash)
               })
             )
         }

@@ -9,7 +9,11 @@ const { serviceRegistry } = require('../src/serviceRegistry')
 const ipfs = serviceRegistry.ipfs
 const ipfsLatest = serviceRegistry.ipfsLatest
 const ipfsAdd = require('../src/ipfsAdd')
-const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
+const {
+  saveFileToIPFSFromFS,
+  removeTrackFolder,
+  saveFileFromBufferToIPFSAndDisk
+} = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
 const { sortKeys } = require('../src/apiSigning')
@@ -31,7 +35,7 @@ const req = {
     error: () => {}
   },
   app: {
-    get: key => {
+    get: (key) => {
       return reqFnStubs[key]
     }
   }
@@ -46,7 +50,12 @@ const srcPath = path.join(segmentsDirPath, sourceFile)
 // consts used for testing saveFileFromBufferToIPFSAndDisk()
 const metadata = {
   test: 'field1',
-  track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
+  track_segments: [
+    {
+      multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+      duration: 1000
+    }
+  ],
   owner_id: 1
 }
 const buffer = Buffer.from(JSON.stringify(metadata))
@@ -65,10 +74,19 @@ describe('test fileManager', () => {
      */
     it('should throw error if cnodeUserUUID is not present', async () => {
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, null, srcPath)
-        assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
+        await saveFileToIPFSFromFS(
+          { logContext: { requestID: uuid() } },
+          null,
+          srcPath
+        )
+        assert.fail(
+          'Should not have passed if cnodeUserUUID is not present in request.'
+        )
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
+        assert.deepStrictEqual(
+          e.message,
+          'User must be authenticated to save a file'
+        )
       }
     })
 
@@ -78,30 +96,47 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw an error if ipfs wrapper add fails', async () => {
-      sinon.stub(ipfsAdd, 'ipfsAddNonImages').rejects(new Error('ipfs wrapper add failed!'))
+      sinon
+        .stub(ipfsAdd, 'ipfsAddNonImages')
+        .rejects(new Error('ipfs wrapper add failed!'))
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, true /* enableIPFSAdd */)
+        await saveFileToIPFSFromFS(
+          { logContext: { requestID: uuid() } },
+          req.session.cnodeUserUUID,
+          srcPath,
+          true /* enableIPFSAdd */
+        )
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
       }
     })
 
     /**
-     * Given: a file is being saved to ipfs from fs
+     * Given: copyMultihashToFs is called
      * When: file copying fails
      * Then: an error is thrown
      */
     it('should throw an error if file copy fails', async () => {
-      const fsExtraStub = { copyFile: (sinon.stub().callsFake(() => {
-        return new Promise((resolve, reject) => reject(new Error('Failed to copy files!!')))
-      })) }
-      const { saveFileToIPFSFromFS } = proxyquire('../src/fileManager',
-        { 'fs-extra': fsExtraStub }
-      )
+      const fsExtraStub = {
+        copyFile: sinon.stub().callsFake(() => {
+          return new Promise((resolve, reject) =>
+            reject(new Error('Failed to copy files!!'))
+          )
+        })
+      }
+      const { copyMultihashToFs } = proxyquire('../src/fileManager', {
+        'fs-extra': fsExtraStub
+      })
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath)
+        await copyMultihashToFs(
+          'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+          srcPath,
+          {
+            logContext: { requestID: uuid() }
+          }
+        )
         assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to copy files!!')
@@ -117,12 +152,33 @@ describe('test fileManager', () => {
      *  - that segment should be present in IPFS
      */
     it('should pass saving file to ipfs from fs (happy path)', async () => {
-      sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
+      sinon
+        .stub(models.File, 'create')
+        .returns({ dataValues: { fileUUID: 'uuid' } })
 
+      const requestID = uuid()
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, true /* enableIPFSAdd */)
+        await saveFileToIPFSFromFS(
+          { logContext: { requestID } },
+          req.session.cnodeUserUUID,
+          srcPath,
+          true /* enableIPFSAdd */
+        )
       } catch (e) {
         assert.fail(e.message)
+      }
+
+      try {
+        await copyMultihashToFs(
+          'QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd',
+          srcPath,
+          {
+            logContext: { requestID }
+          }
+        )
+        assert.fail('Should not have passed if file copying fails.')
+      } catch (e) {
+        assert.deepStrictEqual(e.message, 'Failed to copy files!!')
       }
 
       // 1 segment should be saved in <storagePath>/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd
@@ -162,15 +218,26 @@ describe('test fileManager', () => {
           info: () => {}
         },
         app: {
-          get: () => { return DiskManager.getConfigStoragePath() }
+          get: () => {
+            return DiskManager.getConfigStoragePath()
+          }
         }
       }
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(reqOverride, buffer, true /* enableIPFSAdd */)
-        assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
+        await saveFileFromBufferToIPFSAndDisk(
+          reqOverride,
+          buffer,
+          true /* enableIPFSAdd */
+        )
+        assert.fail(
+          'Should not have passed if cnodeUserUUID is not present in request.'
+        )
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
+        assert.deepStrictEqual(
+          e.message,
+          'User must be authenticated to save a file'
+        )
       }
     })
 
@@ -180,10 +247,16 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw an error if ipfs wrapper add fails', async () => {
-      sinon.stub(ipfsAdd, 'ipfsAddNonImages').rejects(new Error('ipfs wrapper add failed!'))
+      sinon
+        .stub(ipfsAdd, 'ipfsAddNonImages')
+        .rejects(new Error('ipfs wrapper add failed!'))
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(req, buffer, true /* enableIPFSAdd */)
+        await saveFileFromBufferToIPFSAndDisk(
+          req,
+          buffer,
+          true /* enableIPFSAdd */
+        )
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
       }
@@ -206,16 +279,22 @@ describe('test fileManager', () => {
     })
 
     /**
-    * Given: a file buffer is being saved to ipfs, fs, and db
-    * When: everything works as expected
-    * Then: ipfs, fs, and db should have the buffer contents
-    */
+     * Given: a file buffer is being saved to ipfs, fs, and db
+     * When: everything works as expected
+     * Then: ipfs, fs, and db should have the buffer contents
+     */
     it('should pass saving file from buffer (happy path)', async () => {
-      sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
+      sinon
+        .stub(models.File, 'create')
+        .returns({ dataValues: { fileUUID: 'uuid' } })
 
       let resp
       try {
-        resp = await saveFileFromBufferToIPFSAndDisk(req, buffer, true /* enableIPFSAdd */)
+        resp = await saveFileFromBufferToIPFSAndDisk(
+          req,
+          buffer,
+          true /* enableIPFSAdd */
+        )
       } catch (e) {
         assert.fail(e.message)
       }
@@ -265,7 +344,9 @@ describe('test removeTrackFolder()', async function () {
     assert.ok(fs.existsSync(trackSourceFileDir))
     assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'segments')))
     assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'master.mp3')))
-    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'trackManifest.m3u8')))
+    assert.ok(
+      fs.existsSync(path.join(trackSourceFileDir, 'trackManifest.m3u8'))
+    )
     assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'transcode.mp3')))
 
     // Call removeTrackFolder + expect success
