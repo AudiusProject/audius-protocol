@@ -249,7 +249,8 @@ module.exports = function (app) {
         if (!hourlyResponseData.hasOwnProperty(hourSuffix)) {
           hourlyResponseData[hourSuffix] = {
             submission: Number(await redis.get(trackingRedisKeys.submission)),
-            success: Number(await redis.get(trackingRedisKeys.success))
+            success: Number(await redis.get(trackingRedisKeys.success)),
+            time: hourSuffix
           }
           submission += hourlyResponseData[hourSuffix].submission
           success += hourlyResponseData[hourSuffix].success
@@ -264,7 +265,7 @@ module.exports = function (app) {
     if (keys) {
       sortedKeys = keys.sort((a, b) => (new Date(b) - new Date(a)))
       for (var sortedKey of sortedKeys) {
-        data.push({ time: sortedKey, info: hourlyResponseData[sortedKey] })
+        data.push(hourlyResponseData[sortedKey])
       }
     }
     return successResponse({ success, submission, data })
