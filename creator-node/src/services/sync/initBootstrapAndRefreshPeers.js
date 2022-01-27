@@ -1,7 +1,7 @@
 /**
  * Given IPFS node peer addresses, add to bootstrap peers list and manually connect
  **/
- async function initBootstrapAndRefreshPeers(
+async function initBootstrapAndRefreshPeers(
   { ipfs },
   logger,
   targetIPFSPeerAddresses,

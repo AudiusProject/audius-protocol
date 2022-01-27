@@ -1101,11 +1101,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
   const USER_1_WALLET = DUMMY_WALLET
   const USER_1_BLOCKNUMBER = DUMMY_CNODEUSER_BLOCKNUMBER
 
-  const comparisonOmittedFields = ['cnodeUserUUID', 'createdAt', 'updatedAt']
-
   const assetsDirPath = path.resolve(__dirname, 'sync/assets')
-
-  // const exportFilePath = path.resolve(__dirname, 'syncAssets/nodesync/export.json')
   const exportFilePath = path.resolve(assetsDirPath, 'realExport.json')
 
   const unpackExportDataFromFile = (exportDataFilePath) => {
@@ -1350,7 +1346,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
    * Reset nocks, DB, redis, file storage
    * Setup mocks, deps
    */
-  beforeEach(async () => {
+  beforeEach(async function () {
     nock.cleanAll()
 
     try {
@@ -1392,16 +1388,16 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
   })
 
   // close server
-  afterEach(async () => {
+  afterEach(async function () {
     await server.close()
   })
 
-  it.skip('createUserAndTrack - used for populating data files', async () => {
+  it.skip('NO LONGER NEEDED createUserAndTrack - used for populating data files', async function () {
     const testAssetsDirPath = path.resolve(__dirname, 'sync', 'assets')
     await createUserAndTrack(testAssetsDirPath)
   })
 
-  it.only('Primary correctly syncs from secondary when primary has no state', async () => {
+  it('Primary correctly syncs from secondary when primary has no state', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1488,7 +1484,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     )
   })
 
-  it.only('Primary correctly syncs from secondary when nodes have divergent state', async () => {
+  it('Primary correctly syncs from secondary when nodes have divergent state', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1644,9 +1640,102 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     )
   })
 
-  it('Primary correctly syncs from secondary when primary has subset of secondary state', async () => {})
+  it('Primary correctly syncs from secondary when primary has subset of secondary state', async function () {
+    /**
+     * seed local DB with CN + audiusUser + file entry from export
+     * sync
+     * confirm final clock state = 37
+     */
 
-  // TODO primary already has all data - confirm no sync
+     const {
+      exportObj,
+      cnodeUser: exportedCnodeUser,
+      audiusUsers: exportedAudiusUsers,
+      tracks: exportedTracks,
+      files: exportedFiles,
+      clockRecords: exportedClockRecords
+    } = unpackExportDataFromFile(exportFilePath)
 
-  it('Primary correctly syncs from secondary when secondary has state requiring multiple syncs', async () => {})
+    setupExportMock(SECONDARY, exportObj)
+    setupIPFSRouteMocks()
+
+    /** TODO confirm empty state */
+
+    const audiusUsersSubset = _.orderBy(exportedAudiusUsers, ['clock'], ['asc']).slice(0,1)
+    const filesSubset = _.orderBy(exportedFiles, ['clock'], ['asc']).slice(0,1)
+    const clockRecordsSubSet = _.orderBy(exportedClockRecords, ['clock'], ['asc']).slice(0,2)
+
+    const transaction = await models.sequelize.transaction()
+    await models.CNodeUser.create({ ...exportedCnodeUser, clock: 2 }, { transaction })
+    await models.ClockRecord.bulkCreate(clockRecordsSubSet, { transaction })
+    await models.File.bulkCreate(filesSubset, { transaction })
+    await models.AudiusUser.bulkCreate(audiusUsersSubset, { transaction })
+    await transaction.commit()
+
+    /** TODO confirm non-empty initial state */
+
+    await primarySyncFromSecondary({
+      serviceRegistry: serviceRegistryMock,
+      secondary: SECONDARY,
+      wallet: USER_1_WALLET,
+      sourceEndpoint: SELF
+    })
+
+    /** TODO all asserts */
+  })
+
+  it.only('Primary correctly syncs from secondary when both have same data', async function () {
+    /**
+     * seed local DB with CN + audiusUser + file entry from export
+     * sync
+     * confirm final clock state = 37
+     */
+
+     const {
+      exportObj,
+      cnodeUser: exportedCnodeUser,
+      audiusUsers: exportedAudiusUsers,
+      tracks: exportedTracks,
+      files: exportedFiles,
+      clockRecords: exportedClockRecords
+    } = unpackExportDataFromFile(exportFilePath)
+
+    setupExportMock(SECONDARY, exportObj)
+    setupIPFSRouteMocks()
+
+    /** TODO confirm empty state */
+
+    // const audiusUsersSubset = _.orderBy(exportedAudiusUsers, ['clock'], ['asc']).slice(0,1)
+    // const filesSubset = _.orderBy(exportedFiles, ['clock'], ['asc']).slice(0,1)
+    // const clockRecordsSubSet = _.orderBy(exportedClockRecords, ['clock'], ['asc']).slice(0,2)
+
+    const exportedNonTrackFiles = exportedFiles.filter(file => models.File.NonTrackTypes.includes(file.type))
+    const exportedTrackFiles = exportedFiles.filter(file => models.File.TrackTypes.includes(file.type))
+
+    const transaction = await models.sequelize.transaction()
+    await models.CNodeUser.create({ ...exportedCnodeUser }, { transaction })
+    await models.ClockRecord.bulkCreate(exportedClockRecords, { transaction })
+    await models.File.bulkCreate(exportedNonTrackFiles, { transaction })
+    await models.AudiusUser.bulkCreate(exportedAudiusUsers, { transaction })
+    await models.File.bulkCreate(exportedTrackFiles, { transaction })
+    await models.Track.bulkCreate(exportedTracks, { transaction })
+    await transaction.commit()
+
+    /** TODO confirm non-empty initial state */
+
+    await primarySyncFromSecondary({
+      serviceRegistry: serviceRegistryMock,
+      secondary: SECONDARY,
+      wallet: USER_1_WALLET,
+      sourceEndpoint: SELF
+    })
+
+    /** TODO all asserts */
+  })
+
+  it.skip('Primary correctly syncs from secondary when primary has superset of secondary state', async function () {
+    
+  })
+
+  it.skip('Primary correctly syncs from secondary when secondary has state requiring multiple syncs', async function () {})
 })

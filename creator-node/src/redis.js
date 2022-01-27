@@ -22,7 +22,7 @@ class RedisLock {
   }
 }
 
-function getRedisKeyForWallet (wallet) {
+function getRedisKeyForWallet(wallet) {
   return `WALLET.${wallet}`
 }
 

@@ -8,7 +8,6 @@ const DBManager = require('../../dbManager.js')
 const { getCreatorNodeEndpoints } = require('../../middlewares.js')
 const initBootstrapAndRefreshPeers = require('./initBootstrapAndRefreshPeers.js')
 const { saveFileForMultihashToFS } = require('../../fileManager.js')
-const { FileWatcherEventKind } = require('typescript')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
@@ -24,7 +23,7 @@ async function fetchExportFromSecondary({
   logPrefix = `${logPrefix} [fetchExportFromSecondary]`
 
   const exportQueryParams = {
-    wallet_public_key: [wallet],  // export requires a wallet array
+    wallet_public_key: [wallet], // export requires a wallet array
     clock_range_min: clockRangeMin,
     source_endpoint: selfEndpoint
   }
@@ -32,14 +31,15 @@ async function fetchExportFromSecondary({
   try {
     const exportResp = await retry(
       // Throws on any non-200 response code
-      async () => axios({
-        method: 'get',
-        baseURL: secondary,
-        url: '/export',
-        responseType: 'json',
-        params: exportQueryParams,
-        timeout: EXPORT_REQ_TIMEOUT_MS
-      }),
+      async () =>
+        axios({
+          method: 'get',
+          baseURL: secondary,
+          url: '/export',
+          responseType: 'json',
+          params: exportQueryParams,
+          timeout: EXPORT_REQ_TIMEOUT_MS
+        }),
       {
         retries: EXPORT_REQ_MAX_RETRIES
       }
@@ -58,7 +58,7 @@ async function fetchExportFromSecondary({
 
     // TODO check if returned clockrange matches requested
 
-    return exportResp.data.data 
+    return exportResp.data.data
   } catch (e) {
     throw new Error(`${logPrefix} ERROR: ${e.message}`)
   }
@@ -71,8 +71,15 @@ async function fetchExportFromSecondary({
  * - `saveFileForMultihashToFS` will exit early if files already exist on disk
  * - Performed in batches to limit concurrent load
  */
-async function saveFilesToDisk ({ files, userReplicaSet, serviceRegistry, logger }) {
-  const FileSaveMaxConcurrency = serviceRegistry.nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
+async function saveFilesToDisk({
+  files,
+  userReplicaSet,
+  serviceRegistry,
+  logger
+}) {
+  const FileSaveMaxConcurrency = serviceRegistry.nodeConfig.get(
+    'nodeSyncFileSaveMaxConcurrency'
+  )
 
   const trackFiles = files.filter((file) =>
     models.File.TrackTypes.includes(file.type)
@@ -84,7 +91,7 @@ async function saveFilesToDisk ({ files, userReplicaSet, serviceRegistry, logger
   /**
    * Save all Track files to disk
    */
-   for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
+  for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
     const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
 
     /**
@@ -104,7 +111,9 @@ async function saveFilesToDisk ({ files, userReplicaSet, serviceRegistry, logger
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
-        console.log(`SIDTEST SFFM MULTIHASH ${trackFile.multihash} STATUS ${status}`)
+        console.log(
+          `SIDTEST SFFM MULTIHASH ${trackFile.multihash} STATUS ${status}`
+        )
       })
     )
   }
@@ -112,8 +121,11 @@ async function saveFilesToDisk ({ files, userReplicaSet, serviceRegistry, logger
   /**
    * Save all non-Track files to disk
    */
-   for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
-    const nonTrackFilesSlice = nonTrackFiles.slice(i, i + FileSaveMaxConcurrency)
+  for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
+    const nonTrackFilesSlice = nonTrackFiles.slice(
+      i,
+      i + FileSaveMaxConcurrency
+    )
 
     await Promise.all(
       nonTrackFilesSlice.map(async (nonTrackFile) => {
@@ -126,10 +138,7 @@ async function saveFilesToDisk ({ files, userReplicaSet, serviceRegistry, logger
 
           // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
           // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-          if (
-            nonTrackFile.type === 'image' &&
-            nonTrackFile.fileName !== null
-          ) {
+          if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
             success = await saveFileForMultihashToFS(
               serviceRegistry,
               logger,
@@ -161,8 +170,12 @@ async function saveFilesToDisk ({ files, userReplicaSet, serviceRegistry, logger
   console.log(`SIDTEST SFFM ALL DONE, starting DB`)
 }
 
-async function filterOutAlreadyPresentDBEntries ({
-  cnodeUserUUID, tableInstance, fetchedEntries, transaction, comparisonFields
+async function filterOutAlreadyPresentDBEntries({
+  cnodeUserUUID,
+  tableInstance,
+  fetchedEntries,
+  transaction,
+  comparisonFields
 }) {
   const localEntries = await tableInstance.findAll({
     where: { cnodeUserUUID },
@@ -172,13 +185,17 @@ async function filterOutAlreadyPresentDBEntries ({
   console.log(`FETCHEDENTRIES: ${JSON.stringify(fetchedEntries)}`)
   console.log(`localEntries: ${JSON.stringify(localEntries)}`)
 
-  const filteredEntries = fetchedEntries.filter(fetchedEntry => {
+  const filteredEntries = fetchedEntries.filter((fetchedEntry) => {
     let alreadyPresent = false
-    localEntries.forEach(localEntry => {
-      let obj1 = _.pick(fetchedEntry, comparisonFields)
-      let obj2 = _.pick(localEntry, comparisonFields)
-      let isEqual = _.isEqual(obj1,obj2)
-      console.log(`SIDTEST COMPARE: ${JSON.stringify(obj1)} - ${JSON.stringify(obj2)} - isequal: ${isEqual}`)
+    localEntries.forEach((localEntry) => {
+      const obj1 = _.pick(fetchedEntry, comparisonFields)
+      const obj2 = _.pick(localEntry, comparisonFields)
+      const isEqual = _.isEqual(obj1, obj2)
+      console.log(
+        `SIDTEST COMPARE: ${JSON.stringify(obj1)} - ${JSON.stringify(
+          obj2
+        )} - isequal: ${isEqual}`
+      )
       if (isEqual) {
         alreadyPresent = true
       }
@@ -186,7 +203,11 @@ async function filterOutAlreadyPresentDBEntries ({
     return !alreadyPresent
   })
 
-  console.log(`FILTEROUTALREADYPRESENT FOUND ${fetchedEntries.length - filteredEntries.length} DUPES`)
+  console.log(
+    `FILTEROUTALREADYPRESENT FOUND ${
+      fetchedEntries.length - filteredEntries.length
+    } DUPES`
+  )
   return filteredEntries
 }
 
@@ -197,7 +218,12 @@ async function filterOutAlreadyPresentDBEntries ({
  * write data for all diffed files to disk
  * write all DB state in TX
  */
-async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegistry, logger }) {
+async function saveExportedData({
+  fetchedCNodeUser,
+  userReplicaSet,
+  serviceRegistry,
+  logger
+}) {
   let {
     walletPublicKey,
     audiusUsers: fetchedAudiusUsers,
@@ -205,7 +231,12 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
     files: fetchedFiles
   } = fetchedCNodeUser
 
-  await saveFilesToDisk({ files: fetchedFiles, userReplicaSet, serviceRegistry, logger })  
+  await saveFilesToDisk({
+    files: fetchedFiles,
+    userReplicaSet,
+    serviceRegistry,
+    logger
+  })
 
   /**
    * Write all records to DB
@@ -224,8 +255,14 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
 
     cnodeUserUUID = localCNodeUser.cnodeUserUUID
 
-    const audiusUserComparisonFields = ['blockchainId', 'metadataFileUUID', 'metadataJSON', 'coverArtFileUUID', 'profilePicFileUUID']
-    fetchedAudiusUsers = await filterOutAlreadyPresentDBEntries({ 
+    const audiusUserComparisonFields = [
+      'blockchainId',
+      'metadataFileUUID',
+      'metadataJSON',
+      'coverArtFileUUID',
+      'profilePicFileUUID'
+    ]
+    fetchedAudiusUsers = await filterOutAlreadyPresentDBEntries({
       cnodeUserUUID,
       tableInstance: models.AudiusUser,
       fetchedEntries: fetchedAudiusUsers,
@@ -233,8 +270,13 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
       comparisonFields: audiusUserComparisonFields
     })
 
-    const trackComparisonFields = ['blockchainId', 'metadataFileUUID', 'metadataJSON', 'coverArtFileUUID']
-    fetchedTracks = await filterOutAlreadyPresentDBEntries({ 
+    const trackComparisonFields = [
+      'blockchainId',
+      'metadataFileUUID',
+      'metadataJSON',
+      'coverArtFileUUID'
+    ]
+    fetchedTracks = await filterOutAlreadyPresentDBEntries({
       cnodeUserUUID,
       tableInstance: models.Track,
       fetchedEntries: fetchedTracks,
@@ -243,7 +285,7 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
     })
 
     const fileComparisonFields = ['fileUUID']
-    fetchedFiles = await filterOutAlreadyPresentDBEntries({ 
+    fetchedFiles = await filterOutAlreadyPresentDBEntries({
       cnodeUserUUID,
       tableInstance: models.File,
       fetchedEntries: fetchedFiles,
@@ -268,13 +310,21 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
   // Aggregate all entries into single array, sorted by clock asc to preserve original insert order
   let allEntries = _.concat(
     [],
-    fetchedAudiusUsers.map(audiusUser => ({ tableInstance: models.AudiusUser, entry: audiusUser })),
-    fetchedTracks.map(track => ({ tableInstance: models.Track, entry: track })),
-    fetchedFiles.map(file => ({ tableInstance: models.File, entry: file }))
+    fetchedAudiusUsers.map((audiusUser) => ({
+      tableInstance: models.AudiusUser,
+      entry: audiusUser
+    })),
+    fetchedTracks.map((track) => ({
+      tableInstance: models.Track,
+      entry: track
+    })),
+    fetchedFiles.map((file) => ({ tableInstance: models.File, entry: file }))
   )
   allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
 
-  console.log(`SIDTEST SAVEEXPORTEDDATA num entries to insert: ${allEntries.length}`)
+  console.log(
+    `SIDTEST SAVEEXPORTEDDATA num entries to insert: ${allEntries.length}`
+  )
   for await (const { tableInstance, entry } of allEntries) {
     const dataValues = await DBManager.createNewDataRecord(
       _.omit(entry, ['cnodeUserUUID']),
@@ -289,7 +339,12 @@ async function saveExportedData({ fetchedCNodeUser, userReplicaSet, serviceRegis
   console.log(`SIDTEST DONE WITH saveexportedata`)
 }
 
-async function getUserReplicaSet({ serviceRegistry, logger, wallet, selfEndpoint }) {
+async function getUserReplicaSet({
+  serviceRegistry,
+  logger,
+  wallet,
+  selfEndpoint
+}) {
   try {
     let userReplicaSet = await getCreatorNodeEndpoints({
       serviceRegistry,
@@ -309,7 +364,6 @@ async function getUserReplicaSet({ serviceRegistry, logger, wallet, selfEndpoint
     return userReplicaSet
   } catch (e) {
     // TODO ERROR
-
     // logger.error(
     //   redisKey,
     //   `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
@@ -366,10 +420,15 @@ async function primarySyncFromSecondary({
   try {
     await acquireUserRedisLock({ redis, wallet })
 
-    const userReplicaSet = await getUserReplicaSet({ serviceRegistry, logger, wallet, selfEndpoint: selfEndpoint })
+    const userReplicaSet = await getUserReplicaSet({
+      serviceRegistry,
+      logger,
+      wallet,
+      selfEndpoint: selfEndpoint
+    })
 
     let completed = false
-    const clockRangeMin = 0
+    let clockRangeMin = 0
     while (!completed) {
       const exportData = await fetchExportFromSecondary({
         secondary,
@@ -387,9 +446,19 @@ async function primarySyncFromSecondary({
       }
 
       // Attempt to connect to opposing IPFS node without waiting
-      initBootstrapAndRefreshPeers(serviceRegistry, logger, ipfsIDObj.addresses, logPrefix)
+      initBootstrapAndRefreshPeers(
+        serviceRegistry,
+        logger,
+        ipfsIDObj.addresses,
+        logPrefix
+      )
 
-      await saveExportedData({ fetchedCNodeUser, serviceRegistry, userReplicaSet, logger })
+      await saveExportedData({
+        fetchedCNodeUser,
+        serviceRegistry,
+        userReplicaSet,
+        logger
+      })
 
       // While-loop termination
       const clockInfo = fetchedCNodeUser.clockInfo
@@ -399,7 +468,6 @@ async function primarySyncFromSecondary({
         clockRangeMin = clockInfo.requestedClockRangeMax + 1
       }
     }
-
   } catch (e) {
     console.log(`SIDTEST ERROR ${e}, ${e.stack}`)
     // TODO syncHistoryAggregator??
