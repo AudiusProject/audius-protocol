@@ -100,7 +100,6 @@ const InviteLink = ({ className, inviteLink }: InviteLinkProps) => {
         <Toast
           text={messages.copiedLabel}
           delay={2000}
-          overlayClassName={styles.toast}
           placement={ComponentPlacement.TOP}
           mount={MountPlacement.PARENT}
         >
