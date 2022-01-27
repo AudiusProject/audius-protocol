@@ -64,6 +64,9 @@ const RewardPanel = ({
   const openRewardModal = () => openModal(id)
 
   const challenge = useOptimisticUserChallenge(userChallenges[id])
+  const shouldShowCompleted =
+    challenge?.state === 'completed' || challenge?.state === 'disbursed'
+  const needsDisbursement = challenge?.state === 'completed'
 
   return (
     <div className={wm(styles.rewardPanelContainer)} onClick={openRewardModal}>
@@ -77,10 +80,10 @@ const RewardPanel = ({
       <div className={wm(styles.rewardProgress)}>
         <p
           className={cn(styles.rewardProgressLabel, {
-            [styles.complete]: challenge?.state === 'completed'
+            [styles.complete]: shouldShowCompleted
           })}
         >
-          {challenge?.state === 'completed'
+          {shouldShowCompleted
             ? messages.completeLabel
             : fillString(
                 progressLabel,
@@ -98,11 +101,7 @@ const RewardPanel = ({
       </div>
       <ButtonWithArrow
         className={wm(styles.panelButton)}
-        text={
-          challenge?.state === 'completed'
-            ? messages.claimReward
-            : panelButtonText
-        }
+        text={needsDisbursement ? messages.claimReward : panelButtonText}
         onClick={openRewardModal}
         textClassName={styles.panelButtonText}
       />
