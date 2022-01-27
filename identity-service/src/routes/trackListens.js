@@ -281,8 +281,8 @@ module.exports = function (app) {
 
       // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
       let trackingRedisKeys = getTrackingListenKeys(suffix)
-      await initializeExpiringRedisKey(redis, trackingRedisKeys.submission, redisTxTrackingExpiry)
-      await initializeExpiringRedisKey(redis, trackingRedisKeys.success, redisTxTrackingExpiry)
+      await initializeExpiringRedisKey(redis, trackingRedisKeys.submission, redisTxTrackingExpirySeconds)
+      await initializeExpiringRedisKey(redis, trackingRedisKeys.success, redisTxTrackingExpirySeconds)
 
       req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}, ${JSON.stringify(trackingRedisKeys)}`)
 
