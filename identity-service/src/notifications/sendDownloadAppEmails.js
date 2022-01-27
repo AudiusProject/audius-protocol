@@ -71,7 +71,10 @@ async function renderAndSendDownloadAppEmail (
   try {
     logger.info(`render and send download app email: ${userEmail}`)
 
-    const downloadAppHtml = downloadAppTemplate({})
+    const copyrightYear = new Date().getFullYear().toString()
+    const downloadAppHtml = downloadAppTemplate({
+      copyright_year: copyrightYear
+    })
 
     const emailParams = {
       from: 'The Audius Team <team@audius.co>',

@@ -194,7 +194,8 @@ describe('Test Render Email Notification', function () {
     const renderProps = {
       title: 'Email Title',
       notifications: notificationProps,
-      subject: 'Email Subject'
+      subject: 'Email Subject',
+      copyrightYear: '2022'
     }
 
     const testEmailPath = path.join(__dirname, './renderedEmails/testEmail.html')
@@ -231,7 +232,8 @@ describe('Test Render Email Notification', function () {
     const renderProps = {
       title: 'Email Title',
       notifications: notificationProps,
-      subject: 'Email Subject'
+      subject: 'Email Subject',
+      copyrightYear: '2022'
     }
 
     const testEmailPath = path.join(__dirname, './renderedEmails/challengeEmail.html')
@@ -268,7 +270,8 @@ describe('Test Render Email Notification', function () {
     const renderProps = {
       title: 'Email Title',
       notifications: notificationProps,
-      subject: 'Email Subject'
+      subject: 'Email Subject',
+      copyrightYear: '2022'
     }
 
     const testEmailPath = path.join(__dirname, './renderedEmails/additionalChallengeEmail.html')
