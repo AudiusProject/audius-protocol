@@ -3,9 +3,9 @@ import { asLineup } from 'common/store/lineup/reducer'
 import {
   SET_SUGGESTED_FOLLOWS,
   SET_FEED_FILTER
-} from 'pages/feed-page/store/actions'
-import { PREFIX as FeedPrefix } from 'pages/feed-page/store/lineups/feed/actions'
-import feedReducer from 'pages/feed-page/store/lineups/feed/reducer'
+} from 'common/store/pages/feed/actions'
+import { PREFIX as FeedPrefix } from 'common/store/pages/feed/lineup/actions'
+import feedReducer from 'common/store/pages/feed/lineup/reducer'
 
 const initialState = {
   suggestedFollows: [],

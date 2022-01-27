@@ -1,6 +1,6 @@
 import { createSelectorCreator, defaultMemoize } from 'reselect'
 
-const shallowCompare = (a, b) =>
+const shallowCompare = (a: Record<string, any>, b: Record<string, any>) =>
   a &&
   b &&
   Object.keys(a).length === Object.keys(b).length &&

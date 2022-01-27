@@ -147,7 +147,7 @@ function* handleQueueAutoplay({
 }
 
 /**
- * Play the queue. The side effects are slightly complicated, but can be summarzed in the following
+ * Play the queue. The side effects are slightly complicated, but can be summarized in the following
  * cases.
  * 1. If the caller provided a uid, play that uid.
  * 2. If no uid was provided and the queue is empty, find whatever lineup is on the page, queue it and play it.

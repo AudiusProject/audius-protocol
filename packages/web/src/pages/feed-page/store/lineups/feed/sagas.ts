@@ -9,11 +9,12 @@ import {
   TrackMetadata,
   UserTrackMetadata
 } from 'common/models/Track'
+import { CommonState } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { PREFIX, feedActions } from 'pages/feed-page/store/lineups/feed/actions'
-import { getFeedFilter } from 'pages/feed-page/store/selectors'
+import { PREFIX, feedActions } from 'common/store/pages/feed/lineup/actions'
+import { getFeedFilter } from 'common/store/pages/feed/selectors'
 import {
   getAccountReady,
   getFollowIds,
@@ -23,7 +24,6 @@ import apiClient, {
   GetSocialFeedArgs
 } from 'services/audius-api-client/AudiusAPIClient'
 import { LineupSagas } from 'store/lineup/sagas'
-import { AppState } from 'store/types'
 
 type FeedItem = LineupTrack | Collection
 
@@ -122,7 +122,7 @@ class FeedSagas extends LineupSagas {
     super(
       PREFIX,
       feedActions,
-      (store: AppState) => store.feed.feed,
+      (store: CommonState) => store.pages.feed.feed,
       getTracks,
       keepActivityTimeStamp
     )

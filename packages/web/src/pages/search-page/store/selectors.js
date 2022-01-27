@@ -2,7 +2,7 @@ import { createSelector } from 'reselect'
 
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
-import { createShallowSelector } from 'utils/selectorHelpers'
+import { createShallowSelector } from 'common/utils/selectorHelpers'
 
 // Search Results selectors
 export const getSearchTracksLineup = state => state.search.tracks
