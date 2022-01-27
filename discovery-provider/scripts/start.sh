@@ -2,7 +2,9 @@
 
 if [[ -z "$audius_loggly_disable" ]]; then
     if [[ -n "$audius_loggly_token" ]]; then
+        audius_discprov_hostname=$(echo $audius_discprov_url | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
         audius_loggly_tags=$(echo $audius_loggly_tags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
+
         mkdir -p /var/spool/rsyslog
         mkdir -p /etc/rsyslog.d
         cat >/etc/rsyslog.d/22-loggly.conf <<EOF
