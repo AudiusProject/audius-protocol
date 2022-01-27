@@ -18,7 +18,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.ATTESTATION_QUORUM_SIZE]: 0,
   [IntKeys.MIN_AUDIO_SEND_AMOUNT]: 5,
   [IntKeys.CHALLENGE_REFRESH_INTERVAL_MS]: 15000,
-  [IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS]: 5000
+  [IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS]: 5000,
+  [IntKeys.MANUAL_CLAIM_PROMPT_DELAY_MS]: 15000
 }
 
 export const remoteConfigStringDefaults: {
