@@ -2,7 +2,6 @@
 //! Anchor framework
 
 use anchor_lang::prelude::*;
-use std::convert::TryInto;
 
 declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 
@@ -118,28 +117,44 @@ pub mod audius_data {
     /// Functionality to create user without admin privileges
     pub fn create_user(
         ctx: Context<CreateUser>,
+        base: Pubkey,
+        eth_address: [u8; 20],
+        handle_seed: [u8; 16],
+        _user_bump: u8,
+        metadata: String,
         user_authority: Pubkey,
     ) -> ProgramResult {
         msg!("Audius::CreateUser");
 
-        let audius_user_acct = &mut ctx.accounts.user;
+        // Confirm that the derived pda from base is the same as the user storage account
+        let (derived_user_acct, _) = Pubkey::find_program_address(
+            &[&base.to_bytes()[..32], &handle_seed],
+            ctx.program_id,
+        );
+        if derived_user_acct != ctx.accounts.user.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
 
         // Eth_address offset (12) + address (20) + signature (65) = 97
         // TODO: Validate message contents
         let eth_address_offset = 12;
-        let secp_data = sysvar::instructions::load_instruction_at_checked(
-            0,
-            &ctx.accounts.sysvar_program)?;
+        let secp_data =
+            sysvar::instructions::load_instruction_at_checked(0, &ctx.accounts.sysvar_program)?;
 
         if secp_data.program_id != secp256k1_program::id() {
             return Err(ErrorCode::Unauthorized.into());
         }
-
         let instruction_signer =
             secp_data.data[eth_address_offset..eth_address_offset + 20].to_vec();
+        if instruction_signer != eth_address {
+            return Err(ErrorCode::Unauthorized.into());
+        }
 
-        audius_user_acct.eth_address = instruction_signer.as_slice().try_into().unwrap();
+        let audius_user_acct = &mut ctx.accounts.user;
+        audius_user_acct.eth_address = eth_address;
         audius_user_acct.authority = user_authority;
+
+        msg!("AudiusUserMetadata = {:?}", metadata);
 
         Ok(())
     }
@@ -353,10 +368,20 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
 pub struct CreateUser<'info> {
-    #[account(mut)]
+    #[account(
+        init,
+        payer = payer,
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        bump = user_bump,
+        space = USER_ACCOUNT_SIZE
+    )]
     pub user: Account<'info, User>,
-    pub sysvar_program: AccountInfo<'info>
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+    pub sysvar_program: AccountInfo<'info>,
 }
 
 /// Instruction container to allow updates to a given User account.

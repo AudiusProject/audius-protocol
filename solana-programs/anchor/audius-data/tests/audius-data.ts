@@ -353,12 +353,10 @@ describe("audius-data", () => {
   });
 
   it("Creating user!", async () => {
-    let {
-      pkString,
-      handleBytesArray,
-    } = initTestConstants();
+    let { testEthAddr, testEthAddrBytes, handleBytesArray, metadata, pkString } =
+      initTestConstants();
 
-    let { derivedAddress } =
+    let { baseAuthorityAccount, bumpSeed, derivedAddress } =
       await findDerivedPair(
         program.programId,
         adminStgKeypair.publicKey,
@@ -366,6 +364,7 @@ describe("audius-data", () => {
       );
     let newUserAcctPDA = derivedAddress;
 
+    // New sol key that will be used to permission user updates
     let newUserKeypair = anchor.web3.Keypair.generate();
 
     // Generate signed SECP instruction
@@ -377,9 +376,34 @@ describe("audius-data", () => {
       program,
       message,
       pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
       newUserKeypair,
-      newUserAcctPDA,
+      userStgAccount: newUserAcctPDA,
     });
+
+    try {
+      await testCreateUser({
+        provider,
+        program,
+        message,
+        pkString,
+        baseAuthorityAccount,
+        testEthAddr,
+        testEthAddrBytes,
+        handleBytesArray,
+        bumpSeed,
+        metadata,
+        newUserKeypair,
+        userStgAccount: newUserAcctPDA,
+      });
+    } catch (e) {
+      console.log(`Error found as expected ${e}`);
+    }
   });
 
   it("creating + deleting a track", async () => {

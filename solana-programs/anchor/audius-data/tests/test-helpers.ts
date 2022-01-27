@@ -110,26 +110,41 @@ export const testCreateUser = async ({
   program,
   message,
   pkString,
+  baseAuthorityAccount,
+  testEthAddr,
+  testEthAddrBytes,
+  handleBytesArray,
+  bumpSeed,
+  metadata,
   newUserKeypair,
-  newUserAcctPDA,
+  userStgAccount,
 }) => {
-  let createUserTx = await createUser({
+  let tx = await createUser({
     provider,
     program,
     privateKey: pkString,
     message,
+    testEthAddrBytes: Array.from(testEthAddrBytes),
+    handleBytesArray,
+    bumpSeed,
+    metadata,
     userSolPubkey: newUserKeypair.publicKey,
-    userStgAccount: newUserAcctPDA,
+    userStgAccount,
+    baseAuthorityAccount,
   });
-
-  let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
-  if (!newUserKeypair.publicKey.equals(userDataFromChain.authority)) {
+  const userDataFromChain = await program.account.user.fetch(userStgAccount);
+  const returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress);
+  const returnedSolFromChain = userDataFromChain.authority;
+  if (testEthAddr.toLowerCase() != returnedHex) {
+    throw new Error(
+      `Invalid eth address - expected ${testEthAddr.toLowerCase()}, found ${returnedHex}`
+    );
+  }
+  if (!newUserKeypair.publicKey.equals(returnedSolFromChain)) {
     throw new Error("Unexpected public key found");
   }
-  let txInfo = await getTransaction(provider, createUserTx);
-  let fee = txInfo["meta"]["fee"];
+  await confirmLogInTransaction(provider, tx, metadata);
 };
-
 
 export const confirmLogInTransaction = async (
   provider: anchor.Provider,

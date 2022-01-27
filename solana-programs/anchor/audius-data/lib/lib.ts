@@ -146,31 +146,45 @@ export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
   return initUserTx;
 };
 
-/// Create a user's account using given eth private key
-export type createUserArgs = {
+/// Initialize a user from the Audius Admin account
+type createUserParams = {
   provider: Provider;
   program: Program<AudiusData>;
   privateKey: string;
   message: string;
+  testEthAddrBytes: number[];
+  handleBytesArray: number[];
+  bumpSeed: number;
+  metadata: string;
   userSolPubkey: anchor.web3.PublicKey;
   userStgAccount: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
 };
 
-export const createUser = async (args: createUserArgs) => {
+export const createUser = async (args: createUserParams) => {
   const {
-    message,
-    privateKey,
-    provider,
+    baseAuthorityAccount,
     program,
+    privateKey,
+    message,
+    testEthAddrBytes,
+    handleBytesArray,
+    bumpSeed,
+    metadata,
+    provider,
     userSolPubkey,
     userStgAccount,
   } = args;
+
   const signedBytes = signBytes(Buffer.from(message), privateKey);
+
   const { signature, recoveryId } = signedBytes;
+
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
     .publicKeyCreate(Buffer.from(privateKey, "hex"), false)
     .slice(1);
+
   const secpTransactionInstruction =
     Secp256k1Program.createInstructionWithPublicKey({
       publicKey: Buffer.from(ethPubkey),
@@ -178,24 +192,29 @@ export const createUser = async (args: createUserArgs) => {
       signature,
       recoveryId,
     });
-  let createUserTx = await provider.send(
-    (() => {
-      const tx = new Transaction();
-      tx.add(secpTransactionInstruction),
-        tx.add(
-          program.instruction.createUser(userSolPubkey, {
-            accounts: {
-              user: userStgAccount,
-              sysvarProgram: SystemSysVarProgramKey,
-            },
-          })
-        );
-      return tx;
-    })(),
-    [
-      // Signers
-    ]
-  );
+
+  const tx = new Transaction();
+  tx.add(secpTransactionInstruction);
+  tx.add(program.instruction.createUser(
+    baseAuthorityAccount,
+    Array.from(testEthAddrBytes),
+    handleBytesArray,
+    bumpSeed,
+    metadata,
+    userSolPubkey,
+    {
+      accounts: {
+        payer: provider.wallet.publicKey,
+        user: userStgAccount,
+        systemProgram: SystemProgram.programId,
+        sysvarProgram: SystemSysVarProgramKey,
+      },
+      // signers: [adminKeypair],
+    },
+  ));
+
+  let createUserTx = await provider.send(tx, []);
+
   return createUserTx;
 };
 
