@@ -453,6 +453,8 @@ def test_playlist_indexing_skip_tx(app, mocker):
         ],
         autospec=True,
     )
+    test_ipfs_metadata = {}
+    test_blacklisted_cids = {}
 
     with db.scoped_session() as session:
         try:
@@ -471,6 +473,8 @@ def test_playlist_indexing_skip_tx(app, mocker):
                 test_block_number,
                 test_block_timestamp,
                 block_hash,
+                test_ipfs_metadata,
+                test_blacklisted_cids,
             )
             assert len(updated_playlist_ids_set) == 1
             assert (

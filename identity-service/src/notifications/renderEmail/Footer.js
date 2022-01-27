@@ -60,7 +60,8 @@ var MadeWithLove = function MadeWithLove() {
   }, "\u2665\uFE0E"), " in SF & LA");
 };
 
-var AllRightsReserved = function AllRightsReserved() {
+var AllRightsReserved = function AllRightsReserved(_ref) {
+  var copyrightYear = _ref.copyrightYear;
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: 'gilroy',
     style: {
@@ -68,7 +69,7 @@ var AllRightsReserved = function AllRightsReserved() {
       color: '#858199',
       fontSize: '14px'
     }
-  }, "\xA9 2019 Audius, Inc. All Rights Reserved.");
+  }, "\xA9 ", copyrightYear, " Audius, Inc. All Rights Reserved.");
 };
 
 var Unsubscribe = function Unsubscribe() {
@@ -126,7 +127,9 @@ var Footer = function Footer(props) {
       padding: '0px 0px 12px',
       margin: '0px'
     }
-  }, /*#__PURE__*/_react["default"].createElement(AllRightsReserved, null))), /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
+  }, /*#__PURE__*/_react["default"].createElement(AllRightsReserved, {
+    copyrightYear: props.copyrightYear
+  }))), /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     valign: "top",
     id: "utilityBar"
   }, /*#__PURE__*/_react["default"].createElement(Unsubscribe, null))));

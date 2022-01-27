@@ -1,4 +1,6 @@
 # pylint: disable=too-many-lines, arguments-differ
+from enum import Enum
+
 """
 Constants required for multihash implementation
 Ported from https://github.com/hareeshnagaraj/py-multihash
@@ -1022,4 +1024,23 @@ default_lengths = {
     0xB3DE: 0x7E,
     0xB3DF: 0x7F,
     0xB3E0: 0x80,
+}
+
+
+class CONTRACT_TYPES(Enum):
+    USER_FACTORY = "user_factory"
+    TRACK_FACTORY = "track_factory"
+    SOCIAL_FEATURE_FACTORY = "social_feature_factory"
+    PLAYLIST_FACTORY = "playlist_factory"
+    USER_LIBRARY_FACTORY = "user_library_factory"
+    USER_REPLICA_SET_MANAGER = "user_replica_set_manager"
+
+
+CONTRACT_NAMES_ON_CHAIN = {
+    CONTRACT_TYPES.USER_FACTORY: "UserFactory",
+    CONTRACT_TYPES.TRACK_FACTORY: "TrackFactory",
+    CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY: "SocialFeatureFactory",
+    CONTRACT_TYPES.PLAYLIST_FACTORY: "PlaylistFactory",
+    CONTRACT_TYPES.USER_LIBRARY_FACTORY: "UserLibraryFactory",
+    CONTRACT_TYPES.USER_REPLICA_SET_MANAGER: "UserReplicaSetManager",
 }

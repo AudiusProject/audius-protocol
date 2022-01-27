@@ -220,7 +220,7 @@ const Body = (props) => {
           </tr>
           <tr>
             <td style={{ paddingBottom: '25px' }}>
-              <Footer />
+              <Footer copyrightYear={props.copyrightYear} />
             </td>
           </tr>
         </table>
