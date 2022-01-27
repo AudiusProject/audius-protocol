@@ -143,13 +143,14 @@ class TranscodingQueue {
    * @param {string} fileDir
    * @param {string} fileName
    * @param {Object} logContext to create a logger.child(logContext) from
-   * @returns {Object} response in the structure {
-          segments: {
-            fileNames: segmentFileNames {string[]}: the segment file names only, 
-            filePaths: segmentFilePaths {string[]}: the segment file paths 
-          },
-          m3u8FilePath {string}: the m3u8 file path 
-        }}
+   * @returns {Object} response in the structure 
+    {
+      segments: {
+        fileNames: segmentFileNames {string[]}: the segment file names only, 
+        filePaths: segmentFilePaths {string[]}: the segment file paths 
+      },
+      m3u8FilePath {string}: the m3u8 file path 
+    }
    */
   async segment(fileDir, fileName, { logContext }) {
     this.logStatus(

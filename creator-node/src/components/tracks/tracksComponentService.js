@@ -45,7 +45,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const resp = await TrackContentUploadManager.processTranscodeAndSegments(
     { logContext },
     {
-      session: { cnodeUserUUID },
+      cnodeUserUUID,
       fileName,
       fileDir,
       transcodeFilePath,

@@ -5,8 +5,22 @@ const ffmpeg = require('ffmpeg-static').path
 const spawn = require('child_process').spawn
 const { logger: genericLogger } = require('./logging')
 
-/** Segments file into equal size chunks without re-encoding
- *  Try to segment as mp3 and error on failure
+/**
+ * Segments file into equal size chunks without re-encoding.
+ * Try to segment as mp3 and error on failure 
+ * @date 01-27-2022
+ * @param {Object} params
+ * @param {string} params.fileDir the directory of the uploaded track artifact
+ * @param {string} params.fileName the uploaded track artifact filename
+ * @param {Object} params.logContext the log context used to instantiate a logger
+ * @returns {Object} response in the structure 
+  {
+    segments: {
+      fileNames: segmentFileNames {string[]}: the segment file names only, 
+      filePaths: segmentFilePaths {string[]}: the segment file paths 
+    },
+    m3u8FilePath {string}: the m3u8 file path 
+  }
  */
 function segmentFile(fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
@@ -71,12 +85,19 @@ function segmentFile(fileDir, fileName, { logContext }) {
   })
 }
 
-/** Transcode file into 320kbps mp3 and store in same directory. */
+/**
+ * Transcode file into 320kbps mp3 and store in same directory.
+ * @date 01-27-2022
+ * @param {Object} params
+ * @param {string} params.fileDir the directory of the uploaded track artifact
+ * @param {string} params.fileName the uploaded track artifact filename
+ * @param {Object} params.logContext the log context used to instantiate a logger
+ * @returns {string} the path to the transcode
+ */
 function transcodeFileTo320(fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     const sourcePath = path.resolve(fileDir, fileName)
-    // TODO: is it always mp3?
     const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
     logger.info(`Transcoding file ${sourcePath}...`)
 
