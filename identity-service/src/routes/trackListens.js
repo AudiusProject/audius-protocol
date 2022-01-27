@@ -259,11 +259,11 @@ module.exports = function (app) {
     }
 
     // Sort response in descending time order
-    const data =
+    const sortedHourlyData =
       Object.keys(hourlyResponseData)
         .sort((a, b) => (new Date(b) - new Date(a)))
         .map(key => hourlyResponseData[key])
-    return successResponse({ success, submission, data })
+    return successResponse({ success, submission, sortedHourlyData })
   }))
 
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
