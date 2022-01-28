@@ -1,6 +1,7 @@
 const Bull = require('bull')
 const axios = require('axios')
 const _ = require('lodash')
+const retry = require('async-retry')
 
 const utils = require('../utils')
 const models = require('../models')
@@ -11,6 +12,11 @@ const PeerSetManager = require('./peerSetManager')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
+const {
+  SyncMode,
+  computeSyncModeForUserAndReplica,
+  computeSyncModeForUserAndReplicaLegacy
+} = require('./computeSyncModeForUserAndReplica.js')
 
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
@@ -18,11 +24,15 @@ const SyncMonitoringRetryDelayMs = 15000
 // Max number of attempts to select new replica set in reconfig
 const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 
-// Timeout for fetching batch clock values
-const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
-
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
+
+// Timeout for fetching batch clock values
+const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 60000 // 60s
+
+const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
+
+const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = 5000
 
 // Describes the type of sync operation
 const SyncType = Object.freeze({
@@ -680,132 +690,143 @@ class SnapbackSM {
   }
 
   /**
-   * Given map(replica set node => userWallets[]), retrieves clock values for every (node, userWallet) pair
+   * Given map(replica set node => userWallets[]), retrieves user info for every (node, userWallet) pair
    * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
    * @param {Set<string>} unhealthyPeers set of unhealthy peer endpoints
-   * @param {number?} [maxUserClockFetchAttempts=10] max number of attempts to fetch clock values
-   *
-   * @returns {Object} map of peer endpoints to (map of user wallet strings to clock value of replica set node for user)
+   * @returns {Object} map(replica => map(wallet => { clock, filesHash }))
    */
-  async retrieveClockStatusesForUsersAcrossReplicaSet(
-    replicaSetNodesToUserWalletsMap,
-    unhealthyPeers,
-    maxUserClockFetchAttempts = 10
-  ) {
-    const replicaSetNodesToUserClockValuesMap = {}
+  async retrieveUserInfoFromReplicaSet(replicasToWalletsMap, unhealthyPeers) {
+    const replicasToUserInfoMap = {}
 
-    const replicaSetNodes = Object.keys(replicaSetNodesToUserWalletsMap)
-
-    // TODO change to batched parallel requests
+    // In parallel for every replica, fetch info for all users on that replica
+    const replicas = Object.keys(replicasToWalletsMap)
     await Promise.all(
-      replicaSetNodes.map(async (replicaSetNode) => {
-        replicaSetNodesToUserClockValuesMap[replicaSetNode] = {}
+      replicas.map(async (replica) => {
+        replicasToUserInfoMap[replica] = {}
 
-        const replicaSetNodeUserWallets =
-          replicaSetNodesToUserWalletsMap[replicaSetNode]
-        const { timestamp, signature } = generateTimestampAndSignature(
-          { spID: this.spID },
-          this.delegatePrivateKey
-        )
+        const walletsOnReplica = replicasToWalletsMap[replica]
 
-        const axiosReqParams = {
-          baseURL: replicaSetNode,
-          url: '/users/batch_clock_status',
-          method: 'post',
-          data: { walletPublicKeys: replicaSetNodeUserWallets },
-          timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
-          params: {
-            spID: this.spID,
-            timestamp,
-            signature
+        // Make requests in batches since this is an expensive query
+        for (
+          let i = 0;
+          i < walletsOnReplica.length;
+          i += MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
+        ) {
+          const walletsOnReplicaSlice = walletsOnReplica.slice(
+            i,
+            (i + MAX_BATCH_CLOCK_STATUS_BATCH_SIZE)
+          )
+
+          const axiosReqParams = {
+            baseURL: replica,
+            url: '/users/batch_clock_status?returnFilesHash=true',
+            method: 'post',
+            data: { walletPublicKeys: walletsOnReplicaSlice },
+            timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
           }
-        }
 
-        let userClockValuesResp = []
-        let userClockFetchAttempts = 0
-        let errorMsg
-        while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
+          // Generate and attach SP signature to bypass route rate limits
+          const { timestamp, signature } = generateTimestampAndSignature(
+            { spID: this.spID },
+            this.delegatePrivateKey
+          )
+          axiosReqParams.params = { spID: this.spID, timestamp, signature }
+
+          let batchClockStatusResp = []
+          let errorMsg
           try {
-            userClockValuesResp = (await axios(axiosReqParams)).data.data.users
+            batchClockStatusResp = (
+              await retry(async () => axios(axiosReqParams), {
+                retries: MAX_USER_BATCH_CLOCK_FETCH_RETRIES
+              })
+            ).data.data.users
           } catch (e) {
             errorMsg = e
           }
-        }
 
-        // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
-        if (userClockValuesResp.length === 0) {
-          this.logError(
-            `[retrieveClockStatusesForUsersAcrossReplicaSet] Could not fetch clock values for wallets=${replicaSetNodeUserWallets} on replica node=${replicaSetNode} ${
-              errorMsg ? ': ' + errorMsg.toString() : ''
-            }`
-          )
-          unhealthyPeers.add(replicaSetNode)
-        }
-
-        userClockValuesResp.forEach((userClockValueResp) => {
-          const { walletPublicKey, clock } = userClockValueResp
-          try {
-            replicaSetNodesToUserClockValuesMap[replicaSetNode][
-              walletPublicKey
-            ] = clock
-          } catch (e) {
-            // TODO: would this ever error actually?
-            this.log(
-              `Error updating replicaSetNodesToUserClockValuesMap for wallet ${walletPublicKey} to clock ${clock}`
+          // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
+          if (errorMsg) {
+            this.logError(
+              `[retrieveUserInfoFromReplicaSet] Could not fetch clock values from replica ${replica}: ${errorMsg.toString()}`
             )
-            throw e
+            unhealthyPeers.add(replica)
           }
-        })
+
+          // Add response data to output aggregate map
+          batchClockStatusResp.forEach((clockStatusResp) => {
+            /**
+             * @notice `filesHash` will be undefined if node is running version < 0.3.51
+             * @notice `filesHash` will be null if node is running version >= 0.3.51 but has no files for user
+             *    - Note this can happen even if clock > 0 if user has AudiusUser or Track table records without any File table records
+             */
+            const { walletPublicKey, clock, filesHash } = clockStatusResp
+            replicasToUserInfoMap[replica][walletPublicKey] = {
+              clock,
+              filesHash
+            }
+          })
+        }
       })
     )
 
-    return replicaSetNodesToUserClockValuesMap
+    return replicasToUserInfoMap
   }
 
   /**
-   * Issues SyncRequests for every user from primary (this node) to secondary if needed
-   * Only issues requests if primary clock value is greater than secondary clock value
+   * Issues SyncRequests for every user from primary (this node) to secondary as needed
    *
    * @param {Object[]} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
    *      `endpoint` field indicates secondary on which to issue SyncRequest
-   * @param {Object} replicaSetNodesToUserClockStatusesMap map(replica set node => map(userWallet => clockValue))
+   * @param {Object} replicasToUserInfoMap map(replica => map(wallet => { clock, filesHash }))
    * @returns {Object} number of syncs required, enqueued, and errors if any
    */
-  async issueSyncRequestsToSecondaries(
-    userReplicaSets,
-    replicaSetNodesToUserClockStatusesMap
-  ) {
-    // Retrieve clock values for all users on this node, which is their primary
+  async issueSyncRequestsToSecondaries(userReplicaSets, replicasToUserInfoMap) {
     let numSyncRequestsRequired = 0
     let numSyncRequestsEnqueued = 0
     const enqueueSyncRequestErrors = []
 
+    // Only process users with this node as primary
+    userReplicaSets = userReplicaSets.filter(
+      (userReplicaSet) => userReplicaSet.primary === this.endpoint
+    )
+
+    // TODO change to sequential or batched parallel?
     await Promise.all(
       userReplicaSets.map(async (user) => {
         try {
-          const {
-            wallet,
-            primary,
-            secondary1,
-            secondary2,
-            endpoint: secondary
-          } = user
+          const { wallet, primary, endpoint: secondary } = user
 
-          // Short-circuit if primary is not self - this function is meant to be called from primary to secondaries only
-          if (primary !== this.endpoint) {
-            this.logError(
-              `issueSyncRequests || Can only be called by user's primary. User ${wallet} - replicaset [${primary}, ${secondary1}, ${secondary2}].`
+          const { clock: primaryClock, filesHash: primaryFilesHash } =
+            replicasToUserInfoMap[primary][wallet]
+          const { clock: secondaryClock, filesHash: secondaryFilesHash } =
+            replicasToUserInfoMap[secondary][wallet]
+
+          let syncMode = SyncMode.None
+
+          // filesHash value will be undefined if at least 1 replica is running version < 0.3.51
+          if (
+            primaryFilesHash === undefined ||
+            secondaryFilesHash === undefined
+          ) {
+            this.logWarn(
+              `[issueSyncRequestsToSecondaries] Falling back to computeSyncModeForUserAndReplicaLegacy() [primaryFilesHash: ${primaryFilesHash}] secondaryFilesHash: ${secondaryFilesHash}`
             )
-            return
+            syncMode = computeSyncModeForUserAndReplicaLegacy({
+              primaryClock,
+              secondaryClock
+            })
+          } else {
+            syncMode = await computeSyncModeForUserAndReplica({
+              wallet,
+              primaryClock,
+              secondaryClock,
+              primaryFilesHash,
+              secondaryFilesHash,
+              logger
+            })
           }
 
-          // Determine if secondary requires a sync by comparing clock values against primary (this node)
-          const userPrimaryClockVal =
-            replicaSetNodesToUserClockStatusesMap[primary][wallet]
-          const userSecondaryClockVal =
-            replicaSetNodesToUserClockStatusesMap[secondary][wallet]
-
-          if (userPrimaryClockVal > userSecondaryClockVal) {
+          if (syncMode === SyncMode.SecondaryShouldSync) {
             numSyncRequestsRequired += 1
 
             await this.enqueueSync({
@@ -816,10 +837,19 @@ class SnapbackSM {
             })
 
             numSyncRequestsEnqueued += 1
+          } else if (syncMode === SyncMode.PrimaryShouldSync) {
+            /**
+             * Log as placeholder
+             * TODO
+             * 1. await this.syncFromSecondary()
+             * 2. issue sync to secondary with forceResync = true
+             */
+            this.log(
+              `[issueSyncRequestsToSecondaries] [PrimaryShouldSync = true] [SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
+            )
           }
-
-          // Swallow error without short-circuiting other processing
         } catch (e) {
+          // Swallow error without short-circuiting other processing
           enqueueSyncRequestErrors.push(
             `issueSyncRequestsToSecondaries() Error for user ${JSON.stringify(
               user
@@ -944,26 +974,25 @@ class SnapbackSM {
         })
       }
 
-      // Retrieve clock statuses for all users and their current replica sets
-      let replicaSetNodesToUserClockStatusesMap
+      // Retrieve user info for all users and their current replica sets
+      let replicasToUserInfoMap
       try {
-        replicaSetNodesToUserClockStatusesMap =
-          await this.retrieveClockStatusesForUsersAcrossReplicaSet(
-            replicaSetNodesToUserWalletsMap,
-            unhealthyPeers
-          )
+        replicasToUserInfoMap = await this.retrieveUserInfoFromReplicaSet(
+          replicaSetNodesToUserWalletsMap,
+          unhealthyPeers
+        )
         decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
+          stage: 'retrieveUserInfoFromReplicaSet() Success',
           time: Date.now()
         })
       } catch (e) {
         decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
+          stage: 'retrieveUserInfoFromReplicaSet() Error',
           vals: e.message,
           time: Date.now()
         })
         throw new Error(
-          'processStateMachineOperation():retrieveClockStatusesForUsersAcrossReplicaSet() Error'
+          'processStateMachineOperation():retrieveUserInfoFromReplicaSet() Error'
         )
       }
 
@@ -989,7 +1018,7 @@ class SnapbackSM {
       try {
         const resp = await this.issueSyncRequestsToSecondaries(
           potentialSyncRequests,
-          replicaSetNodesToUserClockStatusesMap
+          replicasToUserInfoMap
         )
         numSyncRequestsRequired = resp.numSyncRequestsRequired
         numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
@@ -1787,4 +1816,9 @@ class SnapbackSM {
   }
 }
 
-module.exports = { SnapbackSM, SyncType, RECONFIG_MODE_KEYS, RECONFIG_MODES }
+module.exports = {
+  SnapbackSM,
+  SyncType,
+  RECONFIG_MODE_KEYS,
+  RECONFIG_MODES
+}

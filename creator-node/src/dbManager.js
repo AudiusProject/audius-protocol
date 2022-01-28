@@ -56,11 +56,11 @@ class DBManager {
   /**
    * Deletes all data for a cnodeUser from DB (every table, including CNodeUsers)
    *
-   * @param {Object} CNodeUserLookupObj specifies either `lookupCnodeUserUUID` or `lookupWallet` properties
+   * @param {Object} CNodeUserLookupObj specifies either `lookupCNodeUserUUID` or `lookupWallet` properties
    * @param {?Transaction} externalTransaction sequelize transaction object
    */
   static async deleteAllCNodeUserDataFromDB(
-    { lookupCnodeUserUUID, lookupWallet },
+    { lookupCNodeUserUUID, lookupWallet },
     externalTransaction = null
   ) {
     const transaction =
@@ -73,7 +73,7 @@ class DBManager {
     try {
       const cnodeUserWhereFilter = lookupWallet
         ? { walletPublicKey: lookupWallet }
-        : { cnodeUserUUID: lookupCnodeUserUUID }
+        : { cnodeUserUUID: lookupCNodeUserUUID }
       const cnodeUser = await models.CNodeUser.findOne({
         where: cnodeUserWhereFilter,
         transaction
@@ -202,66 +202,108 @@ class DBManager {
   }
 
   /**
-   * Retrieves md5 hash of all File multihashes for user ordered by clock asc, optionally by clock range
+   * Computes and returns filesHash for user, optionally by clock range
+   * filesHash = md5 hash of all user's File multihashes, ordered by clock asc
    *
    * @param {Object} lookupKey lookup user by either cnodeUserUUID or walletPublicKey
    * @param {Number?} clockMin if provided, consider only Files with clock >= clockMin (inclusive)
    * @param {Number?} clockMax if provided, consider only Files with clock < clockMax (exclusive)
-   * @returns {Number} filesHash
+   * @returns {string|null} filesHash
    */
   static async fetchFilesHashFromDB({
     lookupKey: { lookupCNodeUserUUID, lookupWallet },
     clockMin = null,
     clockMax = null
   }) {
-    let subquery = 'select multihash from "Files"'
+    let query = `
+      select
+        md5(string_agg("multihash", ',' order by "clock" asc))
+      from "Files"
+    `
 
-    if (lookupWallet) {
-      subquery += ` where "cnodeUserUUID" = (
-        select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = :lookupWallet
-      )`
-    } else if (lookupCNodeUserUUID) {
-      subquery += ` where "cnodeUserUUID" = :lookupCNodeUserUUID`
+    if (lookupCNodeUserUUID) {
+      query += ' where "cnodeUserUUID" = :lookupCNodeUserUUID'
+    } else if (lookupWallet) {
+      query +=
+        ' where "cnodeUserUUID" = (select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = :lookupWallet)'
     } else {
-      throw new Error(
-        '[fetchFilesHashFromDB] Error: Must provide lookupCNodeUserUUID or lookupWallet'
-      )
+      throw new Error('Error: Must provide lookupCNodeUserUUID or lookupWallet')
     }
 
     if (clockMin) {
       clockMin = parseInt(clockMin)
       // inclusive
-      subquery += ` and clock >= :clockMin`
+      query += ` and "clock" >= :clockMin`
     }
     if (clockMax) {
       clockMax = parseInt(clockMax)
       // exclusive
-      subquery += ` and clock < :clockMax`
+      query += ` and "clock" < :clockMax`
     }
 
-    subquery += ` order by "clock" asc`
-
     try {
-      const filesHashResp = await sequelize.query(
-        `
-        select
-          md5(cast(array_agg(sorted_hashes.multihash) as text))
-        from (${subquery}) as sorted_hashes;
-        `,
-        {
-          replacements: {
-            lookupWallet,
-            lookupCNodeUserUUID,
-            clockMin,
-            clockMax
-          }
+      const filesHashResp = await sequelize.query(query, {
+        replacements: {
+          lookupWallet,
+          lookupCNodeUserUUID,
+          clockMin,
+          clockMax
         }
-      )
+      })
 
       const filesHash = filesHashResp[0][0].md5
       return filesHash
     } catch (e) {
-      throw new Error(e.message)
+      throw new Error(`[fetchFilesHashFromDB] ${e.message}`)
+    }
+  }
+
+  /**
+   * Computes and returns filesHashes for all users
+   * filesHash will be null if user not found or if no files exist for user
+   * filesHash = md5 hash of all user's File multihashes, ordered by clock asc
+   *
+   * Similar to fetchFilesHashFromDB() above, but for multiple users
+   * Makes single DB query to compute filesHash for all users
+   *
+   * @param {Array<string>} cnodeUserUUIDs cnodeUserUUID array
+   * @returns {Object} filesHashesByUUIDMap = map(cnodeUserUUID<string> => filesHash<string>)
+   */
+  static async fetchFilesHashesFromDB({ cnodeUserUUIDs }) {
+    try {
+      // Initialize filesHashesByUUIDMap with null values
+      const filesHashesByUUIDMap = {}
+      cnodeUserUUIDs.forEach((cnodeUserUUID) => {
+        filesHashesByUUIDMap[cnodeUserUUID] = null
+      })
+      if (cnodeUserUUIDs.length === 0) {
+        return filesHashesByUUIDMap
+      }
+
+      const query = `
+        select
+          "cnodeUserUUID",
+          md5(string_agg("multihash", ',' order by "clock" asc)) as "filesHash"
+        from (
+          select "cnodeUserUUID", "multihash", "clock"
+          from "Files"
+          where "cnodeUserUUID" in (:cnodeUserUUIDs)
+        ) as subquery
+        group by "cnodeUserUUID"
+      `
+      // Returns [{ cnodeUserUUID, filesHash }]
+      const queryResp = await sequelize.query(query, {
+        replacements: { cnodeUserUUIDs }
+      })
+
+      // Populate filesHashesByUUIDMap
+      queryResp[0].forEach((resp) => {
+        filesHashesByUUIDMap[resp.cnodeUserUUID] = resp.filesHash
+      })
+
+      return filesHashesByUUIDMap
+    } catch (e) {
+      throw new Error(`[fetchFilesHashesFromDB] ${e.message}`)
     }
   }
 }
