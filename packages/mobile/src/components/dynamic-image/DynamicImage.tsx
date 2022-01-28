@@ -2,18 +2,20 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 import transparentPlaceholderImg from 'audius-client/src/common/assets/image/1x1-transparent.png'
 import useInstanceVar from 'audius-client/src/common/hooks/useInstanceVar'
+import { Maybe } from 'audius-client/src/common/utils/typeUtils'
+import { isArray, isObject } from 'lodash'
 import {
   Animated,
   Image,
   ImageSourcePropType,
   ImageStyle,
+  ImageURISource,
   StyleProp,
   StyleSheet,
   View
 } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 
-import { useThemeColors } from 'app/utils/theme'
+import { ImageSkeleton } from 'app/components/image-skeleton'
 
 export type DynamicImageProps = {
   // Image source
@@ -36,22 +38,40 @@ const styles = StyleSheet.create({
   }
 })
 
-const ImageWithPlaceholder = ({ usePlaceholder, image, style }) => {
-  const { neutralLight8, neutralLight9 } = useThemeColors()
+const isImageEqual = (
+  imageA: Maybe<ImageSourcePropType>,
+  imageB: Maybe<ImageSourcePropType>
+) => {
+  if (imageA === imageB) {
+    return true
+  }
 
+  if (
+    isArray(imageA) &&
+    isArray(imageB) &&
+    !imageA.some((v, i) => v.uri !== imageB[i].uri)
+  ) {
+    return true
+  }
+
+  if (
+    isObject(imageA) &&
+    isObject(imageB) &&
+    (imageA as ImageURISource).uri === (imageB as ImageURISource).uri
+  ) {
+    return true
+  }
+
+  return false
+}
+
+const ImageWithPlaceholder = ({ usePlaceholder, image, style }) => {
   if (image) {
     return <Image source={image} style={style} />
   }
 
   if (usePlaceholder) {
-    return (
-      <LinearGradient
-        colors={[neutralLight8, neutralLight9]}
-        start={{ x: 1, y: 1 }}
-        end={{ x: 0, y: 0 }}
-        style={style}
-      />
-    )
+    return <ImageSkeleton styles={{ root: style }} />
   }
 
   return <Image source={transparentPlaceholderImg} />
@@ -93,7 +113,8 @@ const DynamicImage = ({
 
   useEffect(() => {
     // Skip animation for subsequent loads where the image hasn't changed
-    if (getPrevImage() !== null && getPrevImage() === image) {
+    const previousImage = getPrevImage()
+    if (previousImage !== null && isImageEqual(previousImage, image)) {
       return
     }
 

@@ -10,6 +10,10 @@ export const getTrack = (state: AppState) => {
   return baseState.index >= 0 ? baseState.queue[baseState.index] : null
 }
 export const getPlaying = (state: AppState) => getBaseState(state).playing
+export const getPlayingUid = (state: AppState) => {
+  const { index, queue } = getBaseState(state)
+  return queue[index]?.uid
+}
 export const getIndex = (state: AppState) => getBaseState(state).index
 export const getQueueLength = (state: AppState) =>
   getBaseState(state).queue.length

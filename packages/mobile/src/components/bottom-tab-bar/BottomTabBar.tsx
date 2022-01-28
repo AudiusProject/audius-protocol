@@ -2,9 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 
 import { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
-// TODO: move these into /common
-import { setTab } from 'audius-client/src/pages/explore-page/store/actions'
-import { Tabs } from 'audius-client/src/pages/explore-page/store/types'
+import { setTab } from 'audius-client/src/common/store/pages/explore/actions'
+import { Tabs } from 'audius-client/src/common/store/pages/explore/types'
 import {
   openSignOn as _openSignOn,
   showRequiresAccountModal

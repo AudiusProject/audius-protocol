@@ -34,7 +34,11 @@ const FavoriteButton = ({ isActive, ...props }: FavoriteButtonProps) => {
       isDarkMode={isDarkMode}
       iconLightJSON={[IconFavoriteOnLight, IconFavoriteOffLight]}
       iconDarkJSON={[IconFavoriteOnDark, IconFavoriteOffDark]}
-      wrapperStyle={[styles.icon, props.wrapperStyle]}
+      wrapperStyle={[
+        styles.icon,
+        props.isDisabled ? { opacity: 0.5 } : {},
+        props.wrapperStyle
+      ]}
     />
   )
 }

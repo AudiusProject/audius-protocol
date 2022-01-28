@@ -15,7 +15,7 @@
       "audio/*": ["./node_modules/audius-client/src/audio/*"],
       "common/*": ["./node_modules/audius-client/src/common/*"],
       "components/*": ["./node_modules/audius-client/src/components/*"],
-      "containers/*": ["./node_modules/audius-client/src/containers/*"],
+      "pages/*": ["./node_modules/audius-client/src/pages/*"],
       "models/*": ["./node_modules/audius-client/src/models/*"],
       "services/*": ["./node_modules/audius-client/src/services/*"],
       "store/*": ["./node_modules/audius-client/src/store/*"],
