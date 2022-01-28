@@ -191,12 +191,17 @@ class App {
   configureOptimizely () {
     const sdkKey = config.get('optimizelySdkKey')
     const optimizelyClientInstance = optimizelySDK.createInstance({
-      sdkKey
+      sdkKey,
+      datafileOptions: {
+        autoUpdate: true,
+        updateInterval: 5000 // Poll for updates every 5s
+      }
     })
 
     this.optimizelyPromise = new Promise(resolve => {
       optimizelyClientInstance.onReady().then(() => {
         this.express.set('optimizelyClient', optimizelyClientInstance)
+
         resolve()
       })
     })
