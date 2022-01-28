@@ -31,11 +31,19 @@ export type TrendingRewardID =
   | 'trending-underground'
 
 export enum FailureReason {
+  // The attestation requires the user to fill out a captcha
   HCAPTCHA = 'HCAPTCHA',
+  // The attestation requires the user to fill out cognito
   COGNITO_FLOW = 'COGNITO_FLOW',
+  // The attestation is blocked
   BLOCKED = 'BLOCKED',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
-  ALREADY_DISBURSED = 'ALREADY_DISBURSED'
+  // This reward has already been disbursed
+  ALREADY_DISBURSED = 'ALREADY_DISBURSED',
+  // The funds have already been sent, but we have not
+  // indexed the challenge.
+  ALREADY_SENT = 'ALREADY_SENT',
+  // An unknown error has occurred
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 }
 
 export type FlowUIOpenEvent = {
