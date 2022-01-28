@@ -36,7 +36,7 @@ module.exports = (async () => {
           'assets',
           'audio',
           'common',
-          'containers',
+          'pages',
           'models',
           'schemas',
           'services',

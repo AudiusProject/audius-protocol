@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { formatSeconds } from 'audius-client/src/common/utils/timeUtil'
-import { Animated, StyleSheet, View, ViewStyle } from 'react-native'
+import { StyleSheet, View, ViewStyle } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
 import IconHidden from 'app/assets/images/iconHidden.svg'
@@ -68,10 +68,6 @@ type Props = {
    */
   duration: number
   /**
-   * Fade in animation style
-   */
-  fadeIn: { opacity: Animated.Value }
-  /**
    * Whether or not the track is the artist pick
    */
   isArtistPick?: boolean
@@ -87,7 +83,6 @@ type Props = {
 
 export const TrackTileTopRight = ({
   duration,
-  fadeIn,
   isArtistPick,
   isUnlisted,
   showArtistPick
@@ -95,7 +90,7 @@ export const TrackTileTopRight = ({
   const trackTileStyles = useThemedStyles(createTrackTileStyles)
 
   return (
-    <Animated.View style={[fadeIn, styles.topRight]}>
+    <View style={styles.topRight}>
       {showArtistPick && isArtistPick && (
         <TrackTileTopRightItem icon={IconStar} label={messages.artistPick} />
       )}
@@ -105,6 +100,6 @@ export const TrackTileTopRight = ({
       <Text style={trackTileStyles.statText}>
         {duration && formatSeconds(duration)}
       </Text>
-    </Animated.View>
+    </View>
   )
 }

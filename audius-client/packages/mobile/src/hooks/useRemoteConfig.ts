@@ -28,7 +28,7 @@ import { remoteConfigInstance } from 'app/services/remote-config/remote-config-i
 // export const useFlag = createUseFeatureFlagHook(remoteConfigInstance)
 // export const useRemoteVar = createUseRemoteVarHook(remoteConfigInstance)
 
-export const useFeatureFlage = (flag: FeatureFlags) => {
+export const useFeatureFlag = (flag: FeatureFlags) => {
   const configLoaded = useSelector(isRemoteConfigLoaded)
   const userIdFlag = flagCohortType[flag] === FeatureFlagCohortType.USER_ID
   const hasAccount = useSelectorWeb(getAccountUser)
