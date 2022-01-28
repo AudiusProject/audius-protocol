@@ -42,8 +42,10 @@ module.exports = function (app) {
 
     const walletAddress = existingUser.walletAddress
     const htmlTemplate = isNativeMobile ? welcomeTemplate : welcomeDownloadTemplate
+    const copyrightYear = new Date().getFullYear().toString()
     const welcomeHtml = htmlTemplate({
-      name
+      name,
+      copyright_year: copyrightYear
     })
 
     const emailParams = {

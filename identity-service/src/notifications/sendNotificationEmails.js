@@ -339,7 +339,9 @@ async function renderAndSendNotificationEmail (
       return
     }
 
-    let renderProps = {}
+    let renderProps = {
+      copyrightYear: new Date().getFullYear().toString()
+    }
     renderProps['notifications'] = notificationProps
     if (frequency === 'live') {
       renderProps['title'] = `Email - ${userEmail}`
