@@ -9,14 +9,14 @@ logger = logging.getLogger(__name__)
 AGGREGATE_TRACK = "aggregate_track"
 
 # UPDATE_AGGREGATE_TRACK_QUERY
-# Get a higher bound blocknumber to check for new save/repost activity
+# Get a lower bound blocknumber to check for new save/repost activity
 # Find a subset of tracks that have changed after that blocknumber
 # For that subset of tracks calculate the play/repost total counts
 # Insert that count for new users or update an existing row
 UPDATE_AGGREGATE_TRACK_QUERY = """
     WITH aggregate_track_checkpoints AS (
         SELECT
-            :current_blocknumber AS current_blocknumber
+            :prev_blocknumber AS prev_blocknumber
     ),
     new_track AS (
         SELECT
@@ -35,12 +35,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 r.is_current IS TRUE
                 AND r.repost_type = 'track'
                 AND r.is_delete IS FALSE
-                AND r.blocknumber <= (
-                    SELECT
-                        current_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
+                AND r.blocknumber > :prev_blocknumber
             GROUP BY
                 r.repost_item_id
         )
@@ -54,12 +49,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 s.is_current IS TRUE
                 AND s.save_type = 'track'
                 AND s.is_delete IS FALSE
-                AND s.blocknumber <= (
-                    SELECT
-                        current_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
+                AND s.blocknumber > :prev_blocknumber
             GROUP BY
                 s.save_item_id
         )
@@ -95,12 +85,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                     FROM
                         new_track
                 )
-                AND r.blocknumber <= (
-                    SELECT
-                        current_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
+                AND r.blocknumber > :prev_blocknumber
             GROUP BY
                 r.repost_item_id
         ) AS track_repost ON track_repost.track_id = t.track_id
@@ -120,12 +105,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                     FROM
                         new_track
                 )
-                AND s.blocknumber <= (
-                    SELECT
-                        current_blocknumber
-                    FROM
-                        aggregate_track_checkpoints
-                )
+                AND s.blocknumber > :prev_blocknumber
             GROUP BY
                 s.save_item_id
         ) AS track_save ON track_save.track_id = t.track_id
