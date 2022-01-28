@@ -17,7 +17,7 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
     WITH aggregate_plays_last_checkpoint AS (
         SELECT
             :prev_id_checkpoint AS prev_id_checkpoint,
-            :new_id_checkpoint AS new_id_checkpoint
+            :current_id_checkpoint AS current_id_checkpoint
     ),
     new_plays AS (
         SELECT
@@ -34,7 +34,7 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
             )
             AND p.id <= (
                 SELECT
-                    new_id_checkpoint
+                    current_id_checkpoint
                 FROM
                     aggregate_plays_last_checkpoint
             )
@@ -55,7 +55,7 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
 
 
 def _update_aggregate_plays(session):
-    new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
+    current_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
     aggregate_worker(
         logger,
@@ -63,8 +63,7 @@ def _update_aggregate_plays(session):
         AGGREGATE_PLAYS_TABLE_NAME,
         UPDATE_AGGREGATE_PLAYS_QUERY,
         "id_checkpoint",
-        new_id_checkpoint,
-        current_prefix="new_",
+        current_id_checkpoint,
     )
 
 

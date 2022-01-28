@@ -58,7 +58,6 @@ def aggregate_worker(
     query,
     checkpoint_name,
     current_checkpoint,
-    current_prefix="current_",
 ):
     # get name of the caller function
     worker_name = f"{currentframe().f_back.f_code.co_name}()"
@@ -83,7 +82,7 @@ def aggregate_worker(
         text(query),
         {
             f"prev_{checkpoint_name}": prev_checkpoint,
-            f"{current_prefix}{checkpoint_name}": current_checkpoint,
+            f"current_{checkpoint_name}": current_checkpoint,
         },
     )
 
