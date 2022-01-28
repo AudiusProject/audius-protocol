@@ -4,27 +4,29 @@ const path = require('path')
 
 const DiskManager = require('../../src/diskManager')
 
-const { handleTrackContentRoute } = require('../../src/components/tracks/tracksComponentService')
+const {
+  handleTrackContentRoute
+} = require('../../src/components/tracks/tracksComponentService')
 
 const uploadTrack = async (filePath, cnodeUserUUID, blacklistManager) => {
   const { fileUUID, fileDir } = saveFileToStorage(filePath)
-  const resp = await handleTrackContentRoute({
-    logContext: {
-      requestID: uuid(),
-      requestMethod: 'POST',
-      requestHostname: '127.0.0.1',
-      requestUrl: '/track_content_async'
+  const resp = await handleTrackContentRoute(
+    {
+      logContext: {
+        requestID: uuid(),
+        requestMethod: 'POST',
+        requestHostname: '127.0.0.1',
+        requestUrl: '/track_content_async'
+      }
+    },
+    {
+      fileName: `${fileUUID}.mp3`,
+      fileDir,
+      fileDestination: fileDir,
+      session: {
+        cnodeUserUUID
+      }
     }
-  },
-  {
-    fileName: `${fileUUID}.mp3`,
-    fileDir,
-    fileDestination: fileDir,
-    session: {
-      cnodeUserUUID
-    }
-  },
-  blacklistManager
   )
 
   return resp
@@ -33,7 +35,10 @@ const uploadTrack = async (filePath, cnodeUserUUID, blacklistManager) => {
 const saveFileToStorage = (filePath) => {
   const file = fs.readFileSync(filePath)
   const fileUUID = uuid()
-  const fileDir = path.join(DiskManager.getTmpTrackUploadArtifactsPath(), fileUUID)
+  const fileDir = path.join(
+    DiskManager.getTmpTrackUploadArtifactsPath(),
+    fileUUID
+  )
   fs.mkdirSync(fileDir)
   fs.mkdirSync(fileDir + '/segments')
   fs.writeFileSync(path.join(fileDir, `${fileUUID}.mp3`), file)
