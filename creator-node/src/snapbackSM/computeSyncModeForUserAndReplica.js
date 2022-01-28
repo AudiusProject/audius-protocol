@@ -43,55 +43,63 @@ async function computeSyncModeForUserAndReplica({
     )
   }
 
-  let syncMode = SyncMode.None
-
-  if (primaryClock === secondaryClock) {
-    if (primaryFilesHash === secondaryFilesHash) {
-      syncMode = SyncMode.None
-    } /* primaryFilesHash !== secondaryFilesHash */ else {
-      /**
-       * If clocks are same but filesHashes are not, this means secondary and primary states for user
-       *    have diverged. To fix this issue, primary should sync content from secondary and
-       *    subsequently force secondary to resync state from primary.
-       */
-      syncMode = SyncMode.PrimaryShouldSync
-    }
+  if (
+    primaryClock === secondaryClock &&
+    primaryFilesHash === secondaryFilesHash
+  ) {
+    /**
+     * Nodes have identical data -> no sync needed
+     */
+    return SyncMode.None
+  } else if (
+    primaryClock === secondaryClock &&
+    primaryFilesHash !== secondaryFilesHash
+  ) {
+    /**
+     * If clocks are same but filesHashes are not, this means secondary and primary states for user
+     *    have diverged. To fix this issue, primary should sync content from secondary and
+     *    subsequently force secondary to resync state from primary.
+     */
+    return SyncMode.PrimaryShouldSync
   } else if (primaryClock < secondaryClock) {
-    syncMode = SyncMode.PrimaryShouldSync
-  } /* primaryClock > secondaryClock */ else {
-    // secondaryFilesHash will be null if secondary has no files for user
-    if (secondaryFilesHash === null) {
-      syncMode = SyncMode.SecondaryShouldSync
-    } /* secondaryFilesHash is defined */ else {
-      /**
-       * If primaryClock > secondaryClock, need to check that nodes have same content for each clock value. To do this, we compute filesHash from primary matching clock range from secondary.
-       */
-      try {
-        // Throws error if failure after all retries
-        const primaryFilesHashForRange = await retry(
-          async () =>
-            DBManager.fetchFilesHashFromDB({
-              lookupKey: { lookupWallet: wallet },
-              clockMin: 0,
-              clockMax: secondaryClock + 1
-            }),
-          { retries: FetchFilesHashNumRetries }
-        )
+    /**
+     * Secondary has more data than primary -> primary must sync from secondary
+     */
+    return SyncMode.PrimaryShouldSync
+  } else if (primaryClock > secondaryClock && secondaryFilesHash === null) {
+    /**
+     * secondaryFilesHash will be null if secondary has no files for user -> secondary must sync from primary
+     */
+    return SyncMode.SecondaryShouldSync
+  } else if (primaryClock > secondaryClock && secondaryFilesHash !== null) {
+    /**
+     * If primaryClock > secondaryClock, need to check that nodes have same content for each clock value. To do this, we compute filesHash from primary matching clock range from secondary.
+     */
+    try {
+      // Throws error if failure after all retries
+      const primaryFilesHashForRange = await retry(
+        async () =>
+          DBManager.fetchFilesHashFromDB({
+            lookupKey: { lookupWallet: wallet },
+            clockMin: 0,
+            clockMax: secondaryClock + 1
+          }),
+        { retries: FetchFilesHashNumRetries }
+      )
 
-        if (primaryFilesHashForRange === secondaryFilesHash) {
-          syncMode = SyncMode.SecondaryShouldSync
-        } else {
-          syncMode = SyncMode.PrimaryShouldSync
-        }
-      } catch (e) {
-        const errorMsg = `[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`
-        logger.error(errorMsg)
-        throw new Error(errorMsg)
+      if (primaryFilesHashForRange === secondaryFilesHash) {
+        return SyncMode.SecondaryShouldSync
+      } else {
+        return SyncMode.PrimaryShouldSync
       }
+    } catch (e) {
+      const errorMsg = `[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`
+      logger.error(errorMsg)
+      throw new Error(errorMsg)
     }
+  } else {
+    return SyncMode.None
   }
-
-  return syncMode
 }
 
 /**

@@ -80,7 +80,18 @@ async function saveFileToIPFSFromFS(
     enableIPFSAdd
   )
 
-  // store file copy by multihash for future retrieval
+  return multihash
+}
+
+/**
+ * Store file copy by multihash for future retrieval
+ * @param {String} multihash ipfs add multihash response
+ * @param {String} srcPath path to content to copy
+ * @param {Object} logContext
+ * @returns the destination path of where the content was copied to
+ */
+async function copyMultihashToFs(multihash, srcPath, logContext) {
+  const logger = genericLogger.child(logContext)
   const dstPath = DiskManager.computeFilePath(multihash)
 
   try {
@@ -96,7 +107,7 @@ async function saveFileToIPFSFromFS(
     throw e
   }
 
-  return { multihash, dstPath }
+  return dstPath
 }
 
 /**
@@ -823,5 +834,6 @@ module.exports = {
   handleTrackContentUpload,
   hasEnoughStorageSpace,
   getFileExtension,
-  checkFileMiddleware
+  checkFileMiddleware,
+  copyMultihashToFs
 }

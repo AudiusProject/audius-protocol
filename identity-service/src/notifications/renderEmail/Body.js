@@ -257,7 +257,9 @@ var Body = function Body(props) {
     style: {
       paddingBottom: '25px'
     }
-  }, /*#__PURE__*/_react["default"].createElement(_Footer["default"], null))))));
+  }, /*#__PURE__*/_react["default"].createElement(_Footer["default"], {
+    copyrightYear: props.copyrightYear
+  }))))));
 };
 
 var _default = Body;
