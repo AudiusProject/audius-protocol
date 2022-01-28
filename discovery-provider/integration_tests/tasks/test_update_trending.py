@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 from integration_tests.utils import populate_mock_db
 from src.models import AggregateIntervalPlay, TrackTrendingScore, TrendingParam
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
-from src.tasks.index_aggregate_track import _update_aggregate_track
+from src.tasks.aggregates.index_aggregate_plays import _update_aggregate_plays
+from src.tasks.aggregates.index_aggregate_track import _update_aggregate_track
 from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.trending_strategies.EJ57D_trending_tracks_strategy import (
     TrendingTracksStrategyEJ57D,

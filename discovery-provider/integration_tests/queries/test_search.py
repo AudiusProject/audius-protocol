@@ -6,7 +6,7 @@ from src.queries.search_queries import (
     track_search_query,
     user_search_query,
 )
-from src.tasks.index_aggregate_track import _update_aggregate_track
+from src.tasks.aggregates.index_aggregate_track import _update_aggregate_track
 from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 from src.utils.db_session import get_db
 

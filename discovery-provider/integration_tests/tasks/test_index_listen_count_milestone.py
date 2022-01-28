@@ -3,7 +3,7 @@ from datetime import datetime
 import redis
 from integration_tests.utils import populate_mock_db
 from src.models import Milestone
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
+from src.tasks.aggregates.index_aggregate_plays import _update_aggregate_plays
 from src.tasks.index_listen_count_milestones import (
     CURRENT_PLAY_INDEXING,
     TRACK_LISTEN_IDS,

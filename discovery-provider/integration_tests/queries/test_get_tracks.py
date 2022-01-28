@@ -3,7 +3,7 @@ from datetime import datetime
 from integration_tests.utils import populate_mock_db
 from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_tracks import _get_tracks
-from src.tasks.index_aggregate_track import _update_aggregate_track
+from src.tasks.aggregates.index_aggregate_track import _update_aggregate_track
 from src.utils.db_session import get_db
 
 

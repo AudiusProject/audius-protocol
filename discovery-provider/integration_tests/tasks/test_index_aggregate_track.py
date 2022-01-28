@@ -4,7 +4,10 @@ from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.models import AggregateTrack
-from src.tasks.index_aggregate_track import AGGREGATE_TRACK, _update_aggregate_track
+from src.tasks.aggregates.index_aggregate_track import (
+    AGGREGATE_TRACK,
+    _update_aggregate_track,
+)
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
