@@ -16,7 +16,7 @@ const createErrorSagas = <ActionType extends { type: string }>({
   getShouldRedirect: (action: ActionType) => boolean
   getShouldReport: (action: ActionType) => boolean
   getType?: (actionType: string) => string
-  getAdditionalInfo?: (action: ActionType) => object
+  getAdditionalInfo?: (action: ActionType) => errorActions.AdditionalInfo
 }) => {
   function* handleError(action: ActionType) {
     console.info(`Handling error: ${JSON.stringify(action)}`)

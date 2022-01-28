@@ -2,19 +2,15 @@ import React, { useCallback, useEffect } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useLastLocation } from 'react-router-last-location'
 
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
 import { Name } from 'common/models/Analytics'
-import Theme from 'common/models/Theme'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { track } from 'store/analytics/providers'
-import { getTheme } from 'store/application/ui/theme/selectors'
-import { AppState } from 'store/types'
 import { useIsMobile } from 'utils/clientUtil'
 import { HOME_PAGE, ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
-import { isMatrix, shouldShowDark } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import styles from './SomethingWrong.module.css'
 
@@ -26,36 +22,30 @@ const messages = {
   cta: 'Try Again'
 }
 
-type OwnProps = {
-  lastRoute: string
-}
-
-type SomethingWrongProps = OwnProps &
-  Omit<ReturnType<typeof mapStateToProps>, 'theme'> &
-  ReturnType<typeof mapDispatchToProps> & { theme?: Theme | null } // a store. // The something wrong component can be rendered without
-
 const INVALID_BACK_PAGES = new Set([ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE])
 
-export const SomethingWrong = ({
-  lastRoute,
-  goBack,
-  theme
-}: SomethingWrongProps) => {
+export const SomethingWrong = () => {
+  const lastLocation = useLastLocation()
   const isMobile = useIsMobile()
 
   useEffect(() => {
     track(Name.ERROR_PAGE)
   }, [])
 
-  const onClickTakeMeBack = useCallback(() => {
+  const lastRoutePathname = lastLocation?.pathname
+
+  const handleClickRetry = useCallback(() => {
     if (NATIVE_MOBILE) {
       new ReloadMessage().send()
+    } else if (
+      !lastRoutePathname ||
+      INVALID_BACK_PAGES.has(lastRoutePathname)
+    ) {
+      window.location.href = HOME_PAGE
     } else {
-      const backRoute =
-        lastRoute && !INVALID_BACK_PAGES.has(lastRoute) ? lastRoute : HOME_PAGE
-      goBack(backRoute)
+      window.location.href = lastRoutePathname
     }
-  }, [lastRoute, goBack])
+  }, [lastRoutePathname])
 
   return (
     <div
@@ -68,7 +58,7 @@ export const SomethingWrong = ({
         style={{
           backgroundImage: `url(${tiledBackground})`,
           backgroundBlendMode:
-            shouldShowDark(theme) || isMatrix() ? 'color-burn' : 'none'
+            isDarkMode() || isMatrix() ? 'color-burn' : 'none'
         }}
       >
         <div className={styles.body}>
@@ -83,7 +73,7 @@ export const SomethingWrong = ({
             textClassName={styles.buttonText}
             type={ButtonType.PRIMARY_ALT}
             text={messages.cta}
-            onClick={onClickTakeMeBack}
+            onClick={handleClickRetry}
           />
         </div>
       </div>
@@ -91,18 +81,4 @@ export const SomethingWrong = ({
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    theme: getTheme(state)
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    goBack: (backRoute: string) => {
-      window.location.href = backRoute
-    }
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SomethingWrong)
+export default SomethingWrong

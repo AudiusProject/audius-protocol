@@ -1,6 +1,5 @@
 import React, { Component, Suspense } from 'react'
 
-import * as Sentry from '@sentry/browser'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
@@ -63,7 +62,6 @@ import {
 } from 'pages/sign-on/store/actions'
 import { getStatus as getSignOnStatus } from 'pages/sign-on/store/selectors'
 import { Pages as SignOnPages } from 'pages/sign-on/store/types'
-import SomethingWrong from 'pages/something-wrong/SomethingWrong'
 import TrackPage from 'pages/track-page/TrackPage'
 import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
@@ -84,7 +82,6 @@ import { getTheme } from 'store/application/ui/theme/selectors'
 import { getWeb3Error } from 'store/backend/selectors'
 import { isMobile, getClient } from 'utils/clientUtil'
 import lazyWithPreload from 'utils/lazyWithPreload'
-import { clearAll } from 'utils/persistentCache'
 import 'utils/redirect'
 import {
   FEED_PAGE,
@@ -121,7 +118,6 @@ import {
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
   authenticatedRoutes,
-  ERROR_PAGE,
   EMPTY_PAGE,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE,
@@ -187,7 +183,7 @@ const ConnectedMusicConfetti = lazyWithPreload(
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 export const MAIN_CONTENT_ID = 'mainContent'
 
-export const includeSearch = search => {
+const includeSearch = search => {
   return search.includes('oauth_token') || search.includes('code')
 }
 
@@ -195,7 +191,6 @@ initializeSentry()
 
 class App extends Component {
   state = {
-    didError: false,
     mainContent: null,
 
     showCTABanner: false,
@@ -207,7 +202,6 @@ class App extends Component {
 
     initialPage: true,
     entryRoute: getPathname(this.props.history.location),
-    lastRoute: null,
     currentRoute: getPathname(this.props.history.location)
   }
 
@@ -227,11 +221,10 @@ class App extends Component {
     this.removeHistoryEventListener = this.props.history.listen(
       (location, action) => {
         this.scrollToTop()
-        this.setState(prevState => ({
+        this.setState({
           initialPage: false,
-          lastRoute: prevState.currentRoute,
           currentRoute: getPathname(location)
-        }))
+        })
       }
     )
 
@@ -430,24 +423,6 @@ class App extends Component {
     this.setState({ showWeb3ErrorBanner: false })
   }
 
-  static getDerivedStateFromError(_) {
-    return { didError: true }
-  }
-
-  componentDidCatch(error, errorInfo) {
-    try {
-      Sentry.withScope(scope => {
-        scope.setExtras(errorInfo)
-        Sentry.captureException(error)
-      })
-    } catch (error) {
-      console.error(error.message)
-    }
-    // Dump the persistent cache on error, just in case that is causing some
-    // un-recoverable state.
-    clearAll()
-  }
-
   render() {
     const {
       theme,
@@ -459,14 +434,12 @@ class App extends Component {
     } = this.props
 
     const {
-      didError,
       showCTABanner,
       showUpdateAppBanner,
       showWeb3ErrorBanner,
       isUpdating,
       showRequiresUpdate,
-      initialPage,
-      lastRoute
+      initialPage
     } = this.state
     const client = getClient()
     const isMobileClient = client === Client.MOBILE
@@ -479,8 +452,6 @@ class App extends Component {
           onUpdate={this.acceptUpdateApp}
         />
       )
-    if (didError || getPathname(this.props.location) === ERROR_PAGE)
-      return <SomethingWrong lastRoute={lastRoute} />
 
     const showBanner =
       showCTABanner || showUpdateAppBanner || showWeb3ErrorBanner
@@ -537,6 +508,7 @@ class App extends Component {
         >
           {isMobileClient && <TopLevelPage />}
           {isMobileClient && <HeaderContextConsumer />}
+
           <Suspense fallback={null}>
             <SwitchComponent isInitialPage={initialPage} handle={userHandle}>
               <Route
