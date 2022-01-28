@@ -21,6 +21,7 @@ import { getUserId, getHasAccount } from 'common/store/account/selectors'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
+import { getBalance } from 'common/store/wallet/slice'
 import AudiusBackend from 'services/AudiusBackend'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -290,6 +291,20 @@ export function* parseAndProcessNotifications(
   return processedNotifications
 }
 
+/**
+ * Run side effects for new notifications
+ */
+export function* handleNewNotifications(
+  notifications: Notification[]
+): Generator<any, void, any> {
+  const hasRewardsNotification = notifications.some(
+    notification => notification.type === NotificationType.ChallengeReward
+  )
+  if (hasRewardsNotification) {
+    yield put(getBalance)
+  }
+}
+
 export function* fetchNotificationUsers(
   action: notificationActions.FetchNotificationUsers
 ) {
@@ -515,6 +530,7 @@ export function* getNotifications(isFirstFetch: boolean) {
               hasMore
             )
           )
+          yield handleNewNotifications(notificationItems)
         }
       } else if (status !== Status.SUCCESS) {
         yield put(
