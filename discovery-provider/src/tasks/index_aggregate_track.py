@@ -1,6 +1,7 @@
 import logging
 
-from src.tasks.celery_app import aggregate_worker, celery, celery_worker
+from src.tasks.aggregates import aggregate_worker, celery_worker
+from src.tasks.celery_app import celery
 from src.tasks.index_aggregate_user import get_latest_blocknumber
 
 logger = logging.getLogger(__name__)

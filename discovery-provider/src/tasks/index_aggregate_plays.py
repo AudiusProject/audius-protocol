@@ -2,7 +2,8 @@ import logging
 
 from sqlalchemy import func
 from src.models import Play
-from src.tasks.celery_app import aggregate_worker, celery, celery_worker
+from src.tasks.aggregates import aggregate_worker, celery_worker
+from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
 
