@@ -35,7 +35,8 @@ def env_config_update(config, section_name, key):
     env_var_base = f"{section_name}_{key}"
     env_var_name = f"audius_{env_var_base}"
     env_var_value = os.environ.get(env_var_name)
-    env_var_exists = env_var_value != None
+    # Don't allow empty strings to override default_ini
+    env_var_exists = env_var_value != None and env_var_value != ""
     if env_var_exists:
         # Override any config values with environment variables if present
         # Variables are formatted as audius_<section_name>_<key>
@@ -127,10 +128,12 @@ except (KeyError, RuntimeError) as e:
     ) from e
 
 try:
-    # get latitude longitude
+    # get latitude longitude and country
     ip_info_url = "https://ipinfo.io"
     ip_info_response = requests.get(ip_info_url)
-    latitude, longitude = ip_info_response.json()["loc"].split(",")
+    response_data = ip_info_response.json()
+    shared_config["serviceLocation"]["serviceCountry"] = response_data["country"]
+    latitude, longitude = response_data["loc"].split(",")
     shared_config["serviceLocation"]["serviceLatitude"] = latitude
     shared_config["serviceLocation"]["serviceLongitude"] = longitude
 

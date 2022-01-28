@@ -8,6 +8,7 @@ import base58
 from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+from src.exceptions import MissingEthRecipientError
 from src.models import (
     ChallengeDisbursement,
     RewardManagerTransaction,
@@ -15,6 +16,11 @@ from src.models import (
     UserChallenge,
 )
 from src.queries.get_balances import enqueue_immediate_balance_refresh
+from src.solana.constants import (
+    TX_SIGNATURES_BATCH_SIZE,
+    TX_SIGNATURES_MAX_BATCHES,
+    TX_SIGNATURES_RESIZE_LENGTH,
+)
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_parser import (
     InstructionFormat,
@@ -44,12 +50,6 @@ logger = logging.getLogger(__name__)
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 MIN_SLOT = int(shared_config["solana"]["rewards_manager_min_slot"])
-
-# Maximum number of batches to process at once
-TX_SIGNATURES_MAX_BATCHES = 20
-
-# Last N entries present in tx_signatures array during processing
-TX_SIGNATURES_RESIZE_LENGTH = 10
 
 
 def check_valid_rewards_manager_program():
@@ -123,7 +123,7 @@ def parse_transfer_instruction_id(transfer_id: str) -> Optional[List[str]]:
     """Parses the transfer instruction id into [challenge_id, specifier]
     The id in the transfer instruction is formatted as "<CHALLENGE_ID>:<SPECIFIER>"
     """
-    id_parts = transfer_id.split(":")
+    id_parts = transfer_id.split(":", 1)
     if len(id_parts) != 2:
         logger.error(
             "index_rewards_manager.py | Unable to parse transfer instruction id"
@@ -283,12 +283,19 @@ def process_batch_sol_reward_manager_txs(
                     f"index_rewards_manager.py | Challenge specifier {specifier} not found"
                     "while processing disbursement"
                 )
-                continue
             if eth_recipient not in users_map:
                 logger.error(
                     f"index_rewards_manager.py | eth_recipient {eth_recipient} not found while processing disbursement"
                 )
-                continue
+                tx_signature = tx["tx_sig"]
+                raise MissingEthRecipientError(
+                    eth_recipient,
+                    transfer_instr["challenge_id"],
+                    specifier,
+                    tx["tx_sig"],
+                    tx["slot"],
+                    f"Error: eth_recipient {eth_recipient} not found while indexing rewards manager for tx signature {tx_signature}",
+                )
 
             user_id = users_map[eth_recipient]
             logger.info(
@@ -375,7 +382,7 @@ def get_transaction_signatures(
         latest_processed_slot = get_latest_slot(session)
         while not intersection_found:
             transactions_history = solana_client_manager.get_signatures_for_address(
-                program, before=last_tx_signature, limit=100
+                program, before=last_tx_signature, limit=TX_SIGNATURES_BATCH_SIZE
             )
 
             transactions_array = transactions_history["result"]

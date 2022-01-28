@@ -139,7 +139,7 @@ class SolanaWeb3Manager {
     }
 
     const ethAddress = this.web3Manager.getWalletAddress()
-    await createUserBankFrom({
+    return createUserBankFrom({
       ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
       feePayerKey: this.feePayerKey,

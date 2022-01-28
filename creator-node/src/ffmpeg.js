@@ -5,14 +5,30 @@ const ffmpeg = require('ffmpeg-static').path
 const spawn = require('child_process').spawn
 const { logger: genericLogger } = require('./logging')
 
-/** Segments file into equal size chunks without re-encoding
- *  Try to segment as mp3 and error on failure
+/**
+ * Segments file into equal size chunks without re-encoding.
+ * Try to segment as mp3 and error on failure 
+ * @date 01-27-2022
+ * @param {Object} params
+ * @param {string} params.fileDir the directory of the uploaded track artifact
+ * @param {string} params.fileName the uploaded track artifact filename
+ * @param {Object} params.logContext the log context used to instantiate a logger
+ * @returns {Object} response in the structure 
+  {
+    segments: {
+      fileNames: segmentFileNames {string[]}: the segment file names only, 
+      filePaths: segmentFilePaths {string[]}: the segment file paths 
+    },
+    m3u8FilePath {string}: the m3u8 file path 
+  }
  */
 function segmentFile(fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     const absolutePath = path.resolve(fileDir, fileName)
     logger.info(`Segmenting file ${absolutePath}...`)
+
+    const m3u8FilePath = path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
 
     // https://ffmpeg.org/ffmpeg-formats.html#hls-2
     const args = [
@@ -35,7 +51,7 @@ function segmentFile(fileDir, fileName, { logContext }) {
       // "-vn" flag required to allow track uploading with album art
       // https://stackoverflow.com/questions/20193065/how-to-remove-id3-audio-tag-image-or-metadata-from-mp3-with-ffmpeg
       '-vn', // skip inclusion of video, process only the audio file without "video"
-      path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
+      m3u8FilePath
     ]
     logger.info(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
@@ -48,9 +64,18 @@ function segmentFile(fileDir, fileName, { logContext }) {
 
     proc.on('close', (code) => {
       if (code === 0) {
-        const segmentFilePaths = fs.readdirSync(fileDir + '/segments')
-        logger.info(`Segmented file ${absolutePath}`)
-        resolve(segmentFilePaths)
+        const segmentFileNames = fs.readdirSync(fileDir + '/segments')
+        const segmentFilePaths = segmentFileNames.map((filename) =>
+          path.resolve(fileDir, 'segments', filename)
+        )
+
+        resolve({
+          segments: {
+            fileNames: segmentFileNames,
+            filePaths: segmentFilePaths
+          },
+          m3u8FilePath
+        })
       } else {
         logger.error('Error when processing file with ffmpeg')
         logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
@@ -60,7 +85,15 @@ function segmentFile(fileDir, fileName, { logContext }) {
   })
 }
 
-/** Transcode file into 320kbps mp3 and store in same directory. */
+/**
+ * Transcode file into 320kbps mp3 and store in same directory.
+ * @date 01-27-2022
+ * @param {Object} params
+ * @param {string} params.fileDir the directory of the uploaded track artifact
+ * @param {string} params.fileName the uploaded track artifact filename
+ * @param {Object} params.logContext the log context used to instantiate a logger
+ * @returns {string} the path to the transcode
+ */
 function transcodeFileTo320(fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
