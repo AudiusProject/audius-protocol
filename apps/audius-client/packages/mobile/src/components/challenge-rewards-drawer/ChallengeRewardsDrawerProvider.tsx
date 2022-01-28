@@ -147,6 +147,12 @@ const challengesConfig: Omit<
     description: messages.referralsDescription,
     progressLabel: messages.referralsProgressLabel
   },
+  'referrals-verified': {
+    icon: IncomingEnvelope,
+    title: messages.referreralsTitle,
+    description: messages.referralsDescription,
+    progressLabel: messages.referralsProgressLabel
+  },
   'track-upload': {
     icon: MultipleMusicalNotes,
     title: messages.trackUploadTitle,

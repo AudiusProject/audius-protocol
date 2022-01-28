@@ -12,7 +12,7 @@ import { createStyles as createTrackTileStyles } from './styles'
 
 type Props = {
   /** Whether or not to show the crown icon */
-  showCrown: boolean
+  showCrown?: boolean
   /** Index of this item in the lineup */
   index: number
 }

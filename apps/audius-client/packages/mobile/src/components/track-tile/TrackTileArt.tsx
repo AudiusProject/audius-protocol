@@ -11,10 +11,13 @@ import {
   SquareSizes
 } from 'audius-client/src/common/models/ImageSizes'
 import { Remix } from 'audius-client/src/common/models/Track'
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import { ImageStyle, StyleProp, View, ViewStyle } from 'react-native'
 
 import CoSign, { Size } from 'app/components/co-sign'
 import DynamicImage from 'app/components/dynamic-image'
+import { useThemedStyles } from 'app/hooks/useThemedStyles'
+
+import { createStyles } from './styles'
 
 type TrackTileArtProps = {
   coSign?: Remix | null
@@ -22,17 +25,8 @@ type TrackTileArtProps = {
   id: ID
   isTrack: boolean
   onLoad: () => void
-  showSkeleton?: boolean
   style?: StyleProp<ViewStyle>
 }
-
-const styles = StyleSheet.create({
-  image: {
-    borderRadius: 4,
-    height: 74,
-    width: 74
-  }
-})
 
 export const TrackTileArt = ({
   coSign,
@@ -40,19 +34,16 @@ export const TrackTileArt = ({
   id,
   isTrack,
   onLoad,
-  showSkeleton,
   style
 }: TrackTileArtProps) => {
+  const styles = useThemedStyles(createStyles)
   const useImage = isTrack ? useTrackCoverArt : useCollectionCoverArt
   const image = useImage(id, coverArtSizes, SquareSizes.SIZE_150_BY_150)
 
   useLoadImageWithTimeout(image, onLoad)
 
   const imageElement = (
-    <DynamicImage
-      image={showSkeleton ? undefined : { uri: image }}
-      style={styles.image}
-    />
+    <DynamicImage image={{ uri: image }} style={styles.image as ImageStyle} />
   )
 
   return coSign ? (

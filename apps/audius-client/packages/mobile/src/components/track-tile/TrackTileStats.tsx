@@ -1,14 +1,13 @@
 import React from 'react'
 
-import { ID } from 'audius-client/src/common/models/Identifiers'
 import { formatCount } from 'audius-client/src/common/utils/formatUtil'
-import { View, Animated, Pressable, StyleSheet } from 'react-native'
+import { View, Pressable, StyleSheet } from 'react-native'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
-import Text, { AnimatedText } from 'app/components/text'
+import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { flexRow, flexRowCentered } from 'app/styles'
+import { flexRowCentered } from 'app/styles'
 import { GestureResponderHandler } from 'app/types/gesture'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
@@ -24,7 +23,7 @@ const formatListenCount = (listenCount?: number) => {
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     stats: {
-      ...flexRow(),
+      flexDirection: 'row',
       flex: 0,
       flexBasis: 26,
       alignItems: 'stretch',
@@ -57,30 +56,26 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 type Props = {
-  fadeIn: { opacity: Animated.Value }
   hidePlays: boolean
-  id: ID
   index: number
   isTrending?: boolean
   isUnlisted?: boolean
   listenCount: number
-  makeGoToFavoritesPage: (trackId: ID) => GestureResponderHandler
-  makeGoToRepostsPage: (trackId: ID) => GestureResponderHandler
+  onPressFavorites: GestureResponderHandler
+  onPressReposts: GestureResponderHandler
   repostCount: number
   saveCount: number
-  showRankIcon: boolean
+  showRankIcon?: boolean
 }
 
 export const TrackTileStats = ({
-  fadeIn,
   hidePlays,
-  id,
   index,
   isTrending,
   isUnlisted,
   listenCount,
-  makeGoToFavoritesPage,
-  makeGoToRepostsPage,
+  onPressFavorites,
+  onPressReposts,
   repostCount,
   saveCount,
   showRankIcon
@@ -92,7 +87,7 @@ export const TrackTileStats = ({
   const hasEngagement = Boolean(repostCount || saveCount)
 
   return (
-    <Animated.View style={[fadeIn, styles.stats]}>
+    <View style={styles.stats}>
       {isTrending && (
         <TrackTileRankIcon showCrown={showRankIcon} index={index} />
       )}
@@ -103,7 +98,8 @@ export const TrackTileStats = ({
               trackTileStyles.statItem,
               !repostCount ? styles.disabledStatItem : {}
             ]}
-            onPress={repostCount ? makeGoToRepostsPage(id) : undefined}
+            disabled={!repostCount}
+            onPress={onPressReposts}
           >
             <Text style={trackTileStyles.statText}>
               {formatCount(repostCount)}
@@ -120,7 +116,8 @@ export const TrackTileStats = ({
               trackTileStyles.statItem,
               !saveCount ? styles.disabledStatItem : {}
             ]}
-            onPress={e => saveCount && makeGoToFavoritesPage(id)(e)}
+            disabled={!saveCount}
+            onPress={onPressFavorites}
           >
             <Text style={trackTileStyles.statText}>
               {formatCount(saveCount)}
@@ -135,12 +132,10 @@ export const TrackTileStats = ({
         </View>
       )}
       {!hidePlays && (
-        <AnimatedText
-          style={[fadeIn, trackTileStyles.statText, styles.listenCount]}
-        >
+        <Text style={[trackTileStyles.statText, styles.listenCount]}>
           {formatListenCount(listenCount)}
-        </AnimatedText>
+        </Text>
       )}
-    </Animated.View>
+    </View>
   )
 }
