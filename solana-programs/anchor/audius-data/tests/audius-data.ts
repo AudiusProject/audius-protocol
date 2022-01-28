@@ -384,6 +384,7 @@ describe("audius-data", () => {
       metadata,
       newUserKeypair,
       userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
     });
 
     try {
@@ -400,6 +401,61 @@ describe("audius-data", () => {
         metadata,
         newUserKeypair,
         userStgAccount: newUserAcctPDA,
+        adminStgPublicKey: adminStgKeypair.publicKey,
+      });
+    } catch (e) {
+      console.log(`Error found as expected ${e}`);
+    }
+  });
+
+  it("initializing + creating user", async () => {
+    let { testEthAddr, testEthAddrBytes, handleBytesArray, metadata, pkString } =
+      initTestConstants();
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+    let newUserAcctPDA = derivedAddress;
+
+    await testInitUser({
+      provider,
+      program,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      userStgAccount: newUserAcctPDA,
+      adminStgKeypair,
+      adminKeypair,
+    });
+
+    // New sol key that will be used to permission user updates
+    let newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKeypair.publicKey.toString();
+
+    try {
+      await testCreateUser({
+        provider,
+        program,
+        message,
+        pkString,
+        baseAuthorityAccount,
+        testEthAddr,
+        testEthAddrBytes,
+        handleBytesArray,
+        bumpSeed,
+        metadata,
+        newUserKeypair,
+        userStgAccount: newUserAcctPDA,
+        adminStgPublicKey: adminStgKeypair.publicKey,
       });
     } catch (e) {
       console.log(`Error found as expected ${e}`);

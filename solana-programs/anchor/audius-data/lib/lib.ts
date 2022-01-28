@@ -158,6 +158,7 @@ type createUserParams = {
   metadata: string;
   userSolPubkey: anchor.web3.PublicKey;
   userStgAccount: anchor.web3.PublicKey;
+  adminStgPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
 };
 
@@ -174,6 +175,7 @@ export const createUser = async (args: createUserParams) => {
     provider,
     userSolPubkey,
     userStgAccount,
+    adminStgPublicKey,
   } = args;
 
   const signedBytes = signBytes(Buffer.from(message), privateKey);
@@ -208,6 +210,7 @@ export const createUser = async (args: createUserParams) => {
         user: userStgAccount,
         systemProgram: SystemProgram.programId,
         sysvarProgram: SystemSysVarProgramKey,
+        audiusAdmin: adminStgPublicKey,
       },
       // signers: [adminKeypair],
     },

@@ -118,6 +118,7 @@ export const testCreateUser = async ({
   metadata,
   newUserKeypair,
   userStgAccount,
+  adminStgPublicKey,
 }) => {
   let tx = await createUser({
     provider,
@@ -130,6 +131,7 @@ export const testCreateUser = async ({
     metadata,
     userSolPubkey: newUserKeypair.publicKey,
     userStgAccount,
+    adminStgPublicKey,
     baseAuthorityAccount,
   });
   const userDataFromChain = await program.account.user.fetch(userStgAccount);

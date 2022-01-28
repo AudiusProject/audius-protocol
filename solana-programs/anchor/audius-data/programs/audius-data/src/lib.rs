@@ -126,9 +126,19 @@ pub mod audius_data {
     ) -> ProgramResult {
         msg!("Audius::CreateUser");
 
+        // Confirm that the base used for user account seed is derived from this Audius admin storage account
+        let (derived_base, _) = Pubkey::find_program_address(
+            &[&ctx.accounts.audius_admin.key().to_bytes()[..32]],
+            ctx.program_id,
+        );
+
+        if derived_base != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         // Confirm that the derived pda from base is the same as the user storage account
         let (derived_user_acct, _) = Pubkey::find_program_address(
-            &[&base.to_bytes()[..32], &handle_seed],
+            &[&derived_base.to_bytes()[..32], &handle_seed],
             ctx.program_id,
         );
         if derived_user_acct != ctx.accounts.user.key() {
@@ -380,6 +390,8 @@ pub struct CreateUser<'info> {
     pub user: Account<'info, User>,
     #[account(mut)]
     pub payer: Signer<'info>,
+    #[account(mut)]
+    pub audius_admin: Account<'info, AudiusAdmin>,
     pub system_program: Program<'info, System>,
     pub sysvar_program: AccountInfo<'info>,
 }
