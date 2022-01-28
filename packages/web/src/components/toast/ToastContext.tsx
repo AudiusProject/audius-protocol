@@ -1,8 +1,10 @@
-import React, { createContext, memo, useState, useCallback } from 'react'
+import React, { createContext, useCallback } from 'react'
 
+import { useDispatch, useSelector } from 'react-redux'
 import { useTransition, animated } from 'react-spring'
 
-import { uuid } from 'common/utils/uid'
+import { CommonState } from 'common/store'
+import { clearToasts, toast } from 'common/store/ui/toast/slice'
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
 
 import styles from './ToastContext.module.css'
@@ -16,16 +18,6 @@ const animationConfig = {
   precision: 0.1
 }
 
-type ToastContextProps = {
-  toast: (content: string | JSX.Element, timeout?: number) => void
-  clear: () => void
-}
-
-type Toast = {
-  content: string | JSX.Element
-  key: string
-}
-
 const FROM_POSITION = -20
 const ENTER_POSITION = 20
 const TOAST_SPACING = 40
@@ -37,26 +29,35 @@ const interp = (i: number) => (y: number) =>
     ? `translate3d(0,${y}px,0)`
     : `translate3d(0, ${y + i * TOAST_SPACING}px, 0)`
 
+type ToastContextProps = {
+  toast: (content: string | JSX.Element, timeout?: number) => void
+  clear: () => void
+}
+
+type Toast = {
+  content: string | JSX.Element
+  key: string
+}
+
 export const ToastContext = createContext<ToastContextProps>({
   clear: () => {},
   toast: () => {}
 })
 
-export const ToastContextProvider = memo((props: { children: JSX.Element }) => {
-  const [toasts, setToasts] = useState<Toast[]>([])
+export const ToastContextProvider = (props: { children: JSX.Element }) => {
+  const toasts = useSelector((state: CommonState) => state.ui.toast.toasts)
+  const dispatch = useDispatch()
 
-  const toast = useCallback(
+  const handleToast = useCallback(
     (content: string | JSX.Element, timeout: number = DEFAULT_TIMEOUT) => {
-      const key = uuid()
-      setToasts(toasts => [...toasts, { content, key }])
-      setTimeout(() => {
-        setToasts(toasts => toasts.slice(1))
-      }, timeout)
+      dispatch(toast({ content: content, timeout }))
     },
-    [setToasts]
+    [dispatch]
   )
 
-  const clear = useCallback(() => setToasts([]), [setToasts])
+  const clear = useCallback(() => {
+    dispatch(clearToasts())
+  }, [dispatch])
 
   const transitions = useTransition(toasts, toast => toast.key, {
     from: (toast: Toast) => ({ y: FROM_POSITION, opacity: 0 }),
@@ -73,7 +74,7 @@ export const ToastContextProvider = memo((props: { children: JSX.Element }) => {
     <ToastContext.Provider
       value={{
         clear,
-        toast
+        toast: handleToast
       }}
     >
       {transitions.map(({ item, props, key }, i) => (
@@ -92,4 +93,4 @@ export const ToastContextProvider = memo((props: { children: JSX.Element }) => {
       {props.children}
     </ToastContext.Provider>
   )
-})
+}

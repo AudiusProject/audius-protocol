@@ -4,6 +4,8 @@ import { takeEvery, put } from 'redux-saga/effects'
 
 import { ERROR_PAGE } from 'utils/route'
 
+import { toast } from '../ui/toast/slice'
+
 import * as errorActions from './actions'
 
 export const Levels: { [level in errorActions.Level]: Sentry.Severity } = {
@@ -40,6 +42,9 @@ function* handleError(action: errorActions.HandleErrorAction) {
 
   if (action.shouldRedirect) {
     yield put(pushRoute(ERROR_PAGE))
+  }
+  if (action.shouldToast) {
+    yield put(toast({ content: action.message }))
   }
 }
 
