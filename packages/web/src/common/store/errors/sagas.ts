@@ -31,9 +31,13 @@ function* handleError(action: errorActions.HandleErrorAction) {
           console.debug(
             `Additional error info: ${JSON.stringify(action.additionalInfo)}`
           )
-          scope.setExtras(action.additionalInfo as Record<string, any>)
+          scope.setExtras(action.additionalInfo)
         }
-        Sentry.captureException(new Error(action.message))
+        const error = new Error(action.message)
+        if (action.name) {
+          error.name = action.name
+        }
+        Sentry.captureException(error)
       })
     } catch (e) {
       console.error(`Got error trying to log error: ${e.message}`)
