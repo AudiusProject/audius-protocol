@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const { isEqual } = require('lodash')
 const mailgun = require('mailgun-js')
 const { redisClient, Lock } = require('./redis')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
@@ -323,6 +324,35 @@ class App {
     })
     attester.start()
     this.express.set('rewardsAttester', attester)
+
+    // Periodically check for new config and update the rewards attester
+    setInterval(() => {
+      const attester = this.express.get('rewardsAttester')
+      logger.info('update', attester.start)
+
+      // Get remote config
+      const endpointsString = getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
+      const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : null
+      const aaoEndpoint = getRemoteVar(
+        this.optimizelyClientInstance, REMOTE_VARS.ORACLE_ENDPOINT
+      )
+      const aaoAddress = getRemoteVar(
+        this.optimizelyClientInstance, REMOTE_VARS.ORACLE_ETH_ADDRESS
+      )
+      logger.info(`Pulled rewards attester remote config: endpoints ${endpoints}, aao ${aaoEndpoint} (${aaoAddress})`)
+
+      // Update if remote config vals !== what the attester has
+      if (!isEqual(endpoints, attester.endpoints)) {
+        attester.updateEndpoints({ endpoints })
+      }
+      if (
+        aaoEndpoint &&
+        aaoAddress &&
+        (aaoEndpoint !== attester.aaoEndpoint || aaoAddress !== attester.aaoAddress)) {
+        attester.updateAAO({ aaoEndpoint, aaoAddress })
+      }
+    }, 10000)
+
     return attester
   }
 
