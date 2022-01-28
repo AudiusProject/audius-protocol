@@ -47,6 +47,7 @@ import shareModalReducer from 'common/store/ui/share-modal/slice'
 import { ShareModalState } from 'common/store/ui/share-modal/types'
 import shareSoundToTikTokModalReducer from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ShareSoundToTikTokModalState } from 'common/store/ui/share-sound-to-tiktok-modal/types'
+import toastReducer, { ToastState } from 'common/store/ui/toast/slice'
 import wallet from 'common/store/wallet/slice'
 
 // In the future, these state slices will live in @audius/client-common.
@@ -76,7 +77,8 @@ export const reducers = {
     modals: modalsReducer,
     nowPlaying: nowPlayingReducer,
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
-    shareModal: shareModalReducer
+    shareModal: shareModalReducer,
+    toast: toastReducer
   }),
 
   // Pages
@@ -138,6 +140,7 @@ export type CommonState = {
     nowPlaying: NowPlayingState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
     shareModal: ShareModalState
+    toast: ToastState
   }
 
   pages: {
