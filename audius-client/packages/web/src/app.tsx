@@ -45,10 +45,6 @@ const AudiusApp = ({
           <MainContentContext.Consumer>
             {({ mainContentRef }) => (
               <App
-                // TS has some issue with withRouter when
-                // interacting between TS + JS components.
-                // This goes away when we port `App` to TS
-                // @ts-ignore
                 setReady={setReady}
                 isReady={isReady}
                 mainContentRef={mainContentRef}
