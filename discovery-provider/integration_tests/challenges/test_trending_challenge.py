@@ -13,9 +13,9 @@ from src.challenges.trending_challenge import (
 )
 from src.models import TrendingResult
 from src.models.models import Challenge, UserChallenge
-from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.aggregates.index_aggregate_plays import _update_aggregate_plays
 from src.tasks.aggregates.index_aggregate_track import _update_aggregate_track
+from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
