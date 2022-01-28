@@ -2,6 +2,8 @@ import React, { useCallback, useEffect } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
+import { goBack, replace } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
 import { useLastLocation } from 'react-router-last-location'
 
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
@@ -27,25 +29,25 @@ const INVALID_BACK_PAGES = new Set([ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE])
 export const SomethingWrong = () => {
   const lastLocation = useLastLocation()
   const isMobile = useIsMobile()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     track(Name.ERROR_PAGE)
   }, [])
 
   const lastRoutePathname = lastLocation?.pathname
+  const shouldGoToHomePage =
+    !lastRoutePathname || INVALID_BACK_PAGES.has(lastRoutePathname)
 
   const handleClickRetry = useCallback(() => {
     if (NATIVE_MOBILE) {
       new ReloadMessage().send()
-    } else if (
-      !lastRoutePathname ||
-      INVALID_BACK_PAGES.has(lastRoutePathname)
-    ) {
-      window.location.href = HOME_PAGE
+    } else if (shouldGoToHomePage) {
+      dispatch(replace(HOME_PAGE))
     } else {
-      window.location.href = lastRoutePathname
+      dispatch(goBack())
     }
-  }, [lastRoutePathname])
+  }, [shouldGoToHomePage, dispatch])
 
   return (
     <div
