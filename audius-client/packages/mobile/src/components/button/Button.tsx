@@ -141,8 +141,9 @@ const Button = ({
   const { primaryDark1 } = useThemeColors()
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation()
 
+  // If underlay is set to undefined, the button will turn black when pressed
   const underlay =
-    type === ButtonType.PRIMARY ? underlayColor || primaryDark1 : undefined
+    type === ButtonType.PRIMARY ? underlayColor || primaryDark1 : 'transparent'
 
   return (
     <Animated.View
