@@ -2,7 +2,7 @@ class IndexingError(Exception):
     """Exception raised for errors in the indexing flow.
 
     Attributes:
-        type -- One of 'user', 'user_replica_set', 'user_library', 'tracks', 'social_features', 'playlists'
+        type -- One of 'session.commit', 'tx', 'user', 'user_replica_set', 'user_library', 'tracks', 'social_features', 'playlists'
         blocknumber -- block number of error
         blockhash -- block hash of error
         txhash -- transaction hash of error

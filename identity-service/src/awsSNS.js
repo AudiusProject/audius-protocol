@@ -151,7 +151,7 @@ async function drainMessageObject (bufferObj) {
   const newBadgeCount = incrementBadgeQuery[0][0][0].iosBadgeCount
   const devices = await models.NotificationDeviceToken.findAll({ where: { userId } })
   // If no devices found, short-circuit
-  if (devices.length === 0) return
+  if (devices.length === 0) return numSentNotifs
   // Dispatch to all devices
   await Promise.all(devices.map(async (device) => {
     const { deviceType, awsARN, deviceToken } = device

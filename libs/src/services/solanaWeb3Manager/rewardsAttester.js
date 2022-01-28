@@ -153,6 +153,37 @@ class RewardsAttester {
   }
 
   /**
+   * Updates the AAO endpoint and address
+   * @param {{
+   *     aaoEndpoint: string
+   *     aaoAddress: string
+   * }} {
+   *     aaoEndpoint,
+   *     aaoAddress
+   * }
+   * @memberof RewardsAttester
+   */
+  async updateAAO ({ aaoEndpoint, aaoAddress }) {
+    this.logger.info(`Updating AAO to ${aaoEndpoint}, ${aaoAddress}`)
+    this.aaoEndpoint = aaoEndpoint
+    this.aaoAddress = aaoAddress
+  }
+
+  /**
+   * Updates the discovery node attestation endpoints
+   * @param {{
+   *     endpoints: Array<string>
+   * }} {
+   *     endpoints
+   * }
+   * @memberof RewardsAttester
+   */
+  async updateEndpoints ({ endpoints }) {
+    this.logger.info(`Updating rewards attester endpoints to ${endpoints}`)
+    this.endpoints = endpoints
+  }
+
+  /**
    * Sleeps until the feePayer has a usable Sol balance.
    *
    * @memberof RewardsAttester
