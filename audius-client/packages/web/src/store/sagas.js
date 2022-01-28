@@ -9,6 +9,7 @@ import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreColle
 import explorePageSagas from 'common/store/pages/explore/sagas'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import shareModalSagas from 'common/store/ui/share-modal/sagas'
+import toastSagas from 'common/store/ui/toast/sagas'
 import addToPlaylistSagas from 'components/add-to-playlist/store/sagas'
 import artistRecommendationsSagas from 'components/artist-recommendations/store/sagas'
 import changePasswordSagas from 'components/change-password/store/sagas'
@@ -134,6 +135,7 @@ export default function* rootSaga() {
     repostPageSagas(),
     scrollLockSagas(),
     shareModalSagas(),
+    toastSagas(),
     shareSoundToTikTokModalSagas(),
     smartCollectionPageSagas(),
     stemUploadSagas(),
