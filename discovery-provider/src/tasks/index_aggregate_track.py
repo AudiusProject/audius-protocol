@@ -61,14 +61,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         COALESCE(track_repost.repost_count, 0) AS repost_count,
         COALESCE(track_save.save_count, 0) AS save_count
     FROM
-        (
-            SELECT
-                t.track_id
-            FROM
-                tracks t
-            GROUP BY
-                t.track_id
-        ) AS t
+        new_track t
         LEFT OUTER JOIN (
             SELECT
                 r.repost_item_id AS track_id,
@@ -115,6 +108,8 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 track_id
             FROM
                 new_track
+            WHERE
+                new_track.is_current is TRUE
         ) ON CONFLICT (track_id) DO
     UPDATE
     SET
