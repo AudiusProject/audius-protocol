@@ -44,6 +44,7 @@ import {
   setUserChallengeDisbursed,
   updateHCaptchaScore,
   showRewardClaimedToast,
+  claimChallengeRewardAlreadyClaimed,
   addPendingAutoClaim,
   removePendingAutoClaim
 } from 'common/store/pages/audio-rewards/slice'
@@ -176,19 +177,28 @@ function* claimChallengeRewardAsync(
             yield put(
               setVisibility({ modal: HCAPTCHA_MODAL_NAME, visible: true })
             )
+            yield put(claimChallengeRewardWaitForRetry(claim))
             break
           case FailureReason.COGNITO_FLOW:
             yield put(
               setVisibility({ modal: COGNITO_MODAL_NAME, visible: true })
             )
+            yield put(claimChallengeRewardWaitForRetry(claim))
+            break
+          case FailureReason.ALREADY_DISBURSED:
+          case FailureReason.ALREADY_SENT:
+            yield put(claimChallengeRewardAlreadyClaimed())
             break
           case FailureReason.BLOCKED:
             throw new Error('User is blocked from claiming')
           case FailureReason.UNKNOWN_ERROR:
-          default:
-            throw new Error(`Unknown Error: ${response.error}`)
+            // Retry once in the case of generic failure, otherwise log error and abort
+            if (retryOnFailure) {
+              yield put(claimChallengeReward({ claim, retryOnFailure: false }))
+            } else {
+              throw new Error(`Unknown Error: ${response.error}`)
+            }
         }
-        yield put(claimChallengeRewardWaitForRetry(claim))
       } else {
         yield put(claimChallengeRewardFailed())
       }
