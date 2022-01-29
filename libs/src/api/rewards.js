@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { sampleSize } = require('lodash')
+const { sampleSize, max } = require('lodash')
 
 const { Base, Services } = require('./base')
 const BN = require('bn.js')
@@ -247,23 +247,32 @@ class Rewards extends Base {
     }
 
     try {
-      const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e, logger }))
-      const AAOAttestation = this.getAAOAttestation({
-        challengeId,
-        specifier,
-        handle,
-        amount,
-        AAOEndpoint,
-        oracleEthAddress
-      })
+      // TODO: encode maxtries
+      
+      const [discoveryNodeAttestationResults, aaoAttestationResult] = await Promise.all([
+        this.getDiscoveryAttestationsWithRetries({
+          endpoints,
+          challengeId,
+          encodedUserId,
+          specifier,
+          oracleEthAddress,
+          logger,
+          maxTries: 20
+        }),
+        this.getAAOAttestation({
+          challengeId,
+          specifier,
+          handle,
+          amount,
+          AAOEndpoint,
+          oracleEthAddress
+        })
+      ])
+      const discoveryNodeSuccesses = discoveryNodeAttestationResults.map(r => r.success)
+      const discoveryNodeErrors = discoveryNodeAttestationResults.map(r => r.error)
+      const { success: aaoAttestation, error: aaoAttestationError } = aaoAttestationResult
 
-      const res = await Promise.all([...discprovAttestations, AAOAttestation])
-      const discoveryNodeAttestationResults = res.slice(0, -1)
-      const discoveryNodeAttestations = discoveryNodeAttestationResults.map(r => r.success)
-      const discoveryNodeAttestationErrors = discoveryNodeAttestationResults.map(r => r.error)
-      const { success: aaoAttestation, error: aaoAttestationError } = res[res.length - 1]
-
-      const error = aaoAttestationError || discoveryNodeAttestationErrors.find(Boolean)
+      const error = aaoAttestationError || discoveryNodeErrors.find(Boolean)
       if (error) {
         return {
           discoveryNodeAttestations: null,
@@ -273,7 +282,7 @@ class Rewards extends Base {
       }
 
       return {
-        discoveryNodeAttestations,
+        discoveryNodeAttestations: discoveryNodeSuccesses,
         aaoAttestation,
         error: null
       }
@@ -434,6 +443,53 @@ class Rewards extends Base {
         error: GetAttestationError.UNKNOWN_ERROR
       }
     }
+  }
+
+  async getDiscoveryAttestationsWithRetries ({
+    endpoints,
+    challengeId,
+    encodedUserId,
+    specifier,
+    oracleEthAddress,
+    logger,
+    maxTries
+  }) {
+    let retryCount = 0
+    const completedAttestations = []
+    let needsAttestations = endpoints
+
+    do {
+      logger.info(`Fetching attestations with retries for endpoints: ${needsAttestations}, attempt ${retryCount}`)
+      if (retryCount > 0) {
+        await (new Promise(resolve => setTimeout(resolve, 1000)))
+      }
+
+      const attestations = await Promise.all(needsAttestations.map(async endpoint => {
+        const res = await this.getChallengeAttestation({
+          challengeId,
+          encodedUserId,
+          specifier,
+          oracleEthAddress,
+          discoveryProviderEndpoint: endpoint,
+          logger
+        })
+        return { endpoint, res }
+      }))
+
+      needsAttestations = []
+      attestations.forEach(a => {
+        if (a.res.error === GetAttestationError.CHALLENGE_INCOMPLETE) {
+          needsAttestations.push(a.endpoint)
+          logger.info(`Node ${a.endpoint} challenge still incomplete`)
+        } else {
+          completedAttestations.push(a.res)
+        }
+      })
+
+      retryCount++
+    }
+    while (needsAttestations.length && retryCount <= maxTries)
+    return completedAttestations
   }
 
   /**
