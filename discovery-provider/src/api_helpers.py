@@ -82,12 +82,18 @@ def response_dict_with_metadata(response_dictionary, sign_response):
     response_dictionary["signer"] = shared_config["delegate"]["owner_wallet"]
 
     if sign_response:
-        # generate timestamp with format HH:MM:SS.sssZ
-        timestamp = datetime.datetime.now().isoformat(timespec="milliseconds") + "Z"
-        response_dictionary["timestamp"] = timestamp
+        try:
+            # generate timestamp with format HH:MM:SS.sssZ
+            timestamp = datetime.datetime.now().isoformat(timespec="milliseconds") + "Z"
+            response_dictionary["timestamp"] = timestamp
 
-        signature = generate_signature(response_dictionary)
-        response_dictionary["signature"] = signature
+            signature = generate_signature(response_dictionary)
+            response_dictionary["signature"] = signature
+        except TypeError as e:
+            # do not raise in case of error, so the response is returned
+            logger.error(
+                f"api_helpers.py#response_dict_with_metadata - could not sign response: {e} for type: {type(response_dictionary)} data: {response_dictionary}"
+            )
 
     return response_dictionary
 
