@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { sampleSize, max } = require('lodash')
+const { sampleSize } = require('lodash')
 
 const { Base, Services } = require('./base')
 const BN = require('bn.js')
@@ -79,6 +79,7 @@ class Rewards extends Base {
    *   AAOEndpoint: string,
    *   endpoints: Array<string>,
    *   instructionsPerTransaction?: number,
+   *   maxAggregationAttempts?: number
    *   logger: any
    * }} {
    *   challengeId,
@@ -91,6 +92,7 @@ class Rewards extends Base {
    *   quorumSize,
    *   AAOEndpoint,
    *   endpoints,
+   *   maxAggregationAttempts,
    *   instructionsPerTransaction,
    *   logger
    *   }
@@ -98,7 +100,7 @@ class Rewards extends Base {
    * @memberof Challenge
    */
   async submitAndEvaluate ({
-    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, instructionsPerTransaction, endpoints = null, logger = console
+    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, instructionsPerTransaction, maxAggregationAttempts = 20, endpoints = null, logger = console
   }) {
     let phase
     try {
@@ -114,7 +116,7 @@ class Rewards extends Base {
       logger.info(`submitAndEvaluate: aggregating attestations for userId [${decodeHashId(encodedUserId)}], challengeId [${challengeId}]`)
       phase = AttestationPhases.AGGREGATE_ATTESTATIONS
       const { discoveryNodeAttestations, aaoAttestation, error: aggregateError } = await this.aggregateAttestations({
-        challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints, logger
+        challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints, logger, maxAttempts: maxAggregationAttempts
       })
       if (aggregateError) {
         throw new Error(aggregateError)
@@ -209,6 +211,7 @@ class Rewards extends Base {
    *   amount: number,
    *   quorumSize: number,
    *   AAOEndpoint: string,
+   *   maxAttempts: number
    *   endpoints = null
    *   logger: any
    * }} {
@@ -220,13 +223,14 @@ class Rewards extends Base {
    *   amount,
    *   quorumSize,
    *   AAOEndpoint,
+   *   maxAttempts
    *   endpoints = null,
    *   logger
    * }
    * @returns {Promise<AttestationsReturn>}
    * @memberof Rewards
    */
-  async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null, logger = console }) {
+  async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, maxAttempts, endpoints = null, logger = console }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
     if (endpoints) {
@@ -247,17 +251,15 @@ class Rewards extends Base {
     }
 
     try {
-      // TODO: encode maxtries
-      
       const [discoveryNodeAttestationResults, aaoAttestationResult] = await Promise.all([
-        this.getDiscoveryAttestationsWithRetries({
+        this._getDiscoveryAttestationsWithRetries({
           endpoints,
           challengeId,
           encodedUserId,
           specifier,
           oracleEthAddress,
           logger,
-          maxTries: 20
+          maxAttempts
         }),
         this.getAAOAttestation({
           challengeId,
@@ -445,14 +447,14 @@ class Rewards extends Base {
     }
   }
 
-  async getDiscoveryAttestationsWithRetries ({
+  async _getDiscoveryAttestationsWithRetries ({
     endpoints,
     challengeId,
     encodedUserId,
     specifier,
     oracleEthAddress,
     logger,
-    maxTries
+    maxAttempts
   }) {
     let retryCount = 0
     const completedAttestations = []
@@ -480,7 +482,7 @@ class Rewards extends Base {
       attestations.forEach(a => {
         if (a.res.error === GetAttestationError.CHALLENGE_INCOMPLETE) {
           needsAttestations.push(a.endpoint)
-          logger.info(`Node ${a.endpoint} challenge still incomplete`)
+          logger.info(`Node ${a.endpoint} challenge still incomplete for challenge [${challengeId}], userId: ${encodedUserId}`)
         } else {
           completedAttestations.push(a.res)
         }
@@ -488,7 +490,7 @@ class Rewards extends Base {
 
       retryCount++
     }
-    while (needsAttestations.length && retryCount <= maxTries)
+    while (needsAttestations.length && retryCount <= maxAttempts)
     return completedAttestations
   }
 
