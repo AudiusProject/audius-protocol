@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import func
 from src.models import Play
-from src.tasks.aggregates import aggregate_worker, celery_worker
+from src.tasks.aggregates import try_updating_aggregate_table, update_aggregate_table
 from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
 def _update_aggregate_plays(session):
     current_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
-    aggregate_worker(
+    update_aggregate_table(
         logger,
         session,
         AGGREGATE_PLAYS_TABLE_NAME,
@@ -77,6 +77,6 @@ def update_aggregate_plays(self):
     db = update_aggregate_plays.db
     redis = update_aggregate_plays.redis
 
-    celery_worker(
+    try_updating_aggregate_table(
         logger, db, redis, AGGREGATE_PLAYS_TABLE_NAME, _update_aggregate_plays
     )
