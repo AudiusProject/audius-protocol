@@ -1,7 +1,11 @@
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardID, UserChallenge } from 'common/models/AudioRewards'
-import { getUserChallengesOverrides } from 'common/store/pages/audio-rewards/selectors'
+import {
+  getUserChallenges,
+  getUserChallengesOverrides
+} from 'common/store/pages/audio-rewards/selectors'
+import { removeNullable } from 'common/utils/typeUtils'
 import { getCompletionStages } from 'components/profile-progress/store/selectors'
 
 type OptimisticChallengeCompletionResponse = Partial<
@@ -62,24 +66,15 @@ export const useOptimisticChallengeCompletionStepCounts = () => {
   return completion
 }
 
-/**
- * Given a challenge, returns a challenge that uses an optimistic
- * is_complete and current_step_count based on what the client knows
- * @param challenge The user challenge to get the optimistic state for
- * @returns the same challenge with is_complete and current_step_count overridden as necessary
- */
-export const useOptimisticUserChallenge = (
-  challenge?: UserChallenge
-): OptimisticUserChallenge | undefined => {
-  const stepCountOverrides = useOptimisticChallengeCompletionStepCounts()
-  const userChallengesOverrides = useSelector(getUserChallengesOverrides)
-
-  if (!challenge) {
-    return challenge
-  }
-  const currentStepCountOverride = stepCountOverrides[challenge?.challenge_id]
-  const userChallengeOverrides =
-    userChallengesOverrides[challenge?.challenge_id]
+const getOptimisticChallenge = (
+  challenge: UserChallenge,
+  stepCountOverrides: Partial<Record<ChallengeRewardID, number>>,
+  userChallengesOverrides: Partial<
+    Record<ChallengeRewardID, Partial<UserChallenge>>
+  >
+): OptimisticUserChallenge => {
+  const currentStepCountOverride = stepCountOverrides[challenge.challenge_id]
+  const userChallengeOverrides = userChallengesOverrides[challenge.challenge_id]
 
   const challengeOverridden = {
     ...challenge,
@@ -95,7 +90,7 @@ export const useOptimisticUserChallenge = (
 
   // The client is more up to date than Discovery Nodes, so override whenever possible.
   // Don't override if the challenge is already marked as completed on Discovery.
-  if (!challenge?.is_complete && currentStepCountOverride !== undefined) {
+  if (!challenge.is_complete && currentStepCountOverride !== undefined) {
     challengeOverridden.current_step_count = currentStepCountOverride
     challengeOverridden.is_complete =
       currentStepCountOverride >= challengeOverridden.max_steps
@@ -106,4 +101,41 @@ export const useOptimisticUserChallenge = (
     __isOptimistic: true,
     state: getUserChallengeState(challengeOverridden)
   }
+}
+
+/**
+ * Get all user challenges but in client-side optimistic state
+ * @see useOptimisticUserChallenge
+ * @returns all user challenges
+ */
+export const useOptimisticUserChallenges = () => {
+  const stepCountOverrides = useOptimisticChallengeCompletionStepCounts()
+  const userChallengesOverrides = useSelector(getUserChallengesOverrides)
+  const userChallenges = useSelector(getUserChallenges)
+  return Object.values(userChallenges)
+    .filter(removeNullable)
+    .map(challenge =>
+      getOptimisticChallenge(
+        challenge,
+        stepCountOverrides,
+        userChallengesOverrides
+      )
+    )
+    .reduce((map, challenge) => {
+      map[challenge.challenge_id] = challenge
+      return map
+    }, {} as Partial<Record<ChallengeRewardID, OptimisticUserChallenge>>)
+}
+
+/**
+ * Given a challenge, returns a challenge that uses an optimistic
+ * state and current_step_count based on what the client knows
+ * @param challenge The user challenge to get the optimistic state for
+ * @returns the same challenge with state and current_step_count overridden as necessary
+ */
+export const useOptimisticUserChallenge = (
+  challenge?: UserChallenge
+): OptimisticUserChallenge | undefined => {
+  const optimisticChallenges = useOptimisticUserChallenges()
+  return challenge ? optimisticChallenges[challenge.challenge_id] : challenge
 }
