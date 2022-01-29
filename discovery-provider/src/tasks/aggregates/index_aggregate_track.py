@@ -103,8 +103,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 track_id
             FROM
                 new_track
-            WHERE
-                new_track.is_current is TRUE
         ) ON CONFLICT (track_id) DO
     UPDATE
     SET
