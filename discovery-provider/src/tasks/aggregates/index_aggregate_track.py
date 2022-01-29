@@ -20,6 +20,8 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             t.track_id AS track_id
         FROM
             tracks t
+        WHERE
+            t.is_current IS TRUE
         GROUP BY
             t.track_id
         UNION
