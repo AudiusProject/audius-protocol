@@ -495,7 +495,9 @@ def notifications():
 
         notifications_unsorted.extend(tier_change_notifications)
 
-        logger.info(f"notifications.py | balance change at {datetime.now() - start_time}")
+        logger.info(
+            f"notifications.py | balance change at {datetime.now() - start_time}"
+        )
 
         #
         # Query relevant repost information
@@ -790,7 +792,9 @@ def notifications():
 
         notifications_unsorted.extend(remix_created_notifications)
 
-        logger.info(f"notifications.py | track updates at {datetime.now() - start_time}")
+        logger.info(
+            f"notifications.py | track updates at {datetime.now() - start_time}"
+        )
 
         # Aggregate playlist/album notifs
         collection_query = session.query(Playlist)
@@ -940,6 +944,8 @@ def notifications():
         )
 
         for playlist_id in users_that_favorited_playlists_dict:
+            # TODO: We probably do not need this check because we are filtering
+            # playlist_favorites_query to only matching ids
             if playlist_id not in playlist_update_notifs_by_playlist_id:
                 continue
             playlist_update_notif = playlist_update_notifs_by_playlist_id[playlist_id]
@@ -954,7 +960,9 @@ def notifications():
 
         notifications_unsorted.extend(playlist_update_notifications)
 
-        logger.info(f"notifications.py | playlist updates at {datetime.now() - start_time}")
+        logger.info(
+            f"notifications.py | playlist updates at {datetime.now() - start_time}"
+        )
 
     # Final sort - TODO: can we sort by timestamp?
     sorted_notifications = sorted(
