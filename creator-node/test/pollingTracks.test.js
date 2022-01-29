@@ -110,6 +110,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     session = await createStarterCNodeUser(userId, userWallet)
 
     // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
+    const DUMMY_MULTIHASH = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService.js',
       {
@@ -117,15 +118,19 @@ describe('test Polling Tracks with mocked IPFS', function () {
           saveFileToIPFSFromFS: sinon
             .stub(FileManager, 'saveFileToIPFSFromFS')
             .returns(
-              new Promise((resolve, reject) => {
-                const multihash =
-                  'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
-                return resolve({
-                  multihash,
-                  dstPath: DiskManager.computeFilePath(multihash)
-                })
+              new Promise((resolve) => {
+                return resolve(DUMMY_MULTIHASH)
               })
-            )
+            ),
+          copyMultihashToFs: sinon
+            .stub(FileManager, 'copyMultihashToFs')
+            .returns(
+              new Promise((resolve) => {
+                const dstPath = DiskManager.computeFilePath(DUMMY_MULTIHASH)
+                return resolve(dstPath)
+              })
+            ),
+          '@global': true
         }
       }
     ))
@@ -228,8 +233,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const {
@@ -262,8 +266,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     let resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const wallet = session.walletPublicKey
@@ -399,10 +402,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     /** clockMinTooHigh */
     const clockMinTooHigh = numExpectedFilesForUser + 5
-    resp = await request(app)
-      .get(
-        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMinTooHigh}`
-      )
+    resp = await request(app).get(
+      `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMinTooHigh}`
+    )
     assert.deepStrictEqual(resp.body.data, {
       clockValue: numExpectedFilesForUser,
       syncInProgress: false,
@@ -412,10 +414,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     /** clockMaxTooLow */
     const clockMaxTooLow = -5
-    resp = await request(app)
-      .get(
-        `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMaxTooLow}`
-      )
+    resp = await request(app).get(
+      `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMaxTooLow}`
+    )
     assert.deepStrictEqual(resp.body.data, {
       clockValue: numExpectedFilesForUser,
       syncInProgress: false,
@@ -475,8 +476,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       saveFileToStorage(testAudioFilePath)
     await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID1, fileDir1, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID1, fileDir1, session)
     )
 
     // Compute expected filesHash for user1
@@ -496,8 +496,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       saveFileToStorage(testAudioFilePath)
     await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID2, fileDir2, session2),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID2, fileDir2, session2)
     )
 
     const expectedUser2FilesHash = await DBManager.fetchFilesHashFromDB({
@@ -536,8 +535,16 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(200)
     assert.deepStrictEqual(resp.body.data, {
       users: [
-        { walletPublicKey: userWallet, clock: numExpectedFilesForUser, filesHash: expectedUser1FilesHash },
-        { walletPublicKey: pubKey2, clock: numExpectedFilesForUser, filesHash: expectedUser2FilesHash }
+        {
+          walletPublicKey: userWallet,
+          clock: numExpectedFilesForUser,
+          filesHash: expectedUser1FilesHash
+        },
+        {
+          walletPublicKey: pubKey2,
+          clock: numExpectedFilesForUser,
+          filesHash: expectedUser2FilesHash
+        }
       ]
     })
 
@@ -548,7 +555,11 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(200)
     assert.deepStrictEqual(resp.body.data, {
       users: [
-        { walletPublicKey: userWallet, clock: numExpectedFilesForUser, filesHash: expectedUser1FilesHash },
+        {
+          walletPublicKey: userWallet,
+          clock: numExpectedFilesForUser,
+          filesHash: expectedUser1FilesHash
+        },
         { walletPublicKey: invalidWallet, clock: -1, filesHash: null }
       ]
     })
@@ -563,8 +574,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp
@@ -604,8 +614,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp
@@ -640,8 +649,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp
@@ -677,8 +685,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const { source_file: sourceFile } = resp
@@ -711,8 +718,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
     const { track_segments: trackSegments, source_file: sourceFile } = resp
 
@@ -755,8 +761,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const { track_segments: trackSegments } = resp
@@ -799,8 +804,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp
@@ -904,7 +908,8 @@ describe('test Polling Tracks with real IPFS', function () {
         '../../TranscodingQueue': {
           segment: sinon
             .stub(TranscodingQueue, 'segment')
-            .rejects(new Error('failed to segment'))
+            .rejects(new Error('failed to segment')),
+          '@global': true
         }
       }
     )
@@ -913,8 +918,7 @@ describe('test Polling Tracks with real IPFS', function () {
     try {
       await handleTrackContentRoute(
         logContext,
-        getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.blacklistManager
+        getReqObj(fileUUID, fileDir, session)
       )
       assert.fail('Should have thrown error if segmenting failed')
     } catch (e) {
@@ -929,7 +933,8 @@ describe('test Polling Tracks with real IPFS', function () {
         '../../TranscodingQueue': {
           transcode320: sinon
             .stub(TranscodingQueue, 'transcode320')
-            .rejects(new Error('failed to transcode'))
+            .rejects(new Error('failed to transcode')),
+          '@global': true
         }
       }
     )
@@ -938,8 +943,7 @@ describe('test Polling Tracks with real IPFS', function () {
     try {
       await handleTrackContentRoute(
         logContext,
-        getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.blacklistManager
+        getReqObj(fileUUID, fileDir, session)
       )
       assert.fail('Should have thrown error if transcoding failed')
     } catch (e) {
@@ -951,8 +955,7 @@ describe('test Polling Tracks with real IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
-      getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.blacklistManager
+      getReqObj(fileUUID, fileDir, session)
     )
 
     const { track_segments: trackSegments, transcodedTrackCID } = resp
