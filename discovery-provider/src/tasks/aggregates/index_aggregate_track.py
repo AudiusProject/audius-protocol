@@ -1,6 +1,5 @@
 import logging
 
-
 from src.tasks.aggregates import try_updating_aggregate_table, update_aggregate_table
 from src.tasks.celery_app import celery
 from src.tasks.index_aggregate_user import get_latest_blocknumber
