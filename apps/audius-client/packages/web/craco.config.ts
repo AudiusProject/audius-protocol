@@ -1,8 +1,15 @@
-import { addBeforeLoader, loaderByName } from '@craco/craco'
+import { addBeforeLoader, loaderByName, when } from '@craco/craco'
 import { Configuration } from 'webpack'
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
 export default {
+  babel: {
+    plugins: ['lodash']
+  },
   webpack: {
+    plugins: when(process.env.BUNDLE_ANALYZE === 'true', () => [
+      new BundleAnalyzerPlugin()
+    ]),
     configure: (webpackConfig: Configuration) => {
       const wasmExtensionRegExp = /\.wasm$/
       webpackConfig.resolve?.extensions?.push('.wasm')
