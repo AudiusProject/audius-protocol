@@ -253,50 +253,71 @@ function* watchClaimChallengeReward() {
   })
 }
 
-export function* watchFetchUserChallenges() {
-  yield takeEvery(fetchUserChallenges.type, function* () {
-    yield call(waitForBackendSetup)
-    const currentUserId: number = yield select(getUserId)
+function* fetchUserChallengesAsync() {
+  yield call(waitForBackendSetup)
+  const currentUserId: number = yield select(getUserId)
 
-    try {
-      const userChallenges: UserChallenge[] = yield call(
-        apiClient.getUserChallenges,
-        {
-          userID: currentUserId
-        }
-      )
-      const prevChallenges: Partial<Record<
-        ChallengeRewardID,
-        UserChallenge
-      >> = yield select(getUserChallenges)
-      const challengesOverrides: Partial<Record<
-        ChallengeRewardID,
-        UserChallenge
-      >> = yield select(getUserChallengesOverrides)
-      let newDisbursement = false
-      for (const challenge of userChallenges) {
-        const prevChallenge = prevChallenges[challenge.challenge_id]
-        const challengeOverrides = challengesOverrides[challenge.challenge_id]
-        // Check for new disbursements
-        if (
-          challenge.is_disbursed &&
-          prevChallenge &&
-          !prevChallenge.is_disbursed && // it wasn't already claimed
-          (!challengeOverrides || !challengeOverrides.is_disbursed) // we didn't claim this session
-        ) {
-          newDisbursement = true
-        }
+  try {
+    const userChallenges: UserChallenge[] = yield call(
+      apiClient.getUserChallenges,
+      {
+        userID: currentUserId
       }
-      if (newDisbursement) {
-        yield put(getBalance())
-        yield put(showMusicConfetti())
-        yield put(showRewardClaimedToast())
-      }
-      yield put(fetchUserChallengesSucceeded({ userChallenges }))
-    } catch (e) {
-      console.error(e)
-      yield put(fetchUserChallengesFailed())
+    )
+    yield put(fetchUserChallengesSucceeded({ userChallenges }))
+  } catch (e) {
+    console.error(e)
+    yield put(fetchUserChallengesFailed())
+  }
+}
+
+function* checkForNewDisbursements(
+  action: ReturnType<typeof fetchUserChallengesSucceeded>
+) {
+  const { userChallenges } = action.payload
+  if (!userChallenges) {
+    return
+  }
+  const prevChallenges: Partial<Record<
+    ChallengeRewardID,
+    UserChallenge
+  >> = yield select(getUserChallenges)
+  const challengesOverrides: Partial<Record<
+    ChallengeRewardID,
+    UserChallenge
+  >> = yield select(getUserChallengesOverrides)
+  let newDisbursement = false
+  for (const challenge of userChallenges) {
+    const prevChallenge = prevChallenges[challenge.challenge_id]
+    const challengeOverrides = challengesOverrides[challenge.challenge_id]
+    // Check for new disbursements
+    if (
+      challenge.is_disbursed &&
+      prevChallenge &&
+      !prevChallenge.is_disbursed && // it wasn't already claimed
+      (!challengeOverrides || !challengeOverrides.is_disbursed) // we didn't claim this session
+    ) {
+      newDisbursement = true
     }
+  }
+  if (newDisbursement) {
+    yield put(getBalance())
+    yield put(showMusicConfetti())
+    yield put(showRewardClaimedToast())
+  }
+}
+
+function* watchFetchUserChallengesSucceeded() {
+  yield takeEvery(fetchUserChallengesSucceeded.type, function* (
+    action: ReturnType<typeof fetchUserChallengesSucceeded>
+  ) {
+    yield call(checkForNewDisbursements, action)
+  })
+}
+
+function* watchFetchUserChallenges() {
+  yield takeEvery(fetchUserChallenges.type, function* () {
+    yield call(fetchUserChallengesAsync)
   })
 }
 
@@ -345,6 +366,7 @@ function* userChallengePollingDaemon() {
 const sagas = () => {
   const sagas = [
     watchFetchUserChallenges,
+    watchFetchUserChallengesSucceeded,
     watchClaimChallengeReward,
     watchSetHCaptchaStatus,
     watchSetCognitoFlowStatus,
