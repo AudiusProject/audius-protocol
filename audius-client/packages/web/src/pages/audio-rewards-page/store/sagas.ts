@@ -7,7 +7,8 @@ import {
   select,
   take,
   takeEvery,
-  takeLatest
+  takeLatest,
+  delay
 } from 'redux-saga/effects'
 
 import {
@@ -21,7 +22,6 @@ import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import {
   getClaimStatus,
   getClaimToRetry,
-  getPendingAutoClaims,
   getUserChallenge,
   getUserChallenges,
   getUserChallengesOverrides
@@ -44,9 +44,7 @@ import {
   setUserChallengeDisbursed,
   updateHCaptchaScore,
   showRewardClaimedToast,
-  claimChallengeRewardAlreadyClaimed,
-  addPendingAutoClaim,
-  removePendingAutoClaim
+  claimChallengeRewardAlreadyClaimed
 } from 'common/store/pages/audio-rewards/slice'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { getBalance, increaseBalance } from 'common/store/wallet/slice'
@@ -120,12 +118,16 @@ function* claimChallengeRewardAsync(
   // This is possible because the client may optimistically set a challenge as complete
   // even though the DN has not yet indexed the change that would mark the challenge as complete.
   // In this case, we wait until the challenge is complete in the DN before claiming
-  yield call(
-    waitForValue,
-    getUserChallenge,
-    { challengeId },
-    (challenge: UserChallenge) => challenge.is_complete
-  )
+  yield race({
+    isComplete: call(
+      waitForValue,
+      getUserChallenge,
+      { challengeId },
+      (challenge: UserChallenge) => challenge.is_complete
+    ),
+    poll: call(pollUserChallenges),
+    timeout: delay(3000)
+  })
 
   const quorumSize = remoteConfigInstance.getRemoteVar(
     IntKeys.ATTESTATION_QUORUM_SIZE
@@ -271,15 +273,10 @@ export function* watchFetchUserChallenges() {
         ChallengeRewardID,
         UserChallenge
       >> = yield select(getUserChallengesOverrides)
-      const pendingAutoClaims: Partial<Record<
-        ChallengeRewardID,
-        number
-      >> = yield select(getPendingAutoClaims)
       let newDisbursement = false
       for (const challenge of userChallenges) {
         const prevChallenge = prevChallenges[challenge.challenge_id]
         const challengeOverrides = challengesOverrides[challenge.challenge_id]
-        const pendingAutoClaim = pendingAutoClaims[challenge.challenge_id]
         // Check for new disbursements
         if (
           challenge.is_disbursed &&
@@ -288,19 +285,6 @@ export function* watchFetchUserChallenges() {
           (!challengeOverrides || !challengeOverrides.is_disbursed) // we didn't claim this session
         ) {
           newDisbursement = true
-          if (pendingAutoClaim) {
-            yield put(removePendingAutoClaim(challenge.challenge_id))
-          }
-        }
-        // Check for newly completed, undisbursed challenges
-        else if (
-          challenge.is_complete &&
-          prevChallenge &&
-          !prevChallenge.is_complete &&
-          !challenge.is_disbursed &&
-          (!challengeOverrides || !challengeOverrides.is_disbursed)
-        ) {
-          yield put(addPendingAutoClaim(challenge.challenge_id))
         }
       }
       if (newDisbursement) {
@@ -328,6 +312,13 @@ function* watchUpdateHCaptchaScore() {
       yield put(setHCaptchaStatus({ status: HCaptchaStatus.SUCCESS }))
     }
   })
+}
+
+function* pollUserChallenges() {
+  while (true) {
+    yield put(fetchUserChallenges())
+    yield delay(500)
+  }
 }
 
 function* userChallengePollingDaemon() {
