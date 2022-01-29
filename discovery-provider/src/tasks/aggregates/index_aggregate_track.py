@@ -58,7 +58,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         COALESCE(track_repost.repost_count, 0) AS repost_count,
         COALESCE(track_save.save_count, 0) AS save_count
     FROM
-        new_track t
+        tracks t
         LEFT OUTER JOIN (
             SELECT
                 r.repost_item_id AS track_id,
