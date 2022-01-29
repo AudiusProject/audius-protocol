@@ -15,11 +15,7 @@ AGGREGATE_TRACK = "aggregate_track"
 # For that subset of tracks calculate the play/repost total counts
 # Insert that count for new users or update an existing row
 UPDATE_AGGREGATE_TRACK_QUERY = """
-    WITH aggregate_track_checkpoints AS (
-        SELECT
-            :prev_blocknumber AS prev_blocknumber
-    ),
-    new_track AS (
+    WITH new_track AS (
         SELECT
             t.track_id AS track_id
         FROM
@@ -79,7 +75,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                     FROM
                         new_track
                 )
-                AND r.blocknumber > :prev_blocknumber
             GROUP BY
                 r.repost_item_id
         ) AS track_repost ON track_repost.track_id = t.track_id
@@ -99,7 +94,6 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                     FROM
                         new_track
                 )
-                AND s.blocknumber > :prev_blocknumber
             GROUP BY
                 s.save_item_id
         ) AS track_save ON track_save.track_id = t.track_id

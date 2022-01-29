@@ -15,30 +15,15 @@ AGGREGATE_PLAYS_TABLE_NAME = "aggregate_plays"
 # For new play item ids, insert those aggregate counts
 # For existing play item ids, add the new aggregate count to the existing aggregate count
 UPDATE_AGGREGATE_PLAYS_QUERY = """
-    WITH aggregate_plays_last_checkpoint AS (
-        SELECT
-            :prev_id_checkpoint AS prev_id_checkpoint,
-            :current_id_checkpoint AS current_id_checkpoint
-    ),
-    new_plays AS (
+    WITH new_plays AS (
         SELECT
             play_item_id,
             count(play_item_id) AS count
         FROM
             plays p
         WHERE
-            p.id > (
-                SELECT
-                    prev_id_checkpoint
-                FROM
-                    aggregate_plays_last_checkpoint
-            )
-            AND p.id <= (
-                SELECT
-                    current_id_checkpoint
-                FROM
-                    aggregate_plays_last_checkpoint
-            )
+            p.id > :prev_id_checkpoint
+            AND p.id <= :current_id_checkpoint
         GROUP BY
             play_item_id
     )
