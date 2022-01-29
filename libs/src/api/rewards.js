@@ -461,7 +461,7 @@ class Rewards extends Base {
     let needsAttestations = endpoints
 
     do {
-      logger.info(`Fetching attestations with retries for endpoints: ${needsAttestations}, attempt ${retryCount}`)
+      logger.info(`Aggregating attestations with retries challenge: ${challengeId}, userId: ${encodedUserId}, endpoints: ${needsAttestations}, attempt ${retryCount}`)
       if (retryCount > 0) {
         await (new Promise(resolve => setTimeout(resolve, 1000)))
       }
@@ -491,6 +491,12 @@ class Rewards extends Base {
       retryCount++
     }
     while (needsAttestations.length && retryCount <= maxAttempts)
+
+    if (needsAttestations.length) {
+      logger.info(`Failed to aggregate attestations for challenge ${challengeId}, userId: ${encodedUserId}`)
+    } else {
+      logger.info(`Successfully aggregated attestations for challenge ${challengeId}, userId: ${encodedUserId}`)
+    }
     return completedAttestations
   }
 
