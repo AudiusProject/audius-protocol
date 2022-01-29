@@ -98,7 +98,7 @@
     "web-vitals": "0.2.2",
     "web3modal": "1.9.3",
     "webgl-context": "2.2.0",
-    "webpack-bundle-analyzer": "^4.5.0"
+    "webpack-bundle-analyzer": "4.5.0"
   },
   "main": "src/electron.js",
   "scripts": {
@@ -151,7 +151,7 @@
     "dist:win:linux-publish-production": "node ./scripts/dist.js --win --linux --publish always --env production",
     "write-sha": "./scripts/writeSHA.sh",
     "analyze": "source-map-explorer build-production/static/js/*.js",
-    "analyzeBundle": "node ./scripts/analyzeBundle.js",
+    "analyzeBundle": "env-cmd ./.env/.env.bundle npm run build:prod",
     "typecheck": "tsc -w --allowJs",
     "update-ipfs-build:dev": "node ./scripts/updateIpfsBuild.js dev",
     "update-ipfs-build:stage": "node ./scripts/updateIpfsBuild.js stage",
@@ -204,9 +204,11 @@
     "@types/react-redux": "7.1.7",
     "@types/react-router-dom": "5.3.3",
     "@types/webpack": "4.41.32",
+    "@types/webpack-bundle-analyzer": "4.4.1",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "2.30.0",
     "abort-controller": "3.0.0",
+    "babel-plugin-lodash": "3.3.4",
     "babel-plugin-macros": "3.1.0",
     "commander": "2.20.3",
     "electron": "12.0.9",
