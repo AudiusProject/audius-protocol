@@ -653,3 +653,5 @@ export const registerContract = async (governance, contractKey, contractAddress,
 
   return parseTx(txR)
 }
+
+export const CallValueZero = toBN(0)
