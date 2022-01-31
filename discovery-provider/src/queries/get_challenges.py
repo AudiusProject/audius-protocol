@@ -151,7 +151,7 @@ def get_challenges(
     challenges_and_disbursements = [
         c
         for c in challenges_and_disbursements
-        if event_bus.get_manager(c[0].challenge_id) is not None
+        if event_bus.does_manager_exist(c[0].challenge_id)
     ]
 
     # Combine aggregates

@@ -62,7 +62,11 @@ class ChallengeEventBus:
 
     def get_manager(self, challenge_id: str) -> ChallengeManager:
         """Gets a manager for a given challenge_id"""
-        return self._managers.get(challenge_id)
+        return self._managers[challenge_id]
+
+    def does_manager_exist(self, challenge_id: str) -> bool:
+        """Returns whether or not a manager exists for a given challenge_id"""
+        return challenge_id in self._managers
 
     @contextmanager
     def use_scoped_dispatch_queue(self):
