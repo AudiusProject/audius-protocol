@@ -3,7 +3,9 @@
 import * as DiscoveryAPI from '@audius/libs/src/services/discoveryProvider/requests'
 import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
 import BN from 'bn.js'
-import moment from 'moment-timezone'
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 
 import placeholderCoverArt from 'common/assets/image/imageBlank2x.png'
 import imageCoverPhotoBlank from 'common/assets/image/imageCoverPhotoBlank.jpg'
@@ -33,6 +35,8 @@ import {
   LIBS_INITTED_EVENT
 } from './audius-backend/eagerLoadUtils'
 import { monitoringCallbacks } from './serviceMonitoring'
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
 
@@ -2322,7 +2326,7 @@ class AudiusBackend {
     if (!account) return
     try {
       const { data, signature } = await AudiusBackend.signData()
-      const timezone = moment.tz.guess()
+      const timezone = dayjs.tz.guess()
       const res = await fetch(`${IDENTITY_SERVICE}/users/update`, {
         method: 'POST',
         headers: {
