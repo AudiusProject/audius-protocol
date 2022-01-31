@@ -17,6 +17,7 @@ import {
   getUserId,
   getUserHandle
 } from 'common/store/account/selectors'
+import { setDominantColors } from 'common/store/average-color/slice'
 import * as cacheActions from 'common/store/cache/actions'
 import * as trackActions from 'common/store/cache/tracks/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
@@ -29,7 +30,6 @@ import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import TrackDownload from 'services/audius-backend/TrackDownload'
 import { make } from 'store/analytics/actions'
-import { setDominantColors } from 'store/application/ui/average-color/slice'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'

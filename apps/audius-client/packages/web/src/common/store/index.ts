@@ -4,6 +4,7 @@ import Cache from 'common/models/Cache'
 import { Collection } from 'common/models/Collection'
 import Kind from 'common/models/Kind'
 import accountSlice from 'common/store/account/reducer'
+import averageColorReducer from 'common/store/average-color/slice'
 import collectionsErrorSagas from 'common/store/cache/collections/errorSagas'
 import collectionsReducer from 'common/store/cache/collections/reducer'
 import collectionsSagas from 'common/store/cache/collections/sagas'
@@ -68,6 +69,7 @@ export const reducers = {
 
   // UI
   ui: combineReducers({
+    averageColor: averageColorReducer,
     addToPlaylist: addToPlaylistReducer,
     createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
@@ -130,6 +132,7 @@ export type CommonState = {
   wallet: ReturnType<typeof wallet>
 
   ui: {
+    averageColor: ReturnType<typeof averageColorReducer>
     addToPlaylist: AddToPlaylistState
     createPlaylistModal: CreatePlaylistModalState
     collectibleDetails: CollectibleDetailsState
