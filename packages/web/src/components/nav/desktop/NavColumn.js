@@ -16,6 +16,7 @@ import {
   getAccountUser,
   getAccountStatus
 } from 'common/store/account/selectors'
+import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import {
   createPlaylist,
   addTrackToPlaylist
@@ -47,7 +48,6 @@ import { resetState as resetUploadState } from 'pages/upload-page/store/actions'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { make, useRecord } from 'store/analytics/actions'
-import { getDominantColorsByTrack } from 'store/application/ui/average-color/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import {
