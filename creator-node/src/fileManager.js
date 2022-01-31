@@ -517,7 +517,7 @@ async function saveFileForMultihashToFS(
         time: Date.now()
       })
     } catch (e) {
-      // await removeFile(expectedStoragePath)
+      await removeFile(expectedStoragePath)
       if (numRetries > 0) {
         return saveFileForMultihashToFS(
           serviceRegistry,

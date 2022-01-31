@@ -8,6 +8,8 @@ const DBManager = require('../../dbManager.js')
 const { getCreatorNodeEndpoints } = require('../../middlewares.js')
 const initBootstrapAndRefreshPeers = require('./initBootstrapAndRefreshPeers.js')
 const { saveFileForMultihashToFS } = require('../../fileManager.js')
+const { SyncMode } = require('../../snapbackSM/computeSyncModeForUserAndReplica.js')
+const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator.js')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
@@ -403,19 +405,23 @@ async function releaseUserRedisLock({ redis, wallet }) {
 /**
  * Export data for user from secondary and save locally, until complete
  */
-async function primarySyncFromSecondary({
+async function primarySyncFromSecondaryOLD({
   serviceRegistry,
   secondary,
   wallet,
   selfEndpoint,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
-  const { redis } = serviceRegistry
+  const { redis, nodeConfig } = serviceRegistry
+
+  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
+    'syncRequestMaxUserFailureCountBeforeSkip'
+  )
 
   const logger = genericLogger.child(logContext)
   const logPrefix = `[primarySyncFromSecondary] [Wallet: ${wallet}] [Secondary: ${secondary}]`
-
   logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
+  const start = Date.now()
 
   try {
     await acquireUserRedisLock({ redis, wallet })
@@ -477,6 +483,129 @@ async function primarySyncFromSecondary({
     // TODO logging
     console.log(`SIDTEST DONE WITH PRIMARYSYNCFROMSECONDARY`)
   }
+}
+
+async function primarySyncFromSecondary({
+  serviceRegistry,
+  secondary,
+  wallet,
+  selfEndpoint,
+  logContext = DEFAULT_LOG_CONTEXT
+}) {
+  return sync({
+    serviceRegistry,
+    endpoint: secondary,
+    wallet,
+    selfEndpoint,
+    logContext,
+    syncMode: SyncMode.PrimaryShouldSync
+  })
+}
+
+async function sync({
+  serviceRegistry,
+  endpoint,
+  wallet,
+  selfEndpoint,
+  syncMode,
+  logContext = DEFAULT_LOG_CONTEXT
+}) {
+  const { redis, nodeConfig } = serviceRegistry
+
+  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
+    'syncRequestMaxUserFailureCountBeforeSkip'
+  )
+
+  const logPrefix = `[Sync] [Mode: ${syncMode}] [Wallet: ${wallet}] [Endpoint: ${endpoint}]`
+  const logger = genericLogger.child(logContext)
+  logger.info(`${logPrefix} Beginning...`)
+  const start = Date.now()
+
+  // object to track if the function errored, returned at the end of the function
+  let errorObj = null
+
+  try {
+    await acquireUserRedisLock({ redis, wallet })
+
+    const userReplicaSet = await getUserReplicaSet({
+      serviceRegistry,
+      logger,
+      wallet,
+      selfEndpoint: selfEndpoint
+    })
+
+    let completed = false
+    let clockRangeMin = 0
+    while (!completed) {
+      const exportData = await fetchExportFromSecondary({
+        endpoint,
+        wallet,
+        clockRangeMin,
+        selfEndpoint,
+        logPrefix
+      })
+
+      const { cnodeUsers, ipfsIDObj } = exportData
+
+      const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
+      if (fetchedCNodeUser.walletPublicKey !== wallet) {
+        throw new Error('NO BAD NO')
+      }
+
+      // Attempt to connect to opposing IPFS node without waiting
+      initBootstrapAndRefreshPeers(
+        serviceRegistry,
+        logger,
+        ipfsIDObj.addresses,
+        logPrefix
+      )
+
+      await saveExportedData({
+        fetchedCNodeUser,
+        serviceRegistry,
+        userReplicaSet,
+        logger
+      })
+
+      // While-loop termination
+      const clockInfo = fetchedCNodeUser.clockInfo
+      if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
+        completed = true
+      } else {
+        clockRangeMin = clockInfo.requestedClockRangeMax + 1
+      }
+    }
+  } catch (e) {
+    /**
+     * TODO move inside argument, defaulted off
+     */
+    // two errors where we wipe the state on the secondary
+    // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
+    // if the secondary gets into a weird state with constraints, wipe the records before future re-syncs
+    if (
+      e.message.includes('Can only insert contiguous clock values') ||
+      e.message.includes('SequelizeForeignKeyConstraintError')
+    ) {
+      logger.error(`${logPrefix} Sync error ${e.message} - Clearing wallet DB state.`)
+      await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
+    }
+    errorObj = e
+
+    await SyncHistoryAggregator.recordSyncFail(wallet)
+  } finally {
+    await releaseUserRedisLock({ redis, wallet })
+
+    if (errorObj) {
+      logger.error(`${logPrefix} Error ${errorObj.message} [Duration: ${Date.now() - start}ms]`)
+    } else {
+      logger.info(`${logPrefix} Complete [Duration: ${Date.now() - start}ms]`)
+    }
+
+    // TODO logging
+    console.log(`SIDTEST DONE WITH PRIMARYSYNCFROMSECONDARY`)
+  }
+
+  return errorObj
 }
 
 module.exports = primarySyncFromSecondary
