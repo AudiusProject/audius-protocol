@@ -515,25 +515,10 @@ async function _addToIpfsWithRetries({
 
 module.exports = function (app) {
   /**
-   * TODO: deprecate this route in favor of `/async_processing_status`.
+   * TODO: Eventually deprecate '/track_content_status'
    */
   app.get(
-    '/track_content_status',
-    handleResponse(async (req, res) => {
-      const AsyncProcessingQueue =
-        req.app.get('serviceRegistry').asyncProcessingQueue
-
-      const redisKey = AsyncProcessingQueue.constructAsyncProcessingKey(
-        req.query.uuid
-      )
-      const value = (await redisClient.get(redisKey)) || '{}'
-
-      return successResponse(JSON.parse(value))
-    })
-  )
-
-  app.get(
-    '/async_processing_status',
+    ['/track_content_status', '/async_processing_status'],
     handleResponse(async (req, res) => {
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
