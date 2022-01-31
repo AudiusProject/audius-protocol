@@ -293,9 +293,9 @@ def fetch_ipfs_metadata(
                 else user_metadata_format
             )
             user_id = cid_to_user_id[cid]
-            if user_id in user_to_replica_set:
+            if user_id and user_id in user_to_replica_set:
                 user_replica_set = user_to_replica_set[
-                    cid_to_user_id[cid]
+                    user_id
                 ]  # user or track owner's replica set
                 future = executor.submit(
                     update_task.ipfs_client.get_metadata,
@@ -307,7 +307,7 @@ def fetch_ipfs_metadata(
                 futures_map[future] = [cid, txhash]
             else:
                 logger.warn(
-                    f"index.py | failed to find existing user for txhash {txhash} with metadata cid {cid}"
+                    f"index.py | failed to find existing user for txhash {txhash} with metadata cid {cid} - missing user id {user_id}"
                 )
 
         for future in concurrent.futures.as_completed(futures):
