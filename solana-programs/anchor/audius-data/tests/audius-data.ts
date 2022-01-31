@@ -387,6 +387,8 @@ describe("audius-data", () => {
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
 
+
+    let errored = false;
     try {
       await testCreateUser({
         provider,
@@ -404,11 +406,16 @@ describe("audius-data", () => {
         adminStgPublicKey: adminStgKeypair.publicKey,
       });
     } catch (e) {
-      console.log(`Error found as expected ${e}`);
+      errored = true;
+      console.log(`Error found as expected ${e} - when trying to create user that already exists`);
+    }
+
+    if (!errored) {
+      throw new Error('Creating existing user did not fail');
     }
   });
 
-  it("initializing + creating user", async () => {
+  it("creating initialized user should fail", async () => {
     let { testEthAddr, testEthAddrBytes, handleBytesArray, metadata, pkString } =
       initTestConstants();
 
@@ -441,6 +448,7 @@ describe("audius-data", () => {
     // Message as the incoming public key
     let message = newUserKeypair.publicKey.toString();
 
+    let errored = false;
     try {
       await testCreateUser({
         provider,
@@ -458,7 +466,12 @@ describe("audius-data", () => {
         adminStgPublicKey: adminStgKeypair.publicKey,
       });
     } catch (e) {
-      console.log(`Error found as expected ${e}`);
+      errored = true;
+      console.log(`Error found as expected ${e} - when trying to create a user that was initialized`);
+    }
+
+    if (!errored) {
+      throw new Error('Creating an already initialized user did not fail');
     }
   });
 
