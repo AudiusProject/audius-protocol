@@ -24,7 +24,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrackInfo'
 import AudioStream from 'audio/AudioStream'
 import { webglSupported } from './utils'
-import { getDominantColorsByTrack } from 'store/application/ui/average-color/slice'
+import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 

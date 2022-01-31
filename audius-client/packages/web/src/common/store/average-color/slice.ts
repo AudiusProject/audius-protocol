@@ -3,8 +3,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import Color from 'common/models/Color'
 import { CID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
+import { CommonState } from 'common/store'
 import { Nullable } from 'common/utils/typeUtils'
-import { AppState } from 'store/types'
 
 const initialState: {
   averageColor: { [multihash: string]: Color }
@@ -19,7 +19,7 @@ const initialState: {
  * Colors is a map of art cid -> Color
  */
 const slice = createSlice({
-  name: 'application/ui/averageColor',
+  name: 'ui/averageColor',
   initialState,
   reducers: {
     setAverageColor: (
@@ -42,28 +42,27 @@ const slice = createSlice({
 export const { setAverageColor, setDominantColors } = slice.actions
 
 export const getAverageColor = (
-  state: AppState,
+  state: CommonState,
   { multihash }: { multihash: Nullable<CID> }
 ): Nullable<Color> =>
-  (multihash && state.application.ui.averageColor.averageColor[multihash]) ||
-  null
+  (multihash && state.ui.averageColor.averageColor[multihash]) || null
 
 export const getAverageColorByTrack = (
-  state: AppState,
+  state: CommonState,
   { track }: { track: Nullable<Track> }
 ): Nullable<Color> => {
   const multihash = track?.cover_art_sizes ?? track?.cover_art
   if (!multihash) return null
-  return state.application.ui.averageColor.averageColor[multihash] ?? null
+  return state.ui.averageColor.averageColor[multihash] ?? null
 }
 
 export const getDominantColorsByTrack = (
-  state: AppState,
+  state: CommonState,
   { track }: { track: Nullable<Track> }
 ): Nullable<Color[]> => {
   const multihash = track?.cover_art_sizes ?? track?.cover_art
   if (!multihash) return null
-  return state.application.ui.averageColor.dominantColors[multihash] ?? null
+  return state.ui.averageColor.dominantColors[multihash] ?? null
 }
 
 export default slice.reducer
