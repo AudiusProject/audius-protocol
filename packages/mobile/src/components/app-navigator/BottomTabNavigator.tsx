@@ -25,9 +25,9 @@ import {
   TrendingStackParamList
 } from './types'
 
-// const EmptyScreen = () => {
-//   return <View />
-// }
+const EmptyScreen = () => {
+  return <View />
+}
 
 const styles = StyleSheet.create({
   tabNavigator: {
@@ -93,6 +93,7 @@ const Tab = createBottomTabNavigator()
 
 type BottomTabNavigatorProps = {
   onBottomTabBarLayout: BottomTabBarProps['onLayout']
+  nativeScreens: Set<string>
 }
 
 /**
@@ -103,6 +104,7 @@ type BottomTabNavigatorProps = {
  * because of the way the top level navigator is hidden to display the WebView
  */
 const BottomTabNavigator = ({
+  nativeScreens,
   onBottomTabBarLayout
 }: BottomTabNavigatorProps) => {
   const state = useNavigationState(state => state)
@@ -139,6 +141,13 @@ const BottomTabNavigator = ({
     setBottomBarDisplay({ isShowing: true })
   }, [setBottomBarDisplay])
 
+  const screen = (name: string, Component: () => JSX.Element) => (
+    <Tab.Screen
+      name={name}
+      component={nativeScreens.has(name) ? Component : EmptyScreen}
+    />
+  )
+
   return (
     <>
       <View style={styles.tabNavigator}>
@@ -160,11 +169,11 @@ const BottomTabNavigator = ({
           )}
           screenOptions={{ headerShown: false }}
         >
-          <Tab.Screen name='feed' component={FeedStackScreen} />
-          <Tab.Screen name='trending' component={TrendingStackScreen} />
-          <Tab.Screen name='explore' component={ExploreStackScreen} />
-          <Tab.Screen name='favorites' component={FavoritesStackScreen} />
-          <Tab.Screen name='profile' component={ProfileStackScreen} />
+          {screen('feed', FeedStackScreen)}
+          {screen('trending', TrendingStackScreen)}
+          {screen('explore', ExploreStackScreen)}
+          {screen('favorites', FavoritesStackScreen)}
+          {screen('profile', ProfileStackScreen)}
         </Tab.Navigator>
       </View>
     </>
