@@ -32,7 +32,7 @@
 		"starting_block": 25346436
 	},
 	{
-		"id": "r-v",
+		"id": "ref-v",
 		"type": "aggregate",
 		"amount": "1",
 		"active": true,

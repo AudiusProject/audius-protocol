@@ -71,7 +71,7 @@ class ReferredChallengeUpdater(ChallengeUpdater):
 
 referral_challenge_manager = ChallengeManager("referrals", ReferralChallengeUpdater())
 verified_referral_challenge_manager = ChallengeManager(
-    "r-v", VerifiedReferralChallengeUpdater()
+    "ref-v", VerifiedReferralChallengeUpdater()
 )
 
 referred_challenge_manager = ChallengeManager("referred", ReferredChallengeUpdater())
