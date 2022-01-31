@@ -102,6 +102,7 @@ const AppNavigator = () => {
           <Stack.Screen name='main' navigationKey='main'>
             {() => (
               <BottomTabNavigator
+                nativeScreens={nativeScreens}
                 onBottomTabBarLayout={handleBottomTabBarLayout}
               />
             )}
