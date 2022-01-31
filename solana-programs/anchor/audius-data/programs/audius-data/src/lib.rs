@@ -119,7 +119,7 @@ pub mod audius_data {
         ctx: Context<CreateUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        handle_seed: [u8; 16],
+        _handle_seed: [u8; 16],
         _user_bump: u8,
         metadata: String,
         user_authority: Pubkey,
@@ -133,15 +133,6 @@ pub mod audius_data {
         );
 
         if derived_base != base {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        // Confirm that the derived pda from base is the same as the user storage account
-        let (derived_user_acct, _) = Pubkey::find_program_address(
-            &[&derived_base.to_bytes()[..32], &handle_seed],
-            ctx.program_id,
-        );
-        if derived_user_acct != ctx.accounts.user.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
