@@ -32,7 +32,7 @@
 		"starting_block": 25346436
 	},
 	{
-		"id": "referrals-verified",
+		"id": "r-v",
 		"type": "aggregate",
 		"amount": "1",
 		"active": true,
