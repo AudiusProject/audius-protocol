@@ -8,6 +8,7 @@ import { AudiusData } from "../target/types/audius_data";
 import {
   confirmLogInTransaction,
   initTestConstants,
+  testCreateUser,
   testInitUser,
   testInitUserSolPubkey,
 } from "./test-helpers";
@@ -349,6 +350,129 @@ describe("audius-data", () => {
       signers: [newUserKeypair],
     });
     await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
+  });
+
+  it("Creating user!", async () => {
+    let { testEthAddr, testEthAddrBytes, handleBytesArray, metadata, pkString } =
+      initTestConstants();
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+    let newUserAcctPDA = derivedAddress;
+
+    // New sol key that will be used to permission user updates
+    let newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKeypair.publicKey.toString();
+
+    await testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    });
+
+
+    let errored = false;
+    try {
+      await testCreateUser({
+        provider,
+        program,
+        message,
+        pkString,
+        baseAuthorityAccount,
+        testEthAddr,
+        testEthAddrBytes,
+        handleBytesArray,
+        bumpSeed,
+        metadata,
+        newUserKeypair,
+        userStgAccount: newUserAcctPDA,
+        adminStgPublicKey: adminStgKeypair.publicKey,
+      });
+    } catch (e) {
+      errored = true;
+      console.log(`Error found as expected ${e} - when trying to create user that already exists`);
+    }
+
+    if (!errored) {
+      throw new Error('Creating existing user did not fail');
+    }
+  });
+
+  it("creating initialized user should fail", async () => {
+    let { testEthAddr, testEthAddrBytes, handleBytesArray, metadata, pkString } =
+      initTestConstants();
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+    let newUserAcctPDA = derivedAddress;
+
+    await testInitUser({
+      provider,
+      program,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      userStgAccount: newUserAcctPDA,
+      adminStgKeypair,
+      adminKeypair,
+    });
+
+    // New sol key that will be used to permission user updates
+    let newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKeypair.publicKey.toString();
+
+    let errored = false;
+    try {
+      await testCreateUser({
+        provider,
+        program,
+        message,
+        pkString,
+        baseAuthorityAccount,
+        testEthAddr,
+        testEthAddrBytes,
+        handleBytesArray,
+        bumpSeed,
+        metadata,
+        newUserKeypair,
+        userStgAccount: newUserAcctPDA,
+        adminStgPublicKey: adminStgKeypair.publicKey,
+      });
+    } catch (e) {
+      errored = true;
+      console.log(`Error found as expected ${e} - when trying to create a user that was initialized`);
+    }
+
+    if (!errored) {
+      throw new Error('Creating an already initialized user did not fail');
+    }
   });
 
   it("creating + deleting a track", async () => {

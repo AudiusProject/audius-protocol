@@ -105,7 +105,7 @@ def test_referral_challenge(app):
             or_(
                 Challenge.id == "referred",
                 Challenge.id == "referrals",
-                Challenge.id == "referrals-verified",
+                Challenge.id == "r-v",
             )
         ).update({"active": True, "starting_block": BLOCK_NUMBER})
 
@@ -173,7 +173,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == referrer.user_id,
-                UserChallenge.challenge_id == "referrals-verified",
+                UserChallenge.challenge_id == "r-v",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -224,7 +224,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == verified_user.user_id,
-                UserChallenge.challenge_id == "referrals-verified",
+                UserChallenge.challenge_id == "r-v",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -246,7 +246,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == verified_user.user_id,
-                UserChallenge.challenge_id == "referrals-verified",
+                UserChallenge.challenge_id == "r-v",
                 UserChallenge.is_complete == True,
             )
             .all()
