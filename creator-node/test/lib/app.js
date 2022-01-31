@@ -2,6 +2,7 @@ const nodeConfig = require('../../src/config.js')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
+const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
 const SyncQueue = require('../../src/services/sync/syncQueue')
 
 // Initialize private IPFS gateway counters
@@ -27,6 +28,7 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
     blacklistManager: blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
+    asyncProcessingQueue: new AsyncProcessingQueueMock(),
     // syncQueue: new SyncQueue(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient),
     nodeConfig
   }
