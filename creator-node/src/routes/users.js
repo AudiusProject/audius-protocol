@@ -246,6 +246,9 @@ module.exports = function (app) {
             response.filesHashForClockRange = filesHashForClockRange
           }
         }
+        if (returnFilesHash && !cnodeUserUUID) {
+          response.filesHash = null
+        }
       }
 
       await Promise.all([

@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const { isEqual } = require('lodash')
 const mailgun = require('mailgun-js')
 const { redisClient, Lock } = require('./redis')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
@@ -191,12 +192,17 @@ class App {
   configureOptimizely () {
     const sdkKey = config.get('optimizelySdkKey')
     const optimizelyClientInstance = optimizelySDK.createInstance({
-      sdkKey
+      sdkKey,
+      datafileOptions: {
+        autoUpdate: true,
+        updateInterval: 5000 // Poll for updates every 5s
+      }
     })
 
     this.optimizelyPromise = new Promise(resolve => {
       optimizelyClientInstance.onReady().then(() => {
         this.express.set('optimizelyClient', optimizelyClientInstance)
+
         resolve()
       })
     })
@@ -204,11 +210,11 @@ class App {
   }
 
   configureReporter () {
-    const slackReporter = new SlackReporter({
-      slackUrl: config.get('reporterSlackUrl'),
+    const slackAudioErrorReporter = new SlackReporter({
+      slackUrl: config.get('successAudioReporterSlackUrl'),
       childLogger: logger
     })
-    this.express.set('slackReporter', slackReporter)
+    this.express.set('slackAudioErrorReporter', slackAudioErrorReporter)
   }
 
   async configureAudiusInstance () {
@@ -241,6 +247,13 @@ class App {
     const endpointsString = getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
     const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : []
 
+    const aaoEndpoint = getRemoteVar(
+      this.optimizelyClientInstance, REMOTE_VARS.ORACLE_ENDPOINT
+    ) || config.get('aaoEndpoint')
+    const aaoAddress = getRemoteVar(
+      this.optimizelyClientInstance, REMOTE_VARS.ORACLE_ETH_ADDRESS
+    ) || config.get('aaoAddress')
+
     // Fetch the last saved offset and startingBLock from the DB,
     // or create them if necessary.
     let initialVals = await models.RewardAttesterValues.findOne()
@@ -252,7 +265,8 @@ class App {
     }
 
     const rewardsReporter = new RewardsReporter({
-      slackUrl: config.get('rewardsReporterSlackUrl'),
+      successSlackUrl: config.get('successAudioReporterSlackUrl'),
+      errorSlackUrl: config.get('errorAudioReporterSlackUrl'),
       childLogger
     })
 
@@ -262,8 +276,8 @@ class App {
       logger: childLogger,
       parallelization: config.get('rewardsParallelization'),
       quorumSize: config.get('rewardsQuorumSize'),
-      aaoEndpoint: config.get('aaoEndpoint'),
-      aaoAddress: config.get('aaoAddress'),
+      aaoEndpoint,
+      aaoAddress,
       startingBlock: initialVals.startingBlock,
       offset: initialVals.offset,
       challengeIdsDenyList,
@@ -310,6 +324,35 @@ class App {
     })
     attester.start()
     this.express.set('rewardsAttester', attester)
+
+    // Periodically check for new config and update the rewards attester
+    setInterval(() => {
+      const attester = this.express.get('rewardsAttester')
+      logger.info('update', attester.start)
+
+      // Get remote config
+      const endpointsString = getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
+      const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : null
+      const aaoEndpoint = getRemoteVar(
+        this.optimizelyClientInstance, REMOTE_VARS.ORACLE_ENDPOINT
+      )
+      const aaoAddress = getRemoteVar(
+        this.optimizelyClientInstance, REMOTE_VARS.ORACLE_ETH_ADDRESS
+      )
+      logger.info(`Pulled rewards attester remote config: endpoints ${endpoints}, aao ${aaoEndpoint} (${aaoAddress})`)
+
+      // Update if remote config vals !== what the attester has
+      if (!isEqual(endpoints, attester.endpoints)) {
+        attester.updateEndpoints({ endpoints })
+      }
+      if (
+        aaoEndpoint &&
+        aaoAddress &&
+        (aaoEndpoint !== attester.aaoEndpoint || aaoAddress !== attester.aaoAddress)) {
+        attester.updateAAO({ aaoEndpoint, aaoAddress })
+      }
+    }, 10000)
+
     return attester
   }
 

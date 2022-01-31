@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 import redis
@@ -9,6 +9,7 @@ from src.challenges.challenge import (
     FullEventMetadata,
 )
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
     verified_referral_challenge_manager,
@@ -18,6 +19,7 @@ from src.models import (
     Challenge,
     ChallengeDisbursement,
     ChallengeType,
+    ListenStreakChallenge,
     UserChallenge,
 )
 from src.models.models import User
@@ -479,7 +481,7 @@ def setup_verified_test(session):
             step_count=5,
         ),
         Challenge(
-            id="referrals-verified",
+            id="r-v",
             type=ChallengeType.aggregate,
             active=True,
             amount="1",
@@ -522,4 +524,119 @@ def test_verified_referrals_invisible_to_nonverified_user(app):
 
             verified = get_challenges(2, False, session, bus)
             assert len(verified) == 1
-            assert verified[0]["challenge_id"] == "referrals-verified"
+            assert verified[0]["challenge_id"] == "r-v"
+
+
+# Testing getting listen streak challenges with override
+
+
+def setup_listen_streak_challenge(session):
+    # Setup
+    blocks = [
+        Block(blockhash="0x1", number=1, parenthash="", is_current=False),
+        Block(blockhash="0x2", number=2, parenthash="", is_current=True),
+    ]
+    users = [
+        User(
+            blockhash="0x1",
+            blocknumber=1,
+            user_id=1,
+            is_current=True,
+            wallet="0xFakeWallet1",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            is_verified=False,
+        ),
+        User(
+            blockhash="0x2",
+            blocknumber=2,
+            user_id=2,
+            is_current=True,
+            wallet="0xFakeWallet2",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            is_verified=True,
+        ),
+    ]
+
+    challenges = [
+        Challenge(
+            id="listen-streak",
+            type=ChallengeType.numeric,
+            active=True,
+            amount="1",
+            step_count=7,
+        )
+    ]
+
+    user_challenges = [
+        UserChallenge(
+            challenge_id="listen-streak",
+            user_id=1,
+            specifier="1",
+            is_complete=False,
+            current_step_count=5,
+        ),
+        UserChallenge(
+            challenge_id="listen-streak",
+            user_id=2,
+            specifier="2",
+            is_complete=False,
+            current_step_count=5,
+        ),
+    ]
+
+    listen_streak_challenges = [
+        ListenStreakChallenge(
+            user_id=1,
+            last_listen_date=datetime.now() - timedelta(hours=12),
+            listen_streak=5,
+        ),
+        ListenStreakChallenge(
+            user_id=2,
+            last_listen_date=datetime.now() - timedelta(hours=50),
+            listen_streak=5,
+        ),
+    ]
+
+    # Wipe any existing challenges in the DB from running migrations, etc
+    session.query(Challenge).delete()
+    session.commit()
+    session.add_all(blocks)
+    session.commit()
+    session.add_all(users)
+    session.add_all(challenges)
+    session.commit()
+    session.add_all(user_challenges)
+    session.commit()
+    session.add_all(listen_streak_challenges)
+    session.commit()
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    bus = ChallengeEventBus(redis_conn)
+    bus.register_listener(DEFAULT_EVENT, listen_streak_challenge_manager)
+    return bus
+
+
+def test_get_challenges_with_no_override_step_count(app):
+    with app.app_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            bus = setup_listen_streak_challenge(session)
+
+            challenges = get_challenges(1, False, session, bus)
+            assert len(challenges) == 1
+            assert challenges[0]["challenge_id"] == "listen-streak"
+            assert challenges[0]["current_step_count"] == 5
+
+
+def test_get_challenges_with_override_step_count(app):
+    with app.app_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            bus = setup_listen_streak_challenge(session)
+
+            challenges = get_challenges(2, False, session, bus)
+            assert len(challenges) == 1
+            assert challenges[0]["challenge_id"] == "listen-streak"
+            assert challenges[0]["current_step_count"] == 0

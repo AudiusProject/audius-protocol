@@ -22,6 +22,7 @@ from src.database_task import DatabaseTask
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.queries import (
     block_confirmation,
+    get_redirect_weights,
     health_check,
     notifications,
     queries,
@@ -320,6 +321,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+    app.register_blueprint(get_redirect_weights.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
     app.register_blueprint(user_signals.bp)
@@ -367,6 +369,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
             "src.tasks.index_aggregate_plays",
+            "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.index_network_peers",
@@ -496,6 +499,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_user_listening_history",
                 "schedule": timedelta(seconds=5),
             },
+            "index_aggregate_monthly_plays": {
+                "task": "index_aggregate_monthly_plays",
+                "schedule": crontab(minute=0, hour=0),  # daily at midnight
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -543,6 +550,8 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
+    redis_inst.delete("index_user_listening_history_lock")
+
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object

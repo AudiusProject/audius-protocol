@@ -13,6 +13,7 @@ const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
+const BlacklistManager = require('./blacklistManager')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -63,6 +64,15 @@ async function authMiddleware(req, res, next) {
     if (resp && resp.blockchainId) {
       userId = parseInt(resp.blockchainId)
     }
+  }
+
+  const userBlacklisted = await BlacklistManager.userIdIsInBlacklist(userId)
+  if (userBlacklisted) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseUnauthorized('User not allowed to make changes on node')
+    )
   }
 
   // Attach session object to request
