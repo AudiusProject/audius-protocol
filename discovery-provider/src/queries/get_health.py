@@ -13,6 +13,7 @@ from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
 )
 from src.queries.get_latest_play import get_latest_play
+from src.queries.get_oldest_unarchived_play import get_oldest_unarchived_play
 from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
@@ -29,6 +30,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
     most_recent_indexed_ipld_block_hash_redis_key,
     most_recent_indexed_ipld_block_redis_key,
+    oldest_unarchived_play_key,
     trending_playlists_last_completion_redis_key,
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
@@ -369,10 +371,17 @@ class SolHealthInfo(TypedDict):
     time_diff_general: int
 
 
+class PlayHealthInfo(TypedDict):
+    is_unhealthy: bool
+    tx_info: Dict
+    time_diff_general: int
+    oldest_unarchived_play_created_at: str
+
+
 # Aggregate play health info across Solana and legacy storage
 def get_play_health_info(
     redis: Redis, plays_count_max_drift: Optional[int]
-) -> SolHealthInfo:
+) -> PlayHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_play_health_info")
 
@@ -403,6 +412,21 @@ def get_play_health_info(
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
+        oldest_unarchived_play = redis_get_or_restore(redis, oldest_unarchived_play_key)
+        if not oldest_unarchived_play:
+            # Query and cache oldest unarchived play
+            oldest_unarchived_play = get_oldest_unarchived_play()
+            if oldest_unarchived_play:
+                redis_set_and_dump(
+                    redis,
+                    oldest_unarchived_play_key,
+                    oldest_unarchived_play.timestamp(),
+                )
+        else:
+            # Decode bytes into float for latest timestamp
+            oldest_unarchived_play = float(oldest_unarchived_play.decode())
+            oldest_unarchived_play = datetime.utcfromtimestamp(oldest_unarchived_play)
+
         time_diff_general = (
             (current_time_utc - latest_db_play).total_seconds()
             if latest_db_play
@@ -418,6 +442,7 @@ def get_play_health_info(
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
         "time_diff_general": time_diff_general,
+        "oldest_unarchived_play_created_at": oldest_unarchived_play,
     }
 
 

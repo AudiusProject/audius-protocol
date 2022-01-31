@@ -28,7 +28,7 @@ PRUNE_PLAYS_QUERY = """
         where
             plays.created_at <= :cutoff_timestamp
         order by
-            id asc
+            plays.created_at asc
         limit
             :max_batch
         returning id

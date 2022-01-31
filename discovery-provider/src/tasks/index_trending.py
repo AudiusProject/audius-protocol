@@ -258,9 +258,7 @@ def index_trending_task(self):
     have_lock = False
     update_lock = redis.lock("index_trending_lock", timeout=7200)
     try:
-        should_update_timestamp = get_should_update_trending(
-            db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
-        )
+        should_update_timestamp = datetime.now()
         have_lock = update_lock.acquire(blocking=False)
         if should_update_timestamp and have_lock:
             index_trending(self, db, redis, should_update_timestamp)
