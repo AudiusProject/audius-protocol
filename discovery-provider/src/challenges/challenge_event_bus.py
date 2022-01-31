@@ -62,7 +62,7 @@ class ChallengeEventBus:
 
     def get_manager(self, challenge_id: str) -> ChallengeManager:
         """Gets a manager for a given challenge_id"""
-        return self._managers[challenge_id]
+        return self._managers.get(challenge_id)
 
     @contextmanager
     def use_scoped_dispatch_queue(self):

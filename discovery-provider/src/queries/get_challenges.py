@@ -146,6 +146,14 @@ def get_challenges(
         ).filter(UserChallenge.user_id == user_id)
     ).all()
 
+    # Filter to challenges that have active managers
+    # (in practice, all challenge should)
+    challenges_and_disbursements = [
+        c
+        for c in challenges_and_disbursements
+        if event_bus.get_manager(c[0].challenge_id) is not None
+    ]
+
     # Combine aggregates
 
     all_challenges: List[Challenge] = (session.query(Challenge)).all()
