@@ -8,7 +8,7 @@ import {
 } from "../lib/utils";
 import ethWeb3 from "web3";
 import { randomBytes } from "crypto";
-import { initUser, initUserSolPubkey } from "../lib/lib";
+import { createUser, initUser, initUserSolPubkey } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
 const { PublicKey } = anchor.web3;
@@ -103,6 +103,49 @@ export const testInitUserSolPubkey = async ({
   }
   let txInfo = await getTransaction(provider, initUserTx);
   let fee = txInfo["meta"]["fee"];
+};
+
+export const testCreateUser = async ({
+  provider,
+  program,
+  message,
+  pkString,
+  baseAuthorityAccount,
+  testEthAddr,
+  testEthAddrBytes,
+  handleBytesArray,
+  bumpSeed,
+  metadata,
+  newUserKeypair,
+  userStgAccount,
+  adminStgPublicKey,
+}) => {
+  let tx = await createUser({
+    provider,
+    program,
+    privateKey: pkString,
+    message,
+    testEthAddrBytes: Array.from(testEthAddrBytes),
+    handleBytesArray,
+    bumpSeed,
+    metadata,
+    userSolPubkey: newUserKeypair.publicKey,
+    userStgAccount,
+    adminStgPublicKey,
+    baseAuthorityAccount,
+  });
+  const userDataFromChain = await program.account.user.fetch(userStgAccount);
+  const returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress);
+  const returnedSolFromChain = userDataFromChain.authority;
+  if (testEthAddr.toLowerCase() != returnedHex) {
+    throw new Error(
+      `Invalid eth address - expected ${testEthAddr.toLowerCase()}, found ${returnedHex}`
+    );
+  }
+  if (!newUserKeypair.publicKey.equals(returnedSolFromChain)) {
+    throw new Error("Unexpected public key found");
+  }
+  await confirmLogInTransaction(provider, tx, metadata);
 };
 
 export const confirmLogInTransaction = async (
