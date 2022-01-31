@@ -508,7 +508,8 @@ async function sync({
   wallet,
   selfEndpoint,
   syncMode,
-  logContext = DEFAULT_LOG_CONTEXT
+  logContext = DEFAULT_LOG_CONTEXT,
+  forceResync = false
 }) {
   const { redis, nodeConfig } = serviceRegistry
 
@@ -527,6 +528,15 @@ async function sync({
   try {
     await acquireUserRedisLock({ redis, wallet })
 
+    if (syncMode === SyncMode.PrimaryShouldSync) {
+
+    } else if (syncMode === SyncMode.SecondaryShouldSync) {
+      
+    }
+    if (forceResync) {
+      await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
+    }
+
     const userReplicaSet = await getUserReplicaSet({
       serviceRegistry,
       logger,
@@ -537,15 +547,13 @@ async function sync({
     let completed = false
     let clockRangeMin = 0
     while (!completed) {
-      const exportData = await fetchExportFromSecondary({
+      const { cnodeUsers, ipfsIDObj } = await fetchExportFromSecondary({
         endpoint,
         wallet,
         clockRangeMin,
         selfEndpoint,
         logPrefix
       })
-
-      const { cnodeUsers, ipfsIDObj } = exportData
 
       const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
       if (fetchedCNodeUser.walletPublicKey !== wallet) {

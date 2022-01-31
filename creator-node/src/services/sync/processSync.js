@@ -527,50 +527,6 @@ async function processSync2(
       }
     }
   } catch (e) {
-    // two errors where we wipe the state on the secondary
-    // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
-    // if the secondary gets into a weird state with constraints, wipe the records before future re-syncs
-    if (
-      e.message.includes('Can only insert contiguous clock values') ||
-      e.message.includes('SequelizeForeignKeyConstraintError')
-    ) {
-      for (const wallet of walletPublicKeys) {
-        logger.error(
-          `Sync error for ${wallet} - "${e.message}". Clearing db state for wallet.`
-        )
-        await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
-      }
-    }
-    errorObj = e
-
-    for (const wallet of walletPublicKeys) {
-      await SyncHistoryAggregator.recordSyncFail(wallet)
-    }
-  } finally {
-    // Release all redis locks
-    for (const wallet of walletPublicKeys) {
-      const redisKey = redis.getNodeSyncRedisKey(wallet)
-      await redisLock.removeLock(redisKey)
-    }
-
-    if (errorObj)
-      logger.error(
-        redisKey,
-        `Sync complete for wallets: ${walletPublicKeys.join(
-          ','
-        )}. Status: Error, message: ${errorObj.message}. Duration sync: ${
-          Date.now() - start
-        }. From endpoint ${creatorNodeEndpoint}.`
-      )
-    else
-      logger.info(
-        redisKey,
-        `Sync complete for wallets: ${walletPublicKeys.join(
-          ','
-        )}. Status: Success. Duration sync: ${
-          Date.now() - start
-        }. From endpoint ${creatorNodeEndpoint}.`
-      )
   }
 
   return errorObj
