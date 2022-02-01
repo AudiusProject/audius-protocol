@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { useTrackCoverArt } from 'audius-client/src/common/hooks/useImageSize'
 import { FavoriteSource } from 'audius-client/src/common/models/Analytics'
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Track } from 'audius-client/src/common/models/Track'
@@ -26,6 +25,7 @@ import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { pause, play } from 'app/store/audio/actions'
 import {
   getPlaying,
