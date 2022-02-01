@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { formatCount } from 'audius-client/src/common/utils/formatUtil'
 import { View, Pressable, StyleSheet } from 'react-native'
 

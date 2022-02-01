@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { sampleSize } from 'lodash'

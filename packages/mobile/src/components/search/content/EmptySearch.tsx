@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { StyleSheet, View, Text } from 'react-native'
 
 import IconBigSearch from 'app/assets/images/iconBigSearch.svg'

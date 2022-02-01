@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import { PureComponent, useContext, useEffect } from 'react'
 
 import * as Sentry from '@sentry/react-native'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
@@ -17,7 +17,7 @@ const ErrorToast = ({ error }: { error: Nullable<string> }) => {
   return null
 }
 
-class ErrorBoundary extends React.PureComponent {
+class ErrorBoundary extends PureComponent {
   state = {
     error: null
   }

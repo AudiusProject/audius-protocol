@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { StyleSheet, View, Text, TouchableHighlight } from 'react-native'
 

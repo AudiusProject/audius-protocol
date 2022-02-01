@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 
 import { useThemedStyles } from 'app/hooks/useThemedStyles'

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, RefObject } from 'react'
+import { useEffect, useRef, RefObject } from 'react'
 
 import {
   requireNativeComponent,

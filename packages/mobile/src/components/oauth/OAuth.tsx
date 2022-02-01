@@ -1,4 +1,4 @@
-import React, { RefObject, useCallback } from 'react'
+import { RefObject, useCallback } from 'react'
 
 import { NativeSyntheticEvent, Modal, View, Button } from 'react-native'
 import Config from 'react-native-config'

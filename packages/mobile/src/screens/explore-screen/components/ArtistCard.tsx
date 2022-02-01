@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { User } from 'audius-client/src/common/models/User'
 import { EXPLORE_PAGE, profilePage } from 'audius-client/src/utils/route'
 import { StyleProp, ViewStyle } from 'react-native'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { StyleSheet, Text, View } from 'react-native'
 
 import { TrendingTrack as TrendingNotification } from 'app/store/notifications/types'

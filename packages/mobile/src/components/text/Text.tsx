@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Animated, Text as RNText } from 'react-native'
 
 import { fontByWeight, font } from 'app/styles'

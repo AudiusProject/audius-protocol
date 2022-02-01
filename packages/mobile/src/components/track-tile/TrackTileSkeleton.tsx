@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { StyleSheet, View } from 'react-native'
 
 import { ImageSkeleton } from 'app/components/image-skeleton'

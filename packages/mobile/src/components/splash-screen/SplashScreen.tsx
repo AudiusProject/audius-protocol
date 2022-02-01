@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 
 import LottieView from 'lottie-react-native'
 import { StyleSheet, Animated } from 'react-native'

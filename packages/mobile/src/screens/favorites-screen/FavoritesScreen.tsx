@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Dimensions, Text, View } from 'react-native'

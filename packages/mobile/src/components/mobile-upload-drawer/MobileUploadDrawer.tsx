@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getIsOpen } from 'audius-client/src/common/store/ui/mobile-upload-drawer/selectors'
 import { hide } from 'audius-client/src/common/store/ui/mobile-upload-drawer/slice'
 import { Image, StyleSheet, View } from 'react-native'

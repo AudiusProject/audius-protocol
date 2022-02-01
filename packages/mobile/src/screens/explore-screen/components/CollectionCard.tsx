@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { UserCollection } from 'audius-client/src/common/models/Collection'
 import {
   albumPage,
