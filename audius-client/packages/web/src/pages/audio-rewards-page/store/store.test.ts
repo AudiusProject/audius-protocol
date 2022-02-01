@@ -30,6 +30,7 @@ import {
   fetchUserChallenges,
   fetchUserChallengesSucceeded,
   HCaptchaStatus,
+  resetUserChallengeCurrentStepCount,
   setCognitoFlowStatus,
   setHCaptchaStatus,
   setUserChallengeDisbursed,
@@ -544,6 +545,106 @@ describe('Rewards Page Sagas', () => {
         .put(
           fetchUserChallengesSucceeded({
             userChallenges: expectedUserChallengesResponse
+          })
+        )
+        .silentRun()
+    })
+
+    const listenStreakUserChallenge: UserChallenge[] = [
+      {
+        challenge_id: 'listen-streak',
+        is_complete: true,
+        is_disbursed: true,
+        is_active: true,
+        amount: 1,
+        current_step_count: 0,
+        max_steps: 7,
+        challenge_type: 'numeric',
+        specifier: '1',
+        user_id: '1'
+      }
+    ]
+
+    it('should not reset the listen streak override', () => {
+      return expectSaga(saga)
+        .dispatch(
+          fetchUserChallengesSucceeded({
+            userChallenges: listenStreakUserChallenge
+          })
+        )
+        .provide([
+          [
+            select(getUserChallenges),
+            {
+              'listen-streak': {
+                current_step_count: 0,
+                is_complete: false,
+                is_disbursed: false
+              }
+            }
+          ],
+          [
+            select(getUserChallengesOverrides),
+            {
+              'listen-streak': {
+                current_step_count: 1
+              }
+            }
+          ]
+        ])
+        .not.put(
+          resetUserChallengeCurrentStepCount({
+            challengeId: 'listen-streak'
+          })
+        )
+        .silentRun()
+    })
+
+    const listenStreakUserChallengeStepCountUp: UserChallenge[] = [
+      {
+        challenge_id: 'listen-streak',
+        is_complete: true,
+        is_disbursed: true,
+        is_active: true,
+        amount: 1,
+        current_step_count: 2,
+        max_steps: 7,
+        challenge_type: 'numeric',
+        specifier: '1',
+        user_id: '1'
+      }
+    ]
+
+    it('should reset the listen streak override to zero', () => {
+      return expectSaga(saga)
+        .dispatch(
+          fetchUserChallengesSucceeded({
+            userChallenges: listenStreakUserChallengeStepCountUp
+          })
+        )
+        .provide([
+          [
+            select(getUserChallenges),
+            {
+              'listen-streak': {
+                current_step_count: 0,
+                is_complete: false,
+                is_disbursed: false
+              }
+            }
+          ],
+          [
+            select(getUserChallengesOverrides),
+            {
+              'listen-streak': {
+                current_step_count: 1
+              }
+            }
+          ]
+        ])
+        .put(
+          resetUserChallengeCurrentStepCount({
+            challengeId: 'listen-streak'
           })
         )
         .silentRun()

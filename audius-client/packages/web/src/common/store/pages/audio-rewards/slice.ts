@@ -100,6 +100,35 @@ const slice = createSlice({
         is_disbursed: true
       }
     },
+    updateOptimisticListenStreak: state => {},
+    setUserChallengeCurrentStepCount: (
+      state,
+      action: PayloadAction<{
+        challengeId: ChallengeRewardID
+        stepCount: number
+      }>
+    ) => {
+      const { challengeId, stepCount } = action.payload
+      state.userChallengesOverrides[challengeId] = {
+        ...state.userChallengesOverrides[challengeId],
+        current_step_count: stepCount
+      }
+    },
+    resetUserChallengeCurrentStepCount: (
+      state,
+      action: PayloadAction<{
+        challengeId: ChallengeRewardID
+      }>
+    ) => {
+      const { challengeId } = action.payload
+      const userChallengeOverride = state.userChallengesOverrides[challengeId]
+      if (
+        userChallengeOverride &&
+        'current_step_count' in userChallengeOverride
+      ) {
+        delete userChallengeOverride.current_step_count
+      }
+    },
     setTrendingRewardsModalType: (
       state,
       action: PayloadAction<{ modalType: TrendingRewardsModalType }>
@@ -200,7 +229,10 @@ export const {
   fetchCognitoFlowUrlFailed,
   fetchCognitoFlowUrlSucceeded,
   showRewardClaimedToast,
-  resetRewardClaimedToast
+  resetRewardClaimedToast,
+  updateOptimisticListenStreak,
+  setUserChallengeCurrentStepCount,
+  resetUserChallengeCurrentStepCount
 } = slice.actions
 
 export default slice

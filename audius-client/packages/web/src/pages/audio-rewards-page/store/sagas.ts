@@ -45,7 +45,10 @@ import {
   setUserChallengeDisbursed,
   updateHCaptchaScore,
   showRewardClaimedToast,
-  claimChallengeRewardAlreadyClaimed
+  claimChallengeRewardAlreadyClaimed,
+  setUserChallengeCurrentStepCount,
+  resetUserChallengeCurrentStepCount,
+  updateOptimisticListenStreak
 } from 'common/store/pages/audio-rewards/slice'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { getBalance, increaseBalance } from 'common/store/wallet/slice'
@@ -313,12 +316,82 @@ function* watchFetchUserChallengesSucceeded() {
     action: ReturnType<typeof fetchUserChallengesSucceeded>
   ) {
     yield call(checkForNewDisbursements, action)
+    yield call(handleOptimisticChallengesOnUpdate, action)
   })
 }
 
 function* watchFetchUserChallenges() {
   yield takeEvery(fetchUserChallenges.type, function* () {
     yield call(fetchUserChallengesAsync)
+  })
+}
+
+/**
+ * Resets the listen streak override if current_step_count is fetched and non-zero
+ * This handles the case where discovery can reset the user's listen streak
+ */
+function* handleOptimisticListenStreakUpdate(
+  challenge: UserChallenge,
+  challengeOverrides?: UserChallenge
+) {
+  if (
+    (challengeOverrides?.current_step_count ?? 0) > 0 &&
+    challenge.current_step_count !== 0
+  ) {
+    yield put(
+      resetUserChallengeCurrentStepCount({
+        challengeId: challenge.challenge_id
+      })
+    )
+  }
+}
+
+/**
+ * Handles challenge override updates on user challenge updates
+ */
+function* handleOptimisticChallengesOnUpdate(
+  action: ReturnType<typeof fetchUserChallengesSucceeded>
+) {
+  const { userChallenges } = action.payload
+  if (!userChallenges) {
+    return
+  }
+
+  const challengesOverrides: Partial<Record<
+    ChallengeRewardID,
+    UserChallenge
+  >> = yield select(getUserChallengesOverrides)
+
+  for (const challenge of userChallenges) {
+    if (challenge.challenge_id === 'listen-streak') {
+      yield call(
+        handleOptimisticListenStreakUpdate,
+        challenge,
+        challengesOverrides[challenge.challenge_id]
+      )
+    }
+  }
+}
+
+/**
+ * Updates the listen streak optimistically if current_step_count is zero and a track is played
+ */
+function* watchUpdateOptimisticListenStreak() {
+  yield takeEvery(updateOptimisticListenStreak.type, function* () {
+    const listenStreakChallenge: ReturnType<typeof getUserChallenge> = yield select(
+      getUserChallenge,
+      {
+        challengeId: 'listen-streak'
+      }
+    )
+    if (listenStreakChallenge?.current_step_count === 0) {
+      yield put(
+        setUserChallengeCurrentStepCount({
+          challengeId: 'listen-streak',
+          stepCount: 1
+        })
+      )
+    }
   })
 }
 
@@ -374,7 +447,8 @@ const sagas = () => {
     watchSetHCaptchaStatus,
     watchSetCognitoFlowStatus,
     watchUpdateHCaptchaScore,
-    userChallengePollingDaemon
+    userChallengePollingDaemon,
+    watchUpdateOptimisticListenStreak
   ]
   return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
 }
