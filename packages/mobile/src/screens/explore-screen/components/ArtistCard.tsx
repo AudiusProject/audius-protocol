@@ -15,7 +15,7 @@ const formatProfileCardSecondaryText = (followers: number) => {
 
 type ArtistCardProps = {
   artist: User
-  style: StyleProp<ViewStyle>
+  style?: StyleProp<ViewStyle>
 }
 
 export const ArtistCard = ({ artist, style }: ArtistCardProps) => {

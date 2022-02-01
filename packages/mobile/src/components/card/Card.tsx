@@ -1,10 +1,6 @@
 import React from 'react'
 
 import {
-  useCollectionCoverArt,
-  useUserProfilePicture
-} from 'audius-client/src/common/hooks/useImageSize'
-import {
   CoverArtSizes,
   ProfilePictureSizes,
   SquareSizes
@@ -22,7 +18,9 @@ import { Shadow } from 'react-native-shadow-2'
 
 import DynamicImage from 'app/components/dynamic-image'
 import UserBadges from 'app/components/user-badges/UserBadges'
+import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import { ID } from 'app/store/notifications/types'
 import { font } from 'app/styles'
 
