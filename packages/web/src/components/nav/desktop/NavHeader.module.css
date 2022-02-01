@@ -27,7 +27,8 @@ svg.logo path {
 }
 
 .matrixLogo {
-  filter: drop-shadow(0px 0px 5px rgba(225, 255, 234, 0.25)) drop-shadow(0px 0px 15px rgba(20, 255, 0, 0.25));
+  filter: drop-shadow(0px 0px 5px rgba(225, 255, 234, 0.25))
+    drop-shadow(0px 0px 15px rgba(20, 255, 0, 0.25));
 }
 
 svg.logo.matrixLogo path {
@@ -52,18 +53,18 @@ svg.logo.matrixLogo path {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
   background-color: var(--neutral-light-9);
 }
 
 .headerIconWrapper:global(.active),
 .headerIconWrapper:hover {
   background-color: var(--secondary-light-2);
-  transform: scale3d(1.1,1.1,1.1);
+  transform: scale3d(1.1, 1.1, 1.1);
 }
 
 .headerIconWrapper:active {
-  transform: scale3d(0.99 ,0.99 ,0.99);
+  transform: scale3d(0.99, 0.99, 0.99);
 }
 
 .headerIconWrapper.iconNotification.active {
@@ -112,8 +113,8 @@ svg.logo.matrixLogo path {
   right: 0px;
   transform: translateX(50%);
   border-radius: 8px;
-  background-color: #D0021B;
-  color: #FFFFFF;
+  background-color: #d0021b;
+  color: #ffffff;
   font-size: 11px;
   font-weight: bold;
   letter-spacing: 0.07px;

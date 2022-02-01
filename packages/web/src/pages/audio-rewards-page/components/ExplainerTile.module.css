@@ -125,7 +125,8 @@
   margin: 24px auto;
 }
 
-.tokenHero svg, .tokenHero img {
+.tokenHero svg,
+.tokenHero img {
   width: 200px;
   height: 200px;
 }
@@ -139,7 +140,7 @@
   cursor: pointer;
 }
 .iconRemove:hover {
-  transform: scale(1.10);
+  transform: scale(1.1);
 }
 .iconRemove:active {
   transform: scale(0.95);
@@ -147,4 +148,3 @@
 .iconRemove g path {
   fill: var(--neutral-light-4);
 }
-

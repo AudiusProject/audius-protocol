@@ -69,12 +69,12 @@
   color: var(--neutral-light-4);
 }
 
-.searchBar :global(.ant-input-prefix)>svg {
+.searchBar :global(.ant-input-prefix) > svg {
   height: 12px;
   width: 12px;
 }
 
-.searchBar :global(.ant-input-prefix)>svg g path {
+.searchBar :global(.ant-input-prefix) > svg g path {
   fill: var(--neutral-light-4);
 }
 
@@ -83,11 +83,10 @@
   opacity: 0;
 }
 
-
 .searchBar :global(.ant-select-dropdown) {
   -webkit-app-region: none;
   animation-duration: 0.2s !important;
-  box-shadow: 0 2px 5px 0 rgba(133,129,153,0.15);
+  box-shadow: 0 2px 5px 0 rgba(133, 129, 153, 0.15);
   position: absolute;
   background: var(--white);
   top: 32px !important;
@@ -105,7 +104,7 @@
   flex-direction: row;
   align-items: center;
   border-radius: 4px;
-  transition: all ease-in-out .04s;
+  transition: all ease-in-out 0.04s;
 }
 
 .searchBox :global(.ant-select-dropdown-menu-item).allResultsOption {
@@ -113,7 +112,8 @@
   padding-bottom: 2px;
 }
 
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active).allResultsOption {
+.searchBox
+  :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active).allResultsOption {
   border-top: 1px solid var(--secondary-dark-1) !important;
 }
 
@@ -121,7 +121,10 @@
   margin: auto 8px;
 }
 
-.searchBox :global(.ant-select-dropdown-menu  .ant-select-dropdown-menu-root .ant-select-dropdown-menu-vertical) {
+.searchBox
+  :global(.ant-select-dropdown-menu
+    .ant-select-dropdown-menu-root
+    .ant-select-dropdown-menu-vertical) {
   padding-top: 4px;
 }
 
@@ -144,7 +147,7 @@
   width: 100%;
   margin-left: 12px;
   margin-right: 16px;
-  background-color: rgba(133,129,153,0.1);
+  background-color: rgba(133, 129, 153, 0.1);
 }
 
 .searchResultHeading {
@@ -154,12 +157,17 @@
   align-items: center;
 }
 
-
-.searchBox :global(.ant-select-dropdown-menu-item-group .ant-select-dropdown-menu-item-group-list .ant-select-dropdown-menu-item) {
+.searchBox
+  :global(.ant-select-dropdown-menu-item-group
+    .ant-select-dropdown-menu-item-group-list
+    .ant-select-dropdown-menu-item) {
   border-radius: 4px;
 }
 
-.searchBox :global(.ant-select-dropdown-menu-item-group .ant-select-dropdown-menu-item-group-list .ant-select-dropdown-menu-item:last-child) {
+.searchBox
+  :global(.ant-select-dropdown-menu-item-group
+    .ant-select-dropdown-menu-item-group-list
+    .ant-select-dropdown-menu-item:last-child) {
   border-radius: 4px;
 }
 
@@ -168,15 +176,25 @@
  * active state, AND unset bg color in the ant built in hover state. Active state must take precedence (!important),
  * otherwise unsetting in hover will unset us everywhere.
  */
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) {
+.searchBox
+  :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) {
   background-color: var(--secondary) !important;
 }
 .searchBox :global(.ant-select-dropdown-menu-item:hover) {
   background-color: unset;
 }
 
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > .resultText,
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > div > .resultText {
+.searchBox
+  :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active)
+  > div
+  > div
+  > .resultText,
+.searchBox
+  :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active)
+  > div
+  > div
+  > div
+  > .resultText {
   color: var(--static-white);
 }
 
@@ -195,27 +213,38 @@
   font-weight: var(--font-medium);
 }
 
-.allResultsOption:global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > span {
+.allResultsOption:global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active)
+  > div
+  > div
+  > span {
   color: var(--white);
 }
 
-.allResultsOption:global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > .iconArrow g path {
+.allResultsOption:global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active)
+  > div
+  > div
+  > .iconArrow
+  g
+  path {
   fill: var(--white);
 }
 
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active).noResultsOption {
+.searchBox
+  :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active).noResultsOption {
   background-color: var(--white);
 }
 
 .noResults {
-  width:100%;
+  width: 100%;
   text-align: center;
   color: var(--neutral);
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
 }
 
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active).noResultsOption span {
+.searchBox
+  :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active).noResultsOption
+  span {
   color: var(--white);
 }
 
@@ -226,7 +255,7 @@
 .searchBox :global(.ant-select-dropdown-menu-item.allResultsOption) {
   margin-top: 12px !important;
   height: 29px !important;
-  border-top: 1px solid rgba(133,129,153,0.1) !important;
+  border-top: 1px solid rgba(133, 129, 153, 0.1) !important;
 }
 
 /* Do not display the dummy search item used to let the user arrow back up to the search bar. */
@@ -254,7 +283,8 @@
   font-weight: var(--font-demi-bold);
   font-size: var(--font-xs);
   top: 32px;
-  box-shadow: 0 0 1px 0 rgba(133,129,153,0.2), 0 2px 3px 0 rgba(133,129,153,0.15);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.2),
+    0 2px 3px 0 rgba(133, 129, 153, 0.15);
   z-index: 1;
   padding: 8px;
 }
@@ -276,7 +306,8 @@
   cursor: pointer;
 }
 
-.tagSearchPopup > .enabled:hover, .tagSearchPopup > .focused {
+.tagSearchPopup > .enabled:hover,
+.tagSearchPopup > .focused {
   background-color: var(--secondary);
   color: var(--white);
 }
@@ -291,6 +322,7 @@
   fill: var(--neutral-light-2);
 }
 
-.tagSearchPopup:hover path, .focused path {
+.tagSearchPopup:hover path,
+.focused path {
   fill: var(--white);
 }

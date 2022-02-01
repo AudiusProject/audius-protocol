@@ -5,7 +5,7 @@
   cursor: pointer;
   display: flex;
   justify-content: center;
-  background: linear-gradient(358.41deg, #C049F9 0.17%, #8200E8 100%);
+  background: linear-gradient(358.41deg, #c049f9 0.17%, #8200e8 100%);
 }
 
 .ctaBanner .content {
@@ -18,8 +18,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all ease-in-out .07s;
-  border-bottom: 1px solid rgba(0,0,0,0);
+  transition: all ease-in-out 0.07s;
+  border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
 .ctaBanner:hover .contentSelection {

@@ -13,13 +13,13 @@
   width: 16px;
   height: 16px;
   position: relative;
-  transition: all .07s ease-in-out !important;
+  transition: all 0.07s ease-in-out !important;
 }
 .icon.notReposted {
-  opacity: 0.0;
+  opacity: 0;
 }
 :global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row)) .icon {
-  opacity: 1.0;
+  opacity: 1;
 }
 
 .icon g path {
@@ -29,7 +29,7 @@
   fill: var(--primary);
 }
 .tableRepostButton:hover .icon {
-  transform: scale3d(1.10,1.10,1.10);
+  transform: scale3d(1.1, 1.1, 1.1);
 }
 .tableRepostButton:hover .icon g path {
   fill: var(--primary);

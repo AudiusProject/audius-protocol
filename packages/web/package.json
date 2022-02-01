@@ -131,6 +131,8 @@
     "eject": "react-scripts eject",
     "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx src",
     "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
+    "stylelint": "stylelint 'src/**/*.css'",
+    "stylelint:fix": "npm run stylelint -- --fix",
     "electron:stage": "electron . staging",
     "electron:prod": "electron . production",
     "electron:localhost": "electron . localhost",
@@ -158,7 +160,8 @@
     "update-ipfs-build:prod": "node ./scripts/updateIpfsBuild.js prod"
   },
   "pre-commit": [
-    "lint"
+    "lint",
+    "stylelint"
   ],
   "eslintConfig": {
     "extends": "react-app"
@@ -237,6 +240,11 @@
     "redux-saga-test-plan": "4.0.4",
     "source-map-explorer": "2.4.2",
     "standard": "12.0.1",
+    "stylelint": "14.3.0",
+    "stylelint-config-css-modules": "2.3.0",
+    "stylelint-config-prettier": "9.0.3",
+    "stylelint-config-standard": "24.0.0",
+    "stylelint-prettier": "2.0.0",
     "terser": "4.8.0",
     "typescript": "3.8.3",
     "webpack": "4.44.2"

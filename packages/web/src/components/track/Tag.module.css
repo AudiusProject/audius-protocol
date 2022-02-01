@@ -11,7 +11,7 @@
 }
 .tag.clickable {
   cursor: pointer;
-  transition: all ease-in-out .04s;
+  transition: all ease-in-out 0.04s;
 }
 .tag.clickable:hover {
   background-color: var(--secondary);

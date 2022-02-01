@@ -42,7 +42,8 @@
   padding-bottom: 2px;
 }
 
-.artistName.extraLarge, .artistName.large {
+.artistName.extraLarge,
+.artistName.large {
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   line-height: normal;
@@ -57,7 +58,8 @@
 .artistName.playlistCreator.medium {
   padding-bottom: 2px;
 }
-.artistName.small, .artistName.miniscule {
+.artistName.small,
+.artistName.miniscule {
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
   line-height: normal;
@@ -67,7 +69,8 @@
   font-weight: var(--font-demi-bold);
 }
 
-.trackTitle, .artistName {
+.trackTitle,
+.artistName {
   position: relative;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -126,7 +129,8 @@
   height: 12px !important;
 }
 
-.hide, .show {
+.hide,
+.show {
   display: inline-flex;
   align-items: center;
   width: 100%;
@@ -137,7 +141,7 @@
 }
 .show {
   opacity: 1;
-  transition: opacity ease-in-out .5s;
+  transition: opacity ease-in-out 0.5s;
 }
 
 .trackName {

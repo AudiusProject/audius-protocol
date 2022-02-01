@@ -48,7 +48,7 @@
   font-weight: var(--font-medium);
   letter-spacing: 0.15px;
   line-height: 20px;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
   cursor: pointer;
 }
 
@@ -105,7 +105,7 @@
 }
 
 .cards.show {
-  transition: opacity .14s ease-in-out !important;
+  transition: opacity 0.14s ease-in-out !important;
   opacity: 1;
 }
 
@@ -113,11 +113,10 @@
   margin: 0px 8px 16px;
 }
 
-
 /* Continue Button */
 .continueButton .continueButtonText {
   font-size: var(--font-l);
-  font-weight: var(--font-bold)
+  font-weight: var(--font-bold);
 }
 
 /* Following Count */

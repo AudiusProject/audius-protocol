@@ -10,7 +10,7 @@
   background-color: var(--notification-background);
   transition: all 0.12s ease-in-out;
   cursor: pointer;
-  transform: scale3d(1,1,1);
+  transform: scale3d(1, 1, 1);
 }
 
 .notification:not(.read).shortDescription:active,
@@ -28,7 +28,7 @@
 .notification:active {
   border-color: var(--notification-border-active);
   background-color: var(--notification-background-active);
-  transform: scale3d(1,1,1);
+  transform: scale3d(1, 1, 1);
 }
 
 .notification.read {
@@ -43,7 +43,7 @@
 
 .notification.shortDescription:active {
   cursor: default;
-  transform: scale3d(1,1,1);
+  transform: scale3d(1, 1, 1);
   border: 1px solid var(--notification-border);
   background-color: var(--notification-background);
   box-shadow: none;
@@ -133,35 +133,36 @@
   line-height: 19px;
 }
 
-.notification .body h1, 
+.notification .body h1,
 .notification .body h2,
 .notification .body h3,
 .notification .body h4,
 .notification .body h5,
-.notification .body h6 { 
+.notification .body h6 {
   margin-bottom: 12px;
   font-weight: var(--font-bold);
 }
 
-.notification .body h1 { 
+.notification .body h1 {
   font-size: var(--font-2xl);
 }
-.notification .body h2 { 
+.notification .body h2 {
   font-size: var(--font-xl);
 }
-.notification .body h3 { 
+.notification .body h3 {
   font-size: var(--font-l);
 }
-.notification .body h4 { 
+.notification .body h4 {
   font-size: var(--font-m);
 }
-.notification .body h5 { 
+.notification .body h5 {
   font-size: var(--font-s);
 }
-.notification .body h6 { 
+.notification .body h6 {
   font-size: var(--font-xs);
 }
-.notification .body p {}
+.notification .body p {
+}
 
 .notification .body strong {
   font-weight: var(--font-bold);
@@ -177,12 +178,12 @@
 .notification .body ul {
   list-style-type: none;
 }
-.notification .body ul > li {}
+.notification .body ul > li {
+}
 .notification .body ul > li:before {
-  content: "-";
+  content: '-';
   margin-right: 4px;
 }
-
 
 .unRead {
   border: 1px solid var(--notification-unread-border);
@@ -198,7 +199,7 @@
   border-radius: 8px;
   background-color: var(--secondary);
   opacity: 1;
-  transition: all 0.12s ease-in-out
+  transition: all 0.12s ease-in-out;
 }
 
 .read .unReadDot {
@@ -226,7 +227,7 @@
 .iconKebabHorizontal {
   height: 20px;
   width: 20px;
-  transition: all .12s ease-in-out !important;
+  transition: all 0.12s ease-in-out !important;
 }
 
 .iconKebabHorizontal:active {
@@ -234,7 +235,7 @@
 }
 
 .iconKebabHorizontal path {
-	fill: var(--static-neutral-light-6);
+  fill: var(--static-neutral-light-6);
 }
 
 .iconKebabHorizontal:active path,

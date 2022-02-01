@@ -9,7 +9,8 @@
   border: 1px solid var(--neutral-light-8);
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
 }
 
 .typeLabel {
@@ -218,7 +219,7 @@
   align-items: center;
 }
 
-.infoValue div :global(.emoji){
+.infoValue div :global(.emoji) {
   margin: -4px 0px 0px 4px;
 }
 
@@ -256,10 +257,10 @@
   text-transform: uppercase;
 }
 
-
 /* Loading */
 
-.loadingSkeleton, .loadingSkeleton :global(.ant-skeleton-content) {
+.loadingSkeleton,
+.loadingSkeleton :global(.ant-skeleton-content) {
   padding: 0 !important;
 }
 .loadingSkeleton :global(.ant-skeleton-paragraph) li {

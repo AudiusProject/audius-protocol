@@ -31,13 +31,15 @@
   flex-grow: 99999;
 }
 
-.mobile .walletTile, .mobile.balanceTile {
+.mobile .walletTile,
+.mobile.balanceTile {
   flex: 1 0 220px;
   width: 100%;
   margin: 12px;
 }
 
-.pageContainer .walletTile, .pageContainer .balanceTile {
+.pageContainer .walletTile,
+.pageContainer .balanceTile {
   margin: 12px;
 }
 

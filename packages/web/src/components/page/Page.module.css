@@ -14,7 +14,7 @@
 }
 
 .pageContainer .flush {
-  top: calc(-1*44px);
+  top: calc(-1 * 44px);
   padding: 0;
 }
 
@@ -46,7 +46,7 @@
 .headerBoxShadow {
   height: 5px;
   width: 100%;
-  box-shadow: 1px 2px 5px -2px rgba(133,129,153,0.25);
+  box-shadow: 1px 2px 5px -2px rgba(133, 129, 153, 0.25);
   position: relative;
   top: -5px;
 }

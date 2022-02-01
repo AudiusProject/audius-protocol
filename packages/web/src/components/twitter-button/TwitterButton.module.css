@@ -4,7 +4,7 @@
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
 
   display: inline-flex;
   align-items: center;
@@ -62,14 +62,15 @@
 
 .textLabel {
   vertical-align: middle;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
 }
 
 /* Twitter Button */
 .twitter {
   cursor: pointer;
   border-radius: 4px;
-  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.25), 0 2px 5px -2px rgba(27,161,241,0.25);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25),
+    0 2px 5px -2px rgba(27, 161, 241, 0.25);
   padding: 10px 16px;
   display: inline-flex;
   align-items: center;
@@ -82,26 +83,30 @@
 
 .twitter:hover {
   transform: translateY(-1px) scale3d(1.04, 1.04, 1.04);
-  background-color: #32AAF2;
-  box-shadow: 0 2px 10px -2px rgba(133,129,153,0.25), 0 2px 10px -2px rgba(27,161,241,0.25);
+  background-color: #32aaf2;
+  box-shadow: 0 2px 10px -2px rgba(133, 129, 153, 0.25),
+    0 2px 10px -2px rgba(27, 161, 241, 0.25);
 }
 
 .twitter:active {
   transform: translateY(0px) scale3d(0.99, 0.99, 0.99);
-  background-color: #1891D9;
-  box-shadow: 0 2px 3px -2px rgba(133,129,153,0.25), 0 2px 3px -2px rgba(27,161,241,0.25);
+  background-color: #1891d9;
+  box-shadow: 0 2px 3px -2px rgba(133, 129, 153, 0.25),
+    0 2px 3px -2px rgba(27, 161, 241, 0.25);
 }
 
 .twitter.verified:hover {
   transform: none;
   background-color: var(--static-white);
-  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.25), 0 2px 5px -2px rgba(27,161,241,0.25);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25),
+    0 2px 5px -2px rgba(27, 161, 241, 0.25);
 }
 
 .twitter.verified:active {
   transform: none;
   background-color: var(--static-white);
-  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.25), 0 2px 5px -2px rgba(27,161,241,0.25);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25),
+    0 2px 5px -2px rgba(27, 161, 241, 0.25);
 }
 
 .twitter.verified {
@@ -113,11 +118,11 @@
 }
 
 .twitter path {
-  fill: var(--static-white)
+  fill: var(--static-white);
 }
 
 .twitter.verified path {
-  fill: var(--static-twitter-blue)
+  fill: var(--static-twitter-blue);
 }
 
 .twitter .textLabel {
@@ -138,4 +143,3 @@
   margin-left: 12px;
   color: var(--static-twitter-blue);
 }
-

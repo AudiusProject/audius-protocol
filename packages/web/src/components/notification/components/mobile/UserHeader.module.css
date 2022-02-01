@@ -48,10 +48,10 @@
 }
 
 .userImage {
-  transition: all .07s ease-in-out;
-  transform: scale3d(1,1,1);
+  transition: all 0.07s ease-in-out;
+  transform: scale3d(1, 1, 1);
 }
 
 .userImage:active {
-  transform: scale3d(0.95,0.95,0.95);
+  transform: scale3d(0.95, 0.95, 0.95);
 }

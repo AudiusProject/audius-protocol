@@ -33,7 +33,8 @@
 }
 
 .dropdown.shadow {
-  box-shadow: 0 0 1px 0 rgba(133,129,153,0.5), 0 2px 6px -2px rgba(133,129,153,0.25);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5),
+    0 2px 6px -2px rgba(133, 129, 153, 0.25);
 }
 .dropdown.border {
   border: 1px solid var(--neutral-light-8);
@@ -78,13 +79,14 @@
 .dropdown :global(.ant-dropdown) {
   border-radius: 4px;
   background-color: var(--white);
-  box-shadow: 0 0 2px 0 rgba(133,129,153,0.3), 0 2px 5px -2px rgba(133,129,153,0.3);
+  box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
+    0 2px 5px -2px rgba(133, 129, 153, 0.3);
   animation-duration: 0.18s;
 }
 
 .dropdown :global(.ant-dropdown-menu) {
-	border-radius: 4px;
-	background-color: var(--white);
+  border-radius: 4px;
+  background-color: var(--white);
   box-shadow: none;
   padding: 8px 0;
   margin-top: 4px;
@@ -96,7 +98,7 @@
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
   color: var(--neutral);
-  transition: all ease-in-out .04s;
+  transition: all ease-in-out 0.04s;
 }
 .dropdown :global(.ant-dropdown-menu-item:hover) {
   background: var(--secondary);

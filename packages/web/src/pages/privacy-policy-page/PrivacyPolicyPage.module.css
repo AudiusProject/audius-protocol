@@ -24,7 +24,6 @@
   background-color: var(--white);
 }
 
-
 /* Mobile Styles */
 .mobileContainer {
   flex-shrink: 0;

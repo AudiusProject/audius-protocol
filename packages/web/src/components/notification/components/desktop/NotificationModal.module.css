@@ -35,7 +35,7 @@
   height: 24px;
   width: 24px;
   padding-left: 2px;
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
   position: absolute;
   top: 20px;
   left: 0px;
@@ -115,32 +115,32 @@
   line-height: 24px;
 }
 
-.body h1, 
+.body h1,
 .body h2,
 .body h3,
 .body h4,
 .body h5,
-.body h6 { 
+.body h6 {
   margin-bottom: 24px;
   font-weight: var(--font-bold);
 }
 
-.body h1 { 
+.body h1 {
   font-size: var(--font-3xl);
 }
-.body h2 { 
+.body h2 {
   font-size: var(--font-2xl);
 }
-.body h3 { 
+.body h3 {
   font-size: var(--font-xl);
 }
-.body h4 { 
+.body h4 {
   font-size: var(--font-l);
 }
-.body h5 { 
+.body h5 {
   font-size: var(--font-m);
 }
-.body h6 { 
+.body h6 {
   font-size: var(--font-s);
 }
 .body p {

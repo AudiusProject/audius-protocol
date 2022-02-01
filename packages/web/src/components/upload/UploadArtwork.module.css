@@ -9,7 +9,7 @@
   height: 100%;
   border-radius: 10px;
   border: 1px solid var(--neutral-light-8);
-  transition: border ease-in-out .1s;
+  transition: border ease-in-out 0.1s;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -46,8 +46,8 @@
   bottom: 0;
   top: 0;
   opacity: 0;
-  background-color: rgba(25,29,45,0.5);
-  transition: all .25s ease-in-out;
+  background-color: rgba(25, 29, 45, 0.5);
+  transition: all 0.25s ease-in-out;
 }
 
 .overlay > div {

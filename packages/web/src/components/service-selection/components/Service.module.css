@@ -103,7 +103,6 @@
 
 .service > .wrapper > .drag:active path {
   fill: var(--neutral);
-
 }
 
 .service > .wrapper > .drag {

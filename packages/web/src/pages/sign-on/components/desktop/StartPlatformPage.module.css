@@ -8,7 +8,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: #DAD9E0;
+  background-color: #dad9e0;
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -27,7 +27,7 @@ svg.backIconArrow {
   transform: rotate(180deg);
 }
 
-svg.backIconArrow path{
+svg.backIconArrow path {
   fill: var(--white);
 }
 
@@ -52,7 +52,6 @@ svg.backIconArrow path{
   line-height: 26px;
   user-select: none;
 }
-
 
 /* Option Section */
 
@@ -79,7 +78,7 @@ svg.backIconArrow path{
 .border {
   height: 152px;
   width: 1px;
-  background-color: #F2F2F4;
+  background-color: #f2f2f4;
 }
 
 .optionButton .optionButtonText {
@@ -105,7 +104,7 @@ svg.backIconArrow path{
 .bgImage {
   height: calc(100% - 312px);
   width: 100%;
-  box-shadow: 10px 10px 20px -5px rgba(0,0,0,0.05);
+  box-shadow: 10px 10px 20px -5px rgba(0, 0, 0, 0.05);
   border-top: 1px solid var(--neutral-light-5);
   background-size: cover;
   background-position: center;
@@ -119,5 +118,5 @@ svg.backIconArrow path{
   flex-direction: column;
   align-items: center;
   position: relative;
-  box-shadow: 10px 10px 20px -5px rgba(0,0,0,0.05);
+  box-shadow: 10px 10px 20px -5px rgba(0, 0, 0, 0.05);
 }

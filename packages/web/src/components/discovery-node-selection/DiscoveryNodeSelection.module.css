@@ -5,7 +5,7 @@
   min-height: 200px;
   width: 400px;
   border-radius: 20px;
-  box-shadow: 0 0 ;
+  box-shadow: 0 0;
   background-color: var(--white);
   display: flex;
   flex-direction: column;

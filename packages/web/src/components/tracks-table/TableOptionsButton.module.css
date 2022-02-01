@@ -12,22 +12,22 @@
   width: 14px;
   height: 14px;
   position: relative;
-  transition: all .07s ease-in-out !important;
+  transition: all 0.07s ease-in-out !important;
 }
 
 .iconHidden {
-  opacity: 0.0;
+  opacity: 0;
 }
 
 :global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row)) .icon {
-  opacity: 1.0;
+  opacity: 1;
 }
 
 .icon g path {
   fill: var(--neutral-light-5);
 }
 .tableOptionsButton:hover .icon {
-  transform: scale3d(1.05,1.05,1.05);
+  transform: scale3d(1.05, 1.05, 1.05);
 }
 .tableOptionsButton:hover .icon g path {
   fill: var(--neutral-light-3);

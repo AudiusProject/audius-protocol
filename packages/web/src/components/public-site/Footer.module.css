@@ -34,9 +34,8 @@
   border: none;
   border-radius: 6px;
   background-color: var(--static-secondary);
-  box-shadow: 0 10px 30px -2px rgba(89,11,151,0.3);
+  box-shadow: 0 10px 30px -2px rgba(89, 11, 151, 0.3);
   padding: 12px 24px;
-
 
   color: var(--static-white);
   font-family: Gilroy !important;
@@ -51,14 +50,14 @@
 
 .startListeningButton:hover {
   transform: scale3d(1.03, 1.03, 1.03);
-  background-color: #8615DF;
-  box-shadow: 0 20px 30px -2px rgba(89,11,151,0.3);
+  background-color: #8615df;
+  box-shadow: 0 20px 30px -2px rgba(89, 11, 151, 0.3);
 }
 
 .startListeningButton:active {
   transform: scale3d(0.99, 0.99, 0.99);
-  background-color: #6A08B7;
-  box-shadow: 0 1px 2px -2px rgba(89,11,151,0.3);
+  background-color: #6a08b7;
+  box-shadow: 0 1px 2px -2px rgba(89, 11, 151, 0.3);
 }
 
 .divider {
@@ -76,7 +75,6 @@
   align-items: center;
   margin-bottom: 37px;
 }
-
 
 /* Site Links */
 .siteLinksContainer {
@@ -206,16 +204,16 @@
 
 .isMobile .logo {
   width: 100%;
-  max-width: 243px; 
+  max-width: 243px;
 }
 
 .isMobile .startListeningButton {
-  margin: 24px auto 0px; 
+  margin: 24px auto 0px;
 }
 
 .isMobile .divider {
   width: 100%;
-  border-bottom: 1px solid #DAD9E0;
+  border-bottom: 1px solid #dad9e0;
   margin: 30px 0px 18px;
 }
 

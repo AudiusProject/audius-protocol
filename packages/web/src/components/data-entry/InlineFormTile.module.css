@@ -47,9 +47,7 @@
   border-left: 1px solid var(--neutral-light-8);
   max-height: 0;
   overflow: hidden;
-  transition:
-    max-height ease-in-out .18s,
-    margin ease-in-out .18s;
+  transition: max-height ease-in-out 0.18s, margin ease-in-out 0.18s;
 }
 
 .advanced.show {

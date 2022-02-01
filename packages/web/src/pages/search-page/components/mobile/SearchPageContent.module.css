@@ -42,7 +42,7 @@
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  padding-top: 20%
+  padding-top: 20%;
 }
 
 .spin :global(.ant-spin-dot i) {
@@ -71,6 +71,6 @@
   font-size: var(--font-l);
 }
 
-.noResults>* {
+.noResults > * {
   margin-bottom: 16px;
 }

@@ -8,12 +8,21 @@
 }
 
 /* Remove the default antd popover inner content spacing*/
-.overlayStyle > :global(.ant-popover-content) > :global(.ant-popover-inner) > div > :global(.antd-popover-inner-content) {
+.overlayStyle
+  > :global(.ant-popover-content)
+  > :global(.ant-popover-inner)
+  > div
+  > :global(.antd-popover-inner-content) {
   padding: 0px;
 }
 
 /* Remove the default antd popover inner content spacing*/
-.overlayStyle > :global(.ant-popover-content) > :global(.ant-popover-inner) > div > :global(.antd-popover-inner-content) > :global(.ant-popover-inner) {
+.overlayStyle
+  > :global(.ant-popover-content)
+  > :global(.ant-popover-inner)
+  > div
+  > :global(.antd-popover-inner-content)
+  > :global(.ant-popover-inner) {
   box-shadow: none;
   background-color: inherit;
   border-radius: 0px;
@@ -28,19 +37,27 @@
   padding: 0px;
 }
 
-.overlayStyle:global(.ant-popover-placement-right), .overlayStyle:global(.ant-popover-placement-rightTop), .overlayStyle:global(.ant-popover-placement-rightBottom) {
+.overlayStyle:global(.ant-popover-placement-right),
+.overlayStyle:global(.ant-popover-placement-rightTop),
+.overlayStyle:global(.ant-popover-placement-rightBottom) {
   padding-left: 9px;
 }
 
-.overlayStyle:global(.ant-popover-placement-left), .overlayStyle:global(.ant-popover-placement-leftTop), .overlayStyle:global(.ant-popover-placement-leftBottom) {
+.overlayStyle:global(.ant-popover-placement-left),
+.overlayStyle:global(.ant-popover-placement-leftTop),
+.overlayStyle:global(.ant-popover-placement-leftBottom) {
   padding-right: 9px;
 }
 
-.overlayStyle:global(.ant-popover-placement-top), .overlayStyle:global(.ant-popover-placement-topLeft), .overlayStyle:global(.ant-popover-placement-topRight) {
+.overlayStyle:global(.ant-popover-placement-top),
+.overlayStyle:global(.ant-popover-placement-topLeft),
+.overlayStyle:global(.ant-popover-placement-topRight) {
   padding-bottom: 9px;
 }
 
-.overlayStyle:global(.ant-popover-placement-bottom), .overlayStyle:global(.ant-popover-placement-bottomLeft), .overlayStyle:global(.ant-popover-placement-bottomRight) {
+.overlayStyle:global(.ant-popover-placement-bottom),
+.overlayStyle:global(.ant-popover-placement-bottomLeft),
+.overlayStyle:global(.ant-popover-placement-bottomRight) {
   padding-top: 9px;
 }
 
