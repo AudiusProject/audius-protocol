@@ -20,7 +20,8 @@ async function fetchExportFromSecondary({
   wallet,
   clockRangeMin,
   selfEndpoint,
-  logPrefix
+  logPrefix,
+  logger
 }) {
   logPrefix = `${logPrefix} [fetchExportFromSecondary]`
 
@@ -47,20 +48,26 @@ async function fetchExportFromSecondary({
       }
     )
 
-    // if (
-    //   !_.has(exportResp, 'data.data')
-    //   || !_.has(exportResp, 'data.data.cnodeUsers')
-    //   || !_.has(exportResp, 'data.data.ipfsIDObj')
-    //   || !_.has(exportResp, 'data.data.clockInfo')
-    //   || exportResp.data.data.cnodeUsers.length !== 1
-    //   || !_.has(exportResp.data.data.cnodeUsers[0], 'walletPublicKey')
-    // ) {
-    //   throw new Error('Malformatted export response data')
-    // }
+    if (
+      !_.has(exportResp, 'data.data')
+      || !_.has(exportResp, 'data.data.cnodeUsers')
+      || !_.has(exportResp, 'data.data.ipfsIDObj')
+      || !_.has(exportResp, 'data.data.clockInfo')
+      || !_.has(exportResp, 'data.data.ipfsIDObj.addresses')
+      || exportResp.data.data.cnodeUsers.length !== 1
+      || !_.has(exportResp.data.data.cnodeUsers[0], 'walletPublicKey')
+    ) {
+      throw new Error('Malformatted export response data')
+    }
 
-    // TODO check if returned clockrange matches requested
+    const { cnodeUsers, ipfsIDObj } = exportResp.data.data
 
-    return exportResp.data.data
+    const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
+    if (fetchedCNodeUser.walletPublicKey !== wallet) {
+      throw new Error('NO BAD NO')
+    }
+
+    return { fetchedCNodeUser, ipfsIDObj }
   } catch (e) {
     throw new Error(`${logPrefix} ERROR: ${e.message}`)
   }
@@ -220,12 +227,7 @@ async function filterOutAlreadyPresentDBEntries({
  * write data for all diffed files to disk
  * write all DB state in TX
  */
-async function saveExportedData({
-  fetchedCNodeUser,
-  userReplicaSet,
-  serviceRegistry,
-  logger
-}) {
+async function saveEntriesToDB({ fetchedCNodeUser, logger }) {
   let {
     walletPublicKey,
     audiusUsers: fetchedAudiusUsers,
@@ -233,18 +235,16 @@ async function saveExportedData({
     files: fetchedFiles
   } = fetchedCNodeUser
 
-  await saveFilesToDisk({
-    files: fetchedFiles,
-    userReplicaSet,
-    serviceRegistry,
-    logger
-  })
-
   /**
    * Write all records to DB
    */
 
   const transaction = await models.sequelize.transaction()
+
+  logger.info(
+    redisKey,
+    `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`
+  )
 
   let localCNodeUser = await models.CNodeUser.findOne({
     where: { walletPublicKey },
@@ -405,86 +405,6 @@ async function releaseUserRedisLock({ redis, wallet }) {
 /**
  * Export data for user from secondary and save locally, until complete
  */
-async function primarySyncFromSecondaryOLD({
-  serviceRegistry,
-  secondary,
-  wallet,
-  selfEndpoint,
-  logContext = DEFAULT_LOG_CONTEXT
-}) {
-  const { redis, nodeConfig } = serviceRegistry
-
-  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
-    'syncRequestMaxUserFailureCountBeforeSkip'
-  )
-
-  const logger = genericLogger.child(logContext)
-  const logPrefix = `[primarySyncFromSecondary] [Wallet: ${wallet}] [Secondary: ${secondary}]`
-  logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
-  const start = Date.now()
-
-  try {
-    await acquireUserRedisLock({ redis, wallet })
-
-    const userReplicaSet = await getUserReplicaSet({
-      serviceRegistry,
-      logger,
-      wallet,
-      selfEndpoint: selfEndpoint
-    })
-
-    let completed = false
-    let clockRangeMin = 0
-    while (!completed) {
-      const exportData = await fetchExportFromSecondary({
-        secondary,
-        wallet,
-        clockRangeMin,
-        selfEndpoint,
-        logPrefix
-      })
-
-      const { cnodeUsers, ipfsIDObj } = exportData
-
-      const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
-      if (fetchedCNodeUser.walletPublicKey !== wallet) {
-        throw new Error('NO BAD NO')
-      }
-
-      // Attempt to connect to opposing IPFS node without waiting
-      initBootstrapAndRefreshPeers(
-        serviceRegistry,
-        logger,
-        ipfsIDObj.addresses,
-        logPrefix
-      )
-
-      await saveExportedData({
-        fetchedCNodeUser,
-        serviceRegistry,
-        userReplicaSet,
-        logger
-      })
-
-      // While-loop termination
-      const clockInfo = fetchedCNodeUser.clockInfo
-      if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
-        completed = true
-      } else {
-        clockRangeMin = clockInfo.requestedClockRangeMax + 1
-      }
-    }
-  } catch (e) {
-    console.log(`SIDTEST ERROR ${e}, ${e.stack}`)
-    // TODO syncHistoryAggregator??
-  } finally {
-    await releaseUserRedisLock({ redis, wallet })
-
-    // TODO logging
-    console.log(`SIDTEST DONE WITH PRIMARYSYNCFROMSECONDARY`)
-  }
-}
-
 async function primarySyncFromSecondary({
   serviceRegistry,
   secondary,
@@ -492,34 +412,18 @@ async function primarySyncFromSecondary({
   selfEndpoint,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
-  return sync({
-    serviceRegistry,
-    endpoint: secondary,
-    wallet,
-    selfEndpoint,
-    logContext,
-    syncMode: SyncMode.PrimaryShouldSync
-  })
-}
-
-async function sync({
-  serviceRegistry,
-  endpoint,
-  wallet,
-  selfEndpoint,
-  syncMode,
-  logContext = DEFAULT_LOG_CONTEXT,
-  forceResync = false
-}) {
   const { redis, nodeConfig } = serviceRegistry
+
+  // This is used only for logging record endpoint of requesting node
+  const selfEndpoint = nodeConfig.get('creatorNodeEndpoint') || null
 
   const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
     'syncRequestMaxUserFailureCountBeforeSkip'
   )
 
-  const logPrefix = `[Sync] [Mode: ${syncMode}] [Wallet: ${wallet}] [Endpoint: ${endpoint}]`
+  const logPrefix = `[primarySyncFromSecondary] [Wallet: ${wallet}] [Secondary: ${secondary}]`
   const logger = genericLogger.child(logContext)
-  logger.info(`${logPrefix} Beginning...`)
+  logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
   const start = Date.now()
 
   // object to track if the function errored, returned at the end of the function
@@ -528,15 +432,9 @@ async function sync({
   try {
     await acquireUserRedisLock({ redis, wallet })
 
-    if (syncMode === SyncMode.PrimaryShouldSync) {
-
-    } else if (syncMode === SyncMode.SecondaryShouldSync) {
-      
-    }
-    if (forceResync) {
-      await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
-    }
-
+    /**
+     * Fetch user replica set for use in `saveExportedData()`
+     */
     const userReplicaSet = await getUserReplicaSet({
       serviceRegistry,
       logger,
@@ -545,20 +443,16 @@ async function sync({
     })
 
     let completed = false
-    let clockRangeMin = 0
+    let exportClockRangeMin = 0
     while (!completed) {
-      const { cnodeUsers, ipfsIDObj } = await fetchExportFromSecondary({
-        endpoint,
+      const exportData = await fetchExportFromSecondary({
+        secondary,
         wallet,
-        clockRangeMin,
+        exportClockRangeMin,
         selfEndpoint,
         logPrefix
       })
-
-      const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
-      if (fetchedCNodeUser.walletPublicKey !== wallet) {
-        throw new Error('NO BAD NO')
-      }
+      const { fetchedCNodeUser, ipfsIDObj } = exportData
 
       // Attempt to connect to opposing IPFS node without waiting
       initBootstrapAndRefreshPeers(
@@ -568,7 +462,14 @@ async function sync({
         logPrefix
       )
 
-      await saveExportedData({
+      await saveFilesToDisk({
+        files: fetchedCNodeUser.files,
+        userReplicaSet,
+        serviceRegistry,
+        logger
+      })
+
+      await saveEntriesToDB({
         fetchedCNodeUser,
         serviceRegistry,
         userReplicaSet,
@@ -580,24 +481,11 @@ async function sync({
       if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
         completed = true
       } else {
-        clockRangeMin = clockInfo.requestedClockRangeMax + 1
+        exportClockRangeMin = clockInfo.requestedClockRangeMax + 1
       }
     }
   } catch (e) {
-    /**
-     * TODO move inside argument, defaulted off
-     */
-    // two errors where we wipe the state on the secondary
-    // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
-    // if the secondary gets into a weird state with constraints, wipe the records before future re-syncs
-    if (
-      e.message.includes('Can only insert contiguous clock values') ||
-      e.message.includes('SequelizeForeignKeyConstraintError')
-    ) {
-      logger.error(`${logPrefix} Sync error ${e.message} - Clearing wallet DB state.`)
-      await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
-    }
-    errorObj = e
+    logger.error(`${logPrefix} Sync error ${e.message}`)
 
     await SyncHistoryAggregator.recordSyncFail(wallet)
   } finally {
