@@ -3,10 +3,6 @@ import React from 'react'
 import cn from 'classnames'
 
 import placeholderArt from 'common/assets/image/imageBlank2x.png'
-import {
-  useCollectionCoverArt,
-  useUserProfilePicture
-} from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import {
   ProfilePictureSizes,
@@ -20,6 +16,8 @@ import RepostFavoritesStats, {
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
 import UpdateDot from 'components/update-dot/UpdateDot'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './Card.module.css'
 

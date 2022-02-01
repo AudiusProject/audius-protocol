@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react'
 
-import { useTrackCoverArt } from 'common/hooks/useImageSize'
 import { Collection } from 'common/models/Collection'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './TrackContent.module.css'
 const TrackContent = ({

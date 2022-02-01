@@ -4,15 +4,13 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import {
-  useUserProfilePicture,
-  useTrackCoverArt
-} from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUserFromTrack } from 'common/store/cache/users/selectors'
 import RemixCard from 'components/remix-card/RemixCard'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'

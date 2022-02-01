@@ -3,11 +3,11 @@ import React from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { useUserProfilePicture } from 'common/hooks/useImageSize'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { formatCount } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './UserCard.module.css'
 
