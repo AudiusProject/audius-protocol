@@ -371,10 +371,7 @@ class SolHealthInfo(TypedDict):
     time_diff_general: int
 
 
-class PlayHealthInfo(TypedDict):
-    is_unhealthy: bool
-    tx_info: Dict
-    time_diff_general: int
+class PlayHealthInfo(SolHealthInfo):
     oldest_unarchived_play_created_at: str
 
 
