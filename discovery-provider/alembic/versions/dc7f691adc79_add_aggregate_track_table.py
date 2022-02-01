@@ -283,7 +283,7 @@ def downgrade():
     connection.execute(
         """
       begin;
-        DROP TABLE IF EXISTS aggregate_track;
+        DROP TABLE IF EXISTS aggregate_track CASCADE;
 
         DROP MATERIALIZED VIEW IF EXISTS aggregate_track;
         DROP INDEX IF EXISTS aggregate_track_idx;
