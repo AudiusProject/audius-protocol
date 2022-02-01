@@ -21,6 +21,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             tracks t
         WHERE
             t.is_current IS TRUE
+            AND t.blocknumber > :prev_blocknumber
         GROUP BY
             t.track_id
         UNION
