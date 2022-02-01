@@ -631,12 +631,12 @@ def test_track_indexing_skip_tx(app, mocker):
                 update_task,
                 update_task,
                 session,
-                test_ipfs_metadata,
-                test_blacklisted_cids,
                 test_track_factory_txs,
                 test_block_number,
                 test_block_timestamp,
                 block_hash,
+                test_ipfs_metadata,
+                test_blacklisted_cids,
             )
             assert len(updated_track_ids_set) == 1
             assert list(updated_track_ids_set)[0] == blessed_track_record.track_id

@@ -153,6 +153,37 @@ class RewardsAttester {
   }
 
   /**
+   * Updates the AAO endpoint and address
+   * @param {{
+   *     aaoEndpoint: string
+   *     aaoAddress: string
+   * }} {
+   *     aaoEndpoint,
+   *     aaoAddress
+   * }
+   * @memberof RewardsAttester
+   */
+  async updateAAO ({ aaoEndpoint, aaoAddress }) {
+    this.logger.info(`Updating AAO to ${aaoEndpoint}, ${aaoAddress}`)
+    this.aaoEndpoint = aaoEndpoint
+    this.aaoAddress = aaoAddress
+  }
+
+  /**
+   * Updates the discovery node attestation endpoints
+   * @param {{
+   *     endpoints: Array<string>
+   * }} {
+   *     endpoints
+   * }
+   * @memberof RewardsAttester
+   */
+  async updateEndpoints ({ endpoints }) {
+    this.logger.info(`Updating rewards attester endpoints to ${endpoints}`)
+    this.endpoints = endpoints
+  }
+
+  /**
    * Sleeps until the feePayer has a usable Sol balance.
    *
    * @memberof RewardsAttester
@@ -430,9 +461,11 @@ class RewardsAttester {
   async _processResponses (responses) {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW, errors.BLOCKED])
-    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT, errors.CHALLENGE_INCOMPLETE])
+    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
     // Account for errors from DN aggregation + Solana program
-    const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT])
+    // CHALLENGE_INCOMPLETE are already handled in the `submitAndEvaluate` flow -
+    // safe to assume those won't work if we see them at this point.
+    const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT, errors.CHALLENGE_INCOMPLETE])
 
     const noRetry = []
     const successful = []

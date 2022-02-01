@@ -42,7 +42,6 @@ const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
 const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
@@ -62,7 +61,7 @@ const streamFromFileSystem = async (req, res, path) => {
   try {
     // If file cannot be found on disk, throw error
     if (!fs.existsSync(path)) {
-      throw new Error('File could not be found on disk.')
+      throw new Error(`File could not be found on disk, path=${path}`)
     }
 
     // Stream file from file system
@@ -515,11 +514,16 @@ async function _addToIpfsWithRetries({
 }
 
 module.exports = function (app) {
+  /**
+   * TODO: Eventually deprecate '/track_content_status'
+   */
   app.get(
-    '/track_content_status',
+    ['/track_content_status', '/async_processing_status'],
     handleResponse(async (req, res) => {
-      const redisKey = constructProcessKey(
-        PROCESS_NAMES.transcode,
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
+
+      const redisKey = AsyncProcessingQueue.constructAsyncProcessingKey(
         req.query.uuid
       )
       const value = (await redisClient.get(redisKey)) || '{}'
@@ -905,3 +909,4 @@ module.exports = function (app) {
 }
 
 module.exports.getCID = getCID
+module.exports.streamFromFileSystem = streamFromFileSystem
