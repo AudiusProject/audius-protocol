@@ -29,7 +29,6 @@ const {
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
-const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const BlacklistManager = require('../blacklistManager')
@@ -51,12 +50,15 @@ module.exports = function (app) {
     syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
+
       if (req.fileSizeError || req.fileFilterError) {
         removeTrackFolder({ logContext: req.logContext }, req.fileDir)
         return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
       }
 
-      await FileProcessingQueue.addTranscodeTask({
+      await AsyncProcessingQueue.addTrackContentUploadTask({
         logContext: req.logContext,
         req: {
           fileName: req.fileName,

@@ -481,7 +481,7 @@ def setup_verified_test(session):
             step_count=5,
         ),
         Challenge(
-            id="referrals-verified",
+            id="ref-v",
             type=ChallengeType.aggregate,
             active=True,
             amount="1",
@@ -524,7 +524,7 @@ def test_verified_referrals_invisible_to_nonverified_user(app):
 
             verified = get_challenges(2, False, session, bus)
             assert len(verified) == 1
-            assert verified[0]["challenge_id"] == "referrals-verified"
+            assert verified[0]["challenge_id"] == "ref-v"
 
 
 # Testing getting listen streak challenges with override

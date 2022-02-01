@@ -81,9 +81,9 @@ const TranscodingQueueMock = (active = 0, waiting = 0) => {
   }
 }
 
-const FileProcessingQueueMock = (active = 0, waiting = 0) => {
+const AsyncProcessingQueueMock = (active = 0, waiting = 0) => {
   return {
-    getFileProcessingQueueJobs: async () => {
+    getAsyncProcessingQueueJobs: async () => {
       return { active, waiting }
     }
   }
@@ -108,7 +108,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
 
@@ -171,7 +171,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
 
@@ -226,7 +226,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
 
@@ -294,7 +294,7 @@ describe('Test Health Check Verbose', function () {
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
 
     assert.deepStrictEqual(res, {
@@ -358,7 +358,7 @@ describe('Test Health Check Verbose', function () {
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
     const defaultRes = await healthCheck(
       { libs: libsMock, snapbackSM: snapbackSMMock },
@@ -366,7 +366,7 @@ describe('Test Health Check Verbose', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
 

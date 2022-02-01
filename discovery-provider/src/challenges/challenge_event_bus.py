@@ -64,6 +64,10 @@ class ChallengeEventBus:
         """Gets a manager for a given challenge_id"""
         return self._managers[challenge_id]
 
+    def does_manager_exist(self, challenge_id: str) -> bool:
+        """Returns whether or not a manager exists for a given challenge_id"""
+        return challenge_id in self._managers
+
     @contextmanager
     def use_scoped_dispatch_queue(self):
         """Makes the bus only dispatch the events once out of the new scope created with 'with'"""
