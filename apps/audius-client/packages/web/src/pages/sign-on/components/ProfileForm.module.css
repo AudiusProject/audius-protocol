@@ -8,7 +8,7 @@
   display: inline-flex;
   align-items: center;
   flex-direction: column;
-  background-color: rgba(255,255,255,0.75);
+  background-color: rgba(255, 255, 255, 0.75);
 }
 
 .header {
@@ -37,7 +37,7 @@
 
 .uploadText {
   width: 127px;
-  color: #FAFAFA;
+  color: #fafafa;
   font-size: 14px;
   font-weight: bold;
   letter-spacing: 0.29px;
@@ -57,15 +57,14 @@
   top: 0;
   padding: 75%;
   opacity: 0;
-  background-color: rgba(25,29,45,0.5);
-  transition: all .25s ease-in-out;
+  background-color: rgba(25, 29, 45, 0.5);
+  transition: all 0.25s ease-in-out;
 }
 
 .overlay.processing {
   opacity: 1;
   padding: 35%;
 }
-
 
 .inputContainer {
   margin-bottom: 47px;
@@ -135,7 +134,7 @@
 
 .continueButton .continueButtonText {
   font-weight: var(--font-bold);
-  font-size: var(--font-l)
+  font-size: var(--font-l);
 }
 
 .handleInput :global(.placeholder) {
@@ -146,7 +145,7 @@
   position: absolute;
   top: 60px;
   left: 38px;
-  background-color: #DAD9E0;
+  background-color: #dad9e0;
 }
 
 .hide {
@@ -173,8 +172,6 @@
   font-size: var(--font-s);
   font-weight: var(--font-medium);
 }
-
-
 
 /* Mobile */
 
@@ -204,8 +201,8 @@
   padding-left: 36px;
 }
 
-.isMobile input::-webkit-input-placeholder { 
-  line-height: normal !important; 
+.isMobile input::-webkit-input-placeholder {
+  line-height: normal !important;
 }
 
 .isMobile .atHandle {

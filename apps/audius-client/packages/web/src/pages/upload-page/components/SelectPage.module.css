@@ -9,7 +9,7 @@
 }
 .uploaded {
   flex: 1 1 0;
-  transition: flex-grow ease-in-out .18s;
+  transition: flex-grow ease-in-out 0.18s;
   margin-left: 16px;
   max-width: 50%;
 }
@@ -28,7 +28,7 @@
   padding-left: 8px;
   text-align: left;
   user-select: none;
-  
+
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
   line-height: 14px;
@@ -40,7 +40,7 @@
 
 .continueButton .continueButtonText {
   font-weight: var(--font-bold);
-  font-size: var(--font-l)
+  font-size: var(--font-l);
 }
 
 .invalidFileType {

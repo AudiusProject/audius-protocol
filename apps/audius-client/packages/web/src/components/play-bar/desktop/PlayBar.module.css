@@ -52,15 +52,18 @@
   width: 32px;
 }
 
-.nextButton, .previousButton {
+.nextButton,
+.previousButton {
   width: 22px;
 }
 
-.nextButton path, .previousButton path {
+.nextButton path,
+.previousButton path {
   fill: var(--next-and-previous-buttons);
 }
 
-.shuffleButton, .repeatButton {
+.shuffleButton,
+.repeatButton {
   width: 16px;
 }
 

@@ -166,7 +166,7 @@
 }
 .collectibleImg:hover {
   cursor: pointer;
-  transform: perspective(1px) scale3d(1.04,1.04,1.04);
+  transform: perspective(1px) scale3d(1.04, 1.04, 1.04);
 }
 .collectibleImg.profileImg {
   border-radius: 100%;
@@ -197,6 +197,10 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

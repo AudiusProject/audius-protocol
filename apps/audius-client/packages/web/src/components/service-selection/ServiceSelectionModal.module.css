@@ -44,7 +44,6 @@
   margin-bottom: 20px;
 }
 
-
 .subtitle {
   color: var(--neutral);
   font-size: var(--font-m);
@@ -144,7 +143,7 @@
   cursor: pointer;
   display: inline;
   transition: border 0.07s ease-in-out;
-  border-bottom: 1px solid rgba(0,0,0,0);
+  border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
 .clearSearch div:hover {

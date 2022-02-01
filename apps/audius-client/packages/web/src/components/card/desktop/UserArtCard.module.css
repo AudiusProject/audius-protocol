@@ -35,7 +35,8 @@
   margin-bottom: 4px;
 }
 
-.userName, .followerCount {
+.userName,
+.followerCount {
   transition: color 0.07s ease-in;
 }
 
@@ -47,7 +48,8 @@
   white-space: nowrap;
 }
 
-.userName:hover, .followerCount:hover {
+.userName:hover,
+.followerCount:hover {
   cursor: pointer;
   color: var(--primary);
   text-decoration: underline;

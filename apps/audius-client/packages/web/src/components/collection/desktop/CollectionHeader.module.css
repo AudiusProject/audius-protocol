@@ -99,7 +99,6 @@
   align-items: center;
 }
 
-
 .infoLabelsSection {
   margin-top: 24px;
   line-height: 10px;
@@ -131,7 +130,6 @@
   color: var(--primary);
 }
 
-
 /* Filter Input */
 .inputWrapper {
   position: absolute;
@@ -156,11 +154,11 @@
   font-weight: var(--font-medium);
   height: 24px;
 }
-.inputWrapper :global(.ant-input-prefix)>svg {
+.inputWrapper :global(.ant-input-prefix) > svg {
   width: 12px;
   height: 12px;
 }
-.inputWrapper :global(.ant-input-prefix)>svg g path {
+.inputWrapper :global(.ant-input-prefix) > svg g path {
   fill: var(--neutral-light-4);
 }
 

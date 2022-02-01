@@ -16,7 +16,7 @@
   border-radius: 8px;
   background-color: var(--white);
   box-shadow: 0 16px 20px 0 var(--table-shadow);
-  
+
   display: flex;
   flex-direction: column;
   justify-content: center;

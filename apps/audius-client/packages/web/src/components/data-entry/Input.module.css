@@ -12,7 +12,7 @@
   outline: none;
   padding-left: 18px;
   background: none;
-  transition: border ease-in-out .1s;
+  transition: border ease-in-out 0.1s;
   font-weight: 500;
   color: var(--neutral);
 }
@@ -22,7 +22,7 @@
   -webkit-box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
 }
 .input.shaded {
-  background-color: #E9E4F0;
+  background-color: #e9e4f0;
 }
 .input.small > input,
 .input.small .placeholder {
@@ -68,7 +68,7 @@
 }
 .input {
   background-color: var(--neutral-light-10);
-  border-radius: 6px;;
+  border-radius: 6px;
 }
 
 .input > input::placeholder {

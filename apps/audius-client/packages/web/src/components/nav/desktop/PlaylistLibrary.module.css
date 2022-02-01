@@ -11,7 +11,7 @@
 }
 
 .droppable::after {
-  content: "";
+  content: '';
   position: absolute;
   height: 2px;
   width: 70%;

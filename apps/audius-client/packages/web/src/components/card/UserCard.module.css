@@ -3,8 +3,9 @@
   width: 168px;
   border-radius: 8px;
   background: var(--neutral-light-10);
-  box-shadow: 0 0 3px 0px rgba(106,103,122,0.2), 0 2px 8px -2px rgba(133,129,153,0.1);
-  transition: all .25s ease;
+  box-shadow: 0 0 3px 0px rgba(106, 103, 122, 0.2),
+    0 2px 8px -2px rgba(133, 129, 153, 0.1);
+  transition: all 0.25s ease;
   display: inline-flex;
   align-items: center;
   flex-direction: column;
@@ -13,31 +14,35 @@
 
 .cardContainer.desktop:hover {
   background-color: var(--white);
-  box-shadow: rgba(228, 230, 234, .5) 2px 2px 20px 4px;
-  transform: translate3D(0,-2px,0) scale(1.04);
-  transition: all .3s ease;
+  box-shadow: rgba(228, 230, 234, 0.5) 2px 2px 20px 4px;
+  transform: translate3D(0, -2px, 0) scale(1.04);
+  transition: all 0.3s ease;
 }
 
 .cardContainer.desktop:active {
   transform: scale3d(1, 1, 1);
-  background-color: #FAFAFA;
-  box-shadow: 0 0 2px 0 rgba(106,103,122,0.25), 0 0 2px -2px rgba(133,129,153,0.15);
+  background-color: #fafafa;
+  box-shadow: 0 0 2px 0 rgba(106, 103, 122, 0.25),
+    0 0 2px -2px rgba(133, 129, 153, 0.15);
 }
 
 .cardContainer.selected {
-  background: linear-gradient(135deg, #9849D6 0%, #6516A3 100%);
-	box-shadow: 0 2px 5px -2px rgba(133,129,153,0.5), 0 2px 6px -2px rgba(126,27,204,0.25);
+  background: linear-gradient(135deg, #9849d6 0%, #6516a3 100%);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.5),
+    0 2px 6px -2px rgba(126, 27, 204, 0.25);
 }
 
 .cardContainer.desktop.selected:hover {
-  background-color: linear-gradient(135deg, #9849D6 0%, #6516A3 100%);
-  box-shadow: 0 2px 15px -2px rgba(133,129,153,0.5), 0 2px 8px -2px rgba(126,27,204,0.25);
+  background-color: linear-gradient(135deg, #9849d6 0%, #6516a3 100%);
+  box-shadow: 0 2px 15px -2px rgba(133, 129, 153, 0.5),
+    0 2px 8px -2px rgba(126, 27, 204, 0.25);
 }
 
 .cardContainer.desktop.selected:active {
-  background-color: rgba(101,22,163,0.5);
-  background: linear-gradient(135deg, #9849D6 0%, #6516A3 100%);
-  box-shadow: 0 0 2px 0 rgba(133,129,153,0.5), 0 0 2px 0 rgba(126,27,204,0.25);
+  background-color: rgba(101, 22, 163, 0.5);
+  background: linear-gradient(135deg, #9849d6 0%, #6516a3 100%);
+  box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.5),
+    0 0 2px 0 rgba(126, 27, 204, 0.25);
 }
 
 .coverArtWrapper {
@@ -108,5 +113,6 @@
   min-width: 140px;
   max-width: 190px;
   height: 160px;
-  box-shadow: 0 0 2px 0 rgba(106,103,122,0.25), 0 2px 8px -2px rgba(133,129,153,0.15);
+  box-shadow: 0 0 2px 0 rgba(106, 103, 122, 0.25),
+    0 2px 8px -2px rgba(133, 129, 153, 0.15);
 }

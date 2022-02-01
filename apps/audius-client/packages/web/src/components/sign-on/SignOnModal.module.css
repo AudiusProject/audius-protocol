@@ -10,7 +10,7 @@
   border-radius: 12px;
   background-color: var(--white);
   box-shadow: rgba(112, 29, 169, 0.3) 0px 16px 20px 0px;
-  transition: all ease-in-out .4s;
+  transition: all ease-in-out 0.4s;
 }
 
 .contentContainer {
@@ -18,12 +18,12 @@
   height: 656px;
   width: 400px;
   background-color: var(--white);
-  box-shadow: 10px 0 20px -5px rgba(0,0,0,0.05);
+  box-shadow: 10px 0 20px -5px rgba(0, 0, 0, 0.05);
   display: flex;
   position: relative;
   transition: none;
-  transition: opacity ease-in-out .4s;
-  transition: transform ease-in-out .4s;
+  transition: opacity ease-in-out 0.4s;
+  transition: transform ease-in-out 0.4s;
 }
 
 .imageContainer {

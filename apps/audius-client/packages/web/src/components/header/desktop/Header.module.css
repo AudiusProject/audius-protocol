@@ -51,12 +51,13 @@
 }
 
 /** Safari doesn't do a good job persisting the title font styles to nested content */
-.header.main > *, .header.main > * > * {
+.header.main > *,
+.header.main > * > * {
   background-image: var(--page-header-gradient);
 
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
-  text-shadow:var(--page-header-text-shadow);
+  text-shadow: var(--page-header-text-shadow);
 }
 
 .header.mini {

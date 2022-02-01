@@ -30,7 +30,7 @@
 }
 
 .title {
-  color: #480B79;
+  color: #480b79;
   font-family: Gilroy !important;
   font-size: 42px;
   font-weight: bold;
@@ -40,7 +40,7 @@
 
 .subTitle {
   max-width: 608px;
-  color: #C2C0CC;
+  color: #c2c0cc;
   font-family: Gilroy !important;
   font-size: 21px;
   font-weight: 500;
@@ -82,7 +82,7 @@
 }
 
 .track:hover {
-  transform: scale3d(1.10, 1.10, 1.10);
+  transform: scale3d(1.1, 1.1, 1.1);
 }
 
 .track:active {
@@ -98,17 +98,21 @@
   justify-content: flex-end;
   padding-bottom: 19px;
   transition: all 0.3s ease-in-out;
-  background: rgba(0,0,0,0);
+  background: rgba(0, 0, 0, 0);
 }
 
 .trackContent:hover,
 .trackContent:active {
-  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
 }
 
 .track .trackTitle {
   opacity: 0;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 18px;
   font-weight: 700;
   line-height: 23px;
@@ -119,7 +123,7 @@
 
 .track .trackArtist {
   opacity: 0;
-  color: rgba(255,255,255, 1);
+  color: rgba(255, 255, 255, 1);
   font-size: 18px;
   font-weight: 500;
   line-height: 23px;
@@ -170,7 +174,7 @@
 }
 
 .mobileContainer .title {
-  color: #480B79;
+  color: #480b79;
   font-family: Gilroy;
   font-size: 32px;
   font-weight: bold;
@@ -179,7 +183,7 @@
 }
 .mobileContainer .subTitle {
   max-width: 300px;
-  color: #C2C0CC;
+  color: #c2c0cc;
   font-family: Gilroy;
   font-size: 16px;
   font-weight: 500;
@@ -209,9 +213,9 @@
 }
 
 .mobileContainer .trackImage {
-	height: 152px;
+  height: 152px;
   width: 152px;
-	border-radius: 8px;
+  border-radius: 8px;
   margin-bottom: 8px;
   background-size: cover;
   background-position: center;

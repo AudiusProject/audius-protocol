@@ -29,6 +29,6 @@
 }
 
 .tooltip :global(.ant-tooltip-content) :global(.ant-tooltip-arrow) {
-  border-bottom-color: black; 
-  border-right-color: black; 
+  border-bottom-color: black;
+  border-right-color: black;
 }

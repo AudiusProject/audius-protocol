@@ -3,7 +3,8 @@
   border-radius: 8px;
   max-width: 722px;
   overflow: hidden;
-  box-shadow: 0 15px 20px -5px var(--profile-completion-shadow-1), 0 15px 20px -5px var(--profile-completion-shadow-2);
+  box-shadow: 0 15px 20px -5px var(--profile-completion-shadow-1),
+    0 15px 20px -5px var(--profile-completion-shadow-2);
   position: relative;
   margin: 3px 0px 24px 0px;
   user-select: none;
@@ -38,10 +39,10 @@
 
 .completionTextPercentage {
   color: var(--secondary);
-  font-size: 52px;	
+  font-size: 52px;
   font-weight: 900;
   letter-spacing: 1.86px;
-  line-height: 32px; 
+  line-height: 32px;
   margin-top: 34px;
 }
 

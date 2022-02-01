@@ -22,7 +22,7 @@
 }
 
 .closeButtonIcon:hover {
-  transform: scale(1.10);
+  transform: scale(1.1);
 }
 
 .closeButtonIcon g path {
@@ -54,7 +54,11 @@
   width: 400px;
   height: 400px;
   opacity: 0.5;
-  background: radial-gradient(95.31% 95.31% at 0.82% 100%, #000000 0%, rgba(0, 0, 0, 0) 100%);
+  background: radial-gradient(
+    95.31% 95.31% at 0.82% 100%,
+    #000000 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 
 .infoOverlayTile {
@@ -64,12 +68,12 @@
   flex-direction: column;
   align-items: flex-start;
   overflow: hidden;
-  transition: all ease-in-out .18s, opacity ease-in-out 0.5s;
+  transition: all ease-in-out 0.18s, opacity ease-in-out 0.5s;
   position: absolute;
   bottom: 0px;
   left: 0px;
   color: var(--neutral-dark-3);
-  text-shadow: 0px 2px 4px rgba(85, 84, 89,.2);  
+  text-shadow: 0px 2px 4px rgba(85, 84, 89, 0.2);
 }
 
 .artworkWrapper {
@@ -82,7 +86,7 @@
   overflow: hidden;
   border: 2px solid var(--currently-playing-border);
   border-radius: 15px;
-  box-shadow: 0 5px 16px -2px rgba(85, 84, 89,.5) !important;
+  box-shadow: 0 5px 16px -2px rgba(85, 84, 89, 0.5) !important;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

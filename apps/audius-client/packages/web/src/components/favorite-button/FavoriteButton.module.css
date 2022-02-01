@@ -16,7 +16,7 @@
   margin: -2px;
   box-sizing: content-box;
   position: relative;
-  transition: all .17s ease-in-out !important;
+  transition: all 0.17s ease-in-out !important;
 }
 .icon.remove {
   position: absolute;
@@ -36,7 +36,7 @@
 }
 
 .favoriteButton:hover .icon {
-  transform: scale3d(1.10,1.10,1.10);
+  transform: scale3d(1.1, 1.1, 1.1);
 }
 .favoriteButton:active .icon {
   transform: scale3d(0.9, 0.9, 0.9);
@@ -44,16 +44,16 @@
 
 /* Swap out icons on hover */
 .favoriteButton .icon.heart {
-  opacity: 1.0;
+  opacity: 1;
 }
 .favoriteButton .icon.remove {
-  opacity: 0.0;
+  opacity: 0;
 }
 .favoriteButton:hover .icon.heart.hoverOut {
-  opacity: 0.0;
+  opacity: 0;
 }
 .favoriteButton:hover .icon.remove {
-  opacity: 1.0;
+  opacity: 1;
 }
 
 .icon g path {

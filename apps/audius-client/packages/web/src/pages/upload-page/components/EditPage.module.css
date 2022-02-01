@@ -6,7 +6,7 @@
   border-radius: 8px;
   margin-bottom: 16px;
   padding: 8px;
-  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.25);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25);
   background: var(--white);
   min-width: 530px;
 }
@@ -18,5 +18,5 @@
 
 .continueButton .continueButtonText {
   font-weight: var(--font-bold);
-  font-size: var(--font-l)
+  font-size: var(--font-l);
 }

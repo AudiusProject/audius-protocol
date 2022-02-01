@@ -7,13 +7,13 @@
   text-decoration: underline;
   cursor: pointer;
   user-select: none;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
 }
 .more.light {
   color: var(--neutral-light-4);
 }
 .more.dark {
-  color: var(--neutral);	
+  color: var(--neutral);
 }
 .more:hover {
   transform: scale(1.03);

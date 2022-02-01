@@ -8,7 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
   cursor: pointer;
 }
 
@@ -44,7 +44,7 @@
 
 .icon path {
   fill: var(--neutral);
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
 }
 
 .container.isSubscribed .icon path,

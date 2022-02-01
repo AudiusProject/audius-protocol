@@ -4,7 +4,7 @@
   padding: 0;
   cursor: pointer;
   display: flex;
-  transition: all .08s ease-in;
+  transition: all 0.08s ease-in;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -67,10 +67,13 @@
   overflow: visible !important;
 }
 
-.playButton :global(#primaryBG) path, .playButton :global(#Primary) path {
+.playButton :global(#primaryBG) path,
+.playButton :global(#Primary) path {
   fill: var(--primary);
 }
 
-.playButton :global(#playpause1) path, .playButton :global(#playpause2) path, .playButton :global(#White) path{
+.playButton :global(#playpause1) path,
+.playButton :global(#playpause2) path,
+.playButton :global(#White) path {
   fill: var(--play-button-triangle);
 }

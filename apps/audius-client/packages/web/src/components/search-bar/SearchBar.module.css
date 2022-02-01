@@ -45,11 +45,11 @@
   position: absolute;
   top: 0;
   right: -1px;
-  
+
   width: 0%;
   transform: scaleX(0.25);
   opacity: 0;
-  
+
   height: 32px;
   outline: 0;
   border: none;
@@ -61,7 +61,7 @@
   font-size: var(--font-s);
   line-height: 18px;
 
-  transition: transform 0.25s ease-in-out, opacity .25s ease-in-out;
+  transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
 
   border-radius: 6px;
   border: none;
