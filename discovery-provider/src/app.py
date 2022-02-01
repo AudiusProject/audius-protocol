@@ -506,10 +506,7 @@ def configure_celery(celery, test_config=None):
             },
             "prune_plays": {
                 "task": "prune_plays",
-                "schedule": crontab(
-                    minute="*/15",
-                    hour="14, 15",
-                ),  # 8x a day during non peak hours
+                "schedule": timedelta(seconds=600),
             },
         },
         task_serializer="json",
