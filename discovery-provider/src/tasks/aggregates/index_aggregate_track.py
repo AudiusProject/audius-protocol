@@ -99,7 +99,8 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 s.save_item_id
         ) AS track_save ON track_save.track_id = t.track_id
     WHERE
-        t.track_id in (
+        t.is_current is TRUE
+        AND t.track_id in (
             SELECT
                 track_id
             FROM
