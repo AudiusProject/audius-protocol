@@ -10,12 +10,12 @@ import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRemoveTrack } from 'assets/img/iconRemoveTrack.svg'
 import { ReactComponent as IconPause } from 'assets/img/pbIconPause.svg'
 import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
-import { useTrackCoverArt } from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import IconButton from 'components/icon-button/IconButton'
 import TablePlayButton from 'components/tracks-table/TablePlayButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './TrackListItem.module.css'
 

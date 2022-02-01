@@ -6,7 +6,6 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
-import { useTrackCoverArt } from 'common/hooks/useImageSize'
 import {
   FavoriteSource,
   RepostSource,
@@ -40,6 +39,7 @@ import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButton
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { getCastMethod } from 'pages/settings-page/store/selectors'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import { useRecord, make } from 'store/analytics/actions'

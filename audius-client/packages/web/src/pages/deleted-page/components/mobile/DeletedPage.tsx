@@ -2,10 +2,6 @@ import React from 'react'
 
 import { Button, ButtonType, IconUser } from '@audius/stems'
 
-import {
-  useTrackCoverArt,
-  useCollectionCoverArt
-} from 'common/hooks/useImageSize'
 import { ID, PlayableType } from 'common/models/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import { Playable } from 'common/models/Playable'
@@ -16,6 +12,8 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Lineup, { LineupWithoutTile } from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './DeletedPage.module.css'

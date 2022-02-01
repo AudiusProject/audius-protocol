@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useCallback } from 'react'
 import cn from 'classnames'
 
 import horizontalLogo from 'assets/img/settingsPageLogo.png'
-import { useUserProfilePicture } from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
 import Theme from 'common/models/Theme'
@@ -16,6 +15,7 @@ import Row from 'components/groupable-list/Row'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import Page from 'components/page/Page'
 import useScrollToTop from 'hooks/useScrollToTop'
+import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { getIsIOS } from 'utils/browser'
 import {
   ACCOUNT_SETTINGS_PAGE,

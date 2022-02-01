@@ -17,7 +17,6 @@ import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { Name } from 'common/models/Analytics'
-import { useTrackCoverArt } from 'common/hooks/useImageSize'
 import { Track } from 'common/models/Track'
 import { SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -27,6 +26,7 @@ import { webglSupported } from './utils'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 const Artwork = ({ track }: { track?: Track | null }) => {
   const { track_id, _cover_art_sizes } = track || {}
@@ -40,11 +40,10 @@ const Artwork = ({ track }: { track?: Track | null }) => {
 }
 
 type VisualizerProps = {
-  isVisible: boolean,
+  isVisible: boolean
   onClose: () => void
 } & ReturnType<typeof mapDispatchToProps> &
   ReturnType<ReturnType<typeof makeMapStateToProps>>
-
 
 const webGLExists = webglSupported()
 const messages = (browser: string) => ({
@@ -61,7 +60,7 @@ const Visualizer = ({
   onClose,
   recordOpen,
   recordClose,
-  goToRoute,
+  goToRoute
 }: VisualizerProps) => {
   const [toastText, setToastText] = useState('')
   // Used to fadeIn/Out the visualizer (opacity 0 -> 1) through a css class
@@ -83,20 +82,21 @@ const Visualizer = ({
     }
   }, [])
 
-  if(!webGLExists) {
+  if (!webGLExists) {
     return null
   }
 
   // Update Colors
   useEffect(() => {
-    if(dominantColors !== null) {
+    if (dominantColors !== null) {
       Visualizer1?.setDominantColors(dominantColors)
     }
   }, [isVisible, dominantColors, playing, currentQueueItem])
 
   // Rebind audio
   useEffect(() => {
-    if (audio && (audio as AudioStream).audioCtx && playing) Visualizer1?.bind(audio)
+    if (audio && (audio as AudioStream).audioCtx && playing)
+      Visualizer1?.bind(audio)
   }, [isVisible, playing, audio, currentQueueItem])
 
   useEffect(() => {
@@ -105,7 +105,7 @@ const Visualizer = ({
       Visualizer1?.show(darkMode)
       recordOpen()
       setShowVisualizer(true)
-      // Fade in after a 50ms delay because setting showVisualizer() and fadeVisualizer() at the 
+      // Fade in after a 50ms delay because setting showVisualizer() and fadeVisualizer() at the
       // same time leads to a race condition resulting in the animation not fading in sometimes
       setTimeout(() => {
         setFadeVisualizer(true)
@@ -127,7 +127,6 @@ const Visualizer = ({
     }
   }, [fadeVisualizer])
 
-  
   const goToTrackPage = useCallback(() => {
     const { track, user } = currentQueueItem
     if (track && user) {
@@ -144,65 +143,63 @@ const Visualizer = ({
 
   const renderTrackInfo = () => {
     const { uid, track, user } = currentQueueItem
-    const dominantColor = dominantColors ? dominantColors[0] : { r: 0, g: 0, b: 0 }
-    return track && user && uid ?
-      (
-        <div className={styles.trackInfoWrapper}>
-          <PlayingTrackInfo
-            profilePictureSizes={user._profile_picture_sizes}
-            trackId={track.track_id}
-            isOwner={track.owner_id === user.user_id}
-            trackTitle={track.title}
-            trackPermalink={track.permalink}
-            artistName={user.name}
-            artistHandle={user.handle}
-            artistUserId={user.user_id}
-            isVerified={user.is_verified}
-            isTrackUnlisted={track.is_unlisted}
-            onClickTrackTitle={() => {
-              goToTrackPage()
-              onClose()
-            }}
-            onClickArtistName={() => {
-              goToArtistPage()
-              onClose()
-            }}
-            hasShadow={true}
-            dominantColor={dominantColor}
-          />
-        </div>
-      )
-      : <div className={styles.emptyTrackInfoWrapper}></div>
+    const dominantColor = dominantColors
+      ? dominantColors[0]
+      : { r: 0, g: 0, b: 0 }
+    return track && user && uid ? (
+      <div className={styles.trackInfoWrapper}>
+        <PlayingTrackInfo
+          profilePictureSizes={user._profile_picture_sizes}
+          trackId={track.track_id}
+          isOwner={track.owner_id === user.user_id}
+          trackTitle={track.title}
+          trackPermalink={track.permalink}
+          artistName={user.name}
+          artistHandle={user.handle}
+          artistUserId={user.user_id}
+          isVerified={user.is_verified}
+          isTrackUnlisted={track.is_unlisted}
+          onClickTrackTitle={() => {
+            goToTrackPage()
+            onClose()
+          }}
+          onClickArtistName={() => {
+            goToArtistPage()
+            onClose()
+          }}
+          hasShadow={true}
+          dominantColor={dominantColor}
+        />
+      </div>
+    ) : (
+      <div className={styles.emptyTrackInfoWrapper}></div>
+    )
   }
-
 
   const { track } = currentQueueItem
   return (
     <div
-      className={cn(
-        styles.visualizer,
-        {
-          [styles.fade]: fadeVisualizer,
-          [styles.show]: showVisualizer,
-        },
-      )}
+      className={cn(styles.visualizer, {
+        [styles.fade]: fadeVisualizer,
+        [styles.show]: showVisualizer
+      })}
     >
       <div className='visualizer' />
       <div className={styles.logoWrapper}>
         <AudiusLogoHorizontal className={styles.logo} />
       </div>
-      <IconRemove
-        className={styles.closeButtonIcon}
-        onClick={onClose} />
+      <IconRemove className={styles.closeButtonIcon} onClick={onClose} />
       <div className={styles.infoOverlayTileShadow}></div>
       <div className={styles.infoOverlayTile}>
-        <div className={cn(styles.artworkWrapper, {
-          [styles.playing]: track,
-        })}
+        <div
+          className={cn(styles.artworkWrapper, {
+            [styles.playing]: track
+          })}
           onClick={() => {
             goToTrackPage()
             onClose()
-          }}>
+          }}
+        >
           <Artwork track={track} />
         </div>
         {renderTrackInfo()}
@@ -216,7 +213,7 @@ const Visualizer = ({
         text={toastText || ''}
       />
     </div>
-  );
+  )
 }
 
 const makeMapStateToProps = () => {
@@ -228,7 +225,9 @@ const makeMapStateToProps = () => {
       audio: getAudio(state),
       playing: getPlaying(state),
       theme: getTheme(state),
-      dominantColors: getDominantColorsByTrack(state, { track: currentQueueItem.track })
+      dominantColors: getDominantColorsByTrack(state, {
+        track: currentQueueItem.track
+      })
     }
   }
   return mapStateToProps
@@ -246,7 +245,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   goToRoute: (route: string) => dispatch(pushRoute(route))
 })
 
-export default connect(
-  makeMapStateToProps,
-  mapDispatchToProps
-)(Visualizer)
+export default connect(makeMapStateToProps, mapDispatchToProps)(Visualizer)

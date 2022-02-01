@@ -1,27 +1,15 @@
 import { useEffect } from 'react'
 
-import { useDispatch } from 'react-redux'
+import { Dispatch } from 'redux'
 
-import imageEmpty from 'common/assets/image/imageBlank2x.png'
-import imageCoverPhotoBlank from 'common/assets/image/imageCoverPhotoBlank.jpg'
-import profilePicEmpty from 'common/assets/image/imageProfilePicEmpty2X.png'
 import useInstanceVar from 'common/hooks/useInstanceVar'
 import {
-  CoverArtSizes,
-  CoverPhotoSizes,
   DefaultSizes,
   ImageSizesObject,
-  ProfilePictureSizes,
   SquareSizes,
   URL,
   WidthSizes
 } from 'common/models/ImageSizes'
-import { fetchCoverArt as fetchCollectionCoverArt } from 'common/store/cache/collections/actions'
-import { fetchCoverArt as fetchTrackCoverArt } from 'common/store/cache/tracks/actions'
-import {
-  fetchCoverPhoto,
-  fetchProfilePicture
-} from 'common/store/cache/users/actions'
 import { Maybe } from 'common/utils/typeUtils'
 
 type Size = SquareSizes | WidthSizes
@@ -71,6 +59,8 @@ type UseImageSizeProps<
   size: ImageSize
   // The available sizes of the image
   sizes: ImageSizes | null
+  // Dispatch for current context. Fixes the issue when trying to use web dispatch in mobile context
+  dispatch: Dispatch<any>
 }
 
 /**
@@ -87,13 +77,13 @@ export const useImageSize = <
 >({
   action,
   defaultImage = '',
+  dispatch,
   id,
   load = true,
   onDemand,
   size,
   sizes
 }: UseImageSizeProps<ImageSize, ImageSizes>) => {
-  const dispatch = useDispatch()
   const [getPreviousId, setPreviousId] = useInstanceVar<number | null>(null)
 
   const fallbackImage = (url: URL) => {
@@ -188,75 +178,3 @@ export const useLoadImageWithTimeout = (
     if (image && !getDidCallback() && callback) callback()
   }, [image, callback, getDidCallback])
 }
-
-export const useTrackCoverArt = (
-  trackId: number | null,
-  coverArtSizes: CoverArtSizes | null,
-  size: SquareSizes,
-  defaultImage: string = imageEmpty as string,
-  onDemand = false,
-  load = true
-) =>
-  useImageSize({
-    id: trackId,
-    sizes: coverArtSizes,
-    size,
-    action: fetchTrackCoverArt,
-    defaultImage,
-    onDemand,
-    load
-  })
-
-export const useCollectionCoverArt = (
-  collectionId: number,
-  coverArtSizes: CoverArtSizes | null,
-  size: SquareSizes,
-  defaultImage: string = imageEmpty as string,
-  onDemand = false,
-  load = true
-) =>
-  useImageSize({
-    id: collectionId,
-    sizes: coverArtSizes,
-    size,
-    action: fetchCollectionCoverArt,
-    defaultImage,
-    onDemand,
-    load
-  })
-
-export const useUserProfilePicture = (
-  userId: number | null,
-  profilePictureSizes: ProfilePictureSizes | null,
-  size: SquareSizes,
-  defaultImage: string = profilePicEmpty as string,
-  onDemand = false,
-  load = true
-) =>
-  useImageSize({
-    id: userId,
-    sizes: profilePictureSizes,
-    size,
-    action: fetchProfilePicture,
-    defaultImage,
-    onDemand,
-    load
-  })
-
-export const useUserCoverPhoto = (
-  userId: number | null,
-  coverPhotoSizes: CoverPhotoSizes | null,
-  size: WidthSizes,
-  defaultImage: string = imageCoverPhotoBlank as string,
-  onDemand = false,
-  load = true
-) =>
-  useImageSize({
-    id: userId,
-    sizes: coverPhotoSizes,
-    size,
-    action: fetchCoverPhoto,
-    defaultImage,
-    onDemand,
-    load
-  })

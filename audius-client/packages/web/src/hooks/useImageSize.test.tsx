@@ -9,8 +9,12 @@ jest.mock('react-redux', () => ({
   useDispatch: () => () => {}
 }))
 
-const TestComponent = (props: Parameters<typeof useImageSize>[0]) => {
-  const image = useImageSize(props)
+const TestComponent = (
+  props: Omit<Parameters<typeof useImageSize>[0], 'dispatch'>
+) => {
+  const dispatch = () => {}
+  // @ts-ignore
+  const image = useImageSize({ ...props, dispatch })
   return <div>{image ?? 'nothing'}</div>
 }
 
@@ -200,9 +204,11 @@ describe('useImageSize', () => {
 
     it('does not dispatch the action if the returned function is not called', () => {
       const action = jest.fn()
+      const dispatch = () => {}
       const { getByText } = render(
         <OnDemandTestComponent
-          useImageOptions={{ ...props, action }}
+          // @ts-ignore
+          useImageOptions={{ ...props, dispatch, action }}
           callFunction={false}
         />
       )
@@ -212,9 +218,11 @@ describe('useImageSize', () => {
 
     it('dispatches the action if the returned function is not called', () => {
       const action = jest.fn()
+      const dispatch = () => {}
       const { getByText } = render(
         <OnDemandTestComponent
-          useImageOptions={{ ...props, action }}
+          // @ts-ignore
+          useImageOptions={{ ...props, dispatch, action }}
           callFunction={true}
         />
       )
