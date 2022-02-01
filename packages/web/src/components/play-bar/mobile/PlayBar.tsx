@@ -4,7 +4,6 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { useTrackCoverArt } from 'common/hooks/useImageSize'
 import { FavoriteSource, Name, PlaybackSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
@@ -18,6 +17,7 @@ import CoSign, { Size } from 'components/co-sign/CoSign'
 import PlayButton from 'components/play-bar/PlayButton'
 import TrackingBar from 'components/play-bar/TrackingBar'
 import { PlayButtonStatus } from 'components/play-bar/types'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { make, useRecord } from 'store/analytics/actions'
 import {
   getAudio,

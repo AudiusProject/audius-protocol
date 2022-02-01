@@ -4,11 +4,11 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { useUserProfilePicture } from 'common/hooks/useImageSize'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUser } from 'common/store/cache/users/selectors'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 
 import styles from './ProfileImage.module.css'

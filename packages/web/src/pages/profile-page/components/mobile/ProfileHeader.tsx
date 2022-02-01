@@ -16,10 +16,6 @@ import Linkify from 'linkifyjs/react'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import imageCoverPhotoBlank from 'common/assets/image/imageCoverPhotoBlank.jpg'
-import {
-  useUserCoverPhoto,
-  useUserProfilePicture
-} from 'common/hooks/useImageSize'
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import {
@@ -35,6 +31,8 @@ import FollowButton from 'components/follow-button/FollowButton'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { make, useRecord } from 'store/analytics/actions'
 import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
 

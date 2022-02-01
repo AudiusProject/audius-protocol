@@ -6,10 +6,6 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import {
-  useUserCoverPhoto,
-  useUserProfilePicture
-} from 'common/hooks/useImageSize'
 import { FollowSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { WidthSizes, SquareSizes } from 'common/models/ImageSizes'
@@ -17,6 +13,8 @@ import { getUserId } from 'common/store/account/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import * as socialActions from 'common/store/social/users/actions'
 import { MountPlacement } from 'components/types'
+import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { setNotificationSubscription } from 'pages/profile-page/store/actions'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
