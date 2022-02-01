@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import commonPasswordList from 'fxa-common-password-list'

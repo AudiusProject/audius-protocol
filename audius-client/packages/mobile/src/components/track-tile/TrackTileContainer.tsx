@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 import { StyleSheet, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'

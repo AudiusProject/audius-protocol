@@ -1,4 +1,4 @@
-import React, { createContext, useRef, RefObject, ReactNode } from 'react'
+import { createContext, useRef, RefObject, ReactNode } from 'react'
 
 import WebView from 'react-native-webview'
 

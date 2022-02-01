@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Chain } from 'audius-client/src/common/models/Chain'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'

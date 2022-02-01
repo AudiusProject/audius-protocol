@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { StyleSheet, FlatList, View, RefreshControl } from 'react-native'
 import { connect } from 'react-redux'

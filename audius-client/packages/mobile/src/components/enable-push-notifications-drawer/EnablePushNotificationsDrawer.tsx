@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 // Importing directly from audius-client temporarily until
 // settings page is migrated because we still need push notification logic to work

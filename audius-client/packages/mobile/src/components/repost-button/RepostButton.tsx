@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { StyleSheet } from 'react-native'
 
 import IconRepostOffDark from 'app/assets/animations/iconRepostTrackTileOffDark.json'

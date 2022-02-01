@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  memo,
-  ReactNode,
-  useCallback,
-  useState
-} from 'react'
+import { createContext, memo, ReactNode, useCallback, useState } from 'react'
 
 import ToastView, { ToastType } from './ToastView'
 

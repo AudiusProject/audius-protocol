@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 
 import * as Sentry from '@sentry/react-native'
 import { Platform } from 'react-native'

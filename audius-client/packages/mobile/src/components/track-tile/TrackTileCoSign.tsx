@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Remix } from 'audius-client/src/common/models/Track'
 import { StyleSheet, View } from 'react-native'
 

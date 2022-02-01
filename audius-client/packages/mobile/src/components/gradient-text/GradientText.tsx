@@ -1,5 +1,3 @@
-import React from 'react'
-
 import MaskedView from '@react-native-masked-view/masked-view'
 import { TextStyle } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'

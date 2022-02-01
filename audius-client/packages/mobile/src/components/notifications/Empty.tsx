@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { View, StyleSheet, Text } from 'react-native'
 
 import IconAnnouncement from 'app/assets/images/iconAnnouncement.svg'

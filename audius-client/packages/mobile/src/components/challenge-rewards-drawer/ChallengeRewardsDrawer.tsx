@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ClaimStatus } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import { StyleSheet, View, ImageSourcePropType } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'

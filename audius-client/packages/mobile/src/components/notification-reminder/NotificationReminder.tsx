@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { checkNotifications, RESULTS } from 'react-native-permissions'
 import { useDispatch } from 'react-redux'

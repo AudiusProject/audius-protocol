@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Name } from 'audius-client/src/common/models/Analytics'

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 
 import { StyleSheet, Animated, Text, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

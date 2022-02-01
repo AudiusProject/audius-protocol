@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { CoverArtSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Remix } from 'audius-client/src/common/models/Track'

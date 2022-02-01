@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  RefObject,
-  useCallback
-} from 'react'
+import { useState, useRef, useEffect, RefObject, useCallback } from 'react'
 
 import { Platform, StyleSheet, View } from 'react-native'
 import MusicControl from 'react-native-music-control'

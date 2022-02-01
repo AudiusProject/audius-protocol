@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useNavigationState } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'

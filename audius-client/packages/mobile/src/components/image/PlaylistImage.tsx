@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { CollectionImage } from 'app/models/Collection'
 import { UserMultihash } from 'app/models/User'

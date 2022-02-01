@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { StyleSheet, Animated, View } from 'react-native'
