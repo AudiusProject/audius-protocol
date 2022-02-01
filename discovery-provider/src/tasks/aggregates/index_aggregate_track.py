@@ -52,8 +52,8 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             GROUP BY
                 s.save_item_id
         )
-    )
-    AND deleted_tracks AS (
+    ),
+    deleted_tracks AS (
         DELETE FROM
             aggregate_track a
         WHERE
