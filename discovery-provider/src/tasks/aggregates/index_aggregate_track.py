@@ -53,6 +53,20 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 s.save_item_id
         )
     )
+    AND deleted_tracks AS (
+        DELETE FROM
+            aggregate_track a
+        WHERE
+            a.track_id IN (
+                SELECT
+                    track_id
+                FROM
+                    tracks d
+                WHERE
+                    t.is_delete IS TRUE
+                    AND d.blocknumber > :prev_blocknumber
+            )
+    )
     INSERT INTO
         aggregate_track (track_id, repost_count, save_count)
     SELECT
