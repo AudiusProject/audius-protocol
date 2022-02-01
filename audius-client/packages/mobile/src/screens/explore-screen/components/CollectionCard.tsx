@@ -20,7 +20,7 @@ const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
 
 type CollectionCardProps = {
   collection: UserCollection
-  style: StyleProp<ViewStyle>
+  style?: StyleProp<ViewStyle>
 }
 
 export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
