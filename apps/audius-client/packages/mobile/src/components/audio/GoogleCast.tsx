@@ -1,4 +1,4 @@
-import React, { useEffect, RefObject, useCallback } from 'react'
+import { useEffect, RefObject, useCallback } from 'react'
 
 import GoogleCast, { CastButton } from 'react-native-google-cast'
 import { connect } from 'react-redux'

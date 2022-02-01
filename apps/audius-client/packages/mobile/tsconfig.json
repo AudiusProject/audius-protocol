@@ -4,7 +4,7 @@
     "module": "commonjs",
     "lib": ["es6", "dom"],
     "allowJs": true,
-    "jsx": "react-native",
+    "jsx": "react-jsx",
     "noEmit": true,
     "incremental": true,
     "isolatedModules": true,

@@ -1,4 +1,4 @@
-import React, { ReactNode, useRef, useState, RefObject } from 'react'
+import { ReactNode, useRef, useState, RefObject } from 'react'
 
 import {
   View,

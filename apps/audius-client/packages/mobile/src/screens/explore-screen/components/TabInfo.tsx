@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { StyleSheet, Text, View } from 'react-native'
 
 import { useThemedStyles } from 'app/hooks/useThemedStyles'

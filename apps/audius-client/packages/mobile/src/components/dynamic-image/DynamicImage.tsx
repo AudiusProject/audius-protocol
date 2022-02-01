@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 import transparentPlaceholderImg from 'audius-client/src/common/assets/image/1x1-transparent.png'
 import useInstanceVar from 'audius-client/src/common/hooks/useInstanceVar'

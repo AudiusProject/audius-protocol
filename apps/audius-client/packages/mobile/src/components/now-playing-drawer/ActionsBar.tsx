@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { View, StyleSheet } from 'react-native'
 
 import IconFavoriteOffDark from 'app/assets/animations/iconFavoriteOffDark.json'

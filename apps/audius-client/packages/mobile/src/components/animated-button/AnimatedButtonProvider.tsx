@@ -1,11 +1,4 @@
-import React, {
-  memo,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo
-} from 'react'
+import { memo, useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
 import LottieView from 'lottie-react-native'
 import { StyleProp, TouchableHighlight, View, ViewStyle } from 'react-native'

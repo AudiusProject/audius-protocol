@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo } from 'react'
 
 import LottieView from 'lottie-react-native'
 import { StyleSheet, Text, View } from 'react-native'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Dimensions, View } from 'react-native'
 

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Animated, StyleProp, View, ViewStyle } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'

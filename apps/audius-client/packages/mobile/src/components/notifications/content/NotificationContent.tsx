@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Notification, NotificationType } from 'app/store/notifications/types'
 
 import Announcement from './Announcement'

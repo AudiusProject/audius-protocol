@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { StyleSheet, View, SectionList, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
 

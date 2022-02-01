@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useLoadImageWithTimeout } from 'audius-client/src/common/hooks/useImageSize'
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import {

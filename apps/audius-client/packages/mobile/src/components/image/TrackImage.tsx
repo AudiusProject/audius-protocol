@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { TrackImage as TrackImageType } from 'app/models/Track'
 import { UserMultihash } from 'app/models/User'

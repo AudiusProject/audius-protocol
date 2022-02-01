@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { CommonState } from 'audius-client/src/common/store'

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { Fragment, useState, useEffect, useRef } from 'react'
 
 import {
   Animated,
@@ -176,7 +176,7 @@ const TabSlider = (props: TabSliderProps) => {
       />
       {props.options.map((option, idx) => {
         return (
-          <React.Fragment key={option.key}>
+          <Fragment key={option.key}>
             <TouchableWithoutFeedback
               onLayout={setOptionWidth(idx)}
               style={[
@@ -206,7 +206,7 @@ const TabSlider = (props: TabSliderProps) => {
                   : [])
               ]}
             />
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </View>

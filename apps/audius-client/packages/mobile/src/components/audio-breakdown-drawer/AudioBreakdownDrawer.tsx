@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { Chain } from 'audius-client/src/common/models/Chain'
 import { BNWei } from 'audius-client/src/common/models/Wallet'

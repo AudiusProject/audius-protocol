@@ -1,4 +1,4 @@
-import React, { useContext, useCallback } from 'react'
+import { useContext, useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { User } from 'audius-client/src/common/models/User'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { StyleSheet, View, Text } from 'react-native'

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import HCaptcha from '@hcaptcha/react-native-hcaptcha'
 import { getHCaptchaStatus } from 'audius-client/src/common/store/pages/audio-rewards/selectors'

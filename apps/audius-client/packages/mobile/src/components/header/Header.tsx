@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { StyleSheet, View } from 'react-native'
 
 import GradientText from 'app/components/gradient-text'
