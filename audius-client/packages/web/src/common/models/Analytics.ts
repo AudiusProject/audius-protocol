@@ -197,7 +197,12 @@ export enum Name {
   DEACTIVATE_ACCOUNT_PAGE_VIEW = 'Deactivate Account: Page View',
   DEACTIVATE_ACCOUNT_REQUEST = 'Deactivate Account: Request',
   DEACTIVATE_ACCOUNT_SUCCESS = 'Deactivate Account: Success',
-  DEACTIVATE_ACCOUNT_FAILURE = 'Deactivate Account: Failure'
+  DEACTIVATE_ACCOUNT_FAILURE = 'Deactivate Account: Failure',
+
+  // Create User Bank
+  CREATE_USER_BANK_REQUEST = 'Create User Bank: Request',
+  CREATE_USER_BANK_SUCCESS = 'Create User Bank: Success',
+  CREATE_USER_BANK_FAILURE = 'Create User Bank: Failure'
 }
 
 type PageView = {
@@ -925,6 +930,23 @@ type DeactivateAccountFailure = {
   eventName: Name.DEACTIVATE_ACCOUNT_FAILURE
 }
 
+type CreateUserBankRequest = {
+  eventName: Name.CREATE_USER_BANK_REQUEST
+  userId: ID
+}
+
+type CreateUserBankSuccess = {
+  eventName: Name.CREATE_USER_BANK_SUCCESS
+  userId: ID
+}
+
+type CreateUserBankFailure = {
+  eventName: Name.CREATE_USER_BANK_FAILURE
+  userId: ID
+  errorCode: string
+  error: string
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1052,3 +1074,6 @@ export type AllTrackingEvents =
   | DeactivateAccountRequest
   | DeactivateAccountSuccess
   | DeactivateAccountFailure
+  | CreateUserBankRequest
+  | CreateUserBankSuccess
+  | CreateUserBankFailure
