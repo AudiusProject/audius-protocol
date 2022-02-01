@@ -18,6 +18,7 @@ import {
 } from 'common/models/AudioRewards'
 import { StringAudio } from 'common/models/Wallet'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
+import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import {
   getClaimStatus,
@@ -350,6 +351,8 @@ function* userChallengePollingDaemon() {
   const audioRewardsPageChallengePollingTimeout = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS
   )!
+
+  yield take(fetchAccountSucceeded.type)
   yield fork(function* () {
     yield call(visibilityPollingDaemon, fetchUserChallenges())
   })
