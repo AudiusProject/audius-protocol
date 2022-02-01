@@ -17,7 +17,7 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * @param {*} sequelize
  * @param {*} getMonitors
  * @param {*} getTranscodeQueueJobs
- * @param {*} getFileProcessingQueueJobs
+ * @param {*} getAsyncProcessingQueueJobs
  * @param {number} numberOfCPUs the number of CPUs on this machine
  * @param {string?} randomBytesToSign optional bytes string to be included in response object
  *    and used in signature generation
@@ -28,7 +28,7 @@ const healthCheck = async (
   sequelize,
   getMonitors,
   getTranscodeQueueJobs,
-  getFileProcessingQueueJobs,
+  getAsyncProcessingQueueJobs,
   numberOfCPUs,
   randomBytesToSign = null
 ) => {
@@ -92,7 +92,7 @@ const healthCheck = async (
   const { active: transcodeActive, waiting: transcodeWaiting } =
     await getTranscodeQueueJobs()
   const { active: fileProcessingActive, waiting: fileProcessingWaiting } =
-    await getFileProcessingQueueJobs()
+    await getAsyncProcessingQueueJobs()
 
   const response = {
     ...versionInfo,
@@ -177,7 +177,7 @@ const healthCheckVerbose = async (
   getMonitors,
   numberOfCPUs,
   getTranscodeQueueJobs,
-  getFileProcessingQueueJobs
+  getAsyncProcessingQueueJobs
 ) => {
   return healthCheck(
     { libs, snapbackSM },
@@ -185,7 +185,7 @@ const healthCheckVerbose = async (
     sequelize,
     getMonitors,
     getTranscodeQueueJobs,
-    getFileProcessingQueueJobs,
+    getAsyncProcessingQueueJobs,
     numberOfCPUs
   )
 }

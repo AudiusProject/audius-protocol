@@ -332,9 +332,12 @@ def fetch_ipfs_metadata(
                 if cid_type[cid] == "track"
                 else user_metadata_format
             )
-            user_replica_set = user_to_replica_set[
-                cid_to_user_id[cid]
-            ]  # user or track owner's replica set
+            user_replica_set = None
+            user_id = cid_to_user_id[cid]
+            if user_id and user_id in user_to_replica_set:
+                user_replica_set = user_to_replica_set[
+                    user_id
+                ]  # user or track owner's replica set
             future = executor.submit(
                 update_task.ipfs_client.get_metadata,
                 cid,
