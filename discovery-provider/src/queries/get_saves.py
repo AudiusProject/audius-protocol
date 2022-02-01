@@ -1,6 +1,8 @@
+from typing import List, Tuple, Union
+
+from pytest import Session
 from src import exceptions
 from src.models import Playlist, Save, SaveType, Track
-from src.models.models import RepostType
 from src.queries.query_helpers import (
     add_users_to_tracks,
     get_users_by_id,
@@ -13,7 +15,13 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
 
-def populate_save_items(session, saves, save_items, save_type, current_user_id):
+def populate_save_items(
+    session: Session,
+    saves: List[dict],
+    save_items: List[dict],
+    save_type: SaveType,
+    current_user_id: int,
+) -> List[dict]:
     if save_type == "tracks":
         save_items = populate_track_metadata(
             session,
@@ -28,8 +36,8 @@ def populate_save_items(session, saves, save_items, save_type, current_user_id):
             session,
             [playlist["playlist_id"] for playlist in save_items],
             save_items,
-            [RepostType.playlist, RepostType.album],
-            [SaveType.playlist, SaveType.album],
+            [],
+            [save_type],
             current_user_id,
         )
         user_id_list = get_users_ids(save_items)
@@ -48,7 +56,9 @@ def populate_save_items(session, saves, save_items, save_type, current_user_id):
     ]
 
 
-def get_saves(save_type, user_id, current_user_id=None, include_save_items=False):
+def get_saves(
+    save_type, user_id, current_user_id=None, include_save_items: bool = False
+):
     save_query_type = None
     if save_type == "albums":
         save_query_type = SaveType.album
@@ -96,7 +106,9 @@ def get_saves(save_type, user_id, current_user_id=None, include_save_items=False
                 Track.is_current == True, Track.is_delete == False
             )
 
-        query_results = paginate_query(query).all()
+        query_results: List[
+            Union[Save, Tuple[Save, Union[Track, Playlist]]]
+        ] = paginate_query(query).all()
 
         # Populate the metadata for any save items
         if include_save_items:
@@ -107,7 +119,7 @@ def get_saves(save_type, user_id, current_user_id=None, include_save_items=False
                 [result[1] for result in query_results]
             )
             save_results = populate_save_items(
-                session, saves, save_items, save_type, current_user_id
+                session, saves, save_items, save_query_type, current_user_id
             )
         else:
             save_results = helpers.query_result_to_list(query_results)
