@@ -892,22 +892,8 @@ workflows:
               only: /(^release.*)$/
 
       # Distribute staging desktop binaries.
-      - hold-dist-mac-staging:
-          type: approval
-          requires:
-            - build-staging
-          filters:
-            branches:
-              only: /(^master)$/
       - dist-mac-staging:
           context: Audius Client
-          requires:
-            - hold-dist-mac-staging
-          filters:
-            branches:
-              only: /(^master)$/
-      - hold-dist-win-staging:
-          type: approval
           requires:
             - build-staging
           filters:
@@ -916,21 +902,14 @@ workflows:
       - dist-win-staging:
           context: Audius Client
           requires:
-              - hold-dist-win-staging
-          filters:
-            branches:
-              only: /(^master)$/
-      - hold-dist-linux-staging:
-          type: approval
-          requires:
-            - build-staging
+              - build-staging
           filters:
             branches:
               only: /(^master)$/
       - dist-linux-staging:
           context: Audius Client
           requires:
-            - hold-dist-linux-staging
+            - build-staging
           filters:
             branches:
               only: /(^master)$/
