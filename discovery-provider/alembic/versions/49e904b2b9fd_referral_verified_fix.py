@@ -1,7 +1,7 @@
 """Referral-verified fix
 
 Revision ID: 49e904b2b9fd
-Revises: 3ea8467836d8
+Revises: 8e4dda8255fd
 Create Date: 2022-01-31 22:19:25.264961
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '49e904b2b9fd'
-down_revision = '3ea8467836d8'
+down_revision = '8e4dda8255fd'
 branch_labels = None
 depends_on = None
 
@@ -27,7 +27,7 @@ def upgrade():
 
         UPDATE user_challenges
         SET challenge_id = 'ref-v'
-        WHERE 
+        WHERE
             challenge_id = 'referrals-verified' OR
             challenge_id = 'r-v';
 
