@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     fontFamily: 'AvenirNextLTPro-Medium'
   },
   forgotPasswordButton: {
-    width: '100%',
+    padding: 6,
     alignItems: 'center',
     marginTop: 16,
     marginBottom: 32
@@ -525,12 +525,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
 
   const renderForgotPasswordButton = () => {
     return (
-      <Text
-        style={styles.forgotPasswordButtonTitle}
-        onPress={() => {
-          dispatch(setVisibility({ drawer: 'ForgotPassword', visible: true }))
-        }}
-      >
+      <Text style={styles.forgotPasswordButtonTitle}>
         {messages.forgotPassword}
       </Text>
     )
@@ -793,6 +788,11 @@ const SignOn = ({ navigation }: SignOnProps) => {
           <TouchableOpacity
             style={styles.forgotPasswordButton}
             activeOpacity={0.6}
+            onPress={() => {
+              dispatch(
+                setVisibility({ drawer: 'ForgotPassword', visible: true })
+              )
+            }}
           >
             {renderForgotPasswordButton()}
           </TouchableOpacity>
