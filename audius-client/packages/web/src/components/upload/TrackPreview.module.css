@@ -11,7 +11,7 @@
 }
 
 .trackPreview.single {
-  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.25);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25);
   height: 64px;
   padding: inherit;
 }
@@ -63,7 +63,7 @@
 }
 
 .remove g path {
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
 }
 .remove:hover {
   transform: scale(1.1);

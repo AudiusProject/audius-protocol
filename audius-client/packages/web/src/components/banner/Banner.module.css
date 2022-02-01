@@ -32,12 +32,13 @@
   cursor: pointer;
 }
 .iconRemove:hover {
-  transform: scale(1.10);
+  transform: scale(1.1);
 }
 .iconRemove:active {
   transform: scale(0.95);
 }
-.iconSave g path, .iconRemove g path {
+.iconSave g path,
+.iconRemove g path {
   fill: var(--static-white);
 }
 

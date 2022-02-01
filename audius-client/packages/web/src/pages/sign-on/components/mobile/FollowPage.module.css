@@ -58,14 +58,13 @@
 }
 
 .cards.show {
-  transition: opacity .14s ease-in-out !important;
+  transition: opacity 0.14s ease-in-out !important;
   opacity: 1;
 }
 
 .mobileButtonContainer {
   margin-bottom: 24px;
 }
-
 
 /* Pill Section */
 .pillSection {
@@ -102,7 +101,7 @@
   font-weight: var(--font-medium);
   letter-spacing: 0.13px;
   line-height: 18px;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
 }
 
 .pickForMe:active {

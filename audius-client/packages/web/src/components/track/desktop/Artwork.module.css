@@ -24,9 +24,9 @@
   top: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0, 0.40);
+  background-color: rgba(0, 0, 0, 0.4);
   opacity: 0;
-  transition: all ease-in-out .18s;
+  transition: all ease-in-out 0.18s;
 }
 .artworkWrapper .artworkIcon > svg,
 .artworkWrapper .artworkIcon > div {
@@ -36,11 +36,11 @@
   width: 40%;
   height: 40%;
   transform: translate(-50%, -50%);
-  transition: all ease-in-out .18s;
+  transition: all ease-in-out 0.18s;
 }
 
 .artworkWrapper .artworkIcon circle {
-  opacity: 0
+  opacity: 0;
 }
 
 .small .artworkWrapper .artworkIcon > svg,
@@ -52,8 +52,8 @@
 .artworkWrapper .artworkIcon g path {
   fill: var(--static-white);
 }
-.artworkWrapper .artworkIcon g circle[fill="#FFFFFF"] {
-  fill: rgba(0,0,0,0);
+.artworkWrapper .artworkIcon g circle[fill='#FFFFFF'] {
+  fill: rgba(0, 0, 0, 0);
 }
 
 .artworkWrapper .loadingAnimation {

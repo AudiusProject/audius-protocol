@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   text-decoration: underline;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
   user-select: none;
 }
 

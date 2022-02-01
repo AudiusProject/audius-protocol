@@ -23,7 +23,6 @@
   }
 }
 
-
 .nowPlaying.native {
   height: 100vh;
 }
@@ -63,7 +62,7 @@
   cursor: pointer;
   height: 24px;
   width: 24px;
-  transform: rotate(90deg)
+  transform: rotate(90deg);
 }
 
 .iconCaret path {
@@ -82,7 +81,7 @@
   height: 100%;
   border: 2px solid var(--white);
   border-radius: 8px;
-  box-shadow: 0 3px 20px -2px rgba(105,73,78,0.5);
+  box-shadow: 0 3px 20px -2px rgba(105, 73, 78, 0.5);
   background-color: var(--neutral-light-8);
   cursor: pointer;
   overflow: hidden;
@@ -160,7 +159,8 @@
   height: 80px !important;
 }
 
-.previousButton svg, .nextButton svg {
+.previousButton svg,
+.nextButton svg {
   width: 36px;
   height: 36px;
 }

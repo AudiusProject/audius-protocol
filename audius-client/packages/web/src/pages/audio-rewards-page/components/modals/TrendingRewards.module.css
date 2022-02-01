@@ -114,7 +114,7 @@
   font-weight: 400;
   margin: 12px 0px 24px;
   text-decoration: underline;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
   user-select: none;
   cursor: pointer;
 }
@@ -130,7 +130,7 @@
 .titleHeader {
   text-align: center;
   color: var(--white);
-  line-height: 34px
+  line-height: 34px;
 }
 .titleIcon {
   margin-right: 8px;

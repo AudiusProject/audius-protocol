@@ -18,16 +18,15 @@
 }
 
 ::selection {
-  background:#a116b7;
-  color:#fff
+  background: #a116b7;
+  color: #fff;
 }
 
 ::-moz-selection {
-  background:#a116b7;
-  color:#fff
+  background: #a116b7;
+  color: #fff;
 }
 
 :global(#landingPage).container * {
   font-family: Gilroy !important;
 }
-

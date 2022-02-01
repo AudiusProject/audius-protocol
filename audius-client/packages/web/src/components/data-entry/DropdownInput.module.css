@@ -74,7 +74,7 @@
   background-color: var(--neutral-light-10);
   border: 1px solid var(--neutral-light-8);
   border-radius: 4px;
-  transition: border ease-in-out .1s;
+  transition: border ease-in-out 0.1s;
   padding-left: 7px;
 }
 .alternative .dropdownInput :global(.ant-select-selection) {
@@ -95,7 +95,7 @@
 }
 .disabled .dropdownInput :global(.ant-select-selection) {
   background-color: var(--neutral-light-8);
-  cursor: default !important;;
+  cursor: default !important;
 }
 
 .placeholder {
@@ -156,12 +156,12 @@
   margin-left: 8px;
 }
 
-
 /* Dropdown */
 .select :global(.ant-select-dropdown) {
   border-radius: 4px;
   background-color: var(--white);
-  box-shadow: 0 0 2px 0 rgba(133,129,153,0.3), 0 2px 5px -2px rgba(133,129,153,0.3);
+  box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
+    0 2px 5px -2px rgba(133, 129, 153, 0.3);
   animation-duration: 0.18s;
 }
 .select > div {
@@ -181,7 +181,7 @@
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
   color: var(--neutral);
-  transition: all ease-in-out .04s;
+  transition: all ease-in-out 0.04s;
 }
 .select :global(.ant-select-dropdown-menu-item-selected) {
   background: var(--neutral-light-10);

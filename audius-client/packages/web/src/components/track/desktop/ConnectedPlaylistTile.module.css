@@ -53,7 +53,6 @@
   font-weight: var(--font-medium);
   font-size: var(--font-m);
   color: var(--neutral);
-
 }
 .userName {
   display: inline-flex;
@@ -99,16 +98,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  transform: scale3d(1,1,1);
-  transition: all .07s ease-in-out !important;
+  transform: scale3d(1, 1, 1);
+  transition: all 0.07s ease-in-out !important;
 }
 
 .menuContainer:hover {
-  transform: scale3d(1.10,1.10,1.10);
+  transform: scale3d(1.1, 1.1, 1.1);
 }
 
 .menuContainer:active {
-  transform: scale3d(0.95,0.95,0.95);
+  transform: scale3d(0.95, 0.95, 0.95);
 }
 
 .menuKebabContainer {

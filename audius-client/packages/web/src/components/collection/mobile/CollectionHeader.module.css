@@ -125,7 +125,7 @@
   margin-top: 14px;
 }
 
-.infoFact:last-child  {
+.infoFact:last-child {
   padding-right: 0px;
 }
 
@@ -188,7 +188,8 @@
 
 /* Loading */
 
-.loadingSkeleton, .loadingSkeleton :global(.ant-skeleton-content) {
+.loadingSkeleton,
+.loadingSkeleton :global(.ant-skeleton-content) {
   padding: 0 !important;
 }
 .loadingSkeleton :global(.ant-skeleton-paragraph) li {

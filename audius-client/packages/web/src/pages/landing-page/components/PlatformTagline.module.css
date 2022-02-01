@@ -30,7 +30,7 @@
 
 .tagline {
   max-width: 470px;
-  color: #480B79;
+  color: #480b79;
   font-family: Gilroy !important;
   font-size: 36px;
   line-height: 48px;
@@ -39,7 +39,7 @@
 }
 
 .dotsBackground {
-  height: 505px;	
+  height: 505px;
   width: 611px;
   background-repeat: repeat;
   background-size: 500px 201px;
@@ -62,11 +62,11 @@
   position: relative;
   z-index: 5;
   max-width: 470px;
-  color: #480B79;
+  color: #480b79;
   font-family: Gilroy !important;
   text-align: center;
 
-  color: #480B79;
+  color: #480b79;
   font-family: Gilroy;
   font-size: 27px;
   line-height: 36px;

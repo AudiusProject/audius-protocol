@@ -12,7 +12,7 @@
   max-height: 248px;
 
   width: 576px;
-  margin: 0px auto 24px; 
+  margin: 0px auto 24px;
   padding: 24px 20px;
   color: var(--neutral);
   background: var(--neutral-light-9);
@@ -26,7 +26,6 @@
   border-radius: 4px;
   opacity: 0.5;
 }
-
 
 .btn {
   margin-bottom: 24px;

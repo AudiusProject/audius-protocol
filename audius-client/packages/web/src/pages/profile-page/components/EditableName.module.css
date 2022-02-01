@@ -1,5 +1,5 @@
 .name h1 {
-  color: #FAFAFA;
+  color: #fafafa;
   display: inline;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -7,11 +7,11 @@
 
 .name > input,
 .name {
-  color: #FAFAFA;
+  color: #fafafa;
   font-size: 42px;
   font-weight: var(--font-heavy);
   letter-spacing: 0.5px;
-  text-shadow: 0 1px 5px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
   height: 52px;
   line-height: normal;
   text-overflow: ellipsis;
@@ -26,7 +26,7 @@
   box-shadow: none;
   outline: none;
   background: none;
-  color: #FAFAFA;
+  color: #fafafa;
   height: 50px;
   padding: 0 0 8px 0;
 }
@@ -36,7 +36,7 @@
 .name > .editNameContainer > .iconPencil {
   cursor: pointer;
 }
-.name > .editNameContainer > .iconPencil svg ,
+.name > .editNameContainer > .iconPencil svg,
 .name > .iconVerified svg {
   margin-left: 8px;
   filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.7));
@@ -51,7 +51,7 @@
 
 .editNameContainer {
   line-height: normal;
-  width:100%;
+  width: 100%;
   display: inline-flex;
   align-items: center;
 }

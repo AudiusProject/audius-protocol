@@ -10,7 +10,8 @@
   z-index: 12;
 
   padding: 0px;
-  padding: 0px env(safe-area-inset-right, 0px) 0px env(safe-area-inset-left, 0px);
+  padding: 0px env(safe-area-inset-right, 0px) 0px
+    env(safe-area-inset-left, 0px);
 
   display: flex;
   align-items: center;

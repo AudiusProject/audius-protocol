@@ -16,9 +16,9 @@
 .web3ErrorBanner .contentSelection {
   display: flex;
   align-items: center;
-  justify-content: center; 
-  transition: all ease-in-out .07s;
-  border-bottom: 1px solid rgba(0,0,0,0);
+  justify-content: center;
+  transition: all ease-in-out 0.07s;
+  border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
 .web3ErrorBanner:hover .contentSelection {
@@ -26,7 +26,7 @@
 }
 
 .pill {
-  background-color: #CA4958;
+  background-color: #ca4958;
   margin-right: 24px;
 }
 

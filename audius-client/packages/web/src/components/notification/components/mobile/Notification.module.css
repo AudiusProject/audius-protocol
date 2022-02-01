@@ -9,7 +9,7 @@
   transition: all 0.12s ease-in-out;
   margin-bottom: 12px;
   cursor: pointer;
-  transform: scale3d(1,1,1);
+  transform: scale3d(1, 1, 1);
   display: inline-flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -24,14 +24,13 @@
 .container:active {
   border-color: var(--notification-border-active);
   background-color: var(--notification-background-active);
-  transform: scale3d(1,1,1);
+  transform: scale3d(1, 1, 1);
 }
 
 .unRead.container:active {
   border-color: var(--notification-unread-border-active);
   background-color: var(--notification-unread-background-active);
 }
-
 
 .unReadDot {
   position: absolute;
@@ -42,7 +41,7 @@
   border-radius: 8px;
   background-color: var(--secondary);
   opacity: 0;
-  transition: all 0.12s ease-in-out
+  transition: all 0.12s ease-in-out;
 }
 
 .unRead .unReadDot {
@@ -120,7 +119,7 @@
 .iconKebabHorizontal {
   height: 20px;
   width: 20px;
-  transition: all .07s ease-in-out !important;
+  transition: all 0.07s ease-in-out !important;
 }
 
 .iconKebabHorizontal:active {

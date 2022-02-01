@@ -20,7 +20,7 @@
   outline: none;
   color: var(--neutral);
   font-weight: 500;
-  transition: border ease-in-out .1s;
+  transition: border ease-in-out 0.1s;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -31,7 +31,7 @@
   padding: 9px;
 }
 .textarea.shaded > textarea {
-  background-color: #E9E4F0;
+  background-color: #e9e4f0;
 }
 .textarea:hover > textarea {
   border-color: var(--neutral-light-6);

@@ -1,5 +1,5 @@
 .savedPageWrapper {
-  position: relative; 
+  position: relative;
   text-align: left;
 }
 
@@ -47,11 +47,11 @@
   padding-bottom: 1px;
   height: 24px;
 }
-.savedPageWrapper :global(.ant-input-prefix)>svg {
+.savedPageWrapper :global(.ant-input-prefix) > svg {
   width: 12px;
   height: 12px;
 }
-.savedPageWrapper :global(.ant-input-prefix)>svg g path {
+.savedPageWrapper :global(.ant-input-prefix) > svg g path {
   fill: var(--neutral-light-4);
 }
 
@@ -70,7 +70,7 @@
 .bodyWrapper .tableWrapper {
   width: 100%;
   border-radius: 8px;
-  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.25);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25);
   background-color: var(--white);
   padding-bottom: 5px;
   overflow: hidden;
@@ -96,4 +96,3 @@
   justify-content: flex-start;
   padding: 0px 10px;
 }
-

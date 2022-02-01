@@ -22,11 +22,11 @@
   padding-right: 2px;
   padding-bottom: 12px;
   padding-top: 0;
-  transition: all ease-in-out .18s;
+  transition: all ease-in-out 0.18s;
 }
 .tabs :global(.ant-tabs-tab) g path {
   fill: var(--neutral-light-4);
-  transition: all ease-in-out .18s;
+  transition: all ease-in-out 0.18s;
 }
 .tabs :global(.ant-tabs-tab-active) {
   color: var(--neutral);

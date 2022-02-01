@@ -4,7 +4,8 @@
   flex: 1 1 352px;
   border: 1px solid var(--neutral-light-8);
   background-color: var(--white);
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
   display: flex;
   overflow: hidden;
   border-radius: 8px;
@@ -16,7 +17,8 @@
 }
 
 .container:active {
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 2px 3px -2px var(--tile-shadow-3);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1),
+    0 2px 3px -2px var(--tile-shadow-3);
 }
 
 .mainContent {
@@ -121,7 +123,7 @@
 
   /* Text truncation*/
   flex: 0 1 65%;
-  overflow:hidden;
+  overflow: hidden;
   margin-right: 12px;
   margin-top: 10px;
 }
@@ -143,13 +145,13 @@
 }
 
 .titles div {
-  overflow:hidden;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .titlesSkeleton div {
-  width: 100%
+  width: 100%;
 }
 
 .title {
@@ -278,7 +280,7 @@
 }
 
 .activeButton path {
-  fill: var(--primary)
+  fill: var(--primary);
 }
 
 .heartIcon {
@@ -313,15 +315,15 @@
 }
 
 .favoriteButton {
-    height: 14px;
-    width: 14px;
-    margin-left: 4px;
+  height: 14px;
+  width: 14px;
+  margin-left: 4px;
 }
 
 .repostButton {
-    height: 16px;
-    width: 16px;
-    margin-left: 4px;
+  height: 16px;
+  width: 16px;
+  margin-left: 4px;
 }
 
 .hide {

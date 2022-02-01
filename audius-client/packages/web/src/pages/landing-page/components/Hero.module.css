@@ -32,7 +32,7 @@
   height: 100%;
   top: 0;
   left: 0;
-  background-color: rgb(76, 29, 133)
+  background-color: rgb(76, 29, 133);
 }
 
 .bgImageLoading {
@@ -96,21 +96,21 @@
 
 .title {
   max-width: 1100px;
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: Gilroy;
   font-size: 220px;
   font-weight: 900;
   line-height: 180px;
-  text-shadow: 0 5px 20px rgba(25,0,96,0.5);
+  text-shadow: 0 5px 20px rgba(25, 0, 96, 0.5);
 }
 
 .subtitle {
   font-family: Gilroy;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 34px;
   font-weight: 800;
   line-height: 44px;
-  text-shadow: 0 2px 5px rgba(25,0,96,0.75);
+  text-shadow: 0 2px 5px rgba(25, 0, 96, 0.75);
   margin-bottom: 60px;
 }
 
@@ -127,9 +127,9 @@
   height: 58px;
   border: none;
   border-radius: 8px;
-  background-color: #CC0FE0;
-  box-shadow: 0 5px 20px -1px rgba(25,0,96,0.5);
-  color: #FFFFFF;
+  background-color: #cc0fe0;
+  box-shadow: 0 5px 20px -1px rgba(25, 0, 96, 0.5);
+  color: #ffffff;
   padding: 16px 40px;
 
   font-family: Gilroy !important;
@@ -138,7 +138,7 @@
   letter-spacing: 0.2px;
   line-height: 26px;
   text-align: center;
-  text-shadow: 0 2px 2px rgba(0,0,0,0.2);
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
   transform: scale3d(1, 1, 1);
   cursor: pointer;
   margin-right: 24px;
@@ -151,18 +151,18 @@
 
 .ctaButton:hover {
   transform: scale3d(1.03, 1.03, 1.03);
-	background-color: #DC19F0;
-	box-shadow: 0 10px 20px -1px rgba(25,0,96,0.5);
+  background-color: #dc19f0;
+  box-shadow: 0 10px 20px -1px rgba(25, 0, 96, 0.5);
 }
 
 .ctaButton:active {
   transform: scale3d(0.99, 0.99, 0.99);
-  background-color: #BA02CE;
-  box-shadow: 0 0 2px -1px rgba(25,0,96,0.5);
+  background-color: #ba02ce;
+  box-shadow: 0 0 2px -1px rgba(25, 0, 96, 0.5);
 }
 
 .ctaArrow {
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
   height: 24px;
   width: 24px;
 }
@@ -179,11 +179,15 @@
   height: 58px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(267.49deg, rgba(91, 35, 225, 0.4) 0%, rgba(91, 35, 225, 0.15) 100%);
+  background: linear-gradient(
+    267.49deg,
+    rgba(91, 35, 225, 0.4) 0%,
+    rgba(91, 35, 225, 0.15) 100%
+  );
   mix-blend-mode: normal;
-  border: 2px solid #FFFFFF;
-  box-shadow: 0 5px 20px -1px rgba(25,0,96,0.5);
-  color: #FFFFFF;
+  border: 2px solid #ffffff;
+  box-shadow: 0 5px 20px -1px rgba(25, 0, 96, 0.5);
+  color: #ffffff;
   padding: 16px 40px;
 
   font-family: Gilroy !important;
@@ -192,21 +196,29 @@
   letter-spacing: 0.2px;
   line-height: 26px;
   text-align: center;
-  text-shadow: 0 2px 2px rgba(0,0,0,0.2);
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
   transform: scale3d(1, 1, 1);
   cursor: pointer;
 }
 
 .tokenButton:hover {
   transform: scale3d(1.03, 1.03, 1.03);
-	background: linear-gradient(267.49deg, rgba(91, 35, 225, 0.6) 0%, rgba(91, 35, 225, 0.35) 100%);
-	box-shadow: 0 10px 20px -1px rgba(25,0,96,0.5);
+  background: linear-gradient(
+    267.49deg,
+    rgba(91, 35, 225, 0.6) 0%,
+    rgba(91, 35, 225, 0.35) 100%
+  );
+  box-shadow: 0 10px 20px -1px rgba(25, 0, 96, 0.5);
 }
 
 .tokenButton:active {
   transform: scale3d(0.99, 0.99, 0.99);
-  background: linear-gradient(267.49deg, rgba(91, 35, 225, 0.6) 0%, rgba(91, 35, 225, 0.35) 100%);
-  box-shadow: 0 0 2px -1px rgba(25,0,96,0.5);
+  background: linear-gradient(
+    267.49deg,
+    rgba(91, 35, 225, 0.6) 0%,
+    rgba(91, 35, 225, 0.35) 100%
+  );
+  box-shadow: 0 0 2px -1px rgba(25, 0, 96, 0.5);
 }
 
 .glyphPattern {
@@ -215,7 +227,6 @@
   z-index: 0;
   bottom: 0;
 }
-
 
 /* Mobile */
 .mobileContainer {
@@ -258,25 +269,24 @@
 }
 
 .mobileContainer .content .title {
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: Gilroy;
   font-size: 81px;
   font-weight: 900;
   line-height: 66px;
   text-align: center;
-  text-shadow: 0 2px 7px rgba(25,0,96,0.5);
+  text-shadow: 0 2px 7px rgba(25, 0, 96, 0.5);
   margin-bottom: 12px;
 }
 
-
 .mobileContainer .content .subtitle {
-	color: #FFFFFF;
-	font-family: Gilroy;
-	font-size: 24px;
-	font-weight: 800;
-	line-height: normal;
-	text-align: center;
-  text-shadow: 0 2px 5px rgba(25,0,96,0.75);
+  color: #ffffff;
+  font-family: Gilroy;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: normal;
+  text-align: center;
+  text-shadow: 0 2px 5px rgba(25, 0, 96, 0.75);
 }
 
 .mobileContainer .glyphPattern {

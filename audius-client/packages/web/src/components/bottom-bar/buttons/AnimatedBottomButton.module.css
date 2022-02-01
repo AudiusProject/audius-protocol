@@ -16,12 +16,16 @@
 
 .animatedButton:before {
   position: absolute;
-  content: "";
+  content: '';
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
-  background: linear-gradient(180deg, var(--neutral-light-8) 0%, var(--white) 100%);;
+  background: linear-gradient(
+    180deg,
+    var(--neutral-light-8) 0%,
+    var(--white) 100%
+  );
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
 }

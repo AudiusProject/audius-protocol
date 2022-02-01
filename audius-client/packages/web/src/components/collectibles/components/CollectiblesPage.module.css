@@ -185,7 +185,8 @@
   font-weight: var(--font-medium);
 }
 
-.detailsStamp .created, .detailsStamp .owned {
+.detailsStamp .created,
+.detailsStamp .owned {
   border: none;
 }
 
@@ -324,7 +325,6 @@
   height: var(--unit-9);
 }
 
-
 .confirmModalContainer {
   padding: 0 var(--unit-6);
 }
@@ -450,7 +450,7 @@
   border-bottom: 1px solid var(--neutral-light-7);
   border-left: 1px solid var(--neutral-light-7);
   font-size: var(--font-xs);
-  animation: fadeInVisible .5s;
+  animation: fadeInVisible 0.5s;
 }
 
 .editRow > div {
@@ -527,15 +527,16 @@
 }
 
 .tableTopShadow {
-  box-shadow: inset 0 14px 14px -14px rgba(0, 0, 0, .15);
+  box-shadow: inset 0 14px 14px -14px rgba(0, 0, 0, 0.15);
 }
 
 .tableBottomShadow {
-  box-shadow: inset 0 -14px 14px -14px rgba(0, 0, 0, .15);
+  box-shadow: inset 0 -14px 14px -14px rgba(0, 0, 0, 0.15);
 }
 
 .tableVerticalShadow {
-  box-shadow: inset 0 14px 14px -14px rgba(0, 0, 0, .15), inset 0 -14px 14px -14px rgba(0, 0, 0, .15);
+  box-shadow: inset 0 14px 14px -14px rgba(0, 0, 0, 0.15),
+    inset 0 -14px 14px -14px rgba(0, 0, 0, 0.15);
 }
 
 .verticalDivider {
@@ -784,11 +785,19 @@
 }
 
 @keyframes fadeInVisible {
-  from {opacity:0;}
-  to {opacity:1;}
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInHidden {
-  from {opacity:0;}
-  to {opacity:.5;}
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.5;
+  }
 }

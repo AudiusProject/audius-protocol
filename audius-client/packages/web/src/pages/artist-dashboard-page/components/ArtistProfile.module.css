@@ -32,7 +32,12 @@
   border-radius: 50%;
   box-sizing: border-box;
   border: 2px solid var(--neutral-light-8);
-  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 72.99%, rgba(0,0,0,0.4) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.2) 72.99%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

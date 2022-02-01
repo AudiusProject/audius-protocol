@@ -9,7 +9,7 @@
   z-index: 100;
   transition: all 0.15s ease-in-out;
   background-color: rgba(255, 255, 255, 0);
-  border-bottom: 0px solid rgba(255, 255, 255,0);
+  border-bottom: 0px solid rgba(255, 255, 255, 0);
 }
 
 .contentContainer {
@@ -22,7 +22,7 @@
 }
 
 .invertColors {
-  background-color: rgba(255,255,255,0.75);
+  background-color: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(5px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 }
@@ -85,7 +85,6 @@
   filter: none;
 }
 
-
 /* Right Links */
 .linkContainer {
   flex: 1;
@@ -97,7 +96,7 @@
 .token {
   cursor: pointer;
   color: var(--static-white);
-  font-family: Gilroy !important;;
+  font-family: Gilroy !important;
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   letter-spacing: 0.2px;
@@ -129,8 +128,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #480B79;
-  font-family: Gilroy !important;;
+  color: #480b79;
+  font-family: Gilroy !important;
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   letter-spacing: 0.2px;
@@ -138,40 +137,38 @@
   padding: 11px 26px 10px;
   border-radius: 6px;
   background-color: var(--static-white);
-  box-shadow: 0 5px 20px -1px rgba(25,0,96,0.5);
+  box-shadow: 0 5px 20px -1px rgba(25, 0, 96, 0.5);
   transform: scale3d(1, 1, 1);
   transition: all 0.15s ease-in-out;
 }
 
 .startListening:hover {
   transform: scale3d(1.03, 1.03, 1.03);
-  background-color: #F7F7F7;
-  box-shadow: 0 10px 20px -1px rgba(25,0,96,0.5);
+  background-color: #f7f7f7;
+  box-shadow: 0 10px 20px -1px rgba(25, 0, 96, 0.5);
 }
 
 .startListening:active {
   transform: scale3d(0.99, 0.99, 0.99);
-  background-color: #F2F2F2;
-  box-shadow: 0 0 2px -1px rgba(25,0,96,0.5);
+  background-color: #f2f2f2;
+  box-shadow: 0 0 2px -1px rgba(25, 0, 96, 0.5);
 }
-
 
 .invertColors .startListening {
   color: var(--static-white);
   background-color: var(--static-primary);
-  box-shadow: 0 5px 20px -2px rgba(253,0,254,0.5);
+  box-shadow: 0 5px 20px -2px rgba(253, 0, 254, 0.5);
 }
 
 .invertColors .startListening:hover {
-  background-color: #DC19F0;
-  box-shadow: 0 10px 20px -2px rgba(253,0,254,0.5);
+  background-color: #dc19f0;
+  box-shadow: 0 10px 20px -2px rgba(253, 0, 254, 0.5);
 }
 
 .invertColors .startListening:active {
-  background-color: #BA02CE;
-  box-shadow: 0 0 2px -2px rgba(253,0,254,0.5);
+  background-color: #ba02ce;
+  box-shadow: 0 0 2px -2px rgba(253, 0, 254, 0.5);
 }
-
 
 /* Mobile Styles */
 .mobileContainer {
@@ -187,7 +184,7 @@
   z-index: 100;
   transition: all 0.15s ease-in-out;
   background-color: rgba(255, 255, 255, 0);
-  border-bottom: 0px solid rgba(255, 255, 255,0);
+  border-bottom: 0px solid rgba(255, 255, 255, 0);
 }
 
 .mobileContainer.invertColors {

@@ -15,21 +15,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: rgba(175,0,255,0.5); 
-  background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.1) 100%); 
-  box-shadow: 0 10px 48px -2px rgba(141,15,195,0.3); 
+  background-color: rgba(175, 0, 255, 0.5);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  box-shadow: 0 10px 48px -2px rgba(141, 15, 195, 0.3);
   padding: 120px 0px;
 }
 
 .title {
   max-width: 1140px;
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: Gilroy !important;
   font-size: 64px;
   font-weight: 800;
   line-height: 86px;
   text-align: center;
-  text-shadow: 0 5px 20px rgba(25,0,96,0.5);
+  text-shadow: 0 5px 20px rgba(25, 0, 96, 0.5);
   margin-bottom: 40px;
 }
 
@@ -53,13 +57,13 @@
   padding: 16px 40px;
   border: none;
   border-radius: 29px;
-  background-color: #FFFFFF;
-  box-shadow: 0 5px 20px -1px rgba(25,0,96,0.5);
+  background-color: #ffffff;
+  box-shadow: 0 5px 20px -1px rgba(25, 0, 96, 0.5);
   display: inline-flex;
   justify-content: center;
   align-items: center;
 
-  color: #480B79;
+  color: #480b79;
   font-family: Gilroy !important;
   font-size: 18px;
   font-weight: bold;
@@ -72,14 +76,14 @@
 
 .ctaButton:hover {
   transform: scale3d(1.03, 1.03, 1.03);
-  background-color: #F7F7F7;
-  box-shadow: 0 10px 20px -1px rgba(25,0,96,0.5);
+  background-color: #f7f7f7;
+  box-shadow: 0 10px 20px -1px rgba(25, 0, 96, 0.5);
 }
 
 .ctaButton:active {
   transform: scale3d(0.99, 0.99, 0.99);
-  background-color: #F2F2F2;
-  box-shadow: 0 0 2px -1px rgba(25,0,96,0.5);
+  background-color: #f2f2f2;
+  box-shadow: 0 0 2px -1px rgba(25, 0, 96, 0.5);
 }
 
 .arrowRight {
@@ -89,7 +93,7 @@
 }
 
 .arrowRight path {
-  fill: #480B79;
+  fill: #480b79;
 }
 
 .background {
@@ -102,13 +106,13 @@
   object-fit: cover;
 }
 
-.title1, 
+.title1,
 .title2 {
   overflow: hidden;
 }
 
 .word {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* Mobile */
@@ -119,7 +123,7 @@
 }
 
 .mobileBgImage {
-  use-select: none;
+  user-select: none;
   position: absolute;
   height: 100%;
   width: 100%;
@@ -137,19 +141,22 @@
 
 .mobileContainer .content {
   padding: 60px 38px;
-  background-color: rgba(175,0,255,0.5);
-  background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.1) 100%);
- }
- 
+  background-color: rgba(175, 0, 255, 0.5);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+}
 
 .mobileContainer .title {
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: Gilroy;
   font-size: 32px;
   font-weight: 800;
   line-height: 43px;
   text-align: center;
-  text-shadow: 0 5px 20px rgba(25,0,96,0.5);
+  text-shadow: 0 5px 20px rgba(25, 0, 96, 0.5);
   margin-bottom: 32px;
 }
 

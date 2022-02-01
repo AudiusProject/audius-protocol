@@ -17,7 +17,7 @@
   color: var(--neutral-light-1);
   font-size: 22px;
   font-weight: var(--font-heavy);
-  letter-spacing: 0.70px;
+  letter-spacing: 0.7px;
   margin-bottom: 4px;
   transition: all ease-in-out 0.18s;
 }
@@ -43,7 +43,7 @@
   font-family: var(--font-family);
   font-size: 10px;
   font-weight: 900;
-  letter-spacing: 1.03px;	
+  letter-spacing: 1.03px;
   line-height: 7px;
   text-transform: uppercase;
 }

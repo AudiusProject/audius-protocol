@@ -20,7 +20,7 @@
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
   color: var(--neutral);
   font-family: var(--font-family);
   font-size: 15px;
@@ -32,7 +32,7 @@
   width: 1px;
   background: var(--neutral-light-5);
   height: 15px;
-  transition: all ease-in-out .18s;
+  transition: all ease-in-out 0.18s;
 }
 
 .separator.invisible {
@@ -46,7 +46,7 @@
   bottom: 3px;
   border-radius: 4px;
   background-color: var(--white);
-  box-shadow: 0 2px 5px -2px rgba(106,103,122,0.5);
+  box-shadow: 0 2px 5px -2px rgba(106, 103, 122, 0.5);
 }
 
 .containerFullWidth {

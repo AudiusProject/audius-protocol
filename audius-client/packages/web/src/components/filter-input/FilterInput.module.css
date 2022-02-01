@@ -21,19 +21,19 @@
 
 .filterContainer :global(.ant-input-affix-wrapper .ant-input):hover {
   border: 1px solid var(--neutral-light-4);
-  box-shadow:none;
+  box-shadow: none;
 }
 
 .filterContainer :global(.ant-input-affix-wrapper .ant-input):focus {
   border: 1px solid var(--neutral-light-6);
-  box-shadow:none;
+  box-shadow: none;
 }
 
-.filterContainer :global(.ant-input-prefix)>svg {
+.filterContainer :global(.ant-input-prefix) > svg {
   width: 12px;
   height: 12px;
 }
-.filterContainer :global(.ant-input-prefix)>svg g path {
+.filterContainer :global(.ant-input-prefix) > svg g path {
   fill: var(--neutral-light-4);
 }
 

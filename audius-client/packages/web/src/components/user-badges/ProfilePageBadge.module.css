@@ -5,7 +5,8 @@
   padding: 8px 6px;
   display: flex;
   background-color: var(--white);
-  box-shadow: 0 0 1px -2px var(--tile-shadow-1), 0 1px 0 -2px var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
+  box-shadow: 0 0 1px -2px var(--tile-shadow-1),
+    0 1px 0 -2px var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
   align-items: center;
   cursor: pointer;
   transition: all var(--quick);
@@ -28,12 +29,12 @@
   margin-right: 8px;
 }
 
-.container:hover{
-  transform: perspective(1px) scale3d(1.04,1.04,1.04);
+.container:hover {
+  transform: perspective(1px) scale3d(1.04, 1.04, 1.04);
 }
 
 .container:active {
-  transform: perspective(1px) scale3d(.99,.99,.99);
+  transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
 }
 
 .container img {

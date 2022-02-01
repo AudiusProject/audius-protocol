@@ -10,7 +10,7 @@
 /* Title */
 .header {
   margin: 40px 0px 0px;
-  color: #7E1BCC;
+  color: #7e1bcc;
   font-size: var(--font-l);
   font-weight: bold;
   width: 320px;
@@ -30,7 +30,7 @@
   position: absolute;
   top: 60px;
   left: 38px;
-  background-color: #DAD9E0;
+  background-color: #dad9e0;
 }
 
 .hide {

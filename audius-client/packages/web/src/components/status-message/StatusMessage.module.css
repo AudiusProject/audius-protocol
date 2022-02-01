@@ -17,7 +17,7 @@
 }
 
 .statusIcon {
-  position: absolute;  
+  position: absolute;
   left: 12px;
   display: flex;
   justify-content: center;
@@ -45,22 +45,21 @@
 }
 
 .iconArrow path {
-  fill: #E03D51;
+  fill: #e03d51;
 }
 
 .clickable .label {
-  border-bottom: 1px solid #E03D51;
+  border-bottom: 1px solid #e03d51;
 }
 
 .errorLabel {
-  color: #E03D51;
+  color: #e03d51;
 }
 
 .checkIcon,
 .removeIcon {
   z-index: 15;
 }
-
 
 .checkIcon > svg path,
 .removeIcon > svg path {

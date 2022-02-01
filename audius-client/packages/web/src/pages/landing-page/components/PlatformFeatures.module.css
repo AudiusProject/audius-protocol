@@ -3,7 +3,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  background: linear-gradient(129.23deg, #F3F2F5 0%, #FBFBFC 100%);
+  background: linear-gradient(129.23deg, #f3f2f5 0%, #fbfbfc 100%);
   -webkit-clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
   clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
   padding: 94px 0px 114px;
@@ -31,7 +31,7 @@
 }
 
 .title {
-  color: #480B79;
+  color: #480b79;
   font-family: Gilroy !important;
   font-size: 42px;
   font-weight: bold;
@@ -41,7 +41,7 @@
 
 .subTitle {
   max-width: 608px;
-  color: #C2C0CC;
+  color: #c2c0cc;
   font-family: Gilroy !important;
   font-size: 21px;
   font-weight: 500;
@@ -63,7 +63,7 @@
   width: 100%;
   max-width: 563px;
   border-radius: 8px;
-  box-shadow: 0 10px 50px -2px rgba(53,5,152,0.4);
+  box-shadow: 0 10px 50px -2px rgba(53, 5, 152, 0.4);
 }
 
 .features {
@@ -78,8 +78,8 @@
   margin-left: 21px;
   padding: 20px 15px 22px 37px;
   border-radius: 12px;
-  background-color: #FFFFFF;
-  box-shadow: 0 16px 20px 0 rgba(232,228,234,0.5);
+  background-color: #ffffff;
+  box-shadow: 0 16px 20px 0 rgba(232, 228, 234, 0.5);
   display: inline-flex;
   align-items: center;
 }
@@ -105,8 +105,8 @@
   padding: 5px 8px 3px;
   text-transform: uppercase;
   border-radius: 13px;
-  background-color: #7E1BCC;
-  color: #FFFFFF;
+  background-color: #7e1bcc;
+  color: #ffffff;
   font-family: Gilroy !important;
   font-size: 13px;
   font-weight: 800;
@@ -132,7 +132,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: linear-gradient(129.23deg, #F3F2F5 0%, #FBFBFC 100%);
+  background: linear-gradient(129.23deg, #f3f2f5 0%, #fbfbfc 100%);
   -webkit-clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
   clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
   padding: 65px 35px;
@@ -143,7 +143,7 @@
 }
 
 .isMobile .title {
-  color: #480B79;
+  color: #480b79;
   font-family: Gilroy;
   font-size: 32px;
   font-weight: bold;
@@ -152,7 +152,7 @@
 }
 
 .isMobile .subTitle {
-  color: #C2C0CC;
+  color: #c2c0cc;
   font-family: Gilroy;
   font-size: 16px;
   font-weight: 500;
@@ -169,7 +169,7 @@
   height: auto;
   width: 100%;
   border-radius: 8px;
-  box-shadow: 0 10px 50px -2px rgba(53,5,152,0.4);
+  box-shadow: 0 10px 50px -2px rgba(53, 5, 152, 0.4);
 }
 
 .isMobile .features {
@@ -181,7 +181,7 @@
   justify-content: center;
   align-content: center;
   flex-direction: column;
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   box-shadow: none;
   margin: 0px 0px 32px;
   padding: 0px;

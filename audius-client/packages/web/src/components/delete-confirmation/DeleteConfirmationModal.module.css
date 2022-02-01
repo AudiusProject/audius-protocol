@@ -49,7 +49,7 @@
   cursor: pointer;
   margin-right: 31px;
   text-transform: uppercase;
-  border-color: var(--accent-red)
+  border-color: var(--accent-red);
 }
 
 .deleteButton .deleteButtonText {
@@ -70,7 +70,6 @@
   border-color: var(--accent-red-dark-1);
   background-color: var(--accent-red-dark-1);
 }
-
 
 .nevermindButton {
   cursor: pointer;

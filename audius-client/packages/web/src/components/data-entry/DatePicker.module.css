@@ -34,7 +34,7 @@ svg.iconCalendar {
   border: 1px solid var(--neutral-light-8);
   border-radius: 6px;
   background-color: var(--neutral-light-10);
-  transition: border ease-in-out .1s;
+  transition: border ease-in-out 0.1s;
 }
 .datePicker:hover :global(.SingleDatePickerInput) {
   border-color: var(--neutral-light-6);
@@ -51,8 +51,7 @@ svg.iconCalendar {
 .datePicker :global(.DayPicker__horizontal),
 .datePicker :global(.CalendarMonth),
 .datePicker :global(.CalendarMonthGrid),
-.datePicker :global(.DayPickerNavigation_button__default)
-{
+.datePicker :global(.DayPickerNavigation_button__default) {
   background: var(--white);
 }
 .datePicker :global(.DateInput_fangStroke) {
@@ -129,4 +128,3 @@ svg.iconCalendar {
 .datePicker :global(.CalendarDay__selected:hover) {
   background-color: var(--secondary-light-2);
 }
-

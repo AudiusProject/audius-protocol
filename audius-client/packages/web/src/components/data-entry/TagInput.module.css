@@ -36,13 +36,13 @@
   background-color: var(--neutral-light-10);
   color: var(--neutral);
   font-weight: 500;
-  
+
   cursor: text;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   user-select: none;
-  transition: border ease-in-out .1s;
+  transition: border ease-in-out 0.1s;
 }
 .wrapper.normal > .tagInput {
   min-height: 50px;
@@ -76,7 +76,7 @@
   font-weight: 600;
   letter-spacing: 0.83px;
   text-transform: uppercase;
-  transition: all ease-in-out .1s;
+  transition: all ease-in-out 0.1s;
   cursor: default;
   padding-right: 0;
 }
@@ -87,7 +87,7 @@
   display: none;
 }
 .tag:hover {
-  opacity: 0.90;
+  opacity: 0.9;
 }
 .tag.flash {
   background-color: var(--neutral-light-7);
@@ -131,12 +131,13 @@
   margin-left: 4px;
 }
 .iconRemove:hover {
-  transform: scale(1.10);
+  transform: scale(1.1);
 }
 .iconRemove:active {
   transform: scale(0.95);
 }
-.iconSave g path, .iconRemove g path {
+.iconSave g path,
+.iconRemove g path {
   fill: var(--static-white);
 }
 

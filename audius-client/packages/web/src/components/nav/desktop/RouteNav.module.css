@@ -8,17 +8,19 @@
   -webkit-app-region: drag;
 }
 
-.backButton, .forwardButton {
+.backButton,
+.forwardButton {
   height: 20px;
   width: 20px;
   margin: 0 16px;
   -webkit-app-region: no-drag;
 
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
 }
 
-.backButton g path, .forwardButton g path {
-  fill: var(--neutral-light-4)
+.backButton g path,
+.forwardButton g path {
+  fill: var(--neutral-light-4);
 }
 
 .forwardButton:hover {

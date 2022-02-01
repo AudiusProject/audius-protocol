@@ -4,7 +4,7 @@
   cursor: pointer;
   margin: 2px;
   user-select: none;
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
   font-size: var(--font-s);
   font-weight: var(--font-demi-bold);
   line-height: 17px;
@@ -12,7 +12,7 @@
 
 .preview > div {
   margin: 8px;
-/*  margin-top: 9px;*/
+  /*  margin-top: 9px;*/
   display: flex;
   align-items: center;
   width: 16px;
@@ -23,19 +23,19 @@
   width: 16px;
   height: 16px;
   position: relative;
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
 }
 
 .previewButton g path {
   fill: var(--neutral);
 }
 
-.previewButton g circle[fill="#FFFFFF"] {
-  fill: rgba(0,0,0,0);
+.previewButton g circle[fill='#FFFFFF'] {
+  fill: rgba(0, 0, 0, 0);
 }
 
 .preview:hover {
-  transform: scale3d(1.05,1.05,1.05);
+  transform: scale3d(1.05, 1.05, 1.05);
   opacity: 0.9;
 }
 

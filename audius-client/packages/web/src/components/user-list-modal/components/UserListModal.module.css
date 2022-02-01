@@ -19,7 +19,7 @@
 
 .modalTitle {
   font-weight: var(--font-heavy);
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   color: var(--neutral-light-4);
   font-size: var(--font-l);
 }

@@ -7,7 +7,7 @@
 }
 
 .spin {
-  padding-top: 40%; 
+  padding-top: 40%;
 }
 
 .spin :global(.ant-spin-dot i) {

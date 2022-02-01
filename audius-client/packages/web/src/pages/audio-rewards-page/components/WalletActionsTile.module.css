@@ -11,7 +11,6 @@
   padding: 33px 56px;
 }
 
-
 .container .btn {
   background: transparent !important;
   border: 1px solid var(--neutral-light-6);
@@ -30,7 +29,7 @@
 
 .btn.balanceDisabled {
   opacity: 0.5;
-  background-color: hsla(0,0%,100%,.1);
+  background-color: hsla(0, 0%, 100%, 0.1);
 }
 
 .disabled {

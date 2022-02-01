@@ -2,7 +2,7 @@
   padding: 10px 17px;
   height: 36px;
   border-radius: 6px;
-  background: linear-gradient(315deg, #196AE3 0%, #1977E3 100%);
+  background: linear-gradient(315deg, #196ae3 0%, #1977e3 100%);
   user-select: none;
   text-align: center;
   white-space: nowrap;
@@ -10,7 +10,7 @@
 }
 
 .badgeIcon {
-  filter: drop-shadow(0 1px 2px rgba(39,31,71,0.25));
+  filter: drop-shadow(0 1px 2px rgba(39, 31, 71, 0.25));
 }
 .badgeIcon svg {
   width: 16px;
@@ -32,5 +32,5 @@
   white-space: nowrap;
   word-break: keep-all;
   text-decoration: none;
-  text-shadow: 0 1px 2px rgba(39,31,71,0.25);
+  text-shadow: 0 1px 2px rgba(39, 31, 71, 0.25);
 }

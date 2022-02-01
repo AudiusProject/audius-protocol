@@ -35,7 +35,9 @@
 }
 
 /* Header Cell Hover Color */
-:global(.ant-table-thead > tr > th.ant-table-column-has-actions.ant-table-column-has-sorters:hover) {
+:global(.ant-table-thead
+    > tr
+    > th.ant-table-column-has-actions.ant-table-column-has-sorters:hover) {
   background: var(--neutral-light-10) !important;
 }
 
@@ -50,7 +52,7 @@
 }
 
 /* Hide header sort caret in col header when not on */
-:global(.ant-table-column-has-sorters:not(.ant-table-column-sort)>svg),
+:global(.ant-table-column-has-sorters:not(.ant-table-column-sort) > svg),
 :global(.ant-table-thead > tr > th .off) {
   display: none !important;
 }
@@ -74,8 +76,6 @@
 :global(.ant-table-thead > tr > th .ant-table-column-sorter-up) {
   margin-top: 1px !important;
 }
-
-
 
 /* Body Cell */
 :global(.ant-table-tbody > tr > td) {
@@ -113,7 +113,8 @@
   transition: all 0.07s ease-in-out;
 }
 
-.loading :global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row) > td) {
+.loading
+  :global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row) > td) {
   background: var(--white);
   cursor: default;
 }
@@ -149,7 +150,8 @@
   top: auto;
 }
 
-:global(.colDate), :global(.colTime) {
+:global(.colDate),
+:global(.colTime) {
   text-align: right !important;
   padding-right: 30px !important;
 }
@@ -187,10 +189,9 @@
 }
 
 .trackName {
-/* The width at which ellipsis start */
-  max-width: 350px
+  /* The width at which ellipsis start */
+  max-width: 350px;
 }
-
 
 :global(.colTrackName) > div:hover .trackName {
   transition: color 0.07s ease-out;
@@ -206,10 +207,10 @@
 }
 
 .artistName {
-  max-width: 250px
+  max-width: 250px;
 }
 
-tr:not(.deleted) :global(.ant-table-column-has-actions)>div:hover{
+tr:not(.deleted) :global(.ant-table-column-has-actions) > div:hover {
   transition: color 0.1s ease-in-out;
   color: var(--neutral);
 }
@@ -224,7 +225,7 @@ tr:not(.deleted) :global(.ant-table-column-has-actions)>div:hover{
   justify-content: center;
   cursor: pointer;
   user-select: none;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
 }
 
 .showMoreText {
@@ -271,7 +272,8 @@ tr.deleted:hover td {
   color: var(--primary);
 }
 
-:global(.ant-empty-image), :global(.ant-empty-description) {
+:global(.ant-empty-image),
+:global(.ant-empty-description) {
   display: none !important;
 }
 

@@ -15,9 +15,9 @@
 .updateAppBanner .contentSelection {
   display: flex;
   align-items: center;
-  justify-content: center; 
-  transition: all ease-in-out .07s;
-  border-bottom: 1px solid rgba(0,0,0,0);
+  justify-content: center;
+  transition: all ease-in-out 0.07s;
+  border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
 .updateAppBanner:hover .contentSelection {
@@ -25,7 +25,7 @@
 }
 
 .pill {
-  background-color: #AC70FF;
+  background-color: #ac70ff;
   margin-left: 24px;
 }
 

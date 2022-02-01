@@ -16,7 +16,7 @@
   margin-left: 8px;
   line-height: 24px;
 
-  transition: transform .07s ease-in-out!important;
+  transition: transform 0.07s ease-in-out !important;
   transition: background-color 0.1s ease;
 }
 

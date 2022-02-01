@@ -2,7 +2,8 @@
   flex: 1 1 352px;
   border: 1px solid var(--neutral-light-8);
   background-color: var(--white);
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
   overflow: hidden;
   border-radius: 8px;
   margin-bottom: 12px;
@@ -31,7 +32,6 @@
   flex: 0 0 74px;
 }
 
-
 .loadingArtImageSkeleton span {
   border-radius: 4px !important;
   height: 74px !important;
@@ -41,7 +41,7 @@
 
 .skeletonText :global(.ant-skeleton-paragraph) li {
   border-radius: 4px !important;
-	border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--neutral-light-8);
 }
 
 .trackInfo {
@@ -64,7 +64,7 @@
 }
 
 .artistName {
-  margin-bottom: 32px;  
+  margin-bottom: 32px;
   width: 115px;
 }
 

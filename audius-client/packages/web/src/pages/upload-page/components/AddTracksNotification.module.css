@@ -6,7 +6,7 @@
   padding: 9px 9px 10px 38px;
   border-radius: 8px;
   background-color: var(--secondary);
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
 }
 
 .notice {
@@ -32,7 +32,7 @@
   font-weight: var(--font-demi-bold);
   letter-spacing: 0.47px;
   white-space: nowrap;
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
   cursor: pointer;
   user-select: none;
   width: 71px;

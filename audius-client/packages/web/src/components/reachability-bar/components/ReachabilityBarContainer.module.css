@@ -11,7 +11,7 @@
 }
 
 .bar {
-  background-color: rgba(126,27,204,0.9);
+  background-color: rgba(126, 27, 204, 0.9);
   height: 40px;
   display: flex;
   justify-content: center;
