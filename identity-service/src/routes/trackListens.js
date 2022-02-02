@@ -262,7 +262,6 @@ module.exports = function (app) {
     }
 
     const percentSuccess = success / submission
-
     // Sort response in descending time order
     const sortedHourlyData =
       Object.keys(hourlyResponseData)
@@ -274,16 +273,19 @@ module.exports = function (app) {
     let recentSuccessCount = 0
     let cutoffTimestamp
     const now = Date.now()
+
     for (var sortedHourlyEntry of sortedHourlyData) {
       // Convert diff from ms to minutes
       const diff = (now - sortedHourlyEntry.time.getTime()) / 60000
-      if (diff > cutoffMinutes) {
-        break
-      }
       recentSubmissionCount += sortedHourlyEntry.submission
       recentSuccessCount += sortedHourlyEntry.success
       cutoffTimestamp = sortedHourlyEntry.time
+      // Exit calculation
+      if (diff > cutoffMinutes) {
+        break
+      }
     }
+
     const recentSuccessPercent = recentSuccessCount / recentSubmissionCount
     const recentInfo = {
       recentSubmissionCount,
