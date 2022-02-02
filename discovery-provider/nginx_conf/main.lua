@@ -23,7 +23,7 @@ function update_redirect_weights (premature)
     end
 
     local httpc = resty_http.new()
-    local res = httpc:request_uri(config.public_url .. "/redirect_weights", { method = "GET" })
+    local res = httpc:request_uri("http://127.0.0.1:3000/redirect_weights", { method = "GET" })
 
     for endpoint, weight in pairs(cjson.decode(res.body)) do
         redirect_weights[endpoint] = weight
