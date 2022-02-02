@@ -31,7 +31,7 @@ function update_redirect_weights (premature)
 end
 
 function _M.start_update_redirect_weights_timer ()
-    update_redirect_weights ()
+    ngx.timer.at(0, update_redirect_weights)
     ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
 end
 
