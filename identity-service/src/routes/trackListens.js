@@ -268,7 +268,7 @@ module.exports = function (app) {
         .sort((a, b) => (new Date(b) - new Date(a)))
         .map(key => hourlyResponseData[key])
 
-    // Calculate success of the last 10% of submissions
+    // Calculate success of submissions before the cutoff
     let recentSubmissionCount = 0
     let recentSuccessCount = 0
     let cutoffTimestamp
