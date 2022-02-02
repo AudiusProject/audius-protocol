@@ -23,6 +23,7 @@ from src.models import (
 )
 from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
+from src.queries.get_prev_track_entries import get_prev_track_entries
 from src.queries.get_sol_rewards_manager import (
     get_latest_cached_sol_rewards_manager_db,
     get_latest_cached_sol_rewards_manager_program_tx,
@@ -716,20 +717,14 @@ def notifications():
             Track.blocknumber <= max_block_number,
         )
         updated_tracks = updated_tracks_query.all()
-        for entry in updated_tracks:
+
+        prev_tracks = get_prev_track_entries(updated_tracks)
+
+        for prev_entry in prev_tracks:
+            entry = next(t for t in updated_tracks if t.track_id == prev_entry.track_id)
             logger.info(
                 f"notifications.py | single track update {entry.track_id} {entry.blocknumber} {datetime.now() - start_time}"
             )
-            prev_entry_query = (
-                session.query(Track)
-                .filter(
-                    Track.track_id == entry.track_id,
-                    Track.blocknumber < entry.blocknumber,
-                )
-                .order_by(desc(Track.blocknumber))
-            )
-            # Previous unlisted entry indicates transition to public, triggering a notification
-            prev_entry = prev_entry_query.first()
 
             # Tracks that were unlisted and turned to public
             if prev_entry.is_unlisted == True:
