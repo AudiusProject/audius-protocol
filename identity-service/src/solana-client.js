@@ -93,11 +93,16 @@ const instructionSchema = new Map([
 
 let feePayer
 
+const feePayers = config.get('solanaFeePayerWallets')
+
 function getFeePayer () {
   if (!feePayer) {
-    feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
+    feePayer = config.get('solanaFeePayerWallet') ? solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(config.get('solanaFeePayerWallet'))) : null
   }
-  return feePayer
+  const randomFeePayerIndex = Math.floor(Math.random() * feePayers.length)
+  const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(feePayers[randomFeePayerIndex].privateKey));
+
+  return randomFeePayer
 }
 
 async function createAndVerifyMessage (

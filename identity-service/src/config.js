@@ -612,6 +612,12 @@ const config = convict({
     default: null,
     env: 'solanaFeePayerWallet'
   },
+  solanaFeePayerWallets: {
+    doc: 'solanaFeePayerWallets - Stringified array like[{ privateKey: [] },...]',
+    format: 'string-array',
+    default: null,
+    env: 'solanaFeePayerWallets'
+  },
   solanaSignerPrivateKey: {
     doc: 'solanaSignerPrivateKey',
     format: String,
