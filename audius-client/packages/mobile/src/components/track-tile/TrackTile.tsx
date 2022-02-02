@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -8,37 +8,22 @@ import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
 import { getUserFromTrack } from 'audius-client/src/common/store/cache/users/selectors'
 import { isEqual } from 'lodash'
-import {
-  Animated,
-  Easing,
-  GestureResponderEvent,
-  Pressable,
-  StyleSheet
-} from 'react-native'
+import { Animated, Easing, GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { BaseStackParamList } from 'app/components/app-navigator/types'
 import { TrackTileProps } from 'app/components/track-tile/types'
 // import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
-import { ThemeColors } from 'app/utils/theme'
 
 import { TrackBannerIcon, TrackBannerIconType } from './TrackBannerIcon'
 import { TrackTileBottomButtons } from './TrackTileBottomButtons'
 import { TrackTileCoSign } from './TrackTileCoSign'
-import { TrackTileContainer } from './TrackTileContainer'
 import { TrackTileMetadata } from './TrackTileMetadata'
+import { TrackTileRoot } from './TrackTileRoot'
 import { TrackTileStats } from './TrackTileStats'
 import { TrackTileTopRight } from './TrackTileTopRight'
-
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    mainContent: {
-      flex: 1
-    }
-  })
 
 export const TrackTile = (props: TrackTileProps) => {
   const { uid } = props
@@ -100,7 +85,6 @@ const TrackTileComponent = ({
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
 
-  const styles = useThemedStyles(createStyles)
   const opacity = useRef(new Animated.Value(0)).current
 
   const isOwner = user_id === currentUserId
@@ -109,6 +93,12 @@ const TrackTileComponent = ({
 
   const hideShare: boolean = field_visibility?.share === false
   const hidePlays = field_visibility?.play_count === false
+
+  const handlePress = useCallback(() => togglePlay(uid, track_id), [
+    togglePlay,
+    uid,
+    track_id
+  ])
 
   const goToTrackPage = (e: GestureResponderEvent) => {
     navigation.navigate('track', { id: track_id })
@@ -140,57 +130,52 @@ const TrackTileComponent = ({
   }, [onLoad, isLoaded, index, opacity])
 
   return (
-    <TrackTileContainer>
+    <TrackTileRoot onPress={handlePress}>
       {showArtistPick && _artist_pick === track_id && (
         <TrackBannerIcon type={TrackBannerIconType.STAR} />
       )}
       {is_unlisted && <TrackBannerIcon type={TrackBannerIconType.HIDDEN} />}
-      <Pressable
-        style={styles.mainContent}
-        onPress={() => togglePlay(uid, track_id)}
-      >
-        <Animated.View style={fadeIn}>
-          <TrackTileTopRight
-            duration={duration}
-            isArtistPick={_artist_pick === track_id}
-            isUnlisted={is_unlisted}
-            showArtistPick={showArtistPick}
-          />
-          <TrackTileMetadata
-            artistName={name}
-            coSign={_co_sign}
-            coverArtSizes={_cover_art_sizes}
-            goToArtistPage={goToArtistPage}
-            goToTrackPage={goToTrackPage}
-            id={track_id}
-            isPlaying={uid === playingUid && isPlaying}
-            setArtworkLoaded={setArtworkLoaded}
-            title={title}
-            user={user}
-          />
-          {_co_sign && <TrackTileCoSign coSign={_co_sign} />}
-          <TrackTileStats
-            hidePlays={hidePlays}
-            index={index}
-            isTrending={isTrending}
-            isUnlisted={is_unlisted}
-            listenCount={play_count}
-            onPressFavorites={onPressFavorites}
-            onPressReposts={onPressReposts}
-            repostCount={repost_count}
-            saveCount={save_count}
-            showRankIcon={showRankIcon}
-          />
-        </Animated.View>
-        <TrackTileBottomButtons
-          hasReposted={has_current_user_reposted}
-          hasSaved={has_current_user_saved}
-          isOwner={isOwner}
-          isShareHidden={hideShare}
+      <Animated.View style={fadeIn}>
+        <TrackTileTopRight
+          duration={duration}
+          isArtistPick={_artist_pick === track_id}
           isUnlisted={is_unlisted}
-          trackId={track_id}
+          showArtistPick={showArtistPick}
         />
-      </Pressable>
-    </TrackTileContainer>
+        <TrackTileMetadata
+          artistName={name}
+          coSign={_co_sign}
+          coverArtSizes={_cover_art_sizes}
+          goToArtistPage={goToArtistPage}
+          goToTrackPage={goToTrackPage}
+          id={track_id}
+          isPlaying={uid === playingUid && isPlaying}
+          setArtworkLoaded={setArtworkLoaded}
+          title={title}
+          user={user}
+        />
+        {_co_sign && <TrackTileCoSign coSign={_co_sign} />}
+        <TrackTileStats
+          hidePlays={hidePlays}
+          index={index}
+          isTrending={isTrending}
+          isUnlisted={is_unlisted}
+          listenCount={play_count}
+          onPressFavorites={onPressFavorites}
+          onPressReposts={onPressReposts}
+          repostCount={repost_count}
+          saveCount={save_count}
+          showRankIcon={showRankIcon}
+        />
+      </Animated.View>
+      <TrackTileBottomButtons
+        hasReposted={has_current_user_reposted}
+        hasSaved={has_current_user_saved}
+        isOwner={isOwner}
+        isShareHidden={hideShare}
+        isUnlisted={is_unlisted}
+        trackId={track_id}
+      />
+    </TrackTileRoot>
   )
 }
