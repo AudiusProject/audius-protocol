@@ -6,6 +6,7 @@ import Status from 'common/models/Status'
 import { Track, UserTrack, UserTrackMetadata } from 'common/models/Track'
 import { getAccountStatus, getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
+import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { setSmartCollection } from 'pages/collection-page/store/actions'
 import Explore from 'services/audius-backend/Explore'
 import { waitForBackendSetup } from 'store/backend/sagas'
@@ -29,8 +30,14 @@ const COLLECTIONS_LIMIT = 25
 function* fetchHeavyRotation() {
   const topListens = yield call(Explore.getTopUserListens)
 
+  const users = yield call(
+    retrieveUsers,
+    topListens.map((t: any) => t.userId)
+  )
   const trackIds = topListens
-    .filter((track: UserTrack) => !track.user.is_deactivated)
+    .filter(
+      (track: any) => !(users.entries[track.userId]?.is_deactivated ?? true)
+    )
     .map((listen: any) => ({
       track: listen.trackId
     }))
