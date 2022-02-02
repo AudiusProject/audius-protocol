@@ -31,7 +31,8 @@ const defaultOffset = 0
 const minOffset = 0
 
 // Duration for listen tracking redis keys prior to expiry (in seconds)
-const redisTxTrackingExpirySeconds = 10 * 60 * 60
+// 1 week in in seconds = 7 days * 24hrs * 60 min * 60s
+const redisTxTrackingExpirySeconds = 7 * 24 * 60 * 60
 
 const getPaginationVars = (limit, offset) => {
   if (!limit) limit = defaultLimit
@@ -235,7 +236,9 @@ const initializeExpiringRedisKey = async (redis, key, expiry) => {
 module.exports = function (app) {
   app.get('/tracks/listen/solana/status', handleResponse(async (req, res) => {
     const redis = req.app.get('redis')
-    let results = await redis.keys('listens-tx-*')
+    const results = await redis.keys('listens-tx-*')
+    // Expected percent success
+    let { percent = 0.9, cutoffMinutes = 60 } = req.query
     let hourlyResponseData = {}
     let success = 0
     let submission = 0
@@ -249,7 +252,8 @@ module.exports = function (app) {
         if (!hourlyResponseData.hasOwnProperty(hourSuffix)) {
           hourlyResponseData[hourSuffix] = {
             submission: Number(await redis.get(trackingRedisKeys.submission)),
-            success: Number(await redis.get(trackingRedisKeys.success))
+            success: Number(await redis.get(trackingRedisKeys.success)),
+            time: new Date(hourSuffix)
           }
           submission += hourlyResponseData[hourSuffix].submission
           success += hourlyResponseData[hourSuffix].success
@@ -257,7 +261,44 @@ module.exports = function (app) {
       }
     }
 
-    return successResponse({ success, submission, hourlyResponseData })
+    const percentSuccess = success / submission
+    // Sort response in descending time order
+    const sortedHourlyData =
+      Object.keys(hourlyResponseData)
+        .sort((a, b) => (new Date(b) - new Date(a)))
+        .map(key => hourlyResponseData[key])
+
+    // Calculate success of submissions before the cutoff
+    let recentSubmissionCount = 0
+    let recentSuccessCount = 0
+    let cutoffTimestamp
+    const now = Date.now()
+
+    for (var sortedHourlyEntry of sortedHourlyData) {
+      // Convert diff from ms to minutes
+      const diff = (now - sortedHourlyEntry.time.getTime()) / 60000
+      recentSubmissionCount += sortedHourlyEntry.submission
+      recentSuccessCount += sortedHourlyEntry.success
+      cutoffTimestamp = sortedHourlyEntry.time
+      // Exit calculation
+      if (diff > cutoffMinutes) {
+        break
+      }
+    }
+
+    const recentSuccessPercent = recentSuccessCount / recentSubmissionCount
+    const recentInfo = {
+      recentSubmissionCount,
+      recentSuccessCount,
+      recentSuccessPercent,
+      cutoffTimestamp
+    }
+
+    const resp = { percentSuccess, success, submission, sortedHourlyData, recentInfo }
+    if (recentSuccessPercent < percent) {
+      return errorResponseBadRequest(resp)
+    }
+    return successResponse(resp)
   }))
 
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {

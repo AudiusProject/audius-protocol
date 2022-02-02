@@ -331,8 +331,8 @@ class NotificationProcessor {
     // These track_id get parameters will be used to retrieve track owner info
     // This is required since there is no guarantee that there are indeed notifications for this user
     // The owner info is then used to target listenCount milestone notifications
-    // Timeout of 2 minutes
-    const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
+    // Timeout of 5 minutes
+    const timeout = 5 /* min */ * 60 /* sec */ * 1000 /* ms */
     const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
     logger.info(`notifications main indexAll job - query notifications from discovery node complete in ${Date.now() - time}ms`)
     time = Date.now()

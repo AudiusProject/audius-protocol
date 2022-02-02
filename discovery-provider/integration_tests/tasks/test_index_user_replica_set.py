@@ -196,6 +196,9 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
         autospec=True,
     )
 
+    test_ipfs_metadata = {}
+    test_blacklisted_cids = {}
+
     with db.scoped_session() as session:
         try:
             current_block = Block(
@@ -213,6 +216,8 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
                 test_block_number,
                 test_block_timestamp,
                 block_hash,
+                test_ipfs_metadata,
+                test_blacklisted_cids,
             )
             assert len(updated_user_ids_set) == 1
             assert list(updated_user_ids_set)[0] == blessed_user_record.user_id

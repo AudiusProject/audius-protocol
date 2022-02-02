@@ -734,12 +734,20 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
               .returns(
                 new Promise((resolve, reject) => {
                   const multihash = MockSavefileMultihash
-                  return resolve({
-                    multihash,
-                    dstPath: DiskManager.computeFilePath(multihash)
-                  })
+                  return resolve(multihash)
                 })
-              )
+              ),
+            copyMultihashToFs: sinon
+              .stub(FileManager, 'copyMultihashToFs')
+              .returns(
+                new Promise((resolve) => {
+                  const dstPath = DiskManager.computeFilePath(
+                    MockSavefileMultihash
+                  )
+                  return resolve(dstPath)
+                })
+              ),
+            '@global': true
           }
         }
       )
@@ -748,8 +756,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
       const { fileUUID, fileDir } = saveFileToStorage(TestAudioFilePath)
       const trackContentResp = await handleTrackContentRoute(
         {},
-        getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.blacklistManager
+        getReqObj(fileUUID, fileDir, session)
       )
 
       // Upload track metadata
