@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
+import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 import {
   View,
   StyleSheet,
@@ -14,14 +16,22 @@ import { useSelector } from 'react-redux'
 
 import Drawer from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
-import { getPlaying } from 'app/store/audio/selectors'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import {
+  getPlaying,
+  getTrack as getNativeTrack
+} from 'app/store/audio/selectors'
 
 import { DrawerAnimationStyle, springToValue } from '../drawer/Drawer'
 
 import { ActionsBar } from './ActionsBar'
+import { Artwork } from './Artwork'
 import { AudioControls } from './AudioControls'
 import { Logo } from './Logo'
 import { PlayBar } from './PlayBar'
+import { Scrubber } from './Scrubber'
+import { TitleBar } from './TitleBar'
+import { TrackInfo } from './TrackInfo'
 
 const PLAY_BAR_HEIGHT = 84
 const STATUS_BAR_FADE_CUTOFF = 0.6
@@ -31,8 +41,22 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     height: Dimensions.get('window').height - PLAY_BAR_HEIGHT
   },
-  controls: {
-    padding: 24
+  controlsContainer: {
+    marginLeft: 24,
+    marginRight: 24
+  },
+  titleBarContainer: {
+    marginBottom: 16
+  },
+  artworkContainer: {
+    marginBottom: 20
+  },
+  trackInfoContainer: {
+    marginBottom: 16
+  },
+  scrubberContainer: {
+    marginLeft: 60,
+    marginRight: 60
   }
 })
 
@@ -148,6 +172,17 @@ const NowPlayingDrawer = ({
     [drawerPercentOpen, bottomBarTranslationAnim, playBarOpacityAnim, isOpen]
   )
 
+  // TODO: As we move away from the audio store slice in mobile-client
+  // in favor of player/queue selectors in common, getNativeTrack calls
+  // should be replaced
+  const trackInfo = useSelector(getNativeTrack)
+  const track = useSelectorWeb(state =>
+    getTrack(state, trackInfo ? { id: trackInfo.trackId } : {})
+  )
+  const user = useSelectorWeb(state =>
+    getUser(state, track ? { id: track.owner_id } : {})
+  )
+
   return (
     <Drawer
       // Appears below bottom bar whereas normally drawers appear above
@@ -165,12 +200,33 @@ const NowPlayingDrawer = ({
       onPanResponderMove={onPanResponderMove}
     >
       <View style={styles.container}>
-        <PlayBar onPress={onDrawerOpen} opacityAnim={playBarOpacityAnim} />
-        <Logo opacityAnim={playBarOpacityAnim} />
-        <View style={styles.controls}>
-          <AudioControls />
-          <ActionsBar />
-        </View>
+        {track && user && (
+          <>
+            <PlayBar
+              track={track}
+              user={user}
+              onPress={onDrawerOpen}
+              opacityAnim={playBarOpacityAnim}
+            />
+            <Logo opacityAnim={playBarOpacityAnim} />
+            <View style={styles.titleBarContainer}>
+              <TitleBar onClose={onDrawerClose} />
+            </View>
+            <View style={styles.artworkContainer}>
+              <Artwork track={track} />
+            </View>
+            <View style={styles.trackInfoContainer}>
+              <TrackInfo track={track} user={user} />
+            </View>
+            <View style={styles.scrubberContainer}>
+              <Scrubber mediaKey='1' />
+            </View>
+            <View style={styles.controlsContainer}>
+              <AudioControls />
+              <ActionsBar />
+            </View>
+          </>
+        )}
       </View>
     </Drawer>
   )

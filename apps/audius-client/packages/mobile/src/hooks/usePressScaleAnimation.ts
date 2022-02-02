@@ -23,5 +23,9 @@ export const usePressScaleAnimation = (scaleTo = 0.97) => {
     }).start()
   }, [scale])
 
-  return { scale, handlePressIn: startPress, handlePressOut: releasePress }
+  return {
+    scale,
+    handlePressIn: startPress,
+    handlePressOut: releasePress
+  }
 }
