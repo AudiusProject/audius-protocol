@@ -24,14 +24,11 @@ class TrendingStrategyFactory:
         self.strategies = {
             TrendingType.TRACKS: {
                 TrendingVersion.EJ57D: TrendingTracksStrategyEJ57D(),
-                TrendingVersion.EJ57D: TrendingTracksStrategyEJ57D(),
             },
             TrendingType.UNDERGROUND_TRACKS: {
                 TrendingVersion.EJ57D: UndergroundTrendingTracksStrategyEJ57D(),
-                TrendingVersion.EJ57D: UndergroundTrendingTracksStrategyEJ57D(),
             },
             TrendingType.PLAYLISTS: {
-                TrendingVersion.EJ57D: TrendingPlaylistsStrategyEJ57D(),
                 TrendingVersion.EJ57D: TrendingPlaylistsStrategyEJ57D(),
             },
         }
