@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FavoriteSource } from 'audius-client/src/common/models/Analytics'
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Track } from 'audius-client/src/common/models/Track'
-import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
+import { User } from 'audius-client/src/common/models/User'
 import {
   saveTrack,
   unsaveTrack
@@ -23,14 +23,10 @@ import DynamicImage from 'app/components/dynamic-image'
 import FavoriteButton from 'app/components/favorite-button'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { pause, play } from 'app/store/audio/actions'
-import {
-  getPlaying,
-  getTrack as getNativeTrack
-} from 'app/store/audio/selectors'
+import { getPlaying } from 'app/store/audio/selectors'
 import { Theme, ThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import AnimatedButtonProvider from '../animated-button/AnimatedButtonProvider'
@@ -103,6 +99,8 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 type PlayBarProps = {
+  track: Track
+  user: User
   onPress: () => void
   /**
    * Opacity animation to fade out play bar as
@@ -120,7 +118,12 @@ const PlayBarArtwork = ({ track }: { track: Track }) => {
   return <DynamicImage image={{ uri: image }} />
 }
 
-export const PlayBar = ({ onPress, opacityAnim }: PlayBarProps) => {
+export const PlayBar = ({
+  track,
+  user,
+  onPress,
+  opacityAnim
+}: PlayBarProps) => {
   const styles = useThemedStyles(createStyles)
   const themeVariant = useThemeVariant()
   const dispatch = useDispatch()
@@ -128,14 +131,6 @@ export const PlayBar = ({ onPress, opacityAnim }: PlayBarProps) => {
 
   const isDarkMode = themeVariant === Theme.DARK
   const [percentComplete, setPercentComplete] = useState(0)
-
-  // TODO: As we move away from the audio store slice in mobile-client
-  // in favor of player/queue selectors in common, getNativeTrack calls
-  // should be replaced
-  const trackInfo = useSelector(getNativeTrack)
-  const track = useSelectorWeb(state =>
-    getTrack(state, trackInfo ? { id: trackInfo.trackId } : {})
-  )
 
   useEffect(() => {
     setInterval(() => {
@@ -223,13 +218,17 @@ export const PlayBar = ({ onPress, opacityAnim }: PlayBarProps) => {
           </View>
           <View style={styles.trackText}>
             <Text numberOfLines={1} weight='bold' style={styles.title}>
-              {trackInfo?.title ?? ''}
+              {track?.title ?? ''}
             </Text>
-            <Text weight='bold' style={styles.separator}>
-              •
+            <Text
+              weight='bold'
+              style={styles.separator}
+              accessibilityElementsHidden
+            >
+              {track ? '•' : ''}
             </Text>
             <Text numberOfLines={1} weight='medium' style={styles.artist}>
-              {trackInfo?.artist ?? ''}
+              {user?.name ?? ''}
             </Text>
           </View>
         </TouchableOpacity>
