@@ -1,7 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { assert } from "chai";
-import ethWeb3 from "web3";
+import { expect, assert } from "chai";
 import { createTrack, initAdmin } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
@@ -13,8 +12,6 @@ import {
   testInitUserSolPubkey,
 } from "./test-helpers";
 
-const { PublicKey } = anchor.web3;
-
 describe("audius-data", () => {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
@@ -25,8 +22,6 @@ describe("audius-data", () => {
   anchor.setProvider(anchor.Provider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
-  const EthWeb3 = new ethWeb3();
-  const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
   let adminKeypair = anchor.web3.Keypair.generate();
   let adminStgKeypair = anchor.web3.Keypair.generate();
@@ -47,13 +42,20 @@ describe("audius-data", () => {
       metadata: trackMetadata,
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
-    await confirmLogInTransaction(provider, tx, trackMetadata);
-    let assignedTrackId = await program.account.track.fetch(
+
+    let track = await program.account.track.fetch(
       newTrackKeypair.publicKey
     );
+
+    const chainOwner = track.owner.toString();
+    const expectedOwner = trackOwnerPDA.toString();
+    expect(chainOwner).to.equal(expectedOwner);
+
     console.log(
-      `track: ${trackMetadata}, trackId assigned = ${assignedTrackId.trackId}`
+      `track: ${trackMetadata}, trackId assigned = ${track.trackId}`
     );
+
+    await confirmLogInTransaction(provider, tx, trackMetadata);
   };
 
   const testDeleteTrack = async ({
@@ -118,14 +120,10 @@ describe("audius-data", () => {
     let adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
-    if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
-      console.log(
-        "On chain retrieved admin info: ",
-        adminAccount.authority.toString()
-      );
-      console.log("Provided admin info: ", adminKeypair.publicKey.toString());
-      throw new Error("Invalid returned values");
-    }
+
+    const chainAuthority = adminAccount.authority.toString();
+    const expectedAuthority = adminKeypair.publicKey.toString();
+    expect(chainAuthority).to.equal(expectedAuthority);
   });
 
   it("Initializing user!", async () => {
@@ -387,8 +385,6 @@ describe("audius-data", () => {
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
 
-
-    let errored = false;
     try {
       await testCreateUser({
         provider,
@@ -405,13 +401,9 @@ describe("audius-data", () => {
         userStgAccount: newUserAcctPDA,
         adminStgPublicKey: adminStgKeypair.publicKey,
       });
+      assert.ok(false, "expected error when creating a user that already exists");
     } catch (e) {
-      errored = true;
-      console.log(`Error found as expected ${e} - when trying to create user that already exists`);
-    }
-
-    if (!errored) {
-      throw new Error('Creating existing user did not fail');
+      expect(e.toString()).to.have.string("custom program error: 0x0");
     }
   });
 
@@ -448,7 +440,6 @@ describe("audius-data", () => {
     // Message as the incoming public key
     let message = newUserKeypair.publicKey.toString();
 
-    let errored = false;
     try {
       await testCreateUser({
         provider,
@@ -465,13 +456,9 @@ describe("audius-data", () => {
         userStgAccount: newUserAcctPDA,
         adminStgPublicKey: adminStgKeypair.publicKey,
       });
+      assert.ok(false, "expected error when creating a user that already exists");
     } catch (e) {
-      errored = true;
-      console.log(`Error found as expected ${e} - when trying to create a user that was initialized`);
-    }
-
-    if (!errored) {
-      throw new Error('Creating an already initialized user did not fail');
+      expect(e.toString()).to.have.string("custom program error: 0x0");
     }
   });
 
