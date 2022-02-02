@@ -212,7 +212,6 @@ export const createUser = async (args: createUserParams) => {
         sysvarProgram: SystemSysVarProgramKey,
         audiusAdmin: adminStgPublicKey,
       },
-      // signers: [adminKeypair],
     },
   ));
 
