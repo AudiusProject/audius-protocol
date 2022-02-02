@@ -22,8 +22,15 @@ function update_redirect_weights (premature)
         return
     end
 
+    ngx.log(ngx.INFO, "updating redirect weights")
+
     local httpc = resty_http.new()
-    local res = httpc:request_uri("http://127.0.0.1:3000/redirect_weights", { method = "GET" })
+    local res, err = httpc:request_uri("http://127.0.0.1:3000/redirect_weights", { method = "GET" })
+
+    if not res then
+        ngx.log(ngx.ERR, "failed to get redirect weights: ", err)
+        return
+    end
 
     for endpoint, weight in pairs(cjson.decode(res.body)) do
         redirect_weights[endpoint] = weight
