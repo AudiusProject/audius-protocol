@@ -146,6 +146,14 @@ def get_challenges(
         ).filter(UserChallenge.user_id == user_id)
     ).all()
 
+    # Filter to challenges that have active managers
+    # (in practice, all challenge should)
+    challenges_and_disbursements = [
+        c
+        for c in challenges_and_disbursements
+        if event_bus.does_manager_exist(c[0].challenge_id)
+    ]
+
     # Combine aggregates
 
     all_challenges: List[Challenge] = (session.query(Challenge)).all()
@@ -186,6 +194,12 @@ def get_challenges(
                 and not user_challenge.is_complete
             ):
                 continue
+
+            override_step_count = event_bus.get_manager(
+                parent_challenge.id
+            ).get_override_challenge_step_count(session, user_id)
+            if override_step_count is not None:
+                user_challenge.current_step_count = override_step_count
             regular_user_challenges.append(
                 to_challenge_response(
                     user_challenge,
