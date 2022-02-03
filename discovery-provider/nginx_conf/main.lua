@@ -18,7 +18,7 @@ local _M = {}
 local redirect_weights = {}
 
 function update_redirect_weights (premature)
-    if premature or redirect_weights then
+    if premature then
         return
     end
 
