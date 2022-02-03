@@ -26,7 +26,7 @@ const POA_SEC_PER_BLOCK = 5
  *
  * @class ThresholdCalculator
  */
-class ThresholdCalculator {
+class AttestationDelayCalculator {
   constructor ({ libs, runBehindSec, allowedStalenessSec, solanaPollingInterval = 30, logger = console}) {
     this.libs = libs
     this.solanaSecPerSlot = SOLANA_EST_SEC_PER_SLOT
@@ -198,9 +198,9 @@ class RewardsAttester {
     this.maxRetries = maxRetries
     // Get override starting block for manually setting indexing start
     this.getStartingBlockOverride = getStartingBlockOverride
-    // How many seconds it should wait from reward completion time
-    // until attesting
-    this.thresholdCalculator = new ThresholdCalculator({
+
+    // Calculate delay
+    this.delayCalculator = new AttestationDelayCalculator({
       libs,
       runBehindSec,
       logger,
@@ -226,7 +226,7 @@ class RewardsAttester {
       endpoints: ${this.endpoints}
     `)
     await this._selectDiscoveryNodes()
-    await this.thresholdCalculator.start()
+    await this.delayCalculator.start()
 
     while (true) {
       try {
@@ -612,8 +612,8 @@ class RewardsAttester {
 
   async _filterRecentlyCompleted (challenges) {
     const [poaThreshold, solanaThreshold] = await Promise.all([
-      this.thresholdCalculator.getPOABlockThreshold(),
-      this.thresholdCalculator.getSolanaSlotThreshold()
+      this.delayCalculator.getPOABlockThreshold(),
+      this.delayCalculator.getSolanaSlotThreshold()
     ])
 
     this.logger.info(`Filtering with POA threshold: ${poaThreshold}, Solana threshold: ${solanaThreshold}`)
@@ -628,4 +628,4 @@ class RewardsAttester {
 }
 
 module.exports = RewardsAttester
-module.exports.ThresholdCalculator = ThresholdCalculator
+module.exports.AttestationDelayCalculator = AttestationDelayCalculator

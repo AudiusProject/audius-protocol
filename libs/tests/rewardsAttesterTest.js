@@ -1,5 +1,5 @@
 const assert = require('assert')
-const { ThresholdCalculator } = require('../src/services/solanaWeb3Manager/rewardsAttester')
+const { AttestationDelayCalculator } = require('../src/services/solanaWeb3Manager/rewardsAttester')
 
 function MockLibs (getSlot, getBlockNumber) {
   this.getSlot = getSlot
@@ -16,9 +16,9 @@ function MockLibs (getSlot, getBlockNumber) {
     }
 }
 
-describe('Threshold calculator tests', () => {
+describe('Delay calculator tests', () => {
   it('Should get Slot and block threshold on fresh start', async () => {
-    const calc = new ThresholdCalculator({
+    const calc = new AttestationDelayCalculator({
       libs: new MockLibs(() => 100, () => 100),
       runBehindSec: 5,
       allowedStalenessSec: 1
@@ -35,7 +35,7 @@ describe('Threshold calculator tests', () => {
 
   it('Should cache slot and block values', async () => {
     const libs = new MockLibs(() => 100, () => 100)
-    const calc = new ThresholdCalculator({
+    const calc = new AttestationDelayCalculator({
       libs,
       runBehindSec: 5,
       allowedStalenessSec: 1
@@ -56,7 +56,7 @@ describe('Threshold calculator tests', () => {
 
   it('Should get new values after the cache expires', async () => {
     const libs = new MockLibs(() => 100, () => 100)
-    const calc = new ThresholdCalculator({
+    const calc = new AttestationDelayCalculator({
       libs,
       runBehindSec: 5,
       allowedStalenessSec: 1
@@ -86,7 +86,7 @@ describe('Threshold calculator tests', () => {
 
     const libs = new MockLibs(() => solSlot.last, () => 100)
 
-    const calc = new ThresholdCalculator({
+    const calc = new AttestationDelayCalculator({
       libs,
       runBehindSec: 5,
       allowedStalenessSec: 1,
