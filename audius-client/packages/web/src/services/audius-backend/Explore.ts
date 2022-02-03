@@ -1,7 +1,7 @@
 import { Collection } from 'common/models/Collection'
 import FeedFilter from 'common/models/FeedFilter'
 import { ID } from 'common/models/Identifiers'
-import { Track, TrackMetadata } from 'common/models/Track'
+import { Track, UserTrack } from 'common/models/Track'
 import AudiusBackend, {
   IDENTITY_SERVICE,
   AuthHeaders
@@ -65,7 +65,7 @@ class Explore {
   static async getTopFolloweeTracksFromWindow(
     window: string,
     limit = 25
-  ): Promise<Track[]> {
+  ): Promise<UserTrack[]> {
     try {
       const tracks = await libs().discoveryProvider.getTopFolloweeWindowed(
         'track',
@@ -80,9 +80,9 @@ class Explore {
     }
   }
 
-  static async getFeedNotListenedTo(limit = 25): Promise<Track[]> {
+  static async getFeedNotListenedTo(limit = 25) {
     try {
-      const tracks = await AudiusBackend.getSocialFeed({
+      const tracks: UserTrack[] = await AudiusBackend.getSocialFeed({
         filter: FeedFilter.ORIGINAL,
         offset: 0,
         limit: 100,
@@ -104,10 +104,7 @@ class Explore {
     }
   }
 
-  static async getRemixables(
-    currentUserId: ID,
-    limit = 25
-  ): Promise<TrackMetadata[]> {
+  static async getRemixables(currentUserId: ID, limit = 25) {
     try {
       const tracks = await apiClient.getRemixables({
         limit,
@@ -121,9 +118,9 @@ class Explore {
     }
   }
 
-  static async getTopFolloweeSaves(limit = 25): Promise<Track[]> {
+  static async getTopFolloweeSaves(limit = 25) {
     try {
-      const tracks = await libs().discoveryProvider.getTopFolloweeSaves(
+      const tracks: UserTrack[] = await libs().discoveryProvider.getTopFolloweeSaves(
         'track',
         limit,
         true
