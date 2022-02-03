@@ -6,7 +6,7 @@ import { getDominantColorsByTrack } from 'audius-client/src/common/store/average
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 
-import DynamicImage from 'app/components/dynamic-image'
+import { DynamicImage } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
@@ -69,7 +69,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
         startColor={shadowColor}
       >
         <View style={styles.image}>
-          <DynamicImage usePlaceholder image={{ uri: image }} />
+          <DynamicImage source={{ uri: image }} />
         </View>
       </Shadow>
     </View>
