@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/animations/iconPause.json'
 import IconPlay from 'app/assets/animations/iconPlay.json'
-import DynamicImage from 'app/components/dynamic-image'
+import { DynamicImage } from 'app/components/core'
 import FavoriteButton from 'app/components/favorite-button'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -115,7 +115,7 @@ const PlayBarArtwork = ({ track }: { track: Track }) => {
     track._cover_art_sizes,
     SquareSizes.SIZE_150_BY_150
   )
-  return <DynamicImage image={{ uri: image }} />
+  return <DynamicImage source={{ uri: image }} />
 }
 
 export const PlayBar = ({
