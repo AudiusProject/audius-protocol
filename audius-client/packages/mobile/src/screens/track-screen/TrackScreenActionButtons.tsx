@@ -20,8 +20,8 @@ import { StyleSheet, View } from 'react-native'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
+import { IconButton } from 'app/components/core'
 import FavoriteButton from 'app/components/favorite-button'
-import IconButton from 'app/components/icon-button/IconButton'
 import RepostButton from 'app/components/repost-button'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -64,19 +64,6 @@ const createStyles = (themeColors: ThemeColors) =>
       position: 'relative',
       bottom: 1,
       marginHorizontal: 16
-    },
-
-    icon: {
-      height: 30,
-      width: 30
-    },
-
-    iconWrapper: {
-      ...flexRowCentered(),
-      width: 30,
-      height: '100%',
-      overflow: 'visible',
-      marginHorizontal: 12
     }
   })
 
@@ -97,7 +84,7 @@ export const TrackScreenActionButtons = ({
   trackId
 }: TrackScreenActionButtonsProps) => {
   const styles = useThemedStyles(createStyles)
-  const { neutralLight4, neutralLight8 } = useThemeColors()
+  const { neutralLight4 } = useThemeColors()
   const dispatchWeb = useDispatchWeb()
 
   const onToggleSave = () => {
@@ -177,25 +164,20 @@ export const TrackScreenActionButtons = ({
 
   const shareButton = (
     <IconButton
-      style={styles.actionButton}
-      icon={() => (
-        <IconShare
-          fill={!isPublished ? neutralLight8 : neutralLight4}
-          height={24}
-          width={24}
-        />
-      )}
-      onPress={isPublished ? onShare : () => {}}
+      fill={neutralLight4}
+      icon={IconShare}
+      isDisabled={!isPublished}
+      onPress={onShare}
+      styles={{ icon: [styles.actionButton, { height: 24, width: 24 }] }}
     />
   )
 
   const overflowMenu = (
     <IconButton
-      style={styles.actionButton}
-      icon={() => (
-        <IconKebabHorizontal fill={neutralLight4} height={30} width={30} />
-      )}
+      fill={neutralLight4}
+      icon={IconKebabHorizontal}
       onPress={onPressOverflow}
+      styles={{ icon: styles.actionButton }}
     />
   )
 
