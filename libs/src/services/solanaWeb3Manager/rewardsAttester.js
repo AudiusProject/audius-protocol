@@ -12,8 +12,80 @@ class BaseRewardsReporter {
   async reportAAORejection ({ userId, challengeId, amount, error }) {}
 }
 
-const SOLANA_BASED_CHALLENGE_IDS = new Set(['listen-streak'])
 const MAX_DISBURSED_CACHE_SIZE = 100
+const SOLANA_EST_SEC_PER_SLOT = 0.5
+const POA_SEC_PER_BLOCK = 5
+
+/**
+ * Class to encapsulate logic for calculating disbursement delay thresholds.
+ * Periodically polls Solana to get slot production rate.
+ * Caches old values (`allowedStalenessSec`) for current POA block & Solana slot to reduce RPC
+ * overhead.
+ *
+ * Exposes `getPOABlockThreshold` and `getSolanaSlotThreshold`
+ *
+ * @class ThresholdCalculator
+ */
+class ThresholdCalculator {
+  constructor ({ libs, runBehindSec, allowedStalenessSec, solanaPollingInterval = 30, logger = console}) {
+    this.libs = libs
+    this.solanaSecPerSlot = SOLANA_EST_SEC_PER_SLOT
+    this.solanaSlot = null
+    this.runBehindSec = runBehindSec
+    this.lastSolanaThreshold = null
+    this.lastPOAThreshold = null
+    this.allowedStalenessSec = allowedStalenessSec
+    this.solanaPollingInterval = solanaPollingInterval
+    this.logger = logger
+    this.intervalHandle = null
+  }
+
+  async start () {
+    // Begin Solana slot rate polling
+    let oldSlot = await this.libs.solanaWeb3Manager.getSlot()
+    this.intervalHandle = setInterval(async () => {
+      const newSlot = await this.libs.solanaWeb3Manager.getSlot()
+      const diff = this.solanaPollingInterval / (newSlot - oldSlot)
+      this.solanaSecPerSlot = diff
+      this.logger.info(`Setting Solana seconds per slot to ${diff}`)
+      oldSlot = newSlot
+    }, this.solanaPollingInterval * 1000)
+  }
+
+  stop() {
+    clearInterval(this.intervalHandle)
+  }
+
+  async getPOABlockThreshold () {
+    // Use cached value if possible
+    if (this.lastPOAThreshold &&
+       (Date.now() - this.lastPOAThreshold.time) / 1000 < this.allowedStalenessSec) {
+      return this.lastPOAThreshold.threshold
+    }
+    const currentBlock = await this.libs.web3Manager.getWeb3().eth.getBlockNumber()
+    let threshold = currentBlock - this.runBehindSec / POA_SEC_PER_BLOCK
+    this.lastPOAThreshold = {
+      threshold,
+      time: Date.now()
+    }
+    return threshold
+  }
+
+  async getSolanaSlotThreshold () {
+    // Use cached value if possible
+    if (this.lastSolanaThreshold &&
+       (Date.now() - this.lastSolanaThreshold.time) / 1000 < this.allowedStalenessSec) {
+      return this.lastSolanaThreshold.threshold
+    }
+    const currentSlot = await this.libs.solanaWeb3Manager.getSlot()
+    let threshold = currentSlot - this.runBehindSec / this.solanaSecPerSlot
+    this.lastSolanaThreshold = {
+      threshold,
+      time: Date.now()
+    }
+    return threshold
+  }
+}
 
 /**
  * `RewardsAttester` is responsible for repeatedly attesting for completed rewards.
@@ -53,6 +125,8 @@ class RewardsAttester {
    *    reporter: BaseRewardsReporter
    *    challengeIdsDenyList: Array<string>
    *    endpoints?: Array<string>
+   *    runBehindSec?: number
+   *    isSolanaChallenge?: (string) => boolean
    * }} {
    *    libs,
    *    startingBlock,
@@ -67,7 +141,9 @@ class RewardsAttester {
    *    maxRetries = 3,
    *    reporter,
    *    challengeIdsDenyList,
-   *    endpoints
+   *    endpoints,
+   *    runBehindSec
+   *    isSolanaChallenge
    *  }
    * @memberof RewardsAttester
    */
@@ -85,7 +161,9 @@ class RewardsAttester {
     maxRetries = 5,
     reporter,
     challengeIdsDenyList,
-    endpoints = []
+    endpoints = [],
+    runBehindSec = 0,
+    isSolanaChallenge = (challengeId) => true
   }) {
     this.libs = libs
     this.logger = logger
@@ -120,6 +198,15 @@ class RewardsAttester {
     this.maxRetries = maxRetries
     // Get override starting block for manually setting indexing start
     this.getStartingBlockOverride = getStartingBlockOverride
+    // How many seconds it should wait from reward completion time
+    // until attesting
+    this.thresholdCalculator = new ThresholdCalculator({
+      libs,
+      runBehindSec,
+      logger,
+      allowedStalenessSec: 5,
+    })
+    this.isSolanaChallenge = isSolanaChallenge
 
     this._performSingleAttestation = this._performSingleAttestation.bind(this)
     this._disbursementToKey = this._disbursementToKey.bind(this)
@@ -139,6 +226,7 @@ class RewardsAttester {
       endpoints: ${this.endpoints}
     `)
     await this._selectDiscoveryNodes()
+    await this.thresholdCalculator.start()
 
     while (true) {
       try {
@@ -153,34 +241,22 @@ class RewardsAttester {
   }
 
   /**
-   * Updates the AAO endpoint and address
+   * Updates attester config
+   *
    * @param {{
-   *     aaoEndpoint: string
-   *     aaoAddress: string
-   * }} {
-   *     aaoEndpoint,
-   *     aaoAddress
-   * }
+   *  aaoEndpoint: string,
+   *  aaoAddress: string,
+   *  endpoints: Array<string>,
+   *  challengeIdsDenyList: Array<string>
+   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }
    * @memberof RewardsAttester
    */
-  async updateAAO ({ aaoEndpoint, aaoAddress }) {
-    this.logger.info(`Updating AAO to ${aaoEndpoint}, ${aaoAddress}`)
-    this.aaoEndpoint = aaoEndpoint
-    this.aaoAddress = aaoAddress
-  }
-
-  /**
-   * Updates the discovery node attestation endpoints
-   * @param {{
-   *     endpoints: Array<string>
-   * }} {
-   *     endpoints
-   * }
-   * @memberof RewardsAttester
-   */
-  async updateEndpoints ({ endpoints }) {
-    this.logger.info(`Updating rewards attester endpoints to ${endpoints}`)
-    this.endpoints = endpoints
+  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }) {
+    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}`)
+    this.aaoEndpoint = aaoEndpoint || this.aaoEndpoint
+    this.aaoAddress = aaoAddress || this.aaoAddress
+    this.endpoints = endpoints || this.endpoints
+    this.challengeIdsDenyList = challengeIdsDenyList ? new Set(...challengeIdsDenyList) : this.challengeIdsDenyList
   }
 
   /**
@@ -245,7 +321,7 @@ class RewardsAttester {
     // slot and throw off this calculation.
     // TODO: [AUD-1217] we should handle this in a less hacky way, possibly by
     // attesting for Solana + POA challenges separately.
-    const poaAttestations = toAttest.filter(({ challengeId }) => !SOLANA_BASED_CHALLENGE_IDS.has(challengeId))
+    const poaAttestations = toAttest.filter(({ challengeId }) => !this.isSolanaChallenge(challengeId))
     const highestBlock = poaAttestations.length ? Math.max(...poaAttestations.map(e => e.completedBlocknumber)) : null
 
     // Attempt to attest in a single sweep
@@ -441,7 +517,12 @@ class RewardsAttester {
       }))
       .filter(d => !(this.challengeIdsDenyList.has(d.challengeId) || (new Set(this.recentlyDisbursedQueue)).has(this._disbursementToKey(d))))
 
-    this.logger.info(`Got ${disbursable.length} undisbursed challenges${this.undisbursedQueue.length !== disbursable.length ? `, filtered out [${disbursable.length - this.undisbursedQueue.length}] recently disbursed challenges.` : '.'}`)
+    // Filter out recently disbursed challenges
+    if (this.undisbursedQueue.length) {
+      this.undisbursedQueue = await this._filterRecentlyCompleted(this.undisbursedQueue)
+    }
+
+    this.logger.info(`Got ${disbursable.length} undisbursed challenges${this.undisbursedQueue.length !== disbursable.length ? `, filtered out [${disbursable.length - this.undisbursedQueue.length}] challenges.` : '.'}`)
     return {}
   }
 
@@ -528,6 +609,23 @@ class RewardsAttester {
       this.recentlyDisbursedQueue.splice(0, this.recentlyDisbursedQueue.length - MAX_DISBURSED_CACHE_SIZE)
     }
   }
+
+  async _filterRecentlyCompleted (challenges) {
+    const [poaThreshold, solanaThreshold] = await Promise.all([
+      this.thresholdCalculator.getPOABlockThreshold(),
+      this.thresholdCalculator.getSolanaSlotThreshold()
+    ])
+
+    this.logger.info(`Filtering with POA threshold: ${poaThreshold}, Solana threshold: ${solanaThreshold}`)
+    const res = challenges.filter(c => (
+      c.completedBlocknumber < (this.isSolanaChallenge(c.challengeId) ? solanaThreshold : poaThreshold)
+    ))
+    if (res.length < challenges.length) {
+      this.logger.info(`Filtered out ${challenges.length - res.length} recent challenges`)
+    }
+    return res
+  }
 }
 
 module.exports = RewardsAttester
+module.exports.ThresholdCalculator = ThresholdCalculator
