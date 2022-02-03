@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback } from 'react'
+import { ReactNode, useCallback } from 'react'
 
 // import DownloadButtons from 'app/components/download-buttons'
 import { useNavigation } from '@react-navigation/native'
@@ -9,7 +9,7 @@ import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import { squashNewLines } from 'audius-client/src/common/utils/formatUtil'
-import { getCannonicalName } from 'audius-client/src/common/utils/genres'
+import { getCanonicalName } from 'audius-client/src/common/utils/genres'
 import {
   formatSeconds,
   formatDate
@@ -35,7 +35,7 @@ import { BaseStackParamList } from 'app/components/app-navigator/types'
 import Button from 'app/components/button'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import DynamicImage from 'app/components/dynamic-image'
+import { DynamicImage } from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -338,7 +338,7 @@ export const TrackScreenHeader = ({
     icon?: ReactNode
   }[] = [
     { value: formatSeconds(duration), label: 'Duration' },
-    { value: getCannonicalName(genre), label: 'Genre' },
+    { value: getCanonicalName(genre), label: 'Genre' },
     { value: formatDate(release_date || created_at), label: 'Released' },
     {
       value: mood,
@@ -421,14 +421,14 @@ export const TrackScreenHeader = ({
       // userId={coSign.user.user_id}
     >
       <DynamicImage
-        image={{ uri: image }}
-        style={[styles.coverArt] as ImageStyle[]}
+        source={{ uri: image }}
+        styles={{ image: styles.coverArt as ImageStyle }}
       />
     </CoSign>
   ) : (
     <DynamicImage
-      image={{ uri: image }}
-      style={[styles.coverArt] as ImageStyle[]}
+      source={{ uri: image }}
+      styles={{ image: styles.coverArt as ImageStyle }}
     />
   )
 
