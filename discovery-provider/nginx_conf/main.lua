@@ -22,17 +22,32 @@ function update_redirect_weights (premature)
         return
     end
 
-    local httpc = resty_http.new()
-    local res = httpc:request_uri(config.public_url .. "/redirect_weights", { method = "GET" })
+    ngx.log(ngx.NOTICE, "updating redirect weights")
 
-    for endpoint, weight in pairs(cjson.decode(res.body)) do
+    local httpc = resty_http.new()
+    local res, err = httpc:request_uri("http://127.0.0.1:3000/redirect_weights", { method = "GET" })
+
+    if not res then
+        ngx.log(ngx.ERR, "failed to get redirect weights: ", err)
+        return
+    end
+
+    for endpoint, weight in pairs(cjson.decode(res.body).data) do
         redirect_weights[endpoint] = weight
+        ngx.log(ngx.INFO, "updated weight for endpoint ", endpoint, " to ", weight)
     end
 end
 
 function _M.start_update_redirect_weights_timer ()
-    update_redirect_weights ()
-    ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
+    -- use lock to ensure that only one timer will run
+    local locked = ngx.shared.locks:get("redirect_weights_timer")
+    if locked == nil then
+        ngx.shared.locks:set("redirect_weights_timer", true)
+        ngx.log(ngx.NOTICE, "starting redirect weights timer")
+        -- deplay first run by 10 seconds to ensure that discovery provider is running
+        ngx.timer.at(10, update_redirect_weights)
+        ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
+    end
 end
 
 function get_cached_public_key (discovery_provider)
