@@ -15,9 +15,12 @@ def redirect_weights():
     endpoints, _ = get_all_other_nodes()
     loads = {}
     for endpoint in endpoints:
-        response = requests.get(f"{endpoint}/request_count")
-        if response.status_code == 200:
-            loads[endpoint] = int(response.text)
+        try:
+            response = requests.get(f"{endpoint}/request_count")
+            if response.status_code == 200:
+                loads[endpoint] = int(response.text)
+        except requests.exceptions.ConnectionError:
+            pass
 
     if len(loads) == 0:
         loads = {endpoint: 1 for endpoint in endpoints}
