@@ -457,6 +457,7 @@ class Rewards extends Base {
     maxAttempts
   }) {
     let retryCount = 0
+    let unrecoverableError = false
     const completedAttestations = []
     let needsAttestations = endpoints
 
@@ -480,11 +481,15 @@ class Rewards extends Base {
 
       needsAttestations = []
       attestations.forEach(a => {
-        if (a.res.error === GetAttestationError.CHALLENGE_INCOMPLETE) {
+        if (a.res.error === GetAttestationError.CHALLENGE_INCOMPLETE ||
+          a.res.error === GetAttestationError.MISSING_CHALLENGES) {
           needsAttestations.push(a.endpoint)
           logger.info(`Node ${a.endpoint} challenge still incomplete for challenge [${challengeId}], userId: ${encodedUserId}`)
         } else {
           completedAttestations.push(a.res)
+          if (a.res.error) {
+            unrecoverableError = true
+          }
         }
       })
 
@@ -492,7 +497,7 @@ class Rewards extends Base {
     }
     while (needsAttestations.length && retryCount <= maxAttempts)
 
-    if (needsAttestations.length) {
+    if (needsAttestations.length || unrecoverableError) {
       logger.info(`Failed to aggregate attestations for challenge ${challengeId}, userId: ${encodedUserId}`)
     } else {
       logger.info(`Successfully aggregated attestations for challenge ${challengeId}, userId: ${encodedUserId}`)
