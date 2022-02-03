@@ -95,10 +95,16 @@ let feePayer
 
 const feePayers = config.get('solanaFeePayerWallets')
 
-function getFeePayer () {
+// TODO: Make this optionally return the single feePayerWallet based on input config
+function getFeePayer (singleFeePayer = true) {
   if (!feePayer) {
     feePayer = config.get('solanaFeePayerWallet') ? solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(config.get('solanaFeePayerWallet'))) : null
   }
+  // Ensure legacy usage of single feePayer is not broken
+  if (singleFeePayer) {
+    return feePayer
+  }
+
   const randomFeePayerIndex = Math.floor(Math.random() * feePayers.length)
   const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(feePayers[randomFeePayerIndex].privateKey));
 
@@ -177,7 +183,7 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
-  let feePayerAccount = getFeePayer()
+  let feePayerAccount = getFeePayer(false)
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
     connection,
