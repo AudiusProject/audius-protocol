@@ -1,7 +1,7 @@
-import { call } from 'redux-saga/effects'
+import { call } from 'typed-redux-saga'
 
 import { ID } from 'common/models/Identifiers'
-import { Track } from 'common/models/Track'
+import { UserTrack } from 'common/models/Track'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { Nullable } from 'common/utils/typeUtils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
@@ -13,27 +13,27 @@ export function* getRecommendedTracks(
   genre: string,
   exclusionList: number[],
   currentUserId: Nullable<ID>
-): Generator<any, Track[], any> {
-  const tracks = yield apiClient.getRecommended({
+) {
+  const tracks = yield* call([apiClient, apiClient.getRecommended], {
     genre,
     exclusionList,
     currentUserId
   })
-  yield call(processAndCacheTracks, tracks)
-  return tracks as Track[]
+  yield* call(processAndCacheTracks, tracks)
+  return tracks
 }
 
-export function* getLuckyTracks(limit: number): Generator<any, Track[], any> {
-  const latestTrackID = yield call(Explore.getLatestTrackID)
+export function* getLuckyTracks(limit: number) {
+  const latestTrackID = yield* call(Explore.getLatestTrackID)
   const ids = Array.from({ length: limit }, () =>
     Math.floor(Math.random() * latestTrackID)
   )
-  const tracks = yield call(AudiusBackend.getAllTracks, {
+  const tracks: UserTrack[] = yield* call(AudiusBackend.getAllTracks, {
     offset: 0,
     limit,
     idsArray: ids,
     filterDeletes: true
   })
-  yield call(processAndCacheTracks, tracks)
-  return tracks as Track[]
+  yield* call(processAndCacheTracks, tracks)
+  return tracks
 }
