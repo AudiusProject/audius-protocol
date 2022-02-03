@@ -95,7 +95,8 @@ let feePayer
 
 const feePayers = config.get('solanaFeePayerWallets')
 
-// TODO: Make this optionally return the single feePayerWallet based on input config
+// Optionally returns the existing singleFeePayer
+// Ensures other usages of this function do not break as we upgrade to multiple
 function getFeePayer (singleFeePayer = true) {
   if (!feePayer) {
     feePayer = config.get('solanaFeePayerWallet') ? solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(config.get('solanaFeePayerWallet'))) : null
