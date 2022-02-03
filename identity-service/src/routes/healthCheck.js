@@ -279,32 +279,49 @@ module.exports = function (app) {
   app.get('/sol_balance_check', handleResponse(async (req, res) => {
     const minimumBalance = parseFloat(req.query.minimumBalance || config.get('solMinimumBalance'))
     const solanaFeePayerWallet = config.get('solanaFeePayerWallet')
+    const solanaFeePayerWallets = config.get('solanaFeePayerWallets')
     const libs = req.app.get('audiusLibs')
     const connection = libs.solanaWeb3Manager.connection
 
-    let solanaFeePayerPublicKey = null
-    let balance = 0
+    let solanaFeePayerBalances = {}
+    let belowMinimumBalances = []
 
     if (solanaFeePayerWallet) {
-      solanaFeePayerPublicKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
-      balance = await connection.getBalance(solanaFeePayerPublicKey)
+      const feePayerPubKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
+      const balance = await connection.getBalance(feePayerPubKey)
+      if (balance < minimumBalance) {
+        belowMinimumBalances.push({ wallet: feePayerPubKey, balance })
+      }
+      solanaFeePayerBalances[feePayerPubKey] = balance
     }
 
-    const sol = Math.floor(balance / (10 ** 9))
-    const lamports = balance % (10 ** 9)
+    if (solanaFeePayerWallets) {
+      await Promise.all([...solanaFeePayerWallets].map(async wallet => {
+        const feePayerPubKey = (new solanaWeb3.Account(wallet)).publicKey
+        const balance = await connection.getBalance(feePayerPubKey)
+        solanaFeePayerBalances[feePayerPubKey] = balance
+        if (balance < minimumBalance) {
+          belowMinimumBalances.push({ wallet: feePayerPubKey, balance })
+        }
+        return { wallet: feePayerPubKey, balance }
+      }))
+    }
 
-    if (balance > minimumBalance) {
+    const solanaFeePayerBalancesArr = Object.keys(solanaFeePayerBalances).map(key => [key, solanaFeePayerBalances[key]])
+
+    if (belowMinimumBalances.length === 0) {
       return successResponse({
         above_balance_minimum: true,
-        balance: { sol, lamports },
-        wallet: solanaFeePayerPublicKey ? solanaFeePayerPublicKey.toBase58() : null
+        minimum_balance: minimumBalance,
+        balances: solanaFeePayerBalancesArr
       })
     }
 
     return errorResponseServerError({
       above_balance_minimum: false,
-      balance: { sol, lamports },
-      wallet: solanaFeePayerPublicKey ? solanaFeePayerPublicKey.toBase58() : null
+      minimum_balance: minimumBalance,
+      belowMinimumBalances,
+      balances: solanaFeePayerBalancesArr
     })
   }))
 
