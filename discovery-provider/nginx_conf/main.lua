@@ -44,7 +44,8 @@ function _M.start_update_redirect_weights_timer ()
     if locked == nil then
         ngx.shared.locks:set("redirect_weights_timer", true)
         ngx.log(ngx.NOTICE, "starting redirect weights timer")
-        ngx.timer.at(0, update_redirect_weights)
+        -- deplay first run by 10 seconds to ensure that discovery provider is running
+        ngx.timer.at(10, update_redirect_weights)
         ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
     end
 end
