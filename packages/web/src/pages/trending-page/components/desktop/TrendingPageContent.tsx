@@ -12,7 +12,7 @@ import useTabs from 'hooks/useTabs/useTabs'
 import {
   trendingWeekActions,
   trendingMonthActions,
-  trendingYearActions
+  trendingAllTimeActions
 } from 'pages/trending-page/store/lineups/trending/actions'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
 import { make, useRecord } from 'store/analytics/actions'
@@ -52,11 +52,11 @@ const getTimeGenreCacheKey = (timeRange: TimeRange, genre: string | null) => {
 // what other time ranges do we need to disable?
 const getRangesToDisable = (timeRange: TimeRange) => {
   switch (timeRange) {
-    case TimeRange.YEAR:
+    case TimeRange.ALL_TIME:
     case TimeRange.MONTH:
-      // In the case of TimeRange.YEAR,
-      // we don't want to return YEAR because
-      // we don't want to disable YEAR (it's the only possible tab left, even if it's empty).
+      // In the case of TimeRangeALL_TIME,
+      // we don't want to return ALL_TIME because
+      // we don't want to disable ALL_TIME (it's the only possible tab left, even if it's empty).
       return [TimeRange.MONTH, TimeRange.WEEK]
     case TimeRange.WEEK:
       return [TimeRange.WEEK]
@@ -69,7 +69,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
     trendingDescription,
     trendingWeek,
     trendingMonth,
-    trendingYear,
+    trendingAllTime,
     getLineupProps,
     trendingGenre,
     setTrendingGenre,
@@ -87,7 +87,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
 
   const weekProps = getLineupProps(trendingWeek)
   const monthProps = getLineupProps(trendingMonth)
-  const yearProps = getLineupProps(trendingYear)
+  const allTimeProps = getLineupProps(trendingAllTime)
 
   // Maintain a set of combinations of time range & genre that
   // have no tracks.
@@ -113,20 +113,22 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
     switch (trendingTimeRange) {
       case TimeRange.WEEK: {
         // If week is empty, month might also be empty (because we accessed it previously.)
-        // If month is also empty, jump straight to year.
+        // If month is also empty, jump straight to all time.
         const monthAlsoEmpty = emptyTimeGenreSet.current.has(
           getTimeGenreCacheKey(TimeRange.MONTH, trendingGenre!)
         )
-        const newTimeRange = monthAlsoEmpty ? TimeRange.YEAR : TimeRange.MONTH
+        const newTimeRange = monthAlsoEmpty
+          ? TimeRange.ALL_TIME
+          : TimeRange.MONTH
         reloadAndSwitchTabs(newTimeRange)
         break
       }
       case TimeRange.MONTH:
-        reloadAndSwitchTabs(TimeRange.YEAR)
+        reloadAndSwitchTabs(TimeRange.ALL_TIME)
         break
-      case TimeRange.YEAR:
+      case TimeRange.ALL_TIME:
       default:
-      // Nothing to do for year
+      // Nothing to do for all time
     }
   }
 
@@ -139,7 +141,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
       // Call reset to change everything everything to skeleton tiles
       makeResetTrending(TimeRange.WEEK)()
       makeResetTrending(TimeRange.MONTH)()
-      makeResetTrending(TimeRange.YEAR)()
+      makeResetTrending(TimeRange.ALL_TIME)()
 
       scrollToTop(trendingTimeRange)
 
@@ -247,12 +249,12 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
       <Lineup
         aria-label='all-time trending tracks'
         ordered
-        {...yearProps}
-        setInView={makeSetInView(TimeRange.YEAR)}
-        loadMore={makeLoadMore(TimeRange.YEAR)}
-        playTrack={makePlayTrack(TimeRange.YEAR)}
-        pauseTrack={makePauseTrack(TimeRange.YEAR)}
-        actions={trendingYearActions}
+        {...allTimeProps}
+        setInView={makeSetInView(TimeRange.ALL_TIME)}
+        loadMore={makeLoadMore(TimeRange.ALL_TIME)}
+        playTrack={makePlayTrack(TimeRange.ALL_TIME)}
+        pauseTrack={makePauseTrack(TimeRange.ALL_TIME)}
+        actions={trendingAllTimeActions}
         endOfLineup={
           <EndOfLineup
             key='endOfLineup'
@@ -296,8 +298,8 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
       },
       {
         text: messages.allTime,
-        label: TimeRange.YEAR,
-        disabled: tabIsDisabled(TimeRange.YEAR)
+        label: TimeRange.ALL_TIME,
+        disabled: tabIsDisabled(TimeRange.ALL_TIME)
       }
     ],
     selectedTabLabel: trendingTimeRange,

@@ -10,6 +10,6 @@ export const getTrendingEntries = (timeRange: TimeRange) => (
   } else if (timeRange === TimeRange.MONTH) {
     return state.trending.trendingMonth.entries
   } else {
-    return state.trending.trendingYear.entries
+    return state.trending.trendingAllTime.entries
   }
 }

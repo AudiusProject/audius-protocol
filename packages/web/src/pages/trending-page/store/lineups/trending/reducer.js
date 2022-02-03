@@ -5,7 +5,7 @@ import {
   PREFIX,
   TRENDING_WEEK_PREFIX,
   TRENDING_MONTH_PREFIX,
-  TRENDING_YEAR_PREFIX
+  TRENDING_ALL_TIME_PREFIX
 } from './actions'
 
 const initialState = {
@@ -37,4 +37,4 @@ const makeTrendingReducer = prefix => {
 
 export const trendingWeek = makeTrendingReducer(TRENDING_WEEK_PREFIX)
 export const trendingMonth = makeTrendingReducer(TRENDING_MONTH_PREFIX)
-export const trendingYear = makeTrendingReducer(TRENDING_YEAR_PREFIX)
+export const trendingAllTime = makeTrendingReducer(TRENDING_ALL_TIME_PREFIX)

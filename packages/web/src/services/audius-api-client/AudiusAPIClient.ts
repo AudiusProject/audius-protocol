@@ -277,13 +277,13 @@ type GetSearchArgs = {
 type TrendingIdsResponse = {
   week: { id: string }[]
   month: { id: string }[]
-  year: { id: string }[]
+  allTime: { id: string }[]
 }
 
 type TrendingIds = {
   week: ID[]
   month: ID[]
-  year: ID[]
+  allTime: ID[]
 }
 
 type GetTrendingPlaylistsArgs = {
@@ -468,7 +468,7 @@ class AudiusAPIClient {
       return {
         week: [],
         month: [],
-        year: []
+        allTime: []
       }
     }
 
@@ -483,7 +483,7 @@ class AudiusAPIClient {
       {
         week: [],
         month: [],
-        year: []
+        allTime: []
       }
     )
     return res
