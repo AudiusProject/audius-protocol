@@ -107,7 +107,7 @@ function getFeePayer (singleFeePayer = true) {
   }
 
   const randomFeePayerIndex = Math.floor(Math.random() * feePayers.length)
-  const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(feePayers[randomFeePayerIndex].privateKey));
+  const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(feePayers[randomFeePayerIndex].privateKey))
 
   return randomFeePayer
 }
