@@ -268,7 +268,6 @@ def upgrade():
           );
           DROP MATERIALIZED VIEW IF EXISTS aggregate_track CASCADE;
           ALTER TABLE aggregate_track_table RENAME TO aggregate_track;
-          CREATE INDEX aggregate_track_idx ON aggregate_track (track_id);
         END IF;
       END
       $do$
