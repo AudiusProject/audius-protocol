@@ -101,7 +101,7 @@ describe('Delay calculator tests', () => {
     await new Promise(res => setTimeout(res, 1100))
     const slotThreshold2 = await calc.getSolanaSlotThreshold()
     // Current slot should be 104, and there should be 4 slots/sec,
-    // so 5 sec lag behind = 104 - 5 * 4 = 184
+    // so 5 sec lag behind = 104 - 5 * 4 = 84
     assert.strictEqual(slotThreshold2, 84)
 
     clearInterval(i)
