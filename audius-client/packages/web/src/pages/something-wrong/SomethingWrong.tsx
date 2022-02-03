@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -7,9 +7,7 @@ import { useDispatch } from 'react-redux'
 import { useLastLocation } from 'react-router-last-location'
 
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
-import { Name } from 'common/models/Analytics'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
-import { track } from 'store/analytics/providers'
 import { useIsMobile } from 'utils/clientUtil'
 import { HOME_PAGE, ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
@@ -30,10 +28,6 @@ export const SomethingWrong = () => {
   const lastLocation = useLastLocation()
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
-
-  useEffect(() => {
-    track(Name.ERROR_PAGE)
-  }, [])
 
   const lastRoutePathname = lastLocation?.pathname
   const shouldGoToHomePage =

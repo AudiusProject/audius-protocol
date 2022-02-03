@@ -2,6 +2,8 @@ import * as Sentry from '@sentry/browser'
 import { push as pushRoute } from 'connected-react-router'
 import { takeEvery, put } from 'redux-saga/effects'
 
+import { Name } from 'common/models/Analytics'
+import { make } from 'store/analytics/actions'
 import { ERROR_PAGE } from 'utils/route'
 
 import { toast } from '../ui/toast/slice'
@@ -45,6 +47,12 @@ function* handleError(action: errorActions.HandleErrorAction) {
   }
 
   if (action.shouldRedirect) {
+    yield put(
+      make(Name.ERROR_PAGE, {
+        error: action.message,
+        name: action.name
+      })
+    )
     yield put(pushRoute(ERROR_PAGE))
   }
   if (action.shouldToast) {

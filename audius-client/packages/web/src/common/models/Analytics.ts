@@ -352,6 +352,8 @@ type TikTokShareSoundError = {
 // Error
 type ErrorPage = {
   eventName: Name.ERROR_PAGE
+  error: string
+  name: string
 }
 type NotFoundPage = {
   eventName: Name.NOT_FOUND_PAGE
