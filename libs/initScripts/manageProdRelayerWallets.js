@@ -1,4 +1,5 @@
 const Web3 = require('web3')
+const solanaWeb3 = require('@solana/web3.js')
 const crypto = require('crypto')
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx').Transaction
@@ -8,6 +9,8 @@ const axios = require('axios')
 // const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
 const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/3a78237a7f4f42e69cf69cf9db7cecd6'
 // const ethWeb3ProviderEndpoint = 'https://eth-mainnet.alchemyapi.io/v2/iSnek4T02BFCUEkcPGKo0eEY1aWLJgxF'
+
+const solanaWeb3ProviderEndpoint = 'https://audius.rpcpool.com'
 
 const fs = require('fs')
 
@@ -41,6 +44,20 @@ Expected format of prod-relayer-config.json
 /**
  * Make sure you save the `prod-relayer-config.json` file from LastPass to libs/initScripts
  */
+
+/*
+Expected format of prod-sol-relayer-config.json
+{
+  "funderPrivateKey": [134,232,...],
+  "relayerWallets": [{
+    "privateKey": [34,323,...]
+  },{
+    "privateKey": [....]
+  },
+  ...]
+}
+
+*/
 
 const configFilePath = './prod-relayer-config.json'
 if (!fs.existsSync(configFilePath)) {
@@ -171,6 +188,87 @@ const fundEthRelayerIfEmpty = async () => {
   await queryAccountBalances(relayerWallets)
 }
 
+// Solana funding related functions
+const minimumSolPerRelayer = 0.2
+const solConfigFilePath = './prod-sol-relayer-config.json'
+
+const getSolFromLamports = (lamports) => {
+  return lamports / solanaWeb3.LAMPORTS_PER_SOL
+}
+
+const getSolConstants = () => {
+  const solProdRelayerInfo = require(solConfigFilePath)
+  const connection = new solanaWeb3.Connection(solanaWeb3ProviderEndpoint)
+  return {
+    solProdRelayerInfo,
+    connection
+  }
+}
+
+const querySolRelayerBalances = async () => {
+  const { solProdRelayerInfo, connection } = getSolConstants()
+  const funderPkey = solProdRelayerInfo['funderPrivateKey']
+  const funderKeypair = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(funderPkey))
+  // Retrieve funder in solana
+  const funderBalance = getSolFromLamports(await connection.getBalance(funderKeypair.publicKey))
+  const relayerKeypairs = []
+  const relayerPkeys = solProdRelayerInfo['relayerWallets']
+
+  for (var relayerPkey of relayerPkeys) {
+    relayerKeypairs.push(
+      solanaWeb3.Keypair.fromSecretKey(
+        Uint8Array.from(relayerPkey['privateKey'])
+      )
+    )
+  }
+
+  console.log(`Minimum Sol Per Relayer = ${minimumSolPerRelayer}`)
+  console.log(`FunderWallet = ${funderKeypair.publicKey}, Balance=${funderBalance}`)
+  const belowMinimumBalanceRelayers = []
+  for (var relayerKeypair of relayerKeypairs) {
+    const relayerBal = getSolFromLamports(await connection.getBalance(relayerKeypair.publicKey))
+    if (relayerBal < minimumSolPerRelayer) {
+      const diffInSol = (minimumSolPerRelayer - relayerBal)
+      const diffInLamports = diffInSol * solanaWeb3.LAMPORTS_PER_SOL
+      belowMinimumBalanceRelayers.push({
+        relayerKeypair,
+        diff: diffInLamports
+      })
+      console.log(`RelayerWallet=${relayerKeypair.publicKey}, Balance=${relayerBal}, diff=${diffInSol}`)
+    }
+  }
+
+  return {
+    funderKeypair,
+    relayerKeypairs,
+    belowMinimumBalanceRelayers
+  }
+}
+
+const fundSolRelayers = async () => {
+  const { connection } = getSolConstants()
+  const { funderKeypair, belowMinimumBalanceRelayers } = await querySolRelayerBalances()
+
+  for (var relayerToFund of belowMinimumBalanceRelayers) {
+    console.log(`Funding ${relayerToFund.relayerKeypair.publicKey} ${relayerToFund.diff} lamports`)
+    let transaction = new solanaWeb3.Transaction().add(
+      solanaWeb3.SystemProgram.transfer({
+        fromPubkey: funderKeypair.publicKey,
+        toPubkey: relayerToFund.relayerKeypair.publicKey,
+        lamports: relayerToFund.diff
+      })
+    )
+    let signature = await solanaWeb3.sendAndConfirmTransaction(
+      connection,
+      transaction,
+      [funderKeypair], {
+        commitment: 'confirmed'
+      }
+    )
+    console.log(`Transfer from ${funderKeypair.publicKey} to ${relayerToFund.relayerKeypair.publicKey} signature=${signature}`)
+  }
+}
+
 let args = process.argv
 const run = async () => {
   switch (args[2]) {
@@ -180,8 +278,14 @@ const run = async () => {
     case 'queryRelayerBalances':
       await queryRelayerBalances()
       break
-    case 'generatenewAccounts':
+    case 'generateNewAccounts':
       await generateNewAccounts()
+      break
+    case 'querySolRelayerBalances':
+      await querySolRelayerBalances()
+      break
+    case 'fundSolanaRelayers':
+      await fundSolRelayers()
       break
     default:
       throw new Error('Invalid argument')

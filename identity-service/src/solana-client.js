@@ -93,11 +93,24 @@ const instructionSchema = new Map([
 
 let feePayer
 
-function getFeePayer () {
+const feePayers = config.get('solanaFeePayerWallets')
+
+// Optionally returns the existing singleFeePayer
+// Ensures other usages of this function do not break as we upgrade to multiple
+function getFeePayer (singleFeePayer = true) {
   if (!feePayer) {
-    feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
+    feePayer = config.get('solanaFeePayerWallet') ? solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(config.get('solanaFeePayerWallet'))) : null
   }
-  return feePayer
+  // Ensure legacy usage of single feePayer is not broken
+  // If multiple feepayers are not provided, default to single value as well
+  if (singleFeePayer || !feePayers) {
+    return feePayer
+  }
+
+  const randomFeePayerIndex = Math.floor(Math.random() * feePayers.length)
+  const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(feePayers[randomFeePayerIndex].privateKey))
+
+  return randomFeePayer
 }
 
 async function createAndVerifyMessage (
@@ -172,7 +185,7 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
-  let feePayerAccount = getFeePayer()
+  let feePayerAccount = getFeePayer(false)
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
     connection,
