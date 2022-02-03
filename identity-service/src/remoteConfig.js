@@ -6,7 +6,8 @@ const REMOTE_VARS = Object.freeze({
   CHALLENGE_IDS_DENY_LIST: 'CHALLENGE_IDS_DENY_LIST',
   REWARDS_ATTESTATION_ENDPOINTS: 'REWARDS_ATTESTATION_ENDPOINTS',
   ORACLE_ENDPOINT: 'ORACLE_ENDPOINT',
-  ORACLE_ETH_ADDRESS: 'ORACLE_ETH_ADDRESS'
+  ORACLE_ETH_ADDRESS: 'ORACLE_ETH_ADDRESS',
+  ATTESTER_DELAY_SEC: 'ATTESTER_DELAY_SEC'
 })
 
 // Default values for remote vars while optimizely has not loaded
@@ -14,7 +15,8 @@ const REMOTE_VARS = Object.freeze({
 // consumed within a few seconds of server init
 const DEFAULTS = Object.freeze({
   [REMOTE_VARS.TRENDING_EXPERIMENT]: null,
-  [REMOTE_VARS.CHALLENGE_IDS_DENY_LIST]: []
+  [REMOTE_VARS.CHALLENGE_IDS_DENY_LIST]: [],
+  [REMOTE_VARS.ATTESTER_DELAY_SEC]: 60
 })
 
 // Use a dummy user id since remote config is enabled by default
