@@ -44,7 +44,7 @@ _M.rsa_private_key = rsa_private_key
 _M.private_key = private_key
 
 -- Disable rate limiting if there are no redirect targets or public_url is not set
-_M.rate_limiting_enabled = public_url == ""
+_M.rate_limiting_enabled = public_url ~= ""
 ngx.log(ngx.NOTICE, "rate_limiting_enabled=", _M.rate_limiting_enabled)
 
 _M.update_redirect_weights_every = tonumber(update_redirect_weights_every)
