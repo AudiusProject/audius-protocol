@@ -66,7 +66,6 @@ if (!fs.existsSync(configFilePath)) {
 
 const prodRelayerInfo = require(configFilePath)
 
-
 const generateNewAccounts = async () => {
   let numWallets = 1
   let wallets = []
@@ -189,7 +188,6 @@ const fundEthRelayerIfEmpty = async () => {
   await queryAccountBalances(relayerWallets)
 }
 
-
 // Solana funding related functions
 const minimumSolPerRelayer = 0.2
 const solConfigFilePath = './prod-sol-relayer-config.json'
@@ -255,11 +253,11 @@ const fundSolRelayers = async () => {
     console.log(`Funding ${relayerToFund.relayerKeypair.publicKey} ${relayerToFund.diff} lamports`)
     let transaction = new solanaWeb3.Transaction().add(
       solanaWeb3.SystemProgram.transfer({
-          fromPubkey: funderKeypair.publicKey,
-          toPubkey: relayerToFund.relayerKeypair.publicKey,
-          lamports: relayerToFund.diff
-        })
-    );
+        fromPubkey: funderKeypair.publicKey,
+        toPubkey: relayerToFund.relayerKeypair.publicKey,
+        lamports: relayerToFund.diff
+      })
+    )
     let signature = await solanaWeb3.sendAndConfirmTransaction(
       connection,
       transaction,
