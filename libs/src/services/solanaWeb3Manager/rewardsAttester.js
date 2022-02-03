@@ -27,7 +27,7 @@ const POA_SEC_PER_BLOCK = 5
  * @class ThresholdCalculator
  */
 class AttestationDelayCalculator {
-  constructor ({ libs, runBehindSec, allowedStalenessSec, solanaPollingInterval = 30, logger = console}) {
+  constructor ({ libs, runBehindSec, allowedStalenessSec, solanaPollingInterval = 30, logger = console }) {
     this.libs = libs
     this.solanaSecPerSlot = SOLANA_EST_SEC_PER_SLOT
     this.solanaSlot = null
@@ -52,7 +52,7 @@ class AttestationDelayCalculator {
     }, this.solanaPollingInterval * 1000)
   }
 
-  stop() {
+  stop () {
     clearInterval(this.intervalHandle)
   }
 
@@ -204,7 +204,7 @@ class RewardsAttester {
       libs,
       runBehindSec,
       logger,
-      allowedStalenessSec: 5,
+      allowedStalenessSec: 5
     })
     this.isSolanaChallenge = isSolanaChallenge
 
