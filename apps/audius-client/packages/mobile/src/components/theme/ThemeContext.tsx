@@ -1,4 +1,4 @@
-import React, { createContext, memo, ReactNode, useState } from 'react'
+import { createContext, memo, ReactNode, useState } from 'react'
 
 import { useDarkMode } from 'react-native-dark-mode'
 

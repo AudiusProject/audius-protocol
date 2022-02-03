@@ -4,7 +4,7 @@ import { ImageSkeleton } from 'app/components/image-skeleton'
 import Skeleton from 'app/components/skeleton'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 
-import { TrackTileBottomButtons } from './TrackTileBottomButtons'
+import { TrackTileActionButtons } from './TrackTileActionButtons'
 import { TrackTileRoot } from './TrackTileRoot'
 import { createStyles } from './styles'
 
@@ -43,7 +43,7 @@ export const TrackTileSkeleton = () => {
       </View>
 
       <View style={styles.bottomButtons}>
-        <TrackTileBottomButtons />
+        <TrackTileActionButtons />
       </View>
     </TrackTileRoot>
   )

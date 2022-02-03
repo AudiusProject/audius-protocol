@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, RefObject, useCallback } from 'react'
 
+import { Genre } from 'audius-client/src/common/utils/genres'
 import { Platform, StyleSheet, View } from 'react-native'
 import MusicControl from 'react-native-music-control'
 import { Command } from 'react-native-music-control/lib/types'
@@ -25,7 +26,6 @@ import {
 import { CastStatus, setPlayPosition } from 'app/store/googleCast/actions'
 import { getGoogleCastStatus } from 'app/store/googleCast/selectors'
 import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
-import { Genre } from 'app/utils/genres'
 import { postMessage } from 'app/utils/postMessage'
 
 import { logListen } from './listens'

@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import {
   FavoriteSource,
@@ -18,21 +18,18 @@ import {
 } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
-import { ImageStyle, Pressable, StyleSheet, View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { ImageStyle, StyleSheet, View } from 'react-native'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import FavoriteButton from 'app/components/favorite-button'
 import RepostButton from 'app/components/repost-button'
-import {
-  ToastContext,
-  SHARE_TOAST_TIMEOUT
-} from 'app/components/toast/ToastContext'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
+
+import IconButton from '../icon-button'
 
 type Props = {
   disabled?: boolean
@@ -42,10 +39,6 @@ type Props = {
   isShareHidden?: boolean
   isUnlisted?: boolean
   trackId?: ID
-}
-
-const messages = {
-  copiedToast: 'Copied To Clipboard'
 }
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -73,7 +66,7 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-export const TrackTileBottomButtons = ({
+export const TrackTileActionButtons = ({
   disabled,
   hasReposted,
   hasSaved,
@@ -82,11 +75,9 @@ export const TrackTileBottomButtons = ({
   isUnlisted,
   trackId
 }: Props) => {
-  const { toast } = useContext(ToastContext)
   const { neutralLight4 } = useThemeColors()
   const styles = useThemedStyles(createStyles)
 
-  const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
 
   const onPressOverflow = useCallback(() => {
@@ -123,14 +114,14 @@ export const TrackTileBottomButtons = ({
     if (trackId === undefined) {
       return
     }
-    dispatch(
+    dispatchWeb(
       requestOpenShareModal({
         type: 'track',
         trackId,
         source: ShareSource.TILE
       })
     )
-  }, [dispatch, trackId])
+  }, [dispatchWeb, trackId])
 
   const onToggleSave = useCallback(() => {
     if (trackId === undefined) {
@@ -173,44 +164,46 @@ export const TrackTileBottomButtons = ({
   )
 
   const shareButton = (
-    <Pressable
-      disabled={disabled}
-      onPress={() => {
-        if (onPressShare) {
-          toast({
-            content: messages.copiedToast,
-            timeout: SHARE_TOAST_TIMEOUT
-          })
-          onPressShare()
-        }
-      }}
-    >
-      <IconShare
-        height={18}
-        width={18}
-        fill={neutralLight4}
-        style={[styles.button, disabled ? { opacity: 0.5 } : {}]}
-      />
-    </Pressable>
+    <IconButton
+      isDisabled={disabled}
+      onPress={onPressShare}
+      icon={() => (
+        <IconShare
+          height={18}
+          width={18}
+          fill={neutralLight4}
+          style={[styles.button, disabled ? { opacity: 0.5 } : {}]}
+        />
+      )}
+    />
   )
 
   const moreButton = (
-    <Pressable onPress={onPressOverflow} disabled={disabled}>
-      <IconKebabHorizontal
-        height={22}
-        width={22}
-        fill={neutralLight4}
-        style={[
-          styles.button,
-          styles.lastButton,
-          disabled ? { opacity: 0.5 } : {}
-        ]}
-      />
-    </Pressable>
+    <IconButton
+      onPress={onPressOverflow}
+      isDisabled={disabled}
+      icon={() => (
+        <IconKebabHorizontal
+          height={22}
+          width={22}
+          fill={neutralLight4}
+          style={[
+            styles.button,
+            styles.lastButton,
+            disabled ? { opacity: 0.5 } : {}
+          ]}
+        />
+      )}
+    />
   )
 
   return (
-    <View style={styles.bottomButtons}>
+    <View
+      style={styles.bottomButtons}
+      // Capture touches to prevent from triggering play
+      onStartShouldSetResponder={() => true}
+      onTouchEnd={e => e.stopPropagation()}
+    >
       <View style={styles.leftButtons}>
         {!isUnlisted && (
           <>

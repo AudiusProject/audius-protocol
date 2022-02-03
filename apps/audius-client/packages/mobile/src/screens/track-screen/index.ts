@@ -1,1 +1,1 @@
-export { default } from './TrackScreen'
+export { TrackScreen } from './TrackScreen'

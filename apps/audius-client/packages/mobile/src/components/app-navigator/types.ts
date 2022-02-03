@@ -3,7 +3,7 @@ import { ID } from 'audius-client/src/common/models/Identifiers'
 
 export type BaseStackParamList = {
   track: { id: ID }
-  profile: { id: ID }
+  profile: { handle: string }
 }
 
 export type FeedStackParamList = BaseStackParamList & {
