@@ -11,6 +11,7 @@ import { Name } from 'common/models/Analytics'
 import TimeRange from 'common/models/TimeRange'
 import { getHasAccount } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
+import { GENRES } from 'common/utils/genres'
 import { openSignOn } from 'pages/sign-on/store/actions'
 import {
   trendingWeekActions,
@@ -31,7 +32,6 @@ import { make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { isMobile } from 'utils/clientUtil'
-import { GENRES } from 'utils/genres'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
 
 import * as trendingPageActions from './store/actions'

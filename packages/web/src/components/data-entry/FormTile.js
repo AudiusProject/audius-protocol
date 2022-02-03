@@ -5,6 +5,11 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
+import {
+  GENRES,
+  ELECTRONIC_PREFIX,
+  getCanonicalName
+} from 'common/utils/genres'
 import DatePicker from 'components/data-entry/DatePicker'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import Input from 'components/data-entry/Input'
@@ -26,7 +31,6 @@ import {
   computeLicenseVariables,
   getDescriptionForType
 } from 'utils/creativeCommonsUtil'
-import { GENRES, ELECTRONIC_PREFIX, getCannonicalName } from 'utils/genres'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { moodMap } from 'utils/moods'
 
@@ -115,7 +119,7 @@ const BasicForm = props => {
               placeholder={messages.genre}
               mount='parent'
               menu={{ items: GENRES }}
-              defaultValue={getCannonicalName(props.defaultFields.genre) || ''}
+              defaultValue={getCanonicalName(props.defaultFields.genre) || ''}
               isRequired={props.requiredFields.genre}
               error={props.invalidFields.genre}
               onSelect={value =>
