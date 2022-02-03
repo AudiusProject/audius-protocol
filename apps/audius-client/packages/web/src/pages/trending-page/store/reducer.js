@@ -1,5 +1,6 @@
 import TimeRange from 'common/models/TimeRange'
 import { asLineup } from 'common/store/lineup/reducer'
+import { GENRES } from 'common/utils/genres'
 import {
   SET_TRENDING_GENRE,
   SET_TRENDING_TIME_RANGE,
@@ -15,7 +16,6 @@ import {
   trendingMonth,
   trendingAllTime
 } from 'pages/trending-page/store/lineups/trending/reducer'
-import { GENRES } from 'utils/genres'
 
 const urlParams = new URLSearchParams(window.location.search)
 const genre = urlParams.get('genre')

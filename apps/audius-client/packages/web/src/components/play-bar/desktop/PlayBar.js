@@ -19,6 +19,7 @@ import {
   saveTrack,
   unsaveTrack
 } from 'common/store/social/tracks/actions'
+import { Genre } from 'common/utils/genres'
 import FavoriteButton from 'components/favorite-button/FavoriteButton'
 import PlayButton from 'components/play-bar/PlayButton'
 import VolumeBar from 'components/play-bar/VolumeBar'
@@ -42,7 +43,6 @@ import { seek, reset } from 'store/player/slice'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { play, pause, next, previous, repeat, shuffle } from 'store/queue/slice'
 import { RepeatMode } from 'store/queue/types'
-import { Genre } from 'utils/genres'
 import { setupHotkeys } from 'utils/hotkeyUtil'
 import { profilePage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
