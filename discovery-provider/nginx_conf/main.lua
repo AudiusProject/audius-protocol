@@ -34,6 +34,7 @@ function update_redirect_weights (premature)
 
     for endpoint, weight in pairs(cjson.decode(res.body)) do
         redirect_weights[endpoint] = weight
+        ngx.log(ngx.NOTICE, "updated weight for endpoint ", endpoint, " to ", weight)
     end
 end
 
