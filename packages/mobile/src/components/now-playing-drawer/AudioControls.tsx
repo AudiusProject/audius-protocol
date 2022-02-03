@@ -15,7 +15,7 @@ import IconShuffleOnLight from 'app/assets/animations/iconShuffleOnLight.json'
 import IconNext from 'app/assets/images/iconNext.svg'
 import IconPrev from 'app/assets/images/iconPrev.svg'
 import AnimatedButtonProvider from 'app/components/animated-button/AnimatedButtonProvider'
-import IconButton from 'app/components/icon-button'
+import { IconButton } from 'app/components/core'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { Theme, ThemeColors, useThemeVariant } from 'app/utils/theme'
 
@@ -76,8 +76,7 @@ export const AudioControls = () => {
     return (
       <IconButton
         icon={IconPrev}
-        containerStyle={styles.button}
-        style={styles.nextPrevIcons}
+        styles={{ root: styles.button, icon: styles.nextPrevIcons }}
       />
     )
   }
@@ -97,8 +96,7 @@ export const AudioControls = () => {
     return (
       <IconButton
         icon={IconNext}
-        containerStyle={styles.button}
-        style={styles.nextPrevIcons}
+        styles={{ root: styles.button, icon: styles.nextPrevIcons }}
       />
     )
   }

@@ -1,7 +1,6 @@
 import { Pressable, StyleSheet } from 'react-native'
 
 import Text from 'app/components/text'
-import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
 import { formatCount } from 'app/utils/format'
@@ -38,16 +37,10 @@ export const TrackScreenStat = ({
   renderLabel
 }: TrackScreenStatProps) => {
   const styles = useThemedStyles(createStyles)
-  const scale = usePressScaleAnimation()
   const { neutralLight4 } = useThemeColors()
 
   return (
-    <Pressable
-      style={styles.countContainer}
-      onPressIn={scale.handlePressIn}
-      onPressOut={scale.handlePressOut}
-      onPress={onPress}
-    >
+    <Pressable style={styles.countContainer} onPress={onPress}>
       <Text style={styles.count} weight='bold'>
         {formatCount(count)}
       </Text>

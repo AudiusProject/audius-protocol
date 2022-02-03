@@ -3,46 +3,53 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
+import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
 
 export type IconButtonProps = {
-  onPress?: () => void
+  fill?: string
   icon: React.FC<
     SvgProps & {
       fillSecondary?: string
     }
   >
-  containerStyle?: StyleProp<ViewStyle>
-  style?: StyleProp<ViewStyle>
-  isActive?: boolean
   isDisabled?: boolean
+  onPress?: () => void
+  styles?: {
+    root?: StyleProp<ViewStyle>
+    icon?: StyleProp<ViewStyle>
+  }
 }
+
+const useStyles = makeStyles(() => ({
+  icon: {
+    height: 18,
+    width: 18
+  }
+}))
 
 /**
  * A button with touchable feedback that is only an
  * icon. Different from a Button in that it has no
  * container.
+ *
+ * The default size is 18x18 but this can be overridden via styles.icon
  */
-const IconButton = ({
-  onPress,
+export const IconButton = ({
+  fill: inputFill,
   icon: Icon,
-  containerStyle,
-  style,
-  isActive,
-  isDisabled
+  isDisabled,
+  onPress,
+  styles: stylesProp
 }: IconButtonProps) => {
+  const styles = useStyles()
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
-  const { neutral, neutralLight4, primary } = useThemeColors()
+  const { neutral } = useThemeColors()
 
-  let fill = neutral
-  if (isActive) {
-    fill = primary
-  } else if (isDisabled) {
-    fill = neutralLight4
-  }
+  const fill = inputFill ?? neutral
 
   return (
-    <Animated.View style={[{ transform: [{ scale }] }, containerStyle]}>
+    <Animated.View style={[{ transform: [{ scale }] }, stylesProp?.root]}>
       <TouchableOpacity
         onPress={onPress}
         onPressIn={handlePressIn}
@@ -51,12 +58,16 @@ const IconButton = ({
         activeOpacity={0.95}
         hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
       >
-        <View style={style}>
+        <View
+          style={[
+            styles.icon,
+            isDisabled && { opacity: 0.5 },
+            stylesProp?.icon
+          ]}
+        >
           <Icon fill={fill} height='100%' width='100%' />
         </View>
       </TouchableOpacity>
     </Animated.View>
   )
 }
-
-export default IconButton

@@ -13,7 +13,7 @@ import IconChromecast from 'app/assets/images/iconChromecast.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import AnimatedButtonProvider from 'app/components/animated-button/AnimatedButtonProvider'
-import IconButton from 'app/components/icon-button'
+import { IconButton } from 'app/components/core'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { Theme, ThemeColors, useThemeVariant } from 'app/utils/theme'
 
@@ -55,16 +55,14 @@ export const ActionsBar = () => {
       return (
         <IconButton
           icon={IconAirplay}
-          containerStyle={styles.button}
-          style={styles.icon}
+          styles={{ icon: styles.icon, root: styles.button }}
         />
       )
     }
     return (
       <IconButton
         icon={IconChromecast}
-        containerStyle={styles.button}
-        style={styles.icon}
+        styles={{ icon: styles.icon, root: styles.button }}
       />
     )
   }
@@ -96,8 +94,7 @@ export const ActionsBar = () => {
     return (
       <IconButton
         icon={IconShare}
-        containerStyle={styles.button}
-        style={styles.icon}
+        styles={{ icon: styles.icon, root: styles.button }}
       />
     )
   }
@@ -105,8 +102,7 @@ export const ActionsBar = () => {
     return (
       <IconButton
         icon={IconKebabHorizontal}
-        containerStyle={styles.button}
-        style={styles.icon}
+        styles={{ icon: styles.icon, root: styles.button }}
       />
     )
   }
