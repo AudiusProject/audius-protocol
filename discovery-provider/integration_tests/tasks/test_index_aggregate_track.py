@@ -215,6 +215,45 @@ def test_index_aggregate_track_populate(app):
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
         assert prev_id_checkpoint == last_checkpoint
 
+    # repost a deleted track
+    entities = {
+        "reposts": [
+            {
+                "repost_item_id": 2,
+                "repost_type": "track",
+                "user_id": 2,
+                "is_current": True,
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+    last_checkpoint += 1
+
+    # confirm track 2 still no longer has a row in aggregate_track
+    with db.scoped_session() as session:
+        _update_aggregate_track(session)
+
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+
+        assert len(results) == 3
+
+        assert results[0].track_id == 1
+        assert results[0].repost_count == 3
+        assert results[0].save_count == 1
+
+        assert results[1].track_id == 4
+        assert results[1].repost_count == 0
+        assert results[1].save_count == 4
+
+        assert results[2].track_id == 5
+        assert results[2].repost_count == 0
+        assert results[2].save_count == 0
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == last_checkpoint
+
     # undelete a track
     entities = {
         "tracks": [
@@ -229,11 +268,34 @@ def test_index_aggregate_track_populate(app):
     populate_mock_db(db, entities)
     last_checkpoint += 1
 
-    # confirm track 2 has a row in aggregate_track again
+    # confirm track 2 has a row in aggregate_track again, with an additional repost
     with db.scoped_session() as session:
         _update_aggregate_track(session)
 
-        basic_tests(session, last_checkpoint=last_checkpoint)
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+
+        assert len(results) == 4
+
+        assert results[0].track_id == 1
+        assert results[0].repost_count == 3
+        assert results[0].save_count == 1
+
+        assert results[1].track_id == 2
+        assert results[1].repost_count == 1
+        assert results[1].save_count == 0
+
+        assert results[2].track_id == 4
+        assert results[2].repost_count == 0
+        assert results[2].save_count == 4
+
+        assert results[3].track_id == 5
+        assert results[3].repost_count == 0
+        assert results[3].save_count == 0
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == last_checkpoint
 
 
 def test_index_aggregate_track_empty_tracks(app):
@@ -521,7 +583,7 @@ def test_index_aggregate_track_entity_model(app):
 
 
 def test_index_aggregate_track_update_with_only_aggregate_track(app):
-    """Test that aggregate_track will be truncated even when no other data"""
+    """Test that aggregate_track will not be manipulated when there is no other data"""
 
     with app.app_context():
         db = get_db()

@@ -64,8 +64,8 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                 FROM
                     tracks d
                 WHERE
-                    d.is_delete IS TRUE
-                    AND d.is_current IS TRUE
+                    d.is_current IS TRUE
+                    AND d.is_delete IS TRUE
                     AND d.blocknumber > :prev_blocknumber
             )
     )

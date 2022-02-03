@@ -93,7 +93,9 @@ def populate_mock_db(db, entities, block_offset=None):
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
 
-        num_blocks = max(len(tracks), len(users), len(follows), len(saves))
+        num_blocks = max(
+            len(tracks), len(users), len(follows), len(saves), len(reposts)
+        )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = (
                 session.query(models.Block).filter(models.Block.number == i).first()
@@ -112,10 +114,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 session.flush()
 
         for i, track_meta in enumerate(tracks):
+            track_id = track_meta.get("track_id", i)
+
+            # mark previous tracks as is_current = False
+            session.query(models.Track).filter(models.Track.is_current == True).filter(
+                models.Track.track_id == track_id
+            ).update({"is_current": False})
+
             track = models.Track(
                 blockhash=hex(i + block_offset),
                 blocknumber=i + block_offset,
-                track_id=track_meta.get("track_id", i),
+                track_id=track_id,
                 title=track_meta.get("title", f"track_{i}"),
                 is_current=track_meta.get("is_current", True),
                 is_delete=track_meta.get("is_delete", False),
