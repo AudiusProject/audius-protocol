@@ -40,7 +40,7 @@ end
 function _M.start_update_redirect_weights_timer ()
     -- use lock to ensure that only one timer will run
     local locked = ngx.shared.locks:get("redirect_weights_timer")
-    if locked ~= nil then
+    if locked == nil then
         ngx.shared.locks:set("redirect_weights_timer", true)
         ngx.log(ngx.NOTICE, "starting redirect weights timer")
         ngx.timer.at(0, update_redirect_weights)
