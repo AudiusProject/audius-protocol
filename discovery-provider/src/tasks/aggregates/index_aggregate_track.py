@@ -21,6 +21,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
             tracks t
         WHERE
             t.is_current IS TRUE
+            AND t.is_delete IS FALSE
             AND t.blocknumber > :prev_blocknumber
         GROUP BY
             t.track_id
@@ -64,6 +65,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
                     tracks d
                 WHERE
                     d.is_delete IS TRUE
+                    AND d.is_current IS TRUE
                     AND d.blocknumber > :prev_blocknumber
             )
     )
@@ -115,6 +117,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
         ) AS track_save ON track_save.track_id = t.track_id
     WHERE
         t.is_current is TRUE
+        AND t.is_delete IS FALSE
         AND t.track_id in (
             SELECT
                 track_id

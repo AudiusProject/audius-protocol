@@ -38,6 +38,12 @@ basic_entities = {
             "is_current": True,
             "is_unlisted": True,
         },
+        {
+            "track_id": 6,
+            "owner_id": 1,
+            "is_current": True,
+            "is_delete": True,
+        },
     ],
     "reposts": [
         {"repost_item_id": 1, "repost_type": "track", "user_id": 2},
@@ -105,7 +111,7 @@ def basic_tests(session, last_checkpoint=12, previous_count=0):
         session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
     )
 
-    assert len(results) == 5
+    assert len(results) == 4
 
     assert results[0].track_id == 1
     assert results[0].repost_count == previous_count + 3
@@ -115,17 +121,13 @@ def basic_tests(session, last_checkpoint=12, previous_count=0):
     assert results[1].repost_count == previous_count + 0
     assert results[1].save_count == previous_count + 0
 
-    assert results[2].track_id == 3
+    assert results[2].track_id == 4
     assert results[2].repost_count == previous_count + 0
-    assert results[2].save_count == previous_count + 1
+    assert results[2].save_count == previous_count + 4
 
-    assert results[3].track_id == 4
+    assert results[3].track_id == 5
     assert results[3].repost_count == previous_count + 0
-    assert results[3].save_count == previous_count + 4
-
-    assert results[4].track_id == 5
-    assert results[4].repost_count == previous_count + 0
-    assert results[4].save_count == previous_count + 0
+    assert results[3].save_count == previous_count + 0
 
     prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
     assert prev_id_checkpoint == last_checkpoint
@@ -158,6 +160,7 @@ def test_index_aggregate_track_populate(app):
     # create db entries based on entities
     populate_mock_db(db, basic_entities, block_offset=3)
 
+    last_checkpoint = 12
     with db.scoped_session() as session:
         # confirm nothing exists before _update_aggregate_track()
         results: List[AggregateTrack] = (
@@ -171,7 +174,66 @@ def test_index_aggregate_track_populate(app):
         _update_aggregate_track(session)
 
         # run basic tests against basic_entities
-        basic_tests(session)
+        basic_tests(session, last_checkpoint=last_checkpoint)
+
+    # delete a track
+    entities = {
+        "tracks": [
+            {
+                "track_id": 2,
+                "owner_id": 1,
+                "is_current": True,
+                "is_delete": True,
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+    last_checkpoint += 1
+
+    # confirm track 2 no longer has a row in aggregate_track
+    with db.scoped_session() as session:
+        _update_aggregate_track(session)
+
+        results: List[AggregateTrack] = (
+            session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+        )
+
+        assert len(results) == 3
+
+        assert results[0].track_id == 1
+        assert results[0].repost_count == 3
+        assert results[0].save_count == 1
+
+        assert results[1].track_id == 4
+        assert results[1].repost_count == 0
+        assert results[1].save_count == 4
+
+        assert results[2].track_id == 5
+        assert results[2].repost_count == 0
+        assert results[2].save_count == 0
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
+        assert prev_id_checkpoint == last_checkpoint
+
+    # undelete a track
+    entities = {
+        "tracks": [
+            {
+                "track_id": 2,
+                "owner_id": 1,
+                "is_current": True,
+                "is_delete": False,
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+    last_checkpoint += 1
+
+    # confirm track 2 has a row in aggregate_track again
+    with db.scoped_session() as session:
+        _update_aggregate_track(session)
+
+        basic_tests(session, last_checkpoint=last_checkpoint)
 
 
 def test_index_aggregate_track_empty_tracks(app):
@@ -268,7 +330,7 @@ def test_index_aggregate_track_empty_activity(app):
         )
 
         assert (
-            len(results) == 5
+            len(results) == 4
         ), "Test that tracks updated on blocks after '1' will be targeted"
 
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_TRACK)
