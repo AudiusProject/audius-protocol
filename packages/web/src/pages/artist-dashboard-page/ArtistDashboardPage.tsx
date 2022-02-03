@@ -143,6 +143,7 @@ const makeColumns = (account: User, isUnlisted: boolean) => {
             isUnlisted={record.is_unlisted}
             index={index}
             trackTitle={val.name}
+            trackPermalink={val.permalink}
             hiddenUntilHover={false}
             includeEmbed={!isUnlisted && !record.is_delete}
             includeAddToPlaylist={!isUnlisted}
