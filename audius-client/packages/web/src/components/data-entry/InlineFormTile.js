@@ -10,11 +10,15 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
+import {
+  GENRES,
+  ELECTRONIC_PREFIX,
+  getCanonicalName
+} from 'common/utils/genres'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import LabeledInput from 'components/data-entry/LabeledInput'
 import TagInput from 'components/data-entry/TagInput'
 import PreviewButton from 'components/upload/PreviewButton'
-import { GENRES, ELECTRONIC_PREFIX, getCannonicalName } from 'utils/genres'
 import { moodMap } from 'utils/moods'
 
 import styles from './InlineFormTile.module.css'
@@ -82,7 +86,7 @@ class InlineFormTile extends Component {
             <DropdownInput
               placeholder='What is the Genre?'
               menu={{ items: GENRES }}
-              defaultValue={getCannonicalName(defaultFields.genre) || ''}
+              defaultValue={getCanonicalName(defaultFields.genre) || ''}
               label='Genre'
               labelStyle={styles.label}
               layout='horizontal'

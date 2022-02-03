@@ -77,7 +77,7 @@ export const ELECTRONIC_SUBGENRES: { [key in Genre]?: string } = {
   [Genre.MOOMBAHTON]: `${ELECTRONIC_PREFIX}${Genre.MOOMBAHTON}`
 }
 
-export const getCannonicalName = (genre: Genre | any) => {
+export const getCanonicalName = (genre: Genre | any) => {
   if (genre in ELECTRONIC_SUBGENRES) return ELECTRONIC_SUBGENRES[genre as Genre]
   return genre
 }

@@ -1,4 +1,4 @@
-import { GENRES } from 'utils/genres'
+import { GENRES } from 'common/utils/genres'
 import { moodMap } from 'utils/moods'
 import { orderedRoutes } from 'utils/route'
 
@@ -31,7 +31,6 @@ export const restrictedHandles = new Set(
     'share',
     'social',
     'artist',
-    'notification',
     'options',
     'billing',
     'support',

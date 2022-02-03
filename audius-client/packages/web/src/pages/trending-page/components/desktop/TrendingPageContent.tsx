@@ -3,6 +3,7 @@ import React, { useState, useRef, useCallback } from 'react'
 import { Name } from 'common/models/Analytics'
 import Status from 'common/models/Status'
 import TimeRange from 'common/models/TimeRange'
+import { GENRES, ELECTRONIC_PREFIX } from 'common/utils/genres'
 import Header from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -16,7 +17,6 @@ import {
 } from 'pages/trending-page/store/lineups/trending/actions'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
 import { make, useRecord } from 'store/analytics/actions'
-import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
 
 import RewardsBanner from '../RewardsBanner'
 

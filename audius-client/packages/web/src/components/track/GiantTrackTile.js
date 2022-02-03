@@ -17,6 +17,7 @@ import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
 
 import { squashNewLines } from 'common/utils/formatUtil'
+import { getCanonicalName } from 'common/utils/genres'
 import { formatDate, formatSeconds } from 'common/utils/timeUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
@@ -27,7 +28,6 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import HiddenTrackHeader from 'pages/track-page/components/HiddenTrackHeader'
-import { getCannonicalName } from 'utils/genres'
 import { moodMap } from 'utils/moods'
 
 import Badge from './Badge'
@@ -249,7 +249,7 @@ class GiantTrackTile extends PureComponent {
         <InfoLabel
           className={styles.infoLabelPlacement}
           labelName='genre'
-          labelValue={getCannonicalName(genre)}
+          labelValue={getCanonicalName(genre)}
         />
       )
     )

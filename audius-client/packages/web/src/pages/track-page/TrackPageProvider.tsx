@@ -38,6 +38,7 @@ import {
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
+import { getCanonicalName } from 'common/utils/genres'
 import { formatSeconds, formatDate } from 'common/utils/timeUtil'
 import { Uid } from 'common/utils/uid'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
@@ -59,7 +60,6 @@ import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
-import { getCannonicalName } from 'utils/genres'
 import {
   profilePage,
   searchResultsPage,
@@ -406,7 +406,7 @@ class TrackPageProvider extends Component<
       releaseDate: releaseDate ? formatDate(releaseDate) : '',
       description: track?.description ?? '',
       mood: track?.mood ?? '',
-      genre: track ? getCannonicalName(track.genre) : '',
+      genre: track ? getCanonicalName(track.genre) : '',
       duration: track ? formatSeconds(track.duration) : '',
       tags: track ? (track.tags || '').split(',').filter(Boolean) : []
     })
