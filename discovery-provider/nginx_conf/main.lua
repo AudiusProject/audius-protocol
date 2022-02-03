@@ -18,11 +18,11 @@ local _M = {}
 local redirect_weights = {}
 
 function update_redirect_weights (premature)
-    if premature then
+    if premature or redirect_weights then
         return
     end
 
-    ngx.log(ngx.INFO, "updating redirect weights")
+    ngx.log(ngx.NOTICE, "updating redirect weights")
 
     local httpc = resty_http.new()
     local res, err = httpc:request_uri("http://127.0.0.1:3000/redirect_weights", { method = "GET" })
@@ -38,8 +38,14 @@ function update_redirect_weights (premature)
 end
 
 function _M.start_update_redirect_weights_timer ()
-    ngx.timer.at(0, update_redirect_weights)
-    ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
+    -- use lock to ensure that only one timer will run
+    local locked = ngx.shared.locks:get("redirect_weights_timer")
+    if locked ~= nil then
+        ngx.shared.locks:set("redirect_weights_timer", true)
+        ngx.log(ngx.NOTICE, "starting redirect weights timer")
+        ngx.timer.at(0, update_redirect_weights)
+        ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
+    end
 end
 
 function get_cached_public_key (discovery_provider)
