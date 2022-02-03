@@ -12,7 +12,7 @@ export interface TrendingPageContentProps {
   trending: Lineup<any>
   trendingWeek: Lineup<any, ExtraTrendingLineupProps>
   trendingMonth: Lineup<any, ExtraTrendingLineupProps>
-  trendingYear: Lineup<any, ExtraTrendingLineupProps>
+  trendingAllTime: Lineup<any, ExtraTrendingLineupProps>
 
   fetchSuggestedFollowUsers: () => void
   followUsers: (userIDs: ID[]) => void

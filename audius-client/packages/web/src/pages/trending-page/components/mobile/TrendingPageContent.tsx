@@ -25,7 +25,7 @@ import useTabs from 'hooks/useTabs/useTabs'
 import {
   trendingWeekActions,
   trendingMonthActions,
-  trendingYearActions
+  trendingAllTimeActions
 } from 'pages/trending-page/store/lineups/trending/actions'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
 import { make, useRecord } from 'store/analytics/actions'
@@ -41,7 +41,7 @@ const messages = {
   title: 'Trending',
   thisWeek: 'THIS WEEK',
   thisMonth: 'THIS MONTH',
-  thisYear: 'THIS YEAR',
+  allTime: 'ALL TIME',
   endOfLineupDescription: "Looks like you've reached the end of this list..."
 }
 
@@ -50,7 +50,7 @@ const RANK_ICON_COUNT = 5
 const tabHeaders = [
   { icon: <IconDay />, text: messages.thisWeek, label: TimeRange.WEEK },
   { icon: <IconMonth />, text: messages.thisMonth, label: TimeRange.MONTH },
-  { icon: <IconAllTime />, text: messages.thisYear, label: TimeRange.YEAR }
+  { icon: <IconAllTime />, text: messages.allTime, label: TimeRange.ALL_TIME }
 ]
 
 const TrendingPageMobileContent = ({
@@ -67,7 +67,7 @@ const TrendingPageMobileContent = ({
   makePlayTrack,
   trendingWeek,
   trendingMonth,
-  trendingYear,
+  trendingAllTime,
   makeSetInView,
   getLineupForRange,
   trendingGenre,
@@ -87,10 +87,10 @@ const TrendingPageMobileContent = ({
     return lineup.lineup.status
   }
 
-  const [weekStatus, monthStatus, yearStatus] = [
+  const [weekStatus, monthStatus, allTimeStatus] = [
     getStatus(TimeRange.WEEK),
     getStatus(TimeRange.MONTH),
-    getStatus(TimeRange.YEAR)
+    getStatus(TimeRange.ALL_TIME)
   ]
 
   // Setup pull to refresh
@@ -102,8 +102,8 @@ const TrendingPageMobileContent = ({
     () => makeRefreshTrendingInView(TimeRange.MONTH)(true),
     [makeRefreshTrendingInView]
   )
-  const refreshTrendingYear = useCallback(
-    () => makeRefreshTrendingInView(TimeRange.YEAR)(true),
+  const refreshTrendingAllTime = useCallback(
+    () => makeRefreshTrendingInView(TimeRange.ALL_TIME)(true),
     [makeRefreshTrendingInView]
   )
 
@@ -118,9 +118,9 @@ const TrendingPageMobileContent = ({
       variable: monthStatus,
       value: Status.SUCCESS
     }),
-    [TimeRange.YEAR]: useAsyncPoll({
-      call: refreshTrendingYear,
-      variable: yearStatus,
+    [TimeRange.ALL_TIME]: useAsyncPoll({
+      call: refreshTrendingAllTime,
+      variable: allTimeStatus,
       value: Status.SUCCESS
     })
   }
@@ -134,9 +134,9 @@ const TrendingPageMobileContent = ({
     getLineupProps,
     trendingMonth
   ])
-  const yearProps = useMemo(() => getLineupProps(trendingYear), [
+  const allTimeProps = useMemo(() => getLineupProps(trendingAllTime), [
     getLineupProps,
-    trendingYear
+    trendingAllTime
   ])
 
   const lineups = useMemo(() => {
@@ -184,13 +184,13 @@ const TrendingPageMobileContent = ({
         }
       />,
       <Lineup
-        key='trendingYear'
-        {...yearProps}
-        setInView={makeSetInView(TimeRange.YEAR)}
-        loadMore={makeLoadMore(TimeRange.YEAR)}
-        playTrack={makePlayTrack(TimeRange.YEAR)}
-        pauseTrack={makePauseTrack(TimeRange.YEAR)}
-        actions={trendingYearActions}
+        key='trendingAllTime'
+        {...allTimeProps}
+        setInView={makeSetInView(TimeRange.ALL_TIME)}
+        loadMore={makeLoadMore(TimeRange.ALL_TIME)}
+        playTrack={makePlayTrack(TimeRange.ALL_TIME)}
+        pauseTrack={makePauseTrack(TimeRange.ALL_TIME)}
+        actions={trendingAllTimeActions}
         variant={LineupVariant.MAIN}
         isTrending
         endOfLineup={
@@ -208,7 +208,7 @@ const TrendingPageMobileContent = ({
     makeSetInView,
     monthProps,
     weekProps,
-    yearProps,
+    allTimeProps,
     trendingGenre
   ])
   const record = useRecord()

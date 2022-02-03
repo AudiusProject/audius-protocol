@@ -3,7 +3,7 @@ import { LineupActions } from 'common/store/lineup/actions'
 export const PREFIX = 'DISCOVER_TRENDING'
 export const TRENDING_WEEK_PREFIX = 'DISCOVER_TRENDING_WEEK'
 export const TRENDING_MONTH_PREFIX = 'DISCOVER_TRENDING_MONTH'
-export const TRENDING_YEAR_PREFIX = 'DISCOVER_TRENDING_YEAR'
+export const TRENDING_ALL_TIME_PREFIX = 'DISCOVER_TRENDING_ALL_TIME'
 
 export const SET_TRENDING_SCORES = 'SET_TRENDING_SCORES'
 
@@ -24,13 +24,14 @@ class TrendingMonthActions extends LineupActions {
     super(TRENDING_MONTH_PREFIX)
   }
 }
-class TrendingYearActions extends LineupActions {
+
+class TrendingAllTimeActions extends LineupActions {
   constructor() {
-    super(TRENDING_YEAR_PREFIX)
+    super(TRENDING_ALL_TIME_PREFIX)
   }
 }
 
 export const trendingActions = new TrendingActions()
 export const trendingWeekActions = new TrendingWeekActions()
 export const trendingMonthActions = new TrendingMonthActions()
-export const trendingYearActions = new TrendingYearActions()
+export const trendingAllTimeActions = new TrendingAllTimeActions()

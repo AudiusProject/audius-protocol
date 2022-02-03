@@ -8,8 +8,8 @@ import TimeRange from 'common/models/TimeRange'
 import * as discoverPageActions from 'pages/trending-page/store/actions'
 import {
   trendingMonthActions,
-  trendingYearActions,
-  trendingWeekActions
+  trendingWeekActions,
+  trendingAllTimeActions
 } from 'pages/trending-page/store/lineups/trending/actions'
 import {
   getTrendingGenre,
@@ -70,7 +70,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     resetAllTrending: () => {
       dispatch(trendingWeekActions.reset())
       dispatch(trendingMonthActions.reset())
-      dispatch(trendingYearActions.reset())
+      dispatch(trendingAllTimeActions.reset())
     }
   }
 }
