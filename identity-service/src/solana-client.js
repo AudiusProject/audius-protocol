@@ -102,7 +102,8 @@ function getFeePayer (singleFeePayer = true) {
     feePayer = config.get('solanaFeePayerWallet') ? solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(config.get('solanaFeePayerWallet'))) : null
   }
   // Ensure legacy usage of single feePayer is not broken
-  if (singleFeePayer) {
+  // If multiple feepayers are not provided, default to single value as well
+  if (singleFeePayer || !feePayers) {
     return feePayer
   }
 
