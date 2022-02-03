@@ -740,15 +740,6 @@ class AudiusBackend {
     }
   }
 
-  static async getUnlistedTracks() {
-    try {
-      return await audiusLibs.Track.getUnlistedTracks()
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  }
-
   static async getArtistTracks({
     offset,
     limit,

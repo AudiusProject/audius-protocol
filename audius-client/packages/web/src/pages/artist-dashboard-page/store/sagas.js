@@ -4,9 +4,7 @@ import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 
 import { IntKeys } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { getBalance } from 'common/store/wallet/slice'
-import { formatUrlName } from 'common/utils/formatUtil'
 import { retrieveUserTracks } from 'pages/profile-page/store/lineups/tracks/retrieveUserTracks'
 import AudiusBackend from 'services/AudiusBackend'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -27,12 +25,14 @@ function* fetchDashboardAsync(action) {
       currentUserId: account.user_id,
       // TODO: This only supports up to 500, we need to redesign / paginate
       // the dashboard
-      limit: account.track_count
+      getUnlisted: true
     }),
     call(AudiusBackend.getPlaylists, account.user_id, [])
   ])
+  const listedTracks = tracks.filter(t => t.is_unlisted === false)
+  const unlistedTracks = tracks.filter(t => t.is_unlisted === true)
 
-  const trackIds = tracks.map(t => t.track_id)
+  const trackIds = listedTracks.map(t => t.track_id)
   const now = moment()
 
   yield call(fetchDashboardListenDataAsync, {
@@ -42,35 +42,16 @@ function* fetchDashboardAsync(action) {
     period: 'month'
   })
 
-  // CreatorNode returns us a response of type { tracks: [{ title, id }] }
-  const unlistedTracksIdentifiers = yield call(AudiusBackend.getUnlistedTracks)
-
-  // Create routeURLs
-  const identifiersWithRouteURL = unlistedTracksIdentifiers.map(t => ({
-    id: parseInt(t.id),
-    handle: account.handle,
-    url_title: formatUrlName(t.title)
-  }))
-
-  // Hit discprov to get the full unlisted tracks
-  let fullUnlistedTracks = []
-  if (unlistedTracksIdentifiers.length) {
-    fullUnlistedTracks = yield call(retrieveTracks, {
-      trackIds: identifiersWithRouteURL,
-      canBeUnlisted: true
-    })
-  }
-
   if (
-    tracks.length > 0 ||
+    listedTracks.length > 0 ||
     playlists.length > 0 ||
-    fullUnlistedTracks.length > 0
+    unlistedTracks.length > 0
   ) {
     yield put(
       dashboardActions.fetchDashboardSucceeded(
-        tracks,
+        listedTracks,
         playlists,
-        fullUnlistedTracks
+        unlistedTracks
       )
     )
     yield call(pollForBalance)
