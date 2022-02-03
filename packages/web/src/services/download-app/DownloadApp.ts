@@ -2,7 +2,12 @@
 
 import { OS } from 'common/models/OS'
 
-const APP_DOWNLOAD_URL = 'https://download.audius.co'
+const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
+
+const APP_DOWNLOAD_URL =
+  ENVIRONMENT === 'staging'
+    ? 'https://download.staging.audius.co'
+    : 'https://download.audius.co'
 
 /** Given the OS, fetch the latest download version from s3. */
 export const getDownloadLinkForSystem = async (os: OS) => {

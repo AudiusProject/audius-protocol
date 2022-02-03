@@ -585,7 +585,7 @@ jobs:
   dist-linux-staging:
     working_directory: ~/audius-client
     docker:
-      - image: electronuserland/builder
+      - image: electronuserland/builder:wine-mono
     steps:
       - checkout
       - attach_workspace:
@@ -740,19 +740,12 @@ workflows:
           filters:
             branches:
               only: /^master$/
-      - hold-update-staging-ga-ipfs-build:
-          type: approval
-          requires:
-            - deploy-ipfs-staging
-          filters:
-            branches:
-              only: /^master$/
       - update-staging-ga-ipfs-build:
           context:
             - Audius Client
             - Pinata
           requires:
-            - hold-update-staging-ga-ipfs-build
+            - deploy-ipfs-staging
           filters:
             branches:
               only: /^master$/
@@ -764,19 +757,12 @@ workflows:
           filters:
             branches:
               only: /^master$/
-      - hold-update-ipfs-staging-records:
-          type: approval
-          requires:
-            - update-staging-ga-ipfs-build
-          filters:
-            branches:
-              only: /^master$/
       - update-ipfs-staging-records:
           context:
             - Audius Client
             - Cloudflare API
           requires:
-            - hold-update-ipfs-staging-records
+            - update-staging-ga-ipfs-build
           filters:
             branches:
               only: /^master$/
