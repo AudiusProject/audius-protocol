@@ -1,4 +1,5 @@
 import { connectRouter } from 'connected-react-router'
+import { History } from 'history'
 import { combineReducers } from 'redux'
 
 import { reducers as clientStoreReducers } from 'common/store'
@@ -56,7 +57,7 @@ import playlistLibrary from 'store/playlist-library/slice'
 import queue from 'store/queue/slice'
 import reachability from 'store/reachability/reducer'
 
-const createRootReducer = routeHistory =>
+const createRootReducer = (routeHistory: History) =>
   combineReducers({
     // Client store
     ...clientStoreReducers,

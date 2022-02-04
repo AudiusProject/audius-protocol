@@ -18,7 +18,9 @@ const responseQueue: ResponseQueue = {}
 window.responseQueue = responseQueue
 const receiveMessage = (message: Message) => {
   // TODO verify source/origins
-  responseQueue[message.id] = message
+  if (message.id) {
+    responseQueue[message.id] = message
+  }
 }
 
 // Pull the correct response off of the response queue

@@ -206,6 +206,8 @@
     "@types/react-native-push-notification": "3.0.8",
     "@types/react-redux": "7.1.7",
     "@types/react-router-dom": "5.3.3",
+    "@types/redux-saga": "^0.10.5",
+    "@types/redux-sentry-middleware": "^0.2.1",
     "@types/webpack": "4.41.32",
     "@types/webpack-bundle-analyzer": "4.4.1",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
