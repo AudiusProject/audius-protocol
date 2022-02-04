@@ -7,6 +7,8 @@ import {
 import { fetchCoverPhoto } from 'audius-client/src/common/store/cache/users/actions'
 import { useDispatch } from 'react-redux'
 
+import { useDispatchWeb } from './useDispatchWeb'
+
 export const useUserCoverPhoto = (
   userId: number | null,
   coverPhotoSizes: CoverPhotoSizes | null,
@@ -15,7 +17,7 @@ export const useUserCoverPhoto = (
   onDemand = false,
   load = true
 ) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatchWeb() as typeof useDispatch
 
   return useImageSize({
     dispatch,
