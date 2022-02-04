@@ -14,8 +14,14 @@ const libs = () => window.audiusLibs
 export const doesUserBankExist = async () => {
   await waitForLibsInit()
   const userBank: PublicKey = await libs().solanaWeb3Manager.getUserBank()
+  const doesExist = await checkIsCreatedTokenAccount(userBank.toString())
+  return doesExist
+}
+
+export const checkIsCreatedTokenAccount = async (addr: string) => {
+  await waitForLibsInit()
   const tokenAccount: Nullable<AccountInfo> = await libs().solanaWeb3Manager.getAssociatedTokenAccountInfo(
-    userBank.toString()
+    addr
   )
   return tokenAccount != null
 }

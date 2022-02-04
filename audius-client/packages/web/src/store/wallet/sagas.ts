@@ -25,6 +25,7 @@ import {
   decreaseBalance
 } from 'common/store/wallet/slice'
 import { stringWeiToBN, weiToString } from 'common/utils/wallet'
+import { checkIsCreatedTokenAccount } from 'services/audius-backend/waudio'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
@@ -63,6 +64,18 @@ function* sendAsync({
     const totalBalance = waudioWeiAmount.add(weiBNBalance)
     if (weiBNAmount.gt(totalBalance)) {
       yield put(sendFailed({ error: 'Not enough $AUDIO' }))
+      return
+    }
+    const isValidRecipientWallet: boolean = yield call(
+      checkIsCreatedTokenAccount,
+      recipientWallet
+    )
+    if (!isValidRecipientWallet) {
+      yield put(
+        sendFailed({
+          error: 'Invalid Recipient Address: Token Account does not exist'
+        })
+      )
       return
     }
   }
