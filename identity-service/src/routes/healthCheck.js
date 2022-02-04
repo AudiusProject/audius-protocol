@@ -297,7 +297,7 @@ module.exports = function (app) {
 
     if (solanaFeePayerWallets) {
       await Promise.all([...solanaFeePayerWallets].map(async wallet => {
-        const feePayerPubKey = (new solanaWeb3.Account(wallet)).publicKey
+        const feePayerPubKey = (new solanaWeb3.Account(wallet.privateKey)).publicKey
         const balance = await connection.getBalance(feePayerPubKey)
         solanaFeePayerBalances[feePayerPubKey] = balance
         if (balance < minimumBalance) {
