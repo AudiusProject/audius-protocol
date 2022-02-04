@@ -404,21 +404,6 @@ class CreatorNode {
   }
 
   /**
-   * Gets all unlisted track for a user.
-   * Will only return tracks for the currently authed user.
-   *
-   * @returns {(Array)} tracks array of tracks
-   */
-  async getUnlistedTracks () {
-    const request = {
-      url: 'tracks/unlisted',
-      method: 'get'
-    }
-    const { data: body } = await this._makeRequest(request)
-    return body.tracks
-  }
-
-  /**
    * Given a particular endpoint to a creator node, check whether
    * this user has a sync in progress on that node.
    * @param {string} endpoint
