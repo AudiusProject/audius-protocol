@@ -288,22 +288,24 @@ module.exports = function (app) {
 
     if (solanaFeePayerWallet) {
       const feePayerPubKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
+      const feePayerBase58 = feePayerPubKey.toBase58()
       const balance = await connection.getBalance(feePayerPubKey)
       if (balance < minimumBalance) {
-        belowMinimumBalances.push({ wallet: feePayerPubKey, balance })
+        belowMinimumBalances.push({ wallet: feePayerBase58, balance })
       }
-      solanaFeePayerBalances[feePayerPubKey] = balance
+      solanaFeePayerBalances[feePayerBase58] = balance
     }
 
     if (solanaFeePayerWallets) {
       await Promise.all([...solanaFeePayerWallets].map(async wallet => {
         const feePayerPubKey = (new solanaWeb3.Account(wallet.privateKey)).publicKey
+        const feePayerBase58 = feePayerPubKey.toBase58()
         const balance = await connection.getBalance(feePayerPubKey)
         solanaFeePayerBalances[feePayerPubKey] = balance
         if (balance < minimumBalance) {
-          belowMinimumBalances.push({ wallet: feePayerPubKey, balance })
+          belowMinimumBalances.push({ wallet: feePayerBase58, balance })
         }
-        return { wallet: feePayerPubKey, balance }
+        return { wallet: feePayerBase58, balance }
       }))
     }
 

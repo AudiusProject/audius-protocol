@@ -18,7 +18,6 @@ const solanaWeb3 = require('@solana/web3.js')
 
 // constants
 const RPC_ENDPOINT = 'https://api.mainnet-beta.solana.com' // DEVNET is https://api.devnet.solana.com
-const MIN_BALANCE = solanaWeb3.LAMPORTS_PER_SOL
 
 // validation
 let args = process.argv
@@ -27,8 +26,7 @@ if (args.length < 3 && !['fundRelayers', 'queryRelayerBalances'].includes(args[3
 }
 const SOL_RELAYER_INFO = require(path.join(__dirname, args[2]))
 const SCRIPT_ACTION = args[3]
-const AMOUNT_TO_TRANSFER = args[4] * solanaWeb3.LAMPORTS_PER_SOL || MIN_BALANCE
-console.log(AMOUNT_TO_TRANSFER)
+const MIN_BALANCE = args[4] * solanaWeb3.LAMPORTS_PER_SOL
 
 const getSolFromLamports = (lamports) => {
   return lamports / solanaWeb3.LAMPORTS_PER_SOL
@@ -69,10 +67,10 @@ const queryRelayerBalances = async () => {
   const belowMinimumBalanceRelayers = []
   for (var relayerKeypair of relayerKeypairs) {
     const relayerBal = await connection.getBalance(relayerKeypair.publicKey)
+    const diffInSol = getSolFromLamports(MIN_BALANCE - relayerBal)
+    console.log(`RelayerWallet=${relayerKeypair.publicKey}, Balance=${getSolFromLamports(relayerBal)} SOL, diff=${diffInSol} SOL`)
     if (relayerBal < MIN_BALANCE) {
-      const diffInSol = getSolFromLamports(MIN_BALANCE - relayerBal)
       belowMinimumBalanceRelayers.push(relayerKeypair)
-      console.log(`RelayerWallet=${relayerKeypair.publicKey}, Balance=${getSolFromLamports(relayerBal)} SOL, diff=${diffInSol} SOL`)
     }
   }
 
@@ -83,7 +81,7 @@ const queryRelayerBalances = async () => {
   }
 }
 
-const fundRelayers = async (amountToTransfer = AMOUNT_TO_TRANSFER) => {
+const fundRelayers = async () => {
   const { connection } = getSolConstants()
   const { funderKeypair, belowMinimumBalanceRelayers } = await queryRelayerBalances()
 
@@ -96,7 +94,7 @@ const fundRelayers = async (amountToTransfer = AMOUNT_TO_TRANSFER) => {
       solanaWeb3.SystemProgram.transfer({
         fromPubkey: funderKeypair.publicKey,
         toPubkey: relayerToFund.publicKey,
-        lamports: amountToTransfer
+        lamports: MIN_BALANCE
       })
     )
     let signature = await solanaWeb3.sendAndConfirmTransaction(
@@ -114,7 +112,7 @@ const fundRelayers = async (amountToTransfer = AMOUNT_TO_TRANSFER) => {
 }
 
 function _throwArgError () {
-  throw new Error('missing argument - format: node fundSolanaFeePayer path-to-relayer-config.json queryRelayerBalances|fundRelayers')
+  throw new Error('missing argument - format: node fundSolanaFeePayer path-to-relayer-config.json queryRelayerBalances|fundRelayers <optional amount to transfer in SOL>')
 }
 
 async function run () {
