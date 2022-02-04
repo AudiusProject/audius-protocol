@@ -475,7 +475,7 @@ describe("audius-data", () => {
 
     let { handleBytesArray: incorrectHandleBytesArray } = initTestConstants();
 
-    let { bumpSeed: incorrectBumpSeed } =
+    let { bumpSeed: incorrectBumpSeed, derivedAddress: incorrectPDA } =
       await findDerivedPair(
         program.programId,
         adminStgKeypair.publicKey,
@@ -510,7 +510,7 @@ describe("audius-data", () => {
       });
       assert.ok(false, "expected error when creating a user with incorrect bump seed");
     } catch (e) {
-      expect(e.toString()).to.have.string("seeds constraint was violated");
+      expect(e.toString()).to.have.string(`Provided seeds do not result in a valid address`, e);
     }
   });
 
