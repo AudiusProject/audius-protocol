@@ -11,23 +11,12 @@ import AppContext from 'pages/AppContext'
 import { AppErrorBoundary } from 'pages/AppErrorBoundary'
 import { MainContentContext } from 'pages/MainContentContext'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-import logger from 'utils/logger'
+import history from 'utils/history'
 
-import configureStore from './store/configureStore'
-import history from './utils/history'
+import { store } from './store/configureStore'
 
 import './services/webVitals'
 import './index.css'
-
-declare global {
-  interface Window {
-    store: any
-  }
-}
-
-const store = configureStore()
-window.store = store
-logger(store)
 
 type AudiusAppProps = {
   setReady: () => void

@@ -133,7 +133,7 @@ export enum MessageType {
 
 export interface Message {
   type: MessageType
-  id: string
+  id?: string
   isAction?: boolean
   // Data to pass in message
   [key: string]: any

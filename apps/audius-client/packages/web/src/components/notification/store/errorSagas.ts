@@ -1,6 +1,7 @@
 import { put, takeEvery } from 'redux-saga/effects'
 
 import * as errorActions from 'common/store/errors/actions'
+import { Level } from 'common/store/errors/level'
 
 import * as notificationActions from './actions'
 
@@ -25,7 +26,7 @@ function* handleFetchNotificationError(action: ErrorAction) {
       shouldRedirect,
       shouldReport,
       additionalInfo: { errorMessage: action.message },
-      level: errorActions.Level.Warning
+      level: Level.Warning
     })
   )
 }

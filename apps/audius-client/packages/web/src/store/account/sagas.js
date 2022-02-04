@@ -16,6 +16,7 @@ import {
 import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import * as errorActions from 'common/store/errors/actions'
+import { Level } from 'common/store/errors/level'
 import {
   getModalIsOpen,
   getModalVisibility,
@@ -135,7 +136,7 @@ function* initAudioChecks() {
           shouldRedirect: false,
           shouldReport: true,
           additionalInfo: { errorMessage: error.message },
-          level: errorActions.Level.Critical
+          level: Level.Critical
         })
       )
     }

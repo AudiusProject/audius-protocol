@@ -69,7 +69,7 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export default function* rootSaga() {
   yield fork(setupBackend)
-  const sagas = [].concat(
+  const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
     // Config
     analyticsSagas(),
     backendSagas(),
