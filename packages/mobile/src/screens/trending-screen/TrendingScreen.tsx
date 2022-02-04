@@ -33,24 +33,24 @@ const TrendingScreen = ({ navigation }: Props) => {
       <Text style={{ flex: 1 }}>Example trending screen</Text>
       <View style={{ flex: 10 }}>
         <TopTabNavigator
-          initialScreen='tracks'
+          initialScreenName='tracks'
           screens={[
             {
               name: 'thisWeek',
               label: 'This Week',
-              icon: IconDay,
+              Icon: IconDay,
               component: ThisWeekTab
             },
             {
               name: 'thisMonth',
               label: 'This Month',
-              icon: IconMonth,
+              Icon: IconMonth,
               component: ThisMonthTab
             },
             {
               name: 'thisYear',
               label: 'This Year',
-              icon: IconAllTime,
+              Icon: IconAllTime,
               component: ThisYearTab
             }
           ]}
