@@ -106,14 +106,14 @@ const ImageWithPlaceholder = ({
 /**
  * A dynamic image that transitions between changes to the `image` prop.
  */
-const DynamicImage = ({
+export const DynamicImage = memo(function DynamicImage({
   source,
   style,
   styles: stylesProp,
   immediate,
   usePlaceholder = true,
   children
-}: DynamicImageProps) => {
+}: DynamicImageProps) {
   const [firstSize, setFirstSize] = useState(0)
   const [secondSize, setSecondSize] = useState(0)
   const [firstImage, setFirstImage] = useState<ImageSourcePropType>()
@@ -211,8 +211,4 @@ const DynamicImage = ({
       {children}
     </View>
   )
-}
-
-const MemoizedDynamicImage = memo(DynamicImage)
-
-export default MemoizedDynamicImage
+})

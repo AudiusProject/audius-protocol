@@ -1,1 +1,1 @@
-export { default as DynamicImage } from './DynamicImage'
+export { DynamicImage } from './DynamicImage'
