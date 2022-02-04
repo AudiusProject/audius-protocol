@@ -83,7 +83,9 @@ def populate_mock_db(db, entities, block_offset=0):
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
 
-        num_blocks = max(len(tracks), len(users), len(follows), len(saves))
+        num_blocks = max(
+            len(tracks), len(users), len(follows), len(saves), len(reposts)
+        )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = (
                 session.query(models.Block).filter(models.Block.number == i).first()
