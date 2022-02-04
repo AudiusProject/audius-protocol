@@ -1,4 +1,4 @@
-import { ProfileUser } from 'audius-client/src/pages/profile-page/store/types'
+import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 import { Text, View } from 'react-native'
 
 import { makeStyles } from 'app/styles/makeStyles'
