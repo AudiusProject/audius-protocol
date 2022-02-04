@@ -97,7 +97,7 @@ export const EMPTY_PAGE = '/empty_page'
 // External Links
 export const AUDIUS_TWITTER_LINK = 'https://twitter.com/AudiusProject'
 export const AUDIUS_INSTAMGRAM_LINK = 'https://www.instagram.com/audiusmusic'
-export const AUDIUS_DISCORD_LINK = 'https://discord.gg/yNUg2e2'
+export const AUDIUS_DISCORD_LINK = 'https://discord.gg/audius'
 export const AUDIUS_PRESS_LINK = 'https://brand.audius.co'
 
 // Org Links
@@ -115,7 +115,7 @@ export const AUDIUS_EXPLORE_LINK = '/explore'
 export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
 export const AUDIUS_PODCAST_LINK =
   'https://www.youtube.com/playlist?list=PLKEECkHRxmPag5iYp4dTK5fGoRcoX40RY'
-export const AUDIUS_CYPHER_LINK = 'https://discord.gg/yNUg2e2'
+export const AUDIUS_CYPHER_LINK = 'https://discord.gg/audius'
 
 export const authenticatedRoutes = [
   FEED_PAGE,
