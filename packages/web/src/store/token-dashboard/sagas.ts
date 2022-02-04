@@ -12,6 +12,10 @@ import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { upgradeToCreator } from 'common/store/cache/users/sagas'
 import {
+  fetchOpenSeaAssetsForWallets,
+  fetchSolanaCollectiblesForWallets
+} from 'common/store/pages/profile/sagas'
+import {
   getSendData,
   getAssociatedWallets
 } from 'common/store/pages/token-dashboard/selectors'
@@ -47,10 +51,6 @@ import { Nullable } from 'common/utils/typeUtils'
 import { weiToString } from 'common/utils/wallet'
 import { CollectibleState } from 'components/collectibles/types'
 import { fetchServices } from 'components/service-selection/store/slice'
-import {
-  fetchOpenSeaAssetsForWallets,
-  fetchSolanaCollectiblesForWallets
-} from 'pages/profile-page/store/sagas'
 import { newUserMetadata } from 'schemas'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient, {

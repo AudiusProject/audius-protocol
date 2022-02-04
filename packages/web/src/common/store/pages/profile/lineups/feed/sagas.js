@@ -4,16 +4,16 @@ import Kind from 'common/models/Kind'
 import { getUserId } from 'common/store/account/selectors'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getTracks } from 'common/store/cache/tracks/selectors'
-import { getIdFromKindId, getKindFromKindId } from 'common/utils/uid'
 import {
   PREFIX,
   feedActions
-} from 'pages/profile-page/store/lineups/feed/actions'
+} from 'common/store/pages/profile/lineups/feed/actions'
 import {
   getProfileUserId,
   getProfileFeedLineup,
   getProfileUserHandle
-} from 'pages/profile-page/store/selectors'
+} from 'common/store/pages/profile/selectors'
+import { getIdFromKindId, getKindFromKindId } from 'common/utils/uid'
 import { getConfirmCalls } from 'store/confirmer/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 
