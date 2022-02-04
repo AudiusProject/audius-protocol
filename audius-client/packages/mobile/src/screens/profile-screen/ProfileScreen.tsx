@@ -1,4 +1,3 @@
-import { makeGetProfile } from 'audius-client/src/common/store/pages/profile/selectors'
 import { Dimensions, Text, View } from 'react-native'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -10,8 +9,7 @@ import { ProfileMetrics } from './ProfileMetrics'
 import { ProfilePhoto } from './ProfilePhoto'
 import { ProfileSocials } from './ProfileSocials'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
-
-const getProfile = makeGetProfile()
+import { getProfile } from './selectors'
 
 const screenHeight = Dimensions.get('window').height
 
@@ -57,7 +55,7 @@ const ProfileScreen = () => {
         <ExpandableBio profile={profile} />
       </View>
       <View style={{ flex: 4 }}>
-        <ProfileTabNavigator />
+        <ProfileTabNavigator profile={profile} />
       </View>
     </View>
   )

@@ -1,60 +1,80 @@
+import { ComponentType, ReactNode } from 'react'
+
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
-import { View } from 'react-native'
+import { SvgProps } from 'react-native-svg'
 
 import { TopTabBar } from 'app/components/top-tab-bar'
+import { makeStyles } from 'app/styles'
 
 const Tab = createMaterialTopTabNavigator()
 
-type ScreenInfo = {
+const useStyles = makeStyles(({ palette }) => ({
+  root: { backgroundColor: palette.white },
+  label: { fontSize: 12 },
+  indicator: { backgroundColor: palette.primary, height: 3 }
+}))
+
+type TabNavigatorProps = {
+  initialScreenName?: string
+  children: ReactNode
+}
+
+export const TabNavigator = ({
+  initialScreenName,
+  children
+}: TabNavigatorProps) => {
+  const styles = useStyles()
+  return (
+    <Tab.Navigator
+      initialRouteName={initialScreenName}
+      tabBar={props => <TopTabBar {...props} />}
+      screenOptions={{
+        tabBarStyle: styles.root,
+        tabBarLabelStyle: styles.label,
+        tabBarIndicatorStyle: styles.indicator
+      }}
+    >
+      {children}
+    </Tab.Navigator>
+  )
+}
+
+type ScreenConfig = {
   name: string
   label?: string
-  component: any
-  icon?: React.ReactNode
+  component: ComponentType<any>
+  Icon: ComponentType<SvgProps>
+}
+
+type TabScreenConfig = ScreenConfig & {
+  key?: string
+}
+
+export const tabScreen = (config: TabScreenConfig) => {
+  const { key, name, label, Icon, component } = config
+  return (
+    <Tab.Screen
+      key={key}
+      name={name}
+      component={component}
+      options={{
+        tabBarLabel: label ?? name,
+        tabBarIcon: ({ color }) => <Icon fill={color} />
+      }}
+    />
+  )
 }
 
 type TopTabsProps = {
-  initialScreen?: string
-  screens?: ScreenInfo[]
+  initialScreenName?: string
+  screens?: ScreenConfig[]
 }
 
-const TopTabNavigator = ({ initialScreen, screens }: TopTabsProps) => {
+const TopTabNavigator = ({ initialScreenName, screens }: TopTabsProps) => {
   return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0
-      }}
-    >
-      <Tab.Navigator
-        initialRouteName={initialScreen}
-        tabBar={props => <TopTabBar {...props} />}
-        // Backup styles
-        screenOptions={{
-          tabBarActiveTintColor: '#CC0FE0',
-          tabBarLabelStyle: { fontSize: 12 },
-          tabBarStyle: { backgroundColor: 'white' },
-          tabBarIndicatorStyle: {
-            backgroundColor: '#CC0FE0',
-            height: 3
-          }
-        }}
-      >
-        {(screens ?? []).map(screen => (
-          <Tab.Screen
-            name={screen.name}
-            key={screen.name}
-            component={screen.component}
-            options={{
-              tabBarLabel: screen.label ?? screen.name,
-              tabBarIcon: () => screen.icon
-            }}
-          />
-        ))}
-      </Tab.Navigator>
-    </View>
+    <TabNavigator initialScreenName={initialScreenName}>
+      {screens?.map(screen => tabScreen({ key: screen.name, ...screen }))}
+    </TabNavigator>
   )
 }
 
