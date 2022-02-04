@@ -104,7 +104,11 @@ const TrackTile = memo(
 
     const renderShareButton = () => {
       return (
-        <Tooltip text={'Share'} disabled={isDisabled} placement={'bottom'}>
+        <Tooltip
+          text={'Share'}
+          disabled={isDisabled || hideShare}
+          placement={'bottom'}
+        >
           <div
             className={cn(styles.iconButtonContainer, {
               [styles.isHidden]: hideShare
