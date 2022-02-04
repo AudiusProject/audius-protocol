@@ -1,5 +1,5 @@
 import { WidthSizes } from 'audius-client/src/common/models/ImageSizes'
-import { ProfileUser } from 'audius-client/src/pages/profile-page/store/types'
+import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'
 import { DynamicImage } from 'app/components/core'

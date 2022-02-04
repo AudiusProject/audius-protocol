@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { ProfileUser } from 'audius-client/src/pages/profile-page/store/types'
+import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 import {
   Pressable,
   View,

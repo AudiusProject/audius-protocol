@@ -1,5 +1,5 @@
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
-import { ProfileUser } from 'audius-client/src/pages/profile-page/store/types'
+import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 
 import { DynamicImage } from 'app/components/core'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'

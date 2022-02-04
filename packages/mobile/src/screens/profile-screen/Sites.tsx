@@ -1,4 +1,4 @@
-import { ProfileUser } from 'audius-client/src/pages/profile-page/store/types'
+import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 import { View, Text } from 'react-native'
 
 import IconDonate from 'app/assets/images/iconDonate.svg'
