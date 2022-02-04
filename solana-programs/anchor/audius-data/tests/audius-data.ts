@@ -462,6 +462,59 @@ describe("audius-data", () => {
     }
   });
 
+  it("creating user with incorrect bump seed should fail", async () => {
+    let { testEthAddr, testEthAddrBytes, handleBytesArray, metadata, pkString } =
+      initTestConstants();
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+
+    let { handleBytesArray: incorrectHandleBytesArray } = initTestConstants();
+
+    let { bumpSeed: incorrectBumpSeed } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(incorrectHandleBytesArray)
+      );
+
+    // New sol key that will be used to permission user updates
+    let newUserAcctPDA = derivedAddress;
+
+    // New sol key that will be used to permission user updates
+    let newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKeypair.publicKey.toString();
+
+    try {
+      await testCreateUser({
+        provider,
+        program,
+        message,
+        pkString,
+        baseAuthorityAccount,
+        testEthAddr,
+        testEthAddrBytes,
+        handleBytesArray,
+        bumpSeed: incorrectBumpSeed,
+        metadata,
+        newUserKeypair,
+        userStgAccount: newUserAcctPDA,
+        adminStgPublicKey: adminStgKeypair.publicKey,
+      });
+      assert.ok(false, "expected error when creating a user with incorrect bump seed");
+    } catch (e) {
+      expect(e.toString()).to.have.string("seeds constraint was violated");
+    }
+  });
+
+
   it("creating + deleting a track", async () => {
     let {
       pkString,
