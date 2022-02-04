@@ -1,6 +1,7 @@
 import { takeEvery, put } from 'redux-saga/effects'
 
 import * as errorActions from 'common/store/errors/actions'
+import { AdditionalInfo } from 'common/store/errors/reportToSentry'
 
 /**
  * Creates error sagas.
@@ -16,7 +17,7 @@ const createErrorSagas = <ActionType extends { type: string }>({
   getShouldRedirect: (action: ActionType) => boolean
   getShouldReport: (action: ActionType) => boolean
   getType?: (actionType: string) => string
-  getAdditionalInfo?: (action: ActionType) => errorActions.AdditionalInfo
+  getAdditionalInfo?: (action: ActionType) => AdditionalInfo
 }) => {
   function* handleError(action: ActionType) {
     console.info(`Handling error: ${JSON.stringify(action)}`)

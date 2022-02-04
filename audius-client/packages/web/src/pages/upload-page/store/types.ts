@@ -37,4 +37,5 @@ export interface UploadPageState {
   error: boolean
   completionId: number
   stems: TrackMetadata[]
+  failedTrackIndices: number[]
 }

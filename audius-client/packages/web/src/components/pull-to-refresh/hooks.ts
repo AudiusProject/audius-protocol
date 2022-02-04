@@ -133,7 +133,9 @@ export const useAndroidPullToRefresh = (fetchContent: () => void) => {
       const message = new EnablePullToRefreshMessage(getMessageId() !== null)
       message.send()
       const resp = await message.receive()
-      setMessageId(resp.id)
+      if (resp.id) {
+        setMessageId(resp.id)
+      }
       fetchContent()
       setToggle(!toggle)
     }

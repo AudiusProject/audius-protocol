@@ -3,10 +3,8 @@ import React, { createRef, MutableRefObject } from 'react'
 import { ConnectedRouter } from 'connected-react-router'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import { Store } from 'redux'
 
-import { CommonState } from 'common/store'
-import configureStore from 'store/configureStore'
+import { store } from 'store/configureStore'
 import history from 'utils/history'
 
 import App from './App'
@@ -30,11 +28,6 @@ jest.mock('services/solana-client/SolanaClient', () => ({
 }))
 
 describe('smoke test', () => {
-  let store: Store<CommonState>
-  beforeAll(() => {
-    store = configureStore()
-  })
-
   it('renders without crashing', () => {
     const rootNode = document.createElement('div')
     const mainContentRef = createRef<HTMLDivElement | null>() as MutableRefObject<

@@ -3,10 +3,8 @@ import React, { ReactNode, useCallback } from 'react'
 import { ErrorBoundary, ErrorBoundaryProps } from 'react-error-boundary'
 import { useDispatch } from 'react-redux'
 
-import {
-  handleError as handleErrorAction,
-  Level
-} from 'common/store/errors/actions'
+import { handleError as handleErrorAction } from 'common/store/errors/actions'
+import { Level } from 'common/store/errors/level'
 
 type HandleError = NonNullable<ErrorBoundaryProps['onError']>
 
