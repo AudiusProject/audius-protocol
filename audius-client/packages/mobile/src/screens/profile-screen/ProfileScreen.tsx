@@ -1,4 +1,4 @@
-import { makeGetProfile } from 'audius-client/src/pages/profile-page/store/selectors'
+import { makeGetProfile } from 'audius-client/src/common/store/pages/profile/selectors'
 import { Dimensions, Text, View } from 'react-native'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
