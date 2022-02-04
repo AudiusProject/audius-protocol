@@ -718,7 +718,7 @@ def notifications():
         )
         updated_tracks = updated_tracks_query.all()
 
-        prev_tracks = get_prev_track_entries(updated_tracks)
+        prev_tracks = get_prev_track_entries(session, updated_tracks)
 
         for prev_entry in prev_tracks:
             entry = next(t for t in updated_tracks if t.track_id == prev_entry.track_id)
