@@ -1,12 +1,12 @@
 import { call, select } from 'redux-saga/effects'
 
 import { getUserId } from 'common/store/account/selectors'
+import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import {
   PREFIX,
   moreByActions
 } from 'pages/deleted-page/store/lineups/more-by/actions'
 import { getLineup } from 'pages/deleted-page/store/selectors'
-import { retrieveUserTracks } from 'pages/profile-page/store/lineups/tracks/retrieveUserTracks'
 import { LineupSagas } from 'store/lineup/sagas'
 
 function* getTracks({

@@ -2,6 +2,7 @@ import { RouterState } from 'connected-react-router'
 
 import { CommonState } from 'common/store'
 import averageColor from 'common/store/average-color/slice'
+import { ProfilePageState } from 'common/store/pages/profile/types'
 import RemoteConfigReducer from 'common/store/remote-config/slice'
 import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
 import ArtistRecommendationsReducer from 'components/artist-recommendations/store/slice'
@@ -25,7 +26,6 @@ import { FollowersPageState } from 'pages/followers-page/store/types'
 import { FollowingPageState } from 'pages/following-page/store/types'
 import HistoryPageState from 'pages/history-page/store/types'
 import { NotificationUsersPageState } from 'pages/notification-users-page/store/types'
-import { ProfilePageState } from 'pages/profile-page/store/types'
 import RemixesPageReducer from 'pages/remixes-page/store/slice'
 import { RepostsPageState } from 'pages/reposts-page/store/types'
 import SavesPageState from 'pages/saved-page/store/types'
@@ -108,6 +108,7 @@ export type AppState = CommonState & {
       notificationUsers: NotificationUsersPageState
       unfollowConfirmation: UnfollowConfirmationModalState
       nowPlaying: NowPlayingState
+      profile: ProfilePageState
       smartCollection: SmartCollectionState
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
@@ -118,7 +119,6 @@ export type AppState = CommonState & {
 
   // Pages
   upload: UploadPageState
-  profile: ProfilePageState
   dashboard: ArtistDashboardState
   signOn: SignOnPageState
   trending: TrendingPageState

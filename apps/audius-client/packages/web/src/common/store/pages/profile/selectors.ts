@@ -1,33 +1,40 @@
 import moment from 'moment'
 import { createSelector } from 'reselect'
 
+import { CommonState } from 'common/store'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUser, getUsers } from 'common/store/cache/users/selectors'
 import { removeNullable } from 'common/utils/typeUtils'
-import { AppState } from 'store/types'
 
 import { CollectionSortMode } from './types'
 
 // Profile selectors
-export const getProfileStatus = (state: AppState) => state.profile.status
-export const getProfileError = (state: AppState) => state.profile.error
-export const getProfileUserId = (state: AppState) => state.profile.userId
-export const getProfileUserHandle = (state: AppState) => state.profile.handle
-export const getProfileMostUsedTags = (state: AppState) =>
-  state.profile.mostUsedTags
-export const getProfileCollectionSortMode = (state: AppState) =>
-  state.profile.collectionSortMode
-export const getProfileFollowers = (state: AppState) => state.profile.followers
-export const getProfileFollowees = (state: AppState) => state.profile.followees
-export const getFolloweeFollows = (state: AppState) =>
-  state.profile.followeeFollows
-export const getIsSubscribed = (state: AppState) =>
-  state.profile.isNotificationSubscribed
-export const getProfileUser = (state: AppState) =>
+export const getProfileStatus = (state: CommonState) =>
+  state.pages.profile.status
+export const getProfileError = (state: CommonState) => state.pages.profile.error
+export const getProfileUserId = (state: CommonState) =>
+  state.pages.profile.userId
+export const getProfileUserHandle = (state: CommonState) =>
+  state.pages.profile.handle
+export const getProfileMostUsedTags = (state: CommonState) =>
+  state.pages.profile.mostUsedTags
+export const getProfileCollectionSortMode = (state: CommonState) =>
+  state.pages.profile.collectionSortMode
+export const getProfileFollowers = (state: CommonState) =>
+  state.pages.profile.followers
+export const getProfileFollowees = (state: CommonState) =>
+  state.pages.profile.followees
+export const getFolloweeFollows = (state: CommonState) =>
+  state.pages.profile.followeeFollows
+export const getIsSubscribed = (state: CommonState) =>
+  state.pages.profile.isNotificationSubscribed
+export const getProfileUser = (state: CommonState) =>
   getUser(state, { id: getProfileUserId(state) })
 
-export const getProfileFeedLineup = (state: AppState) => state.profile.feed
-export const getProfileTracksLineup = (state: AppState) => state.profile.tracks
+export const getProfileFeedLineup = (state: CommonState) =>
+  state.pages.profile.feed
+export const getProfileTracksLineup = (state: CommonState) =>
+  state.pages.profile.tracks
 
 export const makeGetProfile = () => {
   return createSelector(

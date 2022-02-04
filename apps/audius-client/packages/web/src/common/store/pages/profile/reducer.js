@@ -1,12 +1,15 @@
 import Status from 'common/models/Status'
 import { asLineup } from 'common/store/lineup/reducer'
+import feedReducer from 'common/store/pages/profile/lineups/feed/reducer'
+import tracksReducer from 'common/store/pages/profile/lineups/tracks/reducer'
+import {
+  FollowType,
+  CollectionSortMode
+} from 'common/store/pages/profile/types'
 import {
   FOLLOW_USER,
   FOLLOW_USER_FAILED
 } from 'common/store/social/users/actions'
-import feedReducer from 'pages/profile-page/store/lineups/feed/reducer'
-import tracksReducer from 'pages/profile-page/store/lineups/tracks/reducer'
-import { FollowType, CollectionSortMode } from 'pages/profile-page/store/types'
 
 import {
   FETCH_PROFILE,
