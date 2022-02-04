@@ -7,6 +7,8 @@ import {
 import { fetchProfilePicture } from 'audius-client/src/common/store/cache/users/actions'
 import { useDispatch } from 'react-redux'
 
+import { useDispatchWeb } from './useDispatchWeb'
+
 export const useUserProfilePicture = (
   userId: number | null,
   profilePictureSizes: ProfilePictureSizes | null,
@@ -15,7 +17,8 @@ export const useUserProfilePicture = (
   onDemand = false,
   load = true
 ) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatchWeb() as typeof useDispatch
+
   return useImageSize({
     dispatch,
     id: userId,
