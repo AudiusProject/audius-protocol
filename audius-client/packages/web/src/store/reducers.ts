@@ -45,7 +45,6 @@ import editTrackModal from 'store/application/ui/editTrackModal/reducer'
 import mobileKeyboard from 'store/application/ui/mobileKeyboard/reducer'
 import scrollLock from 'store/application/ui/scrollLock/reducer'
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
-import stemsUpload from 'store/application/ui/stemsUpload/slice'
 import theme from 'store/application/ui/theme/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
 import audioManager from 'store/audio-manager/slice'
@@ -117,7 +116,6 @@ const createRootReducer = (routeHistory: History) =>
         remixSettingsModal,
         scrollLock,
         setAsArtistPickConfirmation,
-        stemsUpload,
         theme,
         userListModal,
         visualizer

@@ -1,3 +1,5 @@
+import { Track } from 'common/models/Track'
+
 export enum StemCategory {
   INSTRUMENTAL = 'INSTRUMENTAL',
   LEAD_VOCALS = 'LEAD_VOCALS',
@@ -26,4 +28,15 @@ export const stemCategoryFriendlyNames = {
   [StemCategory.BACKING_VOX]: 'Backing Vocals / Ad-Libs',
   [StemCategory.BASS]: 'Bass',
   [StemCategory.OTHER]: 'Other'
+}
+
+export type StemUpload = {
+  metadata: Track
+  category: StemCategory
+  allowDelete: boolean
+  allowCategorySwitch: boolean
+}
+
+export type StemUploadWithFile = StemUpload & {
+  file: File
 }

@@ -7,16 +7,15 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
-import { StemCategory } from 'common/models/Stems'
+import { StemCategory, StemUploadWithFile } from 'common/models/Stems'
 import { Track } from 'common/models/Track'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
+import { getCurrentUploads } from 'common/store/stems-upload/selectors'
+import { startStemUploads } from 'common/store/stems-upload/slice'
 import { removeNullable } from 'common/utils/typeUtils'
 import { uuid } from 'common/utils/uid'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import {
-  StemUploadWithFile,
-  dropdownRows
-} from 'components/source-files-modal/SourceFilesModal'
+import { dropdownRows } from 'components/source-files-modal/SourceFilesModal'
 import EditTrackModalComponent from 'components/track/EditTrackModal'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
@@ -25,8 +24,6 @@ import {
   getIsOpen,
   getStems
 } from 'store/application/ui/editTrackModal/selectors'
-import { getCurrentUploads } from 'store/application/ui/stemsUpload/selectors'
-import { startStemUploads } from 'store/application/ui/stemsUpload/slice'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname } from 'utils/route'
 

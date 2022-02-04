@@ -1,29 +1,59 @@
-import { useCallback } from 'react'
-
 import moment from 'moment'
-import { useSelector, shallowEqual, useDispatch } from 'react-redux'
-import { useLocation } from 'react-router-dom'
+import { useSelector as reduxUseSelector, shallowEqual } from 'react-redux'
 
 import { ID } from 'common/models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from 'common/models/Stems'
 import { Track, StemTrack } from 'common/models/Track'
+import { CommonState } from 'common/store'
 import { getHasAccount } from 'common/store/account/selectors'
 import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
-import {
-  openSignOn,
-  updateRouteOnExit,
-  updateRouteOnCompletion,
-  showRequiresAccountModal
-} from 'pages/sign-on/store/actions'
-import { getCurrentUploads } from 'store/application/ui/stemsUpload/selectors'
-import { AppState } from 'store/types'
+import { getCurrentUploads } from 'common/store/stems-upload/selectors'
 
-import {
-  ButtonState,
-  messages,
-  DownloadButtonProps,
-  ButtonType
-} from './DownloadButtons'
+export type DownloadButtonConfig = {
+  state: ButtonState
+  type: ButtonType
+  label: string
+  onClick?: () => void
+}
+
+export enum ButtonState {
+  PROCESSING,
+  LOG_IN_REQUIRED,
+  DOWNLOADABLE,
+  REQUIRES_FOLLOW
+}
+
+export enum ButtonType {
+  STEM,
+  TRACK
+}
+
+type Stem = {
+  category: StemCategory
+  downloadable: boolean
+  downloadURL?: string
+  id?: ID
+}
+
+type LabeledStem = Omit<Stem, 'category'> & { label: string }
+
+type UseDownloadTrackButtonsArgs = {
+  following: boolean
+  isOwner: boolean
+  onDownload: (
+    trackID: number,
+    cid: string,
+    category?: string,
+    parentTrackId?: ID
+  ) => void
+  onNotLoggedInClick?: () => void
+}
+
+const messages = {
+  getDownloadTrack: (stemCount: number) => `${stemCount ? 'Original' : ''}`,
+  getDownloadStem: (friendlyName: string, categoryCount: number) =>
+    `${friendlyName} ${categoryCount || ''}`
+}
 
 const doesRequireFollow = (
   isOwner: boolean,
@@ -31,14 +61,20 @@ const doesRequireFollow = (
   track: Track
 ) => !isOwner && !following && track.download?.requires_follow
 
-const useCurrentStems = (trackId: ID) => {
+const useCurrentStems = ({
+  trackId,
+  useSelector
+}: {
+  trackId: ID
+  useSelector: typeof reduxUseSelector
+}) => {
   const track: Track | null = useSelector(
-    (state: AppState) => getTrack(state, { id: trackId }),
+    (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
   const stemIds = (track?._stems ?? []).map(s => s.track_id)
   const stemTracksMap = useSelector(
-    (state: AppState) => getTracks(state, { ids: stemIds }),
+    (state: CommonState) => getTracks(state, { ids: stemIds }),
     shallowEqual
   ) as { [id: number]: StemTrack }
 
@@ -60,9 +96,15 @@ const useCurrentStems = (trackId: ID) => {
   return { stemTracks, track }
 }
 
-const useUploadingStems = (trackId: ID) => {
+const useUploadingStems = ({
+  trackId,
+  useSelector
+}: {
+  trackId: ID
+  useSelector: typeof reduxUseSelector
+}) => {
   const currentUploads = useSelector(
-    (state: AppState) => getCurrentUploads(state, trackId),
+    (state: CommonState) => getCurrentUploads(state, trackId),
     shallowEqual
   )
   const uploadingTracks = currentUploads.map(u => ({
@@ -72,14 +114,7 @@ const useUploadingStems = (trackId: ID) => {
   return { uploadingTracks }
 }
 
-const getFriendlyNames = (
-  stems: Array<{
-    category: StemCategory
-    downloadable: boolean
-    downloadURL?: string
-    id?: ID
-  }>
-) => {
+const getFriendlyNames = (stems: Stem[]): LabeledStem[] => {
   // Make a map of counts of the shape { category: { count, index }}
   // where count is the number of occurences of a category, and index
   // tracks which instance you're pointing at when naming.
@@ -92,7 +127,7 @@ const getFriendlyNames = (
     return acc
   }, {} as { [category: string]: { count: number; index: number } })
 
-  const combinedFriendly = stems.map(t => {
+  return stems.map(t => {
     const friendlyName = stemCategoryFriendlyNames[t.category]
     let label
     const counts = catCounts[t.category]
@@ -110,39 +145,24 @@ const getFriendlyNames = (
       id: t.id
     }
   })
-  return { combinedFriendly }
 }
 
 const getStemButtons = ({
-  parentTrackId,
-  stems,
+  following,
   isLoggedIn,
   isOwner,
-  notLoggedInClick,
   onDownload,
-  following,
+  onNotLoggedInClick,
+  parentTrackId,
+  stems,
   track
-}: {
-  stems: Array<{
-    downloadable: boolean
-    label: string
-    downloadURL?: string
-    id?: ID
-  }>
-  parentTrackId: ID
+}: UseDownloadTrackButtonsArgs & {
   isLoggedIn: boolean
-  isOwner: boolean
-  following: boolean
+  stems: LabeledStem[]
+  parentTrackId: ID
   track: Track
-  notLoggedInClick: () => void
-  onDownload: (
-    id: ID,
-    cid: string,
-    category?: string,
-    parentTrackId?: ID
-  ) => void
 }) => {
-  const stemButtons: DownloadButtonProps[] = stems.map(u => {
+  return stems.map(u => {
     const state = (() => {
       if (!isLoggedIn) return ButtonState.LOG_IN_REQUIRED
 
@@ -156,7 +176,9 @@ const getStemButtons = ({
       const { downloadURL, id } = u
       if (downloadURL !== undefined && id !== undefined)
         return () => {
-          if (!isLoggedIn) notLoggedInClick()
+          if (!isLoggedIn) {
+            onNotLoggedInClick?.()
+          }
           onDownload(id, downloadURL, u.label, parentTrackId)
         }
     })()
@@ -169,35 +191,27 @@ const getStemButtons = ({
       onClick
     }
   })
-  return stemButtons
 }
 
 const makeDownloadOriginalButton = ({
-  isOwner,
-  isLoggedIn,
-  notLoggedInClick,
   following,
-  track,
+  isLoggedIn,
+  isOwner,
+  onNotLoggedInClick,
   onDownload,
-  stemButtonsLength
-}: {
-  isOwner: boolean
+  stemButtonsLength,
+  track
+}: UseDownloadTrackButtonsArgs & {
   isLoggedIn: boolean
-  notLoggedInClick: () => void
-  following: boolean
   track: Track | null
-  onDownload: (
-    id: ID,
-    cid: string,
-    category?: string,
-    parentTrackId?: ID
-  ) => void
   stemButtonsLength: number
 }) => {
-  if (!track?.download?.is_downloadable) return undefined
+  if (!track?.download?.is_downloadable) {
+    return undefined
+  }
 
   const label = messages.getDownloadTrack(stemButtonsLength)
-  const ret: DownloadButtonProps = {
+  const config: DownloadButtonConfig = {
     state: ButtonState.PROCESSING,
     label,
     type: ButtonType.TRACK
@@ -205,85 +219,78 @@ const makeDownloadOriginalButton = ({
 
   const requiresFollow = doesRequireFollow(isOwner, following, track)
   if (isLoggedIn && requiresFollow) {
-    ret.state = ButtonState.REQUIRES_FOLLOW
-    return ret
+    return {
+      ...config,
+      state: ButtonState.REQUIRES_FOLLOW
+    }
   }
 
   const { cid } = track.download
   if (cid) {
-    ret.state = isLoggedIn
-      ? ButtonState.DOWNLOADABLE
-      : ButtonState.LOG_IN_REQUIRED
-    ret.onClick = () => {
-      if (!isLoggedIn) notLoggedInClick()
-      onDownload(track.track_id, cid)
+    return {
+      ...config,
+      state: isLoggedIn
+        ? ButtonState.DOWNLOADABLE
+        : ButtonState.LOG_IN_REQUIRED,
+      onClick: () => {
+        if (!isLoggedIn) {
+          onNotLoggedInClick?.()
+        }
+        onDownload(track.track_id, cid)
+      }
     }
   }
 
-  return ret
+  return config
 }
 
-export const useButtons = (
-  trackId: ID,
-  onDownload: (
-    trackID: number,
-    cid: string,
-    category?: string,
-    parentTrackId?: ID
-  ) => void,
-  isOwner: boolean,
-  following: boolean
-) => {
-  const dispatch = useDispatch()
+export const useDownloadTrackButtons = ({
+  following,
+  isOwner,
+  onDownload,
+  onNotLoggedInClick,
+  trackId,
+  useSelector
+}: UseDownloadTrackButtonsArgs & {
+  trackId: ID
+  useSelector: typeof reduxUseSelector
+}) => {
   const isLoggedIn = useSelector(getHasAccount)
-  const { pathname } = useLocation()
-
-  const notLoggedInClick = useCallback(() => {
-    dispatch(updateRouteOnCompletion(pathname))
-    dispatch(updateRouteOnExit(pathname))
-    dispatch(openSignOn())
-    dispatch(showRequiresAccountModal())
-  }, [dispatch, pathname])
 
   // Get already uploaded stems and parent track
-  const { stemTracks, track } = useCurrentStems(trackId)
+  const { stemTracks, track } = useCurrentStems({ trackId, useSelector })
 
   // Get the currently uploading stems
-  const { uploadingTracks } = useUploadingStems(trackId)
+  const { uploadingTracks } = useUploadingStems({ trackId, useSelector })
   if (!track) return []
 
   // Combine uploaded and uploading stems
-  const combinedStems = [...stemTracks, ...uploadingTracks] as Array<{
-    category: StemCategory
-    downloadable: boolean
-    downloadURL?: string
-    id?: ID
-  }>
+  const combinedStems = [...stemTracks, ...uploadingTracks] as Stem[]
 
   // Give the stems friendly names
-  const { combinedFriendly } = getFriendlyNames(combinedStems)
+  const combinedFriendly = getFriendlyNames(combinedStems)
 
   // Make buttons for stems
   const stemButtons = getStemButtons({
-    parentTrackId: trackId,
-    stems: combinedFriendly,
+    following,
     isLoggedIn,
     isOwner,
-    notLoggedInClick,
     onDownload,
-    following,
+    onNotLoggedInClick,
+    parentTrackId: trackId,
+    stems: combinedFriendly,
     track
   })
 
   // Make download original button
   const originalTrackButton = makeDownloadOriginalButton({
-    isOwner,
-    isLoggedIn,
     following,
-    notLoggedInClick,
-    track,
+    isLoggedIn,
+    isOwner,
     onDownload,
-    stemButtonsLength: stemButtons.length
+    onNotLoggedInClick,
+    stemButtonsLength: stemButtons.length,
+    track
   })
 
   return [...(originalTrackButton ? [originalTrackButton] : []), ...stemButtons]

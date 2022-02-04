@@ -9,8 +9,12 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import { StemCategory, stemCategoryFriendlyNames } from 'common/models/Stems'
-import { Track, Download } from 'common/models/Track'
+import {
+  StemCategory,
+  stemCategoryFriendlyNames,
+  StemUpload
+} from 'common/models/Stems'
+import { Download } from 'common/models/Track'
 import IconButton from 'components/icon-button/IconButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
@@ -35,17 +39,6 @@ const defaultDownloadSettings: Download = {
   is_downloadable: false,
   requires_follow: false,
   cid: null
-}
-
-export type StemUpload = {
-  metadata: Track
-  category: StemCategory
-  allowDelete: boolean
-  allowCategorySwitch: boolean
-}
-
-export type StemUploadWithFile = StemUpload & {
-  file: File
 }
 
 export const dropdownRows = [
