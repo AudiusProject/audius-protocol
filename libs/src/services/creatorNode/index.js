@@ -365,11 +365,11 @@ class CreatorNode {
 
   async handleAsyncTrackUpload (file, onProgress) {
     const { data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress)
-    return this.pollProcessingStatus('transcode', uuid)
+    return this.pollProcessingStatus(uuid)
   }
 
-  async pollProcessingStatus (taskType, uuid) {
-    const route = this.creatorNodeEndpoint + '/track_content_status'
+  async pollProcessingStatus (uuid) {
+    const route = this.creatorNodeEndpoint + '/async_processing_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
       try {
@@ -378,7 +378,7 @@ class CreatorNode {
         //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
         if (status && status === 'DONE') return resp
         if (status && status === 'FAILED') {
-          await this._handleErrorHelper(new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`), route, uuid)
+          await this._handleErrorHelper(new Error(`Track content async upload failed: uuid=${uuid}, error=${resp}`), route, uuid)
         }
       } catch (e) {
         // Catch errors here and swallow them. Errors don't signify that the track
@@ -391,7 +391,7 @@ class CreatorNode {
     }
 
     // TODO: update MAX_TRACK_TRANSCODE_TIMEOUT if generalizing this method
-    await this._handleErrorHelper(new Error(`${taskType} took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
+    await this._handleErrorHelper(new Error(`Track content async upload took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
   }
 
   /**
@@ -401,7 +401,7 @@ class CreatorNode {
    */
   async getTrackContentProcessingStatus (uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/track_content_status',
+      url: '/async_processing_status',
       params: {
         uuid
       },
