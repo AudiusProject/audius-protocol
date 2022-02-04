@@ -77,7 +77,7 @@ const messages = {
   rewardAlreadyClaimed: 'Reward already claimed!',
   claimError: 'Oops, something’s gone wrong',
   claimYourReward: 'Claim Your Reward',
-  twitterShare: (modalType: 'referrals' | 'referrals-verified') =>
+  twitterShare: (modalType: 'referrals' | 'ref-v') =>
     `Share Invite With Your ${modalType === 'referrals' ? 'Friends' : 'Fans'}`,
   twitterCopy: `Come support me on @audiusproject! Use my link and we both earn $AUDIO when you sign up.\n\n #audius #audiorewards\n\n`,
   verifiedChallenge: 'VERIFIED CHALLENGE'
@@ -121,7 +121,7 @@ const InviteLink = ({ className, inviteLink }: InviteLinkProps) => {
 }
 
 type TwitterShareButtonProps = {
-  modalType: 'referrals' | 'referrals-verified'
+  modalType: 'referrals' | 'ref-v'
   inviteLink: string
 }
 
@@ -344,14 +344,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         </div>
       )}
 
-      {userHandle &&
-        (modalType === 'referrals' || modalType === 'referrals-verified') && (
-          <div className={wm(styles.buttonContainer)}>
-            <TwitterShareButton modalType={modalType} inviteLink={inviteLink} />
-            <div className={styles.buttonSpacer} />
-            <InviteLink inviteLink={inviteLink} />
-          </div>
-        )}
+      {userHandle && (modalType === 'referrals' || modalType === 'ref-v') && (
+        <div className={wm(styles.buttonContainer)}>
+          <TwitterShareButton modalType={modalType} inviteLink={inviteLink} />
+          <div className={styles.buttonSpacer} />
+          <InviteLink inviteLink={inviteLink} />
+        </div>
+      )}
       {modalType === 'mobile-install' && (
         <div className={wm(styles.qrContainer)}>
           <img className={styles.qr} src={QRCode} alt='QR Code' />
