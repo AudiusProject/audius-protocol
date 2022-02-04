@@ -27,6 +27,18 @@ export const badgeTiers: { tier: BadgeTier; minAudio: BN }[] = [
   }
 ]
 
+export const tierLevels: BadgeTier[] = [
+  'none',
+  'bronze',
+  'silver',
+  'gold',
+  'platinum'
+]
+
+export const getTierLevel = (tier: BadgeTier) => {
+  return tierLevels.indexOf(tier)
+}
+
 export const getBadgeTier = (
   user: Pick<User, 'balance' | 'associated_wallets_balance'>
 ) => {
