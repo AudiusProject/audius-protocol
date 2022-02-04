@@ -7,7 +7,6 @@ from redis import Redis
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import Block
 from src.queries.get_trending_playlists import (
     GetTrendingPlaylistsArgs,
     _get_trending_playlists_with_session,
@@ -18,6 +17,7 @@ from src.queries.get_underground_trending import (
     _get_underground_trending_with_session,
 )
 from src.tasks.celery_app import celery
+from src.tasks.index_aggregate_user import get_latest_blocknumber
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
@@ -28,17 +28,17 @@ logger = logging.getLogger(__name__)
 trending_strategy_factory = TrendingStrategyFactory()
 
 
-def get_latest_blocknumber(session: Session, redis: Redis) -> Optional[int]:
+def date_to_week(date: datetime) -> str:
+    return date.strftime("%Y-%m-%d")
+
+
+def get_latest_blocknumber_via_redis(session: Session, redis: Redis) -> Optional[int]:
     # get latest db state from redis cache
     latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
     if latest_indexed_block_num is not None:
         return int(latest_indexed_block_num)
-    db_block_query = (
-        session.query(Block.number).filter(Block.is_current == True).first()
-    )
-    if db_block_query is None:
-        return None
-    return db_block_query[0]
+
+    return get_latest_blocknumber(session)
 
 
 # The number of users to recieve the trending rewards
@@ -65,7 +65,7 @@ def dispatch_trending_challenges(
                 "rank": idx + 1,
                 "type": str(type),
                 "version": str(version),
-                "week": str(date),
+                "week": date_to_week(date),
             },
         )
 
@@ -79,7 +79,7 @@ def enqueue_trending_challenges(
     update_start = time.time()
     with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
 
-        latest_blocknumber = get_latest_blocknumber(session, redis)
+        latest_blocknumber = get_latest_blocknumber_via_redis(session, redis)
         if latest_blocknumber is None:
             logger.error(
                 "calculate_trending_challenges.py | Unable to get latest block number"
@@ -161,7 +161,7 @@ def enqueue_trending_challenges(
                         "rank": idx + 1,
                         "type": str(TrendingType.PLAYLISTS),
                         "version": str(version),
-                        "week": str(date),
+                        "week": date_to_week(date),
                     },
                 )
 
@@ -179,6 +179,8 @@ def calculate_trending_challenges_task(self, date=None):
     if date is None:
         logger.error("calculate_trending_challenges.py | Must be called with a date")
         return
+    # Celery gives this to us formatted as '2022-01-01T00:00:00', need to parse into datetime
+    date = datetime.fromisoformat(date)
     db = calculate_trending_challenges_task.db
     redis = calculate_trending_challenges_task.redis
     challenge_bus = calculate_trending_challenges_task.challenge_event_bus

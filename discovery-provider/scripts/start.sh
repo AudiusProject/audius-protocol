@@ -2,7 +2,10 @@
 
 if [[ -z "$audius_loggly_disable" ]]; then
     if [[ -n "$audius_loggly_token" ]]; then
+        # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
+        audius_discprov_hostname=$(echo $audius_discprov_url | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
         audius_loggly_tags=$(echo $audius_loggly_tags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
+
         mkdir -p /var/spool/rsyslog
         mkdir -p /etc/rsyslog.d
         cat >/etc/rsyslog.d/22-loggly.conf <<EOF
@@ -62,17 +65,21 @@ if [ -z "$audius_db_url" ]; then
     /wait
 fi
 
+export PYTHONUNBUFFERED=1
+
+audius_discprov_loglevel=${audius_discprov_loglevel:-info}
+
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) worker.log &
-        celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(logger -t beat) beat.log &
+        celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) worker.log &
+        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) beat.log &
     fi
 else
     ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) &
-        celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(logger -t beat) &
+        celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10

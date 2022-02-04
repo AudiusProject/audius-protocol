@@ -12,7 +12,80 @@ class BaseRewardsReporter {
   async reportAAORejection ({ userId, challengeId, amount, error }) {}
 }
 
-const SOLANA_BASED_CHALLENGE_IDS = new Set(['listen-streak'])
+const MAX_DISBURSED_CACHE_SIZE = 100
+const SOLANA_EST_SEC_PER_SLOT = 0.5
+const POA_SEC_PER_BLOCK = 5
+
+/**
+ * Class to encapsulate logic for calculating disbursement delay thresholds.
+ * Periodically polls Solana to get slot production rate.
+ * Caches old values (`allowedStalenessSec`) for current POA block & Solana slot to reduce RPC
+ * overhead.
+ *
+ * Exposes `getPOABlockThreshold` and `getSolanaSlotThreshold`
+ *
+ * @class ThresholdCalculator
+ */
+class AttestationDelayCalculator {
+  constructor ({ libs, runBehindSec, allowedStalenessSec, solanaPollingInterval = 30, logger = console }) {
+    this.libs = libs
+    this.solanaSecPerSlot = SOLANA_EST_SEC_PER_SLOT
+    this.solanaSlot = null
+    this.runBehindSec = runBehindSec
+    this.lastSolanaThreshold = null
+    this.lastPOAThreshold = null
+    this.allowedStalenessSec = allowedStalenessSec
+    this.solanaPollingInterval = solanaPollingInterval
+    this.logger = logger
+    this.intervalHandle = null
+  }
+
+  async start () {
+    // Begin Solana slot rate polling
+    let oldSlot = await this.libs.solanaWeb3Manager.getSlot()
+    this.intervalHandle = setInterval(async () => {
+      const newSlot = await this.libs.solanaWeb3Manager.getSlot()
+      const diff = this.solanaPollingInterval / (newSlot - oldSlot)
+      this.solanaSecPerSlot = diff
+      this.logger.info(`Setting Solana seconds per slot to ${diff}`)
+      oldSlot = newSlot
+    }, this.solanaPollingInterval * 1000)
+  }
+
+  stop () {
+    clearInterval(this.intervalHandle)
+  }
+
+  async getPOABlockThreshold () {
+    // Use cached value if possible
+    if (this.lastPOAThreshold &&
+       (Date.now() - this.lastPOAThreshold.time) / 1000 < this.allowedStalenessSec) {
+      return this.lastPOAThreshold.threshold
+    }
+    const currentBlock = await this.libs.web3Manager.getWeb3().eth.getBlockNumber()
+    let threshold = currentBlock - this.runBehindSec / POA_SEC_PER_BLOCK
+    this.lastPOAThreshold = {
+      threshold,
+      time: Date.now()
+    }
+    return threshold
+  }
+
+  async getSolanaSlotThreshold () {
+    // Use cached value if possible
+    if (this.lastSolanaThreshold &&
+       (Date.now() - this.lastSolanaThreshold.time) / 1000 < this.allowedStalenessSec) {
+      return this.lastSolanaThreshold.threshold
+    }
+    const currentSlot = await this.libs.solanaWeb3Manager.getSlot()
+    let threshold = currentSlot - this.runBehindSec / this.solanaSecPerSlot
+    this.lastSolanaThreshold = {
+      threshold,
+      time: Date.now()
+    }
+    return threshold
+  }
+}
 
 /**
  * `RewardsAttester` is responsible for repeatedly attesting for completed rewards.
@@ -51,6 +124,9 @@ class RewardsAttester {
    *    maxRetries: number
    *    reporter: BaseRewardsReporter
    *    challengeIdsDenyList: Array<string>
+   *    endpoints?: Array<string>
+   *    runBehindSec?: number
+   *    isSolanaChallenge?: (string) => boolean
    * }} {
    *    libs,
    *    startingBlock,
@@ -64,7 +140,10 @@ class RewardsAttester {
    *    getStartingBlockOverride = () => null,
    *    maxRetries = 3,
    *    reporter,
-   *    challengeIdsDenyList
+   *    challengeIdsDenyList,
+   *    endpoints,
+   *    runBehindSec
+   *    isSolanaChallenge
    *  }
    * @memberof RewardsAttester
    */
@@ -81,7 +160,10 @@ class RewardsAttester {
     getStartingBlockOverride = () => null,
     maxRetries = 5,
     reporter,
-    challengeIdsDenyList
+    challengeIdsDenyList,
+    endpoints = [],
+    runBehindSec = 0,
+    isSolanaChallenge = (challengeId) => true
   }) {
     this.libs = libs
     this.logger = logger
@@ -92,7 +174,9 @@ class RewardsAttester {
     this.aaoEndpoint = aaoEndpoint
     this.aaoAddress = aaoAddress
     this.reporter = reporter || new BaseRewardsReporter()
-    this.endpoints = []
+    this.endpoints = endpoints
+    // If passed endpoints, override the automatic reselection process
+    this.overrideEndpointSelection = !!endpoints.length
     this.maxRetries = maxRetries
     this.updateValues = updateValues
     this.challengeIdsDenyList = new Set(...challengeIdsDenyList)
@@ -100,7 +184,9 @@ class RewardsAttester {
     this.undisbursedQueue = []
     // Stores a set of identifiers representing
     // recently disbursed challenges.
-    this.recentlyDisbursedSet = new Set()
+    // Stored as an array to make it simpler to prune
+    // old entries
+    this.recentlyDisbursedQueue = []
     // How long wait wait before retrying
     this.cooldownMsec = 2000
     // How much we increase the cooldown between attempts:
@@ -112,6 +198,15 @@ class RewardsAttester {
     this.maxRetries = maxRetries
     // Get override starting block for manually setting indexing start
     this.getStartingBlockOverride = getStartingBlockOverride
+
+    // Calculate delay
+    this.delayCalculator = new AttestationDelayCalculator({
+      libs,
+      runBehindSec,
+      logger,
+      allowedStalenessSec: 5
+    })
+    this.isSolanaChallenge = isSolanaChallenge
 
     this._performSingleAttestation = this._performSingleAttestation.bind(this)
     this._disbursementToKey = this._disbursementToKey.bind(this)
@@ -127,9 +222,11 @@ class RewardsAttester {
       quorum size: ${this.quorumSize}, \
       parallelization: ${this.parallelization} \
       AAO endpoint: ${this.aaoEndpoint} \
-      AAO address: ${this.aaoAddress}
+      AAO address: ${this.aaoAddress} \
+      endpoints: ${this.endpoints}
     `)
     await this._selectDiscoveryNodes()
+    await this.delayCalculator.start()
 
     while (true) {
       try {
@@ -141,6 +238,25 @@ class RewardsAttester {
         await this._delay(1000)
       }
     }
+  }
+
+  /**
+   * Updates attester config
+   *
+   * @param {{
+   *  aaoEndpoint: string,
+   *  aaoAddress: string,
+   *  endpoints: Array<string>,
+   *  challengeIdsDenyList: Array<string>
+   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }
+   * @memberof RewardsAttester
+   */
+  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }) {
+    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}`)
+    this.aaoEndpoint = aaoEndpoint || this.aaoEndpoint
+    this.aaoAddress = aaoAddress || this.aaoAddress
+    this.endpoints = endpoints || this.endpoints
+    this.challengeIdsDenyList = challengeIdsDenyList ? new Set(...challengeIdsDenyList) : this.challengeIdsDenyList
   }
 
   /**
@@ -165,9 +281,10 @@ class RewardsAttester {
     const override = await this.getStartingBlockOverride()
     // Careful with 0...
     if (override === null || override === undefined) return
-    this.logger.info(`Setting starting block override: ${override}`)
+    this.logger.info(`Setting starting block override: ${override}, emptying recent disbursed queue`)
     this.startingBlock = override
     this.offset = 0
+    this.recentlyDisbursedQueue = []
   }
 
   /**
@@ -204,7 +321,7 @@ class RewardsAttester {
     // slot and throw off this calculation.
     // TODO: [AUD-1217] we should handle this in a less hacky way, possibly by
     // attesting for Solana + POA challenges separately.
-    const poaAttestations = toAttest.filter(({ challengeId }) => !SOLANA_BASED_CHALLENGE_IDS.has(challengeId))
+    const poaAttestations = toAttest.filter(({ challengeId }) => !this.isSolanaChallenge(challengeId))
     const highestBlock = poaAttestations.length ? Math.max(...poaAttestations.map(e => e.completedBlocknumber)) : null
 
     // Attempt to attest in a single sweep
@@ -247,7 +364,7 @@ class RewardsAttester {
     this.logger.info(`Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`)
 
     // Set the recently disbursed set
-    this.recentlyDisbursedSet = new Set(results.map(this._disbursementToKey))
+    this._addRecentlyDisbursed(results)
 
     // run the `updateValues` callback
     await this.updateValues({ startingBlock: this.startingBlock, offset: this.offset, successCount })
@@ -355,6 +472,7 @@ class RewardsAttester {
   }
 
   async _selectDiscoveryNodes () {
+    if (this.overrideEndpointSelection) return
     this.logger.info(`Selecting discovery nodes`)
     const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll()
     this.endpoints = sampleSize(endpoints, this.quorumSize)
@@ -370,7 +488,7 @@ class RewardsAttester {
   async _refillQueueIfNecessary () {
     if (this.undisbursedQueue.length) return {}
 
-    this.logger.info(`Refilling queue, recently disbursed: ${JSON.stringify(this.recentlyDisbursedSet)}`)
+    this.logger.info(`Refilling queue, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`)
     const { success: disbursable, error } = await this.libs.Rewards.getUndisbursedChallenges({ offset: this.offset, completedBlockNumber: this.startingBlock, logger: this.logger })
 
     if (error) {
@@ -397,9 +515,14 @@ class RewardsAttester {
         wallet,
         completedBlocknumber: completed_blocknumber
       }))
-      .filter(d => !(this.challengeIdsDenyList.has(d.challengeId) || this.recentlyDisbursedSet.has(this._disbursementToKey(d))))
+      .filter(d => !(this.challengeIdsDenyList.has(d.challengeId) || (new Set(this.recentlyDisbursedQueue)).has(this._disbursementToKey(d))))
 
-    this.logger.info(`Got ${disbursable.length} undisbursed challenges${this.undisbursedQueue.length !== disbursable.length ? `, filtered out [${disbursable.length - this.undisbursedQueue.length}] recently disbursed challenges.` : '.'}`)
+    // Filter out recently disbursed challenges
+    if (this.undisbursedQueue.length) {
+      this.undisbursedQueue = await this._filterRecentlyCompleted(this.undisbursedQueue)
+    }
+
+    this.logger.info(`Got ${disbursable.length} undisbursed challenges${this.undisbursedQueue.length !== disbursable.length ? `, filtered out [${disbursable.length - this.undisbursedQueue.length}] challenges.` : '.'}`)
     return {}
   }
 
@@ -419,9 +542,11 @@ class RewardsAttester {
   async _processResponses (responses) {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW, errors.BLOCKED])
-    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT, errors.CHALLENGE_INCOMPLETE])
+    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
     // Account for errors from DN aggregation + Solana program
-    const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT])
+    // CHALLENGE_INCOMPLETE are already handled in the `submitAndEvaluate` flow -
+    // safe to assume those won't work if we see them at this point.
+    const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT, errors.CHALLENGE_INCOMPLETE])
 
     const noRetry = []
     const successful = []
@@ -463,8 +588,8 @@ class RewardsAttester {
     }
   }
 
-  _disbursementToKey ({ challengeId, userId }) {
-    return `${challengeId}_${userId}`
+  _disbursementToKey ({ challengeId, userId, specifier }) {
+    return `${challengeId}_${userId}_${specifier}`
   }
 
   async _backoff (retryCount) {
@@ -476,6 +601,31 @@ class RewardsAttester {
   async _delay (waitTime) {
     return new Promise(resolve => setTimeout(resolve, waitTime))
   }
+
+  async _addRecentlyDisbursed (challenges) {
+    const ids = challenges.map(this._disbursementToKey)
+    this.recentlyDisbursedQueue.push(...ids)
+    if (this.recentlyDisbursedQueue.length > MAX_DISBURSED_CACHE_SIZE) {
+      this.recentlyDisbursedQueue.splice(0, this.recentlyDisbursedQueue.length - MAX_DISBURSED_CACHE_SIZE)
+    }
+  }
+
+  async _filterRecentlyCompleted (challenges) {
+    const [poaThreshold, solanaThreshold] = await Promise.all([
+      this.delayCalculator.getPOABlockThreshold(),
+      this.delayCalculator.getSolanaSlotThreshold()
+    ])
+
+    this.logger.info(`Filtering with POA threshold: ${poaThreshold}, Solana threshold: ${solanaThreshold}`)
+    const res = challenges.filter(c => (
+      c.completedBlocknumber < (this.isSolanaChallenge(c.challengeId) ? solanaThreshold : poaThreshold)
+    ))
+    if (res.length < challenges.length) {
+      this.logger.info(`Filtered out ${challenges.length - res.length} recent challenges`)
+    }
+    return res
+  }
 }
 
 module.exports = RewardsAttester
+module.exports.AttestationDelayCalculator = AttestationDelayCalculator

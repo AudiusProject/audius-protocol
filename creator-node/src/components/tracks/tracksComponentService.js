@@ -1,20 +1,10 @@
-const path = require('path')
-
-const config = require('../../config.js')
 const {
   logger: genericLogger,
   logInfoWithDuration,
   getStartTime
 } = require('../../logging')
-const { getSegmentsDuration } = require('../../segmentDuration')
-const TranscodingQueue = require('../../TranscodingQueue')
-const models = require('../../models')
-const DBManager = require('../../dbManager')
-const fileManager = require('../../fileManager')
 
-const SaveFileToIPFSConcurrencyLimit = 10
-
-const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
+const TrackContentUploadManager = require('./trackContentUploadManager')
 
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
@@ -31,179 +21,44 @@ const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
  */
 const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const logger = genericLogger.child(logContext)
+  const {
+    fileName,
+    fileDir,
+    fileDestination,
+    session: { cnodeUserUUID }
+  } = requestProps
 
   const routeTimeStart = getStartTime()
-  let codeBlockTimeStart
-  const cnodeUserUUID = requestProps.session.cnodeUserUUID
 
   // Create track transcode and segments, and save all to disk
-  let transcodedFilePath
-  let segmentFilePaths
-  try {
-    codeBlockTimeStart = getStartTime()
-
-    const transcode = await Promise.all([
-      TranscodingQueue.segment(requestProps.fileDir, requestProps.fileName, {
-        logContext
-      }),
-      TranscodingQueue.transcode320(
-        requestProps.fileDir,
-        requestProps.fileName,
-        { logContext }
-      )
-    ])
-    segmentFilePaths = transcode[0].filePaths
-    transcodedFilePath = transcode[1].filePath
-
-    logInfoWithDuration(
-      { logger, startTime: codeBlockTimeStart },
-      `Successfully re-encoded track file=${requestProps.fileName}`
+  const codeBlockTimeStart = getStartTime()
+  const { transcodeFilePath, segmentFileNames } =
+    await TrackContentUploadManager.transcodeAndSegment(
+      { logContext },
+      { fileName, fileDir }
     )
-  } catch (err) {
-    // Prune upload artifacts
-    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
-
-    throw new Error(err.toString())
-  }
-
-  // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
-  codeBlockTimeStart = getStartTime()
-  const transcodeFileIPFSResp = await fileManager.saveFileToIPFSFromFS(
-    { logContext: requestProps.logContext },
-    requestProps.session.cnodeUserUUID,
-    transcodedFilePath,
-    ENABLE_IPFS_ADD_TRACKS
-  )
-
-  let segmentFileIPFSResps = []
-  for (
-    let i = 0;
-    i < segmentFilePaths.length;
-    i += SaveFileToIPFSConcurrencyLimit
-  ) {
-    const segmentFilePathsSlice = segmentFilePaths.slice(
-      i,
-      i + SaveFileToIPFSConcurrencyLimit
-    )
-
-    const sliceResps = await Promise.all(
-      segmentFilePathsSlice.map(async (segmentFilePath) => {
-        const segmentAbsolutePath = path.join(
-          requestProps.fileDir,
-          'segments',
-          segmentFilePath
-        )
-        const { multihash, dstPath } = await fileManager.saveFileToIPFSFromFS(
-          { logContext: requestProps.logContext },
-          requestProps.session.cnodeUserUUID,
-          segmentAbsolutePath,
-          ENABLE_IPFS_ADD_TRACKS
-        )
-        return { multihash, srcPath: segmentFilePath, dstPath }
-      })
-    )
-
-    segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
-  }
   logInfoWithDuration(
     { logger, startTime: codeBlockTimeStart },
-    `Successfully saved transcode and segment files to IPFS for file=${requestProps.fileName}`
+    `Successfully re-encoded track file=${fileName}`
   )
 
-  // Retrieve all segment durations as map(segment srcFilePath => segment duration)
-  codeBlockTimeStart = getStartTime()
-  const segmentDurations = await getSegmentsDuration(
-    requestProps.fileName,
-    requestProps.fileDestination
-  )
-  logInfoWithDuration(
-    { logger, startTime: codeBlockTimeStart },
-    `Successfully retrieved segment duration for file=${requestProps.fileName}`
-  )
-
-  // For all segments, build array of (segment multihash, segment duration)
-  let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
-    return {
-      multihash: segmentFileIPFSResp.multihash,
-      duration: segmentDurations[segmentFileIPFSResp.srcPath]
-    }
-  })
-
-  // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
-  trackSegments = trackSegments.filter((trackSegment) => trackSegment.duration)
-
-  // error if there are no track segments
-  if (!trackSegments || !trackSegments.length) {
-    // Prune upload artifacts
-    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
-
-    throw new Error('Track upload failed - no track segments')
-  }
-
-  // Record entries for transcode and segment files in DB
-  codeBlockTimeStart = getStartTime()
-  const transaction = await models.sequelize.transaction()
-  let transcodeFileUUID
-  try {
-    // Record transcode file entry in DB
-    const createTranscodeFileQueryObj = {
-      multihash: transcodeFileIPFSResp.multihash,
-      sourceFile: requestProps.fileName,
-      storagePath: transcodeFileIPFSResp.dstPath,
-      type: 'copy320' // TODO - replace with models enum
-    }
-    const file = await DBManager.createNewDataRecord(
-      createTranscodeFileQueryObj,
+  const resp = await TrackContentUploadManager.processTranscodeAndSegments(
+    { logContext },
+    {
       cnodeUserUUID,
-      models.File,
-      transaction
-    )
-    transcodeFileUUID = file.fileUUID
-
-    // Record all segment file entries in DB
-    // Must be written sequentially to ensure clock values are correctly incremented and populated
-    for (const { multihash, dstPath } of segmentFileIPFSResps) {
-      const createSegmentFileQueryObj = {
-        multihash,
-        sourceFile: requestProps.fileName,
-        storagePath: dstPath,
-        type: 'track' // TODO - replace with models enum
-      }
-      await DBManager.createNewDataRecord(
-        createSegmentFileQueryObj,
-        cnodeUserUUID,
-        models.File,
-        transaction
-      )
+      fileName,
+      fileDir,
+      transcodeFilePath,
+      segmentFileNames,
+      fileDestination
     }
-
-    await transaction.commit()
-  } catch (e) {
-    await transaction.rollback()
-
-    // Prune upload artifacts
-    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
-
-    throw new Error(e.toString())
-  }
-  logInfoWithDuration(
-    { logger, startTime: codeBlockTimeStart },
-    `Successfully updated DB for file=${requestProps.fileName}`
   )
-
-  // Prune upload artifacts after success
-  fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
-
   logInfoWithDuration(
     { logger, startTime: routeTimeStart },
-    `Successfully handled track content for file=${requestProps.fileName}`
+    `Successfully handled track content for file=${fileName}`
   )
-  return {
-    transcodedTrackCID: transcodeFileIPFSResp.multihash,
-    transcodedTrackUUID: transcodeFileUUID,
-    track_segments: trackSegments,
-    source_file: requestProps.fileName
-  }
+
+  return resp
 }
 
 module.exports = {

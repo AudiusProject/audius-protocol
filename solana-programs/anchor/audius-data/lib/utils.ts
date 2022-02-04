@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Program, Provider, Wallet, web3 } from "@project-serum/anchor";
+import { Provider } from "@project-serum/anchor";
 import BN from "bn.js";
 import { randomBytes } from "crypto";
 import * as secp256k1 from "secp256k1";

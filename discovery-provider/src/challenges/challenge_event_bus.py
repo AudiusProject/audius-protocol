@@ -14,6 +14,7 @@ from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
     referred_challenge_manager,
+    verified_referral_challenge_manager,
 )
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.challenges.trending_challenge import (
@@ -62,6 +63,10 @@ class ChallengeEventBus:
     def get_manager(self, challenge_id: str) -> ChallengeManager:
         """Gets a manager for a given challenge_id"""
         return self._managers[challenge_id]
+
+    def does_manager_exist(self, challenge_id: str) -> bool:
+        """Returns whether or not a manager exists for a given challenge_id"""
+        return challenge_id in self._managers
 
     @contextmanager
     def use_scoped_dispatch_queue(self):
@@ -205,7 +210,11 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
+    # referral challenge managers
     bus.register_listener(ChallengeEvent.referral_signup, referral_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.referral_signup, verified_referral_challenge_manager
+    )
     bus.register_listener(ChallengeEvent.referred_signup, referred_challenge_manager)
     # connect_verified_challenge_manager listeners
     bus.register_listener(

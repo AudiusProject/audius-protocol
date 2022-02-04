@@ -12,7 +12,6 @@ class Account extends Base {
 
     this.User = userApi
 
-    this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
@@ -102,7 +101,10 @@ class Account extends Base {
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
    * @param {?boolean} [host] The host url used for the recovery email
-   */
+   * @param {?boolean} [createWAudioUserBank] an optional flag to create the solana user bank account
+   * @param {?Function} [handleUserBankOutcomes] an optional callback to record user bank outcomes
+   * @param {?Object} [userBankOutcomes] an optional object with request, succes, and failure keys to record user bank outcomes
+  */
   async signUp (
     email,
     password,
@@ -111,7 +113,9 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    createWAudioUserBank = false
+    createWAudioUserBank = false,
+    handleUserBankOutcomes = () => {},
+    userBankOutcomes = {}
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -145,12 +149,27 @@ class Account extends Base {
       // If userbank creation fails, we still proceed
       // through signup
       if (createWAudioUserBank && this.solanaWeb3Manager) {
-        phase = phases.SOLANA_USER_BANK_CREATION
-        try {
-          await this.solanaWeb3Manager.createUserBank()
-        } catch (err) {
-          console.error(`Got error creating userbank: ${err}, continuing...`)
-        }
+        phase = phases.SOLANA_USER_BANK_CREATION;
+        // Fire and forget createUserBank. In the case of failure, we will
+        // retry to create user banks in a later session before usage
+        (async () => {
+          try {
+            handleUserBankOutcomes(userBankOutcomes.Request)
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
+            if (error || errorCode) {
+              console.error(
+                `Failed to create userbank, with err: ${error}, ${errorCode}`
+              )
+              handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
+            } else {
+              console.log(`Successfully created userbank!`)
+              handleUserBankOutcomes('Create User Bank: Success')
+            }
+          } catch (err) {
+            console.error(`Got error creating userbank: ${err}, continuing...`)
+            handleUserBankOutcomes(userBankOutcomes.Failure, { error: err.toString() })
+          }
+        })()
       }
 
       // Add user to chain

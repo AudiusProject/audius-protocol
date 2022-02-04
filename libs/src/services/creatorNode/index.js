@@ -127,7 +127,7 @@ class CreatorNode {
 
     this.lazyConnect = lazyConnect
     this.connected = false
-    this.connecting = false
+    this.connecting = false // a lock so multiple content node requests in parallel won't each try to auth
     this.authToken = null
     this.maxBlockNumber = 0
 
@@ -172,6 +172,8 @@ class CreatorNode {
     return this.creatorNodeEndpoint
   }
 
+  /**
+   * Switch from one creatorNodeEndpoint to another including logging out from the old node, updating the endpoint and logging into new node */
   async setEndpoint (creatorNodeEndpoint) {
     // If the endpoints are the same, no-op.
     if (this.creatorNodeEndpoint === creatorNodeEndpoint) return
@@ -188,6 +190,12 @@ class CreatorNode {
     if (!this.lazyConnect) {
       await this.connect()
     }
+  }
+
+  /** Clear all connection state in this class by deleting authToken and setting 'connected' = false */
+  clearConnection () {
+    this.connected = false
+    this.authToken = null
   }
 
   /**
@@ -357,11 +365,11 @@ class CreatorNode {
 
   async handleAsyncTrackUpload (file, onProgress) {
     const { data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress)
-    return this.pollProcessingStatus('transcode', uuid)
+    return this.pollProcessingStatus(uuid)
   }
 
-  async pollProcessingStatus (taskType, uuid) {
-    const route = this.creatorNodeEndpoint + '/track_content_status'
+  async pollProcessingStatus (uuid) {
+    const route = this.creatorNodeEndpoint + '/async_processing_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
       try {
@@ -370,7 +378,7 @@ class CreatorNode {
         //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
         if (status && status === 'DONE') return resp
         if (status && status === 'FAILED') {
-          await this._handleErrorHelper(new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`), route, uuid)
+          await this._handleErrorHelper(new Error(`Track content async upload failed: uuid=${uuid}, error=${resp}`), route, uuid)
         }
       } catch (e) {
         // Catch errors here and swallow them. Errors don't signify that the track
@@ -383,7 +391,7 @@ class CreatorNode {
     }
 
     // TODO: update MAX_TRACK_TRANSCODE_TIMEOUT if generalizing this method
-    await this._handleErrorHelper(new Error(`${taskType} took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
+    await this._handleErrorHelper(new Error(`Track content async upload took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
   }
 
   /**
@@ -393,7 +401,7 @@ class CreatorNode {
    */
   async getTrackContentProcessingStatus (uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/track_content_status',
+      url: '/async_processing_status',
       params: {
         uuid
       },
@@ -522,11 +530,11 @@ class CreatorNode {
     this.authToken = resp.data.sessionToken
 
     setTimeout(() => {
-      this.authToken = null
-      this.connected = false
+      this.clearConnection()
     }, BROWSER_SESSION_REFRESH_TIMEOUT)
   }
 
+  /** Calls logout on the content node. Needs an authToken for this since logout is an authenticated endpoint */
   async _logoutNodeUser () {
     if (!this.authToken) {
       return
@@ -669,6 +677,16 @@ class CreatorNode {
           }
         }
 
+        // if the content node returns an invalid auth token error, clear connection and reconnect
+        if (resp.data && resp.data.error && resp.data.error.includes('Invalid authentication token')) {
+          this.clearConnection()
+          try {
+            await this.ensureConnected()
+          } catch (e) {
+            console.error(e.message)
+          }
+        }
+
         await this._handleErrorHelper(e, axiosRequestObj.url, requestId)
       }
     }
@@ -792,6 +810,14 @@ class CreatorNode {
         console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying`)
         console.warn(e)
         return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
+      } else if (e.response && e.response.data && e.response.data.error && e.response.data.error.includes('Invalid authentication token')) {
+        // if the content node returns an invalid auth token error, clear connection and reconnect
+        this.clearConnection()
+        try {
+          await this.ensureConnected()
+        } catch (e) {
+          console.error(e.message)
+        }
       }
 
       await this._handleErrorHelper(e, url, requestId)

@@ -612,6 +612,12 @@ const config = convict({
     default: null,
     env: 'solanaFeePayerWallet'
   },
+  solanaFeePayerWallets: {
+    doc: 'solanaFeePayerWallets - Stringified array like[{ privateKey: [] },...]',
+    format: 'string-array',
+    default: [],
+    env: 'solanaFeePayerWallets'
+  },
   solanaSignerPrivateKey: {
     doc: 'solanaSignerPrivateKey',
     format: String,
@@ -653,6 +659,12 @@ const config = convict({
     format: String,
     default: '',
     env: 'solanaRewardsManagerTokenPDA'
+  },
+  solanaConfirmationTimeout: {
+    doc: 'The timeout used to send solana transactions through solanaWeb3 connection in ms',
+    format: Number,
+    default: '60000',
+    env: 'solanaConfirmationTimeout'
   },
   rewardsParallelization: {
     doc: 'How many requests to perform in parallel when disbursing rewards',
@@ -714,16 +726,16 @@ const config = convict({
     env: 'minSolanaNotificationSlot',
     default: 105400000
   },
-  rewardsReporterSlackUrl: {
-    doc: 'The slack url to post messages for the rewards reporter',
+  successAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for success in audio / rewards events',
     format: String,
-    env: 'rewardsReporterSlackUrl',
+    env: 'successAudioReporterSlackUrl',
     default: ''
   },
-  reporterSlackUrl: {
-    doc: 'The slack url to post messages for the general messages',
+  errorAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in audio / rewards events',
     format: String,
-    env: 'reporterSlackUrl',
+    env: 'errorAudioReporterSlackUrl',
     default: ''
   },
   wormholeRPCHosts: {
@@ -755,6 +767,12 @@ const config = convict({
     format: String,
     env: 'ethTokenBridgeAddress',
     default: ''
+  },
+  websiteHost: {
+    doc: 'Audius website host',
+    format: String,
+    env: 'websiteHost',
+    default: 'https://audius.co'
   }
 })
 

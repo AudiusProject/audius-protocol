@@ -4,6 +4,9 @@ const models = require('../models')
 const handlebars = require('handlebars')
 const fs = require('fs')
 const path = require('path')
+const config = require('../config.js')
+
+const WEBSITE_HOST = config.get('websiteHost')
 
 const recoveryTemplate = handlebars.compile(
   fs
@@ -30,13 +33,10 @@ module.exports = function (app) {
       return successResponse({ msg: 'No mailgun API Key found', status: true })
     }
 
-    let { host, login, data, signature, handle } = req.body
+    let { login, data, signature, handle } = req.body
 
     if (!login) {
       return errorResponseBadRequest('Please provide valid login information')
-    }
-    if (!host) {
-      return errorResponseBadRequest('Please provide valid host')
     }
     if (!data || !signature) {
       return errorResponseBadRequest('Please provide data and signature')
@@ -62,7 +62,7 @@ module.exports = function (app) {
       login: login,
       email: email
     }
-    const recoveryLink = host + toQueryStr(recoveryParams)
+    const recoveryLink = WEBSITE_HOST + toQueryStr(recoveryParams)
     const copyrightYear = new Date().getFullYear().toString()
     const context = {
       recovery_link: recoveryLink,
