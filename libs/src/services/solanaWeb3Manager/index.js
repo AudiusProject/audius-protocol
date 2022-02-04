@@ -452,6 +452,10 @@ class SolanaWeb3Manager {
     const balance = await this.getBalance({ publicKey })
     return balance > epsilon
   }
+
+  async getSlot () {
+    return this.connection.getSlot('processed')
+  }
 }
 
 module.exports = SolanaWeb3Manager

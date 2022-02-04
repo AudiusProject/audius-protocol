@@ -419,7 +419,7 @@ class AudiusLibs {
         this.ethContracts,
         this.identityService,
         this.solanaWeb3Manager,
-        this.wormholeConfig.rpcHost,
+        this.wormholeConfig.rpcHosts,
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
