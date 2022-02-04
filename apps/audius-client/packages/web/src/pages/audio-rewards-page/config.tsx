@@ -96,8 +96,8 @@ export const challengeRewardsConfig: Record<
       complete: null
     }
   },
-  'referrals-verified': {
-    id: 'referrals-verified' as ChallengeRewardID,
+  'ref-v': {
+    id: 'ref-v' as ChallengeRewardID,
     title: 'Invite your Fans',
     icon: <i className='emoji large incoming-envelope' />,
     description: challenge => `Earn up to ${challenge?.totalAmount} $AUDIO`,
