@@ -37,6 +37,31 @@ const setIsCoSigned = <T extends TrackMetadata>(track: T) => {
 }
 
 /**
+ * When a track is not unlisted, even if field visibility is set
+ * we should coerce the track into a state where socials are visible.
+ * @param track
+ * @returns track with repaired field visibility
+ */
+const setFieldVisibility = <T extends TrackMetadata>(track: T) => {
+  const { is_unlisted } = track
+  if (!is_unlisted) {
+    // Public track
+    return {
+      ...track,
+      field_visibility: {
+        ...track.field_visibility,
+        genre: true,
+        mood: true,
+        tags: true,
+        share: true,
+        play_count: true
+      }
+    }
+  }
+  return track
+}
+
+/**
  * NOTE: This is a temporary fix for a backend bug: The field followee_saves is not defined.
  * This is a stopgap to prevent the client from erroring and should be removed after fixed.
  * The current erroneous disprov endpoint is `/feed/reposts/<userid>`
@@ -58,7 +83,8 @@ export const reformat = <T extends TrackMetadata>(track: T): Track => {
   const withoutUser = omit(t, 'user')
   const withImages = addTrackImages(withoutUser)
   const withCosign = setIsCoSigned(withImages)
+  const withFieldVisibility = setFieldVisibility(withCosign)
 
-  const withDefaultSaves = setDefaultFolloweeSaves(withCosign)
+  const withDefaultSaves = setDefaultFolloweeSaves(withFieldVisibility)
   return withDefaultSaves
 }
