@@ -16,9 +16,15 @@ function MockLibs (getSlot, getBlockNumber) {
     }
 }
 
+let calc = null
+
 describe('Delay calculator tests', () => {
+  afterEach(async () => {
+    calc.stop()
+  })
+
   it('Should get Slot and block threshold on fresh start', async () => {
-    const calc = new AttestationDelayCalculator({
+    calc = new AttestationDelayCalculator({
       libs: new MockLibs(() => 100, () => 100),
       runBehindSec: 5,
       allowedStalenessSec: 1
@@ -35,7 +41,7 @@ describe('Delay calculator tests', () => {
 
   it('Should cache slot and block values', async () => {
     const libs = new MockLibs(() => 100, () => 100)
-    const calc = new AttestationDelayCalculator({
+    calc = new AttestationDelayCalculator({
       libs,
       runBehindSec: 5,
       allowedStalenessSec: 1
@@ -51,12 +57,11 @@ describe('Delay calculator tests', () => {
     assert.strictEqual(slotThreshold, 90)
     const blockThreshold = await calc.getPOABlockThreshold()
     assert.strictEqual(blockThreshold, 99)
-
   })
 
   it('Should get new values after the cache expires', async () => {
     const libs = new MockLibs(() => 100, () => 100)
-    const calc = new AttestationDelayCalculator({
+    calc = new AttestationDelayCalculator({
       libs,
       runBehindSec: 5,
       allowedStalenessSec: 1
@@ -86,7 +91,7 @@ describe('Delay calculator tests', () => {
 
     const libs = new MockLibs(() => solSlot.last, () => 100)
 
-    const calc = new AttestationDelayCalculator({
+    calc = new AttestationDelayCalculator({
       libs,
       runBehindSec: 5,
       allowedStalenessSec: 1,
@@ -105,6 +110,5 @@ describe('Delay calculator tests', () => {
     assert.strictEqual(slotThreshold2, 84)
 
     clearInterval(i)
-    calc.stop()
   })
 })
