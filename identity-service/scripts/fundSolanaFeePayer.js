@@ -89,7 +89,7 @@ const fundRelayers = async () => {
     console.log(`-------- Balances before transferring --------`)
     console.log(`Fee payer balance: ${(await connection.getBalance(funderKeypair.publicKey)) / solanaWeb3.LAMPORTS_PER_SOL}`)
     console.log(`Funder balance: ${(await connection.getBalance(relayerToFund.publicKey)) / solanaWeb3.LAMPORTS_PER_SOL}`)
-    console.log(`Funding ${relayerToFund.publicKey} ${amountToTransfer} lamports`)
+    console.log(`Funding ${relayerToFund.publicKey} ${MIN_BALANCE} lamports`)
     let transaction = new solanaWeb3.Transaction().add(
       solanaWeb3.SystemProgram.transfer({
         fromPubkey: funderKeypair.publicKey,
