@@ -8,12 +8,11 @@ services:
     build: ../.
     restart: always
     ports:
-      - '${audius_server_port}:${audius_server_port}'
+      - '${audius_server_port}:5000'
     env_file:
       - .env
     environment:
       - audius_db_run_migrations=false
-      - FLASK_RUN_PORT=${audius_server_port}
       - audius_redis_url=redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00
       - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
       - audius_discprov_dev_mode=true
