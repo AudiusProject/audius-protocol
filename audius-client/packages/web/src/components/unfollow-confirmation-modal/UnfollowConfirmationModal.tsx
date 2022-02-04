@@ -5,8 +5,8 @@ import { Dispatch } from 'redux'
 
 import { FollowSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
+import { setNotificationSubscription } from 'common/store/pages/profile/actions'
 import * as socialActions from 'common/store/social/users/actions'
-import { setNotificationSubscription } from 'pages/profile-page/store/actions'
 import { AppState } from 'store/types'
 
 import UnfollowConfirmationModal from './components/UnfollowConfirmationModal'

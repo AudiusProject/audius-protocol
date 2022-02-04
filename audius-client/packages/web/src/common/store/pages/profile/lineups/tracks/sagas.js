@@ -6,17 +6,17 @@ import { DELETE_TRACK } from 'common/store/cache/tracks/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { getUser } from 'common/store/cache/users/selectors'
-import { SET_ARTIST_PICK } from 'common/store/social/tracks/actions'
 import {
   PREFIX,
   tracksActions,
   tracksActions as lineupActions
-} from 'pages/profile-page/store/lineups/tracks/actions'
+} from 'common/store/pages/profile/lineups/tracks/actions'
 import {
   getProfileUserId,
   getProfileTracksLineup,
   getProfileUserHandle
-} from 'pages/profile-page/store/selectors'
+} from 'common/store/pages/profile/selectors'
+import { SET_ARTIST_PICK } from 'common/store/social/tracks/actions'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
 

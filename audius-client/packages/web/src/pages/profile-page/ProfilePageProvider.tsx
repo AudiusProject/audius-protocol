@@ -13,6 +13,22 @@ import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
 import { getAccountUser } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
+import * as profileActions from 'common/store/pages/profile/actions'
+import { feedActions } from 'common/store/pages/profile/lineups/feed/actions'
+import { tracksActions } from 'common/store/pages/profile/lineups/tracks/actions'
+import {
+  makeGetProfile,
+  getProfileFeedLineup,
+  getProfileTracksLineup,
+  getProfileUserId
+} from 'common/store/pages/profile/selectors'
+import {
+  CollectionSortMode,
+  Tabs,
+  FollowType,
+  TracksSortMode,
+  getTabForRoute
+} from 'common/store/pages/profile/types'
 import * as socialActions from 'common/store/social/users/actions'
 import * as createPlaylistModalActions from 'common/store/ui/createPlaylistModal/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/slice'
@@ -28,13 +44,6 @@ import * as unfollowConfirmationActions from 'components/unfollow-confirmation-m
 import { BadgeTier } from 'components/user-badges/utils'
 import { setFollowers } from 'pages/followers-page/store/actions'
 import { setFollowing } from 'pages/following-page/store/actions'
-import {
-  CollectionSortMode,
-  Tabs,
-  FollowType,
-  TracksSortMode,
-  getTabForRoute
-} from 'pages/profile-page/store/types'
 import { newUserMetadata } from 'schemas'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { getIsDone } from 'store/confirmer/selectors'
@@ -49,15 +58,6 @@ import { parseUserRoute } from 'utils/route/userRouteParser'
 
 import { ProfilePageProps as DesktopProfilePageProps } from './components/desktop/ProfilePage'
 import { ProfilePageProps as MobileProfilePageProps } from './components/mobile/ProfilePage'
-import * as profileActions from './store/actions'
-import { feedActions } from './store/lineups/feed/actions'
-import { tracksActions } from './store/lineups/tracks/actions'
-import {
-  makeGetProfile,
-  getProfileFeedLineup,
-  getProfileTracksLineup,
-  getProfileUserId
-} from './store/selectors'
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
