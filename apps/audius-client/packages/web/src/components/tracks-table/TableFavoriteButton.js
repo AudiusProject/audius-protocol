@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import FavoriteButton from 'components/favorite-button/FavoriteButton'
+import FavoriteButton from 'components/alt-button/FavoriteButton'
 
 import styles from './TableFavoriteButton.module.css'
 
@@ -21,7 +21,11 @@ class TableFavoriteButton extends Component {
           { [styles.notFavorited]: !favorited }
         )}
       >
-        <FavoriteButton favorited={favorited} onClick={onClick} />
+        <FavoriteButton
+          isActive={favorited}
+          className={styles.icon}
+          onClick={onClick}
+        />
       </div>
     )
   }
