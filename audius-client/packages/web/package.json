@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "@audius/libs": "1.2.61",
-    "@audius/stems": "0.3.20",
+    "@audius/stems": "0.3.21",
     "@craco/craco": "6.4.3",
     "@hcaptcha/react-hcaptcha": "0.3.6",
     "@optimizely/optimizely-sdk": "4.0.0",
