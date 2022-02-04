@@ -49,7 +49,7 @@ describe("audius-data", () => {
 
     const chainOwner = track.owner.toString();
     const expectedOwner = trackOwnerPDA.toString();
-    expect(chainOwner).to.equal(expectedOwner);
+    expect(chainOwner, "track owner").to.equal(expectedOwner);
 
     console.log(
       `track: ${trackMetadata}, trackId assigned = ${track.trackId}`
@@ -123,7 +123,7 @@ describe("audius-data", () => {
 
     const chainAuthority = adminAccount.authority.toString();
     const expectedAuthority = adminKeypair.publicKey.toString();
-    expect(chainAuthority).to.equal(expectedAuthority);
+    expect(chainAuthority, "authority").to.equal(expectedAuthority);
   });
 
   it("Initializing user!", async () => {
