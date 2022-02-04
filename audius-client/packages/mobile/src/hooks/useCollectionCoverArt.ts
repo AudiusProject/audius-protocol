@@ -7,6 +7,8 @@ import {
 import { fetchCoverArt } from 'audius-client/src/common/store/cache/collections/actions'
 import { useDispatch } from 'react-redux'
 
+import { useDispatchWeb } from './useDispatchWeb'
+
 export const useCollectionCoverArt = (
   collectionId: number,
   coverArtSizes: CoverArtSizes | null,
@@ -15,7 +17,8 @@ export const useCollectionCoverArt = (
   onDemand = false,
   load = true
 ) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatchWeb() as typeof useDispatch
+
   return useImageSize({
     dispatch,
     id: collectionId,
