@@ -6,11 +6,13 @@ import { User } from 'common/models/User'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { getUser } from 'common/store/cache/users/selectors'
+import {
+  startStemUploads,
+  stemUploadsSucceeded
+} from 'common/store/stems-upload/slice'
 import { handleUploads } from 'pages/upload-page/store/sagas'
 import { createStemMetadata } from 'pages/upload-page/store/utils/stems'
 import { make } from 'store/analytics/actions'
-
-import { startStemUploads, stemUploadsSucceeded } from './slice'
 
 function* watchUploadStems() {
   yield takeEvery(startStemUploads.type, function* (

@@ -1,7 +1,6 @@
 import { ID } from 'common/models/Identifiers'
-import { StemCategory } from 'common/models/Stems'
+import { StemCategory, StemUpload } from 'common/models/Stems'
 import { Track, StemTrack } from 'common/models/Track'
-import { StemUpload } from 'components/source-files-modal/SourceFilesModal'
 
 export const updateAndFlattenStems = (
   stems: StemUpload[][],
