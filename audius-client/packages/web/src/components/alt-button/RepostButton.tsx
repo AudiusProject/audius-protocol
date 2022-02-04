@@ -61,59 +61,69 @@ const iconMap = {
   }
 }
 
-const RepostButton = ({
-  isDarkMode,
-  isMatrixMode,
-  className,
-  wrapperClassName,
-  onClick = () => {},
-  isActive = false,
-  isDisabled = false,
-  isUnlisted = false,
-  stopPropagation = true,
-  iconMode = false,
-  altVariant = false,
-  'aria-label': ariaLabel
-}: RepostButtonProps) => {
-  const icon =
-    iconMap[isMatrixMode ? 'matrix' : isDarkMode ? 'dark' : 'light'][
-      isActive ? 'active' : 'inactive'
-    ][altVariant ? 'variant' : 'regular']
-  const [isSpinning, setIsSpinning] = useState(false)
-  const [isDepressed, setIsDepressed] = useState(false)
+const RepostButton = React.forwardRef<HTMLButtonElement, RepostButtonProps>(
+  (
+    {
+      isDarkMode,
+      isMatrixMode,
+      className,
+      wrapperClassName,
+      onClick = () => {},
+      isActive = false,
+      isDisabled = false,
+      isUnlisted = false,
+      stopPropagation = true,
+      iconMode = false,
+      altVariant = false,
+      'aria-label': ariaLabel
+    },
+    ref
+  ) => {
+    const icon =
+      iconMap[isMatrixMode ? 'matrix' : isDarkMode ? 'dark' : 'light'][
+        isActive ? 'active' : 'inactive'
+      ][altVariant ? 'variant' : 'regular']
+    const [isSpinning, setIsSpinning] = useState(false)
+    const [isDepressed, setIsDepressed] = useState(false)
 
-  return (
-    <button
-      aria-label={ariaLabel}
-      className={cn(
-        styles.button,
-        { [styles.depress]: isDepressed, [styles.isHidden]: isUnlisted },
-        wrapperClassName
-      )}
-      onAnimationEnd={() => {
-        setIsDepressed(false)
-      }}
-      onClick={e => {
-        if (iconMode) return
-        stopPropagation && e.stopPropagation()
-        if (isDisabled) return
-        setIsSpinning(true)
-        setIsDepressed(true)
-        onClick(e)
-      }}
-    >
-      <div
-        className={cn(styles.icon, { [styles.spin]: isSpinning }, className)}
-        style={{
-          backgroundImage: `url(${icon})`,
-          opacity: isDisabled ? 0.5 : 1
-        }}
+    return (
+      <button
+        ref={ref}
+        aria-label={ariaLabel}
+        className={cn(
+          styles.button,
+          {
+            [styles.depress]: isDepressed,
+            [styles.isHidden]: isUnlisted,
+            [styles.isDisabled]: isDisabled
+          },
+          wrapperClassName
+        )}
         onAnimationEnd={() => {
-          setIsSpinning(false)
+          setIsDepressed(false)
         }}
-      />
-    </button>
-  )
-}
+        onClick={e => {
+          if (iconMode) return
+          stopPropagation && e.stopPropagation()
+          if (isDisabled) return
+          setIsSpinning(true)
+          setIsDepressed(true)
+          onClick(e)
+        }}
+      >
+        <div
+          className={cn(styles.icon, { [styles.spin]: isSpinning }, className)}
+          style={{
+            backgroundImage: `url(${icon})`,
+            opacity: isDisabled ? 0.5 : 1
+          }}
+          onAnimationEnd={() => {
+            setIsSpinning(false)
+          }}
+        />
+      </button>
+    )
+  }
+)
 
 export default RepostButton

@@ -32,6 +32,20 @@
 
 .button {
   all: unset;
+  transform: scale3d(1, 1, 1);
+  transition: all 0.12s ease-in-out;
+}
+
+.button:hover {
+  transform: scale3d(1.18, 1.18, 1.18);
+}
+
+.button.isDisabled:hover {
+  transform: scale3d(1, 1, 1);
+}
+
+.heartWrapper.isDisabled:active {
+  transform: (1, 1, 1);
 }
 
 .spin {
@@ -53,4 +67,8 @@
 
 .isHidden {
   visibility: hidden;
+}
+
+.isDisabled .icon {
+  cursor: auto;
 }

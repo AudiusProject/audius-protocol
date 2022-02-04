@@ -6,3 +6,16 @@
   .tableFavoriteButton {
   opacity: 1;
 }
+
+.tableFavoriteButton {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+}

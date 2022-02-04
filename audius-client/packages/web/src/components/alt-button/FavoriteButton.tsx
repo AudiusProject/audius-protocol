@@ -84,7 +84,12 @@ const FavoriteButton = ({
   return (
     <div
       className={cn(
-        { [styles.scaleYHolder]: yAnim, [styles.isHidden]: isUnlisted },
+        {
+          [styles.scaleYHolder]: yAnim,
+          [styles.isHidden]: isUnlisted,
+          [styles.isDisabled]: isDisabled
+        },
+        styles.heartWrapper,
         wrapperClassName
       )}
       onAnimationEnd={() => {
