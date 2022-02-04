@@ -41,6 +41,31 @@
   cursor: pointer;
 }
 
+.heartWrapper {
+  transform: scale3d(1, 1, 1);
+  transition: all 0.12s ease-in-out;
+}
+
+.heartWrapper:hover {
+  transform: scale3d(1.18, 1.18, 1.18);
+}
+
+.heartWrapper:active {
+  transform: scale3d(0.95, 0.95, 0.95);
+}
+
+.heartWrapper.isDisabled:hover {
+  transform: scale3d(1, 1, 1);
+}
+
+.heartWrapper.isDisabled:active {
+  transform: (1, 1, 1);
+}
+
 .isHidden {
   visibility: hidden;
+}
+
+.isDisabled .heart {
+  cursor: auto;
 }

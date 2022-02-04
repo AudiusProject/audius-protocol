@@ -75,37 +75,18 @@
 
 /* Favorite / Remove Icons */
 
-.repostButton {
-  margin: 0px 24px;
+.toggleRepostContainer {
+  margin-left: 36px;
 }
 
 .toggleFavoriteContainer {
+  margin-left: 16px;
+}
+
+.toggleRepostContainer,
+.toggleFavoriteContainer {
   position: relative;
-  margin-right: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
-}
-
-.favorited {
-  height: 20px;
-  width: 20px;
-}
-
-.favoritedMatrix g path {
-  fill: var(--primary) !important;
-}
-
-.unfavorited {
-  height: 20px;
-  width: 20px;
-}
-
-.unfavorited g path {
-  fill: var(--neutral) !important;
-}
-
-.unfavorited.unfavoritedMatrix g path {
-  fill: var(--neutral-light-4) !important;
 }
