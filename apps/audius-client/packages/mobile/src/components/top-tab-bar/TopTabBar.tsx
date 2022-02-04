@@ -7,6 +7,7 @@ import {
 } from 'react-native'
 
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useThemeColors } from 'app/utils/theme'
 
 // How much the tab indicator should horizontally stretch
 // while it translates for a nice effect.
@@ -87,6 +88,7 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
   const screenWidth = Dimensions.get('screen').width
   const isFocused = tabIndex => state.index === tabIndex
   const styles = useThemedStyles(createTabBarStyles)
+  const { neutral } = useThemeColors()
 
   const onPress = (route, tabIndex: number) => {
     const event = navigation.emit({
@@ -124,7 +126,7 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key]
         const label = options.tabBarLabel ?? options.title ?? route.name
-        const Icon = options.tabBarIcon?.()
+        const icon = options.tabBarIcon({ color: neutral })
 
         const inputRange = state.routes.map((_, i) => i)
         const opacity = position.interpolate({
@@ -143,11 +145,7 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
               style={styles.tab}
               testID={options.tabBarTestID}
             >
-              {Icon && (
-                <Animated.View style={{ opacity }}>
-                  <Icon />
-                </Animated.View>
-              )}
+              <Animated.View style={{ opacity }}>{icon}</Animated.View>
               <Animated.Text style={[styles.tabText, { opacity }]}>
                 {label}
               </Animated.Text>

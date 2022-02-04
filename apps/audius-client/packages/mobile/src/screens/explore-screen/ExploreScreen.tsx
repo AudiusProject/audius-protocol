@@ -30,29 +30,29 @@ const ExploreScreen = ({ navigation }: Props) => {
       <ScreenHeader text={'Explore'} />
       <View style={{ flex: 1 }}>
         <TopTabNavigator
-          initialScreen='tracks'
+          initialScreenName='tracks'
           screens={[
             {
               name: 'forYou',
               label: 'For You',
-              icon: IconForYou,
+              Icon: IconForYou,
               component: ForYouTab
             },
             {
               name: 'moods',
-              icon: IconMoods,
+              Icon: IconMoods,
               component: MoodsTab
             },
             {
               name: 'playlists',
-              icon: IconNote,
+              Icon: IconNote,
               // TODO: Check to see if this should be playlist icon for consistency
               // icon: IconPlaylists,
               component: PlaylistsTab
             },
             {
               name: 'artists',
-              icon: IconUser,
+              Icon: IconUser,
               component: ArtistsTab
             }
           ]}

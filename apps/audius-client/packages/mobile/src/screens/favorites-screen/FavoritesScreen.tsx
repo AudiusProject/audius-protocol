@@ -44,21 +44,21 @@ const FavoritesScreen = ({ navigation }: Props) => {
       <Text style={{ flex: 1 }}>Example favorites screen</Text>
       <View style={{ flex: 10 }}>
         <TopTabNavigator
-          initialScreen='tracks'
+          initialScreenName='tracks'
           screens={[
             {
               name: 'tracks',
-              icon: IconNote,
+              Icon: IconNote,
               component: TracksTab
             },
             {
               name: 'albums',
-              icon: IconAlbum,
+              Icon: IconAlbum,
               component: AlbumsTab
             },
             {
               name: 'playlists',
-              icon: IconPlaylists,
+              Icon: IconPlaylists,
               component: PlaylistsTab
             }
           ]}
