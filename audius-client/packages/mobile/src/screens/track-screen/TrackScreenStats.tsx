@@ -56,12 +56,12 @@ export const TrackScreenStats = ({
   const onPressFavorites = useCallback(() => {
     // TODO: navigate to favorites
     // goToFavoritesPage(trackId)
-  }, [trackId])
+  }, [])
 
   const onPressReposts = useCallback(() => {
     // TODO: navigate to reposts
     // goToRepostsPage(trackId)
-  }, [trackId])
+  }, [])
 
   return (
     <>
