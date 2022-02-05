@@ -26,7 +26,9 @@ use solana_sdk::{
     signature::{Keypair, Signer},
     transaction::Transaction,
     transport::TransportError,
+    feature_set::FeatureSet,
 };
+use std::sync::Arc;
 
 // Construct_eth_pubkey
 pub fn program_test() -> ProgramTest {
@@ -522,7 +524,8 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
         program_context.last_blockhash,
     );
     // Confirm fake instruction passes verification
-    assert!(tx.verify_precompiles(false).is_ok());
+    let feature_set = Arc::new(FeatureSet::all_enabled());
+    assert!(tx.verify_precompiles(&feature_set).is_ok());
     assert!(program_context
         .banks_client
         .process_transaction(tx)
@@ -551,7 +554,7 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
         Some(&program_context.payer.pubkey()),
     );
 
-    assert!(transaction.verify_precompiles(false).is_ok());
+    assert!(transaction.verify_precompiles(&feature_set).is_ok());
 
     transaction.sign(&[&program_context.payer], program_context.last_blockhash);
     let tx_result = program_context
@@ -665,7 +668,8 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
         Some(&program_context.payer.pubkey()),
     );
 
-    assert!(transaction.verify_precompiles(false).is_ok());
+    let feature_set = Arc::new(FeatureSet::all_enabled());
+    assert!(transaction.verify_precompiles(&feature_set).is_ok());
 
     transaction.sign(&[&program_context.payer], program_context.last_blockhash);
     let tx_result = program_context

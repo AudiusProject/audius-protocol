@@ -6,7 +6,6 @@ use solana_program::{
     decode_error::DecodeError,
     msg,
     program_error::{PrintProgramError, ProgramError},
-    sanitize::SanitizeError,
 };
 use thiserror::Error;
 
@@ -46,7 +45,7 @@ impl PrintProgramError for ClaimableProgramError {
     }
 }
 
-/// Convert SanitizeError to ClaimableProgramError
-pub fn to_claimable_tokens_error(_e: SanitizeError) -> ClaimableProgramError {
+/// Convert ProgramError to ClaimableProgramError
+pub fn to_claimable_tokens_error(_e: ProgramError) -> ClaimableProgramError {
     ClaimableProgramError::InstructionLoadError
 }
