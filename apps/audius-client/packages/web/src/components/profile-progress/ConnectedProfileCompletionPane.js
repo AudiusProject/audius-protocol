@@ -4,12 +4,12 @@ import { connect } from 'react-redux'
 import { animated } from 'react-spring'
 
 import { getAccountUser } from 'common/store/account/selectors'
-import MusicConfetti from 'components/background-animations/MusicConfetti'
-import ProfileCompletionPanel from 'components/profile-progress/components/ProfileCompletionPanel'
 import {
   getOrderedCompletionStages,
   getIsAccountLoaded
-} from 'components/profile-progress/store/selectors'
+} from 'common/store/challenges/selectors'
+import MusicConfetti from 'components/background-animations/MusicConfetti'
+import ProfileCompletionPanel from 'components/profile-progress/components/ProfileCompletionPanel'
 
 import ProfileCompletionTooltip from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'
