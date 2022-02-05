@@ -3,13 +3,13 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { animated } from 'react-spring'
 
-import { profileMeterDismissed } from 'common/store/pages/profile/actions'
-import ProfileCompletionHeroCard from 'components/profile-progress/components/ProfileCompletionHeroCard'
 import {
   getOrderedCompletionStages,
   getProfilePageMeterDismissed,
   getIsAccountLoaded
-} from 'components/profile-progress/store/selectors'
+} from 'common/store/challenges/selectors'
+import { profileMeterDismissed } from 'common/store/pages/profile/actions'
+import ProfileCompletionHeroCard from 'components/profile-progress/components/ProfileCompletionHeroCard'
 
 import { useVerticalCollapse, useProfileCompletionDismissal } from './hooks'
 

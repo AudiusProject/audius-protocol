@@ -1,42 +1,44 @@
 import Status from 'common/models/Status'
 import { getAccountUser } from 'common/store/account/selectors'
 
-export const getProfileDescriptionExists = state => {
+import { CommonState } from '..'
+
+export const getProfileDescriptionExists = (state: CommonState) => {
   const curUser = getAccountUser(state)
   if (!curUser) return false
   return curUser.bio !== null && curUser.bio !== undefined
 }
 
-export const getHasFavoritedItem = state => {
+export const getHasFavoritedItem = (state: CommonState) => {
   return state.account.hasFavoritedItem
 }
 
-export const getHasReposted = state => {
+export const getHasReposted = (state: CommonState) => {
   const curUser = getAccountUser(state)
   if (!curUser) return false
   // If the user has any reposts or they have reposted this session
   return curUser.repost_count > 0 || curUser._has_reposted
 }
 
-export const getNumFollowedAccounts = state => {
+export const getNumFollowedAccounts = (state: CommonState) => {
   const curUser = getAccountUser(state)
   if (!curUser) return 0
   return curUser.followee_count
 }
 
-export const getNameExists = state => {
+export const getNameExists = (state: CommonState) => {
   const curUser = getAccountUser(state)
   if (!curUser) return false
   return !!curUser.name
 }
 
-export const getHandleExists = state => {
+export const getHandleExists = (state: CommonState) => {
   const curUser = getAccountUser(state)
   if (!curUser) return false
   return !!curUser.handle
 }
 
-export const getProfilePictureExists = state => {
+export const getProfilePictureExists = (state: CommonState) => {
   const curUser = getAccountUser(state)
   if (!curUser) return false
   // If the user sets the profile picture this session,
@@ -45,25 +47,25 @@ export const getProfilePictureExists = state => {
   // if the profile_picture field is non-null.
 
   return (
-    !!curUser.updatedProfilePicture ||
+    !!curUser._profile_picture_sizes ||
     !!curUser.profile_picture ||
     !!curUser.profile_picture_sizes
   )
 }
 
-export const getCoverPhotoExists = state => {
+export const getCoverPhotoExists = (state: CommonState) => {
   const curUser = getAccountUser(state)
   if (!curUser) return false
 
   // Same logic as getProfilePictureExists
   return (
-    !!curUser.updatedCoverPhoto ||
+    !!curUser._cover_photo_sizes ||
     !!curUser.cover_photo ||
     !!curUser.cover_photo_sizes
   )
 }
 
-export const getCompletionStages = state => ({
+export const getCompletionStages = (state: CommonState) => ({
   hasProfileDescription: getProfileDescriptionExists(state),
   hasFavoritedItem: getHasFavoritedItem(state),
   hasReposted: getHasReposted(state),
@@ -73,7 +75,7 @@ export const getCompletionStages = state => ({
   hasCoverPhoto: getCoverPhotoExists(state)
 })
 
-export const getOrderedCompletionStages = state => {
+export const getOrderedCompletionStages = (state: CommonState) => {
   const strings = {
     profileDescription: 'Profile Description',
     favorited: 'Favorite A Track/Playlist',
@@ -117,8 +119,8 @@ export const getOrderedCompletionStages = state => {
   ]
 }
 
-export const getProfilePageMeterDismissed = state =>
-  state.profile.profileMeterDismissed
+export const getProfilePageMeterDismissed = (state: CommonState) =>
+  state.pages.profile.profileMeterDismissed
 
-export const getIsAccountLoaded = state =>
+export const getIsAccountLoaded = (state: CommonState) =>
   state.account.status === Status.SUCCESS
