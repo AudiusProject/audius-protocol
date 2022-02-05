@@ -19,7 +19,9 @@ use solana_sdk::{
     signature::{Keypair, Signer},
     transaction::Transaction,
     transport::TransportError,
+    feature_set::FeatureSet
 };
+use {std::sync::Arc};
 
 use chrono::Utc;
 
@@ -836,7 +838,8 @@ async fn validate_signature_index_exploit() {
         Some(&payer.pubkey()),
     );
     transaction.sign(&[&payer], recent_blockhash);
-    assert!(transaction.verify_precompiles(false).is_ok());
+    let feature_set = Arc::new(FeatureSet::all_enabled());
+    assert!(transaction.verify_precompiles(&feature_set).is_ok());
     // This fails because when verifying the instructions, we verify the length of provided instructions
     // aginst the length of the provided signature data array
     let transaction_error = banks_client.process_transaction(transaction).await;
