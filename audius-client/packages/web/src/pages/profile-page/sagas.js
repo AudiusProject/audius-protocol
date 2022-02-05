@@ -22,8 +22,15 @@ import {
 } from 'common/store/cache/users/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
+import * as profileActions from 'common/store/pages/profile/actions'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
+import {
+  getProfileUserId,
+  getProfileFollowers,
+  getProfileUser
+} from 'common/store/pages/profile/selectors'
+import { FollowType } from 'common/store/pages/profile/types'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { makeUid, makeKindId } from 'common/utils/uid'
 import * as artistRecommendationsActions from 'components/artist-recommendations/store/slice'
@@ -40,14 +47,6 @@ import { getIsReachable } from 'store/reachability/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { waitForValue } from 'utils/sagaHelpers'
-
-import * as profileActions from './actions'
-import {
-  getProfileUserId,
-  getProfileFollowers,
-  getProfileUser
-} from './selectors'
-import { FollowType } from './types'
 
 const {
   getRemoteVar,
