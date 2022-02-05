@@ -5,6 +5,7 @@ import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
 import {
   amounts,
   ChallengeRewardID,
+  OptimisticUserChallenge,
   TrendingRewardID
 } from 'common/models/AudioRewards'
 import { Nullable } from 'common/utils/typeUtils'
@@ -14,8 +15,6 @@ import {
   TRENDING_PAGE,
   UPLOAD_PAGE
 } from 'utils/route'
-
-import { OptimisticUserChallenge } from './hooks'
 
 type LinkButtonType =
   | 'trackUpload'

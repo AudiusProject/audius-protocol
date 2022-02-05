@@ -17,12 +17,12 @@ import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidation
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { getAccountUser, getUserHandle } from 'common/store/account/selectors'
-import { getHasFavoritedItem } from 'common/store/challenges/selectors'
+import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
+import { getHasFavoritedItem } from 'common/store/challenges/selectors/profile-progress'
 import {
   getChallengeRewardsModalType,
   getClaimStatus,
-  getCognitoFlowStatus,
-  getUserChallenges
+  getCognitoFlowStatus
 } from 'common/store/pages/audio-rewards/selectors'
 import {
   ChallengeRewardsModalType,
@@ -39,7 +39,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { challengeRewardsConfig } from 'pages/audio-rewards-page/config'
-import { useOptimisticUserChallenge } from 'pages/audio-rewards-page/hooks'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
@@ -180,13 +179,13 @@ type BodyProps = {
 
 const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const [modalType] = useRewardsModalType()
-  const userChallenges = useSelector(getUserChallenges)
   const userHandle = useSelector(getUserHandle)
   const dispatch = useDispatch()
   const wm = useWithMobileStyle(styles.mobile)
   const displayMobileContent = isMobile()
 
-  const challenge = useOptimisticUserChallenge(userChallenges[modalType])
+  const userChallenges = useSelector(getOptimisticUserChallenges)
+  const challenge = userChallenges[modalType]
 
   const {
     fullDescription,

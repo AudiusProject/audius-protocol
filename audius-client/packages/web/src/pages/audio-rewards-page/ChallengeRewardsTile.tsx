@@ -5,8 +5,12 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
-import { ChallengeRewardID } from 'common/models/AudioRewards'
+import {
+  ChallengeRewardID,
+  OptimisticUserChallenge
+} from 'common/models/AudioRewards'
 import { StringKeys } from 'common/services/remote-config'
+import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
 import {
   getUserChallenges,
   getUserChallengesLoading
@@ -26,7 +30,6 @@ import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
 import { challengeRewardsConfig } from './config'
-import { OptimisticUserChallenge, useOptimisticUserChallenge } from './hooks'
 
 const messages = {
   title: '$AUDIO REWARDS',
@@ -59,11 +62,11 @@ const RewardPanel = ({
   stepCount
 }: RewardPanelProps) => {
   const wm = useWithMobileStyle(styles.mobile)
-  const userChallenges = useSelector(getUserChallenges)
+  const userChallenges = useSelector(getOptimisticUserChallenges)
 
   const openRewardModal = () => openModal(id)
 
-  const challenge = useOptimisticUserChallenge(userChallenges[id])
+  const challenge = userChallenges[id]
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const needsDisbursement = challenge?.state === 'completed'

@@ -1,30 +1,19 @@
-import { useSelector } from 'react-redux'
-
-import { ChallengeRewardID, UserChallenge } from 'common/models/AudioRewards'
-import { getCompletionStages } from 'common/store/challenges/selectors'
+import {
+  ChallengeRewardID,
+  OptimisticUserChallenge,
+  UserChallenge,
+  UserChallengeState
+} from 'common/models/AudioRewards'
 import {
   getUserChallenges,
   getUserChallengesOverrides
 } from 'common/store/pages/audio-rewards/selectors'
 import { removeNullable } from 'common/utils/typeUtils'
 
-type OptimisticChallengeCompletionResponse = Partial<
-  Record<ChallengeRewardID, number>
->
-type UserChallengeState =
-  | 'inactive'
-  | 'incomplete'
-  | 'in_progress'
-  | 'completed'
-  | 'disbursed'
-export type OptimisticUserChallenge = Omit<
-  UserChallenge,
-  'is_complete' | 'is_active' | 'is_disbursed'
-> & {
-  __isOptimistic: true
-  state: UserChallengeState
-  totalAmount: number
-}
+import { CommonState } from '../..'
+
+import { getCompletionStages } from './profile-progress'
+
 /**
  * Gets the state of a user challenge, with the most progress dominating
  * Mutually exclusive, eg: a challenge is only 'completed' if it is not also 'disbursed'
@@ -53,20 +42,26 @@ const getUserChallengeState = (
   return 'inactive'
 }
 
-export const useOptimisticChallengeCompletionStepCounts = () => {
-  const profileCompletionStages = useSelector(getCompletionStages)
+export const getOptimisticUserChallengeStepCounts = (state: CommonState) => {
+  const profileCompletionStages = getCompletionStages(state)
   const profileCompletion = Object.values(profileCompletionStages).filter(
     Boolean
   ).length
 
-  const completion: OptimisticChallengeCompletionResponse = {
+  const completion: Partial<Record<ChallengeRewardID, number>> = {
     'profile-completion': profileCompletion
   }
 
   return completion
 }
-
-const getOptimisticChallenge = (
+/**
+ * Converts a user challenge to an optimistic user challenge
+ * @param challenge The original UserChallenge
+ * @param stepCountOverrides the overrides to apply to challenge step counts
+ * @param userChallengesOverrides the overrides to apply to other challenge states (currently used for disbursement)
+ * @returns the optimistic state of that challenge
+ */
+const toOptimisticChallenge = (
   challenge: UserChallenge,
   stepCountOverrides: Partial<Record<ChallengeRewardID, number>>,
   userChallengesOverrides: Partial<
@@ -104,18 +99,19 @@ const getOptimisticChallenge = (
 }
 
 /**
- * Get all user challenges but in client-side optimistic state
- * @see useOptimisticUserChallenge
- * @returns all user challenges
+ * Returns all user challenges using an optimistic state and current_step_count
+ * based on what the client tracks. Prevents UI oddness while waiting for discovery to index
+ * @param challenge The user challenge to get the optimistic state for
+ * @returns the same challenge with state and current_step_count overridden as necessary
  */
-export const useOptimisticUserChallenges = () => {
-  const stepCountOverrides = useOptimisticChallengeCompletionStepCounts()
-  const userChallengesOverrides = useSelector(getUserChallengesOverrides)
-  const userChallenges = useSelector(getUserChallenges)
+export const getOptimisticUserChallenges = (state: CommonState) => {
+  const stepCountOverrides = getOptimisticUserChallengeStepCounts(state)
+  const userChallengesOverrides = getUserChallengesOverrides(state)
+  const userChallenges = getUserChallenges(state)
   return Object.values(userChallenges)
     .filter(removeNullable)
     .map(challenge =>
-      getOptimisticChallenge(
+      toOptimisticChallenge(
         challenge,
         stepCountOverrides,
         userChallengesOverrides
@@ -125,17 +121,4 @@ export const useOptimisticUserChallenges = () => {
       map[challenge.challenge_id] = challenge
       return map
     }, {} as Partial<Record<ChallengeRewardID, OptimisticUserChallenge>>)
-}
-
-/**
- * Given a challenge, returns a challenge that uses an optimistic
- * state and current_step_count based on what the client knows
- * @param challenge The user challenge to get the optimistic state for
- * @returns the same challenge with state and current_step_count overridden as necessary
- */
-export const useOptimisticUserChallenge = (
-  challenge?: UserChallenge
-): OptimisticUserChallenge | undefined => {
-  const optimisticChallenges = useOptimisticUserChallenges()
-  return challenge ? optimisticChallenges[challenge.challenge_id] : challenge
 }
