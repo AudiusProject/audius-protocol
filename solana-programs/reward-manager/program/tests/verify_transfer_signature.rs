@@ -18,10 +18,10 @@ use solana_program::{
 };
 use solana_program_test::*;
 use solana_sdk::{
-    secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::Transaction,
+    secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::Transaction, feature_set::FeatureSet
 };
 use std::mem::MaybeUninit;
-use std::{thread, time};
+use std::{thread, time, sync::Arc};
 use utils::*;
 
 #[tokio::test]
@@ -559,7 +559,8 @@ async fn validation_fails_invalid_secp_index() {
     );
 
     // Assert that it *does* precompile - i.e. Solana runtime doesn't catch this hack
-    assert!(tx.verify_precompiles(false).is_ok());
+    let feature_set = Arc::new(FeatureSet::all_enabled());
+    assert!(tx.verify_precompiles(&feature_set).is_ok());
 
     // Assert that it *doesn't* pass our processor
     assert!(context.banks_client.process_transaction(tx).await.is_err())
@@ -672,7 +673,8 @@ async fn validation_fails_incorrect_secp_offset() {
     );
 
     // Assert that it *does* precompile - i.e. Solana runtime doesn't catch this hack
-    assert!(tx.verify_precompiles(false).is_ok());
+    let feature_set = Arc::new(FeatureSet::all_enabled());
+    assert!(tx.verify_precompiles(&feature_set).is_ok());
 
     // Assert that it *doesn't* pass our processor
     assert!(context.banks_client.process_transaction(tx).await.is_err())
