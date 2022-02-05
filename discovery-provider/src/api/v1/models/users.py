@@ -40,6 +40,8 @@ user_model = ns.model(
         "repost_count": fields.Integer(required=True),
         "track_count": fields.Integer(required=True),
         "is_deactivated": fields.Boolean(required=True),
+        "erc_wallet": fields.String(requred=True),
+        "spl_wallet": fields.String(required=True),
     },
 )
 
