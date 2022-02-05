@@ -8,7 +8,11 @@ RUN ln -snf /usr/share/zoneinfo/UTC /etc/localtime && \
 RUN apt-get update && \
     apt-get install -y jq curl build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git python-is-python3 python3-pip && \
     pip3 install --no-cache-dir web3 && \
-    curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+RUN rustup install 1.55.0 && \
     sh -c "$(curl -sSfL https://release.solana.com/v1.8.14/install)"
 
 ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"

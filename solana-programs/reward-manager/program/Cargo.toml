@@ -15,7 +15,7 @@ num_enum = "0.5.1"
 solana-program = "=1.8.14"
 thiserror = "1.0.25"
 borsh = "0.9.0"
-spl-token = { version = "3.1.1", features = [ "no-entrypoint" ] }
+spl-token = { version = "=3.2.0", features = ["no-entrypoint"] }
 bs58 = "0.4.0"
 claimable-tokens = { path = "../../claimable-tokens/program", features = [ "no-entrypoint" ] }
 

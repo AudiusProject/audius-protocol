@@ -15,7 +15,7 @@ solana-program = "=1.8.14"
 thiserror = "1.0.25"
 borsh = "0.9.0"
 bs58 = "0.4.0"
-spl-token = { git="https://github.com/solana-labs/solana-program-library", features = [ "no-entrypoint" ], tag="token-v3.2.0" }
+spl-token = { version = "=3.2.0", features = ["no-entrypoint"] }
 
 [dev-dependencies]
 solana-program-test = "=1.8.14"
