@@ -105,3 +105,25 @@ export const amounts: Record<ChallengeRewardID, number> = {
   'profile-completion': 1,
   'track-upload': 1
 }
+
+/**
+ * Represents the mutually exclusive state of a challenge
+ */
+export type UserChallengeState =
+  | 'inactive'
+  | 'incomplete'
+  | 'in_progress'
+  | 'completed'
+  | 'disbursed'
+
+/**
+ * A User Challenge that has been updated by the client to optimistically include any updates
+ */
+export type OptimisticUserChallenge = Omit<
+  UserChallenge,
+  'is_complete' | 'is_active' | 'is_disbursed'
+> & {
+  __isOptimistic: true
+  state: UserChallengeState
+  totalAmount: number
+}
