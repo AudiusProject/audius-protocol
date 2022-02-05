@@ -17,6 +17,7 @@ import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidation
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { getAccountUser, getUserHandle } from 'common/store/account/selectors'
+import { getHasFavoritedItem } from 'common/store/challenges/selectors'
 import {
   getChallengeRewardsModalType,
   getClaimStatus,
@@ -32,7 +33,6 @@ import {
   claimChallengeReward
 } from 'common/store/pages/audio-rewards/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { getHasFavoritedItem } from 'components/profile-progress/store/selectors'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'

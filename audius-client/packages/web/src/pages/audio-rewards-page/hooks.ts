@@ -1,12 +1,12 @@
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardID, UserChallenge } from 'common/models/AudioRewards'
+import { getCompletionStages } from 'common/store/challenges/selectors'
 import {
   getUserChallenges,
   getUserChallengesOverrides
 } from 'common/store/pages/audio-rewards/selectors'
 import { removeNullable } from 'common/utils/typeUtils'
-import { getCompletionStages } from 'components/profile-progress/store/selectors'
 
 type OptimisticChallengeCompletionResponse = Partial<
   Record<ChallengeRewardID, number>
