@@ -1,7 +1,7 @@
 import Status from 'common/models/Status'
 import { getAccountUser } from 'common/store/account/selectors'
 
-import { CommonState } from '..'
+import { CommonState } from '../..'
 
 export const getProfileDescriptionExists = (state: CommonState) => {
   const curUser = getAccountUser(state)
