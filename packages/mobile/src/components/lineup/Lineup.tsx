@@ -191,38 +191,43 @@ export const Lineup = ({
     index: number
     item: LineupItem | LoadingLineupItem
   }) => {
-    if (item._loading) {
-      return (
-        <View style={styles.item}>
-          <TrackTileSkeleton />
-        </View>
-      )
-    }
-
-    if (item.kind === Kind.TRACKS || item.track_id) {
-      // Render a track tile if the kind tracks or there's a track id present
-
-      if (item._marked_deleted) {
-        return null
+    if ('_loading' in item) {
+      if (item._loading) {
+        return (
+          <View style={styles.item}>
+            <TrackTileSkeleton />
+          </View>
+        )
       }
-
-      return (
-        <View style={styles.item}>
-          <TrackTile
-            {...item}
-            index={index}
-            isTrending={isTrending}
-            showArtistPick={showLeadingElementArtistPick && !!leadingElementId}
-            showRankIcon={index < rankIconCount}
-            togglePlay={togglePlay}
-            uid={item.uid}
-          />
-        </View>
-      )
     } else {
-      return null
-      // TODO: Playlist tile
+      if (item.kind === Kind.TRACKS || item.track_id) {
+        // Render a track tile if the kind tracks or there's a track id present
+
+        if (item._marked_deleted) {
+          return null
+        }
+
+        return (
+          <View style={styles.item}>
+            <TrackTile
+              {...item}
+              index={index}
+              isTrending={isTrending}
+              showArtistPick={
+                showLeadingElementArtistPick && !!leadingElementId
+              }
+              showRankIcon={index < rankIconCount}
+              togglePlay={togglePlay}
+              uid={item.uid}
+            />
+          </View>
+        )
+      } else {
+        return null
+        // TODO: Playlist tile
+      }
     }
+    return null
   }
 
   // Calculate the sections of data to provide to SectionList
