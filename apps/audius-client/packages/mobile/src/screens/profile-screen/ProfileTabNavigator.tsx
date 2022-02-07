@@ -11,30 +11,18 @@ import {
   tabScreen
 } from 'app/components/app-navigator/TopTabNavigator'
 
+import { AlbumsTab } from './AlbumsTab'
+import { PlaylistsTab } from './PlaylistsTab'
+import { RepostsTab } from './RepostsTab'
+import { TracksTab } from './TracksTab'
 import { useShouldShowCollectiblesTab } from './utils'
 
-const TracksTab = () => {
-  return <Text>Tracks Tab</Text>
-}
-
-const RepostsTab = () => {
-  return <Text>Reposts Tab</Text>
-}
-
-const AlbumsTab = () => {
-  return <Text>Albums Tab</Text>
-}
-
-const PlaylistsTab = () => {
-  return <Text>Playlists Tab</Text>
+type ProfileTabNavigatiorProps = {
+  profile: ProfileUser
 }
 
 const CollectiblesTab = () => {
   return <Text>Collectibles Tab</Text>
-}
-
-type ProfileTabNavigatiorProps = {
-  profile: ProfileUser
 }
 
 export const ProfileTabNavigator = ({ profile }: ProfileTabNavigatiorProps) => {
