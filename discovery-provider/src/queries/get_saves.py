@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, cast
 
 from pytest import Session
 from src import exceptions
@@ -106,22 +106,28 @@ def get_saves(
                 Track.is_current == True, Track.is_delete == False
             )
 
-        query_results: List[
-            Union[Save, Tuple[Save, Union[Track, Playlist]]]
+        query_results: Union[
+            List[Tuple[Save, Union[Track, Playlist]]], List[Save]
         ] = paginate_query(query).all()
 
         # Populate the metadata for any save items
         if include_save_items:
+            # hint for static typing analysis
+            query_results_as_tuples = cast(
+                List[Tuple[Save, Union[Track, Playlist]]], query_results
+            )
             saves = helpers.query_result_to_list(
-                [result[0] for result in query_results]
+                [result[0] for result in query_results_as_tuples]
             )
             save_items = helpers.query_result_to_list(
-                [result[1] for result in query_results]
+                [result[1] for result in query_results_as_tuples]
             )
             save_results = populate_save_items(
                 session, saves, save_items, save_query_type, current_user_id
             )
         else:
-            save_results = helpers.query_result_to_list(query_results)
+            # hint for static typing analysis
+            query_results_as_saves = cast(List[Save], query_results)
+            save_results = helpers.query_result_to_list(query_results_as_saves)
 
     return save_results
