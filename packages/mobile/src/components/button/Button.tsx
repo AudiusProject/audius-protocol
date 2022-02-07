@@ -6,13 +6,14 @@ import {
   TextStyle,
   View,
   Animated,
-  StyleProp,
-  ColorValue
+  StyleProp
 } from 'react-native'
+import { Color } from 'react-native-svg'
 
 import Text from 'app/components/text'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { flexRowCentered } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 export enum ButtonType {
@@ -51,6 +52,9 @@ const buttonTypeStyles = {
     },
     buttonText: {
       color: themeColors.neutralLight4
+    },
+    icon: {
+      color: themeColors.neutralLight4
     }
   })
 }
@@ -69,10 +73,8 @@ const createStyles = (type: ButtonType = ButtonType.PRIMARY) => (
           borderRadius: 4
         },
         buttonContent: {
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center'
+          ...flexRowCentered(),
+          justifyContent: 'center'
         },
         buttonText: {
           fontSize: 18,
@@ -111,11 +113,12 @@ export type ButtonProps = {
    * const renderIconArrow = color => <IconArrow fill={color} />
    * export const myComponent = () => <Button renderIcon={renderIconArrow} />
    */
-  renderIcon?: (color: ColorValue) => React.ReactElement
+  renderIcon?: (color: Color) => React.ReactElement
   iconPosition?: 'left' | 'right'
   containerStyle?: StyleProp<ViewStyle>
   style?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
+  iconStyle?: StyleProp<ViewStyle>
   disabled?: boolean
   ignoreDisabledStyle?: boolean
   underlayColor?: string
@@ -131,6 +134,7 @@ const Button = ({
   containerStyle,
   style,
   textStyle,
+  iconStyle,
   disabled = false,
   ignoreDisabledStyle = false,
   underlayColor
@@ -162,14 +166,14 @@ const Button = ({
       >
         <View style={styles.buttonContent}>
           {(icon || renderIcon) && iconPosition === 'left' ? (
-            <View style={styles.iconLeft}>
-              {renderIcon ? renderIcon(styles.icon.color!) : icon}
+            <View style={[styles.iconLeft, iconStyle]}>
+              {renderIcon ? renderIcon(styles.icon.color as Color) : icon}
             </View>
           ) : null}
           <Text style={[styles.buttonText, textStyle]}>{title}</Text>
           {(icon || renderIcon) && iconPosition === 'right' ? (
-            <View style={styles.iconRight}>
-              {renderIcon ? renderIcon(styles.icon.color!) : icon}
+            <View style={[styles.iconRight, iconStyle]}>
+              {renderIcon ? renderIcon(styles.icon.color as Color) : icon}
             </View>
           ) : null}
         </View>
