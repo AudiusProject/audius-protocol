@@ -4,11 +4,11 @@ import { tracksActions } from 'audius-client/src/common/store/pages/profile/line
 import { getProfileTracksLineup } from 'audius-client/src/common/store/pages/profile/selectors'
 import { Text } from 'react-native'
 
+import { EmptyCard } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
-import { EmptyTab } from './EmptyTab'
 import { getProfile } from './selectors'
 
 const messages = {
@@ -35,9 +35,9 @@ export const TracksTab = () => {
 
   if (profile.track_count === 0) {
     return (
-      <EmptyTab>
+      <EmptyCard>
         <Text>{messages.emptyTabText}</Text>
-      </EmptyTab>
+      </EmptyCard>
     )
   }
 
