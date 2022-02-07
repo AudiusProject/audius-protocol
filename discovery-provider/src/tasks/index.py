@@ -480,33 +480,43 @@ def process_state_changes(
         USER_REPLICA_SET_MANAGER: [],
     }
 
-    for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        state_update_futures = {}
+        for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
+            txs_to_process = tx_type_to_grouped_lists_map[tx_type]
+            tx_processing_args = [
+                main_indexing_task,
+                update_task,
+                session,
+                txs_to_process,
+                block_number,
+                block_timestamp,
+                block_hash,
+                ipfs_metadata,
+                blacklisted_cids,
+            ]
 
-        txs_to_process = tx_type_to_grouped_lists_map[tx_type]
-        tx_processing_args = [
-            main_indexing_task,
-            update_task,
-            session,
-            txs_to_process,
-            block_number,
-            block_timestamp,
-            block_hash,
-            ipfs_metadata,
-            blacklisted_cids,
-        ]
+            state_update_futures[executor.submit(bulk_processor, *tx_processing_args)] = tx_type
 
-        (
-            total_changes_for_tx_type,
-            changed_entity_ids,
-        ) = bulk_processor(*tx_processing_args)
+        for future in concurrent.futures.as_completed(state_update_futures):
+            tx_type = state_update_futures[future]
+            try:
+                (
+                    total_changes_for_tx_type,
+                    changed_entity_ids,
+                ) = future.result()
 
-        if tx_type in changed_entity_ids_map.keys():
-            changed_entity_ids_map[tx_type] = changed_entity_ids
+                if tx_type in changed_entity_ids_map.keys():
+                    changed_entity_ids_map[tx_type] = changed_entity_ids
 
-        logger.info(
-            f"index.py | {bulk_processor.__name__} completed"
-            f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
-        )
+                logger.info(
+                    f"index.py | {tx_type} completed"
+                    f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
+                )
+            except Exception as e:
+                raise Exception(
+                    f"get_all_other_nodes.py | ERROR in process_state_changes for tx_type {tx_type} generated {e}"
+                )
 
     return changed_entity_ids_map
 
