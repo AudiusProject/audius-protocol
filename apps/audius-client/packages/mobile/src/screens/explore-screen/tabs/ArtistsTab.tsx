@@ -51,9 +51,7 @@ export const ArtistsTab = ({ navigation }: Props) => {
       }
       contentContainerStyle={styles.contentContainer}
       data={profiles}
-      renderItem={({ item, style }) => (
-        <ArtistCard artist={item} style={style} />
-      )}
+      renderItem={({ item }) => <ArtistCard artist={item} />}
     />
   )
 }

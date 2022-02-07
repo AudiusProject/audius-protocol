@@ -18,9 +18,7 @@ export const CollectionList = (props: CollectionListProps) => {
   return (
     <CardList
       data={collection}
-      renderItem={({ item, style }) => (
-        <CollectionCard collection={item} style={style} />
-      )}
+      renderItem={({ item }) => <CollectionCard collection={item} />}
       {...other}
     />
   )
