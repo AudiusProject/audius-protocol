@@ -313,7 +313,7 @@ export const ChallengeRewardsDrawer = ({
                 claimInProgress ? (
                   <LoadingSpinner />
                 ) : (
-                  <IconCheck fill={color as string} />
+                  <IconCheck fill={color} />
                 )
               }
               iconPosition='left'

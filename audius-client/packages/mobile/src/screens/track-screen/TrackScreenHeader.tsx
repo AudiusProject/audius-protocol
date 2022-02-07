@@ -47,10 +47,11 @@ import { make, track } from 'app/utils/analytics'
 import { moodMap } from 'app/utils/moods'
 import { ThemeColors } from 'app/utils/theme'
 
-import { TrackScreenActionButtons } from './TrackScreenActionButtons'
-import { TrackScreenStats } from './TrackScreenStats'
-
 // import HiddenTrackHeader from '../HiddenTrackHeader'
+
+import { TrackScreenActionButtons } from './TrackScreenActionButtons'
+import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
+import { TrackScreenStats } from './TrackScreenStats'
 
 const messages = {
   track: 'TRACK',
@@ -376,17 +377,14 @@ export const TrackScreenHeader = ({
   }
 
   const renderDownloadButtons = () => {
-    // return (
-    //   <DownloadButtons
-    //     style={styles.downloadButtonsContainer}
-    //     trackId={trackId}
-    //     isOwner={isOwner}
-    //     following={isFollowing}
-    //     onDownload={onDownload}
-    //   />
-    // )
-    // TODO
-    return null
+    return (
+      <TrackScreenDownloadButtons
+        following={user.does_current_user_follow}
+        isOwner={isOwner}
+        trackId={track_id}
+        user={user}
+      />
+    )
   }
 
   const renderTrackLabels = () => {
