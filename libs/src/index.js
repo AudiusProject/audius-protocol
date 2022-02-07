@@ -241,6 +241,7 @@ class AudiusLibs {
    * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
    * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
    * @param {Uint8Array} [feePayerSecretKey] optional fee payer secret key, if not using relay
+   * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -253,7 +254,8 @@ class AudiusLibs {
     rewardsManagerProgramPDA,
     rewardsManagerTokenPDA,
     useRelay,
-    feePayerSecretKey = null
+    feePayerSecretKey = null,
+    confirmationTimeout
   }) {
     return {
       solanaClusterEndpoint,
@@ -266,7 +268,8 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null
+      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null,
+      confirmationTimeout
     }
   }
 
@@ -416,7 +419,7 @@ class AudiusLibs {
         this.ethContracts,
         this.identityService,
         this.solanaWeb3Manager,
-        this.wormholeConfig.rpcHost,
+        this.wormholeConfig.rpcHosts,
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,

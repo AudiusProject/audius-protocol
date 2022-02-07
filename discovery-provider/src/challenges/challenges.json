@@ -32,6 +32,14 @@
 		"starting_block": 25346436
 	},
 	{
+		"id": "ref-v",
+		"type": "aggregate",
+		"amount": "1",
+		"active": true,
+		"step_count": 500,
+		"starting_block": 25346436
+	},
+	{
 		"id": "referred",
 		"type": "boolean",
 		"amount": "1",

@@ -91,20 +91,30 @@ const instructionSchema = new Map([
   ]
 ])
 
-const SOLANA_CONFIRMATION_TIMEOUT_MS = 180 * 1000
-const solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'), {
-  confirmTransactionInitialTimeout: SOLANA_CONFIRMATION_TIMEOUT_MS
-})
 let feePayer
 
-function getFeePayer () {
+const feePayers = config.get('solanaFeePayerWallets')
+
+// Optionally returns the existing singleFeePayer
+// Ensures other usages of this function do not break as we upgrade to multiple
+function getFeePayer (singleFeePayer = true) {
   if (!feePayer) {
-    feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
+    feePayer = config.get('solanaFeePayerWallet') ? solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(config.get('solanaFeePayerWallet'))) : null
   }
-  return feePayer
+  // Ensure legacy usage of single feePayer is not broken
+  // If multiple feepayers are not provided, default to single value as well
+  if (singleFeePayer || !feePayers) {
+    return feePayer
+  }
+
+  const randomFeePayerIndex = Math.floor(Math.random() * feePayers.length)
+  const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(feePayers[randomFeePayerIndex].privateKey))
+
+  return randomFeePayer
 }
 
 async function createAndVerifyMessage (
+  connection,
   validSigner,
   privateKey,
   userId,
@@ -117,7 +127,7 @@ async function createAndVerifyMessage (
   let pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
 
   let validSignerPubK = new solanaWeb3.PublicKey(validSigner)
-  let accInfo = await solanaConnection.getAccountInfo(validSignerPubK)
+  let accInfo = await connection.getAccountInfo(validSignerPubK)
   let signerGroup = new solanaWeb3.PublicKey(
     accInfo.data.toJSON().data.slice(1, 33)
   ) // cut off version and eth address from valid signer data
@@ -175,10 +185,10 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
-  let feePayerAccount = getFeePayer()
+  let feePayerAccount = getFeePayer(false)
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
-    solanaConnection,
+    connection,
     transaction,
     [feePayerAccount],
     {
@@ -191,6 +201,5 @@ async function createAndVerifyMessage (
   return signature
 }
 
-exports.solanaConnection = solanaConnection
 exports.createAndVerifyMessage = createAndVerifyMessage
 exports.getFeePayer = getFeePayer

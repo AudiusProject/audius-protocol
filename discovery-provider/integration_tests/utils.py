@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from src import models
-from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
+from src.tasks.index_aggregate_user import get_latest_blocknumber
 from src.utils import helpers
 from src.utils.db_session import get_db
 
@@ -56,7 +56,7 @@ def populate_mock_db_blocks(db, min, max):
             session.flush()
 
 
-def populate_mock_db(db, entities, block_offset=0):
+def populate_mock_db(db, entities, block_offset=None):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows
 
@@ -65,6 +65,14 @@ def populate_mock_db(db, entities, block_offset=0):
         entities - dict of keys tracks, users, plays of arrays of metadata
     """
     with db.scoped_session() as session:
+        # check if blocknumber already exists for longer running tests
+        if block_offset is None:
+            block_offset = get_latest_blocknumber(session)
+            if block_offset:
+                block_offset += 1
+            else:
+                block_offset = 0
+
         tracks = entities.get("tracks", [])
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
@@ -78,11 +86,16 @@ def populate_mock_db(db, entities, block_offset=0):
         user_challenges = entities.get("user_challenges", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
+        aggregate_track = entities.get("aggregate_track", [])
+        aggregate_monthly_plays = entities.get("aggregate_monthly_plays", [])
+        aggregate_user = entities.get("aggregate_user", [])
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
 
-        num_blocks = max(len(tracks), len(users), len(follows), len(saves))
+        num_blocks = max(
+            len(tracks), len(users), len(follows), len(saves), len(reposts)
+        )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = (
                 session.query(models.Block).filter(models.Block.number == i).first()
@@ -101,10 +114,17 @@ def populate_mock_db(db, entities, block_offset=0):
                 session.flush()
 
         for i, track_meta in enumerate(tracks):
+            track_id = track_meta.get("track_id", i)
+
+            # mark previous tracks as is_current = False
+            session.query(models.Track).filter(models.Track.is_current == True).filter(
+                models.Track.track_id == track_id
+            ).update({"is_current": False})
+
             track = models.Track(
                 blockhash=hex(i + block_offset),
                 blocknumber=i + block_offset,
-                track_id=track_meta.get("track_id", i),
+                track_id=track_id,
                 title=track_meta.get("title", f"track_{i}"),
                 is_current=track_meta.get("is_current", True),
                 is_delete=track_meta.get("is_delete", False),
@@ -221,6 +241,35 @@ def populate_mock_db(db, entities, block_offset=0):
             )
             session.add(aggregate_play)
 
+        for i, aggregate_track_meta in enumerate(aggregate_track):
+            aggregate_track = models.AggregateTrack(
+                track_id=aggregate_track_meta.get("track_id", i),
+                repost_count=aggregate_track_meta.get("repost_count", 0),
+                save_count=aggregate_track_meta.get("save_count", 0),
+            )
+            session.add(aggregate_track)
+
+        for i, aggregate_monthly_play_meta in enumerate(aggregate_monthly_plays):
+            aggregate_monthly_play = models.AggregateMonthlyPlays(
+                play_item_id=aggregate_monthly_play_meta.get("play_item_id", i),
+                timestamp=aggregate_monthly_play_meta.get("timestamp", i),
+                count=aggregate_monthly_play_meta.get("count", 0),
+            )
+            session.add(aggregate_monthly_play)
+
+        for i, aggregate_user_meta in enumerate(aggregate_user):
+            user = models.AggregateUser(
+                user_id=aggregate_user_meta.get("user_id", i),
+                track_count=aggregate_user_meta.get("track_count", 0),
+                playlist_count=aggregate_user_meta.get("playlist_count", 0),
+                album_count=aggregate_user_meta.get("album_count", 0),
+                follower_count=aggregate_user_meta.get("follower_count", 0),
+                following_count=aggregate_user_meta.get("following_count", 0),
+                repost_count=aggregate_user_meta.get("repost_count", 0),
+                track_save_count=aggregate_user_meta.get("track_save_count", 0),
+            )
+            session.add(user)
+
         for i, user_listening_history_meta in enumerate(user_listening_history):
             user_listening_history = models.UserListeningHistory(
                 user_id=user_listening_history_meta.get("user_id", i + 1),
@@ -301,7 +350,3 @@ def populate_mock_db(db, entities, block_offset=0):
             session.add(user_challenge)
 
         session.flush()
-
-        session.execute(
-            UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
-        )
