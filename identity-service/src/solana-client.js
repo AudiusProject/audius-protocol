@@ -160,7 +160,8 @@ async function createAndVerifyMessage (
     instructionData
   )
 
-  let transaction = new solanaWeb3.Transaction()
+  let recentBlockHash = connection.getRecentBlockhash('confirmed')
+  let transaction = new solanaWeb3.Transaction(recentBlockHash)
 
   let secpInstruction = solanaWeb3.Secp256k1Program.createInstructionWithPublicKey(
     {
@@ -192,7 +193,7 @@ async function createAndVerifyMessage (
     transaction,
     [feePayerAccount],
     {
-      skipPreflight: true,
+      skipPreflight: false,
       commitment: config.get('solanaTxCommitmentLevel'),
       preflightCommitment: config.get('solanaTxCommitmentLevel')
     }
