@@ -43,7 +43,7 @@ const relayWormhole = async (
     logs.push(`Attempting Transfer Tokens for sender: ${senderAddress}`)
     const { sha: transferTokensSHA, txProps: transferTokensTxProps } = getTxProps(senderAddress, transferTokens)
     const estimatedGas = await ethTxRelay.estimateEthTransactionGas(senderAddress, transferTokensTxProps.contractAddress, transferTokensTxProps.encodedABI)
-    const gasMultiplier = 1.5
+    const gasMultiplier = 1.05
     transferTokensTxProps.gasLimit = Math.floor(estimatedGas * gasMultiplier)
 
     const transferTokensTxResponse = await ethTxRelay.sendEthTransaction(req, transferTokensTxProps, transferTokensSHA)
