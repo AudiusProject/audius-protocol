@@ -81,7 +81,8 @@ const socialLinks = [
 
 const messages = {
   startListening: 'Start Listening Free',
-  copyright: '© 2020 Audius, Inc. All Rights Reserved.',
+  copyright: (year: number | string) =>
+    `© ${year} Audius, Inc. All Rights Reserved.`,
   madeWith: 'Made with',
   love: '♥︎',
   location: 'in SF & LA'
@@ -142,7 +143,7 @@ const Footer = (props: FooterProps) => {
             ))}
           </div>
           <div className={styles.rightsContainer}>
-            <div>{messages.copyright}</div>
+            <div>{messages.copyright(new Date().getFullYear())}</div>
             <div>
               <span>{messages.madeWith}</span>
               <span className={styles.heart}>{messages.love}</span>
