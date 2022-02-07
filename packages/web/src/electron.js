@@ -17,10 +17,6 @@ const {
 const logger = require('electron-log')
 const { autoUpdater } = require('electron-updater')
 
-// The protocol scheme determines what URLs resolve to the app.
-// In this case audius:// will.
-const SCHEME = 'audius'
-
 const Environment = Object.freeze({
   PRODUCTION: 0,
   STAGING: 1,
@@ -29,30 +25,53 @@ const Environment = Object.freeze({
 
 const args = process.argv.slice(2)
 
-let appEnvironment, localhostPort
-// NOTE: This args will only apply if running electron itself locally
-// Production builds with installers (staging and prod) cannot receive args like this.
+let appEnvironment, localhostPort, scheme
+
+// Try getting the env from the program args if available.
+// Otherwise, try getting env from the electronConfig file.
+let env = null
 if (args.length > 0) {
-  switch (args[0]) {
-    case 'localhost':
-      appEnvironment = Environment.LOCALHOST
-      localhostPort = args[1] || '3000'
-      break
-    case 'staging':
-      appEnvironment = Environment.STAGING
-      break
-    case 'production':
-      appEnvironment = Environment.PRODUCTION
-      break
-    default:
-      appEnvironment = ''
-      break
+  env = args[0]
+}
+if (!env) {
+  const configFile = path.resolve(app.getAppPath(), 'electronConfig.json')
+  try {
+    // Needs to be readFileSync because async js here will take
+    // too long, leading the scheme to be decided after the app has
+    // registered the scheme.
+    const data = fs.readFileSync(configFile)
+    const config = JSON.parse(data)
+    env = config.env
+  } catch (e) {
+    console.error('Unable to parse config file electronConfig.json', e)
   }
 }
 
+switch (env) {
+  case 'localhost':
+    appEnvironment = Environment.LOCALHOST
+    localhostPort = args[1] || '3000'
+    scheme = 'audius-localhost'
+    break
+  case 'staging':
+    appEnvironment = Environment.STAGING
+    scheme = 'audius-staging'
+    break
+  case 'production':
+    appEnvironment = Environment.PRODUCTION
+    scheme = 'audius'
+    break
+  default:
+    appEnvironment = ''
+    scheme = ''
+    break
+}
+
+// The protocol scheme determines what URLs resolve to the app.
+// For example, the URL audius:// will trigger the application to open.
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: SCHEME,
+    scheme,
     privileges: { standard: true, secure: true, supportFetchAPI: true }
   }
 ])
@@ -74,14 +93,14 @@ const getPath = async p => {
  * properly loaded from the filesystem.
  */
 const reformatURL = url => {
-  if (!url) return `${SCHEME}://-`
-  let path = url.replace(`${SCHEME}://`, '').replace(`${SCHEME}:`, '')
+  if (!url) return `${scheme}://-`
+  let path = url.replace(`${scheme}://`, '').replace(`${scheme}:`, '')
   if (path === '--updated') {
     // This was a deeplink after an "update." We could build some nice
     // "Thank you for updating feature," but for now, just omit it
     path = ''
   }
-  return `${SCHEME}://-/${path}`
+  return `${scheme}://-/${path}`
 }
 
 /**
@@ -138,13 +157,17 @@ const createWindow = () => {
     mainWindow.loadURL(`http://localhost:${localhostPort}`)
   } else {
     let directory
-    if (appEnvironment === Environment.STAGING) {
-      directory = path.resolve(app.getAppPath(), 'build-staging')
-    } else if (appEnvironment === Environment.PRODUCTION) {
-      directory = path.resolve(app.getAppPath(), 'build-production')
-    } else {
-      // What CI will use when it creates an installer.
-      directory = path.resolve(app.getAppPath(), 'build')
+    switch (appEnvironment) {
+      case Environment.STAGING:
+        directory = path.resolve(app.getAppPath(), 'build-staging')
+        break
+      case Environment.PRODUCTION:
+        directory = path.resolve(app.getAppPath(), 'build-production')
+        break
+      default:
+        // Should not be exercised, but default to a `build` dir if present
+        directory = path.resolve(app.getAppPath(), 'build')
+        break
     }
 
     const handler = async (request, cb) => {
@@ -156,7 +179,7 @@ const createWindow = () => {
     }
 
     session.defaultSession.protocol.registerFileProtocol(
-      SCHEME,
+      scheme,
       handler,
       err => {
         // The scheme has probably already been registered. Most likely safe to ignore.
@@ -175,7 +198,7 @@ const createWindow = () => {
     if (deepLinkedURL) {
       mainWindow.loadURL(deepLinkedURL)
     } else {
-      mainWindow.loadURL(`${SCHEME}://-`)
+      mainWindow.loadURL(`${scheme}://-`)
     }
   }
 
@@ -238,7 +261,7 @@ if (!lock) {
   })
 }
 
-function initMenu() {
+const initMenu = () => {
   // Create the Application's main menu
   const template = [
     {
@@ -362,7 +385,7 @@ autoUpdater.on('error', info => {
 })
 
 /* App Event Handlers */
-app.setAsDefaultProtocolClient(SCHEME)
+app.setAsDefaultProtocolClient(scheme)
 
 app.on('ready', () => {
   createWindow()

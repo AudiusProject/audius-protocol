@@ -15,19 +15,23 @@ const fse = require('fs-extra')
 
 const PRODUCTION_APP_ID = 'co.audius.app'
 const PRODUCTION_NAME = 'Audius'
+const PRODUCTION_PACKAGE_JSON_NAME = 'audius-client'
 const PRODUCTION_BUCKET = 'download.audius.co'
 const PRODUCTION_ICNS = 'resources/icons/AudiusIcon.icns'
 const PRODUCTION_DMG_ICNS = 'resources/icons/AudiusDmgIcon.icns'
 const PRODUCTION_ICON = 'resources/icons/AudiusIcon.png'
+const PRODUCTION_SCHEME = 'audius'
+const PRODUCTION_BUILD_DIR = 'build-production'
 
 const STAGING_APP_ID = 'co.audius.staging.app'
 const STAGING_NAME = 'Audius Staging'
+const STAGING_PACKAGE_JSON_NAME = 'audius-client-staging'
 const STAGING_BUCKET = 'download.staging.audius.co'
 const STAGING_ICNS = 'resources/icons/AudiusStagingIcon.icns'
 const STAGING_DMG_ICNS = 'resources/icons/AudiusStagingDmgIcon.icns'
 const STAGING_ICON = 'resources/icons/AudiusStagingIcon.png'
-
-const SCHEME = 'audius'
+const STAGING_SCHEME = 'audius-staging'
+const STAGING_BUILD_DIR = 'build-staging'
 
 program
   .option('-m, --mac', 'Build for mac')
@@ -72,17 +76,20 @@ const notarizeFn = async (appId, params) => {
 }
 
 /**
- * Copy the build directory in to /build so that the electron main.js can be invoked
- * on the correct build.
- * There is currently no easy to way to pass env vars or CLI args to the invocation
- * of the electron.js entry-point or this wouldn't be needed.
+ * Write a json file indicating what environment the application is running in
  * @param {boolean} isProduction
  */
-const copyBuildDir = isProduction => {
+const writeEnv = isProduction => {
   if (isProduction) {
-    return fse.copy('build-production', 'build')
+    return fse.writeFile(
+      'electronConfig.json',
+      JSON.stringify({ env: 'production' })
+    )
   }
-  return fse.copy('build-staging', 'build')
+  return fse.writeFile(
+    'electronConfig.json',
+    JSON.stringify({ env: 'staging' })
+  )
 }
 
 /**
@@ -92,25 +99,44 @@ const copyBuildDir = isProduction => {
 const makeBuildParams = isProduction => {
   const appId = isProduction ? PRODUCTION_APP_ID : STAGING_APP_ID
   const productName = isProduction ? PRODUCTION_NAME : STAGING_NAME
+  const packageJsonName = isProduction
+    ? PRODUCTION_PACKAGE_JSON_NAME
+    : STAGING_PACKAGE_JSON_NAME
 
   const bucket = isProduction ? PRODUCTION_BUCKET : STAGING_BUCKET
   const icns = isProduction ? PRODUCTION_ICNS : STAGING_ICNS
   const dmgIcns = isProduction ? PRODUCTION_DMG_ICNS : STAGING_DMG_ICNS
   const icon = isProduction ? PRODUCTION_ICON : STAGING_ICON
+  const buildDir = isProduction ? PRODUCTION_BUILD_DIR : STAGING_BUILD_DIR
+
+  const scheme = isProduction ? PRODUCTION_SCHEME : STAGING_SCHEME
 
   return {
     config: {
       appId: appId,
       npmRebuild: false,
       productName: productName,
+      // Inject data into package.json
+      // https://www.electron.build/configuration/configuration
+      extraMetadata: {
+        // We set prod & stage to separate values to ensure that
+        // the app's app-data does not collide (in addition to a different `scheme`).
+        // `productName` controls the app-data location on most platforms.
+        // https://github.com/electron-userland/electron-builder/issues/3429#issuecomment-434024379
+        productName: productName,
+        // `name` controls the app-data location on some linux platforms.
+        // https://github.com/electron/electron/blob/main/docs/api/app.md#appgetname
+        name: packageJsonName
+      },
       extends: null,
       directories: {
-        buildResources: 'build'
+        buildResources: buildDir
       },
-      files: ['build/**/*', 'src/electron.js'],
+      files: [`${buildDir}/**/*`, 'electronConfig.json', 'src/electron.js'],
       protocols: {
-        name: 'audius-app',
-        schemes: [SCHEME]
+        // Scheme controls deep links as well as local-storage prefix
+        name: scheme,
+        schemes: [scheme]
       },
       mac: {
         category: 'public.app-category.music',
@@ -164,7 +190,7 @@ const makeBuildParams = isProduction => {
       afterSign: async params => notarizeFn(appId, params),
       publish: {
         provider: 's3',
-        bucket: bucket,
+        bucket,
         region: 'us-west-1'
       }
     }
@@ -190,7 +216,7 @@ if (program.publish) {
 console.log('Creating distribution with the following build params:')
 console.log(buildParams)
 
-copyBuildDir(program.env === 'production').then(() => {
+writeEnv(program.env === 'production').then(() => {
   builder.build(buildParams).catch(e => {
     console.error(e)
     process.exit(1)
