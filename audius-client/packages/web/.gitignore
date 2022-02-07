@@ -30,6 +30,7 @@
 
 # distribution
 /dist
+electronConfig.json
 
 # misc
 .DS_Store
