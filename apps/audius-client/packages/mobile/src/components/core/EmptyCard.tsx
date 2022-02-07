@@ -17,11 +17,11 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type EmptyTabProps = {
+type EmptyCardProps = {
   children: ReactNode
 }
 
-export const EmptyTab = ({ children }: EmptyTabProps) => {
+export const EmptyCard = ({ children }: EmptyCardProps) => {
   const styles = useStyles()
   return (
     <Tile

@@ -1,11 +1,11 @@
 import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { CommonState } from 'audius-client/src/common/store'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
+import { CardList } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 import { ArtistCard } from '../components/ArtistCard'
 import { TabInfo } from '../components/TabInfo'
@@ -18,31 +18,14 @@ type Props = {
   navigation: NativeStackNavigationProp<ParamListBase, keyof ParamListBase>
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    tabContainer: {
-      display: 'flex'
-    },
-    contentContainer: {
-      display: 'flex',
-      // TODO: Fix this
-      marginBottom: 240
-    },
-    cardContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'flex-start',
-      padding: 12,
-      paddingTop: 24
-    },
-    card: {
-      flex: 1,
-      flexBasis: '40%',
-      maxWidth: '50%',
-      marginBottom: 8
-    }
-  })
+const useStyles = makeStyles(({ spacing }) => ({
+  contentContainer: {
+    paddingBottom: 240
+  },
+  header: {
+    marginBottom: spacing(2)
+  }
+}))
 
 // TODO: Move these somewhere (clientStore selectors)
 const getExploreUsers = (state: CommonState) => state.pages.explore.profiles
@@ -55,24 +38,22 @@ const makeGetUsers = (userIds: number[]) => {
 }
 
 export const ArtistsTab = ({ navigation }: Props) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const userIds = useSelectorWeb(getExploreUsers)
   const profiles = useSelectorWeb(makeGetUsers(userIds))
 
   return (
-    <ScrollView style={styles.tabContainer}>
-      <TabInfo header={messages.infoHeader} />
-      <View style={styles.contentContainer}>
-        <View style={styles.cardContainer}>
-          {profiles.map((user, idx) => (
-            <ArtistCard
-              key={user.user_id}
-              artist={user}
-              style={[styles.card, { marginLeft: idx % 2 ? 8 : 0 }]}
-            />
-          ))}
+    <CardList
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <TabInfo header={messages.infoHeader} />
         </View>
-      </View>
-    </ScrollView>
+      }
+      contentContainerStyle={styles.contentContainer}
+      data={profiles}
+      renderItem={({ item, style }) => (
+        <ArtistCard artist={item} style={style} />
+      )}
+    />
   )
 }

@@ -1,6 +1,9 @@
+import { useMemo } from 'react'
+
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
-import { CollectionList } from './CollectionList'
+import { CollectionList } from '../../components/collection-list/CollectionList'
+
 import { getProfile } from './selectors'
 
 const messages = {
@@ -9,12 +12,18 @@ const messages = {
 
 export const AlbumsTab = () => {
   const { profile, albums } = useSelectorWeb(getProfile)
-  if (!profile || !albums) return null
+
+  const userAlbums = useMemo(() => {
+    if (profile && albums) {
+      return albums.map(album => ({ ...album, user: profile }))
+    }
+  }, [profile, albums])
+
+  if (!userAlbums) return null
 
   return (
     <CollectionList
-      collection={albums}
-      profile={profile}
+      collection={userAlbums}
       emptyTabText={messages.emptyTabText}
     />
   )

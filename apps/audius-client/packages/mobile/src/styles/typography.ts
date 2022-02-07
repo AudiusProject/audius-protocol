@@ -33,11 +33,21 @@ export const typography = {
   },
   h2: {
     fontSize: 14,
+    fontFamily: fontByWeight.bold,
+    marginBottom: 14 * 0.35
+  },
+  h3: {
+    fontSize: 14,
     fontFamily: fontByWeight.medium,
     marginBottom: 14 * 0.35
   },
   body: {
     fontSize: 14,
+    fontFamily: fontByWeight.medium,
+    marginBottom: 14 * 0.35
+  },
+  body2: {
+    fontSize: 12,
     fontFamily: fontByWeight.medium,
     marginBottom: 14 * 0.35
   },

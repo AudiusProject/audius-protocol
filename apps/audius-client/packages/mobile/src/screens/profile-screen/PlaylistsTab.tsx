@@ -1,9 +1,9 @@
-import { Text } from 'react-native'
+import { useMemo } from 'react'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
-import { CollectionList } from './CollectionList'
-import { EmptyTab } from './EmptyTab'
+import { CollectionList } from '../../components/collection-list/CollectionList'
+
 import { getProfile } from './selectors'
 
 const messages = {
@@ -13,20 +13,17 @@ const messages = {
 export const PlaylistsTab = () => {
   const { profile, playlists } = useSelectorWeb(getProfile)
 
-  if (!profile || !playlists) return null
+  const userPlaylists = useMemo(() => {
+    if (profile && playlists) {
+      return playlists.map(album => ({ ...album, user: profile }))
+    }
+  }, [profile, playlists])
 
-  if (profile.playlist_count === 0) {
-    return (
-      <EmptyTab>
-        <Text>{messages.emptyTabText}</Text>
-      </EmptyTab>
-    )
-  }
+  if (!userPlaylists) return null
 
   return (
     <CollectionList
-      collection={playlists}
-      profile={profile}
+      collection={userPlaylists}
       emptyTabText={messages.emptyTabText}
     />
   )
