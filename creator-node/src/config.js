@@ -658,6 +658,12 @@ const config = convict({
     format: 'BooleanCustom',
     env: 'openRestyCacheCIDEnabled',
     default: false
+  },
+  reconfigNodeWhitelist: {
+    doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',
+    format: String,
+    env: 'reconfigNodeWhitelist',
+    default: ''
   }
 
   /**

@@ -117,6 +117,18 @@ class SnapbackSM {
       'maxSyncMonitoringDurationInMs'
     )
 
+    this.ReconfigNodeWhitelist = this.nodeConfig
+      .get('reconfigNodeWhitelist')
+      .split(',')
+    this.ReconfigNodeWhitelistSet = new Set(this.ReconfigNodeWhitelist)
+
+    // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
+    // ex: 1/<24> users are handled over <3600000> ms (1 hour)
+    this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
+
+    // The interval when SnapbackSM is fired for state machine jobs
+    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
+
     // Throw an error if no libs are provided
     if (
       !this.audiusLibs ||
@@ -134,10 +146,6 @@ class SnapbackSM {
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
-    // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
-    // ex: 1/<24> users are handled over <3600000> ms (1 hour)
-    this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
-
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
 
@@ -147,9 +155,6 @@ class SnapbackSM {
         audiusLibs.discoveryProvider.discoveryProviderEndpoint,
       creatorNodeEndpoint: this.endpoint
     })
-
-    // The interval when SnapbackSM is fired for state machine jobs
-    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
     this.updateEnabledReconfigModesSet()
   }
@@ -1048,6 +1053,7 @@ class SnapbackSM {
         const { services: healthyServicesMap } =
           await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
             performSyncCheck: false,
+            whitelist: this.ReconfigNodeWhitelistSet,
             log: false
           })
 
