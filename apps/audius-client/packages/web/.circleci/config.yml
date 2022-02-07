@@ -585,7 +585,7 @@ jobs:
   dist-linux-staging:
     working_directory: ~/audius-client
     docker:
-      - image: electronuserland/builder:wine-mono
+      - image: electronuserland/builder
     steps:
       - checkout
       - attach_workspace:
