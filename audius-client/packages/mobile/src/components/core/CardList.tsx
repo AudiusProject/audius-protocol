@@ -1,25 +1,16 @@
-import { ReactElement, useCallback } from 'react'
+import { useCallback } from 'react'
 
 import {
   FlatList,
   FlatListProps,
-  ListRenderItemInfo,
-  ViewStyle,
-  StyleProp,
   ListRenderItem,
-  Text
+  Text,
+  View
 } from 'react-native'
 
 import { EmptyCard } from './EmptyCard'
 
-type ListProps<ItemT> = Omit<FlatListProps<ItemT>, 'renderItem'>
-
-type CardListRenderItemInfo<ItemT> = ListRenderItemInfo<ItemT> & {
-  style: StyleProp<ViewStyle>
-}
-
-export type CardListProps<ItemT> = ListProps<ItemT> & {
-  renderItem: (info: CardListRenderItemInfo<ItemT>) => ReactElement | null
+export type CardListProps<ItemT> = FlatListProps<ItemT> & {
   emptyListText?: string
 }
 
@@ -35,7 +26,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
         [`padding${isInLeftColumn ? 'Left' : 'Right'}`]: 16,
         width: '50%'
       }
-      return renderItem({ ...info, style })
+      return <View style={style}>{renderItem?.(info)}</View>
     },
     [renderItem]
   )
