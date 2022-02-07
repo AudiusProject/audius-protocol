@@ -8,6 +8,7 @@ import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
+import { tracksActions } from 'audius-client/src/common/store/pages/track/lineup/actions'
 import { squashNewLines } from 'audius-client/src/common/utils/formatUtil'
 import { getCanonicalName } from 'audius-client/src/common/utils/genres'
 import {
@@ -15,7 +16,6 @@ import {
   formatDate
 } from 'audius-client/src/common/utils/timeUtil'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
-import { tracksActions } from 'common/store/pages/track/lineup/actions'
 import {
   Image,
   ImageStyle,
