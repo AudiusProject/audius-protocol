@@ -27,7 +27,15 @@ def create_instance(provider, image, disk_size, machine_type, name):
 
 
 def setup(
-    provider, service, user, config, fast, protocol_git_ref, client_git_ref, name
+    provider,
+    service,
+    user,
+    config,
+    fast,
+    protocol_git_ref,
+    client_git_ref,
+    name,
+    assume_yes,
 ):
     """Setup a environment suitable for development on a remote machine"""
     subprocess.run(
