@@ -704,10 +704,10 @@ jobs:
             nvm install v14.17.5
             nvm use 14
             export PROTOCOL_DIR=$CIRCLE_WORKING_DIRECTORY
-            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git $PROTOCOL_DIR
-            pwd $PROTOCOL_DIR
-            ls -la $PROTOCOL_DIR
-            cd $PROTOCOL_DIR/service-commands/
+            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
+            pwd "$PROTOCOL_DIR"
+            ls -la "$PROTOCOL_DIR"
+            cd "$PROTOCOL_DIR/service-commands/"
             npm install --unsafe-perm
             A setup --assume-yes remote-dev audius-bake-nightly
       - run:
