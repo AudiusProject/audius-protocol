@@ -703,7 +703,7 @@ jobs:
             source ~/.profile
             nvm install v14.17.5
             nvm use 14
-            export PROTOCOL_DIR=$CIRCLE_WORKING_DIRECTORY
+            export PROTOCOL_DIR=/home/circleci/project
             git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
             pwd "$PROTOCOL_DIR"
             ls -la "$PROTOCOL_DIR"
