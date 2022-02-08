@@ -4,10 +4,10 @@ import {
   IntKeys,
   StringKeys
 } from 'audius-client/src/common/services/remote-config'
+import { getOptimisticUserChallenges } from 'audius-client/src/common/store/challenges/selectors/optimistic-challenges'
 import {
   getChallengeRewardsModalType,
-  getClaimStatus,
-  getUserChallenges
+  getClaimStatus
 } from 'audius-client/src/common/store/pages/audio-rewards/selectors'
 import {
   ChallengeRewardsModalType,
@@ -47,7 +47,7 @@ import { ToastContext } from '../toast/ToastContext'
 
 import { ChallengeRewardsDrawer } from './ChallengeRewardsDrawer'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
-import { ReferralLinkCopyButton } from './ReferralLinkCopyButton'
+import { ReferralRewardContents } from './ReferralRewardContents'
 
 const messages = {
   // Connect Verified
@@ -80,6 +80,12 @@ const messages = {
     'Invite your Friends! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
   referralsProgressLabel: 'Invites Sent',
 
+  // Verified Referrals
+  referreralsVerifiedTitle: 'Invite your Fans',
+  referralsVerifiedDescription:
+    'Invite your fans! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
+  referralsVerifiedProgressLabel: 'Invites Sent',
+
   // Track Upload
   trackUploadTitle: 'Upload 5 Tracks',
   trackUploadDescription: 'Upload 5 tracks to your profile',
@@ -96,6 +102,7 @@ type ChallengeConfig = {
   title: string
   description: string
   progressLabel?: string
+  isVerifiedChallenge?: boolean
   buttonInfo?: {
     link: string
     label: string
@@ -149,9 +156,10 @@ const challengesConfig: Omit<
   },
   'ref-v': {
     icon: IncomingEnvelope,
-    title: messages.referreralsTitle,
-    description: messages.referralsDescription,
-    progressLabel: messages.referralsProgressLabel
+    title: messages.referreralsVerifiedTitle,
+    description: messages.referralsVerifiedDescription,
+    progressLabel: messages.referralsVerifiedProgressLabel,
+    isVerifiedChallenge: true
   },
   'track-upload': {
     icon: MultipleMusicalNotes,
@@ -181,7 +189,7 @@ export const ChallengeRewardsDrawerProvider = () => {
     getModalVisibility(state, MODAL_NAME)
   )
   const modalType = useSelectorWeb(getChallengeRewardsModalType)
-  const userChallenges = useSelectorWeb(getUserChallenges)
+  const userChallenges = useSelectorWeb(getOptimisticUserChallenges)
   const onClose = useCallback(() => {
     dispatchWeb(resetAndCancelClaimReward())
     dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
@@ -192,6 +200,8 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   const challenge = userChallenges ? userChallenges[modalType] : null
   const config = challengesConfig[modalType]
+  const hasChallengeCompleted =
+    challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const goToRoute = useCallback(() => {
     if (!config.buttonInfo?.link) {
       return
@@ -233,7 +243,10 @@ export const ChallengeRewardsDrawerProvider = () => {
   let contents: Maybe<React.ReactElement>
   switch (modalType) {
     case 'referrals':
-      contents = <ReferralLinkCopyButton />
+    case 'ref-v':
+      contents = (
+        <ReferralRewardContents isVerified={config.isVerifiedChallenge} />
+      )
       break
     case 'track-upload':
       contents = (
@@ -242,7 +255,11 @@ export const ChallengeRewardsDrawerProvider = () => {
           title={messages.trackUploadButton}
           renderIcon={renderUploadIcon}
           iconPosition='right'
-          type={challenge?.is_complete ? ButtonType.COMMON : ButtonType.PRIMARY}
+          type={
+            challenge?.state === 'completed' || challenge?.state === 'disbursed'
+              ? ButtonType.COMMON
+              : ButtonType.PRIMARY
+          }
           onPress={openUploadModal}
         />
       )
@@ -250,7 +267,7 @@ export const ChallengeRewardsDrawerProvider = () => {
     case 'profile-completion':
       contents = (
         <ProfileCompletionChecks
-          isComplete={!!challenge?.is_complete}
+          isComplete={hasChallengeCompleted}
           onClose={onClose}
         />
       )
@@ -262,7 +279,7 @@ export const ChallengeRewardsDrawerProvider = () => {
           title={config.buttonInfo.label}
           renderIcon={config.buttonInfo.renderIcon}
           iconPosition={config.buttonInfo.iconPosition}
-          type={challenge?.is_complete ? ButtonType.COMMON : ButtonType.PRIMARY}
+          type={hasChallengeCompleted ? ButtonType.COMMON : ButtonType.PRIMARY}
           onPress={goToRoute}
         />
       )
@@ -281,13 +298,13 @@ export const ChallengeRewardsDrawerProvider = () => {
       titleIcon={config.icon}
       description={config.description}
       progressLabel={config.progressLabel ?? 'Completed'}
-      amount={challenge.amount}
-      isComplete={challenge.is_complete}
+      amount={challenge.totalAmount}
+      challengeState={challenge.state}
       currentStep={challenge.current_step_count}
       stepCount={challenge.max_steps}
-      isDisbursed={challenge.is_disbursed}
       claimStatus={claimStatus}
       onClaim={hasConfig ? onClaim : undefined}
+      isVerifiedChallenge={config.isVerifiedChallenge}
     >
       {contents}
     </ChallengeRewardsDrawer>

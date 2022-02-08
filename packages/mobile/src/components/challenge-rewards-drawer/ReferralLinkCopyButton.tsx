@@ -1,21 +1,19 @@
 import { useContext, useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
-import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
 import { Animated, StyleSheet, View, TouchableHighlight } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import Text from 'app/components/text'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
 import { ToastContext } from '../toast/ToastContext'
 
 const messages = {
-  copyPrompt: 'Copy Invite Link',
+  copyPrompt: 'Copy Invite to Clipboard',
   copyNotice: 'Referral link copied to the clipboard'
 }
 const createStyles = (themeColors: ThemeColors) =>
@@ -25,9 +23,6 @@ const createStyles = (themeColors: ThemeColors) =>
     },
     borderRadius: {
       borderRadius: 6
-    },
-    copyPromptContent: {
-      padding: 16
     },
     copyPrompt: {
       marginBottom: 12,
@@ -41,7 +36,8 @@ const createStyles = (themeColors: ThemeColors) =>
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      padding: 20
     },
     referralUrl: {
       fontSize: 16,
@@ -51,25 +47,26 @@ const createStyles = (themeColors: ThemeColors) =>
     iconCopy: {
       color: themeColors.staticWhite,
       lineHeight: 16,
-      marginLeft: 8
+      marginRight: 8
     }
   })
 
-export const ReferralLinkCopyButton = () => {
+export const ReferralLinkCopyButton = ({
+  inviteUrl
+}: {
+  inviteUrl: string
+}) => {
   const {
     pageHeaderGradientColor1,
     pageHeaderGradientColor2
   } = useThemeColors()
   const styles = useThemedStyles(createStyles)
 
-  const handle = useSelectorWeb(getUserHandle)
-  const referralUrl = `audius.co/signup?ref=${handle}`
-
   const { toast } = useContext(ToastContext)
   const onCopyClicked = useCallback(() => {
-    Clipboard.setString(referralUrl)
+    Clipboard.setString(inviteUrl)
     toast({ content: messages.copyNotice, type: 'info' })
-  }, [referralUrl, toast])
+  }, [inviteUrl, toast])
 
   // Button animation
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation()
@@ -84,19 +81,18 @@ export const ReferralLinkCopyButton = () => {
         onPressOut={handlePressOut}
       >
         <LinearGradient
-          style={[styles.borderRadius, styles.copyPromptContent]}
+          style={[styles.borderRadius]}
+          angleCenter={{ x: 0.5, y: 0.5 }}
+          angle={315}
           useAngle={true}
-          angle={338}
           colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
+          locations={[0.0204, 1]}
         >
-          <Text weight={'bold'} style={styles.copyPrompt}>
-            {messages.copyPrompt}
-          </Text>
           <View style={styles.copyText}>
+            <IconCopy style={styles.iconCopy} width={24} height={24} />
             <Text weight={'bold'} style={styles.referralUrl}>
-              {referralUrl}
+              {messages.copyPrompt}
             </Text>
-            <IconCopy style={styles.iconCopy} width={16} height={16} />
           </View>
         </LinearGradient>
       </TouchableHighlight>
