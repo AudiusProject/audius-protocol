@@ -734,59 +734,59 @@ jobs:
 
 workflows:
   # test, build and push all commits
-  test-build-and-push:
-    jobs:
-      - test-libs:
-          name: test-libs
-      - docker-build-and-push:
-          name: build-libs
-          repo: libs
+  # test-build-and-push:
+  #   jobs:
+  #     - test-libs:
+  #         name: test-libs
+  #     - docker-build-and-push:
+  #         name: build-libs
+  #         repo: libs
 
-      - test-contracts:
-          name: test-contracts
-      - docker-build-and-push:
-          name: build-contracts
-          repo: contracts
+  #     - test-contracts:
+  #         name: test-contracts
+  #     - docker-build-and-push:
+  #         name: build-contracts
+  #         repo: contracts
 
-      - test-eth-contracts:
-          name: test-eth-contracts
-      - docker-build-and-push:
-          name: build-eth-contracts
-          repo: eth-contracts
+  #     - test-eth-contracts:
+  #         name: test-eth-contracts
+  #     - docker-build-and-push:
+  #         name: build-eth-contracts
+  #         repo: eth-contracts
 
-      - test-creator-node:
-          name: test-creator-node
-      - docker-build-and-push:
-          name: build-creator-node
-          repo: creator-node
+  #     - test-creator-node:
+  #         name: test-creator-node
+  #     - docker-build-and-push:
+  #         name: build-creator-node
+  #         repo: creator-node
 
-      - test-discovery-provider:
-          name: test-discovery-provider
-      - docker-build-and-push:
-          name: build-discovery-provider
-          repo: discovery-provider
+  #     - test-discovery-provider:
+  #         name: test-discovery-provider
+  #     - docker-build-and-push:
+  #         name: build-discovery-provider
+  #         repo: discovery-provider
 
-      - test-identity-service:
-          name: test-identity-service
-      - docker-build-and-push:
-          name: build-identity-service
-          repo: identity-service
+  #     - test-identity-service:
+  #         name: test-identity-service
+  #     - docker-build-and-push:
+  #         name: build-identity-service
+  #         repo: identity-service
 
-      - test-solana-programs:
-          name: test-solana-programs
-      - docker-build-and-push:
-          name: build-solana-programs
-          repo: solana-programs
+  #     - test-solana-programs:
+  #         name: test-solana-programs
+  #     - docker-build-and-push:
+  #         name: build-solana-programs
+  #         repo: solana-programs
 
-      - test-mad-dog-e2e:
-          mad-dog-type: test
-      - hold-test-mad-dog-e2e-full:
-          type: approval
-      - test-mad-dog-e2e:
-          name: test-mad-dog-e2e-full
-          mad-dog-type: test-nightly
-          requires:
-            - hold-test-mad-dog-e2e-full
+  #     - test-mad-dog-e2e:
+  #         mad-dog-type: test
+  #     - hold-test-mad-dog-e2e-full:
+  #         type: approval
+  #     - test-mad-dog-e2e:
+  #         name: test-mad-dog-e2e-full
+  #         mad-dog-type: test-nightly
+  #         requires:
+  #           - hold-test-mad-dog-e2e-full
 
   # test master at midnight daily
   test-nightly:
