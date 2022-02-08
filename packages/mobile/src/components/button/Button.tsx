@@ -18,6 +18,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 export enum ButtonType {
   PRIMARY = 'primary',
+  SECONDARY = 'secondary',
   COMMON = 'common'
 }
 
@@ -36,6 +37,17 @@ const buttonTypeStyles = {
   [ButtonType.PRIMARY]: (themeColors: ThemeColors) => ({
     buttonContainer: {
       backgroundColor: themeColors.primary
+    },
+    buttonText: {
+      color: themeColors.staticWhite
+    },
+    icon: {
+      color: themeColors.staticWhite
+    }
+  }),
+  [ButtonType.SECONDARY]: (themeColors: ThemeColors) => ({
+    buttonContainer: {
+      backgroundColor: themeColors.secondary
     },
     buttonText: {
       color: themeColors.staticWhite

@@ -14,6 +14,7 @@ import { useSelector } from 'react-redux'
 import { BaseStackParamList } from 'app/components/app-navigator/types'
 import { TrackTileProps } from 'app/components/track-tile/types'
 // import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 
@@ -61,7 +62,7 @@ const TrackTileComponent = ({
   user
 }: TrackTileProps & { track: Track; user: User }) => {
   const {
-    // permalink,
+    permalink,
     _co_sign,
     _cover_art_sizes,
     duration,
@@ -76,6 +77,7 @@ const TrackTileComponent = ({
     track_id
   } = track
   const { _artist_pick, name, user_id } = user
+  const pushRouteWeb = usePushRouteWeb()
   const navigation = useNavigation<
     NativeStackNavigationProp<BaseStackParamList>
   >()
@@ -103,12 +105,16 @@ const TrackTileComponent = ({
     track_id
   ])
 
-  const goToTrackPage = (e: GestureResponderEvent) => {
-    navigation.navigate('track', { id: track_id })
-  }
+  const goToTrackPage = useCallback(
+    (e: GestureResponderEvent) => {
+      pushRouteWeb(permalink)
+      navigation.navigate('track', { id: track_id })
+    },
+    [pushRouteWeb, permalink, navigation, track_id]
+  )
 
   const goToArtistPage = (e: GestureResponderEvent) => {
-    // navigate to artist page
+    navigation.navigate('profile', { handle: user.handle })
   }
 
   const onPressReposts = (e: GestureResponderEvent) => {
