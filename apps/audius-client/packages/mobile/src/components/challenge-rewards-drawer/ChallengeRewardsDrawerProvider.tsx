@@ -87,8 +87,8 @@ const messages = {
   referralsVerifiedProgressLabel: 'Invites Sent',
 
   // Track Upload
-  trackUploadTitle: 'Upload 5 Tracks',
-  trackUploadDescription: 'Upload 5 tracks to your profile',
+  trackUploadTitle: 'Upload 3 Tracks',
+  trackUploadDescription: 'Upload 3 tracks to your profile',
   trackUploadProgressLabel: 'Uploaded',
   trackUploadButton: 'Upload Tracks',
 
