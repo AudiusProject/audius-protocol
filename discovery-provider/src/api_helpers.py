@@ -1,26 +1,28 @@
-import logging
-import json
 import datetime
+import json
+import logging
+
 import redis
-from web3 import Web3
-from web3.auto import w3
 
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
 from flask import jsonify
+from src.queries.get_health import get_latest_chain_block_set_if_nx
 from src.queries.get_sol_plays import get_sol_play_health_info
 
 # pylint: disable=R0401
 from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
-from src.queries.get_health import get_latest_chain_block_set_if_nx
+from web3 import Web3
+from web3.auto import w3
 
 redis_url = shared_config["redis"]["url"]
 redis_conn = redis.Redis.from_url(url=redis_url)
 web3_connection = web3_provider.get_web3()
 logger = logging.getLogger(__name__)
 disc_prov_version = helpers.get_discovery_provider_version()
+
 
 # Subclass JSONEncoder
 class DateTimeEncoder(json.JSONEncoder):
@@ -69,8 +71,12 @@ def response_dict_with_metadata(response_dictionary, sign_response):
     play_info = get_sol_play_health_info(redis_conn, datetime.datetime.utcnow())
     play_db_tx = play_info["tx_info"]["db_tx"]
     play_chain_tx = play_info["tx_info"]["chain_tx"]
-    response_dictionary["latest_indexed_slot_plays"] = play_db_tx["slot"] if play_db_tx else None
-    response_dictionary["latest_chain_slot_plays"] = play_chain_tx["slot"] if play_chain_tx else None
+    response_dictionary["latest_indexed_slot_plays"] = (
+        play_db_tx["slot"] if play_db_tx else None
+    )
+    response_dictionary["latest_chain_slot_plays"] = (
+        play_chain_tx["slot"] if play_chain_tx else None
+    )
 
     response_dictionary["version"] = disc_prov_version
     response_dictionary["signer"] = shared_config["delegate"]["owner_wallet"]

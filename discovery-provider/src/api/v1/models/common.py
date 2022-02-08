@@ -1,5 +1,4 @@
 from flask_restx import Namespace, fields
-from flask_restx.fields import MarshallingError
 
 # Make a common namespace for all the models
 ns = Namespace("Models")
@@ -17,7 +16,7 @@ favorite = ns.model(
     "favorite",
     {
         "favorite_item_id": fields.String(required=True),
-        "favorite_type": fields.String(required=True),
+        "favorite_type": fields.String(required=True, discriminator=True),
         "user_id": fields.String(required=True),
     },
 )

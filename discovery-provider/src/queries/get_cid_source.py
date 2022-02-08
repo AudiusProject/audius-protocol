@@ -1,11 +1,12 @@
 import logging
-import sqlalchemy
 
+import sqlalchemy
 from src import exceptions
 from src.utils import db_session, redis_connection
 
 logger = logging.getLogger(__name__)
 redis = redis_connection.get_redis()
+
 
 def get_cid_source(cid):
     """
@@ -99,9 +100,7 @@ def get_cid_source(cid):
                     ) as "outer"
                     """
                 )
-                cid_source = session.execute(
-                    cid_source_res, {"cid": cid}
-                ).fetchall()
+                cid_source = session.execute(cid_source_res, {"cid": cid}).fetchall()
 
                 # If something is found, set response
                 if len(cid_source) != 0:
@@ -139,7 +138,9 @@ def get_cid_source(cid):
                         """
                     )
 
-                    cid_source = session.execute(cid_source_res, {"cid": cid}).fetchall()
+                    cid_source = session.execute(
+                        cid_source_res, {"cid": cid}
+                    ).fetchall()
 
                     # If something is found, set response
                     if len(cid_source) != 0:

@@ -1,13 +1,13 @@
 from sqlalchemy import desc
 from sqlalchemy.orm import aliased
-from src.models import Track, Stem, AggregateTrack
+from src.models import AggregateTrack, Stem, Track
 from src.queries.query_helpers import (
-    populate_track_metadata,
     add_users_to_tracks,
     decayed_score,
+    populate_track_metadata,
 )
-from src.utils.db_session import get_db_read_replica
 from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 
 
 def get_remixable_tracks(args):

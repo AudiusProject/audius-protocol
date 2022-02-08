@@ -1,24 +1,26 @@
 {
-  // With this setup, we get linting via pylint, typechecking via mypy,
-  // and formatting via black. Comments are allowed b/c
-  // vscode understands this as a special 'JSON with Comments' file.
-  "python.linting.pylintEnabled": true, // This enables basic linting
-  "python.linting.mypyEnabled": true, // This gives us typing
-  "python.linting.lintOnSave": true, // lint on save
-  "python.linting.maxNumberOfProblems": 1000, // set high max errors
-  "python.linting.pylintCategorySeverity.convention": "Warning",
-  "python.linting.pylintCategorySeverity.refactor": "Warning",
-  "python.pythonPath": "/usr/bin/python3",
-  "python.formatting.provider": "black", // This gives us autoformatting
   "editor.formatOnSave": true,
   "python.analysis.typeCheckingMode": "off",
+  "python.formatting.provider": "black",
   "python.languageServer": "Pylance",
-  "editor.tabSize": 4,
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.lintOnSave": true,
+  "python.linting.mypyEnabled": true,
+  "python.testing.nosetestsEnabled": false,
   "python.testing.pytestArgs": [
     "src",
     "integration_tests"
   ],
+  "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
-  "python.testing.nosetestsEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.sortImports.args": [
+    "--profile",
+    "black"
+  ],
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  }
 }

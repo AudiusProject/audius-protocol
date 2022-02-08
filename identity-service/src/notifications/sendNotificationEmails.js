@@ -22,6 +22,31 @@ const loggingContext = {
   job: 'processEmailNotifications'
 }
 
+const getUserIdsWithUnseenNotifications = async ({ userIds, gtTimeStamp }) => {
+  const [notificationUserIds, solanaNotificationUserIds] = await Promise.all([
+    models.Notification.findAll({
+      attributes: ['userId'],
+      where: {
+        isViewed: false,
+        userId: { [ models.Sequelize.Op.in ]: userIds },
+        timestamp: { [models.Sequelize.Op.gt]: gtTimeStamp }
+      },
+      group: ['userId']
+    }),
+    models.SolanaNotification.findAll({
+      attributes: ['userId'],
+      where: {
+        isViewed: false,
+        userId: { [ models.Sequelize.Op.in ]: userIds },
+        createdAt: { [models.Sequelize.Op.gt]: gtTimeStamp }
+      },
+      group: ['userId']
+    })
+  ])
+
+  return notificationUserIds.concat(solanaNotificationUserIds).map(x => x.userId)
+}
+
 async function processEmailNotifications (expressApp, audiusLibs) {
   try {
     logger.info(loggingContext, `${new Date()} - processEmailNotifications`)
@@ -95,7 +120,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       const relevantUserIdsForAnnouncement = usersCreatedBeforeAnnouncement.filter(userId => !userIdSetToExcludeForAnnouncement.has(userId))
 
       const timeBeforeUserAnnouncementsLoop = Date.now()
-      logger.info({ job: 'processEmailNotifications', timing: 12 }`processEmailNotifications | time before looping over users for announcement id ${id}, entity id ${announcementEntityId} | ${timeBeforeUserAnnouncementsLoop} | ${usersCreatedBeforeAnnouncement.length} users`)
+      logger.info({ job: 'processEmailNotifications' }, `processEmailNotifications | time before looping over users for announcement id ${id}, entity id ${announcementEntityId} | ${timeBeforeUserAnnouncementsLoop} | ${usersCreatedBeforeAnnouncement.length} users`)
       for (var user of relevantUserIdsForAnnouncement) {
         if (liveEmailUsers.includes(user)) {
           // As an added safety check, only process if the announcement was made in the last hour
@@ -132,42 +157,28 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       item => pendingNotificationUsers.add(item))
 
     // Query users with pending notifications grouped by frequency
-    let liveEmailUsersWithUnseenNotifications = await models.Notification.findAll({
-      attributes: ['userId'],
-      where: {
-        isViewed: false,
-        userId: { [ models.Sequelize.Op.in ]: liveEmailUsers },
-        // Over fetch users here, they will get dropped later on if they have 0 notifications
-        // to process.
-        // We could be more precise here by looking at the last sent email for each user
-        // but that query would be more expensive than just finding extra users here and then
-        // dropping them.
-        timestamp: { [models.Sequelize.Op.gt]: dayAgo }
-      },
-      group: ['userId']
-    }).map(x => x.userId)
+
+    // Over fetch users here, they will get dropped later on if they have 0 notifications
+    // to process.
+    // We could be more precise here by looking at the last sent email for each user
+    // but that query would be more expensive than just finding extra users here and then
+    // dropping them.
+    const liveEmailUsersWithUnseenNotifications = await getUserIdsWithUnseenNotifications({
+      userIds: liveEmailUsers,
+      gtTimeStamp: dayAgo
+    })
     liveEmailUsersWithUnseenNotifications.forEach(item => pendingNotificationUsers.add(item))
 
-    let dailyEmailUsersWithUnseeenNotifications = await models.Notification.findAll({
-      attributes: ['userId'],
-      where: {
-        isViewed: false,
-        userId: { [models.Sequelize.Op.in]: dailyEmailUsers },
-        timestamp: { [models.Sequelize.Op.gt]: dayAgo }
-      },
-      group: ['userId']
-    }).map(x => x.userId)
+    const dailyEmailUsersWithUnseeenNotifications = await getUserIdsWithUnseenNotifications({
+      userIds: dailyEmailUsers,
+      gtTimeStamp: dayAgo
+    })
     dailyEmailUsersWithUnseeenNotifications.forEach(item => pendingNotificationUsers.add(item))
 
-    let weeklyEmailUsersWithUnseeenNotifications = await models.Notification.findAll({
-      attributes: ['userId'],
-      where: {
-        isViewed: false,
-        userId: { [models.Sequelize.Op.in]: weeklyEmailUsers },
-        timestamp: { [models.Sequelize.Op.gt]: weekAgo }
-      },
-      group: ['userId']
-    }).map(x => x.userId)
+    const weeklyEmailUsersWithUnseeenNotifications = await getUserIdsWithUnseenNotifications({
+      userIds: weeklyEmailUsers,
+      gtTimeStamp: dayAgo
+    })
     weeklyEmailUsersWithUnseeenNotifications.forEach(item => pendingNotificationUsers.add(item))
 
     logger.info(`processEmailNotifications - Live Email Users: ${liveEmailUsersWithUnseenNotifications}`)
@@ -328,7 +339,9 @@ async function renderAndSendNotificationEmail (
       return
     }
 
-    let renderProps = {}
+    let renderProps = {
+      copyrightYear: new Date().getFullYear().toString()
+    }
     renderProps['notifications'] = notificationProps
     if (frequency === 'live') {
       renderProps['title'] = `Email - ${userEmail}`

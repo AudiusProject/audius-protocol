@@ -3,6 +3,7 @@ const sinon = require('sinon')
 
 const models = require('../../src/models')
 const processNotifications = require('../../src/notifications/processNotifications/index.js')
+const { challengeInfoMap } = require('../../src/notifications/formatNotificationMetadata.js')
 const sendNotifications = require('../../src/notifications/sendNotifications/index.js')
 const { processTrendingTracks } = require('../../src/notifications/trendingTrackProcessing')
 const { pushNotificationQueue } = require('../../src/notifications/notificationQueue')
@@ -17,8 +18,10 @@ const repost = require('./mockNotifications/repost.json')
 const favorite = require('./mockNotifications/favorite.json')
 const create = require('./mockNotifications/create.json')
 const trendingTrack = require('./mockNotifications/trendingTrack.json')
+const challengeReward = require('./mockNotifications/challengeReward.json')
 
 const mockAudiusLibs = require('./mockLibs')
+const { deviceType } = require('../../src/notifications/constants')
 
 describe('Test Send Notifications', function () {
   before(() => {
@@ -189,7 +192,6 @@ describe('Test Send Notifications', function () {
     await tx1.commit()
 
     const pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
-    console.log(pushNotifications.length)
 
     assert.deepStrictEqual(pushNotifications.length, 3)
 
@@ -263,5 +265,39 @@ describe('Test Send Notifications', function () {
     for (let message of user4Messages) {
       assert.deepStrictEqual(user4Notifs.some(n => n.notificationParams.message === message), true)
     }
+  })
+
+  it('should have the correct reward notifications', async function () {
+    const tx1 = await models.sequelize.transaction()
+    await processNotifications(challengeReward, tx1)
+    await sendNotifications(mockAudiusLibs, challengeReward, tx1)
+    await tx1.commit()
+
+    let pushNotifications = pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER
+    console.log(pushNotifications)
+    assert.deepStrictEqual(pushNotifications.length, 7)
+
+    const notifs = [
+      {
+        title: challengeInfoMap['referred'].title,
+        msg: `You’ve received ${challengeInfoMap['referred'].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
+      },
+      ...([
+        'profile-completion', 'listen-streak', 'track-upload', 'referrals', 'connect-verified', 'mobile-install'
+      ].map(id => ({
+        title: challengeInfoMap[id].title,
+        msg: `You’ve earned ${challengeInfoMap[id].amount} $AUDIO for completing this challenge!`
+      })))
+    ]
+
+    for (const n of notifs) {
+      assert.deepStrictEqual(pushNotifications.some(queueNotif =>
+        queueNotif.notificationParams.title === n.title && queueNotif.notificationParams.message === n.msg), true)
+    }
+    assert.ok(pushNotifications.every(queueNotif => {
+      return queueNotif.types.length === 2 &&
+        queueNotif.types.some(t => t === deviceType.Browser) &&
+        queueNotif.types.some(t => t === deviceType.Mobile)
+    }))
   })
 })

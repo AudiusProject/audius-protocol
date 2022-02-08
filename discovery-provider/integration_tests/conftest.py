@@ -1,18 +1,20 @@
 from __future__ import absolute_import
+
 import os
-import pytest
-from sqlalchemy_utils import database_exists, drop_database, create_database
-from web3 import HTTPProvider, Web3
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from pytest_postgresql import factories
+
 import alembic
 import alembic.config
-from src.app import create_app, create_celery
-from src.utils import helpers
-from src.models import Base
-from src.utils.redis_connection import get_redis
+import pytest
 import src
+from pytest_postgresql import factories
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy_utils import create_database, database_exists, drop_database
+from src.app import create_app, create_celery
+from src.models import Base
+from src.utils import helpers
+from src.utils.redis_connection import get_redis
+from web3 import HTTPProvider, Web3
 
 DB_URL = "postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery"
 TEST_BROKER_URL = "redis://localhost:5379/0"
@@ -74,7 +76,7 @@ def celery_config():
     }
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def celery_app():
     """
     Configures a test fixture for celery.
@@ -122,6 +124,9 @@ def celery_app():
     celery_app = create_celery(TEST_CONFIG_OVERRIDE)
 
     yield celery_app
+    if database_exists(DB_URL):
+        drop_database(DB_URL)
+    redis.flushall()
 
 
 @pytest.fixture
@@ -135,9 +140,7 @@ def init_contracts(config):
     deployed contract addresses.
     """
     # Create web3 provider to real ganache
-    web3endpoint = "http://{}:{}".format(
-        config["web3"]["host"], config["web3"]["port"]
-    )
+    web3endpoint = f"http://{config['web3']['host']}:{config['web3']['port']}"
     web3 = Web3(HTTPProvider(web3endpoint))
 
     # set pre-funded account as sender
@@ -169,7 +172,8 @@ def init_contracts(config):
         address=track_factory_address, abi=abi_values["TrackFactory"]["abi"]
     )
     user_replica_set_manager_contract = web3.eth.contract(
-        address=user_replica_set_manager_address, abi=abi_values["UserReplicaSetManager"]["abi"]
+        address=user_replica_set_manager_address,
+        abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
     return {

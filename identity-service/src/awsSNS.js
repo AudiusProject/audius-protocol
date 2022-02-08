@@ -124,12 +124,16 @@ const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
 const deleteEndpoint = _promisifySNS('deleteEndpoint')
 
-// Actually send the messages from the buffer to SNS
-// If a device token is invalid attempt to remove it
-//
-// DON'T throw errors in this function because it stops execution,
-// we want it to continue
+/**
+ * Actually send the messages from the buffer to SNS
+ *
+ * @notice If a device token is invalid attempt to remove it
+ * @notice never throws error since we never want to stop execution of calling function
+ * @returns {Number} numSentNotifs
+ */
 async function drainMessageObject (bufferObj) {
+  let numSentNotifs = 0
+
   const { userId } = bufferObj
   const { message, title, playSound } = bufferObj.notificationParams
 
@@ -147,7 +151,7 @@ async function drainMessageObject (bufferObj) {
   const newBadgeCount = incrementBadgeQuery[0][0][0].iosBadgeCount
   const devices = await models.NotificationDeviceToken.findAll({ where: { userId } })
   // If no devices found, short-circuit
-  if (devices.length === 0) return
+  if (devices.length === 0) return numSentNotifs
   // Dispatch to all devices
   await Promise.all(devices.map(async (device) => {
     const { deviceType, awsARN, deviceToken } = device
@@ -163,6 +167,8 @@ async function drainMessageObject (bufferObj) {
       if (formattedMessage) {
         logger.debug(`Publishing SNS message: ${JSON.stringify(formattedMessage)}`)
         await publishPromisified(formattedMessage)
+
+        numSentNotifs++
       }
     } catch (e) {
       if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
@@ -189,6 +195,8 @@ async function drainMessageObject (bufferObj) {
       }
     }
   }))
+
+  return numSentNotifs
 }
 
 module.exports = {

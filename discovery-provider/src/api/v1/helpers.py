@@ -1,20 +1,22 @@
 import logging
-from src.utils.helpers import decode_string_id, encode_int_id
-from typing import Dict, cast
-from src import api_helpers
-from src.utils.config import shared_config
-from flask_restx import fields, reqparse
 from datetime import datetime
-from .models.common import full_response
+from typing import Dict, cast
+
+from flask_restx import reqparse
+from src import api_helpers
+from src.models import ChallengeType, SaveType
 from src.queries.get_challenges import ChallengeResponse
-from src.models import ChallengeType
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
+from src.utils.config import shared_config
+from src.utils.helpers import decode_string_id, encode_int_id
+
+from .models.common import full_response
 
 logger = logging.getLogger(__name__)
 
 
 def make_image(endpoint, cid, width="", height=""):
-    return "{e}/ipfs/{cid}/{w}x{h}.jpg".format(e=endpoint, cid=cid, w=width, h=height)
+    return f"{endpoint}/ipfs/{cid}/{width}x{height}.jpg"
 
 
 def get_primary_endpoint(user):
@@ -25,7 +27,7 @@ def get_primary_endpoint(user):
 
 
 def add_track_artwork(track):
-    if not "user" in track:
+    if "user" not in track:
         return track
     endpoint = get_primary_endpoint(track["user"])
     cid = track["cover_art_sizes"]
@@ -41,7 +43,7 @@ def add_track_artwork(track):
 
 
 def add_playlist_artwork(playlist):
-    if not "user" in playlist:
+    if "user" not in playlist:
         return playlist
     endpoint = get_primary_endpoint(playlist["user"])
     cid = playlist["playlist_image_sizes_multihash"]
@@ -57,7 +59,7 @@ def add_playlist_artwork(playlist):
 
 
 def add_playlist_added_timestamps(playlist):
-    if not "playlist_contents" in playlist:
+    if "playlist_contents" not in playlist:
         return playlist
     added_timestamps = []
     for track in playlist["playlist_contents"]["track_ids"]:
@@ -103,6 +105,9 @@ def extend_user(user, current_user_id=None):
         not current_user_id or current_user_id != user["user_id"]
     ):
         del user["playlist_library"]
+    # Marshal wallets into clear names
+    user["erc_wallet"] = user["wallet"]
+    user["spl_wallet"] = user["spl_wallet"]
 
     return user
 
@@ -117,6 +122,11 @@ def extend_favorite(favorite):
     favorite["user_id"] = encode_int_id(favorite["user_id"])
     favorite["favorite_item_id"] = encode_int_id(favorite["save_item_id"])
     favorite["favorite_type"] = favorite["save_type"]
+    if "save_item" in favorite:
+        if favorite["save_type"] == SaveType.track:
+            favorite["favorite_item"] = extend_track(favorite["save_item"])
+        else:
+            favorite["favorite_item"] = extend_playlist(favorite["save_item"])
     return favorite
 
 
@@ -128,7 +138,7 @@ def extend_remix_of(remix_of):
             track["user"] = extend_user(track["user"])
         return track
 
-    if not remix_of or not "tracks" in remix_of or not remix_of["tracks"]:
+    if not remix_of or "tracks" not in remix_of or not remix_of["tracks"]:
         return remix_of
 
     remix_of["tracks"] = list(map(extend_track_element, remix_of["tracks"]))
@@ -141,9 +151,8 @@ def parse_bool_param(param):
     param = param.lower()
     if param == "true":
         return True
-    elif param == "false":
+    if param == "false":
         return False
-    return None
 
 
 def parse_unix_epoch_param(time, default=0):
@@ -276,27 +285,31 @@ def extend_challenge_response(challenge: ChallengeResponse):
     new_challenge["challenge_type"] = challenge_type_map[challenge["challenge_type"]]
     return new_challenge
 
+
 def extend_undisbursed_challenge(undisbursed_challenge: UndisbursedChallengeResponse):
     new_undisbursed_challenge = undisbursed_challenge.copy()
-    new_undisbursed_challenge["user_id"] = encode_int_id(new_undisbursed_challenge["user_id"])
+    new_undisbursed_challenge["user_id"] = encode_int_id(
+        new_undisbursed_challenge["user_id"]
+    )
     return new_undisbursed_challenge
 
+
 def abort_bad_path_param(param, namespace):
-    namespace.abort(400, "Oh no! Bad path parameter {}.".format(param))
+    namespace.abort(400, f"Oh no! Bad path parameter {param}.")
 
 
 def abort_bad_request_param(param, namespace):
-    namespace.abort(400, "Oh no! Bad request parameter {}.".format(param))
+    namespace.abort(400, f"Oh no! Bad request parameter {param}.")
 
 
 def abort_not_found(identifier, namespace):
-    namespace.abort(404, "Oh no! Resource for ID {} not found.".format(identifier))
+    namespace.abort(404, f"Oh no! Resource for ID {identifier} not found.")
 
 
 def decode_with_abort(identifier: str, namespace) -> int:
     decoded = decode_string_id(identifier)
     if decoded is None:
-        namespace.abort(404, "Invalid ID: '{}'.".format(identifier))
+        namespace.abort(404, f"Invalid ID: '{identifier}'.")
     return cast(int, decoded)
 
 
@@ -371,7 +384,6 @@ def format_offset(args, max_offset=MAX_LIMIT):
 def get_default_max(value, default, max=None):
     if not isinstance(value, int):
         return default
-    elif max is None:
+    if max is None:
         return value
-    else:
-        return min(value, max)
+    return min(value, max)

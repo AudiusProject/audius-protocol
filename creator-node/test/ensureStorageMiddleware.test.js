@@ -88,7 +88,7 @@ describe('test ensureStorageMiddleware', () => {
     assert(errorObj.error.state === 'NODE_REACHED_CAPACITY')
   })
 
-  it('fails with bad request when storage capacity is reached (/track_content)', async () => {
+  it('fails with bad request when storage capacity is reached (/track_content_async)', async () => {
     await monitoringQueueMock.setRedisValue(storagePathUsedRedisKey, 100)
     const storagePathUsed = await monitoringQueueMock.getRedisValue(storagePathUsedRedisKey)
     assert(storagePathUsed === '100')
@@ -96,7 +96,7 @@ describe('test ensureStorageMiddleware', () => {
     const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
     const file = fs.readFileSync(testAudioFilePath)
     const resp = await request(app)
-      .post('/track_content')
+      .post('/track_content_async')
       .attach('file', file, { filename: 'STARBOY.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)

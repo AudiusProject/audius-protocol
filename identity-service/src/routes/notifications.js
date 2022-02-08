@@ -194,6 +194,14 @@ const formatTrendingTrack = (notification) => {
   }
 }
 
+const formatChallengeReward = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.ChallengeReward,
+    challengeId: notification.actions[0].actionEntityType
+  }
+}
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -220,7 +228,8 @@ const notificationResponseMap = {
   [NotificationType.MilestoneFollow]: formatMilestone,
   [NotificationType.RemixCreate]: formatRemixCreate,
   [NotificationType.RemixCosign]: formatRemixCosign,
-  [NotificationType.TrendingTrack]: formatTrendingTrack
+  [NotificationType.TrendingTrack]: formatTrendingTrack,
+  [NotificationType.ChallengeReward]: formatChallengeReward
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
@@ -233,8 +242,8 @@ const notificationResponseMap = {
 function mergeAudiusAnnoucements (announcements, notifications) {
   const allNotifications = announcements.concat(notifications)
   allNotifications.sort((a, b) => {
-    let aDate = moment(a.datePublished || a.timestamp)
-    let bDate = moment(b.datePublished || b.timestamp)
+    let aDate = moment(a.datePublished || a.timestamp || a.createdAt)
+    let bDate = moment(b.datePublished || b.timestamp || b.createdAt)
     return bDate - aDate
   })
   return allNotifications
@@ -295,8 +304,7 @@ module.exports = function (app) {
    * Fetches the notifications for the specified userId
    * urlQueryParam: {number} limit        Max number of notifications to return, Cannot exceed 100
    * urlQueryParam: {number?} timeOffset  A timestamp reference offset for fetch notification before this date
-   * urlQueryParam: {boolean?} withRemix  A boolean to fetch notifications with remixes
-   * urlQueryParam: {boolean?} withTrendingTrack  A boolean to fetch notifications with weekly trending tracks
+   * urlQueryParam: {boolean?} withRewards  A boolean to fetch notifications with challenge rewards
    *
    * TODO: Validate userId
    * NOTE: The `createdDate` param can/should be changed to the user sending their wallet &
@@ -312,18 +320,20 @@ module.exports = function (app) {
     }
 
     const filterNotificationTypes = []
+    const filterSolanaNotificationTypes = []
 
-    if (req.query.withRemix !== 'true') {
-      filterNotificationTypes.push(NotificationType.RemixCreate, NotificationType.RemixCosign)
-    }
-
-    if (req.query.withTrendingTrack !== 'true') {
-      filterNotificationTypes.push(NotificationType.TrendingTrack)
+    if (req.query.withRewards !== 'true') {
+      filterSolanaNotificationTypes.push(NotificationType.ChallengeReward)
     }
 
     const queryFilter = filterNotificationTypes.length > 0 ? {
       type: { [models.Sequelize.Op.notIn]: filterNotificationTypes }
     } : {}
+
+    const solanaQueryFilter = filterSolanaNotificationTypes.length > 0 ? {
+      type: { [models.Sequelize.Op.notIn]: filterSolanaNotificationTypes }
+    } : {}
+
     req.logger.warn({ filterNotificationTypes })
     if (isNaN(limit) || limit > 100) {
       return errorResponseBadRequest(
@@ -356,7 +366,7 @@ module.exports = function (app) {
         where: {
           userId,
           isHidden: false,
-          ...queryFilter,
+          ...solanaQueryFilter,
           createdAt: {
             [models.Sequelize.Op.lt]: timeOffset.toDate()
           }

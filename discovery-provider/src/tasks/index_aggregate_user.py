@@ -1,13 +1,15 @@
 import logging
 import time
-import sqlalchemy as sa
+from typing import Optional
+
+from sqlalchemy import text
+from sqlalchemy.orm.session import Session
+from src.models import Block
 from src.tasks.celery_app import celery
-from src.utils.redis_constants import (
-    most_recent_indexed_aggregate_user_block_redis_key,
-    index_aggregate_user_last_refresh_completion_redis_key
+from src.utils.update_indexing_checkpoints import (
+    get_last_indexed_checkpoint,
+    save_indexed_checkpoint,
 )
-from src.tasks.calculate_trending_challenges import get_latest_blocknumber
-from src.queries.get_health import get_elapsed_time_redis
 
 logger = logging.getLogger(__name__)
 
@@ -15,12 +17,7 @@ logger = logging.getLogger(__name__)
 AGGREGATE_USER = "aggregate_user"
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
-# (1,209,600 two weeks in seconds / 5 sec block_processing_interval_sec)
-TWO_WEEKS_IN_BLOCKS = 241920
-
-TWO_WEEKS_IN_SECONDS= 1209600
-
-### UPDATE_AGGREGATE_USER_QUERY ###
+# UPDATE_AGGREGATE_USER_QUERY
 # Get a lower bound blocknumber to check for new entity counts for a user
 # Find a subset of users that have changed since that blocknumber
 # For that subset of users reclaculate the entire counts for each entity
@@ -340,79 +337,77 @@ UPDATE_AGGREGATE_USER_QUERY = """
     """
 
 
-def update_aggregate_table(
-    db,
-    redis,
-    table_name,
-    most_recent_indexed_aggregate_block_key,
-    query,
-    timeout=DEFAULT_UPDATE_TIMEOUT,
-):
+def get_latest_blocknumber(session: Session) -> Optional[int]:
+    db_block_query = (
+        session.query(Block.number).filter(Block.is_current == True).first()
+    )
+    if db_block_query is None:
+        logger.error("Unable to get latest block number")
+        return None
+    return db_block_query[0]
+
+
+def _update_aggregate_user(session):
+    most_recent_indexed_aggregate_block = get_last_indexed_checkpoint(
+        session, AGGREGATE_USER
+    )
+
+    latest_blocknumber = get_latest_blocknumber(session)
+
+    logger.info(
+        f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block} | latest_blocknumber: {latest_blocknumber}"
+    )
+
+    if not most_recent_indexed_aggregate_block:
+        # repopulate entire table, if last_checkpoint doesn't exist or last_checkpoint has been cleared
+        logger.info(f"index_aggregate_user.py | Repopulating {AGGREGATE_USER}")
+        most_recent_indexed_aggregate_block = 0
+        session.execute(f"TRUNCATE TABLE {AGGREGATE_USER}")
+        logger.info(f"Table '{AGGREGATE_USER}' truncated")
+    elif latest_blocknumber == most_recent_indexed_aggregate_block:
+        # don't run the query if no new blocknumbers have been indexed
+        logger.info("Skipping index_aggregate_user since blocknumber isn't newer")
+        return
+
+    # run the upsert query
+    logger.info(f"index_aggregate_user.py | Updating {AGGREGATE_USER}")
+    session.execute(
+        text(UPDATE_AGGREGATE_USER_QUERY),
+        {"most_recent_indexed_aggregate_block": most_recent_indexed_aggregate_block},
+    )
+
+    # set new block to be the lower bound for the next indexing
+    if latest_blocknumber:
+        save_indexed_checkpoint(session, AGGREGATE_USER, latest_blocknumber)
+
+
+# ####### CELERY TASKS ####### #
+@celery.task(name="update_aggregate_user", bind=True)
+def update_aggregate_user(self):
+    # Cache custom task class properties
+    # Details regarding custom task context can be found in wiki
+    # Custom Task definition can be found in src/app.py
+    db = update_aggregate_user.db
+    redis = update_aggregate_user.redis
+    # Define lock acquired boolean
     have_lock = False
-    update_lock = redis.lock(f"update_aggregate_table:{table_name}", timeout=timeout)
+    # Define redis lock object
+    lock = f"update_aggregate_table:{AGGREGATE_USER}"
+    update_lock = redis.lock(lock, timeout=DEFAULT_UPDATE_TIMEOUT)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             start_time = time.time()
-            most_recent_indexed_aggregate_block = redis.get(
-                most_recent_indexed_aggregate_block_key
-            )
-            if most_recent_indexed_aggregate_block:
-                most_recent_indexed_aggregate_block = int(
-                    most_recent_indexed_aggregate_block
-                )
-            logger.info(
-                f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
-            )
 
-            elapsed_time = get_elapsed_time_redis(redis,
-                index_aggregate_user_last_refresh_completion_redis_key)
-
-            is_refreshed = False
             with db.scoped_session() as session:
-                latest_indexed_block_num = get_latest_blocknumber(session, redis)
+                _update_aggregate_user(session)
 
-                if (
-                    not most_recent_indexed_aggregate_block
-                ):
-                    # repopulate entire table
-                    logger.info(f"index_aggregate_user.py | Repopulating {table_name}")
-                    most_recent_indexed_aggregate_block = 0
-                    session.execute("TRUNCATE TABLE {}".format(table_name))
-                    is_refreshed = True
-
-                elif not elapsed_time or elapsed_time > TWO_WEEKS_IN_SECONDS:
-                    # refresh the past two weeks for data accuracy
-                    logger.info(f"index_aggregate_user.py | Refreshing {table_name} for the past two weeks")
-                    most_recent_indexed_aggregate_block -= max(TWO_WEEKS_IN_BLOCKS, 0)
-                    is_refreshed = True
-
-                logger.info(f"index_aggregate_user.py | Updating {table_name}")
-                upsert = sa.text(query)
-                session.execute(
-                    upsert,
-                    {
-                        "most_recent_indexed_aggregate_block": most_recent_indexed_aggregate_block
-                    },
-                )
-
-            if is_refreshed:
-                redis.set(
-                    index_aggregate_user_last_refresh_completion_redis_key, int(time.time())
-                )
-
-            # set new block to be the lower bound for the next indexing
-            redis.set(
-                most_recent_indexed_aggregate_block_key, latest_indexed_block_num
-            )
             logger.info(
-                f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec"""
+                f"""index_aggregate_user.py | Finished updating {AGGREGATE_USER} in: {time.time()-start_time} sec"""
             )
         else:
-            logger.info(
-                f"index_aggregate_user.py | Failed to acquire lock update_aggregate_table:{table_name}"
-            )
+            logger.info(f"index_aggregate_user.py | Failed to acquire lock {lock}")
     except Exception as e:
         logger.error(
             "index_aggregate_user.py | Fatal error in main loop", exc_info=True
@@ -421,17 +416,3 @@ def update_aggregate_table(
     finally:
         if have_lock:
             update_lock.release()
-
-
-######## CELERY TASKS ########
-@celery.task(name="update_aggregate_user", bind=True)
-def update_aggregate_user(self):
-    db = update_aggregate_user.db
-    redis = update_aggregate_user.redis
-    update_aggregate_table(
-        db,
-        redis,
-        AGGREGATE_USER,
-        most_recent_indexed_aggregate_user_block_redis_key,
-        UPDATE_AGGREGATE_USER_QUERY,
-    )

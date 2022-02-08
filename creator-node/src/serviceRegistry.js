@@ -2,36 +2,40 @@ const AudiusLibs = require('@audius/libs')
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
-const MonitoringQueue = require('./monitors/MonitoringQueue')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
+
+const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
+const AsyncProcessingQueue = require('./AsyncProcessingQueue')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
  * services for use throughout CreatorNode.
  *
  * Services:
+ *  - `nodeConfig`: exposes config object
  *  - `redis`: Redis Client
  *  - `ipfs`: IPFS Client
  *  - `ipfsLatest`: IPFS Client, latest version
  *  - `blackListManager`: responsible for handling blacklisted content
- *  - `libs`: an instance of Audius Libs
  *  - `monitoringQueue`: recurring job to monitor node state & performance metrics
  *  - `sessionExpirationQueue`: recurring job to clear expired session tokens from Redis and DB
- *  - `nodeConfig`: exposes config object
+ *  - `asyncProcessingQueue`: queue that processes jobs and adds job responses into redis
+ *
+ *  - `libs`: an instance of Audius Libs
  *  - `snapbackSM`: SnapbackStateMachine is responsible for recurring sync and reconfig operations
  *  - `URSMRegistrationManager`: registers node on L2 URSM contract, no-ops afterward
  *
  * `initServices` must be called prior to consuming services from the registry.
  */
 class ServiceRegistry {
-  constructor () {
+  constructor() {
     this.nodeConfig = config
     this.redis = redisClient
     this.ipfs = ipfs
@@ -39,6 +43,7 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
+    this.asyncProcessingQueue = new AsyncProcessingQueue()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
@@ -54,7 +59,7 @@ class ServiceRegistry {
   /**
    * Configure all services
    */
-  async initServices () {
+  async initServices() {
     // Initialize private IPFS gateway counters
     this.redis.set('ipfsGatewayReqs', 0)
     this.redis.set('ipfsStandaloneReqs', 0)
@@ -72,10 +77,10 @@ class ServiceRegistry {
   }
 
   /**
-  * Initializes the blacklistManager if it is not already initialized, and then returns it
-  * @returns initialized blacklistManager instance
-  */
-  async getBlacklistManager () {
+   * Initializes the blacklistManager if it is not already initialized, and then returns it
+   * @returns initialized blacklistManager instance
+   */
+  async getBlacklistManager() {
     if (!this.blacklistManager.initialized) {
       await this.blacklistManager.init()
     }
@@ -86,14 +91,14 @@ class ServiceRegistry {
   /**
    * Returns the ipfs instance
    */
-  getIPFS () {
+  getIPFS() {
     return this.ipfs
   }
 
   /**
    * @returns the ipfsLatest instance
    */
-  getIPFSLatest () {
+  getIPFSLatest() {
     return this.ipfsLatest
   }
 
@@ -106,7 +111,7 @@ class ServiceRegistry {
    *  - register node on L2 URSM contract (requires node L1 identity)
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
    */
-  async initServicesThatRequireServer () {
+  async initServicesThatRequireServer() {
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
@@ -131,37 +136,44 @@ class ServiceRegistry {
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(this.nodeConfig, this.libs, this)
+    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(
+      this.nodeConfig,
+      this.libs,
+      this
+    )
     await this.skippedCIDsRetryQueue.init()
 
     this.servicesThatRequireServerInitialized = true
     this.logInfo(`All services that require server successfully initialized!`)
   }
 
-  logInfo (msg) {
+  logInfo(msg) {
     logger.info(`ServiceRegistry || ${msg}`)
   }
 
-  logError (msg) {
+  logError(msg) {
     logger.error(`ServiceRegistry ERROR || ${msg}`)
   }
 
   /**
    * Poll L1 SPFactory for spID & set spID config once recovered.
    */
-  async _recoverNodeL1Identity () {
+  async _recoverNodeL1Identity() {
     const endpoint = config.get('creatorNodeEndpoint')
 
     const retryTimeoutMs = 5000 // 5sec
     let isInitialized = false
     let attempt = 0
     while (!isInitialized) {
-      this.logInfo(`Attempting to recover node L1 identity for ${endpoint} on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`)
+      this.logInfo(
+        `Attempting to recover node L1 identity for ${endpoint} on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`
+      )
 
       try {
-        const spID = await this.libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
-          endpoint
-        )
+        const spID =
+          await this.libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
+            endpoint
+          )
 
         if (spID !== 0) {
           this.nodeConfig.set('spID', spID)
@@ -179,20 +191,28 @@ class ServiceRegistry {
       await utils.timeout(retryTimeoutMs, false)
     }
 
-    this.logInfo(`Successfully recovered node L1 identity for endpoint ${endpoint} on attempt #${attempt}. spID =  ${this.nodeConfig.get('spID')}`)
+    this.logInfo(
+      `Successfully recovered node L1 identity for endpoint ${endpoint} on attempt #${attempt}. spID = ${this.nodeConfig.get(
+        'spID'
+      )}`
+    )
   }
 
   /**
    * Wait until URSM contract is deployed, then attempt to register on L2 URSM with infinite retries
    * Requires L1 identity
    */
-  async _registerNodeOnL2URSM () {
+  async _registerNodeOnL2URSM() {
     // Wait until URSM contract has been deployed (for backwards-compatibility)
-    let retryTimeoutMs = (this.nodeConfig.get('devMode')) ? 10000 /** 10sec */ : 600000 /* 10min */
+    let retryTimeoutMs = this.nodeConfig.get('devMode')
+      ? 10000 /** 10sec */
+      : 600000 /* 10min */
 
     let isInitialized = false
     while (!isInitialized) {
-      this.logInfo(`Attempting to init UserReplicaSetManagerClient on ${retryTimeoutMs}ms interval...`)
+      this.logInfo(
+        `Attempting to init UserReplicaSetManagerClient on ${retryTimeoutMs}ms interval...`
+      )
       try {
         await this.libs.contracts.initUserReplicaSetManagerClient(false)
 
@@ -210,14 +230,19 @@ class ServiceRegistry {
       await utils.timeout(retryTimeoutMs, false)
     }
 
-    this.URSMRegistrationManager = new URSMRegistrationManager(this.nodeConfig, this.libs)
+    this.URSMRegistrationManager = new URSMRegistrationManager(
+      this.nodeConfig,
+      this.libs
+    )
 
     // Attempt to register on URSM with infinite retries
     isInitialized = false
     let attempt = 0
     retryTimeoutMs = 10000 // 10sec
     while (!isInitialized) {
-      this.logInfo(`Attempting to register node on L2 URSM on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`)
+      this.logInfo(
+        `Attempting to register node on L2 URSM on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`
+      )
 
       try {
         await this.URSMRegistrationManager.run()
@@ -241,14 +266,16 @@ class ServiceRegistry {
    * Initialize SnapbackSM
    * Requires L1 identity
    */
-  async _initSnapbackSM () {
+  async _initSnapbackSM() {
     this.snapbackSM = new SnapbackSM(this.nodeConfig, this.libs)
 
     let isInitialized = false
     const retryTimeoutMs = 10000 // ms
     while (!isInitialized) {
       try {
-        this.logInfo(`Attempting to init SnapbackSM on ${retryTimeoutMs}ms interval...`)
+        this.logInfo(
+          `Attempting to init SnapbackSM on ${retryTimeoutMs}ms interval...`
+        )
 
         await this.snapbackSM.init()
 
@@ -272,14 +299,16 @@ class ServiceRegistry {
    *
    * Configures dataWeb3 to be internal to libs, logged in with delegatePrivateKey in order to write chain TX
    */
-  async _initAudiusLibs () {
+  async _initAudiusLibs() {
     const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
       config.get('ethProviderUrl'),
       config.get('ethNetworkId'),
       /* requiresAccount */ false
     )
     if (!ethWeb3) {
-      throw new Error('Failed to init audiusLibs due to ethWeb3 configuration error')
+      throw new Error(
+        'Failed to init audiusLibs due to ethWeb3 configuration error'
+      )
     }
 
     const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
@@ -300,9 +329,13 @@ class ServiceRegistry {
         // TODO - formatting this private key here is not ideal
         config.get('delegatePrivateKey').replace('0x', '')
       ),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
+      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
+        discoveryProviderWhitelist
+      ),
       // If an identity service config is present, set up libs with the connection, otherwise do nothing
-      identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
+      identityServiceConfig: identityService
+        ? AudiusLibs.configIdentityService(identityService)
+        : undefined,
       isDebug: config.get('creatorNodeIsDebug'),
       isServer: true,
       preferHigherPatchForPrimary: true,

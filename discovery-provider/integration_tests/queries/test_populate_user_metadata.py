@@ -1,8 +1,10 @@
 import logging
+
+from integration_tests.utils import populate_mock_db
 from src.queries import response_name_constants
 from src.queries.query_helpers import populate_user_metadata
+from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.utils.db_session import get_db
-from integration_tests.utils import populate_mock_db
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +36,10 @@ def test_populate_user_metadata(app):
             {"playlist_id": 6, "is_private": True, "playlist_owner_id": 3},
         ],
         "users": [
-            {"user_id": 1, "handle": "user1"},
-            {"user_id": 2, "handle": "user2"},
-            {"user_id": 3, "handle": "user3"},
-            {"user_id": 4, "handle": "user4"},
+            {"user_id": 1, "handle": "user1", "wallet": "0x111"},
+            {"user_id": 2, "handle": "user2", "wallet": "0x222"},
+            {"user_id": 3, "handle": "user3", "wallet": "0x333"},
+            {"user_id": 4, "handle": "user4", "wallet": "0x444"},
         ],
         "follows": [
             {"follower_user_id": 1, "followee_user_id": 2},
@@ -67,13 +69,15 @@ def test_populate_user_metadata(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
+        _update_aggregate_user(session)
+
         user_ids = [1, 2, 3, 4, 5]
         users = [
-            {"user_id": 1, "is_verified": False},
-            {"user_id": 2, "is_verified": False},
-            {"user_id": 3, "is_verified": False},
-            {"user_id": 4, "is_verified": False},
-            {"user_id": 5, "is_verified": False},
+            {"user_id": 1, "wallet": "0x111", "is_verified": False},
+            {"user_id": 2, "wallet": "0x222", "is_verified": False},
+            {"user_id": 3, "wallet": "0x333", "is_verified": False},
+            {"user_id": 4, "wallet": "0x444", "is_verified": False},
+            {"user_id": 5, "wallet": "0x555", "is_verified": False},
         ]
 
         users = populate_user_metadata(session, user_ids, users, None)
@@ -121,9 +125,9 @@ def test_populate_user_metadata(app):
 
         curr_user_ids = [1, 2, 3]
         curr_users = [
-            {"user_id": 1, "is_verified": False},
-            {"user_id": 2, "is_verified": False},
-            {"user_id": 3, "is_verified": False},
+            {"user_id": 1, "wallet": "0x111", "is_verified": False},
+            {"user_id": 2, "wallet": "0x222", "is_verified": False},
+            {"user_id": 3, "wallet": "0x333", "is_verified": False},
         ]
 
         users = populate_user_metadata(session, curr_user_ids, curr_users, 1)

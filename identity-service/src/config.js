@@ -570,6 +570,18 @@ const config = convict({
     env: 'cognitoAPIKey',
     default: ''
   },
+  cognitoBaseUrl: {
+    doc: 'Base URL for Cognito API',
+    format: String,
+    env: 'cognitoBaseUrl',
+    default: ''
+  },
+  cognitoTemplateId: {
+    doc: 'Template for using Cognito Flow API',
+    format: String,
+    env: 'cognitoTemplateId',
+    default: ''
+  },
   solanaEndpoint: {
     doc: 'The Solana RPC endpoint to make requests against',
     format: String,
@@ -599,6 +611,12 @@ const config = convict({
     format: 'string-array',
     default: null,
     env: 'solanaFeePayerWallet'
+  },
+  solanaFeePayerWallets: {
+    doc: 'solanaFeePayerWallets - Stringified array like[{ privateKey: [] },...]',
+    format: 'string-array',
+    default: [],
+    env: 'solanaFeePayerWallets'
   },
   solanaSignerPrivateKey: {
     doc: 'solanaSignerPrivateKey',
@@ -641,6 +659,12 @@ const config = convict({
     format: String,
     default: '',
     env: 'solanaRewardsManagerTokenPDA'
+  },
+  solanaConfirmationTimeout: {
+    doc: 'The timeout used to send solana transactions through solanaWeb3 connection in ms',
+    format: Number,
+    default: '60000',
+    env: 'solanaConfirmationTimeout'
   },
   rewardsParallelization: {
     doc: 'How many requests to perform in parallel when disbursing rewards',
@@ -702,11 +726,53 @@ const config = convict({
     env: 'minSolanaNotificationSlot',
     default: 105400000
   },
-  rewardsReporterSlackUrl: {
-    doc: 'The slack url to post messages for the rewards reporter',
+  successAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for success in audio / rewards events',
     format: String,
-    env: 'rewardsReporterSlackUrl',
+    env: 'successAudioReporterSlackUrl',
     default: ''
+  },
+  errorAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in audio / rewards events',
+    format: String,
+    env: 'errorAudioReporterSlackUrl',
+    default: ''
+  },
+  wormholeRPCHosts: {
+    doc: 'Wormhole RPC Host',
+    format: String,
+    env: 'wormholeRPCHosts',
+    default: ''
+  },
+  solBridgeAddress: {
+    doc: 'Sol bridge address for wormhole',
+    format: String,
+    env: 'solBridgeAddress',
+    default: ''
+  },
+  solTokenBridgeAddress: {
+    doc: 'Sol token bridge address for wormhole',
+    format: String,
+    env: 'solTokenBridgeAddress',
+    default: ''
+  },
+  ethBridgeAddress: {
+    doc: 'Eth bridge address for wormhole',
+    format: String,
+    env: 'ethBridgeAddress',
+    default: ''
+  },
+  ethTokenBridgeAddress: {
+    doc: 'Eth token bridge address for wormhole',
+    format: String,
+    env: 'ethTokenBridgeAddress',
+    default: ''
+  },
+  websiteHost: {
+    doc: 'Audius website host',
+    format: String,
+    env: 'websiteHost',
+    default: 'https://audius.co'
   }
 })
 

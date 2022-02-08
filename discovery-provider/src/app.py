@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 import ast
-from collections import defaultdict
 import datetime
 import logging
 import time
+from collections import defaultdict
 from typing import Any, Dict
 
 import redis
@@ -14,16 +14,15 @@ from flask.json import JSONEncoder
 from flask_cors import CORS
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
-from web3 import HTTPProvider, Web3
-from werkzeug.middleware.proxy_fix import ProxyFix
-
 from src import api_helpers, exceptions
 from src.api.v1 import api as api_v1
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
 from src.database_task import DatabaseTask
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.queries import (
     block_confirmation,
+    get_redirect_weights,
     health_check,
     notifications,
     queries,
@@ -32,6 +31,7 @@ from src.queries import (
     skipped_transactions,
     user_signals,
 )
+from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.utils import helpers
 from src.utils.config import ConfigIni, config_files, shared_config
@@ -39,8 +39,8 @@ from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
-from src.solana.solana_client_manager import SolanaClientManager
-from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
+from web3 import HTTPProvider, Web3
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -321,6 +321,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+    app.register_blueprint(get_redirect_weights.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
     app.register_blueprint(user_signals.bp)
@@ -367,7 +368,8 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_plays",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
-            "src.tasks.index_aggregate_plays",
+            "src.tasks.aggregates.index_aggregate_plays",
+            "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.index_network_peers",
@@ -378,6 +380,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
             "src.tasks.index_aggregate_user",
+            "src.tasks.aggregates.index_aggregate_track",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",
@@ -497,6 +500,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_user_listening_history",
                 "schedule": timedelta(seconds=5),
             },
+            "index_aggregate_monthly_plays": {
+                "task": "index_aggregate_monthly_plays",
+                "schedule": crontab(minute=0, hour=0),  # daily at midnight
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -505,17 +512,22 @@ def configure_celery(celery, test_config=None):
 
     # Initialize DB object for celery task context
     db = SessionManager(
-        database_url,
-        ast.literal_eval(shared_config["db"]["engine_args_literal"])
+        database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
     )
     logger.info("Database instance initialized!")
-    # Initialize IPFS client for celery task context
-    ipfs_client = IPFSClient(
-        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
-    )
 
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
+
+    # Initialize IPFS client for celery task context
+    ipfs_client = IPFSClient(
+        shared_config["ipfs"]["host"],
+        shared_config["ipfs"]["port"],
+        eth_web3,
+        shared_config,
+        redis_inst,
+        eth_abi_values,
+    )
 
     # Clear last scanned redis block on startup
     delete_last_scanned_eth_block_redis(redis_inst)
@@ -539,6 +551,8 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
+    redis_inst.delete("index_user_listening_history_lock")
+
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
@@ -549,6 +563,7 @@ def configure_celery(celery, test_config=None):
                 db=db,
                 web3=web3,
                 abi_values=abi_values,
+                eth_abi_values=eth_abi_values,
                 shared_config=shared_config,
                 ipfs_client=ipfs_client,
                 redis=redis_inst,
@@ -556,6 +571,7 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
             )
+
     celery.autodiscover_tasks(["src.tasks"], "index", True)
 
     # Subclassing celery task with discovery provider context

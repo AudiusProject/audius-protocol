@@ -1,11 +1,15 @@
 import logging
 import time
 from typing import List
-from sqlalchemy import func, desc, text
+
+from sqlalchemy import desc, func
+from src.models import Play
 from src.models.models import HourlyPlayCounts
-from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
 from src.tasks.celery_app import celery
-from src.models import IndexingCheckpoints, Play
+from src.utils.update_indexing_checkpoints import (
+    get_last_indexed_checkpoint,
+    save_indexed_checkpoint,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -18,56 +22,51 @@ UPSERT_HOURLY_PLAY_COUNTS_QUERY = """
     DO UPDATE SET play_count = hourly_play_counts.play_count + EXCLUDED.play_count;
     """
 
+
 def _index_hourly_play_counts(session):
     # get checkpoints
-    prev_id_checkpoint = (session.query(IndexingCheckpoints.last_checkpoint)
-        .filter(IndexingCheckpoints.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
-    ).scalar()
+    prev_id_checkpoint = get_last_indexed_checkpoint(
+        session, HOURLY_PLAY_COUNTS_TABLE_NAME
+    )
 
-    if not prev_id_checkpoint:
-        prev_id_checkpoint = 0
+    new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
-    new_id_checkpoint = (
-        session.query(func.max(Play.id))
-    ).scalar()
-
-    if new_id_checkpoint == prev_id_checkpoint:
-        logger.info("index_hourly_play_counts.py | Skip update because there are no new plays")
+    if not new_id_checkpoint or new_id_checkpoint == prev_id_checkpoint:
+        logger.info(
+            "index_hourly_play_counts.py | Skip update because there are no new plays"
+        )
         return
 
     # get play counts in hourly buckets
-    hourly_play_counts: List[HourlyPlayCounts] = (session.query(
-        func.date_trunc("hour", Play.created_at).label(
-            "hourly_timestamp"
-        ),
-        func.count(Play.id).label("play_count")
-    )
-    .filter(Play.id > prev_id_checkpoint)
-    .filter(Play.id <= new_id_checkpoint)
-    .group_by(func.date_trunc("hour", Play.created_at))
-    .order_by(desc("hourly_timestamp"))
-    .all()
+    hourly_play_counts: List[HourlyPlayCounts] = (
+        session.query(
+            func.date_trunc("hour", Play.created_at).label("hourly_timestamp"),
+            func.count(Play.id).label("play_count"),
+        )
+        .filter(Play.id > prev_id_checkpoint)
+        .filter(Play.id <= new_id_checkpoint)
+        .group_by(func.date_trunc("hour", Play.created_at))
+        .order_by(desc("hourly_timestamp"))
+        .all()
     )
 
     # upsert hourly play count
     # on first population, this will execute an insert for each hour
     # subsequent updates should include 1 or 2 upserts
     for hourly_play_count in hourly_play_counts:
-        session.execute(UPSERT_HOURLY_PLAY_COUNTS_QUERY, {
-            "hourly_timestamp": hourly_play_count.hourly_timestamp,
-            "play_count": hourly_play_count.play_count
-        })
+        session.execute(
+            UPSERT_HOURLY_PLAY_COUNTS_QUERY,
+            {
+                "hourly_timestamp": hourly_play_count.hourly_timestamp,
+                "play_count": hourly_play_count.play_count,
+            },
+        )
 
     # update with new checkpoint
-    session.execute(
-        text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
-        {
-            "tablename": HOURLY_PLAY_COUNTS_TABLE_NAME,
-            "last_checkpoint": new_id_checkpoint,
-        }
-    )
+    save_indexed_checkpoint(session, HOURLY_PLAY_COUNTS_TABLE_NAME, new_id_checkpoint)
 
-######## CELERY TASKS ########
+
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_hourly_play_counts", bind=True)
 def index_hourly_play_counts(self):
     # Cache custom task class properties
@@ -83,7 +82,9 @@ def index_hourly_play_counts(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(f"index_hourly_play_counts.py | Updating {HOURLY_PLAY_COUNTS_TABLE_NAME}")
+            logger.info(
+                f"index_hourly_play_counts.py | Updating {HOURLY_PLAY_COUNTS_TABLE_NAME}"
+            )
 
             start_time = time.time()
 

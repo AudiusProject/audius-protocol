@@ -1,7 +1,8 @@
-import logging  # pylint: disable=C0302
 import functools
-import pickle
 import json
+import logging  # pylint: disable=C0302
+import pickle
+
 from flask.globals import request
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
@@ -30,14 +31,14 @@ def extract_key(path, arg_items, cache_prefix_override=None):
 def get_pickled_key(redis, key):
     cached_value = redis.get(key)
     if cached_value:
-        logger.info(f"Redis Cache - hit {key}")
+        logger.debug(f"Redis Cache - hit {key}")
         try:
             deserialized = pickle.loads(cached_value)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize cached response: {e}")
             return None
-    logger.info(f"Redis Cache - miss {key}")
+    logger.debug(f"Redis Cache - miss {key}")
     return None
 
 
@@ -62,14 +63,14 @@ def use_redis_cache(key, ttl_sec, work_func):
 def get_json_cached_key(redis, key):
     cached_value = redis.get(key)
     if cached_value:
-        logger.info(f"Redis Cache - hit {key}")
+        logger.debug(f"Redis Cache - hit {key}")
         try:
             deserialized = json.loads(cached_value)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize json cached response: {e}")
             return None
-    logger.info(f"Redis Cache - miss {key}")
+    logger.debug(f"Redis Cache - miss {key}")
     return None
 
 
@@ -129,16 +130,16 @@ def cache(**kwargs):
                 cached_resp = redis.get(key)
 
                 if cached_resp:
-                    logger.info(f"Redis Cache - hit {key}")
+                    logger.debug(f"Redis Cache - hit {key}")
                     try:
                         deserialized = pickle.loads(cached_resp)
                         if transform is not None:
-                            return transform(deserialized)
+                            return transform(deserialized)  # pylint: disable=E1102
                         return deserialized, 200
                     except Exception as e:
                         logger.warning(f"Unable to deserialize cached response: {e}")
 
-                logger.info(f"Redis Cache - miss {key}")
+                logger.debug(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
 
             if len(response) == 2:
@@ -149,7 +150,7 @@ def cache(**kwargs):
                 return resp, status_code
             serialized = pickle.dumps(response)
             redis.set(key, serialized, ttl_sec)
-            return transform(response)
+            return transform(response)  # pylint: disable=E1102
 
         return inner_wrap
 
@@ -157,19 +158,19 @@ def cache(**kwargs):
 
 
 def get_user_id_cache_key(id):
-    return "user:id:{}".format(id)
+    return f"user:id:{id}"
 
 
 def get_track_id_cache_key(id):
-    return "track:id:{}".format(id)
+    return f"track:id:{id}"
 
 
 def get_playlist_id_cache_key(id):
-    return "playlist:id:{}".format(id)
+    return f"playlist:id:{id}"
 
 
 def get_sp_id_key(id):
-    return "sp:id:{}".format(id)
+    return f"sp:id:{id}"
 
 
 def remove_cached_user_ids(redis, user_ids):

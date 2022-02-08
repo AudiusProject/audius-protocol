@@ -1,13 +1,15 @@
-from collections import defaultdict
 import logging
-from typing import Dict, Set, Tuple, TypedDict, List, Optional, cast
 from abc import ABC
-from sqlalchemy.orm.session import Session
+from collections import defaultdict
+from typing import Dict, List, Optional, Set, Tuple, TypedDict, cast
+
 from sqlalchemy import func
-from src.models.models import ChallengeType, User
+from sqlalchemy.orm.session import Session
 from src.models import Challenge, UserChallenge
+from src.models.models import ChallengeType, User
 
 logger = logging.getLogger(__name__)
+
 
 # DB Accessors
 def fetch_user_challenges(
@@ -61,7 +63,9 @@ class ChallengeUpdater(ABC):
         already completed state, this method can be left as is.
         """
 
-    def on_after_challenge_creation(self, session, metadatas: List[FullEventMetadata]):
+    def on_after_challenge_creation(
+        self, session: Session, metadatas: List[FullEventMetadata]
+    ):
         """Optional method to do some work after the `ChallengeManager` creates new challenges.
         If a challenge is backed by it's own table, for instance, create those rows here.
         """
@@ -71,12 +75,16 @@ class ChallengeUpdater(ABC):
         return str(user_id)
 
     def should_create_new_challenge(
-        self, event: str, user_id: int, extra: Dict
+        self, session: Session, event: str, user_id: int, extra: Dict
     ) -> bool:
         """Optional method called for aggregate challenges to allow for overriding default
         behavior of creating a new UserChallenge whenever 1) we see a relevant event and
         2) the parent challenge is not yet complete.
         """
+        return True
+
+    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
+        """Optional method to show/hide a challenge for a particular user."""
         return True
 
     def get_metadata(self, session: Session, specifiers: List[str]) -> List[Dict]:
@@ -86,6 +94,12 @@ class ChallengeUpdater(ABC):
     def get_default_metadata(self) -> Dict:
         """Optional method to provide default metadata for an challenge with no progress."""
         return {}
+
+    def get_override_challenge_step_count(
+        self, session: Session, user_id: int
+    ) -> Optional[int]:
+        """Optional method to override the step count value"""
+        return None
 
 
 class ChallengeManager:
@@ -209,7 +223,10 @@ class ChallengeManager:
                     if self._step_count and completion_count >= self._step_count:
                         continue
                     if not self._updater.should_create_new_challenge(
-                        event_type, new_metadata["user_id"], new_metadata["extra"]
+                        session,
+                        event_type,
+                        new_metadata["user_id"],
+                        new_metadata["extra"],
                     ):
                         continue
                     new_user_challenges_specifiers[user_id].add(
@@ -236,7 +253,7 @@ class ChallengeManager:
             to_update = in_progress_challenges + new_user_challenges
 
             # Filter out challenges for deactivated users
-            to_update_user_ids = list(set([c.user_id for c in to_update]))
+            to_update_user_ids = list({c.user_id for c in to_update})
             deactivated_user_ids = (
                 session.query(User.user_id)
                 .filter(
@@ -305,6 +322,16 @@ class ChallengeManager:
     def get_default_metadata(self):
         """Gets default metadata for an challenge with no progress."""
         return self._updater.get_default_metadata()
+
+    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
+        """Optional method to show/hide a challenge for a particular user."""
+        return self._updater.should_show_challenge_for_user(session, user_id)
+
+    def get_override_challenge_step_count(
+        self, session: Session, user_id: int
+    ) -> Optional[int]:
+        """Optional method to override a challenge step count for a particular user."""
+        return self._updater.get_override_challenge_step_count(session, user_id)
 
     # Helpers
 

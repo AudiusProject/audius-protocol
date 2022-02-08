@@ -4,7 +4,6 @@ const { handleResponse, successResponse, errorResponseServerError } = require('.
 const { sequelize } = require('../models')
 const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
-const { solanaConnection } = require('../solana-client')
 const solanaWeb3 = require('@solana/web3.js')
 const Web3 = require('web3')
 const audiusLibsWrapper = require('../audiusLibsInstance')
@@ -16,7 +15,7 @@ const {
 
 const axios = require('axios')
 const moment = require('moment')
-const { REDIS_ATTEST_HEALTH_KEY } = require('../app.js')
+const { REDIS_ATTEST_HEALTH_KEY } = require('../utils/configureAttester')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
@@ -280,30 +279,51 @@ module.exports = function (app) {
   app.get('/sol_balance_check', handleResponse(async (req, res) => {
     const minimumBalance = parseFloat(req.query.minimumBalance || config.get('solMinimumBalance'))
     const solanaFeePayerWallet = config.get('solanaFeePayerWallet')
+    const solanaFeePayerWallets = config.get('solanaFeePayerWallets')
+    const libs = req.app.get('audiusLibs')
+    const connection = libs.solanaWeb3Manager.connection
 
-    let solanaFeePayerPublicKey = null
-    let balance = 0
+    let solanaFeePayerBalances = {}
+    let belowMinimumBalances = []
 
     if (solanaFeePayerWallet) {
-      solanaFeePayerPublicKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
-      balance = await solanaConnection.getBalance(solanaFeePayerPublicKey)
+      const feePayerPubKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
+      const feePayerBase58 = feePayerPubKey.toBase58()
+      const balance = await connection.getBalance(feePayerPubKey)
+      if (balance < minimumBalance) {
+        belowMinimumBalances.push({ wallet: feePayerBase58, balance })
+      }
+      solanaFeePayerBalances[feePayerBase58] = balance
     }
 
-    const sol = Math.floor(balance / (10 ** 9))
-    const lamports = balance % (10 ** 9)
+    if (solanaFeePayerWallets) {
+      await Promise.all([...solanaFeePayerWallets].map(async wallet => {
+        const feePayerPubKey = (new solanaWeb3.Account(wallet.privateKey)).publicKey
+        const feePayerBase58 = feePayerPubKey.toBase58()
+        const balance = await connection.getBalance(feePayerPubKey)
+        solanaFeePayerBalances[feePayerPubKey] = balance
+        if (balance < minimumBalance) {
+          belowMinimumBalances.push({ wallet: feePayerBase58, balance })
+        }
+        return { wallet: feePayerBase58, balance }
+      }))
+    }
 
-    if (balance > minimumBalance) {
+    const solanaFeePayerBalancesArr = Object.keys(solanaFeePayerBalances).map(key => [key, solanaFeePayerBalances[key]])
+
+    if (belowMinimumBalances.length === 0) {
       return successResponse({
         above_balance_minimum: true,
-        balance: { sol, lamports },
-        wallet: solanaFeePayerPublicKey ? solanaFeePayerPublicKey.toBase58() : null
+        minimum_balance: minimumBalance,
+        balances: solanaFeePayerBalancesArr
       })
     }
 
     return errorResponseServerError({
       above_balance_minimum: false,
-      balance: { sol, lamports },
-      wallet: solanaFeePayerPublicKey ? solanaFeePayerPublicKey.toBase58() : null
+      minimum_balance: minimumBalance,
+      belowMinimumBalances,
+      balances: solanaFeePayerBalancesArr
     })
   }))
 

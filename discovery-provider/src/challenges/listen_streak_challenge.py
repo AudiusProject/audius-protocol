@@ -7,8 +7,25 @@ from src.challenges.challenge import (
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.models.models import ListenStreakChallenge, UserChallenge
 from src.challenges.challenge_event import ChallengeEvent
+from src.models.models import ListenStreakChallenge, UserChallenge
+
+
+def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:
+    user_listen_challenge = (
+        session.query(ListenStreakChallenge)
+        .filter(ListenStreakChallenge.user_id == user_id)
+        .first()
+    )
+
+    if user_listen_challenge is None or user_listen_challenge.last_listen_date is None:
+        return None
+
+    # If last_listen_date is over 48 hrs, return zero
+    current_datetime = datetime.now()
+    if current_datetime - user_listen_challenge.last_listen_date >= timedelta(days=2):
+        return 0
+    return None
 
 
 class ListenStreakChallengeUpdater(ChallengeUpdater):
@@ -81,10 +98,16 @@ class ListenStreakChallengeUpdater(ChallengeUpdater):
                 else:
                     partial_completion.listen_streak += 1
 
+    def get_override_challenge_step_count(
+        self, session: Session, user_id: int
+    ) -> Optional[int]:
+        return get_listen_streak_override(session, user_id)
+
 
 listen_streak_challenge_manager = ChallengeManager(
     "listen-streak", ListenStreakChallengeUpdater()
 )
+
 
 # Accessors
 def get_listen_streak_challenges(

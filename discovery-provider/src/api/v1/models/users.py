@@ -1,7 +1,10 @@
 from flask_restx import fields
+
 from .common import ns
 from .playlist_library import playlist_library
 
+# DEPRECATED
+# See connected_wallets
 associated_wallets = ns.model(
     "associated_wallets",
     {
@@ -39,6 +42,8 @@ user_model = ns.model(
         "repost_count": fields.Integer(required=True),
         "track_count": fields.Integer(required=True),
         "is_deactivated": fields.Boolean(required=True),
+        "erc_wallet": fields.String(requred=True),
+        "spl_wallet": fields.String(required=True),
     },
 )
 
@@ -49,6 +54,7 @@ user_model_full = ns.clone(
         "balance": fields.String(required=True),
         "associated_wallets_balance": fields.String(required=True),
         "total_balance": fields.String(required=True),
+        "waudio_balance": fields.String(required=True),
         "associated_sol_wallets_balance": fields.String(required=True),
         "blocknumber": fields.Integer(required=True),
         "wallet": fields.String(required=True),
@@ -66,6 +72,14 @@ user_model_full = ns.clone(
         "metadata_multihash": fields.String,
         "has_collectibles": fields.Boolean(required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
+    },
+)
+
+connected_wallets = ns.model(
+    "connected_wallets",
+    {
+        "erc_wallets": fields.List(fields.String, required=True),
+        "spl_wallets": fields.List(fields.String, required=True),
     },
 )
 
@@ -95,6 +109,7 @@ challenge_response = ns.model(
         "current_step_count": fields.Integer(),
         "max_steps": fields.Integer(),
         "challenge_type": fields.String(required=True),
+        "amount": fields.String(required=True),
         "metadata": fields.Raw(required=True),
     },
 )

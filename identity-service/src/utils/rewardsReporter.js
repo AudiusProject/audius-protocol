@@ -1,11 +1,6 @@
 const axios = require('axios')
 
-const getJsonSlackMessage = (obj) => `\`\`\`
-Source: Identity
-${Object.entries(obj).map(([key, value]) => `${key}: ${value}`).join('\n')}
-\`\`\``
-
-class RewardsReporter {
+class SlackReporter {
   constructor ({
     slackUrl,
     childLogger
@@ -14,51 +9,77 @@ class RewardsReporter {
     this.childLogger = childLogger
   }
 
+  getJsonSlackMessage (obj) {
+    return `\`\`\`
+Source: Identity
+${Object.entries(obj).map(([key, value]) => `${key}: ${value}`).join('\n')}
+\`\`\``
+  }
+
+  async postToSlack ({
+    message
+  }) {
+    try {
+      if (!this.slackUrl) return
+      await axios.post(this.slackUrl, { text: message })
+    } catch (e) {
+      this.childLogger.info(`Error posting to slack in slack reporter ${e.toString()}`)
+    }
+  }
+}
+
+class RewardsReporter {
+  constructor ({
+    successSlackUrl,
+    errorSlackUrl,
+    childLogger
+  }) {
+    this.successReporter = new SlackReporter({ slackUrl: successSlackUrl, childLogger })
+    this.errorReporter = new SlackReporter({ slackUrl: errorSlackUrl, childLogger })
+    this.childLogger = childLogger
+  }
+
   async reportSuccess ({ userId, challengeId, amount }) {
-    const slackMessage = getJsonSlackMessage({
+    const report = {
       status: 'success',
       userId,
       challengeId,
       amount: amount.toString()
-    })
-    await this.postToSlack({ slackUrl: this.slackUrl, message: slackMessage })
-    this.childLogger.info({ status: 'success', userId, challengeId, amount: amount.toString() }, `Rewards Reporter`)
+    }
+    const slackMessage = this.successReporter.getJsonSlackMessage(report)
+    await this.successReporter.postToSlack({ message: slackMessage })
+    this.childLogger.info(report, `Rewards Reporter`)
   }
 
   async reportFailure ({ userId, challengeId, amount, error, phase }) {
-    const slackMessage = getJsonSlackMessage({
+    const report = {
       status: 'failure',
       userId,
       challengeId,
       amount: amount.toString(),
       error: error.toString(),
       phase
-    })
-    await this.postToSlack({ slackUrl: this.slackUrl, message: slackMessage })
-    this.childLogger.info({ status: 'failure', userId, challengeId, amount: amount.toString(), error, phase }, `Rewards Reporter`)
+    }
+    const slackMessage = this.errorReporter.getJsonSlackMessage(report)
+    await this.errorReporter.postToSlack({ message: slackMessage })
+    this.childLogger.info(report, `Rewards Reporter`)
   }
 
   async reportAAORejection ({ userId, challengeId, amount, error }) {
-    const slackMessage = getJsonSlackMessage({
+    const report = {
       status: 'rejection',
       userId,
       challengeId,
       amount: amount.toString(),
       error: error.toString()
-    })
-    await this.postToSlack({ slackUrl: this.slackUrl, message: slackMessage })
-    this.childLogger.info({ status: 'rejection', userId, challengeId, amount: amount.toString(), error }, `Rewards Reporter`)
-  }
-
-  async postToSlack ({
-    slackUrl,
-    message
-  }) {
-    if (!slackUrl) return
-    await axios.post(slackUrl, { text: message })
+    }
+    const slackMessage = this.errorReporter.getJsonSlackMessage(report)
+    await this.errorReporter.postToSlack({ message: slackMessage })
+    this.childLogger.info(report, `Rewards Reporter`)
   }
 }
 
 module.exports = {
+  SlackReporter,
   RewardsReporter
 }

@@ -12,7 +12,6 @@ class Account extends Base {
 
     this.User = userApi
 
-    this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
@@ -102,7 +101,10 @@ class Account extends Base {
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
    * @param {?boolean} [host] The host url used for the recovery email
-   */
+   * @param {?boolean} [createWAudioUserBank] an optional flag to create the solana user bank account
+   * @param {?Function} [handleUserBankOutcomes] an optional callback to record user bank outcomes
+   * @param {?Object} [userBankOutcomes] an optional object with request, succes, and failure keys to record user bank outcomes
+  */
   async signUp (
     email,
     password,
@@ -111,7 +113,9 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    createWAudioUserBank = false
+    createWAudioUserBank = false,
+    handleUserBankOutcomes = () => {},
+    userBankOutcomes = {}
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -141,11 +145,31 @@ class Account extends Base {
         }
       }
 
-      // Create a wAudio user bank address
+      // Create a wAudio user bank address.
+      // If userbank creation fails, we still proceed
+      // through signup
       if (createWAudioUserBank && this.solanaWeb3Manager) {
-        phase = phases.SOLANA_USER_BANK_CREATION
-        // Create a user bank if the solana web3 manager is present
-        await this.solanaWeb3Manager.createUserBank()
+        phase = phases.SOLANA_USER_BANK_CREATION;
+        // Fire and forget createUserBank. In the case of failure, we will
+        // retry to create user banks in a later session before usage
+        (async () => {
+          try {
+            handleUserBankOutcomes(userBankOutcomes.Request)
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
+            if (error || errorCode) {
+              console.error(
+                `Failed to create userbank, with err: ${error}, ${errorCode}`
+              )
+              handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
+            } else {
+              console.log(`Successfully created userbank!`)
+              handleUserBankOutcomes('Create User Bank: Success')
+            }
+          } catch (err) {
+            console.error(`Got error creating userbank: ${err}, continuing...`)
+            handleUserBankOutcomes(userBankOutcomes.Failure, { error: err.toString() })
+          }
+        })()
       }
 
       // Add user to chain
@@ -436,6 +460,29 @@ class Account extends Base {
   }
 
   /**
+   * Sends Eth `amount` tokens to `solanaAccount` on the identity service
+   * by way of the wormhole.
+   */
+  async proxySendTokensFromEthToSol (amount, solanaAccount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const myWalletAddress = this.web3Manager.getWalletAddress()
+    const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    const permitMethod = await this.getPermitProxySendTokensMethod(myWalletAddress, wormholeAddress, amount)
+    const permit = await this.ethWeb3Manager.getRelayMethodParams(this.ethContracts.AudiusTokenClient.contractAddress, permitMethod, selectedEthWallet)
+    const transferTokensMethod = await this.wormholeClient.getTransferTokensToEthWormholeMethod(
+
+      myWalletAddress, amount, solanaAccount, selectedEthWallet
+    )
+    const transferTokens = await this.ethWeb3Manager.getRelayMethodParams(this.ethContracts.WormholeClient.contractAddress, transferTokensMethod, selectedEthWallet)
+    return this.identityService.wormholeRelay({
+      senderAddress: myWalletAddress,
+      permit,
+      transferTokens
+    })
+  }
+
+  /**
    * Sends `amount` tokens to `ethAccount` by way of the wormhole
    * 1.) Creates a solana root wallet
    * 2.) Sends the tokens from the user bank account to the solana wallet
@@ -448,10 +495,7 @@ class Account extends Base {
     return { error, logs, phase }
   }
 
-  /**
-   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
-   */
-  async permitProxySendTokens (owner, relayerAddress, amount) {
+  async _getPermitProxySendTokensParams (owner, relayerAddress, amount) {
     const web3 = this.ethWeb3Manager.getWeb3()
     const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
     const chainId = await new Promise(resolve => web3.eth.getChainId((_, chainId) => resolve(chainId)))
@@ -475,6 +519,20 @@ class Account extends Base {
       deadline
     )
     let result = sign(digest, myPrivateKey)
+    return {
+      result,
+      deadline
+    }
+  }
+
+  /**
+   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   */
+  async permitProxySendTokens (owner, relayerAddress, amount) {
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
     const tx = await this.ethContracts.AudiusTokenClient.permit(
       owner,
       relayerAddress,
@@ -482,10 +540,29 @@ class Account extends Base {
       deadline,
       result.v,
       result.r,
-      result.s,
-      { from: owner }
+      result.s
     )
     return tx
+  }
+
+  /**
+   * Gets the permit method to proxy send tokens `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   */
+  async getPermitProxySendTokensMethod (owner, relayerAddress, amount) {
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
+    const contractMethod = this.ethContracts.AudiusTokenClient.AudiusTokenContract.methods.permit(
+      owner,
+      relayerAddress,
+      amount,
+      deadline,
+      result.v,
+      result.r,
+      result.s
+    )
+    return contractMethod
   }
 
   /**

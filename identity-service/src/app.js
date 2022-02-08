@@ -16,10 +16,8 @@ const audiusLibsWrapper = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
 const { generateWalletLockKey } = require('./relay/txRelay.js')
 const { generateETHWalletLockKey } = require('./relay/ethTxRelay.js')
-const { RewardsAttester } = require('@audius/libs')
-const models = require('./models')
 
-const { RewardsReporter } = require('./utils/rewardsReporter')
+const { SlackReporter } = require('./utils/rewardsReporter')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
@@ -31,10 +29,9 @@ const {
 } = require('./rateLimiter.js')
 const cors = require('./corsMiddleware')
 const { getFeatureFlag, FEATURE_FLAGS } = require('./featureFlag')
-const { REMOTE_VARS, getRemoteVar } = require('./remoteConfig')
+const { setupRewardsAttester } = require('./utils/configureAttester')
 
 const DOMAIN = 'mail.audius.co'
-const REDIS_ATTEST_HEALTH_KEY = 'last-attestation-time'
 
 class App {
   constructor (port) {
@@ -100,6 +97,7 @@ class App {
         cluster.fork({ 'WORKER_TYPE': 'notifications' })
 
         await this.configureRewardsAttester(audiusInstance)
+        await this.configureReporter()
 
         // Fork extra web server workers
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
@@ -143,6 +141,7 @@ class App {
     } else {
       // if it's not the master worker in the cluster
       const audiusInstance = await this.configureAudiusInstance()
+      await this.configureReporter()
 
       if (process.env['WORKER_TYPE'] === 'notifications') {
         await this.notificationProcessor.init(
@@ -188,16 +187,29 @@ class App {
   configureOptimizely () {
     const sdkKey = config.get('optimizelySdkKey')
     const optimizelyClientInstance = optimizelySDK.createInstance({
-      sdkKey
+      sdkKey,
+      datafileOptions: {
+        autoUpdate: true,
+        updateInterval: 5000 // Poll for updates every 5s
+      }
     })
 
     this.optimizelyPromise = new Promise(resolve => {
       optimizelyClientInstance.onReady().then(() => {
         this.express.set('optimizelyClient', optimizelyClientInstance)
+
         resolve()
       })
     })
     return optimizelyClientInstance
+  }
+
+  configureReporter () {
+    const slackAudioErrorReporter = new SlackReporter({
+      slackUrl: config.get('errorAudioReporterSlackUrl'),
+      childLogger: logger
+    })
+    this.express.set('slackAudioErrorReporter', slackAudioErrorReporter)
   }
 
   async configureAudiusInstance () {
@@ -208,69 +220,17 @@ class App {
   }
 
   async configureRewardsAttester (libs) {
-    // Make a more greppable child logger
-    const childLogger = logger.child({ 'service': 'RewardsAttester' })
-
     // Await for optimizely config so we know
     // whether rewards attestation is enabled,
     // returning early if false
     await this.optimizelyPromise
     const isEnabled = getFeatureFlag(this.optimizelyClientInstance, FEATURE_FLAGS.REWARDS_ATTESTATION_ENABLED)
     if (!isEnabled) {
-      childLogger.info('Attestation disabled!')
+      logger.info('Attestation disabled!')
       return
     }
 
-    // Fetch the challengeDenyList, used to filter out
-    // arbitrary challenges by their challengeId
-    const challengeIdsDenyList = (
-      (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.CHALLENGE_IDS_DENY_LIST) || '')
-        .split(',')
-    )
-
-    // Fetch the last saved offset and startingBLock from the DB,
-    // or create them if necessary.
-    let initialVals = await models.RewardAttesterValues.findOne()
-    if (!initialVals) {
-      initialVals = models.RewardAttesterValues.build()
-      initialVals.startingBlock = 0
-      initialVals.offset = 0
-      await initialVals.save()
-    }
-
-    const rewardsReporter = new RewardsReporter({
-      slackUrl: config.get('rewardsReporterSlackUrl'),
-      childLogger
-    })
-
-    // Init the RewardsAttester
-    const attester = new RewardsAttester({
-      libs,
-      logger: childLogger,
-      parallelization: config.get('rewardsParallelization'),
-      quorumSize: config.get('rewardsQuorumSize'),
-      aaoEndpoint: config.get('aaoEndpoint'),
-      aaoAddress: config.get('aaoAddress'),
-      startingBlock: initialVals.startingBlock,
-      offset: initialVals.offset,
-      challengeIdsDenyList,
-      reporter: rewardsReporter,
-      updateValues: async ({ startingBlock, offset, successCount }) => {
-        childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
-
-        await models.RewardAttesterValues.update({
-          startingBlock,
-          offset
-        }, { where: {} })
-
-        // If we succeeded in attesting for at least a single reward,
-        // store in Redis so we can healthcheck it.
-        if (successCount > 0) {
-          await this.redisClient.set(REDIS_ATTEST_HEALTH_KEY, Date.now())
-        }
-      }
-    })
-    attester.start()
+    const attester = await setupRewardsAttester(libs, this.optimizelyClientInstance, this.redisClient)
     this.express.set('rewardsAttester', attester)
     return attester
   }
@@ -432,4 +392,3 @@ class App {
 }
 
 module.exports = App
-module.exports.REDIS_ATTEST_HEALTH_KEY = REDIS_ATTEST_HEALTH_KEY
