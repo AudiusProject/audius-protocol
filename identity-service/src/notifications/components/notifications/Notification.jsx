@@ -34,6 +34,10 @@ const challengeRewardsConfig = {
     title: 'Invite your Friends',
     icon: <IncomingEnvelopeIcon />
   },
+  'ref-v': {
+    title: 'Invite your Fans',
+    icon: <IncomingEnvelopeIcon />
+  },
   'connect-verified': {
     title: 'Link Verified Accounts',
     icon: <WhiteHeavyCheckMarkIcon />
