@@ -103,7 +103,7 @@ function getFeePayer (singleFeePayer = true) {
   }
   // Ensure legacy usage of single feePayer is not broken
   // If multiple feepayers are not provided, default to single value as well
-  if (singleFeePayer || !feePayers) {
+  if (singleFeePayer || feePayers === null || feePayers.length === 0) {
     return feePayer
   }
 
