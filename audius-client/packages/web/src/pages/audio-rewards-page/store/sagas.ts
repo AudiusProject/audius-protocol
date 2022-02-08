@@ -112,10 +112,16 @@ function* retryClaimChallengeReward(errorResolved: boolean) {
   }
 }
 
+// Returns the number of ms to wait before next retry using exponential backoff
+// ie. 400 ms, 800 ms, 1.6 sec, 3.2 sec, 6.4 sec
+export const getBackoff = (retryCount: number) => {
+  return 200 * 2 ** (retryCount + 1)
+}
+
 function* claimChallengeRewardAsync(
   action: ReturnType<typeof claimChallengeReward>
 ) {
-  const { claim, retryOnFailure } = action.payload
+  const { claim, retryOnFailure, retryCount = 0 } = action.payload
   const { specifier, challengeId, amount } = claim
 
   // Do not proceed to claim if challenge is not complete from a DN perspective.
@@ -136,6 +142,11 @@ function* claimChallengeRewardAsync(
   const quorumSize = remoteConfigInstance.getRemoteVar(
     IntKeys.ATTESTATION_QUORUM_SIZE
   )
+
+  const maxClaimRetries = remoteConfigInstance.getRemoteVar(
+    IntKeys.MAX_CLAIM_RETRIES
+  )
+
   const { oracleEthAddress, AAOEndpoint } = getOracleConfig()
 
   const rewardsAttestationEndpoints = remoteConfigInstance.getRemoteVar(
@@ -146,7 +157,12 @@ function* claimChallengeRewardAsync(
   // When endpoints is unset, `submitAndEvaluateAttestations` picks for us
   const endpoints = rewardsAttestationEndpoints?.split(',') || null
   const hasConfig =
-    oracleEthAddress && AAOEndpoint && quorumSize && quorumSize > 0
+    oracleEthAddress &&
+    AAOEndpoint &&
+    quorumSize &&
+    quorumSize > 0 &&
+    maxClaimRetries &&
+    !isNaN(maxClaimRetries)
 
   if (!hasConfig) {
     console.error('Error claiming rewards: Config is missing')
@@ -169,7 +185,7 @@ function* claimChallengeRewardAsync(
       }
     )
     if (response.error) {
-      if (retryOnFailure) {
+      if (retryOnFailure && retryCount < maxClaimRetries!) {
         switch (response.error) {
           case FailureReason.HCAPTCHA:
             // Hide the Challenge Rewards Modal because the HCaptcha modal doesn't look good on top of it.
@@ -198,12 +214,14 @@ function* claimChallengeRewardAsync(
           case FailureReason.BLOCKED:
             throw new Error('User is blocked from claiming')
           case FailureReason.UNKNOWN_ERROR:
-            // Retry once in the case of generic failure, otherwise log error and abort
-            if (retryOnFailure) {
-              yield put(claimChallengeReward({ claim, retryOnFailure: false }))
-            } else {
-              throw new Error(`Unknown Error: ${response.error}`)
-            }
+            yield delay(getBackoff(retryCount))
+            yield put(
+              claimChallengeReward({
+                claim,
+                retryOnFailure: true,
+                retryCount: retryCount + 1
+              })
+            )
         }
       } else {
         yield put(claimChallengeRewardFailed())

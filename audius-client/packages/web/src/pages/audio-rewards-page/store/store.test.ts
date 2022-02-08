@@ -1,3 +1,4 @@
+import delayP from '@redux-saga/delay-p'
 import { expectSaga } from 'redux-saga-test-plan'
 import { call, select } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
@@ -92,6 +93,8 @@ const retryClaimProvisions: StaticProvider[] = [
   [select(getClaimToRetry), testClaim]
 ]
 
+const MAX_CLAIM_RETRIES = 5
+
 const expectedRequestArgs = {
   ...testClaim,
   encodedUserId: undefined,
@@ -110,7 +113,8 @@ beforeAll(() => {
     [StringKeys.ORACLE_ENDPOINT]: 'oracle endpoint',
     [StringKeys.REWARDS_ATTESTATION_ENDPOINTS]: 'rewards attestation endpoints',
     [IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS]: 100000000000,
-    [IntKeys.CHALLENGE_REFRESH_INTERVAL_MS]: 1000000000000
+    [IntKeys.CHALLENGE_REFRESH_INTERVAL_MS]: 1000000000000,
+    [IntKeys.MAX_CLAIM_RETRIES]: MAX_CLAIM_RETRIES
   })
   remoteConfigInstance.waitForRemoteConfig = jest.fn()
 
@@ -277,6 +281,66 @@ describe('Rewards Page Sagas', () => {
             args: [expectedRequestArgs]
           })
           .put(claimChallengeRewardAlreadyClaimed())
+          .silentRun()
+      )
+    })
+
+    it('should attempt retry if below max retries', () => {
+      return (
+        expectSaga(saga)
+          .dispatch(
+            claimChallengeReward({
+              claim: testClaim,
+              retryOnFailure: true
+            })
+          )
+          .provide([
+            ...claimAsyncProvisions,
+            [call.fn(delayP), null],
+            [
+              call.fn(AudiusBackend.submitAndEvaluateAttestations),
+              { error: FailureReason.UNKNOWN_ERROR }
+            ]
+          ])
+          // Assertions
+          .call.like({
+            fn: AudiusBackend.submitAndEvaluateAttestations,
+            args: [expectedRequestArgs]
+          })
+          .put(
+            claimChallengeReward({
+              claim: testClaim,
+              retryOnFailure: true,
+              retryCount: 1
+            })
+          )
+          .silentRun()
+      )
+    })
+
+    it('should not attempt retry if at max retries', () => {
+      return (
+        expectSaga(saga)
+          .dispatch(
+            claimChallengeReward({
+              claim: testClaim,
+              retryOnFailure: true,
+              retryCount: MAX_CLAIM_RETRIES
+            })
+          )
+          .provide([
+            ...claimAsyncProvisions,
+            [
+              call.fn(AudiusBackend.submitAndEvaluateAttestations),
+              { error: FailureReason.UNKNOWN_ERROR }
+            ]
+          ])
+          // Assertions
+          .call.like({
+            fn: AudiusBackend.submitAndEvaluateAttestations,
+            args: [expectedRequestArgs]
+          })
+          .put(claimChallengeRewardFailed())
           .silentRun()
       )
     })
