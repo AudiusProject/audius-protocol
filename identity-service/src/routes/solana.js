@@ -1,8 +1,10 @@
 const express = require('express')
 const crypto = require('crypto')
+const solanaWeb3 = require('@solana/web3.js')
+const config = require('../config.js')
 
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
-const { getFeePayer } = require('../solana-client')
+const { getFeePayerKeypair } = require('../solana-client')
 
 const {
   PublicKey,
@@ -25,7 +27,7 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
   const libs = req.app.get('audiusLibs')
 
-  let { instructions = [], skipPreflight } = req.body
+  let { instructions = [], skipPreflight, feePayerOverride } = req.body
 
   const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
 
@@ -43,7 +45,11 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   })
 
   const transactionHandler = libs.solanaWeb3Manager.transactionHandler
-  const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({ instructions, skipPreflight })
+  const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({
+    instructions,
+    skipPreflight,
+    feePayerOverride
+  })
 
   if (error) {
     // if the tx fails, store it in redis with a 24 hour expiration
@@ -58,12 +64,12 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
 
 /**
  * The raw relay uses the `sendAndConfirmRawTransaction` as opposed to the `sendAndConfirmTransaction` method
- * This is required becuase of a bug in the solana web3 transction that overwrites the singers to prevent the
+ * This is required becuase of a bug in the solana web3 transction that overwrites the signers to prevent the
  * transaction from being formatted correcly.
  * Additionally, signatures are transfered over the wire and added to the transaction manually to prevent the
  * library from incorrecly dropping/re-ordering the signatures.
  * Finally, the transaction must be partially signed so as to not overwrite the other signatures - need as a
- * work-around becuase of another bug in the solana web3 api
+ * work-around because of another bug in the solana web3 api
  */
 solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
@@ -108,7 +114,7 @@ solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
       })
     })
 
-    const feePayerAccount = getFeePayer()
+    const feePayerAccount = getFeePayerKeypair()
     tx.partialSign(feePayerAccount)
 
     const connection = libs.solanaWeb3Manager.connection
@@ -128,6 +134,17 @@ solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
     const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
     return errorResponseServerError(errorString, { error })
   }
+}))
+
+solanaRouter.get('/random_fee_payer', handleResponse(async () => {
+  const solanaFeePayerWallets = config.get('solanaFeePayerWallets')
+  if (!solanaFeePayerWallets || !solanaFeePayerWallets.length) {
+    return errorResponseServerError('There is no list of fee payers to choose from.')
+  }
+
+  const randomFeePayerIndex = Math.floor(Math.random() * solanaFeePayerWallets.length)
+  const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(solanaFeePayerWallets[randomFeePayerIndex].privateKey))
+  return successResponse({ feePayer: randomFeePayer.publicKey })
 }))
 
 module.exports = function (app) {

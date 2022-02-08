@@ -81,6 +81,7 @@ class Rewards extends Base {
    *   instructionsPerTransaction?: number,
    *   maxAggregationAttempts?: number
    *   logger: any
+   *   feePayerOverride: string | null
    * }} {
    *   challengeId,
    *   encodedUserId,
@@ -94,13 +95,14 @@ class Rewards extends Base {
    *   endpoints,
    *   maxAggregationAttempts,
    *   instructionsPerTransaction,
-   *   logger
-   *   }
+   *   logger,
+   *   feePayerOverride
+   * }
    * @returns {Promise<GetSubmitAndEvaluateAttestationsReturn>}
    * @memberof Challenge
    */
   async submitAndEvaluate ({
-    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, instructionsPerTransaction, maxAggregationAttempts = 20, endpoints = null, logger = console
+    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, instructionsPerTransaction, maxAggregationAttempts = 20, endpoints = null, logger = console, feePayerOverride = null
   }) {
     let phase
     try {
@@ -135,7 +137,8 @@ class Rewards extends Base {
         recipientEthAddress,
         tokenAmount: fullTokenAmount,
         instructionsPerTransaction,
-        logger
+        logger,
+        feePayerOverride
       })
 
       // In the case of an unparseable error,
@@ -161,7 +164,8 @@ class Rewards extends Base {
             recipientEthAddress,
             tokenAmount: fullTokenAmount,
             instructionsPerTransaction: 2, // SECP + Attestation
-            logger
+            logger,
+            feePayerOverride
           })
         } else {
           throw new Error(submitErrorCode || submitError)
@@ -178,7 +182,8 @@ class Rewards extends Base {
         recipientEthAddress,
         oracleEthAddress,
         tokenAmount: fullTokenAmount,
-        logger
+        logger,
+        feePayerOverride
       })
 
       if (evaluateErrorCode || evaluateError) {

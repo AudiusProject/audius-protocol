@@ -456,6 +456,14 @@ class RewardsAttester {
     completedBlocknumber
   }) {
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
+
+    let feePayerOverride = null
+    const feePayerKeypairs = this.libs.solanaWeb3Manager.solanaWeb3Config.feePayerKeypairs
+    if (feePayerKeypairs && feePayerKeypairs.length) {
+      const randomFeePayerIndex = Math.floor(Math.random() * feePayerKeypairs.length)
+      feePayerOverride = feePayerKeypairs[randomFeePayerIndex].publicKey
+    }
+
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
       challengeId,
       encodedUserId: userId,
@@ -467,7 +475,8 @@ class RewardsAttester {
       quorumSize: this.quorumSize,
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
-      logger: this.logger
+      logger: this.logger,
+      feePayerOverride
     })
 
     if (success) {

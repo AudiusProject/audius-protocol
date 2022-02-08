@@ -83,7 +83,11 @@ const createSenderLocal = async ethAddress => {
   const protocolDir = getEnv('PROTOCOL_DIR')
   const solanaConfig = require(`${protocolDir}/solana-programs/solana-program-config.json`)
   const ownerWalletBytes = solanaConfig.ownerWallet
-  const feepayerWalletBytes = solanaConfig.feePayerWallet
+  const feepayerWalletBytes = (solanaConfig.feePayerWallets && solanaConfig.feePayerWallets.length) ? solanaConfig.feePayerWallets[0].privateKey : null
+  if (!feepayerWalletBytes) {
+    return
+  }
+
   const connection = new solanaWeb3.Connection('http://localhost:8899')
 
   // Log in as current owner wallet

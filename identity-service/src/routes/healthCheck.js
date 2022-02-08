@@ -278,7 +278,6 @@ module.exports = function (app) {
 
   app.get('/sol_balance_check', handleResponse(async (req, res) => {
     const minimumBalance = parseFloat(req.query.minimumBalance || config.get('solMinimumBalance'))
-    const solanaFeePayerWallet = config.get('solanaFeePayerWallet')
     const solanaFeePayerWallets = config.get('solanaFeePayerWallets')
     const libs = req.app.get('audiusLibs')
     const connection = libs.solanaWeb3Manager.connection
@@ -286,25 +285,16 @@ module.exports = function (app) {
     let solanaFeePayerBalances = {}
     let belowMinimumBalances = []
 
-    if (solanaFeePayerWallet) {
-      const feePayerPubKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
-      const feePayerBase58 = feePayerPubKey.toBase58()
-      const balance = await connection.getBalance(feePayerPubKey)
-      if (balance < minimumBalance) {
-        belowMinimumBalances.push({ wallet: feePayerBase58, balance })
-      }
-      solanaFeePayerBalances[feePayerBase58] = balance
-    }
-
     if (solanaFeePayerWallets) {
       await Promise.all([...solanaFeePayerWallets].map(async wallet => {
-        const feePayerPubKey = (new solanaWeb3.Account(wallet.privateKey)).publicKey
+        const feePayerPubKey = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(wallet.privateKey)).publicKey
         const feePayerBase58 = feePayerPubKey.toBase58()
         const balance = await connection.getBalance(feePayerPubKey)
-        solanaFeePayerBalances[feePayerPubKey] = balance
         if (balance < minimumBalance) {
           belowMinimumBalances.push({ wallet: feePayerBase58, balance })
         }
+        // todo: should it be base58 or the pubkey here? e.g. solanaFeePayerBalances[feePayerBase58] = balance
+        solanaFeePayerBalances[feePayerPubKey] = balance
         return { wallet: feePayerBase58, balance }
       }))
     }

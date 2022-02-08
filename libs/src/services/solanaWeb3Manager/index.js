@@ -59,11 +59,11 @@ class SolanaWeb3Manager {
    *  the manager account of the rewards manager program
    * @param {string} solanaWeb3Config.rewardsManagerTokenPDA
    *  the token holder account of the rewards manager program
-   * @param {boolean} solanaWeb3Config.shouldUseRelay
+   * @param {boolean} solanaWeb3Config.useRelay
    *  whether to submit transactions via a relay, or locally
-   * @param {KeyPair} solanaWeb3Config.feePayerKepair
+   * @param {KeyPair} solanaWeb3Config.feePayerKepairs
+   *  KeyPairs for feepayers
    * @param {number} [solanaWeb3Config.confirmationTimeout] optional default confirmation timeout
-   *  KeyPair for feepayer
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
@@ -92,12 +92,9 @@ class SolanaWeb3Manager {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair,
+      feePayerKeypairs,
       confirmationTimeout
     } = this.solanaWeb3Config
-
-    // Helper to safely create pubkey from nullable val
-    const newPublicKeyNullable = (val) => val ? new PublicKey(val) : null
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
@@ -108,32 +105,37 @@ class SolanaWeb3Manager {
       connection: this.connection,
       useRelay,
       identityService: this.identityService,
-      feePayerKeypair
+      feePayerKeypairs
     })
 
     this.mintAddress = mintAddress
-    this.mintKey = newPublicKeyNullable(mintAddress)
+    this.mintKey = SolanaUtils.newPublicKeyNullable(mintAddress)
 
     this.solanaTokenAddress = solanaTokenAddress
-    this.solanaTokenKey = newPublicKeyNullable(solanaTokenAddress)
+    this.solanaTokenKey = SolanaUtils.newPublicKeyNullable(solanaTokenAddress)
 
-    this.feePayerAddress = feePayerAddress || feePayerKeypair.publicKey
-    this.feePayerKey = newPublicKeyNullable(feePayerAddress || feePayerKeypair.publicKey)
+    if (feePayerAddress) {
+      this.feePayerAddress = feePayerAddress
+      this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerAddress)
+    } else if (feePayerKeypairs && feePayerKeypairs.length) {
+      this.feePayerAddress = feePayerKeypairs[0].publicKey
+      this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerKeypairs[0].publicKey)
+    }
 
-    this.claimableTokenProgramKey = newPublicKeyNullable(claimableTokenProgramAddress)
+    this.claimableTokenProgramKey = SolanaUtils.newPublicKeyNullable(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
       this.claimableTokenProgramKey ? ((await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()) : null
     )
-    this.claimableTokenPDAKey = newPublicKeyNullable(this.claimableTokenPDA)
-    this.rewardManagerProgramId = newPublicKeyNullable(rewardsManagerProgramId)
-    this.rewardManagerProgramPDA = newPublicKeyNullable(rewardsManagerProgramPDA)
-    this.rewardManagerTokenPDA = newPublicKeyNullable(rewardsManagerTokenPDA)
+    this.claimableTokenPDAKey = SolanaUtils.newPublicKeyNullable(this.claimableTokenPDA)
+    this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramId)
+    this.rewardManagerProgramPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramPDA)
+    this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
   }
 
   /**
    * Creates a solana bank account from the web3 provider's eth address
    */
-  async createUserBank () {
+  async createUserBank (feePayerOverride) {
     if (!this.web3Manager) {
       throw new Error('A web3Manager is required for this solanaWeb3Manager method')
     }
@@ -142,7 +144,7 @@ class SolanaWeb3Manager {
     return createUserBankFrom({
       ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
-      feePayerKey: this.feePayerKey,
+      feePayerKey: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       mintKey: this.mintKey,
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
@@ -336,7 +338,8 @@ class SolanaWeb3Manager {
     recipientEthAddress,
     tokenAmount,
     instructionsPerTransaction,
-    logger = console
+    logger = console,
+    feePayerOverride = null
   }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -345,7 +348,7 @@ class SolanaWeb3Manager {
       oracleAttestation,
       challengeId,
       specifier,
-      feePayer: this.feePayerKey,
+      feePayer: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
       transactionHandler: this.transactionHandler,
@@ -379,7 +382,8 @@ class SolanaWeb3Manager {
     recipientEthAddress,
     oracleEthAddress,
     tokenAmount,
-    logger = console
+    logger = console,
+    feePayerOverride = null
   }) {
     return evaluateAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -390,7 +394,7 @@ class SolanaWeb3Manager {
       recipientEthAddress,
       userBankProgramAccount: this.claimableTokenPDAKey,
       oracleEthAddress,
-      feePayer: this.feePayerKey,
+      feePayer: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       tokenAmount,
       transactionHandler: this.transactionHandler,
       logger
