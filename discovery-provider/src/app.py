@@ -229,6 +229,11 @@ def create(test_config=None, mode="app"):
         helpers.configure_flask_app_logging(
             app, shared_config["discprov"]["loglevel_flask"]
         )
+        # Create challenges. Run the create_new_challenges only in flask
+        # Running this in celery + flask init can cause a race condition
+        session_manager = app.db_session_manager
+        with session_manager.scoped_session() as session:
+            create_new_challenges(session)
         return app
 
     if mode == "celery":
@@ -328,11 +333,6 @@ def configure_flask(test_config, app, mode="app"):
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
-
-    # Create challenges
-    session_manager = app.db_session_manager
-    with session_manager.scoped_session() as session:
-        create_new_challenges(session)
 
     return app
 
