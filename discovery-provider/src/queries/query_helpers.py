@@ -22,6 +22,7 @@ from src.models import (
     Track,
     User,
 )
+from src.models.user_bank import UserBankAccount
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
@@ -128,6 +129,12 @@ def populate_user_metadata(
         .filter(AggregateUser.user_id.in_(user_ids))
         .all()
     )
+
+    # build a dict of user (eth) wallet -> user bank
+    user_banks = session.query(
+        UserBankAccount.ethereum_address, UserBankAccount.bank_account
+    ).filter(UserBankAccount.ethereum_address.in_(user["wallet"] for user in users))
+    user_banks_dict = dict(user_banks)
 
     # build dict of user id --> track/playlist/album/follower/followee/repost/track save counts
     count_dict = {
@@ -260,6 +267,9 @@ def populate_user_metadata(
         )
         user[response_name_constants.waudio_balance] = user_balance.get(
             "waudio_balance", "0"
+        )
+        user[response_name_constants.spl_wallet] = user_banks_dict.get(
+            user["wallet"], None
         )
 
     return users
