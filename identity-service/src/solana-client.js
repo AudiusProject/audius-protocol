@@ -103,7 +103,7 @@ function getFeePayer (singleFeePayer = true) {
   }
   // Ensure legacy usage of single feePayer is not broken
   // If multiple feepayers are not provided, default to single value as well
-  if (singleFeePayer || !feePayers) {
+  if (singleFeePayer || feePayers === null || feePayers.length === 0) {
     return feePayer
   }
 
@@ -160,7 +160,8 @@ async function createAndVerifyMessage (
     instructionData
   )
 
-  let transaction = new solanaWeb3.Transaction()
+  let recentBlockHash = connection.getRecentBlockhash('confirmed')
+  let transaction = new solanaWeb3.Transaction(recentBlockHash)
 
   let secpInstruction = solanaWeb3.Secp256k1Program.createInstructionWithPublicKey(
     {
@@ -192,7 +193,7 @@ async function createAndVerifyMessage (
     transaction,
     [feePayerAccount],
     {
-      skipPreflight: true,
+      skipPreflight: false,
       commitment: config.get('solanaTxCommitmentLevel'),
       preflightCommitment: config.get('solanaTxCommitmentLevel')
     }
