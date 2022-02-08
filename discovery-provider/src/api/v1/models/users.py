@@ -3,6 +3,8 @@ from flask_restx import fields
 from .common import ns
 from .playlist_library import playlist_library
 
+# DEPRECATED
+# See connected_wallets
 associated_wallets = ns.model(
     "associated_wallets",
     {
@@ -70,6 +72,14 @@ user_model_full = ns.clone(
         "metadata_multihash": fields.String,
         "has_collectibles": fields.Boolean(required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
+    },
+)
+
+connected_wallets = ns.model(
+    "connected_wallets",
+    {
+        "erc_wallets": fields.List(fields.String, required=True),
+        "spl_wallets": fields.List(fields.String, required=True),
     },
 )
 
