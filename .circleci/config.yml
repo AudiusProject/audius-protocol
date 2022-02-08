@@ -703,9 +703,11 @@ jobs:
             source ~/.profile
             nvm install v14.17.5
             nvm use 14
-            export PROTOCOL_DIR=$CIRCLE_WORKING_DIRECTORY/audius-protocol
-            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git
-            cd audius-protocol/service-commands/
+            export PROTOCOL_DIR=$CIRCLE_WORKING_DIRECTORY
+            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git $PROTOCOL_DIR
+            pwd $PROTOCOL_DIR
+            ls -la $PROTOCOL_DIR
+            cd $PROTOCOL_DIR/service-commands/
             npm install --unsafe-perm
             A setup --assume-yes remote-dev audius-bake-nightly
       - run:
@@ -713,10 +715,10 @@ jobs:
           command: |
             # add startup script
             gcloud compute instances add-metadata audius-bake-nightly \
-              --metadata-from-file=startup-script="audius-protocol/service-commands/scripts/remote-startup.sh"
+              --metadata-from-file=startup-script="$PROTOCOL_DIR/service-commands/scripts/remote-startup.sh"
             # add shutdown script
             gcloud compute instances add-metadata audius-bake-nightly \
-              --metadata-from-file=shutdown-script="audius-protocol/service-commands/scripts/remote-shutdown.sh"
+              --metadata-from-file=shutdown-script="$PROTOCOL_DIR/service-commands/scripts/remote-shutdown.sh"
             gcloud compute instances stop audius-bake-nightly
             gcloud compute instances set-service-account audius-bake-nightly --scopes=cloud-platform --service-account=remote-build-host@audius-infrastructure.iam.gserviceaccount.com # TODO context variable
             gcloud compute instances start audius-bake-nightly
@@ -727,7 +729,7 @@ jobs:
       - run:
           name: bake image and update refs
           command: |
-            ./scripts/bake-dev-image.sh --source audius-bake-nightly
+            $PROTOCOL_DIR/service-commands/scripts/bake-dev-image.sh --source audius-bake-nightly
             # todo use sed to update source disk in gcp secrets manager
 
 workflows:
