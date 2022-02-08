@@ -847,9 +847,11 @@ associated_wallet_response = make_response(
 )
 
 
-# Deprecated in favor of /<user_id>/connected_wallets
 @ns.deprecated
-@ns.route("/associated_wallets")
+@ns.route(
+    "/associated_wallets",
+    doc={"description": "Deprecated in favor of /<user_id>/connected_wallets"},
+)
 class UserIdByAssociatedWallet(Resource):
     @ns.expect(associated_wallet_route_parser)
     @ns.doc(
