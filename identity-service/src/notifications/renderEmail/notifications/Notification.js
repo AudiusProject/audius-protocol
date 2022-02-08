@@ -57,6 +57,10 @@ var challengeRewardsConfig = {
     title: 'Invite your Friends',
     icon: /*#__PURE__*/_react["default"].createElement(_Icons.IncomingEnvelopeIcon, null)
   },
+  'ref-v': {
+    title: 'Invite your Fans',
+    icon: /*#__PURE__*/_react["default"].createElement(_Icons.IncomingEnvelopeIcon, null)
+  },
   'connect-verified': {
     title: 'Link Verified Accounts',
     icon: /*#__PURE__*/_react["default"].createElement(_Icons.WhiteHeavyCheckMarkIcon, null)
