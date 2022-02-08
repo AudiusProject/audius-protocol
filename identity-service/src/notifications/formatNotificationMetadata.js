@@ -250,7 +250,7 @@ const challengeInfoMap = {
   'ref-v': {
     title: '📨 Invite your Fans',
     amount: 1
-    },
+  },
   'connect-verified': {
     title: '✅️ Link Verified Accounts',
     amount: 5

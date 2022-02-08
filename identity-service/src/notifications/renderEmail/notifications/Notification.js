@@ -403,7 +403,7 @@ var getTwitter = function getTwitter(notification) {
       {
         var _text3 = "I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards";
         return {
-          message: 'Share With Your Fans',
+          message: 'Share this with your fans',
           href: "http://twitter.com/share?text=".concat(encodeURIComponent(_text3))
         };
       }
