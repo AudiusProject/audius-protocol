@@ -1,6 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { expect, assert } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { createTrack, initAdmin } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
@@ -11,6 +12,8 @@ import {
   testInitUser,
   testInitUserSolPubkey,
 } from "./test-helpers";
+
+chai.use(chaiAsPromised);
 
 describe("audius-data", () => {
   const provider = anchor.Provider.local("http://localhost:8899", {
@@ -385,26 +388,23 @@ describe("audius-data", () => {
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
 
-    try {
-      await testCreateUser({
-        provider,
-        program,
-        message,
-        pkString,
-        baseAuthorityAccount,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        bumpSeed,
-        metadata,
-        newUserKeypair,
-        userStgAccount: newUserAcctPDA,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-      });
-      assert.ok(false, "expected error when creating a user that already exists");
-    } catch (e) {
-      expect(e.toString()).to.have.string("custom program error: 0x0");
-    }
+    await expect(testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.eventually.be.rejected.and.property('logs').to.include(
+      `Allocate: account Address { address: ${newUserAcctPDA.toString()}, base: None } already in use`
+    );
   });
 
   it("creating initialized user should fail", async () => {
@@ -440,29 +440,26 @@ describe("audius-data", () => {
     // Message as the incoming public key
     let message = newUserKeypair.publicKey.toString();
 
-    try {
-      await testCreateUser({
-        provider,
-        program,
-        message,
-        pkString,
-        baseAuthorityAccount,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        bumpSeed,
-        metadata,
-        newUserKeypair,
-        userStgAccount: newUserAcctPDA,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-      });
-      assert.ok(false, "expected error when creating a user that already exists");
-    } catch (e) {
-      expect(e.toString()).to.have.string("custom program error: 0x0");
-    }
+    await expect(testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.eventually.be.rejected.and.property('logs').to.include(
+      `Allocate: account Address { address: ${newUserAcctPDA.toString()}, base: None } already in use`
+    );
   });
 
-  it("creating user with incorrect bump seed should fail", async () => {
+  it("creating user with incorrect bump seed / pda should fail", async () => {
     let { testEthAddr, testEthAddrBytes, handleBytesArray, metadata, pkString } =
       initTestConstants();
 
@@ -475,7 +472,7 @@ describe("audius-data", () => {
 
     let { handleBytesArray: incorrectHandleBytesArray } = initTestConstants();
 
-    let { bumpSeed: incorrectBumpSeed, derivedAddress: incorrectPDA } =
+    let { derivedAddress: incorrectPDA } =
       await findDerivedPair(
         program.programId,
         adminStgKeypair.publicKey,
@@ -492,26 +489,41 @@ describe("audius-data", () => {
     // Message as the incoming public key
     let message = newUserKeypair.publicKey.toString();
 
-    try {
-      await testCreateUser({
-        provider,
-        program,
-        message,
-        pkString,
-        baseAuthorityAccount,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        bumpSeed: incorrectBumpSeed,
-        metadata,
-        newUserKeypair,
-        userStgAccount: newUserAcctPDA,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-      });
-      assert.ok(false, "expected error when creating a user with incorrect bump seed");
-    } catch (e) {
-      expect(e.toString()).to.have.string(`Provided seeds do not result in a valid address`, e);
-    }
+    await expect(testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed: (bumpSeed + 1) % 255,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.eventually.be.rejected.and.property('logs').to.include(
+      "Program failed to complete: Could not create program address with signer seeds: Provided seeds do not result in a valid address"
+    );
+
+    await expect(testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: incorrectPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.eventually.be.rejected.and.property('logs').to.include(
+      `Program ${program.programId.toString()} failed: Cross-program invocation with unauthorized signer or writable account`
+    );
   });
 
 
