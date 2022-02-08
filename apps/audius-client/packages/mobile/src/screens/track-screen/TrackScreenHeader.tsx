@@ -26,7 +26,6 @@ import {
   View
 } from 'react-native'
 import HyperLink from 'react-native-hyperlink'
-import { Shadow } from 'react-native-shadow-2'
 import { useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/images/iconPause.svg'
@@ -35,7 +34,7 @@ import { BaseStackParamList } from 'app/components/app-navigator/types'
 import Button from 'app/components/button'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import { DynamicImage } from 'app/components/core'
+import { DynamicImage, Tile } from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -430,93 +429,86 @@ export const TrackScreenHeader = ({
   )
 
   return (
-    <Shadow
-      offset={[0, 2]}
-      viewStyle={{ alignSelf: 'stretch' }}
-      distance={4}
-      startColor='rgba(133,129,153,0.05)'
-    >
-      <View style={styles.root}>
-        {is_unlisted ? (
-          <View style={styles.hiddenTrackHeaderWrapper}>
-            {/* <HiddenTrackHeader /> */}
-          </View>
-        ) : (
-          <Text style={styles.typeLabel} weight='demiBold'>
-            {isRemix ? messages.remix : messages.track}
-          </Text>
-        )}
-        <View style={styles.coverArtWrapper}>{imageElement}</View>
-        <Text style={styles.title} weight='bold'>
-          {title}
+    <Tile styles={{ content: styles.root }}>
+      {is_unlisted ? (
+        <View style={styles.hiddenTrackHeaderWrapper}>
+          {/* <HiddenTrackHeader /> */}
+        </View>
+      ) : (
+        <Text style={styles.typeLabel} weight='demiBold'>
+          {isRemix ? messages.remix : messages.track}
         </Text>
-        <TouchableOpacity onPress={onPressArtistName}>
-          <View style={styles.artistContainer}>
-            <Text style={styles.artist}>{user.name}</Text>
-            <UserBadges
-              style={styles.badge}
-              badgeSize={16}
-              user={user}
-              hideName
-            />
-          </View>
-        </TouchableOpacity>
-        <View style={styles.buttonSection}>
-          <Button
-            style={styles.playButton}
-            title={isPlaying ? messages.pause : messages.play}
-            iconPosition='left'
-            renderIcon={fill =>
-              isPlaying ? (
-                <IconPause fill={fill as string} />
-              ) : (
-                <IconPlay fill={fill as string} />
-              )
-            }
-            onPress={onPlay}
-          />
-          <TrackScreenActionButtons
-            hasReposted={has_current_user_reposted}
-            hasSaved={has_current_user_saved}
-            isFollowing={user.does_current_user_follow}
-            isOwner={isOwner}
-            isUnlisted={is_unlisted}
-            showFavorite={!is_unlisted}
-            showOverflow
-            showRepost={!is_unlisted}
-            showShare={!is_unlisted || !!field_visibility?.share}
-            trackId={track_id}
+      )}
+      <View style={styles.coverArtWrapper}>{imageElement}</View>
+      <Text style={styles.title} weight='bold'>
+        {title}
+      </Text>
+      <TouchableOpacity onPress={onPressArtistName}>
+        <View style={styles.artistContainer}>
+          <Text style={styles.artist}>{user.name}</Text>
+          <UserBadges
+            style={styles.badge}
+            badgeSize={16}
+            user={user}
+            hideName
           />
         </View>
-        <TrackScreenStats
-          favoriteCount={save_count}
-          playCount={play_count}
-          repostCount={repost_count}
-          showFavoriteCount={!is_unlisted}
-          showListenCount={!is_unlisted || !field_visibility?.play_count}
-          showRepostCount={!is_unlisted}
+      </TouchableOpacity>
+      <View style={styles.buttonSection}>
+        <Button
+          style={styles.playButton}
+          title={isPlaying ? messages.pause : messages.play}
+          iconPosition='left'
+          renderIcon={fill =>
+            isPlaying ? (
+              <IconPause fill={fill as string} />
+            ) : (
+              <IconPlay fill={fill as string} />
+            )
+          }
+          onPress={onPlay}
+        />
+        <TrackScreenActionButtons
+          hasReposted={has_current_user_reposted}
+          hasSaved={has_current_user_saved}
+          isFollowing={user.does_current_user_follow}
+          isOwner={isOwner}
+          isUnlisted={is_unlisted}
+          showFavorite={!is_unlisted}
+          showOverflow
+          showRepost={!is_unlisted}
+          showShare={!is_unlisted || !!field_visibility?.share}
           trackId={track_id}
         />
-        <View style={styles.descriptionContainer}>
-          {description ? (
-            <HyperLink onPress={onExternalLinkClick} linkStyle={styles.link}>
-              <Text style={styles.description} suppressHighlighting>
-                {squashNewLines(description)}
-              </Text>
-            </HyperLink>
-          ) : null}
-        </View>
-        <View
-          style={[
-            styles.infoSection,
-            is_unlisted && !field_visibility?.play_count && styles.noStats
-          ]}
-        >
-          {renderTrackLabels()}
-        </View>
-        {renderDownloadButtons()}
-        {renderTags()}
       </View>
-    </Shadow>
+      <TrackScreenStats
+        favoriteCount={save_count}
+        playCount={play_count}
+        repostCount={repost_count}
+        showFavoriteCount={!is_unlisted}
+        showListenCount={!is_unlisted || !field_visibility?.play_count}
+        showRepostCount={!is_unlisted}
+        trackId={track_id}
+      />
+      <View style={styles.descriptionContainer}>
+        {description ? (
+          <HyperLink onPress={onExternalLinkClick} linkStyle={styles.link}>
+            <Text style={styles.description} suppressHighlighting>
+              {squashNewLines(description)}
+            </Text>
+          </HyperLink>
+        ) : null}
+      </View>
+      <View
+        style={[
+          styles.infoSection,
+          is_unlisted && !field_visibility?.play_count && styles.noStats
+        ]}
+      >
+        {renderTrackLabels()}
+      </View>
+      {renderDownloadButtons()}
+      {renderTags()}
+    </Tile>
   )
 }
