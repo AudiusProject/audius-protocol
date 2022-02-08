@@ -183,7 +183,14 @@ def populate_mock_db(db, entities, block_offset=None):
                 updated_at=user_meta.get("updated_at", datetime.now()),
                 created_at=user_meta.get("created_at", datetime.now()),
             )
+            user_bank = models.UserBankAccount(
+                signature=f"0x{i}",
+                ethereum_address=user_meta.get("wallet", str(i)),
+                bank_account=f"0x{i}",
+                created_at=datetime.now(),
+            )
             session.add(user)
+            session.add(user_bank)
 
         for i, follow_meta in enumerate(follows):
             follow = models.Follow(

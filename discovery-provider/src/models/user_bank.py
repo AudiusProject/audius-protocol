@@ -20,7 +20,7 @@ created_at={self.created_at}\
 class UserBankAccount(Base):
     __tablename__ = "user_bank_accounts"
     signature = Column(String, nullable=False, primary_key=True)
-    ethereum_address = Column(String, nullable=False)
+    ethereum_address = Column(String, nullable=False, index=True)
     bank_account = Column(String, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
