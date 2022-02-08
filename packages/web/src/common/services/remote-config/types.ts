@@ -89,7 +89,13 @@ export enum IntKeys {
    * Should be larger than both CHALLENGE_REFRESH_INTERVAL_MS and CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS
    * to allow additional polls to check for disbursement
    */
-  MANUAL_CLAIM_PROMPT_DELAY_MS = 'MANUAL_CLAIM_PROMPT_DELAY_MS'
+  MANUAL_CLAIM_PROMPT_DELAY_MS = 'MANUAL_CLAIM_PROMPT_DELAY_MS',
+
+  /**
+   * The maximum number of times to retry the claim method for a reward on the client
+   * Note: Exponential backoff is used between retries
+   */
+  MAX_CLAIM_RETRIES = 'MAX_CLAIM_RETRIES'
 }
 
 export enum BooleanKeys {
