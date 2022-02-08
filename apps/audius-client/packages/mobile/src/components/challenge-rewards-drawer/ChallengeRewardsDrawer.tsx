@@ -1,18 +1,24 @@
+import React from 'react'
+
+import { UserChallengeState } from 'audius-client/src/common/models/AudioRewards'
 import { ClaimStatus } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import { StyleSheet, View, ImageSourcePropType } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
+import IconVerified from 'app/assets/images/iconVerified.svg'
 import Button, { ButtonType } from 'app/components/button'
 import Drawer from 'app/components/drawer'
 import GradientText from 'app/components/gradient-text'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { flexRowCentered } from 'app/styles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
 const messages = {
   task: 'Task',
+  taskVerified: 'Verified Challenge',
   reward: 'Reward',
   progress: 'Progress',
   audio: '$AUDIO',
@@ -104,7 +110,6 @@ const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     content: {
       padding: 16,
-      display: 'flex',
       alignItems: 'center'
     },
     subheader: {
@@ -114,10 +119,17 @@ const createStyles = (themeColors: ThemeColors) =>
       textTransform: 'uppercase',
       marginBottom: 12
     },
+    subheaderIcon: {
+      marginBottom: 12,
+      marginRight: 10
+    },
     task: {
       width: '100%',
       padding: 24,
       paddingTop: 0
+    },
+    taskHeaderVerified: {
+      ...flexRowCentered()
     },
     taskText: {
       fontSize: 16
@@ -128,12 +140,10 @@ const createStyles = (themeColors: ThemeColors) =>
       borderWidth: 1,
       width: '100%',
       marginBottom: 24,
-      display: 'flex',
       flexDirection: 'column'
     },
     statusGridColumns: {
       padding: 16,
-      display: 'flex',
       flexDirection: 'row'
     },
     rewardCell: {
@@ -146,7 +156,6 @@ const createStyles = (themeColors: ThemeColors) =>
       borderColor: themeColors.neutralLight8
     },
     statusCell: {
-      display: 'flex',
       alignItems: 'center',
       paddingLeft: 32,
       paddingRight: 32,
@@ -207,14 +216,13 @@ type ChallengeRewardsDrawerProps = {
   amount: number
   /** The label to use for the in-progress status */
   progressLabel: string
-  /** Whether the challenge reward has already been disbursed */
-  isDisbursed: boolean
-  /** Whether the challenge is completed */
-  isComplete: boolean
+  challengeState: UserChallengeState
   /** The status of the rewards being claimed */
   claimStatus: ClaimStatus
   /** Callback that runs on the claim rewards button being clicked */
   onClaim?: () => void
+  /** Whether the challenge is for verified users only */
+  isVerifiedChallenge: boolean
   children?: React.ReactChild
 }
 export const ChallengeRewardsDrawer = ({
@@ -227,20 +235,22 @@ export const ChallengeRewardsDrawer = ({
   currentStep,
   stepCount = 1,
   progressLabel,
-  isDisbursed,
-  isComplete,
+  challengeState,
   claimStatus,
   onClaim,
+  isVerifiedChallenge,
   children
 }: ChallengeRewardsDrawerProps) => {
   const styles = useThemedStyles(createStyles)
-  const isInProgress = currentStep > 0 && !isComplete
+  const isInProgress = challengeState === 'in_progress'
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
   const claimError = claimStatus === ClaimStatus.ERROR
 
-  const statusText = isComplete
+  const hasCompleted =
+    challengeState === 'completed' || challengeState === 'disbursed'
+  const statusText = hasCompleted
     ? messages.complete
     : isInProgress
     ? `${currentStep}/${stepCount} ${progressLabel}`
@@ -257,9 +267,18 @@ export const ChallengeRewardsDrawer = ({
     >
       <View style={styles.content}>
         <View style={styles.task}>
-          <Text style={styles.subheader} weight='heavy'>
-            {messages.task}
-          </Text>
+          {isVerifiedChallenge ? (
+            <View style={styles.taskHeaderVerified}>
+              <IconVerified style={styles.subheaderIcon} />
+              <Text style={styles.subheader} weight='heavy'>
+                {messages.taskVerified}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.subheader} weight='heavy'>
+              {messages.task}
+            </Text>
+          )}
           <Text weight='bold' style={styles.taskText}>
             {description}
           </Text>
@@ -285,13 +304,13 @@ export const ChallengeRewardsDrawer = ({
           <View
             style={[
               styles.statusCell,
-              isComplete ? styles.statusCellComplete : {}
+              hasCompleted ? styles.statusCellComplete : {}
             ]}
           >
             <Text
               style={[
                 styles.subheader,
-                isComplete ? styles.statusTextComplete : {},
+                hasCompleted ? styles.statusTextComplete : {},
                 isInProgress ? styles.statusTextInProgress : {}
               ]}
               weight='heavy'
@@ -301,7 +320,7 @@ export const ChallengeRewardsDrawer = ({
           </View>
         </View>
         {children}
-        {!isDisbursed && isComplete && onClaim && (
+        {challengeState === 'completed' && onClaim && (
           <View style={styles.claimRewardsContainer}>
             <Button
               containerStyle={styles.claimButtonContainer}

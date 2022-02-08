@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { getHasFavoritedItem } from 'audius-client/src/components/profile-progress/store/selectors'
+import { getHasFavoritedItem } from 'audius-client/src/common/store/challenges/selectors/profile-progress'
 import { profilePage, AUDIO_PAGE } from 'audius-client/src/utils/route'
 import { StyleSheet, View } from 'react-native'
 
