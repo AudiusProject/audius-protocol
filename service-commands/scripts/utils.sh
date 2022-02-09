@@ -13,7 +13,7 @@ DEFAULT_PROVIDER="gcp"
 DEFAULT_USER="ubuntu"
 GCP_DEV_IMAGE="project=audius-infrastructure,image=cj-bake-1-14-22-bake-01-14-2022"
 DEFAULT_SSH_KEY="~/.ssh/google_compute_engine"
-CIRCLECI_SSH_KEY="${CIRCLECI_SSH_KEY:-}"
+CIRCLECI_SSH_KEY="~/.ssh/${CIRCLECI_SSH_KEY:-}"
 
 get_ssh_args() {
 	provider=$1
