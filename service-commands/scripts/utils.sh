@@ -12,14 +12,23 @@ DEFAULT_GCP_MACHINE_TYPE="n2-custom-12-24576"
 DEFAULT_PROVIDER="gcp"
 DEFAULT_USER="ubuntu"
 GCP_DEV_IMAGE="project=audius-infrastructure,image=cj-bake-1-14-22-bake-01-14-2022"
+DEFAULT_SSH_KEY="~/.ssh/google_compute_engine"
+CIRCLECI_SSH_KEY="${CIRCLECI_SSH_KEY:-}"
 
 get_ssh_args() {
 	provider=$1
 	user=$2
 	name=$3
+
+	if [ -n "${CIRCLECI:-}" ]; then
+		SSH_KEY_FILE="$CIRCLECI_SSH_KEY"
+	else
+		SSH_KEY_FILE="$DEFAULT_SSH_KEY"
+	fi
+
 	case "$provider" in
 		azure) printf "az ssh vm --vm-name $name" ;;
-		gcp) printf "gcloud compute ssh $user@$name --" ;;
+		gcp) printf "gcloud compute ssh $user@$name --ssh-key-file=$SSH_KEY_FILE --" ;;
 	esac
 }
 

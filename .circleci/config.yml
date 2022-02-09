@@ -821,6 +821,7 @@ workflows:
       - bake-dev-image:
           context:
             - GCP
+            - circleci-bake
           name: bake-dev-image-test
     # triggers:
     #   - schedule:
