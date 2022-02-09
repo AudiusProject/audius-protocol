@@ -8,6 +8,13 @@ import { BaseStackParamList } from 'app/components/app-navigator/types'
 
 import { usePushRouteWeb } from './usePushRouteWeb'
 
+type AppParamList = BaseStackParamList & {
+  feed: undefined
+  trending: undefined
+  explore: undefined
+  favorites: undefined
+}
+
 type UseNavigationConfig<
   ParamList extends ParamListBase,
   RouteName extends keyof ParamList
@@ -20,14 +27,14 @@ type UseNavigationConfig<
   }
 }
 
-type NavigationType = NativeStackNavigationProp<BaseStackParamList>
+type NavigationType = NativeStackNavigationProp<AppParamList>
 
 export const useNavigation = () => {
   const nativeNavigation = useNavigationNative<NavigationType>()
   const pushRouteWeb = usePushRouteWeb()
 
-  const navigate = <RouteName extends keyof BaseStackParamList>(
-    config: UseNavigationConfig<BaseStackParamList, RouteName>
+  const navigate = <RouteName extends keyof AppParamList>(
+    config: UseNavigationConfig<AppParamList, RouteName>
   ) => {
     const { native, web } = config
 
