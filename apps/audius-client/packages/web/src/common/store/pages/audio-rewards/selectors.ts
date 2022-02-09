@@ -10,6 +10,9 @@ export const getChallengeRewardsModalType = (state: CommonState) =>
 export const getUserChallenges = (state: CommonState) =>
   state.pages.audioRewards.userChallenges
 
+export const getUndisbursedUserChallenges = (state: CommonState) =>
+  state.pages.audioRewards.undisbursedChallenges
+
 export const getUserChallenge = (
   state: CommonState,
   props: { challengeId: ChallengeRewardID }

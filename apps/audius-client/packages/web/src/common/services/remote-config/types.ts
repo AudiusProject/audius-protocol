@@ -95,7 +95,13 @@ export enum IntKeys {
    * The maximum number of times to retry the claim method for a reward on the client
    * Note: Exponential backoff is used between retries
    */
-  MAX_CLAIM_RETRIES = 'MAX_CLAIM_RETRIES'
+  MAX_CLAIM_RETRIES = 'MAX_CLAIM_RETRIES',
+
+  /**
+   * How many challenges the client will attempt to attest for in parallel, in the
+   * case of aggregate challenges.
+   */
+  CLIENT_ATTESTATION_PARALLELIZATION = 'CLIENT_ATTESTATION_PARALLELIZATION'
 }
 
 export enum BooleanKeys {
