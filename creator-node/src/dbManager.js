@@ -214,7 +214,7 @@ class DBManager {
     clockMin = null,
     clockMax = null
   }) {
-    let subquery = 'select multihash from "Files"'
+    let subquery = 'select "multihash","clock" from "Files"'
 
     if (lookupWallet) {
       subquery += ` where "cnodeUserUUID" = (
@@ -223,9 +223,7 @@ class DBManager {
     } else if (lookupCNodeUserUUID) {
       subquery += ` where "cnodeUserUUID" = :lookupCNodeUserUUID`
     } else {
-      throw new Error(
-        '[fetchFilesHashFromDB] Error: Must provide lookupCNodeUserUUID or lookupWallet'
-      )
+      throw new Error('Error: Must provide lookupCNodeUserUUID or lookupWallet')
     }
 
     if (clockMin) {
@@ -239,14 +237,12 @@ class DBManager {
       subquery += ` and clock < :clockMax`
     }
 
-    subquery += ` order by "clock" asc`
-
     try {
       const filesHashResp = await sequelize.query(
         `
         select
-          md5(cast(array_agg(sorted_hashes.multihash) as text))
-        from (${subquery}) as sorted_hashes;
+          md5(cast(array_agg(subqueryResp."multihash" order by "clock" asc) as text))
+        from (${subquery}) as subqueryResp;
         `,
         {
           replacements: {
@@ -260,6 +256,37 @@ class DBManager {
 
       const filesHash = filesHashResp[0][0].md5
       return filesHash
+    } catch (e) {
+      throw new Error(`[fetchFilesHashFromDB] ${e.message}`)
+    }
+  }
+
+  static async fetchFilesHashesFromDB({ cnodeUserUUIDs }) {
+    try {
+      const query = `
+        select
+          "cnodeUserUUID",
+          md5(cast(array_agg("multihash" order by "clock" asc) as text)) as "filesHash"
+        from
+        (
+          select "multihash", "cnodeUserUUID", "clock"
+          from "Files"
+          where "cnodeUserUUID" in (:cnodeUserUUIDs)
+        ) as subquery
+        group by "cnodeUserUUID"
+      `
+      // Returns [{ cnodeUserUUID, filesHash }]
+      const queryResp = await sequelize.query(query, {
+        replacements: { cnodeUserUUIDs }
+      })
+
+      // Convert from array of objects to map(cnodeUserUUID -> filesHash)
+      const filesHashesByUUIDMap = {}
+      queryResp[0].forEach((obj) => {
+        filesHashesByUUIDMap[obj.cnodeUserUUID] = obj.filesHash
+      })
+
+      return filesHashesByUUIDMap
     } catch (e) {
       throw new Error(e.message)
     }

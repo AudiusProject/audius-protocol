@@ -292,6 +292,13 @@ module.exports = function (app) {
           }
         }
       })
+      // const cnodeUserUUIDs = cnodeUsers.map(cnodeUser => cnodeUser.cnodeUserUUID)
+
+      // if (returnFilesHash) {
+      //   const filesHashes = await DBManager.fetchFilesHashesFromDB({
+      //     cnodeUserUUIDs, transaction
+      //   })
+      // }
 
       // Populate users response object with cnodeUsers data
       cnodeUsers.forEach(({ walletPublicKey, clock }) => {

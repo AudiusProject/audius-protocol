@@ -29,6 +29,8 @@ const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
 
+const MAX_USER_BATCH_CLOCK_FETCH_ATTEMPTS = 10
+
 // Describes the type of sync operation
 const SyncType = Object.freeze({
   Recurring:
@@ -695,11 +697,12 @@ class SnapbackSM {
   async retrieveUserInfoFromReplicaSet(
     replicasToWalletsMap,
     unhealthyPeers,
-    maxUserClockFetchAttempts = 10
+    maxUserClockFetchAttempts = MAX_USER_BATCH_CLOCK_FETCH_ATTEMPTS
   ) {
     const replicasToUserInfoMap = {}
 
     // TODO change to batched parallel requests
+    // In parallel for every replica, calls `batch_clock_status` to get all user info
     const replicas = Object.keys(replicasToWalletsMap)
     await Promise.all(
       replicas.map(async (replica) => {
@@ -968,7 +971,8 @@ class SnapbackSM {
       try {
         replicasToUserInfoMap = await this.retrieveUserInfoFromReplicaSet(
           replicaSetNodesToUserWalletsMap,
-          unhealthyPeers
+          unhealthyPeers,
+          MAX_USER_BATCH_CLOCK_FETCH_ATTEMPTS
         )
         decisionTree.push({
           stage: 'retrieveUserInfoFromReplicaSet() Success',
