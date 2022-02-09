@@ -279,6 +279,13 @@ module.exports = function (app) {
           }
         }
       })
+      // const cnodeUserUUIDs = cnodeUsers.map(cnodeUser => cnodeUser.cnodeUserUUID)
+
+      // if (returnFilesHash) {
+      //   const filesHashes = await DBManager.fetchFilesHashesFromDB({
+      //     cnodeUserUUIDs, transaction
+      //   })
+      // }
 
       const users = await Promise.all(
         cnodeUsers.map(async (cnodeUser) => {
