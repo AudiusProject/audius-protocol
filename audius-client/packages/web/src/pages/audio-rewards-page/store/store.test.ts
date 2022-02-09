@@ -63,7 +63,7 @@ function* saga() {
 
 const testClaim: Claim = {
   challengeId: 'connect-verified',
-  specifier: '1',
+  specifiers: ['1'],
   amount: 10
 }
 const testUser = {
@@ -96,14 +96,16 @@ const retryClaimProvisions: StaticProvider[] = [
 const MAX_CLAIM_RETRIES = 5
 
 const expectedRequestArgs = {
-  ...testClaim,
+  challenges: [{ challenge_id: 'connect-verified', specifier: '1' }],
   encodedUserId: undefined,
   handle: 'test_user',
   recipientEthAddress: 'test-wallet',
   oracleEthAddress: 'oracle eth address',
+  amount: 10,
   quorumSize: 1,
   endpoints: ['rewards attestation endpoints'],
-  AAOEndpoint: 'oracle endpoint'
+  AAOEndpoint: 'oracle endpoint',
+  parallelization: 20
 }
 beforeAll(() => {
   // Setup remote config
@@ -114,7 +116,8 @@ beforeAll(() => {
     [StringKeys.REWARDS_ATTESTATION_ENDPOINTS]: 'rewards attestation endpoints',
     [IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS]: 100000000000,
     [IntKeys.CHALLENGE_REFRESH_INTERVAL_MS]: 1000000000000,
-    [IntKeys.MAX_CLAIM_RETRIES]: MAX_CLAIM_RETRIES
+    [IntKeys.MAX_CLAIM_RETRIES]: MAX_CLAIM_RETRIES,
+    [IntKeys.CLIENT_ATTESTATION_PARALLELIZATION]: 20
   })
   remoteConfigInstance.waitForRemoteConfig = jest.fn()
 

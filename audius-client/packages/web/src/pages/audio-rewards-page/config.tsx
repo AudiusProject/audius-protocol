@@ -62,6 +62,7 @@ type ChallengeRewardsInfo = {
   description: (amount: OptimisticUserChallenge | undefined) => string
   fullDescription: (amount: OptimisticUserChallenge | undefined) => string
   progressLabel: string
+  remainingLabel?: string
   amount: number
   stepCount: number
   panelButtonText: string
@@ -85,7 +86,8 @@ export const challengeRewardsConfig: Record<
       `Earn ${challenge?.amount} $AUDIO, for you and your friend`,
     fullDescription: challenge =>
       `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites',
+    progressLabel: '%0/%1 Invites Accepted',
+    remainingLabel: '%0/%1 Invites Remain',
     amount: amounts.referrals,
     stepCount: 5,
     panelButtonText: 'Invite your Friends',
@@ -102,7 +104,8 @@ export const challengeRewardsConfig: Record<
     description: challenge => `Earn up to ${challenge?.totalAmount} $AUDIO`,
     fullDescription: challenge =>
       `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites',
+    progressLabel: '%0/%1 Invites Accepted',
+    remainingLabel: '%0/%1 Invites Remain',
     amount: amounts.referrals,
     stepCount: 500,
     panelButtonText: 'Invite your Fans',

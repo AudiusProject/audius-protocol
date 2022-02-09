@@ -44,8 +44,8 @@ const NavAudio = () => {
   const audioBadge = audioTierMapPng[tier]
 
   const userChallenges = useSelector(getOptimisticUserChallenges)
-  const hasExpiredClaim = Object.values(userChallenges).some(
-    challenge => challenge?.state === 'completed'
+  const hasClaimableTokens = Object.values(userChallenges).some(
+    challenge => challenge && challenge.undisbursedAmount > 0
   )
 
   const [bubbleType, setBubbleType] = useState<BubbleType>('none')
@@ -55,7 +55,7 @@ const NavAudio = () => {
   }, [navigate])
 
   useEffect(() => {
-    if (hasExpiredClaim) {
+    if (hasClaimableTokens) {
       setBubbleType('claim')
     } else if (nonNullTotalBalance && !positiveTotalBalance) {
       setBubbleType('earn')
@@ -64,7 +64,7 @@ const NavAudio = () => {
     }
   }, [
     setBubbleType,
-    hasExpiredClaim,
+    hasClaimableTokens,
     nonNullTotalBalance,
     positiveTotalBalance
   ])

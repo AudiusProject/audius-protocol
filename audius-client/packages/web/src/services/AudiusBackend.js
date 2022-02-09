@@ -11,6 +11,7 @@ import placeholderCoverArt from 'common/assets/image/imageBlank2x.png'
 import imageCoverPhotoBlank from 'common/assets/image/imageCoverPhotoBlank.jpg'
 import placeholderProfilePicture from 'common/assets/image/imageProfilePicEmpty2X.png'
 import { Name } from 'common/models/Analytics'
+import { FailureReason } from 'common/models/AudioRewards'
 import FeedFilter from 'common/models/FeedFilter'
 import { DefaultSizes } from 'common/models/ImageSizes'
 import {
@@ -2645,31 +2646,66 @@ class AudiusBackend {
    * Aggregate, submit, and evaluate attestations for a given challenge for a user
    */
   static async submitAndEvaluateAttestations({
-    challengeId,
+    challenges,
     encodedUserId,
     handle,
     recipientEthAddress,
-    specifier,
     oracleEthAddress,
     amount,
     quorumSize,
     endpoints,
-    AAOEndpoint
+    AAOEndpoint,
+    parallelization
   }) {
     await waitForLibsInit()
     try {
-      const res = await audiusLibs.Rewards.submitAndEvaluate({
-        challengeId,
-        encodedUserId,
-        handle,
-        recipientEthAddress,
-        specifier,
-        oracleEthAddress,
-        amount,
+      if (!challenges.length) return
+      // If just a single challenge, use regular `submitAndEvaluate` route
+      if (challenges.length === 1) {
+        const res = await audiusLibs.Rewards.submitAndEvaluate({
+          challengeId: challenges[0].challenge_id,
+          specifier: challenges[0].specifier,
+          encodedUserId,
+          handle,
+          recipientEthAddress,
+          oracleEthAddress,
+          amount,
+          quorumSize,
+          endpoints,
+          AAOEndpoint
+        })
+        return res
+      }
+
+      // If multiple challenges, use the RewardsAttester
+      const attester = new AudiusLibs.RewardsAttester({
+        libs: audiusLibs,
+        parallelization,
         quorumSize,
-        endpoints,
-        AAOEndpoint
+        aaoEndpoint: AAOEndpoint,
+        aaoAddress: oracleEthAddress,
+        endpoints: endpoints
       })
+
+      const res = await attester.processChallenges(
+        challenges.map(({ specifier, challenge_id: challengeId }) => ({
+          specifier,
+          challengeId,
+          userId: encodedUserId,
+          amount,
+          handle,
+          wallet: recipientEthAddress
+        }))
+      )
+      // If any of the errors are HCAPTCHA or Cognito, return that one
+      if (res.errors) {
+        console.error(`Got errors in aggreagte attestation flow: ${res.errors}`)
+        const hcaptchaOrCognito = res.errors.find(
+          e => e === FailureReason.HCAPTCHA || e === FailureReason.COGNITO_FLOW
+        )
+        // Otherwise, just return the first error we saw
+        return hcaptchaOrCognito || res.errors[0]
+      }
       return res
     } catch (e) {
       console.log(`Failed in libs call to claim reward`)

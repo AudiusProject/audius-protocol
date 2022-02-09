@@ -46,6 +46,7 @@ type RewardPanelProps = {
   description: (challenge?: OptimisticUserChallenge) => string
   panelButtonText: string
   progressLabel: string
+  remainingLabel?: string
   stepCount: number
   openModal: (modalType: ChallengeRewardsModalType) => void
   id: ChallengeRewardID
@@ -58,6 +59,7 @@ const RewardPanel = ({
   panelButtonText,
   openModal,
   progressLabel,
+  remainingLabel,
   icon,
   stepCount
 }: RewardPanelProps) => {
@@ -69,7 +71,28 @@ const RewardPanel = ({
   const challenge = userChallenges[id]
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
-  const needsDisbursement = challenge?.state === 'completed'
+  const needsDisbursement = challenge && challenge.undisbursedAmount > 0
+  const shouldShowProgressBar =
+    stepCount > 1 && challenge?.challenge_type !== 'aggregate'
+
+  let progressLabelFilled: string
+  if (shouldShowCompleted) {
+    progressLabelFilled = messages.completeLabel
+  } else if (challenge?.challenge_type === 'aggregate') {
+    // Count down
+    progressLabelFilled = fillString(
+      remainingLabel ?? '',
+      (challenge?.max_steps - challenge?.current_step_count)?.toString() ?? '',
+      stepCount.toString()
+    )
+  } else {
+    // Count up
+    progressLabelFilled = fillString(
+      progressLabel,
+      challenge?.current_step_count?.toString() ?? '',
+      stepCount.toString()
+    )
+  }
 
   return (
     <div className={wm(styles.rewardPanelContainer)} onClick={openRewardModal}>
@@ -86,15 +109,9 @@ const RewardPanel = ({
             [styles.complete]: shouldShowCompleted
           })}
         >
-          {shouldShowCompleted
-            ? messages.completeLabel
-            : fillString(
-                progressLabel,
-                challenge?.current_step_count?.toString() ?? '',
-                stepCount.toString()
-              )}
+          {progressLabelFilled}
         </p>
-        {stepCount > 1 && (
+        {shouldShowProgressBar && (
           <ProgressBar
             className={styles.rewardProgressBar}
             value={challenge?.current_step_count ?? 0}
