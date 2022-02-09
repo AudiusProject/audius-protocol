@@ -79,7 +79,7 @@ const RECONFIG_MODES = Object.freeze({
 
 const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
-const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 15000 // 15s
+const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 30000 // 30s
 
 /*
   SnapbackSM aka Snapback StateMachine
