@@ -126,7 +126,7 @@ describe('Rewards Attester Tests', () => {
     sinon.restore()
   })
 
-  it.only('Should handle happy path', async () => {
+  it('Should handle happy path attestation loop', async () => {
     const libs = new MockLibs()
 
     const attester = new RewardsAttester({
@@ -144,9 +144,9 @@ describe('Rewards Attester Tests', () => {
 
     const rewardsMock = sinon.mock(libs.Rewards)
 
-    const expectation = rewardsMock.expects("getUndisbursedChallenges")
+    rewardsMock.expects("getUndisbursedChallenges")
       .exactly(3)
-      .onFirstCall() // TODO: add arg matchers
+      .onFirstCall()
       .returns({
         success: [
           {
@@ -168,7 +168,8 @@ describe('Rewards Attester Tests', () => {
             wallet: "0xSecondUser"
           }
         ]
-      }).onSecondCall()
+      })
+      .onSecondCall()
       .returns({
         success: [
           {
@@ -191,7 +192,8 @@ describe('Rewards Attester Tests', () => {
           }
         ]
       })
-      .onThirdCall().callsFake(() => {
+      .onThirdCall()
+      .callsFake(() => {
         attester.stop()
         return {
           success: []

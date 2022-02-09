@@ -254,7 +254,6 @@ class RewardsAttester {
         // Attest for batch in parallel
         const { highestBlock, offset, results, successCount } = await this._attestInParallel(toAttest)
 
-        console.log({ highestBlock, offset, results, successCount })
         // Set state
         this.startingBlock = highestBlock ? highestBlock - 1 : this.startingBlock
         this.offset = offset
@@ -456,7 +455,7 @@ class RewardsAttester {
     wallet,
     completedBlocknumber,
   }) {
-    this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]' : ''}`)
+    this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
       challengeId,
       encodedUserId: userId,
@@ -652,7 +651,6 @@ class RewardsAttester {
       this.delayCalculator.getPOABlockThreshold(),
       this.delayCalculator.getSolanaSlotThreshold()
     ])
-    console.log({poaThreshold, solanaThreshold, challenges})
 
     this.logger.info(`Filtering with POA threshold: ${poaThreshold}, Solana threshold: ${solanaThreshold}`)
     const res = challenges.filter(c => (
