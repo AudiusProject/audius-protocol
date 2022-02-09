@@ -1,12 +1,15 @@
 import { useCallback } from 'react'
 
 import { StyleSheet, View, Text, TouchableHighlight } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import PlaylistImage from 'app/components/image/PlaylistImage'
 import TrackImage from 'app/components/image/TrackImage'
 import UserImage from 'app/components/image/UserImage'
 import UserBadges from 'app/components/user-badges/UserBadges'
+import { useNavigation } from 'app/hooks/useNavigation'
+import { close as closeSearch } from 'app/store/search/actions'
 import useSearchHistory from 'app/store/search/hooks'
 import {
   SearchPlaylist,
@@ -82,21 +85,28 @@ const ItemContainer: React.FunctionComponent<ItemContainerProps> = ({
 }
 
 type UserSearchResultProps = { isLast: boolean; item: SearchUser }
+
 const UserSearchResult = ({ isLast, item: user }: UserSearchResultProps) => {
   const nameStyle = useTheme(styles.name, { color: 'neutral' })
   const imageStyle = useTheme(styles.userImage, {
     backgroundColor: 'neutralLight4'
   })
-  const pushRoute = usePushSearchRoute()
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
   const { appendSearchItem } = useSearchHistory()
-  const onPress = useCallback(() => {
+
+  const handlePress = useCallback(() => {
     appendSearchItem(user.name)
     const userRoute = getUserRoute(user)
-    pushRoute(userRoute, 'search')
-  }, [user, pushRoute, appendSearchItem])
+    dispatch(closeSearch())
+    navigation.navigate({
+      native: { screen: 'profile', params: { handle: user.handle } },
+      web: { route: userRoute, fromPage: 'search' }
+    })
+  }, [user, dispatch, navigation, appendSearchItem])
 
   return (
-    <ItemContainer isLast={isLast} onPress={onPress}>
+    <ItemContainer isLast={isLast} onPress={handlePress}>
       <UserImage user={user} imageStyle={imageStyle} />
       <UserBadges
         style={styles.badgeContainer}

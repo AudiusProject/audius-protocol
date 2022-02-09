@@ -17,7 +17,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { IconButton } from '../core/IconButton'
 
-import { HeaderBackArrow } from './TopBarArrowBack'
+import { TopBarArrowBack } from './TopBarArrowBack'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
@@ -56,7 +56,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 type TopBarProps = StackHeaderProps
 
 export const TopBar = memo(
-  ({ navigation: headerNavigation, back }: TopBarProps) => {
+  ({ navigation: topBarNavigation, back }: TopBarProps) => {
     const styles = useStyles()
     const { neutralLight4 } = useThemeColors()
     const navigation = useNavigation()
@@ -83,7 +83,7 @@ export const TopBar = memo(
       <View style={styles.root}>
         <View style={styles.topBar}>
           {back ? (
-            <HeaderBackArrow onPress={headerNavigation.goBack} />
+            <TopBarArrowBack onPress={topBarNavigation.goBack} />
           ) : (
             <IconButton
               icon={IconNotification}
