@@ -55,8 +55,8 @@ export const createUserBankIfNeeded = async () => {
       })
     } else {
       console.log(`Successfully created userbank!`)
+      await track(Name.CREATE_USER_BANK_SUCCESS, { userId })
     }
-    await track(Name.CREATE_USER_BANK_SUCCESS, { userId })
   } catch (err) {
     await track(Name.CREATE_USER_BANK_FAILURE, {
       userId,
