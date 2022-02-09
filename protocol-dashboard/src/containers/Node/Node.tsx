@@ -16,6 +16,9 @@ import {
   SERVICES,
   NOT_FOUND
 } from 'utils/routes'
+import IndividualServiceApiCallsChart from 'components/IndividualServiceApiCallsChart'
+import clsx from 'clsx'
+import IndividualServiceUniqueUsersChart from 'components/IndividualServiceUniqueUsersChart'
 
 const messages = {
   title: 'SERVICE',
@@ -32,57 +35,64 @@ const ContentNode: React.FC<ContentNodeProps> = ({
 
   if (status === Status.Failure) {
     return null
-  } else if (status === Status.Loading) {
-    return null
   }
 
-  // TODO: compare owner with the current user
-  const isOwner = accountWallet === contentNode!.owner
+  const isOwner = accountWallet === contentNode?.owner ?? false
 
   return (
     <NodeOverview
       spID={spID}
       serviceType={ServiceType.ContentNode}
-      version={contentNode!.version}
-      endpoint={contentNode!.endpoint}
-      operatorWallet={contentNode!.owner}
-      delegateOwnerWallet={contentNode!.delegateOwnerWallet}
+      version={contentNode?.version}
+      endpoint={contentNode?.endpoint}
+      operatorWallet={contentNode?.owner}
+      delegateOwnerWallet={contentNode?.delegateOwnerWallet}
       isOwner={isOwner}
-      isDeregistered={contentNode!.isDeregistered}
+      isDeregistered={contentNode?.isDeregistered}
+      isLoading={status === Status.Loading}
     />
   )
 }
 
-type DiscoveryProviderProps = {
+type DiscoveryNodeProps = {
   spID: number
   accountWallet: Address | undefined
 }
-const DiscoveryProvider: React.FC<DiscoveryProviderProps> = ({
+const DiscoveryNode: React.FC<DiscoveryNodeProps> = ({
   spID,
   accountWallet
-}: DiscoveryProviderProps) => {
-  const { node: discoveryProvider, status } = useDiscoveryProvider({ spID })
+}: DiscoveryNodeProps) => {
+  const { node: discoveryNode, status } = useDiscoveryProvider({ spID })
   const pushRoute = usePushRoute()
   if (status === Status.Failure) {
     pushRoute(NOT_FOUND)
     return null
-  } else if (status === Status.Loading) {
-    return null
   }
 
-  const isOwner = accountWallet === discoveryProvider!.owner
+  const isOwner = accountWallet === discoveryNode?.owner ?? false
 
   return (
-    <NodeOverview
-      spID={spID}
-      serviceType={ServiceType.DiscoveryProvider}
-      version={discoveryProvider!.version}
-      endpoint={discoveryProvider!.endpoint}
-      operatorWallet={discoveryProvider!.owner}
-      delegateOwnerWallet={discoveryProvider!.delegateOwnerWallet}
-      isOwner={isOwner}
-      isDeregistered={discoveryProvider!.isDeregistered}
-    />
+    <>
+      <div className={styles.section}>
+        <NodeOverview
+          spID={spID}
+          serviceType={ServiceType.DiscoveryProvider}
+          version={discoveryNode?.version}
+          endpoint={discoveryNode?.endpoint}
+          operatorWallet={discoveryNode?.owner}
+          delegateOwnerWallet={discoveryNode?.delegateOwnerWallet}
+          isOwner={isOwner}
+          isDeregistered={discoveryNode?.isDeregistered}
+          isLoading={status === Status.Loading}
+        />
+      </div>
+      {discoveryNode ? (
+        <div className={clsx(styles.section, styles.chart)}>
+          <IndividualServiceApiCallsChart node={discoveryNode?.endpoint} />
+          <IndividualServiceUniqueUsersChart node={discoveryNode?.endpoint} />
+        </div>
+      ) : null}
+    </>
   )
 }
 
@@ -107,7 +117,7 @@ const Node: React.FC<NodeProps> = (props: NodeProps) => {
       defaultPreviousPageRoute={SERVICES}
     >
       {isDiscovery ? (
-        <DiscoveryProvider spID={spID} accountWallet={accountWallet} />
+        <DiscoveryNode spID={spID} accountWallet={accountWallet} />
       ) : (
         <ContentNode spID={spID} accountWallet={accountWallet} />
       )}

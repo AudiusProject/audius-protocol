@@ -5,6 +5,13 @@
   display: inline-flex;
   flex-direction: column;
   box-sizing: border-box;
+  min-height: 240px;
+}
+
+.loading {
+  margin: 42px auto 0;
+  justify-content: center;
+  align-items: center;
 }
 
 .header {
