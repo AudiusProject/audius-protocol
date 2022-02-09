@@ -17,7 +17,7 @@ import ProfileScreen from 'app/screens/profile-screen'
 import { TrackScreen } from 'app/screens/track-screen'
 import TrendingScreen from 'app/screens/trending-screen'
 
-import { Header } from './TopBar'
+import { TopBar } from './TopBar'
 import {
   BaseStackParamList,
   ExploreStackParamList,
@@ -58,7 +58,7 @@ const createStackScreen = <StackParamList extends ParamListBase>(
         cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
         gestureEnabled: true,
         gestureResponseDistance: 1000,
-        header: props => <Header {...props} />,
+        header: props => <TopBar {...props} />,
         headerStyle: { height: 87 },
         headerMode: 'float'
       }}
