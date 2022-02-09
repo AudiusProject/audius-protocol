@@ -18,7 +18,7 @@ export enum ClaimStatus {
 
 export type Claim = {
   challengeId: ChallengeRewardID
-  specifier: string
+  specifiers: string[]
   amount: number
 }
 
@@ -38,11 +38,21 @@ type UserChallengesPayload = {
   userChallenges: UserChallenge[] | null
 }
 
+export type UndisbursedUserChallenge = Pick<
+  UserChallenge,
+  'challenge_id' | 'amount' | 'specifier' | 'user_id'
+> & {
+  completed_blocknumber: number
+  handle: string
+  wallet: string
+}
+
 type RewardsUIState = {
   loading: boolean
   trendingRewardsModalType: TrendingRewardsModalType
   challengeRewardsModalType: ChallengeRewardsModalType
   userChallenges: Partial<Record<ChallengeRewardID, UserChallenge>>
+  undisbursedChallenges: UndisbursedUserChallenge[]
   userChallengesOverrides: Partial<
     Record<ChallengeRewardID, Partial<UserChallenge>>
   >
@@ -59,6 +69,7 @@ const initialState: RewardsUIState = {
   trendingRewardsModalType: 'tracks',
   challengeRewardsModalType: 'track-upload',
   userChallenges: {},
+  undisbursedChallenges: [],
   userChallengesOverrides: {},
   loading: true,
   claimStatus: ClaimStatus.NONE,
@@ -89,6 +100,12 @@ const slice = createSlice({
     },
     fetchUserChallengesFailed: state => {
       state.loading = false
+    },
+    setUndisbursedChallenges: (
+      state,
+      action: PayloadAction<UndisbursedUserChallenge[]>
+    ) => {
+      state.undisbursedChallenges = action.payload
     },
     setUserChallengeDisbursed: (
       state,
@@ -213,6 +230,7 @@ export const {
   fetchUserChallenges,
   fetchUserChallengesSucceeded,
   fetchUserChallengesFailed,
+  setUndisbursedChallenges,
   setTrendingRewardsModalType,
   setChallengeRewardsModalType,
   setUserChallengeDisbursed,

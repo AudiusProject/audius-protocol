@@ -126,4 +126,6 @@ export type OptimisticUserChallenge = Omit<
   __isOptimistic: true
   state: UserChallengeState
   totalAmount: number
+  undisbursedAmount: number
+  undisbursedSpecifiers: string[]
 }
