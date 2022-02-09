@@ -29,7 +29,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     color: palette.neutral
   },
   handle: {
-    ...typography.h3,
+    ...typography.h4,
     color: palette.neutralLight4,
     marginBottom: spacing(4)
   }

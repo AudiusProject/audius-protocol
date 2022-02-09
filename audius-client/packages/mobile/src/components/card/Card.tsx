@@ -35,7 +35,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     paddingVertical: spacing(1)
   },
   primaryText: {
-    ...typography.h2,
+    ...typography.h3,
     color: palette.neutral,
     textAlign: 'center'
   },
