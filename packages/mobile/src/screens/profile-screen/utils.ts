@@ -67,5 +67,9 @@ export const useShouldShowCollectiblesTab = (profile: ProfileUser) => {
     hasCollectibles && (neverSetCollectiblesOrder || hasCollectiblesOrder)
   const isUserOnTheirProfile = accountUser?.user_id === user_id
 
-  return hasVisibleCollectibles && isUserOnTheirProfile
+  if (hasVisibleCollectibles) return true
+
+  if (hasCollectibles && isUserOnTheirProfile) return true
+
+  return false
 }

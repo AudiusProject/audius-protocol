@@ -16,18 +16,21 @@ type Theme = {
 
 type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle }
 
-type Styles<T extends NamedStyles<T>> = (theme: Theme) => T | NamedStyles<T>
+type Styles<T extends NamedStyles<T>, PropsT> = (
+  theme: Theme,
+  props?: PropsT
+) => T | NamedStyles<T>
 
-export const makeStyles = <T extends NamedStyles<T> | NamedStyles<any>>(
-  styles: Styles<T>
+export const makeStyles = <T extends NamedStyles<T> | NamedStyles<any>, PropsT>(
+  styles: Styles<T, PropsT>
 ) => {
-  const useStyles = (): T => {
+  const useStyles = (props?: PropsT): T => {
     const { getTheme } = useContext(ThemeContext)
     const themeMode = getTheme()
     const themeColors = useThemeColors()
     const palette = { mode: themeMode, ...themeColors }
     const theme: Theme = { palette, typography, spacing }
-    const namedStyles = styles(theme)
+    const namedStyles = styles(theme, props)
     return StyleSheet.create(namedStyles)
   }
   return useStyles
