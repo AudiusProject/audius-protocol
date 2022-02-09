@@ -1,7 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { assert } from "chai";
-import ethWeb3 from "web3";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { createTrack, initAdmin } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
@@ -13,7 +13,7 @@ import {
   testInitUserSolPubkey,
 } from "./test-helpers";
 
-const { PublicKey } = anchor.web3;
+chai.use(chaiAsPromised);
 
 describe("audius-data", () => {
   const provider = anchor.Provider.local("http://localhost:8899", {
@@ -25,8 +25,6 @@ describe("audius-data", () => {
   anchor.setProvider(anchor.Provider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
-  const EthWeb3 = new ethWeb3();
-  const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
   let adminKeypair = anchor.web3.Keypair.generate();
   let adminStgKeypair = anchor.web3.Keypair.generate();
@@ -47,13 +45,20 @@ describe("audius-data", () => {
       metadata: trackMetadata,
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
-    await confirmLogInTransaction(provider, tx, trackMetadata);
-    let assignedTrackId = await program.account.track.fetch(
+
+    let track = await program.account.track.fetch(
       newTrackKeypair.publicKey
     );
+
+    const chainOwner = track.owner.toString();
+    const expectedOwner = trackOwnerPDA.toString();
+    expect(chainOwner, "track owner").to.equal(expectedOwner);
+
     console.log(
-      `track: ${trackMetadata}, trackId assigned = ${assignedTrackId.trackId}`
+      `track: ${trackMetadata}, trackId assigned = ${track.trackId}`
     );
+
+    await confirmLogInTransaction(provider, tx, trackMetadata);
   };
 
   const testDeleteTrack = async ({
@@ -118,14 +123,10 @@ describe("audius-data", () => {
     let adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
-    if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
-      console.log(
-        "On chain retrieved admin info: ",
-        adminAccount.authority.toString()
-      );
-      console.log("Provided admin info: ", adminKeypair.publicKey.toString());
-      throw new Error("Invalid returned values");
-    }
+
+    const chainAuthority = adminAccount.authority.toString();
+    const expectedAuthority = adminKeypair.publicKey.toString();
+    expect(chainAuthority, "authority").to.equal(expectedAuthority);
   });
 
   it("Initializing user!", async () => {
@@ -387,32 +388,23 @@ describe("audius-data", () => {
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
 
-
-    let errored = false;
-    try {
-      await testCreateUser({
-        provider,
-        program,
-        message,
-        pkString,
-        baseAuthorityAccount,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        bumpSeed,
-        metadata,
-        newUserKeypair,
-        userStgAccount: newUserAcctPDA,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-      });
-    } catch (e) {
-      errored = true;
-      console.log(`Error found as expected ${e} - when trying to create user that already exists`);
-    }
-
-    if (!errored) {
-      throw new Error('Creating existing user did not fail');
-    }
+    await expect(testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.eventually.be.rejected.and.property('logs').to.include(
+      `Allocate: account Address { address: ${newUserAcctPDA.toString()}, base: None } already in use`
+    );
   });
 
   it("creating initialized user should fail", async () => {
@@ -448,32 +440,92 @@ describe("audius-data", () => {
     // Message as the incoming public key
     let message = newUserKeypair.publicKey.toString();
 
-    let errored = false;
-    try {
-      await testCreateUser({
-        provider,
-        program,
-        message,
-        pkString,
-        baseAuthorityAccount,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        bumpSeed,
-        metadata,
-        newUserKeypair,
-        userStgAccount: newUserAcctPDA,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-      });
-    } catch (e) {
-      errored = true;
-      console.log(`Error found as expected ${e} - when trying to create a user that was initialized`);
-    }
-
-    if (!errored) {
-      throw new Error('Creating an already initialized user did not fail');
-    }
+    await expect(testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.eventually.be.rejected.and.property('logs').to.include(
+      `Allocate: account Address { address: ${newUserAcctPDA.toString()}, base: None } already in use`
+    );
   });
+
+  it("creating user with incorrect bump seed / pda should fail", async () => {
+    let { testEthAddr, testEthAddrBytes, handleBytesArray, metadata, pkString } =
+      initTestConstants();
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+
+    let { handleBytesArray: incorrectHandleBytesArray } = initTestConstants();
+
+    let { derivedAddress: incorrectPDA } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(incorrectHandleBytesArray)
+      );
+
+    // New sol key that will be used to permission user updates
+    let newUserAcctPDA = derivedAddress;
+
+    // New sol key that will be used to permission user updates
+    let newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKeypair.publicKey.toString();
+
+    await expect(testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed: (bumpSeed + 1) % 255,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.eventually.be.rejected.and.property('logs').to.include(
+      "Program failed to complete: Could not create program address with signer seeds: Provided seeds do not result in a valid address"
+    );
+
+    await expect(testCreateUser({
+      provider,
+      program,
+      message,
+      pkString,
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: incorrectPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.eventually.be.rejected.and.property('logs').to.include(
+      `Program ${program.programId.toString()} failed: Cross-program invocation with unauthorized signer or writable account`
+    );
+  });
+
 
   it("creating + deleting a track", async () => {
     let {

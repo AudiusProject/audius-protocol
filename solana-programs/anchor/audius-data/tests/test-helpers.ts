@@ -1,5 +1,4 @@
 import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
 import {
   ethAddressToArray,
   getRandomPrivateKey,
@@ -9,7 +8,7 @@ import {
 import ethWeb3 from "web3";
 import { randomBytes } from "crypto";
 import { createUser, initUser, initUserSolPubkey } from "../lib/lib";
-import { AudiusData } from "../target/types/audius_data";
+import { expect } from "chai";
 
 const { PublicKey } = anchor.web3;
 
@@ -66,17 +65,17 @@ export const testInitUser = async ({
     adminStgKey: adminStgKeypair.publicKey,
     adminKeypair,
   });
-  const userDataFromChain = await program.account.user.fetch(userStgAccount);
-  const returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress);
-  const returnedSolFromChain = userDataFromChain.authority;
-  if (testEthAddr.toLowerCase() != returnedHex) {
-    throw new Error(
-      `Invalid eth address - expected ${testEthAddr.toLowerCase()}, found ${returnedHex}`
-    );
-  }
-  if (!DefaultPubkey.equals(returnedSolFromChain)) {
-    throw new Error(`Unexpected public key found`);
-  }
+
+  const account = await program.account.user.fetch(userStgAccount);
+
+  const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
+  const expectedEthAddress = testEthAddr.toLowerCase();
+  expect(chainEthAddress, "eth address").to.equal(expectedEthAddress);
+
+  const chainAuthority = account.authority.toString();
+  const expectedAuthority = DefaultPubkey.toString();
+  expect(chainAuthority, "authority").to.equal(expectedAuthority);
+
   await confirmLogInTransaction(provider, tx, metadata);
 };
 
@@ -88,7 +87,7 @@ export const testInitUserSolPubkey = async ({
   newUserKeypair,
   newUserAcctPDA,
 }) => {
-  let initUserTx = await initUserSolPubkey({
+  await initUserSolPubkey({
     provider,
     program,
     privateKey: pkString,
@@ -97,12 +96,11 @@ export const testInitUserSolPubkey = async ({
     userStgAccount: newUserAcctPDA,
   });
 
-  let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
-  if (!newUserKeypair.publicKey.equals(userDataFromChain.authority)) {
-    throw new Error("Unexpected public key found");
-  }
-  let txInfo = await getTransaction(provider, initUserTx);
-  let fee = txInfo["meta"]["fee"];
+  const account = await program.account.user.fetch(newUserAcctPDA);
+
+  const chainAuthority = account.authority.toString();
+  const expectedAuthority = newUserKeypair.publicKey.toString();
+  expect(chainAuthority, "authority").to.equal(expectedAuthority);
 };
 
 export const testCreateUser = async ({
@@ -134,17 +132,17 @@ export const testCreateUser = async ({
     adminStgPublicKey,
     baseAuthorityAccount,
   });
-  const userDataFromChain = await program.account.user.fetch(userStgAccount);
-  const returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress);
-  const returnedSolFromChain = userDataFromChain.authority;
-  if (testEthAddr.toLowerCase() != returnedHex) {
-    throw new Error(
-      `Invalid eth address - expected ${testEthAddr.toLowerCase()}, found ${returnedHex}`
-    );
-  }
-  if (!newUserKeypair.publicKey.equals(returnedSolFromChain)) {
-    throw new Error("Unexpected public key found");
-  }
+
+  const account = await program.account.user.fetch(userStgAccount);
+
+  const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
+  const expectedEthAddress = testEthAddr.toLowerCase();
+  expect(chainEthAddress, "eth address").to.equal(expectedEthAddress);
+
+  const chainAuthority = account.authority.toString();
+  const expectedAuthority = newUserKeypair.publicKey.toString();
+  expect(chainAuthority, "authority").to.equal(expectedAuthority);
+
   await confirmLogInTransaction(provider, tx, metadata);
 };
 
