@@ -273,12 +273,12 @@ class RewardsAttester {
     this._shouldStop = false
   }
 
-  async stop() {
+  async stop () {
     this._shouldStop = true
     this.delayCalculator.stop()
   }
 
-  async processChallenges(challenges) {
+  async processChallenges (challenges) {
     let toProcess = [...challenges]
     while (toProcess.length) {
       try {
@@ -453,7 +453,7 @@ class RewardsAttester {
     amount,
     handle,
     wallet,
-    completedBlocknumber,
+    completedBlocknumber
   }) {
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
