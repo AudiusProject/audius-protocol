@@ -267,49 +267,13 @@ module.exports = function (app) {
   app.post(
     '/users/batch_clock_status',
     handleResponse(async (req, res) => {
-      const { walletPublicKeys } = req.body
-      const walletPublicKeysSet = new Set(walletPublicKeys)
+      const { walletPublicKeys /* [walletPublicKey] */ } = req.body
 
       const returnFilesHash = !!req.query.returnFilesHash // default false
 
-      const cnodeUsers = await models.CNodeUser.findAll({
-        where: {
-          walletPublicKey: {
-            [models.Sequelize.Op.in]: walletPublicKeys
-          }
-        }
-      })
-      // const cnodeUserUUIDs = cnodeUsers.map(cnodeUser => cnodeUser.cnodeUserUUID)
-
-      // if (returnFilesHash) {
-      //   const filesHashes = await DBManager.fetchFilesHashesFromDB({
-      //     cnodeUserUUIDs, transaction
-      //   })
-      // }
-
-      const users = await Promise.all(
-        cnodeUsers.map(async (cnodeUser) => {
-          walletPublicKeysSet.delete(cnodeUser.walletPublicKey)
-
-          const user = {
-            walletPublicKey: cnodeUser.walletPublicKey,
-            clock: cnodeUser.clock
-          }
-
-          if (returnFilesHash) {
-            const filesHash = await DBManager.fetchFilesHashFromDB({
-              lookupKey: { lookupCNodeUserUUID: cnodeUser.cnodeUserUUID }
-            })
-            user.filesHash = filesHash
-          }
-
-          return user
-        })
-      )
-
-      // Set default values for remaining users
-      const remainingWalletPublicKeys = Array.from(walletPublicKeysSet)
-      remainingWalletPublicKeys.forEach((wallet) => {
+      // Initialize users response object with default values
+      const users = {}
+      walletPublicKeys.forEach((wallet) => {
         const user = {
           walletPublicKey: wallet,
           clock: -1
@@ -317,10 +281,51 @@ module.exports = function (app) {
         if (returnFilesHash) {
           user.filesHash = null
         }
-        users.push(user)
+        users[wallet] = user
       })
 
-      return successResponse({ users })
+      // Fetch all cnodeUsers for wallets
+      const cnodeUsers = await models.CNodeUser.findAll({
+        where: {
+          walletPublicKey: {
+            [models.Sequelize.Op.in]: walletPublicKeys
+          }
+        }
+      })
+
+      // Populate users response object with cnodeUsers data
+      cnodeUsers.forEach(({ walletPublicKey, clock }) => {
+        users[walletPublicKey].walletPublicKey = walletPublicKey
+        users[walletPublicKey].clock = clock
+      })
+
+      // Fetch filesHashes if requested
+      if (returnFilesHash) {
+        // Fetch filesHashes
+        const cnodeUserUUIDs = cnodeUsers.map(
+          (cnodeUser) => cnodeUser.cnodeUserUUID
+        )
+        const filesHashesByCNodeUserUUID =
+          await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs })
+
+        // Populate users response object with filesHash data
+        const cnodeUserUUIDToWalletMap = {}
+        cnodeUsers.forEach((cnodeUser) => {
+          cnodeUserUUIDToWalletMap[cnodeUser.cnodeUserUUID] =
+            cnodeUser.walletPublicKey
+        })
+        Object.entries(filesHashesByCNodeUserUUID).forEach(
+          ([cnodeUserUUID, filesHash]) => {
+            const wallet = cnodeUserUUIDToWalletMap[cnodeUserUUID]
+            users[wallet].filesHash = filesHash
+          }
+        )
+      }
+
+      // Convert response object from map(wallet => { info }) to [{ info }]
+      const usersResp = Object.values(users)
+
+      return successResponse({ users: usersResp })
     })
   )
 }
