@@ -67,7 +67,7 @@ class TransactionHandler {
 
   async _relayTransaction (instructions, recentBlockhash, skipPreflight) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
-    recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash()).blockhash
+    recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash('confirmed')).blockhash
 
     const transactionData = {
       recentBlockhash,
@@ -95,7 +95,7 @@ class TransactionHandler {
       }
     }
 
-    recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash()).blockhash
+    recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash('confirmed')).blockhash
     const tx = new Transaction({ recentBlockhash })
 
     instructions.forEach(i => tx.add(i))
