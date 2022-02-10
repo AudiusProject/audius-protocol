@@ -839,7 +839,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
 
     // delete all DB records
     await DBManager.deleteAllCNodeUserDataFromDB({
-      lookupCnodeUserUUID: cnodeUserUUID
+      lookupCNodeUserUUID: cnodeUserUUID
     })
 
     /** assert all tables empty */
@@ -862,6 +862,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
 
 describe('Test fetchFilesHashFromDB()', async function () {
   const initialClockVal = 0
+  const ClockZero = 0
   const filesTableInst = models.File
 
   let cnodeUser, cnodeUserUUID, server
@@ -937,7 +938,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
 
     // compute expectedFilesHash
     const multihashString = `{${multihashes.join(',')}}`
-    const expectedFilesHash = crypto
+    let expectedFilesHash = crypto
       .createHash('md5')
       .update(multihashString)
       .digest('hex')
@@ -952,6 +953,28 @@ describe('Test fetchFilesHashFromDB()', async function () {
     actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupWallet: cnodeUser.walletPublicKey }
     })
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+
+    // Create CNU2
+    const walletCNU2 = getUuid()
+    const createCNU2Resp = await createStarterCNodeUserWithKey(walletCNU2)
+    const cnodeUserUUID2 = createCNU2Resp.cnodeUserUUID
+    const cnodeUser2 = await getCNodeUser(cnodeUserUUID2)
+    assert.strictEqual(cnodeUser2.clock, initialClockVal)
+
+    // Confirm handles user with no data
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({
+      lookupKey: { lookupCNodeUserUUID: cnodeUserUUID2 }
+    })
+    expectedFilesHash = null
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+
+    // Confirm handles non-existent user
+    const cnodeUserUUID3 = getUuid()
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({
+      lookupKey: { lookupCNodeUserUUID: cnodeUserUUID3 }
+    })
+    expectedFilesHash = null
     assert.strictEqual(actualFilesHash, expectedFilesHash)
   })
 
@@ -1050,20 +1073,43 @@ describe('Test fetchFilesHashFromDB()', async function () {
       .update(multihashStringCNU2)
       .digest('hex')
 
-    const expectedResp = {
+    // fetch filesHashes & assert equal
+    let cnodeUserUUIDs = [cnodeUserUUID, cnodeUserUUID2]
+    let actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs })
+    let expectedResp = {
       [cnodeUserUUID]: expectedFilesHashCNU1,
       [cnodeUserUUID2]: expectedFilesHashCNU2
     }
-
-    // fetch filesHashes & assert equal
-    const cnodeUserUUIDs = [cnodeUserUUID, cnodeUserUUID2]
-    const actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs })
     assert.deepEqual(actualResp, expectedResp)
 
-    /**
-     * TODO test edge cases
-     * - user with no files
-     * - 
-     */
+    // Create CNU3 with no files
+    const walletCNU3 = getUuid()
+    const createCNU3Resp = await createStarterCNodeUserWithKey(walletCNU3)
+    const cnodeUserUUID3 = createCNU3Resp.cnodeUserUUID
+    const cnodeUser3 = await getCNodeUser(cnodeUserUUID3)
+    assert.strictEqual(cnodeUser3.clock, ClockZero)
+
+    // Correctly handles user with no files
+    actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs: [cnodeUserUUID3] })
+    expectedResp = { [cnodeUserUUID3]: null }
+    assert.deepEqual(actualResp, expectedResp)
+
+    // Correctly handles non-existent user
+    const cnodeUserUUID4 = getUuid()
+    actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs: [cnodeUserUUID4] })
+    expectedResp = { [cnodeUserUUID4]: null }
+    assert.deepEqual(actualResp, expectedResp)
+
+    // Correctly handles request with valid user, invalid user, and user with no files
+    actualResp = await DBManager.fetchFilesHashesFromDB({
+      cnodeUserUUIDs: [cnodeUserUUID, cnodeUserUUID2, cnodeUserUUID3, cnodeUserUUID4]
+    })
+    expectedResp = {
+      [cnodeUserUUID]: expectedFilesHashCNU1,
+      [cnodeUserUUID2]: expectedFilesHashCNU2,
+      [cnodeUserUUID3]: null,
+      [cnodeUserUUID4]: null
+    }
+    assert.deepEqual(actualResp, expectedResp)
   })
 })

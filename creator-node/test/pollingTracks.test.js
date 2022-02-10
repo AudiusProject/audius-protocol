@@ -77,8 +77,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     ipfsMock,
     ipfsLatestMock,
     libsMock,
-    handleTrackContentRoute,
-    mockServiceRegistry
+    handleTrackContentRoute
   let session, userId, userWallet
 
   const spId = 1

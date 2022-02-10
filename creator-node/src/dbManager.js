@@ -56,11 +56,11 @@ class DBManager {
   /**
    * Deletes all data for a cnodeUser from DB (every table, including CNodeUsers)
    *
-   * @param {Object} CNodeUserLookupObj specifies either `lookupCnodeUserUUID` or `lookupWallet` properties
+   * @param {Object} CNodeUserLookupObj specifies either `lookupCNodeUserUUID` or `lookupWallet` properties
    * @param {?Transaction} externalTransaction sequelize transaction object
    */
   static async deleteAllCNodeUserDataFromDB(
-    { lookupCnodeUserUUID, lookupWallet },
+    { lookupCNodeUserUUID, lookupWallet },
     externalTransaction = null
   ) {
     const transaction =
@@ -73,7 +73,7 @@ class DBManager {
     try {
       const cnodeUserWhereFilter = lookupWallet
         ? { walletPublicKey: lookupWallet }
-        : { cnodeUserUUID: lookupCnodeUserUUID }
+        : { cnodeUserUUID: lookupCNodeUserUUID }
       const cnodeUser = await models.CNodeUser.findOne({
         where: cnodeUserWhereFilter,
         transaction
@@ -202,12 +202,13 @@ class DBManager {
   }
 
   /**
-   * Retrieves md5 hash of all File multihashes for user ordered by clock asc, optionally by clock range
+   * Computes and returns filesHash for user, optionally by clock range
+   * filesHash = md5 hash of all user's File multihashes, ordered by clock asc
    *
    * @param {Object} lookupKey lookup user by either cnodeUserUUID or walletPublicKey
    * @param {Number?} clockMin if provided, consider only Files with clock >= clockMin (inclusive)
    * @param {Number?} clockMax if provided, consider only Files with clock < clockMax (exclusive)
-   * @returns {Number} filesHash
+   * @returns {string|null} filesHash
    */
   static async fetchFilesHashFromDB({
     lookupKey: { lookupCNodeUserUUID, lookupWallet },
@@ -261,8 +262,25 @@ class DBManager {
     }
   }
 
+  /**
+   * Computes and returns filesHashes for all users
+   * filesHash will be null if user not found or if no files exist for user
+   * filesHash = md5 hash of all user's File multihashes, ordered by clock asc
+   *
+   * Similar to fetchFilesHashFromDB() above, but for multiple users
+   * Makes single DB query to compute filesHash for all users
+   *
+   * @param {Array<string>} cnodeUserUUIDs cnodeUserUUID array
+   * @returns {Object} filesHashesByUUIDMap = map(cnodeUserUUID<string> => filesHash<string>)
+   */
   static async fetchFilesHashesFromDB({ cnodeUserUUIDs }) {
     try {
+      // Initialize filesHashesByUUIDMap with null values
+      const filesHashesByUUIDMap = {}
+      cnodeUserUUIDs.forEach((cnodeUserUUID) => {
+        filesHashesByUUIDMap[cnodeUserUUID] = null
+      })
+
       const query = `
         select
           "cnodeUserUUID",
@@ -280,15 +298,14 @@ class DBManager {
         replacements: { cnodeUserUUIDs }
       })
 
-      // Convert from array of objects to map(cnodeUserUUID -> filesHash)
-      const filesHashesByUUIDMap = {}
-      queryResp[0].forEach((obj) => {
-        filesHashesByUUIDMap[obj.cnodeUserUUID] = obj.filesHash
+      // Populate filesHashesByUUIDMap
+      queryResp[0].forEach((resp) => {
+        filesHashesByUUIDMap[resp.cnodeUserUUID] = resp.filesHash
       })
 
       return filesHashesByUUIDMap
     } catch (e) {
-      throw new Error(e.message)
+      throw new Error(`[fetchFilesHashesFromDB] ${e.message}`)
     }
   }
 }

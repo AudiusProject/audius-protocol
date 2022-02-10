@@ -262,7 +262,8 @@ module.exports = function (app) {
   )
 
   /**
-   * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
+   * Returns latest clock value for CNodeUser, or -1 if no entry found
+   * Optionally returns user filesHash, or null if no files found
    */
   app.post(
     '/users/batch_clock_status',
@@ -292,13 +293,6 @@ module.exports = function (app) {
           }
         }
       })
-      // const cnodeUserUUIDs = cnodeUsers.map(cnodeUser => cnodeUser.cnodeUserUUID)
-
-      // if (returnFilesHash) {
-      //   const filesHashes = await DBManager.fetchFilesHashesFromDB({
-      //     cnodeUserUUIDs, transaction
-      //   })
-      // }
 
       // Populate users response object with cnodeUsers data
       cnodeUsers.forEach(({ walletPublicKey, clock }) => {
