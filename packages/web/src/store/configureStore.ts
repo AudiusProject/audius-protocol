@@ -55,18 +55,15 @@ const statePruner = (state: AppState) => {
       status: state.account.status,
       userId: state.account.userId
     },
-    application: {
-      pages: {
-        profile: {
-          handle: state.application.pages.profile.handle,
-          status: state.application.pages.profile.status,
-          updateError: state.application.pages.profile.updateError,
-          updateSuccess: state.application.pages.profile.updateSuccess,
-          updating: state.application.pages.profile.updating,
-          userId: state.application.pages.profile.userId
-        }
-      },
-      ui: state.application.ui
+    pages: {
+      profile: {
+        handle: state.pages.profile.handle,
+        status: state.pages.profile.status,
+        updateError: state.pages.profile.updateError,
+        updateSuccess: state.pages.profile.updateSuccess,
+        updating: state.pages.profile.updating,
+        userId: state.pages.profile.userId
+      }
     },
     router: {
       action: state.router.action,
