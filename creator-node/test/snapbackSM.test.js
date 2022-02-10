@@ -1,5 +1,3 @@
-/** Integration tests for SnapbackSM module */
-
 const nock = require('nock')
 const assert = require('assert')
 
