@@ -20,7 +20,8 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     paddingHorizontal: spacing(2)
   },
   imgContainer: {
-    padding: spacing(2)
+    paddingTop: spacing(2),
+    paddingHorizontal: spacing(1)
   },
   cardImg: {
     backgroundColor: '#ddd',

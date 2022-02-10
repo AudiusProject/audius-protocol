@@ -22,7 +22,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
       const { index } = info
       const isInLeftColumn = !(index % 2)
       const style = {
-        padding: 8,
+        padding: 4,
         [`padding${isInLeftColumn ? 'Left' : 'Right'}`]: 16,
         width: '50%'
       }
