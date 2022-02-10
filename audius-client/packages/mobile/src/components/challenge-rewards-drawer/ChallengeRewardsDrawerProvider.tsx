@@ -209,7 +209,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   let audioToClaim = 0
   let audioClaimedSoFar = 0
   if (challenge?.challenge_type === 'aggregate') {
-    audioToClaim = challenge.undisbursedAmount
+    audioToClaim = challenge.claimableAmount
     audioClaimedSoFar =
       challenge.amount * challenge.current_step_count - audioToClaim
   } else if (challenge?.state === 'completed') {
@@ -325,7 +325,9 @@ export const ChallengeRewardsDrawerProvider = () => {
       claimStatus={claimStatus}
       onClaim={hasConfig ? onClaim : undefined}
       isVerifiedChallenge={config.isVerifiedChallenge}
-      showProgressBar={challenge.challenge_type !== 'aggregate'}
+      showProgressBar={
+        challenge.challenge_type !== 'aggregate' && challenge.max_steps > 1
+      }
     >
       {contents}
     </ChallengeRewardsDrawer>
