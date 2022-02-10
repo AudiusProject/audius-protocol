@@ -1,3 +1,4 @@
+import { ChallengeRewardID } from 'audius-client/src/common/models/AudioRewards'
 import { Collection } from 'audius-client/src/common/models/Collection'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
@@ -157,15 +158,6 @@ export type TrendingTrack = BaseNotification & {
   entityId: ID
   entity: Track & { user: User }
 }
-
-export type ChallengeRewardID =
-  | 'track-upload'
-  | 'referrals'
-  | 'referred'
-  | 'mobile-install'
-  | 'connect-verified'
-  | 'listen-streak'
-  | 'profile-completion'
 
 export type ChallengeReward = BaseNotification & {
   type: NotificationType.ChallengeReward
