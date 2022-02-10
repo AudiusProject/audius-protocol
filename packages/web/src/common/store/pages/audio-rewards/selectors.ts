@@ -11,7 +11,11 @@ export const getUserChallenges = (state: CommonState) =>
   state.pages.audioRewards.userChallenges
 
 export const getUndisbursedUserChallenges = (state: CommonState) =>
-  state.pages.audioRewards.undisbursedChallenges
+  state.pages.audioRewards.undisbursedChallenges.filter(challenge => {
+    return !(
+      state.pages.audioRewards.disbursedChallenges[challenge.challenge_id] ?? []
+    ).includes(challenge.specifier)
+  })
 
 export const getUserChallenge = (
   state: CommonState,

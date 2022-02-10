@@ -281,7 +281,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   let audioToClaim = 0
   let audioClaimedSoFar = 0
   if (challenge?.challenge_type === 'aggregate') {
-    audioToClaim = challenge.undisbursedAmount
+    audioToClaim = challenge.claimableAmount
     audioClaimedSoFar =
       challenge.amount * challenge.current_step_count - audioToClaim
   } else if (challenge?.state === 'completed') {
