@@ -16,7 +16,7 @@ import {
   Achievement
 } from 'components/notification/store/types'
 import { make, useRecord } from 'store/analytics/actions'
-import { profilePage } from 'utils/route'
+import { AUDIO_PAGE, profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import TrackContent from '../TrackContent'
@@ -82,6 +82,13 @@ const NotificationBlock = (props: NotificationBlockProps) => {
 
   const onCloseUserListModal = () => {
     setUserListModalVisible(false)
+  }
+  const goToRewardsPage = () => {
+    props.toggleNotificationPanel()
+    props.goToRoute(AUDIO_PAGE)
+    record(
+      make(Name.NOTIFICATIONS_CLICK_TILE, { kind: type, link_to: AUDIO_PAGE })
+    )
   }
   const goToEntityPage = (entity: any) => {
     const page = getEntityLink(entity)
@@ -158,6 +165,10 @@ const NotificationBlock = (props: NotificationBlockProps) => {
           (track: Track) => track.track_id === notification.childTrackId
         )
         goToEntityPage(childTrack)
+        break
+      }
+      case NotificationType.ChallengeReward: {
+        goToRewardsPage()
         break
       }
     }
