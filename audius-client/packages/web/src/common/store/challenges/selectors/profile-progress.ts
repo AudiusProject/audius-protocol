@@ -45,9 +45,8 @@ export const getProfilePictureExists = (state: CommonState) => {
   // we set the updatedProfilePicture field to an object (otherwise it's undefined).
   // If the profile picture was set in a previous session, we just have to check
   // if the profile_picture field is non-null.
-
   return (
-    !!curUser._profile_picture_sizes ||
+    !!curUser.updatedProfilePicture ||
     !!curUser.profile_picture ||
     !!curUser.profile_picture_sizes
   )
@@ -59,7 +58,7 @@ export const getCoverPhotoExists = (state: CommonState) => {
 
   // Same logic as getProfilePictureExists
   return (
-    !!curUser._cover_photo_sizes ||
+    !!curUser.updatedCoverPhoto ||
     !!curUser.cover_photo ||
     !!curUser.cover_photo_sizes
   )
