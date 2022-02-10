@@ -21,13 +21,9 @@ import dashboard from 'pages/artist-dashboard-page/store/reducer'
 import collection from 'pages/collection-page/store/reducer'
 import deactivateAccount from 'pages/deactivate-account-page/store/slice'
 import deleted from 'pages/deleted-page/store/slice'
-import favorites from 'pages/favorites-page/store/reducers'
-import followers from 'pages/followers-page/store/reducers'
-import following from 'pages/following-page/store/reducers'
 import history from 'pages/history-page/store/reducer'
 import notificationUsers from 'pages/notification-users-page/store/reducers'
 import remixes from 'pages/remixes-page/store/slice'
-import reposts from 'pages/reposts-page/store/reducers'
 import saved from 'pages/saved-page/store/reducer'
 import search from 'pages/search-page/store/reducer'
 import settings from 'pages/settings-page/store/reducer'
@@ -122,13 +118,9 @@ const createRootReducer = (routeHistory: History) =>
       }),
       pages: combineReducers({
         deleted,
-        favorites,
-        followers,
-        following,
         notificationUsers,
         nowPlaying,
         remixes,
-        reposts,
         settings,
         smartCollection,
         trendingPlaylists,

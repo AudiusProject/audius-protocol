@@ -3,7 +3,6 @@ import {
   call,
   delay,
   fork,
-  all,
   put,
   select,
   takeEvery,
@@ -216,20 +215,12 @@ function* fetchProfileAsync(action) {
       )
     }
 
-    // Delay so the page can load before we fetch followers/followees
+    // Delay so the page can load before we fetch mutual followers
     yield delay(2000)
 
-    const followsToFetch = [
-      put(profileActions.fetchFollowUsers(FollowType.FOLLOWERS)),
-      put(profileActions.fetchFollowUsers(FollowType.FOLLOWEES))
-    ]
     if (!isMobileClient) {
-      followsToFetch.push(
-        put(profileActions.fetchFollowUsers(FollowType.FOLLOWEE_FOLLOWS))
-      )
+      yield put(profileActions.fetchFollowUsers(FollowType.FOLLOWEE_FOLLOWS))
     }
-
-    yield all(followsToFetch)
   } catch (err) {
     const isReachable = yield select(getIsReachable)
     if (!isReachable) return
@@ -261,12 +252,6 @@ function* watchFetchFollowUsers(action) {
   yield takeEvery(profileActions.FETCH_FOLLOW_USERS, function* (action) {
     yield call(waitForBackendSetup)
     switch (action.followerGroup) {
-      case FollowType.FOLLOWERS:
-        yield call(fetchFollowerUsers, action)
-        break
-      case FollowType.FOLLOWEES:
-        yield call(fetchFollowees, action)
-        break
       case FollowType.FOLLOWEE_FOLLOWS:
         yield call(fetchFolloweeFollows, action)
         break
@@ -302,50 +287,6 @@ function* fetchMostUsedTags(userId, trackCount) {
     .sort((a, b) => tagUsage[b] - tagUsage[a])
     .slice(0, MOST_USED_TAGS_COUNT)
   yield put(profileActions.updateMostUsedTags(mostUsedTags))
-}
-
-function* fetchFollowerUsers(action) {
-  const profileUserId = yield select(getProfileUserId)
-  if (!profileUserId) return
-  const currentUserId = yield select(getUserId)
-  const followers = yield apiClient.getFollowers({
-    currentUserId,
-    profileUserId,
-    limit: action.limit,
-    offset: action.offset
-  })
-
-  const followerIds = yield call(cacheUsers, followers)
-  yield put(
-    profileActions.fetchFollowUsersSucceeded(
-      FollowType.FOLLOWERS,
-      followerIds,
-      action.limit,
-      action.offset
-    )
-  )
-}
-
-function* fetchFollowees(action) {
-  const profileUserId = yield select(getProfileUserId)
-  if (!profileUserId) return
-  const currentUserId = yield select(getUserId)
-  const followees = yield apiClient.getFollowing({
-    currentUserId,
-    profileUserId,
-    limit: action.limit,
-    offset: action.offset
-  })
-
-  const followerIds = yield call(cacheUsers, followees)
-  yield put(
-    profileActions.fetchFollowUsersSucceeded(
-      FollowType.FOLLOWEES,
-      followerIds,
-      action.limit,
-      action.offset
-    )
-  )
 }
 
 function* fetchFolloweeFollows(action) {

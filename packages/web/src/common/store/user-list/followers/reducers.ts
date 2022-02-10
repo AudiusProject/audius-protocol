@@ -1,14 +1,14 @@
 import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
 
-import { UserListReducerFactory } from 'components/user-list/store/reducer'
+import { UserListReducerFactory } from 'common/store/user-list/reducer'
 
-import { USER_LIST_TAG } from '../FollowingPage'
+import { USER_LIST_TAG } from '../../../../pages/followers-page/sagas'
 
 import * as actions from './actions'
-import { FollowingOwnState } from './types'
+import { FollowersOwnState } from './types'
 
-type FollowingActions = ActionType<typeof actions>
+type FollowersActions = ActionType<typeof actions>
 
 const userListReducer = UserListReducerFactory.createReducer(USER_LIST_TAG)
 
@@ -16,10 +16,10 @@ const initialState = {
   id: null
 }
 
-const followingPageReducer = createReducer<FollowingOwnState, FollowingActions>(
+const followersPageReducer = createReducer<FollowersOwnState, FollowersActions>(
   initialState,
   {
-    [actions.SET_FOLOWING](state, action) {
+    [actions.SET_FOLLOWERS](state, action) {
       return {
         ...state,
         id: action.id
@@ -29,6 +29,6 @@ const followingPageReducer = createReducer<FollowingOwnState, FollowingActions>(
 )
 
 export default combineReducers({
-  followingPage: followingPageReducer,
+  followersPage: followersPageReducer,
   userList: userListReducer
 })

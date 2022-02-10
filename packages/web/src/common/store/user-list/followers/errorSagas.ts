@@ -2,7 +2,7 @@ import { put, takeEvery } from 'redux-saga/effects'
 
 import * as errorActions from 'common/store/errors/actions'
 
-import { GET_FOLLOWING_ERROR, getFollowersError } from './actions'
+import { GET_FOLLOWERS_ERROR, getFollowersError } from './actions'
 
 type ErrorActions = ReturnType<typeof getFollowersError>
 
@@ -21,5 +21,5 @@ export function* handleFollowersError(action: ErrorActions) {
 }
 
 export function* watchFollowersError() {
-  yield takeEvery([GET_FOLLOWING_ERROR], handleFollowersError)
+  yield takeEvery([GET_FOLLOWERS_ERROR], handleFollowersError)
 }
