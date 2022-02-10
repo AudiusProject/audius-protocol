@@ -1,7 +1,5 @@
 const express = require('express')
 const crypto = require('crypto')
-const solanaWeb3 = require('@solana/web3.js')
-const config = require('../config.js')
 
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayerKeypair } = require('../solana-client')

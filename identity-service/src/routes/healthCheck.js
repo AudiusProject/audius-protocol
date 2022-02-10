@@ -293,8 +293,8 @@ module.exports = function (app) {
         if (balance < minimumBalance) {
           belowMinimumBalances.push({ wallet: feePayerBase58, balance })
         }
-        // todo: should it be base58 or the pubkey here? e.g. solanaFeePayerBalances[feePayerBase58] = balance
-        solanaFeePayerBalances[feePayerPubKey] = balance
+        // todo: should it be base58 or the pubkey here? e.g. solanaFeePayerBalances[feePayerPubKey] = balance
+        solanaFeePayerBalances[feePayerBase58] = balance
         return { wallet: feePayerBase58, balance }
       }))
     }
