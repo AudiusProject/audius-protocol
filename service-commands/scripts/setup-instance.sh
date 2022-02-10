@@ -118,10 +118,7 @@ case "$service" in
 		upload_gitconfig
 		
 		# copy zsh 
-		if [ -f "~/bin/zsh" ]; then
-	            echo -e "Copying zsh config..."
-		    setup_zsh
-		fi
+		setup_zsh
 		
 		echo -e "\nLogin using:\n"
 		echo -e "gcloud compute ssh $user@$name\n"
