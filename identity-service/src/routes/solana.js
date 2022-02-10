@@ -137,14 +137,11 @@ solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
 }))
 
 solanaRouter.get('/random_fee_payer', handleResponse(async () => {
-  const solanaFeePayerWallets = config.get('solanaFeePayerWallets')
-  if (!solanaFeePayerWallets || !solanaFeePayerWallets.length) {
-    return errorResponseServerError('There is no list of fee payers to choose from.')
+  const feePayerAccount = getFeePayerKeypair(false)
+  if (!feePayerAccount) {
+    return errorResponseServerError('There is no fee payer.')
   }
-
-  const randomFeePayerIndex = Math.floor(Math.random() * solanaFeePayerWallets.length)
-  const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(solanaFeePayerWallets[randomFeePayerIndex].privateKey))
-  return successResponse({ feePayer: randomFeePayer.publicKey })
+  return successResponse({ feePayer: feePayerAccount.publicKey })
 }))
 
 module.exports = function (app) {
