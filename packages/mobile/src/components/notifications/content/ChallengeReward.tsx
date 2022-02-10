@@ -1,9 +1,7 @@
+import { ChallengeRewardID } from 'audius-client/src/common/models/AudioRewards'
 import { StyleSheet, Text, View } from 'react-native'
 
-import {
-  ChallengeReward as ChallengeRewardType,
-  ChallengeRewardID
-} from 'app/store/notifications/types'
+import { ChallengeReward as ChallengeRewardType } from 'app/store/notifications/types'
 import { useTheme } from 'app/utils/theme'
 
 import TwitterShare from './TwitterShare'
@@ -43,6 +41,10 @@ const challengeInfoMap: Record<
   },
   referrals: {
     title: '📨 Invite your Friends',
+    amount: 1
+  },
+  'ref-v': {
+    title: '📨 Invite your Fans',
     amount: 1
   },
   referred: {
