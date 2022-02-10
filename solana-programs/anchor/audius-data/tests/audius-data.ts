@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { createTrack, initAdmin, updateUser, updateTrack, deleteTrack } from "../lib/lib";
+import { createTrack, initAdmin } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -73,12 +73,14 @@ describe("audius-data", () => {
       provider.wallet.publicKey
     );
 
-    await deleteTrack({
-      provider,
-      program,
-      trackPDA: trackKeypair.publicKey,
-      userStgAccountPDA: trackOwnerPDA,
-      userAuthorityKeypair: userAuthorityKeypair,
+    await program.rpc.deleteTrack({
+      accounts: {
+        track: trackKeypair.publicKey,
+        user: trackOwnerPDA,
+        authority: userAuthorityKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+      },
+      signers: [userAuthorityKeypair],
     });
 
     // Confirm that the account is zero'd out
@@ -250,11 +252,12 @@ describe("audius-data", () => {
     });
 
     let updatedCID = randomCID();
-    let tx = await updateUser({
-      program,
-      metadata: updatedCID,
-      userStgAccount: newUserAcctPDA,
-      userAuthorityKeypair: newUserKeypair,
+    let tx = await program.rpc.updateUser(updatedCID, {
+      accounts: {
+        user: newUserAcctPDA,
+        userAuthority: newUserKeypair.publicKey,
+      },
+      signers: [newUserKeypair],
     });
     await confirmLogInTransaction(provider, tx, updatedCID);
   });
@@ -338,14 +341,15 @@ describe("audius-data", () => {
 
     let updatedTrackMetadata = randomCID();
     console.log(`Updating track`);
-    let tx3 = await updateTrack({
-      provider,
-      program,
-      trackPDA: newTrackKeypair.publicKey,
-      userStgAccountPDA: newUserAcctPDA,
-      userAuthorityKeypair: newUserKeypair,
-      metadata: updatedTrackMetadata,
-    })
+    let tx3 = await program.rpc.updateTrack(updatedTrackMetadata, {
+      accounts: {
+        track: newTrackKeypair.publicKey,
+        user: newUserAcctPDA,
+        authority: newUserKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+      },
+      signers: [newUserKeypair],
+    });
     await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
   });
 
