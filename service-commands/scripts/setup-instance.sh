@@ -116,7 +116,13 @@ case "$service" in
 
 		# upload personal files: ~/.gitconfig
 		upload_gitconfig
-
+		
+		# copy zsh 
+		if [ -f "~/bin/zsh" ]; then
+	            echo -e "Copying zsh config..."
+		    setup_zsh
+		fi
+		
 		echo -e "\nLogin using:\n"
 		echo -e "gcloud compute ssh $user@$name\n"
 
@@ -124,4 +130,5 @@ case "$service" in
 		echo -e "\nRun the following to create an SSL tunnel to allow the client into the remote-dev box:\n"
 		echo -e "ssh -N -L 3000:127.0.0.1:3000 -i ~/.ssh/google_compute_engine ubuntu@${IP}\n"
 		;;
+		
 esac
