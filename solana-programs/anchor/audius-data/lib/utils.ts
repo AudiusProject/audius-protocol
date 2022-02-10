@@ -36,7 +36,7 @@ export const getTransaction = async (provider: Provider, tx: string) => {
 
 /// Sign any bytes object with the provided eth private key
 export const signBytes = (bytes: any, ethPrivateKey: string) => {
-  const ethPrivateKeyArr = Buffer.from(ethPrivateKey, "hex");
+  const ethPrivateKeyArr = anchor.utils.bytes.hex.decode(ethPrivateKey);
   const msgHash = keccak256(bytes);
   const signatureObj = secp256k1.ecdsaSign(
     Uint8Array.from(msgHash),
