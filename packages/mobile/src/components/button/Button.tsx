@@ -62,11 +62,16 @@ const buttonTypeStyles = {
       borderWidth: 1,
       borderColor: themeColors.neutralLight6
     },
+    button: {
+      paddingVertical: 14,
+      paddingHorizontal: 24
+    },
     buttonText: {
-      color: themeColors.neutralLight4
+      color: themeColors.neutralLight2,
+      fontSize: 16
     },
     icon: {
-      color: themeColors.neutralLight4
+      color: themeColors.neutralLight2
     }
   })
 }
