@@ -34,7 +34,7 @@ import {
   resetUserChallengeCurrentStepCount,
   setCognitoFlowStatus,
   setHCaptchaStatus,
-  setUserChallengeDisbursed,
+  setUserChallengesDisbursed,
   showRewardClaimedToast
 } from 'common/store/pages/audio-rewards/slice'
 import { setVisibility } from 'common/store/ui/modals/slice'
@@ -367,7 +367,12 @@ describe('Rewards Page Sagas', () => {
               amount: stringAudioToStringWei('10' as StringAudio)
             })
           )
-          .put(setUserChallengeDisbursed({ challengeId: 'connect-verified' }))
+          .put(
+            setUserChallengesDisbursed({
+              challengeId: testClaim.challengeId,
+              specifiers: testClaim.specifiers
+            })
+          )
           .put(claimChallengeRewardSucceeded())
           .silentRun()
       )
@@ -398,8 +403,9 @@ describe('Rewards Page Sagas', () => {
           // Assertions
           .not.call(AudiusBackend.submitAndEvaluateAttestations)
           .not.put(
-            setUserChallengeDisbursed({
-              challengeId: testUserChallenge.challenge_id
+            setUserChallengesDisbursed({
+              challengeId: testClaim.challengeId,
+              specifiers: testClaim.specifiers
             })
           )
           .not.put(claimChallengeRewardSucceeded())

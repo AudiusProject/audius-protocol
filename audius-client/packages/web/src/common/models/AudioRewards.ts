@@ -8,10 +8,12 @@ export type UserChallenge = {
   is_complete: boolean
   is_disbursed: boolean
   max_steps: number
-  specifier: string
+  specifier: Specifier
   user_id: string
   amount: number
 }
+
+export type Specifier = string
 
 export type ChallengeRewardID =
   | 'track-upload'
@@ -126,6 +128,6 @@ export type OptimisticUserChallenge = Omit<
   __isOptimistic: true
   state: UserChallengeState
   totalAmount: number
-  undisbursedAmount: number
-  undisbursedSpecifiers: string[]
+  claimableAmount: number
+  undisbursedSpecifiers: Specifier[]
 }

@@ -42,7 +42,7 @@ import {
   HCaptchaStatus,
   setCognitoFlowStatus,
   setHCaptchaStatus,
-  setUserChallengeDisbursed,
+  setUserChallengesDisbursed,
   updateHCaptchaScore,
   showRewardClaimedToast,
   claimChallengeRewardAlreadyClaimed,
@@ -266,7 +266,7 @@ function* claimChallengeRewardAsync(
           amount: stringAudioToStringWei(amount.toString() as StringAudio)
         })
       )
-      yield put(setUserChallengeDisbursed({ challengeId }))
+      yield put(setUserChallengesDisbursed({ challengeId, specifiers }))
       yield put(claimChallengeRewardSucceeded())
     }
   } catch (e) {
