@@ -2,7 +2,6 @@ import { RouterState } from 'connected-react-router'
 
 import { CommonState } from 'common/store'
 import averageColor from 'common/store/average-color/slice'
-import { ProfilePageState } from 'common/store/pages/profile/types'
 import RemoteConfigReducer from 'common/store/remote-config/slice'
 import StemsUploadReducer from 'common/store/stems-upload/slice'
 import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
@@ -108,7 +107,6 @@ export type AppState = CommonState & {
       notificationUsers: NotificationUsersPageState
       unfollowConfirmation: UnfollowConfirmationModalState
       nowPlaying: NowPlayingState
-      profile: ProfilePageState
       smartCollection: SmartCollectionState
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
