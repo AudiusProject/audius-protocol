@@ -139,7 +139,7 @@ solanaRouter.get('/random_fee_payer', handleResponse(async () => {
   if (!feePayerAccount) {
     return errorResponseServerError('There is no fee payer.')
   }
-  return successResponse({ feePayer: feePayerAccount.publicKey })
+  return successResponse({ feePayer: feePayerAccount.publicKey.toString() })
 }))
 
 module.exports = function (app) {
