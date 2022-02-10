@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 
 import { CreatePlaylistSource } from 'audius-client/src/common/models/Analytics'
 import { getAccountWithOwnPlaylists } from 'audius-client/src/common/store/account/selectors'
@@ -12,7 +12,6 @@ import {
   getTrackId,
   getTrackTitle
 } from 'audius-client/src/common/store/ui/add-to-playlist/selectors'
-import { toast } from 'audius-client/src/common/store/ui/toast/slice'
 import { newCollectionMetadata } from 'audius-client/src/schemas'
 import { FEED_PAGE, playlistPage } from 'audius-client/src/utils/route'
 import { NativeScrollEvent, NativeSyntheticEvent, View } from 'react-native'
@@ -22,6 +21,7 @@ import Button, { ButtonType } from 'app/components/button'
 import { Card } from 'app/components/card'
 import { CardList } from 'app/components/core'
 import Drawer from 'app/components/drawer'
+import { ToastContext } from 'app/components/toast/ToastContext'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -33,6 +33,7 @@ const messages = {
 }
 
 export const AddToPlaylistDrawer = () => {
+  const { toast } = useContext(ToastContext)
   const dispatchWeb = useDispatchWeb()
   const pushRouteWeb = usePushRouteWeb()
   const isOpen = useSelectorWeb(getIsOpen)
@@ -85,12 +86,14 @@ export const AddToPlaylistDrawer = () => {
         <Shadow
           offset={[0, 1]}
           containerViewStyle={{ alignSelf: 'center', marginBottom: 16 }}
-          distance={2}
-          startColor='rgba(133,129,153,0.16)'
+          viewStyle={{ borderRadius: 4 }}
+          distance={3}
+          startColor='rgba(133,129,153,0.11)'
         >
           <Button
             title='Create New Playlist'
             onPress={addToNewPlaylist}
+            containerStyle={{ width: 256 }}
             type={ButtonType.COMMON}
           />
         </Shadow>
