@@ -1,10 +1,11 @@
-import { Dimensions, Text, View } from 'react-native'
+import { Dimensions, View } from 'react-native'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles/makeStyles'
 
 import { CoverPhoto } from './CoverPhoto'
 import { ExpandableBio } from './ExpandableBio'
+import { ProfileInfo } from './ProfileInfo'
 import { ProfileMetrics } from './ProfileMetrics'
 import { ProfilePhoto } from './ProfilePhoto'
 import { ProfileSocials } from './ProfileSocials'
@@ -23,15 +24,6 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     backgroundColor: palette.white,
     paddingTop: spacing(8),
     paddingHorizontal: spacing(3)
-  },
-  username: {
-    ...typography.h1,
-    color: palette.neutral
-  },
-  handle: {
-    ...typography.h4,
-    color: palette.neutralLight4,
-    marginBottom: spacing(4)
   }
 }))
 
@@ -46,10 +38,7 @@ const ProfileScreen = () => {
       <CoverPhoto profile={profile} />
       <ProfilePhoto profile={profile} />
       <View style={styles.header}>
-        <Text accessibilityRole='header' style={styles.username}>
-          {profile.name}
-        </Text>
-        <Text style={styles.handle}>@{profile.handle}</Text>
+        <ProfileInfo profile={profile} />
         <ProfileMetrics profile={profile} />
         <ProfileSocials profile={profile} />
         <ExpandableBio profile={profile} />
