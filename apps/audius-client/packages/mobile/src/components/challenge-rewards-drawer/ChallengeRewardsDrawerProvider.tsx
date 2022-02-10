@@ -78,13 +78,13 @@ const messages = {
   referreralsTitle: 'Invite your Friends',
   referralsDescription:
     'Invite your Friends! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
-  referralsProgressLabel: 'Invites Sent',
+  referralsProgressLabel: 'Invites Accepted',
 
   // Verified Referrals
   referreralsVerifiedTitle: 'Invite your Fans',
   referralsVerifiedDescription:
     'Invite your fans! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
-  referralsVerifiedProgressLabel: 'Invites Sent',
+  referralsVerifiedProgressLabel: 'Invites Accepted',
 
   // Track Upload
   trackUploadTitle: 'Upload 3 Tracks',
@@ -202,6 +202,24 @@ export const ChallengeRewardsDrawerProvider = () => {
   const config = challengesConfig[modalType]
   const hasChallengeCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
+
+  // We could just depend on undisbursedAmount here
+  // But DN may have not indexed the challenge so check for client-side completion too
+  // Note that we can't handle aggregate challenges optimistically
+  let audioToClaim = 0
+  let audioClaimedSoFar = 0
+  if (challenge?.challenge_type === 'aggregate') {
+    audioToClaim = challenge.undisbursedAmount
+    audioClaimedSoFar =
+      challenge.amount * challenge.current_step_count - audioToClaim
+  } else if (challenge?.state === 'completed') {
+    audioToClaim = challenge.totalAmount
+    audioClaimedSoFar = 0
+  } else if (challenge?.state === 'disbursed') {
+    audioToClaim = 0
+    audioClaimedSoFar = challenge.totalAmount
+  }
+
   const goToRoute = useCallback(() => {
     if (!config.buttonInfo?.link) {
       return
@@ -225,7 +243,7 @@ export const ChallengeRewardsDrawerProvider = () => {
       claimChallengeReward({
         claim: {
           challengeId: modalType,
-          specifier: challenge?.specifier ?? '',
+          specifiers: [challenge?.specifier ?? ''],
           amount: challenge?.amount ?? 0
         },
         retryOnFailure: true
@@ -302,9 +320,12 @@ export const ChallengeRewardsDrawerProvider = () => {
       challengeState={challenge.state}
       currentStep={challenge.current_step_count}
       stepCount={challenge.max_steps}
+      claimableAmount={audioToClaim}
+      claimedAmount={audioClaimedSoFar}
       claimStatus={claimStatus}
       onClaim={hasConfig ? onClaim : undefined}
       isVerifiedChallenge={config.isVerifiedChallenge}
+      showProgressBar={challenge.challenge_type !== 'aggregate'}
     >
       {contents}
     </ChallengeRewardsDrawer>
