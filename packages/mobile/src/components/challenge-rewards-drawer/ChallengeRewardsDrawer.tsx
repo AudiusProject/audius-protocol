@@ -25,7 +25,10 @@ const messages = {
   incomplete: 'Incomplete',
   complete: 'Complete',
   claim: 'Claim Your Reward',
-  claimErrorMessage: 'Oops, something’s gone wrong'
+  claimErrorMessage:
+    'Something has gone wrong, not all your rewards were claimed. Please try again.',
+  claimableLabel: '$AUDIO available to claim',
+  claimedLabel: '$AUDIO claimed so far'
 }
 
 const createProgressBarStyles = (themeColors: ThemeColors) =>
@@ -144,7 +147,8 @@ const createStyles = (themeColors: ThemeColors) =>
     },
     statusGridColumns: {
       padding: 16,
-      flexDirection: 'row'
+      flexDirection: 'row',
+      justifyContent: 'center'
     },
     rewardCell: {
       paddingRight: 16
@@ -194,6 +198,21 @@ const createStyles = (themeColors: ThemeColors) =>
     },
     claimButtonContainer: {
       width: '100%'
+    },
+    claimButton: {
+      paddingVertical: 12
+    },
+    claimableAmount: {
+      marginVertical: 16,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+      color: themeColors.staticAccentGreenLight1
+    },
+    claimedAmount: {
+      marginTop: 16,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+      color: themeColors.neutralLight4
     }
   })
 
@@ -217,12 +236,18 @@ type ChallengeRewardsDrawerProps = {
   /** The label to use for the in-progress status */
   progressLabel: string
   challengeState: UserChallengeState
+  /** The amount of $AUDIO available to be claimed */
+  claimableAmount: number
+  /** The amount of $AUDIO the user has already claimed, used in aggregate challenges */
+  claimedAmount: number
   /** The status of the rewards being claimed */
   claimStatus: ClaimStatus
   /** Callback that runs on the claim rewards button being clicked */
   onClaim?: () => void
   /** Whether the challenge is for verified users only */
   isVerifiedChallenge: boolean
+  /** True if the challenge type is 'aggregate' */
+  showProgressBar: boolean
   children?: React.ReactChild
 }
 export const ChallengeRewardsDrawer = ({
@@ -236,9 +261,12 @@ export const ChallengeRewardsDrawer = ({
   stepCount = 1,
   progressLabel,
   challengeState,
+  claimableAmount,
+  claimedAmount,
   claimStatus,
   onClaim,
   isVerifiedChallenge,
+  showProgressBar,
   children
 }: ChallengeRewardsDrawerProps) => {
   const styles = useThemedStyles(createStyles)
@@ -255,6 +283,9 @@ export const ChallengeRewardsDrawer = ({
     : isInProgress
     ? `${currentStep}/${stepCount} ${progressLabel}`
     : messages.incomplete
+
+  const claimedAmountText = `(${claimedAmount} ${messages.claimedLabel})`
+  const claimableAmountText = `${claimableAmount} ${messages.claimableLabel}`
 
   return (
     <Drawer
@@ -294,12 +325,14 @@ export const ChallengeRewardsDrawer = ({
                 {messages.audio}
               </Text>
             </View>
-            <View style={styles.progressCell}>
-              <Text style={styles.subheader} weight='heavy'>
-                {messages.progress}
-              </Text>
-              <ProgressBar progress={currentStep} max={stepCount} />
-            </View>
+            {showProgressBar ? (
+              <View style={styles.progressCell}>
+                <Text style={styles.subheader} weight='heavy'>
+                  {messages.progress}
+                </Text>
+                <ProgressBar progress={currentStep} max={stepCount} />
+              </View>
+            ) : null}
           </View>
           <View
             style={[
@@ -320,30 +353,48 @@ export const ChallengeRewardsDrawer = ({
           </View>
         </View>
         {children}
-        {challengeState === 'completed' && onClaim && (
-          <View style={styles.claimRewardsContainer}>
-            <Button
-              containerStyle={styles.claimButtonContainer}
-              type={claimInProgress ? ButtonType.COMMON : ButtonType.PRIMARY}
-              disabled={claimInProgress}
-              title={messages.claim}
-              onPress={onClaim}
-              renderIcon={color =>
-                claimInProgress ? (
-                  <LoadingSpinner />
-                ) : (
-                  <IconCheck fill={color} />
-                )
-              }
-              iconPosition='left'
-            />
-            {claimError && (
-              <Text style={styles.claimRewardsError} weight='bold'>
-                {messages.claimErrorMessage}
-              </Text>
-            )}
-          </View>
-        )}
+        <View style={styles.claimRewardsContainer}>
+          {claimableAmount > 0 && onClaim
+            ? [
+                <Text
+                  key='claimableAmount'
+                  style={styles.claimableAmount}
+                  weight='heavy'
+                >
+                  {claimableAmountText}
+                </Text>,
+                <Button
+                  key='claimButton'
+                  containerStyle={styles.claimButtonContainer}
+                  style={styles.claimButton}
+                  type={
+                    claimInProgress ? ButtonType.COMMON : ButtonType.PRIMARY
+                  }
+                  disabled={claimInProgress}
+                  title={messages.claim}
+                  onPress={onClaim}
+                  renderIcon={color =>
+                    claimInProgress ? (
+                      <LoadingSpinner />
+                    ) : (
+                      <IconCheck fill={color} />
+                    )
+                  }
+                  iconPosition='left'
+                />
+              ]
+            : null}
+          {claimedAmount > 0 && challengeState !== 'disbursed' ? (
+            <Text style={styles.claimedAmount} weight='heavy'>
+              {claimedAmountText}
+            </Text>
+          ) : null}
+          {claimError ? (
+            <Text style={styles.claimRewardsError} weight='bold'>
+              {messages.claimErrorMessage}
+            </Text>
+          ) : null}
+        </View>
       </View>
     </Drawer>
   )

@@ -24,23 +24,15 @@ const createStyles = (themeColors: ThemeColors) =>
     borderRadius: {
       borderRadius: 6
     },
-    copyPrompt: {
-      marginBottom: 12,
-      fontSize: 16,
-      textTransform: 'uppercase',
-      textAlign: 'center',
-      color: themeColors.statTileText,
-      letterSpacing: 1
-    },
-    copyText: {
+    copyTextContainer: {
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 20
+      padding: 12
     },
-    referralUrl: {
-      fontSize: 16,
+    copyText: {
+      fontSize: 18,
       textAlign: 'center',
       color: themeColors.staticWhite
     },
@@ -88,9 +80,9 @@ export const ReferralLinkCopyButton = ({
           colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
           locations={[0.0204, 1]}
         >
-          <View style={styles.copyText}>
+          <View style={styles.copyTextContainer}>
             <IconCopy style={styles.iconCopy} width={24} height={24} />
-            <Text weight={'bold'} style={styles.referralUrl}>
+            <Text weight={'bold'} style={styles.copyText}>
               {messages.copyPrompt}
             </Text>
           </View>

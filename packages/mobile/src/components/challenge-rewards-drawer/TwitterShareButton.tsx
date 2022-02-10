@@ -12,7 +12,7 @@ import { getTwitterLink } from 'app/utils/twitter'
 const makeStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     button: {
-      padding: 20
+      padding: 12
     },
     container: {
       width: '100%',
@@ -20,7 +20,7 @@ const makeStyles = (themeColors: ThemeColors) =>
       backgroundColor: themeColors.staticTwitterBlue
     },
     text: {
-      fontSize: 16
+      fontSize: 18
     }
   })
 

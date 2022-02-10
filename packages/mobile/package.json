@@ -55,7 +55,7 @@
     "@sentry/react-native": "3.2.8",
     "@svgr/core": "5.5.0",
     "array.prototype.flat": "1.2.5",
-    "audius-client": "github:AudiusProject/audius-client.git#fda6dca0de3ac1c281e8da82a58c36d11de0c8b2",
+    "audius-client": "github:AudiusProject/audius-client#7d3c810573b61abd8285964bdbfdb6b52d2070ce",
     "bn.js": "5.2.0",
     "expo-crypto": "9.2.0",
     "fxa-common-password-list": "0.0.4",
