@@ -3,15 +3,18 @@ import { put, select } from 'redux-saga/effects'
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
-import UserListSagaFactory from 'components/user-list/store/sagas'
+import { getFollowersError } from 'common/store/user-list/followers/actions'
+import { watchFollowersError } from 'common/store/user-list/followers/errorSagas'
+import {
+  getId,
+  getUserList,
+  getUserIds
+} from 'common/store/user-list/followers/selectors'
+import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
-import { USER_LIST_TAG } from '../FollowingPage'
-
-import { getFollowingError } from './actions'
-import { watchFollowingError } from './errorSagas'
-import { getId, getUserList, getUserIds } from './selectors'
+export const USER_LIST_TAG = 'FOLLOWERS'
 
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,
@@ -27,7 +30,7 @@ const provider = createUserListProvider<User>({
     entityId: ID
     currentUserId: ID | null
   }) => {
-    return apiClient.getFollowing({
+    return apiClient.getFollowers({
       currentUserId,
       profileUserId: entityId,
       limit: limit,
@@ -36,17 +39,16 @@ const provider = createUserListProvider<User>({
   },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>
-    combinedUserIDs.length < user.followee_count,
-
-  includeCurrentUser: _ => false
+    combinedUserIDs.length < user.follower_count,
+  includeCurrentUser: u => u.does_current_user_follow
 })
 
 function* errorDispatcher(error: Error) {
   const id = yield select(getId)
-  yield put(getFollowingError(id, error.message))
+  yield put(getFollowersError(id, error.message))
 }
 
-function* getFollowing(currentPage: number, pageSize: number) {
+function* getFollowers(currentPage: number, pageSize: number) {
   const id: number | null = yield select(getId)
   if (!id) return { userIds: [], hasMore: false }
   return yield provider({ id, currentPage, pageSize })
@@ -54,11 +56,11 @@ function* getFollowing(currentPage: number, pageSize: number) {
 
 const userListSagas = UserListSagaFactory.createSagas({
   tag: USER_LIST_TAG,
-  fetchUsers: getFollowing,
+  fetchUsers: getFollowers,
   stateSelector: getUserList,
   errorDispatcher
 })
 
 export default function sagas() {
-  return [userListSagas, watchFollowingError]
+  return [userListSagas, watchFollowersError]
 }

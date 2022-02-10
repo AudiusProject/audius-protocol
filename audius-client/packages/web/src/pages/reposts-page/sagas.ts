@@ -5,16 +5,23 @@ import { ID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
-import UserListSagaFactory from 'components/user-list/store/sagas'
+import {
+  trackRepostError,
+  playlistRepostError
+} from 'common/store/user-list/reposts/actions'
+import { watchRepostsError } from 'common/store/user-list/reposts/errorSagas'
+import {
+  getId,
+  getRepostsType,
+  getUserList,
+  getUserIds
+} from 'common/store/user-list/reposts/selectors'
+import { RepostType } from 'common/store/user-list/reposts/types'
+import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
-import { USER_LIST_TAG } from '../RepostsPage'
-
-import { trackRepostError, playlistRepostError } from './actions'
-import { watchRepostsError } from './errorSagas'
-import { getId, getRepostsType, getUserList, getUserIds } from './selectors'
-import { RepostType } from './types'
+export const USER_LIST_TAG = 'REPOSTS'
 
 const getPlaylistReposts = createUserListProvider<Collection>({
   getExistingEntity: getCollection,

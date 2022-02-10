@@ -1,8 +1,8 @@
 import { call, put, takeLatest, select, all } from 'redux-saga/effects'
 
-import * as userListActions from 'components/user-list/store/actions'
 import { AppState } from 'store/types'
 
+import * as userListActions from './actions'
 import { FetchUserIdsSaga, UserListStoreState } from './types'
 
 // Factory for creating UserList sagas that listen to a particular tag,

@@ -1,4 +1,4 @@
-import { UserListStoreState } from 'components/user-list/store/types'
+import { UserListStoreState } from 'common/store/user-list/types'
 
 export type NotificationUsersPageOwnState = {
   id: string | null

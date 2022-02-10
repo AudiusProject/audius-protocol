@@ -52,6 +52,10 @@ import { ShareModalState } from 'common/store/ui/share-modal/types'
 import shareSoundToTikTokModalReducer from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ShareSoundToTikTokModalState } from 'common/store/ui/share-sound-to-tiktok-modal/types'
 import toastReducer, { ToastState } from 'common/store/ui/toast/slice'
+import favoritesUserListReducer from 'common/store/user-list/favorites/reducers'
+import followersUserListReducer from 'common/store/user-list/followers/reducers'
+import followingUserListReducer from 'common/store/user-list/following/reducers'
+import repostsUserListReducer from 'common/store/user-list/reposts/reducers'
 import wallet from 'common/store/wallet/slice'
 
 // In the future, these state slices will live in @audius/client-common.
@@ -83,7 +87,13 @@ export const reducers = {
     nowPlaying: nowPlayingReducer,
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
-    toast: toastReducer
+    toast: toastReducer,
+    userList: combineReducers({
+      followers: followersUserListReducer,
+      following: followingUserListReducer,
+      reposts: repostsUserListReducer,
+      favorites: favoritesUserListReducer
+    })
   }),
 
   // Pages
@@ -125,6 +135,10 @@ export const sagas = {
   // pages/track/store/lineups/tracks/sagas.js
   // pages/track/store/sagas.js
   // store/ui/stemsUpload/sagas.ts
+  // pages/user-list/followers/sagas.ts
+  // pages/user-list/following/sagas.ts
+  // pages/user-list/reposts/sagas.ts
+  // pages/user-list/favorites/sagas.ts
 }
 
 export type CommonState = {
@@ -151,6 +165,12 @@ export type CommonState = {
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
     shareModal: ShareModalState
     toast: ToastState
+    userList: {
+      followers: ReturnType<typeof followersUserListReducer>
+      following: ReturnType<typeof followingUserListReducer>
+      reposts: ReturnType<typeof repostsUserListReducer>
+      favorites: ReturnType<typeof favoritesUserListReducer>
+    }
   }
 
   pages: {

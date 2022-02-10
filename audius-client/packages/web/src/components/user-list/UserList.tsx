@@ -11,14 +11,14 @@ import { getUserId } from 'common/store/account/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { setNotificationSubscription } from 'common/store/pages/profile/actions'
 import * as socialActions from 'common/store/social/users/actions'
+import { loadMore, setPageSize } from 'common/store/user-list/actions'
+import { UserListStoreState } from 'common/store/user-list/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import UserList from './components/UserList'
-import { loadMore, setPageSize } from './store/actions'
-import { UserListStoreState } from './store/types'
 
 type ConnectedUserListOwnProps = {
   // A tag uniquely identifying this particular instance of a UserList in the store.

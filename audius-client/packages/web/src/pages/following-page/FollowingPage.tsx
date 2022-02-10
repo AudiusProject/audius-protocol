@@ -1,16 +1,14 @@
 import React, { useContext, useEffect } from 'react'
 
+import { getUserList } from 'common/store/user-list/following/selectors'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import UserList from 'components/user-list/UserList'
-
-import { getUserList } from './store/selectors'
+import { USER_LIST_TAG } from 'pages/following-page/sagas'
 
 const messages = {
   title: 'Following'
 }
-
-export const USER_LIST_TAG = 'FOLLOWING'
 
 // Eventually calculate a custom page size
 export const PAGE_SIZE = 15

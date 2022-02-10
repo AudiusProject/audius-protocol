@@ -4,10 +4,10 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { loadMore } from 'common/store/user-list/actions'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import UserList from 'components/user-list/UserList'
-import { loadMore } from 'components/user-list/store/actions'
 import {
   getId,
   getPageTitle,

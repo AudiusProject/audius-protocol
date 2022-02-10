@@ -77,10 +77,6 @@ export type ProfilePageProps = {
   profilePictureSizes: ProfilePictureSizes | null
   updatedProfilePicture: { error: boolean; url: string }
   hasProfilePicture: boolean
-  followers: User[]
-  followersLoading: boolean
-  followees: User[]
-  followeesLoading: boolean
   followeeFollows: User[]
   activeTab: Tabs | null
   followeeFollowsCount: number
@@ -130,8 +126,6 @@ export type ProfilePageProps = {
     tracks: number,
     isPrivate?: boolean
   ) => string
-  fetchFollowers: () => void
-  fetchFollowees: () => void
   fetchFolloweeFollows: () => void
   openCreatePlaylistModal: () => void
   updateProfile: (metadata: any) => void
@@ -192,8 +186,6 @@ const ProfilePage = ({
   onCancel,
   onSortByRecent,
   onSortByPopular,
-  fetchFollowers,
-  fetchFollowees,
   fetchFolloweeFollows,
   isArtist,
   status: profileLoadingStatus,
@@ -223,10 +215,6 @@ const ProfilePage = ({
   profilePictureSizes,
   updatedProfilePicture,
   hasProfilePicture,
-  followers,
-  followersLoading,
-  followees,
-  followeesLoading,
   followeeFollows,
   followeeFollowsCount,
   followeeFollowsLoading,
@@ -710,12 +698,6 @@ const ProfilePage = ({
             onShare={onShare}
             onCancel={onCancel}
             following={following}
-            followers={followers}
-            followees={followees}
-            followersLoading={followersLoading}
-            followeesLoading={followeesLoading}
-            loadMoreFollowers={fetchFollowers}
-            loadMoreFollowees={fetchFollowees}
             isSubscribed={isSubscribed}
             onToggleSubscribe={toggleNotificationSubscription}
             onFollow={onFollow}

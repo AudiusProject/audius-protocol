@@ -2,10 +2,10 @@ import { createCustomAction } from 'typesafe-actions'
 
 import { ID } from 'common/models/Identifiers'
 
-export const SET_FOLOWING = 'FOLLOWING_USER_PAGE/SET_FOLOWING'
+export const SET_FOLLOWING = 'FOLLOWING_USER_PAGE/SET_FOLLOWING'
 export const GET_FOLLOWING_ERROR = 'FOLLOWING_USER_PAGE/GET_FOLLOWING_ERROR'
 
-export const setFollowing = createCustomAction(SET_FOLOWING, (id: ID) => ({
+export const setFollowing = createCustomAction(SET_FOLLOWING, (id: ID) => ({
   id
 }))
 export const getFollowingError = createCustomAction(

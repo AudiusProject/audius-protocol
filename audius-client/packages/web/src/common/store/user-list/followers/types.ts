@@ -1,5 +1,5 @@
 import { ID } from 'common/models/Identifiers'
-import { UserListStoreState } from 'components/user-list/store/types'
+import { UserListStoreState } from 'common/store/user-list/types'
 
 export type FollowersOwnState = {
   id: ID | null
