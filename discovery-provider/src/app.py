@@ -204,7 +204,7 @@ def create_celery(test_config=None):
     return create(test_config, mode="celery")
 
 
-def create(test_config=None, mode="app"):
+def create(test_config=None, mode="loadtest"):
     arg_type = type(mode)
     assert isinstance(mode, str), f"Expected string, provided {arg_type}"
     assert mode in ("app", "celery"), f"Expected app/celery, provided {mode}"
@@ -226,7 +226,7 @@ def create(test_config=None, mode="app"):
     app.iniconfig = ConfigIni()
     configure_flask(test_config, app, mode)
 
-    if mode == "app":
+    if mode in ["app", "loadtest"]:
         helpers.configure_flask_app_logging(
             app, shared_config["discprov"]["loglevel_flask"]
         )
@@ -235,6 +235,9 @@ def create(test_config=None, mode="app"):
         session_manager = app.db_session_manager
         with session_manager.scoped_session() as session:
             create_new_challenges(session)
+
+        if mode == "loadtest":
+            app.register_blueprint(load_test.bp)
         return app
 
     if mode == "celery":
@@ -242,13 +245,6 @@ def create(test_config=None, mode="app"):
         helpers.configure_logging()
         configure_celery(celery_app.celery, test_config)
         return celery_app
-
-    if mode == "loadtest":
-        helpers.configure_flask_app_logging(
-            app, shared_config["discprov"]["loglevel_flask"]
-        )
-        app.register_blueprint(load_test.bp)
-        return app
 
     raise ValueError("Invalid mode")
 
