@@ -13,7 +13,7 @@ import {
   Achievement
 } from 'components/notification/store/types'
 import { make, useRecord } from 'store/analytics/actions'
-import { profilePage } from 'utils/route'
+import { AUDIO_PAGE, profilePage } from 'utils/route'
 
 import TrackContent from '../TrackContent'
 import { getEntityLink, TwitterShare } from '../TwitterShare'
@@ -74,6 +74,12 @@ const NotificationItem = (props: NotificationItemProps) => {
     [id, goToUserListPage, markNotificationAsRead]
   )
 
+  const goToRewardsPage = () => {
+    props.goToRoute(AUDIO_PAGE)
+    record(
+      make(Name.NOTIFICATIONS_CLICK_TILE, { kind: type, link_to: AUDIO_PAGE })
+    )
+  }
   const goToEntityPage = (entity: any) => {
     const page = getEntityLink(entity)
     props.goToRoute(page)
@@ -160,6 +166,10 @@ const NotificationItem = (props: NotificationItemProps) => {
           (track: Track) => track.track_id === notification.childTrackId
         )
         goToEntityPage(childTrack)
+        break
+      }
+      case NotificationType.ChallengeReward: {
+        goToRewardsPage()
         break
       }
     }
