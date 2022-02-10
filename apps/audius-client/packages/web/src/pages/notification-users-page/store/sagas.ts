@@ -1,8 +1,8 @@
 import { call, put, select } from 'redux-saga/effects'
 
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
+import UserListSagaFactory from 'common/store/user-list/sagas'
 import { getNotificationById } from 'components/notification/store/selectors'
-import UserListSagaFactory from 'components/user-list/store/sagas'
 import {
   getUserIds,
   getId,

@@ -38,14 +38,14 @@ import {
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
+import { setFavorite } from 'common/store/user-list/favorites/actions'
+import { setRepost } from 'common/store/user-list/reposts/actions'
+import { RepostType } from 'common/store/user-list/reposts/types'
 import { getCanonicalName } from 'common/utils/genres'
 import { formatSeconds, formatDate } from 'common/utils/timeUtil'
 import { Uid } from 'common/utils/uid'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
-import { setFavorite } from 'pages/favorites-page/store/actions'
-import { setRepost } from 'pages/reposts-page/store/actions'
-import { RepostType } from 'pages/reposts-page/store/types'
 import { TrackEvent, make } from 'store/analytics/actions'
 import {
   setUsers,

@@ -116,16 +116,11 @@ const StatBanner = props => {
         <div className={styles.statBanner}>
           <div className={styles.stats}>
             <Stats
-              userId={props.userId}
+              clickable
+              currentUserId={props.userId}
+              userId={props.profileId}
               stats={props.stats}
               size='large'
-              followers={props.followers}
-              followees={props.followees}
-              followersLoading={props.followersLoading}
-              followeesLoading={props.followeesLoading}
-              loadMoreFollowers={props.loadMoreFollowers}
-              loadMoreFollowees={props.loadMoreFollowees}
-              onClickArtistName={props.onClickArtistName}
             />
           </div>
           <div className={styles.buttons}>
@@ -149,8 +144,6 @@ StatBanner.propTypes = {
   onCloseArtistRecommendations: PropTypes.func,
   userId: PropTypes.number,
   onClickArtistName: PropTypes.func,
-  loadMoreFollowers: PropTypes.func,
-  loadMoreFollowees: PropTypes.func,
   onEdit: PropTypes.func,
   onShare: PropTypes.func,
   onSave: PropTypes.func,
@@ -158,10 +151,6 @@ StatBanner.propTypes = {
   onFollow: PropTypes.func,
   onUnfollow: PropTypes.func,
   following: PropTypes.bool,
-  followers: PropTypes.array,
-  followees: PropTypes.array,
-  followersLoading: PropTypes.bool,
-  followeesLoading: PropTypes.bool,
   isSubscribed: PropTypes.bool,
   onToggleSubscribe: PropTypes.func
 }

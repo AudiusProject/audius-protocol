@@ -14,9 +14,9 @@ import {
 } from 'common/store/pages/explore/exploreCollections/selectors'
 import { fetch } from 'common/store/pages/explore/exploreCollections/slice'
 import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
-import { setFavorite } from 'pages/favorites-page/store/actions'
-import { setRepost } from 'pages/reposts-page/store/actions'
-import { RepostType } from 'pages/reposts-page/store/types'
+import { setFavorite } from 'common/store/user-list/favorites/actions'
+import { setRepost } from 'common/store/user-list/reposts/actions'
+import { RepostType } from 'common/store/user-list/reposts/types'
 import {
   setUsers,
   setVisibility

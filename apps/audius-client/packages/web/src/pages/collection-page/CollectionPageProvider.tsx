@@ -43,14 +43,14 @@ import {
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
+import { setFavorite } from 'common/store/user-list/favorites/actions'
+import { setRepost } from 'common/store/user-list/reposts/actions'
+import { RepostType } from 'common/store/user-list/reposts/types'
 import { formatUrlName } from 'common/utils/formatUtil'
 import { Uid } from 'common/utils/uid'
 import { updatePlaylistLastViewedAt } from 'components/notification/store/actions'
 import { getPlaylistUpdates } from 'components/notification/store/selectors'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
-import { setFavorite } from 'pages/favorites-page/store/actions'
-import { setRepost } from 'pages/reposts-page/store/actions'
-import { RepostType } from 'pages/reposts-page/store/types'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import {
