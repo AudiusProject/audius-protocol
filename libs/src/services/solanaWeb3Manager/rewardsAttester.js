@@ -115,7 +115,7 @@ class RewardsAttester {
    *    startingBlock: number
    *    offset: number
    *    parallelization: number
-   *    logger: any
+   *    logger?: any
    *    quorumSize: number
    *    aaoEndpoint: string
    *    aaoAddress: string
@@ -152,7 +152,7 @@ class RewardsAttester {
     startingBlock,
     offset,
     parallelization,
-    logger,
+    logger = console,
     quorumSize,
     aaoEndpoint,
     aaoAddress,
@@ -160,7 +160,7 @@ class RewardsAttester {
     getStartingBlockOverride = () => null,
     maxRetries = 5,
     reporter,
-    challengeIdsDenyList,
+    challengeIdsDenyList = [],
     endpoints = [],
     runBehindSec = 0,
     isSolanaChallenge = (challengeId) => true
@@ -210,6 +210,7 @@ class RewardsAttester {
 
     this._performSingleAttestation = this._performSingleAttestation.bind(this)
     this._disbursementToKey = this._disbursementToKey.bind(this)
+    this._shouldStop = false
   }
 
   /**
@@ -228,16 +229,72 @@ class RewardsAttester {
     await this._selectDiscoveryNodes()
     await this.delayCalculator.start()
 
-    while (true) {
+    while (!this._shouldStop) {
       try {
         await this._awaitFeePayerBalance()
         await this._checkForStartingBlockOverride()
-        await this._attestInParallel()
+
+        // Refill queue if necessary, returning early if error
+        const { error } = await this._refillQueueIfNecessary()
+        if (error) {
+          this.logger.error(`Got error trying to refill challenges: [${error}]`)
+          throw new Error(error)
+        }
+
+        // If queue is still empty, sleep and return
+        if (!this.undisbursedQueue.length) {
+          this.logger.info(`No undisbursed challenges. Sleeping...`)
+          await this._delay(1000)
+          continue
+        }
+
+        // Get undisbursed rewards
+        let toAttest = this.undisbursedQueue.splice(0, this.parallelization)
+
+        // Attest for batch in parallel
+        const { highestBlock, offset, results, successCount } = await this._attestInParallel(toAttest)
+
+        // Set state
+        this.startingBlock = highestBlock ? highestBlock - 1 : this.startingBlock
+        this.offset = offset
+        this.logger.info(`Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`)
+
+        // Set the recently disbursed set
+        this._addRecentlyDisbursed(results)
+
+        // run the `updateValues` callback
+        await this.updateValues({ startingBlock: this.startingBlock, offset: this.offset, successCount })
       } catch (e) {
         this.logger.error(`Got error: ${e}, sleeping`)
         await this._delay(1000)
       }
     }
+
+    this._shouldStop = false
+  }
+
+  async stop () {
+    this._shouldStop = true
+    this.delayCalculator.stop()
+  }
+
+  async processChallenges (challenges) {
+    let toProcess = [...challenges]
+    while (toProcess.length) {
+      try {
+        this.logger.info(`Processing ${toProcess.length} challenges`)
+        let toAttest = toProcess.splice(0, this.parallelization)
+        const { accumulatedErrors: errors } = await this._attestInParallel(toAttest)
+        if (errors && errors.length) {
+          this.logger.error(`Got errors in processChallenges: ${errors}`)
+          return { errors }
+        }
+      } catch (e) {
+        this.logger.error(`Got error: ${e}, sleeping`)
+        await this._delay(1000)
+      }
+    }
+    return {}
   }
 
   /**
@@ -298,25 +355,8 @@ class RewardsAttester {
    *
    * @memberof RewardsAttester
    */
-  async _attestInParallel () {
+  async _attestInParallel (toAttest) {
     this.logger.info(`Attesting in parallel with startingBlock: ${this.startingBlock}, offset: ${this.offset}, parallelization: ${this.parallelization}`)
-
-    // Refill queue if necessary, returning early if error
-    const { error } = await this._refillQueueIfNecessary()
-    if (error) {
-      this.logger.error(`Got error trying to refill challenges: [${error}]`)
-      throw new Error(error)
-    }
-
-    // If queue is still empty, sleep and return
-    if (!this.undisbursedQueue.length) {
-      this.logger.info(`No undisbursed challenges. Sleeping...`)
-      await this._delay(1000)
-      return
-    }
-
-    // Get undisbursed rewards
-    let toAttest = this.undisbursedQueue.splice(0, this.parallelization)
     // Get the highest block number, ignoring Solana based challenges (i.e. listens) which have a significantly higher
     // slot and throw off this calculation.
     // TODO: [AUD-1217] we should handle this in a less hacky way, possibly by
@@ -331,6 +371,7 @@ class RewardsAttester {
     // as well as a flag that indicates whether we should reselect.
     let { successful, noRetry, needsRetry, shouldReselect } = await this._processResponses(results)
     let successCount = successful.length
+    let accumulatedErrors = noRetry
 
     // Increment offset by the # of errors we're not retrying that have the max block #.
     //
@@ -349,6 +390,7 @@ class RewardsAttester {
       }
       const res = await Promise.all(needsRetry.map(this._performSingleAttestation))
       ;({ successful, needsRetry, noRetry, shouldReselect } = await this._processResponses(res))
+      accumulatedErrors = [...accumulatedErrors, ...noRetry]
 
       offset += noRetry.filter(({ completedBlocknumber }) => completedBlocknumber === highestBlock).length
       successCount += successful.length
@@ -356,18 +398,16 @@ class RewardsAttester {
 
     if (retryCount === this.maxRetries) {
       this.logger.error(`Gave up with ${retryCount} retries`)
+      accumulatedErrors = [...accumulatedErrors, ...needsRetry]
     }
 
-    // Set startingBlock and offset
-    this.startingBlock = highestBlock ? highestBlock - 1 : this.startingBlock
-    this.offset = offset
-    this.logger.info(`Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`)
-
-    // Set the recently disbursed set
-    this._addRecentlyDisbursed(results)
-
-    // run the `updateValues` callback
-    await this.updateValues({ startingBlock: this.startingBlock, offset: this.offset, successCount })
+    return {
+      accumulatedErrors,
+      highestBlock,
+      offset,
+      results,
+      successCount
+    }
   }
 
   /**
@@ -394,7 +434,6 @@ class RewardsAttester {
    *     handle: string,
    *     wallet: string,
    *     completedBlocknumber: number
-   *     instructionsPerTransaction?: number
    * }} {
    *     challengeId,
    *     userId,
@@ -403,7 +442,6 @@ class RewardsAttester {
    *     handle,
    *     wallet,
    *     completedBlocknumber,
-   *     instructionsPerTransaction
    *   }
    * @return {Promise<AttestationResponse>}
    * @memberof RewardsAttester
@@ -415,10 +453,9 @@ class RewardsAttester {
     amount,
     handle,
     wallet,
-    completedBlocknumber,
-    instructionsPerTransaction
+    completedBlocknumber
   }) {
-    this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}] ${instructionsPerTransaction ? '[with single attestation flow!]' : ''}`)
+    this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
       challengeId,
       encodedUserId: userId,
@@ -430,7 +467,6 @@ class RewardsAttester {
       quorumSize: this.quorumSize,
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
-      instructionsPerTransaction,
       logger: this.logger
     })
 
@@ -618,7 +654,7 @@ class RewardsAttester {
 
     this.logger.info(`Filtering with POA threshold: ${poaThreshold}, Solana threshold: ${solanaThreshold}`)
     const res = challenges.filter(c => (
-      c.completedBlocknumber < (this.isSolanaChallenge(c.challengeId) ? solanaThreshold : poaThreshold)
+      c.completedBlocknumber <= (this.isSolanaChallenge(c.challengeId) ? solanaThreshold : poaThreshold)
     ))
     if (res.length < challenges.length) {
       this.logger.info(`Filtered out ${challenges.length - res.length} recent challenges`)

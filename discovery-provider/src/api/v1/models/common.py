@@ -16,7 +16,7 @@ favorite = ns.model(
     "favorite",
     {
         "favorite_item_id": fields.String(required=True),
-        "favorite_type": fields.String(required=True),
+        "favorite_type": fields.String(required=True, discriminator=True),
         "user_id": fields.String(required=True),
     },
 )

@@ -6,7 +6,6 @@ from src.tasks.celery_app import celery
 logger = logging.getLogger(__name__)
 
 # Names of the aggregate tables to update
-AGGREGATE_TRACK = "aggregate_track"
 AGGREGATE_PLAYLIST = "aggregate_playlist"
 
 DEFAULT_UPDATE_TIMEOUT = 60 * 10  # 10 minutes
@@ -48,13 +47,6 @@ def update_materialized_view(db, redis, mat_view_name, timeout=DEFAULT_UPDATE_TI
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="update_aggregate_track", bind=True)
-def update_aggregate_track(self):
-    db = update_aggregate_track.db
-    redis = update_aggregate_track.redis
-    update_materialized_view(db, redis, AGGREGATE_TRACK)
-
-
 @celery.task(name="update_aggregate_playlist", bind=True)
 def update_aggregate_playlist(self):
     db = update_aggregate_playlist.db

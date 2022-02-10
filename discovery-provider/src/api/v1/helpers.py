@@ -4,7 +4,7 @@ from typing import Dict, cast
 
 from flask_restx import reqparse
 from src import api_helpers
-from src.models import ChallengeType
+from src.models import ChallengeType, SaveType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.utils.config import shared_config
@@ -105,6 +105,9 @@ def extend_user(user, current_user_id=None):
         not current_user_id or current_user_id != user["user_id"]
     ):
         del user["playlist_library"]
+    # Marshal wallets into clear names
+    user["erc_wallet"] = user["wallet"]
+    user["spl_wallet"] = user["spl_wallet"]
 
     return user
 
@@ -119,6 +122,11 @@ def extend_favorite(favorite):
     favorite["user_id"] = encode_int_id(favorite["user_id"])
     favorite["favorite_item_id"] = encode_int_id(favorite["save_item_id"])
     favorite["favorite_type"] = favorite["save_type"]
+    if "save_item" in favorite:
+        if favorite["save_type"] == SaveType.track:
+            favorite["favorite_item"] = extend_track(favorite["save_item"])
+        else:
+            favorite["favorite_item"] = extend_playlist(favorite["save_item"])
     return favorite
 
 

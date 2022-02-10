@@ -8,5 +8,4 @@ class TrendingType(Enum):
 
 
 class TrendingVersion(Enum):
-    ML51L = "ML51L"
     EJ57D = "EJ57D"
