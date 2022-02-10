@@ -30,6 +30,7 @@ from src.queries import (
     search_queries,
     skipped_transactions,
     user_signals,
+    load_test,
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
@@ -241,6 +242,13 @@ def create(test_config=None, mode="app"):
         helpers.configure_logging()
         configure_celery(celery_app.celery, test_config)
         return celery_app
+
+    if mode == "loadtest":
+        helpers.configure_flask_app_logging(
+            app, shared_config["discprov"]["loglevel_flask"]
+        )
+        app.register_blueprint(load_test.bp)
+        return app
 
     raise ValueError("Invalid mode")
 
