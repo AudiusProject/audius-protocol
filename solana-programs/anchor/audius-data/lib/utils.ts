@@ -16,15 +16,6 @@ export const ethAddressToArray = (ethAddress: string) => {
   return Uint8Array.of(...new BN(strippedEthAddress, "hex").toArray("be"));
 };
 
-/// Generate a key from random bytes, used for testing
-export const getRandomPrivateKey = () => {
-  let privKey: Uint8Array;
-  do {
-    privKey = randomBytes(32);
-  } while (!secp256k1.privateKeyVerify(privKey));
-  return privKey;
-};
-
 /// Retrieve a transaction with retries
 export const getTransaction = async (provider: Provider, tx: string) => {
   let info = await provider.connection.getTransaction(tx);
