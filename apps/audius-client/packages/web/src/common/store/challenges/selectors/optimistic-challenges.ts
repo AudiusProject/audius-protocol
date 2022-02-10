@@ -76,19 +76,7 @@ const toOptimisticChallenge = (
 
   const challengeOverridden = {
     ...challenge,
-    ...userChallengeOverrides,
-    // For aggregate challenges, we show the total amount
-    // you'd get when completing every step of the challenge
-    // -- i.e. for referrals, show 1 audio x 5 steps = 5 audio
-    totalAmount:
-      challenge.challenge_type === 'aggregate'
-        ? challenge.amount * challenge.max_steps
-        : challenge.amount,
-    undisbursedAmount: undisbursed.reduce<number>(
-      (acc, val) => acc + val.amount,
-      0
-    ),
-    undisbursedSpecifiers: undisbursed.map(c => c.specifier)
+    ...userChallengeOverrides
   }
 
   // The client is more up to date than Discovery Nodes, so override whenever possible.
@@ -99,10 +87,27 @@ const toOptimisticChallenge = (
       currentStepCountOverride >= challengeOverridden.max_steps
   }
 
+  const state = getUserChallengeState(challengeOverridden)
+  // For aggregate challenges, we show the total amount
+  // you'd get when completing every step of the challenge
+  // -- i.e. for referrals, show 1 audio x 5 steps = 5 audio
+  const totalAmount =
+    challenge.challenge_type === 'aggregate'
+      ? challenge.amount * challenge.max_steps
+      : challenge.amount
+  const claimableAmount =
+    state === 'completed' && challengeOverridden.challenge_type !== 'aggregate'
+      ? totalAmount
+      : undisbursed.reduce<number>((acc, val) => acc + val.amount, 0)
+  const undisbursedSpecifiers = undisbursed.map(c => c.specifier)
+
   return {
     ...challengeOverridden,
     __isOptimistic: true,
-    state: getUserChallengeState(challengeOverridden)
+    state,
+    totalAmount,
+    claimableAmount,
+    undisbursedSpecifiers
   }
 }
 

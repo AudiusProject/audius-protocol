@@ -45,7 +45,7 @@ const NavAudio = () => {
 
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const hasClaimableTokens = Object.values(userChallenges).some(
-    challenge => challenge && challenge.undisbursedAmount > 0
+    challenge => challenge && challenge.claimableAmount > 0
   )
 
   const [bubbleType, setBubbleType] = useState<BubbleType>('none')
