@@ -2,7 +2,7 @@ from inspect import currentframe
 from time import time
 
 from sqlalchemy import text
-from utils.metric import Metric
+from src.utils.metric import Metric
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
     save_indexed_checkpoint,
@@ -87,7 +87,7 @@ def update_aggregate_table(
         },
     )
 
-    metric.save_time(session, f"update_aggregate_table:{table_name}")
+    metric.save_time(session, f"tasks.aggregates:update_aggregate_table:{table_name}")
 
     # update indexing_checkpoints with the new id
     save_indexed_checkpoint(session, table_name, current_checkpoint)

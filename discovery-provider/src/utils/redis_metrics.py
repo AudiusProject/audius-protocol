@@ -13,6 +13,7 @@ from src.models import (
     AggregateMonthlyTotalUsersMetrics,
     AggregateMonthlyUniqueUsersMetrics,
 )
+from src.utils.metric import Metric
 from src.utils.config import shared_config
 from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
 from src.utils.query_params import app_name_param, stringify_query_params
@@ -639,6 +640,10 @@ def record_metrics(func):
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
 
-        return func(*args, **kwargs)
+        metric = Metric()
+        result = func(*args, **kwargs)
+        metric.save_time(session, f"utils.redis_metrics:{func}")
+
+        return result
 
     return wrap
