@@ -1267,3 +1267,16 @@ class UserListeningHistory(Base):
         return f"<UserListeningHistory(\
 user_id={self.user_id},\
 listening_history={self.listening_history})>"
+
+
+class Metrics(Base):
+    __tablename__ = "metrics"
+    metric_name = Column(String, primary_key=True, nullable=False)
+    timestamp = Column(DateTime, primary_key=True, nullable=False, default=func.now())
+    value = Column(Integer, nullable=False)
+
+    def __repr__(self):
+        return f"<EthBlock(\
+metric_name={self.metric_name},\
+timestamp={self.timestamp},\
+value={self.value})>"
