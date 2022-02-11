@@ -44,6 +44,10 @@ export enum FailureReason {
   // The funds have already been sent, but we have not
   // indexed the challenge.
   ALREADY_SENT = 'ALREADY_SENT',
+  // UserChallenge doesn't exist on DN
+  MISSING_CHALLENGES = 'MISSING_CHALLENGES',
+  // UserChallenge is not in complete state
+  CHALLENGE_INCOMPLETE = 'CHALLENGE_INCOMPLETE',
   // An unknown error has occurred
   UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 }
