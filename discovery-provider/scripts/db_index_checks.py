@@ -1,3 +1,9 @@
+"""
+This file can be used to run checks on the db state
+As part of the container, this should be run after migrations, before application init.
+Some examples of uses are to check if indexes exist, extensions are enabled, etc
+"""
+
 import os
 from sqlalchemy import create_engine
 
@@ -108,7 +114,6 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS ix_users_is_deactivated ON public.users USING btree (is_deactivated)",
     "CREATE INDEX IF NOT EXISTS ix_users_wallet ON public.users USING btree (wallet)",
     "CREATE UNIQUE INDEX IF NOT EXISTS users_pkey ON public.users USING btree (is_current, user_id, blockhash, txhash)",
-
     # soon to be deprecated in 98e2a0a25ada
     # "CREATE INDEX IF NOT EXISTS interval_play_year_count_idx ON public.aggregate_interval_plays USING btree (year_listen_counts)",
 ]
