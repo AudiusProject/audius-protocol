@@ -23,6 +23,7 @@ import { getUsers } from 'common/store/cache/users/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { saveCollection } from 'common/store/social/collections/actions'
 import * as socialActions from 'common/store/social/users/actions'
+import { getFeePayer } from 'common/store/solana/selectors'
 import { ELECTRONIC_SUBGENRES, Genre } from 'common/utils/genres'
 import { getIGUserUrl } from 'components/instagram-auth/InstagramAuth'
 import AudiusBackend from 'services/AudiusBackend'
@@ -290,6 +291,8 @@ function* signUp() {
   const alreadyExisted = signOn.accountAlreadyExisted
   const referrer = signOn.referrer
 
+  const feePayerOverride = yield select(getFeePayer)
+
   yield put(
     confirmerActions.requestConfirmation(
       handle,
@@ -301,7 +304,8 @@ function* signUp() {
             password,
             formFields: createUserMetadata,
             hasWallet: alreadyExisted,
-            referrer
+            referrer,
+            feePayerOverride
           }
         )
 

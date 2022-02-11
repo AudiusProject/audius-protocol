@@ -26,12 +26,12 @@ export const checkIsCreatedTokenAccount = async (addr: string) => {
   return tokenAccount != null
 }
 
-export const createUserBank = async () => {
+export const createUserBank = async (feePayerOverride = null) => {
   await waitForLibsInit()
-  return libs().solanaWeb3Manager.createUserBank()
+  return libs().solanaWeb3Manager.createUserBank(feePayerOverride)
 }
 
-export const createUserBankIfNeeded = async () => {
+export const createUserBankIfNeeded = async (feePayerOverride = null) => {
   await waitForLibsInit()
   const userbankEnabled = remoteConfigInstance.getFeatureEnabled(
     FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP
@@ -43,7 +43,7 @@ export const createUserBankIfNeeded = async () => {
     if (userbankExists) return
     console.warn(`Userbank doesn't exist, attempting to create...`)
     await track(Name.CREATE_USER_BANK_REQUEST, { userId })
-    const { error, errorCode } = await createUserBank()
+    const { error, errorCode } = await createUserBank(feePayerOverride)
     if (error || errorCode) {
       console.error(
         `Failed to create userbank, with err: ${error}, ${errorCode}`
