@@ -2,6 +2,7 @@
   opacity: 0;
   position: relative;
   min-height: 16px;
+  flex-wrap: wrap;
 }
 
 .audio:hover:before {
@@ -19,7 +20,6 @@
   display: flex;
   align-items: center;
   padding-left: 8px;
-  height: 16px;
   transition: opacity ease-in-out 0.5s;
   opacity: 1;
 }
@@ -41,17 +41,25 @@
   color: var(--neutral-light-3);
 }
 
+.amountContainer {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  margin-top: 12px;
+}
+
 .bubbleContainer {
   flex: 1;
   position: relative;
   display: flex;
   align-items: center;
+  min-width: 136px;
+  margin-top: 12px;
 }
 
 .actionBubble {
   display: flex;
   align-items: center;
-  margin-left: 12px;
   padding: 4px 8px;
   color: var(--static-white);
   background: var(--secondary);
@@ -61,7 +69,6 @@
   font-weight: var(--font-bold);
   letter-spacing: 0.1em;
   transition: all 0.07s ease-in-out;
-  position: absolute;
 }
 
 .actionBubble:hover {
