@@ -85,17 +85,19 @@ const NavAudio = () => {
       )}
       onClick={goToAudioPage}
     >
-      {positiveTotalBalance && audioBadge ? (
-        cloneElement(audioBadge, {
-          height: 16,
-          width: 16
-        })
-      ) : (
-        <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
-      )}
-      <span className={styles.audioAmount}>
-        {formatWei(totalBalance!, true, 0)}
-      </span>
+      <div className={styles.amountContainer}>
+        {positiveTotalBalance && audioBadge ? (
+          cloneElement(audioBadge, {
+            height: 16,
+            width: 16
+          })
+        ) : (
+          <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
+        )}
+        <span className={styles.audioAmount}>
+          {formatWei(totalBalance!, true, 0)}
+        </span>
+      </div>
       <div className={styles.bubbleContainer}>
         <Transition
           items={bubbleType}
