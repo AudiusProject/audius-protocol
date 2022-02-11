@@ -42,6 +42,8 @@ export type DynamicImageProps = {
   usePlaceholder?: boolean
   // overlays rendered above image
   children?: ReactNode
+  // callback when image finishes loading
+  onLoad?: () => void
 }
 
 const styles = StyleSheet.create({
@@ -51,6 +53,13 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0
+  },
+  children: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 })
 
@@ -112,7 +121,8 @@ export const DynamicImage = memo(function DynamicImage({
   styles: stylesProp,
   immediate,
   usePlaceholder = true,
-  children
+  children,
+  onLoad
 }: DynamicImageProps) {
   const [firstSize, setFirstSize] = useState(0)
   const [secondSize, setSecondSize] = useState(0)
@@ -130,12 +140,12 @@ export const DynamicImage = memo(function DynamicImage({
   ] = useInstanceVar<ImageSourcePropType | null>(null) // no previous image
 
   const animateTo = useCallback(
-    (anim: Animated.Value, toValue: number) =>
+    (anim: Animated.Value, toValue: number, callback?: () => void) =>
       Animated.timing(anim, {
         toValue,
         duration: immediate ? 100 : 500,
         useNativeDriver: true
-      }).start(),
+      }).start(callback),
     [immediate]
   )
 
@@ -151,13 +161,13 @@ export const DynamicImage = memo(function DynamicImage({
     if (isFirstImageActive) {
       setIsFirstImageActive(false)
       setFirstImage(source)
-      animateTo(firstOpacity, 1)
+      animateTo(firstOpacity, 1, onLoad)
       animateTo(secondOpacity, 0)
     } else {
       setIsFirstImageActive(true)
       setSecondImage(source)
       animateTo(firstOpacity, 0)
-      animateTo(secondOpacity, 1)
+      animateTo(secondOpacity, 1, onLoad)
     }
   }, [
     animateTo,
@@ -167,7 +177,8 @@ export const DynamicImage = memo(function DynamicImage({
     isFirstImageActive,
     secondOpacity,
     setIsFirstImageActive,
-    setPrevImage
+    setPrevImage,
+    onLoad
   ])
 
   const handleSetFirstSize = useCallback((event: LayoutChangeEvent) => {
@@ -208,7 +219,7 @@ export const DynamicImage = memo(function DynamicImage({
           usePlaceholder={usePlaceholder}
         />
       </Animated.View>
-      {children}
+      {children ? <View style={styles.children}>{children}</View> : null}
     </View>
   )
 })
