@@ -122,7 +122,7 @@ cat <<EOF
     "audiusEthRegistryAddress": "$audius_eth_registry_address",
     "validSigner": "$valid_signer",
     "signerGroup": "$signer_group",
-    "feePayerWallet": $(cat feepayer.json),
+    "feePayerWallets": [{ "privateKey": $(cat feepayer.json) }],
     "feePayerWalletPubkey": "$feepayer_pubkey",
     "ownerWallet": $owner_wallet,
     "ownerWalletPubkey": "$owner_wallet_pubkey",
