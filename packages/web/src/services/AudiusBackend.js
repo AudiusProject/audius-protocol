@@ -2697,14 +2697,24 @@ class AudiusBackend {
           wallet: recipientEthAddress
         }))
       )
-      // If any of the errors are HCAPTCHA or Cognito, return that one
       if (res.errors) {
-        console.error(`Got errors in aggreagte attestation flow: ${res.errors}`)
-        const hcaptchaOrCognito = res.errors.find(
-          e => e === FailureReason.HCAPTCHA || e === FailureReason.COGNITO_FLOW
+        console.error(
+          `Got errors in aggregate attestation flow: ${JSON.stringify(
+            res.errors
+          )}`
         )
+        const hcaptchaOrCognito = res.errors.find(
+          ({ error }) =>
+            error === FailureReason.HCAPTCHA ||
+            error === FailureReason.COGNITO_FLOW
+        )
+
+        // If any of the errors are HCAPTCHA or Cognito, return that one
         // Otherwise, just return the first error we saw
-        return hcaptchaOrCognito || res.errors[0]
+        const error = hcaptchaOrCognito
+          ? hcaptchaOrCognito.error
+          : res.errors[0].error
+        return { error }
       }
       return res
     } catch (e) {

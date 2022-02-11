@@ -241,7 +241,14 @@ function* claimChallengeRewardAsync(
             break
           case FailureReason.BLOCKED:
             throw new Error('User is blocked from claiming')
+          // For these 'attestation aggregation errors',
+          // we've already retried in libs so unlikely to succeed here.
+          case FailureReason.MISSING_CHALLENGES:
+          case FailureReason.CHALLENGE_INCOMPLETE:
+            yield put(claimChallengeRewardFailed())
+            break
           case FailureReason.UNKNOWN_ERROR:
+          default:
             // If this was an aggregate challenges with multiple specifiers,
             // then libs handles the retries and we shouldn't retry here.
             if (specifiers.length > 1) {
