@@ -62,6 +62,7 @@ import queueSagas from 'store/queue/sagas'
 import reachabilitySagas from 'store/reachability/sagas'
 import routingSagas from 'store/routing/sagas'
 import socialSagas from 'store/social/sagas'
+import solanaSagas from 'store/solana/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
 import walletSagas from 'store/wallet/sagas'
 
@@ -146,6 +147,9 @@ export default function* rootSaga() {
 
     // Remote config
     remoteConfigSagas(remoteConfigInstance),
+
+    // Solana
+    solanaSagas(),
 
     // Error
     errorSagas()

@@ -52,6 +52,7 @@ import {
   setUndisbursedChallenges,
   UndisbursedUserChallenge
 } from 'common/store/pages/audio-rewards/slice'
+import { getFeePayer } from 'common/store/solana/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { getBalance, increaseBalance } from 'common/store/wallet/slice'
 import { stringAudioToStringWei } from 'common/utils/wallet'
@@ -176,6 +177,7 @@ function* claimChallengeRewardAsync(
   } = getClaimingConfig()
 
   const currentUser: User = yield select(getAccountUser)
+  const feePayerOverride: string = yield select(getFeePayer)
 
   // When endpoints is unset, `submitAndEvaluateAttestations` picks for us
   const endpoints = rewardsAttestationEndpoints?.split(',') || null
@@ -208,7 +210,8 @@ function* claimChallengeRewardAsync(
         quorumSize,
         endpoints,
         AAOEndpoint,
-        parallelization
+        parallelization,
+        feePayerOverride
       }
     )
     if (response.error) {

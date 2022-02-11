@@ -27,6 +27,7 @@ import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
+import solanaReducer from 'common/store/solana/slice'
 import stemsUpload from 'common/store/stems-upload/slice'
 import addToPlaylistReducer, {
   AddToPlaylistState
@@ -107,6 +108,9 @@ export const reducers = {
     track
   }),
 
+  // Solana
+  solana: solanaReducer,
+
   stemsUpload
 }
 
@@ -139,6 +143,7 @@ export const sagas = {
   // pages/user-list/following/sagas.ts
   // pages/user-list/reposts/sagas.ts
   // pages/user-list/favorites/sagas.ts
+  // store/solana/sagas.ts
 }
 
 export type CommonState = {
@@ -182,6 +187,8 @@ export type CommonState = {
     track: TrackPageState
     profile: ProfilePageState
   }
+
+  solana: ReturnType<typeof solanaReducer>
 
   stemsUpload: ReturnType<typeof stemsUpload>
 }
