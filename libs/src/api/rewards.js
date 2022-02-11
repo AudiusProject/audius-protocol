@@ -591,8 +591,37 @@ class Rewards extends Base {
     })
     return receipt
   }
+
+  /**
+   * Logs results of an attestation to identity.
+   *
+   * @param {{
+   *  status: string,
+   *  userId: string,
+   *  challengeId: string,
+   *  amount: number,
+   *  source: string
+   *  specifier: string
+   *  error?: string,
+   *  phase?: string,
+   * }} { status, userId, challengeId, amount, error, phase, specifier }
+   * @memberof IdentityService
+   */
+  async sendAttestationResult({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+    await this.identityService.sendAttestationResult({
+      status,
+      userId,
+      challengeId,
+      amount,
+      error,
+      phase,
+      source,
+      specifier
+    })
+  }
 }
 
 module.exports = Rewards
 module.exports.SubmitAndEvaluateError = SubmitAndEvaluateError
 module.exports.AttestationPhases = AttestationPhases
+

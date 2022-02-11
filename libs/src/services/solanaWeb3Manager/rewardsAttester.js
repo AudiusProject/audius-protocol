@@ -495,7 +495,7 @@ class RewardsAttester {
 
     if (success) {
       this.logger.info(`Successfully attestested for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}]!`)
-      await this.reporter.reportSuccess({ userId, challengeId, amount })
+      await this.reporter.reportSuccess({ userId, challengeId, amount, specifier })
       return {
         challengeId,
         userId,
@@ -514,7 +514,8 @@ class RewardsAttester {
       error,
       amount,
       userId,
-      challengeId
+      challengeId,
+      specifier
     })
 
     return {
@@ -629,7 +630,7 @@ class RewardsAttester {
           noRetry.push(res)
           const isAAO = AAO_ERRORS.has(res.error)
           if (isAAO) {
-            this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error })
+            this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error, specifier: res.specifier })
           }
         }
         return !isNoRetry
