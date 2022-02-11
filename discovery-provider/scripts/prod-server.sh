@@ -8,6 +8,12 @@ if [ "$audius_db_run_migrations" != false ]; then
   echo "Finished running migrations"
 fi
 
+# run a script to ensure all indexes exist in the db
+echo "Running db_index_checks"
+python3 ./scripts/db_index_checks.py
+echo "Finished db_index_checks"
+
+
 # Audius Discovery Provider / Gunicorn
 
 # run with gunicorn web server in prod for greater performance and robustness
