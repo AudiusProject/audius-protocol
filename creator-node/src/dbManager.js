@@ -215,14 +215,17 @@ class DBManager {
     clockMin = null,
     clockMax = null
   }) {
-    let subquery = 'select "multihash","clock" from "Files"'
+    let query = `
+      select
+        md5(string_agg("multihash", ',' order by "clock" asc))
+      from "Files"
+    `
 
-    if (lookupWallet) {
-      subquery += ` where "cnodeUserUUID" = (
-        select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = :lookupWallet
-      )`
-    } else if (lookupCNodeUserUUID) {
-      subquery += ` where "cnodeUserUUID" = :lookupCNodeUserUUID`
+    if (lookupCNodeUserUUID) {
+      query += ' where "cnodeUserUUID" = :lookupCNodeUserUUID'
+    } else if (lookupWallet) {
+      query +=
+        ' where "cnodeUserUUID" = (select "cnodeUserUUID" from "CNodeUsers" where "walletPublicKey" = :lookupWallet)'
     } else {
       throw new Error('Error: Must provide lookupCNodeUserUUID or lookupWallet')
     }
@@ -230,30 +233,23 @@ class DBManager {
     if (clockMin) {
       clockMin = parseInt(clockMin)
       // inclusive
-      subquery += ` and clock >= :clockMin`
+      query += ` and "clock" >= :clockMin`
     }
     if (clockMax) {
       clockMax = parseInt(clockMax)
       // exclusive
-      subquery += ` and clock < :clockMax`
+      query += ` and "clock" < :clockMax`
     }
 
     try {
-      const filesHashResp = await sequelize.query(
-        `
-        select
-          md5(cast(array_agg(subqueryResp."multihash" order by "clock" asc) as text))
-        from (${subquery}) as subqueryResp;
-        `,
-        {
-          replacements: {
-            lookupWallet,
-            lookupCNodeUserUUID,
-            clockMin,
-            clockMax
-          }
+      const filesHashResp = await sequelize.query(query, {
+        replacements: {
+          lookupWallet,
+          lookupCNodeUserUUID,
+          clockMin,
+          clockMax
         }
-      )
+      })
 
       const filesHash = filesHashResp[0][0].md5
       return filesHash
@@ -284,10 +280,9 @@ class DBManager {
       const query = `
         select
           "cnodeUserUUID",
-          md5(cast(array_agg("multihash" order by "clock" asc) as text)) as "filesHash"
-        from
-        (
-          select "multihash", "cnodeUserUUID", "clock"
+          md5(string_agg("multihash", ',' order by "clock" asc)) as "filesHash"
+        from (
+          select "cnodeUserUUID", "multihash", "clock"
           from "Files"
           where "cnodeUserUUID" in (:cnodeUserUUIDs)
         ) as subquery

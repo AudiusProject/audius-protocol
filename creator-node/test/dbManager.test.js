@@ -2,7 +2,7 @@ const assert = require('assert')
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
 const getUuid = require('uuid/v4')
-const crypto = require('crypto')
+
 const request = require('supertest')
 const path = require('path')
 const sinon = require('sinon')
@@ -23,7 +23,7 @@ const {
 const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { saveFileToStorage } = require('./lib/helpers')
+const { saveFileToStorage, computeFilesHash } = require('./lib/helpers')
 
 const TestAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
@@ -937,11 +937,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
     )
 
     // compute expectedFilesHash
-    const multihashString = `{${multihashes.join(',')}}`
-    let expectedFilesHash = crypto
-      .createHash('md5')
-      .update(multihashString)
-      .digest('hex')
+    let expectedFilesHash = computeFilesHash(multihashes)
 
     // fetch filesHash by cnodeUserUUID & assert equal
     let actualFilesHash = await DBManager.fetchFilesHashFromDB({
@@ -990,11 +986,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
     const clockMax = 8 // exclusive
 
     /** clockMin */
-    let multihashString = `{${multihashes.slice(clockMin - 1).join(',')}}`
-    let expectedFilesHash = crypto
-      .createHash('md5')
-      .update(multihashString)
-      .digest('hex')
+    let expectedFilesHash = computeFilesHash(multihashes.slice(clockMin - 1))
     let actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
       clockMin
@@ -1002,11 +994,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
     assert.strictEqual(actualFilesHash, expectedFilesHash)
 
     /** clockMax */
-    multihashString = `{${multihashes.slice(0, clockMax - 1).join(',')}}`
-    expectedFilesHash = crypto
-      .createHash('md5')
-      .update(multihashString)
-      .digest('hex')
+    expectedFilesHash = computeFilesHash(multihashes.slice(0, clockMax - 1))
     actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
       clockMax
@@ -1014,13 +1002,8 @@ describe('Test fetchFilesHashFromDB()', async function () {
     assert.strictEqual(actualFilesHash, expectedFilesHash)
 
     /** clockMin and clockMax */
-    multihashString = `{${multihashes
-      .slice(clockMin - 1, clockMax - 1)
-      .join(',')}}`
-    expectedFilesHash = crypto
-      .createHash('md5')
-      .update(multihashString)
-      .digest('hex')
+    expectedFilesHash = computeFilesHash(multihashes
+      .slice(clockMin - 1, clockMax - 1))
     actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
       clockMin,
@@ -1046,11 +1029,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
     )
 
     // compute expectedFilesHashCNU1
-    const multihashStringCNU1 = `{${multihashesCNU1.join(',')}}`
-    const expectedFilesHashCNU1 = crypto
-      .createHash('md5')
-      .update(multihashStringCNU1)
-      .digest('hex')
+    const expectedFilesHashCNU1 = computeFilesHash(multihashesCNU1)
 
     // Create CNU2
     const walletCNU2 = getUuid()
@@ -1067,11 +1046,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
     )
 
     // compute expectedFilesHashCNU2
-    const multihashStringCNU2 = `{${multihashesCNU2.join(',')}}`
-    const expectedFilesHashCNU2 = crypto
-      .createHash('md5')
-      .update(multihashStringCNU2)
-      .digest('hex')
+    const expectedFilesHashCNU2 = computeFilesHash(multihashesCNU2)
 
     // fetch filesHashes & assert equal
     let cnodeUserUUIDs = [cnodeUserUUID, cnodeUserUUID2]
