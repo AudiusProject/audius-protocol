@@ -318,6 +318,7 @@ class SolanaWeb3Manager {
    *     tokenAmount: BN,
    *     instructionsPerTransaction?: number,
    *     logger: any
+   *     feePayerOverride: string | null
    * }} {
    *     attestations,
    *     oracleAttestation,
@@ -327,6 +328,7 @@ class SolanaWeb3Manager {
    *     tokenAmount,
    *     instructionsPerTransaction,
    *     logger
+   *     feePayerOverride
    *    }
    * @memberof SolanaWeb3Manager
    */
@@ -366,6 +368,7 @@ class SolanaWeb3Manager {
    *    recipientEthAddress: string
    *    oracleEthAddress: string
    *    logger: any
+   *    feePayerOverride: string | null
    * }} {
    *     challengeId,
    *     specifier,
@@ -373,6 +376,7 @@ class SolanaWeb3Manager {
    *     oracleEthAddress,
    *     tokenAmount,
    *     logger
+   *     feePayerOverride
    *   }
    * @memberof SolanaWeb3Manager
    */

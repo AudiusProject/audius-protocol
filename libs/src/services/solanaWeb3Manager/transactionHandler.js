@@ -46,6 +46,7 @@ class TransactionHandler {
    * @property {string} [recentBlockhash=null] optional recent blockhash to prefer over fetching
    * @property {boolean} [skipPreflight=null] optional per transaction override to skipPreflight
    * @property {any} [logger=console] optional logger
+   * @property {any} [feePayerOverride=null] optional fee payer override
    *
    * @param {Array<TransactionInstruction>} instructions an array of `TransactionInstructions`
    * @param {*} [errorMapping=null] an optional error mapping. Should expose a `fromErrorCode` method.
