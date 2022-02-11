@@ -286,7 +286,7 @@ class RewardsAttester {
         let toAttest = toProcess.splice(0, this.parallelization)
         const { accumulatedErrors: errors } = await this._attestInParallel(toAttest)
         if (errors && errors.length) {
-          this.logger.error(`Got errors in processChallenges: ${errors}`)
+          this.logger.error(`Got errors in processChallenges: ${JSON.stringify(errors)}`)
           return { errors }
         }
       } catch (e) {
@@ -578,11 +578,12 @@ class RewardsAttester {
   async _processResponses (responses) {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW, errors.BLOCKED])
-    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
     // Account for errors from DN aggregation + Solana program
-    // CHALLENGE_INCOMPLETE are already handled in the `submitAndEvaluate` flow -
+    // CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
     // safe to assume those won't work if we see them at this point.
-    const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT, errors.CHALLENGE_INCOMPLETE])
+    const NO_RETRY_ERRORS = new Set([...AAO_ERRORS, errors.CHALLENGE_INCOMPLETE, errors.MISSING_CHALLENGES])
+    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
+    const ALREADY_COMPLETE_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT])
 
     const noRetry = []
     const successful = []
@@ -597,15 +598,18 @@ class RewardsAttester {
         return true
       })
       // Filter out responses that are already disbursed
-      .filter(({ error }) => !NO_RETRY_ERRORS.has(error))
+      .filter(({ error }) => !ALREADY_COMPLETE_ERRORS.has(error))
       // Handle any AAO errors - report them and then exclude them from result set
       .filter((res) => {
-        const isAAO = AAO_ERRORS.has(res.error)
-        if (isAAO) {
-          this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error })
+        const isNoRetry = NO_RETRY_ERRORS.has(res.error)
+        if (isNoRetry) {
           noRetry.push(res)
+          const isAAO = AAO_ERRORS.has(res.error)
+          if (isAAO) {
+            this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error })
+          }
         }
-        return !isAAO
+        return !isNoRetry
       })
     )
 
