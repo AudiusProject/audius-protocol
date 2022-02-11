@@ -464,6 +464,10 @@ class SolanaWeb3Manager {
   async getSlot () {
     return this.connection.getSlot('processed')
   }
+
+  async getRandomFeePayer () {
+    return this.identityService.getRandomFeePayer()
+  }
 }
 
 module.exports = SolanaWeb3Manager

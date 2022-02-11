@@ -318,6 +318,16 @@ class IdentityService {
     })
   }
 
+  async getRandomFeePayer () {
+    return this._makeRequest({
+      url: '/solana/random_fee_payer',
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  }
+
   // Relays tx data through the solana relay endpoint
   // type TransactionData = {
   //   recentBlockhash: string
