@@ -37,6 +37,7 @@ import {
   setUserChallengesDisbursed,
   showRewardClaimedToast
 } from 'common/store/pages/audio-rewards/slice'
+import { getFeePayer } from 'common/store/solana/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { getBalance, increaseBalance } from 'common/store/wallet/slice'
 import { stringAudioToStringWei } from 'common/utils/wallet'
@@ -76,6 +77,7 @@ const testUserChallenge = {
   amount: 1,
   is_complete: true
 }
+const testFeePayer = '9AwMCALjKFp2ZQW97rnjJUzUiukzkGAH4HDz5V2uhW3D'
 
 const claimAsyncProvisions: StaticProvider[] = [
   [select(getAccountUser), testUser],
@@ -85,7 +87,8 @@ const claimAsyncProvisions: StaticProvider[] = [
       args: [{ challengeId: testUserChallenge.challenge_id }]
     }),
     testUserChallenge
-  ]
+  ],
+  [select(getFeePayer), testFeePayer]
 ]
 
 const retryClaimProvisions: StaticProvider[] = [
@@ -105,7 +108,8 @@ const expectedRequestArgs = {
   quorumSize: 1,
   endpoints: ['rewards attestation endpoints'],
   AAOEndpoint: 'oracle endpoint',
-  parallelization: 20
+  parallelization: 20,
+  feePayerOverride: testFeePayer
 }
 beforeAll(() => {
   // Setup remote config
