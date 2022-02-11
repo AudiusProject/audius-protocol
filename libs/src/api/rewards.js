@@ -481,10 +481,17 @@ class Rewards extends Base {
 
       needsAttestations = []
       attestations.forEach(a => {
-        if (a.res.error === GetAttestationError.CHALLENGE_INCOMPLETE ||
-          a.res.error === GetAttestationError.MISSING_CHALLENGES) {
+        // If it's a retryable error
+        const isRetryable = a.res.error === GetAttestationError.CHALLENGE_INCOMPLETE ||
+          a.res.error === GetAttestationError.MISSING_CHALLENGES
+
+        if (isRetryable) {
           needsAttestations.push(a.endpoint)
           logger.info(`Node ${a.endpoint} challenge still incomplete for challenge [${challengeId}], userId: ${encodedUserId}`)
+          // If final attempt, make sure we return the result
+          if (retryCount === maxAttempts) {
+            completedAttestations.push(a.res)
+          }
         } else {
           completedAttestations.push(a.res)
           if (a.res.error) {
