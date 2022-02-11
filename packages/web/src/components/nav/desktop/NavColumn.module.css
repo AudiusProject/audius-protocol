@@ -72,7 +72,7 @@ svg.logo path {
 
 .navColumn .accountWrapper {
   display: block;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 
   display: flex;
   flex-direction: row;
