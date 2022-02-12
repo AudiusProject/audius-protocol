@@ -134,6 +134,12 @@ const getClaimingConfig = () => {
   const parallelization = remoteConfigInstance.getRemoteVar(
     IntKeys.CLIENT_ATTESTATION_PARALLELIZATION
   )
+  const completionPollTimeout = remoteConfigInstance.getRemoteVar(
+    IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_TIMEOUT_MS
+  )
+  const completionPollFrequency = remoteConfigInstance.getRemoteVar(
+    IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS
+  )
   const { oracleEthAddress, AAOEndpoint } = getOracleConfig()
 
   return {
@@ -142,7 +148,9 @@ const getClaimingConfig = () => {
     oracleEthAddress,
     AAOEndpoint,
     rewardsAttestationEndpoints,
-    parallelization
+    parallelization,
+    completionPollFrequency,
+    completionPollTimeout
   }
 }
 
@@ -152,29 +160,42 @@ function* claimChallengeRewardAsync(
   const { claim, retryOnFailure, retryCount = 0 } = action.payload
   const { specifiers, challengeId, amount } = claim
 
-  // Do not proceed to claim if challenge is not complete from a DN perspective.
-  // This is possible because the client may optimistically set a challenge as complete
-  // even though the DN has not yet indexed the change that would mark the challenge as complete.
-  // In this case, we wait until the challenge is complete in the DN before claiming
-  yield race({
-    isComplete: call(
-      waitForValue,
-      getUserChallenge,
-      { challengeId },
-      (challenge: UserChallenge) => challenge.is_complete
-    ),
-    poll: call(pollUserChallenges),
-    timeout: delay(3000)
-  })
-
   const {
     quorumSize,
     maxClaimRetries,
     oracleEthAddress,
     AAOEndpoint,
     rewardsAttestationEndpoints,
-    parallelization
+    parallelization,
+    completionPollFrequency,
+    completionPollTimeout
   } = getClaimingConfig()
+
+  // Do not proceed to claim if challenge is not complete from a DN perspective.
+  // This is possible because the client may optimistically set a challenge as complete
+  // even though the DN has not yet indexed the change that would mark the challenge as complete.
+  // In this case, we wait until the challenge is complete in the DN before claiming
+  const challenge: UserChallenge = yield select(getUserChallenge, {
+    challengeId
+  })
+  if (challenge.challenge_type !== 'aggregate' && !challenge.is_complete) {
+    console.log('Waiting for challenge completion...')
+    const raceResult: { isComplete?: boolean } = yield race({
+      isComplete: call(
+        waitForValue,
+        getUserChallenge,
+        { challengeId },
+        (challenge: UserChallenge) => challenge.is_complete
+      ),
+      poll: call(pollUserChallenges, completionPollFrequency || 1000),
+      timeout: delay(completionPollTimeout || 10000)
+    })
+    if (!raceResult.isComplete) {
+      console.warn(
+        'Challenge still not marked as completed on DN. Attempting attestations anyway, but may fail...'
+      )
+    }
+  }
 
   const currentUser: User = yield select(getAccountUser)
   const feePayerOverride: string = yield select(getFeePayer)
@@ -476,10 +497,10 @@ function* watchUpdateHCaptchaScore() {
   })
 }
 
-function* pollUserChallenges() {
+function* pollUserChallenges(frequency: number) {
   while (true) {
     yield put(fetchUserChallenges())
-    yield delay(500)
+    yield delay(frequency)
   }
 }
 
