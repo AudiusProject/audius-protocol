@@ -23,6 +23,7 @@ import {
 import CIDCache from 'common/store/cache/CIDCache'
 import { uuid } from 'common/utils/uid'
 import * as schemas from 'schemas'
+import { ClientRewardsReporter } from 'services/audius-backend/Rewards'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { IS_MOBILE_USER_KEY } from 'store/account/mobileSagas'
 import { track } from 'store/analytics/providers/amplitude'
@@ -2676,6 +2677,9 @@ class AudiusBackend {
     await waitForLibsInit()
     try {
       if (!challenges.length) return
+
+      const reporter = new ClientRewardsReporter(audiusLibs)
+
       // If just a single challenge, use regular `submitAndEvaluate` route
       if (challenges.length === 1) {
         const res = await audiusLibs.Rewards.submitAndEvaluate({
@@ -2691,6 +2695,41 @@ class AudiusBackend {
           AAOEndpoint,
           feePayerOverride
         })
+
+        // Log results -
+        // These calls are fire-and-forget (not awaited)
+        // TODO: Remove this logic when we consolidate all
+        // rewards attesting in the RewardsAttester path
+        if (res.error) {
+          if (
+            res.error === FailureReason.HCAPTCHA ||
+            res.error === FailureReason.COGNITO_FLOW
+          ) {
+            reporter.reportAAORejection({
+              userId: encodedUserId,
+              challengeId: challenges[0].challenge_id,
+              specifier: challenges[0].specifier,
+              amount,
+              error: res.error
+            })
+          } else {
+            reporter.reportFailure({
+              userId: encodedUserId,
+              challengeId: challenges[0].challenge_id,
+              specifier: challenges[0].specifier,
+              amount,
+              error: res.error,
+              phase: res.phase
+            })
+          }
+        } else {
+          reporter.reportSuccess({
+            userId: encodedUserId,
+            challengeId: challenges[0].challenge_id,
+            specifier: challenges[0].specifier,
+            amount
+          })
+        }
         return res
       }
 
@@ -2702,7 +2741,8 @@ class AudiusBackend {
         aaoEndpoint: AAOEndpoint,
         aaoAddress: oracleEthAddress,
         endpoints: endpoints,
-        feePayerOverride
+        feePayerOverride,
+        reporter
       })
 
       const res = await attester.processChallenges(
