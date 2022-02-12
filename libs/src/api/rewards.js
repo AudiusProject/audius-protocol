@@ -469,7 +469,7 @@ class Rewards extends Base {
     do {
       logger.info(`Aggregating attestations with retries challenge: ${challengeId}, userId: ${encodedUserId}, endpoints: ${needsAttestations}, attempt ${retryCount}`)
       if (retryCount > 0) {
-        await (new Promise(resolve => setTimeout(resolve, 1000)))
+        await (new Promise(resolve => setTimeout(resolve, 2000)))
       }
 
       const attestations = await Promise.all(needsAttestations.map(async endpoint => {
@@ -590,6 +590,34 @@ class Rewards extends Base {
       attestations
     })
     return receipt
+  }
+
+  /**
+   * Logs results of an attestation to identity.
+   *
+   * @param {{
+   *  status: string,
+   *  userId: string,
+   *  challengeId: string,
+   *  amount: number,
+   *  source: string
+   *  specifier: string
+   *  error?: string,
+   *  phase?: string,
+   * }} { status, userId, challengeId, amount, error, phase, specifier }
+   * @memberof IdentityService
+   */
+  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+    await this.identityService.sendAttestationResult({
+      status,
+      userId,
+      challengeId,
+      amount,
+      error,
+      phase,
+      source,
+      specifier
+    })
   }
 }
 
