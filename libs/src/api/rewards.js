@@ -469,7 +469,7 @@ class Rewards extends Base {
     do {
       logger.info(`Aggregating attestations with retries challenge: ${challengeId}, userId: ${encodedUserId}, endpoints: ${needsAttestations}, attempt ${retryCount}`)
       if (retryCount > 0) {
-        await (new Promise(resolve => setTimeout(resolve, 1000)))
+        await (new Promise(resolve => setTimeout(resolve, 2000)))
       }
 
       const attestations = await Promise.all(needsAttestations.map(async endpoint => {
