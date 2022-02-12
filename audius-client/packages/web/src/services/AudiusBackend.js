@@ -2688,7 +2688,8 @@ class AudiusBackend {
           amount,
           quorumSize,
           endpoints,
-          AAOEndpoint
+          AAOEndpoint,
+          feePayerOverride
         })
         return res
       }
