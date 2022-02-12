@@ -128,9 +128,14 @@ const slice = createSlice({
           state.disbursedChallenges[challengeId] ?? [],
           specifiers
         )
-      }
-      // All completed challenges that are disbursed are fully disbursed
-      if (userChallenge?.is_complete) {
+        // All completed challenges that are disbursed are fully disbursed
+        if (userChallenge?.is_complete) {
+          state.userChallengesOverrides[challengeId] = {
+            ...state.userChallengesOverrides[challengeId],
+            is_disbursed: true
+          }
+        }
+      } else {
         state.userChallengesOverrides[challengeId] = {
           ...state.userChallengesOverrides[challengeId],
           is_disbursed: true
