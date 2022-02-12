@@ -17,7 +17,7 @@ const handleResult = async ({ status, userId, challengeId, amount, error, phase,
       await reporter.reportAAORejection({ userId, challengeId, amount, error, specifier })
       break
     default:
-      throw new Error("Bad status code")
+      throw new Error('Bad status code')
   }
 }
 
@@ -36,6 +36,6 @@ rewardsRouter.post('/attestation_result', handleResponse(async (req) => {
   }
 }))
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.use('/rewards', rewardsRouter)
 }
