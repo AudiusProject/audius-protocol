@@ -202,7 +202,13 @@ export enum Name {
   // Create User Bank
   CREATE_USER_BANK_REQUEST = 'Create User Bank: Request',
   CREATE_USER_BANK_SUCCESS = 'Create User Bank: Success',
-  CREATE_USER_BANK_FAILURE = 'Create User Bank: Failure'
+  CREATE_USER_BANK_FAILURE = 'Create User Bank: Failure',
+
+  // Rewards
+  REWARDS_CLAIM_START = 'Rewards Claim: Start Claim',
+  REWARDS_CLAIM_SUCCESS = 'Rewards Claim: Success',
+  REWARDS_CLAIM_FAILURE = 'Rewards Claim: Failure',
+  REWARDS_CLAIM_BLOCKED = 'Rewards Claim: Blocked'
 }
 
 type PageView = {
@@ -949,6 +955,45 @@ type CreateUserBankFailure = {
   error: string
 }
 
+type RewardsClaimStart = {
+  eventName: Name.REWARDS_CLAIM_START
+  userId: string
+  challengeId: string
+  specifier: string
+  amount: number
+  source: string
+}
+
+type RewardsClaimSuccess = {
+  eventName: Name.REWARDS_CLAIM_SUCCESS
+  userId: string
+  challengeId: string
+  specifier: string
+  amount: number
+  source: string
+}
+
+type RewardsClaimFailure = {
+  eventName: Name.REWARDS_CLAIM_FAILURE
+  userId: string
+  challengeId: string
+  specifier: string
+  amount: number
+  source: string
+  error: string
+  phase: string
+}
+
+type RewardsClaimBlocked = {
+  eventName: Name.REWARDS_CLAIM_BLOCKED
+  userId: string
+  challengeId: string
+  specifier: string
+  amount: number
+  source: string
+  error: string
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1079,3 +1124,7 @@ export type AllTrackingEvents =
   | CreateUserBankRequest
   | CreateUserBankSuccess
   | CreateUserBankFailure
+  | RewardsClaimStart
+  | RewardsClaimSuccess
+  | RewardsClaimFailure
+  | RewardsClaimBlocked
