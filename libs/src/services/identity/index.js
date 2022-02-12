@@ -394,7 +394,7 @@ class IdentityService {
    * }} { status, userId, challengeId, amount, error, phase, specifier }
    * @memberof IdentityService
    */
-  async sendAttestationResult({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier }) {
     return this._makeRequest({
       url: '/rewards/attestation_result',
       method: 'post',
@@ -410,7 +410,6 @@ class IdentityService {
       }
     })
   }
-
 
   /* ------- INTERNAL FUNCTIONS ------- */
 

@@ -607,7 +607,7 @@ class Rewards extends Base {
    * }} { status, userId, challengeId, amount, error, phase, specifier }
    * @memberof IdentityService
    */
-  async sendAttestationResult({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier }) {
     await this.identityService.sendAttestationResult({
       status,
       userId,
@@ -624,4 +624,3 @@ class Rewards extends Base {
 module.exports = Rewards
 module.exports.SubmitAndEvaluateError = SubmitAndEvaluateError
 module.exports.AttestationPhases = AttestationPhases
-
