@@ -38,6 +38,18 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     paddingRight: 20,
     marginBottom: spacing(1)
   },
+  headerLeft: {
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    height: spacing(6),
+    width: spacing(20)
+  },
+  headerRight: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    height: spacing(6),
+    width: spacing(20)
+  },
   iconNotification: {
     height: 28,
     width: 28
@@ -56,12 +68,15 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 type TopBarProps = StackHeaderProps
 
 export const TopBar = memo(
-  ({ navigation: topBarNavigation, back }: TopBarProps) => {
+  ({ navigation: topBarNavigation, back, options }: TopBarProps) => {
     const styles = useStyles()
+
     const { neutralLight4 } = useThemeColors()
     const navigation = useNavigation()
     const dispatch = useDispatch()
     const dispatchWeb = useDispatchWeb()
+
+    const { headerLeft, headerRight } = options
 
     const handlePressNotification = useCallback(() => {
       dispatch(openNotificationPanel())
@@ -82,28 +97,38 @@ export const TopBar = memo(
     return (
       <View style={styles.root}>
         <View style={styles.topBar}>
-          {back ? (
-            <TopBarArrowBack onPress={topBarNavigation.goBack} />
-          ) : (
-            <IconButton
-              icon={IconNotification}
-              styles={{ icon: styles.iconNotification }}
-              fill={neutralLight4}
-              onPress={handlePressNotification}
-            />
-          )}
+          <View style={styles.headerLeft}>
+            {headerLeft ? (
+              headerLeft({})
+            ) : back ? (
+              <TopBarArrowBack onPress={topBarNavigation.goBack} />
+            ) : (
+              <IconButton
+                icon={IconNotification}
+                styles={{ icon: styles.iconNotification }}
+                fill={neutralLight4}
+                onPress={handlePressNotification}
+              />
+            )}
+          </View>
           <IconButton
             icon={AudiusLogo}
             fill={neutralLight4}
             styles={{ icon: styles.audiusLogo }}
             onPress={handlePressHome}
           />
-          <IconButton
-            icon={IconSearch}
-            fill={neutralLight4}
-            styles={{ icon: styles.iconSearch }}
-            onPress={handlePressSearch}
-          />
+          <View style={styles.headerRight}>
+            {headerRight ? (
+              headerRight({})
+            ) : (
+              <IconButton
+                icon={IconSearch}
+                fill={neutralLight4}
+                styles={{ icon: styles.iconSearch }}
+                onPress={handlePressSearch}
+              />
+            )}
+          </View>
         </View>
       </View>
     )
