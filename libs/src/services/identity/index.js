@@ -380,6 +380,7 @@ class IdentityService {
   }
 
   /**
+   * Sends an attestation result to identity.
    *
    * @param {{
    *  status: string,
