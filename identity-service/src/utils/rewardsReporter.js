@@ -11,7 +11,6 @@ class SlackReporter {
 
   getJsonSlackMessage (obj) {
     return `\`\`\`
-Source: Identity
 ${Object.entries(obj).map(([key, value]) => `${key}: ${value}`).join('\n')}
 \`\`\``
   }
