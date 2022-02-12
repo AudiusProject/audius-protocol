@@ -2443,7 +2443,9 @@ class AudiusBackend {
   static async getRandomFeePayer() {
     await waitForLibsInit()
     try {
-      const feePayer = await audiusLibs.solanaWeb3Manager.getRandomFeePayer()
+      const {
+        feePayer
+      } = await audiusLibs.solanaWeb3Manager.getRandomFeePayer()
       return { feePayer }
     } catch (err) {
       console.error(err.message)
