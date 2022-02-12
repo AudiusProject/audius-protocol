@@ -74,7 +74,7 @@ class TransactionHandler {
       recentBlockhash,
       instructions: relayable,
       skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
-      feePayerOverride
+      feePayerOverride: feePayerOverride.toString()
     }
 
     try {

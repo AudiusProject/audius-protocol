@@ -127,6 +127,7 @@ class RewardsAttester {
    *    endpoints?: Array<string>
    *    runBehindSec?: number
    *    isSolanaChallenge?: (string) => boolean
+   *    feePayerOverride?: string
    * }} {
    *    libs,
    *    startingBlock,
@@ -144,6 +145,7 @@ class RewardsAttester {
    *    endpoints,
    *    runBehindSec
    *    isSolanaChallenge
+   *    feePayerOverride
    *  }
    * @memberof RewardsAttester
    */
@@ -163,7 +165,8 @@ class RewardsAttester {
     challengeIdsDenyList = [],
     endpoints = [],
     runBehindSec = 0,
-    isSolanaChallenge = (challengeId) => true
+    isSolanaChallenge = (challengeId) => true,
+    feePayerOverride = null
   }) {
     this.libs = libs
     this.logger = logger
@@ -198,6 +201,7 @@ class RewardsAttester {
     this.maxRetries = maxRetries
     // Get override starting block for manually setting indexing start
     this.getStartingBlockOverride = getStartingBlockOverride
+    this.feePayerOverride = feePayerOverride
 
     // Calculate delay
     this.delayCalculator = new AttestationDelayCalculator({
@@ -330,11 +334,14 @@ class RewardsAttester {
   }
 
   /**
-   * Returns a random fee payer from among the list of existing fee payers.
+   * Returns the override feePayer if set, otherwise a random fee payer from among the list of existing fee payers.
    *
    * @memberof RewardsAttester
    */
-  async _getRandomFeePayer () {
+  async _getFeePayer () {
+    if (this.feePayerOverride) {
+      return this.feePayerOverride
+    }
     const feePayerKeypairs = this.libs.solanaWeb3Manager.solanaWeb3Config.feePayerKeypairs
     if (feePayerKeypairs && feePayerKeypairs.length) {
       const randomFeePayerIndex = Math.floor(Math.random() * feePayerKeypairs.length)
@@ -483,7 +490,7 @@ class RewardsAttester {
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
       logger: this.logger,
-      feePayerOverride: this._getRandomFeePayer()
+      feePayerOverride: this._getFeePayer()
     })
 
     if (success) {
