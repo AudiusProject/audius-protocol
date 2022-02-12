@@ -1,6 +1,7 @@
 const Bull = require('bull')
 const axios = require('axios')
 const _ = require('lodash')
+const retry = require('async-retry')
 
 const utils = require('../utils')
 const models = require('../models')
@@ -23,13 +24,15 @@ const SyncMonitoringRetryDelayMs = 15000
 // Max number of attempts to select new replica set in reconfig
 const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 
-// Timeout for fetching batch clock values
-const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
-
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
 
-const MAX_USER_BATCH_CLOCK_FETCH_ATTEMPTS = 10
+// Timeout for fetching batch clock values
+const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 60000 // 60s
+
+const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
+
+const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = 5000
 
 // Describes the type of sync operation
 const SyncType = Object.freeze({
@@ -690,19 +693,12 @@ class SnapbackSM {
    * Given map(replica set node => userWallets[]), retrieves user info for every (node, userWallet) pair
    * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
    * @param {Set<string>} unhealthyPeers set of unhealthy peer endpoints
-   * @param {number?} [maxUserClockFetchAttempts=10] max number of attempts to fetch clock values
-   *
    * @returns {Object} map(replica => map(wallet => { clock, filesHash }))
    */
-  async retrieveUserInfoFromReplicaSet(
-    replicasToWalletsMap,
-    unhealthyPeers,
-    maxUserClockFetchAttempts = MAX_USER_BATCH_CLOCK_FETCH_ATTEMPTS
-  ) {
+  async retrieveUserInfoFromReplicaSet(replicasToWalletsMap, unhealthyPeers) {
     const replicasToUserInfoMap = {}
 
-    // TODO change to batched parallel requests
-    // In parallel for every replica, calls `batch_clock_status` to get all user info
+    // In parallel for every replica, fetch info for all users on that replica
     const replicas = Object.keys(replicasToWalletsMap)
     await Promise.all(
       replicas.map(async (replica) => {
@@ -710,54 +706,66 @@ class SnapbackSM {
 
         const walletsOnReplica = replicasToWalletsMap[replica]
 
-        const axiosReqParams = {
-          baseURL: replica,
-          url: '/users/batch_clock_status?returnFilesHash=true',
-          method: 'post',
-          data: { walletPublicKeys: walletsOnReplica },
-          timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
-        }
+        // Make requests in batches since this is an expensive query
+        for (
+          let i = 0;
+          i < walletsOnReplica.length;
+          i += MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
+        ) {
+          const walletsOnReplicaSlice = walletsOnReplica.slice(
+            i,
+            (i += MAX_BATCH_CLOCK_STATUS_BATCH_SIZE)
+          )
 
-        // Generate and attach SP signature to bypass route rate limits
-        const { timestamp, signature } = generateTimestampAndSignature(
-          { spID: this.spID },
-          this.delegatePrivateKey
-        )
-        axiosReqParams.params = { spID: this.spID, timestamp, signature }
+          const axiosReqParams = {
+            baseURL: replica,
+            url: '/users/batch_clock_status?returnFilesHash=true',
+            method: 'post',
+            data: { walletPublicKeys: walletsOnReplicaSlice },
+            timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
+          }
 
-        // Make axios request with retries
-        // TODO replace with asyncRetry
-        let batchClockStatusResp = []
-        let userClockFetchAttempts = 0
-        let errorMsg
-        while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
+          // Generate and attach SP signature to bypass route rate limits
+          const { timestamp, signature } = generateTimestampAndSignature(
+            { spID: this.spID },
+            this.delegatePrivateKey
+          )
+          axiosReqParams.params = { spID: this.spID, timestamp, signature }
+
+          let batchClockStatusResp = []
+          let errorMsg
           try {
-            batchClockStatusResp = (await axios(axiosReqParams)).data.data.users
+            batchClockStatusResp = (
+              await retry(async () => axios(axiosReqParams), {
+                retries: MAX_USER_BATCH_CLOCK_FETCH_RETRIES
+              })
+            ).data.data.users
           } catch (e) {
             errorMsg = e
           }
-        }
 
-        // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
-        if (batchClockStatusResp.length === 0) {
-          this.logError(
-            `[retrieveUserInfoFromReplicaSet] Could not fetch clock values for wallets=${walletsOnReplica} on replica node=${replica} ${
-              errorMsg ? ': ' + errorMsg.toString() : ''
-            }`
-          )
-          unhealthyPeers.add(replica)
-        }
+          // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
+          if (errorMsg) {
+            this.logError(
+              `[retrieveUserInfoFromReplicaSet] Could not fetch clock values from replica ${replica}: ${errorMsg.toString()}`
+            )
+            unhealthyPeers.add(replica)
+          }
 
-        // Else, add response data to output aggregate map
-        batchClockStatusResp.forEach((clockStatusResp) => {
-          /**
-           * @notice `filesHash` will be undefined if node is running version < 0.3.51
-           * @notice `filesHash` will be null if node is running version >= 0.3.51 but has no files for user
-           *    - Note this can happen even if clock > 0 if user has AudiusUser or Track table records without any File table records
-           */
-          const { walletPublicKey, clock, filesHash } = clockStatusResp
-          replicasToUserInfoMap[replica][walletPublicKey] = { clock, filesHash }
-        })
+          // Add response data to output aggregate map
+          batchClockStatusResp.forEach((clockStatusResp) => {
+            /**
+             * @notice `filesHash` will be undefined if node is running version < 0.3.51
+             * @notice `filesHash` will be null if node is running version >= 0.3.51 but has no files for user
+             *    - Note this can happen even if clock > 0 if user has AudiusUser or Track table records without any File table records
+             */
+            const { walletPublicKey, clock, filesHash } = clockStatusResp
+            replicasToUserInfoMap[replica][walletPublicKey] = {
+              clock,
+              filesHash
+            }
+          })
+        }
       })
     )
 
@@ -971,8 +979,7 @@ class SnapbackSM {
       try {
         replicasToUserInfoMap = await this.retrieveUserInfoFromReplicaSet(
           replicaSetNodesToUserWalletsMap,
-          unhealthyPeers,
-          MAX_USER_BATCH_CLOCK_FETCH_ATTEMPTS
+          unhealthyPeers
         )
         decisionTree.push({
           stage: 'retrieveUserInfoFromReplicaSet() Success',
