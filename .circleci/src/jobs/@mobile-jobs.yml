@@ -52,7 +52,6 @@ mobile-build-production-web-app:
   steps:
     - mobile-build-web-app:
         build-type: "mobile-prod"
-        build-directory: "build-mobile-production"
 
 mobile-build-staging-web-app:
   working_directory: ~/audius-client
@@ -62,7 +61,6 @@ mobile-build-staging-web-app:
   steps:
     - mobile-build-web-app:
         build-type: "mobile-stage"
-        build-directory: "build-mobile-staging"
 
 mobile-build-upload-staging-ios:
   working_directory: ~/audius-client
@@ -78,7 +76,7 @@ mobile-build-upload-staging-ios:
         env: ".env.stage"
     - when:
         condition:
-          matches: { pattern: "^master$", value: << pipeline.git.branch >> }
+          matches: { pattern: "^main$", value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-ios:
               bundle-id: "co.audius.audiusmusic.bounce"
@@ -116,7 +114,7 @@ mobile-build-upload-staging-android:
         remote-directory: "audius-mobile-staging"
     - when:
         condition:
-          matches: { pattern: "^master$", value: << pipeline.git.branch >> }
+          matches: { pattern: "^main$", value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-android:
               upload-type: "bounce"
