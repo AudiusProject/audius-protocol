@@ -16,7 +16,6 @@ import {
   TRENDING_PLAYLISTS_PAGE,
   TRENDING_UNDERGROUND_PAGE
 } from 'audius-client/src/utils/route'
-import { push } from 'connected-react-router'
 import {
   Image,
   ImageStyle,
@@ -35,6 +34,7 @@ import TabSlider from 'app/components/tab-slider'
 import Text from 'app/components/text'
 import TweetEmbed from 'app/components/tweet-embed'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -177,6 +177,7 @@ const useIsDark = () => {
 
 const TrendingRewardsDrawer = () => {
   const dispatchWeb = useDispatchWeb()
+  const pushRouteWeb = usePushRouteWeb()
   const styles = useThemedStyles(createStyles)
   const [modalType, setModalType] = useRewardsType()
   const isDark = useIsDark()
@@ -210,9 +211,9 @@ const TrendingRewardsDrawer = () => {
 
   const onButtonPress = useCallback(() => {
     const page = TRENDING_PAGES[modalType]
-    dispatchWeb(push(page))
+    pushRouteWeb(page)
     handleClose()
-  }, [dispatchWeb, modalType, handleClose])
+  }, [pushRouteWeb, modalType, handleClose])
 
   const onPressToS = useCallback(() => {
     Linking.openURL(TOS_URL)

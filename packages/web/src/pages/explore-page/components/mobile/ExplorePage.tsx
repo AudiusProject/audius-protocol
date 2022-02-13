@@ -22,8 +22,8 @@ import {
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
-import { setTab } from 'common/store/pages/explore/actions'
 import { getTab } from 'common/store/pages/explore/selectors'
+import { setTab } from 'common/store/pages/explore/slice'
 import {
   Tabs as ExploreTabs,
   ExploreCollectionsVariant
@@ -312,7 +312,7 @@ const ExplorePage = ({
   const dispatch = useDispatch()
   const didSwitchTabs = useCallback(
     (_: string, to: string) => {
-      dispatch(setTab(to as ExploreTabs))
+      dispatch(setTab({ tab: to as ExploreTabs }))
     },
     [dispatch]
   )

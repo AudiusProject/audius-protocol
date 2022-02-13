@@ -4,7 +4,7 @@ import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
-import placeholderArt from 'common/assets/image/imageBlank2x.png'
+import placeholderArt from 'assets/img/imageCoverPhotoBlank.jpg'
 import { Name } from 'common/models/Analytics'
 import { CID, ID } from 'common/models/Identifiers'
 import { SquareSizes, CoverArtSizes } from 'common/models/ImageSizes'

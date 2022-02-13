@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import placeholderArt from 'common/assets/image/imageBlank2x.png'
+import placeholderArt from 'assets/img/imageCoverPhotoBlank.jpg'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import Toast from 'components/toast/Toast'
 

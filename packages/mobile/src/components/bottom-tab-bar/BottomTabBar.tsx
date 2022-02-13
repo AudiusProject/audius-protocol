@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
-import { setTab } from 'audius-client/src/common/store/pages/explore/actions'
+import { setTab } from 'audius-client/src/common/store/pages/explore/slice'
 import { Tabs } from 'audius-client/src/common/store/pages/explore/types'
 import {
   openSignOn as _openSignOn,
@@ -16,7 +16,6 @@ import {
   getPathname,
   profilePage
 } from 'audius-client/src/utils/route'
-import { push } from 'connected-react-router'
 import { Animated, LayoutChangeEvent, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
@@ -32,6 +31,7 @@ import IconProfileLight from 'app/assets/animations/iconProfileLight.json'
 import IconTrendingDark from 'app/assets/animations/iconTrendingDark.json'
 import IconTrendingLight from 'app/assets/animations/iconTrendingLight.json'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
 import { getLocation } from 'app/store/lifecycle/selectors'
@@ -117,6 +117,7 @@ const BottomTabBar = ({
   translationAnim,
   onLayout
 }: BottomTabBarProps & RNBottomTabBarProps) => {
+  const pushRouteWeb = usePushRouteWeb()
   const bottomBarStyle = useTheme(styles.bottomBar, {
     borderTopColor: 'neutralLight8',
     backgroundColor: 'neutralLight10'
@@ -135,12 +136,10 @@ const BottomTabBar = ({
     dispatchWeb(_openSignOn(false))
     dispatchWeb(showRequiresAccountModal())
   }, [dispatchWeb])
-  const goToRoute = useCallback((route: string) => dispatchWeb(push(route)), [
-    dispatchWeb
-  ])
-  const resetExploreTab = useCallback(() => dispatchWeb(setTab(Tabs.FOR_YOU)), [
-    dispatchWeb
-  ])
+  const resetExploreTab = useCallback(
+    () => dispatchWeb(setTab({ tab: Tabs.FOR_YOU })),
+    [dispatchWeb]
+  )
   const scrollToTop = useCallback(
     () =>
       dispatchWeb({
@@ -200,27 +199,27 @@ const BottomTabBar = ({
           if (!handle) {
             openSignOn()
           } else {
-            goToRoute(FEED_PAGE)
+            pushRouteWeb(FEED_PAGE)
           }
         },
         trending: () => {
-          goToRoute(TRENDING_PAGE)
+          pushRouteWeb(TRENDING_PAGE)
         },
         explore: () => {
-          goToRoute(EXPLORE_PAGE)
+          pushRouteWeb(EXPLORE_PAGE)
         },
         favorites: () => {
           if (!handle) {
             openSignOn()
           } else {
-            goToRoute(FAVORITES_PAGE)
+            pushRouteWeb(FAVORITES_PAGE)
           }
         },
         profile: () => {
           if (!handle) {
             openSignOn()
           } else {
-            goToRoute(profilePage(handle))
+            pushRouteWeb(profilePage(handle))
           }
         }
       }
@@ -238,7 +237,7 @@ const BottomTabBar = ({
         navigation.navigate(route.name)
       }
     },
-    [navigation, goToRoute, handle, openSignOn, resetExploreTab, scrollToTop]
+    [navigation, pushRouteWeb, handle, openSignOn, resetExploreTab, scrollToTop]
   )
 
   return (

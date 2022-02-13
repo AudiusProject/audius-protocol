@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
-import placeholderCoverArt from 'common/assets/image/imageBlank2x.png'
+import placeholderCoverArt from 'assets/img/imageCoverPhotoBlank.jpg'
 import { CreatePlaylistSource } from 'common/models/Analytics'
 import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'

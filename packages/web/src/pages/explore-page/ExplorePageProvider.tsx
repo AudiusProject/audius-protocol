@@ -6,8 +6,8 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { getAccountUser } from 'common/store/account/selectors'
-import { fetchExplore } from 'common/store/pages/explore/actions'
 import { makeGetExplore } from 'common/store/pages/explore/selectors'
+import { fetchExplore } from 'common/store/pages/explore/slice'
 import { formatCount } from 'common/utils/formatUtil'
 import { AppState } from 'store/types'
 

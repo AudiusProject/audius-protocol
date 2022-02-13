@@ -1,0 +1,6 @@
+{
+  "eslint.workingDirectories": [{ "pattern": "./packages/*/" }],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  }
+}

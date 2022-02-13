@@ -4,7 +4,7 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
-import placeholderArt from 'common/assets/image/imageBlank2x.png'
+import placeholderArt from 'assets/img/imageCoverPhotoBlank.jpg'
 import { DefaultSizes } from 'common/models/ImageSizes'
 import Toast from 'components/toast/Toast'
 import {

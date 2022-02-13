@@ -1,4 +1,3 @@
-import imageCoverPhotoBlank from 'audius-client/src/common/assets/image/imageCoverPhotoBlank.jpg'
 import { useImageSize } from 'audius-client/src/common/hooks/useImageSize'
 import {
   CoverPhotoSizes,
@@ -6,6 +5,8 @@ import {
 } from 'audius-client/src/common/models/ImageSizes'
 import { fetchCoverPhoto } from 'audius-client/src/common/store/cache/users/actions'
 import { useDispatch } from 'react-redux'
+
+import imageCoverPhotoBlank from 'app/assets/images/imageCoverPhotoBlank.jpg'
 
 import { useDispatchWeb } from './useDispatchWeb'
 

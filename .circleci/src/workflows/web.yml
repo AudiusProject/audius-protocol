@@ -1,0 +1,262 @@
+when: << pipeline.parameters.run-web-workflow >>
+jobs:
+  - web-init
+
+  # Cut a demo if not master
+  - web-build-demo:
+      requires:
+        - web-init
+      filters:
+        branches:
+          ignore: /^master$/
+  - web-deploy-demo:
+      context: Audius Client
+      requires:
+        - web-build-demo
+      filters:
+        branches:
+          ignore: /^master$/
+
+  # Build
+  - web-build-staging:
+      requires:
+        - web-init
+  - web-build-production:
+      requires:
+        - web-init
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  - web-test-staging:
+      context: Audius Client
+      requires:
+        - web-build-staging
+
+  - web-deploy-staging-s3:
+      context: Audius Client
+      requires:
+        - web-build-staging
+      filters:
+        branches:
+          only: /^master$/
+
+  - web-deploy-staging-cloudflare:
+      context: Audius Client
+      requires:
+        - web-build-staging
+      filters:
+        branches:
+          only: /^master$/
+
+  - web-deploy-release-candidate:
+      context: Audius Client
+      requires:
+        - web-init
+        - web-build-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  # Staging IPFS build
+  - web-build-ipfs-staging:
+      requires:
+        - web-init
+      filters:
+        branches:
+          only: /^master$/
+  - web-deploy-ipfs-staging:
+      context: Audius Client
+      requires:
+        - web-build-ipfs-staging
+      filters:
+        branches:
+          only: /^master$/
+  - web-update-staging-ga-ipfs-build:
+      context:
+        - Audius Client
+        - Pinata
+      requires:
+        - web-deploy-ipfs-staging
+      filters:
+        branches:
+          only: /^master$/
+  - web-publish-staging-build-cids:
+      context:
+        - Audius Client
+      requires:
+        - web-update-staging-ga-ipfs-build
+      filters:
+        branches:
+          only: /^master$/
+  - web-update-ipfs-staging-records:
+      context:
+        - Audius Client
+        - Cloudflare API
+      requires:
+        - web-update-staging-ga-ipfs-build
+      filters:
+        branches:
+          only: /^master$/
+
+  # Release production web.
+  - web-hold-production:
+      type: approval
+      requires:
+        - web-build-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-deploy-production-s3:
+      context: Audius Client
+      requires:
+        - web-hold-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-deploy-production-cloudflare:
+      context: Audius Client
+      requires:
+        - web-hold-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  # Upload sourcemaps
+  - web-deploy-sentry-sourcemaps:
+      context: Audius Client
+      requires:
+        - web-deploy-production-s3
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  - web-publish-github-release:
+      context: Audius Client
+      requires:
+        - web-hold-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  # Production IPFS build
+  - web-build-ipfs-production:
+      requires:
+        - web-init
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-deploy-ipfs-production:
+      context: Audius Client
+      requires:
+        - web-build-ipfs-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-hold-update-production-ga-ipfs-build:
+      type: approval
+      requires:
+        - web-deploy-ipfs-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-update-production-ga-ipfs-build:
+      context:
+        - Audius Client
+        - Pinata
+      requires:
+        - web-hold-update-production-ga-ipfs-build
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-publish-production-build-cids:
+      context:
+        - Audius Client
+      requires:
+        - web-update-production-ga-ipfs-build
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-hold-update-ipfs-production-records:
+      type: approval
+      requires:
+        - web-update-production-ga-ipfs-build
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-update-ipfs-production-records:
+      context:
+        - Audius Client
+        - Cloudflare API
+      requires:
+        - web-hold-update-ipfs-production-records
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  # Distribute staging desktop binaries.
+  - web-dist-mac-staging:
+      context: Audius Client
+      requires:
+        - web-build-staging
+      filters:
+        branches:
+          only: /(^master)$/
+  - web-dist-win-staging:
+      context: Audius Client
+      requires:
+        - web-build-staging
+      filters:
+        branches:
+          only: /(^master)$/
+  - web-dist-linux-staging:
+      context: Audius Client
+      requires:
+        - web-build-staging
+      filters:
+        branches:
+          only: /(^master)$/
+
+  # Distribute production desktop binaries.
+  - web-hold-dist-mac-production:
+      type: approval
+      requires:
+        - web-build-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-dist-mac-production:
+      context: Audius Client
+      requires:
+        - web-hold-dist-mac-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-hold-dist-win-production:
+      type: approval
+      requires:
+        - web-build-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-dist-win-production:
+      context: Audius Client
+      requires:
+        - web-hold-dist-win-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-hold-dist-linux-production:
+      type: approval
+      requires:
+        - web-build-production
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - web-dist-linux-production:
+      context: Audius Client
+      requires:
+        - web-hold-dist-linux-production
+      filters:
+        branches:
+          only: /(^release.*)$/

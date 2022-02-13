@@ -18,7 +18,7 @@ import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
 import exploreCollectionsReducer from 'common/store/pages/explore/exploreCollections/slice'
-import explorePageReducer from 'common/store/pages/explore/reducer'
+import explorePageReducer from 'common/store/pages/explore/slice'
 import feed from 'common/store/pages/feed/reducer'
 import { FeedPageState } from 'common/store/pages/feed/types'
 import profileReducer from 'common/store/pages/profile/reducer'
@@ -143,6 +143,8 @@ export const sagas = {
   // pages/user-list/following/sagas.ts
   // pages/user-list/reposts/sagas.ts
   // pages/user-list/favorites/sagas.ts
+  // pages/explore-page/store/sagas.ts
+  // pages/explore-page/store/exploreCollections/sagas.ts
   // store/solana/sagas.ts
 }
 

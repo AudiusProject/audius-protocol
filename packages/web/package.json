@@ -3,10 +3,10 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "0.24.42",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@audius/libs": "1.2.67",
+    "@audius/libs": "1.2.61",
     "@audius/stems": "0.3.21",
     "@craco/craco": "6.4.3",
     "@hcaptcha/react-hcaptcha": "0.3.6",
@@ -154,15 +154,12 @@
     "write-sha": "./scripts/writeSHA.sh",
     "analyze": "source-map-explorer build-production/static/js/*.js",
     "analyzeBundle": "env-cmd ./.env/.env.bundle npm run build:prod",
-    "typecheck": "tsc -w --allowJs",
+    "typecheck": "tsc",
+    "typecheck:watch": "tsc --watch",
     "update-ipfs-build:dev": "node ./scripts/updateIpfsBuild.js dev",
     "update-ipfs-build:stage": "node ./scripts/updateIpfsBuild.js stage",
     "update-ipfs-build:prod": "node ./scripts/updateIpfsBuild.js prod"
   },
-  "pre-commit": [
-    "lint",
-    "stylelint"
-  ],
   "eslintConfig": {
     "extends": "react-app"
   },
@@ -236,7 +233,6 @@
     "fetch-mock": "9.9.1",
     "fs-extra": "8.1.0",
     "node-fetch": "2.6.1",
-    "pre-commit": "1.2.2",
     "prettier": "2.0.5",
     "prettier-config-standard": "1.0.1",
     "redux-saga-test-plan": "4.0.4",

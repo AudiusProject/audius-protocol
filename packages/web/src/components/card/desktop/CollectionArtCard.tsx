@@ -6,7 +6,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import placeholderArt from 'common/assets/image/imageBlank2x.png'
+import placeholderArt from 'assets/img/imageCoverPhotoBlank.jpg'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'

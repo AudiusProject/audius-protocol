@@ -1,0 +1,70 @@
+version: 2.1
+
+parameters:
+  # Run all workflows for branches that match this regex
+  run-all-workflows-branch-regex:
+    type: string
+    default: /(^master)|(^release.*)$/
+
+setup: true
+
+orbs:
+  continuation: circleci/continuation@0.2.0
+  path-filtering: circleci/path-filtering@0.1.1
+
+jobs:
+  # Generate the CircleCI continue_config.yml from .circleci/src
+  generate-config:
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      # The circleci cli exposed in the image doesn't support config packing
+      # so we install a version that does
+      - run:
+          name: Install cli
+          command: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master/install.sh | DESTDIR=~/cli bash
+      - checkout
+      - run:
+          name: Generate config
+          command: ~/cli config pack .circleci/src > .circleci/continue_config.yml
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - .circleci/continue_config.yml
+
+workflows:
+  setup:
+    jobs:
+      - generate-config
+
+      # Trigger relevant workflows for the files that have changed
+      - path-filtering/filter:
+          base-revision: master
+          config-path: ../workspace/.circleci/continue_config.yml
+          mapping: |
+            packages/web/.* run-web-workflow true
+            packages/mobile/.* run-mobile-workflow true
+          name: trigger-relevant-workflows
+          filters:
+            branches:
+              ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
+          requires:
+            - generate-config
+          workspace_path: ../workspace
+
+      # Trigger all workflows for branches that match regex
+      - continuation/continue:
+          configuration_path: ../workspace/.circleci/continue_config.yml
+          name: trigger-all-workflows
+          filters:
+            branches:
+              only: << pipeline.parameters.run-all-workflows-branch-regex >>
+          parameters: '{
+            "run-web-workflow": true,
+            "run-mobile-workflow": true
+            }'
+          pre-steps:
+            - attach_workspace:
+                at: ../workspace
+          requires:
+            - generate-config
