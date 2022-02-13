@@ -6,7 +6,11 @@ import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'
 
-import * as actions from './actions'
+import {
+  fetchExplore,
+  fetchExploreSucceeded,
+  fetchExploreFailed
+} from './slice'
 
 const EXPLORE_CONTENT_URL =
   process.env.REACT_APP_EXPLORE_CONTENT_URL ||
@@ -17,7 +21,7 @@ const fetchExploreContent = async () => {
 }
 
 function* watchFetchExplore() {
-  yield takeEvery(actions.FETCH_EXPLORE, function* (action) {
+  yield takeEvery(fetchExplore.type, function* (action) {
     yield call(waitForBackendSetup)
     try {
       const exploreContent: {
@@ -32,10 +36,10 @@ function* watchFetchExplore() {
       )
       yield call(fetchUsers, exploreContent.featuredProfiles)
 
-      yield put(actions.fetchExploreSucceeded(exploreContent))
+      yield put(fetchExploreSucceeded({ exploreContent }))
     } catch (e) {
       console.error(e)
-      yield put(actions.fetchExploreFailed())
+      yield put(fetchExploreFailed())
     }
   })
 }

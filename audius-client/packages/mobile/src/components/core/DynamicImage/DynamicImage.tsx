@@ -7,7 +7,6 @@ import {
   useState
 } from 'react'
 
-import transparentPlaceholderImg from 'audius-client/src/common/assets/image/1x1-transparent.png'
 import useInstanceVar from 'audius-client/src/common/hooks/useInstanceVar'
 import { Maybe } from 'audius-client/src/common/utils/typeUtils'
 import { isArray, isObject } from 'lodash'
@@ -24,6 +23,7 @@ import {
   ViewStyle
 } from 'react-native'
 
+import transparentPlaceholderImg from 'app/assets/images/1x1-transparent.png'
 import { ImageSkeleton } from 'app/components/image-skeleton'
 import { StylesProp } from 'app/styles'
 

@@ -26,7 +26,7 @@ module.exports = {
   },
   plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest', 'import'],
   settings: {
-    'import/external-module-folders': ['node_modules', 'audius-client'],
+    'import/external-module-folders': ['node_modules', 'web'],
     'import/resolver': {
       // NOTE: sk - These aliases are required for the import/order rule.
       alias: {

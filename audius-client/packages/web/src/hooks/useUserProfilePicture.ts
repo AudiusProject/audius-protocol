@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux'
 
-import profilePicEmpty from 'common/assets/image/imageProfilePicEmpty2X.png'
+import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
 import { useImageSize } from 'common/hooks/useImageSize'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
 import { fetchProfilePicture } from 'common/store/cache/users/actions'

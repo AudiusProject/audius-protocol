@@ -6,7 +6,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { getUserHandle } from 'common/store/account/selectors'
-import { setTab } from 'common/store/pages/explore/actions'
+import { setTab } from 'common/store/pages/explore/slice'
 import { Tabs } from 'common/store/pages/explore/types'
 import BottomBar from 'components/bottom-bar/BottomBar'
 import {
@@ -134,7 +134,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(showRequiresAccountModal())
     },
     resetExploreTab: () => {
-      dispatch(setTab(Tabs.FOR_YOU))
+      dispatch(setTab({ tab: Tabs.FOR_YOU }))
     }
   }
 }

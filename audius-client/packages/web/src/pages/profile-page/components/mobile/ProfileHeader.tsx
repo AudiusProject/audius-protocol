@@ -15,7 +15,7 @@ import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
-import imageCoverPhotoBlank from 'common/assets/image/imageCoverPhotoBlank.jpg'
+import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import {

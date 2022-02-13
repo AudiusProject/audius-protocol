@@ -1,11 +1,8 @@
-import { useCallback } from 'react'
-
 import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { push } from 'connected-react-router'
 import { ScrollView, StyleSheet, View } from 'react-native'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
 
@@ -66,10 +63,7 @@ const tiles = [
 
 export const ForYouTab = ({ navigation }: Props) => {
   const styles = useThemedStyles(createStyles)
-  const dispatchWeb = useDispatchWeb()
-  const goToRoute = useCallback((route: string) => dispatchWeb(push(route)), [
-    dispatchWeb
-  ])
+  const pushRouteWeb = usePushRouteWeb()
 
   return (
     <ScrollView style={styles.tabContainer}>
@@ -82,7 +76,7 @@ export const ForYouTab = ({ navigation }: Props) => {
             title={tile.title}
             description={tile.description}
             link={tile.link}
-            goToRoute={goToRoute}
+            goToRoute={pushRouteWeb}
             gradientColors={tile.gradientColors}
             gradientAngle={tile.gradientAngle}
             shadowColor={tile.shadowColor}

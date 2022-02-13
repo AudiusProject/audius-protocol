@@ -3,7 +3,7 @@ import React, { useState, useEffect, memo } from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import placeholderArt from 'common/assets/image/imageBlank2x.png'
+import placeholderArt from 'assets/img/imageCoverPhotoBlank.jpg'
 import Kind from 'common/models/Kind'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'

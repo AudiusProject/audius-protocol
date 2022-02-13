@@ -5,7 +5,7 @@ import { FileWithPreview } from 'react-dropzone'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import imageCoverPhotoBlank from 'common/assets/image/imageCoverPhotoBlank.jpg'
+import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import { CoverPhotoSizes, WidthSizes } from 'common/models/ImageSizes'
 import { Nullable } from 'common/utils/typeUtils'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

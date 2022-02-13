@@ -28,9 +28,9 @@ import {
   OverflowActionCallbacks
 } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 import { profilePage } from 'audius-client/src/utils/route'
-import { push } from 'connected-react-router'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 type Props = {
@@ -39,6 +39,7 @@ type Props = {
 
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const dispatchWeb = useDispatchWeb()
+  const pushRouteWeb = usePushRouteWeb()
   const { id: modalId } = useSelectorWeb(getMobileOverflowModal)
   const id = modalId as ID
 
@@ -74,9 +75,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.VIEW_TRACK_PAGE]: () =>
       permalink === undefined
         ? console.error(`Permalink missing for track ${id}`)
-        : dispatchWeb(push(permalink)),
-    [OverflowAction.VIEW_ARTIST_PAGE]: () =>
-      dispatchWeb(push(profilePage(handle))),
+        : pushRouteWeb(permalink),
+    [OverflowAction.VIEW_ARTIST_PAGE]: () => pushRouteWeb(profilePage(handle)),
     [OverflowAction.FOLLOW_ARTIST]: () =>
       dispatchWeb(followUser(owner_id, FollowSource.OVERFLOW)),
     [OverflowAction.UNFOLLOW_ARTIST]: () =>

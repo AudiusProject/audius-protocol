@@ -7,7 +7,7 @@ import { useLocation, withRouter, NavLink } from 'react-router-dom'
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
 
-import imageProfilePicEmpty from 'common/assets/image/imageProfilePicEmpty2X.png'
+import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
 import { Name, CreatePlaylistSource } from 'common/models/Analytics'
 import { SquareSizes } from 'common/models/ImageSizes'
 import Status from 'common/models/Status'

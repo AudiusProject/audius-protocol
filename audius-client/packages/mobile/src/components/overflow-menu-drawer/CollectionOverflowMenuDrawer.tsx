@@ -29,9 +29,9 @@ import {
   playlistPage,
   albumPage
 } from 'audius-client/src/utils/route'
-import { push } from 'connected-react-router'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 type Props = {
@@ -40,6 +40,7 @@ type Props = {
 
 const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const dispatchWeb = useDispatchWeb()
+  const pushRouteWeb = usePushRouteWeb()
   const { id: modalId } = useSelectorWeb(getMobileOverflowModal)
   const id = modalId as ID
 
@@ -73,11 +74,10 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.SHARE]: () =>
       dispatchWeb(shareCollection(id, ShareSource.OVERFLOW)),
     [OverflowAction.VIEW_ALBUM_PAGE]: () =>
-      dispatchWeb(
-        push((is_album ? albumPage : playlistPage)(handle, playlist_name, id))
+      pushRouteWeb(
+        (is_album ? albumPage : playlistPage)(handle, playlist_name, id)
       ),
-    [OverflowAction.VIEW_ARTIST_PAGE]: () =>
-      dispatchWeb(push(profilePage(handle))),
+    [OverflowAction.VIEW_ARTIST_PAGE]: () => pushRouteWeb(profilePage(handle)),
     [OverflowAction.EDIT_PLAYLIST]: () => dispatchWeb(openEditPlaylist(id)),
     [OverflowAction.DELETE_PLAYLIST]: () => dispatchWeb(openDeletePlaylist(id)),
     [OverflowAction.PUBLISH_PLAYLIST]: () =>

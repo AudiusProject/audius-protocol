@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux'
 
-import imageEmpty from 'common/assets/image/imageBlank2x.png'
+import imageEmpty from 'assets/img/imageCoverPhotoBlank.jpg'
 import { useImageSize } from 'common/hooks/useImageSize'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import { fetchCoverArt } from 'common/store/cache/tracks/actions'
