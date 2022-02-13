@@ -2,20 +2,20 @@ when: << pipeline.parameters.run-web-workflow >>
 jobs:
   - web-init
 
-  # Cut a demo if not master
+  # Cut a demo if not main
   - web-build-demo:
       requires:
         - web-init
       filters:
         branches:
-          ignore: /^master$/
+          ignore: /^main$/
   - web-deploy-demo:
       context: Audius Client
       requires:
         - web-build-demo
       filters:
         branches:
-          ignore: /^master$/
+          ignore: /^main$/
 
   # Build
   - web-build-staging:
@@ -39,7 +39,7 @@ jobs:
         - web-build-staging
       filters:
         branches:
-          only: /^master$/
+          only: /^main$/
 
   - web-deploy-staging-cloudflare:
       context: Audius Client
@@ -47,7 +47,7 @@ jobs:
         - web-build-staging
       filters:
         branches:
-          only: /^master$/
+          only: /^main$/
 
   - web-deploy-release-candidate:
       context: Audius Client
@@ -64,14 +64,14 @@ jobs:
         - web-init
       filters:
         branches:
-          only: /^master$/
+          only: /^main$/
   - web-deploy-ipfs-staging:
       context: Audius Client
       requires:
         - web-build-ipfs-staging
       filters:
         branches:
-          only: /^master$/
+          only: /^main$/
   - web-update-staging-ga-ipfs-build:
       context:
         - Audius Client
@@ -80,7 +80,7 @@ jobs:
         - web-deploy-ipfs-staging
       filters:
         branches:
-          only: /^master$/
+          only: /^main$/
   - web-publish-staging-build-cids:
       context:
         - Audius Client
@@ -88,7 +88,7 @@ jobs:
         - web-update-staging-ga-ipfs-build
       filters:
         branches:
-          only: /^master$/
+          only: /^main$/
   - web-update-ipfs-staging-records:
       context:
         - Audius Client
@@ -97,7 +97,7 @@ jobs:
         - web-update-staging-ga-ipfs-build
       filters:
         branches:
-          only: /^master$/
+          only: /^main$/
 
   # Release production web.
   - web-hold-production:
@@ -201,21 +201,21 @@ jobs:
         - web-build-staging
       filters:
         branches:
-          only: /(^master)$/
+          only: /(^main)$/
   - web-dist-win-staging:
       context: Audius Client
       requires:
         - web-build-staging
       filters:
         branches:
-          only: /(^master)$/
+          only: /(^main)$/
   - web-dist-linux-staging:
       context: Audius Client
       requires:
         - web-build-staging
       filters:
         branches:
-          only: /(^master)$/
+          only: /(^main)$/
 
   # Distribute production desktop binaries.
   - web-hold-dist-mac-production:

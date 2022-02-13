@@ -4,7 +4,7 @@ parameters:
   # Run all workflows for branches that match this regex
   run-all-workflows-branch-regex:
     type: string
-    default: /(^master)|(^release.*)$/
+    default: /(^main)|(^release.*)$/
 
 setup: true
 
@@ -39,7 +39,7 @@ workflows:
 
       # Trigger relevant workflows for the files that have changed
       - path-filtering/filter:
-          base-revision: master
+          base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
             packages/web/.* run-web-workflow true
