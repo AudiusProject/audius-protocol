@@ -95,7 +95,7 @@ web-install-wrangler:
   steps:
     - run:
         name: install wrangler
-        command: "npm install @cloudflare/wrangler"
+        command: "cd packages/web && npm install @cloudflare/wrangler"
 
 web-deploy-cloudflare:
   parameters:

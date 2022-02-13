@@ -4,9 +4,6 @@ mobile-build-web-app:
     build-type:
       default: "mobile-prod"
       type: string
-    build-directory:
-      default: "build-mobile-production"
-      type: string
   steps:
     - checkout
     - attach_workspace:
@@ -47,7 +44,7 @@ mobile-build-ios:
         at: ./
     - run:
         name: Move Web App build
-        command: mkdir -p web-app/Web.bundle/build && mv packages/web/<<parameters.build-directory>>/* web-app/Web.bundle/build
+        command: mkdir -p packages/mobile/web-app/Web.bundle/build && mv packages/web/<<parameters.build-directory>>/* packages/mobile/web-app/Web.bundle/build
     - run:
         name: update cocoapods
         command: sudo gem install cocoapods
@@ -66,7 +63,7 @@ mobile-build-ios:
         name: update bundler
         command: gem install bundler:1.17.3
     - restore_cache:
-        key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
     - run: cd packages/mobile/ios && (bundle check || bundle install --path vendor/bundle)
     - save_cache:
         key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
@@ -77,7 +74,7 @@ mobile-build-ios:
         command: cd packages/mobile/ios && bundle update fastlane
     - run:
         name: fastlane build
-        command: cp <<parameters.env>> packages/mobile/ios/ && cd packages/mobile/ios && bundle exec fastlane build bundle_id:<<parameters.bundle-id>>
+        command: cp packages/mobile/<<parameters.env>> packages/mobile/ios/ && cd packages/mobile/ios && bundle exec fastlane build bundle_id:<<parameters.bundle-id>>
     - store_artifacts:
         path: packages/mobile/output
     - store_test_results:
@@ -118,7 +115,7 @@ mobile-build-android:
         at: ./
     - run:
         name: Move Web App build
-        command: mkdir -p web-app/Web.bundle/build && mv packages/web/<<parameters.build-directory>>/* web-app/Web.bundle/build
+        command: mkdir -p packages/mobile/web-app/Web.bundle/build && mv packages/web/<<parameters.build-directory>>/* packages/mobile/web-app/Web.bundle/build
     - run:
         name: migrate support libraries for androidX packages
         command: |
