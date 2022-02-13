@@ -1,0 +1,17 @@
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.2.0
+
+# the default pipeline parameters, which will be updated according to
+# the results of the path-filtering orb in config.yml
+parameters:
+  run-web-workflow:
+    type: boolean
+    default: false
+  run-mobile-workflow:
+    type: boolean
+    default: false
+
+workflows:
+  version: 2.1

@@ -1,0 +1,34 @@
+when: << pipeline.parameters.run-mobile-workflow >>
+jobs:
+  - mobile-init:
+      context: Audius Mobile Client
+
+  - mobile-build-production-web-app:
+      context: Audius Mobile Client
+      requires:
+        - mobile-init
+
+  - mobile-build-staging-web-app:
+      context: Audius Mobile Client
+      requires:
+        - mobile-init
+
+  - mobile-build-upload-staging-ios:
+      context: Audius Mobile Client
+      requires:
+        - mobile-build-staging-web-app
+
+  - mobile-build-upload-staging-android:
+      context: Audius Mobile Client
+      requires:
+        - mobile-build-staging-web-app
+
+  - mobile-build-upload-production-ios:
+      context: Audius Mobile Client
+      requires:
+        - mobile-build-production-web-app
+
+  - mobile-build-upload-production-android:
+      context: Audius Mobile Client
+      requires:
+        - mobile-build-production-web-app

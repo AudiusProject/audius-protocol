@@ -1,7 +1,15 @@
 {
   "name": "root",
   "private": true,
+  "scripts": {
+    "init": "npm run install-deps && npm run install-hooks",
+    "install-deps": "npx lerna exec -- npm i",
+    "install-hooks": "npx @escape.tech/mookme init --only-hook --skip-types-selection"
+  },
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "lerna": "4.0.0"
+  },
+  "dependencies": {
+    "@escape.tech/mookme": "1.2.0"
   }
 }

@@ -166,7 +166,7 @@ commands:
       - run:
           name: install-awscli
           command: sudo pip install awscli
-      - run: aws s3 sync ~/audius-mobile-client/android/app/build/outputs s3://<<parameters.remote-directory>>/android --delete
+      - run: aws s3 sync ~/mobile/android/app/build/outputs s3://<<parameters.remote-directory>>/android --delete
 
   # Upload the android app to the Google Play Store
   upload-android:
@@ -181,7 +181,7 @@ commands:
 
 jobs:
   init:
-    working_directory: ~/audius-mobile-client
+    working_directory: ~/mobile
     docker:
       - image: circleci/node:14.18
     steps:
@@ -225,7 +225,7 @@ jobs:
             - .env.prod
 
   build-production-web-app:
-    working_directory: ~/audius-mobile-client
+    working_directory: ~/mobile
     docker:
       - image: circleci/node:14.18
     resource_class: large
@@ -235,7 +235,7 @@ jobs:
           build-directory: 'build-mobile-production'
 
   build-staging-web-app:
-    working_directory: ~/audius-mobile-client
+    working_directory: ~/mobile
     docker:
       - image: circleci/node:14.18
     resource_class: large
@@ -245,7 +245,7 @@ jobs:
           build-directory: 'build-mobile-staging'
 
   build-upload-staging-ios:
-    working_directory: ~/audius-mobile-client
+    working_directory: ~/mobile
     macos: # Run on osx so app can be created and signed.
       xcode: '13.1.0'
     environment:
@@ -264,7 +264,7 @@ jobs:
                 bundle-id: 'co.audius.audiusmusic.bounce'
 
   build-upload-production-ios:
-    working_directory: ~/audius-mobile-client
+    working_directory: ~/mobile
     macos: # Run on osx so app can be created and signed.
       xcode: '13.1.0'
     environment:
@@ -284,7 +284,7 @@ jobs:
                 bundle-id: 'co.audius.audiusmusic'
 
   build-upload-staging-android:
-    working_directory: ~/audius-mobile-client
+    working_directory: ~/mobile
     resource_class: large
     docker:
       - image: circleci/android:api-30-node
@@ -303,7 +303,7 @@ jobs:
                 upload-type: 'bounce'
 
   build-upload-production-android:
-    working_directory: ~/audius-mobile-client
+    working_directory: ~/mobile
     resource_class: large
     docker:
       - image: circleci/android:api-30-node
