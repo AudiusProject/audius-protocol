@@ -311,6 +311,7 @@ describe('Test Health Check Verbose', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
 
       country: 'US',
       latitude: '37.7749',
