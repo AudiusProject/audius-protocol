@@ -16,7 +16,7 @@ class AnalyticsProvider {
     try {
       this.amplitudeInstance.logEvent(eventName, properties)
     } catch (e) {
-      console.log('Failed to log amplitude event')
+      console.log(`Failed to log amplitude event with error: ${e}`)
     }
   }
 }
