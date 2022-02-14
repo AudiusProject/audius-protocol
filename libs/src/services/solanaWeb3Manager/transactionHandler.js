@@ -54,6 +54,7 @@ class TransactionHandler {
    * @memberof TransactionHandler
    */
   async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null }) {
+    console.log(`solanaWebManager | transactionHandler | handleTransaction | the feePayerOverride is ${feePayerOverride} and its type is ${typeof feePayerOverride} | useRelay is ${useRelay}`)
     let result = null
     if (this.useRelay) {
       result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride)
@@ -74,7 +75,7 @@ class TransactionHandler {
       recentBlockhash,
       instructions: relayable,
       skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
-      feePayerOverride: feePayerOverride.toString()
+      feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null
     }
 
     try {
