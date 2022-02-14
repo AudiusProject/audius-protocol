@@ -338,7 +338,7 @@ class RewardsAttester {
    *
    * @memberof RewardsAttester
    */
-  async _getFeePayer () {
+  _getFeePayer () {
     if (this.feePayerOverride) {
       return this.feePayerOverride
     }
