@@ -606,12 +606,6 @@ const config = convict({
     default: '',
     env: 'solanaValidSigner'
   },
-  solanaFeePayerWallet: {
-    doc: 'solanaFeePayerWallet',
-    format: 'string-array',
-    default: null,
-    env: 'solanaFeePayerWallet'
-  },
   solanaFeePayerWallets: {
     doc: 'solanaFeePayerWallets - Stringified array like[{ privateKey: [] },...]',
     format: 'string-array',
@@ -800,7 +794,7 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
     solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
-    solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
+    solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
     solanaEndpoint: solanaContractConfig.endpoint,
     solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
 
