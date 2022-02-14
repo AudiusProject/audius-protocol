@@ -138,7 +138,7 @@ class Rewards extends Base {
         tokenAmount: fullTokenAmount,
         instructionsPerTransaction,
         logger,
-        feePayerOverride
+        feePayerOverride: null
       })
 
       // In the case of an unparseable error,
@@ -165,7 +165,7 @@ class Rewards extends Base {
             tokenAmount: fullTokenAmount,
             instructionsPerTransaction: 2, // SECP + Attestation
             logger,
-            feePayerOverride
+            feePayerOverride: null
           })
         } else {
           throw new Error(submitErrorCode || submitError)
