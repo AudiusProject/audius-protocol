@@ -56,6 +56,7 @@
     "audius-client": "file:../web",
     "bn.js": "5.2.0",
     "expo-crypto": "9.2.0",
+    "formik": "2.2.9",
     "fxa-common-password-list": "0.0.4",
     "lodash.samplesize": "4.2.0",
     "lottie-ios": "3.2.3",

@@ -15,6 +15,7 @@ type AppParamList = BaseStackParamList & {
   trending: undefined
   explore: undefined
   favorites: undefined
+  EditProfile: undefined
 }
 
 type UseNavigationConfig<
