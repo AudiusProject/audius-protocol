@@ -61,7 +61,7 @@ class RewardsReporter {
       const slackMessage = this.successReporter.getJsonSlackMessage(report)
       await this.successReporter.postToSlack({ message: slackMessage })
       this.childLogger.info(report, `Rewards Reporter`)
-      this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_SUCCESS, {
+      this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_SUCCESS, userId, {
         userId,
         challengeId,
         amount,
@@ -88,7 +88,7 @@ class RewardsReporter {
       const slackMessage = this.errorReporter.getJsonSlackMessage(report)
       await this.errorReporter.postToSlack({ message: slackMessage })
       this.childLogger.info(report, `Rewards Reporter`)
-      this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_FAILURE, {
+      this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_FAILURE, userId, {
         userId,
         challengeId,
         amount,
@@ -116,7 +116,7 @@ class RewardsReporter {
       const slackMessage = this.errorReporter.getJsonSlackMessage(report)
       await this.errorReporter.postToSlack({ message: slackMessage })
       this.childLogger.info(report, `Rewards Reporter`)
-      this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_BLOCKED, {
+      this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_BLOCKED, userId, {
         userId,
         challengeId,
         amount,
