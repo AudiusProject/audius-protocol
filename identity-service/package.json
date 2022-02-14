@@ -93,6 +93,7 @@
       "beforeEach",
       "it",
       "before",
+      "after",
       "describe",
       "afterEach"
     ],
