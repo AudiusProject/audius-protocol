@@ -75,7 +75,6 @@ class RewardsReporter {
 
   async reportFailure ({ userId, challengeId, amount, error, phase, specifier }) {
     try {
-
       const report = {
         status: 'failure',
         userId,
