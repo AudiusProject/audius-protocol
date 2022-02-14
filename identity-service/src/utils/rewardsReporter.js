@@ -1,4 +1,11 @@
 const axios = require('axios')
+const AnalyticsProvider = require('../analytics')
+
+const RewardEventNames = {
+  REWARDS_CLAIM_SUCCESS: 'Rewards Claim: Success',
+  REWARDS_CLAIM_FAILURE: 'Rewards Claim: Failure',
+  REWARDS_CLAIM_BLOCKED: 'Rewards Claim: Blocked'
+}
 
 class SlackReporter {
   constructor ({
@@ -36,6 +43,7 @@ class RewardsReporter {
   }) {
     this.successReporter = new SlackReporter({ slackUrl: successSlackUrl, childLogger })
     this.errorReporter = new SlackReporter({ slackUrl: errorSlackUrl, childLogger })
+    this.analyticsProvider = new AnalyticsProvider()
     this.childLogger = childLogger
     this.source = source
   }
@@ -52,6 +60,13 @@ class RewardsReporter {
     const slackMessage = this.successReporter.getJsonSlackMessage(report)
     await this.successReporter.postToSlack({ message: slackMessage })
     this.childLogger.info(report, `Rewards Reporter`)
+    this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_SUCCESS, {
+      userId,
+      challengeId,
+      amount,
+      specifier,
+      source: this.source
+    })
   }
 
   async reportFailure ({ userId, challengeId, amount, error, phase, specifier }) {
@@ -68,6 +83,15 @@ class RewardsReporter {
     const slackMessage = this.errorReporter.getJsonSlackMessage(report)
     await this.errorReporter.postToSlack({ message: slackMessage })
     this.childLogger.info(report, `Rewards Reporter`)
+    this.analyticsProvidertrack(RewardEventNames.REWARDS_CLAIM_FAILURE, {
+      userId,
+      challengeId,
+      amount,
+      specifier,
+      error,
+      phase,
+      source: this.source
+    })
   }
 
   async reportAAORejection ({ userId, challengeId, amount, error, specifier }) {
@@ -83,6 +107,14 @@ class RewardsReporter {
     const slackMessage = this.errorReporter.getJsonSlackMessage(report)
     await this.errorReporter.postToSlack({ message: slackMessage })
     this.childLogger.info(report, `Rewards Reporter`)
+    this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_BLOCKED, {
+      userId,
+      challengeId,
+      amount,
+      specifier,
+      error,
+      source: this.source
+    })
   }
 }
 
