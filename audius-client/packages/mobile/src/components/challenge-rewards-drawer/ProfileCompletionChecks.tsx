@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { getHasFavoritedItem } from 'audius-client/src/common/store/challenges/selectors/profile-progress'
+import { getCompletionStages } from 'audius-client/src/common/store/challenges/selectors/profile-progress'
 import { profilePage, AUDIO_PAGE } from 'audius-client/src/utils/route'
 import { StyleSheet, View } from 'react-native'
 
@@ -64,7 +64,7 @@ export const ProfileCompletionChecks = ({
   onClose: () => void
 }) => {
   const currentUser = useSelectorWeb(getAccountUser)
-  const hasFavoritedItem = !!useSelectorWeb(getHasFavoritedItem)
+  const completionStages = useSelectorWeb(getCompletionStages)
   const pushRouteWeb = usePushRouteWeb()
   const styles = useThemedStyles(createStyles)
   const goToProfile = useCallback(() => {
@@ -78,13 +78,14 @@ export const ProfileCompletionChecks = ({
     return null
   }
   const config: Record<string, boolean> = {
-    [messages.profileCheckNameAndHandle]: !!currentUser.name,
-    [messages.profileCheckProfilePicture]: !!currentUser.profile_picture_sizes,
-    [messages.profileCheckCoverPhoto]: !!currentUser.cover_photo_sizes,
-    [messages.profileCheckProfileDescription]: !!currentUser.bio,
-    [messages.profileCheckFavorite]: hasFavoritedItem,
-    [messages.profileCheckRepost]: currentUser.repost_count >= 1,
-    [messages.profileCheckFollow]: currentUser.followee_count >= 5
+    [messages.profileCheckNameAndHandle]: completionStages.hasNameAndHandle,
+    [messages.profileCheckProfilePicture]: completionStages.hasProfilePicture,
+    [messages.profileCheckCoverPhoto]: completionStages.hasCoverPhoto,
+    [messages.profileCheckProfileDescription]:
+      completionStages.hasProfileDescription,
+    [messages.profileCheckFavorite]: completionStages.hasFavoritedItem,
+    [messages.profileCheckRepost]: !!completionStages.hasReposted,
+    [messages.profileCheckFollow]: completionStages.hasFollowedAccounts
   }
   return (
     <View>
