@@ -57,8 +57,7 @@ const IS_STAGING = process.env.REACT_APP_ENVIRONMENT === 'staging'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const SUGGESTED_FOLLOW_USER_HANDLE_URL =
-  process.env.REACT_APP_SUGGESTED_FOLLOW_HANDLES ||
-  'https://download.audius.co/static-resources/signup-follows.json'
+  process.env.REACT_APP_SUGGESTED_FOLLOW_HANDLES
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
 
 const messages = {
@@ -97,18 +96,22 @@ function* getArtistsToFollow() {
 
 function* fetchAllFollowArtist() {
   yield call(waitForBackendSetup)
-  // Fetch Featured Follow artists first
-  const suggestedUserFollowIds = yield call(fetchSuggestedFollowUserIds)
-  yield call(fetchUsers, suggestedUserFollowIds)
-  yield put(
-    signOnActions.fetchFollowArtistsSucceeded(
-      FollowArtistsCategory.FEATURED,
-      suggestedUserFollowIds
+  try {
+    // Fetch Featured Follow artists first
+    const suggestedUserFollowIds = yield call(fetchSuggestedFollowUserIds)
+    yield call(fetchUsers, suggestedUserFollowIds)
+    yield put(
+      signOnActions.fetchFollowArtistsSucceeded(
+        FollowArtistsCategory.FEATURED,
+        suggestedUserFollowIds
+      )
     )
-  )
-  yield all(
-    Object.keys(followArtistCategoryGenreMappings).map(fetchFollowArtistGenre)
-  )
+    yield all(
+      Object.keys(followArtistCategoryGenreMappings).map(fetchFollowArtistGenre)
+    )
+  } catch (e) {
+    console.error('Unable to fetch sign up follows', e)
+  }
 }
 
 function* fetchFollowArtistGenre(followArtistCategory) {
