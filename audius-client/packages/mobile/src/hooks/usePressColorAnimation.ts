@@ -42,8 +42,6 @@ export const useColorAnimation = (...colors: string[]) => {
     }).start()
   }, [colorAnim])
 
-  console.log('colors....', colors.map(convertHexToRGBA))
-
   const color = colorAnim.interpolate({
     inputRange: [0, 1],
     outputRange: colors.map(color => convertHexToRGBA(color))
