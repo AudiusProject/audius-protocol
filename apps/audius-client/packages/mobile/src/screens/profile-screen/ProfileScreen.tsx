@@ -16,7 +16,6 @@ const screenHeight = Dimensions.get('window').height
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   screen: {
-    display: 'flex',
     flexDirection: 'column',
     height: screenHeight
   },

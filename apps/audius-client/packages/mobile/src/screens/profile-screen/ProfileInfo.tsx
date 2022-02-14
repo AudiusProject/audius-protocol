@@ -5,7 +5,7 @@ import { View, Text } from 'react-native'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
-import { Button } from './Button'
+import { EditProfileButton } from './EditProfileButton'
 import { FollowButton } from './FollowButton'
 import { SubscribeButton } from './SubscribeButton'
 
@@ -47,7 +47,7 @@ export const ProfileInfo = ({ profile }: ProfileInfoProps) => {
         <Text style={styles.handle}>@{profile.handle}</Text>
       </View>
       {isOwner ? (
-        <Button title='Edit Profile' variant='secondary' />
+        <EditProfileButton />
       ) : (
         <View style={styles.actionButtons}>
           {does_current_user_follow ? <SubscribeButton /> : null}
