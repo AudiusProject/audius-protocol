@@ -23,6 +23,7 @@
     "@sentry/node": "^6.2.5",
     "@sentry/tracing": "^6.2.5",
     "@solana/web3.js": "^1.30.2",
+    "amplitude-js": "^8.17.0",
     "apn": "^2.2.0",
     "aws-sdk": "^2.595.0",
     "axios": "^0.19.0",
