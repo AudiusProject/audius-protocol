@@ -83,7 +83,7 @@ class RewardsReporter {
     const slackMessage = this.errorReporter.getJsonSlackMessage(report)
     await this.errorReporter.postToSlack({ message: slackMessage })
     this.childLogger.info(report, `Rewards Reporter`)
-    this.analyticsProvidertrack(RewardEventNames.REWARDS_CLAIM_FAILURE, {
+    this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_FAILURE, {
       userId,
       challengeId,
       amount,
