@@ -74,7 +74,7 @@ class TransactionHandler {
       recentBlockhash,
       instructions: relayable,
       skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
-      feePayerOverride: feePayerOverride.toString()
+      feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null
     }
 
     try {
@@ -88,8 +88,9 @@ class TransactionHandler {
   }
 
   async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null) {
+    const stringFeePayer = feePayerOverride.toString()
     const feePayerKeypairOverride = (feePayerOverride && this.feePayerKeypairs)
-      ? this.feePayerKeypairs.find(keypair => keypair.publicKey.toString() === feePayerOverride)
+      ? this.feePayerKeypairs.find(keypair => keypair.publicKey.toString() === stringFeePayer)
       : null
     const feePayerAccount = feePayerKeypairOverride || (this.feePayerKeypairs && this.feePayerKeypairs[0])
     if (!feePayerAccount) {
