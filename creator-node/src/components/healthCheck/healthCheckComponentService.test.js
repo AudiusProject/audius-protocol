@@ -89,7 +89,7 @@ const AsyncProcessingQueueMock = (active = 0, waiting = 0) => {
   }
 }
 
-describe.only('Test Health Check', function () {
+describe('Test Health Check', function () {
   it('Should pass', async function () {
     config.set('serviceCountry', 'US')
     config.set('serviceLatitude', '37.7749')
