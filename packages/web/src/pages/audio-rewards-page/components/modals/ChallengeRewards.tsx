@@ -16,9 +16,9 @@ import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
 import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
-import { getAccountUser, getUserHandle } from 'common/store/account/selectors'
+import { getUserHandle } from 'common/store/account/selectors'
 import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
-import { getHasFavoritedItem } from 'common/store/challenges/selectors/profile-progress'
+import { getCompletionStages } from 'common/store/challenges/selectors/profile-progress'
 import {
   getChallengeRewardsModalType,
   getClaimStatus,
@@ -82,7 +82,16 @@ const messages = {
   twitterCopy: `Come support me on @audiusproject! Use my link and we both earn $AUDIO when you sign up.\n\n #audius #audiorewards\n\n`,
   verifiedChallenge: 'VERIFIED CHALLENGE',
   claimAmountLabel: '$AUDIO available to claim',
-  claimedSoFar: '$AUDIO claimed so far'
+  claimedSoFar: '$AUDIO claimed so far',
+
+  // Profile checks
+  profileCheckNameAndHandle: 'Name & Handle',
+  profileCheckProfilePicture: 'Profile Picture',
+  profileCheckCoverPhoto: 'Cover Photo',
+  profileCheckProfileDescription: 'Profile Description',
+  profileCheckFavorite: 'Favorite Track/Playlist',
+  profileCheckRepost: 'Repost Track/Playlist',
+  profileCheckFollow: 'Follow Five People'
 }
 
 type InviteLinkProps = {
@@ -146,18 +155,18 @@ const TwitterShareButton = ({
 }
 
 const ProfileChecks = () => {
-  const currentUser = useSelector(getAccountUser)
-  const hasFavoritedItem = useSelector(getHasFavoritedItem)
+  const completionStages = useSelector(getCompletionStages)
   const wm = useWithMobileStyle(styles.mobile)
 
   const config: Record<string, boolean> = {
-    'Name & Handle': !!currentUser?.name,
-    'Profile Picture': !!currentUser?.profile_picture_sizes,
-    'Cover Photo': !!currentUser?.cover_photo_sizes,
-    'Profile Description': !!currentUser?.bio,
-    'Favorite Track/Playlist': hasFavoritedItem,
-    'Repost Track/Playlist': !!currentUser && currentUser.repost_count >= 1,
-    'Follow Five People': !!currentUser && currentUser.followee_count >= 5
+    [messages.profileCheckNameAndHandle]: completionStages.hasNameAndHandle,
+    [messages.profileCheckProfilePicture]: completionStages.hasProfilePicture,
+    [messages.profileCheckCoverPhoto]: completionStages.hasCoverPhoto,
+    [messages.profileCheckProfileDescription]:
+      completionStages.hasProfileDescription,
+    [messages.profileCheckFavorite]: completionStages.hasFavoritedItem,
+    [messages.profileCheckRepost]: !!completionStages.hasReposted,
+    [messages.profileCheckFollow]: completionStages.hasFollowedAccounts
   }
 
   return (
@@ -293,8 +302,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }
 
   const showProgressBar =
-    challenge?.state === 'in_progress' &&
-    challenge?.challenge_type !== 'aggregate'
+    challenge &&
+    challenge.max_steps > 1 &&
+    challenge.challenge_type !== 'aggregate'
 
   const onClaimRewardClicked = useCallback(() => {
     if (challenge) {
