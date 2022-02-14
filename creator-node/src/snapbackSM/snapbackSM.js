@@ -175,7 +175,7 @@ class SnapbackSM {
       try {
         await this.processStateMachineOperation()
       } catch (e) {
-        this.log(`StateMachineQueue error processing ${e}`)
+        this.logError(`StateMachineQueue processing error: ${e}`)
       }
 
       await utils.timeout(this.snapbackJobInterval)
@@ -192,7 +192,7 @@ class SnapbackSM {
         try {
           await this.processSyncOperation(job, SyncType.Manual)
         } catch (e) {
-          this.log(`ManualSyncQueue processing error: ${e}`)
+          this.logError(`ManualSyncQueue processing error: ${e}`)
         }
 
         done()
@@ -206,7 +206,7 @@ class SnapbackSM {
         try {
           await this.processSyncOperation(job, SyncType.Recurring)
         } catch (e) {
-          this.log(`RecurringSyncQueue processing error ${e}`)
+          this.logError(`RecurringSyncQueue processing error ${e}`)
         }
 
         done()
