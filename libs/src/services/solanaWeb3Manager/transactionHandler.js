@@ -54,7 +54,7 @@ class TransactionHandler {
    * @memberof TransactionHandler
    */
   async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null }) {
-    console.log(`solanaWebManager | transactionHandler | handleTransaction | the feePayerOverride is ${feePayerOverride} and its type is ${typeof feePayerOverride} | useRelay is ${this.useRelay}`)
+    logger.info(`solanaWebManager | transactionHandler | handleTransaction | the feePayerOverride is ${feePayerOverride} and its type is ${typeof feePayerOverride} | useRelay is ${this.useRelay}`)
     let result = null
     if (this.useRelay) {
       result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride)
@@ -93,6 +93,7 @@ class TransactionHandler {
       ? this.feePayerKeypairs.find(keypair => keypair.publicKey.toString() === feePayerOverride)
       : null
     const feePayerAccount = feePayerKeypairOverride || (this.feePayerKeypairs && this.feePayerKeypairs[0])
+    logger.info(`_locallyConfirmTransaction | feePayerKeypairOverride is ${feePayerKeypairOverride} and feePayerAccount is ${feePayerAccount}`)
     if (!feePayerAccount) {
       console.error('Local feepayer keys missing for direct confirmation!')
       return {
@@ -110,6 +111,7 @@ class TransactionHandler {
     tx.sign(feePayerAccount)
 
     try {
+      logger.info('about to sendAndConfirmTransaction')
       const transactionSignature = await sendAndConfirmTransaction(
         this.connection,
         tx,

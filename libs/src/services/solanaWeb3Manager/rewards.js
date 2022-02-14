@@ -258,6 +258,7 @@ async function submitAttestations ({
     return acc
   }, [[]])
 
+  logger.info(`sumbitAttestations | feePayerOverride is ${feePayer}`)
   const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction({
     instructions: i,
     errorMapping: RewardsManagerError,

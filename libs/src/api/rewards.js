@@ -126,6 +126,7 @@ class Rewards extends Base {
 
       // Submit
 
+      logger.info(`submitAndEvaluate | feePayerOverride is ${feePayerOverride}`)
       logger.info(`submitAndEvaluate: submitting for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}] with [${discoveryNodeAttestations.length}] DN and [${aaoAttestation ? 1 : 0}] oracle attestations.`)
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
       phase = AttestationPhases.SUBMIT_ATTESTATIONS
@@ -138,7 +139,7 @@ class Rewards extends Base {
         tokenAmount: fullTokenAmount,
         instructionsPerTransaction,
         logger,
-        feePayerOverride: null
+        feePayerOverride
       })
 
       // In the case of an unparseable error,
@@ -165,7 +166,7 @@ class Rewards extends Base {
             tokenAmount: fullTokenAmount,
             instructionsPerTransaction: 2, // SECP + Attestation
             logger,
-            feePayerOverride: null
+            feePayerOverride
           })
         } else {
           throw new Error(submitErrorCode || submitError)

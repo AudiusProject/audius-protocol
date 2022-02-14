@@ -476,6 +476,8 @@ class RewardsAttester {
     wallet,
     completedBlocknumber
   }) {
+    const feePayerOverride = this._getFeePayer()
+    this.logger.info(`_performSingleAttestation | the feePayerOverride is ${feePayerOverride}`)
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
 
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
@@ -490,7 +492,7 @@ class RewardsAttester {
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
       logger: this.logger,
-      feePayerOverride: this._getFeePayer()
+      feePayerOverride
     })
 
     if (success) {
