@@ -343,6 +343,7 @@ class SolanaWeb3Manager {
     logger = console,
     feePayerOverride = null
   }) {
+    console.log(`feePayerOverride: ${feePayerOverride} | pubKey ${SolanaUtils.newPublicKeyNullable(feePayerOverride)} | localFeePayerKey: ${this.feePayerKey}`)
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
