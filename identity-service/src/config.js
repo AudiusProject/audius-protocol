@@ -767,6 +767,12 @@ const config = convict({
     format: String,
     env: 'websiteHost',
     default: 'https://audius.co'
+  },
+  amplitudeAPIKey: {
+    doc: 'Amplitude API key',
+    format: String,
+    env: 'amplitudeAPIKey',
+    default: ''
   }
 })
 
