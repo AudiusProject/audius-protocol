@@ -41,15 +41,9 @@ export const messages = {
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
-    container: {
+    root: {
       padding: 24,
-      paddingTop: 8,
-      height: '100%'
-    },
-
-    scrollView: {
-      // Margin bottom to account for overscroll
-      marginBottom: 94
+      paddingTop: 8
     },
 
     details: {
@@ -103,11 +97,15 @@ const createStyles = (themeColors: ThemeColors) =>
       marginLeft: 8
     },
 
-    button: {
+    shareButtonContainer: {
+      marginVertical: 16
+    },
+
+    shareButton: {
       width: '100%'
     },
 
-    buttonIcon: {
+    shareButtonIcon: {
       marginRight: 10
     }
   })
@@ -159,83 +157,78 @@ const CollectibleDetails = () => {
       isFullscreen
     >
       {collectible && isOpen && (
-        <View style={styles.container}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            style={styles.scrollView}
-          >
-            <CollectibleMedia collectible={collectible} />
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.root}>
+          <CollectibleMedia collectible={collectible} />
 
-            <View style={styles.details}>
-              <Text style={styles.detailsTitle} weight='bold'>
-                {collectible.name}
-              </Text>
-              <View style={styles.detailsStamp}>
-                <Text
-                  style={[
-                    styles.badge,
-                    collectible.isOwned ? styles.owned : styles.created
-                  ]}
-                  weight='bold'
-                >
-                  {collectible.isOwned ? messages.owned : messages.created}
-                </Text>
-
-                <View style={styles.chainIcon}>
-                  <ChainLogo height={20} width={20} />
-                </View>
-              </View>
-
-              {!!collectible.dateCreated && (
-                <CollectibleDate
-                  date={collectible.dateCreated}
-                  label='Date Created:'
-                />
-              )}
-
-              {!!collectible.dateLastTransferred && (
-                <CollectibleDate
-                  date={collectible.dateLastTransferred}
-                  label='Last Transferred:'
-                />
-              )}
-
-              <Text style={styles.detailsDescription}>
-                {collectible.description}
+          <View style={styles.details}>
+            <Text style={styles.detailsTitle} weight='bold'>
+              {collectible.name}
+            </Text>
+            <View style={styles.detailsStamp}>
+              <Text
+                style={[
+                  styles.badge,
+                  collectible.isOwned ? styles.owned : styles.created
+                ]}
+                weight='bold'
+              >
+                {collectible.isOwned ? messages.owned : messages.created}
               </Text>
 
-              {!!collectible.externalLink && (
-                <CollectibleLink
-                  url={collectible.externalLink}
-                  text={formattedLink}
-                />
-              )}
-              {!!collectible.permaLink && (
-                <CollectibleLink
-                  url={collectible.permaLink}
-                  text={messages.linkToCollectible}
-                />
-              )}
-
-              <View style={{ marginTop: 16 }}>
-                <Button
-                  type={ButtonType.COMMON}
-                  title={messages.share}
-                  onPress={handleShare}
-                  containerStyle={styles.button}
-                  iconPosition={'left'}
-                  style={{ padding: 8 }}
-                  icon={
-                    <IconShare
-                      style={styles.buttonIcon}
-                      fill={buttonIconColor}
-                    />
-                  }
-                />
+              <View style={styles.chainIcon}>
+                <ChainLogo height={20} width={20} />
               </View>
             </View>
-          </ScrollView>
-        </View>
+
+            {!!collectible.dateCreated && (
+              <CollectibleDate
+                date={collectible.dateCreated}
+                label='Date Created:'
+              />
+            )}
+
+            {!!collectible.dateLastTransferred && (
+              <CollectibleDate
+                date={collectible.dateLastTransferred}
+                label='Last Transferred:'
+              />
+            )}
+
+            <Text style={styles.detailsDescription}>
+              {collectible.description}
+            </Text>
+
+            {!!collectible.externalLink && (
+              <CollectibleLink
+                url={collectible.externalLink}
+                text={formattedLink}
+              />
+            )}
+            {!!collectible.permaLink && (
+              <CollectibleLink
+                url={collectible.permaLink}
+                text={messages.linkToCollectible}
+              />
+            )}
+
+            <View style={styles.shareButtonContainer}>
+              <Button
+                type={ButtonType.COMMON}
+                title={messages.share}
+                onPress={handleShare}
+                containerStyle={styles.shareButton}
+                iconPosition={'left'}
+                style={{ padding: 8 }}
+                icon={
+                  <IconShare
+                    style={styles.shareButtonIcon}
+                    fill={buttonIconColor}
+                  />
+                }
+              />
+            </View>
+          </View>
+        </ScrollView>
       )}
     </Drawer>
   )
