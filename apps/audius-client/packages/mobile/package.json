@@ -32,7 +32,8 @@
     "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
-    "typecheck:trace": "tsc --generateTrace tsc_trace"
+    "typecheck:trace": "tsc --generateTrace tsc_trace",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@amplitude/react-native": "2.6.0",
@@ -142,6 +143,7 @@
     "jest": "24.9.0",
     "jetifier": "1.6.8",
     "metro-react-native-babel-preset": "0.67.0",
+    "patch-package": "6.4.7",
     "prettier": "2.0.5",
     "prettier-config-standard": "1.0.1",
     "react-devtools-core": "4.14.0",

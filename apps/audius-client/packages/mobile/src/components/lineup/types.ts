@@ -104,4 +104,10 @@ export type LineupProps = {
    * The variant of the Lineup
    */
   variant?: LineupVariant
+
+  /**
+   * Uniquely identifies Lineup's SectionList. Needed if rendered inside
+   * another VirtualizedList.
+   */
+  listKey?: string
 }

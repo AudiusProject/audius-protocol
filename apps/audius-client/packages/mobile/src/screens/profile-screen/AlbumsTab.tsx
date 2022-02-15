@@ -23,6 +23,7 @@ export const AlbumsTab = () => {
 
   return (
     <CollectionList
+      listKey='profile-albums'
       collection={userAlbums}
       emptyTabText={messages.emptyTabText}
     />

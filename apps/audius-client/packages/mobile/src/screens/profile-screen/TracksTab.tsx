@@ -43,6 +43,7 @@ export const TracksTab = () => {
 
   return (
     <Lineup
+      listKey='profile-tracks'
       actions={tracksActions}
       lineup={lineup}
       playTrack={handlePlayTrack}
