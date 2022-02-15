@@ -309,15 +309,17 @@ class RewardsAttester {
    *  aaoAddress: string,
    *  endpoints: Array<string>,
    *  challengeIdsDenyList: Array<string>
-   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }
+   *  parallelization: number
+   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList, parallelization }
    * @memberof RewardsAttester
    */
-  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }) {
-    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}`)
+  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList, parallelization }) {
+    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}, parallelization: ${parallelization}`)
     this.aaoEndpoint = aaoEndpoint || this.aaoEndpoint
     this.aaoAddress = aaoAddress || this.aaoAddress
     this.endpoints = endpoints || this.endpoints
     this.challengeIdsDenyList = challengeIdsDenyList ? new Set(...challengeIdsDenyList) : this.challengeIdsDenyList
+    this.parallelization = parallelization || this.parallelization
   }
 
   /**
