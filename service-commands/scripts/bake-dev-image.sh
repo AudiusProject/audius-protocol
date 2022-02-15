@@ -16,7 +16,7 @@ handle_provisioning_error () {
     # Azure access (if baking w Azure)
 # Default values of arguments
 USE_AZURE=0 # GCP by default
-SOURCE_DISK="christine-new-bake" # name of remote box to bake as AMI
+SOURCE_DISK="cj-remote-zsh-bake" # name of remote box to bake as AMI
 PROTOCOL_GIT_REF="master"
 CLIENT_GIT_REF="master"
 USERNAME="ubuntu"
