@@ -105,7 +105,8 @@ export const Lineup = ({
   refresh,
   refreshing,
   showLeadingElementArtistPick = true,
-  variant = LineupVariant.MAIN
+  variant = LineupVariant.MAIN,
+  listKey
 }: LineupProps) => {
   const dispatchWeb = useDispatchWeb()
 
@@ -298,6 +299,7 @@ export const Lineup = ({
       renderSectionHeader={({ section: { title } }) =>
         delineate && title ? <Delineator text={title} /> : null
       }
+      listKey={listKey}
     />
   )
 }

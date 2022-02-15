@@ -23,6 +23,7 @@ export const PlaylistsTab = () => {
 
   return (
     <CollectionList
+      listKey='profile-playlists'
       collection={userPlaylists}
       emptyTabText={messages.emptyTabText}
     />

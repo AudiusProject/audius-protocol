@@ -1,5 +1,6 @@
-import { Dimensions, View } from 'react-native'
+import { View } from 'react-native'
 
+import { VirtualizedScrollView } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles/makeStyles'
 
@@ -12,13 +13,7 @@ import { ProfileSocials } from './ProfileSocials'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { getProfile } from './selectors'
 
-const screenHeight = Dimensions.get('window').height
-
-const useStyles = makeStyles(({ palette, typography, spacing }) => ({
-  screen: {
-    flexDirection: 'column',
-    height: screenHeight
-  },
+const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
     backgroundColor: palette.white,
     paddingTop: spacing(8),
@@ -33,7 +28,7 @@ const ProfileScreen = () => {
   if (!profile) return null
 
   return (
-    <View style={styles.screen}>
+    <VirtualizedScrollView listKey='profile-screen'>
       <CoverPhoto profile={profile} />
       <ProfilePhoto profile={profile} />
       <View style={styles.header}>
@@ -45,7 +40,7 @@ const ProfileScreen = () => {
       <View style={{ flex: 4 }}>
         <ProfileTabNavigator profile={profile} />
       </View>
-    </View>
+    </VirtualizedScrollView>
   )
 }
 

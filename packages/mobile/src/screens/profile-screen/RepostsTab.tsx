@@ -43,6 +43,7 @@ export const RepostsTab = () => {
 
   return (
     <Lineup
+      listKey='profile-reposts'
       actions={feedActions}
       lineup={lineup}
       playTrack={handlePlayTrack}
