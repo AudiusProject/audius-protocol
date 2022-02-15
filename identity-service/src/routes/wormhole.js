@@ -1,7 +1,7 @@
 const { sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const ethTxRelay = require('../relay/ethTxRelay')
 const crypto = require('crypto')
-const { getFeePayer } = require('../solana-client')
+const { getFeePayerKeypair } = require('../solana-client')
 
 const { NodeHttpTransport } = require('@improbable-eng/grpc-web-node-http-transport')
 
@@ -50,7 +50,7 @@ const relayWormhole = async (
     const transferTxHash = transferTokensTxResponse.txHash
     context.transferTxHash = transferTxHash
     logs.push(`Attempting Transfer Tokens for sender: ${transferTxHash}`)
-    const feePayerAccount = getFeePayer()
+    const feePayerAccount = getFeePayerKeypair()
 
     const signTransaction = async (transaction) => {
       transaction.partialSign(feePayerAccount)

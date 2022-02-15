@@ -16,22 +16,22 @@ class TransactionHandler {
    *  connection: Connection,
    *  useRelay: boolean,
    *  identityService: Object,
-   *  feePayerKeypair: KeyPair
+   *  feePayerKeypairs: KeyPair[]
    *  skipPreflight: boolean
    * }} {
    *  connection,
    *  useRelay,
    *  identityService = null,
-   *  feePayerKeypair = null,
+   *  feePayerKeypairs = null,
    *  skipPreflight = true
    * }
    * @memberof TransactionHandler
    */
-  constructor ({ connection, useRelay, identityService = null, feePayerKeypair = null, skipPreflight = true }) {
+  constructor ({ connection, useRelay, identityService = null, feePayerKeypairs = null, skipPreflight = true }) {
     this.connection = connection
     this.useRelay = useRelay
     this.identityService = identityService
-    this.feePayerKeypair = feePayerKeypair
+    this.feePayerKeypairs = feePayerKeypairs
     this.skipPreflight = skipPreflight
   }
 
@@ -46,18 +46,19 @@ class TransactionHandler {
    * @property {string} [recentBlockhash=null] optional recent blockhash to prefer over fetching
    * @property {boolean} [skipPreflight=null] optional per transaction override to skipPreflight
    * @property {any} [logger=console] optional logger
+   * @property {any} [feePayerOverride=null] optional fee payer override
    *
    * @param {Array<TransactionInstruction>} instructions an array of `TransactionInstructions`
    * @param {*} [errorMapping=null] an optional error mapping. Should expose a `fromErrorCode` method.
    * @returns {Promise<HandleTransactionReturn>}
    * @memberof TransactionHandler
    */
-  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null }) {
+  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null }) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight)
+      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride)
     } else {
-      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight)
+      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight, feePayerOverride)
     }
     if (result.error && result.errorCode !== null && errorMapping) {
       result.errorCode = errorMapping.fromErrorCode(result.errorCode)
@@ -65,14 +66,15 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction (instructions, recentBlockhash, skipPreflight) {
+  async _relayTransaction (instructions, recentBlockhash, skipPreflight, feePayerOverride = null) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
     recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash('confirmed')).blockhash
 
     const transactionData = {
       recentBlockhash,
       instructions: relayable,
-      skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight
+      skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
+      feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null
     }
 
     try {
@@ -85,8 +87,17 @@ class TransactionHandler {
     }
   }
 
-  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight) {
-    if (!this.feePayerKeypair) {
+  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null) {
+    const feePayerKeypairOverride = (() => {
+      if (feePayerOverride && this.feePayerKeypairs) {
+        const stringFeePayer = feePayerOverride.toString()
+        return this.feePayerKeypairs.find(keypair => keypair.publicKey.toString() === stringFeePayer)
+      }
+      return null
+    })()
+
+    const feePayerAccount = feePayerKeypairOverride || (this.feePayerKeypairs && this.feePayerKeypairs[0])
+    if (!feePayerAccount) {
       console.error('Local feepayer keys missing for direct confirmation!')
       return {
         res: null,
@@ -100,13 +111,13 @@ class TransactionHandler {
 
     instructions.forEach(i => tx.add(i))
 
-    tx.sign(this.feePayerKeypair)
+    tx.sign(feePayerAccount)
 
     try {
       const transactionSignature = await sendAndConfirmTransaction(
         this.connection,
         tx,
-        [this.feePayerKeypair],
+        [feePayerAccount],
         {
           skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
           commitment: 'processed',

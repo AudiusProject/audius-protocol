@@ -127,6 +127,7 @@ class RewardsAttester {
    *    endpoints?: Array<string>
    *    runBehindSec?: number
    *    isSolanaChallenge?: (string) => boolean
+   *    feePayerOverride?: string
    * }} {
    *    libs,
    *    startingBlock,
@@ -144,6 +145,7 @@ class RewardsAttester {
    *    endpoints,
    *    runBehindSec
    *    isSolanaChallenge
+   *    feePayerOverride
    *  }
    * @memberof RewardsAttester
    */
@@ -163,7 +165,8 @@ class RewardsAttester {
     challengeIdsDenyList = [],
     endpoints = [],
     runBehindSec = 0,
-    isSolanaChallenge = (challengeId) => true
+    isSolanaChallenge = (challengeId) => true,
+    feePayerOverride = null
   }) {
     this.libs = libs
     this.logger = logger
@@ -198,6 +201,7 @@ class RewardsAttester {
     this.maxRetries = maxRetries
     // Get override starting block for manually setting indexing start
     this.getStartingBlockOverride = getStartingBlockOverride
+    this.feePayerOverride = feePayerOverride
 
     // Calculate delay
     this.delayCalculator = new AttestationDelayCalculator({
@@ -305,15 +309,17 @@ class RewardsAttester {
    *  aaoAddress: string,
    *  endpoints: Array<string>,
    *  challengeIdsDenyList: Array<string>
-   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }
+   *  parallelization: number
+   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList, parallelization }
    * @memberof RewardsAttester
    */
-  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }) {
-    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}`)
+  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList, parallelization }) {
+    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}, parallelization: ${parallelization}`)
     this.aaoEndpoint = aaoEndpoint || this.aaoEndpoint
     this.aaoAddress = aaoAddress || this.aaoAddress
     this.endpoints = endpoints || this.endpoints
     this.challengeIdsDenyList = challengeIdsDenyList ? new Set(...challengeIdsDenyList) : this.challengeIdsDenyList
+    this.parallelization = parallelization || this.parallelization
   }
 
   /**
@@ -327,6 +333,23 @@ class RewardsAttester {
       this.logger.warn('No usable balance. Waiting...')
       await this._delay(2000)
     }
+  }
+
+  /**
+   * Returns the override feePayer if set, otherwise a random fee payer from among the list of existing fee payers.
+   *
+   * @memberof RewardsAttester
+   */
+  _getFeePayer () {
+    if (this.feePayerOverride) {
+      return this.feePayerOverride
+    }
+    const feePayerKeypairs = this.libs.solanaWeb3Manager.solanaWeb3Config.feePayerKeypairs
+    if (feePayerKeypairs && feePayerKeypairs.length) {
+      const randomFeePayerIndex = Math.floor(Math.random() * feePayerKeypairs.length)
+      return feePayerKeypairs[randomFeePayerIndex].publicKey
+    }
+    return null
   }
 
   /**
@@ -456,6 +479,7 @@ class RewardsAttester {
     completedBlocknumber
   }) {
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
+
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
       challengeId,
       encodedUserId: userId,
@@ -467,12 +491,13 @@ class RewardsAttester {
       quorumSize: this.quorumSize,
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
-      logger: this.logger
+      logger: this.logger,
+      feePayerOverride: this._getFeePayer()
     })
 
     if (success) {
       this.logger.info(`Successfully attestested for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}]!`)
-      await this.reporter.reportSuccess({ userId, challengeId, amount })
+      await this.reporter.reportSuccess({ userId: decodeHashId(userId), challengeId, amount, specifier })
       return {
         challengeId,
         userId,
@@ -490,8 +515,9 @@ class RewardsAttester {
       phase,
       error,
       amount,
-      userId,
-      challengeId
+      userId: decodeHashId(userId),
+      challengeId,
+      specifier
     })
 
     return {
@@ -606,7 +632,7 @@ class RewardsAttester {
           noRetry.push(res)
           const isAAO = AAO_ERRORS.has(res.error)
           if (isAAO) {
-            this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error })
+            this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error, specifier: res.specifier })
           }
         }
         return !isNoRetry

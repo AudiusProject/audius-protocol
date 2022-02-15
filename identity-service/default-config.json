@@ -67,7 +67,7 @@
   "scoreSecret": "score_secret",
   "recaptchaServiceKey": "",
   "hCaptchaSecret": "",
-  "solanaFeePayerWallet": "[]",
+  "solanaFeePayerWallets": "[]",
   "sentryDSN": "",
   "solanaEndpoint": "https://api.mainnet-beta.solana.com"
 }
