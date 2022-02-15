@@ -17,11 +17,15 @@ COPY . .
 COPY scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
-RUN apk update --repository http://dl-5.alpinelinux.org/alpine/v3.11/main/ && \
-    apk add rsyslog --repository http://dl-5.alpinelinux.org/alpine/v3.11/main/ && \
-    apk add python3 --repository http://dl-5.alpinelinux.org/alpine/v3.4/main/ && \
-    apk add python3-dev --repository http://dl-5.alpinelinux.org/alpine/v3.4/main/ && \
-    apk add py3-pip --repository http://dl-5.alpinelinux.org/alpine/v3.4/main/
+# Handle unreachable Alpine repo, revert this eventually:
+# https://github.com/gliderlabs/docker-alpine/issues/155
+RUN sed -i -e 's/dl-cdn/dl-4/' /etc/apk/repositories
+
+RUN apk update && \
+    apk add rsyslog && \
+    apk add python3 && \
+    apk add python3-dev && \
+    apk add py3-pip
 
 EXPOSE 7000
 
