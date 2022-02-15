@@ -1,26 +1,17 @@
 import MaskedView from '@react-native-masked-view/masked-view'
-import { TextStyle } from 'react-native'
+import { TextProps } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import Text from 'app/components/text'
 import { useThemeColors } from 'app/utils/theme'
 
-type Props = {
-  /**
-   * Style to be applied to the text
-   */
-  style?: TextStyle
-  /**
-   * The text to be displayed
-   */
-  text: string
-  accessibilityRole?: 'header'
-}
+type GradientTextProps = TextProps
 
 /**
  * Diagonal gradient text in the Audius colors
  */
-const GradientText = ({ style, text }: Props) => {
+export const GradientText = (props: GradientTextProps) => {
+  const { style, children, ...other } = props
   const {
     pageHeaderGradientColor1,
     pageHeaderGradientColor2
@@ -29,8 +20,8 @@ const GradientText = ({ style, text }: Props) => {
   return (
     <MaskedView
       maskElement={
-        <Text style={style} weight='heavy'>
-          {text}
+        <Text style={style} weight='heavy' {...other}>
+          {children}
         </Text>
       }
     >
@@ -39,12 +30,15 @@ const GradientText = ({ style, text }: Props) => {
         start={{ x: 1, y: 1 }}
         end={{ x: 0, y: 0 }}
       >
-        <Text style={[style, { opacity: 0 }]} weight='heavy'>
-          {text}
+        <Text
+          style={[style, { opacity: 0 }]}
+          weight='heavy'
+          {...other}
+          accessibilityElementsHidden
+        >
+          {children}
         </Text>
       </LinearGradient>
     </MaskedView>
   )
 }
-
-export default GradientText

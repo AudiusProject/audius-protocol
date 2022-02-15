@@ -7,8 +7,8 @@ import {
 import { StyleSheet, View } from 'react-native'
 
 import IconGold from 'app/assets/images/IconGoldBadge.svg'
+import { GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -63,7 +63,7 @@ const TransferAudioMobileDrawer = () => {
     <Drawer isOpen={isOpen} onClose={handleClose}>
       <View style={styles.drawer}>
         <IconGold style={styles.badge} height={134} width={134} />
-        <GradientText text={messages.title} style={styles.title} />
+        <GradientText style={styles.title}>{messages.title}</GradientText>
         <Text style={styles.subtitle}>{messages.subtitle}</Text>
       </View>
     </Drawer>

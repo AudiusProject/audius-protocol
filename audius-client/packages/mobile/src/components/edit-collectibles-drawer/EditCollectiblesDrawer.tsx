@@ -6,8 +6,8 @@ import {
 } from 'audius-client/src/common/store/ui/modals/slice'
 import { StyleSheet, View } from 'react-native'
 
+import { GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -54,7 +54,7 @@ export const EditCollectiblesDrawer = () => {
   return (
     <Drawer onClose={handleClose} isOpen={isOpen}>
       <View style={styles.container}>
-        <GradientText text={messages.title} style={styles.title} />
+        <GradientText style={styles.title}>{messages.title}</GradientText>
         <Text style={styles.text} weight='medium'>
           {messages.text}
         </Text>

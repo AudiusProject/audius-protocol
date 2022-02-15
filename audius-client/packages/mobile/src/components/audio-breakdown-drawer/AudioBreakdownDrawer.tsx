@@ -26,8 +26,8 @@ import IconCopy from 'app/assets/images/iconCopy.svg'
 import IconInfo from 'app/assets/images/iconInfo.svg'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
+import { GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
@@ -225,10 +225,9 @@ const AudioBreakdownDrawer = () => {
       isFullscreen
     >
       <View style={styles.drawer}>
-        <GradientText
-          text={formatWei(totalBalance, true)}
-          style={styles.amount}
-        />
+        <GradientText style={styles.amount}>
+          {formatWei(totalBalance, true)}
+        </GradientText>
 
         <Text style={styles.total} weight='bold'>
           {messages.total}
@@ -240,10 +239,9 @@ const AudioBreakdownDrawer = () => {
               {messages.audiusWallet}
             </Text>
 
-            <GradientText
-              text={formatWei(accountBalance, true)}
-              style={styles.titleAmount}
-            />
+            <GradientText style={styles.titleAmount}>
+              {formatWei(accountBalance, true)}
+            </GradientText>
           </View>
 
           <View style={styles.sectionDescription}>
@@ -259,10 +257,9 @@ const AudioBreakdownDrawer = () => {
               {messages.linkedWallets}
             </Text>
 
-            <GradientText
-              text={formatWei(linkedWalletsBalance, true)}
-              style={styles.titleAmount}
-            />
+            <GradientText style={styles.titleAmount}>
+              {formatWei(linkedWalletsBalance, true)}
+            </GradientText>
           </View>
 
           <View style={styles.walletsHeader}>
