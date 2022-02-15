@@ -4,8 +4,8 @@ import { Image, StyleSheet, View } from 'react-native'
 
 import HeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconUpload from 'app/assets/images/iconGradientUpload.svg'
+import { GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -96,7 +96,7 @@ const MobileUploadDrawer = () => {
             fill={pageHeaderGradientColor2}
             fillSecondary={pageHeaderGradientColor1}
           />
-          <GradientText text={messages.start} style={styles.cta} />
+          <GradientText style={styles.cta}>{messages.start}</GradientText>
           <View>
             <Text style={styles.visit}>{messages.visit}</Text>
           </View>

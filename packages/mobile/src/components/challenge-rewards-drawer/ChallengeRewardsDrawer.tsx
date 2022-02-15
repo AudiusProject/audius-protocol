@@ -8,8 +8,8 @@ import LinearGradient from 'react-native-linear-gradient'
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import Button, { ButtonType } from 'app/components/button'
+import { GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import GradientText from 'app/components/gradient-text'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -320,7 +320,9 @@ export const ChallengeRewardsDrawer = ({
               <Text style={styles.subheader} weight='heavy'>
                 {messages.reward}
               </Text>
-              <GradientText text={`${amount}`} style={styles.audioAmount} />
+              <GradientText style={styles.audioAmount}>
+                {`${amount}`}
+              </GradientText>
               <Text style={styles.audioLabel} weight='heavy'>
                 {messages.audio}
               </Text>

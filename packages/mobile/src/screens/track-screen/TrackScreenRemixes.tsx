@@ -4,8 +4,7 @@ import { View } from 'react-native'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import Button, { ButtonType } from 'app/components/button'
-import { Tile } from 'app/components/core'
-import GradientText from 'app/components/gradient-text'
+import { Tile, GradientText } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -85,7 +84,7 @@ export const TrackScreenRemixes = ({
     <Tile styles={{ tile: styles.tile }}>
       <View style={styles.header}>
         <IconRemix style={styles.iconRemix} fill={pageHeaderGradientColor2} />
-        <GradientText text={messages.title} style={styles.headerText} />
+        <GradientText style={styles.headerText}>{messages.title}</GradientText>
       </View>
       <View style={styles.tracks}>
         {trackIds.map(id => {

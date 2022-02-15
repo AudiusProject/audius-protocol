@@ -8,8 +8,8 @@ import { Image, ImageStyle, Linking, StyleSheet, View } from 'react-native'
 
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
 import ButtonWithArrow from 'app/components/button-with-arrow'
+import { GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -75,7 +75,9 @@ const ApiRewardsDrawer = () => {
   return (
     <Drawer isOpen={isOpen} onClose={handleClose}>
       <View style={styles.content}>
-        <GradientText style={styles.drawerTitle} text={messages.modalTitle} />
+        <GradientText style={styles.drawerTitle}>
+          {messages.modalTitle}
+        </GradientText>
         <Image style={styles.image as ImageStyle} source={AudiusAPI} />
         <Text style={styles.title} weight='bold'>
           {messages.title}

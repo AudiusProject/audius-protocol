@@ -28,8 +28,8 @@ import {
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import ButtonWithArrow from 'app/components/button-with-arrow'
+import { GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import GradientText from 'app/components/gradient-text'
 import TabSlider from 'app/components/tab-slider'
 import Text from 'app/components/text'
 import TweetEmbed from 'app/components/tweet-embed'
@@ -232,10 +232,9 @@ const TrendingRewardsDrawer = () => {
             style={styles.chartEmoji as ImageStyle}
             source={ChartIncreasing}
           />
-          <GradientText
-            text={textMap[modalType].modalTitle}
-            style={styles.modalTitle}
-          />
+          <GradientText style={styles.modalTitle}>
+            {textMap[modalType].modalTitle}
+          </GradientText>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -256,7 +255,9 @@ const TrendingRewardsDrawer = () => {
             </Text>
           </View>
 
-          <GradientText text={messages.lastWeek} style={styles.lastWeek} />
+          <GradientText style={styles.lastWeek}>
+            {messages.lastWeek}
+          </GradientText>
           <TweetEmbed
             // Refresh it when we toggle
             key={`twitter-${tweetId}`}
