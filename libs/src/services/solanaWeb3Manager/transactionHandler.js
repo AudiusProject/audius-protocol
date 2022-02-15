@@ -74,7 +74,7 @@ class TransactionHandler {
       recentBlockhash,
       instructions: relayable,
       skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
-      feePayerOverride: feePayerOverride.toString()
+      feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null
     }
 
     try {
@@ -88,9 +88,14 @@ class TransactionHandler {
   }
 
   async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null) {
-    const feePayerKeypairOverride = (feePayerOverride && this.feePayerKeypairs)
-      ? this.feePayerKeypairs.find(keypair => keypair.publicKey.toString() === feePayerOverride)
-      : null
+    const feePayerKeypairOverride = (() => {
+      if (feePayerOverride && this.feePayerKeypairs) {
+        const stringFeePayer = feePayerOverride.toString()
+        return this.feePayerKeypairs.find(keypair => keypair.publicKey.toString() === stringFeePayer)
+      }
+      return null
+    })()
+
     const feePayerAccount = feePayerKeypairOverride || (this.feePayerKeypairs && this.feePayerKeypairs[0])
     if (!feePayerAccount) {
       console.error('Local feepayer keys missing for direct confirmation!')

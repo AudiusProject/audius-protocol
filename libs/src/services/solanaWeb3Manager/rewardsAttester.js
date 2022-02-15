@@ -338,7 +338,7 @@ class RewardsAttester {
    *
    * @memberof RewardsAttester
    */
-  async _getFeePayer () {
+  _getFeePayer () {
     if (this.feePayerOverride) {
       return this.feePayerOverride
     }
@@ -495,7 +495,7 @@ class RewardsAttester {
 
     if (success) {
       this.logger.info(`Successfully attestested for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}]!`)
-      await this.reporter.reportSuccess({ userId, challengeId, amount, specifier })
+      await this.reporter.reportSuccess({ userId: decodeHashId(userId), challengeId, amount, specifier })
       return {
         challengeId,
         userId,
@@ -513,7 +513,7 @@ class RewardsAttester {
       phase,
       error,
       amount,
-      userId,
+      userId: decodeHashId(userId),
       challengeId,
       specifier
     })
