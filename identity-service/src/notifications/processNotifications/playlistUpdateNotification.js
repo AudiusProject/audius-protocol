@@ -1,5 +1,8 @@
+const { logger } = require('../../logging')
 const moment = require('moment-timezone')
 const models = require('../../models')
+
+const logPrefix = 'notifications playlist updates -'
 
 /**
  * Process playlist update notifications
@@ -12,7 +15,8 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
      * keep track of last playlist updates for each user that favorited playlists
      * e.g. { user1: { playlist1: <timestamp1>, playlist2: <timestamp2>, ... }, ... }
      */
-
+  const startTime = Date.now()
+  logger.info(`${logPrefix} num notifications: ${notifications.length}, start: ${startTime}`)
   const userPlaylistUpdatesMap = {}
   notifications.forEach(notification => {
     const { metadata } = notification
@@ -31,6 +35,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   })
 
   const userIds = Object.keys(userPlaylistUpdatesMap)
+  logger.info(`${logPrefix} parsed notifications, num user ids: ${userIds.length}, time: ${Date.now() - startTime}ms`)
 
   // get wallets for all user ids and map each blockchain user id to their wallet
   const userIdsAndWallets = await models.User.findAll({
@@ -41,6 +46,8 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     },
     transaction: tx
   })
+  logger.info(`${logPrefix} selected wallets, num wallets: ${userIdsAndWallets.length}, time: ${Date.now() - startTime}ms`)
+
   const userWallets = []
   const userIdToWalletsMap = userIdsAndWallets.reduce((accumulator, current) => {
     const walletAddress = current.walletAddress
@@ -50,6 +57,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
       [current.blockchainUserId]: walletAddress
     }
   }, {})
+  logger.info(`${logPrefix} made wallet map, time: ${Date.now() - startTime}ms`)
 
   // get playlist updates for all wallets and map each wallet to its playlist updates
   const userWalletsAndPlaylistUpdates = await models.UserEvents.findAll({
@@ -65,6 +73,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
       [current.walletAddress]: current.playlistUpdates
     }
   }, {})
+  logger.info(`${logPrefix} calculated updates, num updates: ${userWalletsAndPlaylistUpdates.length}, time: ${Date.now() - startTime}ms`)
 
   const newPlaylistUpdatePromises = userIds.map(userId => {
     const walletAddress = userIdToWalletsMap[userId]
@@ -89,7 +98,8 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     })
   })
 
-  await Promise.all(newPlaylistUpdatePromises)
+  const results = await Promise.all(newPlaylistUpdatePromises)
+  logger.info(`${logPrefix} finished upsert, num events: ${results.length}, time: ${Date.now() - startTime}ms`)
   return notifications
 }
 
