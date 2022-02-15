@@ -640,9 +640,9 @@ def record_metrics(func):
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
 
-        metric = Metric()
+        metric = Metric("flask_route_latency_seconds", "Runtimes for flask routes")
         result = func(*args, **kwargs)
-        metric.save_time(session, f"utils.redis_metrics:{func}")
+        metric.save_time({"route": route, "route_key": route_key})
 
         return result
 

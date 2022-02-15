@@ -52,7 +52,7 @@ def update_aggregate_table(
     current_checkpoint,
     recalculations=False,
 ):
-    metric = Metric()
+    metric = Metric("update_aggregate_table_latency_seconds", "Runtimes for src.task.aggregates:update_aggregate_table()")
 
     # get name of the caller function
     task_name = f"{currentframe().f_back.f_code.co_name}()"
@@ -87,7 +87,7 @@ def update_aggregate_table(
         },
     )
 
-    metric.save_time(session, f"tasks.aggregates:update_aggregate_table:{table_name}")
+    metric.save_time({"table_name": table_name, "task_name": task_name})
 
     # update indexing_checkpoints with the new id
     save_indexed_checkpoint(session, table_name, current_checkpoint)
