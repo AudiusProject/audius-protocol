@@ -91,7 +91,8 @@ contract TrustedNotifierManager is InitializableV2 {
         return latestID;
     }
 
-    function getNotifierForID(uint256 _ID) external view returns (address wallet, string memory endpoint) {
+    function getNotifierForID(uint256 _ID) external view
+    returns (address wallet, string memory endpoint) {
         TrustedNotifier memory notifier = IDToTrustedNotifierMap[_ID];
         return (notifier.wallet, notifier.endpoint);
     }
