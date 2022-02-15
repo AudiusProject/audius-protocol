@@ -172,8 +172,12 @@ module.exports = function (app) {
       const redisClient = req.app.get('redisClient')
 
       const walletPublicKey = req.params.walletPublicKey.toLowerCase()
-      const returnSkipInfo = !!req.query.returnSkipInfo // default false
-      const returnFilesHash = !!req.query.returnFilesHash // default false
+      const returnSkipInfo = req.query.returnSkipInfo === 'true' // default false
+      const returnFilesHash = req.query.returnFilesHash === 'true' // default false
+      const filesHashClockRangeMin =
+        parseInt(req.query.filesHashClockRangeMin) || null
+      const filesHashClockRangeMax =
+        parseInt(req.query.filesHashClockRangeMax) || null
 
       const response = {}
 
@@ -187,24 +191,29 @@ module.exports = function (app) {
       response.clockValue = clockValue
 
       async function fetchCIDSkipInfoIfRequested() {
-        if (returnSkipInfo && cnodeUserUUID) {
-          const countsQuery = (
-            await sequelize.query(
-              `
-          select
-            count(*) as "numCIDs",
-            count(case when "skipped" = true then 1 else null end) as "numSkippedCIDs"
-          from "Files"
-          where "cnodeUserUUID" = :cnodeUserUUID
-        `,
-              { replacements: { cnodeUserUUID } }
-            )
-          )[0][0]
+        if (returnSkipInfo) {
+          // Set response to default values
+          response.CIDSkipInfo = { numCIDs: 0, numSkippedCIDs: 0 }
 
-          const numCIDs = parseInt(countsQuery.numCIDs)
-          const numSkippedCIDs = parseInt(countsQuery.numSkippedCIDs)
+          if (cnodeUserUUID) {
+            const countsQuery = (
+              await sequelize.query(
+                `
+            select
+              count(*) as "numCIDs",
+              count(case when "skipped" = true then 1 else null end) as "numSkippedCIDs"
+            from "Files"
+            where "cnodeUserUUID" = :cnodeUserUUID
+          `,
+                { replacements: { cnodeUserUUID } }
+              )
+            )[0][0]
 
-          response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
+            const numCIDs = parseInt(countsQuery.numCIDs)
+            const numSkippedCIDs = parseInt(countsQuery.numSkippedCIDs)
+
+            response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
+          }
         }
       }
 
@@ -224,30 +233,29 @@ module.exports = function (app) {
       }
 
       async function fetchFilesHashIfRequested() {
-        if (returnFilesHash && cnodeUserUUID) {
-          const filesHash = await DBManager.fetchFilesHashFromDB({
-            lookupKey: { lookupCNodeUserUUID: cnodeUserUUID }
-          })
-          response.filesHash = filesHash
-
-          const filesHashClockRangeMin =
-            req.query.filesHashClockRangeMin || null
-          const filesHashClockRangeMax =
-            req.query.filesHashClockRangeMax || null
-
-          if (filesHashClockRangeMin || filesHashClockRangeMax) {
-            const filesHashForClockRange = await DBManager.fetchFilesHashFromDB(
-              {
-                lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
-                clockMin: filesHashClockRangeMin,
-                clockMax: filesHashClockRangeMax
-              }
-            )
-            response.filesHashForClockRange = filesHashForClockRange
-          }
-        }
-        if (returnFilesHash && !cnodeUserUUID) {
+        if (returnFilesHash) {
+          // Set response to default values
           response.filesHash = null
+          if (filesHashClockRangeMin || filesHashClockRangeMax) {
+            response.filesHashForClockRange = null
+          }
+
+          if (cnodeUserUUID) {
+            const filesHash = await DBManager.fetchFilesHashFromDB({
+              lookupKey: { lookupCNodeUserUUID: cnodeUserUUID }
+            })
+            response.filesHash = filesHash
+
+            if (filesHashClockRangeMin || filesHashClockRangeMax) {
+              const filesHashForClockRange =
+                await DBManager.fetchFilesHashFromDB({
+                  lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
+                  clockMin: filesHashClockRangeMin,
+                  clockMax: filesHashClockRangeMax
+                })
+              response.filesHashForClockRange = filesHashForClockRange
+            }
+          }
         }
       }
 
@@ -270,7 +278,7 @@ module.exports = function (app) {
     handleResponse(async (req, res) => {
       const { walletPublicKeys /* [walletPublicKey] */ } = req.body
 
-      const returnFilesHash = !!req.query.returnFilesHash // default false
+      const returnFilesHash = req.query.returnFilesHash === 'true' // default false
 
       // Initialize users response object with default values
       const users = {}
@@ -301,7 +309,7 @@ module.exports = function (app) {
       })
 
       // Fetch filesHashes if requested
-      if (returnFilesHash) {
+      if (returnFilesHash && cnodeUsers.length > 0) {
         // Fetch filesHashes
         const cnodeUserUUIDs = cnodeUsers.map(
           (cnodeUser) => cnodeUser.cnodeUserUUID

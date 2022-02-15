@@ -276,6 +276,9 @@ class DBManager {
       cnodeUserUUIDs.forEach((cnodeUserUUID) => {
         filesHashesByUUIDMap[cnodeUserUUID] = null
       })
+      if (cnodeUserUUIDs.length === 0) {
+        return filesHashesByUUIDMap
+      }
 
       const query = `
         select
