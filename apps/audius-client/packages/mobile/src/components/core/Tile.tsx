@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ComponentProps, ComponentType, ReactNode } from 'react'
 
 import { Pressable, StyleProp, View, ViewStyle } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
@@ -20,7 +20,9 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-export type TileProps = {
+const defaultElement = View
+
+type TileOwnProps<TileComponentType extends ComponentType = ComponentType> = {
   children: ReactNode
   onPress?: GestureResponderHandler
   style?: StyleProp<ViewStyle>
@@ -32,11 +34,29 @@ export type TileProps = {
     // styles for the inner view that displays the tile content
     content: ViewStyle
   }>
+  as?: TileComponentType
 }
 
-export const Tile = (props: TileProps) => {
-  const { children, onPress, style, styles: stylesProp } = props
+export type TileProps<
+  TileComponentType extends ComponentType = typeof defaultElement
+> = TileOwnProps<TileComponentType> &
+  Omit<ComponentProps<TileComponentType>, keyof TileOwnProps>
+
+export const Tile = <
+  TileComponentType extends ComponentType = typeof defaultElement
+>(
+  props: TileProps<TileComponentType>
+) => {
   const styles = useStyles()
+
+  const {
+    as: TileComponent = defaultElement,
+    children,
+    onPress,
+    style,
+    styles: stylesProp,
+    ...other
+  } = props
 
   return (
     <Shadow
@@ -46,14 +66,14 @@ export const Tile = (props: TileProps) => {
       startColor='rgba(133,129,153,0.11)'
       containerViewStyle={[style, stylesProp?.root]}
     >
-      <View style={[styles.tile, stylesProp?.tile]}>
+      <TileComponent style={[styles.tile, stylesProp?.tile]} {...other}>
         <Pressable
           style={[styles.content, stylesProp?.content]}
           onPress={onPress}
         >
           {children}
         </Pressable>
-      </View>
+      </TileComponent>
     </Shadow>
   )
 }
