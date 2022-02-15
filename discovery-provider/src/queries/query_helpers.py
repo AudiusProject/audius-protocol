@@ -172,6 +172,7 @@ def populate_user_metadata(
     )
     track_blocknumber_dict = dict(track_blocknumbers)
 
+    follows_current_user_set = set()
     current_user_followed_user_ids = {}
     current_user_followee_follow_count_dict = {}
     if current_user_id:
@@ -215,6 +216,16 @@ def populate_user_metadata(
         current_user_followee_follow_count_dict = dict(
             current_user_followee_follow_counts
         )
+
+        # can probably avoid doing this as a separate query
+        follows_current_user_ids = [
+            r[0]
+            for r in session.query(Follow.follower_user_id).filter(
+                Follow.followee_user_id == current_user_id,
+                Follow.follower_user_id.in_(user_ids),
+            )
+        ]
+        follows_current_user_set = set(follows_current_user_ids)
 
     balance_dict = get_balances(session, redis, user_ids)
 
@@ -271,6 +282,7 @@ def populate_user_metadata(
         user[response_name_constants.spl_wallet] = user_banks_dict.get(
             user["wallet"], None
         )
+        user["does_follow_current_user"] = user_id in follows_current_user_set
 
     return users
 
