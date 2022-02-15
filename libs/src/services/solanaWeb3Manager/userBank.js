@@ -151,6 +151,7 @@ const createUserBankFrom = async ({
     data: Buffer.from(serializedInstructionEnum)
   })]
 
+  console.log(`createUserBankFrom | feePayerOverride: ${feePayerKey}`)
   return transactionHandler.handleTransaction({ instructions, recentBlockhash, feePayerOverride: feePayerKey })
 }
 

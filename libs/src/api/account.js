@@ -157,14 +157,15 @@ class Account extends Base {
         (async () => {
           try {
             handleUserBankOutcomes(userBankOutcomes.Request)
+            console.log(`signUp | feePayerOverride: ${feePayerOverride}`)
             const { error, errorCode } = await this.solanaWeb3Manager.createUserBank(feePayerOverride)
             if (error || errorCode) {
               console.error(
-                `Failed to create userbank, with err: ${error}, ${errorCode}`
+                `signUp | feePayerOverride: ${feePayerOverride} || Failed to create userbank, with err: ${error}, ${errorCode}`
               )
               handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
             } else {
-              console.log(`Successfully created userbank!`)
+              console.log(`signUp | feePayerOverride: ${feePayerOverride} || Successfully created userbank!`)
               handleUserBankOutcomes('Create User Bank: Success')
             }
           } catch (err) {

@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@amplitude/node": "^1.9.2",
-    "@audius/libs": "1.2.72",
+    "@audius/libs": "1.2.72-beta.1",
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
     "@optimizely/optimizely-sdk": "^4.6.0",
     "@sentry/node": "^6.2.5",

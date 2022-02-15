@@ -136,6 +136,7 @@ class SolanaWeb3Manager {
    * Creates a solana bank account from the web3 provider's eth address
    */
   async createUserBank (feePayerOverride) {
+    console.log(`createUserBank | feePayerOverride: ${feePayerOverride}, ${SolanaUtils.newPublicKeyNullable(feePayerOverride)}, ${this.feePayerKey}, ${SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey}`)
     if (!this.web3Manager) {
       throw new Error('A web3Manager is required for this solanaWeb3Manager method')
     }
