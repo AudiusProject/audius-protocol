@@ -15,8 +15,8 @@ import IconNewReleases from 'app/assets/images/iconNewReleases.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import Button from 'app/components/button'
+import { GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import GradientText from 'app/components/gradient-text'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -153,7 +153,7 @@ const EnablePushNotificationsDrawer = () => {
             fill={pageHeaderGradientColor2}
             fillSecondary={pageHeaderGradientColor1}
           />
-          <GradientText text={messages.dontMiss} style={styles.cta} />
+          <GradientText style={styles.cta}>{messages.dontMiss}</GradientText>
           <Text style={styles.turnOn}>{messages.turnOn}</Text>
         </View>
         <View style={styles.actions}>

@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native'
 
-import GradientText from 'app/components/gradient-text'
+import { GradientText } from 'app/components/core'
 
 const styles = StyleSheet.create({
   container: {
@@ -23,7 +23,7 @@ type HeaderProps = {
 const Header = ({ text }: HeaderProps) => {
   return (
     <View style={styles.container}>
-      <GradientText text={text} style={styles.text} />
+      <GradientText style={styles.text}>{text}</GradientText>
     </View>
   )
 }
