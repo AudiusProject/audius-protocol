@@ -33,7 +33,6 @@ import { SearchPageState } from 'pages/search-page/store/types'
 import SettingsPageState from 'pages/settings-page/store/types'
 import SignOnPageState from 'pages/sign-on/store/types'
 import { SmartCollectionState } from 'pages/smart-collection/store/slice'
-import TrendingPageState from 'pages/trending-page/store/types'
 import trendingPlaylistsReducer from 'pages/trending-playlists/store/slice'
 import trendingUndergroundReducer from 'pages/trending-underground/store/slice'
 import { UploadPageState } from 'pages/upload-page/store/types'
@@ -119,7 +118,6 @@ export type AppState = CommonState & {
   upload: UploadPageState
   dashboard: ArtistDashboardState
   signOn: SignOnPageState
-  trending: TrendingPageState
   history: HistoryPageState
   saved: SavesPageState
   searchBar: SearchBarState

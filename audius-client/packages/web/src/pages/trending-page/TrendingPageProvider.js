@@ -11,14 +11,13 @@ import { Name } from 'common/models/Analytics'
 import TimeRange from 'common/models/TimeRange'
 import { getHasAccount } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
-import { GENRES } from 'common/utils/genres'
-import { openSignOn } from 'pages/sign-on/store/actions'
+import * as trendingPageActions from 'common/store/pages/trending/actions'
 import {
   trendingWeekActions,
   trendingMonthActions,
   trendingAllTimeActions,
   trendingActions
-} from 'pages/trending-page/store/lineups/trending/actions'
+} from 'common/store/pages/trending/lineup/actions'
 import {
   getDiscoverTrendingLineup,
   getTrendingTimeRange,
@@ -27,14 +26,14 @@ import {
   getDiscoverTrendingAllTimeLineup,
   getDiscoverTrendingMonthLineup,
   getLastFetchedTrendingGenre
-} from 'pages/trending-page/store/selectors'
+} from 'common/store/pages/trending/selectors'
+import { GENRES } from 'common/utils/genres'
+import { openSignOn } from 'pages/sign-on/store/actions'
 import { make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
-
-import * as trendingPageActions from './store/actions'
 
 const messages = {
   trendingTitle: 'Trending',

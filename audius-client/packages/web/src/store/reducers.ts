@@ -29,7 +29,6 @@ import search from 'pages/search-page/store/reducer'
 import settings from 'pages/settings-page/store/reducer'
 import signOn from 'pages/sign-on/store/reducer'
 import smartCollection from 'pages/smart-collection/store/slice'
-import trending from 'pages/trending-page/store/reducer'
 import trendingPlaylists from 'pages/trending-playlists/store/slice'
 import trendingUnderground from 'pages/trending-underground/store/slice'
 import upload from 'pages/upload-page/store/reducer'
@@ -77,7 +76,6 @@ const createRootReducer = (routeHistory: History) =>
     profile,
     dashboard,
     signOn,
-    trending,
     history,
     saved,
     searchBar,

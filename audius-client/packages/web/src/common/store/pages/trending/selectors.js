@@ -2,32 +2,34 @@ import TimeRange from 'common/models/TimeRange'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { createShallowSelector } from 'common/utils/selectorHelpers'
 
-export const getSuggestedFollows = state => state.trending.suggestedFollows
-export const getDiscoverTrendingLineup = state => state.trending.trending
+export const getSuggestedFollows = state =>
+  state.pages.trending.suggestedFollows
+export const getDiscoverTrendingLineup = state => state.pages.trending.trending
 export const getDiscoverTrendingWeekLineup = state =>
-  state.trending.trendingWeek
+  state.pages.trending.trendingWeek
 export const getDiscoverTrendingMonthLineup = state =>
-  state.trending.trendingMonth
+  state.pages.trending.trendingMonth
 export const getDiscoverTrendingAllTimeLineup = state =>
-  state.trending.trendingAllTime
+  state.pages.trending.trendingAllTime
 
 export const makeGetTrendingLineup = timeRange => state => {
   return {
-    [TimeRange.WEEK]: state.trending.trendingWeek,
-    [TimeRange.MONTH]: state.trending.trendingMonth,
-    [TimeRange.ALL_TIME]: state.trending.trendingAllTime
+    [TimeRange.WEEK]: state.pages.trending.trendingWeek,
+    [TimeRange.MONTH]: state.pages.trending.trendingMonth,
+    [TimeRange.ALL_TIME]: state.pages.trending.trendingAllTime
   }[timeRange]
 }
 
 export const getCurrentDiscoverTrendingLineup = state => {
-  const timeRange = state.trending.trendingTimeRange
+  const timeRange = state.pages.trending.trendingTimeRange
   return makeGetTrendingLineup(timeRange)(state)
 }
 
-export const getTrendingTimeRange = state => state.trending.trendingTimeRange
-export const getTrendingGenre = state => state.trending.trendingGenre
+export const getTrendingTimeRange = state =>
+  state.pages.trending.trendingTimeRange
+export const getTrendingGenre = state => state.pages.trending.trendingGenre
 export const getLastFetchedTrendingGenre = state =>
-  state.trending.lastFetchedTrendingGenre
+  state.pages.trending.lastFetchedTrendingGenre
 
 export const getSuggestedFollowUsers = state =>
   getUsers(state, { ids: getSuggestedFollows(state) })

@@ -8,6 +8,11 @@ import { ReactComponent as IconMonth } from 'assets/img/iconMonth.svg'
 import { Name } from 'common/models/Analytics'
 import Status from 'common/models/Status'
 import TimeRange from 'common/models/TimeRange'
+import {
+  trendingWeekActions,
+  trendingMonthActions,
+  trendingAllTimeActions
+} from 'common/store/pages/trending/lineup/actions'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import { EndOfLineup } from 'components/lineup/EndOfLineup'
@@ -22,11 +27,6 @@ import NavContext, {
 import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
 import useAsyncPoll from 'hooks/useAsyncPoll'
 import useTabs from 'hooks/useTabs/useTabs'
-import {
-  trendingWeekActions,
-  trendingMonthActions,
-  trendingAllTimeActions
-} from 'pages/trending-page/store/lineups/trending/actions'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
 import { make, useRecord } from 'store/analytics/actions'
 import { BASE_URL, TRENDING_PAGE } from 'utils/route'
