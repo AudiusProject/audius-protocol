@@ -6,7 +6,6 @@ class AnalyticsProvider {
     const AMPLITUDE_API_KEY = config.get('amplitudeAPIKey')
     try {
       this.amplitudeInstance = amplitude.init(AMPLITUDE_API_KEY)
-      console.log({'amplitude': this.amplitudeInstance, key: AMPLITUDE_API_KEY})
     } catch (e) {
       console.log(`Failed to init amplitude with error: ${JSON.stringify(e)}`)
     }
