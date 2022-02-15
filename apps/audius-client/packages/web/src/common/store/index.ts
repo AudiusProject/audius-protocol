@@ -26,6 +26,8 @@ import { ProfilePageState } from 'common/store/pages/profile/types'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
+import trending from 'common/store/pages/trending/reducer'
+import TrendingPageState from 'common/store/pages/trending/types'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import solanaReducer from 'common/store/solana/slice'
 import stemsUpload from 'common/store/stems-upload/slice'
@@ -105,7 +107,8 @@ export const reducers = {
     exploreCollections: exploreCollectionsReducer,
     profile: profileReducer,
     tokenDashboard: tokenDashboardSlice.reducer,
-    track
+    track,
+    trending
   }),
 
   // Solana
@@ -146,6 +149,8 @@ export const sagas = {
   // pages/explore-page/store/sagas.ts
   // pages/explore-page/store/exploreCollections/sagas.ts
   // store/solana/sagas.ts
+  // pages/trending-page/store/sagas.ts
+  // pages/trending-page/store/lineups/trending/sagas.ts
 }
 
 export type CommonState = {
@@ -188,6 +193,7 @@ export type CommonState = {
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     track: TrackPageState
     profile: ProfilePageState
+    trending: TrendingPageState
   }
 
   solana: ReturnType<typeof solanaReducer>

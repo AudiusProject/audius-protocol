@@ -3,6 +3,11 @@ import React, { useState, useRef, useCallback } from 'react'
 import { Name } from 'common/models/Analytics'
 import Status from 'common/models/Status'
 import TimeRange from 'common/models/TimeRange'
+import {
+  trendingWeekActions,
+  trendingMonthActions,
+  trendingAllTimeActions
+} from 'common/store/pages/trending/lineup/actions'
 import { GENRES, ELECTRONIC_PREFIX } from 'common/utils/genres'
 import Header from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
@@ -10,11 +15,6 @@ import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import Page from 'components/page/Page'
 import useTabs from 'hooks/useTabs/useTabs'
-import {
-  trendingWeekActions,
-  trendingMonthActions,
-  trendingAllTimeActions
-} from 'pages/trending-page/store/lineups/trending/actions'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
 import { make, useRecord } from 'store/analytics/actions'
 
