@@ -114,9 +114,9 @@ def test_get_prev_track_entries(app):
         assert len(prev_entries) <= len(entries)
 
         for prev_entry in prev_entries:
-            entry = next(e for e in entries if e["track_id"] == prev_entry.track_id)
-            assert entry["track_id"] == prev_entry.track_id
-            assert entry["blocknumber"] > prev_entry.blocknumber
+            entry = next(e for e in entries if e.track_id == prev_entry.track_id)
+            assert entry.track_id == prev_entry.track_id
+            assert entry.blocknumber > prev_entry.blocknumber
             # previous track with id 3 should have a block number of 7, not 2
             if prev_entry.track_id == 3:
                 assert prev_entry.blocknumber == 7
@@ -125,9 +125,7 @@ def test_get_prev_track_entries(app):
                 assert prev_entry.blocknumber == 11
 
         # Make sure that it properly fetches the track before the one passed
-        single_entry = [
-            {"track_id": 5, "blocknumber": 11},
-        ]
+        single_entry = [Track(track_id=5, blocknumber=11)]
         prev_id_5_track = get_prev_track_entries(session, single_entry)[0]
 
         assert prev_id_5_track.track_id == 5
