@@ -6,13 +6,13 @@ import { Track, UserTrackMetadata } from 'common/models/Track'
 import { StringKeys } from 'common/services/remote-config'
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { Nullable } from 'common/utils/typeUtils'
-import { setLastFetchedTrendingGenre } from 'pages/trending-page/store/actions'
-import { getTrendingEntries } from 'pages/trending-page/store/lineups/trending/selectors'
+import { setLastFetchedTrendingGenre } from 'common/store/pages/trending/actions'
+import { getTrendingEntries } from 'common/store/pages/trending/lineup/selectors'
 import {
   getLastFetchedTrendingGenre,
   getTrendingGenre
-} from 'pages/trending-page/store/selectors'
+} from 'common/store/pages/trending/selectors'
+import { Nullable } from 'common/utils/typeUtils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { AppState } from 'store/types'

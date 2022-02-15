@@ -1,21 +1,18 @@
 import TimeRange from 'common/models/TimeRange'
 import { asLineup } from 'common/store/lineup/reducer'
-import { GENRES } from 'common/utils/genres'
 import {
   SET_TRENDING_GENRE,
   SET_TRENDING_TIME_RANGE,
   SET_LAST_FETCHED_TRENDING_GENRE
-} from 'pages/trending-page/store/actions'
+} from 'common/store/pages/trending/actions'
 import {
   TRENDING_WEEK_PREFIX,
   TRENDING_MONTH_PREFIX,
   TRENDING_ALL_TIME_PREFIX
-} from 'pages/trending-page/store/lineups/trending/actions'
-import {
-  trendingWeek,
-  trendingMonth,
-  trendingAllTime
-} from 'pages/trending-page/store/lineups/trending/reducer'
+} from 'common/store/pages/trending/lineup/actions'
+import { GENRES } from 'common/utils/genres'
+
+import { trendingWeek, trendingMonth, trendingAllTime } from './lineup/reducer'
 
 const urlParams = new URLSearchParams(window.location.search)
 const genre = urlParams.get('genre')

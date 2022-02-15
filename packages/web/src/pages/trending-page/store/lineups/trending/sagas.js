@@ -2,10 +2,6 @@ import { select } from 'redux-saga/effects'
 
 import TimeRange from 'common/models/TimeRange'
 import { getUserId } from 'common/store/account/selectors'
-import { retrieveTrending } from 'pages/track-page/store/retrieveTrending'
-import { getTrendingGenre } from 'pages/trending-page/store/selectors'
-import { LineupSagas } from 'store/lineup/sagas'
-
 import {
   TRENDING_WEEK_PREFIX,
   TRENDING_MONTH_PREFIX,
@@ -13,7 +9,10 @@ import {
   trendingWeekActions,
   trendingMonthActions,
   trendingAllTimeActions
-} from './actions'
+} from 'common/store/pages/trending/lineup/actions'
+import { getTrendingGenre } from 'common/store/pages/trending/selectors'
+import { retrieveTrending } from 'pages/track-page/store/retrieveTrending'
+import { LineupSagas } from 'store/lineup/sagas'
 
 function getTracks(timeRange) {
   return function* ({ offset, limit }) {
@@ -40,7 +39,7 @@ class TrendingWeekSagas extends LineupSagas {
     super(
       TRENDING_WEEK_PREFIX,
       trendingWeekActions,
-      store => store.trending.trendingWeek,
+      store => store.pages.trending.trendingWeek,
       getTracks(TimeRange.WEEK)
     )
   }
@@ -51,7 +50,7 @@ class TrendingMonthSagas extends LineupSagas {
     super(
       TRENDING_MONTH_PREFIX,
       trendingMonthActions,
-      store => store.trending.trendingMonth,
+      store => store.pages.trending.trendingMonth,
       getTracks(TimeRange.MONTH)
     )
   }
@@ -62,7 +61,7 @@ class TrendingAllTimeSagas extends LineupSagas {
     super(
       TRENDING_ALL_TIME_PREFIX,
       trendingAllTimeActions,
-      store => store.trending.trendingAllTime,
+      store => store.pages.trending.trendingAllTime,
       getTracks(TimeRange.ALL_TIME)
     )
   }
