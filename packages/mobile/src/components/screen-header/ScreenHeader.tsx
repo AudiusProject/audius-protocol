@@ -1,9 +1,12 @@
+import { ReactChild } from 'react'
+
 import { View } from 'react-native'
 
 import { GradientText } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 type ScreenHeaderProps = {
+  children?: ReactChild
   text: string
 }
 
@@ -12,7 +15,10 @@ const useStyles = makeStyles(({ palette }) => ({
     backgroundColor: palette.white,
     height: 52,
     borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight8
+    borderBottomColor: palette.neutralLight8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12
   },
   header: {
     fontSize: 24,
@@ -24,7 +30,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-export const ScreenHeader = ({ text }: ScreenHeaderProps) => {
+export const ScreenHeader = ({ children, text }: ScreenHeaderProps) => {
   const styles = useStyles()
 
   return (
@@ -32,6 +38,7 @@ export const ScreenHeader = ({ text }: ScreenHeaderProps) => {
       <GradientText accessibilityRole='header' style={styles.header}>
         {text}
       </GradientText>
+      {children}
     </View>
   )
 }

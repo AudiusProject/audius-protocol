@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser'
 import { routerMiddleware, push as pushRoute } from 'connected-react-router'
-import { debounce, pick } from 'lodash'
+import { pick } from 'lodash'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension/logOnlyInProduction'
 import createSagaMiddleware from 'redux-saga'
@@ -123,7 +123,6 @@ const clientStoreKeys = Object.keys(clientStoreReducers)
 const syncClientStateToNativeMobile = (store: Store) => {
   if (NATIVE_MOBILE) {
     let currentState: RootState
-    const postMessageDebounced = debounce(postMessage, 500, { leading: true })
 
     store.subscribe(() => {
       const state: RootState = store.getState()
@@ -137,10 +136,7 @@ const syncClientStateToNativeMobile = (store: Store) => {
             previousState[k as keyof RootState]
         )
       ) {
-        // Debounce messages to minimize expensive stringify and parse.
-        // Leading and trailing states are sent, state will be out of sync
-        // a maximum of 500ms
-        postMessageDebounced({
+        postMessage({
           type: MessageType.SYNC_CLIENT_STORE,
           state: pick(state, clientStoreKeys)
         })

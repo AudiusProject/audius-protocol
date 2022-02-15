@@ -7,8 +7,7 @@ import IconNote from 'app/assets/images/iconNote.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
 import TopTabNavigator from 'app/components/app-navigator/TopTabNavigator'
 import { ExploreStackParamList } from 'app/components/app-navigator/types'
-
-import { ScreenHeader } from '../ScreenHeader'
+import { ScreenHeader } from 'app/components/screen-header'
 
 import { ArtistsTab } from './tabs/ArtistsTab'
 import { ForYouTab } from './tabs/ForYouTab'
