@@ -56,7 +56,8 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
   const rewardsReporter = new RewardsReporter({
     successSlackUrl: config.get('successAudioReporterSlackUrl'),
     errorSlackUrl: config.get('errorAudioReporterSlackUrl'),
-    childLogger
+    childLogger,
+    source: 'Identity'
   })
 
   // Init the RewardsAttester

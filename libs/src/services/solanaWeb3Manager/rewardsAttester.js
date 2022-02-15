@@ -127,6 +127,7 @@ class RewardsAttester {
    *    endpoints?: Array<string>
    *    runBehindSec?: number
    *    isSolanaChallenge?: (string) => boolean
+   *    feePayerOverride?: string
    * }} {
    *    libs,
    *    startingBlock,
@@ -144,6 +145,7 @@ class RewardsAttester {
    *    endpoints,
    *    runBehindSec
    *    isSolanaChallenge
+   *    feePayerOverride
    *  }
    * @memberof RewardsAttester
    */
@@ -163,7 +165,8 @@ class RewardsAttester {
     challengeIdsDenyList = [],
     endpoints = [],
     runBehindSec = 0,
-    isSolanaChallenge = (challengeId) => true
+    isSolanaChallenge = (challengeId) => true,
+    feePayerOverride = null
   }) {
     this.libs = libs
     this.logger = logger
@@ -198,6 +201,7 @@ class RewardsAttester {
     this.maxRetries = maxRetries
     // Get override starting block for manually setting indexing start
     this.getStartingBlockOverride = getStartingBlockOverride
+    this.feePayerOverride = feePayerOverride
 
     // Calculate delay
     this.delayCalculator = new AttestationDelayCalculator({
@@ -286,7 +290,7 @@ class RewardsAttester {
         let toAttest = toProcess.splice(0, this.parallelization)
         const { accumulatedErrors: errors } = await this._attestInParallel(toAttest)
         if (errors && errors.length) {
-          this.logger.error(`Got errors in processChallenges: ${errors}`)
+          this.logger.error(`Got errors in processChallenges: ${JSON.stringify(errors)}`)
           return { errors }
         }
       } catch (e) {
@@ -327,6 +331,23 @@ class RewardsAttester {
       this.logger.warn('No usable balance. Waiting...')
       await this._delay(2000)
     }
+  }
+
+  /**
+   * Returns the override feePayer if set, otherwise a random fee payer from among the list of existing fee payers.
+   *
+   * @memberof RewardsAttester
+   */
+  _getFeePayer () {
+    if (this.feePayerOverride) {
+      return this.feePayerOverride
+    }
+    const feePayerKeypairs = this.libs.solanaWeb3Manager.solanaWeb3Config.feePayerKeypairs
+    if (feePayerKeypairs && feePayerKeypairs.length) {
+      const randomFeePayerIndex = Math.floor(Math.random() * feePayerKeypairs.length)
+      return feePayerKeypairs[randomFeePayerIndex].publicKey
+    }
+    return null
   }
 
   /**
@@ -456,6 +477,7 @@ class RewardsAttester {
     completedBlocknumber
   }) {
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
+
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
       challengeId,
       encodedUserId: userId,
@@ -467,12 +489,13 @@ class RewardsAttester {
       quorumSize: this.quorumSize,
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
-      logger: this.logger
+      logger: this.logger,
+      feePayerOverride: this._getFeePayer()
     })
 
     if (success) {
       this.logger.info(`Successfully attestested for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}]!`)
-      await this.reporter.reportSuccess({ userId, challengeId, amount })
+      await this.reporter.reportSuccess({ userId, challengeId, amount, specifier })
       return {
         challengeId,
         userId,
@@ -491,7 +514,8 @@ class RewardsAttester {
       error,
       amount,
       userId,
-      challengeId
+      challengeId,
+      specifier
     })
 
     return {
@@ -578,11 +602,12 @@ class RewardsAttester {
   async _processResponses (responses) {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW, errors.BLOCKED])
-    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
     // Account for errors from DN aggregation + Solana program
-    // CHALLENGE_INCOMPLETE are already handled in the `submitAndEvaluate` flow -
+    // CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
     // safe to assume those won't work if we see them at this point.
-    const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT, errors.CHALLENGE_INCOMPLETE])
+    const NO_RETRY_ERRORS = new Set([...AAO_ERRORS, errors.CHALLENGE_INCOMPLETE, errors.MISSING_CHALLENGES])
+    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
+    const ALREADY_COMPLETE_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT])
 
     const noRetry = []
     const successful = []
@@ -597,15 +622,18 @@ class RewardsAttester {
         return true
       })
       // Filter out responses that are already disbursed
-      .filter(({ error }) => !NO_RETRY_ERRORS.has(error))
+      .filter(({ error }) => !ALREADY_COMPLETE_ERRORS.has(error))
       // Handle any AAO errors - report them and then exclude them from result set
       .filter((res) => {
-        const isAAO = AAO_ERRORS.has(res.error)
-        if (isAAO) {
-          this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error })
+        const isNoRetry = NO_RETRY_ERRORS.has(res.error)
+        if (isNoRetry) {
           noRetry.push(res)
+          const isAAO = AAO_ERRORS.has(res.error)
+          if (isAAO) {
+            this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error, specifier: res.specifier })
+          }
         }
-        return !isAAO
+        return !isNoRetry
       })
     )
 

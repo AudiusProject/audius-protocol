@@ -318,6 +318,16 @@ class IdentityService {
     })
   }
 
+  async getRandomFeePayer () {
+    return this._makeRequest({
+      url: '/solana/random_fee_payer',
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  }
+
   // Relays tx data through the solana relay endpoint
   // type TransactionData = {
   //   recentBlockhash: string
@@ -366,6 +376,38 @@ class IdentityService {
       method: 'post',
       headers: signedData,
       data: { minimumDelegationAmount }
+    })
+  }
+
+  /**
+   * Sends an attestation result to identity.
+   *
+   * @param {{
+   *  status: string,
+   *  userId: string,
+   *  challengeId: string,
+   *  amount: number,
+   *  source: string,
+   *  specifier: string
+   *  error?: string,
+   *  phase?: string,
+   * }} { status, userId, challengeId, amount, error, phase, specifier }
+   * @memberof IdentityService
+   */
+  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+    return this._makeRequest({
+      url: '/rewards/attestation_result',
+      method: 'post',
+      data: {
+        status,
+        userId,
+        challengeId,
+        amount,
+        error,
+        phase,
+        source,
+        specifier
+      }
     })
   }
 

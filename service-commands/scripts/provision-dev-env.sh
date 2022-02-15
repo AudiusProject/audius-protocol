@@ -141,9 +141,15 @@ function setup_audius_repos() {
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up
 }
 
+function install_zsh_tooling() {
+    sh -c "$(curl -fsSL https://git.io/zinit-install)"
+    zinit self-update
+}
+
 function setup() {
     if [ "$FAST_PROVISIONED" -eq "1" ]; then # run full setup
         setup_linux_toolchains
+        install_zsh_tooling
         setup_ssh_timeouts
         setup_vscode
         setup_postgres
