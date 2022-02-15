@@ -20,10 +20,11 @@ class AudiusLibsWrapper {
       ? new Set(config.get('discoveryProviderWhitelist').split(','))
       : null
 
-    let feePayerSecretKey = config.get('solanaFeePayerWallet')
-    if (feePayerSecretKey) {
-      feePayerSecretKey = Uint8Array.from(feePayerSecretKey)
-    }
+    const feePayerSecretKeys = config.get('solanaFeePayerWallets')
+      ? config.get('solanaFeePayerWallets')
+        .map(item => item.privateKey)
+        .map(key => Uint8Array.from(key))
+      : null
 
     const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: config.get('solanaEndpoint'),
@@ -35,7 +36,7 @@ class AudiusLibsWrapper {
       rewardsManagerTokenPDA: config.get('solanaRewardsManagerTokenPDA'),
       // Never use the relay path in identity
       useRelay: false,
-      feePayerSecretKey,
+      feePayerSecretKeys,
       confirmationTimeout: config.get('solanaConfirmationTimeout')
     })
 

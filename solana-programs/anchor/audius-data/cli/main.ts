@@ -115,7 +115,6 @@ async function initUserCLI(args: initUserCLIParams) {
   const cliVars = initializeCLI(network, ownerKeypairPath);
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
   const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
-  const ethAddressBytes = ethAddressToArray(ethAddress);
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
       cliVars.program.programId,
@@ -127,7 +126,7 @@ async function initUserCLI(args: initUserCLIParams) {
   let tx = await initUser({
     provider: cliVars.provider,
     program: cliVars.program,
-    testEthAddrBytes: Array.from(ethAddressBytes),
+    ethAddress,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -203,7 +202,6 @@ async function timeUpdatePlaylist(args: updatePlaylistArgs) {
       let start = Date.now();
       let tx = await updatePlaylist({
         program: args.program,
-        provider: args.provider,
         playlistPublicKey: args.playlistPublicKey,
         userStgAccountPDA: args.userStgAccountPDA,
         userAuthorityKeypair: args.userAuthorityKeypair,
@@ -321,7 +319,7 @@ switch (options.function) {
     });
     break;
   case functionTypes.initUserSolPubkey:
-    let privateKey = options.ethPrivateKey;
+    let { ethPrivateKey } = options;
     let userSolPubkey = userSolKeypair.publicKey;
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -329,7 +327,7 @@ switch (options.function) {
         program: cliVars.program,
         provider: cliVars.provider,
         message: "message",
-        privateKey,
+        ethPrivateKey,
         userStgAccount: options.userStgPubkey,
         userSolPubkey,
       });
@@ -416,7 +414,6 @@ switch (options.function) {
       const start = Date.now();
       await timeUpdatePlaylist({
         program: cliVars.program,
-        provider: cliVars.provider,
         metadata: randomCID(),
         playlistPublicKey,
         userAuthorityKeypair: userSolKeypair,

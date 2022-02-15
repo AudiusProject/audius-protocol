@@ -258,7 +258,13 @@ async function submitAttestations ({
     return acc
   }, [[]])
 
-  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction({ instructions: i, errorMapping: RewardsManagerError, logger, skipPreflight: false })))
+  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction({
+    instructions: i,
+    errorMapping: RewardsManagerError,
+    logger,
+    skipPreflight: false,
+    feePayerOverride: feePayer
+  })))
   logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results)}`)
 
   // If there's any error in any of the transactions, just return that one
@@ -505,7 +511,13 @@ const evaluateAttestations = async ({
     data: serializedInstructionEnum
   })
 
-  return transactionHandler.handleTransaction({ instructions: [transferInstruction], errorMapping: RewardsManagerError, logger, skipPreflight: false })
+  return transactionHandler.handleTransaction({
+    instructions: [transferInstruction],
+    errorMapping: RewardsManagerError,
+    logger,
+    skipPreflight: false,
+    feePayerOverride: feePayer
+  })
 }
 
 // Helpers

@@ -85,7 +85,6 @@ describe("playlist", () => {
       playlistMetadata,
     }) => {
       const tx = await updatePlaylist({
-        provider,
         program,
         playlistPublicKey: playlistKeypair.publicKey,
         userStgAccountPDA: playlistOwnerPDA,
@@ -107,7 +106,7 @@ describe("playlist", () => {
         provider.wallet.publicKey
       );
 
-      const tx = await deletePlaylist({
+      await deletePlaylist({
         provider,
         program,
         playlistPublicKey: playlistKeypair.publicKey,
@@ -147,13 +146,7 @@ describe("playlist", () => {
 
     // Initialize user for each test
     beforeEach(async () => {
-      const {
-        pkString,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        metadata,
-      } = initTestConstants();
+      const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
@@ -167,8 +160,7 @@ describe("playlist", () => {
         provider,
         program,
         baseAuthorityAccount,
-        testEthAddr,
-        testEthAddrBytes,
+        ethAddress: ethAccount.address,
         handleBytesArray,
         bumpSeed,
         metadata,
@@ -188,7 +180,7 @@ describe("playlist", () => {
         provider,
         program,
         message,
-        pkString,
+        ethPrivateKey: ethAccount.privateKey,
         newUserKeypair,
         newUserAcctPDA,
       });
