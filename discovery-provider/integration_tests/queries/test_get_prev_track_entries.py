@@ -107,7 +107,7 @@ def test_get_prev_track_entries(app):
             Track(track_id=3, blocknumber=10),
             Track(track_id=1, blocknumber=6),
             Track(track_id=4, blocknumber=9),
-            Track(track_id=5, blocknumber=12)
+            Track(track_id=5, blocknumber=12),
         ]
         prev_entries = get_prev_track_entries(session, entries)
 
