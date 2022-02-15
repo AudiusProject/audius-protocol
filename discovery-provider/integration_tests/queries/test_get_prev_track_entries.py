@@ -1,4 +1,5 @@
 from integration_tests.utils import populate_mock_db
+from src.models.models import Track
 from src.queries.get_prev_track_entries import get_prev_track_entries
 from src.utils.db_session import get_db
 
@@ -101,11 +102,12 @@ def test_get_prev_track_entries(app):
 
         # Make sure that it fetches all previous tracks
         entries = [
-            {"track_id": 6, "blocknumber": 8},
-            {"track_id": 3, "blocknumber": 10},
-            {"track_id": 1, "blocknumber": 6},
-            {"track_id": 4, "blocknumber": 9},
-            {"track_id": 5, "blocknumber": 12},
+            Track(track_id=6, blocknumber=8),
+            Track(track_id=6, blocknumber=8),
+            Track(track_id=3, blocknumber=10),
+            Track(track_id=1, blocknumber=6),
+            Track(track_id=4, blocknumber=9),
+            Track(track_id=5, blocknumber=12)
         ]
         prev_entries = get_prev_track_entries(session, entries)
 
