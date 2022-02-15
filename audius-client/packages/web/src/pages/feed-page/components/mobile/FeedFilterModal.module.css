@@ -1,31 +1,8 @@
-.modalBody {
-  width: 100%;
-}
-
-.container > div {
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid var(--neutral-light-8);
-}
-
 .title {
   font-size: var(--font-m);
   font-weight: var(--font-medium);
   line-height: 18px;
   color: var(--neutral);
-}
-
-.filterItem {
-  cursor: pointer;
-  font-size: var(--font-xl);
-  font-weight: var(--font-demi-bold);
-  letter-spacing: 0.23px;
-  line-height: 26px;
-  color: var(--action-sheet-text);
-}
-
-.filterItem:active {
-  background-color: var(--neutral-light-9);
+  text-align: center;
+  margin: 8px 0 16px;
 }

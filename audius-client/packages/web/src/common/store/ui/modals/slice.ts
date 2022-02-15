@@ -20,6 +20,7 @@ export type Modals =
   | 'CollectibleDetails'
   | 'DeactivateAccountConfirmation'
   | 'Cognito'
+  | 'FeedFilter'
 
 export type ModalsState = { [modal in Modals]: boolean }
 
@@ -40,7 +41,8 @@ const initialState: ModalsState = {
   AudioBreakdown: false,
   CollectibleDetails: false,
   DeactivateAccountConfirmation: false,
-  Cognito: false
+  Cognito: false,
+  FeedFilter: false
 }
 
 const slice = createSlice({

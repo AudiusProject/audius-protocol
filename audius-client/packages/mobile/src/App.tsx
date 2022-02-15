@@ -14,12 +14,14 @@ import AppNavigator from 'app/components/app-navigator/AppNavigator'
 import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
 import { ChallengeRewardsDrawerProvider } from 'app/components/challenge-rewards-drawer/ChallengeRewardsDrawerProvider'
+import { CognitoDrawer } from 'app/components/cognito-drawer/CognitoDrawer'
 import CollectibleDetailsDrawer from 'app/components/collectible-details-drawer'
 import ConnectWalletsDrawer from 'app/components/connect-wallets-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer/DeactivateAccountConfirmationDrawer'
 import DownloadTrackProgressDrawer from 'app/components/download-track-progress-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import EnablePushNotificationsDrawer from 'app/components/enable-push-notifications-drawer'
+import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import ForgotPasswordDrawer from 'app/components/forgot-password-drawer'
 import HCaptcha from 'app/components/hcaptcha'
 import MobileUploadDrawer from 'app/components/mobile-upload-drawer'
@@ -30,6 +32,7 @@ import OverflowMenuDrawer from 'app/components/overflow-menu-drawer'
 import Search from 'app/components/search/Search'
 import { ShareDrawer } from 'app/components/share-drawer'
 import ShareToTiktokDrawer from 'app/components/share-to-tiktok-drawer'
+import { ThemeContextProvider } from 'app/components/theme/ThemeContext'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
 import TransferAudioMobileDrawer from 'app/components/transfer-audio-mobile-drawer'
 import TrendingRewardsDrawer from 'app/components/trending-rewards-drawer'
@@ -43,8 +46,6 @@ import { setup as setupAnalytics } from 'app/utils/analytics'
 
 import ErrorBoundary from './ErrorBoundary'
 import { WebAppManager } from './WebAppManager'
-import { CognitoDrawer } from './components/cognito-drawer/CognitoDrawer'
-import { ThemeContextProvider } from './components/theme/ThemeContext'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -81,6 +82,7 @@ const Drawers = () => {
       <CognitoDrawer />
       <ShareDrawer />
       <ForgotPasswordDrawer />
+      <FeedFilterDrawer />
       {/* Disable the audio breakdown drawer until we get
       the feature flags to work for native mobile */}
       {/* <AudioBreakdownDrawer /> */}
