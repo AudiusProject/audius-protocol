@@ -92,6 +92,11 @@ function get_redirect_target ()
 end
 
 function verify_signature (discovery_provider, nonce, signature)
+    -- reject if all of the parameter are not provided
+    if discovery_provider == nil and nonce == nil and signature == nil then
+        return false
+    end
+
     -- reject if one of the parameter is not provided
     if discovery_provider == nil or nonce == nil or signature == nil then
         ngx.log(
