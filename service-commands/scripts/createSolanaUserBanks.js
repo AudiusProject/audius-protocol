@@ -142,9 +142,9 @@ async function setupConfig(config) {
           )[0].toString()
         : null)
   )
+  const feePayerKeys = (solanaConfig.SOLANA_FEE_PAYER_SECRET_KEYS || []).map(key => Keypair.fromSecretKey(key).publicKey)
   const feePayerKey = newPublicKeyNullable(
-    solanaConfig.SOLANA_FEE_PAYER_ADDRESS ||
-      Keypair.fromSecretKey(solanaConfig.SOLANA_FEE_PAYER_SECRET_KEY).publicKey
+    feePayerKeys && feePayerKeys.length ? newPublicKeyNullable(feePayerKeys[0]) : null
   )
   const solanaTokenProgramKey = newPublicKeyNullable(
     solanaConfig.SOLANA_TOKEN_ADDRESS
@@ -191,8 +191,7 @@ function getConfigForEnv(env) {
       SOLANA_REWARDS_MANAGER_PROGRAM_ID: solanaConfig.rewardsManagerAddress,
       SOLANA_REWARDS_MANAGER_PROGRAM_PDA: solanaConfig.rewardsManagerAccount,
       SOLANA_REWARDS_MANAGER_TOKEN_PDA: solanaConfig.rewardsManagerTokenAccount,
-      SOLANA_FEE_PAYER_ADDRESS: solanaConfig.feePayerWallet.ethAddress,
-      SOLANA_FEE_PAYER_SECRET_KEY: Uint8Array.from(solanaConfig.feePayerWallet)
+      SOLANA_FEE_PAYER_SECRET_KEYS: solanaConfig.feePayerWallets ? solanaConfig.feePayerWallets.map(wallet => Uint8Array.from(wallet.privateKey)) : undefined
     },
     identityServiceConfig: { url: config.get('identity_service') },
     discoveryProviderConfig: {

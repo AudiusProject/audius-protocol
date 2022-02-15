@@ -57,6 +57,10 @@ var challengeRewardsConfig = {
     title: 'Invite your Friends',
     icon: /*#__PURE__*/_react["default"].createElement(_Icons.IncomingEnvelopeIcon, null)
   },
+  'ref-v': {
+    title: 'Invite your Fans',
+    icon: /*#__PURE__*/_react["default"].createElement(_Icons.IncomingEnvelopeIcon, null)
+  },
   'connect-verified': {
     title: 'Link Verified Accounts',
     icon: /*#__PURE__*/_react["default"].createElement(_Icons.WhiteHeavyCheckMarkIcon, null)
@@ -399,7 +403,7 @@ var getTwitter = function getTwitter(notification) {
       {
         var _text3 = "I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards";
         return {
-          message: 'Share With Your Fans',
+          message: 'Share this with your fans',
           href: "http://twitter.com/share?text=".concat(encodeURIComponent(_text3))
         };
       }

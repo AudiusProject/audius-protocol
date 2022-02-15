@@ -206,7 +206,7 @@ class App {
 
   configureReporter () {
     const slackAudioErrorReporter = new SlackReporter({
-      slackUrl: config.get('successAudioReporterSlackUrl'),
+      slackUrl: config.get('errorAudioReporterSlackUrl'),
       childLogger: logger
     })
     this.express.set('slackAudioErrorReporter', slackAudioErrorReporter)
