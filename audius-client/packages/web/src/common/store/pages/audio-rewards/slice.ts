@@ -98,6 +98,14 @@ const slice = createSlice({
         state.userChallenges = {}
       } else {
         state.userChallenges = userChallenges.reduce((acc, challenge) => {
+          // TODO: AUD-1536
+          // Remove this custom override logic when we have identified the proper fix
+          if (
+            challenge.challenge_id === 'listen-streak' &&
+            challenge.is_complete
+          ) {
+            challenge.current_step_count = challenge.max_steps
+          }
           acc[challenge.challenge_id] = challenge
           return acc
         }, {} as Partial<Record<ChallengeRewardID, UserChallenge>>)
