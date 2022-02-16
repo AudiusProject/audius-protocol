@@ -14,7 +14,6 @@ from src.models import (
 )
 from src.tasks.metadata import user_metadata_format
 from src.tasks.users import (
-    UserEventsMetadata,
     lookup_user_record,
     parse_user_event,
     update_user_events,
