@@ -6,7 +6,7 @@ import path from 'path'
 
 import libs from '../../libs'
 import { getHash } from '../bedtime/helpers'
-import { AUDIO_REWARDS_IMAGE_URL, DEFAULT_IMAGE_URL } from '../utils/constants'
+import { AUDIO_REWARDS_IMAGE_URL, DEFAULT_IMAGE_URL, SIGNUP_REF_IMAGE_URL } from '../utils/constants'
 import { nftClient } from '../utils/fetchNft'
 import { formatDate, formatSeconds } from '../utils/format'
 import { encodeHashId } from '../utils/hashids'
@@ -313,6 +313,17 @@ const getTokenContext = (): Context => {
   }
 }
 
+const getSignupRefContext = (handle: string): Context => {
+  return {
+    format: MetaTagFormat.SignupRef,
+    title: `Invite to join Audius from ${handle}!`,
+    description:
+      'Sign up for Audius to earn $AUDIO tokens while using the app!',
+    image: SIGNUP_REF_IMAGE_URL,
+    thumbnail: false,
+  }
+}
+
 const getResponse = async (
   format: MetaTagFormat,
   req: express.Request,
@@ -322,8 +333,12 @@ const getResponse = async (
     title,
     handle,
     type,
-    collectibleId
+    collectibleId,
   } = req.params
+  const {
+    ref
+  } = req.query
+
   const userAgent = req.get('User-Agent') || ''
   const canEmbed = CAN_EMBED_USER_AGENT_REGEX.test(userAgent.toLowerCase())
   const isDiscord = userAgent.toLowerCase().includes('discord')
@@ -367,6 +382,10 @@ const getResponse = async (
     case MetaTagFormat.AUDIO:
       console.log('get audio', req.path, userAgent)
       context = await getTokenContext()
+      break
+    case MetaTagFormat.SignupRef:
+      console.log('get signup ref', req.path, userAgent)
+      context = await getSignupRefContext(ref as string)
       break
     case MetaTagFormat.Error:
     default:

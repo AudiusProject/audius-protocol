@@ -90,6 +90,12 @@ router.get('/error', (
   }
 )
 
+router.get('/signup', (
+  req: express.Request,
+  res: express.Response) => {
+    getMetaTagsResponse(req.query.ref ? MetaTagFormat.SignupRef : MetaTagFormat.Default, req, res)
+})
+
 // Override default metatags
 router.get([
   '/check',
