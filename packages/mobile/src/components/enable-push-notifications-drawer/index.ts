@@ -1,1 +1,1 @@
-export { default } from './EnablePushNotificationsDrawer'
+export { EnablePushNotificationsDrawer } from './EnablePushNotificationsDrawer'

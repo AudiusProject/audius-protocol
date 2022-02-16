@@ -3,8 +3,7 @@ import { View } from 'react-native'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
-import Button, { ButtonType } from 'app/components/button'
-import { Tile, GradientText } from 'app/components/core'
+import { Button, Tile, GradientText } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -56,20 +55,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginBottom: spacing(5)
   },
 
-  buttonContainer: {
-    marginHorizontal: spacing(8)
-  },
-
   button: {
-    padding: spacing(3)
-  },
-
-  buttonText: {
-    fontSize: 14
-  },
-
-  buttonIcon: {
-    marginLeft: 4
+    backgroundColor: palette.secondary
   }
 }))
 
@@ -93,13 +80,13 @@ export const TrackScreenRemixes = ({
       </View>
       <Button
         title={messages.viewAll(count)}
-        renderIcon={fill => <IconArrow fill={fill} height={18} width={18} />}
-        type={ButtonType.SECONDARY}
+        icon={IconArrow}
+        variant='primary'
+        size='medium'
         onPress={goToAllRemixes}
-        style={styles.button}
-        containerStyle={styles.buttonContainer}
-        textStyle={styles.buttonText}
-        iconStyle={styles.buttonIcon}
+        styles={{
+          root: styles.button
+        }}
       />
     </Tile>
   )
