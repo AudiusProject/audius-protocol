@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional, Set, Tuple, TypedDict
+from typing import Any, Dict, Set, Tuple, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
@@ -529,7 +529,7 @@ def validate_signature(
 
 class UserEventsMetadata(TypedDict, total=False):
     referrer: int
-    is_mobile_user: Optional[bool]
+    is_mobile_user: bool
 
 
 def update_user_events(
