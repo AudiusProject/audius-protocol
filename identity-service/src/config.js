@@ -726,6 +726,12 @@ const config = convict({
     env: 'errorAudioReporterSlackUrl',
     default: ''
   },
+  errorWormholeReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in wormhole transfers',
+    format: String,
+    env: 'errorWormholeReporterSlackUrl',
+    default: ''
+  },
   wormholeRPCHosts: {
     doc: 'Wormhole RPC Host',
     format: String,
