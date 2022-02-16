@@ -3,6 +3,7 @@ const AnalyticsProvider = require('../analytics')
 
 const RewardEventNames = {
   REWARDS_CLAIM_SUCCESS: 'Rewards Claim: Success',
+  REWARDS_CLAIM_RETRY: 'Rewards Claim: Retry',
   REWARDS_CLAIM_FAILURE: 'Rewards Claim: Failure',
   REWARDS_CLAIM_BLOCKED: 'Rewards Claim: Blocked'
 }
@@ -70,6 +71,35 @@ class RewardsReporter {
       })
     } catch (e) {
       console.error(`Report success failure: ${JSON.stringify(e)}`)
+    }
+  }
+
+  async reportRetry ({ userId, challengeId, amount, error, phase, specifier }) {
+    try {
+      const report = {
+        status: 'retry',
+        userId,
+        challengeId,
+        amount: amount.toString(),
+        error: error.toString(),
+        phase,
+        source: this.source,
+        specifier
+      }
+      const slackMessage = this.errorReporter.getJsonSlackMessage(report)
+      await this.errorReporter.postToSlack({ message: slackMessage })
+      this.childLogger.info(report, `Rewards Reporter`)
+      this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_RETRY, userId, {
+        userId,
+        challengeId,
+        amount,
+        specifier,
+        error,
+        phase,
+        source: this.source
+      })
+    } catch (e) {
+      console.error(`Report retry error: ${JSON.stringify(e)}`)
     }
   }
 
