@@ -641,10 +641,15 @@ def record_metrics(func):
             logger.error("Error while recording metrics: %s", e.message)
 
         metric = Metric(
-            "flask_route_latency_seconds", "Runtimes for flask routes", ("route",)
+            "flask_route_latency_seconds",
+            "Runtimes for flask routes",
+            ("route", "params"),
         )
         result = func(*args, **kwargs)
-        metric.save_time({"route": route})
+
+        params = "".join(route.split("?")[1:])
+        route = route.split("?")[0]
+        metric.save_time({"route": route, "params": params})
 
         return result
 
