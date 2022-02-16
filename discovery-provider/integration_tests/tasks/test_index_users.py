@@ -547,7 +547,7 @@ def test_self_referrals(bus_mock: mock.MagicMock, app):
         redis = get_redis()
         bus_mock(redis)
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
-        user = User(user_id=1, blockhash=block_hash, blocknumber=1)
+        user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
         events = {"referrer": 1}
         update_user_events(session, user, events, bus_mock)
         mock_call = mock.call.dispatch(
