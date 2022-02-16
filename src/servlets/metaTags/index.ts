@@ -6,7 +6,7 @@ import path from 'path'
 
 import libs from '../../libs'
 import { getHash } from '../bedtime/helpers'
-import { DEFAULT_IMAGE_URL } from '../utils/constants'
+import { AUDIO_REWARDS_IMAGE_URL, DEFAULT_IMAGE_URL } from '../utils/constants'
 import { nftClient } from '../utils/fetchNft'
 import { formatDate, formatSeconds } from '../utils/format'
 import { encodeHashId } from '../utils/hashids'
@@ -303,6 +303,16 @@ of content creators',
   }
 }
 
+const getTokenContext = (): Context => {
+  return {
+    format: MetaTagFormat.AUDIO,
+    title: '$AUDIO & Rewards',
+    description: 'Earn $AUDIO tokens while using the app!',
+    image: AUDIO_REWARDS_IMAGE_URL,
+    thumbnail: true
+  }
+}
+
 const getResponse = async (
   format: MetaTagFormat,
   req: express.Request,
@@ -353,6 +363,10 @@ const getResponse = async (
     case MetaTagFormat.Collectible:
       console.log('get collectible', req.path, userAgent)
       context = await getCollectibleContext(handle, collectibleId, canEmbed, isDiscord)
+      break
+    case MetaTagFormat.AUDIO:
+      console.log('get audio', req.path, userAgent)
+      context = await getTokenContext()
       break
     case MetaTagFormat.Error:
     default:

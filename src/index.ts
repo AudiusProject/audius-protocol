@@ -101,6 +101,12 @@ router.get([
     getMetaTagsResponse(MetaTagFormat.Default, req, res)
 })
 
+router.get('/audio', (
+  req: express.Request,
+  res: express.Response) => {
+    getMetaTagsResponse(MetaTagFormat.AUDIO, req, res)
+})
+
 router.get([
   '/:handle',
   '/:handle/tracks',
