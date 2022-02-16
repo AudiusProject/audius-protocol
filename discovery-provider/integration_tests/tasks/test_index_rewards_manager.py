@@ -1,6 +1,7 @@
 from unittest.mock import create_autospec
 
 from integration_tests.utils import populate_mock_db
+from sqlalchemy import desc
 from src.exceptions import MissingEthRecipientError
 from src.models import ChallengeDisbursement, RewardManagerTransaction
 from src.solana.solana_client_manager import SolanaClientManager
@@ -261,33 +262,36 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     }
 
     with db.scoped_session() as session:
-        try:
-            process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
-            assert False
-        except MissingEthRecipientError:
-            disbursments = session.query(ChallengeDisbursement).all()
-            assert len(disbursments) == 0
-            reward_manager_tx_1 = (
-                session.query(RewardManagerTransaction)
-                .filter(RewardManagerTransaction.signature == first_tx_sig)
-                .all()
-            )
-            assert len(reward_manager_tx_1) == 1
-            assert True
+        process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
+        disbursments = session.query(ChallengeDisbursement).all()
+        assert len(disbursments) == 1
+        disbursement = disbursments[0]
+        # Assert that this invalid user was set to user_id 0
+        assert disbursement.user_id == 0
+        reward_manager_tx_1 = (
+            session.query(RewardManagerTransaction)
+            .filter(RewardManagerTransaction.signature == first_tx_sig)
+            .all()
+        )
+        assert len(reward_manager_tx_1) == 1
 
     populate_mock_db(db, test_user_entries)
     parsed_tx["tx_sig"] = second_tx_sig
+    parsed_tx["slot"] = parsed_tx["slot"] + 1
     with db.scoped_session() as session:
         process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
-        disbursments = session.query(ChallengeDisbursement).all()
+        disbursments = (
+            session.query(ChallengeDisbursement)
+            .order_by(desc(ChallengeDisbursement.slot))
+            .all()
+        )
         reward_manager_tx_1 = (
             session.query(RewardManagerTransaction)
             .filter(RewardManagerTransaction.signature == second_tx_sig)
             .all()
         )
-        assert len(reward_manager_tx_1) == 1
-
-        assert len(disbursments) == 1
+        assert len(reward_manager_tx_1) == 2
+        assert len(disbursments) == 2
         disbursment = disbursments[0]
         assert disbursment.challenge_id == "profile-completion"
         assert disbursment.user_id == 1
