@@ -21,18 +21,25 @@ type initAdminParams = {
   playlistIdOffset: anchor.BN;
 };
 
-export const initAdmin = async (args: initAdminParams) => {
-  return args.program.rpc.initAdmin(
-    args.adminKeypair.publicKey,
-    args.trackIdOffset,
-    args.playlistIdOffset,
+export const initAdmin = async ({
+  provider,
+  program,
+  adminKeypair,
+  adminStgKeypair,
+  trackIdOffset,
+  playlistIdOffset,
+}: initAdminParams) => {
+  return program.rpc.initAdmin(
+    adminKeypair.publicKey,
+    trackIdOffset,
+    playlistIdOffset,
     {
       accounts: {
-        admin: args.adminStgKeypair.publicKey,
-        payer: args.provider.wallet.publicKey,
+        admin: adminStgKeypair.publicKey,
+        payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
       },
-      signers: [args.adminStgKeypair],
+      signers: [adminStgKeypair],
     }
   );
 };
@@ -51,20 +58,18 @@ type initUserParams = {
   adminKeypair: anchor.web3.Keypair;
 };
 
-export const initUser = async (args: initUserParams) => {
-  const {
-    baseAuthorityAccount,
-    program,
-    ethAddress,
-    handleBytesArray,
-    bumpSeed,
-    metadata,
-    provider,
-    adminStgKey,
-    userStgAccount,
-    adminKeypair,
-  } = args;
-
+export const initUser = async ({
+  provider,
+  program,
+  ethAddress,
+  handleBytesArray,
+  bumpSeed,
+  metadata,
+  userStgAccount,
+  baseAuthorityAccount,
+  adminStgKey,
+  adminKeypair,
+}: initUserParams) => {
   return program.rpc.initUser(
     baseAuthorityAccount,
     anchor.utils.bytes.hex.decode(ethAddress),
@@ -94,17 +99,19 @@ export type initUserSolPubkeyArgs = {
   userStgAccount: anchor.web3.PublicKey;
 };
 
-export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
-  const {
-    message,
-    ethPrivateKey,
-    provider,
-    program,
-    userSolPubkey,
-    userStgAccount,
-  } = args;
-  const signedBytes = signBytes(Buffer.from(message), ethPrivateKey);
-  const { signature, recoveryId } = signedBytes;
+export const initUserSolPubkey = async ({
+  provider,
+  program,
+  ethPrivateKey,
+  message,
+  userSolPubkey,
+  userStgAccount,
+}: initUserSolPubkeyArgs) => {
+  const { signature, recoveryId } = signBytes(
+    Buffer.from(message),
+    ethPrivateKey
+  );
+
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
     .publicKeyCreate(anchor.utils.bytes.hex.decode(ethPrivateKey), false)
@@ -113,7 +120,7 @@ export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
   const tx = new Transaction();
 
   tx.add(Secp256k1Program.createInstructionWithPublicKey({
-    publicKey: Buffer.from(ethPubkey),
+    publicKey: ethPubkey,
     message: Buffer.from(message),
     signature,
     recoveryId,
@@ -129,7 +136,7 @@ export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
     },
   ));
 
-  return provider.send(tx, [ /* Signers */ ]);
+  return provider.send(tx);
 };
 
 /// Create a user without Audius Admin account
@@ -147,24 +154,23 @@ type createUserParams = {
   baseAuthorityAccount: anchor.web3.PublicKey;
 };
 
-export const createUser = async (args: createUserParams) => {
-  const {
-    baseAuthorityAccount,
-    program,
-    ethAccount,
-    message,
-    handleBytesArray,
-    bumpSeed,
-    metadata,
-    provider,
-    userSolPubkey,
-    userStgAccount,
-    adminStgPublicKey,
-  } = args;
-
-  const signedBytes = signBytes(Buffer.from(message), ethAccount.privateKey);
-
-  const { signature, recoveryId } = signedBytes;
+export const createUser = async ({
+  baseAuthorityAccount,
+  program,
+  ethAccount,
+  message,
+  handleBytesArray,
+  bumpSeed,
+  metadata,
+  provider,
+  userSolPubkey,
+  userStgAccount,
+  adminStgPublicKey,
+}: createUserParams) => {
+  const { signature, recoveryId } = signBytes(
+    Buffer.from(message),
+    ethAccount.privateKey
+  );
 
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
@@ -174,7 +180,7 @@ export const createUser = async (args: createUserParams) => {
   const tx = new Transaction();
 
   tx.add(Secp256k1Program.createInstructionWithPublicKey({
-    publicKey: Buffer.from(ethPubkey),
+    publicKey: ethPubkey,
     message: Buffer.from(message),
     signature,
     recoveryId,
@@ -198,7 +204,7 @@ export const createUser = async (args: createUserParams) => {
     },
   ));
 
-  return provider.send(tx, [ /* Signers */ ]);
+  return provider.send(tx);
 };
 
 /// Initialize a user from the Audius Admin account
@@ -209,14 +215,12 @@ type updateUserParams = {
   userAuthorityKeypair: anchor.web3.Keypair;
 };
 
-export const updateUser = async (args: updateUserParams) => {
-  const {
-    program,
-    metadata,
-    userStgAccount,
-    userAuthorityKeypair,
-  } = args;
-
+export const updateUser = async ({
+  program,
+  metadata,
+  userStgAccount,
+  userAuthorityKeypair,
+}: updateUserParams) => {
   return program.rpc.updateUser(
     metadata,
     {
@@ -240,17 +244,15 @@ export type createTrackArgs = {
   metadata: string;
 };
 
-export const createTrack = async (args: createTrackArgs) => {
-  const {
-    provider,
-    program,
-    newTrackKeypair,
-    userAuthorityKeypair,
-    metadata,
-    userStgAccountPDA,
-    adminStgPublicKey,
-  } = args;
-
+export const createTrack = async ({
+  provider,
+  program,
+  newTrackKeypair,
+  userAuthorityKeypair,
+  userStgAccountPDA,
+  adminStgPublicKey,
+  metadata,
+}: createTrackArgs) => {
   return program.rpc.createTrack(metadata, {
     accounts: {
       track: newTrackKeypair.publicKey,
@@ -273,15 +275,13 @@ type updateTrackParams = {
   userStgAccountPDA: anchor.web3.PublicKey;
 };
 
-export const updateTrack = async (args: updateTrackParams) => {
-  const {
-    program,
-    trackPDA,
-    metadata,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-  } = args;
-
+export const updateTrack = async ({
+  program,
+  trackPDA,
+  metadata,
+  userAuthorityKeypair,
+  userStgAccountPDA,
+}: updateTrackParams) => {
   return program.rpc.updateTrack(
     metadata,
     {
@@ -304,15 +304,13 @@ type deleteTrackParams = {
   userStgAccountPDA: anchor.web3.PublicKey;
 };
 
-export const deleteTrack = async (args: deleteTrackParams) => {
-  const {
-    provider,
-    program,
-    trackPDA,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-  } = args;
-
+export const deleteTrack = async ({
+  provider,
+  program,
+  trackPDA,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+}: deleteTrackParams) => {
   return program.rpc.deleteTrack({
     accounts: {
       track: trackPDA,
@@ -335,17 +333,15 @@ export type createPlaylistArgs = {
   metadata: string;
 };
 
-export const createPlaylist = async (args: createPlaylistArgs) => {
-  const {
-    provider,
-    program,
-    newPlaylistKeypair,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-    adminStgPublicKey,
-    metadata,
-  } = args;
-
+export const createPlaylist = async ({
+  provider,
+  program,
+  newPlaylistKeypair,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  adminStgPublicKey,
+  metadata,
+}: createPlaylistArgs) => {
   return program.rpc.createPlaylist(metadata, {
     accounts: {
       playlist: newPlaylistKeypair.publicKey,
@@ -368,15 +364,13 @@ export type updatePlaylistArgs = {
   metadata: string;
 };
 
-export const updatePlaylist = async (args: updatePlaylistArgs) => {
-  const {
-    program,
-    playlistPublicKey,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-    metadata,
-  } = args;
-
+export const updatePlaylist = async ({
+  program,
+  playlistPublicKey,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  metadata,
+}: updatePlaylistArgs) => {
   return program.rpc.updatePlaylist(metadata, {
     accounts: {
       playlist: playlistPublicKey,
@@ -396,15 +390,13 @@ export type deletePlaylistArgs = {
   userAuthorityKeypair: Keypair;
 };
 
-export const deletePlaylist = async (args: deletePlaylistArgs) => {
-  const {
-    provider,
-    program,
-    playlistPublicKey,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-  } = args;
-
+export const deletePlaylist = async ({
+  provider,
+  program,
+  playlistPublicKey,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+}: deletePlaylistArgs) => {
   return program.rpc.deletePlaylist({
     accounts: {
       playlist: playlistPublicKey,
