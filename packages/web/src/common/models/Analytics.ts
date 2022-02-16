@@ -207,6 +207,7 @@ export enum Name {
   // Rewards
   REWARDS_CLAIM_START = 'Rewards Claim: Start Claim',
   REWARDS_CLAIM_SUCCESS = 'Rewards Claim: Success',
+  REWARDS_CLAIM_RETRY = 'Rewards Claim: Retry',
   REWARDS_CLAIM_FAILURE = 'Rewards Claim: Failure',
   REWARDS_CLAIM_BLOCKED = 'Rewards Claim: Blocked'
 }
@@ -973,6 +974,17 @@ type RewardsClaimSuccess = {
   source: string
 }
 
+type RewardsClaimRetry = {
+  eventName: Name.REWARDS_CLAIM_RETRY
+  userId: string
+  challengeId: string
+  specifier: string
+  amount: number
+  source: string
+  error: string
+  phase: string
+}
+
 type RewardsClaimFailure = {
   eventName: Name.REWARDS_CLAIM_FAILURE
   userId: string
@@ -1126,5 +1138,6 @@ export type AllTrackingEvents =
   | CreateUserBankFailure
   | RewardsClaimStart
   | RewardsClaimSuccess
+  | RewardsClaimRetry
   | RewardsClaimFailure
   | RewardsClaimBlocked

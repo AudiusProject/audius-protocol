@@ -52,6 +52,48 @@ export class ClientRewardsReporter {
     })()
   }
 
+  reportRetry({
+    userId,
+    challengeId,
+    amount,
+    error,
+    phase,
+    specifier
+  }: {
+    userId: string
+    challengeId: string
+    amount: number
+    error: string
+    phase: string
+    specifier: string
+  }) {
+    ;(async () => {
+      try {
+        await track(Name.REWARDS_CLAIM_RETRY, {
+          userId,
+          challengeId,
+          amount,
+          specifier,
+          error,
+          phase,
+          source: this.source
+        })
+        await this.libs.Rewards.sendAttestationResult({
+          status: 'retry',
+          userId,
+          challengeId,
+          amount,
+          error,
+          phase,
+          source: this.source,
+          specifier
+        })
+      } catch (e) {
+        console.log(`Report retry failure: ${e}`)
+      }
+    })()
+  }
+
   reportFailure({
     userId,
     challengeId,
