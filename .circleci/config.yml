@@ -373,17 +373,13 @@ jobs:
             cd ../
       - run:
           name: run_tests
-          # command: |
-          #   cd eth-contracts
-          #   npm run test-circle-ci-no-coverage
-          #   cd ../
           command: |
             cd eth-contracts
-            npm run test-circle-ci
+            npm run test-circle-ci-no-coverage
             cd ../
       # this is commented out since coverage is now disabled in CI
-      - coveralls/upload:
-          path_to_lcov: ./eth-contracts/coverage/lcov.info
+      # - coveralls/upload:
+      #     path_to_lcov: ./eth-contracts/coverage/lcov.info
 
   test-creator-node:
     docker:
