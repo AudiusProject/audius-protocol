@@ -427,8 +427,6 @@ pub struct UpdateTrack<'info> {
     #[account(mut)]
     // User update authority field
     pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
 }
 
 /// Instruction container for track deletes
@@ -459,8 +457,6 @@ pub struct FollowUser<'info> {
     // Confirm the followee PDA matches the expected value provided the target handle and base
     #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle_seed.as_ref()], bump = followee_handle_bump)]
     pub followee_user_storage: Account<'info, User>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
     // User update authority field
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -494,8 +490,6 @@ pub struct UpdatePlaylist<'info> {
     pub user: Account<'info, User>,
     #[account(mut)]
     pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
 }
 
 /// Instruction container for playlist deletes

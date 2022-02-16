@@ -195,19 +195,18 @@ def get_challenges(
             ):
                 continue
 
+            user_challenge_dict = to_challenge_response(
+                user_challenge,
+                parent_challenge,
+                disbursements[i],
+                existing_metadata[i],
+            )
             override_step_count = event_bus.get_manager(
                 parent_challenge.id
             ).get_override_challenge_step_count(session, user_id)
-            if override_step_count is not None:
-                user_challenge.current_step_count = override_step_count
-            regular_user_challenges.append(
-                to_challenge_response(
-                    user_challenge,
-                    parent_challenge,
-                    disbursements[i],
-                    existing_metadata[i],
-                )
-            )
+            if override_step_count is not None and not user_challenge.is_complete:
+                user_challenge_dict["current_step_count"] = override_step_count
+            regular_user_challenges.append(user_challenge_dict)
 
     rolled_up: List[ChallengeResponse] = []
     for (challenge_id, challenges) in aggregate_user_challenges_map.items():

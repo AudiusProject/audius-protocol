@@ -23,6 +23,7 @@ from src.api.v1.models.common import favorite
 from src.api.v1.models.users import (
     associated_wallets,
     challenge_response,
+    connected_wallets,
     encoded_user_id,
     user_model,
     user_model_full,
@@ -755,7 +756,11 @@ associated_wallet_response = make_response(
 )
 
 
-@ns.route("/associated_wallets")
+@ns.deprecated
+@ns.route(
+    "/associated_wallets",
+    doc={"description": "Deprecated in favor of /<user_id>/connected_wallets"},
+)
 class UserIdByAssociatedWallet(Resource):
     @ns.expect(associated_wallet_route_parser)
     @ns.doc(
@@ -796,6 +801,31 @@ class AssociatedWalletByUserId(Resource):
         user_id = get_associated_user_id({"wallet": args.get("associated_wallet")})
         return success_response(
             {"user_id": encode_int_id(user_id) if user_id else None}
+        )
+
+
+connected_wallets_route_parser = reqparse.RequestParser()
+connected_wallets_route_parser.add_argument("user_id", required=False)
+connected_wallets_response = make_response(
+    "connected_wallets_response", ns, fields.Nested(connected_wallets)
+)
+
+
+@ns.route("/<string:user_id>/connected_wallets")
+class ConnectedWallets(Resource):
+    @ns.expect(connected_wallets_route_parser)
+    @ns.doc(
+        id="""Get the User's erc and spl connected wallets""",
+        params={"user_id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(connected_wallets_response)
+    @cache(ttl_sec=10)
+    def get(self, user_id):
+        decoded_id = decode_with_abort(user_id, full_ns)
+        wallets = get_associated_user_wallet({"user_id": decoded_id})
+        return success_response(
+            {"erc_wallets": wallets["eth"], "spl_wallets": wallets["sol"]}
         )
 
 
