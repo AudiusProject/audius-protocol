@@ -8,7 +8,8 @@ export enum MetaTagFormat {
   Explore,
   Collectibles,
   Collectible,
-  Error
+  Error,
+  AUDIO
 }
 
 export enum Playable {

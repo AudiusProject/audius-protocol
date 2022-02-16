@@ -1,4 +1,5 @@
 export const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/preview-image.jpg'
+export const AUDIO_REWARDS_IMAGE_URL = 'https://download.audius.co/static-resources/audio-rewards.png'
 export const HEAVY_ROTATION_URL = 'https://download.audius.co/static-resources/heavy-rotation.png'
 export const LET_THEM_DJ_URL = 'https://download.audius.co/static-resources/let-them-dj.png'
 export const BEST_NEW_RELEASES_URL = 'https://download.audius.co/static-resources/best-new-releases.png'
