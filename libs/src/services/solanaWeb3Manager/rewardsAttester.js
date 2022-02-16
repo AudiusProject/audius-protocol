@@ -367,6 +367,7 @@ class RewardsAttester {
     this.startingBlock = override
     this.offset = 0
     this.recentlyDisbursedQueue = []
+    this.undisbursedQueue = []
   }
 
   /**
@@ -478,7 +479,7 @@ class RewardsAttester {
     amount,
     handle,
     wallet,
-    completedBlocknumber,
+    completedBlocknumber
   }) {
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
 
@@ -543,12 +544,14 @@ class RewardsAttester {
   async _refillQueueIfNecessary () {
     if (this.undisbursedQueue.length) return {}
 
-    this.logger.info(`Refilling queue, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`)
+    this.logger.info(`Refilling queue with startingBlock: ${this.startingBlock}, offset: ${this.offset}, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`)
     const { success: disbursable, error } = await this.libs.Rewards.getUndisbursedChallenges({ offset: this.offset, completedBlockNumber: this.startingBlock, logger: this.logger })
 
     if (error) {
       return { error }
     }
+
+    this.logger.info(`Got challenges: ${disbursable.map(({ challenge_id, user_id, specifier }) => (`${challenge_id} - ${user_id} - ${specifier}`))}`) // eslint-disable-line
 
     // Map to camelCase, and filter out
     // any challenges in the denylist or recently disbursed set
@@ -635,9 +638,9 @@ class RewardsAttester {
             this.reporter.reportFailure(report)
           }
         } else if (isFinalAttempt) {
-            this.reporter.reportFailure(report)
+          this.reporter.reportFailure(report)
         } else {
-            this.reporter.reportRetry(report)
+          this.reporter.reportRetry(report)
         }
         return !isNoRetry
       })
