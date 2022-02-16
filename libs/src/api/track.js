@@ -25,7 +25,6 @@ class Track extends Base {
     super(...args)
     this.getTracks = this.getTracks.bind(this)
     this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
-    this.getUnlistedTracks = this.getUnlistedTracks.bind(this)
     this.getRandomTracks = this.getRandomTracks.bind(this)
     this.getStemsForTrack = this.getStemsForTrack.bind(this)
     this.getRemixesOfTrack = this.getRemixesOfTrack.bind(this)
@@ -104,17 +103,6 @@ class Track extends Base {
   async getTracksIncludingUnlisted (identifiers, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return this.discoveryProvider.getTracksIncludingUnlisted(identifiers, withUsers)
-  }
-
-  /**
-   * Gets all unlisted track for a user.
-   * Will only return tracks for the currently authed user.
-   *
-   * @returns {(Array)} tracks array of tracks
-   */
-  async getUnlistedTracks () {
-    this.REQUIRES(Services.CREATOR_NODE)
-    return this.creatorNode.getUnlistedTracks()
   }
 
   /**
