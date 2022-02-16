@@ -284,18 +284,15 @@ def process_batch_sol_reward_manager_txs(
                     "while processing disbursement"
                 )
             if eth_recipient not in users_map:
-                logger.error(
-                    f"index_rewards_manager.py | eth_recipient {eth_recipient} not found while processing disbursement"
-                )
                 tx_signature = tx["tx_sig"]
-                raise MissingEthRecipientError(
-                    eth_recipient,
-                    transfer_instr["challenge_id"],
-                    specifier,
-                    tx["tx_sig"],
-                    tx["slot"],
-                    f"Error: eth_recipient {eth_recipient} not found while indexing rewards manager for tx signature {tx_signature}",
+                tx_slot = tx["slot"]
+                logger.error(
+                    f"index_rewards_manager.py | eth_recipient {eth_recipient} not found processing disbursement"
+                    f"tx signature={tx_signature}"
+                    f"tx slot={tx_slot}"
+                    f"specifier = {specifier}"
                 )
+                continue
 
             user_id = users_map[eth_recipient]
             logger.info(
