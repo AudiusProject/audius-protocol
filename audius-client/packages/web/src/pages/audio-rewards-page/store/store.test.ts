@@ -100,7 +100,7 @@ const MAX_CLAIM_RETRIES = 5
 
 const expectedRequestArgs = {
   challenges: [{ challenge_id: 'connect-verified', specifier: '1' }],
-  encodedUserId: undefined,
+  userId: 1,
   handle: 'test_user',
   recipientEthAddress: 'test-wallet',
   oracleEthAddress: 'oracle eth address',
@@ -109,7 +109,8 @@ const expectedRequestArgs = {
   endpoints: ['rewards attestation endpoints'],
   AAOEndpoint: 'oracle endpoint',
   parallelization: 20,
-  feePayerOverride: testFeePayer
+  feePayerOverride: testFeePayer,
+  isFinalAttempt: false
 }
 beforeAll(() => {
   // Setup remote config
@@ -206,7 +207,7 @@ describe('Rewards Page Sagas', () => {
       )
     })
 
-    it('should fail and not retry nor open models on user blocked', () => {
+    it('should fail and not retry nor open modals on user blocked', () => {
       return (
         expectSaga(saga)
           .dispatch(
@@ -494,7 +495,10 @@ describe('Rewards Page Sagas', () => {
           ]
         ])
         .put(claimChallengeReward({ claim: testClaim, retryOnFailure: false }))
-        .call(AudiusBackend.submitAndEvaluateAttestations, expectedRequestArgs)
+        .call(AudiusBackend.submitAndEvaluateAttestations, {
+          ...expectedRequestArgs,
+          isFinalAttempt: true
+        })
         .not.put(claimChallengeRewardWaitForRetry(testClaim))
         .put(claimChallengeRewardFailed())
         .silentRun()
