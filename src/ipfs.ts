@@ -11,7 +11,7 @@ console.log(`Connecting to ipfs: ${IPFS_PROTOCOL}://${IPFS_HOST}:${IPFS_PORT}`)
 const ipfs = createClient({
   protocol: IPFS_PROTOCOL,
   host: IPFS_HOST,
-  port: IPFS_PORT
+  port: IPFS_PORT,
 })
 
 export default ipfs

@@ -11,21 +11,33 @@ import {
   getTracks,
   getUserByHandle,
   getUsers,
-  shouldRedirectTrack
+  shouldRedirectTrack,
 } from '../utils/helpers'
 import { getCollectionPath, getCoverArt, getHash } from './helpers'
-import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse } from './types'
+import {
+  BedtimeFormat,
+  GetCollectionResponse,
+  GetTracksResponse,
+  TrackResponse,
+} from './types'
 
 // Error Messages
 const DELETED_MESSAGE = 'DELETED'
 
-const getTrackMetadata = async (trackId: number, ownerId: number | null): Promise<GetTracksResponse> => {
+const getTrackMetadata = async (
+  trackId: number,
+  ownerId: number | null
+): Promise<GetTracksResponse> => {
   try {
-    if (shouldRedirectTrack(trackId)) return Promise.reject(new Error(DELETED_MESSAGE))
+    if (shouldRedirectTrack(trackId))
+      return Promise.reject(new Error(DELETED_MESSAGE))
     const track = await getTrack(trackId)
-    if (track.is_delete || track.user?.is_deactivated) return Promise.reject(new Error(DELETED_MESSAGE))
-    if (ownerId && track.owner_id !== ownerId) return Promise.reject(new Error('OwnerIds do not match'))
-    if (track.is_unlisted) return Promise.reject(new Error('Attempted to embed a hidden track'))
+    if (track.is_delete || track.user?.is_deactivated)
+      return Promise.reject(new Error(DELETED_MESSAGE))
+    if (ownerId && track.owner_id !== ownerId)
+      return Promise.reject(new Error('OwnerIds do not match'))
+    if (track.is_unlisted)
+      return Promise.reject(new Error('Attempted to embed a hidden track'))
 
     const user = track.user
     const coverArt = getCoverArt(track, user)
@@ -39,7 +51,7 @@ const getTrackMetadata = async (trackId: number, ownerId: number | null): Promis
       coverArt,
       urlPath: track.permalink.substring(1), // strip the leading slash, as it's added later
       gateways: user.creator_node_endpoint,
-      id: track.track_id
+      id: track.track_id,
     }
   } catch (e) {
     const error = `Failed to get track for ID [${trackId}] with error: [${e.message}]`
@@ -48,9 +60,13 @@ const getTrackMetadata = async (trackId: number, ownerId: number | null): Promis
   }
 }
 
-const getTracksFromCollection = async (collection: any, ownerUser: any): Promise<TrackResponse[]> => {
-
-  const trackIds: number[] = collection.playlist_contents.track_ids.map((t: {time: number, track: number }) => t.track)
+const getTracksFromCollection = async (
+  collection: any,
+  ownerUser: any
+): Promise<TrackResponse[]> => {
+  const trackIds: number[] = collection.playlist_contents.track_ids.map(
+    (t: { time: number; track: number }) => t.track
+  )
   let tracks: TrackModel[] = []
 
   // Fetch tracks if there are IDs
@@ -60,32 +76,38 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
     // reorder tracks - discprov returns tracks out of order
     const unorderedTracksMap = unorderedTracks.reduce(
       (acc: Record<number, TrackModel>, t) => ({ ...acc, [t.track_id]: t }),
-      {})
+      {}
+    )
     tracks = trackIds.map((id: number) => unorderedTracksMap[id])
   }
 
   // fetch users from tracks
   // only fetch unique IDs that aren't the owner user
   const trackOwnerIds = tracks.map((t) => t.owner_id)
-  const idsToFetch = new Set(trackOwnerIds.filter((userId: number) => userId !== ownerUser.user_id))
+  const idsToFetch = new Set(
+    trackOwnerIds.filter((userId: number) => userId !== ownerUser.user_id)
+  )
   const users = await getUsers(Array.from(idsToFetch))
 
   // make a map of all users, including the owner
-  const userMap = users.reduce((acc: any, u: any) => ({ ...acc, [u.user_id]: u}), { [ownerUser.user_id]: ownerUser })
+  const userMap = users.reduce(
+    (acc: any, u: any) => ({ ...acc, [u.user_id]: u }),
+    { [ownerUser.user_id]: ownerUser }
+  )
 
   // Create tracks and filter out deletes
-  const parsedTracks: TrackResponse[] =
-    tracks.filter((t) => !t.is_delete && !userMap[t.owner_id].is_deactivated)
-      .map((t) => ({
-        title: t.title,
-        handle: userMap[t.owner_id].handle,
-        userName: userMap[t.owner_id].name,
-        segments: t.track_segments,
-        urlPath: t.permalink.substring(1), // strip the leading slash, as it's added later
-        id: t.track_id,
-        isVerified: userMap[t.owner_id].is_verified,
-        gateways: userMap[t.owner_id].creator_node_endpoint
-      }))
+  const parsedTracks: TrackResponse[] = tracks
+    .filter((t) => !t.is_delete && !userMap[t.owner_id].is_deactivated)
+    .map((t) => ({
+      title: t.title,
+      handle: userMap[t.owner_id].handle,
+      userName: userMap[t.owner_id].name,
+      segments: t.track_segments,
+      urlPath: t.permalink.substring(1), // strip the leading slash, as it's added later
+      id: t.track_id,
+      isVerified: userMap[t.owner_id].is_verified,
+      gateways: userMap[t.owner_id].creator_node_endpoint,
+    }))
 
   return parsedTracks
 }
@@ -93,18 +115,22 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
 // We do a bit of parallelization here.
 // We first grab the collection and owner user in parallel. Once both are completed, we
 // then grab the tracks and cover art in parallel, both of which require the fetched collection and owner user.
-const getCollectionMetadata = async (collectionId: number, ownerId: number | null): Promise<GetCollectionResponse> => {
+const getCollectionMetadata = async (
+  collectionId: number,
+  ownerId: number | null
+): Promise<GetCollectionResponse> => {
   try {
     const collection = await getCollection(collectionId)
     const ownerUser = collection.user
 
-    if (collection.playlist_owner_id !== ownerUser.user_id) return Promise.reject(new Error('OwnerIds do not match'))
+    if (collection.playlist_owner_id !== ownerUser.user_id)
+      return Promise.reject(new Error('OwnerIds do not match'))
     if (collection.is_delete) return Promise.reject(new Error(DELETED_MESSAGE))
 
     // Get tracks & covert art in parallel
     const [tracks, coverArt] = await Promise.all([
       getTracksFromCollection(collection, ownerUser),
-      getCoverArt(collection, ownerUser)
+      getCoverArt(collection, ownerUser),
     ])
 
     // Create URL path
@@ -112,7 +138,7 @@ const getCollectionMetadata = async (collectionId: number, ownerId: number | nul
       ownerHandle: ownerUser.handle,
       isAlbum: collection.is_album,
       name: collection.playlist_name,
-      id: collection.playlist_id
+      id: collection.playlist_id,
     })
 
     return {
@@ -124,7 +150,7 @@ const getCollectionMetadata = async (collectionId: number, ownerId: number | nul
       coverArt,
       isVerified: ownerUser.is_verified,
       id: collection.playlist_id,
-      gateways: ownerUser.creator_node_endpoint
+      gateways: ownerUser.creator_node_endpoint,
     }
   } catch (e) {
     const error = `Failed to get collection for ID [${collectionId}] with error: [${e.message}]`
@@ -137,29 +163,34 @@ type CollectiblesMetadata = {
   user: any
 } & (
   | {
-    ethCollectibles: CollectibleState
-    solCollectibles: CollectibleState
-    type: 'gallery'
-  }
+      ethCollectibles: CollectibleState
+      solCollectibles: CollectibleState
+      type: 'gallery'
+    }
   | {
-    collectible: Collectible | null
-    type: 'detail'
-  }
+      collectible: Collectible | null
+      type: 'detail'
+    }
 )
 
-const getCollectiblesMetadata = async (handle: string, collectibleId?: string): Promise<CollectiblesMetadata> => {
+const getCollectiblesMetadata = async (
+  handle: string,
+  collectibleId?: string
+): Promise<CollectiblesMetadata> => {
   const user = await getUserByHandle(handle)
 
   // Get wallets for user
   const dp = libs.discoveryProvider.discoveryProviderEndpoint
   const encodedUserId = encodeHashId(user.user_id)
-  const res = await fetch(`${dp}/v1/users/associated_wallets?id=${encodedUserId}`)
+  const res = await fetch(
+    `${dp}/v1/users/associated_wallets?id=${encodedUserId}`
+  )
   const { data: walletData } = await res.json()
 
   // Get collectibles for user wallets
   const resp = await nftClient.getCollectibles({
     ethWallets: [user.wallet, ...walletData.wallets],
-    solWallets: walletData.sol_wallets
+    solWallets: walletData.sol_wallets,
   })
 
   if (collectibleId) {
@@ -170,11 +201,13 @@ const getCollectiblesMetadata = async (handle: string, collectibleId?: string): 
       ...solValues.reduce((acc, vals) => [...acc, ...vals], []),
     ]
 
-    const foundCol = collectibles.find((col) => getHash(col.id) === collectibleId)
+    const foundCol = collectibles.find(
+      (col) => getHash(col.id) === collectibleId
+    )
     return {
       user,
       collectible: foundCol ?? null,
-      type: 'detail'
+      type: 'detail',
     }
   }
 
@@ -182,7 +215,7 @@ const getCollectiblesMetadata = async (handle: string, collectibleId?: string): 
     user,
     ethCollectibles: resp.ethCollectibles,
     solCollectibles: resp.solCollectibles,
-    type: 'gallery'
+    type: 'gallery',
   }
 }
 

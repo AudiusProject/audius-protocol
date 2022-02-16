@@ -6,8 +6,8 @@ it('resolves with the dapp', async () => {
   const options = {
     url: URL,
     headers: {
-      'User-Agent': 'human bean'
-    }
+      'User-Agent': 'human bean',
+    },
   }
   const body = await req(options)
   expect(body.includes(`reactEnv`)).toBe(true)

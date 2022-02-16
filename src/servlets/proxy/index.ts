@@ -28,7 +28,7 @@ const proxyRequest = async (proxyUrl: string, formattedUrl: string) => {
     request({
       url: formattedUrl,
       proxy: proxyUrl,
-      json: true
+      json: true,
     }).then(
       (res) => {
         resolve(res)
@@ -40,60 +40,61 @@ const proxyRequest = async (proxyUrl: string, formattedUrl: string) => {
     )
   })
   const duration = Date.now() - start
-  console.log(`[${duration}] Proxy succeeded to ${formattedUrl} via ${proxyUrl}`)
+  console.log(
+    `[${duration}] Proxy succeeded to ${formattedUrl} via ${proxyUrl}`
+  )
   return result
 }
 
 /**
  * Proxy request via external
  */
-router.get('/', async (
-  req: express.Request,
-  expressRes: express.Response
-) => {
-    try {
-      const url = req.query.url as string
-      const replace = req.query.replace as string
+router.get('/', async (req: express.Request, expressRes: express.Response) => {
+  try {
+    const url = req.query.url as string
+    const replace = req.query.replace as string
 
-      if (!url) throw new Error('No url provided')
-      if (!replace) throw new Error('No replace json provided')
+    if (!url) throw new Error('No url provided')
+    if (!replace) throw new Error('No replace json provided')
 
-      let formattedUrl = url
-      const parsedReplaceJSON = JSON.parse(replace)
-      Object.keys(parsedReplaceJSON).forEach((key: string) => {
-        formattedUrl = formattedUrl.replace(key, parsedReplaceJSON[key])
-      })
+    let formattedUrl = url
+    const parsedReplaceJSON = JSON.parse(replace)
+    Object.keys(parsedReplaceJSON).forEach((key: string) => {
+      formattedUrl = formattedUrl.replace(key, parsedReplaceJSON[key])
+    })
 
-      const requests = PROXY_URLS.map((proxy) => proxyRequest(proxy, formattedUrl))
-      const result = await promiseAny(requests)
+    const requests = PROXY_URLS.map((proxy) =>
+      proxyRequest(proxy, formattedUrl)
+    )
+    const result = await promiseAny(requests)
 
-      expressRes.json(result)
-    } catch (e) {
-      console.error(e)
-      expressRes.status(500).send({ error: e.message })
-    }
+    expressRes.json(result)
+  } catch (e) {
+    console.error(e)
+    expressRes.status(500).send({ error: e.message })
+  }
 })
 
 /**
  * Simple proxy with no external
  */
-router.get('/simple', async (
-  req: express.Request,
-  expressRes: express.Response
-) => {
-  const url = req.query.url as string
-  const result = await new Promise((resolve, reject) => {
-    request({
-      url,
-      headers: {
-        'Access-Control-Allow-Method': '*',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*'
-      }
-    }).then(
-      (res) => resolve(res),
-      (error) => reject(error)
-    )
-  })
-  expressRes.send(result)
-})
+router.get(
+  '/simple',
+  async (req: express.Request, expressRes: express.Response) => {
+    const url = req.query.url as string
+    const result = await new Promise((resolve, reject) => {
+      request({
+        url,
+        headers: {
+          'Access-Control-Allow-Method': '*',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+      }).then(
+        (res) => resolve(res),
+        (error) => reject(error)
+      )
+    })
+    expressRes.send(result)
+  }
+)

@@ -10,7 +10,7 @@ export interface TrackResponse {
   handle: string
   userName: string
   isVerified: boolean
-  segments: Array<{ duration: number, multihash: string }>
+  segments: Array<{ duration: number; multihash: string }>
   urlPath: string
   gateways: string
 }

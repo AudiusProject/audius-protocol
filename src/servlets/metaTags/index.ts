@@ -6,7 +6,11 @@ import path from 'path'
 
 import libs from '../../libs'
 import { getHash } from '../bedtime/helpers'
-import { AUDIO_REWARDS_IMAGE_URL, DEFAULT_IMAGE_URL, SIGNUP_REF_IMAGE_URL } from '../utils/constants'
+import {
+  AUDIO_REWARDS_IMAGE_URL,
+  DEFAULT_IMAGE_URL,
+  SIGNUP_REF_IMAGE_URL,
+} from '../utils/constants'
 import { nftClient } from '../utils/fetchNft'
 import { formatDate, formatSeconds } from '../utils/format'
 import { encodeHashId } from '../utils/hashids'
@@ -17,7 +21,7 @@ import {
   getImageUrl,
   getTrackByHandleAndSlug,
   getUser,
-  getUserByHandle
+  getUserByHandle,
 } from '../utils/helpers'
 import { Context, MetaTagFormat, Playable } from './types'
 
@@ -40,23 +44,36 @@ const getTrackEmbedUrl = (type: Playable, hashId: string) => {
 // These URLs are *never* to be shared more broadly than in the
 // general-admission response to a Discordbot.
 
-const getCollectiblesEmbedUrl = (handle: string, isDiscord: boolean = false) => {
-  return `${E.PUBLIC_URL}/embed/${isDiscord ? 'track/' : ''}${handle}/collectibles`
+const getCollectiblesEmbedUrl = (
+  handle: string,
+  isDiscord: boolean = false
+) => {
+  return `${E.PUBLIC_URL}/embed/${
+    isDiscord ? 'track/' : ''
+  }${handle}/collectibles`
 }
 
-const getCollectibleEmbedUrl = (handle: string, collectibleId: string, isDiscord: boolean = false) => {
-  return `${E.PUBLIC_URL}/embed/${isDiscord ? 'track/' : ''}${handle}/collectibles/${collectibleId}`
+const getCollectibleEmbedUrl = (
+  handle: string,
+  collectibleId: string,
+  isDiscord: boolean = false
+) => {
+  return `${E.PUBLIC_URL}/embed/${
+    isDiscord ? 'track/' : ''
+  }${handle}/collectibles/${collectibleId}`
 }
 
 /** Routes */
 
 const template = handlebars.compile(
-  fs
-    .readFileSync(path.resolve(__dirname, './template.html'))
-    .toString()
+  fs.readFileSync(path.resolve(__dirname, './template.html')).toString()
 )
 
-const getTrackContext = async (handle: string, slug: string, canEmbed: boolean): Promise<Context> => {
+const getTrackContext = async (
+  handle: string,
+  slug: string,
+  canEmbed: boolean
+): Promise<Context> => {
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
@@ -65,7 +82,10 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
 
     const labels = [
-      { name: 'Released', value: formatDate(track.release_date, RELEASE_DATE_FORMAT) },
+      {
+        name: 'Released',
+        value: formatDate(track.release_date, RELEASE_DATE_FORMAT),
+      },
       { name: 'Duration', value: formatSeconds(track.duration) },
       { name: 'Genre', value: track.genre },
       { name: 'Mood', value: track.mood },
@@ -79,7 +99,7 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
       labels,
       image: track.artwork['1000x1000'],
       embed: canEmbed,
-      embedUrl: getTrackEmbedUrl(Playable.TRACK, track.id)
+      embedUrl: getTrackEmbedUrl(Playable.TRACK, track.id),
     }
   } catch (e) {
     console.error(e)
@@ -87,7 +107,10 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
   }
 }
 
-const getCollectionContext = async (id: number, canEmbed: boolean): Promise<Context> => {
+const getCollectionContext = async (
+  id: number,
+  canEmbed: boolean
+): Promise<Context> => {
   if (!id) return getDefaultContext()
   try {
     const collection = await getCollection(id)
@@ -107,7 +130,7 @@ const getCollectionContext = async (id: number, canEmbed: boolean): Promise<Cont
         collection.is_album ? Playable.ALBUM : Playable.PLAYLIST,
         collection.playlist_id,
         collection.playlist_owner_id
-      )
+      ),
     }
   } catch (e) {
     console.error(e)
@@ -125,9 +148,10 @@ const getUserContext = async (handle: string): Promise<Context> => {
       ? `${user.profile_picture_sizes}/1000x1000.jpg`
       : user.profile_picture
 
-    const infoText = user.track_count > 0
-      ? `Listen to ${user.name} on Audius`
-      : `Follow ${user.name} on Audius`
+    const infoText =
+      user.track_count > 0
+        ? `Listen to ${user.name} on Audius`
+        : `Follow ${user.name} on Audius`
 
     return {
       format: MetaTagFormat.User,
@@ -156,9 +180,10 @@ const getCollectiblesContext = async (
       ? `${user.profile_picture_sizes}/1000x1000.jpg`
       : user.profile_picture
 
-    const infoText = user.track_count > 0
-      ? `Listen to ${user.name} on Audius`
-      : `Follow ${user.name} on Audius`
+    const infoText =
+      user.track_count > 0
+        ? `Listen to ${user.name} on Audius`
+        : `Follow ${user.name} on Audius`
 
     return {
       format: MetaTagFormat.Collectibles,
@@ -167,7 +192,7 @@ const getCollectiblesContext = async (
       additionalSEOHint: infoText,
       image: getImageUrl(profilePicture, gateway),
       embed: canEmbed,
-      embedUrl: getCollectiblesEmbedUrl(user.handle, isDiscord)
+      embedUrl: getCollectiblesEmbedUrl(user.handle, isDiscord),
     }
   } catch (e) {
     console.error(e)
@@ -190,20 +215,23 @@ const getCollectibleContext = async (
       ? `${user.profile_picture_sizes}/1000x1000.jpg`
       : user.profile_picture
 
-    const infoText = user.track_count > 0
-      ? `Listen to ${user.name} on Audius`
-      : `Follow ${user.name} on Audius`
+    const infoText =
+      user.track_count > 0
+        ? `Listen to ${user.name} on Audius`
+        : `Follow ${user.name} on Audius`
 
     const dp = libs.discoveryProvider.discoveryProviderEndpoint
     const encodedUserId = encodeHashId(user.user_id)
-    const res = await fetch(`${dp}/v1/users/associated_wallets?id=${encodedUserId}`)
+    const res = await fetch(
+      `${dp}/v1/users/associated_wallets?id=${encodedUserId}`
+    )
     const { data: walletData } = await res.json()
 
     if (collectibleId) {
       // Get collectibles for user wallets
       const resp = await nftClient.getCollectibles({
         ethWallets: walletData.wallets,
-        solWallets: walletData.sol_wallets
+        solWallets: walletData.sol_wallets,
       })
 
       const ethValues: Collectible[][] = Object.values(resp.ethCollectibles)
@@ -213,7 +241,9 @@ const getCollectibleContext = async (
         ...solValues.reduce((acc, vals) => [...acc, ...vals], []),
       ]
 
-      const foundCol = collectibles.find((col) => getHash(col.id) === collectibleId)
+      const foundCol = collectibles.find(
+        (col) => getHash(col.id) === collectibleId
+      )
 
       if (foundCol) {
         return {
@@ -223,7 +253,11 @@ const getCollectibleContext = async (
           additionalSEOHint: infoText,
           image: foundCol.frameUrl ?? '',
           embed: canEmbed,
-          embedUrl: getCollectibleEmbedUrl(user.handle, collectibleId, isDiscord)
+          embedUrl: getCollectibleEmbedUrl(
+            user.handle,
+            collectibleId,
+            isDiscord
+          ),
         }
       }
     }
@@ -235,16 +269,18 @@ const getCollectibleContext = async (
       additionalSEOHint: infoText,
       image: getImageUrl(profilePicture, gateway),
       embed: canEmbed,
-      embedUrl: getCollectiblesEmbedUrl(user.handle)
+      embedUrl: getCollectiblesEmbedUrl(user.handle),
     }
-
   } catch (e) {
     console.error(e)
     return getDefaultContext()
   }
 }
 
-const getRemixesContext = async (handle: string, slug: string): Promise<Context> => {
+const getRemixesContext = async (
+  handle: string,
+  slug: string
+): Promise<Context> => {
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
@@ -253,7 +289,10 @@ const getRemixesContext = async (handle: string, slug: string): Promise<Context>
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
 
     const labels = [
-      { name: 'Released', value: formatDate(track.release_date, RELEASE_DATE_FORMAT) },
+      {
+        name: 'Released',
+        value: formatDate(track.release_date, RELEASE_DATE_FORMAT),
+      },
       { name: 'Duration', value: formatSeconds(track.duration) },
       { name: 'Genre', value: track.genre },
       { name: 'Mood', value: track.mood },
@@ -279,7 +318,7 @@ const getUploadContext = (): Context => {
     title: 'Audius Upload',
     description: `Upload your tracks to Audius`,
     image: DEFAULT_IMAGE_URL,
-    thumbnail: true
+    thumbnail: true,
   }
 }
 
@@ -287,7 +326,7 @@ const getExploreContext = (type: string): Context => {
   return {
     format: MetaTagFormat.Explore,
     thumbnail: true,
-    ...getExploreInfo(type)
+    ...getExploreInfo(type),
   }
 }
 
@@ -295,11 +334,12 @@ const getDefaultContext = (): Context => {
   return {
     format: MetaTagFormat.Default,
     title: 'Audius',
-    description: 'Audius is a music streaming and \
+    description:
+      'Audius is a music streaming and \
 sharing platform that puts power back into the hands \
 of content creators',
     image: DEFAULT_IMAGE_URL,
-    thumbnail: true
+    thumbnail: true,
   }
 }
 
@@ -309,7 +349,7 @@ const getTokenContext = (): Context => {
     title: '$AUDIO & Rewards',
     description: 'Earn $AUDIO tokens while using the app!',
     image: AUDIO_REWARDS_IMAGE_URL,
-    thumbnail: false
+    thumbnail: false,
   }
 }
 
@@ -329,15 +369,8 @@ const getResponse = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const {
-    title,
-    handle,
-    type,
-    collectibleId,
-  } = req.params
-  const {
-    ref
-  } = req.query
+  const { title, handle, type, collectibleId } = req.params
+  const { ref } = req.query
 
   const userAgent = req.get('User-Agent') || ''
   const canEmbed = CAN_EMBED_USER_AGENT_REGEX.test(userAgent.toLowerCase())
@@ -377,7 +410,12 @@ const getResponse = async (
       break
     case MetaTagFormat.Collectible:
       console.log('get collectible', req.path, userAgent)
-      context = await getCollectibleContext(handle, collectibleId, canEmbed, isDiscord)
+      context = await getCollectibleContext(
+        handle,
+        collectibleId,
+        canEmbed,
+        isDiscord
+      )
       break
     case MetaTagFormat.AUDIO:
       console.log('get audio', req.path, userAgent)

@@ -24,159 +24,129 @@ const router = express.Router()
 
 /** Bedtime Routes */
 
-router.get([
-  '/embed/api/tracks/:id',
-  '/embed/api/tracks/hashid/:hashId'
-], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  ['/embed/api/tracks/:id', '/embed/api/tracks/hashid/:hashId'],
+  (req: express.Request, res: express.Response) => {
     getBedtimeResponse(BedtimeFormat.TRACK, req, res)
   }
 )
 
-router.get([
-  '/embed/api/collections/:id',
-  '/embed/api/collections/hashid/:hashId'
-], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  ['/embed/api/collections/:id', '/embed/api/collections/hashid/:hashId'],
+  (req: express.Request, res: express.Response) => {
     getBedtimeResponse(BedtimeFormat.COLLECTION, req, res)
   }
 )
 
-router.get([
-  '/embed/api/:handle/collectibles',
-  '/embed/api/:handle/collectibles/:collectibleId'
-], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  [
+    '/embed/api/:handle/collectibles',
+    '/embed/api/:handle/collectibles/:collectibleId',
+  ],
+  (req: express.Request, res: express.Response) => {
     getBedtimeResponse(BedtimeFormat.COLLECTIBLES, req, res)
   }
 )
 
 /** Metatag Routes */
 
-router.get([
-  '/upload',
-  '/upload/:type'], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  ['/upload', '/upload/:type'],
+  (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Upload, req, res)
   }
 )
 
-router.get([
-    '/explore',
-    '/explore/:type'
-  ], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  ['/explore', '/explore/:type'],
+  (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Explore, req, res)
   }
 )
 
-router.get('/trending/playlists', (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  '/trending/playlists',
+  (req: express.Request, res: express.Response) => {
     req.params.type = 'trending-playlists'
     getMetaTagsResponse(MetaTagFormat.Explore, req, res)
   }
 )
 
-router.get('/error', (
-  req: express.Request,
-  res: express.Response) => {
-    getMetaTagsResponse(MetaTagFormat.Error, req, res)
-  }
-)
+router.get('/error', (req: express.Request, res: express.Response) => {
+  getMetaTagsResponse(MetaTagFormat.Error, req, res)
+})
 
-router.get('/signup', (
-  req: express.Request,
-  res: express.Response) => {
-    getMetaTagsResponse(req.query.ref ? MetaTagFormat.SignupRef : MetaTagFormat.Default, req, res)
+router.get('/signup', (req: express.Request, res: express.Response) => {
+  getMetaTagsResponse(
+    req.query.ref ? MetaTagFormat.SignupRef : MetaTagFormat.Default,
+    req,
+    res
+  )
 })
 
 // Override default metatags
-router.get([
-  '/check',
-  '/undefined',
-  '/press'
-], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  ['/check', '/undefined', '/press'],
+  (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Default, req, res)
+  }
+)
+
+router.get('/audio', (req: express.Request, res: express.Response) => {
+  getMetaTagsResponse(MetaTagFormat.AUDIO, req, res)
 })
 
-router.get('/audio', (
-  req: express.Request,
-  res: express.Response) => {
-    getMetaTagsResponse(MetaTagFormat.AUDIO, req, res)
-})
-
-router.get([
-  '/:handle',
-  '/:handle/tracks',
-  '/:handle/playlists',
-  '/:handle/albums',
-  '/:handle/reposts'
-], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  [
+    '/:handle',
+    '/:handle/tracks',
+    '/:handle/playlists',
+    '/:handle/albums',
+    '/:handle/reposts',
+  ],
+  (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.User, req, res)
   }
 )
 
-router.get([
-  '/:handle/collectibles/:collectibleId'
-], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  ['/:handle/collectibles/:collectibleId'],
+  (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Collectible, req, res)
   }
 )
 
-router.get([
-  '/:handle/collectibles'
-], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  ['/:handle/collectibles'],
+  (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Collectibles, req, res)
   }
 )
 
-router.get('/:handle/:title/remixes', (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  '/:handle/:title/remixes',
+  (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Remixes, req, res)
   }
 )
 
-router.get('/:handle/:title', (
-  req: express.Request,
-  res: express.Response) => {
-    getMetaTagsResponse(MetaTagFormat.Track, req, res)
-  }
-)
+router.get('/:handle/:title', (req: express.Request, res: express.Response) => {
+  getMetaTagsResponse(MetaTagFormat.Track, req, res)
+})
 
-router.get([
-  '/:handle/album/:title',
-  '/:handle/playlist/:title'], (
-  req: express.Request,
-  res: express.Response) => {
+router.get(
+  ['/:handle/album/:title', '/:handle/playlist/:title'],
+  (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Collection, req, res)
   }
 )
 
-router.get('/', (
-  req: express.Request,
-  res: express.Response) => {
-    getMetaTagsResponse(MetaTagFormat.Default, req, res)
+router.get('/', (req: express.Request, res: express.Response) => {
+  getMetaTagsResponse(MetaTagFormat.Default, req, res)
 })
 
-router.get('*', (
-  req: express.Request,
-  res: express.Response) => {
-    getMetaTagsResponse(MetaTagFormat.Default, req, res)
+router.get('*', (req: express.Request, res: express.Response) => {
+  getMetaTagsResponse(MetaTagFormat.Default, req, res)
 })
 
 app.use(express.static(path.resolve(__dirname + '/public')))
