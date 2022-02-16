@@ -205,11 +205,11 @@ class App {
   }
 
   configureReporter () {
-    const slackAudioErrorReporter = new SlackReporter({
-      slackUrl: config.get('errorAudioReporterSlackUrl'),
+    const slackWormholeErrorReporter = new SlackReporter({
+      slackUrl: config.get('errorWormholeReporterSlackUrl'),
       childLogger: logger
     })
-    this.express.set('slackAudioErrorReporter', slackAudioErrorReporter)
+    this.express.set('slackWormholeErrorReporter', slackWormholeErrorReporter)
   }
 
   async configureAudiusInstance () {
