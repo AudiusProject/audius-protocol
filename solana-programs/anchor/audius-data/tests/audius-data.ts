@@ -453,6 +453,9 @@ describe("audius-data", () => {
     // Message as the incoming public key
     let message = newUserKeypair.publicKey.toString();
 
+    let incorrectBumpSeed = (bumpSeed + 1) % 256;
+    incorrectBumpSeed = incorrectBumpSeed === 0 ? 1 : incorrectBumpSeed;
+
     await expect(testCreateUser({
       provider,
       program,
@@ -460,7 +463,7 @@ describe("audius-data", () => {
       ethAccount,
       baseAuthorityAccount,
       handleBytesArray,
-      bumpSeed: (bumpSeed + 1) % 255,
+      bumpSeed: incorrectBumpSeed,
       metadata,
       newUserKeypair,
       userStgAccount: newUserAcctPDA,

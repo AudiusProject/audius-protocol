@@ -284,7 +284,7 @@ describe("follows", () => {
         signers: [newUser1Key],
       };
       let expectedErrorFound = false;
-      let expectedErrorString = "account is not owned by the executing program";
+      let expectedErrorString = "Transaction simulation failed: Error processing Instruction 0: custom program error: 0xa7";
       try {
         await program.rpc.followUser(
           baseAuthorityAccount,
@@ -295,13 +295,13 @@ describe("follows", () => {
           handle2DerivedInfo.bumpSeed,
           followArgs
         );
-      } catch (e: any) {
+      } catch (e) {
         let index = e.toString().indexOf(expectedErrorString);
         if (index > 0) expectedErrorFound = true;
       }
-      assert.equal(expectedErrorFound, true, expectedErrorString);
+      assert.equal(expectedErrorFound, true, "account is not owned by the executing program");
       expectedErrorFound = false;
-      expectedErrorString = "seeds constraint was violated";
+      expectedErrorString = "Transaction simulation failed: Error processing Instruction 0: custom program error: 0x92";
       // https://github.com/project-serum/anchor/blob/77043131c210cf14a34386cadd9242b1a65daa6e/lang/syn/src/codegen/accounts/constraints.rs#L355
       // Next, submit mismatched arguments
       // followArgs will contain followee target user 2 storage PDA
@@ -318,11 +318,11 @@ describe("follows", () => {
           handle1DerivedInfo.bumpSeed,
           followArgs
         );
-      } catch (e: any) {
+      } catch (e) {
         let index = e.toString().indexOf(expectedErrorString);
         if (index > 0) expectedErrorFound = true;
       }
-      assert.equal(expectedErrorFound, true, expectedErrorString);
+      assert.equal(expectedErrorFound, true, "seeds constraint was violated");
     });
   });
 });
