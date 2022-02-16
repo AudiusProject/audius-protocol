@@ -1,15 +1,9 @@
 import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
-import {
-  ethAddressToArray,
-  getRandomPrivateKey,
-  getTransaction,
-  randomCID,
-} from "../lib/utils";
 import ethWeb3 from "web3";
 import { randomBytes } from "crypto";
-import { initUser, initUserSolPubkey } from "../lib/lib";
-import { AudiusData } from "../target/types/audius_data";
+import { expect } from "chai";
+import { getTransaction, randomCID } from "../lib/utils";
+import { createUser, initUser, initUserSolPubkey } from "../lib/lib";
 
 const { PublicKey } = anchor.web3;
 
@@ -17,36 +11,26 @@ const EthWeb3 = new ethWeb3();
 const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
 export const initTestConstants = () => {
-  const privKey = getRandomPrivateKey();
-  const pkString = Buffer.from(privKey).toString("hex");
-  const pubKey = EthWeb3.eth.accounts.privateKeyToAccount(pkString);
-  const testEthAddr = pubKey.address;
-  const testEthAddrBytes = ethAddressToArray(testEthAddr);
+  const ethAccount = EthWeb3.eth.accounts.create();
   const handle = randomBytes(20).toString("hex");
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  // TODO: Verify this
-  const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
+  const handleBytesArray = Array.from({ ...handleBytes, length: 16 }); // TODO: Verify this
   const metadata = randomCID();
-  const values = {
-    privKey,
-    pkString,
-    pubKey,
-    testEthAddr,
-    testEthAddrBytes,
+
+  return {
+    ethAccount,
     handle,
     handleBytes,
     handleBytesArray,
     metadata,
   };
-  return values;
 };
 
 export const testInitUser = async ({
   provider,
   program,
   baseAuthorityAccount,
-  testEthAddr,
-  testEthAddrBytes,
+  ethAddress,
   handleBytesArray,
   bumpSeed,
   metadata,
@@ -57,7 +41,7 @@ export const testInitUser = async ({
   let tx = await initUser({
     provider,
     program,
-    testEthAddrBytes: Array.from(testEthAddrBytes),
+    ethAddress,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -66,17 +50,16 @@ export const testInitUser = async ({
     adminStgKey: adminStgKeypair.publicKey,
     adminKeypair,
   });
-  const userDataFromChain = await program.account.user.fetch(userStgAccount);
-  const returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress);
-  const returnedSolFromChain = userDataFromChain.authority;
-  if (testEthAddr.toLowerCase() != returnedHex) {
-    throw new Error(
-      `Invalid eth address - expected ${testEthAddr.toLowerCase()}, found ${returnedHex}`
-    );
-  }
-  if (!DefaultPubkey.equals(returnedSolFromChain)) {
-    throw new Error(`Unexpected public key found`);
-  }
+
+  const account = await program.account.user.fetch(userStgAccount);
+
+  const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
+  expect(chainEthAddress, "eth address").to.equal(ethAddress.toLowerCase());
+
+  const chainAuthority = account.authority.toString();
+  const expectedAuthority = DefaultPubkey.toString();
+  expect(chainAuthority, "authority").to.equal(expectedAuthority);
+
   await confirmLogInTransaction(provider, tx, metadata);
 };
 
@@ -84,25 +67,63 @@ export const testInitUserSolPubkey = async ({
   provider,
   program,
   message,
-  pkString,
+  ethPrivateKey,
   newUserKeypair,
   newUserAcctPDA,
 }) => {
-  let initUserTx = await initUserSolPubkey({
+  await initUserSolPubkey({
     provider,
     program,
-    privateKey: pkString,
+    ethPrivateKey,
     message,
     userSolPubkey: newUserKeypair.publicKey,
     userStgAccount: newUserAcctPDA,
   });
 
-  let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
-  if (!newUserKeypair.publicKey.equals(userDataFromChain.authority)) {
-    throw new Error("Unexpected public key found");
-  }
-  let txInfo = await getTransaction(provider, initUserTx);
-  let fee = txInfo["meta"]["fee"];
+  const account = await program.account.user.fetch(newUserAcctPDA);
+
+  const chainAuthority = account.authority.toString();
+  const expectedAuthority = newUserKeypair.publicKey.toString();
+  expect(chainAuthority, "authority").to.equal(expectedAuthority);
+};
+
+export const testCreateUser = async ({
+  provider,
+  program,
+  message,
+  baseAuthorityAccount,
+  ethAccount,
+  handleBytesArray,
+  bumpSeed,
+  metadata,
+  newUserKeypair,
+  userStgAccount,
+  adminStgPublicKey,
+}) => {
+  let tx = await createUser({
+    provider,
+    program,
+    ethAccount,
+    message,
+    handleBytesArray,
+    bumpSeed,
+    metadata,
+    userSolPubkey: newUserKeypair.publicKey,
+    userStgAccount,
+    adminStgPublicKey,
+    baseAuthorityAccount,
+  });
+
+  const account = await program.account.user.fetch(userStgAccount);
+
+  const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
+  expect(chainEthAddress, "eth address").to.equal(ethAccount.address.toLowerCase());
+
+  const chainAuthority = account.authority.toString();
+  const expectedAuthority = newUserKeypair.publicKey.toString();
+  expect(chainAuthority, "authority").to.equal(expectedAuthority);
+
+  await confirmLogInTransaction(provider, tx, metadata);
 };
 
 export const confirmLogInTransaction = async (

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const uuid = require('uuid/v4')
 const path = require('path')
+const crypto = require('crypto')
 
 const DiskManager = require('../../src/diskManager')
 
@@ -46,7 +47,17 @@ const saveFileToStorage = (filePath) => {
   return { fileUUID, fileDir }
 }
 
+const computeFilesHash = function (multihashes) {
+  const multihashString = `${multihashes.join(',')}`
+  const filesHash = crypto
+    .createHash('md5')
+    .update(multihashString)
+    .digest('hex')
+  return filesHash
+}
+
 module.exports = {
   uploadTrack,
-  saveFileToStorage
+  saveFileToStorage,
+  computeFilesHash
 }

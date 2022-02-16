@@ -111,6 +111,8 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
         listen_milestones = []
         for track_id in check_track_ids:
             current_milestone = None
+            if track_id not in play_counts:
+                continue
             if track_id in milestones:
                 current_milestone = milestones[track_id]
             next_milestone_threshold = get_next_track_milestone(

@@ -114,6 +114,52 @@ pub mod audius_data {
         Ok(())
     }
 
+    /// Functionality to create user without admin privileges
+    pub fn create_user(
+        ctx: Context<CreateUser>,
+        base: Pubkey,
+        eth_address: [u8; 20],
+        _handle_seed: [u8; 16],
+        _user_bump: u8,
+        metadata: String,
+        user_authority: Pubkey,
+    ) -> ProgramResult {
+        msg!("Audius::CreateUser");
+
+        // Confirm that the base used for user account seed is derived from this Audius admin storage account
+        let (derived_base, _) = Pubkey::find_program_address(
+            &[&ctx.accounts.audius_admin.key().to_bytes()[..32]],
+            ctx.program_id,
+        );
+
+        if derived_base != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Eth_address offset (12) + address (20) + signature (65) = 97
+        // TODO: Validate message contents
+        let eth_address_offset = 12;
+        let secp_data =
+            sysvar::instructions::load_instruction_at_checked(0, &ctx.accounts.sysvar_program)?;
+
+        if secp_data.program_id != secp256k1_program::id() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        let instruction_signer =
+            secp_data.data[eth_address_offset..eth_address_offset + 20].to_vec();
+        if instruction_signer != eth_address {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        let audius_user_acct = &mut ctx.accounts.user;
+        audius_user_acct.eth_address = eth_address;
+        audius_user_acct.authority = user_authority;
+
+        msg!("AudiusUserMetadata = {:?}", metadata);
+
+        Ok(())
+    }
+
     /// Permissioned function to log an update to User metadata
     pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> ProgramResult {
         msg!("Audius::UpdateUser");
@@ -319,6 +365,28 @@ pub struct InitializeUserSolIdentity<'info> {
     pub sysvar_program: AccountInfo<'info>,
 }
 
+/// Instruction container to create a user account.
+/// `user` is the target user PDA.
+/// The global sys var program is required to enable instruction introspection.
+#[derive(Accounts)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
+pub struct CreateUser<'info> {
+    #[account(
+        init,
+        payer = payer,
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        bump = user_bump,
+        space = USER_ACCOUNT_SIZE
+    )]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(mut)]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub system_program: Program<'info, System>,
+    pub sysvar_program: AccountInfo<'info>,
+}
+
 /// Instruction container to allow updates to a given User account.
 /// `user` is the target user PDA.
 /// `user_authority` is a signer field which must match the `authority` field in the User account.
@@ -359,8 +427,6 @@ pub struct UpdateTrack<'info> {
     #[account(mut)]
     // User update authority field
     pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
 }
 
 /// Instruction container for track deletes
@@ -391,8 +457,6 @@ pub struct FollowUser<'info> {
     // Confirm the followee PDA matches the expected value provided the target handle and base
     #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle_seed.as_ref()], bump = followee_handle_bump)]
     pub followee_user_storage: Account<'info, User>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
     // User update authority field
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -426,8 +490,6 @@ pub struct UpdatePlaylist<'info> {
     pub user: Account<'info, User>,
     #[account(mut)]
     pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
 }
 
 /// Instruction container for playlist deletes

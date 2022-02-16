@@ -11,7 +11,7 @@ DEFAULT_GCP_IMAGE="project=ubuntu-os-cloud,family=ubuntu-2004-lts"
 DEFAULT_GCP_MACHINE_TYPE="n2-custom-12-24576"
 DEFAULT_PROVIDER="gcp"
 DEFAULT_USER="ubuntu"
-GCP_DEV_IMAGE="project=audius-infrastructure,image=cj-bake-1-14-22-bake-01-14-2022"
+GCP_DEV_IMAGE="project=audius-infrastructure,image=cj-remote-zsh-bake-bake-02-10-2022"
 
 get_ssh_args() {
 	provider=$1
@@ -183,34 +183,40 @@ set_ssh_serveralive() {
 }
 
 upload_gitconfig() {
-	if [[ -f "$HOME/.gitconfig.remote-dev" ]]; then
-		copy_file_to_remote $provider $user $name '~/.gitconfig.remote-dev' '~/.gitconfig'
+	read -p "Configure remote gitconfig? (local ~/.gitconfig/.remote-dev required) [y/N] " -n 1 -r && echo
+	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+		if [[ -f "$HOME/.gitconfig.remote-dev" ]]; then
+			copy_file_to_remote $provider $user $name '~/.gitconfig.remote-dev' '~/.gitconfig'
+		fi
 	fi
 }
 
 setup_zsh() {
-	execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
+	read -p "Configure zshell? (local config required) [y/N] " -n 1 -r && echo
+	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+		execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
 
-	zshenv=$PROTOCOL_DIR/service-commands/scripts/.zshenv
-	if [[ -f "$HOME/.zshenv.remote-dev" ]]; then
-		zshenv=~/.zshenv.remote-dev
-	fi
-	cp $zshenv ~/.zshenv.tmp
-	IP=$(get_ip_addr $provider $name)
-	echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.zshenv.tmp
-	echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
-	copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
-	rm ~/.zshenv.tmp
+		zshenv=$PROTOCOL_DIR/service-commands/scripts/.zshenv
+		if [[ -f "$HOME/.zshenv.remote-dev" ]]; then
+			zshenv=~/.zshenv.remote-dev
+		fi
+		cp $zshenv ~/.zshenv.tmp
+		IP=$(get_ip_addr $provider $name)
+		echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.zshenv.tmp
+		echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
+		copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
+		rm ~/.zshenv.tmp
 
-	zshrc=$PROTOCOL_DIR/service-commands/scripts/.zshrc
-	if [[ -f "$HOME/.zshrc.remote-dev" ]]; then
-		zshrc=~/.zshrc.remote-dev
-	fi
-	copy_file_to_remote $provider $user $name $zshrc '~/.zshrc'
+		zshrc=$PROTOCOL_DIR/service-commands/scripts/.zshrc
+		if [[ -f "$HOME/.zshrc.remote-dev" ]]; then
+			zshrc=~/.zshrc.remote-dev
+		fi
+		copy_file_to_remote $provider $user $name $zshrc '~/.zshrc'
 
-	p10k_zsh=$PROTOCOL_DIR/service-commands/scripts/.p10k.zsh
-	if [[ -f "$HOME/.p10k.zsh.remote-dev" ]]; then
-		p10k_zsh=~/.p10k.zsh.remote-dev
+		p10k_zsh=$PROTOCOL_DIR/service-commands/scripts/.p10k.zsh
+		if [[ -f "$HOME/.p10k.zsh.remote-dev" ]]; then
+			p10k_zsh=~/.p10k.zsh.remote-dev
+		fi
+		copy_file_to_remote $provider $user $name $p10k_zsh '~/.p10k.zsh'
 	fi
-	copy_file_to_remote $provider $user $name $p10k_zsh '~/.p10k.zsh'
 }

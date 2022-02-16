@@ -29,7 +29,6 @@ const {
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
-const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const BlacklistManager = require('../blacklistManager')
@@ -51,12 +50,15 @@ module.exports = function (app) {
     syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
+
       if (req.fileSizeError || req.fileFilterError) {
         removeTrackFolder({ logContext: req.logContext }, req.fileDir)
         return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
       }
 
-      await FileProcessingQueue.addTranscodeTask({
+      await AsyncProcessingQueue.addTrackContentUploadTask({
         logContext: req.logContext,
         req: {
           fileName: req.fileName,
@@ -711,37 +713,5 @@ module.exports = function (app) {
       next()
     },
     getCID
-  )
-
-  /**
-   * List all unlisted tracks for a user
-   */
-  app.get(
-    '/tracks/unlisted',
-    authMiddleware,
-    handleResponse(async (req, res) => {
-      const tracks = (
-        await models.sequelize.query(
-          `select "metadataJSON"->'title' as "title", "blockchainId" from (
-        select "metadataJSON", "blockchainId", row_number() over (
-          partition by "blockchainId" order by "clock" desc
-        ) from "Tracks"
-        where "cnodeUserUUID" = :cnodeUserUUID
-        and ("metadataJSON"->>'is_unlisted')::boolean = true
-      ) as a
-      where a.row_number = 1;`,
-          {
-            replacements: { cnodeUserUUID: req.session.cnodeUserUUID }
-          }
-        )
-      )[0]
-
-      return successResponse({
-        tracks: tracks.map((track) => ({
-          title: track.title,
-          id: track.blockchainId
-        }))
-      })
-    })
   )
 }

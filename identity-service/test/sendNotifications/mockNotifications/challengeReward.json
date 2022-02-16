@@ -24,6 +24,14 @@
     "type": "ChallengeReward"
   },
   {
+    "initiator": 6,
+    "metadata": {
+      "challenge_id": "ref-v"
+    },
+    "slot": 114989029,
+    "type": "ChallengeReward"
+  },
+  {
     "initiator": 8,
     "metadata": {
       "challenge_id": "referred"

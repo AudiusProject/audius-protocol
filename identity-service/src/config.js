@@ -606,11 +606,11 @@ const config = convict({
     default: '',
     env: 'solanaValidSigner'
   },
-  solanaFeePayerWallet: {
-    doc: 'solanaFeePayerWallet',
+  solanaFeePayerWallets: {
+    doc: 'solanaFeePayerWallets - Stringified array like[{ privateKey: [] },...]',
     format: 'string-array',
-    default: null,
-    env: 'solanaFeePayerWallet'
+    default: [],
+    env: 'solanaFeePayerWallets'
   },
   solanaSignerPrivateKey: {
     doc: 'solanaSignerPrivateKey',
@@ -767,6 +767,12 @@ const config = convict({
     format: String,
     env: 'websiteHost',
     default: 'https://audius.co'
+  },
+  amplitudeAPIKey: {
+    doc: 'Amplitude API key',
+    format: String,
+    env: 'amplitudeAPIKey',
+    default: ''
   }
 })
 
@@ -794,7 +800,7 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
     solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
-    solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
+    solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
     solanaEndpoint: solanaContractConfig.endpoint,
     solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
 
