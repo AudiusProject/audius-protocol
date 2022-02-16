@@ -63,7 +63,6 @@ import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { AUDIO_PAGE } from 'utils/route'
-import { encodeHashId } from 'utils/route/hashIds'
 import { waitForValue } from 'utils/sagaHelpers'
 import {
   foregroundPollingDaemon,
@@ -223,7 +222,7 @@ function* claimChallengeRewardAsync(
       AudiusBackend.submitAndEvaluateAttestations,
       {
         challenges,
-        encodedUserId: encodeHashId(currentUser.user_id),
+        userId: currentUser.user_id,
         handle: currentUser.handle,
         recipientEthAddress: currentUser.wallet,
         oracleEthAddress,
@@ -232,7 +231,8 @@ function* claimChallengeRewardAsync(
         endpoints,
         AAOEndpoint,
         parallelization,
-        feePayerOverride
+        feePayerOverride,
+        isFinalAttempt: !retryOnFailure
       }
     )
     if (response.error) {

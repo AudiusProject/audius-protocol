@@ -30,6 +30,7 @@ import { track } from 'store/analytics/providers/amplitude'
 import { isElectron } from 'utils/clientUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { Timer } from 'utils/performance'
+import { encodeHashId } from 'utils/route/hashIds'
 
 import {
   waitForLibsInit,
@@ -2663,7 +2664,7 @@ class AudiusBackend {
    */
   static async submitAndEvaluateAttestations({
     challenges,
-    encodedUserId,
+    userId,
     handle,
     recipientEthAddress,
     oracleEthAddress,
@@ -2672,13 +2673,17 @@ class AudiusBackend {
     endpoints,
     AAOEndpoint,
     parallelization,
-    feePayerOverride
+    feePayerOverride,
+    isFinalAttempt
   }) {
     await waitForLibsInit()
     try {
       if (!challenges.length) return
 
       const reporter = new ClientRewardsReporter(audiusLibs)
+
+      const userIdStr = `${userId}`
+      const encodedUserId = encodeHashId(userId)
 
       // If just a single challenge, use regular `submitAndEvaluate` route
       if (challenges.length === 1) {
@@ -2706,15 +2711,24 @@ class AudiusBackend {
             res.error === FailureReason.COGNITO_FLOW
           ) {
             reporter.reportAAORejection({
-              userId: encodedUserId,
+              userId: userIdStr,
               challengeId: challenges[0].challenge_id,
               specifier: challenges[0].specifier,
               amount,
               error: res.error
             })
-          } else {
+          } else if (isFinalAttempt) {
             reporter.reportFailure({
-              userId: encodedUserId,
+              userId: userIdStr,
+              challengeId: challenges[0].challenge_id,
+              specifier: challenges[0].specifier,
+              amount,
+              error: res.error,
+              phase: res.phase
+            })
+          } else {
+            reporter.reportRetry({
+              userId: userIdStr,
               challengeId: challenges[0].challenge_id,
               specifier: challenges[0].specifier,
               amount,
@@ -2724,7 +2738,7 @@ class AudiusBackend {
           }
         } else {
           reporter.reportSuccess({
-            userId: encodedUserId,
+            userId: userIdStr,
             challengeId: challenges[0].challenge_id,
             specifier: challenges[0].specifier,
             amount
