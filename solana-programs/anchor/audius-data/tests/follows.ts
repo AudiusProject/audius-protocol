@@ -7,8 +7,7 @@ import { AudiusData } from "../target/types/audius_data";
 import {
   confirmLogInTransaction,
   initTestConstants,
-  testInitUser,
-  testInitUserSolPubkey,
+  testCreateUser,
 } from "./test-helpers";
 
 const UserActionEnumValues = {
@@ -81,9 +80,6 @@ describe("follows", () => {
         adminStgKeypair.publicKey,
         Buffer.from(handleBytesArray1)
       );
-      let derivedAddress = handle1DerivedInfo.derivedAddress;
-      let bumpSeed = handle1DerivedInfo.bumpSeed;
-      baseAuthorityAccount = handle1DerivedInfo.baseAuthorityAccount;
 
       handle2DerivedInfo = await findDerivedPair(
         program.programId,
@@ -91,34 +87,10 @@ describe("follows", () => {
         Buffer.from(handleBytesArray2)
       );
 
-      userStorageAccount1 = derivedAddress;
+      baseAuthorityAccount = handle1DerivedInfo.baseAuthorityAccount;
+
+      userStorageAccount1 = handle1DerivedInfo.derivedAddress;
       userStorageAccount2 = handle2DerivedInfo.derivedAddress;
-
-      await testInitUser({
-        provider,
-        program,
-        baseAuthorityAccount,
-        ethAddress: constants1.ethAccount.address,
-        handleBytesArray: handleBytesArray1,
-        bumpSeed,
-        metadata: constants1.metadata,
-        userStgAccount: userStorageAccount1,
-        adminKeypair,
-        adminStgKeypair,
-      });
-
-      await testInitUser({
-        provider,
-        program,
-        baseAuthorityAccount,
-        ethAddress: constants2.ethAccount.address,
-        handleBytesArray: handleBytesArray2,
-        bumpSeed: handle2DerivedInfo.bumpSeed,
-        metadata: constants2.metadata,
-        userStgAccount: userStorageAccount2,
-        adminKeypair,
-        adminStgKeypair,
-      });
 
       // New sol keys that will be used to permission user updates
       newUser1Key = anchor.web3.Keypair.generate();
@@ -126,24 +98,35 @@ describe("follows", () => {
 
       // Generate signed SECP instruction
       // Message as the incoming public key
-      let message1 = newUser1Key.publicKey.toString();
-      let message2 = newUser2Key.publicKey.toString();
+      const message1 = newUser1Key.publicKey.toString();
+      const message2 = newUser2Key.publicKey.toString();
 
-      await testInitUserSolPubkey({
+      await testCreateUser({
         provider,
         program,
         message: message1,
-        ethPrivateKey: constants1.ethAccount.privateKey,
+        baseAuthorityAccount,
+        ethAccount: constants1.ethAccount,
+        handleBytesArray: handleBytesArray1,
+        bumpSeed: handle1DerivedInfo.bumpSeed,
+        metadata: constants1.metadata,
         newUserKeypair: newUser1Key,
-        newUserAcctPDA: userStorageAccount1,
+        userStgAccount: userStorageAccount1,
+        adminStgPublicKey: adminStgKeypair.publicKey,
       });
-      await testInitUserSolPubkey({
+
+      await testCreateUser({
         provider,
         program,
         message: message2,
-        ethPrivateKey: constants2.ethAccount.privateKey,
+        baseAuthorityAccount,
+        ethAccount: constants2.ethAccount,
+        handleBytesArray: handleBytesArray2,
+        bumpSeed: handle2DerivedInfo.bumpSeed,
+        metadata: constants2.metadata,
         newUserKeypair: newUser2Key,
-        newUserAcctPDA: userStorageAccount2,
+        userStgAccount: userStorageAccount2,
+        adminStgPublicKey: adminStgKeypair.publicKey,
       });
     });
 
