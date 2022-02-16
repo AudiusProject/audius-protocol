@@ -1,11 +1,16 @@
 import { ComponentProps, ComponentType, ReactNode } from 'react'
 
-import { Pressable, StyleProp, View, ViewStyle } from 'react-native'
+import {
+  Pressable,
+  PressableProps,
+  StyleProp,
+  View,
+  ViewStyle
+} from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 
 import { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles/makeStyles'
-import { GestureResponderHandler } from 'app/types/gesture'
 
 const useStyles = makeStyles(({ palette }) => ({
   tile: {
@@ -22,9 +27,15 @@ const useStyles = makeStyles(({ palette }) => ({
 
 const defaultElement = View
 
-type TileOwnProps<TileComponentType extends ComponentType = ComponentType> = {
+type TilePressableProps = Pick<
+  PressableProps,
+  'onPress' | 'onPressIn' | 'onPressOut'
+>
+
+type TileOwnProps<
+  TileComponentType extends ComponentType = ComponentType
+> = TilePressableProps & {
   children: ReactNode
-  onPress?: GestureResponderHandler
   style?: StyleProp<ViewStyle>
   styles?: StylesProp<{
     // styles for root element
@@ -53,6 +64,8 @@ export const Tile = <
     as: TileComponent = defaultElement,
     children,
     onPress,
+    onPressIn,
+    onPressOut,
     style,
     styles: stylesProp,
     ...other
@@ -70,6 +83,8 @@ export const Tile = <
         <Pressable
           style={[styles.content, stylesProp?.content]}
           onPress={onPress}
+          onPressIn={onPressIn}
+          onPressOut={onPressOut}
         >
           {children}
         </Pressable>

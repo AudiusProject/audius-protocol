@@ -1,1 +1,1 @@
-export { default } from './TrendingScreen'
+export { TrendingScreen } from './TrendingScreen'

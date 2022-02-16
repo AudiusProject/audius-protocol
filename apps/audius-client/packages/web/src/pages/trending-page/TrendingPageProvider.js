@@ -19,7 +19,6 @@ import {
   trendingActions
 } from 'common/store/pages/trending/lineup/actions'
 import {
-  getDiscoverTrendingLineup,
   getTrendingTimeRange,
   getTrendingGenre,
   getDiscoverTrendingWeekLineup,
@@ -206,7 +205,6 @@ class TrendingPageProvider extends PureComponent {
 
 const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
-  const getTrendingLineup = makeGetLineupMetadatas(getDiscoverTrendingLineup)
   const getTrendingWeekLineup = makeGetLineupMetadatas(
     getDiscoverTrendingWeekLineup
   )
@@ -219,7 +217,6 @@ const makeMapStateToProps = () => {
 
   const mapStateToProps = state => ({
     hasAccount: getHasAccount(state),
-    trending: getTrendingLineup(state),
     trendingWeek: getTrendingWeekLineup(state),
     trendingMonth: getTrendingMonthLineup(state),
     trendingAllTime: getTrendingAllTimeLineup(state),

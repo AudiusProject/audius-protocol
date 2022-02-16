@@ -16,7 +16,7 @@ import FavoritesScreen from 'app/screens/favorites-screen'
 import { FeedScreen } from 'app/screens/feed-screen'
 import ProfileScreen from 'app/screens/profile-screen'
 import { TrackScreen } from 'app/screens/track-screen'
-import TrendingScreen from 'app/screens/trending-screen'
+import { TrendingScreen } from 'app/screens/trending-screen'
 
 import { TopBar } from './TopBar'
 import {

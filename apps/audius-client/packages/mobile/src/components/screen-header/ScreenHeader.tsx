@@ -10,19 +10,19 @@ type ScreenHeaderProps = {
   text: string
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: palette.white,
     height: 52,
     borderBottomWidth: 1,
     borderBottomColor: palette.neutralLight8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12
+    paddingHorizontal: spacing(3)
   },
   header: {
     fontSize: 24,
-    marginLeft: 12,
     lineHeight: 52,
     textShadowOffset: { height: 2, width: 0 },
     textShadowRadius: 4,
