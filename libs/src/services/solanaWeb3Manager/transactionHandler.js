@@ -53,10 +53,10 @@ class TransactionHandler {
    * @returns {Promise<HandleTransactionReturn>}
    * @memberof TransactionHandler
    */
-  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null }) {
+  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null, sendBlockhash = true }) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride)
+      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride, sendBlockhash)
     } else {
       result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight, feePayerOverride)
     }
@@ -66,15 +66,17 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction (instructions, recentBlockhash, skipPreflight, feePayerOverride = null) {
+  async _relayTransaction (instructions, recentBlockhash, skipPreflight, feePayerOverride = null, sendBlockhash) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
-    recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash('confirmed')).blockhash
 
     const transactionData = {
-      recentBlockhash,
       instructions: relayable,
       skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
       feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null
+    }
+
+    if (sendBlockhash) {
+      transactionData.recentBlockhash = (recentBlockhash || (await this.connection.getRecentBlockhash('confirmed')).blockhash)
     }
 
     try {
