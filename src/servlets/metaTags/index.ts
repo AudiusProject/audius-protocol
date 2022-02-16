@@ -6,7 +6,7 @@ import path from 'path'
 
 import libs from '../../libs'
 import { getHash } from '../bedtime/helpers'
-import { AUDIO_REWARDS_IMAGE_URL, DEFAULT_IMAGE_URL } from '../utils/constants'
+import { AUDIO_REWARDS_IMAGE_URL, DEFAULT_IMAGE_URL, SIGNUP_REF_IMAGE_URL } from '../utils/constants'
 import { nftClient } from '../utils/fetchNft'
 import { formatDate, formatSeconds } from '../utils/format'
 import { encodeHashId } from '../utils/hashids'
@@ -319,8 +319,8 @@ const getSignupRefContext = (handle: string): Context => {
     title: `Invite to join Audius from ${handle}!`,
     description:
       'Sign up for Audius to earn $AUDIO tokens while using the app!',
-    image: DEFAULT_IMAGE_URL,
-    thumbnail: false
+    image: SIGNUP_REF_IMAGE_URL,
+    thumbnail: false,
   }
 }
 

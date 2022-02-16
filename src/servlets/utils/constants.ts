@@ -10,6 +10,7 @@ export const MOST_LOVED_URL = 'https://download.audius.co/static-resources/most-
 export const FEELING_LUCKY_URL = 'https://download.audius.co/static-resources/feeling-lucky.png'
 export const REMIXABLES = 'https://download.audius.co/static-resources/remixables.jpeg'
 export const UNDERGROUND_TRENDING_URL = 'https://download.audius.co/static-resources/underground-trending.png'
+export const SIGNUP_REF_IMAGE_URL = 'https://download.audius.co/static-resources/signup_referral.png'
 export const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
 
 export interface ExploreInfoType {
