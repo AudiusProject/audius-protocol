@@ -309,7 +309,7 @@ const getTokenContext = (): Context => {
     title: '$AUDIO & Rewards',
     description: 'Earn $AUDIO tokens while using the app!',
     image: AUDIO_REWARDS_IMAGE_URL,
-    thumbnail: true
+    thumbnail: false
   }
 }
 
