@@ -478,7 +478,7 @@ class RewardsAttester {
     amount,
     handle,
     wallet,
-    completedBlocknumber,
+    completedBlocknumber
   }) {
     this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
 
@@ -635,9 +635,9 @@ class RewardsAttester {
             this.reporter.reportFailure(report)
           }
         } else if (isFinalAttempt) {
-            this.reporter.reportFailure(report)
+          this.reporter.reportFailure(report)
         } else {
-            this.reporter.reportRetry(report)
+          this.reporter.reportRetry(report)
         }
         return !isNoRetry
       })
