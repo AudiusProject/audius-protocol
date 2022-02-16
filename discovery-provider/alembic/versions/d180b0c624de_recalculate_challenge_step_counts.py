@@ -21,14 +21,14 @@ def upgrade():
         """
         BEGIN;
 
-        CREATE INDEX IF NOT EXISTS user_challenges_challenge_idx ON user_challenges_copy2 (challenge_id);
+        CREATE INDEX IF NOT EXISTS user_challenges_challenge_idx ON user_challenges (challenge_id);
 
         -- 'mobile-install' challenge only exists if completed
         -- 'connect-verified' challenge only exists if completed
         -- 'tt' (trending) challenge only exists if completed
         -- 'tut' (trending) challenge only exists if completed
         -- 'tp' (trending) challenge only exists if completed
-        UPDATE user_challenges_copy2
+        UPDATE user_challenges
         SET
             is_complete=True,
             current_step_count=1
@@ -47,7 +47,7 @@ def upgrade():
                 blocknumber >= 25346436
             GROUP BY owner_id
         )
-        UPDATE user_challenges_copy2
+        UPDATE user_challenges
         SET
             is_complete=(track_uploads.track_count >= 3),
             current_step_count=track_uploads.track_count
