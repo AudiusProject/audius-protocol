@@ -33,6 +33,7 @@ import {
   claimChallengeReward
 } from 'common/store/pages/audio-rewards/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { show as showConfetti } from 'components/music-confetti/store/slice'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -327,11 +328,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   useEffect(() => {
     if (claimStatus === ClaimStatus.SUCCESS) {
       toast(messages.rewardClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
+      dispatch(showConfetti())
     }
     if (claimStatus === ClaimStatus.ALREADY_CLAIMED) {
       toast(messages.rewardAlreadyClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
     }
-  }, [claimStatus, toast])
+  }, [claimStatus, toast, dispatch])
 
   const inviteLink = useMemo(
     () => (userHandle ? fillString(messages.inviteLink, userHandle) : ''),
