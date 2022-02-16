@@ -340,7 +340,7 @@ web-deploy-sentry-sourcemaps:
         name: finalize-release
         command: |
           cd packages/web
-          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client ${CIRCLE_SHA1}
+          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client finalize ${CIRCLE_SHA1}
 
 web-dist-mac-staging:
   working_directory: ~/audius-client
