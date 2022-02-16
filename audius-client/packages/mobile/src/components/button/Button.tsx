@@ -141,6 +141,9 @@ export type ButtonProps = {
   underlayColor?: string
 }
 
+/**
+ * @deprecated use `import { Button } from 'app/components/core'`
+ */
 const Button = ({
   title,
   onPress,
