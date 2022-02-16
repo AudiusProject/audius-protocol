@@ -551,7 +551,9 @@ class RewardsAttester {
       return { error }
     }
 
-    this.logger.info(`Got challenges: ${disbursable.map(({ challenge_id, user_id, specifier }) => (`${challenge_id} - ${user_id} - ${specifier}`))}`) // eslint-disable-line
+    if (disbursable.length) {
+      this.logger.info(`Got challenges: ${disbursable.map(({ challenge_id, user_id, specifier }) => (`${challenge_id} - ${user_id} - ${specifier}`))}`) // eslint-disable-line
+    }
 
     // Map to camelCase, and filter out
     // any challenges in the denylist or recently disbursed set
