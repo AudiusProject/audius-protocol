@@ -1,8 +1,8 @@
 import IconNotification from 'app/assets/images/iconNotification.svg'
+import { Button } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
-import { Button } from './Button'
 import { getProfile } from './selectors'
 
 const messages = {
@@ -28,8 +28,9 @@ export const SubscribeButton = () => {
       style={styles.root}
       title={isSubscribed ? messages.subscribed : messages.subscribe}
       noText
-      iconLeft={IconNotification}
+      icon={IconNotification}
       variant={isSubscribed ? 'primary' : 'common'}
+      size='small'
     />
   )
 }

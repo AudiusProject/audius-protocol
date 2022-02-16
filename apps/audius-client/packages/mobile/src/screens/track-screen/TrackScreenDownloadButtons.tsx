@@ -13,12 +13,11 @@ import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconDownload from 'app/assets/images/iconDownload.svg'
-import Button, { ButtonType } from 'app/components/button'
+import { Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useToast } from 'app/hooks/useToast'
-import { font } from 'app/styles'
 import { makeStyles } from 'app/styles/makeStyles'
 import { make, track } from 'app/utils/analytics'
 
@@ -38,20 +37,6 @@ const useStyles = makeStyles(({ palette }) => ({
   buttonContainer: {
     alignSelf: 'center',
     marginBottom: 6
-  },
-  button: {
-    paddingVertical: 4,
-    paddingHorizontal: 8
-  },
-  icon: {
-    marginRight: 4
-  },
-  label: {
-    fontSize: 14,
-    padding: 0,
-    textTransform: 'uppercase',
-    ...font('bold'),
-    color: palette.neutralLight4
   }
 }))
 
@@ -83,24 +68,16 @@ const DownloadButton = ({
   // when a follow is required
   return (
     <Button
-      type={ButtonType.COMMON}
-      renderIcon={fill =>
-        isProcessing ? (
-          <LoadingSpinner
-            color={fill as string}
-            style={{ height: 18, width: 18 }}
-          />
-        ) : (
-          <IconDownload fill={fill} height={18} width={18} />
-        )
-      }
+      variant='common'
+      icon={isProcessing ? LoadingSpinner : IconDownload}
       iconPosition='left'
       title={messages.addDownloadPrefix(label)}
-      style={styles.button}
-      containerStyle={[styles.buttonContainer, isDisabled && { opacity: 0.5 }]}
-      textStyle={styles.label}
-      iconStyle={styles.icon}
+      styles={{
+        root: styles.buttonContainer,
+        button: isDisabled && { opacity: 0.5 }
+      }}
       onPress={handlePress}
+      size='small'
     />
   )
 }

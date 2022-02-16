@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
+import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-
-import { Button } from './Button'
 
 export const EditProfileButton = () => {
   const navigation = useNavigation()
@@ -13,6 +12,11 @@ export const EditProfileButton = () => {
   }, [navigation])
 
   return (
-    <Button title='Edit Profile' variant='secondary' onPress={handlePress} />
+    <Button
+      title='Edit Profile'
+      variant='secondary'
+      onPress={handlePress}
+      size='small'
+    />
   )
 }
