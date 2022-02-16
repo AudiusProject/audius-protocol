@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from src import models
-from src.tasks.index_aggregate_user import get_latest_blocknumber
+from src.tasks.aggregates import get_latest_blocknumber
 from src.utils import helpers
 from src.utils.db_session import get_db
 
