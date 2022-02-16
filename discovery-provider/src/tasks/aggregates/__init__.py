@@ -16,7 +16,14 @@ logger = logging.getLogger(__name__)
 
 
 def try_updating_aggregate_table(
-    logger, db, redis, table_name, aggregate_func, timeout=60 * 10
+    logger,
+    db,
+    redis,
+    table_name,
+    aggregate_func,
+    timeout=60 * 10,
+    blocking_timeout=None,
+    lock_name=None,
 ):
     # get name of the caller function
     task_name = currentframe().f_back.f_code.co_name
@@ -24,8 +31,11 @@ def try_updating_aggregate_table(
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    lock_name = f"update_aggregate_table:{table_name}"
-    update_lock = redis.lock(lock_name, timeout=timeout)
+    if not lock_name:
+        lock_name = f"update_aggregate_table:{table_name}"
+    update_lock = redis.lock(
+        lock_name, timeout=timeout, blocking_timeout=blocking_timeout
+    )
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
