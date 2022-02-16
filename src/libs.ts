@@ -13,7 +13,7 @@ const libs = new AudiusLibs({
     E.ETH_PROVIDER_URL,
     E.ETH_OWNER_WALLET
   ),
-  discoveryProviderConfig: AudiusLibs.configDiscoveryProvider()
+  discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
 })
 
 export default libs

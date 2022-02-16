@@ -10,33 +10,33 @@ export enum MetaTagFormat {
   Collectible,
   Error,
   AUDIO,
-  SignupRef
+  SignupRef,
 }
 
 export enum Playable {
   TRACK = 'track',
   PLAYLIST = 'playlist',
-  ALBUM = 'album'
+  ALBUM = 'album',
 }
 
 export interface Context {
-  format: MetaTagFormat,
+  format: MetaTagFormat
 
-  title: string,
-  description: string,
-  image: string,
+  title: string
+  description: string
+  image: string
   // Whether or not the image shows as a small thumbnail version
-  thumbnail?: boolean,
+  thumbnail?: boolean
 
   // Url to the app (for deep-linking)
-  appUrl?: string,
+  appUrl?: string
   // Whether or not to show an embed player
-  embed?: boolean,
+  embed?: boolean
   // Bedtime player url
-  embedUrl?: string,
+  embedUrl?: string
 
-  tags?: string[],
-  labels?: Array<{ name: string, value: string }>,
+  tags?: string[]
+  labels?: Array<{ name: string; value: string }>
 
   additionalSEOHint?: string
 }

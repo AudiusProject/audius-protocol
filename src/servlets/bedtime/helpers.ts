@@ -27,24 +27,34 @@ export const getCoverArt = (trackOrPlaylist: any, user: any) => {
  */
 const formatUrlName = (name: string): string => {
   if (!name) return ''
-  return name
-    .replace(/!|%|#|\$|&|'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/g, '')
-    .replace(/\s+/g, '-')
-    // Reduce repeated `-` to a single `-`
-    .replace(/-+/g, '-')
-    .toLowerCase()
+  return (
+    name
+      .replace(/!|%|#|\$|&|'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/g, '')
+      .replace(/\s+/g, '-')
+      // Reduce repeated `-` to a single `-`
+      .replace(/-+/g, '-')
+      .toLowerCase()
+  )
 }
 
 const encodeUrlName = (name: string): string => {
   return encodeURIComponent(formatUrlName(name))
 }
 
-export const getCollectionPath = ({ ownerHandle, isAlbum, name, id }: {
-  ownerHandle: string,
-  isAlbum: boolean,
-  name: string,
+export const getCollectionPath = ({
+  ownerHandle,
+  isAlbum,
+  name,
+  id,
+}: {
+  ownerHandle: string
+  isAlbum: boolean
+  name: string
   id: number
-}) => `${encodeUrlName(ownerHandle)}/${isAlbum ? 'album' : 'playlist'}/${encodeUrlName(name)}-${id}`
+}) =>
+  `${encodeUrlName(ownerHandle)}/${
+    isAlbum ? 'album' : 'playlist'
+  }/${encodeUrlName(name)}-${id}`
 
 /**
  * Generate a short base36 hash for a given string.
@@ -52,9 +62,10 @@ export const getCollectionPath = ({ ownerHandle, isAlbum, name, id }: {
  * @param {string} str
  * @returns {string} hash
  */
-export const getHash = (str: string) => (
-  Math.abs(str.split('').reduce((a, b) => {
-    a = ((a << 5) - a) + b.charCodeAt(0)
-    return a & a
-  }, 0)).toString(36)
-)
+export const getHash = (str: string) =>
+  Math.abs(
+    str.split('').reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0)
+      return a & a
+    }, 0)
+  ).toString(36)

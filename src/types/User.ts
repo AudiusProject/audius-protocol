@@ -1,4 +1,3 @@
-
 // The general case models come from the "/v1" routes
 export type ProfilePicture = {
   ['150x150']: string
@@ -94,7 +93,7 @@ type ComputedUserProps = {
   track_blocknumber: number
   track_count: number
   track_save_count: number
-  user_balance: string,
+  user_balance: string
 
   // Current User
   current_user_followee_follow_count: number

@@ -5,7 +5,7 @@ import {
   DEFAULT_IMAGE_URL,
   ExploreInfoType,
   exploreMap,
-  USER_NODE_IPFS_GATEWAY
+  USER_NODE_IPFS_GATEWAY,
 } from './constants'
 import { encodeHashId } from './hashids'
 
@@ -25,7 +25,7 @@ export const getTrack = async (id: number): Promise<TrackModel> => {
 }
 
 export const getTracks = async (ids: number[]): Promise<TrackModel[]> => {
-  const ts =  await libs.Track.getTracks(ids.length, 0, ids)
+  const ts = await libs.Track.getTracks(ids.length, 0, ids)
   if (ts) return ts
   throw new Error(`Failed to get tracks ${ids}`)
 }
@@ -35,7 +35,7 @@ const userModelToFullUser = (user: UserModel): FullUser => {
     ...user,
     id: encodeHashId(user.user_id)!,
     cover_photo_legacy: null,
-    profile_picture_legacy: null
+    profile_picture_legacy: null,
   }
 }
 
@@ -49,24 +49,24 @@ const trackModelToFullTrack = async (track: TrackModel): Promise<FullTrack> => {
   const artwork = {
     ['150x150']: null,
     ['480x480']: null,
-    ['1000x1000']: getImageUrl(coverArt, gateway)
+    ['1000x1000']: getImageUrl(coverArt, gateway),
   }
 
   const releaseDate = track.release_date ? track.release_date : track.created_at
   const duration = track.track_segments.reduce(
-    (acc: number, v) => acc = acc + v.duration,
+    (acc: number, v) => (acc = acc + v.duration),
     0
   )
 
   // Map remix_of and stem_of to FullTrack
   const remixOf = track.remix_of
     ? {
-      tracks: track.remix_of.tracks.map((t) => ({
-        ...t,
-        parent_track_id: encodeHashId(t.parent_track_id)!,
-        user: userModelToFullUser(user)
-      }))
-    }
+        tracks: track.remix_of.tracks.map((t) => ({
+          ...t,
+          parent_track_id: encodeHashId(t.parent_track_id)!,
+          user: userModelToFullUser(user),
+        })),
+      }
     : null
   const stemOf = { category: null, parent_track_id: null }
 
@@ -82,11 +82,14 @@ const trackModelToFullTrack = async (track: TrackModel): Promise<FullTrack> => {
     favorite_count: track.save_count,
     downloadable: track.download.is_downloadable,
     followee_favorites: track.followee_saves,
-    user_id: encodeHashId(track.owner_id)!
+    user_id: encodeHashId(track.owner_id)!,
   }
 }
 
-export const getTrackByHandleAndSlug = async (handle: string, slug: string): Promise<Track> => {
+export const getTrackByHandleAndSlug = async (
+  handle: string,
+  slug: string
+): Promise<Track> => {
   const track = await libs.Track.getTracksByHandleAndSlug(handle, slug)
   if (track) return Array.isArray(track) ? track[0] : track
 
@@ -135,12 +138,18 @@ export const getUserByHandle = async (handle: string): Promise<UserModel> => {
   throw new Error(`Failed to get user ${handle}`)
 }
 
-export const formatGateway = (creatorNodeEndpoint: string, userId: number): string =>
+export const formatGateway = (
+  creatorNodeEndpoint: string,
+  userId: number
+): string =>
   creatorNodeEndpoint
     ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
     : USER_NODE_IPFS_GATEWAY
 
-export const getImageUrl = (cid: string | null, gateway: string | null): string => {
+export const getImageUrl = (
+  cid: string | null,
+  gateway: string | null
+): string => {
   if (!cid) return DEFAULT_IMAGE_URL
   return `${gateway}${cid}`
 }
@@ -151,7 +160,7 @@ export const getExploreInfo = (type: string): ExploreInfoType => {
       title: 'Just For You',
       description: `Content curated for you based on your likes, reposts, and follows.
                     Refreshes often so if you like a track, favorite it.`,
-      image: DEFAULT_IMAGE_URL
+      image: DEFAULT_IMAGE_URL,
     }
   }
   return exploreMap[type]
@@ -163,8 +172,8 @@ export const getExploreInfo = (type: string): ExploreInfoType => {
  */
 export const shuffle = (a: any[]) => {
   for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1)) as number
-      [a[i], a[j]] = [a[j], a[i]]
+    const j = Math.floor(Math.random() * (i + 1)) as number
+    [a[i], a[j]] = [a[j], a[i]]
   }
   return a
 }

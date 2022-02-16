@@ -6,8 +6,8 @@ it('resolves with og tags for slack', async () => {
   const options = {
     url: URL,
     headers: {
-      'User-Agent': 'slackbot'
-    }
+      'User-Agent': 'slackbot',
+    },
   }
   const body = await req(options)
   expect(body.includes(`prefix="og`)).toBe(true)
@@ -18,8 +18,8 @@ it('resolves with og tags for facebook', async () => {
   const options = {
     url: URL,
     headers: {
-      'User-Agent': 'facebookexternalhit'
-    }
+      'User-Agent': 'facebookexternalhit',
+    },
   }
   const body = await req(options)
   expect(body.includes(`prefix="og`)).toBe(true)

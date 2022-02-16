@@ -16,7 +16,7 @@ export type RemixParent = {
 }
 
 export type Track = {
-  artwork: TrackArtwork,
+  artwork: TrackArtwork
   description: string
   downloadable: boolean
   duration: number
