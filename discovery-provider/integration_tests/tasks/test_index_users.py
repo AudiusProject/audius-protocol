@@ -14,6 +14,7 @@ from src.models import (
 )
 from src.tasks.metadata import user_metadata_format
 from src.tasks.users import (
+    UserEventsMetadata,
     lookup_user_record,
     parse_user_event,
     update_user_events,
@@ -548,7 +549,7 @@ def test_self_referrals(bus_mock: mock.MagicMock, app):
         bus_mock(redis)
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
-        events = {"referrer": 1}
+        events: UserEventsMetadata = {"referrer": 1}
         update_user_events(session, user, events, bus_mock)
         mock_call = mock.call.dispatch(
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
