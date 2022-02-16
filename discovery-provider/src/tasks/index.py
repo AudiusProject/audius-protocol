@@ -973,10 +973,12 @@ def update_task(self):
     # Update redis cache for health check queries
     update_latest_block_redis()
 
+    DEFAULT_LOCK_TIMEOUT = 60 * 10 # ten minutes
+    
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("disc_prov_lock", blocking_timeout=25)
+    update_lock = redis.lock("disc_prov_lock", blocking_timeout=25, timeout=DEFAULT_LOCK_TIMEOUT)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
