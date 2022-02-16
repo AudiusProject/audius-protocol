@@ -29,7 +29,8 @@ rewardsRouter.post('/attestation_result', handleResponse(async (req) => {
   const reporter = new RewardsReporter({
     successSlackUrl: config.get('successAudioReporterSlackUrl'),
     errorSlackUrl: config.get('errorAudioReporterSlackUrl'),
-    source
+    source,
+    shouldReportAnalytics: false
   })
   try {
     await handleResult({ status, userId, challengeId, amount, error, phase, reporter, specifier })
