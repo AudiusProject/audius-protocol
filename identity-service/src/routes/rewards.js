@@ -13,6 +13,9 @@ const handleResult = async ({ status, userId, challengeId, amount, error, phase,
     case 'failure':
       await reporter.reportFailure({ userId, challengeId, amount, error, phase, specifier })
       break
+    case 'retry':
+      await reporter.reportRetry({ userId, challengeId, amount, error, phase, specifier })
+      break
     case 'rejection':
       await reporter.reportAAORejection({ userId, challengeId, amount, error, specifier })
       break
