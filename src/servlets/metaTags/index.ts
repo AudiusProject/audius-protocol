@@ -316,7 +316,7 @@ const getTokenContext = (): Context => {
 const getSignupRefContext = (handle: string): Context => {
   return {
     format: MetaTagFormat.SignupRef,
-    title: `Invite to join Audius from ${handle}!`,
+    title: `Invite to join Audius from @${handle}!`,
     description:
       'Sign up for Audius to earn $AUDIO tokens while using the app!',
     image: SIGNUP_REF_IMAGE_URL,
