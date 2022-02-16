@@ -1,4 +1,5 @@
 from integration_tests.utils import populate_mock_db
+from src.models.models import Track
 from src.queries.get_prev_track_entries import get_prev_track_entries
 from src.utils.db_session import get_db
 
@@ -101,20 +102,21 @@ def test_get_prev_track_entries(app):
 
         # Make sure that it fetches all previous tracks
         entries = [
-            {"track_id": 6, "blocknumber": 8},
-            {"track_id": 3, "blocknumber": 10},
-            {"track_id": 1, "blocknumber": 6},
-            {"track_id": 4, "blocknumber": 9},
-            {"track_id": 5, "blocknumber": 12},
+            Track(track_id=6, blocknumber=8),
+            Track(track_id=6, blocknumber=8),
+            Track(track_id=3, blocknumber=10),
+            Track(track_id=1, blocknumber=6),
+            Track(track_id=4, blocknumber=9),
+            Track(track_id=5, blocknumber=12),
         ]
         prev_entries = get_prev_track_entries(session, entries)
 
         assert len(prev_entries) <= len(entries)
 
         for prev_entry in prev_entries:
-            entry = next(e for e in entries if e["track_id"] == prev_entry.track_id)
-            assert entry["track_id"] == prev_entry.track_id
-            assert entry["blocknumber"] > prev_entry.blocknumber
+            entry = next(e for e in entries if e.track_id == prev_entry.track_id)
+            assert entry.track_id == prev_entry.track_id
+            assert entry.blocknumber > prev_entry.blocknumber
             # previous track with id 3 should have a block number of 7, not 2
             if prev_entry.track_id == 3:
                 assert prev_entry.blocknumber == 7
@@ -123,9 +125,7 @@ def test_get_prev_track_entries(app):
                 assert prev_entry.blocknumber == 11
 
         # Make sure that it properly fetches the track before the one passed
-        single_entry = [
-            {"track_id": 5, "blocknumber": 11},
-        ]
+        single_entry = [Track(track_id=5, blocknumber=11)]
         prev_id_5_track = get_prev_track_entries(session, single_entry)[0]
 
         assert prev_id_5_track.track_id == 5

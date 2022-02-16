@@ -309,15 +309,17 @@ class RewardsAttester {
    *  aaoAddress: string,
    *  endpoints: Array<string>,
    *  challengeIdsDenyList: Array<string>
-   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }
+   *  parallelization: number
+   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList, parallelization }
    * @memberof RewardsAttester
    */
-  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList }) {
-    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}`)
+  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList, parallelization }) {
+    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}, parallelization: ${parallelization}`)
     this.aaoEndpoint = aaoEndpoint || this.aaoEndpoint
     this.aaoAddress = aaoAddress || this.aaoAddress
     this.endpoints = endpoints || this.endpoints
     this.challengeIdsDenyList = challengeIdsDenyList ? new Set(...challengeIdsDenyList) : this.challengeIdsDenyList
+    this.parallelization = parallelization || this.parallelization
   }
 
   /**
@@ -495,7 +497,7 @@ class RewardsAttester {
 
     if (success) {
       this.logger.info(`Successfully attestested for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}]!`)
-      await this.reporter.reportSuccess({ userId, challengeId, amount, specifier })
+      await this.reporter.reportSuccess({ userId: decodeHashId(userId), challengeId, amount, specifier })
       return {
         challengeId,
         userId,
@@ -513,7 +515,7 @@ class RewardsAttester {
       phase,
       error,
       amount,
-      userId,
+      userId: decodeHashId(userId),
       challengeId,
       specifier
     })

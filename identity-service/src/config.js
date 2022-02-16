@@ -660,12 +660,6 @@ const config = convict({
     default: '60000',
     env: 'solanaConfirmationTimeout'
   },
-  rewardsParallelization: {
-    doc: 'How many requests to perform in parallel when disbursing rewards',
-    format: Number,
-    default: '2',
-    env: 'rewardsParallelization'
-  },
   rewardsQuorumSize: {
     doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
     format: Number,
@@ -767,6 +761,12 @@ const config = convict({
     format: String,
     env: 'websiteHost',
     default: 'https://audius.co'
+  },
+  amplitudeAPIKey: {
+    doc: 'Amplitude API key',
+    format: String,
+    env: 'amplitudeAPIKey',
+    default: ''
   }
 })
 
