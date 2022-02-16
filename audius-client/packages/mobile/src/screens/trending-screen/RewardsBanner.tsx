@@ -1,8 +1,14 @@
-import { Text, View } from 'react-native'
+import { useCallback } from 'react'
+
+import { setTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
+import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+import { Animated, Text, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import { Tile } from 'app/components/core'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -15,6 +21,10 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
+  root: {
+    marginTop: spacing(3),
+    marginHorizontal: spacing(3)
+  },
   tile: {
     borderWidth: 0
   },
@@ -54,29 +64,48 @@ type RewardsBannerProps = {
 export const RewardsBanner = (props: RewardsBannerProps) => {
   const { type } = props
   const styles = useStyles()
+  const dispatchWeb = useDispatchWeb()
   const {
     pageHeaderGradientColor1,
     pageHeaderGradientColor2
   } = useThemeColors()
 
+  const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation()
+
+  const handlePress = useCallback(() => {
+    dispatchWeb(setTrendingRewardsModalType({ modalType: 'tracks' }))
+    dispatchWeb(
+      setVisibility({ modal: 'TrendingRewardsExplainer', visible: true })
+    )
+  }, [dispatchWeb])
+
   return (
-    <Tile
-      as={LinearGradient}
-      colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-      start={{ x: 1, y: 1 }}
-      end={{ x: 0, y: 0 }}
-      styles={{ tile: styles.tile, content: styles.tileContent }}
-    >
-      <View style={styles.title}>
-        <IconCrown
-          style={styles.iconCrown}
-          fill={styles.iconCrown.fill}
-          height={styles.iconCrown.height}
-          width={styles.iconCrown.width}
-        />
-        <Text style={styles.titleText}>{messages.rewards}</Text>
-      </View>
-      <Text style={styles.descriptionText}>{messages[type]}</Text>
-    </Tile>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Tile
+        as={LinearGradient}
+        colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
+        start={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        styles={{
+          root: styles.root,
+          tile: styles.tile,
+          content: styles.tileContent
+        }}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
+        <View style={styles.title}>
+          <IconCrown
+            style={styles.iconCrown}
+            fill={styles.iconCrown.fill}
+            height={styles.iconCrown.height}
+            width={styles.iconCrown.width}
+          />
+          <Text style={styles.titleText}>{messages.rewards}</Text>
+        </View>
+        <Text style={styles.descriptionText}>{messages[type]}</Text>
+      </Tile>
+    </Animated.View>
   )
 }

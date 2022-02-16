@@ -19,7 +19,6 @@ const genre = urlParams.get('genre')
 const timeRange = urlParams.get('timeRange')
 
 const initialState = {
-  suggestedFollows: [],
   trendingTimeRange: Object.values(TimeRange).includes(timeRange)
     ? timeRange
     : TimeRange.WEEK,

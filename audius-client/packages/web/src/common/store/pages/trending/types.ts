@@ -2,7 +2,7 @@ import { ID } from 'common/models/Identifiers'
 import { LineupState } from 'common/models/Lineup'
 import TimeRange from 'common/models/TimeRange'
 
-export default interface TrendingPageState {
+export type TrendingPageState = {
   trendingWeek: LineupState<{ id: ID }>
   trendingMonth: LineupState<{ id: ID }>
   trendingAllTime: LineupState<{ id: ID }>

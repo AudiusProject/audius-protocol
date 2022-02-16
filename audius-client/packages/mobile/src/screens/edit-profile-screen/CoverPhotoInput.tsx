@@ -56,7 +56,7 @@ export const CoverPhotoInput = () => {
       setIsLoading(true)
     }
     launchSelectImageActionSheet(handleImageSelected, styles.shareSheet.color)
-  }, [setValue])
+  }, [setValue, styles.shareSheet.color])
 
   return (
     <Pressable
