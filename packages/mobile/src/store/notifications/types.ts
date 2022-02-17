@@ -3,7 +3,7 @@ import { Collection } from 'audius-client/src/common/models/Collection'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 
-import { BadgeTier } from 'app/utils/badgeTier'
+import { AudioTier } from 'app/components/audio-rewards'
 
 export type ID = number
 
@@ -166,7 +166,7 @@ export type ChallengeReward = BaseNotification & {
 
 export type TierChange = BaseNotification & {
   type: NotificationType.TierChange
-  tier: BadgeTier
+  tier: AudioTier
 }
 
 export type Notification =

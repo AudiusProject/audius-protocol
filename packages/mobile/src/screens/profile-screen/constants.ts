@@ -1,3 +1,3 @@
-import { BadgeTier } from 'app/utils/badgeTier'
+import { AudioTier } from 'app/components/audio-rewards'
 
-export const MIN_COLLECTIBLES_TIER: BadgeTier = 'silver'
+export const MIN_COLLECTIBLES_TIER: AudioTier = 'silver'

@@ -24,13 +24,13 @@ import IconStars from 'app/assets/images/iconStars.svg'
 import IconTrending from 'app/assets/images/iconTrending.svg'
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
+import { AudioTier } from 'app/components/audio-rewards'
 import {
   Entity as EntityType,
   Notification,
   NotificationType,
   TierChange
 } from 'app/store/notifications/types'
-import { BadgeTier } from 'app/utils/badgeTier'
 import { useColor, useTheme } from 'app/utils/theme'
 
 import NotificationContent from './content/NotificationContent'
@@ -39,7 +39,7 @@ import { getNotificationRoute } from './routeUtil'
 const IS_IOS = Platform.OS === 'ios'
 
 const tierInfoMap: Record<
-  BadgeTier,
+  AudioTier,
   { title: string; icon: React.FC<SvgProps> }
 > = {
   none: {
