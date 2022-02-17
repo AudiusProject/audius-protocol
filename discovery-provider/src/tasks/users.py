@@ -173,7 +173,8 @@ def lookup_user_record(
     user_exists = (
         session.query(User)
         .filter(User.user_id == user_id, User.is_current == True)
-        .count() > 0
+        .count()
+        > 0
     )
 
     user_record = None  # will be set in this if/else
