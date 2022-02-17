@@ -44,6 +44,7 @@ class AudiusLibs {
    * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
    * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
    * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
+   * @param {number?} unhealthyBlockDiff the number of blocks we would consider a discovery node unhealthy
    */
   static configDiscoveryProvider (
     whitelist = null,
@@ -53,7 +54,8 @@ class AudiusLibs {
     monitoringCallbacks = {},
     selectionRequestTimeout = null,
     selectionRequestRetries = null,
-    unhealthySlotDiffPlays = null
+    unhealthySlotDiffPlays = null,
+    unhealthyBlockDiff = null
   ) {
     return {
       whitelist,
@@ -63,7 +65,8 @@ class AudiusLibs {
       monitoringCallbacks,
       selectionRequestTimeout,
       selectionRequestRetries,
-      unhealthySlotDiffPlays
+      unhealthySlotDiffPlays,
+      unhealthyBlockDiff
     }
   }
 
@@ -440,7 +443,8 @@ class AudiusLibs {
         this.discoveryProviderConfig.monitoringCallbacks,
         this.discoveryProviderConfig.selectionRequestTimeout,
         this.discoveryProviderConfig.selectionRequestRetries,
-        this.discoveryProviderConfig.unhealthySlotDiffPlays
+        this.discoveryProviderConfig.unhealthySlotDiffPlays,
+        this.discoveryProviderConfig.unhealthyBlockDiff
       )
       await this.discoveryProvider.init()
     }

@@ -3,7 +3,7 @@ const axios = require('axios')
 const Utils = require('../../utils')
 
 const {
-  UNHEALTHY_BLOCK_DIFF,
+  DEFAULT_UNHEALTHY_BLOCK_DIFF,
   REQUEST_TIMEOUT_MS
 } = require('./constants')
 
@@ -30,6 +30,7 @@ const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
  * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
  * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
  * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
+ * @param {number?} unhealthyBlockDiff the number of blocks we would consider a discovery node unhealthy
  */
 class DiscoveryProvider {
   constructor (
@@ -43,7 +44,8 @@ class DiscoveryProvider {
     monitoringCallbacks = {},
     selectionRequestTimeout,
     selectionRequestRetries,
-    unhealthySlotDiffPlays
+    unhealthySlotDiffPlays,
+    unhealthyBlockDiff
   ) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -51,6 +53,7 @@ class DiscoveryProvider {
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
 
+    this.unhealthyBlockDiff = unhealthyBlockDiff || DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection({
       whitelist: this.whitelist,
       blacklist: this.blacklist,
@@ -58,7 +61,8 @@ class DiscoveryProvider {
       selectionCallback,
       monitoringCallbacks,
       requestTimeout: selectionRequestTimeout,
-      unhealthySlotDiffPlays: unhealthySlotDiffPlays
+      unhealthySlotDiffPlays: unhealthySlotDiffPlays,
+      unhealthyBlockDiff: this.unhealthyBlockDiff
     }, this.ethContracts)
     this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
     this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
@@ -87,6 +91,11 @@ class DiscoveryProvider {
 
   setEndpoint (endpoint) {
     this.discoveryProviderEndpoint = endpoint
+  }
+
+  setUnhealthyBlockDiff (updatedBlockDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {
+    this.unhealthyBlockDiff = updatedBlockDiff
+    this.serviceSelector.setUnhealthyBlockDiff(updatedBlockDiff)
   }
 
   /**
@@ -671,13 +680,13 @@ class DiscoveryProvider {
       } = parsedResponse
 
       const blockDiff = chainBlock - indexedBlock
-      if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
+      if (blockDiff > this.unhealthyBlockDiff) {
         return blockDiff
       }
       return null
     } catch (e) {
       console.error(e)
-      return UNHEALTHY_BLOCK_DIFF
+      return this.unhealthyBlockDiff
     }
   }
 
