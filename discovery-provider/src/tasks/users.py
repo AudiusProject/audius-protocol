@@ -527,7 +527,7 @@ def validate_signature(
     return False
 
 
-class UserEventsMetadata(TypedDict):
+class UserEventsMetadata(TypedDict, total=False):
     referrer: int
     is_mobile_user: bool
 
@@ -569,6 +569,7 @@ def update_user_events(
                 event == "referrer"
                 and isinstance(value, int)
                 and user_events.referrer is None
+                and user_record.user_id != value
             ):
                 user_events.referrer = value
                 bus.dispatch(
