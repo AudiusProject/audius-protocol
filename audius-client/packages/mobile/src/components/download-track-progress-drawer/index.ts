@@ -1,1 +1,1 @@
-export { default } from './DownloadTrackProgressDrawer'
+export { DownloadTrackProgressDrawer } from './DownloadTrackProgressDrawer'

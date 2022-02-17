@@ -7,35 +7,17 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import WebView from 'react-native-webview'
 import { Provider } from 'react-redux'
 
-import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
-import ApiRewardsDrawer from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import AppNavigator from 'app/components/app-navigator/AppNavigator'
 // import AudioBreakdownDrawer from 'app/components/audio-breakdown-drawer'
 import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
-import { ChallengeRewardsDrawerProvider } from 'app/components/challenge-rewards-drawer/ChallengeRewardsDrawerProvider'
-import { CognitoDrawer } from 'app/components/cognito-drawer/CognitoDrawer'
-import CollectibleDetailsDrawer from 'app/components/collectible-details-drawer'
-import ConnectWalletsDrawer from 'app/components/connect-wallets-drawer'
-import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer/DeactivateAccountConfirmationDrawer'
-import DownloadTrackProgressDrawer from 'app/components/download-track-progress-drawer'
-import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
-import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
-import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
-import ForgotPasswordDrawer from 'app/components/forgot-password-drawer'
 import HCaptcha from 'app/components/hcaptcha'
-import MobileUploadDrawer from 'app/components/mobile-upload-drawer'
 import NavigationContainer from 'app/components/navigation-container'
 import Notifications from 'app/components/notifications/Notifications'
 import OAuth from 'app/components/oauth/OAuth'
-import OverflowMenuDrawer from 'app/components/overflow-menu-drawer'
 import Search from 'app/components/search/Search'
-import { ShareDrawer } from 'app/components/share-drawer'
-import ShareToTiktokDrawer from 'app/components/share-to-tiktok-drawer'
 import { ThemeContextProvider } from 'app/components/theme/ThemeContext'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
-import TransferAudioMobileDrawer from 'app/components/transfer-audio-mobile-drawer'
-import TrendingRewardsDrawer from 'app/components/trending-rewards-drawer'
 import WebApp from 'app/components/web/WebApp'
 import { WebRefContextProvider } from 'app/components/web/WebRef'
 import useConnectivity from 'app/components/web/useConnectivity'
@@ -44,9 +26,9 @@ import PushNotifications from 'app/notifications'
 import createStore from 'app/store'
 import { setup as setupAnalytics } from 'app/utils/analytics'
 
+import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { WebAppManager } from './WebAppManager'
-import { TrendingFilterDrawer } from './screens/trending-screen/TrendingFilterDrawer'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -62,35 +44,6 @@ const Airplay = Platform.select({
 
 // Increment the session count when the App.tsx code is first run
 incrementSessionCount()
-
-const Drawers = () => {
-  return (
-    <>
-      <MobileUploadDrawer />
-      <EnablePushNotificationsDrawer />
-      <CollectibleDetailsDrawer />
-      <ConnectWalletsDrawer />
-      <EditCollectiblesDrawer />
-      <OverflowMenuDrawer />
-      <DeactivateAccountConfirmationDrawer />
-      <DownloadTrackProgressDrawer />
-      <TransferAudioMobileDrawer />
-      <TrendingRewardsDrawer />
-      <ApiRewardsDrawer />
-      <AddToPlaylistDrawer />
-      <ShareToTiktokDrawer />
-      <ChallengeRewardsDrawerProvider />
-      <CognitoDrawer />
-      <ShareDrawer />
-      <ForgotPasswordDrawer />
-      <FeedFilterDrawer />
-      <TrendingFilterDrawer />
-      {/* Disable the audio breakdown drawer until we get
-      the feature flags to work for native mobile */}
-      {/* <AudioBreakdownDrawer /> */}
-    </>
-  )
-}
 
 const Modals = () => {
   return (

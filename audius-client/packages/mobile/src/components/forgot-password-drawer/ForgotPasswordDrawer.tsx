@@ -107,7 +107,7 @@ const messages = {
   subject: '"Save This Email: Audius Password Recovery"'
 }
 
-const ForgotPasswordDrawer = () => {
+export const ForgotPasswordDrawer = () => {
   const [isOpen, setIsOpen] = useDrawer('ForgotPassword')
 
   const styles = useThemedStyles(createStyles)
@@ -144,5 +144,3 @@ const ForgotPasswordDrawer = () => {
     </Drawer>
   )
 }
-
-export default ForgotPasswordDrawer

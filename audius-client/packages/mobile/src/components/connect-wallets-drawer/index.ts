@@ -1,1 +1,1 @@
-export { default } from './ConnectWalletsDrawer'
+export { ConnectWalletsDrawer } from './ConnectWalletsDrawer'

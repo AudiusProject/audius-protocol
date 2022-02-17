@@ -1,1 +1,1 @@
-export { default } from './ForgotPasswordDrawer'
+export { ForgotPasswordDrawer } from './ForgotPasswordDrawer'

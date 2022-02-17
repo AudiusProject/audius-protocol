@@ -1,1 +1,1 @@
-export { default } from './TransferAudioMobileDrawer'
+export { TransferAudioMobileDrawer } from './TransferAudioMobileDrawer'
