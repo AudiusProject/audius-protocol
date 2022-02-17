@@ -72,7 +72,7 @@ const slice = createSlice({
       }
       state.modalState = newState
     },
-    transferingEthAudioToSolWAudio: state => {
+    transferEthAudioToSolWAudio: state => {
       if (
         state.modalState?.stage !== 'SEND' ||
         state.modalState.flowState.stage !== 'SENDING'
@@ -292,7 +292,7 @@ export const {
   updateWalletError,
   preloadWalletProviders,
   resetStatus,
-  transferingEthAudioToSolWAudio
+  transferEthAudioToSolWAudio
 } = slice.actions
 
 export default slice
