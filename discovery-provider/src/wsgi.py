@@ -11,6 +11,8 @@ if not getenv("PROMETHEUS_MULTIPROC_DIR"):
     exit(1)
 
 
+# Do bookkeeping when one process dies in a multi-process setup by
+# deleting all gauge_${pid}.db files
 def child_exit(server, worker):
     from prometheus_client import multiprocess
 
