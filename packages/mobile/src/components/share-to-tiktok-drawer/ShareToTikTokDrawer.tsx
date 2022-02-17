@@ -90,7 +90,7 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-const ShareToTikTokDrawer = () => {
+export const ShareToTikTokDrawer = () => {
   const styles = useThemedStyles(createStyles)
 
   const dispatchWeb = useDispatchWeb()
@@ -203,5 +203,3 @@ const ShareToTikTokDrawer = () => {
     </Drawer>
   )
 }
-
-export default ShareToTikTokDrawer

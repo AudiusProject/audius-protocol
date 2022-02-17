@@ -1,1 +1,1 @@
-export { default } from './OverflowMenuDrawer'
+export { OverflowMenuDrawer } from './OverflowMenuDrawer'

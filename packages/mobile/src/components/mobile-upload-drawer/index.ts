@@ -1,1 +1,1 @@
-export { default } from './MobileUploadDrawer'
+export { MobileUploadDrawer } from './MobileUploadDrawer'

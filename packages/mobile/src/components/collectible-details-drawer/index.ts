@@ -1,1 +1,1 @@
-export { default } from './CollectibleDetailsDrawer'
+export { CollectibleDetailsDrawer } from './CollectibleDetailsDrawer'

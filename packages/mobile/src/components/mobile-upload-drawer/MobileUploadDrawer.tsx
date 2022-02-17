@@ -72,7 +72,7 @@ const messages = {
   clear: 'Crystal Clear 320kbps'
 }
 
-const MobileUploadDrawer = () => {
+export const MobileUploadDrawer = () => {
   const isOpen = useSelectorWeb(getIsOpen)
   const dispatchWeb = useDispatchWeb()
   const close = () => dispatchWeb(hide())
@@ -115,5 +115,3 @@ const MobileUploadDrawer = () => {
     </Drawer>
   )
 }
-
-export default MobileUploadDrawer
