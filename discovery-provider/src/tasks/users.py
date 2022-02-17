@@ -206,7 +206,7 @@ def lookup_user_record(
 
 def invalidate_old_user(session, user_id):
     # Check if the userId is in the db
-    logger.info(f"index.py | invalid date user with id {user_id}")
+    logger.info(f"index.py | invalidate user with id {user_id}")
 
     user_exists = (
         session.query(User).filter(user_id=user_id, is_current=True).count() > 0
