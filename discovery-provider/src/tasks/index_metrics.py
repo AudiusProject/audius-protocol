@@ -14,7 +14,7 @@ from src.queries.update_historical_metrics import (
 from src.tasks.celery_app import celery
 from src.utils.get_all_other_nodes import get_all_other_nodes
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.utils.metric import Metric
+from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.redis_metrics import (
     METRICS_INTERVAL,
     datetime_format_secondary,
@@ -411,7 +411,7 @@ def update_metrics(self):
             logger.info(
                 f"index_metrics.py | update_metrics | {self.request.id} | Acquired update_metrics_lock"
             )
-            metric = Metric(
+            metric = PrometheusMetric(
                 "index_metrics_runtime_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
                 ("task_name"),
@@ -454,7 +454,7 @@ def aggregate_metrics(self):
             logger.info(
                 f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock"
             )
-            metric = Metric(
+            metric = PrometheusMetric(
                 "index_metrics_runtime_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
                 ("task_name"),
@@ -498,7 +498,7 @@ def synchronize_metrics(self):
             logger.info(
                 f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock"
             )
-            metric = Metric(
+            metric = PrometheusMetric(
                 "index_metrics_runtime_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
                 ("task_name"),

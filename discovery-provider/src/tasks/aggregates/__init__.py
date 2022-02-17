@@ -6,7 +6,7 @@ from typing import Optional
 from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 from src.models import Block
-from src.utils.metric import Metric
+from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
     save_indexed_checkpoint,
@@ -68,7 +68,7 @@ def update_aggregate_table(
     current_checkpoint,
     recalculations=False,
 ):
-    metric = Metric(
+    metric = PrometheusMetric(
         "update_aggregate_table_latency_seconds",
         "Runtimes for src.task.aggregates:update_aggregate_table()",
         ("table_name", "task_name"),
