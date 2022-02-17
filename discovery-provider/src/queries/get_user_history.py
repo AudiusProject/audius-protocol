@@ -17,7 +17,7 @@ def get_user_history(args):
     with db.scoped_session() as session:
         user_history_query = (
             session.query(User)
-            .filter(User.user_id == user_id)
+            .filter(User.user_id == user_id, User.is_current == True)
             .order_by(User.updated_at.asc())
         )
 
