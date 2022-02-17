@@ -1,10 +1,13 @@
 import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 import { View, Text } from 'react-native'
 
+import {
+  getAudioTierRank,
+  getUserAudioTier,
+  IconAudioBadge
+} from 'app/components/audio-rewards'
 import { Tile } from 'app/components/core'
-import { badgeByTier } from 'app/components/user-badges/UserBadges'
 import { makeStyles } from 'app/styles/makeStyles'
-import getBadgeTier, { getTierLevel } from 'app/utils/badgeTier'
 
 const messages = {
   tier: 'tier'
@@ -46,18 +49,17 @@ type ProfileBadgeProps = {
 
 export const ProfileBadge = ({ profile }: ProfileBadgeProps) => {
   const styles = useStyles()
-  const tier = getBadgeTier(profile)
-  const tierLevel = getTierLevel(tier)
-  const Badge = badgeByTier[tier]
+  const tier = getUserAudioTier(profile)
+  const tierRank = getAudioTierRank(tier)
 
-  if (!Badge) return null
+  if (tier === 'none') return null
 
   return (
     <Tile styles={{ root: styles.root, content: styles.content }}>
-      <Badge height={28} width={28} style={styles.badge} />
+      <IconAudioBadge tier={tier} height={28} width={28} style={styles.badge} />
       <View>
         <Text style={styles.tierNumber}>
-          {messages.tier} {tierLevel}
+          {messages.tier} {tierRank}
         </Text>
         <Text style={styles.tierText}>{tier}</Text>
       </View>

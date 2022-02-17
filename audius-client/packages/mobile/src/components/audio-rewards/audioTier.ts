@@ -3,8 +3,9 @@ import BN from 'bn.js'
 
 export const WEI = new BN('1000000000000000000')
 
-export type BadgeTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'
-export const badgeTiers: { tier: BadgeTier; minAudio: BN }[] = [
+export type AudioTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'
+
+const audioTierRequirements: { tier: AudioTier; minAudio: BN }[] = [
   {
     tier: 'platinum',
     minAudio: new BN('100000')
@@ -27,7 +28,7 @@ export const badgeTiers: { tier: BadgeTier; minAudio: BN }[] = [
   }
 ]
 
-export const tierLevels: BadgeTier[] = [
+export const audioTierOrder: AudioTier[] = [
   'none',
   'bronze',
   'silver',
@@ -35,23 +36,21 @@ export const tierLevels: BadgeTier[] = [
   'platinum'
 ]
 
-export const getTierLevel = (tier: BadgeTier) => {
-  return tierLevels.indexOf(tier)
+export const getAudioTierRank = (tier: AudioTier) => {
+  return audioTierOrder.indexOf(tier)
 }
 
-export const getBadgeTier = (
+export const getUserAudioTier = (
   user: Pick<User, 'balance' | 'associated_wallets_balance'>
 ) => {
   const totalBalance = new BN(user.balance ?? '0')
     .add(new BN(user.associated_wallets_balance ?? '0'))
     .div(WEI)
 
-  const index = badgeTiers.findIndex(t => {
+  const index = audioTierRequirements.findIndex(t => {
     return t.minAudio.lte(totalBalance)
   })
 
-  const tier = index === -1 ? 'none' : badgeTiers[index].tier
+  const tier = index === -1 ? 'none' : audioTierRequirements[index].tier
   return tier
 }
-
-export default getBadgeTier

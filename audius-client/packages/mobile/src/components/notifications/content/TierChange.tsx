@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native'
 
+import { AudioTier } from 'app/components/audio-rewards'
 import { TierChange as TierChangeType } from 'app/store/notifications/types'
-import { BadgeTier } from 'app/utils/badgeTier'
 import { useTheme } from 'app/utils/theme'
 
 import TwitterShare from './TwitterShare'
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 })
 
 export const tierInfoMap: Record<
-  BadgeTier,
+  AudioTier,
   { label: string; amount: number }
 > = {
   none: {
