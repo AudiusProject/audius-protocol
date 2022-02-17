@@ -38,7 +38,9 @@ class WalletClient {
 
   async transferTokensFromEthToSol(): Promise<void> {
     const balance = await AudiusBackend.getBalance(true)
-    await AudiusBackend.transferAudioToWAudio(balance)
+    if (balance.gt(new BN('0'))) {
+      await AudiusBackend.transferAudioToWAudio(balance)
+    }
   }
 
   async getAssociatedWalletBalance(
