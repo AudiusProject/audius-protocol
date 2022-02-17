@@ -1,7 +1,7 @@
 import FeedFilter from 'audius-client/src/common/models/FeedFilter'
 
 import { messages } from 'app/components/feed-filter-drawer'
-import { HeaderButton } from 'app/components/header-button'
+import { HeaderButton } from 'app/components/header'
 
 const messageMap = {
   [FeedFilter.ALL]: messages.filterAll,
@@ -19,5 +19,5 @@ export const FeedFilterButton = ({
   currentFilter,
   onPress
 }: FeedFilterButtonProps) => {
-  return <HeaderButton onPress={onPress} text={messageMap[currentFilter]} />
+  return <HeaderButton onPress={onPress} title={messageMap[currentFilter]} />
 }
