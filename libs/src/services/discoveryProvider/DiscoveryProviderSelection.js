@@ -38,7 +38,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     this.selectionCallback = config.selectionCallback
     this.monitoringCallbacks = config.monitoringCallbacks || {}
     this.unhealthySlotDiffPlays = config.unhealthySlotDiffPlays
-    this.unhealthyBlockDiff = config.unhealthyBlockDiff
+    this.unhealthyBlockDiff = config.unhealthyBlockDiff || DEFAULT_UNHEALTHY_BLOCK_DIFF
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
