@@ -98,6 +98,11 @@ class DiscoveryProvider {
     this.serviceSelector.setUnhealthyBlockDiff(updatedBlockDiff)
   }
 
+  setUnhealthySlotDiffPlays (updatedDiff) {
+    this.unhealthySlotDiffPlays = updatedDiff
+    this.serviceSelector.setUnhealthySlotDiffPlays(updatedDiff)
+  }
+
   /**
    * Get users with all relevant user data
    * can be filtered by providing an integer array of ids

@@ -211,6 +211,10 @@ class DiscoveryProviderSelection extends ServiceSelection {
     this.unhealthyBlockDiff = updatedDiff
   }
 
+  setUnhealthySlotDiffPlays (updatedDiff) {
+    this.unhealthySlotDiffPlays = updatedDiff
+  }
+
   isInRegressedMode () {
     return this._regressedMode
   }
