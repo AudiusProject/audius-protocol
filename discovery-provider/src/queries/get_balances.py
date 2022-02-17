@@ -66,8 +66,8 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
                 int(user_balance.balance)
                 + int(user_balance.associated_wallets_balance)
                 + int(user_balance.associated_sol_wallets_balance)
-                * 10 ** WAUDIO_DECIMALS
-                + int(user_balance.waudio) * 10 ** WAUDIO_DECIMALS
+                * 10**WAUDIO_DECIMALS
+                + int(user_balance.waudio) * 10**WAUDIO_DECIMALS
             ),
         }
         for user_balance in query

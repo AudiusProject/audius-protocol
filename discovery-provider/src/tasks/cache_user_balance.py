@@ -40,7 +40,7 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 MAX_LAZY_REFRESH_USER_IDS = 100
 
 # Sol balances have 8 decimals, so they need to be increased to 18 to match eth balances
-SPL_TO_WEI = 10 ** 10
+SPL_TO_WEI = 10**10
 
 
 class AssociatedWallets(TypedDict):
