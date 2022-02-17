@@ -4,6 +4,7 @@ import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { StyleSheet, Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { Header } from 'app/components/header'
 import useAppState from 'app/hooks/useAppState'
 import useLocation from 'app/hooks/useLocation'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
@@ -16,8 +17,6 @@ import {
 } from 'app/store/search/selectors'
 import { getEmptyPageRoute } from 'app/utils/routes'
 import { useTheme } from 'app/utils/theme'
-
-import Header from '../header/Header'
 
 import SearchHistory from './SearchHistory'
 import SearchResults from './SearchResults'

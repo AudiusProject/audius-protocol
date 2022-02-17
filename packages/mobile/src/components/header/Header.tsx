@@ -1,31 +1,44 @@
-import { StyleSheet, View } from 'react-native'
+import { ReactChild } from 'react'
+
+import { View } from 'react-native'
 
 import { GradientText } from 'app/components/core'
+import { makeStyles } from 'app/styles'
 
-const styles = StyleSheet.create({
-  container: {
-    display: 'flex',
-    paddingTop: 10,
-    paddingLeft: 12
-  },
-  text: {
-    fontSize: 24,
-    textShadowColor: 'rgba(126, 27, 204, 0.15)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4
-  }
-})
-
-type HeaderProps = {
+type ScreenHeaderProps = {
+  children?: ReactChild
   text: string
 }
 
-const Header = ({ text }: HeaderProps) => {
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  root: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: palette.white,
+    height: 52,
+    borderBottomWidth: 1,
+    borderBottomColor: palette.neutralLight8,
+    paddingHorizontal: spacing(3)
+  },
+  header: {
+    fontSize: 24,
+    lineHeight: 52,
+    textShadowOffset: { height: 2, width: 0 },
+    textShadowRadius: 4,
+    textShadowColor: 'rgba(162,47,235,0.2)'
+  }
+}))
+
+export const Header = ({ children, text }: ScreenHeaderProps) => {
+  const styles = useStyles()
+
   return (
-    <View style={styles.container}>
-      <GradientText style={styles.text}>{text}</GradientText>
+    <View style={styles.root}>
+      <GradientText accessibilityRole='header' style={styles.header}>
+        {text}
+      </GradientText>
+      {children}
     </View>
   )
 }
-
-export default Header

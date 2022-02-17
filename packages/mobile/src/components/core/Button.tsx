@@ -153,7 +153,7 @@ const useStyles = makeStyles(
   }
 )
 
-type ButtonProps = RNButtonProps &
+export type ButtonProps = RNButtonProps &
   PressableProps & {
     icon?: ComponentType<SvgProps>
     iconPosition?: 'left' | 'right'

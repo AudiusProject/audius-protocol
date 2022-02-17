@@ -8,7 +8,7 @@ import IconAllTime from 'app/assets/images/iconAllTime.svg'
 import IconDay from 'app/assets/images/iconDay.svg'
 import IconMonth from 'app/assets/images/iconMonth.svg'
 import TopTabNavigator from 'app/components/app-navigator/TopTabNavigator'
-import { ScreenHeader } from 'app/components/screen-header'
+import { Header } from 'app/components/header'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { RewardsBanner } from './RewardsBanner'
@@ -62,9 +62,9 @@ export const TrendingScreen = () => {
 
   return (
     <View style={{ height: screenHeight }}>
-      <ScreenHeader text='Trending'>
+      <Header text='Trending'>
         <TrendingFilterButton />
-      </ScreenHeader>
+      </Header>
       <TopTabNavigator initialScreenName='tracks' screens={screens} />
     </View>
   )

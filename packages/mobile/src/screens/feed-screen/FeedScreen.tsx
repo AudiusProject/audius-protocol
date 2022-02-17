@@ -12,8 +12,8 @@ import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { isEqual } from 'lodash'
 
 import { FeedStackParamList } from 'app/components/app-navigator/types'
+import { Header } from 'app/components/header'
 import { Lineup } from 'app/components/lineup'
-import { ScreenHeader } from 'app/components/screen-header'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/utils/analytics'
@@ -64,12 +64,12 @@ export const FeedScreen = ({ navigation }: Props) => {
 
   return (
     <>
-      <ScreenHeader text={messages.header}>
+      <Header text={messages.header}>
         <FeedFilterButton
           onPress={handleFilterButtonPress}
           currentFilter={feedFilter}
         />
-      </ScreenHeader>
+      </Header>
       <Lineup
         actions={feedActions}
         delineate
