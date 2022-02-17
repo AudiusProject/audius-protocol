@@ -80,24 +80,30 @@ def user_replica_set_state_update(
                     # first, get the user object from the db(if exists or create a new one)
                     # then set the lookup object for user_id with the appropriate props
                     if user_id:
-                        existing_user_record = lookup_user_record(
-                            update_task,
-                            session,
-                            entry,
-                            block_number,
-                            block_timestamp,
-                            txhash,
-                        )
+                        if user_id not in user_replica_set_events_lookup:
+                            existing_user_record = lookup_user_record(
+                                update_task,
+                                session,
+                                entry,
+                                block_number,
+                                block_timestamp,
+                                txhash,
+                            )
+                        else:
+                            existing_user_record = user_replica_set_events_lookup[user_id]
 
                     if cnode_sp_id:
-                        existing_cnode_record = lookup_ursm_cnode(
-                            update_task,
-                            session,
-                            entry,
-                            block_number,
-                            block_timestamp,
-                            txhash,
-                        )
+                        if cnode_sp_id not in cnode_events_lookup:
+                            existing_cnode_record = lookup_ursm_cnode(
+                                update_task,
+                                session,
+                                entry,
+                                block_number,
+                                block_timestamp,
+                                txhash,
+                            )
+                        else:
+                            existing_cnode_record = cnode_events_lookup[cnode_sp_id]
 
                     # Add or update the value of the user record for this block in user_replica_set_events_lookup,
                     # ensuring that multiple events for a single user result in only 1 row insert operation
@@ -166,7 +172,7 @@ def user_replica_set_state_update(
                         event_blockhash,
                         txhash,
                         str(e),
-                    ) from e
+                    ) from e\
             num_user_replica_set_changes += processedEntries
 
     logger.info(
