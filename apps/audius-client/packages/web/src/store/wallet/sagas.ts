@@ -10,7 +10,7 @@ import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   fetchAssociatedWallets,
-  transferingEthAudioToSolWAudio
+  transferEthAudioToSolWAudio
 } from 'common/store/pages/token-dashboard/slice'
 import {
   getAccountBalance,
@@ -56,7 +56,10 @@ function* sendAsync({
   const waudioWeiAmount: BNWei = yield call(
     walletClient.getCurrentWAudioBalance
   )
-  if (chain === Chain.Eth && (!weiBNBalance || !weiBNBalance.gt(weiBNAmount))) {
+  if (
+    chain === Chain.Eth &&
+    (!weiBNBalance || !weiBNBalance.gte(weiBNAmount))
+  ) {
     yield put(sendFailed({ error: 'Not enough $AUDIO' }))
     return
   } else if (chain === Chain.Sol) {
@@ -77,7 +80,7 @@ function* sendAsync({
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
-      yield put(transferingEthAudioToSolWAudio())
+      yield put(transferEthAudioToSolWAudio())
       yield call(walletClient.transferTokensFromEthToSol)
     }
 
