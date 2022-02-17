@@ -29,8 +29,7 @@ const messages = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
-    borderTopWidth: 1
+    width: '100%'
   },
   itemContainer: {
     display: 'flex',
@@ -129,9 +128,6 @@ const SearchHistory = () => {
   }, [clearHistory, setDisplayHistory])
 
   const backgroundColor = useColor('neutralLight8')
-  const containerStyles = useTheme(styles.container, {
-    borderTopColor: 'neutralLight8'
-  })
   const clearTextStyle = useTheme(styles.clearText, { color: 'neutralLight4' })
 
   if (!displayHistory || displayHistory.length === 0) {
@@ -139,7 +135,7 @@ const SearchHistory = () => {
   }
 
   return (
-    <View style={containerStyles} onTouchStart={Keyboard.dismiss}>
+    <View style={styles.container} onTouchStart={Keyboard.dismiss}>
       <FlatList
         keyboardShouldPersistTaps={'always'}
         data={displayHistory.concat('clear')}

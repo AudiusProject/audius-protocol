@@ -7,7 +7,7 @@ import IconNote from 'app/assets/images/iconNote.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
 import TopTabNavigator from 'app/components/app-navigator/TopTabNavigator'
 import { ExploreStackParamList } from 'app/components/app-navigator/types'
-import { ScreenHeader } from 'app/components/screen-header'
+import { Header } from 'app/components/header'
 
 import { ArtistsTab } from './tabs/ArtistsTab'
 import { ForYouTab } from './tabs/ForYouTab'
@@ -26,7 +26,7 @@ const ExploreScreen = ({ navigation }: Props) => {
         height: screenHeight
       }}
     >
-      <ScreenHeader text={'Explore'} />
+      <Header text={'Explore'} />
       <View style={{ flex: 1 }}>
         <TopTabNavigator
           initialScreenName='tracks'
