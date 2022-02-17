@@ -1,4 +1,12 @@
 const axios = require('axios')
+const AnalyticsProvider = require('../analytics')
+
+const RewardEventNames = {
+  REWARDS_CLAIM_SUCCESS: 'Rewards Claim: Success',
+  REWARDS_CLAIM_RETRY: 'Rewards Claim: Retry',
+  REWARDS_CLAIM_FAILURE: 'Rewards Claim: Failure',
+  REWARDS_CLAIM_BLOCKED: 'Rewards Claim: Blocked'
+}
 
 class SlackReporter {
   constructor ({
@@ -11,7 +19,6 @@ class SlackReporter {
 
   getJsonSlackMessage (obj) {
     return `\`\`\`
-Source: Identity
 ${Object.entries(obj).map(([key, value]) => `${key}: ${value}`).join('\n')}
 \`\`\``
   }
@@ -32,50 +39,138 @@ class RewardsReporter {
   constructor ({
     successSlackUrl,
     errorSlackUrl,
-    childLogger
+    childLogger = console,
+    source,
+    shouldReportAnalytics = true
   }) {
     this.successReporter = new SlackReporter({ slackUrl: successSlackUrl, childLogger })
     this.errorReporter = new SlackReporter({ slackUrl: errorSlackUrl, childLogger })
+    this.analyticsProvider = new AnalyticsProvider()
     this.childLogger = childLogger
+    this.source = source
+    this.shouldReportAnalytics = shouldReportAnalytics
   }
 
-  async reportSuccess ({ userId, challengeId, amount }) {
-    const report = {
-      status: 'success',
-      userId,
-      challengeId,
-      amount: amount.toString()
+  async reportSuccess ({ userId, challengeId, amount, specifier }) {
+    try {
+      const report = {
+        status: 'success',
+        userId,
+        challengeId,
+        amount: amount.toString(),
+        source: this.source,
+        specifier
+      }
+      const slackMessage = this.successReporter.getJsonSlackMessage(report)
+      await this.successReporter.postToSlack({ message: slackMessage })
+      this.childLogger.info(report, `Rewards Reporter`)
+
+      if (this.shouldReportAnalytics) {
+        this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_SUCCESS, userId, {
+          userId,
+          challengeId,
+          amount,
+          specifier,
+          source: this.source
+        })
+      }
+    } catch (e) {
+      console.error(`Report success failure: ${JSON.stringify(e)}`)
     }
-    const slackMessage = this.successReporter.getJsonSlackMessage(report)
-    await this.successReporter.postToSlack({ message: slackMessage })
-    this.childLogger.info(report, `Rewards Reporter`)
   }
 
-  async reportFailure ({ userId, challengeId, amount, error, phase }) {
-    const report = {
-      status: 'failure',
-      userId,
-      challengeId,
-      amount: amount.toString(),
-      error: error.toString(),
-      phase
+  async reportRetry ({ userId, challengeId, amount, error, phase, specifier }) {
+    try {
+      const report = {
+        status: 'retry',
+        userId,
+        challengeId,
+        amount: amount.toString(),
+        error: error.toString(),
+        phase,
+        source: this.source,
+        specifier
+      }
+      const slackMessage = this.errorReporter.getJsonSlackMessage(report)
+      await this.errorReporter.postToSlack({ message: slackMessage })
+      this.childLogger.info(report, `Rewards Reporter`)
+
+      if (this.shouldReportAnalytics) {
+        this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_RETRY, userId, {
+          userId,
+          challengeId,
+          amount,
+          specifier,
+          error,
+          phase,
+          source: this.source
+        })
+      }
+    } catch (e) {
+      console.error(`Report retry error: ${JSON.stringify(e)}`)
     }
-    const slackMessage = this.errorReporter.getJsonSlackMessage(report)
-    await this.errorReporter.postToSlack({ message: slackMessage })
-    this.childLogger.info(report, `Rewards Reporter`)
   }
 
-  async reportAAORejection ({ userId, challengeId, amount, error }) {
-    const report = {
-      status: 'rejection',
-      userId,
-      challengeId,
-      amount: amount.toString(),
-      error: error.toString()
+  async reportFailure ({ userId, challengeId, amount, error, phase, specifier }) {
+    try {
+      const report = {
+        status: 'failure',
+        userId,
+        challengeId,
+        amount: amount.toString(),
+        error: error.toString(),
+        phase,
+        source: this.source,
+        specifier
+      }
+      const slackMessage = this.errorReporter.getJsonSlackMessage(report)
+      await this.errorReporter.postToSlack({ message: slackMessage })
+      this.childLogger.info(report, `Rewards Reporter`)
+
+      if (this.shouldReportAnalytics) {
+        this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_FAILURE, userId, {
+          userId,
+          challengeId,
+          amount,
+          specifier,
+          error,
+          phase,
+          source: this.source
+        })
+      }
+    } catch (e) {
+      console.error(`Report failure error: ${JSON.stringify(e)}`)
     }
-    const slackMessage = this.errorReporter.getJsonSlackMessage(report)
-    await this.errorReporter.postToSlack({ message: slackMessage })
-    this.childLogger.info(report, `Rewards Reporter`)
+  }
+
+  async reportAAORejection ({ userId, challengeId, amount, error, specifier }) {
+    try {
+      const report = {
+        status: 'rejection',
+        userId,
+        challengeId,
+        amount: amount.toString(),
+        error: error.toString(),
+        source: this.source,
+        specifier
+      }
+      const slackMessage = this.errorReporter.getJsonSlackMessage(report)
+      await this.errorReporter.postToSlack({ message: slackMessage })
+      this.childLogger.info(report, `Rewards Reporter`)
+
+      if (this.shouldReportAnalytics) {
+        this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_BLOCKED, userId, {
+          userId,
+          challengeId,
+          amount,
+          specifier,
+          error,
+          source: this.source
+        })
+      }
+    } catch (e) {
+      console.error(`Report rejection error: ${JSON.stringify(e)}`)
+    }
   }
 }
 

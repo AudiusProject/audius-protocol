@@ -151,7 +151,7 @@ const createUserBankFrom = async ({
     data: Buffer.from(serializedInstructionEnum)
   })]
 
-  return transactionHandler.handleTransaction({ instructions, recentBlockhash })
+  return transactionHandler.handleTransaction({ instructions, recentBlockhash, feePayerOverride: feePayerKey })
 }
 
 module.exports = {

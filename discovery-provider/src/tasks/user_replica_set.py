@@ -78,7 +78,7 @@ def user_replica_set_state_update(
                     # if the user id is not in the lookup object, it hasn't been initialized yet
                     # first, get the user object from the db(if exists or create a new one)
                     # then set the lookup object for user_id with the appropriate props
-                    if user_id and (user_id not in user_replica_set_events_lookup):
+                    if user_id:
                         existing_user_record = lookup_user_record(
                             update_task,
                             session,
@@ -88,7 +88,7 @@ def user_replica_set_state_update(
                             txhash,
                         )
 
-                    if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):
+                    if cnode_sp_id:
                         existing_cnode_record = lookup_ursm_cnode(
                             update_task,
                             session,

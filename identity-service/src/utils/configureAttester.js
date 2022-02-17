@@ -28,12 +28,15 @@ const getRemoteConfig = async (optimizely) => {
 
   const runBehindSec = getRemoteVar(optimizely, REMOTE_VARS.ATTESTER_DELAY_SEC) || 0
 
+  const parallelization = getRemoteVar(optimizely, REMOTE_VARS.ATTESTER_PARALLELIZATION) || 2
+
   return {
     challengeIdsDenyList,
     endpoints,
     aaoEndpoint,
     aaoAddress,
-    runBehindSec
+    runBehindSec,
+    parallelization
   }
 }
 
@@ -41,7 +44,7 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
   // Make a more greppable child logger
   const childLogger = logger.child({ 'service': 'RewardsAttester' })
 
-  const { challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec } = await getRemoteConfig(optimizely)
+  const { challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec, parallelization } = await getRemoteConfig(optimizely)
 
   // Fetch the last saved offset and startingBLock from the DB,
   // or create them if necessary.
@@ -56,14 +59,15 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
   const rewardsReporter = new RewardsReporter({
     successSlackUrl: config.get('successAudioReporterSlackUrl'),
     errorSlackUrl: config.get('errorAudioReporterSlackUrl'),
-    childLogger
+    childLogger,
+    source: 'Identity'
   })
 
   // Init the RewardsAttester
   const attester = new RewardsAttester({
     libs,
     logger: childLogger,
-    parallelization: config.get('rewardsParallelization'),
+    parallelization,
     quorumSize: config.get('rewardsQuorumSize'),
     aaoEndpoint,
     aaoAddress,
@@ -116,9 +120,9 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
 
   // Periodically check for new config and update the rewards attester
   setInterval(async () => {
-    const { challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec } = await getRemoteConfig(optimizely)
-    logger.info(`Pulled rewards attester remote config: endpoints ${endpoints}, aao ${aaoEndpoint} (${aaoAddress}), denyList: ${challengeIdsDenyList}, run behind: ${runBehindSec}`)
-    attester.updateConfig({ challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec })
+    const { challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec, parallelization } = await getRemoteConfig(optimizely)
+    logger.info(`Pulled rewards attester remote config: endpoints ${endpoints}, aao ${aaoEndpoint} (${aaoAddress}), denyList: ${challengeIdsDenyList}, run behind: ${runBehindSec},  parallelization: ${parallelization}`)
+    attester.updateConfig({ challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, parallelization })
   }, 10000)
 
   attester.start()
