@@ -344,7 +344,7 @@ pub struct InitializeUser<'info> {
         init,
         payer = payer,
         seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump,
+        bump,
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
@@ -375,7 +375,7 @@ pub struct CreateUser<'info> {
         init,
         payer = payer,
         seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump,
+        bump,
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
