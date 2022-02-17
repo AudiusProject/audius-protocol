@@ -217,10 +217,12 @@ def populate_user_metadata(
             current_user_followee_follow_counts
         )
 
-        # can probably avoid doing this as a separate query
+        # do requested user IDs follow current user?
         follows_current_user_ids = [
             r[0]
             for r in session.query(Follow.follower_user_id).filter(
+                Follow.is_current == True,
+                Follow.is_delete == False,
                 Follow.followee_user_id == current_user_id,
                 Follow.follower_user_id.in_(user_ids),
             )
