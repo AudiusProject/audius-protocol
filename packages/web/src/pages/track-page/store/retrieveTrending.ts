@@ -12,6 +12,7 @@ import {
   getLastFetchedTrendingGenre,
   getTrendingGenre
 } from 'common/store/pages/trending/selectors'
+import { Genre } from 'common/utils/genres'
 import { Nullable } from 'common/utils/typeUtils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -19,7 +20,7 @@ import { AppState } from 'store/types'
 
 type RetrieveTrendingArgs = {
   timeRange: TimeRange
-  genre: Nullable<string>
+  genre: Nullable<Genre>
   offset: number
   limit: number
   currentUserId: Nullable<ID>
