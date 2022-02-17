@@ -1,1 +1,1 @@
-export { default } from './ShareToTikTokDrawer'
+export { ShareToTikTokDrawer } from './ShareToTikTokDrawer'

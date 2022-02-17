@@ -175,7 +175,7 @@ const useIsDark = () => {
   return themeVariant === Theme.DARK
 }
 
-const TrendingRewardsDrawer = () => {
+export const TrendingRewardsDrawer = () => {
   const dispatchWeb = useDispatchWeb()
   const pushRouteWeb = usePushRouteWeb()
   const styles = useThemedStyles(createStyles)
@@ -284,5 +284,3 @@ const TrendingRewardsDrawer = () => {
     </Drawer>
   )
 }
-
-export default TrendingRewardsDrawer

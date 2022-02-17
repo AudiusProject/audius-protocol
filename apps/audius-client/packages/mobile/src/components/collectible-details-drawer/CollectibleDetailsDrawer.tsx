@@ -119,7 +119,7 @@ const getHostname = (url: string) => {
   return url.match(/(https*:\/\/)([^/]+)/)?.[2] ?? ''
 }
 
-const CollectibleDetails = () => {
+export const CollectibleDetailsDrawer = () => {
   const dispatchWeb = useDispatchWeb()
 
   const handle = useSelectorWeb(getUserHandle)
@@ -233,5 +233,3 @@ const CollectibleDetails = () => {
     </Drawer>
   )
 }
-
-export default CollectibleDetails

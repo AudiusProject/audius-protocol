@@ -58,7 +58,7 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-const ApiRewardsDrawer = () => {
+export const ApiRewardsDrawer = () => {
   const dispatchWeb = useDispatchWeb()
   const styles = useThemedStyles(createStyles)
 
@@ -94,5 +94,3 @@ const ApiRewardsDrawer = () => {
     </Drawer>
   )
 }
-
-export default ApiRewardsDrawer

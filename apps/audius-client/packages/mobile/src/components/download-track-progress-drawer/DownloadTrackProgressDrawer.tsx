@@ -65,7 +65,7 @@ const messages = {
   title: 'Downloading'
 }
 
-const DownloadTrackProgressDrawer = () => {
+export const DownloadTrackProgressDrawer = () => {
   const [isOpen, setIsOpen] = useDrawer('DownloadTrackProgress')
 
   const downloadPercentage = useSelector(getDownloadedPercentage)
@@ -101,5 +101,3 @@ const DownloadTrackProgressDrawer = () => {
     </Drawer>
   )
 }
-
-export default DownloadTrackProgressDrawer

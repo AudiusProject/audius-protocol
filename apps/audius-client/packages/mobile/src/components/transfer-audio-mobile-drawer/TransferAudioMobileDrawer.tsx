@@ -47,7 +47,7 @@ const messages = {
   subtitle: 'To transfer AUDIO please visit audius.co from a desktop browser'
 }
 
-const TransferAudioMobileDrawer = () => {
+export const TransferAudioMobileDrawer = () => {
   const dispatchWeb = useDispatchWeb()
   const isOpen = useSelectorWeb(state =>
     getModalVisibility(state, TRANSFER_AUDIO_MODAL_NAME)
@@ -69,5 +69,3 @@ const TransferAudioMobileDrawer = () => {
     </Drawer>
   )
 }
-
-export default TransferAudioMobileDrawer

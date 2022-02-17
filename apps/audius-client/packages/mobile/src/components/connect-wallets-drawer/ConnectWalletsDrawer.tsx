@@ -42,7 +42,7 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-const ConnectWalletsDrawer = () => {
+export const ConnectWalletsDrawer = () => {
   const styles = useThemedStyles(createStyles)
   const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
   const dispatchWeb = useDispatchWeb()
@@ -62,5 +62,3 @@ const ConnectWalletsDrawer = () => {
     </Drawer>
   )
 }
-
-export default ConnectWalletsDrawer

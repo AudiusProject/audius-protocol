@@ -1,1 +1,1 @@
-export { default } from './TrendingRewardsDrawer'
+export { TrendingRewardsDrawer } from './TrendingRewardsDrawer'

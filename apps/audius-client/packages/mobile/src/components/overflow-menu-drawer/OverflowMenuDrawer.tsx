@@ -37,7 +37,7 @@ const rowMessageMap = {
   [OverflowAction.UNFOLLOW]: 'Unfollow'
 }
 
-const OverflowMenuDrawer = () => {
+export const OverflowMenuDrawer = () => {
   const dispatchWeb = useDispatchWeb()
 
   const onClose = useCallback(() => dispatchWeb(close()), [dispatchWeb])
@@ -70,5 +70,3 @@ const OverflowMenuDrawer = () => {
     />
   )
 }
-
-export default OverflowMenuDrawer
