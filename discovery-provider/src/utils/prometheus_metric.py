@@ -9,8 +9,13 @@ class PrometheusMetric:
     def __init__(self, name, description, labelnames=()):
         self.start_time = time()
 
+        # set metric prefix of audius_project_
+        name = f"audius_dn_{name}"
+
         # CollectorRegistries must be uniquely named
         if name not in PrometheusMetric.histograms:
+            # NOTE: we only set labelnames once.
+            # unsure if overloading is supported.
             PrometheusMetric.histograms[name] = Histogram(
                 name, description, labelnames=labelnames
             )
