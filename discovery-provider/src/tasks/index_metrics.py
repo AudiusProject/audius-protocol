@@ -414,7 +414,7 @@ def update_metrics(self):
             metric = PrometheusMetric(
                 "index_metrics_runtime_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
-                ("task_name"),
+                ("task_name",),
             )
             sweep_metrics(db, redis)
             refresh_metrics_matviews(db)
@@ -457,7 +457,7 @@ def aggregate_metrics(self):
             metric = PrometheusMetric(
                 "index_metrics_runtime_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
-                ("task_name"),
+                ("task_name",),
             )
             consolidate_metrics_from_other_nodes(self, db, redis)
             metric.save_time({"task_name": "aggregate_metrics"})
@@ -501,7 +501,7 @@ def synchronize_metrics(self):
             metric = PrometheusMetric(
                 "index_metrics_runtime_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
-                ("task_name"),
+                ("task_name",),
             )
             synchronize_all_node_metrics(self, db)
             metric.save_time({"task_name": "synchronize_metrics"})
