@@ -11,8 +11,7 @@ import { AudiusData } from "../target/types/audius_data";
 import {
   confirmLogInTransaction,
   initTestConstants,
-  testInitUser,
-  testInitUserSolPubkey,
+  testCreateUser,
 } from "./test-helpers";
 
 describe("playlist", () => {
@@ -154,20 +153,8 @@ describe("playlist", () => {
           adminStgKeypair.publicKey,
           Buffer.from(handleBytesArray)
         );
-      newUserAcctPDA = derivedAddress;
 
-      await testInitUser({
-        provider,
-        program,
-        baseAuthorityAccount,
-        ethAddress: ethAccount.address,
-        handleBytesArray,
-        bumpSeed,
-        metadata,
-        userStgAccount: newUserAcctPDA,
-        adminStgKeypair,
-        adminKeypair,
-      });
+      newUserAcctPDA = derivedAddress;
 
       // New sol key that will be used to permission user updates
       newUserKeypair = anchor.web3.Keypair.generate();
@@ -176,13 +163,18 @@ describe("playlist", () => {
       // Message as the incoming public key
       const message = newUserKeypair.publicKey.toString();
 
-      await testInitUserSolPubkey({
+      await testCreateUser({
         provider,
         program,
         message,
-        ethPrivateKey: ethAccount.privateKey,
+        baseAuthorityAccount,
+        ethAccount,
+        handleBytesArray,
+        bumpSeed,
+        metadata,
         newUserKeypair,
-        newUserAcctPDA,
+        userStgAccount: newUserAcctPDA,
+        adminStgPublicKey: adminStgKeypair.publicKey,
       });
     });
 

@@ -162,6 +162,22 @@ alias dp='cd ${PROTOCOL_DIR}/discovery-provider'
 alias libs='cd ${PROTOCOL_DIR}/libs'
 alias is='cd ${PROTOCOL_DIR}/identity-service'
 alias sc='cd ${PROTOCOL_DIR}/service-commands'
-alias maddog='cd ${PROTOCOL_DIR}/mad-dog'
+alias md='cd ${PROTOCOL_DIR}/mad-dog'
 alias dapp='cd ${PROTOCOL_DIR}/../audius-client'
 alias ak='cd ${PROTOCOL_DIR}/../audius-k8s'
+
+alias aup='
+  sc
+  sh scripts/init-repos.sh
+  libs
+  npm install
+  npm install lodash
+  npm install web3
+  npm link
+  sc
+  npm link @audius/libs
+  md
+  npm link @audius/libs
+  npm link @audius/service-commands
+  A up
+'
