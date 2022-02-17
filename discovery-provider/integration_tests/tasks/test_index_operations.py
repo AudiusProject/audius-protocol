@@ -7,7 +7,13 @@ import pytest
 import src.utils.multihash
 from chance import chance
 from integration_tests.utils import to_bytes
-from src.models.models import Block, Track, User
+from src.models.models import (
+    Block,
+    SkippedTransaction,
+    SkippedTransactionLevel,
+    Track,
+    User,
+)
 from src.queries.get_skipped_transactions import get_indexing_error
 from src.utils.helpers import remove_test_file
 from src.utils.indexing_errors import IndexingError
@@ -242,18 +248,15 @@ def test_index_operations_metadata_fetch_error(
                 current_block = (
                     current_block_query[0].number if len(current_block_query) > 0 else 0
                 )
+            skipped_tx = (
+                session.query(SkippedTransaction)
+                .filter_by(level=SkippedTransactionLevel.node)
+                .all()[0]
+            )
+            assert skipped_tx
+    except IndexingError:
+        # indexing should not stall or raise
         assert False
-    except IndexingError as error:
-        error = get_indexing_error(redis)
-        errored_block_in_db_results = (
-            session.query(Block).filter_by(number=error["blocknumber"]).all()
-        )  # should not exist
-        errored_block_in_db = len(errored_block_in_db_results) != 0
-        # when errored block is in db, it breaks the consensus mechanism
-        # for discovery nodes staying in sync
-        assert not errored_block_in_db
-        assert error["message"] == "Broken fetch"
-        assert error["count"] == 1
 
 
 def test_index_operations_tx_receipts_fetch_error(
@@ -356,18 +359,15 @@ def test_index_operations_tx_parse_error(celery_app, celery_app_contracts, mocke
                 current_block = (
                     current_block_query[0].number if len(current_block_query) > 0 else 0
                 )
-        assert False
+            skipped_tx = (
+                session.query(SkippedTransaction)
+                .filter_by(level=SkippedTransactionLevel.node)
+                .all()[0]
+            )
+            assert skipped_tx
     except IndexingError:
-        error = get_indexing_error(redis)
-        errored_block_in_db_results = (
-            session.query(Block).filter_by(number=error["blocknumber"]).all()
-        )  # should not exist
-        errored_block_in_db = len(errored_block_in_db_results) != 0
-        # when errored block is in db, it breaks the consensus mechanism
-        # for discovery nodes staying in sync
-        assert not errored_block_in_db
-        assert error["message"] == "Broken parser"
-        assert error["count"] == 1
+        # indexing should not stall or raise
+        assert False
 
 
 def test_index_operations_indexing_error_on_commit(

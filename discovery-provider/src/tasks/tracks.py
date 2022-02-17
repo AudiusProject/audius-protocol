@@ -12,7 +12,7 @@ from src.models import Remix, Stem, Track, TrackRoute, User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers, multihash
-from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
+from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.track_event_constants import (
     track_event_types_arr,
@@ -114,18 +114,13 @@ def track_state_update(
                         track_events[track_id]["events"].append(event_type)
                         track_ids.add(track_id)
                         processedEntries += 1
-                except EntityMissingRequiredFieldError as e:
+                except Exception as e:
                     logger.warning(f"Skipping tx {txhash} with error {e}")
                     skipped_tx_count += 1
                     add_node_level_skipped_transaction(
                         session, block_number, blockhash, txhash
                     )
                     pass
-                except Exception as e:
-                    logger.info("Error in parse track transaction")
-                    raise IndexingError(
-                        "track", block_number, blockhash, txhash, str(e)
-                    ) from e
 
             num_total_changes += processedEntries
 

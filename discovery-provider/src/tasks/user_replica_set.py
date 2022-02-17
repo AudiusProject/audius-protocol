@@ -13,7 +13,7 @@ from src.utils.eth_contracts_helpers import (
     content_node_service_type,
     sp_factory_registry_key,
 )
-from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
+from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.redis_cache import get_pickled_key, get_sp_id_key
 from src.utils.user_event_constants import (
@@ -36,7 +36,6 @@ def user_replica_set_state_update(
     _blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of User model state changes found in transaction and set of user_id values"""
-
     event_blockhash = update_task.web3.toHex(block_hash)
     num_user_replica_set_changes = 0
     skipped_tx_count = 0
@@ -151,22 +150,13 @@ def user_replica_set_state_update(
                             ] = parsed_cnode_record
                         cnode_events_lookup[cnode_sp_id]["events"].append(event_type)
                         processedEntries += 1
-                except EntityMissingRequiredFieldError as e:
+                except Exception as e:
                     logger.warning(f"Skipping tx {txhash} with error {e}")
                     skipped_tx_count += 1
                     add_node_level_skipped_transaction(
                         session, block_number, event_blockhash, txhash
                     )
                     pass
-                except Exception as e:
-                    logger.info("Error in parse user replica set transaction")
-                    raise IndexingError(
-                        "user_replica_set",
-                        block_number,
-                        event_blockhash,
-                        txhash,
-                        str(e),
-                    ) from e
             num_user_replica_set_changes += processedEntries
 
     logger.info(

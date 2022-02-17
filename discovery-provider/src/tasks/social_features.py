@@ -8,8 +8,8 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import Follow, Playlist, Repost, RepostType
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.index_related_artists import queue_related_artist_calculation
-from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,7 @@ def social_feature_state_update(
     """Return Tuple containing int representing number of social feature related state changes in this transaction and empty Set (to align with other _state_update function signatures)"""
     empty_set: Set[int] = set()
     num_total_changes = 0
+    skipped_tx_count = 0
     if not social_feature_factory_txs:
         return num_total_changes, empty_set
 
@@ -113,9 +114,9 @@ def social_feature_state_update(
             logger.info("Error in parse track transaction")
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             blockhash = update_task.web3.toHex(block_hash)
-            raise IndexingError(
-                "social_feature", block_number, blockhash, txhash, str(e)
-            ) from e
+            logger.warning(f"Skipping tx {txhash} with error {e}")
+            skipped_tx_count += 1
+            add_node_level_skipped_transaction(session, block_number, blockhash, txhash)
 
     # bulk process all repost and follow changes
 
@@ -150,6 +151,11 @@ def social_feature_state_update(
             dispatch_challenge_follow(challenge_bus, follow, block_number)
             queue_related_artist_calculation(update_task.redis, followee_user_id)
         num_total_changes += len(followee_user_ids)
+
+    logger.info(
+        f"index.py | social_features.py | [social features indexing] There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
+    )
+
     return num_total_changes, empty_set
 
 

@@ -27,7 +27,10 @@ from src.queries.get_skipped_transactions import (
     get_indexing_error,
     set_indexing_error,
 )
-from src.queries.skipped_transactions import add_network_level_skipped_transaction
+from src.queries.skipped_transactions import (
+    add_network_level_skipped_transaction,
+    add_node_level_skipped_transaction,
+)
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import track_metadata_format, user_metadata_format
@@ -352,11 +355,14 @@ def fetch_ipfs_metadata(
             try:
                 ipfs_metadata[cid] = future.result()
             except Exception as e:
-                logger.info("Error in fetch ipfs metadata")
+                logger.info(
+                    f"Error in fetch ipfs metadata, skipping txhash {txhash} with error {e}"
+                )
                 blockhash = update_task.web3.toHex(block_hash)
-                raise IndexingError(
-                    "prefetch-cids", block_number, blockhash, txhash, str(e)
-                ) from e
+                add_node_level_skipped_transaction(
+                    session, block_number, blockhash, txhash
+                )
+                pass
 
     return ipfs_metadata, blacklisted_cids
 
@@ -558,7 +564,7 @@ def index_blocks(self, db, blocks_list):
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
-
+        sorted_txs = []
         with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             skip_tx_hash = get_tx_hash_to_skip(session, redis)
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level

@@ -9,7 +9,7 @@ from src.models import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
-from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
+from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.playlist_event_constants import (
     playlist_event_types_arr,
@@ -87,18 +87,13 @@ def playlist_state_update(
                         playlist_events_lookup[playlist_id]["events"].append(event_type)
                         playlist_ids.add(playlist_id)
                         processedEntries += 1
-                except EntityMissingRequiredFieldError as e:
+                except Exception as e:
                     logger.warning(f"Skipping tx {txhash} with error {e}")
                     skipped_tx_count += 1
                     add_node_level_skipped_transaction(
                         session, block_number, blockhash, txhash
                     )
                     pass
-                except Exception as e:
-                    logger.info("Error in parse playlist transaction")
-                    raise IndexingError(
-                        "playlist", block_number, blockhash, txhash, str(e)
-                    ) from e
             num_total_changes += processedEntries
 
     logger.info(

@@ -8,7 +8,7 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import Playlist, Save, SaveType
-from src.utils.indexing_errors import IndexingError
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,7 @@ def user_library_state_update(
     """Return Tuple containing int representing number of User Library model state changes found in transaction and empty Set (to align with fn signature of other _state_update functions."""
     empty_set: Set[int] = set()
     num_total_changes = 0
+    skipped_tx_count = 0
     if not user_library_factory_txs:
         return num_total_changes, empty_set
 
@@ -86,12 +87,14 @@ def user_library_state_update(
                 playlist_save_state_changes,
             )
         except Exception as e:
-            logger.info("Error in user library transaction")
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             blockhash = update_task.web3.toHex(block_hash)
-            raise IndexingError(
-                "user_library", block_number, blockhash, txhash, str(e)
-            ) from e
+            logger.warning(
+                f"Error in user library transaction - Skipping tx {txhash} with error {e}"
+            )
+            skipped_tx_count += 1
+            add_node_level_skipped_transaction(session, block_number, blockhash, txhash)
+            pass
 
     for user_id, track_ids in track_save_state_changes.items():
         for track_id in track_ids:
@@ -114,6 +117,9 @@ def user_library_state_update(
             dispatch_favorite(challenge_bus, save, block_number)
         num_total_changes += len(playlist_ids)
 
+    logger.info(
+        f"index.py | user_library.py | There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
+    )
     return num_total_changes, empty_set
 
 

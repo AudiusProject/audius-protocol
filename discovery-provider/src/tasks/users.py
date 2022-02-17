@@ -16,7 +16,7 @@ from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
-from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
+from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 
@@ -124,18 +124,13 @@ def user_state_update(
                         user_events_lookup[user_id]["events"].append(event_type)
                         user_ids.add(user_id)
                         processedEntries += 1
-                except EntityMissingRequiredFieldError as e:
+                except Exception as e:
                     logger.warning(f"Skipping tx {txhash} with error {e}")
                     skipped_tx_count += 1
                     add_node_level_skipped_transaction(
                         session, block_number, blockhash, txhash
                     )
                     pass
-                except Exception as e:
-                    logger.error("Error in parse user transaction")
-                    raise IndexingError(
-                        "user", block_number, blockhash, txhash, str(e)
-                    ) from e
 
             num_total_changes += processedEntries
 
