@@ -170,12 +170,7 @@ def lookup_user_record(
     user_id = helpers.get_tx_arg(entry, "_userId")
 
     # Check if the userId is in the db
-    user_exists = (
-        session.query(User)
-        .filter(User.user_id == user_id, User.is_current == True)
-        .count()
-        > 0
-    )
+    user_exists = session.query(User).filter(User.user_id == user_id).count() > 0
 
     user_record = None  # will be set in this if/else
     if user_exists:
