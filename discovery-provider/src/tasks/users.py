@@ -170,12 +170,7 @@ def lookup_user_record(
     user_id = helpers.get_tx_arg(entry, "_userId")
 
     # Check if the userId is in the db
-    user_exists = (
-        session.query(User)
-        .filter_by(user_id=helpers.get_tx_arg(entry, "_userId"))
-        .count()
-        > 0
-    )
+    user_exists = session.query(User).filter(User.user_id == user_id).count() > 0
 
     user_record = None  # will be set in this if/else
     if user_exists:
@@ -527,7 +522,7 @@ def validate_signature(
     return False
 
 
-class UserEventsMetadata(TypedDict):
+class UserEventsMetadata(TypedDict, total=False):
     referrer: int
     is_mobile_user: bool
 
@@ -569,6 +564,7 @@ def update_user_events(
                 event == "referrer"
                 and isinstance(value, int)
                 and user_events.referrer is None
+                and user_record.user_id != value
             ):
                 user_events.referrer = value
                 bus.dispatch(

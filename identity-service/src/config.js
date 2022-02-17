@@ -606,11 +606,11 @@ const config = convict({
     default: '',
     env: 'solanaValidSigner'
   },
-  solanaFeePayerWallet: {
-    doc: 'solanaFeePayerWallet',
+  solanaFeePayerWallets: {
+    doc: 'solanaFeePayerWallets - Stringified array like[{ privateKey: [] },...]',
     format: 'string-array',
-    default: null,
-    env: 'solanaFeePayerWallet'
+    default: [],
+    env: 'solanaFeePayerWallets'
   },
   solanaSignerPrivateKey: {
     doc: 'solanaSignerPrivateKey',
@@ -659,12 +659,6 @@ const config = convict({
     format: Number,
     default: '60000',
     env: 'solanaConfirmationTimeout'
-  },
-  rewardsParallelization: {
-    doc: 'How many requests to perform in parallel when disbursing rewards',
-    format: Number,
-    default: '2',
-    env: 'rewardsParallelization'
   },
   rewardsQuorumSize: {
     doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
@@ -732,6 +726,12 @@ const config = convict({
     env: 'errorAudioReporterSlackUrl',
     default: ''
   },
+  errorWormholeReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in wormhole transfers',
+    format: String,
+    env: 'errorWormholeReporterSlackUrl',
+    default: ''
+  },
   wormholeRPCHosts: {
     doc: 'Wormhole RPC Host',
     format: String,
@@ -767,6 +767,12 @@ const config = convict({
     format: String,
     env: 'websiteHost',
     default: 'https://audius.co'
+  },
+  amplitudeAPIKey: {
+    doc: 'Amplitude API key',
+    format: String,
+    env: 'amplitudeAPIKey',
+    default: ''
   }
 })
 
@@ -794,7 +800,7 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
     solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
-    solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
+    solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
     solanaEndpoint: solanaContractConfig.endpoint,
     solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
 

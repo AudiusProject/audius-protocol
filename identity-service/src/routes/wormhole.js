@@ -1,7 +1,7 @@
 const { sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const ethTxRelay = require('../relay/ethTxRelay')
 const crypto = require('crypto')
-const { getFeePayer } = require('../solana-client')
+const { getFeePayerKeypair } = require('../solana-client')
 
 const { NodeHttpTransport } = require('@improbable-eng/grpc-web-node-http-transport')
 
@@ -43,14 +43,14 @@ const relayWormhole = async (
     logs.push(`Attempting Transfer Tokens for sender: ${senderAddress}`)
     const { sha: transferTokensSHA, txProps: transferTokensTxProps } = getTxProps(senderAddress, transferTokens)
     const estimatedGas = await ethTxRelay.estimateEthTransactionGas(senderAddress, transferTokensTxProps.contractAddress, transferTokensTxProps.encodedABI)
-    const gasMultiplier = 1.5
+    const gasMultiplier = 1.05
     transferTokensTxProps.gasLimit = Math.floor(estimatedGas * gasMultiplier)
 
     const transferTokensTxResponse = await ethTxRelay.sendEthTransaction(req, transferTokensTxProps, transferTokensSHA)
     const transferTxHash = transferTokensTxResponse.txHash
     context.transferTxHash = transferTxHash
     logs.push(`Attempting Transfer Tokens for sender: ${transferTxHash}`)
-    const feePayerAccount = getFeePayer()
+    const feePayerAccount = getFeePayerKeypair()
 
     const signTransaction = async (transaction) => {
       transaction.partialSign(feePayerAccount)
@@ -91,11 +91,11 @@ const relayWormhole = async (
 module.exports = function (app) {
   app.post('/wormhole_relay', async (req, res, next) => {
     const audiusLibs = req.app.get('audiusLibs')
-    const slackAudioErrorReporter = req.app.get('slackAudioErrorReporter')
+    const slackWormholeErrorReporter = req.app.get('slackWormholeErrorReporter')
     const body = req.body
     const reportError = async (errorData) => {
-      const message = slackAudioErrorReporter.getJsonSlackMessage(errorData)
-      await slackAudioErrorReporter.postToSlack({ message })
+      const message = slackWormholeErrorReporter.getJsonSlackMessage(errorData)
+      await slackWormholeErrorReporter.postToSlack({ message })
     }
 
     try {

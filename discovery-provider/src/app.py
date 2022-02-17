@@ -229,6 +229,11 @@ def create(test_config=None, mode="app"):
         helpers.configure_flask_app_logging(
             app, shared_config["discprov"]["loglevel_flask"]
         )
+        # Create challenges. Run the create_new_challenges only in flask
+        # Running this in celery + flask init can cause a race condition
+        session_manager = app.db_session_manager
+        with session_manager.scoped_session() as session:
+            create_new_challenges(session)
         return app
 
     if mode == "celery":
@@ -329,11 +334,6 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
 
-    # Create challenges
-    session_manager = app.db_session_manager
-    with session_manager.scoped_session() as session:
-        create_new_challenges(session)
-
     return app
 
 
@@ -368,7 +368,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_plays",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
-            "src.tasks.index_aggregate_plays",
+            "src.tasks.aggregates.index_aggregate_plays",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
@@ -380,6 +380,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
             "src.tasks.index_aggregate_user",
+            "src.tasks.aggregates.index_aggregate_track",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",

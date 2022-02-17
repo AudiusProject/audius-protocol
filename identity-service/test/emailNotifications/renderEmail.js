@@ -142,6 +142,14 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
+      challenge_id: 'ref-v'
+    },
+    slot: 112519144,
+    type: 'ChallengeReward'
+  },
+  {
+    initiator: 1,
+    metadata: {
       challenge_id: 'referred'
     },
     slot: 112519145,
@@ -247,7 +255,7 @@ describe('Test Render Email Notification', function () {
     assert.deepStrictEqual(notifHtml, emailRendered)
   })
 
-  it('should render challenge notifications emails', async function () {
+  it('should render additional challenge notifications emails', async function () {
     const timeBeforeEmailNotifications = moment()
     // ======================================= Process initial Notifications =======================================
     const tx1 = await models.sequelize.transaction()
@@ -264,7 +272,7 @@ describe('Test Render Email Notification', function () {
       5
     )
 
-    assert.deepStrictEqual(notificationCount, 3)
+    assert.deepStrictEqual(notificationCount, 4)
     // assert some notification props
 
     const renderProps = {

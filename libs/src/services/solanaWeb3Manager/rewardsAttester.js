@@ -7,13 +7,87 @@ const { decodeHashId } = require('../../utils/utils')
 class BaseRewardsReporter {
   async reportSuccess ({ userId, challengeId, amount }) {}
 
+  async reportRetry ({ userId, challengeId, amount, error, phase }) {}
+
   async reportFailure ({ userId, challengeId, amount, error, phase }) {}
 
   async reportAAORejection ({ userId, challengeId, amount, error }) {}
 }
 
-const SOLANA_BASED_CHALLENGE_IDS = new Set(['listen-streak'])
 const MAX_DISBURSED_CACHE_SIZE = 100
+const SOLANA_EST_SEC_PER_SLOT = 0.5
+const POA_SEC_PER_BLOCK = 5
+
+/**
+ * Class to encapsulate logic for calculating disbursement delay thresholds.
+ * Periodically polls Solana to get slot production rate.
+ * Caches old values (`allowedStalenessSec`) for current POA block & Solana slot to reduce RPC
+ * overhead.
+ *
+ * Exposes `getPOABlockThreshold` and `getSolanaSlotThreshold`
+ *
+ * @class ThresholdCalculator
+ */
+class AttestationDelayCalculator {
+  constructor ({ libs, runBehindSec, allowedStalenessSec, solanaPollingInterval = 30, logger = console }) {
+    this.libs = libs
+    this.solanaSecPerSlot = SOLANA_EST_SEC_PER_SLOT
+    this.solanaSlot = null
+    this.runBehindSec = runBehindSec
+    this.lastSolanaThreshold = null
+    this.lastPOAThreshold = null
+    this.allowedStalenessSec = allowedStalenessSec
+    this.solanaPollingInterval = solanaPollingInterval
+    this.logger = logger
+    this.intervalHandle = null
+  }
+
+  async start () {
+    // Begin Solana slot rate polling
+    let oldSlot = await this.libs.solanaWeb3Manager.getSlot()
+    this.intervalHandle = setInterval(async () => {
+      const newSlot = await this.libs.solanaWeb3Manager.getSlot()
+      const diff = this.solanaPollingInterval / (newSlot - oldSlot)
+      this.solanaSecPerSlot = diff
+      this.logger.info(`Setting Solana seconds per slot to ${diff}`)
+      oldSlot = newSlot
+    }, this.solanaPollingInterval * 1000)
+  }
+
+  stop () {
+    clearInterval(this.intervalHandle)
+  }
+
+  async getPOABlockThreshold () {
+    // Use cached value if possible
+    if (this.lastPOAThreshold &&
+       (Date.now() - this.lastPOAThreshold.time) / 1000 < this.allowedStalenessSec) {
+      return this.lastPOAThreshold.threshold
+    }
+    const currentBlock = await this.libs.web3Manager.getWeb3().eth.getBlockNumber()
+    let threshold = currentBlock - this.runBehindSec / POA_SEC_PER_BLOCK
+    this.lastPOAThreshold = {
+      threshold,
+      time: Date.now()
+    }
+    return threshold
+  }
+
+  async getSolanaSlotThreshold () {
+    // Use cached value if possible
+    if (this.lastSolanaThreshold &&
+       (Date.now() - this.lastSolanaThreshold.time) / 1000 < this.allowedStalenessSec) {
+      return this.lastSolanaThreshold.threshold
+    }
+    const currentSlot = await this.libs.solanaWeb3Manager.getSlot()
+    let threshold = currentSlot - this.runBehindSec / this.solanaSecPerSlot
+    this.lastSolanaThreshold = {
+      threshold,
+      time: Date.now()
+    }
+    return threshold
+  }
+}
 
 /**
  * `RewardsAttester` is responsible for repeatedly attesting for completed rewards.
@@ -43,7 +117,7 @@ class RewardsAttester {
    *    startingBlock: number
    *    offset: number
    *    parallelization: number
-   *    logger: any
+   *    logger?: any
    *    quorumSize: number
    *    aaoEndpoint: string
    *    aaoAddress: string
@@ -53,6 +127,9 @@ class RewardsAttester {
    *    reporter: BaseRewardsReporter
    *    challengeIdsDenyList: Array<string>
    *    endpoints?: Array<string>
+   *    runBehindSec?: number
+   *    isSolanaChallenge?: (string) => boolean
+   *    feePayerOverride?: string
    * }} {
    *    libs,
    *    startingBlock,
@@ -67,7 +144,10 @@ class RewardsAttester {
    *    maxRetries = 3,
    *    reporter,
    *    challengeIdsDenyList,
-   *    endpoints
+   *    endpoints,
+   *    runBehindSec
+   *    isSolanaChallenge
+   *    feePayerOverride
    *  }
    * @memberof RewardsAttester
    */
@@ -76,7 +156,7 @@ class RewardsAttester {
     startingBlock,
     offset,
     parallelization,
-    logger,
+    logger = console,
     quorumSize,
     aaoEndpoint,
     aaoAddress,
@@ -84,8 +164,11 @@ class RewardsAttester {
     getStartingBlockOverride = () => null,
     maxRetries = 5,
     reporter,
-    challengeIdsDenyList,
-    endpoints = []
+    challengeIdsDenyList = [],
+    endpoints = [],
+    runBehindSec = 0,
+    isSolanaChallenge = (challengeId) => true,
+    feePayerOverride = null
   }) {
     this.libs = libs
     this.logger = logger
@@ -120,9 +203,20 @@ class RewardsAttester {
     this.maxRetries = maxRetries
     // Get override starting block for manually setting indexing start
     this.getStartingBlockOverride = getStartingBlockOverride
+    this.feePayerOverride = feePayerOverride
+
+    // Calculate delay
+    this.delayCalculator = new AttestationDelayCalculator({
+      libs,
+      runBehindSec,
+      logger,
+      allowedStalenessSec: 5
+    })
+    this.isSolanaChallenge = isSolanaChallenge
 
     this._performSingleAttestation = this._performSingleAttestation.bind(this)
     this._disbursementToKey = this._disbursementToKey.bind(this)
+    this._shouldStop = false
   }
 
   /**
@@ -139,48 +233,95 @@ class RewardsAttester {
       endpoints: ${this.endpoints}
     `)
     await this._selectDiscoveryNodes()
+    await this.delayCalculator.start()
 
-    while (true) {
+    while (!this._shouldStop) {
       try {
         await this._awaitFeePayerBalance()
         await this._checkForStartingBlockOverride()
-        await this._attestInParallel()
+
+        // Refill queue if necessary, returning early if error
+        const { error } = await this._refillQueueIfNecessary()
+        if (error) {
+          this.logger.error(`Got error trying to refill challenges: [${error}]`)
+          throw new Error(error)
+        }
+
+        // If queue is still empty, sleep and return
+        if (!this.undisbursedQueue.length) {
+          this.logger.info(`No undisbursed challenges. Sleeping...`)
+          await this._delay(1000)
+          continue
+        }
+
+        // Get undisbursed rewards
+        let toAttest = this.undisbursedQueue.splice(0, this.parallelization)
+
+        // Attest for batch in parallel
+        const { highestBlock, offset, results, successCount } = await this._attestInParallel(toAttest)
+
+        // Set state
+        this.startingBlock = highestBlock ? highestBlock - 1 : this.startingBlock
+        this.offset = offset
+        this.logger.info(`Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`)
+
+        // Set the recently disbursed set
+        this._addRecentlyDisbursed(results)
+
+        // run the `updateValues` callback
+        await this.updateValues({ startingBlock: this.startingBlock, offset: this.offset, successCount })
       } catch (e) {
         this.logger.error(`Got error: ${e}, sleeping`)
         await this._delay(1000)
       }
     }
+
+    this._shouldStop = false
+  }
+
+  async stop () {
+    this._shouldStop = true
+    this.delayCalculator.stop()
+  }
+
+  async processChallenges (challenges) {
+    let toProcess = [...challenges]
+    while (toProcess.length) {
+      try {
+        this.logger.info(`Processing ${toProcess.length} challenges`)
+        let toAttest = toProcess.splice(0, this.parallelization)
+        const { accumulatedErrors: errors } = await this._attestInParallel(toAttest)
+        if (errors && errors.length) {
+          this.logger.error(`Got errors in processChallenges: ${JSON.stringify(errors)}`)
+          return { errors }
+        }
+      } catch (e) {
+        this.logger.error(`Got error: ${e}, sleeping`)
+        await this._delay(1000)
+      }
+    }
+    return {}
   }
 
   /**
-   * Updates the AAO endpoint and address
+   * Updates attester config
+   *
    * @param {{
-   *     aaoEndpoint: string
-   *     aaoAddress: string
-   * }} {
-   *     aaoEndpoint,
-   *     aaoAddress
-   * }
+   *  aaoEndpoint: string,
+   *  aaoAddress: string,
+   *  endpoints: Array<string>,
+   *  challengeIdsDenyList: Array<string>
+   *  parallelization: number
+   * }} { aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList, parallelization }
    * @memberof RewardsAttester
    */
-  async updateAAO ({ aaoEndpoint, aaoAddress }) {
-    this.logger.info(`Updating AAO to ${aaoEndpoint}, ${aaoAddress}`)
-    this.aaoEndpoint = aaoEndpoint
-    this.aaoAddress = aaoAddress
-  }
-
-  /**
-   * Updates the discovery node attestation endpoints
-   * @param {{
-   *     endpoints: Array<string>
-   * }} {
-   *     endpoints
-   * }
-   * @memberof RewardsAttester
-   */
-  async updateEndpoints ({ endpoints }) {
-    this.logger.info(`Updating rewards attester endpoints to ${endpoints}`)
-    this.endpoints = endpoints
+  updateConfig ({ aaoEndpoint, aaoAddress, endpoints, challengeIdsDenyList, parallelization }) {
+    this.logger.info(`Updating attester with config aaoEndpoint: ${aaoEndpoint}, aaoAddress: ${aaoAddress}, endpoints: ${endpoints}, challengeIdsDenyList: ${challengeIdsDenyList}, parallelization: ${parallelization}`)
+    this.aaoEndpoint = aaoEndpoint || this.aaoEndpoint
+    this.aaoAddress = aaoAddress || this.aaoAddress
+    this.endpoints = endpoints || this.endpoints
+    this.challengeIdsDenyList = challengeIdsDenyList ? new Set(...challengeIdsDenyList) : this.challengeIdsDenyList
+    this.parallelization = parallelization || this.parallelization
   }
 
   /**
@@ -197,6 +338,23 @@ class RewardsAttester {
   }
 
   /**
+   * Returns the override feePayer if set, otherwise a random fee payer from among the list of existing fee payers.
+   *
+   * @memberof RewardsAttester
+   */
+  _getFeePayer () {
+    if (this.feePayerOverride) {
+      return this.feePayerOverride
+    }
+    const feePayerKeypairs = this.libs.solanaWeb3Manager.solanaWeb3Config.feePayerKeypairs
+    if (feePayerKeypairs && feePayerKeypairs.length) {
+      const randomFeePayerIndex = Math.floor(Math.random() * feePayerKeypairs.length)
+      return feePayerKeypairs[randomFeePayerIndex].publicKey
+    }
+    return null
+  }
+
+  /**
    * Escape hatch for manually setting starting block.
    *
    * @memberof RewardsAttester
@@ -209,6 +367,7 @@ class RewardsAttester {
     this.startingBlock = override
     this.offset = 0
     this.recentlyDisbursedQueue = []
+    this.undisbursedQueue = []
   }
 
   /**
@@ -222,30 +381,13 @@ class RewardsAttester {
    *
    * @memberof RewardsAttester
    */
-  async _attestInParallel () {
+  async _attestInParallel (toAttest) {
     this.logger.info(`Attesting in parallel with startingBlock: ${this.startingBlock}, offset: ${this.offset}, parallelization: ${this.parallelization}`)
-
-    // Refill queue if necessary, returning early if error
-    const { error } = await this._refillQueueIfNecessary()
-    if (error) {
-      this.logger.error(`Got error trying to refill challenges: [${error}]`)
-      throw new Error(error)
-    }
-
-    // If queue is still empty, sleep and return
-    if (!this.undisbursedQueue.length) {
-      this.logger.info(`No undisbursed challenges. Sleeping...`)
-      await this._delay(1000)
-      return
-    }
-
-    // Get undisbursed rewards
-    let toAttest = this.undisbursedQueue.splice(0, this.parallelization)
     // Get the highest block number, ignoring Solana based challenges (i.e. listens) which have a significantly higher
     // slot and throw off this calculation.
     // TODO: [AUD-1217] we should handle this in a less hacky way, possibly by
     // attesting for Solana + POA challenges separately.
-    const poaAttestations = toAttest.filter(({ challengeId }) => !SOLANA_BASED_CHALLENGE_IDS.has(challengeId))
+    const poaAttestations = toAttest.filter(({ challengeId }) => !this.isSolanaChallenge(challengeId))
     const highestBlock = poaAttestations.length ? Math.max(...poaAttestations.map(e => e.completedBlocknumber)) : null
 
     // Attempt to attest in a single sweep
@@ -253,8 +395,9 @@ class RewardsAttester {
 
     // "Process" the results of attestation into noRetry and needsRetry errors,
     // as well as a flag that indicates whether we should reselect.
-    let { successful, noRetry, needsRetry, shouldReselect } = await this._processResponses(results)
+    let { successful, noRetry, needsRetry, shouldReselect } = this._processResponses(results, false)
     let successCount = successful.length
+    let accumulatedErrors = noRetry
 
     // Increment offset by the # of errors we're not retrying that have the max block #.
     //
@@ -272,7 +415,8 @@ class RewardsAttester {
         await this._selectDiscoveryNodes()
       }
       const res = await Promise.all(needsRetry.map(this._performSingleAttestation))
-      ;({ successful, needsRetry, noRetry, shouldReselect } = await this._processResponses(res))
+      ;({ successful, needsRetry, noRetry, shouldReselect } = this._processResponses(res, retryCount === this.maxRetries))
+      accumulatedErrors = [...accumulatedErrors, ...noRetry]
 
       offset += noRetry.filter(({ completedBlocknumber }) => completedBlocknumber === highestBlock).length
       successCount += successful.length
@@ -280,18 +424,16 @@ class RewardsAttester {
 
     if (retryCount === this.maxRetries) {
       this.logger.error(`Gave up with ${retryCount} retries`)
+      accumulatedErrors = [...accumulatedErrors, ...needsRetry]
     }
 
-    // Set startingBlock and offset
-    this.startingBlock = highestBlock ? highestBlock - 1 : this.startingBlock
-    this.offset = offset
-    this.logger.info(`Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`)
-
-    // Set the recently disbursed set
-    this._addRecentlyDisbursed(results)
-
-    // run the `updateValues` callback
-    await this.updateValues({ startingBlock: this.startingBlock, offset: this.offset, successCount })
+    return {
+      accumulatedErrors,
+      highestBlock,
+      offset,
+      results,
+      successCount
+    }
   }
 
   /**
@@ -318,7 +460,6 @@ class RewardsAttester {
    *     handle: string,
    *     wallet: string,
    *     completedBlocknumber: number
-   *     instructionsPerTransaction?: number
    * }} {
    *     challengeId,
    *     userId,
@@ -327,7 +468,6 @@ class RewardsAttester {
    *     handle,
    *     wallet,
    *     completedBlocknumber,
-   *     instructionsPerTransaction
    *   }
    * @return {Promise<AttestationResponse>}
    * @memberof RewardsAttester
@@ -339,10 +479,10 @@ class RewardsAttester {
     amount,
     handle,
     wallet,
-    completedBlocknumber,
-    instructionsPerTransaction
+    completedBlocknumber
   }) {
-    this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}] ${instructionsPerTransaction ? '[with single attestation flow!]' : ''}`)
+    this.logger.info(`Attempting to attest for userId [${decodeHashId(userId)}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`)
+
     const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate({
       challengeId,
       encodedUserId: userId,
@@ -354,13 +494,12 @@ class RewardsAttester {
       quorumSize: this.quorumSize,
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
-      instructionsPerTransaction,
-      logger: this.logger
+      logger: this.logger,
+      feePayerOverride: this._getFeePayer()
     })
 
     if (success) {
       this.logger.info(`Successfully attestested for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}]!`)
-      await this.reporter.reportSuccess({ userId, challengeId, amount })
       return {
         challengeId,
         userId,
@@ -374,13 +513,6 @@ class RewardsAttester {
 
     // Handle error path
     this.logger.error(`Failed to attest for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}], oracle: [${this.aaoAddress}] at phase: [${phase}] with error [${error}]`)
-    await this.reporter.reportFailure({
-      phase,
-      error,
-      amount,
-      userId,
-      challengeId
-    })
 
     return {
       challengeId,
@@ -412,11 +544,15 @@ class RewardsAttester {
   async _refillQueueIfNecessary () {
     if (this.undisbursedQueue.length) return {}
 
-    this.logger.info(`Refilling queue, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`)
+    this.logger.info(`Refilling queue with startingBlock: ${this.startingBlock}, offset: ${this.offset}, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`)
     const { success: disbursable, error } = await this.libs.Rewards.getUndisbursedChallenges({ offset: this.offset, completedBlockNumber: this.startingBlock, logger: this.logger })
 
     if (error) {
       return { error }
+    }
+
+    if (disbursable.length) {
+      this.logger.info(`Got challenges: ${disbursable.map(({ challenge_id, user_id, specifier }) => (`${challenge_id}-${user_id}-${specifier}`))}`) // eslint-disable-line
     }
 
     // Map to camelCase, and filter out
@@ -441,7 +577,12 @@ class RewardsAttester {
       }))
       .filter(d => !(this.challengeIdsDenyList.has(d.challengeId) || (new Set(this.recentlyDisbursedQueue)).has(this._disbursementToKey(d))))
 
-    this.logger.info(`Got ${disbursable.length} undisbursed challenges${this.undisbursedQueue.length !== disbursable.length ? `, filtered out [${disbursable.length - this.undisbursedQueue.length}] recently disbursed challenges.` : '.'}`)
+    // Filter out recently disbursed challenges
+    if (this.undisbursedQueue.length) {
+      this.undisbursedQueue = await this._filterRecentlyCompleted(this.undisbursedQueue)
+    }
+
+    this.logger.info(`Got ${disbursable.length} undisbursed challenges${this.undisbursedQueue.length !== disbursable.length ? `, filtered out [${disbursable.length - this.undisbursedQueue.length}] challenges.` : '.'}`)
     return {}
   }
 
@@ -458,14 +599,16 @@ class RewardsAttester {
    * }}
    * @memberof RewardsAttester
    */
-  async _processResponses (responses) {
+
+  _processResponses (responses, isFinalAttempt) {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW, errors.BLOCKED])
-    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
     // Account for errors from DN aggregation + Solana program
-    // CHALLENGE_INCOMPLETE are already handled in the `submitAndEvaluate` flow -
+    // CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
     // safe to assume those won't work if we see them at this point.
-    const NO_RETRY_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT, errors.CHALLENGE_INCOMPLETE])
+    const NO_RETRY_ERRORS = new Set([...AAO_ERRORS, errors.CHALLENGE_INCOMPLETE, errors.MISSING_CHALLENGES])
+    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
+    const ALREADY_COMPLETE_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT])
 
     const noRetry = []
     const successful = []
@@ -475,20 +618,33 @@ class RewardsAttester {
       .filter((res) => {
         if (!res.error) {
           successful.push(res)
+          this.reporter.reportSuccess({ userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, specifier: res.specifier })
           return false
         }
         return true
       })
       // Filter out responses that are already disbursed
-      .filter(({ error }) => !NO_RETRY_ERRORS.has(error))
-      // Handle any AAO errors - report them and then exclude them from result set
+      .filter(({ error }) => !ALREADY_COMPLETE_ERRORS.has(error))
+      // Handle no retry errors
       .filter((res) => {
-        const isAAO = AAO_ERRORS.has(res.error)
-        if (isAAO) {
-          this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error })
+        const report = { userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, error: res.error, phase: res.phase, specifier: res.specifier }
+        const isNoRetry = NO_RETRY_ERRORS.has(res.error)
+        if (isNoRetry) {
           noRetry.push(res)
+          const isAAO = AAO_ERRORS.has(res.error)
+          // `noRetry` errors are never retried, so
+          // they're always logged as failure or AAO
+          if (isAAO) {
+            this.reporter.reportAAORejection(report)
+          } else {
+            this.reporter.reportFailure(report)
+          }
+        } else if (isFinalAttempt) {
+          this.reporter.reportFailure(report)
+        } else {
+          this.reporter.reportRetry(report)
         }
-        return !isAAO
+        return !isNoRetry
       })
     )
 
@@ -528,6 +684,23 @@ class RewardsAttester {
       this.recentlyDisbursedQueue.splice(0, this.recentlyDisbursedQueue.length - MAX_DISBURSED_CACHE_SIZE)
     }
   }
+
+  async _filterRecentlyCompleted (challenges) {
+    const [poaThreshold, solanaThreshold] = await Promise.all([
+      this.delayCalculator.getPOABlockThreshold(),
+      this.delayCalculator.getSolanaSlotThreshold()
+    ])
+
+    this.logger.info(`Filtering with POA threshold: ${poaThreshold}, Solana threshold: ${solanaThreshold}`)
+    const res = challenges.filter(c => (
+      c.completedBlocknumber <= (this.isSolanaChallenge(c.challengeId) ? solanaThreshold : poaThreshold)
+    ))
+    if (res.length < challenges.length) {
+      this.logger.info(`Filtered out ${challenges.length - res.length} recent challenges`)
+    }
+    return res
+  }
 }
 
 module.exports = RewardsAttester
+module.exports.AttestationDelayCalculator = AttestationDelayCalculator

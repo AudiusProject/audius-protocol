@@ -3,7 +3,7 @@ from datetime import datetime
 import redis
 from integration_tests.utils import populate_mock_db
 from src.models import Milestone
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
+from src.tasks.aggregates.index_aggregate_plays import _update_aggregate_plays
 from src.tasks.index_listen_count_milestones import (
     CURRENT_PLAY_INDEXING,
     TRACK_LISTEN_IDS,
@@ -145,3 +145,11 @@ def test_listen_count_milestone_processing(app):
             ]
 
             assert sorted_milestones == [(1, 10), (2, 100), (4, 1000), (9, 5000)]
+
+        # Add a track that's not been indexed yet
+        redis_conn.sadd(TRACK_LISTEN_IDS, 20)
+        set_json_cached_key(
+            redis_conn, CURRENT_PLAY_INDEXING, {"slot": 14, "timestamp": 1634836056}
+        )
+        index_listen_count_milestones(db, redis_conn)
+        # expect this to not error
