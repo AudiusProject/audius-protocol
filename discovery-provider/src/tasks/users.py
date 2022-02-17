@@ -184,6 +184,7 @@ def lookup_user_record(
             .filter(User.user_id == user_id, User.is_current == True)
             .first()
         )
+        logger.info(f"index.py | matterlight | {user_id} {user_record}")
 
         # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
         # https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
