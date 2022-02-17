@@ -714,36 +714,4 @@ module.exports = function (app) {
     },
     getCID
   )
-
-  /**
-   * List all unlisted tracks for a user
-   */
-  app.get(
-    '/tracks/unlisted',
-    authMiddleware,
-    handleResponse(async (req, res) => {
-      const tracks = (
-        await models.sequelize.query(
-          `select "metadataJSON"->'title' as "title", "blockchainId" from (
-        select "metadataJSON", "blockchainId", row_number() over (
-          partition by "blockchainId" order by "clock" desc
-        ) from "Tracks"
-        where "cnodeUserUUID" = :cnodeUserUUID
-        and ("metadataJSON"->>'is_unlisted')::boolean = true
-      ) as a
-      where a.row_number = 1;`,
-          {
-            replacements: { cnodeUserUUID: req.session.cnodeUserUUID }
-          }
-        )
-      )[0]
-
-      return successResponse({
-        tracks: tracks.map((track) => ({
-          title: track.title,
-          id: track.blockchainId
-        }))
-      })
-    })
-  )
 }

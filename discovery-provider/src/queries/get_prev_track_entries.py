@@ -1,8 +1,11 @@
+from typing import List
+
 from sqlalchemy import and_, func, or_
+from sqlalchemy.orm.session import Session
 from src.models import Track
 
 
-def get_prev_track_entries(session, entries):
+def get_prev_track_entries(session: Session, entries: List[Track]):
     """
     Gets the previous state of tracks in the database given a list of tracks.
 
@@ -18,7 +21,7 @@ def get_prev_track_entries(session, entries):
         return []
 
     def get_prev_query_pairs(entry):
-        return [entry["track_id"], entry["blocknumber"]]
+        return [entry.track_id, entry.blocknumber]
 
     prev_query_pairs = map(get_prev_query_pairs, entries)
 
@@ -28,8 +31,10 @@ def get_prev_track_entries(session, entries):
         )
         .filter(
             or_(
-                and_(Track.track_id == pair[0], Track.blocknumber < pair[1])
-                for pair in prev_query_pairs
+                *(
+                    and_(Track.track_id == pair[0], Track.blocknumber < pair[1])
+                    for pair in prev_query_pairs
+                )
             )
         )
         .group_by(Track.track_id)
