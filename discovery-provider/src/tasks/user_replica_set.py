@@ -172,7 +172,7 @@ def user_replica_set_state_update(
                         event_blockhash,
                         txhash,
                         str(e),
-                    ) from e\
+                    ) from e
             num_user_replica_set_changes += processedEntries
 
     logger.info(
