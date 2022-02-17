@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import TimeRange from 'common/models/TimeRange'
-import * as discoverPageActions from 'common/store/pages/trending/actions'
+import * as trendingPageActions from 'common/store/pages/trending/actions'
 import {
   trendingMonthActions,
   trendingWeekActions,
@@ -15,7 +15,7 @@ import {
   getTrendingGenre,
   getTrendingTimeRange
 } from 'common/store/pages/trending/selectors'
-import { GENRES, ELECTRONIC_PREFIX } from 'common/utils/genres'
+import { GENRES, ELECTRONIC_PREFIX, Genre } from 'common/utils/genres'
 import { AppState } from 'store/types'
 import { TRENDING_PAGE } from 'utils/route'
 
@@ -38,7 +38,7 @@ const ConnectedTrendingGenreSelectionPage = ({
   const setTrimmedGenre = (genre: string | null) => {
     const trimmedGenre =
       genre !== null ? genre.replace(ELECTRONIC_PREFIX, '') : genre
-    setTrendingGenre(trimmedGenre)
+    setTrendingGenre(trimmedGenre as Genre | null)
     resetAllTrending()
     setTrendingTimeRange(timeRange)
     goToTrending()
@@ -62,10 +62,10 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    setTrendingGenre: (genre: string | null) =>
-      dispatch(discoverPageActions.setTrendingGenre(genre)),
+    setTrendingGenre: (genre: Genre | null) =>
+      dispatch(trendingPageActions.setTrendingGenre(genre)),
     setTrendingTimeRange: (timeRange: TimeRange) =>
-      dispatch(discoverPageActions.setTrendingTimeRange(timeRange)),
+      dispatch(trendingPageActions.setTrendingTimeRange(timeRange)),
     goToTrending: () => dispatch(pushRoute(TRENDING_PAGE)),
     resetAllTrending: () => {
       dispatch(trendingWeekActions.reset())

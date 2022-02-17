@@ -1,4 +1,5 @@
 export enum Genre {
+  ALL = 'All Genres',
   ELECTRONIC = 'Electronic',
   ROCK = 'Rock',
   METAL = 'Metal',
