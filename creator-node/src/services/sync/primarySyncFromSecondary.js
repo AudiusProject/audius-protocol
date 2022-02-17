@@ -8,7 +8,9 @@ const DBManager = require('../../dbManager.js')
 const { getCreatorNodeEndpoints } = require('../../middlewares.js')
 const initBootstrapAndRefreshPeers = require('./initBootstrapAndRefreshPeers.js')
 const { saveFileForMultihashToFS } = require('../../fileManager.js')
-const { SyncMode } = require('../../snapbackSM/computeSyncModeForUserAndReplica.js')
+const {
+  SyncMode
+} = require('../../snapbackSM/computeSyncModeForUserAndReplica.js')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator.js')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
@@ -48,14 +50,12 @@ async function fetchExportFromSecondary({
       }
     )
 
+    // TODO do we need all of this, or is there a cleaner way to compare schema
     if (
-      !_.has(exportResp, 'data.data')
-      || !_.has(exportResp, 'data.data.cnodeUsers')
-      || !_.has(exportResp, 'data.data.ipfsIDObj')
-      || !_.has(exportResp, 'data.data.clockInfo')
-      || !_.has(exportResp, 'data.data.ipfsIDObj.addresses')
-      || exportResp.data.data.cnodeUsers.length !== 1
-      || !_.has(exportResp.data.data.cnodeUsers[0], 'walletPublicKey')
+      !_.has(exportResp, 'data.data') ||
+      !_.has(exportResp.data.data, 'cnodeUsers') ||
+      !_.has(exportResp.data.data, 'ipfsIDObj') ||
+      Object.keys(exportResp.data.data.cnodeUsers).length !== 1
     ) {
       throw new Error('Malformatted export response data')
     }
@@ -227,7 +227,7 @@ async function filterOutAlreadyPresentDBEntries({
  * write data for all diffed files to disk
  * write all DB state in TX
  */
-async function saveEntriesToDB({ fetchedCNodeUser, logger }) {
+async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
   let {
     walletPublicKey,
     audiusUsers: fetchedAudiusUsers,
@@ -235,15 +235,11 @@ async function saveEntriesToDB({ fetchedCNodeUser, logger }) {
     files: fetchedFiles
   } = fetchedCNodeUser
 
-  /**
-   * Write all records to DB
-   */
-
   const transaction = await models.sequelize.transaction()
 
   logger.info(
-    redisKey,
-    `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`
+    logPrefix,
+    `beginning add ops for cnodeUser wallet ${walletPublicKey}`
   )
 
   let localCNodeUser = await models.CNodeUser.findOne({
@@ -343,9 +339,10 @@ async function saveEntriesToDB({ fetchedCNodeUser, logger }) {
 
 async function getUserReplicaSet({
   serviceRegistry,
-  logger,
   wallet,
-  selfEndpoint
+  selfEndpoint,
+  logger,
+  logPrefix
 }) {
   try {
     let userReplicaSet = await getCreatorNodeEndpoints({
@@ -367,7 +364,7 @@ async function getUserReplicaSet({
   } catch (e) {
     // TODO ERROR
     // logger.error(
-    //   redisKey,
+    //   logPrefix,
     //   `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
     // )
   }
@@ -409,7 +406,6 @@ async function primarySyncFromSecondary({
   serviceRegistry,
   secondary,
   wallet,
-  selfEndpoint,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
   const { redis, nodeConfig } = serviceRegistry
@@ -417,17 +413,13 @@ async function primarySyncFromSecondary({
   // This is used only for logging record endpoint of requesting node
   const selfEndpoint = nodeConfig.get('creatorNodeEndpoint') || null
 
-  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
-    'syncRequestMaxUserFailureCountBeforeSkip'
-  )
-
   const logPrefix = `[primarySyncFromSecondary] [Wallet: ${wallet}] [Secondary: ${secondary}]`
   const logger = genericLogger.child(logContext)
   logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
   const start = Date.now()
 
   // object to track if the function errored, returned at the end of the function
-  let errorObj = null
+  const errorObj = null
 
   try {
     await acquireUserRedisLock({ redis, wallet })
@@ -437,9 +429,10 @@ async function primarySyncFromSecondary({
      */
     const userReplicaSet = await getUserReplicaSet({
       serviceRegistry,
-      logger,
       wallet,
-      selfEndpoint: selfEndpoint
+      selfEndpoint,
+      logger,
+      logPrefix
     })
 
     let completed = false
@@ -450,6 +443,7 @@ async function primarySyncFromSecondary({
         wallet,
         exportClockRangeMin,
         selfEndpoint,
+        logger,
         logPrefix
       })
       const { fetchedCNodeUser, ipfsIDObj } = exportData
@@ -471,9 +465,8 @@ async function primarySyncFromSecondary({
 
       await saveEntriesToDB({
         fetchedCNodeUser,
-        serviceRegistry,
-        userReplicaSet,
-        logger
+        logger,
+        logPrefix
       })
 
       // While-loop termination
@@ -492,7 +485,11 @@ async function primarySyncFromSecondary({
     await releaseUserRedisLock({ redis, wallet })
 
     if (errorObj) {
-      logger.error(`${logPrefix} Error ${errorObj.message} [Duration: ${Date.now() - start}ms]`)
+      logger.error(
+        `${logPrefix} Error ${errorObj.message} [Duration: ${
+          Date.now() - start
+        }ms]`
+      )
     } else {
       logger.info(`${logPrefix} Complete [Duration: ${Date.now() - start}ms]`)
     }

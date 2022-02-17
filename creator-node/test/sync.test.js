@@ -1393,6 +1393,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
   })
 
   it.skip('NO LONGER NEEDED createUserAndTrack - used for populating data files', async function () {
+    return
     const testAssetsDirPath = path.resolve(__dirname, 'sync', 'assets')
     await createUserAndTrack(testAssetsDirPath)
   })
@@ -1705,13 +1706,11 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
 
     /** TODO confirm empty state */
 
-    // const audiusUsersSubset = _.orderBy(exportedAudiusUsers, ['clock'], ['asc']).slice(0,1)
-    // const filesSubset = _.orderBy(exportedFiles, ['clock'], ['asc']).slice(0,1)
-    // const clockRecordsSubSet = _.orderBy(exportedClockRecords, ['clock'], ['asc']).slice(0,2)
-
+    /**
+     * Write all secondary state to primary
+     */
     const exportedNonTrackFiles = exportedFiles.filter(file => models.File.NonTrackTypes.includes(file.type))
     const exportedTrackFiles = exportedFiles.filter(file => models.File.TrackTypes.includes(file.type))
-
     const transaction = await models.sequelize.transaction()
     await models.CNodeUser.create({ ...exportedCnodeUser }, { transaction })
     await models.ClockRecord.bulkCreate(exportedClockRecords, { transaction })
@@ -1726,11 +1725,11 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     await primarySyncFromSecondary({
       serviceRegistry: serviceRegistryMock,
       secondary: SECONDARY,
-      wallet: USER_1_WALLET,
-      sourceEndpoint: SELF
+      wallet: USER_1_WALLET
     })
 
     /** TODO all asserts */
+    
   })
 
   it.skip('Primary correctly syncs from secondary when primary has superset of secondary state', async function () {
