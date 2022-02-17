@@ -23,6 +23,12 @@ export enum IntKeys {
   DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS = 'DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS',
 
   /**
+   * Number of blocks at which we would consider a discovery node to be
+   * unhealthy. Unset value (null) means use the libs default block diff.
+   */
+  DISCOVERY_NODE_MAX_BLOCK_DIFF = 'DISCOVERY_NODE_MAX_BLOCK_DIFF',
+
+  /**
    * Frequency (in ms) to poll for user wallet balance on the client dashboard page
    */
   DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS = 'DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS',
