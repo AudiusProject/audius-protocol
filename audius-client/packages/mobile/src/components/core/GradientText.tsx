@@ -1,21 +1,29 @@
 import MaskedView from '@react-native-masked-view/masked-view'
 import { TextProps } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
+import LinearGradient, {
+  LinearGradientProps
+} from 'react-native-linear-gradient'
 
 import Text from 'app/components/text'
 import { useThemeColors } from 'app/utils/theme'
 
-type GradientTextProps = TextProps
+export type GradientTextProps = TextProps &
+  Partial<Omit<LinearGradientProps, 'style'>>
 
 /**
  * Diagonal gradient text in the Audius colors
  */
 export const GradientText = (props: GradientTextProps) => {
-  const { style, children, ...other } = props
   const {
     pageHeaderGradientColor1,
     pageHeaderGradientColor2
   } = useThemeColors()
+  const {
+    style,
+    children,
+    colors = [pageHeaderGradientColor1, pageHeaderGradientColor2],
+    ...other
+  } = props
 
   return (
     <MaskedView
@@ -26,7 +34,7 @@ export const GradientText = (props: GradientTextProps) => {
       }
     >
       <LinearGradient
-        colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
+        colors={colors}
         start={{ x: 1, y: 1 }}
         end={{ x: 0, y: 0 }}
       >
