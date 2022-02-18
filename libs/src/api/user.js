@@ -387,6 +387,10 @@ class Users extends Base {
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
+    const logPrefix = `[User:updateCreator()] [userId: ${userId}]`
+    const fnStartMs = Date.now()
+    let startMs = fnStartMs
+
     // Error if libs instance does not already have existing user state
     const user = this.userStateManager.getCurrentUser()
     if (!user) {
@@ -410,11 +414,11 @@ class Users extends Base {
         txReceipt: updateEndpointTxReceipt, replicaSetSPIDs
       } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
-      console.log(`${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
+      console.log(`${logPrefix} _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
       startMs = Date.now()
 
       await this._waitForURSMCreatorNodeEndpointIndexing(userId, replicaSetSPIDs)
-      console.log(`${logPrefix} [phase: ${phase}] _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
+      console.log(`${logPrefix} _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
     }
 
     // Upload new metadata object to CN
@@ -465,6 +469,10 @@ class Users extends Base {
     const userId = user.user_id
     const oldMetadata = { ...user }
 
+    const logPrefix = `[User:upgradeToCreator()] [userId: ${userId}]`
+    const fnStartMs = Date.now()
+    let startMs = fnStartMs
+
     // Clean and validate metadata
     const newMetadata = this._cleanUserMetadata({ ...user })
     this._validateUserMetadata(newMetadata)
@@ -509,11 +517,11 @@ class Users extends Base {
         txReceipt: updateEndpointTxReceipt, replicaSetSPIDs
       } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
-      console.log(`${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
+      console.log(`${logPrefix} _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
       startMs = Date.now()
 
       await this._waitForURSMCreatorNodeEndpointIndexing(userId, replicaSetSPIDs)
-      console.log(`${logPrefix} [phase: ${phase}] _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
+      console.log(`${logPrefix} _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
     }
 
     // Upload new metadata object to CN
