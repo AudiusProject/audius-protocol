@@ -543,7 +543,7 @@ class RewardsAttester {
       verbose: true,
       whitelist: this.endpointPool.size > 0 ? Array.from(this.endpointPool) : null
     })
-    this.endpoints = await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(endpoints, this.quorumSize)
+    this.endpoints = await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(this.quorumSize, endpoints)
     this.logger.info(`Selected new discovery nodes: [${this.endpoints}]`)
   }
 
