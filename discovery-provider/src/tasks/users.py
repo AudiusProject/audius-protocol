@@ -33,6 +33,7 @@ def user_state_update(
     block_hash,
     ipfs_metadata,
     blacklisted_cids,
+    loggingHelper,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
 
