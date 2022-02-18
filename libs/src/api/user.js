@@ -405,7 +405,7 @@ class Users extends Base {
     let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       // Perform update to new contract
-      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
+      const { txReceipt: updateEndpointTxReceipt } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
@@ -502,7 +502,7 @@ class Users extends Base {
       await this.creatorNode.setEndpoint(newPrimary)
 
       // Update user creator_node_endpoint on chain if applicable
-      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
+      const { txReceipt: updateEndpointTxReceipt } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
@@ -602,14 +602,20 @@ class Users extends Base {
       // Update user creator_node_endpoint on chain if applicable
       if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
+        const { type, replicaSetSPIDs } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
         console.log(`${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
         startMs = Date.now()
 
-        // Ensure DN has indexed creator_node_endpoint change
-        await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
-        console.log(`${logPrefix} [phase: ${phase}] _waitForCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
-        startMs = Date.now()
+        if (type === 'UserReplicaSetManager') {
+          await this._waitForURSMCreatorNodeEndpointIndexing(userId, replicaSetSPIDs)
+          console.log(`${logPrefix} [phase: ${phase}] _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
+          startMs = Date.now()
+        } else {
+          // Ensure DN has indexed creator_node_endpoint change
+          await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
+          console.log(`${logPrefix} [phase: ${phase}] _waitForCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
+          startMs = Date.now()
+        }
       }
 
       // Upload new metadata object to CN
@@ -675,10 +681,36 @@ class Users extends Base {
       const userList = await this.discoveryProvider.getUsers(1, 0, [userId])
       if (userList) {
         const user = userList[0]
-        if (user && user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
+        if (user && user.creator_node_endpoint === creatorNodeEndpoint) {
+          isUpdated = true
+          continue // skip unnecessary 500ms timeout
+        }
       }
+
       await Utils.wait(500)
     }
+  }
+
+  async _waitForURSMCreatorNodeEndpointIndexing (userId, replicaSetSPIDs, timeoutMs = 60000) {
+    const asyncFn = async function () {
+      let isUpdated = false
+      while (!isUpdated) {
+        const replicaSet = await this.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+        if (
+          replicaSet &&
+          replicaSet.hasOwnProperty('primaryId') &&
+          replicaSet.hasOwnProperty('secondaryIds') &&
+          replicaSet.primaryId === replicaSetSPIDs[0] &&
+          replicaSet.secondaryIds === replicaSetSPIDs.slice(1, 3)
+        ) {
+          isUpdated = true
+          continue // skip unnecessary 500ms timeout
+        }
+      }
+
+      await Utils.wait(500)
+    }
+    await Utils.racePromiseWithTimeout(asyncFn(), timeoutMs, `[User:_waitForURSMCreatorNodeEndpointIndexing()] Timeout error after ${timeoutMs}ms`)
   }
 
   async _addUserOperations (userId, newMetadata, exclude = []) {
@@ -802,33 +834,45 @@ class Users extends Base {
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
     }
+
     // If still uninitialized, proceed with legacy update - else move forward with new contract update
     if (!this.contracts.UserReplicaSetManagerClient) {
-      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
+      console.log(`[User:_updateReplicaSetOnChain()] Failed to init UserReplicaSetManagerClient. Falling back to UserFactoryClient.`)
+
+      const { txReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
         userId,
         creatorNodeEndpoint
       )
-      return updateEndpointTxReceipt
+      return {
+        txReceipt,
+        type: 'UserFactory'
+      }
     }
-    let primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
-    let secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
+    const primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
+    const secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
 
     if (secondaries.length < 2) {
       throw new Error(`Invalid number of secondaries found - received ${secondaries}`)
     }
 
-    let [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
+    const [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
       this._retrieveSpIDFromEndpoint(primaryEndpoint),
       this._retrieveSpIDFromEndpoint(secondaries[0]),
       this._retrieveSpIDFromEndpoint(secondaries[1])
     ])
+
     // Update in new contract
-    let tx = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+    const txReceipt = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       userId,
       primarySpID,
       [secondary1SpID, secondary2SpID]
     )
-    return tx
+    const replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
+    return {
+      txReceipt,
+      type: 'UserReplicaSetManager',
+      replicaSetSPIDs
+    }
   }
 
   // Retrieve cached value for spID from endpoint if present, otherwise fetch from eth web3
