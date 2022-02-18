@@ -7,6 +7,7 @@ import { WidthSizes, SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/follow-button/FollowButton'
 import Stats from 'components/stats/Stats'
+import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
@@ -55,10 +56,13 @@ const ArtistCover = props => {
               useSVGTiers
             />
           </div>
-          <div
-            className={styles.artistHandle}
-            onClick={props.onNameClick}
-          >{`@${props.handle}`}</div>
+          <div className={styles.artistHandleWrapper}>
+            <div
+              className={styles.artistHandle}
+              onClick={props.onNameClick}
+            >{`@${props.handle}`}</div>
+            {props.doesFollowCurrentUser ? <FollowsYouBadge /> : null}
+          </div>
         </div>
       </div>
     </DynamicImage>

@@ -29,6 +29,7 @@ import { ArtistRecommendationsDropdown } from 'components/artist-recommendations
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/follow-button/FollowButton'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
+import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
@@ -101,6 +102,7 @@ type ProfileHeaderProps = {
   setFollowersUserId: (id: ID) => void
   followingCount: number
   setFollowingUserId: (id: ID) => void
+  doesFollowCurrentUser: boolean
   twitterHandle: string
   instagramHandle: string
   tikTokHandle: string
@@ -147,6 +149,7 @@ const ProfileHeader = ({
   trackCount,
   followerCount,
   followingCount,
+  doesFollowCurrentUser,
   twitterHandle,
   instagramHandle,
   tikTokHandle,
@@ -355,7 +358,10 @@ const ProfileHeader = ({
                   </span>
                 </h1>
               </div>
-              <h2 className={styles.artistHandle}>{handle}</h2>
+              <div className={styles.artistHandleWrapper}>
+                <h2 className={styles.artistHandle}>{handle}</h2>
+                {doesFollowCurrentUser ? <FollowsYouBadge /> : null}
+              </div>
             </div>
             <div className={styles.right}>
               {following && (

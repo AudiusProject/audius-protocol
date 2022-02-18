@@ -14,6 +14,7 @@ import More from 'components/more/More'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import Tag from 'components/track/Tag'
 import UploadChip from 'components/upload/UploadChip'
+import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import EditableName from 'pages/profile-page/components/EditableName'
 import SocialLink, { Type } from 'pages/profile-page/components/SocialLink'
@@ -349,7 +350,10 @@ const ProfileWrapping = props => {
                 onChange={props.onUpdateName}
                 userId={props.userId}
               />
-              <h2 className={styles.handle}>{props.handle}</h2>
+              <div className={styles.handleWrapper}>
+                <h2 className={styles.handle}>{props.handle}</h2>
+                {props.doesFollowCurrentUser ? <FollowsYouBadge /> : null}
+              </div>
             </>
           )}
         </div>
