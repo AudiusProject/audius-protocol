@@ -197,16 +197,10 @@ def lookup_user_record(
 
 
 def invalidate_old_user(session, user_id):
-    # Check if the userId is in the db
-    logger.info(f"index.py | invalidate user with id {user_id}")
-
     # Update existing record in db to is_current = False
-    num_invalidated_users = (
-        session.query(User)
-        .filter(User.user_id == user_id, User.is_current == True)
-        .update({"is_current": False})
+    session.query(User).filter(User.user_id == user_id, User.is_current == True).update(
+        {"is_current": False}
     )
-    logger.info(f"index.py | num_invalidated_users {num_invalidated_users}")
 
 
 def parse_user_event(
