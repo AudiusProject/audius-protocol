@@ -6,7 +6,7 @@ import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
-import placeholderArt from 'assets/img/imageCoverPhotoBlank.jpg'
+import placeholderArt from 'assets/img/imageBlank2x.png'
 import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
 import { Name } from 'common/models/Analytics'
 import { SquareSizes } from 'common/models/ImageSizes'
