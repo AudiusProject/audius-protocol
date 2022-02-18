@@ -6,7 +6,7 @@ import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import { fetchCoverArt } from 'common/store/cache/collections/actions'
 
 export const useCollectionCoverArt = (
-  collectionId: number,
+  collectionId: number | null | undefined,
   coverArtSizes: CoverArtSizes | null,
   size: SquareSizes,
   defaultImage: string = imageEmpty as string,

@@ -383,7 +383,7 @@ const NavColumn = ({
         </SimpleBar>
         <CreatePlaylistModal
           visible={showCreatePlaylistModal}
-          onSave={onCreatePlaylist}
+          onCreatePlaylist={onCreatePlaylist}
           onCancel={closeCreatePlaylistModal}
         />
       </div>

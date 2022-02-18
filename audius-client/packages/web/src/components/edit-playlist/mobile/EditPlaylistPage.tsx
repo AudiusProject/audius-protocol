@@ -137,7 +137,10 @@ const EditPlaylistPage = g(
         } catch (err) {
           setFormFields((formFields: any) => ({
             ...formFields,
-            artwork: { ...(formFields.artwork || {}), error: err.message }
+            artwork: {
+              ...(formFields.artwork || {}),
+              error: err instanceof Error ? err.message : 'Unknown error'
+            }
           }))
         }
       },

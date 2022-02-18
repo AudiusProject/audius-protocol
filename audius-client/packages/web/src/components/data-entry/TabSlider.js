@@ -1,3 +1,4 @@
+/** @deprecated - Use SegmentedControl from Stems instead. */
 import React, { useState, useEffect, useRef } from 'react'
 
 import cn from 'classnames'
