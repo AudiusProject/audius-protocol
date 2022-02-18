@@ -297,7 +297,7 @@ type DrawerComponent = {
   (props: DrawerProps & { title: string }): React.ReactElement
   (props: Omit<DrawerProps, 'titleIcon'>): React.ReactElement
 }
-const Drawer: DrawerComponent = ({
+export const Drawer: DrawerComponent = ({
   isOpen,
   children,
   onClose,
