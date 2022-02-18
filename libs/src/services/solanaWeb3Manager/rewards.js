@@ -263,7 +263,8 @@ async function submitAttestations ({
     errorMapping: RewardsManagerError,
     logger,
     skipPreflight: false,
-    feePayerOverride: feePayer
+    feePayerOverride: feePayer,
+    sendBlockhash: false
   })))
   logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results)}`)
 
@@ -516,7 +517,8 @@ const evaluateAttestations = async ({
     errorMapping: RewardsManagerError,
     logger,
     skipPreflight: false,
-    feePayerOverride: feePayer
+    feePayerOverride: feePayer,
+    sendBlockhash: false
   })
 }
 

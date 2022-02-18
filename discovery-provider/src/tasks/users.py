@@ -172,7 +172,7 @@ def lookup_user_record(
     # Check if the userId is in the db
     user_exists = (
         session.query(User)
-        .filter_by(user_id=helpers.get_tx_arg(entry, "_userId"))
+        .filter(User.user_id == user_id, User.is_current == True)
         .count()
         > 0
     )
@@ -206,9 +206,14 @@ def lookup_user_record(
 
 def invalidate_old_user(session, user_id):
     # Check if the userId is in the db
-    logger.info(f"index.py | invalid date user with id {user_id}")
+    logger.info(f"index.py | invalidate user with id {user_id}")
 
-    user_exists = session.query(User).filter_by(user_id=user_id).count() > 0
+    user_exists = (
+        session.query(User)
+        .filter(User.user_id == user_id, User.is_current == True)
+        .count()
+        > 0
+    )
 
     if user_exists:
         # Update existing record in db to is_current = False
@@ -527,7 +532,7 @@ def validate_signature(
     return False
 
 
-class UserEventsMetadata(TypedDict):
+class UserEventsMetadata(TypedDict, total=False):
     referrer: int
     is_mobile_user: bool
 
@@ -569,6 +574,7 @@ def update_user_events(
                 event == "referrer"
                 and isinstance(value, int)
                 and user_events.referrer is None
+                and user_record.user_id != value
             ):
                 user_events.referrer = value
                 bus.dispatch(
