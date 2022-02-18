@@ -1,10 +1,11 @@
 from time import time
+from typing import Dict
 
 from prometheus_client import Histogram
 
 
 class PrometheusMetric:
-    histograms = {}
+    histograms: Dict[str, Histogram] = {}
 
     def __init__(self, name, description, labelnames=()):
         self.start_time = time()
