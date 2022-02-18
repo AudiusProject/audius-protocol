@@ -65,18 +65,29 @@ module.exports = function (app) {
       if (igUser.error) {
         return errorResponseBadRequest(new Error(igUser.error.message))
       }
-
-      // Store the access token, user id, and current profile for user in db
-      try {
-        await models.InstagramUser.upsert({
+      const existingInstagramUser = models.InstagramUser.findOne({
+        where: {
           uuid: igUser.username,
-          profile: igUser,
-          accessToken
-        })
+          blockchainUserId: {
+            [models.Sequelize.Op.not]: null
+          }
+        }
+      })
+      if (existingInstagramUser) {
+        return errorResponseBadRequest(`Another Audius profile has already been authenticated with Instagram user @${igUser.username}!`)
+      } else {
+        // Store the access token, user id, and current profile for user in db
+        try {
+          await models.InstagramUser.upsert({
+            uuid: igUser.username,
+            profile: igUser,
+            accessToken
+          })
 
-        return successResponse(igUser)
-      } catch (err) {
-        return errorResponseBadRequest(err)
+          return successResponse(igUser)
+        } catch (err) {
+          return errorResponseBadRequest(err)
+        }
       }
     } catch (err) {
       return errorResponseBadRequest(err)
