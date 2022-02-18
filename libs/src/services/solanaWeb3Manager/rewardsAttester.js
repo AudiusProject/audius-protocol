@@ -1,4 +1,3 @@
-const { sampleSize } = require('lodash')
 const { SubmitAndEvaluateError } = require('../../api/rewards')
 const { decodeHashId } = require('../../utils/utils')
 
@@ -289,8 +288,8 @@ class RewardsAttester {
 
   /**
    * Called from the client to attest challenges
-   * @param {any[]} challenges 
-   * @returns 
+   * @param {any[]} challenges
+   * @returns
    */
   async processChallenges (challenges) {
     await this._selectDiscoveryNodes()
@@ -538,7 +537,7 @@ class RewardsAttester {
   }
 
   async _selectDiscoveryNodes () {
-    this.logger.info(`Selecting discovery nodes`, {endpointPool: this.endpointPool})
+    this.logger.info(`Selecting discovery nodes`, { endpointPool: this.endpointPool })
     const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll({
       verbose: true,
       whitelist: this.endpointPool.size > 0 ? Array.from(this.endpointPool) : null
