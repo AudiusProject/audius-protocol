@@ -245,19 +245,26 @@ def parse_user_event(
         user_record.handle = handle_str
         user_record.handle_lc = handle_str.lower()
         user_record.wallet = helpers.get_tx_arg(entry, "_wallet").lower()
+        logger.info("index.py | users.py | add_user")
     elif event_type == user_event_types_lookup["update_multihash"]:
         metadata_multihash = helpers.multihash_digest_to_cid(
             helpers.get_tx_arg(entry, "_multihashDigest")
         )
         user_record.metadata_multihash = metadata_multihash
+        logger.info("index.py | users.py | update_multihash")
+
     elif event_type == user_event_types_lookup["update_name"]:
         user_record.name = helpers.bytes32_to_str(helpers.get_tx_arg(entry, "_name"))
+        logger.info("index.py | users.py | update_name")
     elif event_type == user_event_types_lookup["update_location"]:
         user_record.location = helpers.bytes32_to_str(
             helpers.get_tx_arg(entry, "_location")
         )
+        logger.info("index.py | users.py | update_location")
+
     elif event_type == user_event_types_lookup["update_bio"]:
         user_record.bio = helpers.get_tx_arg(entry, "_bio")
+        logger.info("index.py | users.py | update_bio")
     elif event_type == user_event_types_lookup["update_profile_photo"]:
         profile_photo_multihash = helpers.multihash_digest_to_cid(
             helpers.get_tx_arg(entry, "_profilePhotoDigest")
@@ -270,6 +277,7 @@ def parse_user_event(
             )
             return None
         user_record.profile_picture = profile_photo_multihash
+        logger.info("index.py | users.py | update_profile_photo")
     elif event_type == user_event_types_lookup["update_cover_photo"]:
         cover_photo_multihash = helpers.multihash_digest_to_cid(
             helpers.get_tx_arg(entry, "_coverPhotoDigest")
@@ -282,8 +290,10 @@ def parse_user_event(
             )
             return None
         user_record.cover_photo = cover_photo_multihash
+        logger.info("index.py | users.py | update_cover_photo")
     elif event_type == user_event_types_lookup["update_is_creator"]:
         user_record.is_creator = helpers.get_tx_arg(entry, "_isCreator")
+        logger.info("index.py | users.py | update_is_creator")
     elif event_type == user_event_types_lookup["update_is_verified"]:
         user_record.is_verified = helpers.get_tx_arg(entry, "_isVerified")
         if user_record.is_verified:
@@ -292,6 +302,7 @@ def parse_user_event(
                 block_number,
                 user_record.user_id,
             )
+        logger.info("index.py | users.py | update_is_verified")
 
     elif event_type == user_event_types_lookup["update_creator_node_endpoint"]:
         # Ensure any user consuming the new UserReplicaSetManager contract does not process
@@ -305,6 +316,7 @@ def parse_user_event(
             user_record.creator_node_endpoint = helpers.get_tx_arg(
                 entry, "_creatorNodeEndpoint"
             )
+        logger.info("index.py | users.py | update_creator_node_endpoint")
 
     # New updated_at timestamp
     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
@@ -317,12 +329,14 @@ def parse_user_event(
             if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
                 user_record.profile_picture = ipfs_metadata["profile_picture"]
 
-            logger.info("index.py | users.py | update_multihash | profile_picture")
+            logger.info(
+                "index.py | users.py | update_multihash | added profile_picture"
+            )
 
             if "cover_photo" in ipfs_metadata and ipfs_metadata["cover_photo"]:
                 user_record.cover_photo = ipfs_metadata["cover_photo"]
 
-            logger.info("index.py | users.py | update_multihash | cover_photo")
+            logger.info("index.py | users.py | update_multihash | added cover_photo")
 
             if "bio" in ipfs_metadata and ipfs_metadata["bio"]:
                 user_record.bio = ipfs_metadata["bio"]
@@ -440,6 +454,8 @@ def parse_user_event(
             user_record,
             f"Error parsing user {user_record} with entity missing required field(s)",
         )
+
+    logger.info("index.py | users.py | return user_record")
 
     return user_record
 
