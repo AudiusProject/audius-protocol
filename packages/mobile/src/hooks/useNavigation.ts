@@ -37,20 +37,27 @@ export const useNavigation = () => {
   const nativeNavigation = useNavigationNative<NavigationType>()
   const pushRouteWeb = usePushRouteWeb()
 
-  const navigate = useCallback(
-    <RouteName extends keyof AppParamList>(
+  const performNavigation = useCallback(
+    method => <RouteName extends keyof AppParamList>(
       config: UseNavigationConfig<AppParamList, RouteName>
     ) => {
       const { native, web } = config
-
-      nativeNavigation.navigate(native.screen, native.params)
+      method(native.screen, native.params)
       if (web) {
         pushRouteWeb(web.route, web.fromPage, web.fromNativeNotifications)
       }
     },
-    [nativeNavigation, pushRouteWeb]
+    [pushRouteWeb]
   )
 
-  const navigation = useMemo(() => ({ navigate }), [navigate])
-  return navigation
+  return useMemo(
+    () => ({
+      navigate: performNavigation(nativeNavigation.navigate),
+      push: performNavigation(nativeNavigation.push),
+      // Notifying the web layer of the pop action
+      // is handled in `createStackScreen`
+      goBack: nativeNavigation.goBack
+    }),
+    [nativeNavigation, performNavigation]
+  )
 }

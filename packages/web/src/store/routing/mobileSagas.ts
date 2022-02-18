@@ -1,4 +1,4 @@
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute, goBack } from 'connected-react-router'
 import { put, takeEvery } from 'redux-saga/effects'
 
 import { MessageType, Message } from 'services/native-mobile-interface/types'
@@ -18,6 +18,12 @@ function* watchPushRoute() {
   })
 }
 
+function* watchPopRoute() {
+  yield takeEvery(MessageType.POP_ROUTE, function* () {
+    yield put(goBack())
+  })
+}
+
 function* watchScrollToTop() {
   yield takeEvery(MessageType.SCROLL_TO_TOP, function* () {
     window.scrollTo(0, 0)
@@ -25,7 +31,7 @@ function* watchScrollToTop() {
 }
 
 const sagas = () => {
-  return [watchPushRoute, watchScrollToTop]
+  return [watchPushRoute, watchPopRoute, watchScrollToTop]
 }
 
 export default sagas

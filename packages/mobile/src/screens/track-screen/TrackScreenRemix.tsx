@@ -133,14 +133,14 @@ const TrackScreenRemixComponent = ({
     SquareSizes.SIZE_480_BY_480
   )
 
-  const goToTrackPage = useCallback(() => {
+  const handlePressTrack = useCallback(() => {
     pushRouteWeb(permalink)
-    navigation.navigate('track', { id: track_id })
+    navigation.push('track', { id: track_id })
   }, [navigation, permalink, pushRouteWeb, track_id])
 
-  const goToArtistPage = useCallback(() => {
+  const handlePressArtist = useCallback(() => {
     pushRouteWeb(profilePage(handle))
-    navigation.navigate('profile', { handle })
+    navigation.push('profile', { handle })
   }, [handle, navigation, pushRouteWeb])
 
   const images = (
@@ -156,10 +156,10 @@ const TrackScreenRemixComponent = ({
 
   return (
     <View style={[styles.root, style, stylesProp?.root]}>
-      <Pressable onPress={goToTrackPage}>
+      <Pressable onPress={handlePressTrack}>
         {_co_sign ? <CoSign size={Size.MEDIUM}>{images}</CoSign> : images}
       </Pressable>
-      <Pressable style={styles.artist} onPress={goToArtistPage}>
+      <Pressable style={styles.artist} onPress={handlePressArtist}>
         <View style={styles.name}>
           <Text>{messages.by}</Text>
           <Text style={styles.artistName} numberOfLines={1}>

@@ -1,8 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
 // import DownloadButtons from 'app/components/download-buttons'
-import { useNavigation } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Name, PlaybackSource } from 'audius-client/src/common/models/Analytics'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
@@ -30,13 +28,13 @@ import { useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
-import { BaseStackParamList } from 'app/components/app-navigator/types'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
 import { Button, DynamicImage, Tile } from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { getPlaying, getPlayingUid, getTrack } from 'app/store/audio/selectors'
@@ -245,9 +243,7 @@ export const TrackScreenHeader = ({
 }: TrackHeaderProps) => {
   const dispatchWeb = useDispatchWeb()
   const styles = useThemedStyles(createStyles)
-  const navigation = useNavigation<
-    NativeStackNavigationProp<BaseStackParamList>
-  >()
+  const navigation = useNavigation()
 
   const image = useTrackCoverArt(
     track_id,
@@ -264,7 +260,7 @@ export const TrackScreenHeader = ({
 
   const isOwner = owner_id === currentUserId
 
-  const onPlay = useCallback(() => {
+  const handlePressPlay = useCallback(() => {
     const trackPlay = () =>
       track(
         make({
@@ -296,16 +292,19 @@ export const TrackScreenHeader = ({
     }
   }, [track_id, uid, dispatchWeb, isPlaying, playingUid, queueTrack])
 
-  const onPressArtistName = useCallback(() => {
-    navigation.navigate('profile', { handle: user.handle })
+  const handlePressArtistName = useCallback(() => {
+    navigation.push({
+      native: { screen: 'profile', params: { handle: user.handle } },
+      web: { route: `/${user.handle}` }
+    })
   }, [navigation, user])
 
-  const onPressTag = useCallback((tag: string) => {
+  const handlePressTag = useCallback((tag: string) => {
     // TODO: navigate to search screen
     // goToSearchResultsPage(`#${tag}`)
   }, [])
 
-  const onExternalLinkClick = useCallback(url => {
+  const handleExternalLinkClick = useCallback(url => {
     Linking.canOpenURL(url).then(supported => {
       if (supported) {
         Linking.openURL(url)
@@ -354,7 +353,7 @@ export const TrackScreenHeader = ({
         {filteredTags.length > 0 ? (
           <View style={styles.tags}>
             {filteredTags.map(tag => (
-              <Pressable key={tag} onPress={() => onPressTag(tag)}>
+              <Pressable key={tag} onPress={() => handlePressTag(tag)}>
                 <Text style={styles.tag} weight='bold'>
                   {tag}
                 </Text>
@@ -399,14 +398,7 @@ export const TrackScreenHeader = ({
   }
 
   const imageElement = _co_sign ? (
-    <CoSign
-      size={Size.LARGE}
-      // hasFavorited={coSign.has_remix_author_saved}
-      // hasReposted={coSign.has_remix_author_reposted}
-      // coSignName={coSign.user.name}
-      style={styles.coverArt}
-      // userId={coSign.user.user_id}
-    >
+    <CoSign size={Size.LARGE} style={styles.coverArt}>
       <DynamicImage
         source={{ uri: image }}
         styles={{ image: styles.coverArt as ImageStyle }}
@@ -434,7 +426,7 @@ export const TrackScreenHeader = ({
       <Text style={styles.title} weight='bold'>
         {title}
       </Text>
-      <TouchableOpacity onPress={onPressArtistName}>
+      <TouchableOpacity onPress={handlePressArtistName}>
         <View style={styles.artistContainer}>
           <Text style={styles.artist}>{user.name}</Text>
           <UserBadges
@@ -451,7 +443,7 @@ export const TrackScreenHeader = ({
           size='large'
           iconPosition='left'
           icon={isPlaying ? IconPause : IconPlay}
-          onPress={onPlay}
+          onPress={handlePressPlay}
           fullWidth
         />
         <TrackScreenActionButtons
@@ -478,7 +470,7 @@ export const TrackScreenHeader = ({
       />
       <View style={styles.descriptionContainer}>
         {description ? (
-          <HyperLink onPress={onExternalLinkClick} linkStyle={styles.link}>
+          <HyperLink onPress={handleExternalLinkClick} linkStyle={styles.link}>
             <Text style={styles.description} suppressHighlighting>
               {squashNewLines(description)}
             </Text>
