@@ -628,7 +628,7 @@ class Users extends Base {
       // Write remaining metadata fields to chain
       phase = phases.UPDATE_USER_ON_CHAIN_OPS
       const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
-      console.log(`${logPrefix} [phase: ${phase}] UserFactoryClient.updateMultihash() completed in ${Date.now() - startMs}ms`)
+      console.log(`${logPrefix} [phase: ${phase}] _updateUserOperations() completed in ${Date.now() - startMs}ms`)
       startMs = Date.now()
 
       // Write to CN to associate blockchain user id with updated metadata and block number
