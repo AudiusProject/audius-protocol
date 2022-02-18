@@ -193,6 +193,20 @@ class Utils {
       return null
     }
   }
+
+  /**
+   * If `promise` responds before `timeoutMs`,
+   * this function returns its response; else rejects with `timeoutMessage`
+   * @param {Promise} promise
+   * @param {number} timeoutMs
+   * @param {string} timeoutMessage
+   */
+  static async racePromiseWithTimeout (promise, timeoutMs, timeoutMessage) {
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
+    })
+    return Promise.race([promise, timeoutPromise])
+  }
 }
 
 module.exports = Utils
