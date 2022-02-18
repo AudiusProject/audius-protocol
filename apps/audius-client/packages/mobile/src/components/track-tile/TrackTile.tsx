@@ -6,7 +6,7 @@ import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
 import { getUserFromTrack } from 'audius-client/src/common/store/cache/users/selectors'
 import { isEqual } from 'lodash'
-import { Animated, Easing, GestureResponderEvent } from 'react-native'
+import { Animated, Easing } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { TrackTileProps } from 'app/components/track-tile/types'
@@ -94,11 +94,6 @@ const TrackTileComponent = ({
     track_id
   ])
 
-  const onPressReposts = (e: GestureResponderEvent) => {
-    // navigate to reposts page
-    // goToRoute(REPOSTING_USERS_ROUTE)
-  }
-
   useEffect(() => {
     if (isLoaded) {
       onLoad?.(index)
@@ -142,7 +137,6 @@ const TrackTileComponent = ({
           isTrending={isTrending}
           isUnlisted={is_unlisted}
           listenCount={play_count}
-          onPressReposts={onPressReposts}
           repostCount={repost_count}
           saveCount={save_count}
           showRankIcon={showRankIcon}

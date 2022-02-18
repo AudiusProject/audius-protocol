@@ -10,7 +10,7 @@ const messages = {
 export const RepostsScreen = () => {
   return (
     <UserListScreen title={messages.title}>
-      <UserList userSelector={getUserList} tag='FOLLOWING' />
+      <UserList userSelector={getUserList} tag='REPOSTS' />
     </UserListScreen>
   )
 }
