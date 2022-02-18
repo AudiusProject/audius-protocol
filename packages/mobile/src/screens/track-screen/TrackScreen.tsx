@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { LineupState } from 'audius-client/src/common/models/Lineup'
 import { Track } from 'audius-client/src/common/models/Track'
@@ -19,7 +17,6 @@ import { StyleSheet, View } from 'react-native'
 import { BaseStackParamList } from 'app/components/app-navigator/types'
 import { Lineup } from 'app/components/lineup'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -124,21 +121,9 @@ const TrackScreenMainContent = ({
  * `TrackScreen` displays a single track and a Lineup of more tracks by the artist
  */
 export const TrackScreen = ({ route, navigation }: Props) => {
-  const dispatchWeb = useDispatchWeb()
   const lineup = useSelectorWeb(getMoreByArtistLineup, isEqual)
   const track = useSelectorWeb(getTrack)
   const user = useSelectorWeb(getUser)
-
-  const playTrack = useCallback(
-    (uid?: string) => {
-      dispatchWeb(tracksActions.play(uid))
-    },
-    [dispatchWeb]
-  )
-
-  const pauseTrack = useCallback(() => {
-    dispatchWeb(tracksActions.pause())
-  }, [dispatchWeb])
 
   return (
     <View>
@@ -150,8 +135,6 @@ export const TrackScreen = ({ route, navigation }: Props) => {
           ) : null
         }
         lineup={lineup}
-        pauseTrack={pauseTrack}
-        playTrack={playTrack}
       />
     </View>
   )

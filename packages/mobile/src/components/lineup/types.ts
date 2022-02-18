@@ -75,16 +75,6 @@ export type LineupProps = {
   refreshing?: boolean
 
   /**
-   * Function called to pause playback
-   */
-  pauseTrack: () => void
-
-  /**
-   * Function called to play a track
-   */
-  playTrack: (uid: UID) => void
-
-  /**
    * How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none
    */
   rankIconCount?: number
