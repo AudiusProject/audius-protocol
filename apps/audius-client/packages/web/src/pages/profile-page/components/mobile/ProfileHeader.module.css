@@ -114,14 +114,19 @@
   display: inline-block;
 }
 
+.artistHandleWrapper {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
 .artistHandle {
   color: var(--neutral-light-4);
   font-family: var(--font-family);
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   line-height: normal;
-  margin-bottom: 14px;
-  text-align: left;
+  display: inline-block;
+  margin-right: 8px;
 }
 
 .artistMetrics {
