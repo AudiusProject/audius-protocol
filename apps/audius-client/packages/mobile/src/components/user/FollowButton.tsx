@@ -1,4 +1,4 @@
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 
 import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
@@ -10,10 +10,11 @@ const messages = {
 }
 
 type FollowButtonsProps = {
-  profile: ProfileUser
+  profile: User
+  noIcon?: boolean
 }
 
-export const FollowButton = ({ profile }: FollowButtonsProps) => {
+export const FollowButton = ({ profile, noIcon }: FollowButtonsProps) => {
   const { does_current_user_follow } = profile
   const isFollowing = does_current_user_follow
 
@@ -25,7 +26,7 @@ export const FollowButton = ({ profile }: FollowButtonsProps) => {
     <Button
       title={isFollowing ? messages.following : messages.follow}
       variant={variant}
-      icon={Icon}
+      icon={noIcon ? undefined : Icon}
       iconPosition='left'
       size='small'
     />

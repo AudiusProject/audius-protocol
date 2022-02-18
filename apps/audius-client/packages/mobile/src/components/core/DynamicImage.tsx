@@ -190,7 +190,7 @@ export const DynamicImage = memo(function DynamicImage({
   }, [])
 
   return (
-    <View style={[style, stylesProp?.root]}>
+    <View style={[stylesProp?.root, style]}>
       <Animated.View
         style={[
           stylesProp?.imageContainer,
