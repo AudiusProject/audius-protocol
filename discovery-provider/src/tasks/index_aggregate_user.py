@@ -43,7 +43,6 @@ UPDATE_AGGREGATE_USER_QUERY = """
             GROUP BY
                 user_id
             UNION
-            ALL
             SELECT
                 t.owner_id AS owner_id
             FROM
@@ -59,7 +58,6 @@ UPDATE_AGGREGATE_USER_QUERY = """
             GROUP BY
                 t.owner_id
             UNION
-            ALL
             SELECT
                 p.playlist_owner_id AS owner_id
             FROM
@@ -76,7 +74,6 @@ UPDATE_AGGREGATE_USER_QUERY = """
             GROUP BY
                 p.playlist_owner_id
             UNION
-            ALL
             SELECT
                 p.playlist_owner_id AS owner_id
             FROM
@@ -93,74 +90,66 @@ UPDATE_AGGREGATE_USER_QUERY = """
             GROUP BY
                 p.playlist_owner_id
             UNION
-            ALL (
-                SELECT
-                    f.followee_user_id AS followee_user_id
-                FROM
-                    follows f
-                WHERE
-                    f.is_current IS TRUE
-                    AND f.blocknumber > (
-                        SELECT
-                            blocknumber
-                        FROM
-                            aggregate_user_latest_blocknumber
-                    )
-                GROUP BY
-                    f.followee_user_id
-            )
+            SELECT
+                f.followee_user_id AS followee_user_id
+            FROM
+                follows f
+            WHERE
+                f.is_current IS TRUE
+                AND f.blocknumber > (
+                    SELECT
+                        blocknumber
+                    FROM
+                        aggregate_user_latest_blocknumber
+                )
+            GROUP BY
+                f.followee_user_id
             UNION
-            ALL (
-                SELECT
-                    f.follower_user_id AS follower_user_id
-                FROM
-                    follows f
-                WHERE
-                    f.is_current IS TRUE
-                    AND f.blocknumber > (
-                        SELECT
-                            blocknumber
-                        from
-                            aggregate_user_latest_blocknumber
-                    )
-                GROUP BY
-                    f.follower_user_id
-            )
+            SELECT
+                f.follower_user_id AS follower_user_id
+            FROM
+                follows f
+            WHERE
+                f.is_current IS TRUE
+                AND f.blocknumber > (
+                    SELECT
+                        blocknumber
+                    from
+                        aggregate_user_latest_blocknumber
+                )
+            GROUP BY
+                f.follower_user_id
             UNION
-            ALL (
-                SELECT
-                    r.user_id AS user_id
-                FROM
-                    reposts r
-                WHERE
-                    r.is_current IS TRUE
-                    AND r.blocknumber > (
-                        SELECT
-                            blocknumber
-                        from
-                            aggregate_user_latest_blocknumber
-                    )
-                GROUP BY
-                    r.user_id
-            )
+            SELECT
+                r.user_id AS user_id
+            FROM
+                reposts r
+            WHERE
+                r.is_current IS TRUE
+                AND r.blocknumber > (
+                    SELECT
+                        blocknumber
+                    from
+                        aggregate_user_latest_blocknumber
+                )
+            GROUP BY
+                r.user_id
             UNION
-            ALL (
-                SELECT
-                    s.user_id AS user_id
-                FROM
-                    saves s
-                WHERE
-                    s.is_current IS TRUE
-                    AND s.save_type = 'track'
-                    AND s.blocknumber > (
-                        SELECT
-                            blocknumber
-                        FROM
-                            aggregate_user_latest_blocknumber
-                    )
-                GROUP BY
-                    s.user_id
-            )
+            SELECT
+                s.user_id AS user_id
+            FROM
+                saves s
+            WHERE
+                s.is_current IS TRUE
+                AND s.save_type = 'track'
+                AND s.blocknumber > (
+                    SELECT
+                        blocknumber
+                    FROM
+                        aggregate_user_latest_blocknumber
+                )
+            GROUP BY
+                s.user_id
         )
         INSERT INTO
             aggregate_user (
