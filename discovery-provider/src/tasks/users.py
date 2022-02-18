@@ -383,7 +383,9 @@ def parse_user_event(
                 "profile_picture_sizes" in ipfs_metadata
                 and ipfs_metadata["profile_picture_sizes"]
             ):
-                user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
+                user_record.profile_picture_sizes = ipfs_metadata[
+                    "profile_picture_sizes"
+                ]
 
             logger.info(
                 "index.py | users.py | update_multihash | profile_picture_sizes"
