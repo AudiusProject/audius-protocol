@@ -545,12 +545,8 @@ class Rewards extends Base {
     endpoints,
     numAttestations = 3
   }) {
-    let attestEndpoints
-    if (endpoints) {
-      attestEndpoints = sampleSize(endpoints, numAttestations)
-    } else {
-      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(numAttestations)
-    }
+    const discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true, whitelist: endpoints })
+    const attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(discoveryProviders, numAttestations)
 
     if (attestEndpoints.length < numAttestations) {
       throw new Error(`Not enough other nodes found, need ${numAttestations}, found ${attestEndpoints.length}`)
