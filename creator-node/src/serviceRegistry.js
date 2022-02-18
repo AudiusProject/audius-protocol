@@ -330,7 +330,15 @@ class ServiceRegistry {
         config.get('delegatePrivateKey').replace('0x', '')
       ),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-        discoveryProviderWhitelist
+        discoveryProviderWhitelist,
+        /* blacklist */ null,
+        /* reselectTimeout */ null,
+        /* selectionCallback */ null,
+        /* monitoringCallbacks */ {},
+        /* selectionRequestTimeout */ null,
+        /* selectionRequestRetries */ null,
+        /* unhealthySlotDiffPlays */ null,
+        /* unhealthyBlockDiff */ 500
       ),
       // If an identity service config is present, set up libs with the connection, otherwise do nothing
       identityServiceConfig: identityService
