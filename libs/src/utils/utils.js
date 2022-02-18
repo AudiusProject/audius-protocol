@@ -195,13 +195,17 @@ class Utils {
   }
 
   /**
-   * If `requestPromise` responds before `timeoutMs`, this function returns its response; else rejects with `timeoutErrorMsg`
+   * If `promise` responds before `timeoutMs`,
+   * this function returns its response; else rejects with `timeoutMessage`
+   * @param {Promise} promise
+   * @param {number} timeoutMs
+   * @param {string} timeoutMessage
    */
-  static async racePromiseWithTimeout (requestPromise, timeoutMs, timeoutErrorMsg) {
+  static async racePromiseWithTimeout (promise, timeoutMs, timeoutMessage) {
     const timeoutPromise = new Promise((resolve, reject) => {
-      setTimeout(() => reject(new Error(timeoutErrorMsg)), timeoutMs)
+      setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
     })
-    return Promise.race([requestPromise, timeoutPromise])
+    return Promise.race([promise, timeoutPromise])
   }
 }
 
