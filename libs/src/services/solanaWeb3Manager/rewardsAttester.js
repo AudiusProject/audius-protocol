@@ -535,7 +535,7 @@ class RewardsAttester {
     this.logger.info(`Selecting discovery nodes`, {endpointPool: this.endpointPool})
     const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll({
       verbose: true,
-      whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
+      whitelist: this.endpointPool.size > 0 ? Array.from(this.endpointPool) : null
     })
     this.endpoints = await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(endpoints, this.quorumSize)
     this.logger.info(`Selected new discovery nodes: [${this.endpoints}]`)
