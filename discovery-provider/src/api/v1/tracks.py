@@ -28,6 +28,7 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.users import user_model_full
 from src.queries.get_feed import get_feed
+from src.queries.get_max_id import get_max_id
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
     get_full_recommended_tracks,
@@ -921,5 +922,59 @@ class MostLoved(Resource):
             "limit": format_limit(request_args, 100, 25),
         }
         tracks = get_top_followee_saves('track', args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+@ns.route('/latest')
+class LatestTrack(Resource):
+    @record_metrics
+    @ns.marshal_with(tracks_response)
+    def get(self):
+        latest = get_max_id('track')
+        return success_response(latest)
+
+
+by_ids_parser = reqparse.RequestParser()
+by_ids_parser.add_argument("ids_array", required=True, type=str)
+by_ids_parser.add_argument("sort", required=False, type=str)
+by_ids_parser.add_argument("limit", required=False, default=100, type=int)
+by_ids_parser.add_argument("offset", required=False, default=0, type=int)
+by_ids_parser.add_argument("user_id", required=False, type=int)
+by_ids_parser.add_argument("authed_user_id", required=False, type=int)
+by_ids_parser.add_argument("min_block_number", required=False, type=int)
+by_ids_parser.add_argument("filter_deleted", required=False, type=bool)
+by_ids_parser.add_argument("with_users", required=False, type=bool)
+
+
+@full_ns.route('/by_ids')
+class TracksByIDs(Resource):
+    @record_metrics
+    @cache(ttl_sec=10)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        request_args = by_ids_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
+        ids_array = request_args.get("ids_array").split(",")
+
+        args = {
+            "id": ids_array,
+            "limit": format_limit(request_args, 100, 25),
+            "offset": format_offset(request_args),
+            "current_user_id": current_user_id,
+            "filter_deleted": request_args.get("filter_deleted"),
+            "with_users": request_args.get("with_users"),
+            "tracks_only": request_args.get("tracks_only"), 
+        }
+        if request_args.get("sort"):
+            args["sort"] = request_args.get("sort")
+        if request_args.get("user_id"):
+            args["user_id"] = request_args.get("user_id")
+        if request_args.get("authed_user_id"):
+            args["authed_user_id"] = request_args.get("authed_user_id")
+        if request_args.get("min_block_number"):
+            args["min_block_number"] = request_args.get("min_block_number")
+        
+        tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
