@@ -123,7 +123,7 @@ class ArtistCard extends Component {
         <div className={styles.artistCardContainer}>
           <ArtistCover {...artistProps} />
           <div className={styles.artistStatsContainer}>
-            <Stats clickable={false} stats={this.getStats()} />
+            <Stats clickable={false} stats={this.getStats()} size='medium' />
           </div>
           <div className={styles.descriptionContainer}>
             <div>
