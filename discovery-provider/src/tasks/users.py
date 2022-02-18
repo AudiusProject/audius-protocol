@@ -170,21 +170,13 @@ def lookup_user_record(
     user_id = helpers.get_tx_arg(entry, "_userId")
 
     # Check if the userId is in the db
-    user_exists = (
+    user_record = (
         session.query(User)
         .filter(User.user_id == user_id, User.is_current == True)
-        .count()
-        > 0
+        .first()
     )
 
-    user_record = None  # will be set in this if/else
-    if user_exists:
-        user_record = (
-            session.query(User)
-            .filter(User.user_id == user_id, User.is_current == True)
-            .first()
-        )
-
+    if user_record:
         # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
         # https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
         session.expunge(user_record)
@@ -208,23 +200,13 @@ def invalidate_old_user(session, user_id):
     # Check if the userId is in the db
     logger.info(f"index.py | invalidate user with id {user_id}")
 
-    user_exists = (
+    # Update existing record in db to is_current = False
+    num_invalidated_users = (
         session.query(User)
         .filter(User.user_id == user_id, User.is_current == True)
-        .count()
-        > 0
+        .update({"is_current": False})
     )
-
-    if user_exists:
-        # Update existing record in db to is_current = False
-        num_invalidated_users = (
-            session.query(User)
-            .filter(User.user_id == user_id, User.is_current == True)
-            .update({"is_current": False})
-        )
-        assert (
-            num_invalidated_users > 0
-        ), "Update operation requires a current user to be invalidated"
+    logger.info(f"index.py | num_invalidated_users {num_invalidated_users}")
 
 
 def parse_user_event(
