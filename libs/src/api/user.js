@@ -572,6 +572,7 @@ class Users extends Base {
       UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN: 'UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN',
       UPLOAD_METADATA: 'UPLOAD_METADATA',
       UPDATE_METADATA_ON_CHAIN: 'UPDATE_METADATA_ON_CHAIN',
+      UPDATE_USER_ON_CHAIN_OPS: 'UPDATE_USER_ON_CHAIN_OPS',
       ASSOCIATE_USER: 'ASSOCIATE_USER'
     }
     let phase = ''
@@ -583,29 +584,46 @@ class Users extends Base {
     this._validateUserMetadata(newMetadata)
 
     try {
+      let startMs = Date.now()
+      let logPrefix = `[updateAndUploadMetadata] [userId: ${userId}]`
+
       // Update user creator_node_endpoint on chain if applicable
       if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
         await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
+        console.log(`${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
+        startMs = Date.now()
+
         // Ensure DN has indexed creator_node_endpoint change
         await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
+        console.log(`${logPrefix} [phase: ${phase}] _waitForCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
+        startMs = Date.now()
       }
 
       // Upload new metadata object to CN
       phase = phases.UPLOAD_METADATA
       const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+      console.log(`${logPrefix} [phase: ${phase}] creatorNode.uploadCreatorContent() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
       // Write metadata multihash to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN
       const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
       const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+      console.log(`${logPrefix} [phase: ${phase}] UserFactoryClient.updateMultihash() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
       // Write remaining metadata fields to chain
+      phase = phases.UPDATE_USER_ON_CHAIN_OPS
       const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
+      console.log(`${logPrefix} [phase: ${phase}] UserFactoryClient.updateMultihash() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
       // Write to CN to associate blockchain user id with updated metadata and block number
       phase = phases.ASSOCIATE_USER
       await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
+      console.log(`${logPrefix} [phase: ${phase}] creatorNode.associateCreator() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
       // Update libs instance with new user metadata object
       this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
