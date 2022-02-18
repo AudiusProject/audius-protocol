@@ -103,6 +103,7 @@ const ArtistPopover = ({
         playlistCount={creator.playlist_count}
         followerCount={creator.follower_count}
         followingCount={creator.followee_count}
+        doesFollowCurrentUser={!!creator.does_follow_current_user}
         userId={creator.user_id}
         name={creator.name}
         handle={creator.handle}
