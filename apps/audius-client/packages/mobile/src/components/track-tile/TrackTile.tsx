@@ -99,11 +99,6 @@ const TrackTileComponent = ({
     // goToRoute(REPOSTING_USERS_ROUTE)
   }
 
-  const onPressFavorites = (e: GestureResponderEvent) => {
-    // navigate to favorites page
-    // goToRoute(REPOSTING_USERS_ROUTE)
-  }
-
   useEffect(() => {
     if (isLoaded) {
       onLoad?.(index)
@@ -141,12 +136,12 @@ const TrackTileComponent = ({
         />
         {_co_sign && <TrackTileCoSign coSign={_co_sign} />}
         <TrackTileStats
+          trackId={track_id}
           hidePlays={hidePlays}
           index={index}
           isTrending={isTrending}
           isUnlisted={is_unlisted}
           listenCount={play_count}
-          onPressFavorites={onPressFavorites}
           onPressReposts={onPressReposts}
           repostCount={repost_count}
           saveCount={save_count}

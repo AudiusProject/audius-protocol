@@ -1,9 +1,17 @@
+import { useCallback } from 'react'
+
+import { FavoriteType } from 'audius-client/src/common/models/Favorite'
+import { ID } from 'audius-client/src/common/models/Identifiers'
+import { setFavorite } from 'audius-client/src/common/store/user-list/favorites/actions'
 import { formatCount } from 'audius-client/src/common/utils/formatUtil'
+import { FAVORITING_USERS_ROUTE } from 'audius-client/src/utils/route'
 import { View, Pressable, StyleSheet } from 'react-native'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import Text from 'app/components/text'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
 import { GestureResponderHandler } from 'app/types/gesture'
@@ -54,12 +62,12 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 type Props = {
+  trackId: ID
   hidePlays: boolean
   index: number
   isTrending?: boolean
   isUnlisted?: boolean
   listenCount: number
-  onPressFavorites: GestureResponderHandler
   onPressReposts: GestureResponderHandler
   repostCount: number
   saveCount: number
@@ -67,12 +75,12 @@ type Props = {
 }
 
 export const TrackTileStats = ({
+  trackId,
   hidePlays,
   index,
   isTrending,
   isUnlisted,
   listenCount,
-  onPressFavorites,
   onPressReposts,
   repostCount,
   saveCount,
@@ -81,8 +89,18 @@ export const TrackTileStats = ({
   const styles = useThemedStyles(createStyles)
   const trackTileStyles = useThemedStyles(createTrackTileStyles)
   const { neutralLight4 } = useThemeColors()
+  const dispatchWeb = useDispatchWeb()
+  const navigation = useNavigation()
 
   const hasEngagement = Boolean(repostCount || saveCount)
+
+  const handlePressFavorites = useCallback(() => {
+    dispatchWeb(setFavorite(trackId, FavoriteType.TRACK))
+    navigation.push({
+      native: { screen: 'FavoritedScreen', params: undefined },
+      web: { route: FAVORITING_USERS_ROUTE }
+    })
+  }, [dispatchWeb, trackId, navigation])
 
   return (
     <View style={styles.stats}>
@@ -115,7 +133,7 @@ export const TrackTileStats = ({
               !saveCount ? styles.disabledStatItem : {}
             ]}
             disabled={!saveCount}
-            onPress={onPressFavorites}
+            onPress={handlePressFavorites}
           >
             <Text style={trackTileStyles.statText}>
               {formatCount(saveCount)}
