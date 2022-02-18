@@ -130,6 +130,7 @@ class RewardsAttester {
    *    runBehindSec?: number
    *    isSolanaChallenge?: (string) => boolean
    *    feePayerOverride?: string
+   *    maxAggregationAttempts?: number
    * }} {
    *    libs,
    *    startingBlock,
@@ -148,6 +149,7 @@ class RewardsAttester {
    *    runBehindSec
    *    isSolanaChallenge
    *    feePayerOverride
+   *    maxAggregationAttempts
    *  }
    * @memberof RewardsAttester
    */
@@ -168,7 +170,8 @@ class RewardsAttester {
     endpoints = [],
     runBehindSec = 0,
     isSolanaChallenge = (challengeId) => true,
-    feePayerOverride = null
+    feePayerOverride = null,
+    maxAggregationAttempts = 20
   }) {
     this.libs = libs
     this.logger = logger
@@ -182,6 +185,7 @@ class RewardsAttester {
     this.endpoints = endpoints
     this.endpointPool = new Set(endpoints)
     this.maxRetries = maxRetries
+    this.maxAggregationAttempts = maxAggregationAttempts
     this.updateValues = updateValues
     this.challengeIdsDenyList = new Set(...challengeIdsDenyList)
     // Stores a queue of undisbursed challenges
@@ -494,7 +498,8 @@ class RewardsAttester {
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
       logger: this.logger,
-      feePayerOverride: this._getFeePayer()
+      feePayerOverride: this._getFeePayer(),
+      maxAggregationAttempts: this.maxAggregationAttempts
     })
 
     if (success) {
