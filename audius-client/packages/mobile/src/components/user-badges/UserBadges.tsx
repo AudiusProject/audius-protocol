@@ -1,5 +1,12 @@
 import { User } from 'audius-client/src/common/models/User'
-import { StyleSheet, View, Text } from 'react-native'
+import {
+  StyleSheet,
+  View,
+  Text,
+  ViewStyle,
+  StyleProp,
+  TextStyle
+} from 'react-native'
 
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { IconAudioBadge, getUserAudioTier } from 'app/components/audio-rewards'
@@ -10,8 +17,8 @@ type UserBadgesProps = {
     'name' | 'associated_wallets_balance' | 'balance' | 'is_verified'
   >
   badgeSize?: number
-  style?: Record<string, any>
-  nameStyle?: Record<string, any>
+  style?: StyleProp<ViewStyle>
+  nameStyle?: StyleProp<TextStyle>
   hideName?: boolean
 }
 
@@ -26,7 +33,7 @@ const styles = StyleSheet.create({
   }
 })
 
-const UserBadges = (props: UserBadgesProps) => {
+export const UserBadges = (props: UserBadgesProps) => {
   const { user, badgeSize = 14, style, nameStyle, hideName } = props
   const tier = getUserAudioTier(user)
 
