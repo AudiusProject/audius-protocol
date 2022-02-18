@@ -1,5 +1,12 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
+import {
+  IconPlaylists,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle
+} from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -11,7 +18,7 @@ import {
   deletePlaylist
 } from 'common/store/cache/collections/actions'
 import { getCollectionWithUser } from 'common/store/cache/collections/selectors'
-import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
+import PlaylistForm from 'components/create-playlist/PlaylistForm'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import {
   getIsOpen,
@@ -20,13 +27,16 @@ import {
 import { close } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname, playlistPage } from 'utils/route'
+import zIndex from 'utils/zIndex'
+
+import styles from './EditPlaylistModal.module.css'
 
 const messages = {
-  edit: 'EDIT',
-  delete: 'DELETE',
+  edit: 'Edit',
+  delete: 'Delete',
   title: {
-    playlist: 'PLAYLIST',
-    album: 'ALBUM'
+    playlist: 'Playlist',
+    album: 'Album'
   },
   type: {
     playlist: 'Playlist',
@@ -74,22 +84,48 @@ const EditPlaylistModal = ({
     onClose()
   }
 
+  const editPlaylistModalTitle = `${messages.edit} ${
+    isAlbum ? messages.title.album : messages.title.playlist
+  }`
+
+  const [isArtworkPopupOpen, setIsArtworkPopupOpen] = useState(false)
+
+  const onOpenArtworkPopup = useCallback(() => {
+    setIsArtworkPopupOpen(true)
+  }, [setIsArtworkPopupOpen])
+
+  const onCloseArtworkPopup = useCallback(() => {
+    setIsArtworkPopupOpen(false)
+  }, [setIsArtworkPopupOpen])
+
   if (!collection) return null
   return (
     <>
-      <CreatePlaylistModal
-        key={playlistId}
-        title={`${messages.edit} ${
-          isAlbum ? messages.title.album : messages.title.playlist
-        }`}
-        isAlbum={isAlbum}
-        visible={isOpen}
-        metadata={collection}
-        editMode
-        onDelete={onClickDelete}
-        onSave={onSaveEdit}
-        onCancel={onClose}
-      />
+      <Modal
+        bodyClassName={styles.modalBody}
+        modalKey='editplaylist'
+        title={editPlaylistModalTitle}
+        dismissOnClickOutside={!isArtworkPopupOpen}
+        isOpen={isOpen}
+        onClose={onClose}
+        zIndex={zIndex.CREATE_PLAYLIST_MODAL}
+      >
+        <ModalHeader onClose={onClose}>
+          <ModalTitle icon={<IconPlaylists />} title={editPlaylistModalTitle} />
+        </ModalHeader>
+        <ModalContent>
+          <PlaylistForm
+            isEditMode
+            onCloseArtworkPopup={onCloseArtworkPopup}
+            onOpenArtworkPopup={onOpenArtworkPopup}
+            metadata={collection}
+            isAlbum={isAlbum}
+            onDelete={onClickDelete}
+            onCancel={onClose}
+            onSave={onSaveEdit}
+          />
+        </ModalContent>
+      </Modal>
       <DeleteConfirmationModal
         title={`${messages.delete} ${
           isAlbum ? messages.title.album : messages.title.playlist
