@@ -5,9 +5,3 @@
   overflow-y: visible !important;
   overflow-x: visible !important;
 }
-
-.segmentedControlContainer {
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: center;
-}

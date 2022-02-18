@@ -10,6 +10,9 @@ export type NestedNonNullable<T> = {
 }
 
 export type Nullable<T> = T | null
+export type DeepNullable<T> = {
+  [K in keyof T]: DeepNullable<T[K]> | null
+}
 export type Overwrite<T, U extends keyof T, V> = Omit<T, U> & V
 export type Maybe<T> = T | undefined
 
