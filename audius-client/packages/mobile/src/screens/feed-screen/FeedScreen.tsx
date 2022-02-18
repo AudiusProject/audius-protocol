@@ -50,14 +50,6 @@ export const FeedScreen = ({ navigation }: Props) => {
     dispatchWeb(feedActions.refreshInView(true))
   }
 
-  const playTrack = (uid?: string) => {
-    dispatchWeb(feedActions.play(uid))
-  }
-
-  const pauseTrack = () => {
-    dispatchWeb(feedActions.pause())
-  }
-
   const handleFilterButtonPress = useCallback(() => {
     dispatchWeb(setVisibility({ modal: 'FeedFilter', visible: true }))
   }, [dispatchWeb])
@@ -77,8 +69,6 @@ export const FeedScreen = ({ navigation }: Props) => {
         loadMore={loadMore}
         refresh={refresh}
         refreshing={isRefreshing && feedLineup.isMetadataLoading}
-        pauseTrack={pauseTrack}
-        playTrack={playTrack}
         selfLoad
       />
     </>

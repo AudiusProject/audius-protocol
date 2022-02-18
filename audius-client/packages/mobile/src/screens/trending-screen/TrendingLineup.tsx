@@ -75,17 +75,6 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
     dispatchWeb(trendingActions.refreshInView(true))
   }, [dispatchWeb, trendingActions])
 
-  const handlePlayTrack = useCallback(
-    (uid?: string) => {
-      dispatchWeb(trendingActions.play(uid))
-    },
-    [dispatchWeb, trendingActions]
-  )
-
-  const handlePauseTrack = useCallback(() => {
-    dispatchWeb(trendingActions.pause())
-  }, [dispatchWeb, trendingActions])
-
   const handleLoadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
       dispatchWeb(
@@ -104,8 +93,6 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
       refresh={handleRefresh}
       refreshing={isRefreshing && trendingLineup.isMetadataLoading}
       loadMore={handleLoadMore}
-      playTrack={handlePlayTrack}
-      pauseTrack={handlePauseTrack}
       {...other}
     />
   )
