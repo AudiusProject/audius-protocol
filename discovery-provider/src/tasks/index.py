@@ -561,6 +561,7 @@ def index_blocks(self, db, blocks_list):
         )
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
+        logger.info("index.py | checkpoint | session start")
         with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             skip_tx_hash = get_tx_hash_to_skip(session, redis)
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
@@ -677,6 +678,8 @@ def index_blocks(self, db, blocks_list):
                 )
             if skip_tx_hash:
                 clear_indexing_error(redis)
+
+        logger.info("index.py | checkpoint | session commit")
 
         if changed_entity_ids_map:
             remove_updated_entities_from_cache(redis, changed_entity_ids_map)
