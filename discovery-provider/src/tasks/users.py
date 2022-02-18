@@ -35,6 +35,7 @@ def user_state_update(
     blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
+    begin_user_state_update = datetime.now()
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -152,6 +153,9 @@ def user_state_update(
             challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
             session.add(value_obj["user"])
 
+    logger.info(
+        f"index.py | users.py | finished user_state_update in {datetime.now() - begin_user_state_update} // per event: {(datetime.now() - begin_user_state_update) / num_total_changes} secs"
+    )
     return num_total_changes, user_ids
 
 
