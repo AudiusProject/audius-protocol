@@ -22,6 +22,13 @@ function MockLibs (getSlot = () => 100, getBlockNumber = () => 100) {
     submitAndEvaluate: (args) => {},
     getUndisbursedChallenges: (args) => {},
   }
+  this.discoveryProvider = {
+    serviceSelector: {
+      findAll: ({ whitelist }) => {
+        return whitelist
+      }
+    }
+  }
 }
 
 let calc = null
