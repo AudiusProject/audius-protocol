@@ -76,6 +76,7 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
     challengeIdsDenyList,
     reporter: rewardsReporter,
     endpoints,
+    maxAggregationAttempts: 2,
     isSolanaChallenge: (challengeId) => challengeId === 'listen-streak',
     runBehindSec,
     updateValues: async ({ startingBlock, offset, successCount }) => {
