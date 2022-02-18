@@ -317,17 +317,27 @@ def parse_user_event(
             if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
                 user_record.profile_picture = ipfs_metadata["profile_picture"]
 
+            logger.info("index.py | users.py | update_multihash | profile_picture")
+
             if "cover_photo" in ipfs_metadata and ipfs_metadata["cover_photo"]:
                 user_record.cover_photo = ipfs_metadata["cover_photo"]
+
+            logger.info("index.py | users.py | update_multihash | cover_photo")
 
             if "bio" in ipfs_metadata and ipfs_metadata["bio"]:
                 user_record.bio = ipfs_metadata["bio"]
 
+            logger.info("index.py | users.py | update_multihash | bio")
+
             if "name" in ipfs_metadata and ipfs_metadata["name"]:
                 user_record.name = ipfs_metadata["name"]
 
+            logger.info("index.py | users.py | update_multihash | name")
+
             if "location" in ipfs_metadata and ipfs_metadata["location"]:
                 user_record.location = ipfs_metadata["location"]
+
+            logger.info("index.py | users.py | update_multihash | location")
 
             # Fields with no on-chain counterpart
             if (
@@ -336,11 +346,16 @@ def parse_user_event(
             ):
                 user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
 
+            logger.info(
+                "index.py | users.py | update_multihash | profile_picture_sizes"
+            )
+
             if (
                 "cover_photo_sizes" in ipfs_metadata
                 and ipfs_metadata["cover_photo_sizes"]
             ):
                 user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
+            logger.info("index.py | users.py | update_multihash | cover_photo_sizes")
 
             if (
                 "collectibles" in ipfs_metadata
@@ -352,6 +367,8 @@ def parse_user_event(
             else:
                 user_record.has_collectibles = False
 
+            logger.info("index.py | users.py | update_multihash | updated collectibles")
+
             if "associated_wallets" in ipfs_metadata:
                 update_user_associated_wallets(
                     session,
@@ -360,6 +377,9 @@ def parse_user_event(
                     ipfs_metadata["associated_wallets"],
                     "eth",
                 )
+            logger.info(
+                "index.py | users.py | update_multihash | update_user_associated_wallets eth"
+            )
 
             if "associated_sol_wallets" in ipfs_metadata:
                 update_user_associated_wallets(
@@ -369,6 +389,9 @@ def parse_user_event(
                     ipfs_metadata["associated_sol_wallets"],
                     "sol",
                 )
+            logger.info(
+                "index.py | users.py | update_multihash | update_user_associated_wallets sol"
+            )
 
             if (
                 "playlist_library" in ipfs_metadata
@@ -376,8 +399,12 @@ def parse_user_event(
             ):
                 user_record.playlist_library = ipfs_metadata["playlist_library"]
 
+            logger.info("index.py | users.py | update_multihash | playlist_library")
+
             if "is_deactivated" in ipfs_metadata:
                 user_record.is_deactivated = ipfs_metadata["is_deactivated"]
+
+            logger.info("index.py | users.py | update_multihash | is_deactivated")
 
             if "events" in ipfs_metadata and ipfs_metadata["events"]:
                 update_user_events(
@@ -386,6 +413,8 @@ def parse_user_event(
                     ipfs_metadata["events"],
                     update_task.challenge_event_bus,
                 )
+
+            logger.info("index.py | users.py | update_multihash | events")
 
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes
