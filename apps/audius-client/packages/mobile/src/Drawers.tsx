@@ -1,5 +1,6 @@
 import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
+import { TiersExplainerDrawer } from 'app/components/audio-rewards'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { CognitoDrawer } from 'app/components/cognito-drawer/CognitoDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
@@ -40,6 +41,7 @@ export const Drawers = () => {
       <ForgotPasswordDrawer />
       <FeedFilterDrawer />
       <TrendingFilterDrawer />
+      <TiersExplainerDrawer />
       {/* Disable the audio breakdown drawer until we get
       the feature flags to work for native mobile */}
       {/* <AudioBreakdownDrawer /> */}
