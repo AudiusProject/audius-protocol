@@ -239,7 +239,8 @@ class CreatorNode {
         blockchainUserId: audiusUserId,
         metadataFileUUID,
         blockNumber: this.maxBlockNumber
-      }
+      },
+      headers: { 'Enforce-Write-Quorum': true }
     })
   }
 
@@ -338,7 +339,8 @@ class CreatorNode {
         metadataFileUUID,
         blockNumber: this.maxBlockNumber,
         transcodedTrackUUID
-      }
+      },
+      headers: { 'Enforce-Write-Quorum': true }
     })
   }
 
@@ -755,6 +757,8 @@ class CreatorNode {
     const { headers, formData } = this.createFormDataAndUploadHeaders(file, extraFormDataOptions)
     const requestId = headers['X-Request-ID']
 
+    headers['Enforce-Write-Quorum'] = true
+
     let total
     const url = this.creatorNodeEndpoint + route
 
@@ -775,7 +779,7 @@ class CreatorNode {
       console.debug(`Uploading file to ${url}`)
 
       const reqParams = {
-        headers: headers,
+        headers,
         adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
         // Add a 10% inherit processing time for the file upload.
         onUploadProgress: (progressEvent) => {
