@@ -11,6 +11,12 @@ const useStyles = makeStyles(({ spacing }) => ({
     position: 'absolute',
     top: spacing(5),
     right: spacing(3)
+  },
+  imageRoot: {
+    height: 96
+  },
+  image: {
+    height: '100%'
   }
 }))
 
@@ -31,7 +37,10 @@ export const CoverPhoto = ({ profile }: CoverPhotoProps) => {
   const isArtist = track_count > 0
 
   return (
-    <DynamicImage source={{ uri: coverPhoto }} style={{ height: 96 }}>
+    <DynamicImage
+      source={{ uri: coverPhoto }}
+      styles={{ root: styles.imageRoot, image: styles.image }}
+    >
       {isArtist ? <BadgeArtist style={styles.artistBadge} /> : null}
     </DynamicImage>
   )

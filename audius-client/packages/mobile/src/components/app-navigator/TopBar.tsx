@@ -2,7 +2,7 @@ import { memo, useCallback } from 'react'
 
 import { StackHeaderProps } from '@react-navigation/stack'
 import { markAllAsViewed } from 'audius-client/src/components/notification/store/actions'
-import { Platform, View } from 'react-native'
+import { Platform, View, Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
@@ -12,7 +12,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { open as openNotificationPanel } from 'app/store/notifications/actions'
 import { open as openSearch } from 'app/store/search/actions'
-import { makeStyles } from 'app/styles'
+import { makeStyles, typography } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { IconButton } from '../core/IconButton'
@@ -50,6 +50,12 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     height: spacing(6),
     width: spacing(20)
   },
+  title: {
+    fontSize: 18,
+    fontFamily: typography.fontByWeight.heavy,
+    color: palette.neutralLight5,
+    textTransform: 'uppercase'
+  },
   iconNotification: {
     height: 28,
     width: 28
@@ -76,7 +82,7 @@ export const TopBar = memo(
     const dispatch = useDispatch()
     const dispatchWeb = useDispatchWeb()
 
-    const { headerLeft, headerRight } = options
+    const { headerLeft, headerRight, title } = options
 
     const handlePressNotification = useCallback(() => {
       dispatch(openNotificationPanel())
@@ -111,12 +117,18 @@ export const TopBar = memo(
               />
             )}
           </View>
-          <IconButton
-            icon={AudiusLogo}
-            fill={neutralLight4}
-            styles={{ icon: styles.audiusLogo }}
-            onPress={handlePressHome}
-          />
+          {title ? (
+            <Text style={styles.title} accessibilityRole='header'>
+              {title}
+            </Text>
+          ) : (
+            <IconButton
+              icon={AudiusLogo}
+              fill={neutralLight4}
+              styles={{ icon: styles.audiusLogo }}
+              onPress={handlePressHome}
+            />
+          )}
           <View style={styles.headerRight}>
             {headerRight ? (
               headerRight({})

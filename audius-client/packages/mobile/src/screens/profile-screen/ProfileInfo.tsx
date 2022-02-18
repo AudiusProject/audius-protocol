@@ -2,11 +2,11 @@ import { getAccountUser } from 'audius-client/src/common/store/account/selectors
 import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 import { View, Text } from 'react-native'
 
+import { FollowButton } from 'app/components/user'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
-import { FollowButton } from './FollowButton'
 import { SubscribeButton } from './SubscribeButton'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({

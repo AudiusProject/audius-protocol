@@ -10,13 +10,14 @@ import { Animated, StyleSheet, View } from 'react-native'
 
 import BottomTabBar, { BottomTabBarProps } from 'app/components/bottom-tab-bar'
 import NowPlayingDrawer from 'app/components/now-playing-drawer/NowPlayingDrawer'
-import { EditProfileScreen } from 'app/screens/edit-profile-screen/EditProfileScreen'
+import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import ExploreScreen from 'app/screens/explore-screen'
 import FavoritesScreen from 'app/screens/favorites-screen'
 import { FeedScreen } from 'app/screens/feed-screen'
-import ProfileScreen from 'app/screens/profile-screen'
+import { ProfileScreen } from 'app/screens/profile-screen'
 import { TrackScreen } from 'app/screens/track-screen'
 import { TrendingScreen } from 'app/screens/trending-screen'
+import { FollowersScreen } from 'app/screens/user-list-screen'
 
 import { TopBar } from './TopBar'
 import {
@@ -68,6 +69,9 @@ const createStackScreen = <StackParamList extends ParamListBase>(
       <Stack.Screen name='track' component={TrackScreen} />
       <Stack.Screen name='profile' component={ProfileScreen} />
       <Stack.Screen name='EditProfile' component={EditProfileScreen} />
+      <Stack.Group>
+        <Stack.Screen name='FollowersScreen' component={FollowersScreen} />
+      </Stack.Group>
     </Stack.Navigator>
   )
 }
