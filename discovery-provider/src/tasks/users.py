@@ -168,9 +168,19 @@ def user_state_update(
     for user_id, value_obj in user_events_lookup.items():
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
+            invalidate_user_record = datetime.now()
             invalidate_old_user(session, user_id)
+            logger.info(
+                f"index.py | users.py | user_state_update | invalidate user {datetime.now() - invalidate_user_record}."
+            )
+
             challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
+            begin_add_user_record = datetime.now()
             session.add(value_obj["user"])
+            logger.info(
+                f"index.py | users.py | user_state_update | add user record {datetime.now() - begin_add_user_record}."
+            )
+
 
     if num_total_changes:
         logger.info(
