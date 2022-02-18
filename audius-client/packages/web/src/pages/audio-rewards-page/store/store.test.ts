@@ -442,7 +442,7 @@ describe('Rewards Page Sagas', () => {
           ...claimAsyncProvisions,
           [call.fn(AudiusBackend.submitAndEvaluateAttestations), {}]
         ])
-        .put(claimChallengeReward({ claim: testClaim, retryOnFailure: false }))
+        .put(claimChallengeReward({ claim: testClaim, retryOnFailure: true }))
         .put(claimChallengeRewardSucceeded())
         .silentRun()
     })
@@ -485,7 +485,7 @@ describe('Rewards Page Sagas', () => {
 
     it('should not retry twice', () => {
       return expectSaga(saga)
-        .dispatch(setHCaptchaStatus({ status: HCaptchaStatus.SUCCESS }))
+        .dispatch(setCognitoFlowStatus({ status: CognitoFlowStatus.CLOSED }))
         .provide([
           ...retryClaimProvisions,
           ...claimAsyncProvisions,

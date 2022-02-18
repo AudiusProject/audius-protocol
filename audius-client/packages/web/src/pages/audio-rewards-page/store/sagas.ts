@@ -98,7 +98,13 @@ function getOracleConfig() {
   return { oracleEthAddress, AAOEndpoint }
 }
 
-function* retryClaimChallengeReward(errorResolved: boolean) {
+function* retryClaimChallengeReward({
+  errorResolved,
+  retryOnFailure
+}: {
+  errorResolved: boolean
+  retryOnFailure: boolean
+}) {
   const claimStatus: ClaimStatus = yield select(getClaimStatus)
   const claim: Claim = yield select(getClaimToRetry)
   if (claimStatus === ClaimStatus.WAITING_FOR_RETRY) {
@@ -107,7 +113,7 @@ function* retryClaimChallengeReward(errorResolved: boolean) {
       setVisibility({ modal: CHALLENGE_REWARDS_MODAL_NAME, visible: true })
     )
     if (errorResolved) {
-      yield put(claimChallengeReward({ claim, retryOnFailure: false }))
+      yield put(claimChallengeReward({ claim, retryOnFailure }))
     } else {
       yield put(claimChallengeRewardFailed())
     }
@@ -311,7 +317,10 @@ function* watchSetHCaptchaStatus() {
     action: ReturnType<typeof setHCaptchaStatus>
   ) {
     const { status } = action.payload
-    yield call(retryClaimChallengeReward, status === HCaptchaStatus.SUCCESS)
+    yield call(retryClaimChallengeReward, {
+      errorResolved: status === HCaptchaStatus.SUCCESS,
+      retryOnFailure: true
+    })
   })
 }
 
@@ -322,7 +331,10 @@ function* watchSetCognitoFlowStatus() {
     const { status } = action.payload
     // Only attempt retry on closed, so that we don't error on open
     if (status === CognitoFlowStatus.CLOSED) {
-      yield call(retryClaimChallengeReward, true)
+      yield call(retryClaimChallengeReward, {
+        errorResolved: true,
+        retryOnFailure: false
+      })
     }
   })
 }
