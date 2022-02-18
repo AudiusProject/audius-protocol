@@ -183,8 +183,7 @@ class RewardsAttester {
     this.aaoAddress = aaoAddress
     this.reporter = reporter || new BaseRewardsReporter()
     this.endpoints = endpoints
-    // If passed endpoints, override the automatic reselection process
-    this.overrideEndpointSelection = !!endpoints.length
+    this.endpointPool = new Set(endpoints)
     this.maxRetries = maxRetries
     this.maxAggregationAttempts = maxAggregationAttempts
     this.updateValues = updateValues
@@ -236,7 +235,7 @@ class RewardsAttester {
       AAO address: ${this.aaoAddress} \
       endpoints: ${this.endpoints}
     `)
-    await this._selectDiscoveryNodes()
+    await this.selectDiscoveryNodes()
     await this.delayCalculator.start()
 
     while (!this._shouldStop) {
@@ -416,7 +415,7 @@ class RewardsAttester {
     while (needsRetry.length && retryCount < this.maxRetries) {
       await this._backoff(retryCount++)
       if (shouldReselect) {
-        await this._selectDiscoveryNodes()
+        await this.selectDiscoveryNodes()
       }
       const res = await Promise.all(needsRetry.map(this._performSingleAttestation))
       ;({ successful, needsRetry, noRetry, shouldReselect } = this._processResponses(res, retryCount === this.maxRetries))
@@ -532,11 +531,13 @@ class RewardsAttester {
     }
   }
 
-  async _selectDiscoveryNodes () {
-    if (this.overrideEndpointSelection) return
-    this.logger.info(`Selecting discovery nodes`)
-    const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll()
-    this.endpoints = sampleSize(endpoints, this.quorumSize)
+  async selectDiscoveryNodes () {
+    this.logger.info(`Selecting discovery nodes`, {endpointPool: this.endpointPool})
+    const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll({
+      verbose: true,
+      whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
+    })
+    this.endpoints = await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(endpoints, this.quorumSize)
     this.logger.info(`Selected new discovery nodes: [${this.endpoints}]`)
   }
 
