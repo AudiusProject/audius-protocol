@@ -320,6 +320,7 @@ def parse_user_event(
 
     # New updated_at timestamp
     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
+    logger.info("index.py | users.py | updated_at")
 
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
@@ -548,6 +549,7 @@ def update_user_associated_wallets(
         is_updated_wallets = set(previous_wallets) != added_associated_wallets
         if is_updated_wallets:
             enqueue_immediate_balance_refresh(update_task.redis, [user_record.user_id])
+        logger.info("index.py | users.py | update_user_associated_wallets")
     except Exception as e:
         logger.error(
             f"index.py | users.py | Fatal updating user associated wallets while indexing {e}",

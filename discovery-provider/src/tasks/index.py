@@ -1,5 +1,6 @@
 # pylint: disable=C0302
 import concurrent.futures
+import datetime
 import logging
 from operator import itemgetter, or_
 
@@ -481,6 +482,7 @@ def process_state_changes(
     }
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
+        begin_time = datetime.datetime.now()
 
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
@@ -504,7 +506,7 @@ def process_state_changes(
             changed_entity_ids_map[tx_type] = changed_entity_ids
 
         logger.info(
-            f"index.py | {bulk_processor.__name__} completed"
+            f"index.py | {bulk_processor.__name__} completed in {datetime.datetime.now() - begin_time}"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
 
