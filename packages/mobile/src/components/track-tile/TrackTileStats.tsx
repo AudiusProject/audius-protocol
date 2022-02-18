@@ -3,8 +3,13 @@ import { useCallback } from 'react'
 import { FavoriteType } from 'audius-client/src/common/models/Favorite'
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { setFavorite } from 'audius-client/src/common/store/user-list/favorites/actions'
+import { setRepost } from 'audius-client/src/common/store/user-list/reposts/actions'
+import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { formatCount } from 'audius-client/src/common/utils/formatUtil'
-import { FAVORITING_USERS_ROUTE } from 'audius-client/src/utils/route'
+import {
+  FAVORITING_USERS_ROUTE,
+  REPOSTING_USERS_ROUTE
+} from 'audius-client/src/utils/route'
 import { View, Pressable, StyleSheet } from 'react-native'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
@@ -14,7 +19,6 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
-import { GestureResponderHandler } from 'app/types/gesture'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
 import { TrackTileRankIcon } from './TrackTileRankIcon'
@@ -68,7 +72,6 @@ type Props = {
   isTrending?: boolean
   isUnlisted?: boolean
   listenCount: number
-  onPressReposts: GestureResponderHandler
   repostCount: number
   saveCount: number
   showRankIcon?: boolean
@@ -81,7 +84,6 @@ export const TrackTileStats = ({
   isTrending,
   isUnlisted,
   listenCount,
-  onPressReposts,
   repostCount,
   saveCount,
   showRankIcon
@@ -102,6 +104,14 @@ export const TrackTileStats = ({
     })
   }, [dispatchWeb, trackId, navigation])
 
+  const handlePressReposts = useCallback(() => {
+    dispatchWeb(setRepost(trackId, RepostType.TRACK))
+    navigation.push({
+      native: { screen: 'RepostsScreen', params: undefined },
+      web: { route: REPOSTING_USERS_ROUTE }
+    })
+  }, [dispatchWeb, trackId, navigation])
+
   return (
     <View style={styles.stats}>
       {isTrending && (
@@ -115,7 +125,7 @@ export const TrackTileStats = ({
               !repostCount ? styles.disabledStatItem : {}
             ]}
             disabled={!repostCount}
-            onPress={onPressReposts}
+            onPress={handlePressReposts}
           >
             <Text style={trackTileStyles.statText}>
               {formatCount(repostCount)}

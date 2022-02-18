@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 import { setFollowers } from 'audius-client/src/common/store/user-list/followers/actions'
+import { setFollowing } from 'audius-client/src/common/store/user-list/following/actions'
 import { Pressable, Text, View } from 'react-native'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -58,6 +59,14 @@ export const ProfileMetrics = ({ profile }: ProfileMetricsProps) => {
     })
   }, [dispatchWeb, user_id, navigation])
 
+  const handlePressFollowing = useCallback(() => {
+    dispatchWeb(setFollowing(user_id))
+    navigation.navigate({
+      native: { screen: 'FollowingScreen', params: undefined },
+      web: { route: '/following' }
+    })
+  }, [dispatchWeb, user_id, navigation])
+
   return (
     <View style={styles.root}>
       <View style={styles.metric}>
@@ -68,10 +77,10 @@ export const ProfileMetrics = ({ profile }: ProfileMetricsProps) => {
         <Text style={styles.value}>{follower_count}</Text>
         <Text style={styles.label}>{messages.followers}</Text>
       </Pressable>
-      <View style={styles.metric}>
+      <Pressable style={styles.metric} onPress={handlePressFollowing}>
         <Text style={styles.value}>{followee_count}</Text>
         <Text style={styles.label}>{messages.following}</Text>
-      </View>
+      </Pressable>
     </View>
   )
 }
