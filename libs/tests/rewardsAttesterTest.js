@@ -151,7 +151,8 @@ describe('Rewards Attester Tests', () => {
       aaoAddress: '0xFakeOracle',
       challengeIdsDenyList: [],
       endpoints: ['https://dn1.co', 'https://dn2.co', 'https://dn3.co'],
-      isSolanaChallenge: () => false
+      isSolanaChallenge: () => false,
+      feePayerOverride: 'test feepayer override'
     })
 
     const rewardsMock = sinon.mock(libs.Rewards)
