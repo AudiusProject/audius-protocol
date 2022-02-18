@@ -172,9 +172,10 @@ def user_state_update(
             challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
             session.add(value_obj["user"])
 
-    logger.info(
-        f"index.py | users.py | user_state_update | finished user_state_update in {datetime.now() - begin_user_state_update} // per event: {(datetime.now() - begin_user_state_update) / num_total_changes} secs"
-    )
+    if num_total_changes:
+        logger.info(
+            f"index.py | users.py | user_state_update | finished user_state_update in {datetime.now() - begin_user_state_update} // per event: {(datetime.now() - begin_user_state_update) / num_total_changes} secs"
+        )
     return num_total_changes, user_ids
 
 
