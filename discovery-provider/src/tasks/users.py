@@ -165,22 +165,24 @@ def user_state_update(
 
     # for each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
+    user_objs = []
     for user_id, value_obj in user_events_lookup.items():
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
-            invalidate_user_record = datetime.now()
-            invalidate_old_user(session, user_id)
-            logger.info(
-                f"index.py | users.py | user_state_update | invalidate user {datetime.now() - invalidate_user_record}."
-            )
+            user_objs.append(value_obj["user"])
 
             challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
-            begin_add_user_record = datetime.now()
-            session.add(value_obj["user"])
-            logger.info(
-                f"index.py | users.py | user_state_update | add user record {datetime.now() - begin_add_user_record}."
-            )
+    invalidate_user_record = datetime.now()
+    invalidate_old_user_batch(session, list(user_ids))
+    logger.info(
+        f"index.py | users.py | user_state_update | invalidate user {datetime.now() - invalidate_user_record}."
+    )
 
+    begin_add_user_record = datetime.now()
+    session.add_all(user_objs)
+    logger.info(
+        f"index.py | users.py | user_state_update | add user record {datetime.now() - begin_add_user_record}."
+    )
 
     if num_total_changes:
         logger.info(
@@ -242,23 +244,26 @@ def invalidate_old_user(session, user_id):
     # Check if the userId is in the db
     logger.info(f"index.py | invalidate user with id {user_id}")
 
-    user_exists = (
+    # Update existing record in db to is_current = False
+    num_invalidated_users = (
         session.query(User)
         .filter(User.user_id == user_id, User.is_current == True)
-        .count()
-        > 0
+        .update({"is_current": False})
     )
+    logger.info(f"index.py | num_invalidated_users {num_invalidated_users}")
 
-    if user_exists:
-        # Update existing record in db to is_current = False
-        num_invalidated_users = (
-            session.query(User)
-            .filter(User.user_id == user_id, User.is_current == True)
-            .update({"is_current": False})
-        )
-        assert (
-            num_invalidated_users > 0
-        ), "Update operation requires a current user to be invalidated"
+
+def invalidate_old_user_batch(session, user_ids):
+    # Check if the userId is in the db
+    logger.info(f"index.py | invalidate user with id {user_ids}")
+
+    # Update existing record in db to is_current = False
+    num_invalidated_users = (
+        session.query(User)
+        .filter(User.user_id.in_(user_ids), User.is_current == True)
+        .update({"is_current": False})
+    )
+    logger.info(f"index.py | num_invalidated_users {num_invalidated_users}")
 
 
 def parse_user_event(
