@@ -549,7 +549,7 @@ def index_blocks(self, db, blocks_list):
     changed_entity_ids_map = {}
     for i in block_order_range:
         update_ursm_address(self)
-        logger.info(f"index.py | checkpoint | update_ursm_address")
+        logger.info("index.py | checkpoint | update_ursm_address")
 
         block = blocks_list[i]
         block_index = num_blocks - i
@@ -581,7 +581,7 @@ def index_blocks(self, db, blocks_list):
                 }
                 try:
                     tx_receipt_dict = fetch_tx_receipts(self, block)
-                    logger.info(f"index.py | checkpoint | fetch_tx_receipts")
+                    logger.info("index.py | checkpoint | fetch_tx_receipts")
 
                     # Sort transactions by hash
                     sorted_txs = sorted(
@@ -612,7 +612,7 @@ def index_blocks(self, db, blocks_list):
                             if contract_type:
                                 txs_grouped_by_type[contract_type].append(tx_receipt)
 
-                    logger.info(f"index.py | checkpoint | parsed")
+                    logger.info("index.py | checkpoint | parsed")
 
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
@@ -623,10 +623,10 @@ def index_blocks(self, db, blocks_list):
                         block_number,
                         block_hash,
                     )
-                    logger.info(f"index.py | checkpoint | fetch_ipfs_metadata")
+                    logger.info("index.py | checkpoint | fetch_ipfs_metadata")
 
                     add_indexed_block_to_db(session, block)
-                    logger.info(f"index.py | checkpoint | add_indexed_block_to_db")
+                    logger.info("index.py | checkpoint | add_indexed_block_to_db")
 
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
@@ -639,7 +639,7 @@ def index_blocks(self, db, blocks_list):
                         txs_grouped_by_type,
                         block,
                     )
-                    logger.info(f"index.py | checkpoint | process_state_changes")
+                    logger.info("index.py | checkpoint | process_state_changes")
 
                 except IndexingError as err:
                     create_and_raise_indexing_error(err, redis)
@@ -658,7 +658,7 @@ def index_blocks(self, db, blocks_list):
                     "session.commit", block_number, blockhash, "commit", str(e)
                 )
                 create_and_raise_indexing_error(indexing_error, redis)
-                logger.info(f"index.py | checkpoint | create_and_raise_indexing_error")
+                logger.info("index.py | checkpoint | create_and_raise_indexing_error")
             try:
                 # Check the last block's timestamp for updating the trending challenge
                 [should_update, date] = should_trending_challenge_update(
@@ -668,7 +668,7 @@ def index_blocks(self, db, blocks_list):
                     celery.send_task(
                         "calculate_trending_challenges", kwargs={"date": date}
                     )
-                logger.info(f"index.py | checkpoint | should_trending_challenge_update")
+                logger.info("index.py | checkpoint | should_trending_challenge_update")
             except Exception as e:
                 # Do not throw error, as this should not stop indexing
                 logger.error(
@@ -680,7 +680,7 @@ def index_blocks(self, db, blocks_list):
 
         if changed_entity_ids_map:
             remove_updated_entities_from_cache(redis, changed_entity_ids_map)
-            logger.info(f"index.py | checkpoint | remove_updated_entities_from_cache")
+            logger.info("index.py | checkpoint | remove_updated_entities_from_cache")
 
         logger.info(
             f"index.py | checkpoint | redis cache clean operations complete for block=${block_number}"
