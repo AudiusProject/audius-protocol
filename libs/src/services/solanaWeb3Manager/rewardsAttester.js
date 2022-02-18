@@ -1,4 +1,3 @@
-const { sampleSize } = require('lodash')
 const { SubmitAndEvaluateError } = require('../../api/rewards')
 const { decodeHashId } = require('../../utils/utils')
 
@@ -223,7 +222,7 @@ class RewardsAttester {
   }
 
   /**
-   * Begin attestation loop.
+   * Begin attestation loop. Entry point for identity attestations
    *
    * @memberof RewardsAttester
    */
@@ -235,7 +234,7 @@ class RewardsAttester {
       AAO address: ${this.aaoAddress} \
       endpoints: ${this.endpoints}
     `)
-    await this.selectDiscoveryNodes()
+    await this._selectDiscoveryNodes()
     await this.delayCalculator.start()
 
     while (!this._shouldStop) {
@@ -287,7 +286,13 @@ class RewardsAttester {
     this.delayCalculator.stop()
   }
 
+  /**
+   * Called from the client to attest challenges
+   * @param {any[]} challenges
+   * @returns
+   */
   async processChallenges (challenges) {
+    await this._selectDiscoveryNodes()
     let toProcess = [...challenges]
     while (toProcess.length) {
       try {
@@ -415,7 +420,7 @@ class RewardsAttester {
     while (needsRetry.length && retryCount < this.maxRetries) {
       await this._backoff(retryCount++)
       if (shouldReselect) {
-        await this.selectDiscoveryNodes()
+        await this._selectDiscoveryNodes()
       }
       const res = await Promise.all(needsRetry.map(this._performSingleAttestation))
       ;({ successful, needsRetry, noRetry, shouldReselect } = this._processResponses(res, retryCount === this.maxRetries))
@@ -531,13 +536,13 @@ class RewardsAttester {
     }
   }
 
-  async selectDiscoveryNodes () {
-    this.logger.info(`Selecting discovery nodes`, {endpointPool: this.endpointPool})
+  async _selectDiscoveryNodes () {
+    this.logger.info(`Selecting discovery nodes`, { endpointPool: this.endpointPool })
     const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll({
       verbose: true,
-      whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
+      whitelist: this.endpointPool.size > 0 ? Array.from(this.endpointPool) : null
     })
-    this.endpoints = await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(endpoints, this.quorumSize)
+    this.endpoints = await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(this.quorumSize, endpoints)
     this.logger.info(`Selected new discovery nodes: [${this.endpoints}]`)
   }
 
