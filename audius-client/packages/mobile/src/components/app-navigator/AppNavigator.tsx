@@ -15,7 +15,7 @@ import {
 import { getAccountAvailable } from 'app/store/signon/selectors'
 import { getNavigationStateAtRoute } from 'app/utils/navigation'
 
-import BottomTabNavigator from './BottomTabNavigator'
+import { BottomTabNavigator } from './BottomTabNavigator'
 
 // This enables the RN bottom bar and navigation
 const IS_MAIN_NAVIGATION_ENABLED = Config.NATIVE_NAVIGATION_ENABLED

@@ -15,7 +15,7 @@ const screenHeight = Dimensions.get('window').height
 
 const TracksTab = ({ navigation }) => {
   const handlePress = useCallback(() => {
-    navigation.navigate('track', { id: 1 })
+    navigation.push('track', { id: 1 })
   }, [navigation])
 
   return (

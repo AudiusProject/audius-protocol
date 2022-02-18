@@ -10,7 +10,6 @@ import { Animated, Easing, GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { TrackTileProps } from 'app/components/track-tile/types'
-import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 
@@ -73,7 +72,6 @@ const TrackTileComponent = ({
     track_id
   } = track
   const { _artist_pick, name, user_id } = user
-  const navigation = useNavigation()
 
   const playingUid = useSelector(getPlayingUid)
   const isPlaying = useSelector(getPlaying)
@@ -95,23 +93,6 @@ const TrackTileComponent = ({
     uid,
     track_id
   ])
-
-  const goToTrackPage = useCallback(
-    (e: GestureResponderEvent) => {
-      navigation.navigate({
-        native: { screen: 'track', params: { id: track_id } },
-        web: { route: permalink }
-      })
-    },
-    [navigation, permalink, track_id]
-  )
-
-  const goToArtistPage = (e: GestureResponderEvent) => {
-    navigation.navigate({
-      native: { screen: 'profile', params: { handle: user.handle } },
-      web: { route: user.handle }
-    })
-  }
 
   const onPressReposts = (e: GestureResponderEvent) => {
     // navigate to reposts page
@@ -151,9 +132,8 @@ const TrackTileComponent = ({
           artistName={name}
           coSign={_co_sign}
           coverArtSizes={_cover_art_sizes}
-          goToArtistPage={goToArtistPage}
-          goToTrackPage={goToTrackPage}
           id={track_id}
+          permalink={permalink}
           isPlaying={uid === playingUid && isPlaying}
           setArtworkLoaded={setArtworkLoaded}
           title={title}
