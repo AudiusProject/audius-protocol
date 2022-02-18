@@ -239,8 +239,12 @@ class Rewards extends Base {
   async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, maxAttempts, endpoints = null, logger = console }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
-    const discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true, whitelist })
-    endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(discoveryProviders, quorumSize)
+    if (endpoints) {
+      endpoints = sampleSize(endpoints, quorumSize)
+    } else {
+      // If no endpoints array provided, select here
+      endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(quorumSize)
+    }
 
     if (endpoints.length < quorumSize) {
       logger.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)
@@ -545,8 +549,12 @@ class Rewards extends Base {
     endpoints,
     numAttestations = 3
   }) {
-    const discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true, whitelist: endpoints })
-    const attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(discoveryProviders, numAttestations)
+    let attestEndpoints
+    if (endpoints) {
+      attestEndpoints = sampleSize(endpoints, numAttestations)
+    } else {
+      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(numAttestations)
+    }
 
     if (attestEndpoints.length < numAttestations) {
       throw new Error(`Not enough other nodes found, need ${numAttestations}, found ${attestEndpoints.length}`)
