@@ -239,12 +239,8 @@ class Rewards extends Base {
   async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, maxAttempts, endpoints = null, logger = console }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
-    if (endpoints) {
-      endpoints = sampleSize(endpoints, quorumSize)
-    } else {
-      // If no endpoints array provided, select here
-      endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(quorumSize)
-    }
+    const discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true, whitelist })
+    endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(discoveryProviders, quorumSize)
 
     if (endpoints.length < quorumSize) {
       logger.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)

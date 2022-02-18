@@ -119,11 +119,9 @@ class ServiceProvider extends Base {
    * Throws if unable to find a large enough list.
    * @param {number} quorumSize
    */
-  async getUniquelyOwnedDiscoveryNodes (quorumSize) {
-    const selectable = await this.discoveryProvider.serviceSelector.findAll({ verbose: true })
-
+  async getUniquelyOwnedDiscoveryNodes (discoveryProviders, quorumSize) {
     // Group nodes by owner
-    const grouped = selectable.reduce((acc, curr) => {
+    const grouped = discoveryProviders.reduce((acc, curr) => {
       if (curr.owner in acc) {
         acc[curr.owner].push(curr)
       } else {
