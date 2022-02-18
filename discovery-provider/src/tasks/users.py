@@ -209,7 +209,10 @@ def invalidate_old_user(session, user_id):
     logger.info(f"index.py | invalidate user with id {user_id}")
 
     user_exists = (
-        session.query(User).filter(User.user_id == user_id, User.is_current == True).count() > 0
+        session.query(User)
+        .filter(User.user_id == user_id, User.is_current == True)
+        .count()
+        > 0
     )
 
     if user_exists:
