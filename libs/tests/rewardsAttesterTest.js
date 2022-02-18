@@ -21,6 +21,11 @@ function MockLibs (getSlot = () => 100, getBlockNumber = () => 100) {
   this.Rewards = {
     submitAndEvaluate: (args) => {},
     getUndisbursedChallenges: (args) => {},
+    ServiceProvider: {
+      getUniquelyOwnedDiscoveryNodes: (quorumSize, nodes) => {
+        return nodes.slice(0, quorumSize)
+      }
+    }
   }
   this.discoveryProvider = {
     serviceSelector: {
