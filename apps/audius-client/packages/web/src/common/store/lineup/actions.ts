@@ -1,3 +1,6 @@
+import { ID, UID } from 'common/models/Identifiers'
+import { TrackMetadata } from 'common/models/Track'
+
 export const FETCH_LINEUP_METADATAS = 'FETCH_LINEUP_METADATAS'
 export const FETCH_LINEUP_METADATAS_REQUESTED =
   'FETCH_LINEUP_METADATAS_REQUESTED'
@@ -33,11 +36,11 @@ export const SET_LOADING = 'SET_LOADING'
 
 export const SET_PAGE = 'SET_PAGE'
 
-export const addPrefix = (prefix, actionType) => {
+export const addPrefix = (prefix: string, actionType: string) => {
   return `${prefix}_${actionType}`
 }
 
-export const stripPrefix = (prefix, actionType) => {
+export const stripPrefix = (prefix: string, actionType: string) => {
   return actionType.replace(`${prefix}_`, '')
 }
 
@@ -56,7 +59,10 @@ export const stripPrefix = (prefix, actionType) => {
  *  export const playlistActions = new PlaylistActions()
  */
 export class LineupActions {
-  constructor(prefix, removeDeleted = false) {
+  prefix: string
+  removeDeleted: boolean
+
+  constructor(prefix: string, removeDeleted = false) {
     this.prefix = prefix
     this.removeDeleted = removeDeleted
   }
@@ -73,7 +79,12 @@ export class LineupActions {
    * @param {boolean} [overwrite] a boolean indicating whether to overwrite cached entries the fetch may be refetching
    * @param {*} [payload] keyword args payload to send to the "get tracks" query
    */
-  fetchLineupMetadatas(offset = 0, limit = 10, overwrite = false, payload) {
+  fetchLineupMetadatas(
+    offset = 0,
+    limit = 10,
+    overwrite = false,
+    payload?: unknown
+  ) {
     return {
       type: addPrefix(this.prefix, FETCH_LINEUP_METADATAS),
       offset,
@@ -87,7 +98,7 @@ export class LineupActions {
     offset = 0,
     limit = 10,
     overwrite = false,
-    payload
+    payload: unknown
   ) {
     return {
       type: addPrefix(this.prefix, FETCH_LINEUP_METADATAS_REQUESTED),
@@ -98,7 +109,12 @@ export class LineupActions {
     }
   }
 
-  fetchLineupMetadatasSucceeded(entries, offset, limit, deleted) {
+  fetchLineupMetadatasSucceeded(
+    entries: unknown,
+    offset: number,
+    limit: number,
+    deleted: boolean
+  ) {
     return {
       type: addPrefix(this.prefix, FETCH_LINEUP_METADATAS_SUCCEEDED),
       entries,
@@ -114,14 +130,14 @@ export class LineupActions {
     }
   }
 
-  fetchTrackAudio(trackMetadata) {
+  fetchTrackAudio(trackMetadata: TrackMetadata) {
     return {
       type: addPrefix(this.prefix, FETCH_TRACK_AUDIO),
       trackMetadata: trackMetadata
     }
   }
 
-  fetchTrackAudioRequested(index, trackId) {
+  fetchTrackAudioRequested(index: number, trackId: ID) {
     return {
       type: addPrefix(this.prefix, FETCH_TRACK_AUDIO_REQUESTED),
       index: index,
@@ -129,7 +145,7 @@ export class LineupActions {
     }
   }
 
-  fetchTrackAudioSucceeded(index, trackId) {
+  fetchTrackAudioSucceeded(index: number, trackId: ID) {
     return {
       type: addPrefix(this.prefix, FETCH_TRACK_AUDIO_SUCCEEDED),
       index: index,
@@ -137,7 +153,7 @@ export class LineupActions {
     }
   }
 
-  play(uid) {
+  play(uid?: UID) {
     return {
       type: addPrefix(this.prefix, PLAY),
       uid
@@ -150,7 +166,7 @@ export class LineupActions {
     }
   }
 
-  updateTrackMetadata(trackId, metadata) {
+  updateTrackMetadata(trackId: ID, metadata: TrackMetadata) {
     return {
       type: addPrefix(this.prefix, UPDATE_TRACK_METADATA),
       trackId,
@@ -158,7 +174,7 @@ export class LineupActions {
     }
   }
 
-  updateLineupOrder(orderedIds) {
+  updateLineupOrder(orderedIds: UID[]) {
     return {
       type: addPrefix(this.prefix, UPDATE_LINEUP_ORDER),
       orderedIds
@@ -166,7 +182,7 @@ export class LineupActions {
   }
 
   // Side-effect: Unsubscribes this lineup from cache entries it is subscribed to.
-  reset(source) {
+  reset(source?: string) {
     return {
       type: addPrefix(this.prefix, RESET),
       source
@@ -179,7 +195,7 @@ export class LineupActions {
     }
   }
 
-  add(entry, id) {
+  add(entry: unknown, id: ID) {
     return {
       type: addPrefix(this.prefix, ADD),
       entry,
@@ -187,7 +203,7 @@ export class LineupActions {
     }
   }
 
-  remove(kind, uid) {
+  remove(kind: string, uid: UID) {
     return {
       type: addPrefix(this.prefix, REMOVE),
       kind,
@@ -195,7 +211,7 @@ export class LineupActions {
     }
   }
 
-  setInView(inView) {
+  setInView(inView: boolean) {
     return {
       type: addPrefix(this.prefix, SET_IN_VIEW),
       inView
@@ -203,7 +219,7 @@ export class LineupActions {
   }
 
   // If limit is not provided, we use whatever is in the state
-  refreshInView(overwrite = false, payload, limit = null) {
+  refreshInView(overwrite = false, payload?: unknown, limit = null) {
     return {
       type: addPrefix(this.prefix, REFRESH_IN_VIEW),
       overwrite,
@@ -218,7 +234,7 @@ export class LineupActions {
     }
   }
 
-  setPage = page => {
+  setPage = (page: number) => {
     return {
       type: addPrefix(this.prefix, SET_PAGE),
       page

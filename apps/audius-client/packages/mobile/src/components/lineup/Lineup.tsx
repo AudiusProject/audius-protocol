@@ -99,8 +99,6 @@ export const Lineup = ({
   lineup,
   loadMore,
   header,
-  playTrack,
-  pauseTrack,
   rankIconCount = 0,
   refresh,
   refreshing,
@@ -163,7 +161,7 @@ export const Lineup = ({
   const togglePlay = useCallback(
     (uid: UID, id: ID, source?: PlaybackSource) => {
       if (uid !== playingUid || (uid === playingUid && !playing)) {
-        playTrack(uid)
+        actions.play(uid)
         track(
           make({
             eventName: Name.PLAYBACK_PLAY,
@@ -172,7 +170,7 @@ export const Lineup = ({
           })
         )
       } else if (uid === playingUid && playing) {
-        pauseTrack()
+        actions.pause()
         track(
           make({
             eventName: Name.PLAYBACK_PAUSE,
@@ -182,7 +180,7 @@ export const Lineup = ({
         )
       }
     },
-    [playTrack, pauseTrack, playing, playingUid]
+    [actions, playing, playingUid]
   )
 
   const renderItem = ({
