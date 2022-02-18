@@ -8,7 +8,12 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen/EditProfileScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import { TrackScreen } from 'app/screens/track-screen'
-import { FavoritedScreen, FollowersScreen } from 'app/screens/user-list-screen'
+import {
+  FavoritedScreen,
+  FollowersScreen,
+  FollowingScreen,
+  RepostsScreen
+} from 'app/screens/user-list-screen'
 
 import { TopBar } from './TopBar'
 
@@ -54,7 +59,9 @@ export const BaseStackNavigator = ({
       <Stack.Screen name='EditProfile' component={EditProfileScreen} />
       <Stack.Group>
         <Stack.Screen name='FollowersScreen' component={FollowersScreen} />
+        <Stack.Screen name='FollowingScreen' component={FollowingScreen} />
         <Stack.Screen name='FavoritedScreen' component={FavoritedScreen} />
+        <Stack.Screen name='RepostsScreen' component={RepostsScreen} />
       </Stack.Group>
     </Stack.Navigator>
   )
