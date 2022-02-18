@@ -5,7 +5,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import placeholderArt from 'assets/img/imageCoverPhotoBlank.jpg'
+import placeholderArt from 'assets/img/imageBlank2x.png'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUser } from 'common/store/cache/users/selectors'
