@@ -66,6 +66,8 @@ def user_state_update(
                 user_id = helpers.get_tx_arg(entry, "_userId")
                 try:
                     # look up or populate existing record
+                    begin_lookup = datetime.now()
+
                     if user_id in user_events_lookup:
                         existing_user_record = user_events_lookup[user_id]["user"]
                     else:
@@ -77,9 +79,13 @@ def user_state_update(
                             block_timestamp,
                             txhash,
                         )
-
+                    logger.info(
+                        f"index.py | users.py | user_state_update | lookup user record {datetime.now() - begin_lookup}."
+                    )
                     # parse user event to add metadata to record
                     if event_type == user_event_types_lookup["update_multihash"]:
+                        begin_update_multihash = datetime.now()
+
                         metadata_multihash = helpers.multihash_digest_to_cid(
                             helpers.get_tx_arg(entry, "_multihashDigest")
                         )
@@ -99,7 +105,13 @@ def user_state_update(
                             if metadata_multihash not in blacklisted_cids
                             else None
                         )
+                        logger.info(
+                            f"index.py | users.py | user_state_update | parse user event multihash {datetime.now() - begin_update_multihash}."
+                        )
+
                     else:
+                        begin_normal_parse_user_event = datetime.now()
+
                         user_record = parse_user_event(
                             self,
                             update_task,
@@ -112,9 +124,13 @@ def user_state_update(
                             None,
                             block_timestamp,
                         )
+                        logger.info(
+                            f"index.py | users.py | user_state_update | parse user event non multihash {datetime.now() - begin_normal_parse_user_event}."
+                        )
 
                     # process user record
                     if user_record is not None:
+                        begin_process_user_record = datetime.now()
                         if user_id not in user_events_lookup:
                             user_events_lookup[user_id] = {
                                 "user": user_record,
@@ -125,6 +141,9 @@ def user_state_update(
                         user_events_lookup[user_id]["events"].append(event_type)
                         user_ids.add(user_id)
                         processedEntries += 1
+                        logger.info(
+                            f"index.py | users.py | user_state_update | process user record {datetime.now() - begin_process_user_record}."
+                        )
                 except EntityMissingRequiredFieldError as e:
                     logger.warning(f"Skipping tx {txhash} with error {e}")
                     skipped_tx_count += 1
@@ -141,7 +160,7 @@ def user_state_update(
             num_total_changes += processedEntries
 
     logger.info(
-        f"index.py | users.py | There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
+        f"index.py | users.py | user_state_update | There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
     )
 
     # for each record in user_events_lookup, invalidate the old record and add the new record
@@ -154,7 +173,7 @@ def user_state_update(
             session.add(value_obj["user"])
 
     logger.info(
-        f"index.py | users.py | finished user_state_update in {datetime.now() - begin_user_state_update} // per event: {(datetime.now() - begin_user_state_update) / num_total_changes} secs"
+        f"index.py | users.py | user_state_update | finished user_state_update in {datetime.now() - begin_user_state_update} // per event: {(datetime.now() - begin_user_state_update) / num_total_changes} secs"
     )
     return num_total_changes, user_ids
 
