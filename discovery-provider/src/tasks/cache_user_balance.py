@@ -228,7 +228,7 @@ def refresh_user_ids(
                     owner_wallet
                 ).call()
                 associated_balance = 0
-                waudio_balance = "0"
+                waudio_balance: str = "0"
                 associated_sol_balance = 0
 
                 if "associated_wallets" in wallets:
@@ -286,7 +286,7 @@ def refresh_user_ids(
                         bal_info = waudio_token.get_balance(
                             PublicKey(wallets["bank_account"])
                         )
-                        waudio_balance: str = bal_info["result"]["value"]["amount"]
+                        waudio_balance = bal_info["result"]["value"]["amount"]
 
                 # update the balance on the user model
                 user_balance = user_balances[user_id]
