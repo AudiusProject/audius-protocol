@@ -40,8 +40,9 @@ solanaRouter.post('/relay', authMiddleware, handleResponse(async (req, res, next
   if (socialProofRequiredToSend && isSendInstruction(instructions)) {
     const userHasSocialProof = await doesUserHaveSocialProof(req.user)
     if (!userHasSocialProof) {
+      let handle = req.user && req.user.handle || ''
       return errorResponseServerError(
-        `User ${req.user.handle} is missing social proof`,
+        `User ${handle} is missing social proof`,
         { error: 'Missing social proof' }
       )
     }
