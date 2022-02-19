@@ -120,6 +120,9 @@ class TwitterLogin extends Component {
         }
       )
       .then(response => {
+        if (!response.ok) {
+          response.json().then(json => this.props.onFailure(json.error))
+        }
         this.props.onSuccess(response)
       })
       .catch(error => {
