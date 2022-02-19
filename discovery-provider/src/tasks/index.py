@@ -221,7 +221,7 @@ def fetch_tx_receipts(self, block):
     block_number = block.number
     block_transactions = block.transactions
     block_tx_with_receipts = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_tx_receipt = {
             executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions
         }
