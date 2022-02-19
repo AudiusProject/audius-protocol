@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple, TypedDict
+from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 from redis import Redis
 from solana.publickey import PublicKey
