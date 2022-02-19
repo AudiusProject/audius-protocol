@@ -209,7 +209,12 @@ export enum Name {
   REWARDS_CLAIM_SUCCESS = 'Rewards Claim: Success',
   REWARDS_CLAIM_RETRY = 'Rewards Claim: Retry',
   REWARDS_CLAIM_FAILURE = 'Rewards Claim: Failure',
-  REWARDS_CLAIM_BLOCKED = 'Rewards Claim: Blocked'
+  REWARDS_CLAIM_BLOCKED = 'Rewards Claim: Blocked',
+
+  // Social Proof
+  SOCIAL_PROOF_OPEN = 'Social Proof: Open',
+  SOCIAL_PROOF_SUCCESS = 'Social Proof: Success',
+  SOCIAL_PROOF_ERROR = 'Social Proof: Error'
 }
 
 type PageView = {
@@ -1006,6 +1011,26 @@ type RewardsClaimBlocked = {
   error: string
 }
 
+type SocialProofOpen = {
+  eventName: Name.SOCIAL_PROOF_OPEN
+  type: 'instagram' | 'twitter'
+  handle: string
+}
+
+type SocialProofSuccess = {
+  eventName: Name.SOCIAL_PROOF_SUCCESS
+  type: 'instagram' | 'twitter'
+  handle: string
+  screenName: string
+}
+
+type SocialProofError = {
+  eventName: Name.SOCIAL_PROOF_ERROR
+  type: 'instagram' | 'twitter'
+  handle: string
+  error: string
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1141,3 +1166,6 @@ export type AllTrackingEvents =
   | RewardsClaimRetry
   | RewardsClaimFailure
   | RewardsClaimBlocked
+  | SocialProofOpen
+  | SocialProofSuccess
+  | SocialProofError

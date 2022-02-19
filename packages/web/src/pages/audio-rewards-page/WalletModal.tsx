@@ -28,6 +28,7 @@ import { ModalState } from 'common/store/pages/token-dashboard/types'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { Nullable } from 'common/utils/typeUtils'
 import { stringWeiToBN, weiToString } from 'common/utils/wallet'
+import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { isMobile } from 'utils/clientUtil'
@@ -330,6 +331,9 @@ const WalletModal = () => {
   const onClose = useCallback(() => {
     dispatch(setModalVisibility({ isVisible: false }))
   }, [dispatch])
+  const onOpen = useCallback(() => {
+    dispatch(setModalVisibility({ isVisible: true }))
+  }, [dispatch])
 
   const onInputSendData = (
     amount: BNWei,
@@ -359,37 +363,41 @@ const WalletModal = () => {
   const wm = useWithMobileStyle(styles.mobile)
 
   return (
-    <ModalDrawer
-      isOpen={modalVisible}
-      onClose={onClose}
-      bodyClassName={cn(styles.modalBody, {
-        [styles.wallets]: modalState?.stage === 'CONNECT_WALLETS',
-        [styles.convertingEth]:
-          modalState &&
-          'flowState' in modalState &&
-          modalState.flowState?.stage === 'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL'
-      })}
-      showTitleHeader
-      title={getTitle(modalState)}
-      showDismissButton={allowDismiss}
-      dismissOnClickOutside={allowDismiss}
-      contentHorizontalPadding={24}
-      useGradientTitle={false}
-    >
-      <div
-        className={wm(styles.modalContainer, {
-          [styles.sendModalContainer]: modalState?.stage === 'SEND'
+    <>
+      <ModalDrawer
+        isOpen={modalVisible}
+        onClose={onClose}
+        bodyClassName={cn(styles.modalBody, {
+          [styles.wallets]: modalState?.stage === 'CONNECT_WALLETS',
+          [styles.convertingEth]:
+            modalState &&
+            'flowState' in modalState &&
+            modalState.flowState?.stage ===
+              'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL'
         })}
+        showTitleHeader
+        title={getTitle(modalState)}
+        showDismissButton={allowDismiss}
+        dismissOnClickOutside={allowDismiss}
+        contentHorizontalPadding={24}
+        useGradientTitle={false}
       >
-        <ModalContent
-          modalState={modalState}
-          onInputSendData={onInputSendData}
-          onConfirmSend={onConfirmSend}
-          onClose={onClose}
-          onLaunchDiscord={onLaunchDiscord}
-        />
-      </div>
-    </ModalDrawer>
+        <div
+          className={wm(styles.modalContainer, {
+            [styles.sendModalContainer]: modalState?.stage === 'SEND'
+          })}
+        >
+          <ModalContent
+            modalState={modalState}
+            onInputSendData={onInputSendData}
+            onConfirmSend={onConfirmSend}
+            onClose={onClose}
+            onLaunchDiscord={onLaunchDiscord}
+          />
+        </div>
+      </ModalDrawer>
+      <SocialProof onSuccess={onOpen} />
+    </>
   )
 }
 
