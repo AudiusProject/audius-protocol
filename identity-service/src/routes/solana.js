@@ -1,8 +1,10 @@
 const express = require('express')
 const crypto = require('crypto')
 
+const authMiddleware = require('../authMiddleware')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayerKeypair } = require('../solana-client')
+const { isSendTx, isUserVerified } = require('../utils/relayHelpers')
 
 const {
   PublicKey,
@@ -21,11 +23,18 @@ const isValidInstruction = (instr) => {
   return true
 }
 
-solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
+solanaRouter.post('/relay', authMiddleware, handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
   const libs = req.app.get('audiusLibs')
 
   let { instructions = [], skipPreflight, feePayerOverride } = req.body
+
+  if (isSendTx(instructions)) {
+    const userIsVerified = await isUserVerified(req.user)
+    if (!userIsVerified) {
+      return errorResponseServerError(`User ${req.user.handle} is not verified`, { errorCode: 1337, error: `User ${req.user.handle} is not verified` })
+    }
+  }
 
   const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
 
