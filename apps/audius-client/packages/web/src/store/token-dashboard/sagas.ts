@@ -22,7 +22,6 @@ import {
   pressSend,
   setModalState,
   setModalVisibility as setSendAUDIOModalVisibility,
-  inputSendData,
   confirmSend,
   setDiscordCode,
   setIsConnectingWallet,
@@ -69,7 +68,7 @@ import { confirmTransaction } from 'store/confirmer/sagas'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 
-function* send() {
+function* pressSendAsync() {
   // Set modal state to input
   const inputStage: ModalState = {
     stage: 'SEND',
@@ -81,11 +80,9 @@ function* send() {
     put(setSendAUDIOModalVisibility({ isVisible: true })),
     put(setModalState({ modalState: inputStage }))
   ])
+}
 
-  // Await input + confirmation
-  yield take(inputSendData.type)
-  yield take(confirmSend.type)
-
+function* confirmSendAsync() {
   // Send the txn, update local balance
   const sendData: ReturnType<typeof getSendData> = yield select(getSendData)
   if (!sendData) return
@@ -792,7 +789,11 @@ function* preloadProviders() {
 }
 
 function* watchPressSend() {
-  yield takeLatest(pressSend.type, send)
+  yield takeLatest(pressSend.type, pressSendAsync)
+}
+
+function* watchConfirmSend() {
+  yield takeLatest(confirmSend.type, confirmSendAsync)
 }
 
 function* watchGetAssociatedWallets() {
@@ -814,6 +815,7 @@ function* watchRemoveWallet() {
 const sagas = () => {
   return [
     watchPressSend,
+    watchConfirmSend,
     watchForDiscordCode,
     watchGetAssociatedWallets,
     watchConnectNewWallet,
