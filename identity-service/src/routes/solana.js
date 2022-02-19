@@ -36,7 +36,7 @@ solanaRouter.post('/relay', authMiddleware, handleResponse(async (req, res, next
     optimizelyClient = app.get('optimizelyClient')
     socialProofRequiredToSend = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED)
   } catch (error) {
-    console.error(`failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`)
+    logger.error(`failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`)
   }
   if (socialProofRequiredToSend && isSendInstruction(instructions)) {
     const userHasSocialProof = await doesUserHaveSocialProof(user)
