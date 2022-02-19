@@ -80,7 +80,7 @@ module.exports = function (app) {
         }
       })
       if (existingTwitterUser) {
-        return errorResponseBadRequest(`Another Audius profile has already been authenticated with Twitter user @${userProfile.screen_name}!`)
+        return errorResponseBadRequest(`Another Audius profile has already been authenticated with this Twitter user!`)
       } else {
         try {
           let uuid = uuidv4()
