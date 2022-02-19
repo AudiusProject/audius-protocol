@@ -5,7 +5,7 @@ from typing import List
 from redis import Redis
 from sqlalchemy.orm.session import Session
 from src.models import UserBalance
-from src.tasks.cache_user_balance import to_wei
+from src.utils.spl_audio import to_wei
 
 logger = logging.getLogger(__name__)
 
