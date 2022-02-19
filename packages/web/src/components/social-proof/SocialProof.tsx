@@ -24,9 +24,10 @@ import { make, TrackEvent, useRecord } from 'store/analytics/actions'
 import styles from './SocialProof.module.css'
 
 const messages = {
-  modalTitle: 'Verify Your Identity',
-  description: 'Please verify your identity before you can continue',
-  failure: 'Sorry, unable to retrieve information',
+  modalTitle: 'Confirm Your Identity',
+  description: 'Please confirm your identity before you can continue',
+  failure:
+    'Sorry, unable to retrieve information or the account is already used',
   errorTwitter: 'Unable to verify your Twitter account',
   errorInstagram: 'Unable to verify your Instagram account'
 }
