@@ -117,6 +117,7 @@ type SearchStatusWrapperProps = {
 const SearchStatusWrapper = React.memo(
   ({ status, children }: SearchStatusWrapperProps) => {
     switch (status) {
+      case Status.IDLE:
       case Status.LOADING:
       case Status.ERROR: // TODO
         return <Loading />
