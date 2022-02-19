@@ -177,7 +177,6 @@ class App {
 
   configureSentry () {
     const dsn = config.get('sentryDSN')
-    console.log({ dsn })
     if (dsn) {
       Sentry.init({
         dsn
@@ -374,7 +373,9 @@ class App {
     function errorHandler (err, req, res, next) {
       req.logger.error('Internal server error')
       req.logger.error(err.stack)
-      Sentry.captureException(err)
+      if (Sentry.getCurrentHub().getClient()) {
+        Sentry.captureException(err)
+      }
       sendResponse(req, res, errorResponseServerError('Internal server error'))
     }
     this.express.use(errorHandler)
