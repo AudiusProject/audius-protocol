@@ -46,7 +46,7 @@ pycparser==2.20
 PyNaCl==1.4.0
 requests==2.25.1
 six==1.15.0
-solana==0.10.0
+solana==0.12.1
 typing-extensions==3.10.0.0
 urllib3==1.26.3
 
