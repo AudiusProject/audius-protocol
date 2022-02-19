@@ -2,6 +2,7 @@ const request = require('supertest')
 const assert = require('assert')
 const sinon = require('sinon')
 
+const config = require('../../src/config')
 const { getApp } = require('../lib/app')
 
 const { sendInstruction, createUserBankInstruction } = require('../lib/instructionMocks')
@@ -17,6 +18,7 @@ describe('test Solana util functions', function () {
 describe('test Solana relay route without social verification', function () {
   let app, server, sandbox
   beforeEach(async () => {
+    config.set('sentryDSN', '')
     sandbox = sinon.createSandbox()
     const appInfo = await getApp(null, null)
     app = appInfo.app
