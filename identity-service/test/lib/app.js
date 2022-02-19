@@ -1,12 +1,9 @@
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
-const sinon = require('sinon')
-const Sentry = require('@sentry/node')
-
-sinon.stub(Sentry, 'init').returns()
 
 async function getApp (s3bucket, ipfsMock) {
   delete require.cache[require.resolve('../../src/app')] // force reload between each test
   const App = require('../../src/app')
+  App.configureSentry = () => {}
   const app = new App(8000)
   const server = await app.init()
 
