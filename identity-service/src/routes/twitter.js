@@ -71,7 +71,7 @@ module.exports = function (app) {
         json: true
       }
       let userProfile = await doRequest(userRequest)
-      const existingTwitterUser = models.TwitterUser.findOne({
+      const existingTwitterUser = await models.TwitterUser.findOne({
         where: {
           'twitterProfile.id': userProfile.id,
           blockchainUserId: {

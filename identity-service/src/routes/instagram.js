@@ -65,7 +65,7 @@ module.exports = function (app) {
       if (igUser.error) {
         return errorResponseBadRequest(new Error(igUser.error.message))
       }
-      const existingInstagramUser = models.InstagramUser.findOne({
+      const existingInstagramUser = await models.InstagramUser.findOne({
         where: {
           uuid: igUser.username,
           blockchainUserId: {
