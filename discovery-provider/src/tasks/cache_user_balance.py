@@ -258,9 +258,8 @@ def refresh_user_ids(
                                     ],
                                     ASSOCIATED_TOKEN_PROGRAM_ID_PK,
                                 )
-                                bal_info = waudio_token.get_account_info(
-                                    derived_account
-                                )
+
+                                bal_info = waudio_token.get_balance(derived_account)
                                 associated_waudio_balance: str = bal_info["result"][
                                     "value"
                                 ]["amount"]
@@ -287,7 +286,7 @@ def refresh_user_ids(
                         bal_info = waudio_token.get_balance(
                             PublicKey(wallets["bank_account"])
                         )
-                        waudio_balance = bal_info["result"]["value"]["amount"]
+                        waudio_balance: str = bal_info["result"]["value"]["amount"]
 
                 # update the balance on the user model
                 user_balance = user_balances[user_id]
