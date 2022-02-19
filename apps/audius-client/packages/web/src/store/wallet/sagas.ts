@@ -65,7 +65,7 @@ function* sendAsync({
   } else if (chain === Chain.Sol) {
     const totalBalance = waudioWeiAmount.add(weiBNBalance)
     if (weiBNAmount.gt(totalBalance)) {
-      yield put(sendFailed({ error: 'Not enough $AUDIO' }))
+      yield put(sendFailed({ error: 'Missing social proof' }))
       return
     }
   }
@@ -87,9 +87,16 @@ function* sendAsync({
     if (chain === Chain.Eth) {
       yield call(() => walletClient.sendTokens(recipientWallet, weiBNAmount))
     } else {
-      yield call(() =>
-        walletClient.sendWAudioTokens(recipientWallet, weiBNAmount)
-      )
+      try {
+        yield call(() =>
+          walletClient.sendWAudioTokens(recipientWallet, weiBNAmount)
+        )
+      } catch (e) {
+        if ((e as Error)?.message === 'Missing social proof') {
+          yield put(sendFailed({ error: 'Missing social proof' }))
+          return
+        }
+      }
     }
 
     // Only decrease store balance if we haven't already changed

@@ -142,6 +142,9 @@ class WalletClient {
         amount
       )
       if (error) {
+        if (error === 'TODO:csjiang') {
+          throw new Error('Missing social proof')
+        }
         console.error(
           `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
             `with error ${error.toString()} and errorCode: ${errorCode}`

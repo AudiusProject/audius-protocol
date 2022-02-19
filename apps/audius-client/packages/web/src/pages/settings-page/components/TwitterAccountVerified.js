@@ -20,7 +20,7 @@ export class AccountVerified extends Component {
   onTwitterLoginFailure = error => {
     console.error(error)
     if (this.props.onFailure) {
-      this.props.onFailure()
+      this.props.onFailure(error)
     }
   }
 

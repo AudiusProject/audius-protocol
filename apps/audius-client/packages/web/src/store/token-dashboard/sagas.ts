@@ -21,7 +21,7 @@ import {
   removeWallet as removeWalletAction,
   pressSend,
   setModalState,
-  setModalVisibility,
+  setModalVisibility as setSendAUDIOModalVisibility,
   inputSendData,
   confirmSend,
   setDiscordCode,
@@ -36,6 +36,7 @@ import {
   ConfirmRemoveWalletAction,
   ModalState
 } from 'common/store/pages/token-dashboard/types'
+import { setVisibility } from 'common/store/ui/modals/slice'
 import {
   send as walletSend,
   claimFailed,
@@ -77,7 +78,7 @@ function* send() {
     }
   }
   yield all([
-    put(setModalVisibility({ isVisible: true })),
+    put(setSendAUDIOModalVisibility({ isVisible: true })),
     put(setModalState({ modalState: inputStage }))
   ])
 
@@ -97,14 +98,21 @@ function* send() {
   })
 
   if (error) {
-    const errorState: ModalState = {
-      stage: 'SEND',
-      flowState: {
-        stage: 'ERROR',
-        error: error.payload.error ?? ''
+    if (error.payload.error === 'Missing social proof') {
+      yield all([
+        put(setSendAUDIOModalVisibility({ isVisible: false })),
+        put(setVisibility({ modal: 'SocialProof', visible: true }))
+      ])
+    } else {
+      const errorState: ModalState = {
+        stage: 'SEND',
+        flowState: {
+          stage: 'ERROR',
+          error: error.payload.error ?? ''
+        }
       }
+      yield put(setModalState({ modalState: errorState }))
     }
-    yield put(setModalState({ modalState: errorState }))
     return
   }
 
