@@ -162,6 +162,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
 
       setStatus(Status.SUCCESS)
       onInstagramLogin(uuid, profile)
+      setIsOpen(false)
 
       const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_SUCCESS, {
         handle,
@@ -170,7 +171,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
       })
       record(trackEvent)
     },
-    [record, handle, onInstagramLogin]
+    [record, handle, onInstagramLogin, setIsOpen]
   )
 
   const handleTwitterLogin = useCallback(
@@ -180,6 +181,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
 
       setStatus(Status.SUCCESS)
       onTwitterLogin(uuid, profile)
+      setIsOpen(false)
 
       const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_SUCCESS, {
         handle,
@@ -188,7 +190,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
       })
       record(trackEvent)
     },
-    [record, handle, onTwitterLogin]
+    [record, handle, onTwitterLogin, setIsOpen]
   )
 
   useEffect(() => {
