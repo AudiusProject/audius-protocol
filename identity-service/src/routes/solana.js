@@ -28,11 +28,16 @@ solanaRouter.post('/relay', authMiddleware, handleResponse(async (req, res, next
   const { user, app, body, logger } = req
   const redis = app.get('redis')
   const libs = app.get('audiusLibs')
+  let optimizelyClient
+  let socialProofRequiredToSend = true
 
   let { instructions = [], skipPreflight, feePayerOverride } = body
-
-  const optimizelyClient = app.get('optimizelyClient')
-  const socialProofRequiredToSend = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED)
+  try {
+    optimizelyClient = app.get('optimizelyClient')
+    socialProofRequiredToSend = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED)
+  } catch (error) {
+    console.error(`failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`)
+  }
   if (socialProofRequiredToSend && isSendInstruction(instructions)) {
     const userHasSocialProof = await doesUserHaveSocialProof(user)
     if (!userHasSocialProof) {
