@@ -57,6 +57,11 @@ const slice = createSlice({
       state.balance = existingBalance
         .sub(new BN(amount))
         .toString() as StringWei
+      if (state.totalBalance) {
+        state.totalBalance = new BN(state.totalBalance)
+          .sub(new BN(amount))
+          .toString() as StringWei
+      }
       state.localBalanceDidChange = true
     },
     // Saga Actions
