@@ -34,7 +34,7 @@ let sandbox
 
 describe('Test Send Notification Emails', function () {
   before(() => {
-    sandbox = sinon.sandbox.create()
+    sandbox = sinon.createSandbox()
     sandbox.stub(notificationUtils, 'shouldSendEmail')
       .returns(true)
   })
