@@ -107,7 +107,10 @@ def extend_user(user, current_user_id=None):
         del user["playlist_library"]
     # Marshal wallets into clear names
     user["erc_wallet"] = user["wallet"]
-    user["spl_wallet"] = user["spl_wallet"]
+
+    # Autocomplete search doesn't contain spl_wallet
+    if "spl_wallet" in user:
+        user["spl_wallet"] = user["spl_wallet"]
 
     return user
 
