@@ -15,13 +15,13 @@ describe('test Solana util functions', function () {
 })
 
 describe('test Solana relay route without social verification', function () {
-  let app, server, stub, sandbox
+  let app, server, sandbox
   beforeEach(async () => {
     sandbox = sinon.createSandbox()
     const appInfo = await getApp(null, null)
     app = appInfo.app
     server = appInfo.server
-    stub = sandbox.stub(relayHelpers, 'isUserVerified').resolves(false)
+    sandbox.stub(relayHelpers, 'doesUserHaveSocialProof').resolves(false)
   })
   afterEach(async () => {
     sandbox.restore()

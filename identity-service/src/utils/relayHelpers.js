@@ -9,7 +9,7 @@ const isSendInstruction = instr => instr.length &&
   instr[1].data.data &&
   instr[1].data.data[0] === 1
 
-async function isUserVerified (userInstance) {
+async function doesUserHaveSocialProof (userInstance) {
   const { blockchainUserId } = userInstance
   const twitterUser = await models.TwitterUser.findOne({ where: {
     blockchainUserId
@@ -23,5 +23,5 @@ async function isUserVerified (userInstance) {
 
 module.exports = {
   isSendInstruction,
-  isUserVerified
+  doesUserHaveSocialProof
 }

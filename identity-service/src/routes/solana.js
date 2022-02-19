@@ -4,7 +4,7 @@ const crypto = require('crypto')
 const authMiddleware = require('../authMiddleware')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayerKeypair } = require('../solana-client')
-const { isSendTx, isUserVerified } = require('../utils/relayHelpers')
+const { isSendTx, doesUserHaveSocialProof } = require('../utils/relayHelpers')
 
 const {
   PublicKey,
@@ -30,9 +30,12 @@ solanaRouter.post('/relay', authMiddleware, handleResponse(async (req, res, next
   let { instructions = [], skipPreflight, feePayerOverride } = req.body
 
   if (isSendTx(instructions)) {
-    const userIsVerified = await isUserVerified(req.user)
+    const userIsVerified = await doesUserHaveSocialProof(req.user)
     if (!userIsVerified) {
-      return errorResponseServerError(`User ${req.user.handle} is not verified`, { errorCode: 1337, error: `User ${req.user.handle} is not verified` })
+      return errorResponseServerError(
+        `User ${req.user.handle} is not verified`,
+        { error: 'Missing social proof' }
+      )
     }
   }
 

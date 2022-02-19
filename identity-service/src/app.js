@@ -177,6 +177,7 @@ class App {
 
   configureSentry () {
     const dsn = config.get('sentryDSN')
+    console.log({ dsn })
     if (dsn) {
       Sentry.init({
         dsn
