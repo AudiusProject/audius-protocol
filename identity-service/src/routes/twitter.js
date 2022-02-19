@@ -80,7 +80,7 @@ module.exports = function (app) {
         }
       })
       if (!!existingTwitterUser) {
-        req.logger.log(`Twitter user found: ${existingTwitterUser}`)
+        req.logger.info(`Twitter user found: ${existingTwitterUser}`)
         return errorResponseBadRequest(`Another Audius profile has already been authenticated with this Twitter user!`)
       } else {
         try {
