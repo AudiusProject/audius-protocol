@@ -158,7 +158,7 @@ class IPFSClient:
 
     def query_ipfs_metadata_json(self, gateway_ipfs_urls, default_metadata_fields):
         formatted_json = None
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
             # Start the load operations and mark each future with its URL
             future_to_url = {
                 executor.submit(
