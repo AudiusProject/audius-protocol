@@ -4,7 +4,7 @@ const crypto = require('crypto')
 const authMiddleware = require('../authMiddleware')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayerKeypair } = require('../solana-client')
-const { isSendTx, doesUserHaveSocialProof } = require('../utils/relayHelpers')
+const { isSendInstruction, doesUserHaveSocialProof } = require('../utils/relayHelpers')
 
 const {
   PublicKey,
@@ -29,7 +29,7 @@ solanaRouter.post('/relay', authMiddleware, handleResponse(async (req, res, next
 
   let { instructions = [], skipPreflight, feePayerOverride } = req.body
 
-  if (isSendTx(instructions)) {
+  if (isSendInstruction(instructions)) {
     const userIsVerified = await doesUserHaveSocialProof(req.user)
     if (!userIsVerified) {
       return errorResponseServerError(
