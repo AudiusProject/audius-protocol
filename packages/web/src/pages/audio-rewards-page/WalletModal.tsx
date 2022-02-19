@@ -331,8 +331,10 @@ const WalletModal = () => {
   const onClose = useCallback(() => {
     dispatch(setModalVisibility({ isVisible: false }))
   }, [dispatch])
-  const onOpen = useCallback(() => {
+
+  const openAndConfirmSend = useCallback(() => {
     dispatch(setModalVisibility({ isVisible: true }))
+    dispatch(confirmSend())
   }, [dispatch])
 
   const onInputSendData = (
@@ -396,7 +398,8 @@ const WalletModal = () => {
           />
         </div>
       </ModalDrawer>
-      <SocialProof onSuccess={onOpen} />
+      {/* On social proof success, open the wallet modal and confirm send */}
+      <SocialProof onSuccess={openAndConfirmSend} />
     </>
   )
 }
