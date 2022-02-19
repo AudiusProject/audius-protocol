@@ -143,7 +143,7 @@ def track_state_update(
 
     if num_total_changes:
         logger.info(
-            f"index.py | users.py | user_state_update | finished user_state_update in {datetime.now() - begin_track_state_update} // per event: {(datetime.now() - begin_track_state_update) / num_total_changes} secs"
+            f"index.py | tracks.py | track_state_update | finished track_state_update in {datetime.now() - begin_track_state_update} // per event: {(datetime.now() - begin_track_state_update) / num_total_changes} secs"
         )
     return num_total_changes, track_ids
 
