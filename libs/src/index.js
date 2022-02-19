@@ -382,6 +382,7 @@ class AudiusLibs {
         this.isServer
       )
       await this.web3Manager.init()
+      this.identityService.setWeb3Manager(this.web3Manager)
     }
     if (this.solanaWeb3Config) {
       this.solanaWeb3Manager = new SolanaWeb3Manager(
