@@ -34,6 +34,8 @@ def track_state_update(
     blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
+    begin_track_state_update = datetime.now()
+
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
     skipped_tx_count = 0
@@ -139,6 +141,10 @@ def track_state_update(
             invalidate_old_track(session, track_id)
             session.add(value_obj["track"])
 
+    if num_total_changes:
+        logger.info(
+            f"index.py | users.py | user_state_update | finished user_state_update in {datetime.now() - begin_track_state_update} // per event: {(datetime.now() - begin_track_state_update) / num_total_changes} secs"
+        )
     return num_total_changes, track_ids
 
 
