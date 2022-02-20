@@ -45,7 +45,6 @@ const DiskManager = require('../diskManager')
 const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
-const { start } = require('repl')
 
 const fsStat = promisify(fs.stat)
 
@@ -127,7 +126,7 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
 const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
-    req.logger.debug(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
+    req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
     console.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
