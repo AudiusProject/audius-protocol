@@ -14,7 +14,11 @@ import {
 } from 'redux-saga/effects'
 
 import { FavoriteSource, Name } from 'common/models/Analytics'
-import { IntKeys, StringKeys } from 'common/services/remote-config'
+import {
+  FeatureFlags,
+  IntKeys,
+  StringKeys
+} from 'common/services/remote-config'
 import * as accountActions from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
@@ -50,6 +54,8 @@ import mobileSagas from './mobileSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 import { checkHandle } from './verifiedChecker'
+
+const { getFeatureEnabled, waitForRemoteConfig } = remoteConfigInstance
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
@@ -362,9 +368,18 @@ function* signUp() {
         // Set the has request browser permission to true as the signon provider will open it
         setHasRequestedBrowserPermission()
 
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
-        if (!confirmed) {
-          throw new Error(`Could not confirm sign up for user id ${userId}`)
+        yield call(waitForRemoteConfig)
+
+        // Check feature flag to disable confirmation
+        if (!getFeatureEnabled(FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION)) {
+          const confirmed = yield call(
+            confirmTransaction,
+            blockHash,
+            blockNumber
+          )
+          if (!confirmed) {
+            throw new Error(`Could not confirm sign up for user id ${userId}`)
+          }
         }
       },
       function* () {
@@ -456,6 +471,11 @@ function* signIn(action) {
         })
       )
       yield put(signOnActions.showToast(messages.incompleteAccount))
+
+      const trackEvent = make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
+        handle: signInResponse.handle
+      })
+      yield put(trackEvent)
     } else if (signInResponse.error && signInResponse.phase === 'FIND_USER') {
       // Go to sign up flow because the account is incomplete
       yield put(
