@@ -5,6 +5,7 @@ import cn from 'classnames'
 import 'url-search-params-polyfill'
 
 import { StringKeys } from 'common/services/remote-config'
+import { InstagramProfile } from 'common/store/account/reducer'
 import { RequestInstagramAuthMessage } from 'services/native-mobile-interface/oauth'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
@@ -53,6 +54,17 @@ type InstagramAuthProps = {
   className?: string
   children?: ReactNode
   text?: string
+  /**
+   * Whether or not the success of this instagram auth
+   * depends on fetching metadata or not.
+   * Generally speaking, fetching metadata is not reliable,
+   * so if the purpose of this auth is just verification
+   * that the user has OAuthed, not to pull specific data,
+   * set this flag to false.
+   * Without metadata, instagram gives you very few fields:
+   * https://developers.facebook.com/docs/instagram-basic-display-api/reference/user
+   */
+  requiresProfileMetadata?: boolean
 }
 
 const InstagramAuth = ({
@@ -67,7 +79,8 @@ const InstagramAuth = ({
   disabled = false,
   className,
   children,
-  text = 'Sign in with Instagram'
+  text = 'Sign in with Instagram',
+  requiresProfileMetadata = true
 }: InstagramAuthProps) => {
   // Opens a popup window for the instagram authentication
   const openPopup = useCallback(() => {
@@ -81,6 +94,7 @@ const InstagramAuth = ({
   const getProfile = useCallback(
     async code => {
       try {
+        // Fetch the profile from the graph API
         const profileResp = await window.fetch(getUserUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -90,6 +104,10 @@ const InstagramAuth = ({
         if (!profileRespJson.username) {
           return onFailure(new Error('Unable to fetch information'))
         }
+
+        // Fetch the profile metadata
+        let igUserProfile: InstagramProfile
+
         const profileEndpoint =
           remoteConfigInstance.getRemoteVar(
             StringKeys.INSTAGRAM_API_PROFILE_URL
@@ -98,15 +116,27 @@ const InstagramAuth = ({
           profileEndpoint,
           profileRespJson.username
         )
-        const igProfile = await window.fetch(fetchIGUserUrl)
-        const igProfileJson = await igProfile.json()
-        if (!igProfileJson.graphql || !igProfileJson.graphql.user) {
-          return onFailure(new Error('Unable to fetch information'))
+        try {
+          const igProfile = await window.fetch(fetchIGUserUrl)
+          const igProfileJson = await igProfile.json()
+          if (!igProfileJson.graphql || !igProfileJson.graphql.user) {
+            throw new Error('Unable to fetch information')
+          }
+          igUserProfile = igUserFields.reduce((profile, field) => {
+            ;(profile as any)[field] = igProfileJson.graphql.user[field]
+            return profile
+          }, {} as InstagramProfile)
+        } catch (e) {
+          if (requiresProfileMetadata) {
+            return onFailure(e)
+          }
+
+          // Pull metadata from what we have and keep going
+          igUserProfile = igUserFields.reduce((profile, field) => {
+            ;(profile as any)[field] = profileRespJson[field]
+            return profile
+          }, {} as InstagramProfile)
         }
-        const igUserProfile = igUserFields.reduce((profile: any, field) => {
-          profile[field] = igProfileJson.graphql.user[field]
-          return profile
-        }, {})
 
         const setProfileResponse = await window.fetch(setProfileUrl, {
           method: 'POST',
@@ -125,7 +155,7 @@ const InstagramAuth = ({
         Sentry.captureException(`Instagram getProfile failed with ${err}`)
       }
     },
-    [getUserUrl, setProfileUrl, onSuccess, onFailure]
+    [getUserUrl, setProfileUrl, onSuccess, onFailure, requiresProfileMetadata]
   )
 
   const polling = useCallback(
