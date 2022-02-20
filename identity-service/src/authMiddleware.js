@@ -72,7 +72,12 @@ async function authMiddleware (req, res, next) {
   }
 }
 
-async function parameterizedAuthMiddleware ({ shouldRespondBadRequest }) {
+/**
+ * Parameterized version of authentication middleware
+ * @param {{ shouldRespondBadRequest }: { shouldRespondBadRequest: boolean }} 
+ * @returns function `authMiddleware`
+ */
+const parameterizedAuthMiddleware = ({ shouldRespondBadRequest }) => {
   return async (req, res, next) => {
     try {
       const encodedDataMessage = req.get('Encoded-Data-Message')
