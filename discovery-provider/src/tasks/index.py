@@ -40,6 +40,7 @@ from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.indexing_errors import IndexingError
+from src.utils.ipfs_lib import NEW_BLOCK_TIMEOUT_SECONDS
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -347,7 +348,9 @@ def fetch_ipfs_metadata(
             futures.append(future)
             futures_map[future] = [cid, txhash]
 
-        for future in concurrent.futures.as_completed(futures):
+        for future in concurrent.futures.as_completed(
+            futures, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
+        ):
             cid, txhash = futures_map[future]
             try:
                 ipfs_metadata[cid] = future.result()
