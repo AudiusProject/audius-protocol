@@ -12,6 +12,9 @@ types-pytz==2021.1.2
 # web3 used to be 5.11.0 but due to a build issue in docker, downgraded to 5.8.0
 web3==5.8.0
 Flask==1.0.4
+# pin itsdangerous and markupsafe https://github.com/pallets/flask/issues/4455
+itsdangerous==1.1.0
+markupsafe==1.1.1
 psycopg2==2.8.5
 SQLAlchemy==1.3.0
 alembic==1.4.3

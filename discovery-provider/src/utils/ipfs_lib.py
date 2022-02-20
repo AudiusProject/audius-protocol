@@ -1,13 +1,10 @@
 import concurrent.futures
-import json
 import logging
 import time
 from urllib.parse import urljoin, urlparse
 
-import ipfshttpclient
 import requests
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
-from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
 NEW_BLOCK_TIMEOUT_SECONDS = 15
@@ -18,17 +15,12 @@ class IPFSClient:
 
     def __init__(
         self,
-        ipfs_peer_host,
-        ipfs_peer_port,
         eth_web3=None,
         shared_config=None,
         redis=None,
         eth_abi_values=None,
     ):
-        self._api = ipfshttpclient.connect(
-            f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
-        )
-        logger.warning("IPFSCLIENT | initializing")
+        # logger.warning("IPFSCLIENT | initializing")
 
         # Fetch list of registered content nodes to use during init.
         # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty
@@ -47,12 +39,6 @@ class IPFSClient:
         else:
             self._cnode_endpoints = []
             logger.warning("IPFSCLIENT | couldn't fetch _cnode_endpoints on init")
-
-        self._ipfsid = self._api.id()
-        self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
-
-    def get_peer_info(self):
-        return self._ipfsid
 
     def get_metadata_from_json(self, default_metadata_fields, resp_json):
         metadata = {}
@@ -128,7 +114,7 @@ class IPFSClient:
         start_time = time.time()
         r = requests.get(url, timeout=max_timeout)
         logger.info(
-            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}"
+            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status']}"
         )
         return r
 
@@ -210,61 +196,12 @@ class IPFSClient:
         gateway_metadata_json = data
         return gateway_metadata_json
 
-    def get_metadata_from_ipfs_node(self, multihash, default_metadata_fields):
-        logger.warning(f"IPFSCLIENT | get_metadata_from_ipfs_node, {multihash}")
-        try:
-            res = self.cat(multihash)
-            resp_val = json.loads(res)
-
-            # If an invalid response object is retrieved return empty values and log error
-            if not isinstance(resp_val, dict):
-                raise Exception(
-                    f"IPFSCLIENT | Expected dict type for {multihash}, received {resp_val}"
-                )
-
-        except ValueError as e:
-            # Return default format if deserialization fails
-            logger.error(
-                f"IPFSCLIENT | Failed to deserialize response for {multihash}. {e}"
-            )
-            raise e
-        except Exception as e:
-            logger.error(
-                f"IPFSCLIENT | Local Node Unknown exception retrieving {multihash}. {e}"
-            )
-            raise e
-
-        logger.info(f"IPFSCLIENT | Retrieved {multihash} from ipfs node")
-        return self.get_metadata_from_json(default_metadata_fields, resp_val)
-
-    def cat(self, multihash):
-        try:
-            res = self._api.cat(multihash, timeout=1)
-            return res
-        except:
-            logger.error(
-                f"IPFSCLIENT | IPFS cat timed out after 1s for CID {multihash}"
-            )
-            raise  # error is of type ipfshttpclient.exceptions.TimeoutError
-
-    def connect_peer(self, peer):
-        try:
-            if peer in self._ipfsid["Addresses"]:
-                return
-            r = self._api.swarm.connect(peer, timeout=3)
-            logger.info(r)
-        except Exception as e:
-            logger.error(f"IPFSCLIENT | IPFS Failed to update peer: {e}")
-
     def update_cnode_urls(self, cnode_endpoints):
         if len(cnode_endpoints):
             logger.info(
                 f"IPFSCLIENT | update_cnode_urls with endpoints {cnode_endpoints}"
             )
             self._cnode_endpoints = cnode_endpoints
-
-    def ipfs_id_multiaddr(self):
-        return self._multiaddr
 
 
 def construct_image_dir_gateway_url(address, CID):
