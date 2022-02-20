@@ -72,13 +72,9 @@ class ContractClient {
       this._isInitializing = false
       this._isInitialized = true
     } catch (e) {
-      // If using ethWeb3Manager or useExternalWeb3 is true, do not do reselect provider logic and fail
-      if (!this.providerSelector) {
-        console.error(`Failed to initialize ${this.contractRegistryKey} contract`, e)
-        return
-      }
-
-      await this.retryInit(selectNewEndpointOnRetry)
+      const selectNewEndpoint = !!this.providerSelector
+      console.error(`Failed to initialize ${this.contractRegistryKey}. Retrying init with selectNewEndpoint=${selectNewEndpoint}`)
+      await this.retryInit(selectNewEndpoint)
     }
   }
 
