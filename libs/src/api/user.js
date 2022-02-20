@@ -424,6 +424,9 @@ class Users extends Base {
     // Upload new metadata object to CN
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
+    // Make non-awaited /ipfs requests to all replicas for CID to warm cache before writing to chain
+    Utils.CIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint.split(','))
+
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
@@ -527,6 +530,9 @@ class Users extends Base {
     // Upload new metadata object to CN
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
+    // Make non-awaited /ipfs requests to all replicas for CID to warm cache before writing to chain
+    Utils.CIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint.split(','))
+
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
@@ -627,6 +633,9 @@ class Users extends Base {
       const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
       console.log(`${logPrefix} [phase: ${phase}] creatorNode.uploadCreatorContent() completed in ${Date.now() - startMs}ms`)
       startMs = Date.now()
+
+      // Make non-awaited /ipfs requests to all replicas for CID to warm cache before writing to chain
+      Utils.CIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint.split(','))
 
       // Write metadata multihash to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN

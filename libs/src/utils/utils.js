@@ -2,6 +2,8 @@ const bs58 = require('bs58')
 const Web3 = require('../web3')
 const axios = require('axios')
 const Hashids = require('hashids/cjs')
+let urlJoin = require('proper-url-join')
+if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MultiProvider = require('./multiProvider.js')
 const uuid = require('./uuid.js')
@@ -206,6 +208,19 @@ class Utils {
       setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
     })
     return Promise.race([promise, timeoutPromise])
+  }
+
+  static async CIDHeadRequests (cid, replicas) {
+    await Promise.all(replicas.map(async (replica) => {
+      try {
+        await axios({
+          url: urlJoin(replica, cid),
+          method: 'head'
+        })
+      } catch (e) {
+        // DO NOTHING
+      }
+    }))
   }
 }
 
