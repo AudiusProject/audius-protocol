@@ -57,7 +57,7 @@ class IPFSClient:
 
     # pylint: disable=broad-except
     def get_metadata(
-        self, session, multihash, default_metadata_fields, user_replica_set=None
+        self, async_session, multihash, default_metadata_fields, user_replica_set=None
     ):
         """Retrieve file from IPFS or gateway, validating metadata requirements prior to
         returning an object with no missing entries
@@ -71,7 +71,7 @@ class IPFSClient:
 
         try:
             api_metadata = self.get_metadata_from_gateway(
-                session, multihash, default_metadata_fields, user_replica_set
+                async_session, multihash, default_metadata_fields, user_replica_set
             )
             retrieved_metadata = api_metadata != default_metadata_fields
         except Exception as e:
@@ -105,7 +105,7 @@ class IPFSClient:
         return api_metadata
 
     # Retrieve a metadata object
-    def load_metadata_url(self, session, url, max_timeout):
+    def load_metadata_url(self, async_session, url, max_timeout):
         # Skip URL if invalid
         validate_url = urlparse(url)
         if not validate_url.scheme:
@@ -114,19 +114,19 @@ class IPFSClient:
             )
         logger.info(f"IPFSCLIENT | load_metadata_url requesting metadata {url}")
         start_time = time.time()
-        r = session.get(url, timeout=max_timeout)
+        r = async_session.get(url, timeout=max_timeout)
         logger.info(
             f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status'] if 'CF-Cache-Status' in r.headers else 'Not using cloudflare'}"
         )
         return r
 
     def query_ipfs_metadata_json(
-        self, session, gateway_ipfs_urls, default_metadata_fields
+        self, async_session, gateway_ipfs_urls, default_metadata_fields
     ):
         start_time = time.time()
         # Start the load operations and mark each future with its URL
         for url in gateway_ipfs_urls:
-            r = self.load_metadata_url(url, NEW_BLOCK_TIMEOUT_SECONDS)
+            r = self.load_metadata_url(async_session, url, NEW_BLOCK_TIMEOUT_SECONDS)
 
             if r.status_code != 200:
                 logger.warning(f"IPFSCLIENT | {url} - {r.status_code}")
@@ -144,7 +144,11 @@ class IPFSClient:
         return None
 
     def get_metadata_from_gateway(
-        self, session, multihash, default_metadata_fields, user_replica_set: str = None
+        self,
+        async_session,
+        multihash,
+        default_metadata_fields,
+        user_replica_set: str = None,
     ):
         """Args:
         args.user_replica_set - comma-separated string of user's replica urls
@@ -163,7 +167,7 @@ class IPFSClient:
             try:
                 query_urls = [f"{addr}/ipfs/{multihash}" for addr in user_replicas]
                 data = self.query_ipfs_metadata_json(
-                    session, query_urls, default_metadata_fields
+                    async_session, query_urls, default_metadata_fields
                 )
                 if data is None:
                     raise Exception()
@@ -182,7 +186,7 @@ class IPFSClient:
 
         query_urls = [f"{addr}/ipfs/{multihash}" for addr in gateway_endpoints]
         data = self.query_ipfs_metadata_json(
-            session, query_urls, default_metadata_fields
+            async_session, query_urls, default_metadata_fields
         )
         if data is None:
             raise Exception(
