@@ -1,7 +1,7 @@
 const express = require('express')
 const crypto = require('crypto')
 
-const authMiddleware = require('../authMiddleware')
+const { parameterizedAuthMiddleware } = require('../authMiddleware')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayerKeypair } = require('../solana-client')
 const { isSendInstruction, doesUserHaveSocialProof } = require('../utils/relayHelpers')
@@ -24,62 +24,73 @@ const isValidInstruction = (instr) => {
   return true
 }
 
-solanaRouter.post('/relay', authMiddleware, handleResponse(async (req, res, next) => {
-  const redis = req.app.get('redis')
-  const libs = req.app.get('audiusLibs')
-  let optimizelyClient
-  let socialProofRequiredToSend = true
+solanaRouter.post(
+  '/relay',
+  parameterizedAuthMiddleware({ shouldResponseBadRequest: false }),
+  handleResponse(async (req, res, next) => {
+    const redis = req.app.get('redis')
+    const libs = req.app.get('audiusLibs')
+    let optimizelyClient
+    let socialProofRequiredToSend = true
 
-  let { instructions = [], skipPreflight, feePayerOverride } = req.body
-  try {
-    optimizelyClient = req.app.get('optimizelyClient')
-    socialProofRequiredToSend = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED)
-  } catch (error) {
-    req.logger.error(`failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`)
-  }
-  if (socialProofRequiredToSend && isSendInstruction(instructions)) {
-    const userHasSocialProof = await doesUserHaveSocialProof(req.user)
-    if (!userHasSocialProof) {
-      let handle = req.user ? req.user.handle : ''
-      return errorResponseServerError(
-        `User ${handle} is missing social proof`,
-        { error: 'Missing social proof' }
-      )
+    let { instructions = [], skipPreflight, feePayerOverride } = req.body
+    try {
+      optimizelyClient = req.app.get('optimizelyClient')
+      socialProofRequiredToSend = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED)
+    } catch (error) {
+      req.logger.error(`failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`)
     }
-  }
+    if (socialProofRequiredToSend && isSendInstruction(instructions)) {
+      if (!req.user) {
+        return errorResponseServerError(
+          `User has no auth record`,
+          { error: 'No auth record' }
+        )
+      }
 
-  const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
+      const userHasSocialProof = await doesUserHaveSocialProof(req.user)
+      if (!userHasSocialProof) {
+        const handle = req.user.handle || ''
+        return errorResponseServerError(
+          `User ${handle} is missing social proof`,
+          { error: 'Missing social proof' }
+        )
+      }
+    }
 
-  instructions = instructions.filter(isValidInstruction).map((instr) => {
-    const keys = instr.keys.map(key => ({
-      pubkey: new PublicKey(key.pubkey),
-      isSigner: key.isSigner,
-      isWritable: key.isWritable
-    }))
-    return new TransactionInstruction({
-      keys,
-      programId: new PublicKey(instr.programId),
-      data: Buffer.from(instr.data)
+    const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
+
+    instructions = instructions.filter(isValidInstruction).map((instr) => {
+      const keys = instr.keys.map(key => ({
+        pubkey: new PublicKey(key.pubkey),
+        isSigner: key.isSigner,
+        isWritable: key.isWritable
+      }))
+      return new TransactionInstruction({
+        keys,
+        programId: new PublicKey(instr.programId),
+        data: Buffer.from(instr.data)
+      })
     })
-  })
 
-  const transactionHandler = libs.solanaWeb3Manager.transactionHandler
-  const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({
-    instructions,
-    skipPreflight,
-    feePayerOverride
-  })
+    const transactionHandler = libs.solanaWeb3Manager.transactionHandler
+    const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({
+      instructions,
+      skipPreflight,
+      feePayerOverride
+    })
 
-  if (error) {
-    // if the tx fails, store it in redis with a 24 hour expiration
-    await redis.setex(`solanaFailedTx:${reqBodySHA}`, 60 /* seconds */ * 60 /* minutes */ * 24 /* hours */, JSON.stringify(req.body))
-    req.logger.error('Error in solana transaction:', error, reqBodySHA)
-    const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
-    return errorResponseServerError(errorString, { errorCode, error })
+    if (error) {
+      // if the tx fails, store it in redis with a 24 hour expiration
+      await redis.setex(`solanaFailedTx:${reqBodySHA}`, 60 /* seconds */ * 60 /* minutes */ * 24 /* hours */, JSON.stringify(req.body))
+      req.logger.error('Error in solana transaction:', error, reqBodySHA)
+      const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
+      return errorResponseServerError(errorString, { errorCode, error })
+    }
+
+    return successResponse({ transactionSignature })
   }
-
-  return successResponse({ transactionSignature })
-}))
+  ))
 
 /**
  * The raw relay uses the `sendAndConfirmRawTransaction` as opposed to the `sendAndConfirmTransaction` method
