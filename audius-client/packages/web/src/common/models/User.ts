@@ -49,7 +49,6 @@ export type UserMetadata = {
   twitterVerified?: boolean
   instagramVerified?: boolean
   balance?: Nullable<StringWei>
-  total_balance?: Nullable<StringWei>
   associated_wallets_balance?: Nullable<StringWei>
   playlist_library?: PlaylistLibrary
   userBank?: SolanaWalletAddress
