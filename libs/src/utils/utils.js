@@ -210,21 +210,19 @@ class Utils {
     return Promise.race([promise, timeoutPromise])
   }
 
-  static async makeCIDHeadRequests (cid, creatorNodeEndpointStr) {
-    if (!creatorNodeEndpointStr) return
+  static async makeCIDHeadRequest (cid, creatorNode) {
+    if (!creatorNode) return
 
-    const replicas = creatorNodeEndpointStr.split(',')
-    await Promise.all(replicas.map(async (replica) => {
-      try {
-        await axios({
-          url: urlJoin(replica, cid),
-          method: 'head'
-        })
-      } catch (e) {
-        // DO NOTHING
-        console.error(`[makeCIDHeadRequests] [CID=${cid}] [Replica=${replica}] Error ${e.message}`)
-      }
-    }))
+    try {
+      console.log(`[makeCIDHeadRequest] [CID=${cid}] [creatorNode=${creatorNode}] Making request...`)
+      await axios({
+        url: urlJoin(creatorNode, '/ipfs/', cid),
+        method: 'get'
+      })
+    } catch (e) {
+      // DO NOTHING
+      console.error(`[makeCIDHeadRequest] [CID=${cid}] [creatorNode=${creatorNode}] Error ${e.message}`)
+    }
   }
 }
 

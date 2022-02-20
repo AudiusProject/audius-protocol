@@ -350,6 +350,12 @@ class Track extends Base {
         }
       })
 
+      // Make non-awaited /ipfs requests to primary for CID to warm cache before writing to chain
+      if (this.creatorNode.getEndpoint()) {
+        const primary = this.creatorNode.getEndpoint().split(',')[0]
+        Utils.makeCIDHeadRequest(metadataMultihash, primary)
+      }
+
       phase = phases.ADDING_TRACK
 
       // Write metadata to chain
@@ -517,6 +523,13 @@ class Track extends Base {
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackMetadata(
       metadata
     )
+
+    // Make non-awaited /ipfs requests to primary for CID to warm cache before writing to chain
+    if (this.creatorNode.getEndpoint()) {
+      const primary = this.creatorNode.getEndpoint().split(',')[0]
+      Utils.makeCIDHeadRequest(metadataMultihash, primary)
+    }
+
     // Write the new metadata to chain
     const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const trackId = metadata.track_id
