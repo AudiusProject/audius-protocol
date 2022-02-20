@@ -94,7 +94,6 @@ class IPFSClient:
                 exc_info=True,
             )
 
-
         # Raise error if metadata is not retrieved.
         # Ensure default values are not written into database.
         if not retrieved_metadata:
