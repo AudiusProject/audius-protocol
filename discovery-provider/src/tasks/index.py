@@ -1,9 +1,11 @@
 # pylint: disable=C0302
+import asyncio
 import concurrent.futures
 import logging
 from datetime import datetime
 from operator import itemgetter, or_
 
+import aiohttp
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -254,7 +256,7 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-def fetch_ipfs_metadata(
+async def fetch_ipfs_metadata(
     db,
     user_factory_txs,
     track_factory_txs,
@@ -333,7 +335,7 @@ def fetch_ipfs_metadata(
     )
 
     ipfs_metadata = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+    async with aiohttp.ClientSession() as session:
         futures = []
         futures_map = {}
         for cid, txhash in cids:
@@ -348,27 +350,37 @@ def fetch_ipfs_metadata(
                 user_replica_set = user_to_replica_set[
                     user_id
                 ]  # user or track owner's replica set
-            future = executor.submit(
-                update_task.ipfs_client.get_metadata,
-                cid,
-                metadata_format,
-                user_replica_set,
+            future = asyncio.ensure_future(
+                update_task.ipfs_client.get_metadata(
+                    session, cid, metadata_format, user_replica_set
+                )
             )
-            futures.append(future)
+            futures.append(
+                asyncio.ensure_future(
+                    update_task.ipfs_client.get_metadata(
+                        session, cid, metadata_format, user_replica_set
+                    )
+                )
+            )
             futures_map[future] = [cid, txhash]
 
-        for future in concurrent.futures.as_completed(
-            futures, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
-        ):
-            cid, txhash = futures_map[future]
-            try:
-                ipfs_metadata[cid] = future.result()
-            except Exception as e:
-                logger.info("Error in fetch ipfs metadata")
-                blockhash = update_task.web3.toHex(block_hash)
-                raise IndexingError(
-                    "prefetch-cids", block_number, blockhash, txhash, str(e)
-                ) from e
+        finished_tasks = asyncio.gather(*futures)
+        try:
+            await asyncio.wait_for(
+                finished_tasks, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
+            )
+            for future in finished_tasks:
+                cid, txhash = futures_map[future]
+                ipfs_metadata[cid] = future
+        except asyncio.TimeoutError:
+            logger.info("index.py | fetch_ipfs_metadata TimeoutError")
+        except Exception as e:
+            logger.info("index.py | Error in fetch ipfs metadata")
+            blockhash = update_task.web3.toHex(block_hash)
+            raise IndexingError(
+                "prefetch-cids", block_number, blockhash, txhash, str(e)
+            ) from e
+
     logger.info(
         f"index.py | finished fetch_ipfs_metadata: {len(cids)} cids in {datetime.now() - start_time} seconds"
     )

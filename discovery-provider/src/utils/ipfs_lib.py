@@ -1,9 +1,9 @@
+# pylint: disable=C0302
 import concurrent.futures
 import logging
 import time
 from urllib.parse import urljoin, urlparse
 
-import requests
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,9 @@ class IPFSClient:
         concurrent.futures.thread._threads_queues.clear()
 
     # pylint: disable=broad-except
-    def get_metadata(self, multihash, default_metadata_fields, user_replica_set=None):
+    def get_metadata(
+        self, session, multihash, default_metadata_fields, user_replica_set=None
+    ):
         """Retrieve file from IPFS or gateway, validating metadata requirements prior to
         returning an object with no missing entries
         """
@@ -69,7 +71,7 @@ class IPFSClient:
 
         try:
             api_metadata = self.get_metadata_from_gateway(
-                multihash, default_metadata_fields, user_replica_set
+                session, multihash, default_metadata_fields, user_replica_set
             )
             retrieved_metadata = api_metadata != default_metadata_fields
         except Exception as e:
@@ -103,7 +105,7 @@ class IPFSClient:
         return api_metadata
 
     # Retrieve a metadata object
-    def load_metadata_url(self, url, max_timeout):
+    def load_metadata_url(self, session, url, max_timeout):
         # Skip URL if invalid
         validate_url = urlparse(url)
         if not validate_url.scheme:
@@ -112,46 +114,37 @@ class IPFSClient:
             )
         logger.info(f"IPFSCLIENT | load_metadata_url requesting metadata {url}")
         start_time = time.time()
-        r = requests.get(url, timeout=max_timeout)
+        r = session.get(url, timeout=max_timeout)
         logger.info(
-            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status'] if hasattr(r.headers, 'CF-Cache-Status') else 'Not using cloudflare'}"
+            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status'] if 'CF-Cache-Status' in r.headers else 'Not using cloudflare'}"
         )
         return r
 
-    def query_ipfs_metadata_json(self, gateway_ipfs_urls, default_metadata_fields):
+    def query_ipfs_metadata_json(
+        self, session, gateway_ipfs_urls, default_metadata_fields
+    ):
         start_time = time.time()
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            # Start the load operations and mark each future with its URL
-            future_to_url = {
-                executor.submit(
-                    self.load_metadata_url, url, NEW_BLOCK_TIMEOUT_SECONDS
-                ): url
-                for url in gateway_ipfs_urls
-            }
-            for future in concurrent.futures.as_completed(future_to_url):
-                url = future_to_url[future]
-                try:
-                    r = future.result()
-                    if r.status_code != 200:
-                        logger.warning(f"IPFSCLIENT | {url} - {r.status_code}")
-                        raise Exception("Invalid status_code")
-                    # Override with retrieved JSON value
-                    formatted_json = self.get_metadata_from_json(
-                        default_metadata_fields, r.json()
-                    )
-                    # Exit loop if dict is successfully retrieved
-                    logger.info(
-                        f"IPFSCLIENT | query_ipfs_metadata_json Retrieved from {url} took {time.time() - start_time} seconds"
-                    )
-                    self.force_clear_queue_and_stop_task_execution(executor)
-                    return formatted_json
+        # Start the load operations and mark each future with its URL
+        for url in gateway_ipfs_urls:
+            r = self.load_metadata_url(url, NEW_BLOCK_TIMEOUT_SECONDS)
 
-                except Exception as exc:
-                    logger.error(f"IPFSClient | {url} generated an exception: {exc}")
+            if r.status_code != 200:
+                logger.warning(f"IPFSCLIENT | {url} - {r.status_code}")
+                raise Exception("Invalid status_code")
+            # Override with retrieved JSON value
+            formatted_json = self.get_metadata_from_json(
+                default_metadata_fields, r.json()
+            )
+            # Exit loop if dict is successfully retrieved
+            logger.info(
+                f"IPFSCLIENT | query_ipfs_metadata_json Retrieved from {url} took {time.time() - start_time} seconds"
+            )
+            return formatted_json
+
         return None
 
     def get_metadata_from_gateway(
-        self, multihash, default_metadata_fields, user_replica_set: str = None
+        self, session, multihash, default_metadata_fields, user_replica_set: str = None
     ):
         """Args:
         args.user_replica_set - comma-separated string of user's replica urls
@@ -170,7 +163,7 @@ class IPFSClient:
             try:
                 query_urls = [f"{addr}/ipfs/{multihash}" for addr in user_replicas]
                 data = self.query_ipfs_metadata_json(
-                    query_urls, default_metadata_fields
+                    session, query_urls, default_metadata_fields
                 )
                 if data is None:
                     raise Exception()
@@ -188,7 +181,9 @@ class IPFSClient:
         )
 
         query_urls = [f"{addr}/ipfs/{multihash}" for addr in gateway_endpoints]
-        data = self.query_ipfs_metadata_json(query_urls, default_metadata_fields)
+        data = self.query_ipfs_metadata_json(
+            session, query_urls, default_metadata_fields
+        )
         if data is None:
             raise Exception(
                 f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
