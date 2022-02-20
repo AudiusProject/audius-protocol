@@ -129,7 +129,7 @@ class IPFSClient:
         start_time = time.time()
         r = requests.get(url, timeout=max_timeout)
         logger.info(
-            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache {r.headers['CF-Cache-Status']}"
+            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status']}"
         )
         return r
 
