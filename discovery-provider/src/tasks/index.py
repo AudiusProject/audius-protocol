@@ -348,7 +348,7 @@ def fetch_ipfs_metadata(
             futures_map[future] = [cid, txhash]
 
         try:
-            for future in concurrent.futures.as_completed(futures, timeout=3):
+            for future in concurrent.futures.as_completed(futures):
                 cid, txhash = futures_map[future]
                 try:
                     ipfs_metadata[cid] = future.result()

@@ -1,7 +1,7 @@
 import concurrent.futures
 import logging
 from datetime import datetime
-from typing import Any, Dict, Set, Tuple, TypedDict
+from typing import Any, Dict, List, Set, Tuple, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
@@ -55,7 +55,7 @@ def user_state_update(
 
     # Array of transactions by user to be applied in parallel
     # Map(user_id=1 <-> [tx1, tx2], user_id=2 <-> [tx1])
-    user_transactions_lookup: Dict[int, list[Tuple]] = {}
+    user_transactions_lookup: Dict[int, List[Tuple]] = {}
 
     # For each user factory transaction, loop through every tx
     # loop through all audius event types within that tx and get all event logs

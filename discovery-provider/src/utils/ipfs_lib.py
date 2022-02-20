@@ -10,7 +10,7 @@ from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
-NEW_BLOCK_TIMEOUT_SECONDS = 5
+NEW_BLOCK_TIMEOUT_SECONDS = 15
 
 
 class IPFSClient:
@@ -80,49 +80,21 @@ class IPFSClient:
         retrieved_from_ipfs_node = False
         start_time = time.time()
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            metadata_futures = {}
-            metadata_futures[
-                executor.submit(
-                    self.get_metadata_from_ipfs_node, multihash, default_metadata_fields
-                )
-            ] = "metadata_from_ipfs_node"
-            metadata_futures[
-                executor.submit(
-                    self.get_metadata_from_gateway,
-                    multihash,
-                    default_metadata_fields,
-                    user_replica_set,
-                )
-            ] = "metadata_from_gateway"
-            for get_metadata_future in concurrent.futures.as_completed(
-                metadata_futures, timeout=NEW_BLOCK_TIMEOUT_SECONDS
-            ):
-                metadata_fetch_source = metadata_futures[get_metadata_future]
-                try:
-                    api_metadata = get_metadata_future.result()
-                    retrieved = api_metadata != default_metadata_fields
-                    if retrieved:
-                        logger.info(
-                            f"IPFSCLIENT | retrieved metadata successfully, \
-                            {api_metadata}, \
-                            source: {metadata_fetch_source}"
-                        )
-                        if metadata_fetch_source == "metadata_from_gateway":
-                            retrieved_from_gateway = True
-                        else:
-                            retrieved_from_ipfs_node = True
-                        self.force_clear_queue_and_stop_task_execution(executor)
-                        break  # use first returned result
-                except Exception as e:
-                    logger.error(
-                        f"IPFSCLIENT | ipfs_lib.py | \
-                        ERROR in metadata_futures parallel processing \
-                        generated {e}, multihash: {multihash}, source: {metadata_fetch_source}",
-                        exc_info=True,
-                    )
+        try:
+            api_metadata = self.get_metadata_from_gateway(
+                multihash, default_metadata_fields, user_replica_set
+            )
+            retrieved = api_metadata != default_metadata_fields
+        except Exception as e:
+            logger.error(
+                f"IPFSCLIENT | ipfs_lib.py | \
+                ERROR in get_metadata_from_gateway \
+                generated {e}, multihash: {multihash}",
+                exc_info=True,
+            )
 
-        retrieved_metadata = retrieved_from_gateway or retrieved_from_ipfs_node
+        retrieved_metadata = retrieved
+
         # Raise error if metadata is not retrieved.
         # Ensure default values are not written into database.
         if not retrieved_metadata:
@@ -153,11 +125,17 @@ class IPFSClient:
             raise Exception(
                 f"IPFSCLIENT | Invalid URL from provided gateway addr - {url}"
             )
+        logger.info(f"IPFSCLIENT | load_metadata_url requesting metadata {url}")
+        start_time = time.time()
         r = requests.get(url, timeout=max_timeout)
+        logger.info(
+            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}"
+        )
         return r
 
     def query_ipfs_metadata_json(self, gateway_ipfs_urls, default_metadata_fields):
         formatted_json = None
+        start_time = time.time()
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # Start the load operations and mark each future with its URL
             future_to_url = {
@@ -178,9 +156,16 @@ class IPFSClient:
                         default_metadata_fields, r.json()
                     )
                     # Exit loop if dict is successfully retrieved
-                    logger.warning(f"IPFSCLIENT | Retrieved from {url}")
+                    logger.info(
+                        f"IPFSCLIENT | query_ipfs_metadata_json Retrieved from {url} took {time.time() - start_time} seconds"
+                    )
+                    start_shutdown = time.time()
                     self.force_clear_queue_and_stop_task_execution(executor)
-                    break
+                    logger.info(
+                        f"IPFSCLIENT | shutdown queue took {time.time() - start_shutdown} seconds"
+                    )
+                    return formatted_json
+
                 except Exception as exc:
                     logger.error(f"IPFSClient | {url} generated an exception: {exc}")
         return formatted_json
@@ -214,13 +199,6 @@ class IPFSClient:
                 logger.error(
                     "IPFSCLIENT | get_metadata_from_gateway \
                         \nfailed to fetch metadata from user replica gateways"
-                )
-                # Remove replica set from gateway endpoints before querying
-                gateway_endpoints = list(
-                    filter(
-                        lambda endpoint: endpoint not in user_replicas,
-                        gateway_endpoints,
-                    )
                 )
 
         logger.warning(
