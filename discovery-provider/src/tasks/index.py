@@ -355,13 +355,7 @@ async def fetch_ipfs_metadata(
                     session, cid, metadata_format, user_replica_set
                 )
             )
-            futures.append(
-                asyncio.ensure_future(
-                    update_task.ipfs_client.get_metadata(
-                        session, cid, metadata_format, user_replica_set
-                    )
-                )
-            )
+            futures.append(future)
             futures_map[future] = [cid, txhash]
 
         finished_tasks = asyncio.gather(*futures)
