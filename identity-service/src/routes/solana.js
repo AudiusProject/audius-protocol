@@ -50,7 +50,7 @@ solanaRouter.post(
 
       const userHasSocialProof = await doesUserHaveSocialProof(req.user)
       if (!userHasSocialProof) {
-        let handle = req.user ? req.user.handle : ''
+        const handle = req.user.handle || ''
         return errorResponseServerError(
           `User ${handle} is missing social proof`,
           { error: 'Missing social proof' }
