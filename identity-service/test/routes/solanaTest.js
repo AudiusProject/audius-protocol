@@ -38,6 +38,6 @@ describe('test Solana relay route without social verification', function () {
         skipPreflight: false,
         feePayerOverride: null
       })
-      .expect(400, done)
+      .expect(500, done)
   })
 })
