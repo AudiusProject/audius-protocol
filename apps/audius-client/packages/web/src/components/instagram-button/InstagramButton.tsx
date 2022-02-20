@@ -15,6 +15,17 @@ type InstagramAuthButtonProps = {
   onFailure?: (error: any) => void
   style?: object
   disabled?: boolean
+  /**
+   * Whether or not the success of this instagram auth
+   * depends on fetching metadata or not.
+   * Generally speaking, fetching metadata is not reliable,
+   * so if the purpose of this auth is just verification
+   * that the user has OAuthed, not to pull specific data,
+   * set this flag to false.
+   * Without metadata, instagram gives you very few fields:
+   * https://developers.facebook.com/docs/instagram-basic-display-api/reference/user
+   */
+  requiresProfileMetadata?: boolean
 } & InstagramButtonProps
 
 type InstagramButtonProps = {
@@ -53,7 +64,8 @@ const InstagramAuthButton = ({
   onSuccess,
   onFailure,
   disabled = false,
-  text
+  text,
+  requiresProfileMetadata = true
 }: InstagramAuthButtonProps) => {
   return (
     <InstagramAuth
@@ -63,6 +75,7 @@ const InstagramAuthButton = ({
       onSuccess={onSuccess || (() => {})}
       getUserUrl={`${IDENTITY_SERVICE}/instagram`}
       setProfileUrl={`${IDENTITY_SERVICE}/instagram/profile`}
+      requiresProfileMetadata={requiresProfileMetadata}
     >
       <InstagramButton
         className={className}
