@@ -261,6 +261,8 @@ def fetch_ipfs_metadata(
     block_number,
     block_hash,
 ):
+    start_time = datetime.now()
+
     track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]
     track_contract = update_task.web3.eth.contract(
         address=get_contract_addresses()["track_factory"], abi=track_abi
@@ -293,7 +295,6 @@ def fetch_ipfs_metadata(
                     blacklisted_cids.add(cid)
                 user_id = event_args._userId
                 cid_to_user_id[cid] = user_id
-
         for tx_receipt in track_factory_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             for event_type in [
@@ -318,6 +319,7 @@ def fetch_ipfs_metadata(
                     else:
                         blacklisted_cids.add(cid)
                     cid_to_user_id[cid] = track_owner_id
+    logger.info(f"starting fetch_ipfs_metadata: {cids}")
 
     # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
     user_to_replica_set = dict(
@@ -367,6 +369,9 @@ def fetch_ipfs_metadata(
                 raise IndexingError(
                     "prefetch-cids", block_number, blockhash, txhash, str(e)
                 ) from e
+    logger.info(
+        f"index.py | finished fetch_ipfs_metadata: {len(cids)} cids in {datetime.now() - start_time} seconds"
+    )
 
     return ipfs_metadata, blacklisted_cids
 
