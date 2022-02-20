@@ -26,6 +26,11 @@ export const getLocation = async (): Promise<Location | null> => {
     const res = await fetch('https://ipapi.co/json/')
     return res.json()
   } catch (e) {
+    console.error(
+      `Got error during getLocation call: ${e} | Error message is: ${
+        (e as any)?.message ?? null
+      }`
+    )
     return null
   }
 }
