@@ -1,13 +1,10 @@
 import concurrent.futures
-import json
 import logging
 import time
 from urllib.parse import urljoin, urlparse
 
-import ipfshttpclient
 import requests
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
-from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
 NEW_BLOCK_TIMEOUT_SECONDS = 15
@@ -18,42 +15,30 @@ class IPFSClient:
 
     def __init__(
         self,
-        ipfs_peer_host,
-        ipfs_peer_port,
         eth_web3=None,
         shared_config=None,
         redis=None,
         eth_abi_values=None,
     ):
-        pass
-        # self._api = ipfshttpclient.connect(
-        #     f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http"
-        # )
         # logger.warning("IPFSCLIENT | initializing")
 
-        # # Fetch list of registered content nodes to use during init.
-        # # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty
-        # # it might fail to find content and throw an error. To prevent race conditions between
-        # # indexing starting and this getting populated, run this on init in the instance
-        # # in the celery worker
-        # if eth_web3 and shared_config and redis and eth_abi_values:
-        #     self._cnode_endpoints = list(
-        #         fetch_all_registered_content_nodes(
-        #             eth_web3, shared_config, redis, eth_abi_values
-        #         )
-        #     )
-        #     logger.warning(
-        #         f"IPFSCLIENT | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
-        #     )
-        # else:
-        #     self._cnode_endpoints = []
-        #     logger.warning("IPFSCLIENT | couldn't fetch _cnode_endpoints on init")
-
-        # self._ipfsid = self._api.id()
-        # self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
-
-    # def get_peer_info(self):
-    #     return self._ipfsid
+        # Fetch list of registered content nodes to use during init.
+        # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty
+        # it might fail to find content and throw an error. To prevent race conditions between
+        # indexing starting and this getting populated, run this on init in the instance
+        # in the celery worker
+        if eth_web3 and shared_config and redis and eth_abi_values:
+            self._cnode_endpoints = list(
+                fetch_all_registered_content_nodes(
+                    eth_web3, shared_config, redis, eth_abi_values
+                )
+            )
+            logger.warning(
+                f"IPFSCLIENT | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
+            )
+        else:
+            self._cnode_endpoints = []
+            logger.warning("IPFSCLIENT | couldn't fetch _cnode_endpoints on init")
 
     def get_metadata_from_json(self, default_metadata_fields, resp_json):
         metadata = {}
@@ -173,11 +158,11 @@ class IPFSClient:
         """
 
         # Default return initial metadata format
-        # gateway_metadata_json = default_metadata_fields
+        gateway_metadata_json = default_metadata_fields
         logger.warning(
             f"IPFSCLIENT | get_metadata_from_gateway, {multihash} replica set: {user_replica_set}"
         )
-        # gateway_endpoints = self._cnode_endpoints
+        gateway_endpoints = self._cnode_endpoints
 
         # first attempt to first fetch metadata from user replica set, if provided & non-empty
         if user_replica_set and isinstance(user_replica_set, str):
@@ -195,68 +180,21 @@ class IPFSClient:
                     "IPFSCLIENT | get_metadata_from_gateway \
                         \nfailed to fetch metadata from user replica gateways"
                 )
-        return data
 
-        # logger.warning(
-        #     f"IPFSCLIENT | get_metadata_from_gateway, \
-        #         \ncombined addresses: {gateway_endpoints}, \
-        #         \ncnode_endpoints: {self._cnode_endpoints}"
-        # )
+        logger.warning(
+            f"IPFSCLIENT | get_metadata_from_gateway, \
+                \ncombined addresses: {gateway_endpoints}, \
+                \ncnode_endpoints: {self._cnode_endpoints}"
+        )
 
-        # query_urls = [f"{addr}/ipfs/{multihash}" for addr in gateway_endpoints]
-        # data = self.query_ipfs_metadata_json(query_urls, default_metadata_fields)
-        # if data is None:
-        #     raise Exception(
-        #         f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
-        #     )
-        # gateway_metadata_json = data
-        # return gateway_metadata_json
-
-    # def get_metadata_from_ipfs_node(self, multihash, default_metadata_fields):
-    #     logger.warning(f"IPFSCLIENT | get_metadata_from_ipfs_node, {multihash}")
-    #     try:
-    #         res = self.cat(multihash)
-    #         resp_val = json.loads(res)
-
-    #         # If an invalid response object is retrieved return empty values and log error
-    #         if not isinstance(resp_val, dict):
-    #             raise Exception(
-    #                 f"IPFSCLIENT | Expected dict type for {multihash}, received {resp_val}"
-    #             )
-
-    #     except ValueError as e:
-    #         # Return default format if deserialization fails
-    #         logger.error(
-    #             f"IPFSCLIENT | Failed to deserialize response for {multihash}. {e}"
-    #         )
-    #         raise e
-    #     except Exception as e:
-    #         logger.error(
-    #             f"IPFSCLIENT | Local Node Unknown exception retrieving {multihash}. {e}"
-    #         )
-    #         raise e
-
-    #     logger.info(f"IPFSCLIENT | Retrieved {multihash} from ipfs node")
-    #     return self.get_metadata_from_json(default_metadata_fields, resp_val)
-
-    def cat(self, multihash):
-        try:
-            res = self._api.cat(multihash, timeout=1)
-            return res
-        except:
-            logger.error(
-                f"IPFSCLIENT | IPFS cat timed out after 1s for CID {multihash}"
+        query_urls = [f"{addr}/ipfs/{multihash}" for addr in gateway_endpoints]
+        data = self.query_ipfs_metadata_json(query_urls, default_metadata_fields)
+        if data is None:
+            raise Exception(
+                f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
             )
-            raise  # error is of type ipfshttpclient.exceptions.TimeoutError
-
-    # def connect_peer(self, peer):
-    #     try:
-    #         if peer in self._ipfsid["Addresses"]:
-    #             return
-    #         r = self._api.swarm.connect(peer, timeout=3)
-    #         logger.info(r)
-    #     except Exception as e:
-    #         logger.error(f"IPFSCLIENT | IPFS Failed to update peer: {e}")
+        gateway_metadata_json = data
+        return gateway_metadata_json
 
     def update_cnode_urls(self, cnode_endpoints):
         if len(cnode_endpoints):
@@ -264,9 +202,6 @@ class IPFSClient:
                 f"IPFSCLIENT | update_cnode_urls with endpoints {cnode_endpoints}"
             )
             self._cnode_endpoints = cnode_endpoints
-
-    # def ipfs_id_multiaddr(self):
-    #     return self._multiaddr
 
 
 def construct_image_dir_gateway_url(address, CID):
