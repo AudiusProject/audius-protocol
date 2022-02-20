@@ -35,6 +35,7 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.utils import helpers
 from src.utils.config import ConfigIni, config_files, shared_config
+from src.utils.ipfs_lib import IPFSClient
 
 # from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
@@ -373,7 +374,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
-            "src.tasks.index_network_peers",
+            # "src.tasks.index_network_peers",
             "src.tasks.index_trending",
             "src.tasks.cache_user_balance",
             "src.monitors.monitoring_queue",
@@ -433,10 +434,10 @@ def configure_celery(celery, test_config=None):
                 "task": "vacuum_db",
                 "schedule": timedelta(days=1),
             },
-            "update_network_peers": {
-                "task": "update_network_peers",
-                "schedule": timedelta(seconds=30),
-            },
+            # "update_network_peers": {
+            #     "task": "update_network_peers",
+            #     "schedule": timedelta(seconds=30),
+            # },
             "index_trending": {
                 "task": "index_trending",
                 "schedule": timedelta(seconds=10),
@@ -520,15 +521,15 @@ def configure_celery(celery, test_config=None):
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
 
-    # # Initialize IPFS client for celery task context
-    # ipfs_client = IPFSClient(
-    #     shared_config["ipfs"]["host"],
-    #     shared_config["ipfs"]["port"],
-    #     eth_web3,
-    #     shared_config,
-    #     redis_inst,
-    #     eth_abi_values,
-    # )
+    # Initialize IPFS client for celery task context
+    ipfs_client = IPFSClient(
+        shared_config["ipfs"]["host"],
+        shared_config["ipfs"]["port"],
+        eth_web3,
+        shared_config,
+        redis_inst,
+        eth_abi_values,
+    )
 
     # Clear last scanned redis block on startup
     delete_last_scanned_eth_block_redis(redis_inst)
@@ -566,7 +567,7 @@ def configure_celery(celery, test_config=None):
                 abi_values=abi_values,
                 eth_abi_values=eth_abi_values,
                 shared_config=shared_config,
-                ipfs_client=None,
+                ipfs_client=ipfs_client,
                 redis=redis_inst,
                 eth_web3_provider=eth_web3,
                 solana_client_manager=solana_client_manager,
