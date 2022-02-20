@@ -1,8 +1,11 @@
 const express = require('express')
 const crypto = require('crypto')
 
+const authMiddleware = require('../authMiddleware')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayerKeypair } = require('../solana-client')
+const { isSendInstruction, doesUserHaveSocialProof } = require('../utils/relayHelpers')
+const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 const {
   PublicKey,
@@ -21,11 +24,29 @@ const isValidInstruction = (instr) => {
   return true
 }
 
-solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
+solanaRouter.post('/relay', authMiddleware, handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
   const libs = req.app.get('audiusLibs')
+  let optimizelyClient
+  let socialProofRequiredToSend = true
 
   let { instructions = [], skipPreflight, feePayerOverride } = req.body
+  try {
+    optimizelyClient = req.app.get('optimizelyClient')
+    socialProofRequiredToSend = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED)
+  } catch (error) {
+    req.logger.error(`failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`)
+  }
+  if (socialProofRequiredToSend && isSendInstruction(instructions)) {
+    const userHasSocialProof = await doesUserHaveSocialProof(req.user)
+    if (!userHasSocialProof) {
+      let handle = req.user ? req.user.handle : ''
+      return errorResponseServerError(
+        `User ${handle} is missing social proof`,
+        { error: 'Missing social proof' }
+      )
+    }
+  }
 
   const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
 
