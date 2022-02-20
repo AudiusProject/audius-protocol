@@ -133,7 +133,6 @@ class IPFSClient:
         return r
 
     def query_ipfs_metadata_json(self, gateway_ipfs_urls, default_metadata_fields):
-        formatted_json = None
         start_time = time.time()
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # Start the load operations and mark each future with its URL
@@ -158,16 +157,12 @@ class IPFSClient:
                     logger.info(
                         f"IPFSCLIENT | query_ipfs_metadata_json Retrieved from {url} took {time.time() - start_time} seconds"
                     )
-                    start_shutdown = time.time()
                     self.force_clear_queue_and_stop_task_execution(executor)
-                    logger.info(
-                        f"IPFSCLIENT | shutdown queue took {time.time() - start_shutdown} seconds"
-                    )
                     return formatted_json
 
                 except Exception as exc:
                     logger.error(f"IPFSClient | {url} generated an exception: {exc}")
-        return formatted_json
+        return None
 
     def get_metadata_from_gateway(
         self, multihash, default_metadata_fields, user_replica_set: str = None
