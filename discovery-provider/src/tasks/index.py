@@ -375,7 +375,7 @@ async def fetch_ipfs_metadata(
                             continue
                         other_future.cancel()
 
-                ipfs_metadata[cid] = futures_result
+                    ipfs_metadata[cid] = futures_result
         except asyncio.TimeoutError:
             logger.info("index.py | fetch_ipfs_metadata TimeoutError")
         except Exception as e:

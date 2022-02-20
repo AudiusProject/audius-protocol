@@ -103,7 +103,7 @@ class IPFSClient:
         return api_metadata
 
     # Retrieve a metadata object
-    def load_metadata_url(self, async_session, url, max_timeout):
+    async def load_metadata_url(self, async_session, url, max_timeout, default_metadata_fields):
         # Skip URL if invalid
         validate_url = urlparse(url)
         if not validate_url.scheme:
@@ -112,34 +112,31 @@ class IPFSClient:
             )
         logger.info(f"IPFSCLIENT | load_metadata_url requesting metadata {url}")
         start_time = time.time()
-        r = async_session.get(url, timeout=max_timeout)
+        r = await async_session.get(url, timeout=max_timeout)
         logger.info(
             f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status'] if 'CF-Cache-Status' in r.headers else 'Not using cloudflare'}"
         )
-        return r
+
+        if r.status_code != 200:
+            logger.warning(f"IPFSCLIENT | {url} - {r.status_code}")
+            # TODO: what do we return here?
+            return None
+
+        # Override with retrieved JSON value
+        formatted_json = self.get_metadata_from_json(
+            default_metadata_fields, r.json(content_type=None)
+        )
+
+        # Exit loop if dict is successfully retrieved
+        logger.info(
+            f"IPFSCLIENT | load_metadata_url Retrieved from {url} took {time.time() - start_time} seconds"
+        )
+        return formatted_json
 
     def query_ipfs_metadata_json(
         self, async_session, gateway_ipfs_urls, default_metadata_fields
     ):
-        start_time = time.time()
-        # Start the load operations and mark each future with its URL
-        for url in gateway_ipfs_urls:
-            r = self.load_metadata_url(async_session, url, NEW_BLOCK_TIMEOUT_SECONDS)
-
-            if r.status_code != 200:
-                logger.warning(f"IPFSCLIENT | {url} - {r.status_code}")
-                raise Exception("Invalid status_code")
-            # Override with retrieved JSON value
-            formatted_json = self.get_metadata_from_json(
-                default_metadata_fields, r.json()
-            )
-            # Exit loop if dict is successfully retrieved
-            logger.info(
-                f"IPFSCLIENT | query_ipfs_metadata_json Retrieved from {url} took {time.time() - start_time} seconds"
-            )
-            return formatted_json
-
-        return None
+        return [self.load_metadata_url(async_session, url, NEW_BLOCK_TIMEOUT_SECONDS, default_metadata_fields) for url in gateway_ipfs_urls]
 
     def get_metadata_from_gateway(
         self,
