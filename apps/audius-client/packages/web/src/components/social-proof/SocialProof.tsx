@@ -35,7 +35,7 @@ const messages = {
 type VerifyBodyProps = {
   handle: string
   onClick: () => void
-  onFailure: (type: 'instagram' | 'twitter', error: Error) => void
+  onFailure: (kind: 'instagram' | 'twitter', error: Error) => void
   onTwitterLogin: (uuid: string, profile: any) => void
   onInstagramLogin: (uuid: string, profile: any) => void
   error?: string
@@ -57,7 +57,7 @@ const VerifyBody = ({
     onClick()
     const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_OPEN, {
       handle,
-      type: 'twitter'
+      kind: 'twitter'
     })
     record(trackEvent)
   }, [record, handle, onClick])
@@ -66,7 +66,7 @@ const VerifyBody = ({
     onClick()
     const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_OPEN, {
       handle,
-      type: 'instagram'
+      kind: 'instagram'
     })
     record(trackEvent)
   }, [record, handle, onClick])
@@ -140,7 +140,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
   const onClick = useCallback(() => setStatus(Status.LOADING), [setStatus])
   const record = useRecord()
   const onFailure = useCallback(
-    (type: 'instagram' | 'twitter', error: Error) => {
+    (kind: 'instagram' | 'twitter', error: Error) => {
       // We should have an account handle by this point
       if (!handle) return
 
@@ -149,7 +149,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
 
       const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_ERROR, {
         handle,
-        type,
+        kind,
         error: error.message
       })
       record(trackEvent)
@@ -168,7 +168,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
 
       const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_SUCCESS, {
         handle,
-        type: 'instagram',
+        kind: 'instagram',
         screenName: profile.username
       })
       record(trackEvent)
@@ -187,7 +187,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
 
       const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_SUCCESS, {
         handle,
-        type: 'twitter',
+        kind: 'twitter',
         screenName: profile.screen_name
       })
       record(trackEvent)
