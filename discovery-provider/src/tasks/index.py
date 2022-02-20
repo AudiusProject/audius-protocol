@@ -41,8 +41,8 @@ from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
-    record_index_blocks_seconds,
-    sweep_old_index_blocks_seconds,
+    record_index_blocks_ms,
+    sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
 from src.utils.ipfs_lib import NEW_BLOCK_TIMEOUT_SECONDS
@@ -691,10 +691,11 @@ def index_blocks(self, db, blocks_list):
         )
 
         # Record the time this took in redis
-        record_index_blocks_seconds(redis, datetime.now() - start_time)
+        duration_ms = round((datetime.now() - start_time).total_seconds() * 1000)
+        record_index_blocks_ms(redis, duration_ms)
         # Sweep records older than 30 days every day
         if block_number % BLOCKS_PER_DAY == 0:
-            sweep_old_index_blocks_seconds(redis, 30)
+            sweep_old_index_blocks_ms(redis, 30)
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
