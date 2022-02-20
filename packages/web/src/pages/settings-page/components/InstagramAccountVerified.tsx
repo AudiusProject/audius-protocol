@@ -14,16 +14,34 @@ type InstagramVerificationProps = {
   onFailure: (error: any) => void
   disabled?: boolean
   text?: string
+  /**
+   * Whether or not the success of this instagram auth
+   * depends on fetching metadata or not.
+   * Generally speaking, fetching metadata is not reliable,
+   * so if the purpose of this auth is just verification
+   * that the user has OAuthed, not to pull specific data,
+   * set this flag to false.
+   * Without metadata, instagram gives you very few fields:
+   * https://developers.facebook.com/docs/instagram-basic-display-api/reference/user
+   */
+  requiresProfileMetadata?: boolean
 }
-export const InstagramVerification = (props: InstagramVerificationProps) => {
+export const InstagramVerification = ({
+  onClick,
+  onSuccess,
+  onFailure,
+  disabled,
+  requiresProfileMetadata = true
+}: InstagramVerificationProps) => {
   return (
     <InstagramButton
-      onClick={props.onClick}
+      onClick={onClick}
       className={styles.button}
-      onSuccess={props.onSuccess}
-      onFailure={props.onFailure}
-      disabled={props.disabled}
+      onSuccess={onSuccess}
+      onFailure={onFailure}
+      disabled={disabled}
       text={messages.verify}
+      requiresProfileMetadata={requiresProfileMetadata}
     />
   )
 }
