@@ -79,12 +79,13 @@ class IPFSClient:
         retrieved_from_gateway = False
         retrieved_from_ipfs_node = False
         start_time = time.time()
+        retrieved_metadata = False
 
         try:
             api_metadata = self.get_metadata_from_gateway(
                 multihash, default_metadata_fields, user_replica_set
             )
-            retrieved = api_metadata != default_metadata_fields
+            retrieved_metadata = api_metadata != default_metadata_fields
         except Exception as e:
             logger.error(
                 f"IPFSCLIENT | ipfs_lib.py | \
@@ -93,7 +94,6 @@ class IPFSClient:
                 exc_info=True,
             )
 
-        retrieved_metadata = retrieved
 
         # Raise error if metadata is not retrieved.
         # Ensure default values are not written into database.
