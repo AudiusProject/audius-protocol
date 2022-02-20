@@ -1019,20 +1019,20 @@ type RewardsClaimBlocked = {
 
 type SocialProofOpen = {
   eventName: Name.SOCIAL_PROOF_OPEN
-  type: 'instagram' | 'twitter'
+  kind: 'instagram' | 'twitter'
   handle: string
 }
 
 type SocialProofSuccess = {
   eventName: Name.SOCIAL_PROOF_SUCCESS
-  type: 'instagram' | 'twitter'
+  kind: 'instagram' | 'twitter'
   handle: string
   screenName: string
 }
 
 type SocialProofError = {
   eventName: Name.SOCIAL_PROOF_ERROR
-  type: 'instagram' | 'twitter'
+  kind: 'instagram' | 'twitter'
   handle: string
   error: string
 }
