@@ -338,6 +338,7 @@ async def fetch_ipfs_metadata(
     async with aiohttp.ClientSession() as async_session:
         futures = []
         futures_map = {}
+        cid_futures_map = {}
         for cid, txhash in cids:
             metadata_format = (
                 track_metadata_format
@@ -350,22 +351,31 @@ async def fetch_ipfs_metadata(
                 user_replica_set = user_to_replica_set[
                     user_id
                 ]  # user or track owner's replica set
-            future = asyncio.ensure_future(
+            futures = asyncio.ensure_future(
                 update_task.ipfs_client.get_metadata(
                     async_session, cid, metadata_format, user_replica_set
                 )
             )
-            futures.append(future)
-            futures_map[future] = [cid, txhash]
+            cid_futures_map[cid] = futures
 
-        finished_tasks = asyncio.gather(*futures)
+            futures.extend(future)
+            for future in futures:
+                futures_map[future] = [cid, txhash]
+
         try:
-            await asyncio.wait_for(
-                finished_tasks, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
-            )
-            for future in finished_tasks:
+            for future in asyncio.as_completed(
+                futures, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
+            ):
+                futures_result = await future
                 cid, txhash = futures_map[future]
-                ipfs_metadata[cid] = future
+
+                if futures_result:
+                    for other_future in cid_futures_map[cid]:
+                        if other_future == future:
+                            continue
+                        other_future.cancel()
+
+                ipfs_metadata[cid] = futures_result
         except asyncio.TimeoutError:
             logger.info("index.py | fetch_ipfs_metadata TimeoutError")
         except Exception as e:

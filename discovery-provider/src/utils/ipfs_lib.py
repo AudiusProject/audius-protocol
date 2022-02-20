@@ -92,9 +92,7 @@ class IPFSClient:
             )
             logger.error(api_metadata)
             logger.error(default_metadata_fields)
-            raise Exception(
-                f"IPFSCLIENT | Failed to retrieve metadata. Using default values for {multihash}"
-            )
+            return None
 
         duration = time.time() - start_time
         logger.info(
