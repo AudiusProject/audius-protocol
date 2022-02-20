@@ -74,7 +74,11 @@ async function authMiddleware (req, res, next) {
 
 /**
  * Parameterized version of authentication middleware
- * @param {{ shouldRespondBadRequest }: { shouldRespondBadRequest: boolean }}
+ * @param {{
+ *  shouldRespondBadRequest, whether or not to return server error on auth failure
+ * }: {
+ *  shouldRespondBadRequest: boolean
+ * }}
  * @returns function `authMiddleware`
  */
 const parameterizedAuthMiddleware = ({ shouldRespondBadRequest }) => {
