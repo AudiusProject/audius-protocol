@@ -358,11 +358,8 @@ async def fetch_ipfs_metadata(
             futures.append(future)
             futures_map[future] = [cid, txhash]
 
-        finished_tasks = asyncio.gather(*futures)
         try:
-            await asyncio.wait_for(
-                finished_tasks, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
-            )
+            finished_tasks = await asyncio.gather(*futures)
             for future in finished_tasks:
                 cid, txhash = futures_map[future]
                 ipfs_metadata[cid] = future
