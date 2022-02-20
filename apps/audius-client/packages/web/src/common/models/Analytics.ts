@@ -35,6 +35,7 @@ export enum Name {
   // Sign in
   SIGN_IN_OPEN = 'Sign In: Open',
   SIGN_IN_FINISH = 'Sign In: Finish',
+  SIGN_IN_WITH_INCOMPLETE_ACCOUNT = 'Sign In: Incomplete Account',
 
   // Settings
   SETTINGS_CHANGE_THEME = 'Settings: Change Theme',
@@ -293,6 +294,11 @@ type SignInOpen = {
 type SignInFinish = {
   eventName: Name.SIGN_IN_FINISH
   status: 'success' | 'invalid credentials'
+}
+
+type SignInWithIncompleteAccount = {
+  eventName: Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT
+  handle: string
 }
 
 // Settings
@@ -1047,6 +1053,7 @@ export type AllTrackingEvents =
   | CreateAccountOpenFinish
   | SignInOpen
   | SignInFinish
+  | SignInWithIncompleteAccount
   | SettingsChangeTheme
   | SettingsStartTwitterOauth
   | SettingsCompleteTwitterOauth
