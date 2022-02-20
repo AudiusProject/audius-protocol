@@ -335,7 +335,7 @@ async def fetch_ipfs_metadata(
     )
 
     ipfs_metadata = {}
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession() as async_session:
         futures = []
         futures_map = {}
         for cid, txhash in cids:
@@ -352,7 +352,7 @@ async def fetch_ipfs_metadata(
                 ]  # user or track owner's replica set
             future = asyncio.ensure_future(
                 update_task.ipfs_client.get_metadata(
-                    session, cid, metadata_format, user_replica_set
+                    async_session, cid, metadata_format, user_replica_set
                 )
             )
             futures.append(future)
