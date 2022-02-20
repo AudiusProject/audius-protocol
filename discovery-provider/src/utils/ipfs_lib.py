@@ -128,7 +128,9 @@ class IPFSClient:
                 ): url
                 for url in gateway_ipfs_urls
             }
-            for future in concurrent.futures.as_completed(future_to_url):
+            for future in concurrent.futures.as_completed(
+                future_to_url, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
+            ):
                 url = future_to_url[future]
                 try:
                     r = future.result()
