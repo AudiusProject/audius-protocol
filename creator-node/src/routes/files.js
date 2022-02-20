@@ -125,7 +125,7 @@ const streamFromFileSystem = async (req, res, path) => {
 
 const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
-const printGetCIDDecisionTree = (decisionTree, req) => {
+const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
     req.logger.debug(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
@@ -161,7 +161,7 @@ const getCID = async (req, res) => {
     decisionTree.push({
       stage: `CID_IS_BLACKLISTED`
     })
-    printGetCIDDecisionTree(decisionTree, req)
+    logGetCIDDecisionTree(decisionTree, req)
     return sendResponse(
       req,
       res,
@@ -196,7 +196,7 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `DB_CID_QUERY_FAILED`
       })
-      printGetCIDDecisionTree(decisionTree, req)
+      logGetCIDDecisionTree(decisionTree, req)
       return sendResponse(
         req,
         res,
@@ -210,7 +210,7 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `DB_CID_QUERY_CONFIRMED_DIR`
       })
-      printGetCIDDecisionTree(decisionTree, req)
+      logGetCIDDecisionTree(decisionTree, req)
       return sendResponse(
         req,
         res,
@@ -273,7 +273,7 @@ const getCID = async (req, res) => {
       stage: `STREAM_FROM_FILE_SYSTEM_COMPLETE`,
       time: `${Date.now() - startMs}ms`
     })
-    printGetCIDDecisionTree(decisionTree, req)
+    logGetCIDDecisionTree(decisionTree, req)
     return fsStream
   } catch (e) {
     req.logger.info(`Failed to retrieve ${storagePath} from FS`)
@@ -298,7 +298,7 @@ const getCID = async (req, res) => {
         stage: `STREAM_FROM_FILE_SYSTEM_AFTER_FIND_CID_IN_NETWORK_COMPLETE`,
         time: `${Date.now() - startMs}ms`
       })
-      printGetCIDDecisionTree(decisionTree, req)
+      logGetCIDDecisionTree(decisionTree, req)
 
       return fsStream
     } catch (e) {
@@ -306,7 +306,7 @@ const getCID = async (req, res) => {
         stage: `FIND_CID_IN_NETWORK_ERROR`,
         time: `${Date.now() - startMs}ms`
       })
-      printGetCIDDecisionTree(decisionTree, req)
+      logGetCIDDecisionTree(decisionTree, req)
       req.logger.error(
         `Error calling findCIDInNetwork for path ${storagePath}`,
         e
@@ -346,7 +346,7 @@ const getCID = async (req, res) => {
             stage: `ERROR_REQUESTED_RANGE_NOT_SATISFIABLE`,
             time: `${Date.now() - startMs}ms`
           })
-          printGetCIDDecisionTree(decisionTree, req)
+          logGetCIDDecisionTree(decisionTree, req)
           res.status(416)
           return sendResponse(
             req,
@@ -393,7 +393,7 @@ const getCID = async (req, res) => {
             stage: `STREAM_WRITE_COMPLETE`,
             time: `${Date.now() - startMs}ms`
           })
-          printGetCIDDecisionTree(decisionTree, req)
+          logGetCIDDecisionTree(decisionTree, req)
           resolve()
         })
         .on('error', (e) => {
@@ -402,7 +402,7 @@ const getCID = async (req, res) => {
             time: `${Date.now() - startMs}ms`,
             val: `${e.message}`
           })
-          printGetCIDDecisionTree(decisionTree, req)
+          logGetCIDDecisionTree(decisionTree, req)
           reject(e)
         })
     })
@@ -414,7 +414,7 @@ const getCID = async (req, res) => {
       stage: 'STREAM_FROM_IPFS_FAILURE',
       time: `${Date.now() - startMs}ms`
     })
-    printGetCIDDecisionTree(decisionTree, req)
+    logGetCIDDecisionTree(decisionTree, req)
 
     // If the file cannot be retrieved through IPFS, return 500 without attempting to stream file.
     return sendResponse(req, res, errorResponseServerError(e.message))
