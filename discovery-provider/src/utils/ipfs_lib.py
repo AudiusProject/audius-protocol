@@ -57,7 +57,7 @@ class IPFSClient:
         concurrent.futures.thread._threads_queues.clear()
 
     # pylint: disable=broad-except
-    def get_metadata(
+    async def get_metadata(
         self, async_session, multihash, default_metadata_fields, user_replica_set=None
     ):
         """Retrieve file from IPFS or gateway, validating metadata requirements prior to
@@ -71,7 +71,7 @@ class IPFSClient:
         retrieved_metadata = False
 
         try:
-            api_metadata = self.get_metadata_from_gateway(
+            api_metadata = await self.get_metadata_from_gateway(
                 async_session, multihash, default_metadata_fields, user_replica_set
             )
             retrieved_metadata = api_metadata != default_metadata_fields
