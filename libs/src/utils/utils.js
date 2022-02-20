@@ -210,7 +210,10 @@ class Utils {
     return Promise.race([promise, timeoutPromise])
   }
 
-  static async CIDHeadRequests (cid, replicas) {
+  static async makeCIDHeadRequests (cid, creatorNodeEndpointStr) {
+    if (!creatorNodeEndpointStr) return
+
+    const replicas = creatorNodeEndpointStr.split(',')
     await Promise.all(replicas.map(async (replica) => {
       try {
         await axios({
@@ -219,6 +222,7 @@ class Utils {
         })
       } catch (e) {
         // DO NOTHING
+        console.error(`[makeCIDHeadRequests] [CID=${cid}] [Replica=${replica}] Error ${e.message}`)
       }
     }))
   }

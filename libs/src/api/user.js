@@ -425,7 +425,7 @@ class Users extends Base {
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
     // Make non-awaited /ipfs requests to all replicas for CID to warm cache before writing to chain
-    Utils.CIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint.split(','))
+    Utils.makeCIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -531,7 +531,7 @@ class Users extends Base {
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
     // Make non-awaited /ipfs requests to all replicas for CID to warm cache before writing to chain
-    Utils.CIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint.split(','))
+    Utils.makeCIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -635,7 +635,7 @@ class Users extends Base {
       startMs = Date.now()
 
       // Make non-awaited /ipfs requests to all replicas for CID to warm cache before writing to chain
-      Utils.CIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint.split(','))
+      Utils.makeCIDHeadRequests(metadataMultihash, newMetadata.creator_node_endpoint)
 
       // Write metadata multihash to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN
