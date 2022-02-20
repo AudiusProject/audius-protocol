@@ -99,8 +99,7 @@ module.exports = function (app) {
     try {
       const checkFields = [
         'id',
-        'username',
-        'is_verified'
+        'username'
       ]
       const hasMinimumFields = checkFields.every(field => (field in profile))
       if (!hasMinimumFields) throw new Error('Invalid profile')
@@ -112,7 +111,7 @@ module.exports = function (app) {
         } })
         if (!igUser) throw new Error(`Could not find matching ig user in the db: ${profile.username}`)
         igUser.profile = profile
-        igUser.verified = profile.is_verified
+        igUser.verified = profile.is_verified || false
         await igUser.save()
 
         return successResponse(profile)
