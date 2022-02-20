@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
+from datetime import datetime
 from operator import itemgetter, or_
 
 from src.app import get_contract_addresses
@@ -39,6 +40,10 @@ from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
+from src.utils.index_blocks_performance import (
+    record_index_blocks_ms,
+    sweep_old_index_blocks_ms,
+)
 from src.utils.indexing_errors import IndexingError
 from src.utils.ipfs_lib import NEW_BLOCK_TIMEOUT_SECONDS
 from src.utils.redis_cache import (
@@ -84,6 +89,8 @@ TX_TYPE_TO_HANDLER_MAP = {
     USER_LIBRARY_FACTORY: user_library_state_update,
     USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
 }
+
+BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 logger = logging.getLogger(__name__)
 
@@ -551,6 +558,7 @@ def index_blocks(self, db, blocks_list):
     latest_block_timestamp = None
     changed_entity_ids_map = {}
     for i in block_order_range:
+        start_time = datetime.now()
         update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
@@ -681,6 +689,13 @@ def index_blocks(self, db, blocks_list):
         logger.info(
             f"index.py | update most recently processed block complete for block=${block_number}"
         )
+
+        # Record the time this took in redis
+        duration_ms = round((datetime.now() - start_time).total_seconds() * 1000)
+        record_index_blocks_ms(redis, duration_ms)
+        # Sweep records older than 30 days every day
+        if block_number % BLOCKS_PER_DAY == 0:
+            sweep_old_index_blocks_ms(redis, 30)
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
