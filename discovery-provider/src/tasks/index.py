@@ -992,7 +992,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_discovery_provider", bind=True)
-async def update_task(self):
+def update_task(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
@@ -1124,7 +1124,7 @@ async def update_task(self):
             revert_blocks(self, db, revert_blocks_list)
 
             # Perform indexing operations
-            await index_blocks(self, db, index_blocks_list)
+            asyncio.run(index_blocks(self, db, index_blocks_list))
             logger.info(
                 f"index.py | update_task | {self.request.id} | Processing complete within session"
             )
