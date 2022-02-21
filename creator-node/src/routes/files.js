@@ -303,6 +303,20 @@ const getCID = async (req, res) => {
             `${logPrefix} No valid file found for provided CID`
           )
         )
+      } else if (queryResults.type === 'dir') {
+        decisionTree.push({
+          stage: `DB_CID_QUERY_CONFIRMED_DIR`
+        })
+        logGetCIDDecisionTree(decisionTree, req)
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest('this dag node is a directory')
+        )
+      } else {
+        decisionTree.push({
+          stage: `DB_CID_QUERY_CID_FOUND`
+        })
       }
     } catch (e) {
       decisionTree.push({
