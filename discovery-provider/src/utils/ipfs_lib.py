@@ -141,7 +141,7 @@ class IPFSClient:
         for future in asyncio.as_completed(futures):
             [r, url] = await future
 
-            if future.cancelled() or not r or r.status != 200:
+            if not r or r.status != 200:
                 continue
 
             # If it worked, cancel the other futures
