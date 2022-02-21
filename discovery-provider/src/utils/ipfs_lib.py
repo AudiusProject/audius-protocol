@@ -151,9 +151,8 @@ class IPFSClient:
                     other_future.close()
 
             # Override with retrieved JSON value
-            formatted_json = self.get_metadata_from_json(
-                default_metadata_fields, r.json()
-            )
+            json = await r.json()
+            formatted_json = self.get_metadata_from_json(default_metadata_fields, json)
 
             # Exit loop if dict is successfully retrieved
             logger.info(
