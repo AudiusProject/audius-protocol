@@ -170,70 +170,28 @@ const getCID = async (req, res) => {
     )
   }
 
-  startMs = Date.now()
-  const cacheKey = getStoragePathQueryCacheKey(CID)
-  let storagePath = await redisClient.get(cacheKey)
-  decisionTree.push({
-    stage: `REDIS_CLIENT_GET_CACHE_KEY`,
-    time: `${Date.now() - startMs}ms`
-  })
+  const storagePath = DiskManager.computeFilePath(CID)
+  /**
+   * check if path exists
+   * if dir -> return error
+   * if file exists, continue
+   */
+  try {
+    // Will throw if path does not exist
+    // If exists, returns an instance of fs.stats class
+    const stats = await fs.stat(storagePath)
 
-  if (!storagePath) {
-    // Don't serve if not found in DB.
-    startMs = Date.now()
-    const queryResults = await models.File.findOne({
-      where: {
-        multihash: CID
-      },
-      order: [['clock', 'DESC']]
-    })
-    decisionTree.push({
-      stage: `DB_CID_QUERY`,
-      time: `${Date.now() - startMs}ms`
-    })
-    if (!queryResults) {
-      decisionTree.push({
-        stage: `DB_CID_QUERY_FAILED`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
-        req,
-        res,
-        errorResponseNotFound(
-          `${logPrefix} No valid file found for provided CID`
-        )
-      )
+    if (stats.isDirectory()) {
+      // error dag node is directory
+    } else if (stats.isFile()) {
+      // continue
+    } else {
+      // return error -> 
     }
 
-    if (queryResults.type === 'dir') {
-      decisionTree.push({
-        stage: `DB_CID_QUERY_CONFIRMED_DIR`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest('this dag node is a directory')
-      )
-    }
-
-    storagePath = queryResults.storagePath
-    // Intentionally not awaited
-    redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
+  } catch (e) {
+    // if not found -> return 404
   }
-
-  startMs = Date.now()
-  redisClient.incr('ipfsStandaloneReqs')
-  const totalStandaloneIpfsReqs = parseInt(
-    await redisClient.get('ipfsStandaloneReqs')
-  )
-  req.logger.info(
-    `${logPrefix} IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`
-  )
-  decisionTree.push({
-    stage: `UPDATE_REDIS_IPFS_STANDALONE_REQS`,
-    time: `${Date.now() - startMs}ms`
-  })
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
   if (req.query.filename) {
