@@ -146,10 +146,10 @@ class IPFSClient:
 
             # If it worked, cancel the other futures
             # TODO: this part is sus
-            for other_future in futures:
-                if other_future != future:
-                    # Cancel other future
-                    other_future.close()
+            # for other_future in futures:
+            #     if other_future != future:
+            #         # Cancel other future
+            #         other_future.close()
 
             # Override with retrieved JSON value
             json = await r.json(content_type=None)
