@@ -174,7 +174,7 @@ const getCID = async (req, res) => {
   }
 
   // Compute expected storagePath for CID
-  const storagePath = DiskManager.computeFilePath(CID)
+  const storagePath = DiskManager.computeFilePath(CID, false)
 
   /**
    * First check if file exists on FS at storagePath
