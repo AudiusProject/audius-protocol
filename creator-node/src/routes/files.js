@@ -132,7 +132,14 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
   }
 }
 
-// Gets a CID, streaming from the filesystem if available and falling back to IPFS if not
+/**
+ * Given a CID, return the appropriate file
+ * 1. Stream file from FS if available
+ * 2. Else, check if CID exists in DB. If not, return 404 error
+ * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
+ * 4. If not avail in CN network, fetch file from IPFS and stream from IPFS
+ * 5. If not avail in IPFS, respond with 400 server error
+ */
 const getCID = async (req, res) => {
   if (!(req.params && req.params.CID)) {
     return sendResponse(
