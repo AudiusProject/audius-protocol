@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { AuthHeaders } = require('../../constants')
 const uuid = require('../../utils/uuid')
 
 const Requests = require('./requests')
@@ -10,6 +11,11 @@ class IdentityService {
   constructor (identityServiceEndpoint, captcha) {
     this.identityServiceEndpoint = identityServiceEndpoint
     this.captcha = captcha
+    this.web3Manager = null
+  }
+
+  setWeb3Manager (web3Manager) {
+    this.web3Manager = web3Manager
   }
 
   /* ------- HEDGEHOG AUTH ------- */
@@ -348,10 +354,18 @@ class IdentityService {
   //   }
   // }
   async solanaRelay (transactionData) {
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = await this.web3Manager.sign(message)
+
     return this._makeRequest({
       url: '/solana/relay',
       method: 'post',
-      data: transactionData
+      data: transactionData,
+      headers: {
+        [AuthHeaders.MESSAGE]: message,
+        [AuthHeaders.SIGNATURE]: signature
+      }
     })
   }
 

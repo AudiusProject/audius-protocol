@@ -1,4 +1,3 @@
-const { sampleSize } = require('lodash')
 const { SubmitAndEvaluateError } = require('../../api/rewards')
 const { decodeHashId } = require('../../utils/utils')
 
@@ -183,8 +182,7 @@ class RewardsAttester {
     this.aaoAddress = aaoAddress
     this.reporter = reporter || new BaseRewardsReporter()
     this.endpoints = endpoints
-    // If passed endpoints, override the automatic reselection process
-    this.overrideEndpointSelection = !!endpoints.length
+    this.endpointPool = new Set(endpoints)
     this.maxRetries = maxRetries
     this.maxAggregationAttempts = maxAggregationAttempts
     this.updateValues = updateValues
@@ -224,7 +222,7 @@ class RewardsAttester {
   }
 
   /**
-   * Begin attestation loop.
+   * Begin attestation loop. Entry point for identity attestations
    *
    * @memberof RewardsAttester
    */
@@ -288,7 +286,13 @@ class RewardsAttester {
     this.delayCalculator.stop()
   }
 
+  /**
+   * Called from the client to attest challenges
+   * @param {any[]} challenges
+   * @returns
+   */
   async processChallenges (challenges) {
+    await this._selectDiscoveryNodes()
     let toProcess = [...challenges]
     while (toProcess.length) {
       try {
@@ -533,10 +537,12 @@ class RewardsAttester {
   }
 
   async _selectDiscoveryNodes () {
-    if (this.overrideEndpointSelection) return
-    this.logger.info(`Selecting discovery nodes`)
-    const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll()
-    this.endpoints = sampleSize(endpoints, this.quorumSize)
+    this.logger.info(`Selecting discovery nodes`, { endpointPool: this.endpointPool })
+    const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll({
+      verbose: true,
+      whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
+    })
+    this.endpoints = await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(this.quorumSize, Array.from(endpoints))
     this.logger.info(`Selected new discovery nodes: [${this.endpoints}]`)
   }
 

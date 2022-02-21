@@ -160,17 +160,20 @@ class ServiceSelection {
    * Note: this method is potentially slow.
    * If you need just a single service, prefer calling `.select()`
    * @param {boolean} verbose whether or not to return full services metadata
+   * @param {Set} whitelist a whitelist to override the set of endpoints
    */
-  async findAll ({ verbose = false } = {}) {
+  async findAll ({ verbose = false, whitelist = null } = {}) {
     // Get all the services
     let services = await this.getServices({ verbose })
 
     // If a whitelist is provided, filter down to it
-    if (this.whitelist) {
+    whitelist = whitelist || this.whitelist
+    if (whitelist) {
+      // If using verbose, the services are an object with service metadata, not a string endpoint
       if (verbose) {
-        services = services.filter(s => this.whitelist.has(s.endpoint))
+        services = services.filter(s => whitelist.has(s.endpoint))
       } else {
-        services = this.filterToWhitelist(services)
+        services = services.filter(s => whitelist.has(s))
       }
     }
 
