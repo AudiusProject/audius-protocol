@@ -16,8 +16,7 @@ const {
   errorResponseForbidden,
   errorResponseRangeNotSatisfiable,
   errorResponseUnauthorized,
-  handleResponseWithHeartbeat,
-  ErrorBadRequest
+  handleResponseWithHeartbeat
 } = require('../apiHelpers')
 const { recoverWallet } = require('../apiSigning')
 
@@ -216,7 +215,7 @@ const getCID = async (req, res) => {
       return sendResponse(
         req,
         res,
-        ErrorBadRequest('CID is of invalid file type')
+        errorResponseBadRequest('CID is of invalid file type')
       )
     }
   } catch (e) {
