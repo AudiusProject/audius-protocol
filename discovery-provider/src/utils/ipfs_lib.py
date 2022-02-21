@@ -118,7 +118,7 @@ class IPFSClient:
         try:
             r = await async_session.get(url, timeout=max_timeout)
             logger.info(
-                f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status'] if 'CF-Cache-Status' in r.headers else 'Not using cloudflare'}"
+                f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status}, cache: {r.headers['CF-Cache-Status'] if 'CF-Cache-Status' in r.headers else 'Not using cloudflare'}"
             )
             return [r, url]
         except Exception as e:
@@ -141,7 +141,7 @@ class IPFSClient:
         for future in asyncio.as_completed(futures):
             [r, url] = await future
 
-            if future.cancelled() or not r or r.status_code != 200:
+            if future.cancelled() or not r or r.status != 200:
                 continue
 
             # If it worked, cancel the other futures
