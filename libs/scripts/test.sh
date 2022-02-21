@@ -60,13 +60,14 @@ sh ./scripts/migrate_contracts.sh
 node ./initScripts/local.js distribute
 
 # Run unit tests
-npm run test:units
+# npm run test:units
 
 # run tests
 printf '\nSTART tests:\n\n'
 if [ "$#" -eq  "0" ]
  then
-  ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha tests/index.js
+  # ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha tests/index.js
+  ./node_modules/.bin/mocha tests/providerSelectionTest.js
 else
   ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha $1
 fi

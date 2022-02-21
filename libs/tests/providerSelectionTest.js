@@ -7,7 +7,7 @@ const EthWeb3Manager = require('../src/services/ethWeb3Manager/index')
 
 let contractClient
 
-describe('Testing ContractClient class with ProviderSelection', () => {
+describe.only('Testing ContractClient class with ProviderSelection', () => {
   afterEach(async () => {
     // Reset stub
     sinon.restore()
@@ -38,7 +38,7 @@ describe('Testing ContractClient class with ProviderSelection', () => {
    */
   // note: when web3 is set to a new object, the second call will throw a different error. that is acceptable
   // as we don't care about what the error is
-  it('should log error if both audius gateway and public gateway are unhealthy', async () => {
+  it.only('should log error if both audius gateway and public gateway are unhealthy', async () => {
     contractClient = createContractClientWithInternalWeb3()
     sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'init')
@@ -47,7 +47,7 @@ describe('Testing ContractClient class with ProviderSelection', () => {
     await contractClient.init()
 
     assert(initWithProviderSelectionSpy.calledTwice)
-    assert(consoleSpy.calledOnce)
+    assert(consoleSpy.callCount === 5) // 5 = CONTRACT_INIT_MAX_ATTEMPTS
   })
 
   /**

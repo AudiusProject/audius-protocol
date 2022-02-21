@@ -4,6 +4,7 @@ const retry = require('async-retry')
 
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
+const CONTRACT_INIT_MAX_ATTEMPTS = 5
 const METHOD_CALL_MAX_RETRIES = 5
 
 /*
@@ -25,6 +26,7 @@ class ContractClient {
     // Initialization setup
     this._isInitialized = false
     this._isInitializing = false
+    this._initAttempts = 0
 
     // Initializing this.providerSelector for POA provider fallback logic
     if (this.web3Manager instanceof Web3Manager && !this.web3Manager.web3Config.useExternalWeb3) {
@@ -48,7 +50,7 @@ class ContractClient {
           if (this._isInitialized) resolve()
         }, CONTRACT_INITIALIZING_INTERVAL)
         setTimeout(() => {
-          reject(new Error('Initialization timeout'))
+          reject(new Error('[ContractClient:init()] Initialization timeout'))
         }, CONTRACT_INITIALIZING_TIMEOUT)
       })
       clearInterval(interval)
@@ -72,9 +74,15 @@ class ContractClient {
       this._isInitializing = false
       this._isInitialized = true
     } catch (e) {
+      if (++this._initAttempts >= CONTRACT_INIT_MAX_ATTEMPTS) {
+        console.error(`Failed to initialize ${this.contractRegistryKey}. Max attempts exceeded.`)
+        return
+      }
+
       const selectNewEndpoint = !!this.providerSelector
-      console.error(`Failed to initialize ${this.contractRegistryKey}. Retrying init with selectNewEndpoint=${selectNewEndpoint}`)
-      await this.retryInit(selectNewEndpoint)
+      console.error(`Failed to initialize ${this.contractRegistryKey} on attempt #${this._initAttempts}. Retrying with selectNewEndpoint=${selectNewEndpoint} selectNewEndpointOnRetry=${selectNewEndpointOnRetry}`)
+      this._isInitializing = false
+      await this.retryInit(selectNewEndpoint && selectNewEndpointOnRetry)
     }
   }
 
@@ -89,12 +97,17 @@ class ContractClient {
     }
   }
 
-  /** Adds current provider into unhealthy set and selects the next healthy provider */
+  /**
+   * Adds current provider into unhealthy set and selects the next healthy provider
+   */
   async selectNewEndpoint () {
-    this.providerSelector.addUnhealthy(this.web3Manager.getWeb3().currentProvider.host)
+    const currentProviderUrl = this.web3Manager.getWeb3().currentProvider.host
+    this.providerSelector.addUnhealthy(currentProviderUrl)
 
     if (this.providerSelector.getUnhealthySize() === this.providerSelector.getServicesSize()) {
-      throw new Error(`No available, healthy providers to init contract ${this.contractRegistryKey}`)
+      console.log(`No healthy providers available - resetting ProviderSelection and selecting.`)
+      this.providerSelector.clearUnhealthy()
+      this.providerSelector.clearBackups()
     }
 
     // Reset _isInitializing to false to retry init logic and avoid the _isInitialzing check
