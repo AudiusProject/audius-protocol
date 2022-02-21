@@ -556,7 +556,7 @@ def create_and_raise_indexing_error(err, redis):
     raise err
 
 
-def index_blocks(self, db, blocks_list):
+async def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
 
@@ -629,7 +629,7 @@ def index_blocks(self, db, blocks_list):
 
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
+                    ipfs_metadata, blacklisted_cids = await fetch_ipfs_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
@@ -992,7 +992,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_discovery_provider", bind=True)
-def update_task(self):
+async def update_task(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
@@ -1124,7 +1124,7 @@ def update_task(self):
             revert_blocks(self, db, revert_blocks_list)
 
             # Perform indexing operations
-            index_blocks(self, db, index_blocks_list)
+            await index_blocks(self, db, index_blocks_list)
             logger.info(
                 f"index.py | update_task | {self.request.id} | Processing complete within session"
             )
