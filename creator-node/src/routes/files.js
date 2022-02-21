@@ -315,7 +315,7 @@ const getCID = async (req, res) => {
         )
       } else {
         decisionTree.push({
-          stage: `DB_CID_QUERY_CID_FOUND`,
+          stage: `DB_CID_QUERY_CID_FOUND`
         })
       }
     } catch (e) {
