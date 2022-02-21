@@ -115,16 +115,23 @@ class IPFSClient:
             )
         logger.info(f"IPFSCLIENT | load_metadata_url requesting metadata {url}")
         start_time = time.time()
-        r = await async_session.get(url, timeout=max_timeout)
-        logger.info(
-            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status'] if 'CF-Cache-Status' in r.headers else 'Not using cloudflare'}"
-        )
-        return [r, url]
+        try:
+            r = await async_session.get(url, timeout=max_timeout)
+            logger.info(
+                f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status'] if 'CF-Cache-Status' in r.headers else 'Not using cloudflare'}"
+            )
+            return [r, url]
+        except Exception as e:
+            logger.info(
+                f"IPFSCLIENT | load_metadata_url to {url} failed in {time.time() - start_time} seconds with error: {e}"
+            )
+            return [None, url]
 
     async def query_ipfs_metadata_json(
         self, async_session, gateway_ipfs_urls, default_metadata_fields
     ):
         start_time = time.time()
+
         # Start the load operations and mark each future with its URL
         futures = [
             self.load_metadata_url(async_session, url, NEW_BLOCK_TIMEOUT_SECONDS)
@@ -134,7 +141,7 @@ class IPFSClient:
         for future in asyncio.as_completed(futures):
             [r, url] = await future
 
-            if future.cancelled() or r.status_code != 200:
+            if future.cancelled() or not r or r.status_code != 200:
                 continue
 
             # If it worked, cancel the other futures
