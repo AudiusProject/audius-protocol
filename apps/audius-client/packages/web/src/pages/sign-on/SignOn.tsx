@@ -1,14 +1,20 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
+import { replace as replaceRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { Dispatch } from 'redux'
 
+import { getHasAccount } from 'common/store/account/selectors'
 import { Pages } from 'pages/sign-on/store/types'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
+import { TRENDING_PAGE } from 'utils/route'
 
 import SignOnProvider from './SignOnProvider'
 import SignOnDesktopPage from './components/desktop/SignOnPage'
 import SignOnMobilePage from './components/mobile/SignOnPage'
+import * as signOnAction from './store/actions'
 import { getPage } from './store/selectors'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
@@ -19,15 +25,40 @@ type OwnProps = {
   page?: Pages
 }
 
-type SignOnContentProps = ReturnType<typeof mapStateToProps> & OwnProps
+type SignOnContentProps = ReturnType<typeof mapStateToProps> &
+  ReturnType<typeof mapDispatchToProps> &
+  RouteComponentProps &
+  OwnProps
 
 const SignOn = ({
+  hasAccount,
   isMobile,
+  fetchReferrer,
+  replaceRoute,
+  location,
   signIn,
   page,
   initialPage
 }: SignOnContentProps) => {
   const content = isMobile ? SignOnMobilePage : SignOnDesktopPage
+  const [isInitialRender, setIsInitialRender] = useState(true)
+
+  useEffect(() => {
+    setIsInitialRender(false)
+  }, [])
+
+  useEffect(() => {
+    // Check for referrer before redirecting if signed in to support retroactive referrals
+    const referrerHandle = new URLSearchParams(location.search).get('ref')
+    if (referrerHandle) {
+      fetchReferrer(referrerHandle)
+    }
+
+    if (isInitialRender && hasAccount) {
+      replaceRoute(TRENDING_PAGE)
+    }
+  }, [isInitialRender, hasAccount, location, fetchReferrer, replaceRoute])
+
   return !NATIVE_MOBILE ? (
     <SignOnProvider
       isMobile={isMobile}
@@ -43,8 +74,18 @@ const SignOn = ({
 function mapStateToProps(state: AppState) {
   return {
     isMobile: isMobile(),
+    hasAccount: getHasAccount(state),
     page: getPage(state)
   }
 }
 
-export default connect(mapStateToProps)(SignOn)
+function mapDispatchToProps(dispatch: Dispatch) {
+  return {
+    fetchReferrer: (handle: string) =>
+      dispatch(signOnAction.fetchReferrer(handle)),
+
+    replaceRoute: (route: string) => dispatch(replaceRoute(route))
+  }
+}
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SignOn))

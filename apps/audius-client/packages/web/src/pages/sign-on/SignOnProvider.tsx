@@ -109,19 +109,8 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   }
 
   componentDidMount() {
-    const { isMobile, replaceRoute, hasAccount } = this.props
+    const { isMobile } = this.props
 
-    // Check for referrer before redirecting if signed in to support retroactive referrals
-    const referrerHandle = new URLSearchParams(this.props.location.search).get(
-      'ref'
-    )
-    if (referrerHandle) {
-      this.props.fetchReferrer(referrerHandle)
-    }
-
-    if (hasAccount) {
-      replaceRoute(TRENDING_PAGE)
-    }
     this.unlisten = this.props.history.listen(() => {
       if (isMobile) {
         if (!this.hasRouteHash()) {
