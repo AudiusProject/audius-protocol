@@ -1,6 +1,7 @@
-import { UID } from 'common/models/Identifiers'
+import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
+import { Nullable } from 'common/utils/typeUtils'
 
 export type Lineup<T, ExtraProps = {}> = {
   entries: T[]
@@ -17,15 +18,15 @@ export type Lineup<T, ExtraProps = {}> = {
   isMetadataLoading: boolean
 } & ExtraProps
 
-export type LineupStateTrack<T> = { uid: UID; kind: Kind } & T
+export type LineupStateTrack<T> = { uid: UID; kind: Kind; id: ID } & T
+
+export type Order = Record<UID, number>
 
 // Add possibility of attaching extra metadata to entries with type `T`
 // e.g. DateAdded
 export type LineupState<T> = {
   entries: Array<LineupStateTrack<T>>
-  order: {
-    [uid: string]: number
-  }
+  order: Order
   total: number
   deleted: number
   status: Status
@@ -34,4 +35,8 @@ export type LineupState<T> = {
   prefix: string
   page: number
   isMetadataLoading: boolean
+  dedupe?: boolean
+  containsDeleted: boolean
+  maxEntries: Nullable<number>
+  entryIds?: Nullable<Set<UID>>
 }

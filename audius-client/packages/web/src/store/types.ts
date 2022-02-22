@@ -34,7 +34,6 @@ import SettingsPageState from 'pages/settings-page/store/types'
 import SignOnPageState from 'pages/sign-on/store/types'
 import { SmartCollectionState } from 'pages/smart-collection/store/slice'
 import trendingPlaylistsReducer from 'pages/trending-playlists/store/slice'
-import trendingUndergroundReducer from 'pages/trending-underground/store/slice'
 import { UploadPageState } from 'pages/upload-page/store/types'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
@@ -110,7 +109,6 @@ export type AppState = CommonState & {
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
       trendingPlaylists: ReturnType<typeof trendingPlaylistsReducer>
-      trendingUnderground: ReturnType<typeof trendingUndergroundReducer>
     }
   }
 

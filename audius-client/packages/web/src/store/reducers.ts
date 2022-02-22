@@ -30,7 +30,6 @@ import settings from 'pages/settings-page/store/reducer'
 import signOn from 'pages/sign-on/store/reducer'
 import smartCollection from 'pages/smart-collection/store/slice'
 import trendingPlaylists from 'pages/trending-playlists/store/slice'
-import trendingUnderground from 'pages/trending-underground/store/slice'
 import upload from 'pages/upload-page/store/reducer'
 import visualizer from 'pages/visualizer/store/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
@@ -122,7 +121,6 @@ const createRootReducer = (routeHistory: History) =>
         settings,
         smartCollection,
         trendingPlaylists,
-        trendingUnderground,
         unfollowConfirmation
       })
     })

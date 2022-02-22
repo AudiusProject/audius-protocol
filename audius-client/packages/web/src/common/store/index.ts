@@ -26,6 +26,7 @@ import { ProfilePageState } from 'common/store/pages/profile/types'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
+import trendingUnderground from 'common/store/pages/trending-underground/slice'
 import trending from 'common/store/pages/trending/reducer'
 import { TrendingPageState } from 'common/store/pages/trending/types'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
@@ -108,7 +109,8 @@ export const reducers = {
     profile: profileReducer,
     tokenDashboard: tokenDashboardSlice.reducer,
     track,
-    trending
+    trending,
+    trendingUnderground
   }),
 
   // Solana
@@ -151,6 +153,8 @@ export const sagas = {
   // store/solana/sagas.ts
   // pages/trending-page/store/sagas.ts
   // pages/trending-page/store/lineups/trending/sagas.ts
+  // pages/trending-underground-page/store/lineups/tracks/sagas.ts
+  // pages/trending-underground-page/store/sagas.ts
 }
 
 export type CommonState = {
@@ -194,6 +198,7 @@ export type CommonState = {
     track: TrackPageState
     profile: ProfilePageState
     trending: TrendingPageState
+    trendingUnderground: ReturnType<typeof trendingUnderground>
   }
 
   solana: ReturnType<typeof solanaReducer>

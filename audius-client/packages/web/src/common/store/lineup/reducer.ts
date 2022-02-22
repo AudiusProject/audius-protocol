@@ -1,3 +1,7 @@
+import { Reducer } from 'redux'
+
+import { UID } from 'common/models/Identifiers'
+import { LineupState, LineupStateTrack, Order } from 'common/models/Lineup'
 import Status from 'common/models/Status'
 import {
   FETCH_LINEUP_METADATAS_REQUESTED,
@@ -13,6 +17,7 @@ import {
 } from 'common/store/lineup/actions'
 
 export const initialLineupState = {
+  prefix: '',
   // Contains identifiers for cache entries as well as retained metadata.
   // array<id, uid, ...>
   entries: [],
@@ -38,14 +43,75 @@ export const initialLineupState = {
   maxEntries: null
 }
 
+type SetInViewAction = {
+  type: typeof SET_IN_VIEW
+  inView: boolean
+}
+
+type FetchLineupMetadatasRequestedAction = {
+  type: typeof FETCH_LINEUP_METADATAS_REQUESTED
+  limit: number
+  offset: number
+}
+
+type FetchLineupMetadatasSucceededAction<T> = {
+  type: typeof FETCH_LINEUP_METADATAS_SUCCEEDED
+  entries: LineupStateTrack<T>[]
+  deleted: number
+  limit: number
+  offset: number
+}
+
+type FetchLineupMetadatasFailedAction = {
+  type: typeof FETCH_LINEUP_METADATAS_FAILED
+}
+
+type UpdateLineupOrderAction = {
+  type: typeof UPDATE_LINEUP_ORDER
+  orderedIds: UID[]
+}
+
+type AddAction<T> = {
+  type: typeof ADD
+  entry: LineupStateTrack<T>
+}
+
+type RemoveAction = {
+  type: typeof REMOVE
+  uid: UID
+}
+
+type SetLoadingAction = {
+  type: typeof SET_LOADING
+}
+
+type SetPageAction = {
+  type: typeof SET_PAGE
+  page: number
+}
+
+type LineupActions<T> =
+  | SetInViewAction
+  | FetchLineupMetadatasRequestedAction
+  | FetchLineupMetadatasSucceededAction<T>
+  | FetchLineupMetadatasFailedAction
+  | UpdateLineupOrderAction
+  | AddAction<T>
+  | RemoveAction
+  | SetLoadingAction
+  | SetPageAction
+
 export const actionsMap = {
-  [SET_IN_VIEW](state, action) {
+  [SET_IN_VIEW]<T>(state: LineupState<T>, action: SetInViewAction) {
     return {
       ...state,
       inView: action.inView
     }
   },
-  [FETCH_LINEUP_METADATAS_REQUESTED](state, action) {
+  [FETCH_LINEUP_METADATAS_REQUESTED]<T>(
+    state: LineupState<T>,
+    action: FetchLineupMetadatasRequestedAction
+  ) {
     const newState = { ...state }
     if (action.offset === 0) newState.entryIds = new Set([])
     newState.total = action.limit + action.offset
@@ -53,7 +119,10 @@ export const actionsMap = {
     newState.isMetadataLoading = true
     return newState
   },
-  [FETCH_LINEUP_METADATAS_SUCCEEDED](state, action) {
+  [FETCH_LINEUP_METADATAS_SUCCEEDED]<T>(
+    state: LineupState<T>,
+    action: FetchLineupMetadatasSucceededAction<T>
+  ) {
     const newState = { ...state }
     newState.isMetadataLoading = false
     newState.status = Status.SUCCESS
@@ -93,24 +162,30 @@ export const actionsMap = {
     newState.entries.forEach((entry, i) => {
       if (!entry.uid) entry.uid = `${entry.id.toString()}-${i.toString()}`
     })
-    newState.order = newState.entries.reduce((m, entry, i) => {
+    newState.order = newState.entries.reduce<Order>((m, entry, i) => {
       m[entry.uid] = i
       return m
     }, {})
     return newState
   },
-  [FETCH_LINEUP_METADATAS_FAILED](state, action) {
+  [FETCH_LINEUP_METADATAS_FAILED]<T>(
+    state: LineupState<T>,
+    action: FetchLineupMetadatasFailedAction
+  ) {
     const newState = { ...state }
     newState.status = Status.ERROR
     newState.isMetadataLoading = false
     newState.entries = []
     return newState
   },
-  [UPDATE_LINEUP_ORDER](state, action) {
+  [UPDATE_LINEUP_ORDER]<T>(
+    state: LineupState<T>,
+    action: UpdateLineupOrderAction
+  ) {
     const reorderedEntries = action.orderedIds.map(uid => ({
       ...state.entries[state.order[uid]]
     }))
-    const newOrder = action.orderedIds.reduce((m, uid, i) => {
+    const newOrder = action.orderedIds.reduce<Order>((m, uid, i) => {
       m[uid] = i
       return m
     }, {})
@@ -120,7 +195,7 @@ export const actionsMap = {
       order: newOrder
     }
   },
-  [ADD](state, action) {
+  [ADD]<T>(state: LineupState<T>, action: AddAction<T>) {
     const newState = { ...state }
     newState.entries = newState.entries.concat({
       ...action.entry
@@ -129,7 +204,7 @@ export const actionsMap = {
     newState.order[action.entry.uid] = newState.entries.length
     return newState
   },
-  [REMOVE](state, action) {
+  [REMOVE]<T>(state: LineupState<T>, action: RemoveAction) {
     const newState = { ...state }
     newState.entries = state.entries.filter(e => e.uid !== action.uid)
 
@@ -142,13 +217,13 @@ export const actionsMap = {
 
     return newState
   },
-  [SET_LOADING](state, action) {
+  [SET_LOADING]<T>(state: LineupState<T>, action: SetLoadingAction) {
     return {
       ...state,
       status: Status.LOADING
     }
   },
-  [SET_PAGE](state, action) {
+  [SET_PAGE]<T>(state: LineupState<T>, action: SetPageAction) {
     return {
       ...state,
       page: action.page
@@ -163,9 +238,25 @@ export const actionsMap = {
  * @param {String} prefix the lineup reducer's prefix, e.g. "FEED"
  * @param {Function} reducer the reducer function to decorate
  */
-export const asLineup = (prefix, reducer) => (state, action) => {
-  const baseActionType = stripPrefix(prefix, action.type)
+export const asLineup = <
+  EntryT,
+  LineupStateType extends LineupState<EntryT>,
+  LineupActionType extends { type: string }
+>(
+  prefix: string,
+  reducer: (
+    state: LineupStateType | undefined,
+    action: LineupActionType
+  ) => LineupStateType
+): Reducer<LineupStateType, LineupActionType | LineupActions<EntryT>> => (
+  state: LineupStateType | undefined,
+  action: LineupActionType | LineupActions<EntryT>
+): LineupStateType => {
+  const baseActionType = stripPrefix(prefix, action.type) as LineupActions<
+    EntryT
+  >['type']
   const matchingReduceFunction = actionsMap[baseActionType]
-  if (!matchingReduceFunction) return reducer(state, action)
-  return matchingReduceFunction(state, action)
+  if (!matchingReduceFunction) return reducer(state, action as LineupActionType)
+  // @ts-ignore action is never for some reason, ts 4.1 may help here
+  return matchingReduceFunction(state, action as LineupActions<EntryT>)
 }

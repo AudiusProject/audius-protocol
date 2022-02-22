@@ -12,7 +12,7 @@ export const FETCH_SEARCH_PAGE_TAGS_SUCCEEDED =
 export const FETCH_SEARCH_PAGE_TAGS_FAILED =
   'SEARCH/FETCH_SEARCH_PAGE_TAGS_FAILED'
 
-type FetchSearchPageResultsAction = {
+export type FetchSearchPageResultsAction = {
   type: typeof FETCH_SEARCH_PAGE_RESULTS
   searchText: string
   searchKind: SearchKind
@@ -20,27 +20,27 @@ type FetchSearchPageResultsAction = {
   offset: number
 }
 
-type FetchSearchPageResultsSuceededAction = {
+export type FetchSearchPageResultsSuceededAction = {
   type: typeof FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED
   results: any
   searchText: string
 }
 
-type FetchSearchPageResultsFailedAction = {
+export type FetchSearchPageResultsFailedAction = {
   type: typeof FETCH_SEARCH_PAGE_RESULTS_FAILED
 }
 
-type FetchSearchPageTagsSucceededAction = {
+export type FetchSearchPageTagsSucceededAction = {
   type: typeof FETCH_SEARCH_PAGE_TAGS_SUCCEEDED
   results: any
   tag: string
 }
 
-type FetchSearchPageTagsFailedAction = {
+export type FetchSearchPageTagsFailedAction = {
   type: typeof FETCH_SEARCH_PAGE_TAGS_FAILED
 }
 
-type FetchSearchPageTagsAction = {
+export type FetchSearchPageTagsAction = {
   type: typeof FETCH_SEARCH_PAGE_TAGS
   tag: string
   searchKind: SearchKind
