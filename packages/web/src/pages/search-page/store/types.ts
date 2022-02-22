@@ -1,6 +1,7 @@
 import { ID } from 'common/models/Identifiers'
 import { LineupState } from 'common/models/Lineup'
 import Status from 'common/models/Status'
+import { Track } from 'common/models/Track'
 
 export type SearchPageState = {
   status: Status
@@ -9,7 +10,7 @@ export type SearchPageState = {
   albumIds: ID[]
   playlistIds: ID[]
   artistIds: ID[]
-  tracks: LineupState<{ id: ID }>
+  tracks: LineupState<Track>
 }
 
 export enum SearchKind {

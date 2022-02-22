@@ -7,11 +7,15 @@ import {
   SearchPageActions,
   FETCH_SEARCH_PAGE_TAGS,
   FETCH_SEARCH_PAGE_TAGS_SUCCEEDED,
-  FETCH_SEARCH_PAGE_TAGS_FAILED
+  FETCH_SEARCH_PAGE_TAGS_FAILED,
+  FetchSearchPageResultsFailedAction,
+  FetchSearchPageResultsSuceededAction,
+  FetchSearchPageTagsAction,
+  FetchSearchPageTagsSucceededAction,
+  FetchSearchPageTagsFailedAction
 } from 'pages/search-page/store/actions'
 import { PREFIX } from 'pages/search-page/store/lineups/tracks/actions'
 import tracksReducer from 'pages/search-page/store/lineups/tracks/reducer'
-import { ActionsMap } from 'utils/reducer'
 
 import { SearchPageState } from './types'
 
@@ -32,18 +36,23 @@ const initialState: SearchPageState = {
     inView: false,
     prefix: '',
     page: 0,
-    isMetadataLoading: false
+    isMetadataLoading: false,
+    maxEntries: null,
+    containsDeleted: false
   }
 }
 
-const actionsMap: ActionsMap<SearchPageState> = {
-  [FETCH_SEARCH_PAGE_RESULTS](state, action) {
+const actionsMap = {
+  [FETCH_SEARCH_PAGE_RESULTS](state: SearchPageState) {
     return {
       ...state,
       status: Status.LOADING
     }
   },
-  [FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED](state, action) {
+  [FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED](
+    state: SearchPageState,
+    action: FetchSearchPageResultsSuceededAction
+  ) {
     const newState = {
       ...initialState,
       status: Status.SUCCESS
@@ -58,19 +67,28 @@ const actionsMap: ActionsMap<SearchPageState> = {
     }
     return newState
   },
-  [FETCH_SEARCH_PAGE_RESULTS_FAILED](state, action) {
+  [FETCH_SEARCH_PAGE_RESULTS_FAILED](
+    state: SearchPageState,
+    action: FetchSearchPageResultsFailedAction
+  ) {
     return {
       ...initialState,
       status: Status.ERROR
     }
   },
-  [FETCH_SEARCH_PAGE_TAGS](state, action) {
+  [FETCH_SEARCH_PAGE_TAGS](
+    state: SearchPageState,
+    action: FetchSearchPageTagsAction
+  ) {
     return {
       ...state,
       status: Status.LOADING
     }
   },
-  [FETCH_SEARCH_PAGE_TAGS_SUCCEEDED](state, action) {
+  [FETCH_SEARCH_PAGE_TAGS_SUCCEEDED](
+    state: SearchPageState,
+    action: FetchSearchPageTagsSucceededAction
+  ) {
     const newState = {
       ...initialState,
       status: Status.SUCCESS
@@ -86,7 +104,10 @@ const actionsMap: ActionsMap<SearchPageState> = {
 
     return newState
   },
-  [FETCH_SEARCH_PAGE_TAGS_FAILED](state, action) {
+  [FETCH_SEARCH_PAGE_TAGS_FAILED](
+    state: SearchPageState,
+    action: FetchSearchPageTagsFailedAction
+  ) {
     return {
       ...initialState,
       status: Status.ERROR
@@ -100,12 +121,14 @@ function reducer(
   state: SearchPageState = initialState,
   action: SearchPageActions
 ) {
+  // @ts-ignore this technically will never hit with actions typed the way they are
   const tracks = tracksLineupReducer(state.tracks, action)
   if (tracks !== state.tracks) return { ...state, tracks }
 
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
-  return matchingReduceFunction(state, action)
+  // @ts-ignore for some reason action is never ts 4.0 may help
+  return matchingReduceFunction(state, action as SearchPageActions)
 }
 
 export default reducer
