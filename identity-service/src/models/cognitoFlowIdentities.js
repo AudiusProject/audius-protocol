@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = (sequelize, DataTypes) => {
-  const CognitoFlowIdentity = sequelize.define('CognitoFlowIdentity', {
+  const CognitoFlowIdentities = sequelize.define('CognitoFlowIdentities', {
     maskedIdentity: {
       allowNull: false,
       primaryKey: true,
@@ -16,5 +16,5 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE
     }
   }, {})
-  return CognitoFlowIdentity
+  return CognitoFlowIdentities
 }

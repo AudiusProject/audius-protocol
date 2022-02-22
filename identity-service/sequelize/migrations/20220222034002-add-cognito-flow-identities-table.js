@@ -2,7 +2,7 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('CognitoFlowIdentity', {
+    return queryInterface.createTable('CognitoFlowIdentities', {
       maskedIdentity: {
         allowNull: false,
         primaryKey: true,
@@ -20,6 +20,6 @@ module.exports = {
   },
 
   down: (queryInterface) => {
-    return queryInterface.dropTable('CognitoFlowIdentity')
+    return queryInterface.dropTable('CognitoFlowIdentities')
   }
 }
