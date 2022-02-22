@@ -362,6 +362,7 @@ pub struct InitializeUser<'info> {
 pub struct InitializeUserSolIdentity<'info> {
     #[account(mut)]
     pub user: Account<'info, User>,
+    /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
     pub sysvar_program: AccountInfo<'info>,
 }
 
@@ -384,6 +385,7 @@ pub struct CreateUser<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     pub system_program: Program<'info, System>,
+    /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
     pub sysvar_program: AccountInfo<'info>,
 }
 
