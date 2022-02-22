@@ -59,13 +59,17 @@ module.exports = function (app) {
       // check that this identity has not already been used by another account before proceeding to save the score
       let shouldFail = false
       if (status === 'success') {
+        const baseUrl = config.get('cognitoBaseUrl')
+        const path = `/flow_sessions/${sessionId}`
+        const method = 'GET'
+        const body = ''
+        const headers = createCognitoHeaders({ path, method, body })
+        const url = `${baseUrl}${path}`
         const flowSessionResponse = await axios({
-          method: 'get',
-          url: `https://api.cognitohq.com/flow_sessions/${sessionId}`,
-          headers: {
-            'Cognito-Version': '2020-08-14'
-          }
-          // todo: add authentication headers?
+          adapter: axiosHttpAdapter,
+          url,
+          method,
+          headers
         })
         const identityObj = flowSessionResponse.data.user.id_number
         const { value, category, type } = identityObj
