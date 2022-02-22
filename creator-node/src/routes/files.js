@@ -181,7 +181,20 @@ const getCID = async (req, res) => {
   }
 
   // Compute expected storagePath for CID
-  const storagePath = DiskManager.computeFilePath(CID, false)
+  let storagePath
+  try {
+    storagePath = DiskManager.computeFilePath(CID, false)
+  } catch (e) {
+    decisionTree.push({
+      stage: `COMPUTE_FILE_PATH_FAILURE`
+    })
+    logGetCIDDecisionTree(decisionTree, req)
+    return sendResponse(
+      req,
+      res,
+      errorResponseBadRequest(`${logPrefix} Invalid CID`)
+    )
+  }
 
   /**
    * First check if file exists on FS at storagePath
