@@ -82,7 +82,8 @@ const isWebhookValid = (headers, path) => {
 }
 
 const createMaskedCognitoIdentity = (identity) => {
-  return web3.utils.sha3(identity)
+  const hashSalt = config.get('hashSalt')
+  return web3.utils.sha3(`${identity}${hashSalt}`)
 }
 
 module.exports = {
