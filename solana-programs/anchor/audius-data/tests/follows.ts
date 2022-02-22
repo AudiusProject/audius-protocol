@@ -267,7 +267,7 @@ describe("follows", () => {
         signers: [newUser1Key],
       };
       let expectedErrorFound = false;
-      let expectedErrorString = "The given account is not owned by the executing program";
+      let expectedErrorString = "The program expected this account to be already initialized";
       try {
         await program.rpc.followUser(
           baseAuthorityAccount,
@@ -280,6 +280,7 @@ describe("follows", () => {
         );
       } catch (e) {
         let index = e.toString().indexOf(expectedErrorString);
+        console.dir(e, { depth: 5 })
         if (index >= 0) expectedErrorFound = true;
       }
       assert.equal(expectedErrorFound, true, `Expect to find ${expectedErrorString}`);
@@ -303,6 +304,7 @@ describe("follows", () => {
         );
       } catch (e) {
         let index = e.toString().indexOf(expectedErrorString);
+        console.dir(e, { depth: 5 })
         if (index >= 0) expectedErrorFound = true;
       }
       assert.equal(expectedErrorFound, true, `Expected to find ${expectedErrorString}`);
