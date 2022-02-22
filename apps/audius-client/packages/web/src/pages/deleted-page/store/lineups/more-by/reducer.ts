@@ -1,8 +1,10 @@
+import { LineupState } from 'common/models/Lineup'
+import { Track } from 'common/models/Track'
 import { RESET_SUCCEEDED, stripPrefix } from 'common/store/lineup/actions'
 import { initialLineupState } from 'common/store/lineup/reducer'
 import { PREFIX } from 'pages/deleted-page/store/lineups/more-by/actions'
 
-export const initialState = {
+export const initialState: LineupState<Track> = {
   ...initialLineupState,
   prefix: PREFIX
 }

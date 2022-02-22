@@ -13,9 +13,10 @@ import RewardsBanner from 'pages/trending-page/components/RewardsBanner'
 import { isMobile } from 'utils/clientUtil'
 import { BASE_URL, TRENDING_UNDERGROUND_PAGE } from 'utils/route'
 
+import { trendingUndergroundLineupActions } from '../../common/store/pages/trending-underground/lineup/actions'
+import { getLineup } from '../../common/store/pages/trending-underground/lineup/selectors'
+
 import styles from './TrendingUndergroundPage.module.css'
-import { trendingUndergroundLineupActions } from './store/lineups/tracks/actions'
-import { getLineup } from './store/lineups/tracks/selectors'
 
 const useTrendingUndergroundLineup = (containerRef: HTMLElement) => {
   return useLineupProps({

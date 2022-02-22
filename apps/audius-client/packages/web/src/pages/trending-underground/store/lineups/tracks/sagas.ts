@@ -4,12 +4,14 @@ import { Track, UserTrackMetadata } from 'common/models/Track'
 import { StringKeys } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
+import {
+  PREFIX,
+  trendingUndergroundLineupActions
+} from 'common/store/pages/trending-underground/lineup/actions'
+import { getLineup } from 'common/store/pages/trending-underground/lineup/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { LineupSagas } from 'store/lineup/sagas'
-
-import { PREFIX, trendingUndergroundLineupActions } from './actions'
-import { getLineup } from './selectors'
 
 function* getTrendingUnderground({
   limit,

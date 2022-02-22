@@ -1,9 +1,11 @@
+import { Collection } from 'common/models/Collection'
+import { LineupState } from 'common/models/Lineup'
 import { RESET_SUCCEEDED, stripPrefix } from 'common/store/lineup/actions'
 import { initialLineupState } from 'common/store/lineup/reducer'
 
 import { PREFIX } from './actions'
 
-export const initialState = {
+export const initialState: LineupState<Collection> = {
   ...initialLineupState,
   prefix: PREFIX,
   // Trending is limited to 30 playlists
