@@ -7,7 +7,7 @@ const { logger } = require('../logging')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
-const { sign, createCognitoHeaders } = require('../utils/cognitoHelpers')
+const { sign, createCognitoHeaders, createMaskedCognitoIdentity } = require('../utils/cognitoHelpers')
 const axios = require('axios')
 const axiosHttpAdapter = require('axios/lib/adapters/http')
 const config = require('../config')
@@ -37,7 +37,7 @@ module.exports = function (app) {
    *     "event": "flow_session.status.updated", // could be another event but we mostly care about flow_session.status.updated
    *     "data": {
    *         "object": "flow_session",
-   *         "id": "some-other-id",
+   *         "id": "some-session-id",
    *         "status": "failed", // or 'success'
    *         "step": null, // or some step if event is flow_session.step.updated
    *         "customer_reference": "some-customer-unique-persistent-id-eg-handle",
@@ -56,6 +56,34 @@ module.exports = function (app) {
     const { id: sessionId, customer_reference: handle, status } = data
 
     try {
+      // check that this identity has not already been used by another account before proceeding to save the score
+      let shouldFail = false
+      if (status === 'success') {
+        const flowSessionResponse = await axios({
+          method: 'get',
+          url: `https://api.cognitohq.com/flow_sessions/${sessionId}`,
+          headers: {
+            'Cognito-Version': '2020-08-14'
+          }
+          // todo: add authentication headers?
+        })
+        const identityObj = flowSessionResponse.data.user.id_number
+        const { value, category, type } = identityObj
+        const identity = `${value}::${category}::${type}`
+        const maskedIdentity = createMaskedCognitoIdentity(identity)
+        const record = await models.CognitoFlowIdentity.findOne({ where: { maskedIdentity } })
+        if (record) {
+          shouldFail = true
+        } else {
+          const now = Date.now()
+          await models.CognitoFlowIdentity.create({
+            maskedIdentity,
+            createdAt: now,
+            updatedAt: now
+          })
+        }
+      }
+
       // save cognito flow for user
       logger.info(`Saving cognito flow result for user with handle '${handle}' (status: '${status}')`)
       await models.CognitoFlows.create({
@@ -63,8 +91,8 @@ module.exports = function (app) {
         sessionId,
         handle,
         status,
-        // score of 1 if 'success', otherwise 0
-        score: Number(status === 'success')
+        // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
+        score: Number(!shouldFail && (status === 'success'))
       })
 
       // cognito flow requires the receiver to respond with 200, otherwise it'll retry with exponential backoff
