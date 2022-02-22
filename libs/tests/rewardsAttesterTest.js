@@ -21,6 +21,18 @@ function MockLibs (getSlot = () => 100, getBlockNumber = () => 100) {
   this.Rewards = {
     submitAndEvaluate: (args) => {},
     getUndisbursedChallenges: (args) => {},
+    ServiceProvider: {
+      getUniquelyOwnedDiscoveryNodes: (quorumSize, nodes) => {
+        return nodes.slice(0, quorumSize)
+      }
+    }
+  }
+  this.discoveryProvider = {
+    serviceSelector: {
+      findAll: ({ whitelist }) => {
+        return whitelist
+      }
+    }
   }
 }
 
@@ -139,7 +151,8 @@ describe('Rewards Attester Tests', () => {
       aaoAddress: '0xFakeOracle',
       challengeIdsDenyList: [],
       endpoints: ['https://dn1.co', 'https://dn2.co', 'https://dn3.co'],
-      isSolanaChallenge: () => false
+      isSolanaChallenge: () => false,
+      feePayerOverride: 'test feepayer override'
     })
 
     const rewardsMock = sinon.mock(libs.Rewards)
