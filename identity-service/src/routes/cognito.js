@@ -47,6 +47,8 @@ module.exports = function (app) {
    * }
    */
   app.post('/cognito_webhook/flow', cognitoFlowMiddleware, handleResponse(async (req) => {
+    logger.info(`COGNITO WEBHOOK FLOW POST DATA '${JSON.stringify(req.body, null, 2)}`)
+
     const { id, event, data } = req.body
 
     // if event is not of type status, meaning the event denotes of a step in the flow, but not the completion
@@ -66,18 +68,22 @@ module.exports = function (app) {
         const method = 'GET'
         const body = ''
         const headers = createCognitoHeaders({ path, method, body })
+        logger.info(`CREATED COGNITO HEADERS ${JSON.stringify(headers, null, 2)}`)
         const url = `${baseUrl}${path}`
+        logger.info(`THE URL ${url}`)
         const flowSessionResponse = await axios({
           adapter: axiosHttpAdapter,
           url,
           method,
           headers
         })
+        logger.info(`THE FLOW SESSION RESPONSE ${flowSessionResponse}`)
         const identityObj = flowSessionResponse.data.user.id_number
         const { value, category, type } = identityObj
         const identity = `${value}::${category}::${type}`
         const maskedIdentity = createMaskedCognitoIdentity(identity)
         const record = await models.CognitoFlowIdentity.findOne({ where: { maskedIdentity } })
+        logger.info(`IDENTITY THINGS ${identity} | ${maskedIdentity} | ${JSON.stringify(record, null, 2)}`)
 
         if (record) {
           cognitoIdentityAlreadyExists = true
@@ -109,10 +115,12 @@ module.exports = function (app) {
       )
 
       await transaction.commit()
+      logger.info(`COGNITO WEBHOOK FLOW POST SUCCESS!!!`)
 
       // cognito flow requires the receiver to respond with 200, otherwise it'll retry with exponential backoff
       return successResponse({})
     } catch (err) {
+      logger.info(`COGNITO WEBHOOK FLOW POST ERROR???`)
       await transaction.rollback()
       console.error(err)
       return errorResponseServerError(err.message)
