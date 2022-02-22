@@ -13,6 +13,9 @@ const handleResult = async ({ status, userId, challengeId, amount, error, phase,
     case 'failure':
       await reporter.reportFailure({ userId, challengeId, amount, error, phase, specifier })
       break
+    case 'retry':
+      await reporter.reportRetry({ userId, challengeId, amount, error, phase, specifier })
+      break
     case 'rejection':
       await reporter.reportAAORejection({ userId, challengeId, amount, error, specifier })
       break
@@ -26,7 +29,8 @@ rewardsRouter.post('/attestation_result', handleResponse(async (req) => {
   const reporter = new RewardsReporter({
     successSlackUrl: config.get('successAudioReporterSlackUrl'),
     errorSlackUrl: config.get('errorAudioReporterSlackUrl'),
-    source
+    source,
+    shouldReportAnalytics: false
   })
   try {
     await handleResult({ status, userId, challengeId, amount, error, phase, reporter, specifier })

@@ -1,4 +1,4 @@
-const { pick } = require('lodash')
+const { pick, isEqual } = require('lodash')
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
@@ -227,6 +227,10 @@ class Users extends Base {
     }
     let phase = ''
 
+    const logPrefix = `[User:assignReplicaSet()] [userId: ${userId}]`
+    const fnStartMs = Date.now()
+    let startMs = fnStartMs
+
     const user = this.userStateManager.getCurrentUser()
     // Failed the addUser() step
     if (!user) { throw new Error('No current user') }
@@ -246,6 +250,9 @@ class Users extends Base {
         preferHigherPatchForPrimary: this.preferHigherPatchForPrimary,
         preferHigherPatchForSecondaries: this.preferHigherPatchForSecondaries
       })
+      console.log(`${logPrefix} [phase: ${phase}] ServiceProvider.autoSelectCreatorNodes() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
+
       // Ideally, 1 primary and n-1 secondaries are chosen. The best-worst case scenario is that at least 1 primary
       // is chosen. If a primary was not selected (which also implies that secondaries were not chosen), throw
       // an error.
@@ -267,9 +274,13 @@ class Users extends Base {
         newMetadata,
         userId
       })
+      console.log(`${logPrefix} [phase: ${phase}] updateAndUploadMetadata() completed in ${Date.now() - startMs}ms`)
+
+      console.log(`${logPrefix} completed in ${Date.now() - fnStartMs}ms`)
     } catch (e) {
-      console.log(`assignReplicaSet() Error -- Phase ${phase}: ${e}`)
-      throw new Error(`assignReplicaSet() Error -- Phase ${phase}: ${e}`)
+      const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${Date.now() - fnStartMs}ms: ${e}`
+      console.log(errorMsg)
+      throw new Error(errorMsg)
     }
 
     return newMetadata
@@ -376,6 +387,10 @@ class Users extends Base {
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
+    const logPrefix = `[User:updateCreator()] [userId: ${userId}]`
+    const fnStartMs = Date.now()
+    let startMs = fnStartMs
+
     // Error if libs instance does not already have existing user state
     const user = this.userStateManager.getCurrentUser()
     if (!user) {
@@ -394,14 +409,16 @@ class Users extends Base {
     let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       // Perform update to new contract
-      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
+      startMs = Date.now()
+      const {
+        txReceipt: updateEndpointTxReceipt, replicaSetSPIDs
+      } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
+      console.log(`${logPrefix} _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
-      // Ensure DN has indexed creator_node_endpoint change
-      await this._waitForCreatorNodeEndpointIndexing(
-        newMetadata.user_id,
-        newMetadata.creator_node_endpoint
-      )
+      await this._waitForURSMCreatorNodeEndpointIndexing(userId, replicaSetSPIDs)
+      console.log(`${logPrefix} _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
     }
 
     // Upload new metadata object to CN
@@ -452,6 +469,10 @@ class Users extends Base {
     const userId = user.user_id
     const oldMetadata = { ...user }
 
+    const logPrefix = `[User:upgradeToCreator()] [userId: ${userId}]`
+    const fnStartMs = Date.now()
+    let startMs = fnStartMs
+
     // Clean and validate metadata
     const newMetadata = this._cleanUserMetadata({ ...user })
     this._validateUserMetadata(newMetadata)
@@ -491,14 +512,16 @@ class Users extends Base {
       await this.creatorNode.setEndpoint(newPrimary)
 
       // Update user creator_node_endpoint on chain if applicable
-      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
+      startMs = Date.now()
+      const {
+        txReceipt: updateEndpointTxReceipt, replicaSetSPIDs
+      } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
+      console.log(`${logPrefix} _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
-      // Ensure DN has indexed creator_node_endpoint change
-      await this._waitForCreatorNodeEndpointIndexing(
-        newMetadata.user_id,
-        newMetadata.creator_node_endpoint
-      )
+      await this._waitForURSMCreatorNodeEndpointIndexing(userId, replicaSetSPIDs)
+      console.log(`${logPrefix} _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
     }
 
     // Upload new metadata object to CN
@@ -572,6 +595,7 @@ class Users extends Base {
       UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN: 'UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN',
       UPLOAD_METADATA: 'UPLOAD_METADATA',
       UPDATE_METADATA_ON_CHAIN: 'UPDATE_METADATA_ON_CHAIN',
+      UPDATE_USER_ON_CHAIN_OPS: 'UPDATE_USER_ON_CHAIN_OPS',
       ASSOCIATE_USER: 'ASSOCIATE_USER'
     }
     let phase = ''
@@ -582,36 +606,56 @@ class Users extends Base {
     newMetadata = this._cleanUserMetadata(newMetadata)
     this._validateUserMetadata(newMetadata)
 
+    const logPrefix = `[User:updateAndUploadMetadata()] [userId: ${userId}]`
+    const fnStartMs = Date.now()
+    let startMs = fnStartMs
+
     try {
       // Update user creator_node_endpoint on chain if applicable
       if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
-        // Ensure DN has indexed creator_node_endpoint change
-        await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
+        const { replicaSetSPIDs } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
+        console.log(`${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
+        startMs = Date.now()
+
+        await this._waitForURSMCreatorNodeEndpointIndexing(userId, replicaSetSPIDs)
+        console.log(`${logPrefix} [phase: ${phase}] _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
       }
 
       // Upload new metadata object to CN
       phase = phases.UPLOAD_METADATA
       const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+      console.log(`${logPrefix} [phase: ${phase}] creatorNode.uploadCreatorContent() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
       // Write metadata multihash to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN
       const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
       const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+      console.log(`${logPrefix} [phase: ${phase}] UserFactoryClient.updateMultihash() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
       // Write remaining metadata fields to chain
+      phase = phases.UPDATE_USER_ON_CHAIN_OPS
       const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
+      console.log(`${logPrefix} [phase: ${phase}] _updateUserOperations() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
       // Write to CN to associate blockchain user id with updated metadata and block number
       phase = phases.ASSOCIATE_USER
       await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
+      console.log(`${logPrefix} [phase: ${phase}] creatorNode.associateCreator() completed in ${Date.now() - startMs}ms`)
+      startMs = Date.now()
 
       // Update libs instance with new user metadata object
       this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+
+      console.log(`${logPrefix} completed in ${Date.now() - fnStartMs}ms`)
     } catch (e) {
       // TODO: think about handling the update metadata on chain and associating..
-      throw new Error(`updateAndUploadMetadata() Error -- Phase ${phase}: ${e}`)
+      const errorMsg = `updateAndUploadMetadata() Error -- Phase ${phase} in ${Date.now() - fnStartMs}ms: ${e}`
+      console.log(errorMsg)
+      throw new Error(errorMsg)
     }
   }
 
@@ -636,15 +680,40 @@ class Users extends Base {
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
   async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
-    let isUpdated = false
-    while (!isUpdated) {
+    while (true) {
       const userList = await this.discoveryProvider.getUsers(1, 0, [userId])
       if (userList) {
         const user = userList[0]
-        if (user && user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
+        if (user && user.creator_node_endpoint === creatorNodeEndpoint) {
+          break
+        }
+      }
+
+      await Utils.wait(500)
+    }
+  }
+
+  async _waitForURSMCreatorNodeEndpointIndexing (userId, replicaSetSPIDs, timeoutMs = 60000) {
+    const asyncFn = async () => {
+      while (true) {
+        const replicaSet = await this.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+        if (
+          replicaSet &&
+          replicaSet.hasOwnProperty('primaryId') &&
+          replicaSet.hasOwnProperty('secondaryIds') &&
+          replicaSet.primaryId === replicaSetSPIDs[0] &&
+          isEqual(replicaSet.secondaryIds, replicaSetSPIDs.slice(1, 3))
+        ) {
+          break
+        }
       }
       await Utils.wait(500)
     }
+    await Utils.racePromiseWithTimeout(
+      asyncFn(),
+      timeoutMs,
+      `[User:_waitForURSMCreatorNodeEndpointIndexing()] Timeout error after ${timeoutMs}ms`
+    )
   }
 
   async _addUserOperations (userId, newMetadata, exclude = []) {
@@ -768,33 +837,31 @@ class Users extends Base {
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
     }
-    // If still uninitialized, proceed with legacy update - else move forward with new contract update
-    if (!this.contracts.UserReplicaSetManagerClient) {
-      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
-        userId,
-        creatorNodeEndpoint
-      )
-      return updateEndpointTxReceipt
-    }
-    let primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
-    let secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
+
+    const primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
+    const secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
 
     if (secondaries.length < 2) {
       throw new Error(`Invalid number of secondaries found - received ${secondaries}`)
     }
 
-    let [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
+    const [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
       this._retrieveSpIDFromEndpoint(primaryEndpoint),
       this._retrieveSpIDFromEndpoint(secondaries[0]),
       this._retrieveSpIDFromEndpoint(secondaries[1])
     ])
+
     // Update in new contract
-    let tx = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+    const txReceipt = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       userId,
       primarySpID,
       [secondary1SpID, secondary2SpID]
     )
-    return tx
+    const replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
+    return {
+      txReceipt,
+      replicaSetSPIDs
+    }
   }
 
   // Retrieve cached value for spID from endpoint if present, otherwise fetch from eth web3

@@ -170,21 +170,13 @@ def lookup_user_record(
     user_id = helpers.get_tx_arg(entry, "_userId")
 
     # Check if the userId is in the db
-    user_exists = (
+    user_record = (
         session.query(User)
-        .filter_by(user_id=helpers.get_tx_arg(entry, "_userId"))
-        .count()
-        > 0
+        .filter(User.user_id == user_id, User.is_current == True)
+        .first()
     )
 
-    user_record = None  # will be set in this if/else
-    if user_exists:
-        user_record = (
-            session.query(User)
-            .filter(User.user_id == user_id, User.is_current == True)
-            .first()
-        )
-
+    if user_record:
         # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
         # https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
         session.expunge(user_record)
@@ -205,21 +197,10 @@ def lookup_user_record(
 
 
 def invalidate_old_user(session, user_id):
-    # Check if the userId is in the db
-    logger.info(f"index.py | invalid date user with id {user_id}")
-
-    user_exists = session.query(User).filter_by(user_id=user_id).count() > 0
-
-    if user_exists:
-        # Update existing record in db to is_current = False
-        num_invalidated_users = (
-            session.query(User)
-            .filter(User.user_id == user_id, User.is_current == True)
-            .update({"is_current": False})
-        )
-        assert (
-            num_invalidated_users > 0
-        ), "Update operation requires a current user to be invalidated"
+    # Update existing record in db to is_current = False
+    session.query(User).filter(User.user_id == user_id, User.is_current == True).update(
+        {"is_current": False}
+    )
 
 
 def parse_user_event(
@@ -527,7 +508,7 @@ def validate_signature(
     return False
 
 
-class UserEventsMetadata(TypedDict):
+class UserEventsMetadata(TypedDict, total=False):
     referrer: int
     is_mobile_user: bool
 
@@ -569,6 +550,7 @@ def update_user_events(
                 event == "referrer"
                 and isinstance(value, int)
                 and user_events.referrer is None
+                and user_record.user_id != value
             ):
                 user_events.referrer = value
                 bus.dispatch(

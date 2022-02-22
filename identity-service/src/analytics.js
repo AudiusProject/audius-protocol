@@ -16,7 +16,7 @@ class AnalyticsProvider {
       await this.amplitudeInstance.logEvent({
         event_type: eventName,
         event_properties: properties,
-        user_id: userId
+        user_id: `${userId}`
       })
     } catch (e) {
       console.log(`Failed to log amplitude event with error: ${e}`)

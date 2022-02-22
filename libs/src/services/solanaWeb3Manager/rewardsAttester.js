@@ -1,4 +1,3 @@
-const { sampleSize } = require('lodash')
 const { SubmitAndEvaluateError } = require('../../api/rewards')
 const { decodeHashId } = require('../../utils/utils')
 
@@ -6,6 +5,8 @@ const { decodeHashId } = require('../../utils/utils')
 // "reporting" functionality to RewardsAttester (i.e. posts to Slack if something notable happens)
 class BaseRewardsReporter {
   async reportSuccess ({ userId, challengeId, amount }) {}
+
+  async reportRetry ({ userId, challengeId, amount, error, phase }) {}
 
   async reportFailure ({ userId, challengeId, amount, error, phase }) {}
 
@@ -128,6 +129,7 @@ class RewardsAttester {
    *    runBehindSec?: number
    *    isSolanaChallenge?: (string) => boolean
    *    feePayerOverride?: string
+   *    maxAggregationAttempts?: number
    * }} {
    *    libs,
    *    startingBlock,
@@ -146,6 +148,7 @@ class RewardsAttester {
    *    runBehindSec
    *    isSolanaChallenge
    *    feePayerOverride
+   *    maxAggregationAttempts
    *  }
    * @memberof RewardsAttester
    */
@@ -166,7 +169,8 @@ class RewardsAttester {
     endpoints = [],
     runBehindSec = 0,
     isSolanaChallenge = (challengeId) => true,
-    feePayerOverride = null
+    feePayerOverride = null,
+    maxAggregationAttempts = 20
   }) {
     this.libs = libs
     this.logger = logger
@@ -178,9 +182,9 @@ class RewardsAttester {
     this.aaoAddress = aaoAddress
     this.reporter = reporter || new BaseRewardsReporter()
     this.endpoints = endpoints
-    // If passed endpoints, override the automatic reselection process
-    this.overrideEndpointSelection = !!endpoints.length
+    this.endpointPool = new Set(endpoints)
     this.maxRetries = maxRetries
+    this.maxAggregationAttempts = maxAggregationAttempts
     this.updateValues = updateValues
     this.challengeIdsDenyList = new Set(...challengeIdsDenyList)
     // Stores a queue of undisbursed challenges
@@ -218,7 +222,7 @@ class RewardsAttester {
   }
 
   /**
-   * Begin attestation loop.
+   * Begin attestation loop. Entry point for identity attestations
    *
    * @memberof RewardsAttester
    */
@@ -282,7 +286,13 @@ class RewardsAttester {
     this.delayCalculator.stop()
   }
 
+  /**
+   * Called from the client to attest challenges
+   * @param {any[]} challenges
+   * @returns
+   */
   async processChallenges (challenges) {
+    await this._selectDiscoveryNodes()
     let toProcess = [...challenges]
     while (toProcess.length) {
       try {
@@ -365,6 +375,7 @@ class RewardsAttester {
     this.startingBlock = override
     this.offset = 0
     this.recentlyDisbursedQueue = []
+    this.undisbursedQueue = []
   }
 
   /**
@@ -392,7 +403,7 @@ class RewardsAttester {
 
     // "Process" the results of attestation into noRetry and needsRetry errors,
     // as well as a flag that indicates whether we should reselect.
-    let { successful, noRetry, needsRetry, shouldReselect } = await this._processResponses(results)
+    let { successful, noRetry, needsRetry, shouldReselect } = this._processResponses(results, false)
     let successCount = successful.length
     let accumulatedErrors = noRetry
 
@@ -412,7 +423,7 @@ class RewardsAttester {
         await this._selectDiscoveryNodes()
       }
       const res = await Promise.all(needsRetry.map(this._performSingleAttestation))
-      ;({ successful, needsRetry, noRetry, shouldReselect } = await this._processResponses(res))
+      ;({ successful, needsRetry, noRetry, shouldReselect } = this._processResponses(res, retryCount === this.maxRetries))
       accumulatedErrors = [...accumulatedErrors, ...noRetry]
 
       offset += noRetry.filter(({ completedBlocknumber }) => completedBlocknumber === highestBlock).length
@@ -492,12 +503,12 @@ class RewardsAttester {
       AAOEndpoint: this.aaoEndpoint,
       endpoints: this.endpoints,
       logger: this.logger,
-      feePayerOverride: this._getFeePayer()
+      feePayerOverride: this._getFeePayer(),
+      maxAggregationAttempts: this.maxAggregationAttempts
     })
 
     if (success) {
       this.logger.info(`Successfully attestested for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}]!`)
-      await this.reporter.reportSuccess({ userId: decodeHashId(userId), challengeId, amount, specifier })
       return {
         challengeId,
         userId,
@@ -511,14 +522,6 @@ class RewardsAttester {
 
     // Handle error path
     this.logger.error(`Failed to attest for challenge [${challengeId}] for user [${decodeHashId(userId)}], amount [${amount}], oracle: [${this.aaoAddress}] at phase: [${phase}] with error [${error}]`)
-    await this.reporter.reportFailure({
-      phase,
-      error,
-      amount,
-      userId: decodeHashId(userId),
-      challengeId,
-      specifier
-    })
 
     return {
       challengeId,
@@ -534,10 +537,12 @@ class RewardsAttester {
   }
 
   async _selectDiscoveryNodes () {
-    if (this.overrideEndpointSelection) return
-    this.logger.info(`Selecting discovery nodes`)
-    const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll()
-    this.endpoints = sampleSize(endpoints, this.quorumSize)
+    this.logger.info(`Selecting discovery nodes`, { endpointPool: this.endpointPool })
+    const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll({
+      verbose: true,
+      whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
+    })
+    this.endpoints = await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(this.quorumSize, Array.from(endpoints))
     this.logger.info(`Selected new discovery nodes: [${this.endpoints}]`)
   }
 
@@ -550,11 +555,15 @@ class RewardsAttester {
   async _refillQueueIfNecessary () {
     if (this.undisbursedQueue.length) return {}
 
-    this.logger.info(`Refilling queue, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`)
+    this.logger.info(`Refilling queue with startingBlock: ${this.startingBlock}, offset: ${this.offset}, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`)
     const { success: disbursable, error } = await this.libs.Rewards.getUndisbursedChallenges({ offset: this.offset, completedBlockNumber: this.startingBlock, logger: this.logger })
 
     if (error) {
       return { error }
+    }
+
+    if (disbursable.length) {
+      this.logger.info(`Got challenges: ${disbursable.map(({ challenge_id, user_id, specifier }) => (`${challenge_id}-${user_id}-${specifier}`))}`) // eslint-disable-line
     }
 
     // Map to camelCase, and filter out
@@ -601,7 +610,8 @@ class RewardsAttester {
    * }}
    * @memberof RewardsAttester
    */
-  async _processResponses (responses) {
+
+  _processResponses (responses, isFinalAttempt) {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW, errors.BLOCKED])
     // Account for errors from DN aggregation + Solana program
@@ -619,21 +629,31 @@ class RewardsAttester {
       .filter((res) => {
         if (!res.error) {
           successful.push(res)
+          this.reporter.reportSuccess({ userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, specifier: res.specifier })
           return false
         }
         return true
       })
       // Filter out responses that are already disbursed
       .filter(({ error }) => !ALREADY_COMPLETE_ERRORS.has(error))
-      // Handle any AAO errors - report them and then exclude them from result set
+      // Handle no retry errors
       .filter((res) => {
+        const report = { userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, error: res.error, phase: res.phase, specifier: res.specifier }
         const isNoRetry = NO_RETRY_ERRORS.has(res.error)
         if (isNoRetry) {
           noRetry.push(res)
           const isAAO = AAO_ERRORS.has(res.error)
+          // `noRetry` errors are never retried, so
+          // they're always logged as failure or AAO
           if (isAAO) {
-            this.reporter.reportAAORejection({ userId: res.userId, challengeId: res.challengeId, amount: res.amount, error: res.error, specifier: res.specifier })
+            this.reporter.reportAAORejection(report)
+          } else {
+            this.reporter.reportFailure(report)
           }
+        } else if (isFinalAttempt) {
+          this.reporter.reportFailure(report)
+        } else {
+          this.reporter.reportRetry(report)
         }
         return !isNoRetry
       })

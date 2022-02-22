@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
-from operator import itemgetter
+from operator import itemgetter, or_
 
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -347,16 +347,25 @@ def fetch_ipfs_metadata(
             futures.append(future)
             futures_map[future] = [cid, txhash]
 
-        for future in concurrent.futures.as_completed(futures):
-            cid, txhash = futures_map[future]
-            try:
-                ipfs_metadata[cid] = future.result()
-            except Exception as e:
-                logger.info("Error in fetch ipfs metadata")
-                blockhash = update_task.web3.toHex(block_hash)
-                raise IndexingError(
-                    "prefetch-cids", block_number, blockhash, txhash, str(e)
-                ) from e
+        try:
+            for future in concurrent.futures.as_completed(futures, timeout=3):
+                cid, txhash = futures_map[future]
+                try:
+                    ipfs_metadata[cid] = future.result()
+                except Exception as e:
+                    logger.info("Error in fetch ipfs metadata")
+                    blockhash = update_task.web3.toHex(block_hash)
+                    raise IndexingError(
+                        "prefetch-cids", block_number, blockhash, txhash, str(e)
+                    ) from e
+        except concurrent.futures.TimeoutError as exc:
+            logger.error(f"index.py | Timeout fetch_ipfs_metadata: {exc}")
+            # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
+            # in order to do that we need to actually clear the queue which we do here to force this
+            # task to stop execution
+            executor._threads.clear()
+            concurrent.futures.thread._threads_queues.clear()
+            raise exc
 
     return ipfs_metadata, blacklisted_cids
 
@@ -879,8 +888,13 @@ def revert_blocks(self, db, revert_blocks_list):
                 user_id = user_to_revert.user_id
                 previous_user_entry = (
                     session.query(User)
-                    .filter(User.user_id == user_id)
-                    .filter(User.blocknumber < revert_block_number)
+                    .filter(
+                        User.user_id == user_id,
+                        User.blocknumber < revert_block_number,
+                        # Or both possibilities to allow use of composite index
+                        # on user, block, is_current
+                        or_(User.is_current == True, User.is_current == False),
+                    )
                     .order_by(User.blocknumber.desc())
                     .first()
                 )
@@ -973,10 +987,16 @@ def update_task(self):
     # Update redis cache for health check queries
     update_latest_block_redis()
 
+    DEFAULT_LOCK_TIMEOUT = 60 * 10  # ten minutes
+
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("disc_prov_lock", blocking_timeout=25)
+    # blocking_timeout is duration it waits to try to acquire lock
+    # timeout is the duration the lock is held
+    update_lock = redis.lock(
+        "disc_prov_lock", blocking_timeout=25, timeout=DEFAULT_LOCK_TIMEOUT
+    )
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
