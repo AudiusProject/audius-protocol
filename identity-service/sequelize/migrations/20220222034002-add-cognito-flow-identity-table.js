@@ -3,15 +3,9 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('CognitoFlowIdentity', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
       maskedIdentity: {
         allowNull: false,
-        unique: true,
+        primaryKey: true,
         type: Sequelize.STRING
       },
       createdAt: {

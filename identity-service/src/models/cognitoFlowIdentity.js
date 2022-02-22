@@ -2,15 +2,9 @@
 
 module.exports = (sequelize, DataTypes) => {
   const CognitoFlowIdentity = sequelize.define('CognitoFlowIdentity', {
-    id: {
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
-      type: DataTypes.INTEGER
-    },
     maskedIdentity: {
       allowNull: false,
-      unique: true,
+      primaryKey: true,
       type: DataTypes.STRING
     },
     createdAt: {
