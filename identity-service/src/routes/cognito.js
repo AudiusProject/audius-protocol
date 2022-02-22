@@ -55,6 +55,8 @@ module.exports = function (app) {
 
     const { id: sessionId, customer_reference: handle, status } = data
 
+    const transaction = await models.sequelize.transaction()
+
     try {
       // check that this identity has not already been used by another account before proceeding to save the score
       let cognitoIdentityAlreadyExists = false
@@ -76,32 +78,42 @@ module.exports = function (app) {
         const identity = `${value}::${category}::${type}`
         const maskedIdentity = createMaskedCognitoIdentity(identity)
         const record = await models.CognitoFlowIdentity.findOne({ where: { maskedIdentity } })
+
         if (record) {
           cognitoIdentityAlreadyExists = true
         } else {
           const now = Date.now()
-          await models.CognitoFlowIdentity.create({
-            maskedIdentity,
-            createdAt: now,
-            updatedAt: now
-          })
+          await models.CognitoFlowIdentity.create(
+            {
+              maskedIdentity,
+              createdAt: now,
+              updatedAt: now
+            },
+            { transaction }
+          )
         }
       }
 
       // save cognito flow for user
       logger.info(`Saving cognito flow result for user with handle '${handle}' (status: '${status}')`)
-      await models.CognitoFlows.create({
-        id,
-        sessionId,
-        handle,
-        status,
-        // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
-        score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
-      })
+      await models.CognitoFlows.create(
+        {
+          id,
+          sessionId,
+          handle,
+          status,
+          // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
+          score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
+        },
+        { transaction }
+      )
+
+      await transaction.commit()
 
       // cognito flow requires the receiver to respond with 200, otherwise it'll retry with exponential backoff
       return successResponse({})
     } catch (err) {
+      await transaction.rollback()
       console.error(err)
       return errorResponseServerError(err.message)
     }
