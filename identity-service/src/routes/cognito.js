@@ -7,7 +7,7 @@ const { logger } = require('../logging')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
-const { sign, createCognitoHeaders } = require('../utils/cognitoHelpers')
+const { sign, createCognitoHeaders, createMaskedCognitoIdentity } = require('../utils/cognitoHelpers')
 const axios = require('axios')
 const axiosHttpAdapter = require('axios/lib/adapters/http')
 const config = require('../config')
@@ -37,7 +37,7 @@ module.exports = function (app) {
    *     "event": "flow_session.status.updated", // could be another event but we mostly care about flow_session.status.updated
    *     "data": {
    *         "object": "flow_session",
-   *         "id": "some-other-id",
+   *         "id": "some-session-id",
    *         "status": "failed", // or 'success'
    *         "step": null, // or some step if event is flow_session.step.updated
    *         "customer_reference": "some-customer-unique-persistent-id-eg-handle",
@@ -55,21 +55,65 @@ module.exports = function (app) {
 
     const { id: sessionId, customer_reference: handle, status } = data
 
+    const transaction = await models.sequelize.transaction()
+
     try {
+      // check that this identity has not already been used by another account before proceeding to save the score
+      let cognitoIdentityAlreadyExists = false
+      if (status === 'success') {
+        const baseUrl = config.get('cognitoBaseUrl')
+        const path = `/flow_sessions/${sessionId}`
+        const method = 'GET'
+        const body = ''
+        const headers = createCognitoHeaders({ path, method, body })
+        const url = `${baseUrl}${path}`
+        const flowSessionResponse = await axios({
+          adapter: axiosHttpAdapter,
+          url,
+          method,
+          headers
+        })
+        const identityObj = flowSessionResponse.data.user.id_number
+        const { value, category, type } = identityObj
+        const identity = `${value}::${category}::${type}`
+        const maskedIdentity = createMaskedCognitoIdentity(identity)
+        const record = await models.CognitoFlowIdentities.findOne({ where: { maskedIdentity } })
+
+        if (record) {
+          logger.info(`cognito_webhook flow | this identity has already been used previously | sessionId: ${sessionId}, handle: ${handle}`)
+          cognitoIdentityAlreadyExists = true
+        } else {
+          const now = Date.now()
+          await models.CognitoFlowIdentities.create(
+            {
+              maskedIdentity,
+              createdAt: now,
+              updatedAt: now
+            },
+            { transaction }
+          )
+        }
+      }
+
       // save cognito flow for user
-      logger.info(`Saving cognito flow result for user with handle '${handle}' (status: '${status}')`)
-      await models.CognitoFlows.create({
-        id,
-        sessionId,
-        handle,
-        status,
-        // score of 1 if 'success', otherwise 0
-        score: Number(status === 'success')
-      })
+      await models.CognitoFlows.create(
+        {
+          id,
+          sessionId,
+          handle,
+          status,
+          // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
+          score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
+        },
+        { transaction }
+      )
+
+      await transaction.commit()
 
       // cognito flow requires the receiver to respond with 200, otherwise it'll retry with exponential backoff
       return successResponse({})
     } catch (err) {
+      await transaction.rollback()
       console.error(err)
       return errorResponseServerError(err.message)
     }
