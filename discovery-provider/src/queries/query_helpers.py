@@ -172,23 +172,34 @@ def populate_user_metadata(
     )
     track_blocknumber_dict = dict(track_blocknumbers)
 
+    follows_current_user_set = set()
     current_user_followed_user_ids = {}
     current_user_followee_follow_count_dict = {}
     if current_user_id:
-        # does current user follow any of requested user ids
-        current_user_followed_user_ids = (
-            session.query(Follow.followee_user_id)
+        # collect all incoming and outgoing follow edges for current user.
+        current_user_follow_rows = (
+            session.query(Follow.follower_user_id, Follow.followee_user_id)
             .filter(
                 Follow.is_current == True,
                 Follow.is_delete == False,
-                Follow.followee_user_id.in_(user_ids),
-                Follow.follower_user_id == current_user_id,
+                or_(
+                    and_(
+                        Follow.followee_user_id.in_(user_ids),
+                        Follow.follower_user_id == current_user_id,
+                    ),
+                    and_(
+                        Follow.followee_user_id == current_user_id,
+                        Follow.follower_user_id.in_(user_ids),
+                    ),
+                ),
             )
             .all()
         )
-        current_user_followed_user_ids = {
-            r[0]: True for r in current_user_followed_user_ids
-        }
+        for follower_id, following_id in current_user_follow_rows:
+            if follower_id == current_user_id:
+                current_user_followed_user_ids[following_id] = True
+            else:
+                follows_current_user_set.add(follower_id)
 
         # build dict of user id --> followee follow count
         current_user_followees = (
@@ -271,6 +282,7 @@ def populate_user_metadata(
         user[response_name_constants.spl_wallet] = user_banks_dict.get(
             user["wallet"], None
         )
+        user["does_follow_current_user"] = user_id in follows_current_user_set
 
     return users
 

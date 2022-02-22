@@ -51,7 +51,7 @@ class DiskManager {
    *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
    * @param {String} cid file system destination, either filename or directory
    */
-  static computeFilePath(cid) {
+  static computeFilePath(cid, ensureDirPathExists = true) {
     try {
       CID.isCID(new CID(cid))
     } catch (e) {
@@ -75,7 +75,9 @@ class DiskManager {
     // const parentDirPath = this.getConfigStoragePath()
 
     // create the subdirectories in parentDirHash if they don't exist
-    this.ensureDirPathExists(parentDirPath)
+    if (ensureDirPathExists) {
+      this.ensureDirPathExists(parentDirPath)
+    }
 
     return path.join(parentDirPath, cid)
   }
