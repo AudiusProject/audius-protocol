@@ -57,7 +57,7 @@ module.exports = function (app) {
 
     try {
       // check that this identity has not already been used by another account before proceeding to save the score
-      let shouldFail = false
+      let cognitoIdentityAlreadyExists = false
       if (status === 'success') {
         const baseUrl = config.get('cognitoBaseUrl')
         const path = `/flow_sessions/${sessionId}`
@@ -77,7 +77,7 @@ module.exports = function (app) {
         const maskedIdentity = createMaskedCognitoIdentity(identity)
         const record = await models.CognitoFlowIdentity.findOne({ where: { maskedIdentity } })
         if (record) {
-          shouldFail = true
+          cognitoIdentityAlreadyExists = true
         } else {
           const now = Date.now()
           await models.CognitoFlowIdentity.create({
@@ -96,7 +96,7 @@ module.exports = function (app) {
         handle,
         status,
         // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
-        score: Number(!shouldFail && (status === 'success'))
+        score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
       })
 
       // cognito flow requires the receiver to respond with 200, otherwise it'll retry with exponential backoff

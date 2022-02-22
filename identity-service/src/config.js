@@ -774,10 +774,10 @@ const config = convict({
     env: 'amplitudeAPIKey',
     default: ''
   },
-  hashSalt: {
+  cognitoIdentityHashSalt: {
     doc: 'Hash salt',
     format: String,
-    env: 'hashSalt',
+    env: 'cognitoIdentityHashSalt',
     default: ''
   }
 })
