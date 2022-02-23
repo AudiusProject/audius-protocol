@@ -3,6 +3,7 @@ import concurrent.futures
 import logging
 from datetime import datetime
 from operator import itemgetter, or_
+from tracemalloc import start
 
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -261,6 +262,7 @@ def fetch_ipfs_metadata(
     block_number,
     block_hash,
 ):
+    start_time = datetime.now()
     track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]
     track_contract = update_task.web3.eth.contract(
         address=get_contract_addresses()["track_factory"], abi=track_abi
@@ -367,7 +369,9 @@ def fetch_ipfs_metadata(
                 raise IndexingError(
                     "prefetch-cids", block_number, blockhash, txhash, str(e)
                 ) from e
-
+    logger.info(
+        f"index.py | finished fetching {len(ipfs_metadata)} CIDs in {datetime.now() - start_time} seconds"
+    )
     return ipfs_metadata, blacklisted_cids
 
 
