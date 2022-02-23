@@ -12,14 +12,15 @@ import { TrendingUndergroundScreen } from 'app/screens/explore-screen/tabs/ForYo
 import FavoritesScreen from 'app/screens/favorites-screen'
 import { FeedScreen } from 'app/screens/feed-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
+import { SettingsScreen } from 'app/screens/settings-screen'
 import { TrendingScreen } from 'app/screens/trending-screen'
 
 import { BaseStackNavigator } from './BaseStackNavigator'
 import {
-  BaseStackParamList,
   ExploreStackParamList,
   FavoritesStackParamList,
   FeedStackParamList,
+  ProfileStackParamList,
   TrendingStackParamList
 } from './types'
 
@@ -75,8 +76,11 @@ const FavoritesStackScreen = createStackScreen<FavoritesStackParamList>(
   Stack => <Stack.Screen name='favorites-stack' component={FavoritesScreen} />
 )
 
-const ProfileStackScreen = createStackScreen<BaseStackParamList>(Stack => (
-  <Stack.Screen name='profile-stack' component={ProfileScreen} />
+const ProfileStackScreen = createStackScreen<ProfileStackParamList>(Stack => (
+  <>
+    <Stack.Screen name='profile-stack' component={ProfileScreen} />
+    <Stack.Screen name='SettingsScreen' component={SettingsScreen} />
+  </>
 ))
 
 const Tab = createBottomTabNavigator()

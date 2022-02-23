@@ -104,7 +104,7 @@ export const TopBar = memo(
       <View style={styles.root}>
         <View style={styles.topBar}>
           <View style={styles.headerLeft}>
-            {headerLeft ? (
+            {headerLeft !== undefined ? (
               headerLeft({})
             ) : back ? (
               <TopBarArrowBack onPress={topBarNavigation.goBack} />
@@ -130,7 +130,7 @@ export const TopBar = memo(
             />
           )}
           <View style={styles.headerRight}>
-            {headerRight ? (
+            {headerRight !== undefined ? (
               headerRight({})
             ) : (
               <IconButton

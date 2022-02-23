@@ -6,22 +6,26 @@ import {
 } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
-import { BaseStackParamList } from 'app/components/app-navigator/types'
+import {
+  BaseStackParamList,
+  ProfileStackParamList
+} from 'app/components/app-navigator/types'
 
 import { usePushRouteWeb } from './usePushRouteWeb'
 
-type AppParamList = BaseStackParamList & {
-  feed: undefined
-  trending: undefined
-  explore: undefined
-  favorites: undefined
-  EditProfile: undefined
-  FollowersScreen: undefined
-  FollowingScreen: undefined
-  FavoritedScreen: undefined
-  RepostsScreen: undefined
-  TrendingUnderground: undefined
-}
+type AppParamList = BaseStackParamList &
+  ProfileStackParamList & {
+    feed: undefined
+    trending: undefined
+    explore: undefined
+    favorites: undefined
+    EditProfile: undefined
+    FollowersScreen: undefined
+    FollowingScreen: undefined
+    FavoritedScreen: undefined
+    RepostsScreen: undefined
+    TrendingUnderground: undefined
+  }
 
 type UseNavigationConfig<
   ParamList extends ParamListBase,
