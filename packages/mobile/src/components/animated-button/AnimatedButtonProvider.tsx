@@ -4,11 +4,12 @@ import LottieView from 'lottie-react-native'
 import { StyleProp, TouchableHighlight, View, ViewStyle } from 'react-native'
 import { usePrevious } from 'react-use'
 
+import { GestureResponderHandler } from 'app/types/gesture'
 import { useColor } from 'app/utils/theme'
 
 export type BaseAnimatedButtonProps = {
   iconIndex?: number
-  onPress: () => void
+  onPress?: GestureResponderHandler
   isActive?: boolean
   isDisabled?: boolean
   showUnderlay?: boolean
@@ -89,7 +90,7 @@ const AnimatedButton = ({
       animationRef.current?.play()
     }
 
-    onPress()
+    onPress?.()
   }, [isDisabled, onPress, isActive, setIsPlaying, hasMultipleStates])
 
   const progress = useMemo(() => {

@@ -53,7 +53,7 @@ type Props = {
   coSign: Remix
 }
 
-export const TrackTileCoSign = ({ coSign }: Props) => {
+export const LineupTileCoSign = ({ coSign }: Props) => {
   const trackTileStyles = useThemedStyles(createTrackTileStyles)
   return (
     <View style={styles.coSignText}>
