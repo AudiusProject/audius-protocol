@@ -89,7 +89,7 @@ class DiskManager {
     if (!this.isValidCID(cid)) {
       throw new Error(`[computeLegacyFilePath] [CID=${cid}] Invalid CID.`)
     }
-    return path.join(this.getConfigStoragePath(), 'files', cid)
+    return path.join(this.getConfigStoragePath(), cid)
   }
 
   /**
