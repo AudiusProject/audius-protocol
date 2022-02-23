@@ -179,7 +179,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     Returns a tuple of health results and a boolean indicating an error
     """
-    start_time = time.time()
     redis = redis_connection.get_redis()
     web3 = web3_provider.get_web3()
 
@@ -270,6 +269,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if last_scanned_block_for_balance_refresh
         else None
     )
+
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
