@@ -53,7 +53,7 @@ export const typography = {
   body2: {
     fontSize: 12,
     fontFamily: fontByWeight.medium,
-    marginBottom: 14 * 0.35
+    marginBottom: 12 * 0.2
   },
   fontByWeight
 }
