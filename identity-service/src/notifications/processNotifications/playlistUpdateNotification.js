@@ -1,6 +1,7 @@
 const { logger } = require('../../logging')
 const moment = require('moment-timezone')
 const models = require('../../models')
+const { sequelize, Sequelize } = require('../../models')
 
 const logPrefix = 'notifications playlist updates -'
 
@@ -75,31 +76,40 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   }, {})
   logger.info(`${logPrefix} calculated updates, num updates: ${userWalletsAndPlaylistUpdates.length}, time: ${Date.now() - startTime}ms`)
 
-  const newPlaylistUpdatePromises = userIds.map(userId => {
-    const walletAddress = userIdToWalletsMap[userId]
-    if (!walletAddress) return Promise.resolve()
+  const newUserEvents = userIds
+    .map(userId => {
+      const walletAddress = userIdToWalletsMap[userId]
+      if (!walletAddress) return null
 
-    const dbPlaylistUpdates = userWalletToPlaylistUpdatesMap[walletAddress] || {}
-    const fetchedPlaylistUpdates = userPlaylistUpdatesMap[userId]
-    Object.keys(fetchedPlaylistUpdates).forEach(playlistId => {
-      const fetchedLastUpdated = moment(fetchedPlaylistUpdates[playlistId]).utc()
-      dbPlaylistUpdates[playlistId] = {
-        // in case user favorited this track before and has no UserEvent record of it
-        userLastViewed: fetchedLastUpdated.subtract(1, 'seconds').valueOf(),
-        ...dbPlaylistUpdates[playlistId],
-        lastUpdated: fetchedLastUpdated.valueOf()
-      }
-    })
+      const dbPlaylistUpdates = userWalletToPlaylistUpdatesMap[walletAddress] || {}
+      const fetchedPlaylistUpdates = userPlaylistUpdatesMap[userId]
+      Object.keys(fetchedPlaylistUpdates).forEach(playlistId => {
+        const fetchedLastUpdated = moment(fetchedPlaylistUpdates[playlistId]).utc()
+        dbPlaylistUpdates[playlistId] = {
+          // in case user favorited this track before and has no UserEvent record of it
+          userLastViewed: fetchedLastUpdated.subtract(1, 'seconds').valueOf(),
+          ...dbPlaylistUpdates[playlistId],
+          lastUpdated: fetchedLastUpdated.valueOf()
+        }
+      })
 
-    // upsert playlist updates based for the wallet address
-    return models.UserEvents.upsert({
-      walletAddress,
-      playlistUpdates: dbPlaylistUpdates
+      return [walletAddress, JSON.stringify(dbPlaylistUpdates)]
     })
+    .filter(Boolean)
+
+  logger.info(`${logPrefix} mapped updates, time: ${Date.now() - startTime}ms`)
+
+  const results = await sequelize.query(`
+    INSERT INTO "UserEvents" ("walletAddress", "playlistUpdates", "createdAt", "updatedAt")
+    VALUES ${newUserEvents.map(_ => '(?,now(),now())').join(',')}
+    ON CONFLICT ("walletAddress") DO UPDATE
+      SET "playlistUpdates" = "excluded"."playlistUpdates"
+  `, {
+    replacements: newUserEvents,
+    type: Sequelize.QueryTypes.INSERT
   })
 
-  const results = await Promise.all(newPlaylistUpdatePromises)
-  logger.info(`${logPrefix} finished upsert, num events: ${results.length}, time: ${Date.now() - startTime}ms`)
+  logger.info(`${logPrefix} bulk upserted updates, rows: ${results}, time: ${Date.now() - startTime}ms`)
   return notifications
 }
 
