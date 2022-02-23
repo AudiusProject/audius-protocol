@@ -38,13 +38,17 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-export const Delineator = ({ text }) => {
+type DelineatorProps = {
+  text?: string
+}
+
+export const Delineator = ({ text }: DelineatorProps) => {
   const styles = useThemedStyles(createStyles)
 
   return (
     <View style={styles.root}>
       <View style={styles.line} />
-      {text && (
+      {!text ? null : (
         <View style={styles.box}>
           <Text style={styles.text} weight='bold'>
             {text}

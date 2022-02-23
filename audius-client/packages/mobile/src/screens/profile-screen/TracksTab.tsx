@@ -27,6 +27,11 @@ export const TracksTab = () => {
   }
 
   return (
-    <Lineup listKey='profile-tracks' actions={tracksActions} lineup={lineup} />
+    <Lineup
+      leadingElementId={profile._artist_pick}
+      listKey='profile-tracks'
+      actions={tracksActions}
+      lineup={lineup}
+    />
   )
 }
