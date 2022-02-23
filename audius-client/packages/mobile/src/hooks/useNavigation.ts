@@ -20,6 +20,7 @@ type AppParamList = BaseStackParamList & {
   FollowingScreen: undefined
   FavoritedScreen: undefined
   RepostsScreen: undefined
+  TrendingUnderground: undefined
 }
 
 type UseNavigationConfig<

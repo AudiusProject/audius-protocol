@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useCallback } from 'react'
 
 import {
   Image,
@@ -14,6 +14,7 @@ import LinearGradient from 'react-native-linear-gradient'
 
 import IconAudioRewardsPill from 'app/assets/images/iconAudioRewardsPill.svg'
 import Text from 'app/components/text'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { font } from 'app/styles'
 import { ThemeColors } from 'app/utils/theme'
@@ -22,6 +23,7 @@ type ColorTileProps = {
   style?: StyleProp<ViewStyle>
   title: string
   link: string
+  screen?: 'TrendingUnderground'
   description?: string
   gradientColors?: string[]
   gradientAngle?: number
@@ -29,7 +31,6 @@ type ColorTileProps = {
   shadowOpacity?: number
   icon?: React.FC
   emoji?: ReactNode
-  goToRoute: (route: string) => void
   isIncentivized?: boolean
 }
 
@@ -120,6 +121,7 @@ export const ColorTile = ({
   style,
   title,
   link,
+  screen,
   description,
   gradientColors = [],
   gradientAngle = 0,
@@ -127,10 +129,19 @@ export const ColorTile = ({
   shadowOpacity = 0.25,
   icon: Icon,
   emoji,
-  goToRoute,
   isIncentivized
 }: ColorTileProps) => {
   const styles = useThemedStyles(createStyles)
+  const navigation = useNavigation()
+
+  const handlePress = useCallback(() => {
+    if (screen) {
+      navigation.push({
+        native: { screen, params: undefined },
+        web: { route: link }
+      })
+    }
+  }, [navigation, screen, link])
 
   return (
     <View
@@ -144,7 +155,7 @@ export const ColorTile = ({
       >
         <TouchableOpacity
           style={[styles.colorTile, !!emoji && styles.hasEmoji]}
-          onPress={() => goToRoute(link)}
+          onPress={handlePress}
         >
           <View style={{ backgroundColor: 'transparent' }}>
             <Text style={[styles.title, !!emoji && styles.emojiTitle]}>
