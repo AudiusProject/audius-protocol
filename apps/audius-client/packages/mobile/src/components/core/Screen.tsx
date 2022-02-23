@@ -10,7 +10,9 @@ const useStyles = makeStyles(({ palette }, { variant }) => ({
   root: {
     height: '100%',
     backgroundColor:
-      variant === 'primary' ? palette.background : palette.backgroundSecondary
+      variant === 'primary' ? palette.background : palette.backgroundSecondary,
+    // TODO: figure out why screens need this. Likel related to the BottomTabNavigator
+    paddingBottom: 80
   }
 }))
 

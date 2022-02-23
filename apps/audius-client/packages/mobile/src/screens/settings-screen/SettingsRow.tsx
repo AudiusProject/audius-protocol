@@ -12,7 +12,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     borderTopWidth: 1
   },
   root: {
-    backgroundColor: palette.staticWhite,
+    backgroundColor: palette.white,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -20,6 +20,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     paddingHorizontal: spacing(5),
     borderBottomColor: palette.neutralLight8,
     borderBottomWidth: 1
+  },
+  content: {
+    flex: 1
   }
 }))
 
@@ -40,7 +43,7 @@ export const SettingsRow = (props: SettingsRowProps) => {
       onPress={onPress}
       style={[styles.root, firstItem && styles.firstItem, style]}
     >
-      <View>{children}</View>
+      <View style={styles.content}>{children}</View>
       {onPress ? (
         <IconCaretRight fill={neutralLight4} height={16} width={16} />
       ) : null}

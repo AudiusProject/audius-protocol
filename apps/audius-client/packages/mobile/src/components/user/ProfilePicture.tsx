@@ -9,7 +9,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   profilePhoto: {
     height: 82,
     width: 82,
-    borderRadius: 82 / 2,
+    borderRadius: 1000,
     borderWidth: 2,
     borderStyle: 'solid',
     borderColor: palette.white,
