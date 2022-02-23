@@ -91,12 +91,13 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
       }
     })
 
-    // upsert playlist updates based for the wallet address
-    return models.UserEvents.upsert({
-      walletAddress,
-      playlistUpdates: dbPlaylistUpdates
-    })
+    return { walletAddress, playlistUpdates: dbPlaylistUpdates }
   })
+  const newUserEvents = await Promise.all(newPlaylistUpdatePromises)
+  await models.UserEvents.bulkCreate(
+    newUserEvents,
+    { updateOnDeuplicate: ['walletAddress'] }
+  )
 
   const results = await Promise.all(newPlaylistUpdatePromises)
   logger.info(`${logPrefix} finished upsert, num events: ${results.length}, time: ${Date.now() - startTime}ms`)
