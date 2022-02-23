@@ -239,7 +239,7 @@ class RewardsAttester {
     // set the pool to the entire list of discovery providers.
     // This overrides any configured whitelist for the service selector.
     if (this.endpointPool.size === 0) {
-      const pool = this.libs.discoveryProvider.serviceSelector.getServices()
+      const pool = await this.libs.discoveryProvider.serviceSelector.getServices()
       this.endpointPool = new Set(pool)
     }
     await this._selectDiscoveryNodes()
