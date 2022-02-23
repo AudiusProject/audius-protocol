@@ -38,6 +38,7 @@ export const handleThemeChange = (theme: Theme) => {
 
 export const defaultTheme = {
   background: '#F3F0F7',
+  backgroundSecondary: '#FAFAFA',
   primary: '#CC0FE0',
   primaryDark1: '#B80ECA',
   primaryDark2: '#A30CB3',
@@ -86,6 +87,7 @@ export const defaultTheme = {
 
 export const darkTheme = {
   background: '#242438',
+  backgroundSecondary: '#2F3048',
   primary: '#C74BD3',
   primaryDark1: '#C556D4',
   primaryDark2: '#C563D6',
@@ -134,6 +136,7 @@ export const darkTheme = {
 
 const matrixTheme = {
   background: '#1A1818',
+  backgroundSecondary: '#1A1818',
   primary: '#0CF10C',
   primaryDark1: '#0CF10C',
   primaryDark2: '#0CF10C',

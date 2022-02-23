@@ -24,6 +24,7 @@ export type FavoritesStackParamList = BaseStackParamList & {
 
 export type ProfileStackParamList = BaseStackParamList & {
   'profile-stack': undefined
+  SettingsScreen: undefined
 }
 
 export type BottomTabsParamList = {
