@@ -1,7 +1,10 @@
+import { useCallback } from 'react'
+
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { Text, View } from 'react-native'
 
 import { ProfilePhoto } from 'app/components/user'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
@@ -23,13 +26,21 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 export const AccountSettingsRow = () => {
   const styles = useStyles()
   const accountUser = useSelectorWeb(getAccountUser)
+  const navigation = useNavigation()
+
+  const handlePress = useCallback(() => {
+    navigation.push({
+      native: { screen: 'AccountSettingsScreen', params: undefined },
+      web: { route: '/settings/account' }
+    })
+  }, [navigation])
 
   if (!accountUser) return null
 
   const { name, handle } = accountUser
 
   return (
-    <SettingsRow style={styles.root} onPress={() => null}>
+    <SettingsRow style={styles.root} onPress={handlePress}>
       <View style={styles.content}>
         <ProfilePhoto profile={accountUser} style={styles.profilePicture} />
         <View style={styles.info}>

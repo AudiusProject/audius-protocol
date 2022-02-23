@@ -6,8 +6,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: {
     ...typography.body2,
     color: palette.neutralLight2,
-    marginVertical: spacing(2),
-    marginRight: spacing(10)
+    marginVertical: spacing(2)
   }
 }))
 
