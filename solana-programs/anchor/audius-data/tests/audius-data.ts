@@ -434,22 +434,6 @@ describe("audius-data", () => {
 
     const { handleBytesArray: incorrectHandleBytesArray } = initTestConstants();
 
-    await expect(testCreateUser({
-      provider,
-      program,
-      message,
-      ethAccount,
-      baseAuthorityAccount,
-      handleBytesArray,
-      bumpSeed: (bumpSeed + 1) % 255,
-      metadata,
-      newUserKeypair,
-      userStgAccount: newUserAcctPDA,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-    })).to.eventually.be.rejected.and.property('logs').to.include(
-      "Program failed to complete: Could not create program address with signer seeds: Provided seeds do not result in a valid address"
-    );
-
     const { derivedAddress: incorrectPDA } =
       await findDerivedPair(
         program.programId,
