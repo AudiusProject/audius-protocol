@@ -27,12 +27,11 @@ grpc.setDefaultTransport(NodeHttpTransport())
 // Please provide an eth RPC provider endpoint here
 // For example https://mainnet.infura.io/v3/<your-key-here>
 const ETH_PROVIDER = process.env.ethProvider
-const SOLANA_CLUSTER_ENDPOINT = 'https://api.mainnet-beta.solana.com'
+const SOLANA_CLUSTER_ENDPOINT = 'https://audius.rpcpool.com/'
 const ETH_BRIDGE_ADDRESS = '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B'
 const SOL_BRIDGE_ADDRESS = 'worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth'
 const ETH_TOKEN_BRIDGE_ADDRESS = '0x3ee18B2214AFF97000D974cf647E7C347E8fa585'
 const SOL_TOKEN_BRIDGE_ADDRESS = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
-const WAUDIO_MINT_ADDRESS = 'BCD75RNBHrJJpW4dXVagL5mPjzRLnVZq4YirJdjEYMV7'
 
 // https://github.com/certusone/wormhole/blob/7f5740754b8d722c42310be086dc21efa7ed8c83/bridge_ui/src/utils/consts.ts#L150
 const WORMHOLE_RPC_HOSTS = [
@@ -55,7 +54,7 @@ const RETRY_DELAY_MS_RECEIPT = 1000
 const NUM_RETRIES_VAA = 60
 const RETRY_DELAY_MS_VAA = 5000
 
-const ETH_REWARD_MANAGER_ADDRESS = '0xF9B0871d3A8dc365f6231653f7D879c9578ED039'
+const ETH_REWARD_MANAGER_ADDRESS = '0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0'
 const TEST_PRIVATE_KEY = process.env.testPrivateKey
 const FEE_PAYER_SECRET_KEY = process.env.feePayerAddress
 
@@ -195,9 +194,7 @@ async function run () {
       SOL_BRIDGE_ADDRESS,
       SOL_TOKEN_BRIDGE_ADDRESS,
       feePayerAddress,
-      vaaBytes,
-      /* isSolanaNative */ false, // todo: is this correct?
-      /* mintAddress */ WAUDIO_MINT_ADDRESS
+      vaaBytes
     )
     console.log({ transaction })
 
