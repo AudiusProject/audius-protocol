@@ -50,7 +50,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   logger.info(`${logPrefix} selected wallets, num wallets: ${userIdsAndWallets.length}, time: ${Date.now() - startTime}ms`)
 
   const userIdToWalletsMap = {}
-  for ({blockchainUserId, walletAddress} of userIdsAndWallets) {
+  for (const { blockchainUserId, walletAddress } of userIdsAndWallets) {
     userIdToWalletsMap[blockchainUserId] = walletAddress
   }
 
