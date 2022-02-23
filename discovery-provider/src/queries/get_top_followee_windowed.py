@@ -1,3 +1,5 @@
+import logging  # pylint: disable=C0302
+
 from sqlalchemy import desc, text
 from src import exceptions
 from src.models import Follow, Track
@@ -24,7 +26,7 @@ def get_top_followee_windowed(type, window, args):
 
     limit = args.get("limit", 25)
 
-    current_user_id = get_current_user_id()
+    current_user_id = args.get("user_id")
     db = get_db_read_replica()
     with db.scoped_session() as session:
         # Construct a subquery to get the summed save + repost count for the `type`

@@ -189,6 +189,8 @@ def get_feed_route():
         args["followee_user_ids"] = parse_id_array_param(
             request.args.getlist("followee_user_id")
         )
+    user_id = get_current_user_id()
+    args["user_id"] = user_id
     feed_results = get_feed(args)
     return api_helpers.success_response(feed_results)
 
@@ -463,7 +465,8 @@ def get_top_followee_windowed_route(type, window):
         args["limit"] = 25
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-
+    user_id = get_current_user_id()
+    args["user_id"] = user_id
     try:
         tracks = get_top_followee_windowed(type, window, args)
         return api_helpers.success_response(tracks)
@@ -491,7 +494,8 @@ def get_top_followee_saves_route(type):
         args["limit"] = 25
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-
+    user_id = get_current_user_id()
+    args["user_id"] = user_id
     try:
         tracks = get_top_followee_saves(type, args)
         return api_helpers.success_response(tracks)

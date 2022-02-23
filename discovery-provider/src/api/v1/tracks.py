@@ -1,5 +1,4 @@
-import logging
-from tokenize import String  # pylint: disable=C0302
+import logging  # pylint: disable=C0302
 from typing import List
 from urllib.parse import urljoin
 
@@ -10,12 +9,14 @@ from src.api.v1.helpers import (
     abort_bad_path_param,
     abort_bad_request_param,
     abort_not_found,
+    decode_ids_array,
     decode_with_abort,
     extend_track,
     extend_user,
     format_limit,
     format_offset,
     full_trending_parser,
+    get_authed_user_id,
     get_current_user_id,
     get_default_max,
     get_encoded_track_id,
@@ -822,7 +823,8 @@ class FullRemixingRoute(Resource):
       limit?: (number) default=25, max=100
 """
 best_new_releases_parser = reqparse.RequestParser()
-best_new_releases_parser.add_argument("window", required=True, type=str)
+best_new_releases_parser.add_argument("window", required=True, choices=('week', 'month', 'year'), type=str)
+best_new_releases_parser.add_argument("user_id", required=True, type=str)
 best_new_releases_parser.add_argument("limit", required=False, default=25, type=int)
 best_new_releases_parser.add_argument("with_users", required=False, default=True, type=bool)
 
@@ -834,17 +836,12 @@ class BestNewReleases(Resource):
     @full_ns.marshal_with(full_tracks_response)
     def get(self):
         request_args = best_new_releases_parser.parse_args()
-        
         window = request_args.get("window")
-        valid_windows = ["week", "month", "year"]
-        if not window or window not in valid_windows:
-            abort_bad_request_param("window", full_ns)
-        
         args = {
             "with_users": request_args.get("with_users"),
-            "limit": format_limit(request_args, 100, 25),
+            "limit": format_limit(request_args, 100),
+            "user_id": get_current_user_id(request_args)
         }
-        
         tracks = get_top_followee_windowed("track", window, args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
@@ -865,7 +862,8 @@ This is generated in the following manner:
 """
 
 under_the_radar_parser = reqparse.RequestParser()
-under_the_radar_parser.add_argument("filter", required=False, default='all', type=str)
+under_the_radar_parser.add_argument("user_id", required=True, type=str)
+under_the_radar_parser.add_argument("filter", required=False, default='all', choices=('all', 'repost', 'original'), type=str)
 under_the_radar_parser.add_argument("limit", required=False, default=25, type=int)
 under_the_radar_parser.add_argument("offset", required=False, default=0, type=int)
 under_the_radar_parser.add_argument("tracks_only", required=False, type=bool)
@@ -884,18 +882,10 @@ class UnderTheRadar(Resource):
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100, 25),
             "offset": format_offset(request_args),
+            "user_id": get_current_user_id(request_args),
+            "filter": request_args.get("filter")
         }
-        
-        # filter should be one of ["all", "reposts", "original"]
-        # empty filter value results in "all"
-        filter = request_args.get("filter")
-        valid_filters = ["all", "repost", "original"]
-        if not filter or filter not in valid_filters:
-            args["filter"] = "all"
-        else:
-            args["filter"] = request_args.get("filter")
-
-        feed_results = get_feed(args)    
+        feed_results = get_feed(args)
         feed_results = list(map(extend_track, feed_results))
         return success_response(feed_results)
     
@@ -906,6 +896,7 @@ class UnderTheRadar(Resource):
         - Most favorited
 """
 most_loved_parser = reqparse.RequestParser()
+most_loved_parser.add_argument("user_id", required=True, type=str)
 most_loved_parser.add_argument("limit", required=False, default=25, type=int)
 most_loved_parser.add_argument("with_users", required=False, type=bool)
 
@@ -920,6 +911,7 @@ class MostLoved(Resource):
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100, 25),
+            "user_id": get_current_user_id(request_args)
         }
         tracks = get_top_followee_saves('track', args)
         tracks = list(map(extend_track, tracks))
@@ -929,19 +921,18 @@ class MostLoved(Resource):
 @ns.route('/latest')
 class LatestTrack(Resource):
     @record_metrics
-    @ns.marshal_with(tracks_response)
     def get(self):
         latest = get_max_id('track')
         return success_response(latest)
 
 
 by_ids_parser = reqparse.RequestParser()
-by_ids_parser.add_argument("ids_array", required=True, type=str)
-by_ids_parser.add_argument("sort", required=False, type=str)
+by_ids_parser.add_argument("id", required=True, action="append")
+by_ids_parser.add_argument("sort", required=False, choices=('date', 'plays', 'created_at', "create_date", "release_date", "blocknumber", "track_id"), type=str)
 by_ids_parser.add_argument("limit", required=False, default=100, type=int)
 by_ids_parser.add_argument("offset", required=False, default=0, type=int)
-by_ids_parser.add_argument("user_id", required=False, type=int)
-by_ids_parser.add_argument("authed_user_id", required=False, type=int)
+by_ids_parser.add_argument("user_id", required=False, type=str)
+by_ids_parser.add_argument("authed_user_id", required=False, type=str)
 by_ids_parser.add_argument("min_block_number", required=False, type=int)
 by_ids_parser.add_argument("filter_deleted", required=False, type=bool)
 by_ids_parser.add_argument("with_users", required=False, type=bool)
@@ -955,7 +946,7 @@ class TracksByIDs(Resource):
     def get(self):
         request_args = by_ids_parser.parse_args()
         current_user_id = get_current_user_id(request_args)
-        ids_array = request_args.get("ids_array").split(",")
+        ids_array = decode_ids_array(request_args.get("id"))
 
         args = {
             "id": ids_array,
@@ -964,17 +955,15 @@ class TracksByIDs(Resource):
             "current_user_id": current_user_id,
             "filter_deleted": request_args.get("filter_deleted"),
             "with_users": request_args.get("with_users"),
-            "tracks_only": request_args.get("tracks_only"), 
         }
         if request_args.get("sort"):
             args["sort"] = request_args.get("sort")
         if request_args.get("user_id"):
-            args["user_id"] = request_args.get("user_id")
+            args["user_id"] = get_current_user_id(request_args)
         if request_args.get("authed_user_id"):
-            args["authed_user_id"] = request_args.get("authed_user_id")
+            args["authed_user_id"] = get_authed_user_id(request_args)
         if request_args.get("min_block_number"):
             args["min_block_number"] = request_args.get("min_block_number")
-        
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)

@@ -333,6 +333,18 @@ def get_current_user_id(args):
     return None
 
 
+def get_authed_user_id(args):
+    """Gets authed_user_id from args featuring a "authed_user_id" key"""
+    if args.get("authed_user_id"):
+        return decode_string_id(args["authed_user_id"])
+    return None
+
+
+def decode_ids_array(ids_array):
+    """Takes string ids and decodes them"""
+    return list(map(lambda id: decode_string_id(id), ids_array))
+
+
 search_parser = reqparse.RequestParser()
 search_parser.add_argument("query", required=True)
 search_parser.add_argument("only_downloadable", required=False, default=False)
