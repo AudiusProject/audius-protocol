@@ -234,6 +234,14 @@ class RewardsAttester {
       AAO address: ${this.aaoAddress} \
       endpoints: ${this.endpoints}
     `)
+
+    // If a list of endpoints was not specified,
+    // set the pool to the entire list of discovery providers.
+    // This overrides any configured whitelist for the service selector.
+    if (this.endpointPool.size === 0) {
+      const pool = await this.libs.discoveryProvider.serviceSelector.getServices()
+      this.endpointPool = new Set(pool)
+    }
     await this._selectDiscoveryNodes()
     await this.delayCalculator.start()
 
