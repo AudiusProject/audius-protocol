@@ -6,7 +6,7 @@ const retry = require('async-retry')
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, ETH minimum allowed gas price
 const HIGH_GAS_PRICE = 250 * MIN_GAS_PRICE // 250 GWei
 const DEFAULT_GAS_PRICE = 100 * MIN_GAS_PRICE // 100 Gwei is a reasonably average gas price
-const MAX_GAS_LIMIT = 2000000 // ETH block gas limit is 30M, set to 1/15 of that or 2M
+const MAX_GAS_LIMIT = 5000000 // We've seen prod tx's take up to 4M. Set to the highest we've observed + a buffer
 
 /** Singleton state-manager for Audius Eth Contracts */
 class EthWeb3Manager {
