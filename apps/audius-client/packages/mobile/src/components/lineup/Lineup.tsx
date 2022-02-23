@@ -87,6 +87,12 @@ const styles = StyleSheet.create({
   }
 })
 
+type Section = {
+  delineate: boolean
+  title?: string
+  data: Array<LineupItem | LoadingLineupItem>
+}
+
 /** `Lineup` encapsulates the logic for displaying a list of items such as Tracks (e.g. prefetching items
  * displaying loading states, etc).
  */
@@ -230,7 +236,7 @@ export const Lineup = ({
   }
 
   // Calculate the sections of data to provide to SectionList
-  const sections = useMemo(() => {
+  const sections: Section[] = useMemo(() => {
     const { deleted, entries, hasMore, isMetadataLoading, page } = lineup
     const itemDisplayCount = page <= 1 ? itemCounts.initial : pageItemCount
 
@@ -261,23 +267,41 @@ export const Lineup = ({
       () => ({ _loading: true } as LoadingLineupItem)
     )
 
-    // If delineate=true, create sections of items based on time.
-    // Otherwise return one section
-    return delineate
-      ? [
-          ...delineateByTime(entries),
-          {
-            title: '',
-            data: skeletonItems
-          }
-        ]
-      : [
-          {
-            title: '',
-            data: [...entries, ...skeletonItems]
-          }
-        ]
-  }, [count, countOrDefault, delineate, itemCounts, lineup, pageItemCount])
+    if (delineate) {
+      return [
+        ...delineateByTime(entries),
+        {
+          delineate: false,
+          data: skeletonItems
+        }
+      ]
+    }
+
+    if (leadingElementId && showLeadingElementArtistPick) {
+      const [artistPick, ...restEntries] = [...entries, ...skeletonItems]
+
+      return [
+        { delineate: false, data: [artistPick] },
+        { delineate: true, data: restEntries }
+      ]
+    }
+
+    return [
+      {
+        delineate: false,
+        data: [...entries, ...skeletonItems]
+      }
+    ]
+  }, [
+    count,
+    countOrDefault,
+    delineate,
+    itemCounts,
+    lineup,
+    pageItemCount,
+    leadingElementId,
+    showLeadingElementArtistPick
+  ])
 
   return (
     <SectionList
@@ -294,9 +318,9 @@ export const Lineup = ({
       // TODO: figure out why this is causing duplicate ids
       // keyExtractor={(item, index) => String(item.id + index)}
       renderItem={renderItem}
-      renderSectionHeader={({ section: { title } }) =>
-        delineate && title ? <Delineator text={title} /> : null
-      }
+      renderSectionHeader={({ section }) => {
+        return section.delineate ? <Delineator text={section.title} /> : null
+      }}
       listKey={listKey}
     />
   )

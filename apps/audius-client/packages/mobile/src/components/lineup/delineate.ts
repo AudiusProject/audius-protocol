@@ -45,12 +45,11 @@ const getLineupItemGroup = ({ activityTimestamp }: LineupItem) => {
 
 export const delineateByTime = (entries: LineupItem[]) => {
   return Object.entries(groupBy<LineupItem>(entries, getLineupItemGroup)).map(
-    ([title, data], index) => ({
-      // For the first group,
-      // set the title as empty string to prevent
-      // Delineator from being displayed
-      title: index === 0 ? '' : title,
-      data
-    })
+    ([title, data], index) => {
+      // For the first group, prevent delineator from being displayed
+      return index === 0
+        ? { delineate: false, data }
+        : { delineate: true, title, data }
+    }
   )
 }
