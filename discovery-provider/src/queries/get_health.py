@@ -182,7 +182,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     start_time = time.time()
     redis = redis_connection.get_redis()
     web3 = web3_provider.get_web3()
-    logger.info("health_check.py - 1 - get redis connection", time.time() - start_time)
 
     verbose = args.get("verbose")
     enforce_block_diff = args.get("enforce_block_diff")
@@ -202,25 +201,20 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_num = None
     latest_indexed_block_hash = None
 
-    logger.info("health_check.py - 2 - compute healthy block diff", time.time() - start_time)
-
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
         latest_block_num, latest_block_hash = get_latest_chain_block_set_if_nx(
             redis, web3
         )
-        logger.info("health_check.py - 3.1 - use_redis_cache - get_latest_chain_block_set_if_nx", time.time() - start_time)
 
         # get latest db state from redis cache
         latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
         if latest_indexed_block_num is not None:
             latest_indexed_block_num = int(latest_indexed_block_num)
-        logger.info("health_check.py - 3.2 - use_redis_cache - most_recent_indexed_block_redis_key", time.time() - start_time)
 
         latest_indexed_block_hash = redis.get(most_recent_indexed_block_hash_redis_key)
         if latest_indexed_block_hash is not None:
             latest_indexed_block_hash = latest_indexed_block_hash.decode("utf-8")
-        logger.info("health_check.py - 3.2 - use_redis_cache - most_recent_indexed_block_hash_redis_key", time.time() - start_time)
 
     # fetch latest blockchain state from web3 if:
     # we explicitly don't want to use redis cache or
@@ -230,14 +224,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block = web3.eth.getBlock("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
-    logger.info("health_check.py - 4 - NOT use_redis_cache", time.time() - start_time)
 
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
-    logger.info("health_check.py - 5 - get_play_health_info", time.time() - start_time)
     rewards_manager_health_info = get_rewards_manager_health_info(redis)
-    logger.info("health_check.py - 6 - get_rewards_manager_health_info", time.time() - start_time)
     user_bank_health_info = get_user_bank_health_info(redis)
-    logger.info("health_check.py - 7 - get_user_bank_health_info", time.time() - start_time)
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -250,7 +240,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         db_block_state = _get_db_block_state()
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
-    logger.info("health_check.py - 8 - _get_db_block_state", time.time() - start_time)
 
     trending_tracks_age_sec = get_elapsed_time_redis(
         redis, trending_tracks_last_completion_redis_key
@@ -281,7 +270,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if last_scanned_block_for_balance_refresh
         else None
     )
-    logger.info("health_check.py - 9 - get_elapsed_time_redis", time.time() - start_time)
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -296,7 +284,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             MONITORS[monitor_names.redis_total_memory],
         ]
     )
-    logger.info("health_check.py - 10 - get_monitors", time.time() - start_time)
 
     health_results = {
         "web": {
@@ -406,7 +393,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     is_unhealthy = (
         unhealthy_blocks or unhealthy_challenges or play_health_info["is_unhealthy"]
     )
-    logger.info("health_check.py - 11 - compute final object", time.time() - start_time)
 
     return health_results, is_unhealthy
 
