@@ -75,10 +75,9 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   }, {})
   logger.info(`${logPrefix} calculated updates, num updates: ${userWalletsAndPlaylistUpdates.length}, time: ${Date.now() - startTime}ms`)
 
-  const newPlaylistUpdatePromises = userIds.map(userId => {
+  const newAndUpdatedPlaylistUpdateRecords = userIds.map(userId => {
     const walletAddress = userIdToWalletsMap[userId]
-    if (!walletAddress) return Promise.resolve()
-
+    if (!walletAddress) return null
     const dbPlaylistUpdates = userWalletToPlaylistUpdatesMap[walletAddress] || {}
     const fetchedPlaylistUpdates = userPlaylistUpdatesMap[userId]
     Object.keys(fetchedPlaylistUpdates).forEach(playlistId => {
@@ -90,15 +89,16 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
         lastUpdated: fetchedLastUpdated.valueOf()
       }
     })
-
-    // upsert playlist updates based for the wallet address
-    return models.UserEvents.upsert({
+    return {
       walletAddress,
       playlistUpdates: dbPlaylistUpdates
-    })
+    }
   })
+  const results = await models.UserEvents.bulkCreate(
+    newAndUpdatedPlaylistUpdateRecords.filter(Boolean),
+    { updateOnDuplicate: ['walletAddress'] }
+  )
 
-  const results = await Promise.all(newPlaylistUpdatePromises)
   logger.info(`${logPrefix} finished upsert, num events: ${results.length}, time: ${Date.now() - startTime}ms`)
   return notifications
 }
