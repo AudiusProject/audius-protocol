@@ -42,12 +42,12 @@ from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
+from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 from src.utils.index_blocks_performance import (
     record_index_blocks_ms,
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
-from src.utils.ipfs_lib import NEW_BLOCK_TIMEOUT_SECONDS
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -256,7 +256,101 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-async def fetch_ipfs_metadata(
+def get_metadata_from_json(default_metadata_fields, resp_json):
+    metadata = {}
+    for parameter, value in default_metadata_fields.items():
+        metadata[parameter] = (
+            resp_json.get(parameter) if resp_json.get(parameter) != None else value
+        )
+    return metadata
+
+
+async def fetch_metadata_from_gateway_endpoints(
+    cid_metadata,
+    cids,
+    cid_to_user_id,
+    user_to_replica_set,
+    cnode_endpoints,
+    cid_type,
+    block_hash,
+    block_number,
+    txhash,
+    fetch_from_replica_set=True,
+):
+    async with aiohttp.ClientSession() as async_session:
+        futures = []
+        cid_futures_map = {}
+        for cid in cids:
+            if cid in cid_metadata:
+                continue  # already fetched
+            user_id = cid_to_user_id[cid]
+            if fetch_from_replica_set and user_id and user_id in user_to_replica_set:
+                user_replica_set = user_to_replica_set[
+                    user_id
+                ]  # user or track owner's replica set
+                if not user_replica_set:
+                    continue  # try all gateway endpoints on later attempt
+                user_replica_set = user_replica_set.split(",")
+
+            gateway_endpoints = (
+                user_replica_set
+                if fetch_from_replica_set
+                else list(
+                    set(cnode_endpoints) - set(user_replica_set)
+                )  # already fetched replica set
+            )
+            for gateway_endpoint in gateway_endpoints:
+                future = asyncio.ensure_future(
+                    update_task.ipfs_client.get_metadata_async(
+                        async_session, cid, gateway_endpoint
+                    )
+                )
+                if cid not in cid_futures_map:
+                    cid_futures_map[cid] = set()
+                cid_futures_map[cid].add(future)
+                futures.append(future)
+
+        try:
+            for future in asyncio.as_completed(futures, timeout=5):
+                try:
+                    future_result = await future
+                except asyncio.CancelledError:
+                    pass  # swallow canceled requests
+
+                if not future_result:
+                    continue
+
+                cid, metadata_json = future_result
+
+                metadata_format = (
+                    track_metadata_format
+                    if cid_type[cid] == "track"
+                    else user_metadata_format
+                )
+
+                formatted_json = get_metadata_from_json(metadata_format, metadata_json)
+
+                if formatted_json != metadata_format:
+                    cid_metadata[cid] = formatted_json
+
+                    if len(cid_metadata) == len(cids):
+                        break  # fetched all metadata
+
+                    for other_future in cid_futures_map[cid]:
+                        if other_future == future:
+                            continue
+                        other_future.cancel()  # cancel other pending requests
+        except asyncio.TimeoutError:
+            logger.info("index.py | fetch_cid_metadata TimeoutError")
+        except Exception as e:
+            logger.info("index.py | Error in fetch ipfs metadata")
+            blockhash = update_task.web3.toHex(block_hash)
+            raise IndexingError(
+                "prefetch-cids", block_number, blockhash, txhash, str(e)
+            ) from e
+
+
+def fetch_cid_metadata(
     db,
     user_factory_txs,
     track_factory_txs,
@@ -276,11 +370,13 @@ async def fetch_ipfs_metadata(
     )
 
     blacklisted_cids = set()
-    cids = set()
-    cid_type = {}
-    # cid -> user_id lookup to make fetching replica set more efficient
-    cid_to_user_id = {}
+    cids_txhash_set = set()
+    cid_type = {}  # cid -> entity type track / user
+    cid_to_user_id = (
+        {}
+    )  # cid -> user_id lookup to make fetching replica set more efficient
 
+    # fetch transactions
     with db.scoped_session() as session:
         for tx_receipt in user_factory_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -291,7 +387,7 @@ async def fetch_ipfs_metadata(
                 event_args = entry["args"]
                 cid = helpers.multihash_digest_to_cid(event_args._multihashDigest)
                 if not is_blacklisted_ipld(session, cid):
-                    cids.add((cid, txhash))
+                    cids_txhash_set.add((cid, txhash))
                     cid_type[cid] = "user"
                 else:
                     blacklisted_cids.add(cid)
@@ -316,12 +412,11 @@ async def fetch_ipfs_metadata(
                     )
                     cid = multihash.to_b58_string(buf)
                     if not is_blacklisted_ipld(session, cid):
-                        cids.add((cid, txhash))
+                        cids_txhash_set.add((cid, txhash))
                         cid_type[cid] = "track"
                     else:
                         blacklisted_cids.add(cid)
                     cid_to_user_id[cid] = track_owner_id
-    logger.info(f"starting fetch_ipfs_metadata: {cids}")
 
     # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
     user_to_replica_set = dict(
@@ -334,62 +429,63 @@ async def fetch_ipfs_metadata(
         .all()
     )
 
-    ipfs_metadata = {}
-    async with aiohttp.ClientSession() as async_session:
-        futures = []
-        futures_map = {}
-        cid_futures_map = {}
-        for cid, txhash in cids:
-            metadata_format = (
-                track_metadata_format
-                if cid_type[cid] == "track"
-                else user_metadata_format
-            )
-            user_replica_set = None
-            user_id = cid_to_user_id[cid]
-            if user_id and user_id in user_to_replica_set:
-                user_replica_set = user_to_replica_set[
-                    user_id
-                ]  # user or track owner's replica set
-            futures = asyncio.ensure_future(
-                update_task.ipfs_client.get_metadata(
-                    async_session, cid, metadata_format, user_replica_set
-                )
-            )
-            cid_futures_map[cid] = futures
+    cids = set(cid_type.keys())
+    cid_metadata = {}  # cid -> metadata
 
-            futures.extend(future)
-            for future in futures:
-                futures_map[future] = [cid, txhash]
-
-        try:
-            for future in asyncio.as_completed(
-                futures, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
-            ):
-                futures_result = await future
-                cid, txhash = futures_map[future]
-
-                if futures_result:
-                    for other_future in cid_futures_map[cid]:
-                        if other_future == future:
-                            continue
-                        other_future.cancel()
-
-                    ipfs_metadata[cid] = futures_result
-        except asyncio.TimeoutError:
-            logger.info("index.py | fetch_ipfs_metadata TimeoutError")
-        except Exception as e:
-            logger.info("index.py | Error in fetch ipfs metadata")
-            blockhash = update_task.web3.toHex(block_hash)
-            raise IndexingError(
-                "prefetch-cids", block_number, blockhash, txhash, str(e)
-            ) from e
-
-    logger.info(
-        f"index.py | finished fetch_ipfs_metadata: {len(cids)} cids in {datetime.now() - start_time} seconds"
+    # first attempt - fetch all CIDs from replica set
+    asyncio.run(
+        fetch_metadata_from_gateway_endpoints(
+            cid_metadata,
+            cids,
+            cid_to_user_id,
+            user_to_replica_set,
+            None,
+            cid_type,
+            block_hash,
+            block_number,
+            txhash,
+            fetch_from_replica_set=True,
+        )
     )
 
-    return ipfs_metadata, blacklisted_cids
+    # second attempt - fetch missing CIDs from other cnodes
+    if len(cid_metadata) != len(cids):
+        eth_web3 = update_task.eth_web3
+        shared_config = update_task.shared_config
+        redis = update_task.redis
+        eth_abi_values = update_task.eth_abi_values
+
+        cnode_endpoints = list(
+            fetch_all_registered_content_nodes(
+                eth_web3, shared_config, redis, eth_abi_values
+            )
+        )
+
+        asyncio.run(
+            fetch_metadata_from_gateway_endpoints(
+                cid_metadata,
+                cids,
+                cid_to_user_id,
+                user_to_replica_set,
+                cnode_endpoints,
+                cid_type,
+                block_hash,
+                block_number,
+                txhash,
+                fetch_from_replica_set=False,
+            )
+        )
+
+    if len(cid_metadata) != len(cids):
+        raise Exception(
+            f"Did not fetch all CIDs - missing {[set(cids) - set(cid_metadata.keys())]} CIDs"
+        )
+
+    logger.info(
+        f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
+    )
+
+    return cid_metadata, blacklisted_cids
 
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
@@ -495,7 +591,7 @@ def add_indexed_block_to_redis(block, redis):
 def process_state_changes(
     main_indexing_task,
     session,
-    ipfs_metadata,
+    cid_metadata,
     blacklisted_cids,
     tx_type_to_grouped_lists_map,
     block,
@@ -522,7 +618,7 @@ def process_state_changes(
             block_number,
             block_timestamp,
             block_hash,
-            ipfs_metadata,
+            cid_metadata,
             blacklisted_cids,
         ]
 
@@ -643,7 +739,7 @@ def index_blocks(self, db, blocks_list):
 
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
+                    cid_metadata, blacklisted_cids = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
@@ -659,7 +755,7 @@ def index_blocks(self, db, blocks_list):
                     changed_entity_ids_map = process_state_changes(
                         self,
                         session,
-                        ipfs_metadata,
+                        cid_metadata,
                         blacklisted_cids,
                         txs_grouped_by_type,
                         block,

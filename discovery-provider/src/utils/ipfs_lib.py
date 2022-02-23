@@ -1,13 +1,11 @@
 # pylint: disable=C0302
-import concurrent.futures
+import asyncio
 import logging
-import time
 from urllib.parse import urljoin, urlparse
 
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 logger = logging.getLogger(__name__)
-NEW_BLOCK_TIMEOUT_SECONDS = 15
 
 
 class IPFSClient:
@@ -40,162 +38,33 @@ class IPFSClient:
             self._cnode_endpoints = []
             logger.warning("IPFSCLIENT | couldn't fetch _cnode_endpoints on init")
 
-    def get_metadata_from_json(self, default_metadata_fields, resp_json):
-        metadata = {}
-        for parameter, value in default_metadata_fields.items():
-            metadata[parameter] = (
-                resp_json.get(parameter) if resp_json.get(parameter) != None else value
-            )
-        return metadata
-
-    def force_clear_queue_and_stop_task_execution(self, executor):
-        logger.info(
-            "IPFSCLIENT | force_clear_queue_and_stop_task_execution - Clearing queue for executor..."
-        )
-        executor._threads.clear()
-        concurrent.futures.thread._threads_queues.clear()
-
-    # pylint: disable=broad-except
-    def get_metadata(
-        self, async_session, multihash, default_metadata_fields, user_replica_set=None
-    ):
-        """Retrieve file from IPFS or gateway, validating metadata requirements prior to
-        returning an object with no missing entries
-        """
-        logger.warning(f"IPFSCLIENT | get_metadata - {multihash}")
-        api_metadata = default_metadata_fields
-        retrieved_from_gateway = False
-        retrieved_from_ipfs_node = False
-        start_time = time.time()
-        retrieved_metadata = False
-
-        try:
-            api_metadata = self.get_metadata_from_gateway(
-                async_session, multihash, default_metadata_fields, user_replica_set
-            )
-            retrieved_metadata = api_metadata != default_metadata_fields
-        except Exception as e:
-            logger.error(
-                f"IPFSCLIENT | ipfs_lib.py | \
-                ERROR in get_metadata_from_gateway \
-                generated {e}, multihash: {multihash}",
-                exc_info=True,
-            )
-
-        # Raise error if metadata is not retrieved.
-        # Ensure default values are not written into database.
-        if not retrieved_metadata:
-            logger.error(
-                f"IPFSCLIENT | Retrieved metadata: {retrieved_metadata}. "
-                f"retrieved from gateway : {retrieved_from_gateway}, "
-                f"retrieved from local node : {retrieved_from_ipfs_node}"
-            )
-            logger.error(api_metadata)
-            logger.error(default_metadata_fields)
-            return None
-
-        duration = time.time() - start_time
-        logger.info(
-            f"IPFSCLIENT | get_metadata ${multihash} {duration} seconds \
-                | from ipfs:{retrieved_from_ipfs_node} |from gateway:{retrieved_from_gateway}"
-        )
-
-        return api_metadata
-
-    # Retrieve a metadata object
-    async def load_metadata_url(self, async_session, url, max_timeout, default_metadata_fields):
-        # Skip URL if invalid
-        validate_url = urlparse(url)
-        if not validate_url.scheme:
-            raise Exception(
-                f"IPFSCLIENT | Invalid URL from provided gateway addr - {url}"
-            )
-        logger.info(f"IPFSCLIENT | load_metadata_url requesting metadata {url}")
-        start_time = time.time()
-        r = await async_session.get(url, timeout=max_timeout)
-        logger.info(
-            f"IPFSCLIENT | load_metadata_url to {url} finished in {time.time() - start_time} seconds, status: {r.status_code}, cache: {r.headers['CF-Cache-Status'] if 'CF-Cache-Status' in r.headers else 'Not using cloudflare'}"
-        )
-
-        if r.status_code != 200:
-            logger.warning(f"IPFSCLIENT | {url} - {r.status_code}")
-            # TODO: what do we return here?
-            return None
-
-        # Override with retrieved JSON value
-        formatted_json = self.get_metadata_from_json(
-            default_metadata_fields, r.json(content_type=None)
-        )
-
-        # Exit loop if dict is successfully retrieved
-        logger.info(
-            f"IPFSCLIENT | load_metadata_url Retrieved from {url} took {time.time() - start_time} seconds"
-        )
-        return formatted_json
-
-    def query_ipfs_metadata_json(
-        self, async_session, gateway_ipfs_urls, default_metadata_fields
-    ):
-        return [self.load_metadata_url(async_session, url, NEW_BLOCK_TIMEOUT_SECONDS, default_metadata_fields) for url in gateway_ipfs_urls]
-
-    def get_metadata_from_gateway(
-        self,
-        async_session,
-        multihash,
-        default_metadata_fields,
-        user_replica_set: str = None,
-    ):
-        """Args:
-        args.user_replica_set - comma-separated string of user's replica urls
-        """
-
-        # Default return initial metadata format
-        gateway_metadata_json = default_metadata_fields
-        logger.warning(
-            f"IPFSCLIENT | get_metadata_from_gateway, {multihash} replica set: {user_replica_set}"
-        )
-        gateway_endpoints = self._cnode_endpoints
-
-        # first attempt to first fetch metadata from user replica set, if provided & non-empty
-        if user_replica_set and isinstance(user_replica_set, str):
-            user_replicas = user_replica_set.split(",")
-            try:
-                query_urls = [f"{addr}/ipfs/{multihash}" for addr in user_replicas]
-                data = self.query_ipfs_metadata_json(
-                    async_session, query_urls, default_metadata_fields
-                )
-                if data is None:
-                    raise Exception()
-                return data
-            except Exception:
-                logger.error(
-                    "IPFSCLIENT | get_metadata_from_gateway \
-                        \nfailed to fetch metadata from user replica gateways"
-                )
-
-        logger.warning(
-            f"IPFSCLIENT | get_metadata_from_gateway, \
-                \ncombined addresses: {gateway_endpoints}, \
-                \ncnode_endpoints: {self._cnode_endpoints}"
-        )
-
-        query_urls = [f"{addr}/ipfs/{multihash}" for addr in gateway_endpoints]
-        data = self.query_ipfs_metadata_json(
-            async_session, query_urls, default_metadata_fields
-        )
-        if data is None:
-            raise Exception(
-                f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
-            )
-        gateway_metadata_json = data
-        return gateway_metadata_json
-
     def update_cnode_urls(self, cnode_endpoints):
         if len(cnode_endpoints):
             logger.info(
                 f"IPFSCLIENT | update_cnode_urls with endpoints {cnode_endpoints}"
             )
             self._cnode_endpoints = cnode_endpoints
+
+    async def get_metadata_async(self, async_session, multihash, gateway_endpoint):
+        url = gateway_endpoint + "/ipfs/" + multihash
+        # Skip URL if invalid
+        try:
+            validate_url = urlparse(url)
+            if not validate_url.scheme:
+                raise Exception(
+                    f"IPFSCLIENT | Invalid URL from provided gateway addr - {url}"
+                )
+
+            async with async_session.get(url, timeout=2) as resp:
+                if resp.status == 200:
+                    json_resp = await resp.json(content_type=None)
+                    return (multihash, json_resp)
+        except asyncio.TimeoutError:
+            logger.info("IPFSCLIENT | get_metadata_async TimeoutError")
+            return None
+        except Exception as e:
+            logger.info(f"IPFSCLIENT | get_metadata_async Exception - {str(e)}")
+            return None
 
 
 def construct_image_dir_gateway_url(address, CID):
