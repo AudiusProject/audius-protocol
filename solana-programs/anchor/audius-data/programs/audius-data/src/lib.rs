@@ -337,7 +337,7 @@ pub struct Initialize<'info> {
 /// `payer` is the account responsible for the lamports required to allocate this account.
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16])]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
@@ -370,7 +370,7 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16])]
 pub struct CreateUser<'info> {
     #[account(
         init,
