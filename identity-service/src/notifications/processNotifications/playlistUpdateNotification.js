@@ -95,7 +95,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     })
     .filter(Boolean)
 
-  logger.info(`${logPrefix} mapped updates, time: ${Date.now() - startTime}ms`)
+  logger.info(`${logPrefix} mapped events, time: ${Date.now() - startTime}ms`)
 
   const results = await sequelize.query(`
     INSERT INTO "UserEvents" ("walletAddress", "playlistUpdates", "createdAt", "updatedAt")
