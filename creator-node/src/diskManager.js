@@ -83,6 +83,29 @@ class DiskManager {
   }
 
   /**
+   * Construct the legacy path to a file or directory given a CID
+   */
+  static computeLegacyFilePath(cid) {
+    if (!this.isValidCID(cid)) {
+      throw new Error(`[computeLegacyFilePath] [CID=${cid}] Invalid CID.`)
+    }
+    return path.join(this.getConfigStoragePath(), 'files', cid)
+  }
+
+  /**
+   * Boolean function to check if arg is a valid CID
+   */
+  static isValidCID(cid) {
+    try {
+      // Will throw if `new CID(cid)` fails
+      // CID.isCID() returns boolean
+      return CID.isCID(new CID(cid))
+    } catch (e) {
+      return false
+    }
+  }
+
+  /**
    * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory
    *
    * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
