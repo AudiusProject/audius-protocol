@@ -64,13 +64,15 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     },
     transaction: tx
   })
-  const userWalletToPlaylistUpdatesMap = userWalletsAndPlaylistUpdates.reduce((accumulator, current) => {
-    return {
-      ...accumulator,
-      [current.walletAddress]: current.playlistUpdates
-    }
-  }, {})
-  logger.info(`${logPrefix} calculated updates, num updates: ${userWalletsAndPlaylistUpdates.length}, time: ${Date.now() - startTime}ms`)
+
+  logger.info(`${logPrefix} found updates, time: ${Date.now() - startTime}ms`)
+
+  const userWalletToPlaylistUpdatesMap = {}
+  for (const { walletAddress, playlistUpdates } of userWalletsAndPlaylistUpdates) {
+    userWalletToPlaylistUpdatesMap[walletAddress] = playlistUpdates
+  }
+
+  logger.info(`${logPrefix} mapped updates, num updates: ${userWalletsAndPlaylistUpdates.length}, time: ${Date.now() - startTime}ms`)
 
   const newUserEvents = userIds
     .map(userId => {
