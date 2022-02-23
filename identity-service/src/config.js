@@ -773,6 +773,12 @@ const config = convict({
     format: String,
     env: 'amplitudeAPIKey',
     default: ''
+  },
+  cognitoIdentityHashSalt: {
+    doc: 'Hash salt',
+    format: String,
+    env: 'cognitoIdentityHashSalt',
+    default: ''
   }
 })
 
