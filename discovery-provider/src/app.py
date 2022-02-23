@@ -390,6 +390,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.calculate_trending_challenges",
             "src.tasks.index_listen_count_milestones",
             "src.tasks.user_listening_history.index_user_listening_history",
+            "src.tasks.prune_plays",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -504,6 +505,13 @@ def configure_celery(celery, test_config=None):
                 "task": "index_aggregate_monthly_plays",
                 "schedule": crontab(minute=0, hour=0),  # daily at midnight
             },
+            "prune_plays": {
+                "task": "prune_plays",
+                "schedule": crontab(
+                    minute="*/15",
+                    hour="14, 15",
+                ),  # 8x a day during non peak hours
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -551,7 +559,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
-    redis_inst.delete("index_user_listening_history_lock")
+    redis_inst.delete("prune_plays_lock")
 
     logger.info("Redis instance initialized!")
 
