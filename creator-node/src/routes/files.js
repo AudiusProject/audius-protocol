@@ -197,9 +197,10 @@ const getCID = async (req, res) => {
   }
 
   /**
-   * First check if file exists on FS at storagePath
-   * If found, continue
-   * If filePath is dir or not found, return error
+   * Check if file exists on FS at storagePath
+   * If found and not of file type, return error
+   * If found and file type, continue
+   * If not found, continue
    */
   startMs = Date.now()
   let fileFoundOnFS = false
@@ -246,6 +247,81 @@ const getCID = async (req, res) => {
     // continue
   }
 
+  /**
+   * If not found on FS at storagePath, check legacyStoragePath
+   */
+  if (!fileFoundOnFS) {
+    // Compute expected legacyStoragePath for CID
+    let legacyStoragePath
+    try {
+      legacyStoragePath = DiskManager.computeLegacyFilePath(CID)
+    } catch (e) {
+      decisionTree.push({
+        stage: `COMPUTE_LEGACY_FILE_PATH_FAILURE`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest(`${logPrefix} Invalid CID`)
+      )
+    }
+
+    /**
+     * Check if file exists on FS at legacyStoragePath
+     * If found and not of file type, return error
+     * If found and file type, continue
+     * If not found, continue
+     */
+    startMs = Date.now()
+    try {
+      // Will throw if path does not exist
+      // If exists, returns an instance of fs.stats class
+      const fsStats = await fs.stat(legacyStoragePath)
+      decisionTree.push({
+        stage: `FS_STATS_LEGACY_STORAGE_PATH`,
+        time: `${Date.now() - startMs}ms`
+      })
+
+      if (fsStats.isFile()) {
+        decisionTree.push({
+          stage: `CID_CONFIRMED_FILE_LEGACY_STORAGE_PATH`
+        })
+        fileFoundOnFS = true
+      } else if (fsStats.isDirectory()) {
+        decisionTree.push({
+          stage: `CID_CONFIRMED_DIRECTORY_LEGACY_STORAGE_PATH`
+        })
+        logGetCIDDecisionTree(decisionTree, req)
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest('this dag node is a directory')
+        )
+      } else {
+        decisionTree.push({
+          stage: `CID_INVALID_TYPE_LEGACY_STORAGE_PATH`
+        })
+        logGetCIDDecisionTree(decisionTree, req)
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest('CID is of invalid file type')
+        )
+      }
+    } catch (e) {
+      decisionTree.push({
+        stage: `CID_NOT_FOUND_ON_FS_LEGACY_STORAGE_PATH`,
+        time: `${Date.now() - startMs}ms`
+      })
+      // continue
+    }
+
+    if (fileFoundOnFS) {
+      storagePath = legacyStoragePath
+    }
+  }
+
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
   if (req.query.filename) {
     res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
@@ -272,7 +348,9 @@ const getCID = async (req, res) => {
     })
   }
 
-  // If file found on file system, stream
+  /**
+   * If file found on file system, stream
+   */
   if (fileFoundOnFS) {
     startMs = Date.now()
     try {
@@ -289,62 +367,70 @@ const getCID = async (req, res) => {
         time: `${Date.now() - startMs}ms`
       })
     }
-  } else {
-    // Check if CID record is in DB, error if not
-    startMs = Date.now()
-    try {
-      const queryResults = await models.File.findOne({
-        where: {
-          multihash: CID
-        },
-        order: [['clock', 'DESC']]
-      })
-      decisionTree.push({
-        stage: `DB_CID_QUERY`,
-        time: `${Date.now() - startMs}ms`
-      })
+  }
 
-      if (!queryResults) {
-        decisionTree.push({
-          stage: `DB_CID_QUERY_CID_NOT_FOUND`
-        })
-        logGetCIDDecisionTree(decisionTree, req)
-        return sendResponse(
-          req,
-          res,
-          errorResponseNotFound(
-            `${logPrefix} No valid file found for provided CID`
-          )
-        )
-      } else if (queryResults.type === 'dir') {
-        decisionTree.push({
-          stage: `DB_CID_QUERY_CONFIRMED_DIR`
-        })
-        logGetCIDDecisionTree(decisionTree, req)
-        return sendResponse(
-          req,
-          res,
-          errorResponseBadRequest('this dag node is a directory')
-        )
-      } else {
-        decisionTree.push({
-          stage: `DB_CID_QUERY_CID_FOUND`
-        })
-        storagePath = queryResults.storagePath
-      }
-    } catch (e) {
+  /**
+   * If not found on FS, check if CID record is in DB, error if not found
+   */
+  startMs = Date.now()
+  try {
+    const queryResults = await models.File.findOne({
+      where: {
+        multihash: CID
+      },
+      order: [['clock', 'DESC']]
+    })
+    decisionTree.push({
+      stage: `DB_CID_QUERY`,
+      time: `${Date.now() - startMs}ms`
+    })
+
+    if (!queryResults) {
       decisionTree.push({
-        stage: `DB_CID_QUERY_ERROR`,
-        time: `${Date.now() - startMs}ms`,
-        error: `${e.message}`
+        stage: `DB_CID_QUERY_CID_NOT_FOUND`
       })
       logGetCIDDecisionTree(decisionTree, req)
       return sendResponse(
         req,
         res,
-        errorResponseServerError(`${logPrefix} DB query failed`)
+        errorResponseNotFound(
+          `${logPrefix} No valid file found for provided CID`
+        )
       )
+    } else if (queryResults.type === 'dir') {
+      decisionTree.push({
+        stage: `DB_CID_QUERY_CONFIRMED_DIR`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest('this dag node is a directory')
+      )
+    } else {
+      decisionTree.push({
+        stage: `DB_CID_QUERY_CID_FOUND`
+      })
+      // This should never happen, logging in case it does
+      if (storagePath !== queryResults.storagePath) {
+        req.logger.error(
+          `${logPrefix} Found unexpected storagePath. Expected ${storagePath}, found ${queryResults.storagePath}.`
+        )
+      }
+      storagePath = queryResults.storagePath
     }
+  } catch (e) {
+    decisionTree.push({
+      stage: `DB_CID_QUERY_ERROR`,
+      time: `${Date.now() - startMs}ms`,
+      error: `${e.message}`
+    })
+    logGetCIDDecisionTree(decisionTree, req)
+    return sendResponse(
+      req,
+      res,
+      errorResponseServerError(`${logPrefix} DB query failed`)
+    )
   }
 
   /**
