@@ -330,6 +330,7 @@ const getCID = async (req, res) => {
         decisionTree.push({
           stage: `DB_CID_QUERY_CID_FOUND`
         })
+        storagePath = queryResults.storagePath
       }
     } catch (e) {
       decisionTree.push({
