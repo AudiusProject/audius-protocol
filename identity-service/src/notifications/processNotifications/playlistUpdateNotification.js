@@ -49,32 +49,30 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   })
   logger.info(`${logPrefix} selected wallets, num wallets: ${userIdsAndWallets.length}, time: ${Date.now() - startTime}ms`)
 
-  const userWallets = []
-  const userIdToWalletsMap = userIdsAndWallets.reduce((accumulator, current) => {
-    const walletAddress = current.walletAddress
-    userWallets.push(current.walletAddress)
-    return {
-      ...accumulator,
-      [current.blockchainUserId]: walletAddress
-    }
-  }, {})
+  const userIdToWalletsMap = {}
+  for (const { blockchainUserId, walletAddress } of userIdsAndWallets) {
+    userIdToWalletsMap[blockchainUserId] = walletAddress
+  }
+
   logger.info(`${logPrefix} made wallet map, time: ${Date.now() - startTime}ms`)
 
   // get playlist updates for all wallets and map each wallet to its playlist updates
   const userWalletsAndPlaylistUpdates = await models.UserEvents.findAll({
     attributes: ['walletAddress', 'playlistUpdates'],
     where: {
-      walletAddress: userWallets
+      walletAddress: Object.values(userIdToWalletsMap)
     },
     transaction: tx
   })
-  const userWalletToPlaylistUpdatesMap = userWalletsAndPlaylistUpdates.reduce((accumulator, current) => {
-    return {
-      ...accumulator,
-      [current.walletAddress]: current.playlistUpdates
-    }
-  }, {})
-  logger.info(`${logPrefix} calculated updates, num updates: ${userWalletsAndPlaylistUpdates.length}, time: ${Date.now() - startTime}ms`)
+
+  logger.info(`${logPrefix} found updates, time: ${Date.now() - startTime}ms`)
+
+  const userWalletToPlaylistUpdatesMap = {}
+  for (const { walletAddress, playlistUpdates } of userWalletsAndPlaylistUpdates) {
+    userWalletToPlaylistUpdatesMap[walletAddress] = playlistUpdates
+  }
+
+  logger.info(`${logPrefix} mapped updates, num updates: ${userWalletsAndPlaylistUpdates.length}, time: ${Date.now() - startTime}ms`)
 
   const newUserEvents = userIds
     .map(userId => {
@@ -97,7 +95,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     })
     .filter(Boolean)
 
-  logger.info(`${logPrefix} mapped updates, time: ${Date.now() - startTime}ms`)
+  logger.info(`${logPrefix} mapped events, time: ${Date.now() - startTime}ms`)
 
   const results = await sequelize.query(`
     INSERT INTO "UserEvents" ("walletAddress", "playlistUpdates", "createdAt", "updatedAt")
