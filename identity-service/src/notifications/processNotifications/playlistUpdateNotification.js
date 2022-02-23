@@ -49,22 +49,18 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   })
   logger.info(`${logPrefix} selected wallets, num wallets: ${userIdsAndWallets.length}, time: ${Date.now() - startTime}ms`)
 
-  const userWallets = []
-  const userIdToWalletsMap = userIdsAndWallets.reduce((accumulator, current) => {
-    const walletAddress = current.walletAddress
-    userWallets.push(current.walletAddress)
-    return {
-      ...accumulator,
-      [current.blockchainUserId]: walletAddress
-    }
-  }, {})
+  const userIdToWalletsMap = {}
+  for ({blockchainUserId, walletAddress} of userIdsAndWallets) {
+    userIdToWalletsMap[blockchainUserId] = walletAddress
+  }
+
   logger.info(`${logPrefix} made wallet map, time: ${Date.now() - startTime}ms`)
 
   // get playlist updates for all wallets and map each wallet to its playlist updates
   const userWalletsAndPlaylistUpdates = await models.UserEvents.findAll({
     attributes: ['walletAddress', 'playlistUpdates'],
     where: {
-      walletAddress: userWallets
+      walletAddress: Object.values(userIdToWalletsMap)
     },
     transaction: tx
   })
