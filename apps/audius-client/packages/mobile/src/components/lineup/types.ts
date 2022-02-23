@@ -14,6 +14,7 @@ export type LineupItem = {
   id: ID
   kind: Kind
   track_id?: ID
+  playlist_id?: ID
   uid: UID
   _marked_deleted?: boolean
   activityTimestamp?: Maybe<number | string>

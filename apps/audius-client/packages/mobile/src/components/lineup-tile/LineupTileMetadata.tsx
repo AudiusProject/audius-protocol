@@ -4,21 +4,17 @@ import { ID } from 'audius-client/src/common/models/Identifiers'
 import { CoverArtSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Remix } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
-import {
-  GestureResponderEvent,
-  Pressable,
-  StyleSheet,
-  View
-} from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 
 import IconVolume from 'app/assets/images/iconVolume.svg'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { GestureResponderHandler } from 'app/types/gesture'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
-import { TrackTileArt } from './TrackTileArt'
+import { LineupTileArt } from './LineupTileArt'
 import { createStyles as createTrackTileStyles } from './styles'
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -63,19 +59,19 @@ type Props = {
   coverArtSizes: CoverArtSizes
   id: ID
   isPlaying: boolean
-  permalink: string
+  onPressTitle?: GestureResponderHandler
   setArtworkLoaded: (loaded: boolean) => void
   title: string
   user: User
 }
 
-export const TrackTileMetadata = ({
+export const LineupTileMetadata = ({
   artistName,
   coSign,
   coverArtSizes,
   id,
   isPlaying,
-  permalink,
+  onPressTitle,
   setArtworkLoaded,
   title,
   user
@@ -85,29 +81,16 @@ export const TrackTileMetadata = ({
   const trackTileStyles = useThemedStyles(createTrackTileStyles)
   const { primary } = useThemeColors()
 
-  const handleTitlePress = useCallback(
-    (e: GestureResponderEvent) => {
-      navigation.push({
-        native: { screen: 'track', params: { id } },
-        web: { route: permalink }
-      })
-    },
-    [navigation, permalink, id]
-  )
-
-  const handleArtistPress = useCallback(
-    (e: GestureResponderEvent) => {
-      navigation.push({
-        native: { screen: 'profile', params: { handle: user.handle } },
-        web: { route: `/${user.handle}` }
-      })
-    },
-    [navigation, user]
-  )
+  const handleArtistPress = useCallback(() => {
+    navigation.push({
+      native: { screen: 'profile', params: { handle: user.handle } },
+      web: { route: `/${user.handle}` }
+    })
+  }, [navigation, user])
 
   return (
     <View style={styles.metadata}>
-      <TrackTileArt
+      <LineupTileArt
         id={id}
         isTrack={true}
         onLoad={() => setArtworkLoaded(true)}
@@ -116,7 +99,7 @@ export const TrackTileMetadata = ({
         style={trackTileStyles.imageContainer}
       />
       <View style={trackTileStyles.titles}>
-        <Pressable style={trackTileStyles.title} onPress={handleTitlePress}>
+        <Pressable style={trackTileStyles.title} onPress={onPressTitle}>
           {({ pressed }) => (
             <>
               <Text

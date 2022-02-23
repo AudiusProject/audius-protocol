@@ -4,8 +4,8 @@ import { ImageSkeleton } from 'app/components/image-skeleton'
 import Skeleton from 'app/components/skeleton'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 
-import { TrackTileActionButtons } from './TrackTileActionButtons'
-import { TrackTileRoot } from './TrackTileRoot'
+import { LineupTileActionButtons } from './LineupTileActionButtons'
+import { LineupTileRoot } from './LineupTileRoot'
 import { createStyles } from './styles'
 
 const styles = StyleSheet.create({
@@ -23,10 +23,10 @@ const styles = StyleSheet.create({
   }
 })
 
-export const TrackTileSkeleton = () => {
+export const LineupTileSkeleton = () => {
   const trackTileStyles = useThemedStyles(createStyles)
   return (
-    <TrackTileRoot>
+    <LineupTileRoot>
       <View style={styles.metadata}>
         <View style={[trackTileStyles.imageContainer, trackTileStyles.image]}>
           <ImageSkeleton styles={{ root: trackTileStyles.image }} />
@@ -43,8 +43,8 @@ export const TrackTileSkeleton = () => {
       </View>
 
       <View style={styles.bottomButtons}>
-        <TrackTileActionButtons />
+        <LineupTileActionButtons />
       </View>
-    </TrackTileRoot>
+    </LineupTileRoot>
   )
 }

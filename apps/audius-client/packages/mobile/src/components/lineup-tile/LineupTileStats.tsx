@@ -21,13 +21,15 @@ import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
-import { TrackTileRankIcon } from './TrackTileRankIcon'
+import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { createStyles as createTrackTileStyles } from './styles'
 
-const formatListenCount = (listenCount?: number) => {
-  if (!listenCount) return null
-  const suffix = listenCount === 1 ? 'Play' : 'Plays'
-  return `${formatCount(listenCount)} ${suffix}`
+const formatPlayCount = (playCount?: number) => {
+  if (!playCount) {
+    return null
+  }
+  const suffix = playCount === 1 ? 'Play' : 'Plays'
+  return `${formatCount(playCount)} ${suffix}`
 }
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -66,24 +68,24 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 type Props = {
-  trackId: ID
-  hidePlays: boolean
+  hidePlays?: boolean
+  id: ID
   index: number
   isTrending?: boolean
   isUnlisted?: boolean
-  listenCount: number
+  playCount?: number
   repostCount: number
   saveCount: number
   showRankIcon?: boolean
 }
 
-export const TrackTileStats = ({
-  trackId,
+export const LineupTileStats = ({
   hidePlays,
+  id,
   index,
   isTrending,
   isUnlisted,
-  listenCount,
+  playCount,
   repostCount,
   saveCount,
   showRankIcon
@@ -97,25 +99,25 @@ export const TrackTileStats = ({
   const hasEngagement = Boolean(repostCount || saveCount)
 
   const handlePressFavorites = useCallback(() => {
-    dispatchWeb(setFavorite(trackId, FavoriteType.TRACK))
+    dispatchWeb(setFavorite(id, FavoriteType.TRACK))
     navigation.push({
       native: { screen: 'FavoritedScreen', params: undefined },
       web: { route: FAVORITING_USERS_ROUTE }
     })
-  }, [dispatchWeb, trackId, navigation])
+  }, [dispatchWeb, id, navigation])
 
   const handlePressReposts = useCallback(() => {
-    dispatchWeb(setRepost(trackId, RepostType.TRACK))
+    dispatchWeb(setRepost(id, RepostType.TRACK))
     navigation.push({
       native: { screen: 'RepostsScreen', params: undefined },
       web: { route: REPOSTING_USERS_ROUTE }
     })
-  }, [dispatchWeb, trackId, navigation])
+  }, [dispatchWeb, id, navigation])
 
   return (
     <View style={styles.stats}>
       {isTrending && (
-        <TrackTileRankIcon showCrown={showRankIcon} index={index} />
+        <LineupTileRankIcon showCrown={showRankIcon} index={index} />
       )}
       {hasEngagement && !isUnlisted && (
         <View style={styles.leftStats}>
@@ -159,7 +161,7 @@ export const TrackTileStats = ({
       )}
       {!hidePlays && (
         <Text style={[trackTileStyles.statText, styles.listenCount]}>
-          {formatListenCount(listenCount)}
+          {formatPlayCount(playCount)}
         </Text>
       )}
     </View>

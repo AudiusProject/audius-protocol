@@ -15,7 +15,6 @@ import { SvgProps } from 'react-native-svg'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { flexRowCentered, makeStyles, StylesProp } from 'app/styles'
-import { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 
 const useStyles = makeStyles(
@@ -203,7 +202,7 @@ export const Button = (props: ButtonProps) => {
     handlePressOut: handlePressOutColor
   } = useColorAnimation(styles.root.backgroundColor, primaryDark1)
 
-  const handlePressIn: GestureResponderHandler = useCallback(
+  const handlePressIn = useCallback(
     event => {
       onPressIn?.(event)
       setIsPressing(true)
@@ -213,7 +212,7 @@ export const Button = (props: ButtonProps) => {
     [onPressIn, handlePressInScale, handlePressInColor]
   )
 
-  const handlePressOut: GestureResponderHandler = useCallback(
+  const handlePressOut = useCallback(
     event => {
       onPressOut?.(event)
       setIsPressing(false)

@@ -7,7 +7,11 @@ import { range } from 'lodash'
 import { Dimensions, SectionList, StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { TrackTile, TrackTileSkeleton } from 'app/components/track-tile'
+import {
+  CollectionTile,
+  TrackTile,
+  LineupTileSkeleton
+} from 'app/components/lineup-tile'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { make, track } from 'app/utils/analytics'
@@ -165,9 +169,9 @@ export const Lineup = ({
   ])
 
   const togglePlay = useCallback(
-    (uid: UID, id: ID, source?: PlaybackSource) => {
+    (uid: UID, id: ID, source: PlaybackSource) => {
       if (uid !== playingUid || (uid === playingUid && !playing)) {
-        actions.play(uid)
+        dispatchWeb(actions.play(uid))
         track(
           make({
             eventName: Name.PLAYBACK_PLAY,
@@ -176,7 +180,7 @@ export const Lineup = ({
           })
         )
       } else if (uid === playingUid && playing) {
-        actions.pause()
+        dispatchWeb(actions.pause())
         track(
           make({
             eventName: Name.PLAYBACK_PAUSE,
@@ -186,8 +190,20 @@ export const Lineup = ({
         )
       }
     },
-    [actions, playing, playingUid]
+    [actions, dispatchWeb, playing, playingUid]
   )
+
+  const getLineupTileComponent = (item: LineupItem) => {
+    if (item.kind === Kind.TRACKS || item.track_id) {
+      if (item._marked_deleted) {
+        return null
+      }
+      return TrackTile
+    } else if (item.kind === Kind.COLLECTIONS || item.playlist_id) {
+      return CollectionTile
+    }
+    return null
+  }
 
   const renderItem = ({
     index,
@@ -200,21 +216,16 @@ export const Lineup = ({
       if (item._loading) {
         return (
           <View style={styles.item}>
-            <TrackTileSkeleton />
+            <LineupTileSkeleton />
           </View>
         )
       }
     } else {
-      if (item.kind === Kind.TRACKS || item.track_id) {
-        // Render a track tile if the kind tracks or there's a track id present
-
-        if (item._marked_deleted) {
-          return null
-        }
-
+      const LineupTile = getLineupTileComponent(item)
+      if (LineupTile) {
         return (
           <View style={styles.item}>
-            <TrackTile
+            <LineupTile
               {...item}
               index={index}
               isTrending={isTrending}
@@ -227,9 +238,6 @@ export const Lineup = ({
             />
           </View>
         )
-      } else {
-        return null
-        // TODO: Playlist tile
       }
     }
     return null

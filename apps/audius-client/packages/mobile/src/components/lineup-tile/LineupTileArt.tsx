@@ -15,7 +15,7 @@ import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 
 import { createStyles } from './styles'
 
-type TrackTileArtProps = {
+type LineupTileArtProps = {
   coSign?: Remix | null
   coverArtSizes: CoverArtSizes
   id: ID
@@ -24,14 +24,14 @@ type TrackTileArtProps = {
   style?: StyleProp<ViewStyle>
 }
 
-export const TrackTileArt = ({
+export const LineupTileArt = ({
   coSign,
   coverArtSizes,
   id,
   isTrack,
   onLoad,
   style
-}: TrackTileArtProps) => {
+}: LineupTileArtProps) => {
   const styles = useThemedStyles(createStyles)
   const useImage = isTrack ? useTrackCoverArt : useCollectionCoverArt
   const image = useImage(id, coverArtSizes, SquareSizes.SIZE_150_BY_150)
