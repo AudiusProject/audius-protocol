@@ -31,6 +31,7 @@ export type ExploreCollection = {
   icon?: React.FC
   incentivized?: boolean // Whether we reward winners with $AUDIO
   link: string
+  screen?: 'TrendingUnderground'
 }
 
 export type ExploreMoodCollection = ExploreCollection & {
@@ -87,6 +88,7 @@ export const TRENDING_UNDERGROUND: ExploreCollection = {
   shadowOpacity: 0.25,
   icon: IconCassette,
   link: TRENDING_UNDERGROUND_PAGE,
+  screen: 'TrendingUnderground',
   incentivized: true
 }
 
