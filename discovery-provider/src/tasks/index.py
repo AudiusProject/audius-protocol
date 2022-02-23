@@ -267,23 +267,26 @@ def get_metadata_from_json(default_metadata_fields, resp_json):
 
 async def fetch_metadata_from_gateway_endpoints(
     cid_metadata,
-    cids,
+    cids_txhash_set,
     cid_to_user_id,
     user_to_replica_set,
     cnode_endpoints,
     cid_type,
     block_hash,
     block_number,
-    txhash,
     fetch_from_replica_set=True,
 ):
     async with aiohttp.ClientSession() as async_session:
         futures = []
         cid_futures_map = {}
-        for cid in cids:
+        cid_txhash_map = {cid: txhash for cid, txhash in cids_txhash_set}
+
+        for cid in cid_txhash_map:
             if cid in cid_metadata:
                 continue  # already fetched
             user_id = cid_to_user_id[cid]
+
+            user_replica_set = []
             if fetch_from_replica_set and user_id and user_id in user_to_replica_set:
                 user_replica_set = user_to_replica_set[
                     user_id
@@ -333,7 +336,7 @@ async def fetch_metadata_from_gateway_endpoints(
                 if formatted_json != metadata_format:
                     cid_metadata[cid] = formatted_json
 
-                    if len(cid_metadata) == len(cids):
+                    if len(cid_metadata) == len(cids_txhash_set):
                         break  # fetched all metadata
 
                     for other_future in cid_futures_map[cid]:
@@ -346,7 +349,7 @@ async def fetch_metadata_from_gateway_endpoints(
             logger.info("index.py | Error in fetch ipfs metadata")
             blockhash = update_task.web3.toHex(block_hash)
             raise IndexingError(
-                "prefetch-cids", block_number, blockhash, txhash, str(e)
+                "prefetch-cids", block_number, blockhash, cid_txhash_map[cid], str(e)
             ) from e
 
 
@@ -372,9 +375,9 @@ def fetch_cid_metadata(
     blacklisted_cids = set()
     cids_txhash_set = set()
     cid_type = {}  # cid -> entity type track / user
-    cid_to_user_id = (
-        {}
-    )  # cid -> user_id lookup to make fetching replica set more efficient
+
+    # cid -> user_id lookup to make fetching replica set more efficient
+    cid_to_user_id = {}
 
     # fetch transactions
     with db.scoped_session() as session:
@@ -429,27 +432,25 @@ def fetch_cid_metadata(
         .all()
     )
 
-    cids = set(cid_type.keys())
     cid_metadata = {}  # cid -> metadata
 
     # first attempt - fetch all CIDs from replica set
     asyncio.run(
         fetch_metadata_from_gateway_endpoints(
             cid_metadata,
-            cids,
+            cids_txhash_set,
             cid_to_user_id,
             user_to_replica_set,
             None,
             cid_type,
             block_hash,
             block_number,
-            txhash,
             fetch_from_replica_set=True,
         )
     )
 
     # second attempt - fetch missing CIDs from other cnodes
-    if len(cid_metadata) != len(cids):
+    if len(cid_metadata) != len(cids_txhash_set):
         eth_web3 = update_task.eth_web3
         shared_config = update_task.shared_config
         redis = update_task.redis
@@ -464,21 +465,20 @@ def fetch_cid_metadata(
         asyncio.run(
             fetch_metadata_from_gateway_endpoints(
                 cid_metadata,
-                cids,
+                cids_txhash_set,
                 cid_to_user_id,
                 user_to_replica_set,
                 cnode_endpoints,
                 cid_type,
                 block_hash,
                 block_number,
-                txhash,
                 fetch_from_replica_set=False,
             )
         )
 
-    if len(cid_metadata) != len(cids):
+    if len(cid_metadata) != len(cids_txhash_set):
         raise Exception(
-            f"Did not fetch all CIDs - missing {[set(cids) - set(cid_metadata.keys())]} CIDs"
+            f"Did not fetch all CIDs - missing {[set(cids_txhash_set) - set(cid_metadata.keys())]} CIDs"
         )
 
     logger.info(
