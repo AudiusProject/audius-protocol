@@ -9,8 +9,8 @@ const styles = StyleSheet.create({
   }
 })
 
-type TrackTileRootProps = TileProps
+type LineupTileRootProps = TileProps
 
-export const TrackTileRoot = (props: TrackTileRootProps) => {
+export const LineupTileRoot = (props: LineupTileRootProps) => {
   return <Tile {...props} styles={{ tile: styles.tile }} />
 }

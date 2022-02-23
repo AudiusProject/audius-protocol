@@ -31,12 +31,16 @@ const styles = StyleSheet.create({
   }
 })
 
-export enum TrackBannerIconType {
+export enum LineupTileBannerIconType {
   STAR = 'star',
   HIDDEN = 'hidden'
 }
 
-export const TrackBannerIcon = ({ type }: { type: TrackBannerIconType }) => {
+export const LineupTileBannerIcon = ({
+  type
+}: {
+  type: LineupTileBannerIconType
+}) => {
   const {
     neutral,
     neutralLight3,
@@ -46,11 +50,11 @@ export const TrackBannerIcon = ({ type }: { type: TrackBannerIconType }) => {
   } = useThemeColors()
 
   const { icon: Icon, colors } = {
-    [TrackBannerIconType.STAR]: {
+    [LineupTileBannerIconType.STAR]: {
       icon: IconStar,
       colors: [secondary, pageHeaderGradientColor2]
     },
-    [TrackBannerIconType.HIDDEN]: {
+    [LineupTileBannerIconType.HIDDEN]: {
       icon: IconHidden,
       colors: [neutral, neutralLight3]
     }

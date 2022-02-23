@@ -244,16 +244,14 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             </>
           )}
         </div>
-        {
-          <TrackList
-            activeTrackUid={props.activeTrackUid}
-            goToCollectionPage={props.goToCollectionPage}
-            tracks={props.tracks}
-            isLoading={showSkeleton}
-            numLoadingSkeletonRows={numLoadingSkeletonRows}
-            trackCount={trackCount}
-          />
-        }
+        <TrackList
+          activeTrackUid={props.activeTrackUid}
+          goToCollectionPage={props.goToCollectionPage}
+          tracks={props.tracks}
+          isLoading={showSkeleton}
+          numLoadingSkeletonRows={numLoadingSkeletonRows}
+          trackCount={trackCount}
+        />
         <div className={cn(fadeIn)}>
           <BottomButtons
             hasSaved={props.hasCurrentUserSaved}

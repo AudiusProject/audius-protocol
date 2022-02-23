@@ -49,7 +49,7 @@ type ItemProps = {
   label: string
 }
 
-const TrackTileTopRightItem = ({ icon: Icon, label }: ItemProps) => {
+const LineupTileTopRightItem = ({ icon: Icon, label }: ItemProps) => {
   const { neutralLight4 } = useThemeColors()
   const trackTileStyles = useThemedStyles(createTrackTileStyles)
   return (
@@ -62,9 +62,9 @@ const TrackTileTopRightItem = ({ icon: Icon, label }: ItemProps) => {
 
 type Props = {
   /**
-   * The duration of the track
+   * The duration of the track or tracks
    */
-  duration: number
+  duration?: number
   /**
    * Whether or not the track is the artist pick
    */
@@ -79,7 +79,7 @@ type Props = {
   showArtistPick?: boolean
 }
 
-export const TrackTileTopRight = ({
+export const LineupTileTopRight = ({
   duration,
   isArtistPick,
   isUnlisted,
@@ -90,10 +90,13 @@ export const TrackTileTopRight = ({
   return (
     <View style={styles.topRight}>
       {showArtistPick && isArtistPick && (
-        <TrackTileTopRightItem icon={IconStar} label={messages.artistPick} />
+        <LineupTileTopRightItem icon={IconStar} label={messages.artistPick} />
       )}
       {isUnlisted && (
-        <TrackTileTopRightItem icon={IconHidden} label={messages.hiddenTrack} />
+        <LineupTileTopRightItem
+          icon={IconHidden}
+          label={messages.hiddenTrack}
+        />
       )}
       <Text style={trackTileStyles.statText}>
         {duration && formatSeconds(duration)}
