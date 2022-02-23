@@ -100,8 +100,8 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   logger.info(`${logPrefix} mapped updates, time: ${Date.now() - startTime}ms`)
 
   const results = await sequelize.query(`
-    INSERT INTO "UserEvents" ("walletAddress", "playlistUpdates")
-    VALUES ${newUserEvents.map(_ => '(?)').join(',')}
+    INSERT INTO "UserEvents" ("walletAddress", "playlistUpdates", "createdAt", "updatedAt")
+    VALUES ${newUserEvents.map(_ => '(?,now(),now())').join(',')}
     ON CONFLICT ("walletAddress") DO UPDATE
       SET "playlistUpdates" = "excluded"."playlistUpdates"
   `, {
