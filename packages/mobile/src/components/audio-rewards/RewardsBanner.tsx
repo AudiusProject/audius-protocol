@@ -73,11 +73,11 @@ export const RewardsBanner = (props: RewardsBannerProps) => {
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation()
 
   const handlePress = useCallback(() => {
-    dispatchWeb(setTrendingRewardsModalType({ modalType: 'tracks' }))
+    dispatchWeb(setTrendingRewardsModalType({ modalType: type }))
     dispatchWeb(
       setVisibility({ modal: 'TrendingRewardsExplainer', visible: true })
     )
-  }, [dispatchWeb])
+  }, [dispatchWeb, type])
 
   return (
     <Animated.View style={{ transform: [{ scale }] }}>

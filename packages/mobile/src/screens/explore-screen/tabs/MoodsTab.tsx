@@ -2,7 +2,6 @@ import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { ScrollView, StyleSheet, View } from 'react-native'
 
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
 
@@ -52,7 +51,6 @@ const tiles = [
 
 export const MoodsTab = ({ navigation }: Props) => {
   const styles = useThemedStyles(createStyles)
-  const pushRouteWeb = usePushRouteWeb()
 
   return (
     <ScrollView style={styles.tabContainer}>
@@ -71,7 +69,6 @@ export const MoodsTab = ({ navigation }: Props) => {
             description={tile.description}
             link={tile.link}
             emoji={tile.emoji}
-            goToRoute={pushRouteWeb}
             gradientColors={tile.gradientColors}
             gradientAngle={tile.gradientAngle}
             shadowColor={tile.shadowColor}

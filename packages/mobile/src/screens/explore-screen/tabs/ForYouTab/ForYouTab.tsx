@@ -2,7 +2,6 @@ import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { ScrollView, StyleSheet, View } from 'react-native'
 
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
 
@@ -11,9 +10,9 @@ import {
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
   TOP_ALBUMS
-} from '../collections'
-import { ColorTile } from '../components/ColorTile'
-import { TabInfo } from '../components/TabInfo'
+} from '../../collections'
+import { ColorTile } from '../../components/ColorTile'
+import { TabInfo } from '../../components/TabInfo'
 import {
   HEAVY_ROTATION,
   BEST_NEW_RELEASES,
@@ -21,7 +20,7 @@ import {
   MOST_LOVED,
   REMIXABLES,
   FEELING_LUCKY
-} from '../smartCollections'
+} from '../../smartCollections'
 
 const messages = {
   infoHeader: 'Just For You',
@@ -45,6 +44,9 @@ const createStyles = (themeColors: ThemeColors) =>
       paddingVertical: 24,
       // TODO: Fix this
       marginBottom: 240
+    },
+    tile: {
+      marginBottom: 8
     }
   })
 
@@ -63,27 +65,13 @@ const tiles = [
 
 export const ForYouTab = ({ navigation }: Props) => {
   const styles = useThemedStyles(createStyles)
-  const pushRouteWeb = usePushRouteWeb()
 
   return (
     <ScrollView style={styles.tabContainer}>
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
         {tiles.map(tile => (
-          <ColorTile
-            style={{ marginBottom: 8 }}
-            key={tile.title}
-            title={tile.title}
-            description={tile.description}
-            link={tile.link}
-            goToRoute={pushRouteWeb}
-            gradientColors={tile.gradientColors}
-            gradientAngle={tile.gradientAngle}
-            shadowColor={tile.shadowColor}
-            shadowOpacity={tile.shadowOpacity}
-            icon={tile.icon}
-            isIncentivized={tile.incentivized}
-          />
+          <ColorTile style={styles.tile} key={tile.title} {...tile} />
         ))}
       </View>
     </ScrollView>
