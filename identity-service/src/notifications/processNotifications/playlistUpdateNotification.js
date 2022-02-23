@@ -93,7 +93,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
         }
       })
 
-      return [walletAddress, dbPlaylistUpdates]
+      return [walletAddress, JSON.stringify(dbPlaylistUpdates)]
     })
     .filter(Boolean)
 
