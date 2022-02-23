@@ -3,6 +3,7 @@ import { ReactNode } from 'react'
 import { Pressable, StyleProp, View, ViewStyle } from 'react-native'
 
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
+import { Link } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -28,25 +29,29 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 type SettingsRowProps = {
   onPress?: () => void
+  url?: string
   children: ReactNode
   firstItem?: boolean
   style?: StyleProp<ViewStyle>
 }
 
 export const SettingsRow = (props: SettingsRowProps) => {
-  const { onPress, children, firstItem, style } = props
+  const { onPress, children, firstItem, style, url } = props
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
 
+  const Root = url ? Link : Pressable
+
   return (
-    <Pressable
+    <Root
+      url={url as string}
       onPress={onPress}
       style={[styles.root, firstItem && styles.firstItem, style]}
     >
       <View style={styles.content}>{children}</View>
-      {onPress ? (
+      {onPress || url ? (
         <IconCaretRight fill={neutralLight4} height={16} width={16} />
       ) : null}
-    </Pressable>
+    </Root>
   )
 }
