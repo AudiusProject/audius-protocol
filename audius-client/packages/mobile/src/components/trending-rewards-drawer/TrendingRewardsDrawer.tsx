@@ -28,9 +28,8 @@ import {
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import ButtonWithArrow from 'app/components/button-with-arrow'
-import { GradientText } from 'app/components/core'
+import { SegmentedControl, GradientText } from 'app/components/core'
 import Drawer from 'app/components/drawer'
-import TabSlider from 'app/components/tab-slider'
 import Text from 'app/components/text'
 import TweetEmbed from 'app/components/tweet-embed'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -238,7 +237,7 @@ export const TrendingRewardsDrawer = () => {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <TabSlider
+          <SegmentedControl
             options={tabOptions}
             selected={modalType}
             onSelectOption={option =>
