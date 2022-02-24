@@ -57,17 +57,25 @@ const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT = 5
  * Helper method to stream file from file system on creator node
  * Serves partial content using range requests
  */
-const streamFromFileSystem = async (req, res, path) => {
+const streamFromFileSystem = async (
+  req,
+  res,
+  path,
+  checkExistence = true,
+  fsStats = null
+) => {
   try {
-    // If file cannot be found on disk, throw error
-    if (!fs.existsSync(path)) {
-      throw new Error(`File could not be found on disk, path=${path}`)
+    if (checkExistence) {
+      // If file cannot be found on disk, throw error
+      if (!fs.existsSync(path)) {
+        throw new Error(`File could not be found on disk, path=${path}`)
+      }
     }
 
     // Stream file from file system
     let fileStream
 
-    const stat = await fsStat(path)
+    const stat = fsStats || (await fsStat(path))
     // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
       res.set('Accept-Ranges', 'bytes')
@@ -184,6 +192,9 @@ const getCID = async (req, res) => {
   let storagePath
   try {
     storagePath = DiskManager.computeFilePath(CID, false)
+    decisionTree.push({
+      stage: `COMPUTE_FILE_PATH_COMPLETE`
+    })
   } catch (e) {
     decisionTree.push({
       stage: `COMPUTE_FILE_PATH_FAILURE`
@@ -204,10 +215,14 @@ const getCID = async (req, res) => {
    */
   startMs = Date.now()
   let fileFoundOnFS = false
+  let fsStats
   try {
-    // Will throw if path does not exist
-    // If exists, returns an instance of fs.stats class
-    const fsStats = await fs.stat(storagePath)
+    /**
+     * fs.stat returns instance of fs.stats class, used to check if exists, an dir vs file
+     * Throws error if nothing found
+     * https://nodejs.org/api/fs.html#fspromisesstatpath-options
+     */
+    fsStats = await fs.stat(storagePath)
     decisionTree.push({
       stage: `FS_STATS`,
       time: `${Date.now() - startMs}ms`
@@ -241,7 +256,7 @@ const getCID = async (req, res) => {
     }
   } catch (e) {
     decisionTree.push({
-      stage: `CID_NOT_FOUND_ON_FS`,
+      stage: `FS_STATS_CID_NOT_FOUND`,
       time: `${Date.now() - startMs}ms`
     })
     // continue
@@ -255,6 +270,9 @@ const getCID = async (req, res) => {
     let legacyStoragePath
     try {
       legacyStoragePath = DiskManager.computeLegacyFilePath(CID)
+      decisionTree.push({
+        stage: `COMPUTE_LEGACY_FILE_PATH_COMPLETE`
+      })
     } catch (e) {
       decisionTree.push({
         stage: `COMPUTE_LEGACY_FILE_PATH_FAILURE`
@@ -277,7 +295,7 @@ const getCID = async (req, res) => {
     try {
       // Will throw if path does not exist
       // If exists, returns an instance of fs.stats class
-      const fsStats = await fs.stat(legacyStoragePath)
+      fsStats = await fs.stat(legacyStoragePath)
       decisionTree.push({
         stage: `FS_STATS_LEGACY_STORAGE_PATH`,
         time: `${Date.now() - startMs}ms`
@@ -311,7 +329,7 @@ const getCID = async (req, res) => {
       }
     } catch (e) {
       decisionTree.push({
-        stage: `CID_NOT_FOUND_ON_FS_LEGACY_STORAGE_PATH`,
+        stage: `FS_STATS_LEGACY_STORAGE_PATH_CID_NOT_FOUND`,
         time: `${Date.now() - startMs}ms`
       })
       // continue
@@ -330,31 +348,48 @@ const getCID = async (req, res) => {
   // Set the CID cache-control so that client caches the response for 30 days
   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
 
-  // Add background IPFS rehydrate task
-  startMs = Date.now()
-  try {
-    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, storagePath, {
-      logContext: req.logContext
-    })
-    decisionTree.push({
-      stage: `ADD_REHYDRATE_IPFS_FROM_FS`,
-      time: `${Date.now() - startMs}ms`
-    })
-  } catch (e) {
-    decisionTree.push({
-      stage: `ADD_REHYDRATE_IPFS_FROM_ERROR`,
-      time: `${Date.now() - startMs}ms`,
-      error: `${e.message}`
-    })
-  }
-
   /**
-   * If file found on file system, stream
+   * If file found on file system:
+   * 1. add background task to rehydrate from disk to IPFS
+   * 2. stream from FS
    */
   if (fileFoundOnFS) {
+    /**
+     * 1. add background task to rehydrate from disk to IPFS
+     */
     startMs = Date.now()
     try {
-      const fsStream = await streamFromFileSystem(req, res, storagePath)
+      RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(
+        CID,
+        storagePath,
+        {
+          logContext: req.logContext
+        }
+      )
+      decisionTree.push({
+        stage: `ADD_REHYDRATE_IPFS_FROM_FS`,
+        time: `${Date.now() - startMs}ms`
+      })
+    } catch (e) {
+      decisionTree.push({
+        stage: `ADD_REHYDRATE_IPFS_FROM_ERROR`,
+        time: `${Date.now() - startMs}ms`,
+        error: `${e.message}`
+      })
+    }
+
+    /**
+     * 2. stream from FS
+     */
+    startMs = Date.now()
+    try {
+      const fsStream = await streamFromFileSystem(
+        req,
+        res,
+        storagePath,
+        false,
+        fsStats
+      )
       decisionTree.push({
         stage: `STREAM_FROM_FILE_SYSTEM_COMPLETE`,
         time: `${Date.now() - startMs}ms`
@@ -434,7 +469,7 @@ const getCID = async (req, res) => {
   }
 
   /**
-   * If found in DB, but not file system:
+   * If found in DB (means not found in FS):
    * 1. Attempt to retrieve file from network and save to file system
    * 2. If retrieved, stream from file system
    * 3. Else, continue
@@ -443,14 +478,23 @@ const getCID = async (req, res) => {
   try {
     startMs = Date.now()
     const libs = req.app.get('audiusLibs')
-    await findCIDInNetwork(storagePath, CID, req.logger, libs, trackId)
+    const found = await findCIDInNetwork(
+      storagePath,
+      CID,
+      req.logger,
+      libs,
+      trackId
+    )
+    if (!found) {
+      throw new Error('Not found in network')
+    }
     decisionTree.push({
       stage: `FIND_CID_IN_NETWORK_COMPLETE`,
       time: `${Date.now() - startMs}ms`
     })
 
     startMs = Date.now()
-    const fsStream = await streamFromFileSystem(req, res, storagePath)
+    const fsStream = await streamFromFileSystem(req, res, storagePath, false)
     decisionTree.push({
       stage: `STREAM_FROM_FILE_SYSTEM_AFTER_FIND_CID_IN_NETWORK_COMPLETE`,
       time: `${Date.now() - startMs}ms`
