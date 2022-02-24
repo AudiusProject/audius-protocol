@@ -13,12 +13,14 @@ from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
 )
 from src.queries.get_latest_play import get_latest_play
+from src.queries.get_oldest_unarchived_play import get_oldest_unarchived_play
 from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
+from src.utils.index_blocks_performance import get_average_index_blocks_ms_since
 from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
@@ -29,6 +31,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
     most_recent_indexed_ipld_block_hash_redis_key,
     most_recent_indexed_ipld_block_redis_key,
+    oldest_unarchived_play_key,
     trending_playlists_last_completion_redis_key,
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
@@ -36,6 +39,14 @@ from src.utils.redis_constants import (
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
+
+MINUTE_IN_SECONDS = 60
+TEN_MINUTES_IN_SECONDS = 60 * 10
+HOUR_IN_SECONDS = 60 * 60
+SIX_HOURS_IN_SECONDS = 6 * 60 * 60
+TWELVE_HOURS_IN_SECONDS = 12 * 60 * 60
+DAY_IN_SECONDS = 24 * 60 * 60
+
 number_of_cpus = os.cpu_count()
 
 disc_prov_version = helpers.get_discovery_provider_version()
@@ -260,6 +271,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if last_scanned_block_for_balance_refresh
         else None
     )
+
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -347,6 +359,30 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
         health_results["tables"] = table_size_info_json
 
+        # Get index blocks performance
+        index_blocks_minute = get_average_index_blocks_ms_since(
+            redis, MINUTE_IN_SECONDS
+        )
+        index_blocks_ten_minutes = get_average_index_blocks_ms_since(
+            redis, TEN_MINUTES_IN_SECONDS
+        )
+        index_blocks_hour = get_average_index_blocks_ms_since(redis, HOUR_IN_SECONDS)
+        index_blocks_six_hours = get_average_index_blocks_ms_since(
+            redis, SIX_HOURS_IN_SECONDS
+        )
+        index_blocks_twelve_hours = get_average_index_blocks_ms_since(
+            redis, TWELVE_HOURS_IN_SECONDS
+        )
+        index_blocks_day = get_average_index_blocks_ms_since(redis, DAY_IN_SECONDS)
+        health_results["index_blocks_avg_ms"] = {
+            "minute": index_blocks_minute,
+            "ten_minutes": index_blocks_ten_minutes,
+            "hour": index_blocks_hour,
+            "six_hours": index_blocks_six_hours,
+            "twelve_hours": index_blocks_twelve_hours,
+            "day": index_blocks_day,
+        }
+
     unhealthy_blocks = bool(
         enforce_block_diff and block_difference > healthy_block_diff
     )
@@ -369,10 +405,14 @@ class SolHealthInfo(TypedDict):
     time_diff_general: int
 
 
+class PlayHealthInfo(SolHealthInfo):
+    oldest_unarchived_play_created_at: str
+
+
 # Aggregate play health info across Solana and legacy storage
 def get_play_health_info(
     redis: Redis, plays_count_max_drift: Optional[int]
-) -> SolHealthInfo:
+) -> PlayHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_play_health_info")
 
@@ -403,6 +443,21 @@ def get_play_health_info(
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
+        oldest_unarchived_play = redis_get_or_restore(redis, oldest_unarchived_play_key)
+        if not oldest_unarchived_play:
+            # Query and cache oldest unarchived play
+            oldest_unarchived_play = get_oldest_unarchived_play()
+            if oldest_unarchived_play:
+                redis_set_and_dump(
+                    redis,
+                    oldest_unarchived_play_key,
+                    oldest_unarchived_play.timestamp(),
+                )
+        else:
+            # Decode bytes into float for latest timestamp
+            oldest_unarchived_play = float(oldest_unarchived_play.decode())
+            oldest_unarchived_play = datetime.utcfromtimestamp(oldest_unarchived_play)
+
         time_diff_general = (
             (current_time_utc - latest_db_play).total_seconds()
             if latest_db_play
@@ -418,6 +473,7 @@ def get_play_health_info(
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
         "time_diff_general": time_diff_general,
+        "oldest_unarchived_play_created_at": oldest_unarchived_play,
     }
 
 
