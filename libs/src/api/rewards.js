@@ -257,30 +257,36 @@ class Rewards extends Base {
     }
 
     try {
-      const [discoveryNodeAttestationResults, aaoAttestationResult] = await Promise.all([
-        this._getDiscoveryAttestationsWithRetries({
-          endpoints,
-          challengeId,
-          encodedUserId,
-          specifier,
-          oracleEthAddress,
-          logger,
-          maxAttempts
-        }),
-        this.getAAOAttestation({
-          challengeId,
-          specifier,
-          handle,
-          amount,
-          AAOEndpoint,
-          oracleEthAddress
-        })
-      ])
+      const { success: aaoAttestation, error: aaoAttestationError } = await this.getAAOAttestation({
+        challengeId,
+        specifier,
+        handle,
+        amount,
+        AAOEndpoint,
+        oracleEthAddress
+      })
+
+      if (aaoAttestationError) {
+        return {
+          discoveryNodeAttestations: null,
+          aaoAttestation: null,
+          error: aaoAttestationError
+        }
+      }
+
+      const discoveryNodeAttestationResults = await this._getDiscoveryAttestationsWithRetries({
+        endpoints,
+        challengeId,
+        encodedUserId,
+        specifier,
+        oracleEthAddress,
+        logger,
+        maxAttempts
+      })
+
       const discoveryNodeSuccesses = discoveryNodeAttestationResults.map(r => r.success)
       const discoveryNodeErrors = discoveryNodeAttestationResults.map(r => r.error)
-      const { success: aaoAttestation, error: aaoAttestationError } = aaoAttestationResult
-
-      const error = aaoAttestationError || discoveryNodeErrors.find(Boolean)
+      const error = discoveryNodeErrors.find(Boolean)
       if (error) {
         return {
           discoveryNodeAttestations: null,
