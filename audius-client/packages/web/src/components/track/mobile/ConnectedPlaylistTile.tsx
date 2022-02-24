@@ -32,12 +32,12 @@ import {
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
+import { getTheme } from 'common/store/ui/theme/selectors'
 import { setFavorite } from 'common/store/user-list/favorites/actions'
 import { setRepost } from 'common/store/user-list/reposts/actions'
 import { RepostType } from 'common/store/user-list/reposts/types'
 import { PlaylistTileProps } from 'components/track/types'
 import { useRecord, make } from 'store/analytics/actions'
-import { getTheme } from 'store/application/ui/theme/selectors'
 import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import {

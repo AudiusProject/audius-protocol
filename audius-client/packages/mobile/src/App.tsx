@@ -16,7 +16,7 @@ import NavigationContainer from 'app/components/navigation-container'
 import Notifications from 'app/components/notifications/Notifications'
 import OAuth from 'app/components/oauth/OAuth'
 import Search from 'app/components/search/Search'
-import { ThemeContextProvider } from 'app/components/theme/ThemeContext'
+import { ThemeProvider } from 'app/components/theme/ThemeContext'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
 import WebApp from 'app/components/web/WebApp'
 import { WebRefContextProvider } from 'app/components/web/WebRef'
@@ -73,13 +73,13 @@ const App = () => {
 
   return (
     <SafeAreaProvider>
-      <ThemeContextProvider>
+      <Provider store={store}>
         <ToastContextProvider>
           <ErrorBoundary>
             <NavigationContainer>
-              <Provider store={store}>
-                <WebRefContextProvider>
-                  <WebAppManager webApp={<WebApp webRef={webRef} />}>
+              <WebRefContextProvider>
+                <WebAppManager webApp={<WebApp webRef={webRef} />}>
+                  <ThemeProvider>
                     <GoogleCast webRef={webRef} />
                     <AppNavigator />
                     <Search />
@@ -89,13 +89,13 @@ const App = () => {
                     <Audio webRef={webRef} />
                     <OAuth webRef={webRef} />
                     <Airplay webRef={webRef} />
-                  </WebAppManager>
-                </WebRefContextProvider>
-              </Provider>
+                  </ThemeProvider>
+                </WebAppManager>
+              </WebRefContextProvider>
             </NavigationContainer>
           </ErrorBoundary>
         </ToastContextProvider>
-      </ThemeContextProvider>
+      </Provider>
     </SafeAreaProvider>
   )
 }

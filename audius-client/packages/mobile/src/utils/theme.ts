@@ -186,8 +186,7 @@ const themeColorsByThemeVariant = {
 }
 
 export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
-  const { isSystemDarkMode, getTheme } = useContext(ThemeContext)
-  const theme = getTheme()
+  const { isSystemDarkMode, theme } = useContext(ThemeContext)
 
   const systemTheme = isSystemDarkMode ? Theme.DARK : Theme.DEFAULT
   return theme === Theme.AUTO ? systemTheme : theme
@@ -205,8 +204,7 @@ export const useColor = (color: string) => {
 
 // Uses normalColor when in light/dark mode, but "special color" when in other mode
 export const useSpecialColor = (normalColor: string, specialColor: string) => {
-  const { getTheme } = useContext(ThemeContext)
-  const theme = getTheme()
+  const { theme } = useContext(ThemeContext)
   const themeVariant = useThemeColors()
   if (theme === Theme.MATRIX) {
     return (themeVariant as any)[specialColor]

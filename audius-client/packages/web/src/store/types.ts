@@ -48,7 +48,6 @@ import EditTrackModalState from './application/ui/editTrackModal/types'
 import { MobileKeyboardState } from './application/ui/mobileKeyboard/types'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
-import { ThemeState } from './application/ui/theme/types'
 import { UserListModalState } from './application/ui/userListModal/types'
 import { BackendState } from './backend/types'
 import { ConfirmerState } from './confirmer/types'
@@ -92,7 +91,6 @@ export type AppState = CommonState & {
       scrollLock: ScrollLockState
       setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
       stemsUpload: ReturnType<typeof StemsUploadReducer>
-      theme: ThemeState
       userListModal: UserListModalState
       visualizer: ReturnType<typeof VisualizerReducer>
     }

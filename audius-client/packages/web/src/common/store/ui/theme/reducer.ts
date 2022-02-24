@@ -1,4 +1,4 @@
-import { ThemeActions, SET_THEME } from 'store/application/ui/theme/actions'
+import { ThemeActions, SET_THEME } from 'common/store/ui/theme/actions'
 import { makeReducer } from 'utils/reducer'
 
 import { ThemeState } from './types'
