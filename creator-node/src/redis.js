@@ -44,7 +44,7 @@ class CID {
     return JSON.parse(val)
   }
 
-  static async setMetadata (CID, metadata) {
+  static async saveMetadata (CID, metadata) {
     /**
      * TODO error if data size above max
      */
