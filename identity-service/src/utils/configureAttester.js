@@ -17,7 +17,7 @@ const getRemoteConfig = async (optimizely) => {
   )
 
   const endpointsString = getRemoteVar(optimizely, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
-  const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : []
+  const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : null
 
   const aaoEndpoint = getRemoteVar(
     optimizely, REMOTE_VARS.ORACLE_ENDPOINT
