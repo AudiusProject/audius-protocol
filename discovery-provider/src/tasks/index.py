@@ -161,6 +161,7 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
                     most_recent_indexed_block_hash_redis_key,
                     current_block_result.blockhash,
                 )
+            logger.info(f"isaac current_block_result: {current_block_result.number}")
 
     return target_blockhash
 
