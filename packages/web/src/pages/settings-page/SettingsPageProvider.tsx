@@ -16,11 +16,11 @@ import {
   getUserName
 } from 'common/store/account/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
+import { setTheme } from 'common/store/ui/theme/actions'
+import { getTheme } from 'common/store/ui/theme/selectors'
 import { show } from 'components/music-confetti/store/slice'
 import { makeGetTierAndVerifiedForUser } from 'components/user-badges/utils'
 import { make, TrackEvent } from 'store/analytics/actions'
-import { setTheme } from 'store/application/ui/theme/actions'
-import { getTheme } from 'store/application/ui/theme/selectors'
 import { AppState } from 'store/types'
 import {
   isPushManagerAvailable,

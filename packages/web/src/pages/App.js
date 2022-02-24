@@ -19,6 +19,8 @@ import {
   getUserHandle
 } from 'common/store/account/selectors'
 import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
+import { setTheme } from 'common/store/ui/theme/actions'
+import { getTheme } from 'common/store/ui/theme/selectors'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import AppRedirectPopover from 'components/app-redirect-popover/components/AppRedirectPopover'
 import MobileDesktopBanner from 'components/banner/CTABanner'
@@ -77,8 +79,6 @@ import {
   incrementScrollCount as incrementScrollCountAction,
   decrementScrollCount as decrementScrollCountAction
 } from 'store/application/ui/scrollLock/actions'
-import { setTheme } from 'store/application/ui/theme/actions'
-import { getTheme } from 'store/application/ui/theme/selectors'
 import { getWeb3Error } from 'store/backend/selectors'
 import { isMobile, getClient } from 'utils/clientUtil'
 import lazyWithPreload from 'utils/lazyWithPreload'

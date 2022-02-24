@@ -12,7 +12,7 @@ import Toast from 'components/toast/Toast'
 
 import styles from './VisualizerProvider.module.css'
 import { MountPlacement, ComponentPlacement } from 'components/types'
-import { getTheme } from 'store/application/ui/theme/selectors'
+import { getTheme } from 'common/store/ui/theme/selectors'
 import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
 import { make, TrackEvent } from 'store/analytics/actions'
