@@ -18,6 +18,7 @@ import {
   saveTrack,
   unsaveTrack
 } from 'common/store/social/tracks/actions'
+import { getTheme } from 'common/store/ui/theme/selectors'
 import { Genre } from 'common/utils/genres'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -29,7 +30,6 @@ import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButton
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import Tooltip from 'components/tooltip/Tooltip'
 import { make } from 'store/analytics/actions'
-import { getTheme } from 'store/application/ui/theme/selectors'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import {
   getAudio,

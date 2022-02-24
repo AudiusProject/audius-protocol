@@ -25,8 +25,7 @@ export const makeStyles = <T extends NamedStyles<T> | NamedStyles<any>, PropsT>(
   styles: Styles<T, PropsT>
 ) => {
   const useStyles = (props?: PropsT): T => {
-    const { getTheme } = useContext(ThemeContext)
-    const themeMode = getTheme()
+    const { theme: themeMode } = useContext(ThemeContext)
     const themeColors = useThemeColors()
     const palette = { mode: themeMode, ...themeColors }
     const theme: Theme = { palette, typography, spacing }

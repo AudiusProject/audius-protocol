@@ -55,6 +55,8 @@ import shareModalReducer from 'common/store/ui/share-modal/slice'
 import { ShareModalState } from 'common/store/ui/share-modal/types'
 import shareSoundToTikTokModalReducer from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ShareSoundToTikTokModalState } from 'common/store/ui/share-sound-to-tiktok-modal/types'
+import theme from 'common/store/ui/theme/reducer'
+import { ThemeState } from 'common/store/ui/theme/types'
 import toastReducer, { ToastState } from 'common/store/ui/toast/slice'
 import favoritesUserListReducer from 'common/store/user-list/favorites/reducers'
 import followersUserListReducer from 'common/store/user-list/followers/reducers'
@@ -97,7 +99,8 @@ export const reducers = {
       following: followingUserListReducer,
       reposts: repostsUserListReducer,
       favorites: favoritesUserListReducer
-    })
+    }),
+    theme
   }),
 
   // Pages
@@ -155,6 +158,7 @@ export const sagas = {
   // pages/trending-page/store/lineups/trending/sagas.ts
   // pages/trending-underground-page/store/lineups/tracks/sagas.ts
   // pages/trending-underground-page/store/sagas.ts
+  // store/application/ui/theme/sagas.ts
 }
 
 export type CommonState = {
@@ -187,6 +191,7 @@ export type CommonState = {
       reposts: ReturnType<typeof repostsUserListReducer>
       favorites: ReturnType<typeof favoritesUserListReducer>
     }
+    theme: ThemeState
   }
 
   pages: {
