@@ -113,6 +113,7 @@ module.exports = function (app) {
           handle,
           status,
           // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
+          // so it is possible to get a status of success yet a score of 0 because this identity has already been associated to another account
           score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
         },
         { transaction }
@@ -137,18 +138,27 @@ module.exports = function (app) {
       return errorResponseForbidden(`Not permissioned to retry flow session for user handle ${handle}`)
     }
 
-    const baseUrl = config.get('cognitoBaseUrl')
-    const templateId = config.get('cognitoTemplateId')
-    const path = '/flow_sessions/retry'
-    const method = 'POST'
-    const body = JSON.stringify({
-      customer_reference: handle,
-      template_id: templateId,
-      strategy: 'reset'
-    })
-    const headers = createCognitoHeaders({ path, method, body })
-    const url = `${baseUrl}${path}`
     try {
+      const record = await models.CognitoFlows.findOne({ where: { handle } })
+      // only request flow retry if no current passing score for handle
+      // because there should be no need to redo the flow if score is already passing
+      // also, it would otherwise be possible that the new flow will pass but the unique identity check will have a collision
+      if (record && record.score === 1) {
+        return successResponse({})
+      }
+
+      const baseUrl = config.get('cognitoBaseUrl')
+      const templateId = config.get('cognitoTemplateId')
+      const path = '/flow_sessions/retry'
+      const method = 'POST'
+      const body = JSON.stringify({
+        customer_reference: handle,
+        template_id: templateId,
+        strategy: 'reset'
+      })
+      const headers = createCognitoHeaders({ path, method, body })
+      const url = `${baseUrl}${path}`
+
       await axios({
         adapter: axiosHttpAdapter,
         url,
@@ -156,11 +166,18 @@ module.exports = function (app) {
         headers,
         data: body
       })
-      logger.info(`Successfully requested a flow session retry for user handle ${handle}`)
+
+      // remove record if failing flow record exists
+      // otherwise the existing record will be the one taken into account before even hitting the flow
+      if (record) {
+        await models.CognitoFlows.destroy({ where: { handle } })
+      }
+
+      logger.info(`cognito_retry | Successfully requested a flow session retry for user handle ${handle}`)
       return successResponse({})
     } catch (err) {
-      logger.error(`Failed request to retry flow session for user handle ${handle} with error message: ${err.message}`)
-      logger.error(`The full retry error payload for user handle ${handle} is: ${JSON.stringify(err)}`)
+      logger.error(`cognito_retry | Failed request to retry flow session for user handle ${handle} with error message: ${err.message}`)
+      logger.error(`cognito_retry | The full retry error payload for user handle ${handle} is: ${JSON.stringify(err)}`)
       return errorResponseServerError(err.message)
     }
   }))
