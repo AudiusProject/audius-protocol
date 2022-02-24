@@ -531,8 +531,6 @@ def configure_celery(celery, test_config=None):
 
     # Initialize IPFS client for celery task context
     ipfs_client = IPFSClient(
-        shared_config["ipfs"]["host"],
-        shared_config["ipfs"]["port"],
         eth_web3,
         shared_config,
         redis_inst,
