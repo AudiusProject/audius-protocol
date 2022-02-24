@@ -252,11 +252,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     user_balances_age_sec = get_elapsed_time_redis(
         redis, user_balances_refresh_last_completion_redis_key
     )
-    num_users_in_lazy_balance_refresh_queue = len(
-        redis.smembers(LAZY_REFRESH_REDIS_PREFIX)
+    num_users_in_lazy_balance_refresh_queue = int(
+        redis.scard(LAZY_REFRESH_REDIS_PREFIX)
     )
-    num_users_in_immediate_balance_refresh_queue = len(
-        redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
+    num_users_in_immediate_balance_refresh_queue = int(
+        redis.scard(IMMEDIATE_REFRESH_REDIS_PREFIX)
     )
     last_scanned_block_for_balance_refresh = redis_get_or_restore(
         redis, eth_indexing_last_scanned_block_key
