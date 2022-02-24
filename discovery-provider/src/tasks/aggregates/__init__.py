@@ -66,7 +66,6 @@ def update_aggregate_table(
     query,
     checkpoint_name,
     current_checkpoint,
-    recalculations=False,
 ):
     metric = PrometheusMetric(
         "update_aggregate_table_latency_seconds",
@@ -79,12 +78,6 @@ def update_aggregate_table(
 
     # get the last updated id that counted towards the current aggregate track
     prev_checkpoint = get_last_indexed_checkpoint(session, table_name)
-    if not prev_checkpoint and recalculations:
-        prev_checkpoint = 0
-        logger.info(f"{task_name} | Repopulating {table_name}")
-        session.execute(f"TRUNCATE TABLE {table_name}")
-        logger.info(f"{task_name} | Table '{table_name}' truncated")
-
     if not current_checkpoint or current_checkpoint == prev_checkpoint:
         logger.info(
             f"{task_name} | Skipping aggregation update because there are no new blocks"

@@ -342,7 +342,6 @@ def _update_aggregate_user(session):
         UPDATE_AGGREGATE_USER_QUERY,
         "indexed_aggregate_block",
         current_blocknumber,
-        recalculations=True,
     )
 
 
