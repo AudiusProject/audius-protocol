@@ -130,13 +130,14 @@ module.exports = function (app) {
   }))
 
   app.post('/cognito_retry/:handle', handleResponse(async (req) => {
+    const handle = req.params.handle
+
     if (req.headers['x-cognito-retry'] !== config.get('cognitoRetrySecret')) {
-      return errorResponseForbidden(`Not permissioned to retry flow session for user handle ${}`)
+      return errorResponseForbidden(`Not permissioned to retry flow session for user handle ${handle}`)
     }
 
     const baseUrl = config.get('cognitoBaseUrl')
     const templateId = config.get('cognitoTemplateId')
-    const handle = req.params.handle
     const path = '/flow_sessions/retry'
     const method = 'POST'
     const body = JSON.stringify({
