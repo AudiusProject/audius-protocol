@@ -123,7 +123,42 @@ module.exports = function (app) {
       return successResponse({})
     } catch (err) {
       await transaction.rollback()
-      console.error(err)
+      logger.error(`Failed to consume cognito flow webhook for user handle ${handle} for session id ${sessionId}`)
+      logger.error(`The full webhook error payload for user handle ${handle} is: ${JSON.stringify(err)}`)
+      return errorResponseServerError(err.message)
+    }
+  }))
+
+  app.post('/cognito_retry/:handle', handleResponse(async (req) => {
+    if (req.headers['x-cognito-retry'] !== config.get('cognitoRetrySecret')) {
+      return errorResponseForbidden(`Not permissioned to retry flow session for user handle ${}`)
+    }
+
+    const baseUrl = config.get('cognitoBaseUrl')
+    const templateId = config.get('cognitoTemplateId')
+    const handle = req.params.handle
+    const path = '/flow_sessions/retry'
+    const method = 'POST'
+    const body = JSON.stringify({
+      customer_reference: handle,
+      template_id: templateId,
+      strategy: 'reset'
+    })
+    const headers = createCognitoHeaders({ path, method, body })
+    const url = `${baseUrl}${path}`
+    try {
+      await axios({
+        adapter: axiosHttpAdapter,
+        url,
+        method,
+        headers,
+        data: body
+      })
+      logger.info(`Successfully requested a flow session retry for user handle ${handle}`)
+      return successResponse({})
+    } catch (err) {
+      logger.error(`Failed request to retry flow session for user handle ${handle} with error message: ${err.message}`)
+      logger.error(`The full retry error payload for user handle ${handle} is: ${JSON.stringify(err)}`)
       return errorResponseServerError(err.message)
     }
   }))

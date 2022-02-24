@@ -779,6 +779,12 @@ const config = convict({
     format: String,
     env: 'cognitoIdentityHashSalt',
     default: ''
+  },
+  cognitoRetrySecret: {
+    doc: 'The secret necessary to request a retry for the cognito flow',
+    format: String,
+    env: 'cognitoRetrySecret',
+    default: ''
   }
 })
 
