@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { createTrack, initAdmin, updateUser, updateAdmin, updateTrack, deleteTrack } from "../lib/lib";
+import { createTrack, initAdmin, updateUser, updateAdmin, updateTrack, deleteTrack, verifyUser } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -28,6 +28,7 @@ describe("audius-data", () => {
 
   const adminKeypair = anchor.web3.Keypair.generate();
   const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminAuthenticatorKeypair = anchor.web3.Keypair.generate();
 
   const testCreateTrack = async ({
     trackMetadata,
@@ -114,10 +115,10 @@ describe("audius-data", () => {
       program: program,
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
+      authenticatorKeypair: adminAuthenticatorKeypair,
       trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("0"),
     });
-
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
@@ -508,6 +509,45 @@ describe("audius-data", () => {
     );
   });
 
+  it("Verify user", async () => {
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+
+    const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toString();
+
+    await testCreateUser({
+      provider,
+      program,
+      message,
+      ethAccount,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    });
+    let tx = await verifyUser({
+      program,
+      adminKeypair: adminStgKeypair,
+      userStgAccount: newUserAcctPDA,
+      authenticatorKeypair: adminAuthenticatorKeypair,
+    });
+
+    await confirmLogInTransaction(provider, tx, 'Program log: Instruction: VerifyUser');
+  });
 
   it("creating + deleting a track", async () => {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();

@@ -29,6 +29,7 @@ describe("follows", () => {
 
   let adminKeypair = anchor.web3.Keypair.generate();
   let adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminAuthenticatorKeypair = anchor.web3.Keypair.generate();
 
   it("follows - Initializing admin account!", async () => {
     await initAdmin({
@@ -36,6 +37,7 @@ describe("follows", () => {
       program: program,
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
+      authenticatorKeypair: adminAuthenticatorKeypair,
       trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("0"),
     });

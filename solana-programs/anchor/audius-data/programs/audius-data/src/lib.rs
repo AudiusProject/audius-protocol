@@ -23,15 +23,34 @@ pub mod audius_data {
     pub fn init_admin(
         ctx: Context<Initialize>,
         authority: Pubkey,
+        authenticator: Pubkey,
         track_id_offset: u64,
         playlist_id_offset: u64,
     ) -> Result<()> {
         msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
+        audius_admin.authenticator = authenticator;
         audius_admin.track_id = track_id_offset;
         audius_admin.playlist_id = playlist_id_offset;
         audius_admin.is_write_enabled = true;
+        Ok(())
+    }
+
+    /// Verifies a user by asserting that the audius_admin's authenticator matches the signed authenticator account
+    pub fn verify_user(
+        ctx: Context<VerifyUser>
+    ) -> Result<()> {
+
+        // Question, do we need to validate the audius_admin account somehow?
+
+        // Validate that the audius admin authenticator matches the authenticator passed in
+        if ctx.accounts.audius_admin.authenticator != ctx.accounts.authenticator.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        msg!("Verify user = {:?}", ctx.accounts.user.eth_address);
+
         Ok(())
     }
 
@@ -317,8 +336,8 @@ pub mod audius_data {
     }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8 + 8 + 1;
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 1;
 
 /// Size of user account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
@@ -531,12 +550,22 @@ pub struct DeletePlaylist<'info> {
     pub payer: Signer<'info>,
 }
 
+/// Instruction container for verifying a user
+/// Removes playlist storage account entirely
+#[derive(Accounts)]
+pub struct VerifyUser<'info> {
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub user: Account<'info, User>,
+    pub authenticator: Signer<'info>,
+}
+
 // END Instructions
 
 /// Audius root account
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
+    pub authenticator: Pubkey,
     pub track_id: u64,
     pub playlist_id: u64,
     pub is_write_enabled: bool,

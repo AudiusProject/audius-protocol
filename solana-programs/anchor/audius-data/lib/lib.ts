@@ -17,6 +17,7 @@ type initAdminParams = {
   program: Program<AudiusData>;
   adminKeypair: Keypair;
   adminStgKeypair: Keypair;
+  authenticatorKeypair: Keypair;
   trackIdOffset: anchor.BN;
   playlistIdOffset: anchor.BN;
 };
@@ -26,11 +27,13 @@ export const initAdmin = async ({
   program,
   adminKeypair,
   adminStgKeypair,
+  authenticatorKeypair,
   trackIdOffset,
   playlistIdOffset,
 }: initAdminParams) => {
   return program.rpc.initAdmin(
     adminKeypair.publicKey,
+    authenticatorKeypair.publicKey,
     trackIdOffset,
     playlistIdOffset,
     {
@@ -210,7 +213,6 @@ export const createUser = async ({
 /// Initialize a user from the Audius Admin account
 type updateUserParams = {
   program: Program<AudiusData>;
-  metadata: string;
   userStgAccount: anchor.web3.PublicKey;
   userAuthorityKeypair: anchor.web3.Keypair;
 };
@@ -256,6 +258,31 @@ export const updateAdmin = async ({
       },
       signers: [adminAuthorityKeypair],
     },
+  );
+};
+
+/// Verify user with authenticatorKeypair
+type verifyUserParams = {
+  program: Program<AudiusData>;
+  userStgAccount: anchor.web3.PublicKey;
+  authenticatorKeypair: anchor.web3.Keypair;
+  adminKeypair: Keypair;
+};
+export const verifyUser = async ({
+  program,
+  adminKeypair,
+  userStgAccount,
+  authenticatorKeypair,
+}: verifyUserParams) => {
+  return program.rpc.verifyUser(
+    {
+      accounts: {
+        user: userStgAccount,
+        audiusAdmin: adminKeypair.publicKey,
+        authenticator: authenticatorKeypair.publicKey,
+      },
+      signers: [authenticatorKeypair],
+    }
   );
 };
 
