@@ -84,6 +84,16 @@ module.exports = function (app) {
         return errorResponseServerError(`Could not save to db: ${e}`)
       }
 
+      /**
+       * Write metadata object to Redis
+       */
+      const redis = req.app.get('redisClient')
+      try {
+        await redis.CID.saveMetadata(multihash, metadataJSON)
+      } catch (e) {
+        req.logger.error(``)
+      }
+
       return successResponse({
         metadataMultihash: multihash,
         metadataFileUUID: fileUUID

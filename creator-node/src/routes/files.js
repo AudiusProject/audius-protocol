@@ -23,6 +23,8 @@ const { recoverWallet } = require('../apiSigning')
 const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+const redis = require('../redis.js')
+
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -160,7 +162,7 @@ const getCID = async (req, res) => {
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
-  const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}` }]
+  const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}`, CID, trackId }]
   const logPrefix = `[getCID] [CID=${CID}]`
 
   /**
@@ -186,6 +188,40 @@ const getCID = async (req, res) => {
         `${logPrefix} CID has been blacklisted by this node`
       )
     )
+  }
+
+  /**
+   * Check Redis for CID
+   */
+  startMs = Date.now()
+  try {
+    const CIDInfo = await redis.CID.get(CID)
+
+    decisionTree.push({
+      stage: 'REDIS_CID_FETCH_SUCCESSFUL',
+      time: `${Date.now() - startMs}ms`
+    })
+
+    if (CIDInfo.type === 'metadata' && CIDInfo.data) {
+      req.logger.info(`${logPrefix} SIDTEST FOUND CID IN REDIS`)
+
+      /**
+       * TODO
+       * - send response to client
+       * - all appriopriate headers
+       */
+      return sendResponse(
+        req,
+        res,
+        CIDInfo.data
+      )
+    }
+  } catch (e) {
+    decisionTree.push({
+      stage: 'REDIS_CID_FETCH_FAILURE',
+      time: `${Date.now() - startMs}ms`
+    })
+    // continue
   }
 
   // Compute expected storagePath for CID

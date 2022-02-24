@@ -26,6 +26,34 @@ function getNodeSyncRedisKey(wallet) {
   return `NODESYNC.${wallet}`
 }
 
+class CID {
+  static CID_KEY_PREFIX = 'CID:::'
+
+  static METADATA_EXPIRATION_SEC = 3600 // 1hr
+
+  static getKey (CID) {
+    return `${CID_KEY_PREFIX}${CID}`
+  }
+
+  static async get (CID) {
+    const key = this.getKey(CID)
+    const val = await redisClient.get(key)
+    if (!val) {
+      return
+    }
+    return JSON.parse(val)
+  }
+
+  static async setMetadata (CID, metadata) {
+    /**
+     * TODO error if data size above max
+     */
+    const key = this.getKey(CID)
+    return redisClient.set(key, JSON.stringify(metadata), 'EX', METADATA_EXPIRATION_SEC)
+  }
+}
+
 module.exports = redisClient
 module.exports.lock = RedisLock
 module.exports.getNodeSyncRedisKey = getNodeSyncRedisKey
+module.exports.CID = CID
