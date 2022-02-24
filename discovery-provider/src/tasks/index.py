@@ -286,22 +286,15 @@ async def fetch_metadata_from_gateway_endpoints(
                 continue  # already fetched
             user_id = cid_to_user_id[cid]
 
-            user_replica_set = []
+            gateway_endpoints = cnode_endpoints
             if fetch_from_replica_set and user_id and user_id in user_to_replica_set:
                 user_replica_set = user_to_replica_set[
                     user_id
                 ]  # user or track owner's replica set
                 if not user_replica_set:
                     continue  # try all gateway endpoints on later attempt
-                user_replica_set = user_replica_set.split(",")
+                gateway_endpoints = user_replica_set.split(",")
 
-            gateway_endpoints = (
-                user_replica_set
-                if fetch_from_replica_set
-                else list(
-                    set(cnode_endpoints) - set(user_replica_set)
-                )  # already fetched replica set
-            )
             for gateway_endpoint in gateway_endpoints:
                 future = asyncio.ensure_future(
                     update_task.ipfs_client.get_metadata_async(
@@ -336,7 +329,7 @@ async def fetch_metadata_from_gateway_endpoints(
                 if formatted_json != metadata_format:
                     cid_metadata[cid] = formatted_json
 
-                    if len(cid_metadata) == len(cids_txhash_set):
+                    if len(cid_metadata) == len(cid_txhash_map):
                         break  # fetched all metadata
 
                     for other_future in cid_futures_map[cid]:
@@ -448,7 +441,6 @@ def fetch_cid_metadata(
             fetch_from_replica_set=True,
         )
     )
-
     # second attempt - fetch missing CIDs from other cnodes
     if len(cid_metadata) != len(cids_txhash_set):
         eth_web3 = update_task.eth_web3
@@ -476,9 +468,9 @@ def fetch_cid_metadata(
             )
         )
 
-    if len(cid_metadata) != len(cids_txhash_set):
+    if len(cid_metadata) != len(cid_type.keys()):
         raise Exception(
-            f"Did not fetch all CIDs - missing {[set(cids_txhash_set) - set(cid_metadata.keys())]} CIDs"
+            f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
         )
 
     logger.info(
