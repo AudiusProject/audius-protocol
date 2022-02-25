@@ -4,8 +4,8 @@ import {
   FETCH_SAVES_FAILED,
   ADD_LOCAL_SAVE,
   REMOVE_LOCAL_SAVE
-} from 'pages/saved-page/store/actions'
-import tracksReducer from 'pages/saved-page/store/lineups/tracks/reducer'
+} from 'common/store/pages/saved-page/actions'
+import tracksReducer from 'common/store/pages/saved-page/lineups/tracks/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 

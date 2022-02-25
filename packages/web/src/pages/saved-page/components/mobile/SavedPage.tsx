@@ -13,6 +13,11 @@ import { ID, UID } from 'common/models/Identifiers'
 import { Lineup } from 'common/models/Lineup'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
+import {
+  Tabs,
+  SavedPageTrack,
+  SavedPageCollection
+} from 'common/store/pages/saved-page/types'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -23,11 +28,6 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useArePlaylistUpdatesEnabled } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
-import {
-  Tabs,
-  SavedPageTrack,
-  SavedPageCollection
-} from 'pages/saved-page/store/types'
 import { make, useRecord } from 'store/analytics/actions'
 import { QueueItem } from 'store/queue/types'
 import { albumPage, TRENDING_PAGE, playlistPage } from 'utils/route'

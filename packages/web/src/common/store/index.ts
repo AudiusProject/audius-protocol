@@ -23,6 +23,7 @@ import feed from 'common/store/pages/feed/reducer'
 import { FeedPageState } from 'common/store/pages/feed/types'
 import profileReducer from 'common/store/pages/profile/reducer'
 import { ProfilePageState } from 'common/store/pages/profile/types'
+import savedPageReducer from 'common/store/pages/saved-page/reducer'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
@@ -110,6 +111,7 @@ export const reducers = {
     explore: explorePageReducer,
     exploreCollections: exploreCollectionsReducer,
     profile: profileReducer,
+    savedPage: savedPageReducer,
     tokenDashboard: tokenDashboardSlice.reducer,
     track,
     trending,
@@ -199,6 +201,7 @@ export type CommonState = {
     feed: FeedPageState
     explore: ReturnType<typeof explorePageReducer>
     exploreCollections: ReturnType<typeof exploreCollectionsReducer>
+    savedPage: ReturnType<typeof savedPageReducer>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     track: TrackPageState
     profile: ProfilePageState
