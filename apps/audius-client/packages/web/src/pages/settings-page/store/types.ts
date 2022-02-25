@@ -47,14 +47,8 @@ export type PushNotifications = {
   [PushNotificationSetting.Remixes]: boolean
 }
 
-export enum Cast {
-  AIRPLAY = 'AIRPLAY',
-  CHROMECAST = 'CHROMECAST'
-}
-
 export default interface SettingsPageState {
   browserNotifications: Notifications
   pushNotifications: PushNotifications
   emailFrequency: EmailFrequency
-  castMethod: Cast
 }

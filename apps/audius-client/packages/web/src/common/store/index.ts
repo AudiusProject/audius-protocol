@@ -16,6 +16,8 @@ import { TracksCacheState } from 'common/store/cache/tracks/types'
 import usersReducer from 'common/store/cache/users/reducer'
 import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
+import { sagas as castSagas } from 'common/store/cast/sagas'
+import cast from 'common/store/cast/slice'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
 import exploreCollectionsReducer from 'common/store/pages/explore/exploreCollections/slice'
 import explorePageReducer from 'common/store/pages/explore/slice'
@@ -83,6 +85,9 @@ export const reducers = {
   // Wallet
   wallet,
 
+  // Cast
+  cast,
+
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
@@ -133,7 +138,8 @@ export const sagas = {
   collections: collectionsSagas,
   tracks: tracksSagas,
   users: usersSagas,
-  remoteConfig: remoteConfigSagas
+  remoteConfig: remoteConfigSagas,
+  cast: castSagas
 
   // TODO: pull in the following from audius-client
   // once AudiusBackend and dependencies are migrated
@@ -178,6 +184,9 @@ export type CommonState = {
 
   // Wallet
   wallet: ReturnType<typeof wallet>
+
+  // Cast
+  cast: ReturnType<typeof cast>
 
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>

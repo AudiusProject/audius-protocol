@@ -11,7 +11,3 @@ export const getPushNotificationSettings = (state: AppState) => {
 export const getEmailFrequency = (state: AppState) => {
   return state.application.pages.settings.emailFrequency
 }
-
-export const getCastMethod = (state: AppState) => {
-  return state.application.pages.settings.castMethod
-}

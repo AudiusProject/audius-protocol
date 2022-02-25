@@ -8,10 +8,10 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
+import { CastMethod } from 'common/store/cast/slice'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import IconButton from 'components/icon-button/IconButton'
-import { Cast } from 'pages/settings-page/store/types'
 import { AirplayMessage } from 'services/native-mobile-interface/cast'
 import { ShowGoogleCastPickerMessage } from 'services/native-mobile-interface/googleCast'
 
@@ -24,7 +24,7 @@ type ActionsBarProps = {
   hasFavorited: boolean
   isCasting: boolean
   isOwner: boolean
-  castMethod: Cast
+  castMethod: CastMethod
   onToggleRepost: () => void
   onToggleFavorite: () => void
   onShare: () => void
@@ -46,7 +46,7 @@ const ActionsBar = ({
   isDarkMode,
   isMatrixMode
 }: ActionsBarProps) => {
-  const isAirplay = castMethod === Cast.AIRPLAY
+  const isAirplay = castMethod === 'airplay'
 
   return (
     <div className={styles.actionsBar}>
