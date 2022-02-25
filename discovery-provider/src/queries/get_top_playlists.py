@@ -1,9 +1,9 @@
 from sqlalchemy import desc
 from src import exceptions
 from src.models import Playlist, RepostType, SaveType
+from src.models.models import AggregatePlaylist
 from src.queries.query_helpers import (
     create_followee_playlists_subquery,
-    create_save_repost_count_subquery,
     decayed_score,
     filter_to_playlist_mood,
     get_current_user_id,
@@ -43,8 +43,6 @@ def get_top_playlists(kind, args):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        # Construct a subquery to get the summed save + repost count for the `kind`
-        count_subquery = create_save_repost_count_subquery(session, kind)
 
         # If filtering by followees, set the playlist view to be only playlists from
         # users that the current user follows.
@@ -60,15 +58,18 @@ def get_top_playlists(kind, args):
         playlist_query = (
             session.query(
                 playlists_to_query,
-                count_subquery.c["count"],
+                (AggregatePlaylist.repost_count + AggregatePlaylist.save_count).label(
+                    "count"
+                ),
                 decayed_score(
-                    count_subquery.c["count"], playlists_to_query.c.created_at
+                    AggregatePlaylist.repost_count + AggregatePlaylist.save_count,
+                    playlists_to_query.c.created_at,
                 ).label("score"),
             )
             .select_from(playlists_to_query)
             .join(
-                count_subquery,
-                count_subquery.c["id"] == playlists_to_query.c.playlist_id,
+                AggregatePlaylist,
+                AggregatePlaylist.playlist_id == playlists_to_query.c.playlist_id,
             )
             .filter(
                 playlists_to_query.c.is_current == True,
