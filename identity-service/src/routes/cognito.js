@@ -135,6 +135,11 @@ module.exports = function (app) {
     }
   }))
 
+  /**
+   * This endpoint is not programatically called.
+   * It exists in case we want to request a flow session retry for a handle
+   * in case our webhook receiver runs into an issue
+   */
   app.post('/cognito_retry/:handle', handleResponse(async (req) => {
     const handle = req.params.handle
 
@@ -186,6 +191,11 @@ module.exports = function (app) {
     }
   }))
 
+  /**
+   * Returns whether a recent cognito entry exists for a given handle.
+   * This is so that the client can poll this endpoint to check whether
+   * or not to proceed with a reward claim retry.
+   */
   app.get('/cognito_recent_exists/:handle', handleResponse(async (req) => {
     const handle = req.params.handle
     const records = await models.CognitoFlows.findAll({
