@@ -37,7 +37,12 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     marginBottom: spacing(4)
   },
   actionButtons: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    position: 'relative',
+    alignSelf: 'flex-start'
+  },
+  followButton: {
+    width: 110
   }
 }))
 
@@ -66,14 +71,17 @@ export const ProfileInfo = ({ profile }: ProfileInfoProps) => {
           <Text style={styles.followsYou}>{messages.followsYou}</Text>
         ) : null}
       </View>
-      {isOwner ? (
-        <EditProfileButton />
-      ) : (
-        <View style={styles.actionButtons}>
-          {does_current_user_follow ? <SubscribeButton /> : null}
-          <FollowButton profile={profile} />
-        </View>
-      )}
+
+      <View style={styles.actionButtons}>
+        {isOwner ? (
+          <EditProfileButton style={styles.followButton} />
+        ) : (
+          <>
+            {does_current_user_follow ? <SubscribeButton /> : null}
+            <FollowButton style={styles.followButton} profile={profile} />
+          </>
+        )}
+      </View>
     </View>
   )
 }

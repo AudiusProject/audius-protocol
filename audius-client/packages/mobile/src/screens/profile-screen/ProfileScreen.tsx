@@ -19,15 +19,19 @@ import { getProfile } from './selectors'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.neutralLight10,
     paddingTop: spacing(8),
-    paddingHorizontal: spacing(3)
+    paddingHorizontal: spacing(3),
+    paddingBottom: spacing(3)
   },
   profilePicture: {
     position: 'absolute',
     top: 37,
     left: 11,
     zIndex: 100
+  },
+  navigator: {
+    height: '100%'
   }
 }))
 
@@ -64,7 +68,7 @@ export const ProfileScreen = () => {
           <ProfileSocials profile={profile} />
           <ExpandableBio profile={profile} />
         </View>
-        <View style={{ flex: 4 }}>
+        <View style={styles.navigator}>
           <ProfileTabNavigator profile={profile} />
         </View>
       </VirtualizedScrollView>

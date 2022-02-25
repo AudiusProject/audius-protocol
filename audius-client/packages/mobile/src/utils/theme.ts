@@ -134,7 +134,7 @@ export const darkTheme = {
   statTileText: '#C675FF'
 }
 
-const matrixTheme = {
+export const matrixTheme = {
   background: '#1A1818',
   backgroundSecondary: '#1A1818',
   primary: '#0CF10C',

@@ -22,8 +22,9 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
       const { index } = info
       const isInLeftColumn = !(index % 2)
       const style = {
-        padding: 4,
-        [`padding${isInLeftColumn ? 'Left' : 'Right'}`]: 16,
+        paddingVertical: 12,
+        paddingBottom: 0,
+        [`padding${isInLeftColumn ? 'Left' : 'Right'}`]: 12,
         width: '50%'
       }
       return <View style={style}>{renderItem?.(info)}</View>

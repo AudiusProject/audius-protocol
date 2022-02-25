@@ -1,4 +1,5 @@
 import { User } from 'audius-client/src/common/models/User'
+import { StyleProp, ViewStyle } from 'react-native'
 
 import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
@@ -12,9 +13,11 @@ const messages = {
 type FollowButtonsProps = {
   profile: User
   noIcon?: boolean
+  style?: StyleProp<ViewStyle>
 }
 
-export const FollowButton = ({ profile, noIcon }: FollowButtonsProps) => {
+export const FollowButton = (props: FollowButtonsProps) => {
+  const { profile, noIcon, style } = props
   const { does_current_user_follow } = profile
   const isFollowing = does_current_user_follow
 
@@ -24,6 +27,7 @@ export const FollowButton = ({ profile, noIcon }: FollowButtonsProps) => {
 
   return (
     <Button
+      style={style}
       title={isFollowing ? messages.following : messages.follow}
       variant={variant}
       icon={noIcon ? undefined : Icon}

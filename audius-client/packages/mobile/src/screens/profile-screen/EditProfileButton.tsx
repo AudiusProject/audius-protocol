@@ -1,10 +1,13 @@
 import { useCallback } from 'react'
 
-import { Button } from 'app/components/core'
+import { Button, ButtonProps } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-export const EditProfileButton = () => {
+type EditProfileButtonProps = Partial<ButtonProps>
+
+export const EditProfileButton = (props: EditProfileButtonProps) => {
   const navigation = useNavigation()
+
   const handlePress = useCallback(() => {
     navigation.navigate({
       native: { screen: 'EditProfile', params: undefined }
@@ -17,6 +20,7 @@ export const EditProfileButton = () => {
       variant='secondary'
       onPress={handlePress}
       size='small'
+      {...props}
     />
   )
 }
