@@ -153,6 +153,7 @@ module.exports = function (app) {
       // because there should be no need to redo the flow if score is already passing
       // also, it would otherwise be possible that the new flow will pass but the unique identity check will have a collision
       if (record && record.score === 1) {
+        logger.info(`cognito_retry | Not requesting flow session retry for handle ${handle} because user already passed cognito`)
         return successResponse({})
       }
 
