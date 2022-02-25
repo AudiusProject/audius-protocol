@@ -198,8 +198,8 @@ class Rewards extends Base {
       return { success: true, error: null, phase: null }
     } catch (e) {
       const err = e.message
-      const logger = (err === GetAttestationError.COGNITO_FLOW || err === GetAttestationError.HCAPTCHA) ? logger.info : logger.error
-      logger(`submitAndEvaluate: failed for userId: [${decodeHashId(encodedUserId)}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`)
+      const log = (err === GetAttestationError.COGNITO_FLOW || err === GetAttestationError.HCAPTCHA) ? logger.info : logger.error
+      log(`submitAndEvaluate: failed for userId: [${decodeHashId(encodedUserId)}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`)
       return { success: false, error: err, phase }
     }
   }
@@ -633,10 +633,11 @@ class Rewards extends Base {
    *  specifier: string
    *  error?: string,
    *  phase?: string,
-   * }} { status, userId, challengeId, amount, error, phase, specifier }
+   *  reason?: string
+   * }} { status, userId, challengeId, amount, error, phase, specifier, reason }
    * @memberof IdentityService
    */
-  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier, reason }) {
     await this.identityService.sendAttestationResult({
       status,
       userId,
@@ -645,7 +646,8 @@ class Rewards extends Base {
       error,
       phase,
       source,
-      specifier
+      specifier,
+      reason
     })
   }
 }
