@@ -84,6 +84,8 @@ module.exports = function (app) {
         return errorResponseServerError(`Could not save to db: ${e}`)
       }
 
+      issueAndWaitForSecondarySyncRequests(req)
+
       return successResponse({
         metadataMultihash: multihash,
         metadataFileUUID: fileUUID
