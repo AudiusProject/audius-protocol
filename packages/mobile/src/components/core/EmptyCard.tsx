@@ -1,9 +1,11 @@
 import { ReactNode } from 'react'
 
+import { Text } from 'react-native'
+
 import { Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   emptyTabRoot: {
     marginVertical: spacing(2),
     marginHorizontal: spacing(3)
@@ -14,8 +16,21 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   emptyTabContent: {
     alignItems: 'center'
+  },
+  emptyCardText: {
+    ...typography.body,
+    color: palette.neutral
   }
 }))
+
+type EmptyCardTextProps = {
+  children: ReactNode
+}
+
+export const EmptyCardText = ({ children }: EmptyCardTextProps) => {
+  const styles = useStyles()
+  return <Text style={styles.emptyCardText}>{children}</Text>
+}
 
 type EmptyCardProps = {
   children: ReactNode
