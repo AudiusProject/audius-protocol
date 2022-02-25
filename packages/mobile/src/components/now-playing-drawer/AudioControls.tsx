@@ -1,4 +1,7 @@
+import { useCallback } from 'react'
+
 import { View, StyleSheet } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/animations/iconPause.json'
 import IconPlay from 'app/assets/animations/iconPlay.json'
@@ -17,6 +20,8 @@ import IconPrev from 'app/assets/images/iconPrev.svg'
 import AnimatedButtonProvider from 'app/components/animated-button/AnimatedButtonProvider'
 import { IconButton } from 'app/components/core'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { pause, play } from 'app/store/audio/actions'
+import { getPlaying } from 'app/store/audio/selectors'
 import { Theme, ThemeColors, useThemeVariant } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -48,9 +53,20 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 export const AudioControls = () => {
+  const dispatch = useDispatch()
   const styles = useThemedStyles(createStyles)
   const themeVariant = useThemeVariant()
   const isDarkMode = themeVariant === Theme.DARK
+
+  const isPlaying = useSelector(getPlaying)
+
+  const onPressPlayButton = useCallback(() => {
+    if (isPlaying) {
+      dispatch(pause())
+    } else {
+      dispatch(play())
+    }
+  }, [isPlaying, dispatch])
 
   const renderRepeatButton = () => {
     return (
@@ -84,9 +100,10 @@ export const AudioControls = () => {
     return (
       <AnimatedButtonProvider
         isDarkMode={isDarkMode}
+        isActive={isPlaying}
         iconLightJSON={[IconPlay, IconPause]}
         iconDarkJSON={[IconPlay, IconPause]}
-        onPress={() => {}}
+        onPress={onPressPlayButton}
         style={styles.button}
         wrapperStyle={styles.playIcon}
       />
