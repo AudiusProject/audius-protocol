@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 import {
@@ -21,15 +21,14 @@ const messages = {
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   root: {
-    marginTop: spacing(5)
+    marginTop: spacing(3)
   },
   bio: {
     ...typography.body,
     color: palette.neutralLight2
   },
   expandButton: {
-    marginTop: spacing(2),
-    backgroundColor: 'white'
+    marginTop: spacing(2)
   },
   expandText: {
     ...typography.h4,
@@ -46,13 +45,14 @@ export const ExpandableBio = ({ profile }: ExpandableBioProps) => {
   const { bio, website, donation } = profile
   const styles = useStyles()
   const [fullBioHeight, setFullBioHeight] = useState(0)
-  const hasSites = Boolean(website || donation) || true
+  const hasSites = Boolean(website || donation)
   const [shouldShowMore, setShouldShowMore] = useState(hasSites)
   const [isExpanded, setIsExpanded] = useToggle(false)
 
   const handleBioLayout = useCallback(
     (event: LayoutChangeEvent) => {
       const { height } = event.nativeEvent.layout
+
       if (!fullBioHeight) {
         setFullBioHeight(height)
       } else if (fullBioHeight > height) {
@@ -67,26 +67,38 @@ export const ExpandableBio = ({ profile }: ExpandableBioProps) => {
     setIsExpanded(!isExpanded)
   }, [isExpanded, setIsExpanded])
 
+  /*
+   * hasSites isn't always correct on first render, this effect waits for
+   * a potential change
+   */
+  useEffect(() => {
+    if (hasSites) {
+      setShouldShowMore(true)
+    }
+  }, [hasSites])
+
+  if (!bio && !hasSites) return null
+
   return (
     <View style={styles.root}>
       <View>
-        <Text
-          numberOfLines={fullBioHeight && !isExpanded ? 1 : 0}
-          style={styles.bio}
-          onLayout={handleBioLayout}
-        >
-          {bio}
-        </Text>
+        {bio ? (
+          <Text
+            numberOfLines={fullBioHeight && !isExpanded ? 2 : 0}
+            style={styles.bio}
+            onLayout={handleBioLayout}
+          >
+            {bio}
+          </Text>
+        ) : null}
         {hasSites && isExpanded ? <Sites profile={profile} /> : null}
       </View>
       {shouldShowMore ? (
-        <View style={styles.expandButton}>
-          <Pressable onPress={handleToggleExpanded}>
-            <Text style={styles.expandText}>
-              {isExpanded ? messages.showLess : messages.showMore}
-            </Text>
-          </Pressable>
-        </View>
+        <Pressable style={styles.expandButton} onPress={handleToggleExpanded}>
+          <Text style={styles.expandText}>
+            {isExpanded ? messages.showLess : messages.showMore}
+          </Text>
+        </Pressable>
       ) : null}
     </View>
   )

@@ -1,8 +1,7 @@
 import { feedActions } from 'audius-client/src/common/store/pages/profile/lineups/feed/actions'
 import { getProfileFeedLineup } from 'audius-client/src/common/store/pages/profile/selectors'
-import { Text } from 'react-native'
 
-import { EmptyCard } from 'app/components/core'
+import { EmptyCard, EmptyCardText } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
@@ -21,7 +20,7 @@ export const RepostsTab = () => {
   if (profile.repost_count === 0) {
     return (
       <EmptyCard>
-        <Text>{messages.emptyTabText}</Text>
+        <EmptyCardText>{messages.emptyTabText}</EmptyCardText>
       </EmptyCard>
     )
   }

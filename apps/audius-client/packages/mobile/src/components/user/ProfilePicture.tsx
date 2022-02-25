@@ -13,10 +13,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     borderWidth: 2,
     borderStyle: 'solid',
     borderColor: palette.white,
-    overflow: 'hidden'
-  },
-  profilePhotoImage: {
-    backgroundColor: palette.neutral
+    overflow: 'hidden',
+    backgroundColor: palette.neutralLight6
   }
 }))
 
@@ -40,8 +38,7 @@ export const ProfilePhoto = (props: ProfilePhotoProps) => {
       styles={{
         ...stylesProp,
         ...{
-          root: styles.profilePhoto,
-          image: styles.profilePhotoImage
+          root: styles.profilePhoto
         }
       }}
       {...other}

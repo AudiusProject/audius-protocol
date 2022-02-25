@@ -30,13 +30,14 @@ export const ProfileSocials = ({ profile }: ProfileSocialsProps) => {
   const { twitter_handle, instagram_handle } = profile
   const styles = useStyles()
   const { neutral } = useThemeColors()
+
   return (
     <View style={styles.socials}>
       <ProfileBadge profile={profile} />
-      {!twitter_handle ? (
+      {twitter_handle ? (
         <IconTwitterBird style={styles.icon} fill={neutral} />
       ) : null}
-      {!instagram_handle ? <IconInstagram style={styles.icon} /> : null}
+      {instagram_handle ? <IconInstagram style={styles.icon} /> : null}
     </View>
   )
 }

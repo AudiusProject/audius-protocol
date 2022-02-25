@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useContext } from 'react'
 
 import {
   LinkingOptions,
@@ -6,6 +6,9 @@ import {
 } from '@react-navigation/native'
 
 import { AppStackParamList } from 'app/components/app-navigator/types'
+
+import { navigationThemes } from '../app-navigator/navigationThemes'
+import { ThemeContext } from '../theme/ThemeContext'
 
 type Props = {
   children: ReactNode
@@ -85,8 +88,18 @@ const linking: LinkingOptions<AppStackParamList> = {
  * and configures linking
  */
 const NavigationContainer = ({ children }: Props) => {
+  const { theme, isSystemDarkMode } = useContext(ThemeContext)
+
+  const navigationTheme =
+    theme === 'auto' ? (isSystemDarkMode ? 'dark' : 'default') : theme
+
   return (
-    <RNNavigationContainer linking={linking}>{children}</RNNavigationContainer>
+    <RNNavigationContainer
+      linking={linking}
+      theme={navigationThemes[navigationTheme]}
+    >
+      {children}
+    </RNNavigationContainer>
   )
 }
 
