@@ -17,6 +17,10 @@ const GetAttestationError = Object.freeze({
   HCAPTCHA: 'HCAPTCHA',
   COGNITO_FLOW: 'COGNITO_FLOW',
   BLOCKED: 'BLOCKED',
+  DISCOVERY_NODE_ATTESTATION_ERROR: 'DISCOVERY_NODE_ATTESTATION_ERROR',
+  DISCOVERY_NODE_UNKNOWN_RESPONSE: 'DISCOVERY_NODE_UNKNOWN_RESPONSE',
+  AAO_ATTESTATION_ERROR: 'AAO_ATTESTATION_ERROR',
+  AAO_ATTESTATION_UNKNOWN_RESPONSE: 'AAO_ATTESTATION_UNKNOWN_RESPONSE',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 })
 
@@ -194,7 +198,8 @@ class Rewards extends Base {
       return { success: true, error: null, phase: null }
     } catch (e) {
       const err = e.message
-      logger.error(`submitAndEvaluate: failed for userId: [${decodeHashId(encodedUserId)}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`)
+      const logger = (err === GetAttestationError.COGNITO_FLOW || err === GetAttestationError.HCAPTCHA) ? logger.info : logger.error
+      logger(`submitAndEvaluate: failed for userId: [${decodeHashId(encodedUserId)}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`)
       return { success: false, error: err, phase }
     }
   }
@@ -256,8 +261,12 @@ class Rewards extends Base {
       }
     }
 
+    // First attempt AAO
+
+    const aaoAttestation = null
+
     try {
-      const { success: aaoAttestation, error: aaoAttestationError } = await this.getAAOAttestation({
+      const { success, error: aaoAttestationError } = await this.getAAOAttestation({
         challengeId,
         specifier,
         handle,
@@ -273,7 +282,20 @@ class Rewards extends Base {
           error: aaoAttestationError
         }
       }
+      aaoAttestation = success
+    } catch (e) {
+      const err = e.message
+      logger.error(`Failed to aggregate attestations for user [${decodeHashId(encodedUserId)}], challenge-id: [${challengeId}] with err: ${err}`)
+      return {
+        discoveryNodeAttestations: null,
+        aaoAttestation: null,
+        error: GetAttestationError.AAO_ATTESTATION_ERROR
+      }
+    }
 
+    // Then attempt DNs
+
+    try {
       const discoveryNodeAttestationResults = await this._getDiscoveryAttestationsWithRetries({
         endpoints,
         challengeId,
@@ -306,7 +328,7 @@ class Rewards extends Base {
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
-        error: GetAttestationError.UNKNOWN_ERROR
+        error: GetAttestationError.DISCOVERY_NODE_ATTESTATION_ERROR
       }
     }
   }
@@ -357,7 +379,7 @@ class Rewards extends Base {
     } catch (e) {
       const err = e.message
       logger.error(`Failed to get challenge attestation for userId [${decodeHashId(encodedUserId)}] challengeId [${challengeId}]from ${discoveryProviderEndpoint} with ${err}`)
-      const mappedErr = GetAttestationError[err] || GetAttestationError.UNKNOWN_ERROR
+      const mappedErr = GetAttestationError[err] || GetAttestationError.DISCOVERY_NODE_UNKNOWN_RESPONSE
       return {
         success: null,
         error: mappedErr
@@ -435,7 +457,7 @@ class Rewards extends Base {
 
       if (needs) {
         logger.error(`Failed to get AAO attestation: needs ${needs}`)
-        const mappedErr = GetAttestationError[needs] || GetAttestationError.UNKNOWN_ERROR
+        const mappedErr = GetAttestationError[needs] || GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
         return {
           success: null,
           error: mappedErr
@@ -454,7 +476,7 @@ class Rewards extends Base {
       logger.error(`Failed to get AAO attestation: ${err}`)
       return {
         success: null,
-        error: GetAttestationError.UNKNOWN_ERROR
+        error: GetAttestationError.AAO_ATTESTATION_ERROR
       }
     }
   }
