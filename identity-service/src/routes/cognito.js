@@ -1,12 +1,13 @@
 const {
   handleResponse,
   successResponse,
+  errorResponseForbidden,
   errorResponseServerError
 } = require('../apiHelpers')
 const { logger } = require('../logging')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
-const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
+const { cognitoFlowMiddleware, MAX_TIME_DRIFT_MILLISECONDS } = require('../cognitoFlowMiddleware')
 const { sign, createCognitoHeaders, createMaskedCognitoIdentity } = require('../utils/cognitoHelpers')
 const axios = require('axios')
 const axiosHttpAdapter = require('axios/lib/adapters/http')
@@ -162,6 +163,23 @@ module.exports = function (app) {
       logger.error(`The full retry error payload for user handle ${handle} is: ${JSON.stringify(err)}`)
       return errorResponseServerError(err.message)
     }
+  }))
+
+  app.get('/cognito_recent_exists/:handle', handleResponse(async (req) => {
+    const handle = req.params.handle
+    const records = await models.CognitoFlows.findAll({
+      where: { handle },
+      order: [['updatedAt', 'DESC']],
+      limit: 1
+    })
+    logger.info(`cognito_exists | ${JSON.stringify(records, null, 2)}`)
+    if (records.length) {
+      const timeDifferenceMilliseconds =
+        Date.now() - new Date(records[0].updatedAt).getTime()
+      logger.info(`cognito_exists | ${Date.now()} | ${new Date(records[0].updatedAt).getTime()} | ${timeDifferenceMilliseconds}`)
+      return successResponse({ exists: timeDifferenceMilliseconds <= MAX_TIME_DRIFT_MILLISECONDS })
+    }
+    return successResponse({ exists: false })
   }))
 
   /**
