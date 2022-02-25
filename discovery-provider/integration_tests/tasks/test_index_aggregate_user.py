@@ -456,14 +456,14 @@ def test_index_aggregate_user_update_with_extra_user(app):
         assert results[1].repost_count == 2
         assert results[1].track_save_count == 1
 
-        assert results[1].user_id == 3
-        assert results[1].track_count == 9
-        assert results[1].playlist_count == 9
-        assert results[1].album_count == 9
-        assert results[1].follower_count == 9
-        assert results[1].following_count == 9
-        assert results[1].repost_count == 9
-        assert results[1].track_save_count == 9
+        assert results[2].user_id == 3
+        assert results[2].track_count == 9
+        assert results[2].playlist_count == 9
+        assert results[2].album_count == 9
+        assert results[2].follower_count == 9
+        assert results[2].following_count == 9
+        assert results[2].repost_count == 9
+        assert results[2].track_save_count == 9
 
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
         assert prev_id_checkpoint == 3
