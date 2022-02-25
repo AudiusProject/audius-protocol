@@ -154,8 +154,6 @@ class RewardsReporter {
         source: this.source,
         specifier
       }
-      const slackMessage = this.errorReporter.getJsonSlackMessage(report)
-      await this.errorReporter.postToSlack({ message: slackMessage })
       this.childLogger.info(report, `Rewards Reporter`)
 
       if (this.shouldReportAnalytics) {

@@ -122,7 +122,6 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
   // Periodically check for new config and update the rewards attester
   setInterval(async () => {
     const { challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec, parallelization } = await getRemoteConfig(optimizely)
-    logger.info(`Pulled rewards attester remote config: endpoints ${endpoints}, aao ${aaoEndpoint} (${aaoAddress}), denyList: ${challengeIdsDenyList}, run behind: ${runBehindSec},  parallelization: ${parallelization}`)
     attester.updateConfig({ challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, parallelization })
   }, 10000)
 
