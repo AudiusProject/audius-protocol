@@ -83,7 +83,7 @@ class TransactionHandler {
       const response = await this.identityService.solanaRelay(transactionData)
       return { res: response, error: null, errorCode: null }
     } catch (e) {
-      const error = e.response.data.error || e.message
+      const error = (e.response && e.response.data && e.response.data.error) || e.message
       const errorCode = this._parseSolanaErrorCode(error)
       return { res: null, error, errorCode }
     }
