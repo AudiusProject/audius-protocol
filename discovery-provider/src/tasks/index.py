@@ -342,11 +342,8 @@ def fetch_cid_metadata(
                 cids_txhash_set,
                 cid_to_user_id,
                 user_to_replica_set,
-                None,
                 cid_type,
-                block_hash,
-                block_number,
-                fetch_from_replica_set=True,
+                should_fetch_from_replica_set=True,
             )
         )
     except Exception:
@@ -363,9 +360,7 @@ def fetch_cid_metadata(
                     cid_to_user_id,
                     user_to_replica_set,
                     cid_type,
-                    block_hash,
-                    block_number,
-                    fetch_from_replica_set=False,
+                    should_fetch_from_replica_set=False,
                 )
             )
         except Exception as e:
