@@ -5,7 +5,6 @@ import logging
 from datetime import datetime
 from operator import itemgetter, or_
 
-import aiohttp
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -33,7 +32,6 @@ from src.queries.get_skipped_transactions import (
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
-from src.tasks.metadata import track_metadata_format, user_metadata_format
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.tracks import track_event_types_lookup, track_state_update
@@ -42,7 +40,6 @@ from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
-from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 from src.utils.index_blocks_performance import (
     record_index_blocks_ms,
     sweep_old_index_blocks_ms,
@@ -256,96 +253,6 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-def get_metadata_from_json(default_metadata_fields, resp_json):
-    metadata = {}
-    for parameter, value in default_metadata_fields.items():
-        metadata[parameter] = (
-            resp_json.get(parameter) if resp_json.get(parameter) != None else value
-        )
-    return metadata
-
-
-async def fetch_metadata_from_gateway_endpoints(
-    cid_metadata,
-    cids_txhash_set,
-    cid_to_user_id,
-    user_to_replica_set,
-    cnode_endpoints,
-    cid_type,
-    block_hash,
-    block_number,
-    fetch_from_replica_set=True,
-):
-    async with aiohttp.ClientSession() as async_session:
-        futures = []
-        cid_futures_map = {}
-        cid_txhash_map = {cid: txhash for cid, txhash in cids_txhash_set}
-
-        for cid in cid_txhash_map:
-            if cid in cid_metadata:
-                continue  # already fetched
-            user_id = cid_to_user_id[cid]
-
-            gateway_endpoints = cnode_endpoints
-            if fetch_from_replica_set and user_id and user_id in user_to_replica_set:
-                user_replica_set = user_to_replica_set[
-                    user_id
-                ]  # user or track owner's replica set
-                if not user_replica_set:
-                    continue  # try all gateway endpoints on later attempt
-                gateway_endpoints = user_replica_set.split(",")
-
-            for gateway_endpoint in gateway_endpoints:
-                future = asyncio.ensure_future(
-                    update_task.ipfs_client.get_metadata_async(
-                        async_session, cid, gateway_endpoint
-                    )
-                )
-                if cid not in cid_futures_map:
-                    cid_futures_map[cid] = set()
-                cid_futures_map[cid].add(future)
-                futures.append(future)
-
-        try:
-            for future in asyncio.as_completed(futures, timeout=5):
-                try:
-                    future_result = await future
-                except asyncio.CancelledError:
-                    pass  # swallow canceled requests
-
-                if not future_result:
-                    continue
-
-                cid, metadata_json = future_result
-
-                metadata_format = (
-                    track_metadata_format
-                    if cid_type[cid] == "track"
-                    else user_metadata_format
-                )
-
-                formatted_json = get_metadata_from_json(metadata_format, metadata_json)
-
-                if formatted_json != metadata_format:
-                    cid_metadata[cid] = formatted_json
-
-                    if len(cid_metadata) == len(cid_txhash_map):
-                        break  # fetched all metadata
-
-                    for other_future in cid_futures_map[cid]:
-                        if other_future == future:
-                            continue
-                        other_future.cancel()  # cancel other pending requests
-        except asyncio.TimeoutError:
-            logger.info("index.py | fetch_cid_metadata TimeoutError")
-        except Exception as e:
-            logger.info("index.py | Error in fetch ipfs metadata")
-            blockhash = update_task.web3.toHex(block_hash)
-            raise IndexingError(
-                "prefetch-cids", block_number, blockhash, cid_txhash_map[cid], str(e)
-            ) from e
-
-
 def fetch_cid_metadata(
     db,
     user_factory_txs,
@@ -428,49 +335,49 @@ def fetch_cid_metadata(
     cid_metadata = {}  # cid -> metadata
 
     # first attempt - fetch all CIDs from replica set
-    asyncio.run(
-        fetch_metadata_from_gateway_endpoints(
-            cid_metadata,
-            cids_txhash_set,
-            cid_to_user_id,
-            user_to_replica_set,
-            None,
-            cid_type,
-            block_hash,
-            block_number,
-            fetch_from_replica_set=True,
-        )
-    )
-    # second attempt - fetch missing CIDs from other cnodes
-    if len(cid_metadata) != len(cids_txhash_set):
-        eth_web3 = update_task.eth_web3
-        shared_config = update_task.shared_config
-        redis = update_task.redis
-        eth_abi_values = update_task.eth_abi_values
-
-        cnode_endpoints = list(
-            fetch_all_registered_content_nodes(
-                eth_web3, shared_config, redis, eth_abi_values
-            )
-        )
-
+    try:
         asyncio.run(
-            fetch_metadata_from_gateway_endpoints(
+            update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
                 cid_metadata,
                 cids_txhash_set,
                 cid_to_user_id,
                 user_to_replica_set,
-                cnode_endpoints,
+                None,
                 cid_type,
                 block_hash,
                 block_number,
-                fetch_from_replica_set=False,
+                fetch_from_replica_set=True,
             )
         )
+    except Exception:
+        # swallow exception on first attempt fetching from replica set
+        pass
+
+    # second attempt - fetch missing CIDs from other cnodes
+    if len(cid_metadata) != len(cids_txhash_set):
+        try:
+            asyncio.run(
+                update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
+                    cid_metadata,
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    block_hash,
+                    block_number,
+                    fetch_from_replica_set=False,
+                )
+            )
+        except Exception as e:
+            logger.info("index.py | Error in fetch cid metadata")
+            raise IndexingError(
+                "prefetch-cids", block_number, block_hash, None, str(e)
+            ) from e
 
     if len(cid_metadata) != len(cid_type.keys()):
-        raise Exception(
-            f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+        missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+        raise IndexingError(
+            "prefetch-cids", block_number, block_hash, None, missing_cids_msg
         )
 
     logger.info(
