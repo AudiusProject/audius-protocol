@@ -159,7 +159,8 @@ class EthContracts {
       this.ethWeb3Manager,
       TrustedNotifierManagerABI,
       TrustedNotifierManagerProxyKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.GovernanceClient
     )
 
     this.contractClients = [
