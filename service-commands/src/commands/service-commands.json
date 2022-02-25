@@ -261,16 +261,18 @@
       "echo 'Starting TN...'",
       "cd $TN_DIR; . scripts/start.sh dev",
       "sleep 5",
-      "echo 'TN Started'"
+      "echo 'TN Started, registering on chain'",
+      "cd libs/; node initScripts/local.js register-trusted-notifier"
     ],
-    "register": [
-      "cd service-commands; ./scripts/registerAAO.sh"
+    "restart": [
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "cd $TN_DIR; . scripts/stop.sh dev",
+      "cd $TN_DIR; . scripts/start.sh dev"
     ],
     "down": [
-      "set -x",
       "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
       "echo 'Stopping TN...'",
-      "cd $TN_DIR; docker-compose -f compose/dev/docker-compose.yml down"
+      "cd $TN_DIR; . scripts/stop.sh dev"
     ]
   }
 }
