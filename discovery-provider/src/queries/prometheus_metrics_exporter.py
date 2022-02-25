@@ -10,11 +10,11 @@ from prometheus_client import (
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint("metrics", __name__)
+bp = Blueprint("prometheus_metrics_exporter", __name__)
 
 
 @bp.route("/metrics", methods=["GET"])
-def metrics():
+def prometheus_metrics_exporter():
     registry = CollectorRegistry()
     multiprocess.MultiProcessCollector(registry)
     data = generate_latest(registry)
