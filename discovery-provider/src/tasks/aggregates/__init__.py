@@ -15,7 +15,7 @@ from src.utils.update_indexing_checkpoints import (
 logger = logging.getLogger(__name__)
 
 
-def try_updating_aggregate_table(
+def init_task_and_acquire_lock(
     logger,
     db,
     redis,
