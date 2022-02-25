@@ -1,7 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { assert } from "chai";
-import { initAdmin } from "../lib/lib";
+import { initAdmin, updateAdmin } from "../lib/lib";
 import { findDerivedPair } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -100,6 +100,14 @@ describe("follows", () => {
       // Message as the incoming public key
       const message1 = newUser1Key.publicKey.toString();
       const message2 = newUser2Key.publicKey.toString();
+
+      // disable admin writes
+      await updateAdmin({
+        program,
+        isWriteEnabled: false,
+        adminStgAccount: adminStgKeypair.publicKey,
+        adminAuthorityKeypair: adminKeypair,
+      })
 
       await testCreateUser({
         provider,
