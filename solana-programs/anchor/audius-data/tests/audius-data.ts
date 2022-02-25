@@ -28,7 +28,7 @@ describe("audius-data", () => {
 
   const adminKeypair = anchor.web3.Keypair.generate();
   const adminStgKeypair = anchor.web3.Keypair.generate();
-  const adminAuthenticatorKeypair = anchor.web3.Keypair.generate();
+  const verifierKeypair = anchor.web3.Keypair.generate();
 
   const testCreateTrack = async ({
     trackMetadata,
@@ -111,11 +111,11 @@ describe("audius-data", () => {
 
   it("Initializing admin account!", async () => {
     await initAdmin({
-      provider: provider,
-      program: program,
-      adminKeypair: adminKeypair,
-      adminStgKeypair: adminStgKeypair,
-      authenticatorKeypair: adminAuthenticatorKeypair,
+      provider,
+      program,
+      adminKeypair,
+      adminStgKeypair,
+      verifierKeypair,
       trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("0"),
     });
@@ -543,7 +543,8 @@ describe("audius-data", () => {
       program,
       adminKeypair: adminStgKeypair,
       userStgAccount: newUserAcctPDA,
-      authenticatorKeypair: adminAuthenticatorKeypair,
+      verifierKeypair,
+      baseAuthorityAccount
     });
 
     await confirmLogInTransaction(provider, tx, 'Program log: Instruction: VerifyUser');
