@@ -625,53 +625,47 @@ class RewardsAttester {
     // Account for errors from DN aggregation + Solana program
     // CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
     // safe to assume those won't work if we see them at this point.
-    const NO_RETRY_ERRORS = new Set([...AAO_ERRORS, errors.CHALLENGE_INCOMPLETE, errors.MISSING_CHALLENGES])
-    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT])
+    const NEEDS_RESELECT_ERRORS = new Set([errors.INSUFFICIENT_DISCOVERY_NODE_COUNT, errors.CHALLENGE_INCOMPLETE, errors.MISSING_CHALLENGES])
     const ALREADY_COMPLETE_ERRORS = new Set([errors.ALREADY_DISBURSED, errors.ALREADY_SENT])
 
     const noRetry = []
     const successful = []
-    // Filter down to errors needing retry
-    let needsRetry = (responses
-      // Filter our successful responses
-      .filter((res) => {
-        if (!res.error) {
-          successful.push(res)
-          this.reporter.reportSuccess({ userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, specifier: res.specifier })
-          return false
-        }
-        return true
-      })
-      // Filter out responses that are already disbursed
-      .filter(({ error }) => !ALREADY_COMPLETE_ERRORS.has(error))
-      // Handle no retry errors
-      .filter((res) => {
-        const report = { userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, error: res.error, phase: res.phase, specifier: res.specifier }
-        const isNoRetry = NO_RETRY_ERRORS.has(res.error)
-        if (isNoRetry) {
-          noRetry.push(res)
-          const isAAO = AAO_ERRORS.has(res.error)
-          // `noRetry` errors are never retried, so
-          // they're always logged as failure or AAO
-          if (isAAO) {
-            const errorType = {
-              [errors.HCAPTCHA]: 'hcaptcha',
-              [errors.COGNITO_FLOW]: 'cognito',
-              [errors.BLOCKED]: 'blocked'
-            }[res.error]
-            report.reason = errorType
-            this.reporter.reportAAORejection(report)
-          } else {
-            this.reporter.reportFailure(report)
-          }
-        } else if (isFinalAttempt) {
-          this.reporter.reportFailure(report)
-        } else {
-          this.reporter.reportRetry(report)
-        }
-        return !isNoRetry
-      })
-    )
+    // Filter our successful responses
+    let allErrors = responses.filter((res) => {
+      if (!res.error) {
+        successful.push(res)
+        this.reporter.reportSuccess({ userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, specifier: res.specifier })
+        return false
+      }
+      return true
+    })
+
+    // Filter out responses that are already disbursed
+    const stillIncomplete = allErrors.filter(({ error }) => !ALREADY_COMPLETE_ERRORS.has(error))
+
+    // Filter to errors needing retry
+    const needsRetry = stillIncomplete.filter((res) => {
+      const report = { userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, error: res.error, phase: res.phase, specifier: res.specifier }
+      const isAAOError = AAO_ERRORS.has(res.error)
+      // Filter out and handle unretryable AAO errors
+      if (isAAOError) {
+        noRetry.push(res)
+        const errorType = {
+          [errors.HCAPTCHA]: 'hcaptcha',
+          [errors.COGNITO_FLOW]: 'cognito',
+          [errors.BLOCKED]: 'blocked'
+        }[res.error]
+        report.reason = errorType
+        this.reporter.reportAAORejection(report)
+      } else if (isFinalAttempt) {
+        // Final attempt at retries
+        this.reporter.reportFailure(report)
+      } else {
+        // Otherwise, retry it
+        this.reporter.reportRetry(report)
+      }
+      return !isAAOError && !isFinalAttempt
+    })
 
     if (needsRetry.length) {
       this.logger.info(`Handling errors: ${JSON.stringify(needsRetry.map(({ error, phase }) => ({ error, phase })))}`)
