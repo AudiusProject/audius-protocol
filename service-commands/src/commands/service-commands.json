@@ -42,7 +42,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 13 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
       "echo 'Writing configs'",
       "cd eth-contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
@@ -253,6 +253,24 @@
       "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
       "echo 'Stopping AAO...'",
       "cd $AAO_DIR; docker-compose -f docker-compose-dev.yml down"
+    ]
+  },
+  "tn": {
+    "up": [
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "echo 'Starting TN...'",
+      "cd $TN_DIR; . scripts/start.sh dev",
+      "sleep 5",
+      "echo 'TN Started'"
+    ],
+    "register": [
+      "cd service-commands; ./scripts/registerAAO.sh"
+    ],
+    "down": [
+      "set -x",
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "echo 'Stopping TN...'",
+      "cd $TN_DIR; docker-compose -f compose/dev/docker-compose.yml down"
     ]
   }
 }

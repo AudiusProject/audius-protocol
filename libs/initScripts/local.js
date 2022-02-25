@@ -248,6 +248,16 @@ const run = async () => {
           delegateWallet,
           ownerWallet)
         break
+
+      case 'register-trusted-notifier':
+        // hardcoded in developer .env
+        const wallet = '0xDab4329EC1C82d6573D4aCa44Cc9e327D0835c54'
+        const endpoint = 'http://localhost:8000'
+        await audiusLibs.ethContracts.TrustedNotifierManagerClient.registerNotifier(
+          wallet,
+          endpoint)
+        break
+
       default:
         throwArgError()
     }

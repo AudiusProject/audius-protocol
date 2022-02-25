@@ -33,7 +33,7 @@ class TrustedNotifierManagerClient extends GovernedContractClient {
   }
 
   async getNotifierForID (ID) {
-    const method = await this.getMethod('getLatestNotifierID', ID)
+    const method = await this.getMethod('getNotifierForID', ID)
     const notifier = await method.call()
     return {
       wallet: notifier.wallet,

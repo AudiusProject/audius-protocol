@@ -11,6 +11,7 @@ const utils = require('./utils')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
+const TrustedNotifierManager = require('./services/TrustedNotifierManager')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -46,6 +47,7 @@ class ServiceRegistry {
     this.URSMRegistrationManager = null
     this.syncQueue = null
     this.skippedCIDsRetryQueue = null
+    this.trustedNotifierManager = null
 
     this.servicesInitialized = false
     this.servicesThatRequireServerInitialized = false
@@ -63,6 +65,9 @@ class ServiceRegistry {
 
     // init libs
     this.libs = await this._initAudiusLibs()
+
+    this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
+    this.trustedNotifierManager.init()
 
     // Intentionally not awaitted
     this.monitoringQueue.start()

@@ -658,8 +658,13 @@ const config = convict({
     format: 'BooleanCustom',
     env: 'openRestyCacheCIDEnabled',
     default: false
+  },
+  trustedNotifierIndex: {
+    doc: 'On-chain index for trusted notifier selection',
+    format: 'nat',
+    env: 'trustedNotifierIndex',
+    default: 1
   }
-
   /**
    * unsupported options at the moment
    */
