@@ -178,11 +178,9 @@ pub mod audius_data {
 
     /// Permissioned function to log an update to Admin metadata
     pub fn update_admin(ctx: Context<UpdateAdmin>,  is_write_enabled: bool) -> Result<()> {
-        msg!("Audius::UpdateAdmin");
         if ctx.accounts.admin.authority != ctx.accounts.admin_authority.key() { // could be has_one
             return Err(ErrorCode::Unauthorized.into());
         }
-        msg!("is_write_enabled = {:?}", is_write_enabled);
         ctx.accounts.admin.is_write_enabled = is_write_enabled;
         Ok(())
     }
