@@ -105,19 +105,23 @@ module.exports = function (app) {
         }
       }
 
-      // save cognito flow for user
-      await models.CognitoFlows.create(
-        {
-          id,
-          sessionId,
-          handle,
-          status,
-          // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
-          // so it is possible to get a status of success yet a score of 0 because this identity has already been associated to another account
-          score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
-        },
-        { transaction }
-      )
+      // only save cognito flow for user if status is 'success' or 'failed'
+      // otherwise when e.g. a flow session retry is requested for a user, then
+      // the 'canceled' webhook will be consumed and saved unintentionally
+      if (['success', 'failed'].includes(status)) {
+        await models.CognitoFlows.create(
+          {
+            id,
+            sessionId,
+            handle,
+            status,
+            // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
+            // so it is possible to get a status of success yet a score of 0 because this identity has already been associated to another account
+            score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
+          },
+          { transaction }
+        )
+      }
 
       await transaction.commit()
 
