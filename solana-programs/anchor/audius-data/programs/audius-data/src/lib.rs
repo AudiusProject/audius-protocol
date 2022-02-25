@@ -319,7 +319,7 @@ pub mod audius_data {
     }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id)
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
 pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8 + 8 + 1;
 
 /// Size of user account
