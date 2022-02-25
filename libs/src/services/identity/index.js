@@ -439,6 +439,9 @@ class IdentityService {
     // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)
+      if (!resp.data) {
+        throw new Error(`Identity response missing data field for url: ${axiosRequestObj.url}, req-id: ${requestId}`)
+      }
       return resp.data
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {

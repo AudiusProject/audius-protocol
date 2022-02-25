@@ -15,6 +15,7 @@ from src.models import (
 )
 from src.utils.config import shared_config
 from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
+from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.query_params import app_name_param, stringify_query_params
 
 logger = logging.getLogger(__name__)
@@ -639,6 +640,17 @@ def record_metrics(func):
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
 
-        return func(*args, **kwargs)
+        metric = PrometheusMetric(
+            "flask_route_latency_seconds",
+            "Runtimes for flask routes",
+            ("route", "params"),
+        )
+        result = func(*args, **kwargs)
+
+        params = "".join(route.split("?")[1:])
+        route = route.split("?")[0]
+        metric.save_time({"route": route, "params": params})
+
+        return result
 
     return wrap
