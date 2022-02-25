@@ -369,7 +369,7 @@ def test_index_aggregate_user_update(app):
 
 
 def test_index_aggregate_user_update_with_extra_user(app):
-    """Test that the entire aggregate_user table is truncated"""
+    """Test that the entire aggregate_user table is not truncated"""
 
     with app.app_context():
         db = get_db()
@@ -432,7 +432,41 @@ def test_index_aggregate_user_update_with_extra_user(app):
         _update_aggregate_user(session)
 
     with db.scoped_session() as session:
-        basic_tests(session, last_checkpoint=3)
+        results: List[AggregateUser] = (
+            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
+        )
+
+        assert len(results) == 3
+
+        assert results[0].user_id == 1
+        assert results[0].track_count == 2
+        assert results[0].playlist_count == 1
+        assert results[0].album_count == 1
+        assert results[0].follower_count == 1
+        assert results[0].following_count == 1
+        assert results[0].repost_count == 0
+        assert results[0].track_save_count == 0
+
+        assert results[1].user_id == 2
+        assert results[1].track_count == 1
+        assert results[1].playlist_count == 0
+        assert results[1].album_count == 0
+        assert results[1].follower_count == 1
+        assert results[1].following_count == 1
+        assert results[1].repost_count == 2
+        assert results[1].track_save_count == 1
+
+        assert results[2].user_id == 3
+        assert results[2].track_count == 9
+        assert results[2].playlist_count == 9
+        assert results[2].album_count == 9
+        assert results[2].follower_count == 9
+        assert results[2].following_count == 9
+        assert results[2].repost_count == 9
+        assert results[2].track_save_count == 9
+
+        prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
+        assert prev_id_checkpoint == 3
 
 
 def test_index_aggregate_user_entity_model(app):
@@ -486,7 +520,7 @@ def test_index_aggregate_user_entity_model(app):
 
 
 def test_index_aggregate_user_update_with_only_aggregate_user(app):
-    """Test that aggregate_user will be truncated even when no other data"""
+    """Test that aggregate_user will never be truncated even when no other data"""
 
     with app.app_context():
         db = get_db()
@@ -566,8 +600,8 @@ def test_index_aggregate_user_update_with_only_aggregate_user(app):
             session.query(AggregateUser).order_by(AggregateUser.user_id).all()
         )
         assert (
-            len(results) == 0
-        ), "Test that aggregate_user has been truncated due to reset checkpoint"
+            len(results) == 3
+        ), "Test that aggregate_user has not been truncated due to reset checkpoint"
 
         prev_id_checkpoint = get_last_indexed_checkpoint(session, AGGREGATE_USER)
         assert prev_id_checkpoint == 0
