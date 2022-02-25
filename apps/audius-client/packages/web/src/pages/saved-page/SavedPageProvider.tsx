@@ -15,11 +15,19 @@ import { ID, UID } from 'common/models/Identifiers'
 import * as accountActions from 'common/store/account/reducer'
 import { getAccountWithSavedPlaylistsAndAlbums } from 'common/store/account/selectors'
 import { makeGetTableMetadatas } from 'common/store/lineup/selectors'
+import * as saveActions from 'common/store/pages/saved-page/actions'
+import { tracksActions } from 'common/store/pages/saved-page/lineups/tracks/actions'
+import { getSavedTracksLineup } from 'common/store/pages/saved-page/selectors'
+import {
+  Tabs as ProfileTabs,
+  SavedPageTrack,
+  TrackRecord,
+  SavedPageCollection
+} from 'common/store/pages/saved-page/types'
 import * as socialActions from 'common/store/social/tracks/actions'
 import { formatCount } from 'common/utils/formatUtil'
 import { updatePlaylistLastViewedAt } from 'components/notification/store/actions'
 import { getPlaylistUpdates } from 'components/notification/store/selectors'
-import { getSavedTracksLineup } from 'pages/saved-page/store/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
@@ -29,14 +37,6 @@ import { profilePage } from 'utils/route'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
-import * as saveActions from './store/actions'
-import { tracksActions } from './store/lineups/tracks/actions'
-import {
-  Tabs as ProfileTabs,
-  SavedPageTrack,
-  TrackRecord,
-  SavedPageCollection
-} from './store/types'
 
 const messages = {
   title: 'Favorites',
@@ -306,6 +306,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const {
       tracks: { entries }
     } = this.props
+    // @ts-ignore
     const dataSource = this.formatMetadata(entries)
     let updatedOrder
     if (!column) {
@@ -404,6 +405,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     }
 
     return (
+      // @ts-ignore
       <this.props.children {...childProps} {...mobileProps} {...desktopProps} />
     )
   }

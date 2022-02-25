@@ -4,21 +4,24 @@ import { call, select, put, takeEvery } from 'redux-saga/effects'
 import Kind from 'common/models/Kind'
 import { getTracks as getCacheTracks } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { SAVE_TRACK, UNSAVE_TRACK } from 'common/store/social/tracks/actions'
-import { makeUid } from 'common/utils/uid'
-import * as saveActions from 'pages/saved-page/store/actions'
+import * as saveActions from 'common/store/pages/saved-page/actions'
+import {
+  PREFIX,
+  tracksActions as savedTracksActions
+} from 'common/store/pages/saved-page/lineups/tracks/actions'
 import {
   getLocalSaves,
   getLocalSave,
   getSavedTracksLineupUid,
   getSaves
-} from 'pages/saved-page/store/selectors'
+} from 'common/store/pages/saved-page/selectors'
+import { SAVE_TRACK, UNSAVE_TRACK } from 'common/store/social/tracks/actions'
+import { makeUid } from 'common/utils/uid'
 import { LineupSagas } from 'store/lineup/sagas'
 import { getUid as getPlayerUid } from 'store/player/selectors'
 import * as queueActions from 'store/queue/slice'
 
-import { PREFIX, tracksActions as savedTracksActions } from './actions'
-const getSavedTracks = state => state.saved.tracks
+const getSavedTracks = state => state.pages.savedPage.tracks
 
 function* getTracks() {
   const savedTracks = yield select(getSaves)

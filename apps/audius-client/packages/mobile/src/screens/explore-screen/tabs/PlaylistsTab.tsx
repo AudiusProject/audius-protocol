@@ -1,6 +1,6 @@
 import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { CommonState } from 'audius-client/src/common/store'
+import { makeGetExplore } from 'audius-client/src/common/store/pages/explore/selectors'
 import { View } from 'react-native'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -26,29 +26,11 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-// TODO: Move these somewhere (clientStore selectors)
-const getExplorePlaylists = (state: CommonState) =>
-  state.pages.explore.playlists
-
-const makeGetFullPlaylists = (playlistIds: number[]) => {
-  return (state: CommonState) => {
-    const collections = state.collections.entries
-    const users = state.users.entries
-
-    return playlistIds
-      .map(id => collections[id].metadata)
-      .filter(Boolean)
-      .map(collection => ({
-        ...collection,
-        user: users[collection.playlist_owner_id]?.metadata ?? {}
-      }))
-  }
-}
+const getExplore = makeGetExplore()
 
 export const PlaylistsTab = ({ navigation }: Props) => {
   const styles = useStyles()
-  const playlistIds = useSelectorWeb(getExplorePlaylists)
-  const playlists = useSelectorWeb(makeGetFullPlaylists(playlistIds))
+  const { playlists } = useSelectorWeb(getExplore)
 
   return (
     <CollectionList
