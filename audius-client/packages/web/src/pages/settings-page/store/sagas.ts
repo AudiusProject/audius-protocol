@@ -18,7 +18,6 @@ import { isElectron } from 'utils/clientUtil'
 import * as actions from './actions'
 import errorSagas from './errorSagas'
 import mobileSagas from './mobileSagas'
-import { CAST_METHOD } from './reducer'
 import { getBrowserNotificationSettings } from './selectors'
 import { BrowserNotificationSetting } from './types'
 
@@ -199,15 +198,6 @@ function* watchUpdateEmailFrequency() {
   })
 }
 
-function* watchUpdateCastMethod() {
-  yield takeEvery(
-    actions.UPDATE_CAST_METHOD,
-    (action: actions.UpdateCastMethod) => {
-      window.localStorage.setItem(CAST_METHOD, action.cast)
-    }
-  )
-}
-
 export default function sagas() {
   const sagas = [
     watchGetSettings,
@@ -215,7 +205,6 @@ export default function sagas() {
     watchToogleBrowserPushNotification,
     watchUpdateNotificationSettings,
     watchUpdateEmailFrequency,
-    watchUpdateCastMethod,
     errorSagas
   ]
   return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas

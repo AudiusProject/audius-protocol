@@ -170,9 +170,9 @@ export const PlayBar = ({
   const onPressFavoriteButton = useCallback(() => {
     if (track) {
       if (track.has_current_user_saved) {
-        dispatchWeb(unsaveTrack(track?.track_id, FavoriteSource.PLAYBAR))
+        dispatchWeb(unsaveTrack(track.track_id, FavoriteSource.PLAYBAR))
       } else {
-        dispatchWeb(saveTrack(track?.track_id, FavoriteSource.PLAYBAR))
+        dispatchWeb(saveTrack(track.track_id, FavoriteSource.PLAYBAR))
       }
     }
   }, [dispatchWeb, track])

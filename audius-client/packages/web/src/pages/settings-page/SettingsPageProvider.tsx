@@ -15,6 +15,8 @@ import {
   getUserHandle,
   getUserName
 } from 'common/store/account/selectors'
+import { getMethod as getCastMethod } from 'common/store/cast/selectors'
+import { CastMethod, updateMethod } from 'common/store/cast/slice'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { setTheme } from 'common/store/ui/theme/actions'
 import { getTheme } from 'common/store/ui/theme/selectors'
@@ -40,14 +42,12 @@ import * as settingPageActions from './store/actions'
 import {
   getBrowserNotificationSettings,
   getPushNotificationSettings,
-  getEmailFrequency,
-  getCastMethod
+  getEmailFrequency
 } from './store/selectors'
 import {
   BrowserNotificationSetting,
   EmailFrequency,
-  PushNotificationSetting,
-  Cast
+  PushNotificationSetting
 } from './store/types'
 
 const messages = {
@@ -278,8 +278,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(settingPageActions.updateEmailFrequency(frequency)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     goBack: () => dispatch(goBack()),
-    updateCastMethod: (castMethod: Cast) =>
-      dispatch(settingPageActions.updateCastMethod(castMethod)),
+    updateCastMethod: (castMethod: CastMethod) => {
+      dispatch(updateMethod({ method: castMethod }))
+    },
     recordThemeChange: (themeSettings: string) => {
       const theme =
         themeSettings === Theme.DEFAULT

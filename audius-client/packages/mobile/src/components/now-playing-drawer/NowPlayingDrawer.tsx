@@ -223,7 +223,7 @@ const NowPlayingDrawer = ({
             </View>
             <View style={styles.controlsContainer}>
               <AudioControls />
-              <ActionsBar />
+              <ActionsBar track={track} />
             </View>
           </>
         )}
