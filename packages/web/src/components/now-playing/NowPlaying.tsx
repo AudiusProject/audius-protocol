@@ -17,6 +17,7 @@ import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
+import { getMethod as getCastMethod } from 'common/store/cast/selectors'
 import {
   saveTrack,
   unsaveTrack,
@@ -41,7 +42,6 @@ import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleBut
 import { PlayButtonStatus } from 'components/play-bar/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { getCastMethod } from 'pages/settings-page/store/selectors'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import { useRecord, make } from 'store/analytics/actions'
 import {

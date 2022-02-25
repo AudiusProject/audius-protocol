@@ -1,4 +1,3 @@
-import { getIsIOS } from 'utils/browser'
 import { ActionsMap } from 'utils/reducer'
 
 import {
@@ -10,7 +9,6 @@ import {
   SET_PUSH_NOTIFICATION_SETTINGS,
   TOGGLE_PUSH_NOTIFICATION_SETTING,
   TogglePushNotificationSetting,
-  UPDATE_CAST_METHOD,
   SET_BROWSER_NOTIFICATION_PERMISSION,
   SET_BROWSER_NOTIFICATION_ENABLED
 } from './actions'
@@ -18,19 +16,8 @@ import SettingsPageState, {
   BrowserNotificationSetting,
   emailFrequency,
   EmailFrequency,
-  PushNotificationSetting,
-  Cast
+  PushNotificationSetting
 } from './types'
-
-export const CAST_METHOD = 'CAST_METHOD'
-const getCastMethod = () => {
-  if (!getIsIOS()) return Cast.CHROMECAST
-  try {
-    const castMethod = window.localStorage.getItem(CAST_METHOD)
-    if (castMethod === Cast.CHROMECAST) return Cast.CHROMECAST
-  } catch (err) {}
-  return Cast.AIRPLAY
-}
 
 export const initialState = {
   browserNotifications: {
@@ -50,8 +37,7 @@ export const initialState = {
     [PushNotificationSetting.Remixes]: true,
     [PushNotificationSetting.Favorites]: true
   },
-  [emailFrequency]: EmailFrequency.Daily,
-  castMethod: getCastMethod()
+  [emailFrequency]: EmailFrequency.Daily
 }
 
 const actionsMap: ActionsMap<SettingsPageState> = {
@@ -141,12 +127,6 @@ const actionsMap: ActionsMap<SettingsPageState> = {
     return {
       ...state,
       [emailFrequency]: action.frequency
-    }
-  },
-  [UPDATE_CAST_METHOD](state, action) {
-    return {
-      ...state,
-      castMethod: action.cast
     }
   }
 }

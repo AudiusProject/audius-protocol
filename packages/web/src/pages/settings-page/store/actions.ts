@@ -4,8 +4,7 @@ import {
   BrowserNotificationSetting,
   EmailFrequency,
   PushNotifications,
-  PushNotificationSetting,
-  Cast
+  PushNotificationSetting
 } from './types'
 
 export const TOGGLE_NOTIFICATION_SETTING =
@@ -31,7 +30,6 @@ export const SET_NOTIFICATION_SETTINGS =
 export const SET_PUSH_NOTIFICATION_SETTINGS =
   'SETTINGS_PAGE/SET_PUSH_NOTIFICATION_SETTINGS'
 
-export const UPDATE_CAST_METHOD = 'SETTINGS_PAGE/UPDATE_CAST_METHOD'
 export const SET_BROWSER_NOTIFICATION_PERMISSION =
   'SETTINGS/SET_BROWSER_NOTIFICATION_PERMISSION'
 export const SET_BROWSER_NOTIFICATION_ENABLED =
@@ -98,10 +96,6 @@ export function updateEmailFrequency(
   return { type: UPDATE_EMAIL_FREQUENCY, frequency, updateServer }
 }
 
-export function updateCastMethod(cast: Cast) {
-  return { type: UPDATE_CAST_METHOD, cast }
-}
-
 export function setBrowserNotificationPermission(permission: Permission) {
   return { type: SET_BROWSER_NOTIFICATION_PERMISSION, permission }
 }
@@ -148,7 +142,6 @@ export type SetPushNotificationSettings = ReturnType<
   typeof setPushNotificationSettings
 >
 
-export type UpdateCastMethod = ReturnType<typeof updateCastMethod>
 export type SetBrowserNotificationPermission = ReturnType<
   typeof setBrowserNotificationPermission
 >
@@ -173,7 +166,6 @@ export type SettingActions =
   | GetPushNotificationSettingsFailed
   | SetNotificationSettings
   | SetPushNotificationSettings
-  | UpdateCastMethod
   | SetBrowserNotificationPermission
   | SetBrowserNotificationEnabled
   | SetBrowserNotificationSettingsOn

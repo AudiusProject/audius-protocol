@@ -7,6 +7,7 @@ import { ID } from 'common/models/Identifiers'
 import { SquareSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
 import Theme from 'common/models/Theme'
 import { InstagramProfile, TwitterProfile } from 'common/store/account/reducer'
+import { CastMethod } from 'common/store/cast/slice'
 import TabSlider from 'components/data-entry/TabSlider'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'
@@ -30,8 +31,7 @@ import {
   EmailFrequency,
   BrowserNotificationSetting,
   PushNotificationSetting,
-  PushNotifications,
-  Cast
+  PushNotifications
 } from '../../store/types'
 
 import AboutSettingsPage from './AboutSettingsPage'
@@ -82,7 +82,7 @@ type OwnProps = {
   notificationSettings: Notifications
   emailFrequency: EmailFrequency
   pushNotificationSettings: PushNotifications
-  castMethod: Cast
+  castMethod: CastMethod
 
   getNotificationSettings: () => void
   getPushNotificationSettings: () => void
@@ -95,7 +95,7 @@ type OwnProps = {
     isOn: boolean
   ) => void
   updateEmailFrequency: (frequency: EmailFrequency) => void
-  updateCastMethod: (castMethod: Cast) => void
+  updateCastMethod: (castMethod: CastMethod) => void
   recordSignOut: (callback?: () => void) => void
   showMatrix: boolean
 }
@@ -206,6 +206,7 @@ const SettingsPage = (props: SettingsPageProps) => {
       />
     )
   }
+  console.log(castMethod)
   return (
     <Page
       title={messages.title}
@@ -269,17 +270,17 @@ const SettingsPage = (props: SettingsPageProps) => {
                   fullWidth
                   options={[
                     {
-                      key: Cast.AIRPLAY,
+                      key: 'airplay',
                       text: 'Airplay'
                     },
                     {
-                      key: Cast.CHROMECAST,
+                      key: 'chromecast',
                       text: 'Chromecast'
                     }
                   ]}
                   selected={castMethod}
-                  onSelectOption={(option: Cast) => {
-                    updateCastMethod(option)
+                  onSelectOption={(method: CastMethod) => {
+                    updateCastMethod(method)
                   }}
                 />
               </Row>

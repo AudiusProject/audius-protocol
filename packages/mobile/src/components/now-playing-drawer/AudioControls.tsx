@@ -54,6 +54,7 @@ const createStyles = (themeColors: ThemeColors) =>
 
 export const AudioControls = () => {
   const dispatch = useDispatch()
+
   const styles = useThemedStyles(createStyles)
   const themeVariant = useThemeVariant()
   const isDarkMode = themeVariant === Theme.DARK
