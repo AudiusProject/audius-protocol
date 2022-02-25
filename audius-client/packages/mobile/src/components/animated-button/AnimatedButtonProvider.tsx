@@ -38,6 +38,7 @@ const AnimatedButton = ({
   const underlayColor = useColor('neutralLight8')
   const animationRef = useRef<LottieView | null>()
   const previousExternalIconIndex = usePrevious(externalIconIndex)
+  const previousActiveState = usePrevious(isActive)
 
   // When externalIconIndex is updated, update iconIndex
   // if animation isn't currently playing
@@ -91,7 +92,32 @@ const AnimatedButton = ({
     }
 
     onPress?.()
-  }, [isDisabled, onPress, isActive, setIsPlaying, hasMultipleStates])
+  }, [
+    isDisabled,
+    onPress,
+    isActive,
+    setIsPlaying,
+    hasMultipleStates,
+    animationRef
+  ])
+
+  // For multi state buttons, when `isActive` flips, trigger
+  // the animation to run
+  useEffect(() => {
+    if (hasMultipleStates) {
+      if (isActive !== previousActiveState && !isPlaying) {
+        setIsPlaying(true)
+        animationRef.current?.play()
+      }
+    }
+  }, [
+    isActive,
+    previousActiveState,
+    isPlaying,
+    setIsPlaying,
+    hasMultipleStates,
+    animationRef
+  ])
 
   const progress = useMemo(() => {
     if (hasMultipleStates || isPlaying) {
@@ -160,7 +186,9 @@ const AnimatedButtonProvider = ({
     }
   }, [isDarkMode, setIconJSON, iconDarkJSON, iconLightJSON])
 
-  return iconJSON && <AnimatedButton iconJSON={iconJSON} {...buttonProps} />
+  return iconJSON ? (
+    <AnimatedButton iconJSON={iconJSON} {...buttonProps} />
+  ) : null
 }
 
 export default memo(AnimatedButtonProvider)
