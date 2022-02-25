@@ -75,6 +75,7 @@ def get_top_playlists(kind, args):
                 playlists_to_query.c.is_current == True,
                 playlists_to_query.c.is_delete == False,
                 playlists_to_query.c.is_private == False,
+                playlists_to_query.c.is_album == (kind == "album"),
             )
         )
 
