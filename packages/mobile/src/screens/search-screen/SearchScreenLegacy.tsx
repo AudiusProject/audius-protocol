@@ -47,6 +47,10 @@ const styles = StyleSheet.create({
   }
 })
 
+/*
+ * Legacy Search component used in WebView version of the app.
+ * Remove after we move to native app.
+ */
 const Search = () => {
   const dispatch = useDispatch()
   const isOpen = useSelector(getIsOpen)

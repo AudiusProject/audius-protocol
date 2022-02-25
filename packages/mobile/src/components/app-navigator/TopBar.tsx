@@ -2,7 +2,7 @@ import { memo, useCallback } from 'react'
 
 import { StackHeaderProps } from '@react-navigation/stack'
 import { markAllAsViewed } from 'audius-client/src/components/notification/store/actions'
-import { Platform, View, Text } from 'react-native'
+import { Platform, View, Text, Animated } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
@@ -11,15 +11,14 @@ import IconSearch from 'app/assets/images/iconSearch.svg'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { open as openNotificationPanel } from 'app/store/notifications/actions'
-import { open as openSearch } from 'app/store/search/actions'
-import { makeStyles, typography } from 'app/styles'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { IconButton } from '../core/IconButton'
 
 import { TopBarArrowBack } from './TopBarArrowBack'
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   root: {
     height: Platform.OS === 'ios' ? 86 : 55,
     borderBottomWidth: 1,
@@ -41,14 +40,12 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   headerLeft: {
     justifyContent: 'center',
     alignItems: 'flex-start',
-    height: spacing(6),
-    width: spacing(20)
+    height: spacing(8)
   },
   headerRight: {
     justifyContent: 'center',
     alignItems: 'flex-end',
-    height: spacing(6),
-    width: spacing(20)
+    height: spacing(8)
   },
   title: {
     fontSize: 18,
@@ -82,7 +79,12 @@ export const TopBar = memo(
     const dispatch = useDispatch()
     const dispatchWeb = useDispatchWeb()
 
-    const { headerLeft, headerRight, title } = options
+    const {
+      headerLeft,
+      headerRight,
+      title,
+      headerRightContainerStyle
+    } = options
 
     const handlePressNotification = useCallback(() => {
       dispatch(openNotificationPanel())
@@ -97,8 +99,30 @@ export const TopBar = memo(
     }, [navigation])
 
     const handlePressSearch = useCallback(() => {
-      dispatch(openSearch())
-    }, [dispatch])
+      navigation.navigate({
+        native: { screen: 'Search', params: undefined },
+        web: { route: 'search' }
+      })
+    }, [navigation])
+
+    const renderTitle = () => {
+      if (title === null) return null
+      if (title) {
+        return (
+          <Text style={styles.title} accessibilityRole='header'>
+            {title}
+          </Text>
+        )
+      }
+      return (
+        <IconButton
+          icon={AudiusLogo}
+          fill={neutralLight4}
+          styles={{ icon: styles.audiusLogo }}
+          onPress={handlePressHome}
+        />
+      )
+    }
 
     return (
       <View style={styles.root}>
@@ -117,19 +141,10 @@ export const TopBar = memo(
               />
             )}
           </View>
-          {title ? (
-            <Text style={styles.title} accessibilityRole='header'>
-              {title}
-            </Text>
-          ) : (
-            <IconButton
-              icon={AudiusLogo}
-              fill={neutralLight4}
-              styles={{ icon: styles.audiusLogo }}
-              onPress={handlePressHome}
-            />
-          )}
-          <View style={styles.headerRight}>
+          {renderTitle()}
+          <Animated.View
+            style={[styles.headerRight, headerRightContainerStyle]}
+          >
             {headerRight !== undefined ? (
               headerRight({})
             ) : (
@@ -140,7 +155,7 @@ export const TopBar = memo(
                 onPress={handlePressSearch}
               />
             )}
-          </View>
+          </Animated.View>
         </View>
       </View>
     )

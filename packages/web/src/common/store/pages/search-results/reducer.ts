@@ -13,9 +13,9 @@ import {
   FetchSearchPageTagsAction,
   FetchSearchPageTagsSucceededAction,
   FetchSearchPageTagsFailedAction
-} from 'pages/search-page/store/actions'
-import { PREFIX } from 'pages/search-page/store/lineups/tracks/actions'
-import tracksReducer from 'pages/search-page/store/lineups/tracks/reducer'
+} from 'common/store/pages/search-results/actions'
+import { PREFIX } from 'common/store/pages/search-results/lineup/tracks/actions'
+import tracksReducer from 'common/store/pages/search-results/lineup/tracks/reducer'
 
 import { SearchPageState } from './types'
 

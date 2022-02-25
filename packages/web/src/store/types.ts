@@ -2,7 +2,6 @@ import { RouterState } from 'connected-react-router'
 
 import { CommonState } from 'common/store'
 import averageColor from 'common/store/average-color/slice'
-import SavesPageState from 'common/store/pages/saved-page/types'
 import RemoteConfigReducer from 'common/store/remote-config/slice'
 import StemsUploadReducer from 'common/store/stems-upload/slice'
 import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
@@ -29,7 +28,6 @@ import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import HistoryPageState from 'pages/history-page/store/types'
 import { NotificationUsersPageState } from 'pages/notification-users-page/store/types'
 import RemixesPageReducer from 'pages/remixes-page/store/slice'
-import { SearchPageState } from 'pages/search-page/store/types'
 import SettingsPageState from 'pages/settings-page/store/types'
 import SignOnPageState from 'pages/sign-on/store/types'
 import { SmartCollectionState } from 'pages/smart-collection/store/slice'
@@ -115,9 +113,7 @@ export type AppState = CommonState & {
   dashboard: ArtistDashboardState
   signOn: SignOnPageState
   history: HistoryPageState
-  saved: SavesPageState
   searchBar: SearchBarState
-  search: SearchPageState
   collection: CollectionsPageState
   notification: NotificationState
 

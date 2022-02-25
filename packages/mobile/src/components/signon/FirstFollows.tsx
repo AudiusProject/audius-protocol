@@ -327,7 +327,7 @@ const PickForMeButton = ({ active }: { active: boolean }) => {
   )
 }
 
-const FollowArtistCard = ({
+export const FollowArtistCard = ({
   user,
   isSelected
 }: {

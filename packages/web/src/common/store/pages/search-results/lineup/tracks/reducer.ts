@@ -2,7 +2,7 @@ import { LineupState } from 'common/models/Lineup'
 import { Track } from 'common/models/Track'
 import { RESET_SUCCEEDED, stripPrefix } from 'common/store/lineup/actions'
 import { initialLineupState } from 'common/store/lineup/reducer'
-import { PREFIX } from 'pages/search-page/store/lineups/tracks/actions'
+import { PREFIX } from 'common/store/pages/search-results/lineup/tracks/actions'
 
 const initialState: LineupState<Track> = {
   ...initialLineupState,
