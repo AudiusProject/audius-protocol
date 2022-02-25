@@ -263,7 +263,7 @@ class Rewards extends Base {
 
     // First attempt AAO
 
-    const aaoAttestation = null
+    let aaoAttestation = null
 
     try {
       const { success, error: aaoAttestationError } = await this.getAAOAttestation({

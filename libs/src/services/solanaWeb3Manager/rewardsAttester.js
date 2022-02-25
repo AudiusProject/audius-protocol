@@ -659,7 +659,7 @@ class RewardsAttester {
               [errors.COGNITO_FLOW]: 'cognito',
               [errors.BLOCKED]: 'blocked'
             }[res.error]
-            report[reason] = errorType
+            report.reason = errorType
             this.reporter.reportAAORejection(report)
           } else {
             this.reporter.reportFailure(report)
