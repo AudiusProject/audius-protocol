@@ -2,6 +2,15 @@ import { select, all, call } from 'redux-saga/effects'
 
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import {
+  PREFIX,
+  tracksActions
+} from 'common/store/pages/search-results/lineup/tracks/actions'
+import {
+  getSearchTracksLineup,
+  getSearchResultsPageTracks
+} from 'common/store/pages/search-results/selectors'
+import { SearchKind } from 'common/store/pages/search-results/types'
+import {
   getCategory,
   getQuery,
   isTagSearch,
@@ -11,15 +20,12 @@ import {
   getSearchResults,
   getTagSearchResults
 } from 'pages/search-page/store/sagas'
-import { getSearchResultsPageTracks } from 'pages/search-page/store/selectors'
-import { SearchKind } from 'pages/search-page/store/types'
 import { LineupSagas } from 'store/lineup/sagas'
 import { isMobile } from 'utils/clientUtil'
 
-import { PREFIX, tracksActions } from './actions'
-
 function* getSearchPageResultsTracks({ offset, limit, payload }) {
   const category = getCategory()
+
   if (category === SearchKind.TRACKS || isMobile()) {
     // If we are on the tracks sub-page of search or mobile, which we should paginate on
     let results
@@ -58,7 +64,6 @@ function* getSearchPageResultsTracks({ offset, limit, payload }) {
         select(getSearchResultsPageTracks)
       ])
       const sortedTracks = sortedIds.map(id => tracks[id])
-
       return sortedTracks
     } catch (e) {
       console.error(e)
@@ -72,7 +77,7 @@ class SearchPageResultsSagas extends LineupSagas {
     super(
       PREFIX,
       tracksActions,
-      state => state.search.tracks,
+      getSearchTracksLineup,
       getSearchPageResultsTracks
     )
   }

@@ -1,16 +1,22 @@
 import { createSelector } from 'reselect'
 
+import { CommonState } from 'common/store'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { createShallowSelector } from 'common/utils/selectorHelpers'
 
 // Search Results selectors
-export const getSearchTracksLineup = state => state.search.tracks
-export const getSearchResults = state => state.search
-export const getSearchStatus = state => state.search.status
-export const getSearchResultsPageTracks = state => state.search.trackIds || []
+export const getBaseState = (state: CommonState) => state.pages.searchResults
+export const getSearchTracksLineup = (state: CommonState) =>
+  getBaseState(state).tracks
+export const getSearchResults = (state: CommonState) => getBaseState(state)
+export const getSearchStatus = (state: CommonState) =>
+  getBaseState(state).status
+export const getSearchResultsPageTracks = (state: CommonState) =>
+  getBaseState(state).trackIds || []
 
-const getSearchArtistsIds = state => state.search.artistIds || []
+const getSearchArtistsIds = (state: CommonState) =>
+  getBaseState(state).artistIds || []
 const getUnsortedSearchArtists = createShallowSelector(
   [getSearchArtistsIds, state => state],
   (artistIds, state) => getUsers(state, { ids: artistIds })
@@ -22,8 +28,8 @@ export const makeGetSearchArtists = () => {
   )
 }
 
-const getSearchAlbums = state =>
-  getCollections(state, { ids: state.search.albumIds })
+const getSearchAlbums = (state: CommonState) =>
+  getCollections(state, { ids: getBaseState(state).albumIds })
 export const makeGetSearchAlbums = () => {
   return createShallowSelector([getSearchAlbums, getUsers], (albums, users) =>
     Object.values(albums)
@@ -37,8 +43,8 @@ export const makeGetSearchAlbums = () => {
   )
 }
 
-const getSearchPlaylists = state =>
-  getCollections(state, { ids: state.search.playlistIds })
+const getSearchPlaylists = (state: CommonState) =>
+  getCollections(state, { ids: getBaseState(state).playlistIds })
 export const makeGetSearchPlaylists = () => {
   return createShallowSelector(
     [getSearchPlaylists, getUsers],

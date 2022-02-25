@@ -9,9 +9,9 @@ import {
   SectionHeader
 } from 'app/store/search/types'
 
-import MoreContainer from './content/MoreContainer'
 import SearchItem from './content/SearchItem'
 import SearchSectionHeader from './content/SearchSectionHeader'
+import { SeeMoreResultsButton } from './content/SeeMoreResultsButton'
 
 const messages = {
   profile: 'PROFILES',
@@ -75,7 +75,7 @@ const SearchResults = () => {
         )}
         renderSectionHeader={({ section: { title } }) =>
           title === 'more' ? (
-            <MoreContainer />
+            <SeeMoreResultsButton />
           ) : (
             <SearchSectionHeader
               title={headerMapping[title as SectionHeader]}

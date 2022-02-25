@@ -24,6 +24,8 @@ import { FeedPageState } from 'common/store/pages/feed/types'
 import profileReducer from 'common/store/pages/profile/reducer'
 import { ProfilePageState } from 'common/store/pages/profile/types'
 import savedPageReducer from 'common/store/pages/saved-page/reducer'
+import searchResults from 'common/store/pages/search-results/reducer'
+import { SearchPageState } from 'common/store/pages/search-results/types'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
@@ -112,6 +114,7 @@ export const reducers = {
     exploreCollections: exploreCollectionsReducer,
     profile: profileReducer,
     savedPage: savedPageReducer,
+    searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
     track,
     trending,
@@ -161,6 +164,8 @@ export const sagas = {
   // pages/trending-underground-page/store/lineups/tracks/sagas.ts
   // pages/trending-underground-page/store/sagas.ts
   // store/application/ui/theme/sagas.ts
+  // pages/search-page/store/sagas.ts
+  // pages/search-page/store/lineups/tracks/sagas.ts
 }
 
 export type CommonState = {
@@ -201,10 +206,11 @@ export type CommonState = {
     feed: FeedPageState
     explore: ReturnType<typeof explorePageReducer>
     exploreCollections: ReturnType<typeof exploreCollectionsReducer>
-    savedPage: ReturnType<typeof savedPageReducer>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     track: TrackPageState
     profile: ProfilePageState
+    savedPage: ReturnType<typeof savedPageReducer>
+    searchResults: SearchPageState
     trending: TrendingPageState
     trendingUnderground: ReturnType<typeof trendingUnderground>
   }

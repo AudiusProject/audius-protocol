@@ -13,9 +13,13 @@ const styles = StyleSheet.create({
 
 type LoadingSpinnerProps = {
   /**
-   * The color of the spinner
+   * @deprecated The color of the spinner
    */
   color?: string
+  /**
+   * Fill color of the spinner
+   */
+  fill?: string
   /**
    * Style to apply to the spinner
    */
@@ -24,7 +28,7 @@ type LoadingSpinnerProps = {
 
 const LoadingSpinner = (props: LoadingSpinnerProps) => {
   const { neutralLight4 } = useThemeColors()
-  const color = props.color ?? neutralLight4
+  const color = props.color ?? props.fill ?? neutralLight4
   return (
     <LottieView
       style={[styles.spinner, props.style]}

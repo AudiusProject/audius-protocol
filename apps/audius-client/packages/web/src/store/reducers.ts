@@ -24,7 +24,6 @@ import deleted from 'pages/deleted-page/store/slice'
 import history from 'pages/history-page/store/reducer'
 import notificationUsers from 'pages/notification-users-page/store/reducers'
 import remixes from 'pages/remixes-page/store/slice'
-import search from 'pages/search-page/store/reducer'
 import settings from 'pages/settings-page/store/reducer'
 import signOn from 'pages/sign-on/store/reducer'
 import smartCollection from 'pages/smart-collection/store/slice'
@@ -75,7 +74,6 @@ const createRootReducer = (routeHistory: History) =>
     signOn,
     history,
     searchBar,
-    search,
     collection,
     notification,
     serviceSelection,

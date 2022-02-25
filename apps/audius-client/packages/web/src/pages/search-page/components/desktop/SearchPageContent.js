@@ -5,6 +5,7 @@ import { Redirect } from 'react-router'
 
 import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
 import Status from 'common/models/Status'
+import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import { formatCount } from 'common/utils/formatUtil'
 import Card from 'components/card/desktop/Card'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
@@ -13,7 +14,6 @@ import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import Page from 'components/page/Page'
 import Toast from 'components/toast/Toast'
-import { tracksActions } from 'pages/search-page/store/lineups/tracks/actions'
 import {
   albumPage,
   fullAlbumPage,
