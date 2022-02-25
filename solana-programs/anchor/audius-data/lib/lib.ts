@@ -233,6 +233,32 @@ export const updateUser = async ({
   );
 };
 
+// Update Audius Admin account
+type updateAdminParams = {
+  program: Program<AudiusData>;
+  isWriteEnabled: boolean;
+  adminStgAccount: anchor.web3.PublicKey;
+  adminAuthorityKeypair: anchor.web3.Keypair;
+};
+
+export const updateAdmin = async ({
+  program,
+  isWriteEnabled,
+  adminStgAccount,
+  adminAuthorityKeypair,
+}: updateAdminParams) => {
+  return program.rpc.updateAdmin(
+    isWriteEnabled,
+    {
+      accounts: {
+        admin: adminStgAccount,
+        adminAuthority: adminAuthorityKeypair.publicKey,
+      },
+      signers: [adminAuthorityKeypair],
+    },
+  );
+};
+
 /// Create a track
 export type createTrackArgs = {
   provider: Provider;
