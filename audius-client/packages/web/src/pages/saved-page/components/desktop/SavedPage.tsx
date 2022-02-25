@@ -8,6 +8,12 @@ import { ID, UID } from 'common/models/Identifiers'
 import { Lineup } from 'common/models/Lineup'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
+import {
+  Tabs as ProfileTabs,
+  TrackRecord,
+  SavedPageTrack,
+  SavedPageCollection
+} from 'common/store/pages/saved-page/types'
 import Card from 'components/card/desktop/Card'
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
@@ -17,12 +23,6 @@ import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import useTabs from 'hooks/useTabs/useTabs'
-import {
-  Tabs as ProfileTabs,
-  TrackRecord,
-  SavedPageTrack,
-  SavedPageCollection
-} from 'pages/saved-page/store/types'
 import { QueueItem } from 'store/queue/types'
 import { albumPage } from 'utils/route'
 

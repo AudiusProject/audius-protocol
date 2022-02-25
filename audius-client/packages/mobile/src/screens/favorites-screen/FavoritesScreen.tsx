@@ -1,36 +1,20 @@
-import { useCallback } from 'react'
-
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { Button, Dimensions, Text, View } from 'react-native'
+import { Dimensions, View } from 'react-native'
 
 import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import TopTabNavigator from 'app/components/app-navigator/TopTabNavigator'
 import { FavoritesStackParamList } from 'app/components/app-navigator/types'
+import { Header } from 'app/components/header'
+
+import { AlbumsTab } from './AlbumsTab'
+import { PlaylistsTab } from './PlaylistsTab'
+import { TracksTab } from './TracksTab'
 
 type Props = NativeStackScreenProps<FavoritesStackParamList, 'favorites-stack'>
 
 const screenHeight = Dimensions.get('window').height
-
-const TracksTab = ({ navigation }) => {
-  const handlePress = useCallback(() => {
-    navigation.push('track', { id: 1 })
-  }, [navigation])
-
-  return (
-    <View>
-      <Text>Tracks Tab</Text>
-      <Button title='Go to single track view' onPress={handlePress} />
-    </View>
-  )
-}
-const AlbumsTab = () => {
-  return <Text>Albums Tab</Text>
-}
-const PlaylistsTab = () => {
-  return <Text>Playlists Tab</Text>
-}
 
 const FavoritesScreen = ({ navigation }: Props) => {
   return (
@@ -41,8 +25,8 @@ const FavoritesScreen = ({ navigation }: Props) => {
         height: screenHeight
       }}
     >
-      <Text style={{ flex: 1 }}>Example favorites screen</Text>
-      <View style={{ flex: 10 }}>
+      <Header text='Favorites' />
+      <View style={{ flex: 1 }}>
         <TopTabNavigator
           initialScreenName='tracks'
           screens={[
