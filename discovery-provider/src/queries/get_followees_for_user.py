@@ -6,8 +6,7 @@ from src.utils.db_session import get_db_read_replica
 sql = text(
     """
 SELECT
-    followee_user_id,
-    follower_count
+    followee_user_id
 from
     follows
     left outer join aggregate_user on followee_user_id = user_id
