@@ -189,11 +189,9 @@ module.exports = function (app) {
       order: [['updatedAt', 'DESC']],
       limit: 1
     })
-    logger.info(`cognito_exists | ${JSON.stringify(records, null, 2)}`)
     if (records.length) {
       const timeDifferenceMilliseconds =
         Date.now() - new Date(records[0].updatedAt).getTime()
-      logger.info(`cognito_exists | ${Date.now()} | ${new Date(records[0].updatedAt).getTime()} | ${timeDifferenceMilliseconds}`)
       return successResponse({ exists: timeDifferenceMilliseconds <= MAX_TIME_DRIFT_MILLISECONDS })
     }
     return successResponse({ exists: false })
