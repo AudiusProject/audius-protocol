@@ -8,11 +8,16 @@ import { withRouter } from 'react-router-dom'
 import { Name } from 'common/models/Analytics'
 import { getUserId } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
+import * as searchPageActions from 'common/store/pages/search-results/actions'
+import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import {
   makeGetSearchArtists,
   makeGetSearchPlaylists,
-  makeGetSearchAlbums
-} from 'pages/search-page/store/selectors'
+  makeGetSearchAlbums,
+  getSearchTracksLineup,
+  getBaseState as getSearchResultsState
+} from 'common/store/pages/search-results/selectors'
+import { SearchKind } from 'common/store/pages/search-results/types'
 import { make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
@@ -24,9 +29,6 @@ import {
 } from 'utils/route'
 
 import * as helpers from './helpers'
-import * as searchPageActions from './store/actions'
-import { tracksActions } from './store/lineups/tracks/actions'
-import { SearchKind } from './store/types'
 
 class SearchPageProvider extends Component {
   constructor(props) {
@@ -138,9 +140,9 @@ const makeMapStateToProps = (initialState, ownProps) => {
   const getAlbums = makeGetSearchAlbums()
   const getSearchArtists = makeGetSearchArtists()
   const getCurrentQueueItem = makeGetCurrent()
-  const getTracksLineup = makeGetLineupMetadatas(state => state.search.tracks)
+  const getTracksLineup = makeGetLineupMetadatas(getSearchTracksLineup)
   const mapStateToProps = (state, props) => ({
-    search: state.search,
+    search: getSearchResultsState(state),
     tracks: getTracksLineup(state),
     artists: getSearchArtists(state),
     playlists: getPlaylists(state),

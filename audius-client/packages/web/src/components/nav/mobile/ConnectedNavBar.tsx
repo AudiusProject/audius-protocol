@@ -11,12 +11,12 @@ import {
   getAccountUser,
   getAccountStatus
 } from 'common/store/account/selectors'
+import { getSearchStatus } from 'common/store/pages/search-results/selectors'
 import {
   RouterContext,
   SlideDirection
 } from 'components/animated-switch/RouterContextProvider'
 import { getNotificationUnreadCount } from 'components/notification/store/selectors'
-import { getSearchStatus } from 'pages/search-page/store/selectors'
 import { openSignOn } from 'pages/sign-on/store/actions'
 import { make, useRecord } from 'store/analytics/actions'
 import { AppState } from 'store/types'

@@ -8,13 +8,15 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 import {
   BaseStackParamList,
-  ProfileStackParamList
+  ProfileStackParamList,
+  SearchParamList
 } from 'app/components/app-navigator/types'
 
 import { usePushRouteWeb } from './usePushRouteWeb'
 
 type AppParamList = BaseStackParamList &
-  ProfileStackParamList & {
+  ProfileStackParamList &
+  SearchParamList & {
     feed: undefined
     trending: undefined
     explore: undefined
