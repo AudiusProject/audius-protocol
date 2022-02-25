@@ -73,9 +73,18 @@ module.exports = function (app) {
           method,
           headers
         })
-        const identityObj = flowSessionResponse.data.user.id_number
-        const { value, category, type } = identityObj
-        const identity = `${value}::${category}::${type}`
+
+        const userInfo = flowSessionResponse.data.user
+        const { id_number: idNumber, phone, date_of_birth: dob, address, name } = userInfo
+
+        let identity = null
+        if (idNumber) {
+          const { value, category, type } = idNumber
+          identity = `${value}::${category}::${type}`
+        } else {
+          identity = JSON.stringify({ phone, dob, address, name })
+        }
+
         const maskedIdentity = createMaskedCognitoIdentity(identity)
         const record = await models.CognitoFlowIdentities.findOne({ where: { maskedIdentity } })
 

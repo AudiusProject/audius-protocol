@@ -25,7 +25,7 @@ pub mod audius_data {
         authority: Pubkey,
         track_id_offset: u64,
         playlist_id_offset: u64,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
@@ -46,7 +46,7 @@ pub mod audius_data {
         handle_seed: [u8; 16],
         _user_bump: u8,
         metadata: String,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         msg!("Audius::InitUser");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
@@ -84,7 +84,7 @@ pub mod audius_data {
     pub fn init_user_sol(
         ctx: Context<InitializeUserSolIdentity>,
         user_authority: Pubkey,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
         let index_current_instruction =
@@ -123,7 +123,7 @@ pub mod audius_data {
         _user_bump: u8,
         metadata: String,
         user_authority: Pubkey,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         msg!("Audius::CreateUser");
 
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
@@ -161,7 +161,7 @@ pub mod audius_data {
     }
 
     /// Permissioned function to log an update to User metadata
-    pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> ProgramResult {
+    pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
         msg!("Audius::UpdateUser");
         if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
             return Err(ErrorCode::Unauthorized.into());
@@ -177,7 +177,7 @@ pub mod audius_data {
     /*
         Track related functions
     */
-    pub fn create_track(ctx: Context<CreateTrack>, metadata: String) -> ProgramResult {
+    pub fn create_track(ctx: Context<CreateTrack>, metadata: String) -> Result<()> {
         msg!("Audius::CreateTrack");
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
@@ -192,9 +192,9 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn update_track(ctx: Context<UpdateTrack>, metadata: String) -> ProgramResult {
+    pub fn update_track(ctx: Context<UpdateTrack>, metadata: String) -> Result<()> {
         msg!("Audius::UpdateTrack");
-        if ctx.accounts.user.key() != ctx.accounts.track.owner.key() {
+        if ctx.accounts.user.key() != ctx.accounts.track.owner {
             return Err(ErrorCode::Unauthorized.into());
         }
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
@@ -204,9 +204,9 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn delete_track(ctx: Context<DeleteTrack>) -> ProgramResult {
+    pub fn delete_track(ctx: Context<DeleteTrack>) -> Result<()> {
         msg!("Audius::DeleteTrack");
-        if ctx.accounts.user.key() != ctx.accounts.track.owner.key() {
+        if ctx.accounts.user.key() != ctx.accounts.track.owner {
             return Err(ErrorCode::Unauthorized.into());
         }
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
@@ -221,9 +221,9 @@ pub mod audius_data {
     /*
         Playlist related functions
     */
-    pub fn create_playlist(ctx: Context<CreatePlaylist>, metadata: String) -> ProgramResult {
+    pub fn create_playlist(ctx: Context<CreatePlaylist>, metadata: String) -> Result<()> {
         msg!("Audius::CreatePlaylist");
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority.key() {
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
         // Set owner to user storage account
@@ -234,9 +234,9 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn update_playlist(ctx: Context<UpdatePlaylist>, metadata: String) -> ProgramResult {
+    pub fn update_playlist(ctx: Context<UpdatePlaylist>, metadata: String) -> Result<()> {
         msg!("Audius::UpdatePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
+        if ctx.accounts.user.key() != ctx.accounts.playlist.owner {
             return Err(ErrorCode::Unauthorized.into());
         }
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
@@ -246,9 +246,9 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn delete_playlist(ctx: Context<DeletePlaylist>) -> ProgramResult {
+    pub fn delete_playlist(ctx: Context<DeletePlaylist>) -> Result<()> {
         msg!("Audius::DeletePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
+        if ctx.accounts.user.key() != ctx.accounts.playlist.owner {
             return Err(ErrorCode::Unauthorized.into());
         }
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
@@ -275,7 +275,7 @@ pub mod audius_data {
         _follower_bump: u8,
         _followee_handle_seed: [u8; 16],
         _followee_bump: u8,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         match user_action {
             UserAction::FollowUser => {
                 msg!("Audius::FollowUser");
@@ -337,14 +337,14 @@ pub struct Initialize<'info> {
 /// `payer` is the account responsible for the lamports required to allocate this account.
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16])]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
         init,
         payer = payer,
         seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump,
+        bump,
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
@@ -362,6 +362,7 @@ pub struct InitializeUser<'info> {
 pub struct InitializeUserSolIdentity<'info> {
     #[account(mut)]
     pub user: Account<'info, User>,
+    /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
     pub sysvar_program: AccountInfo<'info>,
 }
 
@@ -369,13 +370,13 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16])]
 pub struct CreateUser<'info> {
     #[account(
         init,
         payer = payer,
         seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump,
+        bump,
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
@@ -384,6 +385,7 @@ pub struct CreateUser<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     pub system_program: Program<'info, System>,
+    /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
     pub sysvar_program: AccountInfo<'info>,
 }
 
@@ -539,7 +541,7 @@ pub struct Playlist {
 }
 
 // Errors
-#[error]
+#[error_code]
 pub enum ErrorCode {
     #[msg("You are not authorized to perform this action.")]
     Unauthorized,

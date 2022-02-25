@@ -117,7 +117,7 @@ describe("playlist", () => {
       // Note that there appears to be a delay in the propagation, hence the retries
       let playlistAcctBalance = initialPlaylistAcctBalance;
       let payerBalance = initialPayerBalance;
-      let retries = 20;
+      let retries = 100;
       while (playlistAcctBalance > 0 && retries > 0) {
         playlistAcctBalance = await provider.connection.getBalance(
           playlistKeypair.publicKey
@@ -129,7 +129,7 @@ describe("playlist", () => {
       }
 
       if (playlistAcctBalance > 0) {
-        throw new Error("Failed to deallocate track");
+        throw new Error(`Failed to deallocate playlist - Remaining balance ${playlistAcctBalance}`);
       }
 
       console.log(
