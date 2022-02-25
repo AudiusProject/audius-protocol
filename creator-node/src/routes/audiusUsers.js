@@ -84,6 +84,7 @@ module.exports = function (app) {
         return errorResponseServerError(`Could not save to db: ${e}`)
       }
 
+      // This call is not await-ed to avoid delaying or errorring
       issueAndWaitForSecondarySyncRequests(req)
 
       return successResponse({
