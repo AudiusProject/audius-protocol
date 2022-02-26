@@ -8,8 +8,10 @@ class TrustedNotifierManager {
     this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
 
-    this.trustedNotifierIndex = nodeConfig.get('trustedNotifierIndex')
-    this.trustedNotifierEnabled = !!this.trustedNotifierIndex
+    this.trustedNotifierSelection = this.nodeConfig.get(
+      'trustedNotifierSelection'
+    )
+    this.trustedNotifierEnabled = !!this.trustedNotifierSelection
 
     // will be set in init
     this.trustedNotifierData = {
@@ -34,12 +36,20 @@ class TrustedNotifierManager {
   }
 
   async init() {
+    if (!this.trustedNotifierEnabled) {
+      const nodeOperatorEmailAddress = this.nodeConfig.get(
+        'nodeOperatorEmailAddress'
+      )
+      this.trustedNotifierData.emailAddress = nodeOperatorEmailAddress
+      return
+    }
+
     try {
       // intermediate variable to cache value from chain
       if (!this.trustedNotifierChainData) {
         this.trustedNotifierChainData =
           await this.audiusLibs.ethContracts.TrustedNotifierManagerClient.getNotifierForID(
-            this.trustedNotifierIndex
+            this.trustedNotifierSelection
           )
       }
 
@@ -49,7 +59,7 @@ class TrustedNotifierManager {
         '0x0000000000000000000000000000000000000000'
       ) {
         this.logInfo(
-          `Could not recover a trustedNotifier at index ${this.trustedNotifierIndex}, trying again soon`
+          `Could not recover a trustedNotifier at index ${this.trustedNotifierSelection}, trying again soon`
         )
         await wait(ONE_MIN)
         return this.init()
@@ -63,7 +73,6 @@ class TrustedNotifierManager {
 
         const resp = (await axios.get(healthCheckEndpoint)).data
         if (resp && resp.emailAddress) {
-          this.trustedNotifierEmailAddress = resp.emailAddress
           this.trustedNotifierData = {
             emailAddress: resp.emailAddress,
             ...this.trustedNotifierChainData
@@ -80,10 +89,6 @@ class TrustedNotifierManager {
 
   getTrustedNotifier() {
     return this.trustedNotifierData
-  }
-
-  getTrustedNotifierEmailAddress() {
-    return this.trustedNotifierEmailAddress
   }
 }
 

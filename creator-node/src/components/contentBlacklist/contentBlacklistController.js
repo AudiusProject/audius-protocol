@@ -213,7 +213,7 @@ function verifyRequest(data, signature, trustedNotifierManager) {
   if (
     recoveredPublicWallet.toLowerCase() !==
       config.get('delegateOwnerWallet').toLowerCase() ||
-    recoveredPublicWallet.toLowerCase() !== trustedNotifierWallet
+    recoveredPublicWallet.toLowerCase() !== trustedNotifierWallet.toLowerCase()
   ) {
     throw new Error(
       "Requester's public key does does not match Creator Node's delegate owner wallet or Trusted Notifier."
