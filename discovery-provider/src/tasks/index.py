@@ -336,26 +336,28 @@ def fetch_cid_metadata(
 
     # first attempt - fetch all CIDs from replica set
     try:
-        asyncio.run(
-            update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
-                cid_metadata,
-                cids_txhash_set,
-                cid_to_user_id,
-                user_to_replica_set,
-                cid_type,
-                should_fetch_from_replica_set=True,
+        cid_metadata.update(
+            asyncio.run(
+                update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=True,
+                )
             )
         )
-    except Exception:
+    except asyncio.TimeoutError:
         # swallow exception on first attempt fetching from replica set
         pass
 
     # second attempt - fetch missing CIDs from other cnodes
     if len(cid_metadata) != len(cids_txhash_set):
-        try:
+        cid_metadata.update(
             asyncio.run(
                 update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
-                    cid_metadata,
+                    cid_metadata.keys(),
                     cids_txhash_set,
                     cid_to_user_id,
                     user_to_replica_set,
@@ -363,22 +365,15 @@ def fetch_cid_metadata(
                     should_fetch_from_replica_set=False,
                 )
             )
-        except Exception as e:
-            logger.info("index.py | Error in fetch cid metadata")
-            raise IndexingError(
-                "prefetch-cids", block_number, block_hash, None, str(e)
-            ) from e
-
-    if len(cid_metadata) != len(cid_type.keys()):
-        missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
-        raise IndexingError(
-            "prefetch-cids", block_number, block_hash, None, missing_cids_msg
         )
+
+    if cid_type and len(cid_metadata) != len(cid_type.keys()):
+        missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+        raise Exception(missing_cids_msg)
 
     logger.info(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
-
     return cid_metadata, blacklisted_cids
 
 
@@ -654,8 +649,12 @@ def index_blocks(self, db, blocks_list):
                         txs_grouped_by_type,
                         block,
                     )
-                except IndexingError as err:
-                    create_and_raise_indexing_error(err, redis)
+                except Exception as e:
+                    blockhash = update_task.web3.toHex(block_hash)
+                    indexing_error = IndexingError(
+                        "prefetch-cids", block_number, blockhash, None, str(e)
+                    )
+                    create_and_raise_indexing_error(indexing_error, redis)
 
             try:
                 session.commit()

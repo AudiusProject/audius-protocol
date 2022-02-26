@@ -47,7 +47,7 @@ class IPFSClient:
             )
             self._cnode_endpoints = cnode_endpoints
 
-    def _get_metadata_from_json(default_metadata_fields, resp_json):
+    def _get_metadata_from_json(self, default_metadata_fields, resp_json):
         metadata = {}
         for parameter, value in default_metadata_fields.items():
             metadata[parameter] = (
@@ -89,7 +89,7 @@ class IPFSClient:
 
     async def fetch_metadata_from_gateway_endpoints(
         self,
-        cid_metadata,
+        fetched_cids,
         cids_txhash_set,
         cid_to_user_id,
         user_to_replica_set,
@@ -99,18 +99,20 @@ class IPFSClient:
         """
         Fetch CID metadata from gateway endpoints and update cid_metadata dict.
 
-        cid_metadata -- dict for cid -> metadata json
+        fetched_cids -- CIDs already successfully fetched
         cids_txhash_set -- set of cids that we want metadata for
         user_to_replica_set -- dict of user id -> replica set
         cid_type -- dict of cid -> cid type
         should_fetch_from_replica_set -- boolean for if fetch should be from replica set only
         """
+        cid_metadata = {}
+
         async with aiohttp.ClientSession() as async_session:
             futures = []
             cid_futures_map = {}
 
-            for cid in cids_txhash_set:
-                if cid in cid_metadata:
+            for cid, txhash in cids_txhash_set:
+                if cid in fetched_cids:
                     continue  # already fetched
                 user_id = cid_to_user_id[cid]
 
@@ -154,13 +156,16 @@ class IPFSClient:
                     if formatted_json != metadata_format:
                         cid_metadata[cid] = formatted_json
 
-                        if len(cid_metadata) == len(cids_txhash_set):
+                        if len(fetched_cids) + len(cid_metadata) == len(
+                            cids_txhash_set
+                        ):
                             break  # fetched all metadata
 
                         for other_future in cid_futures_map[cid]:
                             if other_future == future:
                                 continue
                             other_future.cancel()  # cancel other pending requests
+
             except asyncio.TimeoutError:
                 logger.info(
                     "IPFSCLIENT | fetch_metadata_from_gateway_endpoints TimeoutError"
@@ -168,3 +173,4 @@ class IPFSClient:
             except Exception as e:
                 logger.info("IPFSCLIENT | Error in fetch cid metadata")
                 raise e
+        return cid_metadata

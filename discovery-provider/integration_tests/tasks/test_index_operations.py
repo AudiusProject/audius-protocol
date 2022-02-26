@@ -172,6 +172,21 @@ def seed_contract_data(task, contracts, web3):
     }
 
 
+class MockResponse:
+    def __init__(self, json, status):
+        self._json = json
+        self.status = status
+
+    async def json(self, content_type):
+        return self._json
+
+    async def __aexit__(self, exc_type, exc, tb):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+
 @pytest.fixture(autouse=True)
 def cleanup():
     yield
@@ -189,9 +204,17 @@ def test_index_operations(celery_app, celery_app_contracts, mocker):
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     new_user_handle = seed_data["new_user_handle"]
     new_user_id = seed_data["new_user_id"]
+
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient.get_metadata",
-        return_value=seed_data["track_metadata"],
+        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        return_value=["https://test-content-node.audius.co"],
+        autospec=True,
+    )
+
+    mock_response = MockResponse(seed_data["track_metadata"], 200)
+    mocker.patch(
+        "aiohttp.ClientSession.get",
+        return_value=mock_response,
         autospec=True,
     )
 
@@ -228,13 +251,12 @@ def test_index_operations_metadata_fetch_error(
     web3 = celery_app_contracts["web3"]
 
     # patch ipfs metadata event to raise an exception
-    def fetch_metadata_stub(*_):
+    def fetch_metadata_stub(*_, should_fetch_from_replica_set):
         raise Exception("Broken fetch")
 
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient.get_metadata",
+        "src.utils.ipfs_lib.IPFSClient.fetch_metadata_from_gateway_endpoints",
         side_effect=fetch_metadata_stub,
-        autospec=True,
     )
 
     seed_contract_data(task, celery_app_contracts, web3)
@@ -353,8 +375,15 @@ def test_index_operations_tx_parse_error(celery_app, celery_app_contracts, mocke
 
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient.get_metadata",
-        return_value=seed_data["track_metadata"],
+        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        return_value=["https://test-content-node.audius.co"],
+        autospec=True,
+    )
+
+    mock_response = MockResponse(seed_data["track_metadata"], 200)
+    mocker.patch(
+        "aiohttp.ClientSession.get",
+        return_value=mock_response,
         autospec=True,
     )
     current_block = None
@@ -402,8 +431,15 @@ def test_index_operations_indexing_error_on_commit(
 
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient.get_metadata",
-        return_value=seed_data["track_metadata"],
+        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        return_value=["https://test-content-node.audius.co"],
+        autospec=True,
+    )
+
+    mock_response = MockResponse(seed_data["track_metadata"], 200)
+    mocker.patch(
+        "aiohttp.ClientSession.get",
+        return_value=mock_response,
         autospec=True,
     )
 
@@ -467,8 +503,15 @@ def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
 
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient.get_metadata",
-        return_value=seed_data["track_metadata"],
+        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        return_value=["https://test-content-node.audius.co"],
+        autospec=True,
+    )
+
+    mock_response = MockResponse(seed_data["track_metadata"], 200)
+    mocker.patch(
+        "aiohttp.ClientSession.get",
+        return_value=mock_response,
         autospec=True,
     )
 
