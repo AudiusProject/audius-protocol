@@ -1,7 +1,8 @@
 const { logger } = require('../logging')
+const axios = require('axios')
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-const FIVE_MINUTES = 60000 * 5
+const ONE_MIN = 1000 * 60
 class TrustedNotifierManager {
   constructor(nodeConfig, audiusLibs) {
     this.nodeConfig = nodeConfig
@@ -9,7 +10,13 @@ class TrustedNotifierManager {
 
     this.trustedNotifierIndex = nodeConfig.get('trustedNotifierIndex')
     this.trustedNotifierEnabled = !!this.trustedNotifierIndex
-    this.trustedNotifier = null // will be set in init
+
+    // will be set in init
+    this.trustedNotifierData = {
+      emailAddress: null,
+      wallet: null,
+      endpoint: null
+    }
 
     if (!this.audiusLibs) {
       throw new Error(
@@ -27,24 +34,56 @@ class TrustedNotifierManager {
   }
 
   async init() {
-    this.trustedNotifier =
-      await this.audiusLibs.ethContracts.TrustedNotifierManagerClient.getNotifierForID(
-        this.trustedNotifierIndex
-      )
-    if (
-      this.trustedNotifier.wallet ===
-      '0x0000000000000000000000000000000000000000'
-    ) {
-      this.logInfo(
-        `Could not recover a trustedNotifier at index ${this.trustedNotifierIndex}, trying again in 5 minutes`
-      )
-      await wait(FIVE_MINUTES)
-      return this.init()
+    try {
+      // intermediate variable to cache value from chain
+      if (!this.trustedNotifierChainData) {
+        this.trustedNotifierChainData =
+          await this.audiusLibs.ethContracts.TrustedNotifierManagerClient.getNotifierForID(
+            this.trustedNotifierIndex
+          )
+      }
+
+      // if server is not up, retry
+      if (
+        this.trustedNotifierChainData.wallet ===
+        '0x0000000000000000000000000000000000000000'
+      ) {
+        this.logInfo(
+          `Could not recover a trustedNotifier at index ${this.trustedNotifierIndex}, trying again soon`
+        )
+        await wait(ONE_MIN)
+        return this.init()
+      }
+
+      try {
+        const healthCheckEndpoint = `${this.trustedNotifierChainData.endpoint.replace(
+          /\/$/,
+          ''
+        )}/health_check`
+
+        const resp = (await axios.get(healthCheckEndpoint)).data
+        if (resp && resp.emailAddress) {
+          this.trustedNotifierEmailAddress = resp.emailAddress
+          this.trustedNotifierData = {
+            emailAddress: resp.emailAddress,
+            ...this.trustedNotifierChainData
+          }
+        }
+      } catch (e) {
+        await wait(ONE_MIN)
+        return this.init()
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 
   getTrustedNotifier() {
-    return this.trustedNotifier
+    return this.trustedNotifierData
+  }
+
+  getTrustedNotifierEmailAddress() {
+    return this.trustedNotifierEmailAddress
   }
 }
 

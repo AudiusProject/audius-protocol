@@ -30,6 +30,8 @@ const contentBlacklistGetAllController = async (req) => {
 }
 
 const contentBlacklistAddController = async (req) => {
+  const trustedNotifierManager = req.app.get('trustedNotifierManager')
+
   logger.debug(`ContentBlackListController - [add] parsing query params`)
   let parsedQueryParams
   try {
@@ -43,7 +45,11 @@ const contentBlacklistAddController = async (req) => {
   logger.debug(`ContentBlackListController - [add] verifying signature`)
   let { type, values, timestamp, signature } = parsedQueryParams
   try {
-    verifyRequest({ values, type, timestamp }, signature)
+    verifyRequest(
+      { values, type, timestamp },
+      signature,
+      trustedNotifierManager
+    )
   } catch (e) {
     return errorResponseUnauthorized('Unauthorized user.')
   }
@@ -78,6 +84,8 @@ const contentBlacklistAddController = async (req) => {
 }
 
 const contentBlacklistRemoveController = async (req) => {
+  const trustedNotifierManager = req.app.get('trustedNotifierManager')
+
   logger.debug(`ContentBlackListController - [remove] parsing query params`)
 
   let parsedQueryParams
@@ -92,7 +100,11 @@ const contentBlacklistRemoveController = async (req) => {
   logger.debug(`ContentBlackListController - [remove] verifying signature`)
   let { type, values, timestamp, signature } = parsedQueryParams
   try {
-    verifyRequest({ values, type, timestamp }, signature)
+    verifyRequest(
+      { values, type, timestamp },
+      signature,
+      trustedNotifierManager
+    )
   } catch (e) {
     return errorResponseUnauthorized('Unauthorized user.')
   }
@@ -194,14 +206,17 @@ function parseQueryParams(queryParams) {
  * @param {string} data.timestamp the timestamp of when the data was signed
  * @param {string} signature the signature generated from signing the data
  */
-function verifyRequest(data, signature) {
+function verifyRequest(data, signature, trustedNotifierManager) {
+  const trustedNotifierWallet =
+    trustedNotifierManager.getTrustedNotifier().wallet
   const recoveredPublicWallet = recoverWallet(data, signature)
   if (
     recoveredPublicWallet.toLowerCase() !==
-    config.get('delegateOwnerWallet').toLowerCase()
+      config.get('delegateOwnerWallet').toLowerCase() ||
+    recoveredPublicWallet.toLowerCase() !== trustedNotifierWallet
   ) {
     throw new Error(
-      "Requester's public key does does not match Creator Node's delegate owner wallet."
+      "Requester's public key does does not match Creator Node's delegate owner wallet or Trusted Notifier."
     )
   }
 }
