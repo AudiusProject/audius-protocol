@@ -11,28 +11,35 @@ type HttpMethod = 'POST' | 'GET' | 'PUT' | 'DELETE' | 'PATCH'
 
 export type CognitoSignatureResponse = { signature: string }
 export type CognitoFlowResponse = { shareable_url: string }
+type CognitoFlowExistsResponse = { exists: boolean }
+type AuthHeadersType = typeof AuthHeaders
 
 async function _makeRequest<ResponseModel>({
   path,
-  method = 'GET'
+  method = 'GET',
+  useAuth = true
 }: {
   path: string
   method?: HttpMethod
+  useAuth?: boolean
 }): Promise<ResponseModel> {
-  await waitForLibsInit()
-  const account = libs().Account.getCurrentUser()
-  if (!account) {
-    throw new Error('Cognito Identity Request Failed: Missing current user')
-  }
-  const { data, signature } = await AudiusBackend.signData()
-  const response = await fetch(`${IDENTITY_SERVICE}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
+  const options: {
+    method: HttpMethod
+    headers?: { [key in AuthHeadersType[keyof AuthHeadersType]]: string }
+  } = { method }
+  if (useAuth) {
+    await waitForLibsInit()
+    const account = libs().Account.getCurrentUser()
+    if (!account) {
+      throw new Error('Cognito Identity Request Failed: Missing current user')
+    }
+    const { data, signature } = await AudiusBackend.signData()
+    options.headers = {
       [AuthHeaders.Message]: data,
       [AuthHeaders.Signature]: signature
     }
-  })
+  }
+  const response = await fetch(`${IDENTITY_SERVICE}${path}`, options)
   if (response.status >= 400 && response.status < 600) {
     throw new Error(`Cognito Identity Request Failed: ${response.statusText}`)
   }
@@ -45,3 +52,10 @@ export const getCognitoSignature = () =>
 
 export const getCognitoFlow = () =>
   _makeRequest<CognitoFlowResponse>({ path: '/cognito_flow', method: 'POST' })
+
+export const getCognitoExists = (handle: string) =>
+  _makeRequest<CognitoFlowExistsResponse>({
+    path: `/cognito_recent_exists/${handle}`,
+    method: 'GET',
+    useAuth: false
+  })
