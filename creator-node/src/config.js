@@ -659,11 +659,17 @@ const config = convict({
     env: 'openRestyCacheCIDEnabled',
     default: false
   },
-  trustedNotifierIndex: {
-    doc: 'On-chain index for trusted notifier selection',
+  trustedNotifierSelection: {
+    doc: 'To select a trusted notifier, set to a value >= 1 corresponding to the index of the notifier on chain. 0 means no trusted notifier selected and self manage notifications',
     format: 'nat',
     env: 'trustedNotifierIndex',
     default: 1
+  },
+  nodeOperatorEmailAddress: {
+    doc: 'Email address for the node operator where they will respond in a timely manner. Must be defined if trustedNotifierSelection is set to 0',
+    format: String,
+    env: 'nodeOperatorEmailAddress',
+    default: ''
   }
   /**
    * unsupported options at the moment
