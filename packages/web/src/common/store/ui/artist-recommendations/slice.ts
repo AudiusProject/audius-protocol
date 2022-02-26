@@ -3,7 +3,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 
-const initialState: Record<ID, { relatedArtistIds: ID[]; status: Status }> = {}
+export type ArtistRecommendationsState = Record<
+  ID,
+  { relatedArtistIds: ID[]; status: Status }
+>
+
+const initialState: ArtistRecommendationsState = {}
 
 const slice = createSlice({
   name: 'artist-recommendations',

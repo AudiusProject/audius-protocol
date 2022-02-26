@@ -6,7 +6,6 @@ import { reducers as clientStoreReducers } from 'common/store'
 import profile from 'common/store/pages/profile/reducer'
 import queue from 'common/store/queue/slice'
 import remoteConfig from 'common/store/remote-config/slice'
-import artistRecommendations from 'components/artist-recommendations/store/slice'
 import changePassword from 'components/change-password/store/slice'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
@@ -91,7 +90,6 @@ const createRootReducer = (routeHistory: History) =>
     application: combineReducers({
       ui: combineReducers({
         appCTAModal,
-        artistRecommendations,
         changePassword,
         cookieBanner,
         deactivateAccount,

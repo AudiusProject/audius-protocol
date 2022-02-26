@@ -15,7 +15,10 @@ import { FollowSource, Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
 import { User } from 'common/models/User'
+import { CommonState } from 'common/store'
 import * as socialActions from 'common/store/social/users/actions'
+import { makeGetRelatedArtists } from 'common/store/ui/artist-recommendations/selectors'
+import { fetchRelatedArtists } from 'common/store/ui/artist-recommendations/slice'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/follow-button/FollowButton'
@@ -24,13 +27,10 @@ import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { make, useRecord } from 'store/analytics/actions'
-import { AppState } from 'store/types'
 import { useIsMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './ArtistRecommendations.module.css'
-import { makeGetRelatedArtists } from './store/selectors'
-import { fetchRelatedArtists } from './store/slice'
 
 export type ArtistRecommendationsProps = {
   ref?: MutableRefObject<HTMLDivElement>
@@ -142,7 +142,7 @@ export const ArtistRecommendations = forwardRef(
 
     // Get the related artists
     const getRelatedArtists = useMemo(makeGetRelatedArtists, [artistId])
-    const suggestedArtists = useSelector<AppState, User[]>(state =>
+    const suggestedArtists = useSelector<CommonState, User[]>(state =>
       getRelatedArtists(state, { id: artistId })
     )
 

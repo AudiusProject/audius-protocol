@@ -41,6 +41,9 @@ import stemsUpload from 'common/store/stems-upload/slice'
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from 'common/store/ui/add-to-playlist/reducer'
+import artistRecommendationsReducer, {
+  ArtistRecommendationsState
+} from 'common/store/ui/artist-recommendations/slice'
 import collectibleDetailsReducer, {
   CollectibleDetailsState
 } from 'common/store/ui/collectible-details/slice'
@@ -96,6 +99,7 @@ export const reducers = {
   ui: combineReducers({
     averageColor: averageColorReducer,
     addToPlaylist: addToPlaylistReducer,
+    artistRecommendations: artistRecommendationsReducer,
     createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
@@ -203,6 +207,7 @@ export type CommonState = {
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>
     addToPlaylist: AddToPlaylistState
+    artistRecommendations: ArtistRecommendationsState
     createPlaylistModal: CreatePlaylistModalState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
