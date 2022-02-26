@@ -7,6 +7,8 @@ import { Dispatch } from 'redux'
 import { FavoriteSource, Name, PlaybackSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
+import { makeGetCurrent } from 'common/store/queue/selectors'
+import { pause, play } from 'common/store/queue/slice'
 import {
   recordListen,
   saveTrack,
@@ -26,8 +28,6 @@ import {
   getPlaying
 } from 'store/player/selectors'
 import { AudioState } from 'store/player/types'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { pause, play } from 'store/queue/slice'
 import { AppState } from 'store/types'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 

@@ -24,13 +24,13 @@ import {
   TrackRecord,
   SavedPageCollection
 } from 'common/store/pages/saved-page/types'
+import { makeGetCurrent } from 'common/store/queue/selectors'
 import * as socialActions from 'common/store/social/tracks/actions'
 import { formatCount } from 'common/utils/formatUtil'
 import { updatePlaylistLastViewedAt } from 'components/notification/store/actions'
 import { getPlaylistUpdates } from 'components/notification/store/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'

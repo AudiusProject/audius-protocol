@@ -9,15 +9,15 @@ import cacheSagas from 'common/store/cache/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { LineupActions } from 'common/store/lineup/actions'
 import { asLineup, initialLineupState } from 'common/store/lineup/reducer'
+import queueReducer, {
+  initialState as initialQueueState
+} from 'common/store/queue/slice'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { initialState as initialConfirmerState } from 'store/confirmer/reducer'
 import { LineupSagas } from 'store/lineup/sagas'
 import playerReducer, {
   initialState as initialPlayerState
 } from 'store/player/slice'
-import queueReducer, {
-  initialState as initialQueueState
-} from 'store/queue/slice'
 import { noopReducer, allSagas } from 'store/testHelper'
 
 const PREFIX = 'tracks'

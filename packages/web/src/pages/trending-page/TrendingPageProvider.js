@@ -26,11 +26,11 @@ import {
   getDiscoverTrendingMonthLineup,
   getLastFetchedTrendingGenre
 } from 'common/store/pages/trending/selectors'
+import { makeGetCurrent } from 'common/store/queue/selectors'
 import { GENRES } from 'common/utils/genres'
 import { openSignOn } from 'pages/sign-on/store/actions'
 import { make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
 

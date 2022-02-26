@@ -7,23 +7,6 @@ import { getUserId } from 'common/store/account/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import {
-  PersistQueueMessage,
-  RepeatModeMessage,
-  ShuffleMessage
-} from 'services/native-mobile-interface/queue'
-import { MessageType, Message } from 'services/native-mobile-interface/types'
-import * as playerActions from 'store/player/slice'
-import {
-  persist,
-  queueAutoplay,
-  repeat,
-  shuffle,
-  updateIndex
-} from 'store/queue/slice'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-import { generateM3U8Variants } from 'utils/hlsUtil'
-
-import {
   getOrder,
   getIndex,
   getId as getQueueTrackId,
@@ -31,7 +14,23 @@ import {
   getShuffleIndex,
   getShuffleOrder,
   getQueueAutoplay
-} from './selectors'
+} from 'common/store/queue/selectors'
+import {
+  persist,
+  queueAutoplay,
+  repeat,
+  shuffle,
+  updateIndex
+} from 'common/store/queue/slice'
+import {
+  PersistQueueMessage,
+  RepeatModeMessage,
+  ShuffleMessage
+} from 'services/native-mobile-interface/queue'
+import { MessageType, Message } from 'services/native-mobile-interface/types'
+import * as playerActions from 'store/player/slice'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { generateM3U8Variants } from 'utils/hlsUtil'
 
 const PUBLIC_IPFS_GATEWAY = 'http://cloudflare-ipfs.com/ipfs/'
 const DEFAULT_IMAGE_URL =

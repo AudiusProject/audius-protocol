@@ -4,6 +4,7 @@ import { combineReducers } from 'redux'
 
 import { reducers as clientStoreReducers } from 'common/store'
 import profile from 'common/store/pages/profile/reducer'
+import queue from 'common/store/queue/slice'
 import remoteConfig from 'common/store/remote-config/slice'
 import artistRecommendations from 'components/artist-recommendations/store/slice'
 import changePassword from 'components/change-password/store/slice'
@@ -44,7 +45,6 @@ import confirmer from 'store/confirmer/reducer'
 import dragndrop from 'store/dragndrop/reducer'
 import player from 'store/player/slice'
 import playlistLibrary from 'store/playlist-library/slice'
-import queue from 'store/queue/slice'
 import reachability from 'store/reachability/reducer'
 
 const createRootReducer = (routeHistory: History) =>

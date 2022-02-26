@@ -7,6 +7,7 @@ import { Spring } from 'react-spring/renderprops'
 
 import { Name } from 'common/models/Analytics'
 import { getAccountUser } from 'common/store/account/selectors'
+import { pause as pauseQueue } from 'common/store/queue/slice'
 import { openWithDelay } from 'components/first-upload-modal/store/slice'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
@@ -14,7 +15,6 @@ import { dropdownRows as stemRows } from 'components/source-files-modal/SourceFi
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import * as schemas from 'schemas'
 import { make } from 'store/analytics/actions'
-import { pause as pauseQueue } from 'store/queue/slice'
 import { playlistPage, albumPage, profilePage } from 'utils/route'
 
 import styles from './UploadPage.module.css'

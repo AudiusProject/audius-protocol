@@ -12,6 +12,16 @@ import {
 } from 'common/models/Analytics'
 import { getUserId } from 'common/store/account/selectors'
 import { getLineupHasTracks } from 'common/store/lineup/selectors'
+import { makeGetCurrent } from 'common/store/queue/selectors'
+import {
+  play,
+  pause,
+  next,
+  previous,
+  repeat,
+  shuffle
+} from 'common/store/queue/slice'
+import { RepeatMode } from 'common/store/queue/types'
 import {
   repostTrack,
   undoRepostTrack,
@@ -39,9 +49,6 @@ import {
   getBuffering
 } from 'store/player/selectors'
 import { seek, reset } from 'store/player/slice'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { play, pause, next, previous, repeat, shuffle } from 'store/queue/slice'
-import { RepeatMode } from 'store/queue/types'
 import { setupHotkeys } from 'utils/hotkeyUtil'
 import { profilePage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
