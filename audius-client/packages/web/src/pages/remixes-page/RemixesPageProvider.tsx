@@ -7,9 +7,9 @@ import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
+import { makeGetCurrent } from 'common/store/queue/selectors'
 import { LineupVariant } from 'components/lineup/types'
 import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 

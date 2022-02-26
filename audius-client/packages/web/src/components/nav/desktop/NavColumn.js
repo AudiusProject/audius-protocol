@@ -20,6 +20,7 @@ import {
   createPlaylist,
   addTrackToPlaylist
 } from 'common/store/cache/collections/actions'
+import { makeGetCurrent } from 'common/store/queue/selectors'
 import { saveCollection } from 'common/store/social/collections/actions'
 import { saveTrack } from 'common/store/social/tracks/actions'
 import * as createPlaylistModalActions from 'common/store/ui/createPlaylistModal/actions'
@@ -49,7 +50,6 @@ import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { make, useRecord } from 'store/analytics/actions'
 import { getIsDragging } from 'store/dragndrop/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
 import {
   FEED_PAGE,
   TRENDING_PAGE,

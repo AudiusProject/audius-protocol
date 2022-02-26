@@ -1,5 +1,8 @@
 import { useCallback } from 'react'
 
+import { getRepeat, getShuffle } from 'common/store/queue/selectors'
+import { shuffle, repeat } from 'common/store/queue/slice'
+import { RepeatMode } from 'common/store/queue/types'
 import { View, StyleSheet } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -19,6 +22,8 @@ import IconNext from 'app/assets/images/iconNext.svg'
 import IconPrev from 'app/assets/images/iconPrev.svg'
 import AnimatedButtonProvider from 'app/components/animated-button/AnimatedButtonProvider'
 import { IconButton } from 'app/components/core'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { pause, play } from 'app/store/audio/actions'
 import { getPlaying } from 'app/store/audio/selectors'
@@ -54,12 +59,15 @@ const createStyles = (themeColors: ThemeColors) =>
 
 export const AudioControls = () => {
   const dispatch = useDispatch()
+  const dispatchWeb = useDispatchWeb()
 
   const styles = useThemedStyles(createStyles)
   const themeVariant = useThemeVariant()
   const isDarkMode = themeVariant === Theme.DARK
 
   const isPlaying = useSelector(getPlaying)
+  const shuffleEnabled = useSelectorWeb(getShuffle)
+  const repeatMode = useSelectorWeb(getRepeat)
 
   const onPressPlayButton = useCallback(() => {
     if (isPlaying) {
@@ -68,6 +76,32 @@ export const AudioControls = () => {
       dispatch(play())
     }
   }, [isPlaying, dispatch])
+
+  const onPressShuffle = useCallback(() => {
+    let enable: boolean
+    if (shuffleEnabled) {
+      enable = false
+    } else {
+      enable = true
+    }
+    dispatchWeb(shuffle({ enable }))
+  }, [dispatchWeb, shuffleEnabled])
+
+  const onPressRepeat = useCallback(() => {
+    let mode: RepeatMode
+    switch (repeatMode) {
+      case RepeatMode.ALL:
+        mode = RepeatMode.SINGLE
+        break
+      case RepeatMode.OFF:
+        mode = RepeatMode.ALL
+        break
+      case RepeatMode.SINGLE:
+        mode = RepeatMode.OFF
+        break
+    }
+    dispatchWeb(repeat({ mode }))
+  }, [dispatchWeb, repeatMode])
 
   const renderRepeatButton = () => {
     return (
@@ -83,7 +117,7 @@ export const AudioControls = () => {
           IconRepeatSingleDark,
           IconRepeatOffDark
         ]}
-        onPress={() => {}}
+        onPress={onPressRepeat}
         style={styles.button}
         wrapperStyle={styles.shuffleRepeatIcons}
       />
@@ -124,7 +158,7 @@ export const AudioControls = () => {
         isDarkMode={isDarkMode}
         iconLightJSON={[IconShuffleOnLight, IconShuffleOffLight]}
         iconDarkJSON={[IconShuffleOnDark, IconShuffleOffDark]}
-        onPress={() => {}}
+        onPress={onPressShuffle}
         style={styles.button}
         wrapperStyle={styles.shuffleRepeatIcons}
       />

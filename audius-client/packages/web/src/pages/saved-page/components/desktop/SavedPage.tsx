@@ -14,6 +14,7 @@ import {
   SavedPageTrack,
   SavedPageCollection
 } from 'common/store/pages/saved-page/types'
+import { QueueItem } from 'common/store/queue/types'
 import Card from 'components/card/desktop/Card'
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
@@ -23,7 +24,6 @@ import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import useTabs from 'hooks/useTabs/useTabs'
-import { QueueItem } from 'store/queue/types'
 import { albumPage } from 'utils/route'
 
 import styles from './SavedPage.module.css'

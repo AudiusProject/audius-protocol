@@ -1,5 +1,5 @@
 import { ID, UID } from 'common/models/Identifiers'
-import { RepeatMode } from 'store/queue/types'
+import { RepeatMode } from 'common/store/queue/types'
 
 import { NativeMobileMessage } from './helpers'
 import { MessageType } from './types'

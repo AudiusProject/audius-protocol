@@ -19,14 +19,6 @@ import { getCollection } from 'common/store/cache/collections/selectors'
 import { getId } from 'common/store/cache/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
-import { makeUid, Uid } from 'common/utils/uid'
-import { make } from 'store/analytics/actions'
-import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
-import {
-  getTrackId as getPlayerTrackId,
-  getUid as getPlayerUid
-} from 'store/player/selectors'
-import * as playerActions from 'store/player/slice'
 import {
   getId as getQueueTrackId,
   getIndex,
@@ -38,7 +30,7 @@ import {
   getSource,
   getUid,
   getUndershot
-} from 'store/queue/selectors'
+} from 'common/store/queue/selectors'
 import {
   add,
   clear,
@@ -49,8 +41,16 @@ import {
   persist,
   previous,
   remove
-} from 'store/queue/slice'
-import { RepeatMode, Source } from 'store/queue/types'
+} from 'common/store/queue/slice'
+import { RepeatMode, Source } from 'common/store/queue/types'
+import { makeUid, Uid } from 'common/utils/uid'
+import { make } from 'store/analytics/actions'
+import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
+import {
+  getTrackId as getPlayerTrackId,
+  getUid as getPlayerUid
+} from 'store/player/selectors'
+import * as playerActions from 'store/player/slice'
 
 import { getRecommendedTracks } from '../recommendation/sagas'
 

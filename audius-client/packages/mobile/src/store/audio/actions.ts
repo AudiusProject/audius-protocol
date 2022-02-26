@@ -11,6 +11,8 @@ export const REPEAT = 'AUDIO/REPEAT'
 export const SHUFFLE = 'AUDIO/SHUFFLE'
 export const RESET = 'AUDIO/RESET'
 
+// TODO(aud-1606): Clean up actions after message passing is removed.
+
 type PlayAction = {
   type: typeof PLAY
 }

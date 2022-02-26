@@ -18,6 +18,7 @@ import {
   SavedPageTrack,
   SavedPageCollection
 } from 'common/store/pages/saved-page/types'
+import { QueueItem } from 'common/store/queue/types'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -29,7 +30,6 @@ import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useArePlaylistUpdatesEnabled } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
 import { make, useRecord } from 'store/analytics/actions'
-import { QueueItem } from 'store/queue/types'
 import { albumPage, TRENDING_PAGE, playlistPage } from 'utils/route'
 
 import NewPlaylistButton from './NewPlaylistButton'

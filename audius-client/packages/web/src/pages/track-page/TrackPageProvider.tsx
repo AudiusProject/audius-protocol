@@ -30,6 +30,7 @@ import {
   getStatus,
   getSourceSelector
 } from 'common/store/pages/track/selectors'
+import { makeGetCurrent } from 'common/store/queue/selectors'
 import * as socialTracksActions from 'common/store/social/tracks/actions'
 import * as socialUsersActions from 'common/store/social/users/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/slice'
@@ -56,7 +57,6 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
