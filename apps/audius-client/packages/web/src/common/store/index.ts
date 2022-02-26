@@ -34,6 +34,7 @@ import TrackPageState from 'common/store/pages/track/types'
 import trendingUnderground from 'common/store/pages/trending-underground/slice'
 import trending from 'common/store/pages/trending/reducer'
 import { TrendingPageState } from 'common/store/pages/trending/types'
+import queue from 'common/store/queue/slice'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import solanaReducer from 'common/store/solana/slice'
 import stemsUpload from 'common/store/stems-upload/slice'
@@ -81,6 +82,9 @@ export const reducers = {
   collections: asCache(collectionsReducer, Kind.COLLECTIONS),
   tracks: asCache(tracksReducer, Kind.TRACKS),
   users: asCache(usersReducer, Kind.USERS),
+
+  // Playback
+  queue,
 
   // Wallet
   wallet,
@@ -141,7 +145,8 @@ export const sagas = {
   remoteConfig: remoteConfigSagas,
   cast: castSagas
 
-  // TODO: pull in the following from audius-client
+  // TODO:
+  // pull in the following from web
   // once AudiusBackend and dependencies are migrated
   // common/store/pages/explore/exploreCollections/sagas.ts
   // common/store/pages/explore/sagas.ts
@@ -172,6 +177,10 @@ export const sagas = {
   // store/application/ui/theme/sagas.ts
   // pages/search-page/store/sagas.ts
   // pages/search-page/store/lineups/tracks/sagas.ts
+  //
+  // pull in the following from web
+  // once the player and dependencies are migrated
+  // store/queue/sagas.ts
 }
 
 export type CommonState = {
@@ -181,6 +190,9 @@ export type CommonState = {
   collections: Cache<Collection>
   tracks: TracksCacheState
   users: UsersCacheState
+
+  // Playback
+  queue: ReturnType<typeof queue>
 
   // Wallet
   wallet: ReturnType<typeof wallet>

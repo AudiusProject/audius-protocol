@@ -29,6 +29,7 @@ import {
   TracksSortMode,
   getTabForRoute
 } from 'common/store/pages/profile/types'
+import { makeGetCurrent } from 'common/store/queue/selectors'
 import * as socialActions from 'common/store/social/users/actions'
 import * as createPlaylistModalActions from 'common/store/ui/createPlaylistModal/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/slice'
@@ -48,7 +49,6 @@ import { newUserMetadata } from 'schemas'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { getIsDone } from 'store/confirmer/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'

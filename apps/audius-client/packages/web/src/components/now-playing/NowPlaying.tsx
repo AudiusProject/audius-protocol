@@ -18,6 +18,16 @@ import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import { getMethod as getCastMethod } from 'common/store/cast/selectors'
+import { makeGetCurrent } from 'common/store/queue/selectors'
+import {
+  next,
+  pause,
+  play,
+  previous,
+  repeat,
+  shuffle
+} from 'common/store/queue/slice'
+import { RepeatMode } from 'common/store/queue/types'
 import {
   saveTrack,
   unsaveTrack,
@@ -52,9 +62,6 @@ import {
 } from 'store/player/selectors'
 import { seek, reset } from 'store/player/slice'
 import { AudioState } from 'store/player/types'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { next, pause, play, previous, repeat, shuffle } from 'store/queue/slice'
-import { RepeatMode } from 'store/queue/types'
 import { AppState } from 'store/types'
 import { pushUniqueRoute as pushRoute, profilePage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
