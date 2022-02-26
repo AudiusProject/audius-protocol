@@ -11,7 +11,11 @@ import {
 } from 'common/models/AudioRewards'
 import { StringAudio } from 'common/models/Wallet'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
-import { getAccountUser, getUserId } from 'common/store/account/selectors'
+import {
+  getAccountUser,
+  getUserHandle,
+  getUserId
+} from 'common/store/account/selectors'
 import {
   getClaimStatus,
   getClaimToRetry,
@@ -43,6 +47,7 @@ import { getBalance, increaseBalance } from 'common/store/wallet/slice'
 import { stringAudioToStringWei } from 'common/utils/wallet'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getCognitoExists } from 'services/audius-backend/Cognito'
 // Need the mock type to get the helper function that sets the config
 // eslint-disable-next-line jest/no-mocks-import
 import { MockRemoteConfigInstance } from 'services/remote-config/__mocks__/remote-config-instance'
@@ -476,6 +481,8 @@ describe('Rewards Page Sagas', () => {
         .provide([
           ...retryClaimProvisions,
           ...claimAsyncProvisions,
+          [select(getUserHandle), testUser.handle],
+          [call.fn(getCognitoExists), { exists: true }],
           [call.fn(AudiusBackend.submitAndEvaluateAttestations), {}]
         ])
         .put(claimChallengeReward({ claim: testClaim, retryOnFailure: false }))
@@ -489,6 +496,8 @@ describe('Rewards Page Sagas', () => {
         .provide([
           ...retryClaimProvisions,
           ...claimAsyncProvisions,
+          [select(getUserHandle), testUser.handle],
+          [call.fn(getCognitoExists), { exists: true }],
           [
             call.fn(AudiusBackend.submitAndEvaluateAttestations),
             { error: FailureReason.BLOCKED }

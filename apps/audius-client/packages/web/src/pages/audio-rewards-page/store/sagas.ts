@@ -19,7 +19,11 @@ import {
 import { StringAudio } from 'common/models/Wallet'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
-import { getAccountUser, getUserId } from 'common/store/account/selectors'
+import {
+  getAccountUser,
+  getUserHandle,
+  getUserId
+} from 'common/store/account/selectors'
 import {
   getClaimStatus,
   getClaimToRetry,
@@ -60,6 +64,7 @@ import { show as showMusicConfetti } from 'components/music-confetti/store/slice
 import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getCognitoExists } from 'services/audius-backend/Cognito'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { AUDIO_PAGE } from 'utils/route'
@@ -77,6 +82,8 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const HCAPTCHA_MODAL_NAME = 'HCaptcha'
 const COGNITO_MODAL_NAME = 'Cognito'
 const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewardsExplainer'
+const COGNITO_CHECK_MAX_RETRIES = 5
+const COGNITO_CHECK_DELAY_MS = 3000
 
 function getOracleConfig() {
   let oracleEthAddress = remoteConfigInstance.getRemoteVar(
@@ -331,10 +338,39 @@ function* watchSetCognitoFlowStatus() {
     const { status } = action.payload
     // Only attempt retry on closed, so that we don't error on open
     if (status === CognitoFlowStatus.CLOSED) {
-      yield call(retryClaimChallengeReward, {
-        errorResolved: true,
-        retryOnFailure: false
-      })
+      // poll identity for a recent cognito entry for this user
+      // before proceeding with another attempt at claiming
+      // otherwise may get failure reason that says cognito
+      // even though user completed the cognito flow
+      let numRetries = 0
+      const handle: string = yield select(getUserHandle)
+      do {
+        try {
+          const { exists } = yield call(getCognitoExists, handle)
+          if (exists) {
+            yield call(retryClaimChallengeReward, {
+              errorResolved: true,
+              retryOnFailure: false
+            })
+            break
+          } else {
+            yield delay(COGNITO_CHECK_DELAY_MS)
+          }
+        } catch (e) {
+          console.error(
+            `Error checking whether cognito record exists for handle ${handle}: ${
+              e && (e as any).message
+            }`
+          )
+        }
+      } while (numRetries++ < COGNITO_CHECK_MAX_RETRIES)
+
+      if (numRetries === COGNITO_CHECK_MAX_RETRIES) {
+        yield call(retryClaimChallengeReward, {
+          errorResolved: false,
+          retryOnFailure: false
+        })
+      }
     }
   })
 }
