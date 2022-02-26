@@ -45,6 +45,7 @@ export const ArtistRecommendationsDropdown = (
   if (!isEnabled || !isLoaded) {
     return null
   }
+
   return (
     <animated.div className={styles.dropdown} style={spring}>
       <ArtistRecommendations

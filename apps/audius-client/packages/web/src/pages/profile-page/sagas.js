@@ -30,9 +30,9 @@ import {
   getProfileUser
 } from 'common/store/pages/profile/selectors'
 import { FollowType } from 'common/store/pages/profile/types'
+import * as artistRecommendationsActions from 'common/store/ui/artist-recommendations/slice'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { makeUid, makeKindId } from 'common/utils/uid'
-import * as artistRecommendationsActions from 'components/artist-recommendations/store/slice'
 import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import { setAudiusAccountUser } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'

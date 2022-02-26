@@ -10,7 +10,6 @@ import { FavoritesPageState } from 'common/store/user-list/favorites/types'
 import { FollowersPageState } from 'common/store/user-list/followers/types'
 import { FollowingPageState } from 'common/store/user-list/following/types'
 import { RepostsPageState } from 'common/store/user-list/reposts/types'
-import ArtistRecommendationsReducer from 'components/artist-recommendations/store/slice'
 import { ChangePasswordState } from 'components/change-password/store/slice'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
@@ -73,7 +72,6 @@ export type AppState = CommonState & {
   application: {
     ui: {
       appCTAModal: ReturnType<typeof AppCTAModalReducer>
-      artistRecommendations: ReturnType<typeof ArtistRecommendationsReducer>
       averageColor: ReturnType<typeof averageColor>
       changePassword: ChangePasswordState
       cookieBanner: CookieBannerState

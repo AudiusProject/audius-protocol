@@ -50,6 +50,10 @@ export const typography = {
     fontSize: 14,
     fontFamily: fontByWeight.medium
   },
+  body1: {
+    fontSize: 14,
+    fontFamily: fontByWeight.regular
+  },
   body2: {
     fontSize: 12,
     fontFamily: fontByWeight.medium,
