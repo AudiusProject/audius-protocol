@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { createTrack, initAdmin, updateUser, updateTrack, deleteTrack } from "../lib/lib";
+import { createTrack, initAdmin, updateUser, updateAdmin, updateTrack, deleteTrack } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -125,6 +125,7 @@ describe("audius-data", () => {
     const chainAuthority = adminAccount.authority.toString();
     const expectedAuthority = adminKeypair.publicKey.toString();
     expect(chainAuthority, "authority").to.equal(expectedAuthority);
+    expect(adminAccount.isWriteEnabled, "is_write_enabled").to.equal(true);
   });
 
   it("Initializing user!", async () => {
@@ -320,6 +321,47 @@ describe("audius-data", () => {
     await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
   });
 
+  it("Creating user with admin writes enabled should fail", async () => {
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+
+    const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+
+    // enable admin writes
+    await updateAdmin({
+      program,
+      isWriteEnabled: true,
+      adminStgAccount: adminStgKeypair.publicKey,
+      adminAuthorityKeypair: adminKeypair,
+    })
+
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toString();
+
+   await expect (testCreateUser({
+      provider,
+      program,
+      message,
+      ethAccount,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    })).to.be.rejectedWith(Error)
+
+  });
+
   it("Creating user!", async () => {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
@@ -329,6 +371,14 @@ describe("audius-data", () => {
         adminStgKeypair.publicKey,
         Buffer.from(handleBytesArray)
       );
+
+    // disable admin writes
+    await updateAdmin({
+      program,
+      isWriteEnabled: false,
+      adminStgAccount: adminStgKeypair.publicKey,
+      adminAuthorityKeypair: adminKeypair,
+    })
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();

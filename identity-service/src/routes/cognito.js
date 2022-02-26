@@ -1,12 +1,13 @@
 const {
   handleResponse,
   successResponse,
+  errorResponseForbidden,
   errorResponseServerError
 } = require('../apiHelpers')
 const { logger } = require('../logging')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
-const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
+const { cognitoFlowMiddleware, MAX_TIME_DRIFT_MILLISECONDS } = require('../cognitoFlowMiddleware')
 const { sign, createCognitoHeaders, createMaskedCognitoIdentity } = require('../utils/cognitoHelpers')
 const axios = require('axios')
 const axiosHttpAdapter = require('axios/lib/adapters/http')
@@ -104,18 +105,23 @@ module.exports = function (app) {
         }
       }
 
-      // save cognito flow for user
-      await models.CognitoFlows.create(
-        {
-          id,
-          sessionId,
-          handle,
-          status,
-          // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
-          score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
-        },
-        { transaction }
-      )
+      // only save cognito flow for user if status is 'success' or 'failed'
+      // otherwise when e.g. a flow session retry is requested for a user, then
+      // the 'canceled' webhook will be consumed and saved unintentionally
+      if (['success', 'failed'].includes(status)) {
+        await models.CognitoFlows.create(
+          {
+            id,
+            sessionId,
+            handle,
+            status,
+            // score of 1 if 'success' and no other account has previously used this same cognito identiy, otherwise 0
+            // so it is possible to get a status of success yet a score of 0 because this identity has already been associated to another account
+            score: Number(!cognitoIdentityAlreadyExists && (status === 'success'))
+          },
+          { transaction }
+        )
+      }
 
       await transaction.commit()
 
@@ -123,9 +129,87 @@ module.exports = function (app) {
       return successResponse({})
     } catch (err) {
       await transaction.rollback()
-      console.error(err)
+      logger.error(`Failed to consume cognito flow webhook for user handle ${handle} for session id ${sessionId}`)
+      logger.error(`The full webhook error payload for user handle ${handle} is: ${JSON.stringify(err)}`)
       return errorResponseServerError(err.message)
     }
+  }))
+
+  /**
+   * This endpoint is not programatically called.
+   * It exists in case we want to request a flow session retry for a handle
+   * in case our webhook receiver runs into an issue
+   */
+  app.post('/cognito_retry/:handle', handleResponse(async (req) => {
+    const handle = req.params.handle
+
+    if (req.headers['x-cognito-retry'] !== config.get('cognitoRetrySecret')) {
+      return errorResponseForbidden(`Not permissioned to retry flow session for user handle ${handle}`)
+    }
+
+    try {
+      const record = await models.CognitoFlows.findOne({ where: { handle } })
+      // only request flow retry if no current passing score for handle
+      // because there should be no need to redo the flow if score is already passing
+      // also, it would otherwise be possible that the new flow will pass but the unique identity check will have a collision
+      if (record && record.score === 1) {
+        logger.info(`cognito_retry | Not requesting flow session retry for handle ${handle} because user already passed cognito`)
+        return successResponse({})
+      }
+
+      const baseUrl = config.get('cognitoBaseUrl')
+      const templateId = config.get('cognitoTemplateId')
+      const path = '/flow_sessions/retry'
+      const method = 'POST'
+      const body = JSON.stringify({
+        customer_reference: handle,
+        template_id: templateId,
+        strategy: 'reset'
+      })
+      const headers = createCognitoHeaders({ path, method, body })
+      const url = `${baseUrl}${path}`
+
+      await axios({
+        adapter: axiosHttpAdapter,
+        url,
+        method,
+        headers,
+        data: body
+      })
+
+      // remove record if failing flow record exists
+      // otherwise the existing record will be the one taken into account before even hitting the flow
+      if (record) {
+        await models.CognitoFlows.destroy({ where: { handle } })
+      }
+
+      logger.info(`cognito_retry | Successfully requested a flow session retry for user handle ${handle}`)
+      return successResponse({})
+    } catch (err) {
+      logger.error(`cognito_retry | Failed request to retry flow session for user handle ${handle} with error message: ${err.message}`)
+      logger.error(`cognito_retry | The full retry error payload for user handle ${handle} is: ${JSON.stringify(err)}`)
+      return errorResponseServerError(err.message)
+    }
+  }))
+
+  /**
+   * Returns whether a recent cognito entry exists for a given handle.
+   * This is so that the client can poll this endpoint to check whether
+   * or not to proceed with a reward claim retry.
+   */
+  app.get('/cognito_recent_exists/:handle', handleResponse(async (req) => {
+    const handle = req.params.handle
+    const records = await models.CognitoFlows.findAll({
+      where: { handle },
+      order: [['updatedAt', 'DESC']],
+      limit: 1
+    })
+    if (records.length) {
+      const timeDifferenceMilliseconds =
+        Date.now() - new Date(records[0].updatedAt).getTime()
+      return successResponse({ exists: timeDifferenceMilliseconds <= MAX_TIME_DRIFT_MILLISECONDS })
+    }
+    return successResponse({ exists: false })
   }))
 
   /**

@@ -31,6 +31,7 @@ pub mod audius_data {
         audius_admin.authority = authority;
         audius_admin.track_id = track_id_offset;
         audius_admin.playlist_id = playlist_id_offset;
+        audius_admin.is_write_enabled = true;
         Ok(())
     }
 
@@ -136,6 +137,11 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
+        // Confirm admin is disabled
+        if ctx.accounts.audius_admin.is_write_enabled {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         // Eth_address offset (12) + address (20) + signature (65) = 97
         // TODO: Validate message contents
         let eth_address_offset = 12;
@@ -170,8 +176,16 @@ pub mod audius_data {
         Ok(())
     }
 
+    /// Permissioned function to log an update to Admin metadata
+    pub fn update_admin(ctx: Context<UpdateAdmin>,  is_write_enabled: bool) -> Result<()> {
+        if ctx.accounts.admin.authority != ctx.accounts.admin_authority.key() { // could be has_one
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        ctx.accounts.admin.is_write_enabled = is_write_enabled;
+        Ok(())
+    }
+
     // User TODOS:
-    // - Disable audius admin signing
     // - Enable happy path flow with both eth address and sol key
 
     /*
@@ -303,8 +317,8 @@ pub mod audius_data {
     }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8 + 8;
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8 + 8 + 1;
 
 /// Size of user account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
@@ -398,6 +412,14 @@ pub struct UpdateUser<'info> {
     pub user: Account<'info, User>,
     #[account(mut)]
     pub user_authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateAdmin<'info> {
+    #[account(mut)]
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(mut)]
+    pub admin_authority: Signer<'info>,
 }
 
 /// Instruction container for track creation
@@ -517,6 +539,7 @@ pub struct AudiusAdmin {
     pub authority: Pubkey,
     pub track_id: u64,
     pub playlist_id: u64,
+    pub is_write_enabled: bool,
 }
 
 /// User storage account
