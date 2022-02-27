@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
+import time
 from datetime import datetime
 from operator import itemgetter, or_
 
@@ -647,9 +648,10 @@ def index_blocks(self, db, blocks_list):
                     create_and_raise_indexing_error(err, redis)
 
             try:
+                commit_start_time = time.time()
                 session.commit()
                 logger.info(
-                    f"index.py | session committed to db for block=${block_number}"
+                    f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
             except Exception as e:
                 # Use 'commit' as the tx hash here.
