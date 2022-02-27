@@ -119,7 +119,7 @@ def user_state_update(
             challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
             new_user_ids.append(user_id)
             new_user_objects.append(value_obj["user"])
-    invalidate_old_users(session, user_id)
+    invalidate_old_users(session, new_user_ids)
     session.bulk_save_objects(new_user_objects)
 
     if num_total_changes:
