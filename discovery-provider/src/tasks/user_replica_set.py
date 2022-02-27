@@ -175,8 +175,8 @@ def user_replica_set_state_update(
 
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
-    new_user_objects = []
     new_user_ids = []
+    new_user_objects = []
     for user_id, value_obj in user_replica_set_events_lookup.items():
         logger.info(
             f"index.py | user_replica_set.py | Replica Set Processing Adding {value_obj['user']}"

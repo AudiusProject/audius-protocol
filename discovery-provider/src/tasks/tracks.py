@@ -135,13 +135,13 @@ def track_state_update(
         f"index.py | tracks.py | [track indexing] There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
     )
 
-    new_track_objects = []
     new_track_ids = []
+    new_track_objects = []
     for track_id, value_obj in track_events.items():
         if value_obj["events"]:
             logger.info(f"index.py | tracks.py | Adding {value_obj['track']}")
-            new_track_objects.append(value_obj["track"])
             new_track_ids.append(track_id)
+            new_track_objects.append(value_obj["track"])
     invalidate_old_tracks(session, new_track_ids)
     session.bulk_save_objects(new_track_objects)
 

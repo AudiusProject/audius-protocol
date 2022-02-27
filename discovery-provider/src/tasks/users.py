@@ -111,8 +111,8 @@ def user_state_update(
 
     # For each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
-    new_user_objects = []
     new_user_ids = []
+    new_user_objects = []
     for user_id, value_obj in user_events_lookup.items():
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
