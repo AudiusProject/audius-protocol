@@ -25,7 +25,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     }
-  }, {})
+  }, {
+    indexes: [{
+      fields: [`((twitterProfile->>'screen_name'))`],
+      unique: false,
+      name: 'twitter_users_screen_name_idx'
+    }]
+  })
 
   return TwitterUser
 }
