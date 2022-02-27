@@ -123,6 +123,74 @@ describe('test ContentBlacklist', function () {
       })
   })
 
+  it('should return the proper userIds, trackIds, and segments when sent by trusted notifier', async () => {
+    // throwaway wallet pair to set as notifier + sign for the request
+    const trustedNotifierConfig = {
+      wallet: '0xb01831D0bD5A6eB083C0C4412EC91062B79Bed89',
+      privateKey: 'fb0486224fc0221d1c23c00379cb10ce5f99aff2b0e5c1afd828c08b57f21429'
+    }
+    mockServiceRegistry.trustedNotifierManager.trustedNotifierData.wallet = trustedNotifierConfig.wallet
+
+    ids = [43021]
+    const addUserData = generateTimestampAndSignature({
+      type: BlacklistManager.getTypes().user,
+      values: ids
+    }, trustedNotifierConfig.privateKey)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({
+        type: BlacklistManager.getTypes().user,
+        'values[]': ids,
+        signature: addUserData.signature,
+        timestamp: addUserData.timestamp
+      })
+      .expect(200)
+
+    const addTrackData = generateTimestampAndSignature({
+      type: BlacklistManager.getTypes().track,
+      values: ids
+    }, trustedNotifierConfig.privateKey)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({
+        type: BlacklistManager.getTypes().track,
+        'values[]': ids,
+        signature: addTrackData.signature,
+        timestamp: addTrackData.timestamp
+      })
+      .expect(200)
+
+    const cids = [generateRandomCID()]
+    const addCIDData = generateTimestampAndSignature({
+      type: BlacklistManager.getTypes().cid,
+      values: cids
+    }, trustedNotifierConfig.privateKey)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({
+        type: BlacklistManager.getTypes().cid,
+        'values[]': cids,
+        signature: addCIDData.signature,
+        timestamp: addCIDData.timestamp
+      })
+      .expect(200)
+
+    await request(app)
+      .get('/blacklist')
+      .expect(200)
+      .expect(resp => {
+        assert.deepStrictEqual(resp.body.data.trackIds.length, 1)
+        assert.deepStrictEqual(resp.body.data.trackIds[0], '43021')
+        assert.deepStrictEqual(resp.body.data.userIds.length, 1)
+        assert.deepStrictEqual(resp.body.data.userIds[0], '43021')
+        assert.deepStrictEqual(resp.body.data.individualSegments.length, 1)
+        assert.deepStrictEqual(resp.body.data.individualSegments[0], cids[0])
+      })
+  })
+
   it('should add user type and id to db and redis', async () => {
     ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user

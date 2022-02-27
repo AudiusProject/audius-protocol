@@ -250,7 +250,7 @@ const run = async () => {
         break
 
       case 'register-trusted-notifier':
-        // hardcoded in developer .env
+        // hardcoded in trusted-notifier .env.dev
         const wallet = '0xe82a5a2948d2b5e71232f640777346869817fbae'
         const endpoint = 'http://trusted_notifier_service:8000'
         await audiusLibs.ethContracts.TrustedNotifierManagerClient.registerNotifier(
@@ -259,7 +259,6 @@ const run = async () => {
         break
 
       case 'query-trusted-notifier':
-        // hardcoded in developer .env
         let id = args[3]
         if (!id) throw new Error('Please pass in a valid ID')
         let resp = await audiusLibs.ethContracts.TrustedNotifierManagerClient.getNotifierForID(id)
