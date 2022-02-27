@@ -7,7 +7,7 @@ from src.app import get_contract_addresses, get_eth_abi_values
 from src.database_task import DatabaseTask
 from src.models import URSMContentNode, User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
-from src.tasks.users import invalidate_old_user, lookup_user_record
+from src.tasks.users import invalidate_old_users, lookup_user_record
 from src.utils import helpers
 from src.utils.eth_contracts_helpers import (
     content_node_service_type,
@@ -175,12 +175,16 @@ def user_replica_set_state_update(
 
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
+    new_user_objects = []
+    new_user_ids = []
     for user_id, value_obj in user_replica_set_events_lookup.items():
         logger.info(
             f"index.py | user_replica_set.py | Replica Set Processing Adding {value_obj['user']}"
         )
-        invalidate_old_user(session, user_id)
-        session.add(value_obj["user"])
+        new_user_ids.append(user_id)
+        new_user_objects.append(value_obj["user"])
+    invalidate_old_users(session, new_user_ids)
+    session.bulk_save_objects(new_user_objects)
 
     for content_node_id, value_obj in cnode_events_lookup.items():
         logger.info(

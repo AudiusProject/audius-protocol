@@ -111,12 +111,16 @@ def user_state_update(
 
     # For each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
+    new_user_objects = []
+    new_user_ids = []
     for user_id, value_obj in user_events_lookup.items():
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
-            invalidate_old_user(session, user_id)
             challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
-            session.add(value_obj["user"])
+            new_user_ids.append(user_id)
+            new_user_objects.append(value_obj["user"])
+    invalidate_old_users(session, user_id)
+    session.bulk_save_objects(new_user_objects)
 
     if num_total_changes:
         logger.info(
@@ -261,11 +265,11 @@ def lookup_user_record(
     return user_record
 
 
-def invalidate_old_user(session, user_id):
-    # Update existing record in db to is_current = False
-    session.query(User).filter(User.user_id == user_id, User.is_current == True).update(
-        {"is_current": False}
-    )
+def invalidate_old_users(session, user_ids):
+    # Update existing records in db to is_current = False
+    session.query(User).filter(
+        User.user_id.in_(user_ids), User.is_current == True
+    ).update({"is_current": False})
 
 
 def parse_user_event(

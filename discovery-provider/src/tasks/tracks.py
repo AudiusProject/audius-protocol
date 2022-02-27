@@ -135,11 +135,15 @@ def track_state_update(
         f"index.py | tracks.py | [track indexing] There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
     )
 
+    new_track_objects = []
+    new_track_ids = []
     for track_id, value_obj in track_events.items():
         if value_obj["events"]:
             logger.info(f"index.py | tracks.py | Adding {value_obj['track']}")
-            invalidate_old_track(session, track_id)
-            session.add(value_obj["track"])
+            new_track_objects.append(value_obj["track"])
+            new_track_ids.append(track_id)
+    invalidate_old_tracks(session, new_track_ids)
+    session.bulk_save_objects(new_track_objects)
 
     if num_total_changes:
         logger.info(
@@ -184,20 +188,11 @@ def lookup_track_record(
     return track_record
 
 
-def invalidate_old_track(session, track_id):
-    track_exists = session.query(Track).filter_by(track_id=track_id).count() > 0
-
-    if not track_exists:
-        return
-
-    num_invalidated_tracks = (
-        session.query(Track)
-        .filter(Track.track_id == track_id, Track.is_current == True)
-        .update({"is_current": False})
-    )
-    assert (
-        num_invalidated_tracks > 0
-    ), "Update operation requires a current track to be invalidated"
+def invalidate_old_tracks(session, track_ids):
+    # Update existing records in db to is_current = False
+    session.query(Track).filter(
+        Track.track_id.in_(track_ids), Track.is_current == True
+    ).update({"is_current": False})
 
 
 def update_stems_table(session, track_record, track_metadata):
