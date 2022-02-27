@@ -257,8 +257,6 @@ def fetch_cid_metadata(
     db,
     user_factory_txs,
     track_factory_txs,
-    block_number,
-    block_hash,
 ):
     start_time = datetime.now()
 
@@ -632,8 +630,6 @@ def index_blocks(self, db, blocks_list):
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
-                        block_number,
-                        block_hash,
                     )
 
                     add_indexed_block_to_db(session, block)
