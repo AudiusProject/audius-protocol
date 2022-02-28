@@ -96,7 +96,7 @@ BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 logger = logging.getLogger(__name__)
 
 
-# """ HELPER FUNCTIONS """ #
+# HELPER FUNCTIONS
 
 default_padded_start_hash = (
     "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -1021,7 +1021,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
         session.delete(user_events_to_revert)
 
 
-# """ CELERY TASKS """ #
+# CELERY TASKS
 @celery.task(name="update_discovery_provider", bind=True)
 def update_task(self):
     # Cache custom task class properties
