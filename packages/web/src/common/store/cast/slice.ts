@@ -8,19 +8,8 @@ type CastState = {
   method: CastMethod
 }
 
-const getInitialCastMethod = (): CastMethod => {
-  try {
-    const castMethod = window.localStorage.getItem(CAST_METHOD)
-    if (castMethod === 'chromecast') return 'chromecast'
-    return 'airplay'
-  } catch (e) {
-    console.error(e)
-    return 'airplay'
-  }
-}
-
 const initialState: CastState = {
-  method: getInitialCastMethod()
+  method: 'airplay'
 }
 
 const slice = createSlice({
@@ -29,7 +18,9 @@ const slice = createSlice({
   reducers: {
     updateMethod: (
       state,
-      { payload: { method } }: PayloadAction<{ method: CastMethod }>
+      {
+        payload: { method }
+      }: PayloadAction<{ method: CastMethod; persist?: boolean }>
     ) => {
       state.method = method
     }
