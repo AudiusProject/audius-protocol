@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
 from sqlalchemy.sql import functions, null
-from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -149,11 +148,9 @@ def track_state_update(
 
 
 def get_track_events_tx(update_task, event_type, tx_receipt):
-    track_abi = update_task.abi_values["TrackFactory"]["abi"]
-    track_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["track_factory"], abi=track_abi
+    return getattr(update_task.track_contract.events, event_type)().processReceipt(
+        tx_receipt
     )
-    return getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_track_record(
