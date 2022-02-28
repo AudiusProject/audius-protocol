@@ -9,9 +9,9 @@ import { Dispatch } from 'redux'
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { InstagramProfile } from 'common/store/account/reducer'
+import * as settingPageActions from 'common/store/pages/settings/actions'
+import { PushNotificationSetting } from 'common/store/pages/settings/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import * as settingPageActions from 'pages/settings-page/store/actions'
-import { PushNotificationSetting } from 'pages/settings-page/store/types'
 import FollowPage, {
   BottomSection as FollowPageBottom
 } from 'pages/sign-on/components/mobile/FollowPage'

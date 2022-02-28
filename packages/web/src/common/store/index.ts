@@ -28,6 +28,8 @@ import { ProfilePageState } from 'common/store/pages/profile/types'
 import savedPageReducer from 'common/store/pages/saved-page/reducer'
 import searchResults from 'common/store/pages/search-results/reducer'
 import { SearchPageState } from 'common/store/pages/search-results/types'
+import settings from 'common/store/pages/settings/reducer'
+import { SettingsPageState } from 'common/store/pages/settings/types'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
@@ -131,7 +133,8 @@ export const reducers = {
     tokenDashboard: tokenDashboardSlice.reducer,
     track,
     trending,
-    trendingUnderground
+    trendingUnderground,
+    settings
   }),
 
   // Solana
@@ -237,6 +240,7 @@ export type CommonState = {
     profile: ProfilePageState
     savedPage: ReturnType<typeof savedPageReducer>
     searchResults: SearchPageState
+    settings: SettingsPageState
     trending: TrendingPageState
     trendingUnderground: ReturnType<typeof trendingUnderground>
   }

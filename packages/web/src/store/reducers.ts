@@ -24,7 +24,6 @@ import deleted from 'pages/deleted-page/store/slice'
 import history from 'pages/history-page/store/reducer'
 import notificationUsers from 'pages/notification-users-page/store/reducers'
 import remixes from 'pages/remixes-page/store/slice'
-import settings from 'pages/settings-page/store/reducer'
 import signOn from 'pages/sign-on/store/reducer'
 import smartCollection from 'pages/smart-collection/store/slice'
 import trendingPlaylists from 'pages/trending-playlists/store/slice'
@@ -110,7 +109,6 @@ const createRootReducer = (routeHistory: History) =>
         notificationUsers,
         nowPlaying,
         remixes,
-        settings,
         smartCollection,
         trendingPlaylists,
         unfollowConfirmation

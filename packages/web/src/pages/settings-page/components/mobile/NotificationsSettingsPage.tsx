@@ -2,16 +2,16 @@ import React, { useCallback, useEffect } from 'react'
 
 import cn from 'classnames'
 
+import {
+  EmailFrequency,
+  PushNotificationSetting
+} from 'common/store/pages/settings/types'
 import TabSlider from 'components/data-entry/TabSlider'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
 import Page from 'components/page/Page'
 import Switch from 'components/switch/Switch'
-import {
-  EmailFrequency,
-  PushNotificationSetting
-} from 'pages/settings-page/store/types'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import { PromptPushNotificationPermissions } from 'services/native-mobile-interface/notifications'
 

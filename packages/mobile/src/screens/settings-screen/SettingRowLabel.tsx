@@ -1,9 +1,16 @@
 import { ComponentType } from 'react'
 
-import { ImageSourcePropType, Text, View, Image } from 'react-native'
+import {
+  ImageSourcePropType,
+  Text,
+  View,
+  Image,
+  TextStyle,
+  ViewStyle
+} from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
-import { makeStyles } from 'app/styles'
+import { makeStyles, StylesProps } from 'app/styles'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: { flexDirection: 'row', alignItems: 'center' },
@@ -18,7 +25,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 type BaseProps = {
   label: string
-}
+} & StylesProps<{ root?: ViewStyle; label: TextStyle }>
 
 type SettingsRowLabelProps =
   | BaseProps
@@ -30,7 +37,7 @@ type SettingsRowLabelProps =
     })
 
 export const SettingsRowLabel = (props: SettingsRowLabelProps) => {
-  const { label } = props
+  const { label, styles: stylesProp, style } = props
   const styles = useStyles()
 
   const renderIcon = () => {
@@ -53,9 +60,9 @@ export const SettingsRowLabel = (props: SettingsRowLabelProps) => {
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, style, stylesProp?.root]}>
       {renderIcon()}
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, stylesProp?.label]}>{label}</Text>
     </View>
   )
 }

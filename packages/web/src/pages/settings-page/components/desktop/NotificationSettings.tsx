@@ -4,13 +4,13 @@ import { Modal } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
-import TabSlider from 'components/data-entry/TabSlider'
-import Switch from 'components/switch/Switch'
 import {
   Notifications,
   BrowserNotificationSetting,
   EmailFrequency
-} from 'pages/settings-page/store/types'
+} from 'common/store/pages/settings/types'
+import TabSlider from 'components/data-entry/TabSlider'
+import Switch from 'components/switch/Switch'
 import { Permission } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
 

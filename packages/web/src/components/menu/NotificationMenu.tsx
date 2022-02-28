@@ -5,8 +5,8 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { getBrowserNotificationSettings } from 'common/store/pages/settings/selectors'
 import { NotificationType } from 'components/notification/store/types'
-import { getBrowserNotificationSettings } from 'pages/settings-page/store/selectors'
 import { AppState } from 'store/types'
 
 export type OwnProps = {

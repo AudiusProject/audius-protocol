@@ -11,6 +11,7 @@ import { Theme } from 'app/utils/theme'
 
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
+import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
 
 const messages = {
@@ -47,13 +48,14 @@ export const AppearanceSettingsRow = () => {
       <SettingsRowDescription>
         {messages.appearanceDescription}
       </SettingsRowDescription>
-      <SegmentedControl
-        style={{ marginTop: 8 }}
-        fullWidth
-        options={appearanceOptions}
-        defaultSelected={theme}
-        onSelectOption={setTheme}
-      />
+      <SettingsRowContent>
+        <SegmentedControl
+          fullWidth
+          options={appearanceOptions}
+          defaultSelected={theme}
+          onSelectOption={setTheme}
+        />
+      </SettingsRowContent>
     </SettingsRow>
   )
 }

@@ -84,7 +84,7 @@ export const ProfileScreen = () => {
           <ProfileMetrics profile={profile} />
           <ProfileSocials profile={profile} />
           <ExpandableBio profile={profile} />
-          {hasUserFollowed ? null : (
+          {!hasUserFollowed ? null : (
             <ArtistRecommendations
               profile={profile}
               onClose={handleCloseArtistRecs}

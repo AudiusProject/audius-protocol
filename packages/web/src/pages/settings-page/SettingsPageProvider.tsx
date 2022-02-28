@@ -17,6 +17,17 @@ import {
 } from 'common/store/account/selectors'
 import { getMethod as getCastMethod } from 'common/store/cast/selectors'
 import { CastMethod, updateMethod } from 'common/store/cast/slice'
+import * as settingPageActions from 'common/store/pages/settings/actions'
+import {
+  getBrowserNotificationSettings,
+  getPushNotificationSettings,
+  getEmailFrequency
+} from 'common/store/pages/settings/selectors'
+import {
+  BrowserNotificationSetting,
+  EmailFrequency,
+  PushNotificationSetting
+} from 'common/store/pages/settings/types'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { setTheme } from 'common/store/ui/theme/actions'
 import { getTheme } from 'common/store/ui/theme/selectors'
@@ -38,17 +49,6 @@ import {
   SettingsPageProps as MobileSettingsPageProps,
   SubPage
 } from './components/mobile/SettingsPage'
-import * as settingPageActions from './store/actions'
-import {
-  getBrowserNotificationSettings,
-  getPushNotificationSettings,
-  getEmailFrequency
-} from './store/selectors'
-import {
-  BrowserNotificationSetting,
-  EmailFrequency,
-  PushNotificationSetting
-} from './store/types'
 
 const messages = {
   title: 'Settings',

@@ -17,17 +17,17 @@ import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import * as errorActions from 'common/store/errors/actions'
 import { Level } from 'common/store/errors/level'
+import {
+  setBrowserNotificationPermission,
+  setBrowserNotificationEnabled,
+  setBrowserNotificationSettingsOn
+} from 'common/store/pages/settings/actions'
 import { getFeePayer } from 'common/store/solana/selectors'
 import {
   getModalIsOpen,
   getModalVisibility,
   setVisibility
 } from 'common/store/ui/modals/slice'
-import {
-  setBrowserNotificationPermission,
-  setBrowserNotificationEnabled,
-  setBrowserNotificationSettingsOn
-} from 'pages/settings-page/store/actions'
 import * as uploadActions from 'pages/upload-page/store/actions'
 import AudioManager from 'services/AudioManager'
 import AudiusBackend from 'services/AudiusBackend'

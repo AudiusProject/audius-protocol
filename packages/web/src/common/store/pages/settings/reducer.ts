@@ -12,7 +12,8 @@ import {
   SET_BROWSER_NOTIFICATION_PERMISSION,
   SET_BROWSER_NOTIFICATION_ENABLED
 } from './actions'
-import SettingsPageState, {
+import {
+  SettingsPageState,
   BrowserNotificationSetting,
   emailFrequency,
   EmailFrequency,

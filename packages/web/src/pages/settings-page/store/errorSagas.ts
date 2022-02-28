@@ -1,6 +1,5 @@
+import * as actions from 'common/store/pages/settings/actions'
 import createErrorSagas from 'common/utils/errorSagas'
-
-import * as actions from './actions'
 
 type Errors = actions.TogglePushNotificationSettingFailed
 
