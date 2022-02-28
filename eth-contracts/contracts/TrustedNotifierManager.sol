@@ -27,8 +27,25 @@ contract TrustedNotifierManager is InitializableV2 {
      * @notice Function to initialize the contract
      * @param _governanceAddress - Governance proxy address
      */
-    function initialize (address _governanceAddress) public initializer {
+    function initialize (
+        address _governanceAddress,
+        address _initialNotifierWallet,
+        string memory _initialNotiferEndpoint
+    ) public initializer {
         _updateGovernanceAddress(_governanceAddress);
+
+        uint256 ID = latestID.add(1);
+        latestID = ID;
+
+        IDToTrustedNotifierMap[ID] = TrustedNotifier({
+            wallet: _initialNotifierWallet,
+            endpoint: _initialNotiferEndpoint
+        });
+
+        walletToIDMap[_initialNotifierWallet] = ID;
+
+        endpointToIDMap[keccak256(bytes(_initialNotiferEndpoint))] = ID;
+
         InitializableV2.initialize();
     }
 
