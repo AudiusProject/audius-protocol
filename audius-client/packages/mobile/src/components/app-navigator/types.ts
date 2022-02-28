@@ -28,6 +28,7 @@ export type ProfileStackParamList = BaseStackParamList & {
   AboutScreen: undefined
   AccountSettingsScreen: undefined
   NotificationSettingsScreen: undefined
+  AudioScreen: undefined
 }
 
 export type SearchParamList = BaseStackParamList & {
