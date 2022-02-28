@@ -7,6 +7,7 @@ import { Animated, StyleSheet, View } from 'react-native'
 
 import BottomTabBar, { BottomTabBarProps } from 'app/components/bottom-tab-bar'
 import NowPlayingDrawer from 'app/components/now-playing-drawer/NowPlayingDrawer'
+import { AudioScreen } from 'app/screens/audio-screen'
 import ExploreScreen from 'app/screens/explore-screen'
 import { TrendingUndergroundScreen } from 'app/screens/explore-screen/tabs/ForYouTab'
 import FavoritesScreen from 'app/screens/favorites-screen'
@@ -94,6 +95,7 @@ const ProfileStackScreen = createStackScreen<ProfileStackParamList>(Stack => (
       name='NotificationSettingsScreen'
       component={NotificationSettingsScreen}
     />
+    <Stack.Screen name='AudioScreen' component={AudioScreen} />
   </>
 ))
 
