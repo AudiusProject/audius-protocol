@@ -4,6 +4,7 @@ import {
   createPlaylist,
   deletePlaylist,
   initAdmin,
+  updateAdmin,
   updatePlaylist,
 } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
@@ -162,6 +163,14 @@ describe("playlist", () => {
       // Generate signed SECP instruction
       // Message as the incoming public key
       const message = newUserKeypair.publicKey.toString();
+
+      // disable admin writes
+      await updateAdmin({
+        program,
+        isWriteEnabled: false,
+        adminStgAccount: adminStgKeypair.publicKey,
+        adminAuthorityKeypair: adminKeypair,
+      })
 
       await testCreateUser({
         provider,

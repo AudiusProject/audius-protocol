@@ -1,10 +1,8 @@
-import concurrent.futures
 import logging
 
 from src.models import User
 from src.tasks.celery_app import celery
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
-from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 
 logger = logging.getLogger(__name__)
 
@@ -53,30 +51,6 @@ def retrieve_peers_from_db(self):
     return cnode_endpoints_set
 
 
-# Function submitted to future in threadpool executor
-def connect_peer(endpoint, ipfs_client):
-    logger.info(f"index_network_peers.py | Peering with {endpoint}")
-    ipfs_swarm_address = get_ipfs_info_from_cnode_endpoint(endpoint, None)
-    ipfs_client.connect_peer(ipfs_swarm_address)
-    logger.info(f"index_network_peers.py | Successfully peered with {endpoint}")
-
-
-# Actively connect to all peers in parallel
-def connect_peers(self, peers_list):
-    ipfs_client = update_network_peers.ipfs_client
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_connect_peer_request = {
-            executor.submit(connect_peer, endpoint, ipfs_client): endpoint
-            for endpoint in peers_list
-        }
-        for future in concurrent.futures.as_completed(future_to_connect_peer_request):
-            try:
-                # No return value expected here so we just ensure all futures are resolved
-                future.result()
-            except Exception as exc:
-                logger.error(exc)
-
-
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_network_peers", bind=True)
 def update_network_peers(self):
@@ -116,8 +90,6 @@ def update_network_peers(self):
             # Update creator node url list in IPFS Client
             # This list of known nodes is used to traverse and retrieve metadata from gateways
             ipfs_client.update_cnode_urls(peers_list)
-            # Connect to all peers
-            connect_peers(self, peers_list)
         else:
             logger.info(
                 "index_network_peers.py | Failed to acquire update_network_peers"

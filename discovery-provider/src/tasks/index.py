@@ -1,6 +1,8 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
+import time
+from datetime import datetime
 from operator import itemgetter, or_
 
 from src.app import get_contract_addresses
@@ -39,7 +41,12 @@ from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
+from src.utils.index_blocks_performance import (
+    record_index_blocks_ms,
+    sweep_old_index_blocks_ms,
+)
 from src.utils.indexing_errors import IndexingError
+from src.utils.ipfs_lib import NEW_BLOCK_TIMEOUT_SECONDS
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -84,10 +91,12 @@ TX_TYPE_TO_HANDLER_MAP = {
     USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
 }
 
+BLOCKS_PER_DAY = (24 * 60 * 60) / 5
+
 logger = logging.getLogger(__name__)
 
 
-# ####### HELPER FUNCTIONS ####### #
+# HELPER FUNCTIONS
 
 default_padded_start_hash = (
     "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -221,7 +230,7 @@ def fetch_tx_receipts(self, block):
     block_number = block.number
     block_transactions = block.transactions
     block_tx_with_receipts = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_tx_receipt = {
             executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions
         }
@@ -347,25 +356,18 @@ def fetch_ipfs_metadata(
             futures.append(future)
             futures_map[future] = [cid, txhash]
 
-        try:
-            for future in concurrent.futures.as_completed(futures, timeout=3):
-                cid, txhash = futures_map[future]
-                try:
-                    ipfs_metadata[cid] = future.result()
-                except Exception as e:
-                    logger.info("Error in fetch ipfs metadata")
-                    blockhash = update_task.web3.toHex(block_hash)
-                    raise IndexingError(
-                        "prefetch-cids", block_number, blockhash, txhash, str(e)
-                    ) from e
-        except concurrent.futures.TimeoutError as exc:
-            logger.error(f"index.py | Timeout fetch_ipfs_metadata: {exc}")
-            # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
-            # in order to do that we need to actually clear the queue which we do here to force this
-            # task to stop execution
-            executor._threads.clear()
-            concurrent.futures.thread._threads_queues.clear()
-            raise exc
+        for future in concurrent.futures.as_completed(
+            futures, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
+        ):
+            cid, txhash = futures_map[future]
+            try:
+                ipfs_metadata[cid] = future.result()
+            except Exception as e:
+                logger.info("Error in fetch ipfs metadata")
+                blockhash = update_task.web3.toHex(block_hash)
+                raise IndexingError(
+                    "prefetch-cids", block_number, blockhash, txhash, str(e)
+                ) from e
 
     return ipfs_metadata, blacklisted_cids
 
@@ -557,6 +559,7 @@ def index_blocks(self, db, blocks_list):
     latest_block_timestamp = None
     changed_entity_ids_map = {}
     for i in block_order_range:
+        start_time = datetime.now()
         update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
@@ -587,8 +590,19 @@ def index_blocks(self, db, blocks_list):
                     USER_REPLICA_SET_MANAGER: [],
                 }
                 try:
+                    """
+                    Fetch transaction receipts
+                    """
+                    fetch_tx_receipts_start_time = time.time()
                     tx_receipt_dict = fetch_tx_receipts(self, block)
+                    logger.info(
+                        f"index.py | index_blocks - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
+                    )
 
+                    """
+                    Parse transaction receipts
+                    """
+                    parse_tx_receipts_start_time = time.time()
                     # Sort transactions by hash
                     sorted_txs = sorted(
                         block.transactions, key=lambda entry: entry["hash"]
@@ -617,7 +631,14 @@ def index_blocks(self, db, blocks_list):
                             )
                             if contract_type:
                                 txs_grouped_by_type[contract_type].append(tx_receipt)
+                    logger.info(
+                        f"index.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
+                    )
 
+                    """
+                    Fetch JSON metadata
+                    """
+                    fetch_ipfs_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
                     ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
@@ -627,9 +648,23 @@ def index_blocks(self, db, blocks_list):
                         block_number,
                         block_hash,
                     )
+                    logger.info(
+                        f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
+                    )
 
+                    """
+                    Add block to db
+                    """
+                    add_indexed_block_to_db_start_time = time.time()
                     add_indexed_block_to_db(session, block)
+                    logger.info(
+                        f"index.py | index_blocks - add_indexed_block_to_db in {time.time() - add_indexed_block_to_db_start_time}s"
+                    )
 
+                    """
+                    Add state changes in block to db (users, tracks, etc.)
+                    """
+                    process_state_changes_start_time = time.time()
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit
@@ -641,13 +676,18 @@ def index_blocks(self, db, blocks_list):
                         txs_grouped_by_type,
                         block,
                     )
+                    logger.info(
+                        f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
+                    )
+
                 except IndexingError as err:
                     create_and_raise_indexing_error(err, redis)
 
             try:
+                commit_start_time = time.time()
                 session.commit()
                 logger.info(
-                    f"index.py | session committed to db for block=${block_number}"
+                    f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
             except Exception as e:
                 # Use 'commit' as the tx hash here.
@@ -687,6 +727,13 @@ def index_blocks(self, db, blocks_list):
         logger.info(
             f"index.py | update most recently processed block complete for block=${block_number}"
         )
+
+        # Record the time this took in redis
+        duration_ms = round((datetime.now() - start_time).total_seconds() * 1000)
+        record_index_blocks_ms(redis, duration_ms)
+        # Sweep records older than 30 days every day
+        if block_number % BLOCKS_PER_DAY == 0:
+            sweep_old_index_blocks_ms(redis, 30)
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
@@ -974,7 +1021,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
         session.delete(user_events_to_revert)
 
 
-# ####### CELERY TASKS ####### #
+# CELERY TASKS
 @celery.task(name="update_discovery_provider", bind=True)
 def update_task(self):
     # Cache custom task class properties

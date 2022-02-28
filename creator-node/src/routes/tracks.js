@@ -181,6 +181,9 @@ module.exports = function (app) {
         return errorResponseServerError(`Could not save to db db: ${e}`)
       }
 
+      // This call is not await-ed to avoid delaying or errorring
+      issueAndWaitForSecondarySyncRequests(req)
+
       return successResponse({
         metadataMultihash: multihash,
         metadataFileUUID: fileUUID
