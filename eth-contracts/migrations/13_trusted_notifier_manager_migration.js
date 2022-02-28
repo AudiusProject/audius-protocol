@@ -19,13 +19,14 @@ module.exports = (deployer, network, accounts) => {
 
     const initialNotifierWallet = config.initialNotifierWallet || accounts[20]
     const initialNotifierEndpoint = config.initialNotifierEndpoint || 'default.trustednotifier'
+    const initialNotifierEmail = config.initialNotifierEmail || 'email@default.trustednotifier'
 
     // Deploy TrustedNotifierManager logic and proxy contracts and register proxy
     const trustedNotifierManager0 = await deployer.deploy(TrustedNotifierManager, { from: proxyDeployerAddress })
     const initializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'string'],
-      [governanceAddress, initialNotifierWallet, initialNotifierEndpoint]
+      ['address', 'address', 'string', 'string'],
+      [governanceAddress, initialNotifierWallet, initialNotifierEndpoint, initialNotifierEmail]
     )
     const trustedNotifierManagerProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
