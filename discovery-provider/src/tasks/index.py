@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
+import time
 from datetime import datetime
 from operator import itemgetter, or_
 
@@ -95,7 +96,7 @@ BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 logger = logging.getLogger(__name__)
 
 
-# ####### HELPER FUNCTIONS ####### #
+# HELPER FUNCTIONS
 
 default_padded_start_hash = (
     "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -589,8 +590,19 @@ def index_blocks(self, db, blocks_list):
                     USER_REPLICA_SET_MANAGER: [],
                 }
                 try:
+                    """
+                    Fetch transaction receipts
+                    """
+                    fetch_tx_receipts_start_time = time.time()
                     tx_receipt_dict = fetch_tx_receipts(self, block)
+                    logger.info(
+                        f"index.py | index_blocks - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
+                    )
 
+                    """
+                    Parse transaction receipts
+                    """
+                    parse_tx_receipts_start_time = time.time()
                     # Sort transactions by hash
                     sorted_txs = sorted(
                         block.transactions, key=lambda entry: entry["hash"]
@@ -619,7 +631,14 @@ def index_blocks(self, db, blocks_list):
                             )
                             if contract_type:
                                 txs_grouped_by_type[contract_type].append(tx_receipt)
+                    logger.info(
+                        f"index.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
+                    )
 
+                    """
+                    Fetch JSON metadata
+                    """
+                    fetch_ipfs_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
                     ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
@@ -629,9 +648,23 @@ def index_blocks(self, db, blocks_list):
                         block_number,
                         block_hash,
                     )
+                    logger.info(
+                        f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
+                    )
 
+                    """
+                    Add block to db
+                    """
+                    add_indexed_block_to_db_start_time = time.time()
                     add_indexed_block_to_db(session, block)
+                    logger.info(
+                        f"index.py | index_blocks - add_indexed_block_to_db in {time.time() - add_indexed_block_to_db_start_time}s"
+                    )
 
+                    """
+                    Add state changes in block to db (users, tracks, etc.)
+                    """
+                    process_state_changes_start_time = time.time()
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit
@@ -643,13 +676,18 @@ def index_blocks(self, db, blocks_list):
                         txs_grouped_by_type,
                         block,
                     )
+                    logger.info(
+                        f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
+                    )
+
                 except IndexingError as err:
                     create_and_raise_indexing_error(err, redis)
 
             try:
+                commit_start_time = time.time()
                 session.commit()
                 logger.info(
-                    f"index.py | session committed to db for block=${block_number}"
+                    f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
             except Exception as e:
                 # Use 'commit' as the tx hash here.
@@ -983,7 +1021,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
         session.delete(user_events_to_revert)
 
 
-# ####### CELERY TASKS ####### #
+# CELERY TASKS
 @celery.task(name="update_discovery_provider", bind=True)
 def update_task(self):
     # Cache custom task class properties
