@@ -13,7 +13,7 @@ export const SystemSysVarProgramKey = new PublicKey(
 /// Convert a string input to output array of Uint8
 export const ethAddressToArray = (ethAddress: string) => {
   const strippedEthAddress = ethAddress.replace("0x", "");
-  return Uint8Array.of(...new BN(strippedEthAddress, "hex").toArray("be"));
+  return Uint8Array.of(...new BN(strippedEthAddress, "hex").toArray("be", 20));
 };
 
 /// Retrieve a transaction with retries
