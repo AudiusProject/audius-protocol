@@ -1,13 +1,9 @@
-import { AppState } from 'store/types'
+import { CommonState } from 'common/store'
 
-export const getBrowserNotificationSettings = (state: AppState) => {
-  return state.application.pages.settings.browserNotifications
+export const getBrowserNotificationSettings = (state: CommonState) => {
+  return state.pages.settings.browserNotifications
 }
 
-export const getPushNotificationSettings = (state: AppState) => {
-  return state.application.pages.settings.pushNotifications
-}
-
-export const getEmailFrequency = (state: AppState) => {
-  return state.application.pages.settings.emailFrequency
+export const getPushNotificationSettings = (state: CommonState) => {
+  return state.pages.settings.pushNotifications
 }

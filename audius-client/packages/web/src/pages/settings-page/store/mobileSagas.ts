@@ -1,6 +1,10 @@
 import { select, call, put, takeEvery } from 'redux-saga/effects'
 
 import { getAccountUser } from 'common/store/account/selectors'
+import * as actions from 'common/store/pages/settings/actions'
+import { initialState } from 'common/store/pages/settings/reducer'
+import { getPushNotificationSettings } from 'common/store/pages/settings/selectors'
+import { PushNotificationSetting } from 'common/store/pages/settings/types'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   EnablePushNotificationsMessage,
@@ -8,11 +12,6 @@ import {
 } from 'services/native-mobile-interface/notifications'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
-
-import * as actions from './actions'
-import { initialState } from './reducer'
-import { getPushNotificationSettings } from './selectors'
-import { PushNotificationSetting } from './types'
 
 function* watchGetPushNotificationSettings() {
   yield takeEvery(actions.GET_PUSH_NOTIFICATION_SETTINGS, function* () {

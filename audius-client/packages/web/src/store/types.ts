@@ -28,7 +28,6 @@ import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import HistoryPageState from 'pages/history-page/store/types'
 import { NotificationUsersPageState } from 'pages/notification-users-page/store/types'
 import RemixesPageReducer from 'pages/remixes-page/store/slice'
-import SettingsPageState from 'pages/settings-page/store/types'
 import SignOnPageState from 'pages/sign-on/store/types'
 import { SmartCollectionState } from 'pages/smart-collection/store/slice'
 import trendingPlaylistsReducer from 'pages/trending-playlists/store/slice'
@@ -91,7 +90,6 @@ export type AppState = CommonState & {
       visualizer: ReturnType<typeof VisualizerReducer>
     }
     pages: {
-      settings: SettingsPageState
       reposts: RepostsPageState
       favorites: FavoritesPageState
       followers: FollowersPageState

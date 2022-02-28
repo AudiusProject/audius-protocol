@@ -17,6 +17,11 @@ import { ProfilePictureSizes } from 'common/models/ImageSizes'
 import { OS } from 'common/models/OS'
 import Theme from 'common/models/Theme'
 import { InstagramProfile } from 'common/store/account/reducer'
+import {
+  Notifications,
+  BrowserNotificationSetting,
+  EmailFrequency
+} from 'common/store/pages/settings/types'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import TabSlider from 'components/data-entry/TabSlider'
@@ -32,11 +37,6 @@ import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { signOut } from 'utils/signOut'
 
 import { version } from '../../../../../package.json'
-import {
-  Notifications,
-  BrowserNotificationSetting,
-  EmailFrequency
-} from '../../store/types'
 
 import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'

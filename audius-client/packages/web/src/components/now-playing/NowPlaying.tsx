@@ -17,7 +17,7 @@ import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
-import { getMethod as getCastMethod } from 'common/store/cast/selectors'
+import { getMethod } from 'common/store/cast/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import {
   next,
@@ -476,7 +476,7 @@ function makeMapStateToProps() {
       isPlaying: getPlaying(state),
       isBuffering: getBuffering(state),
       isCasting: getIsCasting(state),
-      castMethod: getCastMethod(state),
+      castMethod: getMethod(state),
       dominantColors: getDominantColorsByTrack(state, {
         track: currentQueueItem.track
       })

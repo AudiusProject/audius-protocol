@@ -15,6 +15,7 @@ import { ProfileScreen } from 'app/screens/profile-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
+  NotificationSettingsScreen,
   SettingsScreen
 } from 'app/screens/settings-screen'
 import { TrendingScreen } from 'app/screens/trending-screen'
@@ -88,6 +89,10 @@ const ProfileStackScreen = createStackScreen<ProfileStackParamList>(Stack => (
     <Stack.Screen
       name='AccountSettingsScreen'
       component={AccountSettingsScreen}
+    />
+    <Stack.Screen
+      name='NotificationSettingsScreen'
+      component={NotificationSettingsScreen}
     />
   </>
 ))

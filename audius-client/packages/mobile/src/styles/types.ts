@@ -11,7 +11,7 @@ type Style = StyleProp<ViewStyle | ImageStyle | TextStyle>
  * to `styles.root`
  */
 export type StylesProps<
-  Styles extends { root: Style } & Record<string, Style>
+  Styles extends { root?: Style } & Record<string, Style>
 > = {
   style?: Styles['root']
   styles?: Styles
