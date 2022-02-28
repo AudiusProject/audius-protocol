@@ -34,7 +34,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   },
   iconCrown: {
     fill: palette.white,
-    height: 15,
+    height: 22,
     width: 22,
     marginRight: spacing(1)
   },
