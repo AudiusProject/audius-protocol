@@ -8,7 +8,6 @@ from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
-from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -221,11 +220,9 @@ def process_user_txs_serial(
 
 
 def get_user_events_tx(update_task, event_type, tx_receipt):
-    user_abi = update_task.abi_values["UserFactory"]["abi"]
-    user_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["user_factory"], abi=user_abi
+    return getattr(update_task.user_contract.events, event_type)().processReceipt(
+        tx_receipt
     )
-    return getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_user_record(
