@@ -45,10 +45,14 @@ import player from 'store/player/slice'
 import playlistLibrary from 'store/playlist-library/slice'
 import reachability from 'store/reachability/reducer'
 
+import { webStoreContext } from './storeContext'
+
+export const commonStoreReducers = clientStoreReducers(webStoreContext)
+
 const createRootReducer = (routeHistory: History) =>
   combineReducers({
-    // Client store
-    ...clientStoreReducers,
+    // Common store
+    ...commonStoreReducers,
 
     // Router
     router: connectRouter(routeHistory),

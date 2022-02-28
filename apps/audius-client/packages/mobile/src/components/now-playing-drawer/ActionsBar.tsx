@@ -20,7 +20,7 @@ import {
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, NativeModules } from 'react-native'
 
 import IconFavoriteOffDark from 'app/assets/animations/iconFavoriteOffDark.json'
 import IconFavoriteOffLight from 'app/assets/animations/iconFavoriteOffLight.json'
@@ -39,6 +39,7 @@ import { IconButton } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { showCastPicker } from 'app/store/googleCast/controller'
 import { Theme, ThemeColors, useThemeVariant } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -143,9 +144,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   }, [track, currentUserId, dispatchWeb])
 
   const renderCastButton = () => {
+    const airplay = NativeModules.AirplayViewManager
     if (castMethod === 'airplay') {
       return (
         <IconButton
+          onPress={airplay.click}
           icon={IconAirplay}
           styles={{ icon: styles.icon, root: styles.button }}
         />
@@ -153,6 +156,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
     return (
       <IconButton
+        onPress={showCastPicker}
         icon={IconChromecast}
         styles={{ icon: styles.icon, root: styles.button }}
       />

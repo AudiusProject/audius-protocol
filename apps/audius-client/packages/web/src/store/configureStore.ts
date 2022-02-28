@@ -6,13 +6,12 @@ import { composeWithDevTools } from 'redux-devtools-extension/logOnlyInProductio
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 
-import { reducers as clientStoreReducers } from 'common/store'
 import { Level } from 'common/store/errors/level'
 import { reportToSentry } from 'common/store/errors/reportToSentry'
 import { postMessage } from 'services/native-mobile-interface/helpers'
 import { MessageType } from 'services/native-mobile-interface/types'
 import { track as amplitudeTrack } from 'store/analytics/providers/amplitude'
-import createRootReducer from 'store/reducers'
+import createRootReducer, { commonStoreReducers } from 'store/reducers'
 import rootSaga from 'store/sagas'
 import history from 'utils/history'
 import logger from 'utils/logger'
@@ -118,7 +117,7 @@ const middlewares = applyMiddleware(
 
 // As long as the mobile client is dependent on the web client, we need to sync
 // the client store from web -> mobile
-const clientStoreKeys = Object.keys(clientStoreReducers)
+const clientStoreKeys = Object.keys(commonStoreReducers)
 
 const syncClientStateToNativeMobile = (store: Store) => {
   if (NATIVE_MOBILE) {

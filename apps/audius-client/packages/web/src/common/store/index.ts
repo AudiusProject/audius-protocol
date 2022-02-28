@@ -75,12 +75,24 @@ import followingUserListReducer from 'common/store/user-list/following/reducers'
 import repostsUserListReducer from 'common/store/user-list/reposts/reducers'
 import wallet from 'common/store/wallet/slice'
 
-// In the future, these state slices will live in @audius/client-common.
+// In the future, these state slices will live in packages/common.
 // For now they live in the web client. As features get migrated to RN
 // relevant state slices should be added here. Eventually they will be pulled into
-// @audius/client-common and the mobile client will no longer be dependent on the web client
+// packages/common and the mobile client will no longer be dependent on the web client
 
-export const reducers = {
+export type CommonStoreContext = {
+  getLocalStorageItem: (key: string) => Promise<string | null>
+  setLocalStorageItem: (key: string, value: string) => Promise<void>
+}
+
+/**
+ * A function that creates common reducers. The function takes
+ * a CommonStoreContext as input such that platforms (native and web)
+ * may specify system-level APIs, e.g. local storage.
+ * @param ctx
+ * @returns an object of all reducers to be used with `combineReducers`
+ */
+export const reducers = (ctx: CommonStoreContext) => ({
   account: accountSlice.reducer,
 
   // Cache
@@ -141,16 +153,23 @@ export const reducers = {
   solana: solanaReducer,
 
   stemsUpload
-}
+})
 
-export const sagas = {
+/**
+ * A function that creates common sagas. The function takes
+ * a CommonStoreContext as input such that platforms (native and web)
+ * may specify system-level APIs, e.g. local storage.
+ * @param ctx
+ * @returns an object of all sagas to be yielded
+ */
+export const sagas = (ctx: CommonStoreContext) => ({
   cache: cacheSagas,
   collectionsError: collectionsErrorSagas,
   collections: collectionsSagas,
   tracks: tracksSagas,
   users: usersSagas,
   remoteConfig: remoteConfigSagas,
-  cast: castSagas
+  cast: castSagas(ctx)
 
   // TODO:
   // pull in the following from web
@@ -188,7 +207,7 @@ export const sagas = {
   // pull in the following from web
   // once the player and dependencies are migrated
   // store/queue/sagas.ts
-}
+})
 
 export type CommonState = {
   account: ReturnType<typeof accountSlice.reducer>

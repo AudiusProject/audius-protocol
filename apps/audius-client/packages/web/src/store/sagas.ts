@@ -4,6 +4,7 @@ import collectionsSagas from 'common/store/cache/collections/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
+import { sagas as castSagas } from 'common/store/cast/sagas'
 import errorSagas from 'common/store/errors/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
 import explorePageSagas from 'common/store/pages/explore/sagas'
@@ -66,6 +67,8 @@ import solanaSagas from 'store/solana/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
 import walletSagas from 'store/wallet/sagas'
 
+import { webStoreContext } from './storeContext'
+
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export default function* rootSaga() {
@@ -119,6 +122,9 @@ export default function* rootSaga() {
 
     // Wallet
     walletSagas(),
+
+    // Cast
+    castSagas(webStoreContext),
 
     // Application
     addToPlaylistSagas(),
