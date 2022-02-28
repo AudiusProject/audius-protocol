@@ -1,3 +1,9 @@
+import { ID } from 'common/models/Identifiers'
+import { User, UserMetadata } from 'common/models/User'
+import { Nullable } from 'common/utils/typeUtils'
+
+import { CollectionSortMode } from './types'
+
 export const FETCH_PROFILE = 'PROFILE/FETCH_PROFILE'
 export const FETCH_PROFILE_SUCCEEDED = 'PROFILE/FETCH_PROFILE_SUCCEEDED'
 export const FETCH_PROFILE_FAILED = 'PROFILE/FETCH_PROFILE_FAILED'
@@ -26,11 +32,11 @@ export const SET_NOTIFICATION_SUBSCRIPTION =
 // Either handle or userId is required
 // TODO: Move this to redux toolkit
 export function fetchProfile(
-  handle,
-  userId,
-  forceUpdate,
-  shouldSetLoading,
-  deleteExistingEntry
+  handle: Nullable<string>,
+  userId: Nullable<ID>,
+  forceUpdate: boolean,
+  shouldSetLoading: boolean,
+  deleteExistingEntry: boolean
 ) {
   return {
     type: FETCH_PROFILE,
@@ -42,7 +48,7 @@ export function fetchProfile(
   }
 }
 
-export function fetchProfileSucceeded(handle, userId) {
+export function fetchProfileSucceeded(handle: string, userId: ID) {
   return { type: FETCH_PROFILE_SUCCEEDED, handle, userId }
 }
 
@@ -50,11 +56,11 @@ export function fetchProfileFailed() {
   return { type: FETCH_PROFILE_FAILED }
 }
 
-export function updateProfile(metadata) {
+export function updateProfile(metadata: UserMetadata) {
   return { type: UPDATE_PROFILE, metadata }
 }
 
-export function updateProfileSucceeded(userId) {
+export function updateProfileSucceeded(userId: ID) {
   return { type: UPDATE_PROFILE_SUCCEEDED, userId }
 }
 
@@ -66,11 +72,11 @@ export function resetProfile() {
   return { type: RESET_PROFILE }
 }
 
-export function updateCollectionSortMode(mode) {
+export function updateCollectionSortMode(mode: CollectionSortMode) {
   return { type: UPDATE_COLLECTION_SORT_MODE, mode }
 }
 
-export function setProfileField(field, value) {
+export function setProfileField(field: string, value: string) {
   return { type: SET_PROFILE_FIELD, field, value }
 }
 
@@ -78,15 +84,19 @@ export function updateCurrentUserFollows(follow = false) {
   return { type: UPDATE_CURRENT_USER_FOLLOWS, follow }
 }
 
-export function fetchFollowUsers(followerGroup, limit = 15, offset = 0) {
+export function fetchFollowUsers(
+  followerGroup: User[],
+  limit = 15,
+  offset = 0
+) {
   return { type: FETCH_FOLLOW_USERS, followerGroup, offset, limit }
 }
 
 export function fetchFollowUsersSucceeded(
-  followerGroup,
-  userIds,
-  limit,
-  offset
+  followerGroup: User[],
+  userIds: ID[],
+  limit: number,
+  offset: number
 ) {
   return {
     type: FETCH_FOLLOW_USERS_SUCCEEDED,
@@ -97,7 +107,11 @@ export function fetchFollowUsersSucceeded(
   }
 }
 
-export function fetchFollowUsersFailed(followerGroup, limit, offset) {
+export function fetchFollowUsersFailed(
+  followerGroup: User[],
+  limit: number,
+  offset: number
+) {
   return { type: FETCH_FOLLOW_USERS_FAILED, followerGroup, limit, offset }
 }
 
@@ -105,13 +119,13 @@ export function profileMeterDismissed() {
   return { type: DISMISS_PROFILE_METER }
 }
 
-export function updateMostUsedTags(mustUsedTags) {
-  return { type: UPDATE_MOST_USED_TAGS, mustUsedTags }
+export function updateMostUsedTags(mostUsedTags: string[]) {
+  return { type: UPDATE_MOST_USED_TAGS, mostUsedTags }
 }
 
 export function setNotificationSubscription(
-  userId,
-  isSubscribed,
+  userId: ID,
+  isSubscribed: boolean,
   update = false
 ) {
   return { type: SET_NOTIFICATION_SUBSCRIPTION, userId, isSubscribed, update }
