@@ -1,6 +1,9 @@
 import { select, call, put, takeEvery } from 'redux-saga/effects'
 
 import { Name } from 'common/models/Analytics'
+import * as actions from 'common/store/pages/settings/actions'
+import { getBrowserNotificationSettings } from 'common/store/pages/settings/selectors'
+import { BrowserNotificationSetting } from 'common/store/pages/settings/types'
 import AudiusBackend from 'services/AudiusBackend'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
@@ -15,11 +18,8 @@ import {
 } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
 
-import * as actions from './actions'
 import errorSagas from './errorSagas'
 import mobileSagas from './mobileSagas'
-import { getBrowserNotificationSettings } from './selectors'
-import { BrowserNotificationSetting } from './types'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

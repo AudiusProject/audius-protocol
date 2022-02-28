@@ -37,6 +37,13 @@ export const SettingsScreen = () => {
 
   const navigation = useNavigation()
 
+  const handlePressNotifications = useCallback(() => {
+    navigation.push({
+      native: { screen: 'NotificationSettingsScreen', params: undefined },
+      web: { route: '/settings/notifications' }
+    })
+  }, [navigation])
+
   const handlePressAbout = useCallback(() => {
     navigation.push({
       native: { screen: 'AboutScreen', params: undefined },
@@ -55,7 +62,7 @@ export const SettingsScreen = () => {
         />
       </SettingsRow>
       <Divider />
-      <SettingsRow onPress={() => null}>
+      <SettingsRow onPress={handlePressNotifications}>
         <SettingsRowLabel label={messages.notifications} iconSource={Bell} />
       </SettingsRow>
       <AppearanceSettingsRow />
