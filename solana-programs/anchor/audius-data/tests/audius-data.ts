@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { createTrack, initAdmin, updateUser, updateAdmin, updateTrack, deleteTrack, verifyUser } from "../lib/lib";
+import { createTrack, initAdmin, updateUser, updateAdmin, updateTrack, deleteTrack, updateIsVerified } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -539,7 +539,7 @@ describe("audius-data", () => {
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
-    let tx = await verifyUser({
+    let tx = await updateIsVerified({
       program,
       adminKeypair: adminStgKeypair,
       userStgAccount: newUserAcctPDA,
@@ -549,7 +549,7 @@ describe("audius-data", () => {
       bumpSeed
     });
 
-    await confirmLogInTransaction(provider, tx, 'Program log: Instruction: VerifyUser');
+    await confirmLogInTransaction(provider, tx, 'success');
   });
 
   it("creating + deleting a track", async () => {

@@ -263,7 +263,7 @@ export const updateAdmin = async ({
 };
 
 /// Verify user with authenticatorKeypair
-type verifyUserParams = {
+type UpdateIsVerifiedParams = {
   program: Program<AudiusData>;
   userStgAccount: anchor.web3.PublicKey;
   verifierKeypair: anchor.web3.Keypair;
@@ -272,7 +272,7 @@ type verifyUserParams = {
   handleBytesArray: number[];
   bumpSeed: number;
 };
-export const verifyUser = async ({
+export const updateIsVerified = async ({
   program,
   adminKeypair,
   userStgAccount,
@@ -280,8 +280,8 @@ export const verifyUser = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed
-}: verifyUserParams) => {
-  return program.rpc.verifyUser(
+}: UpdateIsVerifiedParams) => {
+  return program.rpc.updateIsVerified(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
     {

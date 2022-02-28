@@ -38,8 +38,8 @@ pub mod audius_data {
     }
 
     /// Verifies a user by asserting that the audius_admin's verifier matches the signed verifier account
-    pub fn verify_user(
-        ctx: Context<VerifyUser>,
+    pub fn update_is_verified(
+        ctx: Context<UpdateIsVerified>,
         base: Pubkey,
         _user_handle: UserHandle
     ) -> Result<()> {
@@ -558,10 +558,9 @@ pub struct DeletePlaylist<'info> {
 }
 
 /// Instruction container for verifying a user
-/// Removes playlist storage account entirely
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_handle: UserHandle)]
-pub struct VerifyUser<'info> {
+pub struct UpdateIsVerified<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
     // Confirm the follower PDA matches the expected value provided the target handle and base
     #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
