@@ -120,6 +120,50 @@ describe('Test Send Notification Emails', function () {
     const userEmail = await models.NotificationEmail.findOne({ where: { userId: 1, emailFrequency: EmailFrequency.WEEKLY } })
     assert.strictEqual(!!userEmail, true)
   })
+
+  it('should not error email flow if error in sending email', async function () {
+    // Create a user
+    await models.User.create({
+      blockchainUserId: 1,
+      email: 'test@test.com',
+      isConfigured: true,
+      lastSeenDate: moment().format('YYYY-MM-DDTHH:mm:ss')
+    })
+
+    // Create a user notification setting
+    await models.UserNotificationSettings.create({
+      userId: 1,
+      emailFrequency: EmailFrequency.WEEKLY
+    })
+
+    const tx1 = await models.sequelize.transaction()
+    // This method puts the notifications in the db
+    await processNotifications(mockNotification, tx1)
+    await tx1.commit()
+    const mockExpressWithFailedMg = {
+      get: (resource) => {
+        switch (resource) {
+          case 'announcements': {
+            return []
+          }
+          case 'mailgun': {
+            return {
+              messages: () => ({
+                send: (_, cb) => {
+                  cb(new Error('failed to send email'), null)
+                }
+              })
+            }
+          }
+          default:
+            return undefined
+        }
+      }
+    }
+    await processEmailNotifications(mockExpressWithFailedMg, mockLibs)
+    const userEmail = await models.NotificationEmail.findOne({ where: { userId: 1, emailFrequency: EmailFrequency.WEEKLY } })
+    assert.strictEqual(!!userEmail, false)
+  })
 })
 
 describe('Test Should Send Email Emails', function () {
