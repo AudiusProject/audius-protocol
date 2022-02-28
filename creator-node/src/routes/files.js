@@ -55,7 +55,9 @@ const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT = 5
 
 /**
  * Helper method to stream file from file system on creator node
- * Serves partial content using range requests
+ * Serves partial content if specified using range requests
+ * By default, checks path for file existence before proceeding
+ * If not provided, checks fs stats for path
  */
 const streamFromFileSystem = async (
   req,
@@ -142,7 +144,8 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
 
 /**
  * Given a CID, return the appropriate file
- * 1. Stream file from FS if available
+ * 1. Check if file exists at expected storage path (current and legacy)
+ * 1. If found, stream from FS
  * 2. Else, check if CID exists in DB. If not, return 404 error
  * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
  * 4. If not avail in CN network, fetch file from IPFS and stream from IPFS
@@ -288,7 +291,7 @@ const getCID = async (req, res) => {
     /**
      * Check if file exists on FS at legacyStoragePath
      * If found and not of file type, return error
-     * If found and file type, continue
+     * If found and of type file, continue with legacyStoragePath
      * If not found, continue
      */
     startMs = Date.now()
