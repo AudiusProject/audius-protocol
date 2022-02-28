@@ -7,7 +7,7 @@ from src.app import get_contract_addresses, get_eth_abi_values
 from src.database_task import DatabaseTask
 from src.models import URSMContentNode, User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
-from src.tasks.users import invalidate_old_users, lookup_user_record
+from src.tasks.users import invalidate_old_users, lookup_or_create_user_records
 from src.utils import helpers
 from src.utils.eth_contracts_helpers import (
     content_node_service_type,
@@ -55,119 +55,128 @@ def user_replica_set_state_update(
     # Data format is {"cnode_sp_id": {"cnode_record", "events":[]}}
     cnode_events_lookup = {}
 
-    # pylint: disable=too-many-nested-blocks
+    user_events_txs = []
+    tx_user_ids = []
     for tx_receipt in user_replica_set_mgr_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in user_replica_set_manager_event_types_arr:
             user_events_tx = get_user_replica_set_mgr_tx(
                 update_task, event_type, tx_receipt
             )
-            processedEntries = 0  # if record does not get added, do not count towards num_total_changes
             for entry in user_events_tx:
                 args = entry["args"]
-                existing_user_record = None
-                existing_cnode_record = None
                 user_id = (
                     helpers.get_tx_arg(entry, "_userId") if "_userId" in args else None
                 )
-                cnode_sp_id = (
-                    helpers.get_tx_arg(entry, "_cnodeSpId")
-                    if "_cnodeSpId" in args
-                    else None
-                )
-                try:
-                    # if the user id is not in the lookup object, it hasn't been initialized yet
-                    # first, get the user object from the db(if exists or create a new one)
-                    # then set the lookup object for user_id with the appropriate props
-                    if user_id:
-                        existing_user_record = lookup_user_record(
-                            update_task,
-                            session,
-                            entry,
-                            block_number,
-                            block_timestamp,
-                            txhash,
-                        )
+                tx_user_ids.append(user_id)
 
-                    if cnode_sp_id:
-                        existing_cnode_record = lookup_ursm_cnode(
-                            update_task,
-                            session,
-                            entry,
-                            block_number,
-                            block_timestamp,
-                            txhash,
-                        )
+            user_events_txs.append((event_type, user_events_tx, txhash))
 
-                    # Add or update the value of the user record for this block in user_replica_set_events_lookup,
-                    # ensuring that multiple events for a single user result in only 1 row insert operation
-                    # (even if multiple operations are present)
-                    if (
-                        event_type
-                        == user_replica_set_manager_event_types_lookup[
-                            "update_replica_set"
-                        ]
-                    ):
-                        parsed_user_record = parse_user_record(
-                            update_task,
-                            entry,
-                            existing_user_record,
-                            block_timestamp,
-                        )
-                        if user_id not in user_replica_set_events_lookup:
-                            user_replica_set_events_lookup[user_id] = {
-                                "user": parsed_user_record,
-                                "events": [],
-                            }
-                        else:
-                            user_replica_set_events_lookup[user_id][
-                                "user"
-                            ] = parsed_user_record
-                        user_replica_set_events_lookup[user_id]["events"].append(
-                            event_type
-                        )
-                        user_ids.add(user_id)
-                        processedEntries += 1
-                    # Process L2 Content Node operations
-                    elif (
-                        event_type
-                        == user_replica_set_manager_event_types_lookup[
-                            "add_or_update_content_node"
-                        ]
-                    ):
-                        parsed_cnode_record = parse_ursm_cnode_record(
-                            update_task,
-                            entry,
-                            existing_cnode_record,
-                        )
-                        if cnode_sp_id not in cnode_events_lookup:
-                            cnode_events_lookup[cnode_sp_id] = {
-                                "content_node": parsed_cnode_record,
-                                "events": [],
-                            }
-                        else:
-                            cnode_events_lookup[cnode_sp_id][
-                                "content_node"
-                            ] = parsed_cnode_record
-                        cnode_events_lookup[cnode_sp_id]["events"].append(event_type)
-                        processedEntries += 1
-                except EntityMissingRequiredFieldError as e:
-                    logger.warning(f"Skipping tx {txhash} with error {e}")
-                    skipped_tx_count += 1
-                    add_node_level_skipped_transaction(
-                        session, block_number, event_blockhash, txhash
-                    )
-                    pass
-                except Exception as e:
-                    logger.info("Error in parse user replica set transaction")
-                    raise IndexingError(
-                        "user_replica_set",
+    user_id_to_user_record = lookup_or_create_user_records(
+        session, tx_user_ids, block_timestamp
+    )
+
+    for event_type, user_events_tx, txhash in user_events_txs:
+        processedEntries = (
+            0  # if record does not get added, do not count towards num_total_changes
+        )
+        for entry in user_events_tx:
+            args = entry["args"]
+            existing_user_record = None
+            existing_cnode_record = None
+            user_id = (
+                helpers.get_tx_arg(entry, "_userId") if "_userId" in args else None
+            )
+            cnode_sp_id = (
+                helpers.get_tx_arg(entry, "_cnodeSpId")
+                if "_cnodeSpId" in args
+                else None
+            )
+            try:
+                # if the user id is not in the lookup object, it hasn't been initialized yet
+                # first, get the user object from the db(if exists or create a new one)
+                # then set the lookup object for user_id with the appropriate props
+                if user_id:
+                    existing_user_record = user_id_to_user_record[user_id]
+                    existing_user_record.blocknumber = block_number
+                    existing_user_record.blockhash = event_blockhash
+                    existing_user_record.txhash = txhash
+
+                if cnode_sp_id:
+                    existing_cnode_record = lookup_ursm_cnode(
+                        update_task,
+                        session,
+                        entry,
                         block_number,
-                        event_blockhash,
+                        block_timestamp,
                         txhash,
-                        str(e),
-                    ) from e
-            num_user_replica_set_changes += processedEntries
+                    )
+
+                # Add or update the value of the user record for this block in user_replica_set_events_lookup,
+                # ensuring that multiple events for a single user result in only 1 row insert operation
+                # (even if multiple operations are present)
+                if (
+                    event_type
+                    == user_replica_set_manager_event_types_lookup["update_replica_set"]
+                ):
+                    parsed_user_record = parse_user_record(
+                        update_task,
+                        entry,
+                        existing_user_record,
+                        block_timestamp,
+                    )
+                    if user_id not in user_replica_set_events_lookup:
+                        user_replica_set_events_lookup[user_id] = {
+                            "user": parsed_user_record,
+                            "events": [],
+                        }
+                    else:
+                        user_replica_set_events_lookup[user_id][
+                            "user"
+                        ] = parsed_user_record
+                    user_replica_set_events_lookup[user_id]["events"].append(event_type)
+                    user_ids.add(user_id)
+                    processedEntries += 1
+                # Process L2 Content Node operations
+                elif (
+                    event_type
+                    == user_replica_set_manager_event_types_lookup[
+                        "add_or_update_content_node"
+                    ]
+                ):
+                    parsed_cnode_record = parse_ursm_cnode_record(
+                        update_task,
+                        entry,
+                        existing_cnode_record,
+                    )
+                    if cnode_sp_id not in cnode_events_lookup:
+                        cnode_events_lookup[cnode_sp_id] = {
+                            "content_node": parsed_cnode_record,
+                            "events": [],
+                        }
+                    else:
+                        cnode_events_lookup[cnode_sp_id][
+                            "content_node"
+                        ] = parsed_cnode_record
+                    cnode_events_lookup[cnode_sp_id]["events"].append(event_type)
+                    processedEntries += 1
+            except EntityMissingRequiredFieldError as e:
+                logger.warning(f"Skipping tx {txhash} with error {e}")
+                skipped_tx_count += 1
+                add_node_level_skipped_transaction(
+                    session, block_number, event_blockhash, txhash
+                )
+                pass
+            except Exception as e:
+                logger.info("Error in parse user replica set transaction")
+                raise IndexingError(
+                    "user_replica_set",
+                    block_number,
+                    event_blockhash,
+                    txhash,
+                    str(e),
+                ) from e
+        num_user_replica_set_changes += processedEntries
 
     logger.info(
         f"index.py | user_replica_set.py | [URSM indexing] There are {num_user_replica_set_changes} events processed and {skipped_tx_count} skipped transactions."

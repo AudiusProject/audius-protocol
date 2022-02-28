@@ -550,11 +550,12 @@ def test_track_indexing_skip_tx(app, mocker):
     test_block_hash = update_task.web3.toHex(block_hash)
     test_track_factory_txs = [cursed_tx, blessed_tx]
     test_timestamp = datetime.utcfromtimestamp(test_block_timestamp)
+    blessed_track_record_id = 91232
     blessed_track_record = Track(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=blessed_tx_hash,
-        track_id=91232,
+        track_id=blessed_track_record_id,
         is_unlisted=False,
         route_id="test",
         track_segments=[
@@ -569,11 +570,12 @@ def test_track_indexing_skip_tx(app, mocker):
         created_at=test_timestamp,
         owner_id=1,
     )
+    cursed_track_record_id = 91238
     cursed_track_record = Track(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=cursed_tx_hash,
-        track_id=91238,
+        track_id=cursed_track_record_id,
         is_unlisted=None,
         is_current=True,
         is_delete=True,
@@ -582,8 +584,13 @@ def test_track_indexing_skip_tx(app, mocker):
     )
 
     mocker.patch(
-        "src.tasks.tracks.lookup_track_record",
-        side_effect=[cursed_track_record, blessed_track_record],
+        "src.tasks.tracks.lookup_or_create_track_records",
+        side_effect=[
+            {
+                cursed_track_record_id: cursed_track_record,
+                blessed_track_record_id: blessed_track_record,
+            }
+        ],
         autospec=True,
     )
     mocker.patch(

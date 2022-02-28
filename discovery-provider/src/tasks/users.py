@@ -76,6 +76,10 @@ def user_state_update(
 
             # num_total_changes += processedEntries
 
+    user_id_to_user_record = lookup_or_create_user_records(
+        session, list(user_transactions_lookup.keys()), block_timestamp
+    )
+
     # Process each user in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         process_user_txs_futures = {}
@@ -87,6 +91,7 @@ def user_state_update(
                     self,
                     user_id,
                     user_txs,
+                    user_id_to_user_record,
                     session,
                     user_events_lookup,
                     update_task,
@@ -133,6 +138,7 @@ def process_user_txs_serial(
     self,
     user_id,
     user_txs,
+    user_id_to_user_record,
     session,
     user_events_lookup,
     update_task,
@@ -156,14 +162,10 @@ def process_user_txs_serial(
             if user_id in user_events_lookup:
                 existing_user_record = user_events_lookup[user_id]["user"]
             else:
-                existing_user_record = lookup_user_record(
-                    update_task,
-                    session,
-                    entry,
-                    block_number,
-                    block_timestamp,
-                    txhash,
-                )
+                existing_user_record = user_id_to_user_record[user_id]
+                existing_user_record.blocknumber = block_number
+                existing_user_record.blockhash = blockhash
+                existing_user_record.txhash = txhash
 
             # parse user event to add metadata to record
             if event_type == user_event_types_lookup["update_multihash"]:
@@ -263,6 +265,39 @@ def lookup_user_record(
     user_record.txhash = txhash
 
     return user_record
+
+
+def lookup_or_create_user_records(
+    session: Session, user_ids: List[int], block_timestamp: float
+) -> Dict[int, User]:
+    """
+    Given an array of user_ids, looks up existing records or creates
+    new ones with default values if no record is found.
+    """
+    user_id_to_user_record = {}
+    user_records = (
+        session.query(User)
+        .filter(User.user_id.in_(user_ids), User.is_current == True)
+        .all()
+    )
+
+    for user_record in user_records:
+        # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
+        # https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
+        session.expunge(user_record)
+        make_transient(user_record)
+        user_id_to_user_record[user_record.user_id] = user_record
+
+    # Ensure we found all users and if not create new ones
+    for user_id in user_ids:
+        if user_id not in user_id_to_user_record:
+            user_id_to_user_record[user_id] = User(
+                is_current=True,
+                user_id=user_id,
+                created_at=datetime.utcfromtimestamp(block_timestamp),
+            )
+
+    return user_id_to_user_record
 
 
 def invalidate_old_users(session, user_ids):

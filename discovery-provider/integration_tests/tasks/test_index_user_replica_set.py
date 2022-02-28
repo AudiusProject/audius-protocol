@@ -67,22 +67,24 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
     ]
     test_timestamp = datetime.utcfromtimestamp(test_block_timestamp)
     test_wallet = "0x0birbchickemcatlet"
+    blessed_user_record_id = 1
     blessed_user_record = User(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=blessed_user_tx_hash,
-        user_id=1,
+        user_id=blessed_user_record_id,
         name="tobey maguire",
         is_creator=False,
         is_current=True,
         updated_at=test_timestamp,
         created_at=test_timestamp,
     )
+    cursed_user_record_id = 2
     cursed_user_record = User(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=cursed_user_tx_hash,
-        user_id=2,
+        user_id=cursed_user_record_id,
         name="birb",
         is_current=None,
         is_creator=None,
@@ -110,8 +112,13 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
     )
 
     mocker.patch(
-        "src.tasks.user_replica_set.lookup_user_record",
-        side_effect=[cursed_user_record, blessed_user_record],
+        "src.tasks.user_replica_set.lookup_or_create_user_records",
+        side_effect=[
+            {
+                cursed_user_record_id: cursed_user_record,
+                blessed_user_record_id: blessed_user_record,
+            }
+        ],
         autospec=True,
     )
     mocker.patch(

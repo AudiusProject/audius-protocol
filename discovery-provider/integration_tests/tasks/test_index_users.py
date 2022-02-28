@@ -567,22 +567,24 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
     test_block_hash = update_task.web3.toHex(block_hash)
     test_user_factory_txs = [cursed_tx, blessed_tx]
     test_timestamp = datetime.utcfromtimestamp(test_block_timestamp)
+    blessed_user_record_id = 91232
     blessed_user_record = User(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=blessed_tx_hash,
-        user_id=91232,
+        user_id=blessed_user_record_id,
         name="tobey maguire",
         is_creator=False,
         is_current=True,
         updated_at=test_timestamp,
         created_at=test_timestamp,
     )
+    cursed_user_record_id = 91238
     cursed_user_record = User(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=cursed_tx_hash,
-        user_id=91238,
+        user_id=cursed_user_record_id,
         name="birb",
         is_current=None,
         is_creator=None,
@@ -591,8 +593,13 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
     )
 
     mocker.patch(
-        "src.tasks.users.lookup_user_record",
-        side_effect=[cursed_user_record, blessed_user_record],
+        "src.tasks.users.lookup_or_create_user_records",
+        side_effect=[
+            {
+                cursed_user_record_id: cursed_user_record,
+                blessed_user_record_id: blessed_user_record,
+            }
+        ],
         autospec=True,
     )
     mocker.patch(
