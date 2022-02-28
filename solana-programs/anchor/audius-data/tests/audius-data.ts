@@ -544,7 +544,9 @@ describe("audius-data", () => {
       adminKeypair: adminStgKeypair,
       userStgAccount: newUserAcctPDA,
       verifierKeypair,
-      baseAuthorityAccount
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed
     });
 
     await confirmLogInTransaction(provider, tx, 'Program log: Instruction: VerifyUser');

@@ -269,16 +269,21 @@ type verifyUserParams = {
   verifierKeypair: anchor.web3.Keypair;
   baseAuthorityAccount: anchor.web3.Keypair;
   adminKeypair: Keypair;
+  handleBytesArray: number[];
+  bumpSeed: number;
 };
 export const verifyUser = async ({
   program,
   adminKeypair,
   userStgAccount,
   verifierKeypair,
-  baseAuthorityAccount
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed
 }: verifyUserParams) => {
   return program.rpc.verifyUser(
     baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
     {
       accounts: {
         user: userStgAccount,
