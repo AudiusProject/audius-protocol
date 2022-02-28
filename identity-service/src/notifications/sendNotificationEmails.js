@@ -307,7 +307,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
         acc[response.result] = 1
       }
       if (response.result === Results.ERROR) {
-        logger.info({ job: processEmailNotifications, duration: totalDuration }, response.error.toString())
+        logger.info({ job: processEmailNotifications }, response.error.toString())
       }
       return acc
     }, {})
