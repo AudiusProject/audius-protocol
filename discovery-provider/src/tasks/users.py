@@ -8,7 +8,6 @@ from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
-from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -37,7 +36,9 @@ def user_state_update(
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
     begin_user_state_update = datetime.now()
-    logger.info(f"index.py | users.py | user_state_update - begin state update {datetime.now() - begin_user_state_update}")
+    logger.info(
+        f"index.py | users.py | user_state_update - begin state update {datetime.now() - begin_user_state_update}"
+    )
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -64,7 +65,9 @@ def user_state_update(
     for tx_receipt in user_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in user_event_types_arr:
-            user_events_tx = get_user_events_tx(update_task, event_type, tx_receipt)
+            user_events_tx = get_user_events_tx(
+                update_task.user_contract, event_type, tx_receipt
+            )
             # if record does not get added, do not count towards num_total_changes
             for entry in user_events_tx:
                 user_id = helpers.get_tx_arg(entry, "_userId")
@@ -76,12 +79,16 @@ def user_state_update(
                 )
 
             # num_total_changes += processedEntries
-    logger.info(f"index.py | users.py | user_state_update - loop thru tx {datetime.now() - begin_user_state_update}")
+    logger.info(
+        f"index.py | users.py | user_state_update - loop thru tx {datetime.now() - begin_user_state_update}"
+    )
 
     user_id_to_user_record = lookup_or_create_user_records(
         session, list(user_transactions_lookup.keys()), block_timestamp
     )
-    logger.info(f"index.py | users.py | user_state_update - lookup or create {datetime.now() - begin_user_state_update}")
+    logger.info(
+        f"index.py | users.py | user_state_update - lookup or create {datetime.now() - begin_user_state_update}"
+    )
 
     # Process each user in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -238,11 +245,7 @@ def process_user_txs_serial(
     return processed_entries
 
 
-def get_user_events_tx(update_task, event_type, tx_receipt):
-    user_abi = update_task.abi_values["UserFactory"]["abi"]
-    user_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["user_factory"], abi=user_abi
-    )
+def get_user_events_tx(user_contract, event_type, tx_receipt):
     return getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
 
 

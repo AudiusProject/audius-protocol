@@ -262,15 +262,8 @@ def fetch_ipfs_metadata(
     block_number,
     block_hash,
 ):
-    track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]
-    track_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["track_factory"], abi=track_abi
-    )
-
-    user_abi = update_task.abi_values[USER_FACTORY_CONTRACT_NAME]["abi"]
-    user_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[USER_FACTORY], abi=user_abi
-    )
+    user_contract = update_task.user_contract
+    track_contract = update_task.track_contract
 
     blacklisted_cids = set()
     cids = set()
@@ -1030,6 +1023,18 @@ def update_task(self):
     db = update_task.db
     web3 = update_task.web3
     redis = update_task.redis
+
+    track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]
+    track_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()["track_factory"], abi=track_abi
+    )
+    update_task.track_contract = track_contract
+
+    user_abi = update_task.abi_values[USER_FACTORY_CONTRACT_NAME]["abi"]
+    user_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[USER_FACTORY], abi=user_abi
+    )
+    update_task.user_contract = user_contract
 
     # Update redis cache for health check queries
     update_latest_block_redis()

@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
 from sqlalchemy.sql import functions, null
-from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -50,7 +49,9 @@ def track_state_update(
     for tx_receipt in track_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in track_event_types_arr:
-            track_events_tx = get_track_events_tx(update_task, event_type, tx_receipt)
+            track_events_tx = get_track_events_tx(
+                update_task.track_contract, event_type, tx_receipt
+            )
             for entry in track_events_tx:
                 args = entry["args"]
                 track_id = (
@@ -169,11 +170,7 @@ def track_state_update(
     return num_total_changes, track_ids
 
 
-def get_track_events_tx(update_task, event_type, tx_receipt):
-    track_abi = update_task.abi_values["TrackFactory"]["abi"]
-    track_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["track_factory"], abi=track_abi
-    )
+def get_track_events_tx(track_contract, event_type, tx_receipt):
     return getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
 
 
