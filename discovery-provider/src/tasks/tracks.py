@@ -192,7 +192,7 @@ def invalidate_old_tracks(session, track_ids):
     # Update existing records in db to is_current = False
     session.query(Track).filter(
         Track.track_id.in_(track_ids), Track.is_current == True
-    ).update({"is_current": False})
+    ).update({"is_current": False}, synchronize_session="fetch")
 
 
 def update_stems_table(session, track_record, track_metadata):

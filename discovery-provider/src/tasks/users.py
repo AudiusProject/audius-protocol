@@ -269,7 +269,7 @@ def invalidate_old_users(session, user_ids):
     # Update existing records in db to is_current = False
     session.query(User).filter(
         User.user_id.in_(user_ids), User.is_current == True
-    ).update({"is_current": False})
+    ).update({"is_current": False}, synchronize_session="fetch")
 
 
 def parse_user_event(
