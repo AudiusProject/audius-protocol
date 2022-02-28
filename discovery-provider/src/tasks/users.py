@@ -37,6 +37,7 @@ def user_state_update(
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
     begin_user_state_update = datetime.now()
+    logger.info(f"index.py | users.py | user_state_update - begin state update {datetime.now() - begin_user_state_update}")
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -75,10 +76,12 @@ def user_state_update(
                 )
 
             # num_total_changes += processedEntries
+    logger.info(f"index.py | users.py | user_state_update - loop thru tx {datetime.now() - begin_user_state_update}")
 
     user_id_to_user_record = lookup_or_create_user_records(
         session, list(user_transactions_lookup.keys()), block_timestamp
     )
+    logger.info(f"index.py | users.py | user_state_update - lookup or create {datetime.now() - begin_user_state_update}")
 
     # Process each user in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -111,7 +114,7 @@ def user_state_update(
             except Exception as exc:
                 raise exc
     logger.info(
-        f"index.py | users.py | There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
+        f"index.py | users.py | user_state_update There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions. {datetime.now() - begin_user_state_update}"
     )
 
     # For each record in user_events_lookup, invalidate the old record and add the new record
@@ -124,8 +127,17 @@ def user_state_update(
             challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
             new_user_ids.append(user_id)
             new_user_objects.append(value_obj["user"])
+    logger.info(
+        f"index.py | users.py | user_state_update iterate {datetime.now() - begin_user_state_update}"
+    )
     invalidate_old_users(session, new_user_ids)
+    logger.info(
+        f"index.py | users.py | user_state_update invalidate {datetime.now() - begin_user_state_update}"
+    )
     session.bulk_save_objects(new_user_objects)
+    logger.info(
+        f"index.py | users.py | user_state_update bulk save {datetime.now() - begin_user_state_update}"
+    )
 
     if num_total_changes:
         logger.info(
