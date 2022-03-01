@@ -537,18 +537,6 @@ describe("audius-data", () => {
 
     // Confirm account deallocated after removal
     await pollAccountBalance(provider, userDelPDA, 0, 100)
-    // try {
-    //   // Expected failure when attempting to use invalid PDA
-    //   await updateUser({
-    //     program,
-    //     metadata: randomCID(),
-    //     userStgAccount: newUserAcctPDA,
-    //     userAuthorityKeypair: userAuthorityDelegateKeypair,
-    //     userDelegateAuthority: userDelPDA
-    //   });
-    // } catch(e) {
-    //   console.log(e)
-    // }
     await expect(updateUser({
       program,
       metadata: randomCID(),
