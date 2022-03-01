@@ -1,18 +1,22 @@
 module.exports = {
   root: true,
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: ['./tsconfig.json'],
+    project: ["./tsconfig.json"],
   },
-  plugins: [
-    '@typescript-eslint',
-  ],
+  plugins: ["@typescript-eslint", "mocha"],
   extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier',
+    "standard",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "prettier-standard/prettier-file",
+    "plugin:mocha/recommended",
   ],
   env: {
     node: true,
-  }
+  },
+  rules: {
+    "mocha/no-setup-in-describe": "off",
+  },
 };

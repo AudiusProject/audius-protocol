@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import ethWeb3 from "web3";
+import Web3 from "web3";
 import { randomBytes } from "crypto";
 import { expect } from "chai";
 import { getTransaction, randomCID } from "../lib/utils";
@@ -7,7 +7,7 @@ import { createUser, initUser, initUserSolPubkey } from "../lib/lib";
 
 const { PublicKey } = anchor.web3;
 
-const EthWeb3 = new ethWeb3();
+const EthWeb3 = new Web3();
 const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
 export const initTestConstants = () => {
@@ -117,7 +117,9 @@ export const testCreateUser = async ({
   const account = await program.account.user.fetch(userStgAccount);
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
-  expect(chainEthAddress, "eth address").to.equal(ethAccount.address.toLowerCase());
+  expect(chainEthAddress, "eth address").to.equal(
+    ethAccount.address.toLowerCase()
+  );
 
   const chainAuthority = account.authority.toString();
   const expectedAuthority = newUserKeypair.publicKey.toString();
@@ -135,7 +137,7 @@ export const confirmLogInTransaction = async (
   const logs = info.meta.logMessages;
   let stringFound = false;
   logs.forEach((v) => {
-    if (v.indexOf(log) != -1) {
+    if (v.indexOf(log) !== -1) {
       stringFound = true;
     }
   });

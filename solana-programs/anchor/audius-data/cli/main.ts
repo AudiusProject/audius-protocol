@@ -2,10 +2,7 @@ import { Program, Provider, Wallet, web3 } from "@project-serum/anchor";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
-import {
-  randomCID,
-  findDerivedPair,
-} from "../lib/utils";
+import { randomCID, findDerivedPair } from "../lib/utils";
 import {
   initAdmin,
   initUser,
@@ -15,7 +12,6 @@ import {
   CreatePlaylistParams,
   createPlaylist,
   DeletePlaylistParams,
-
   deletePlaylist,
   updatePlaylist,
   UpdatePlaylistParams,
@@ -139,9 +135,10 @@ async function initUserCLI(args: initUserCLIParams) {
 }
 
 async function timeCreateTrack(args: CreateTrackParams) {
-  const retries = 5;
+  let retries = 5;
   let err = null;
   while (retries > 0) {
+    // TODO make sure retries is modified
     try {
       const start = Date.now();
       const tx = await createTrack({
@@ -157,6 +154,7 @@ async function timeCreateTrack(args: CreateTrackParams) {
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
+      retries--;
       return tx;
     } catch (e) {
       err = e;
@@ -166,7 +164,7 @@ async function timeCreateTrack(args: CreateTrackParams) {
 }
 
 async function timeCreatePlaylist(args: CreatePlaylistParams) {
-  const retries = 5;
+  let retries = 5;
   let err = null;
   while (retries > 0) {
     try {
@@ -184,6 +182,7 @@ async function timeCreatePlaylist(args: CreatePlaylistParams) {
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
+      retries--;
       return tx;
     } catch (e) {
       err = e;
@@ -193,7 +192,7 @@ async function timeCreatePlaylist(args: CreatePlaylistParams) {
 }
 
 async function timeUpdatePlaylist(args: UpdatePlaylistParams) {
-  const retries = 5;
+  let retries = 5;
   let err = null;
   while (retries > 0) {
     try {
@@ -209,6 +208,7 @@ async function timeUpdatePlaylist(args: UpdatePlaylistParams) {
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
+      retries--;
       return tx;
     } catch (e) {
       err = e;
@@ -218,7 +218,7 @@ async function timeUpdatePlaylist(args: UpdatePlaylistParams) {
 }
 
 async function timeDeletePlaylist(args: DeletePlaylistParams) {
-  const retries = 5;
+  let retries = 5;
   let err = null;
   while (retries > 0) {
     try {
@@ -234,6 +234,7 @@ async function timeDeletePlaylist(args: DeletePlaylistParams) {
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
+      retries--;
       return tx;
     } catch (e) {
       err = e;
@@ -403,7 +404,9 @@ switch (options.function) {
       }
       const start = Date.now();
       await Promise.all(promises);
-      console.log(`Processed ${numPlaylists} playlists in ${Date.now() - start}ms`);
+      console.log(
+        `Processed ${numPlaylists} playlists in ${Date.now() - start}ms`
+      );
     })();
     break;
   }
@@ -422,8 +425,10 @@ switch (options.function) {
         playlistPublicKey,
         userAuthorityKeypair: userSolKeypair,
         userStgAccountPDA: options.userStgPubkey,
-      })
-      console.log(`Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`);
+      });
+      console.log(
+        `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
+      );
     })();
     break;
   }
@@ -441,9 +446,11 @@ switch (options.function) {
         provider: cliVars.provider,
         playlistPublicKey,
         userAuthorityKeypair: userSolKeypair,
-        userStgAccountPDA: options.userStgPubkey
-      })
-      console.log(`Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`);
+        userStgAccountPDA: options.userStgPubkey,
+      });
+      console.log(
+        `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
+      );
     })();
     break;
   }

@@ -81,7 +81,7 @@ export const findProgramAddress = (
 export const findDerivedAddress = async (
   programId: anchor.web3.PublicKey,
   base: anchor.web3.PublicKey,
-  seed: (Buffer | Uint8Array)
+  seed: Buffer | Uint8Array
 ) => {
   const finalSeed = [base.toBytes().slice(0, 32), seed];
   const result = await PublicKey.findProgramAddress(finalSeed, programId);
