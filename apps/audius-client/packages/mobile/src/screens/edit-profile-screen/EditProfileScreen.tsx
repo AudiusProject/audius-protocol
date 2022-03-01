@@ -5,6 +5,7 @@ import {
   SquareSizes,
   WidthSizes
 } from 'audius-client/src/common/models/ImageSizes'
+import { UserMetadata } from 'audius-client/src/common/models/User'
 import { updateProfile } from 'audius-client/src/common/store/pages/profile/actions'
 import { Formik, FormikProps } from 'formik'
 import { View } from 'react-native'
@@ -124,7 +125,7 @@ export const EditProfileScreen = () => {
       if (profile_picture.file) {
         newProfile.updatedProfilePicture = cover_photo
       }
-      dispatchWeb(updateProfile(newProfile))
+      dispatchWeb(updateProfile(newProfile as UserMetadata))
     },
     [dispatchWeb, profile]
   )
