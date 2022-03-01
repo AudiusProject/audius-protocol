@@ -28,7 +28,9 @@ const fontSize = {
   large: 18,
   xl: 20,
   xxl: 24,
-  xxxl: 32
+  xxxl: 28,
+  xxxxl: 32,
+  xxxxxl: 64
 }
 
 export const font = (weight: FontWeight): TextStyle => ({
