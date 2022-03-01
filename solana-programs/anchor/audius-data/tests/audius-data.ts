@@ -605,7 +605,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     await testCreateUser({
       provider,
