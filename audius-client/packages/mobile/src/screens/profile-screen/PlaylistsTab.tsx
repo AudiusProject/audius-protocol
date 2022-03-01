@@ -4,11 +4,8 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { CollectionList } from '../../components/collection-list/CollectionList'
 
+import { useEmptyProfileText } from './EmptyProfileTile'
 import { getProfile } from './selectors'
-
-const messages = {
-  emptyTabText: "You haven't created any playlists yet"
-}
 
 export const PlaylistsTab = () => {
   const { profile, playlists } = useSelectorWeb(getProfile)
@@ -19,13 +16,15 @@ export const PlaylistsTab = () => {
     }
   }, [profile, playlists])
 
+  const emptyListText = useEmptyProfileText(profile, 'playlists')
+
   if (!userPlaylists) return null
 
   return (
     <CollectionList
       listKey='profile-playlists'
       collection={userPlaylists}
-      emptyTabText={messages.emptyTabText}
+      emptyListText={emptyListText}
     />
   )
 }
