@@ -735,4 +735,84 @@ describe("audius-data", () => {
     await confirmLogInTransaction(provider, tx4, 'success');
   });
 
+  it("Error on saving an invalid track", async () => {
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+
+    const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toString();
+
+    await testCreateUser({
+      provider,
+      program,
+      message,
+      baseAuthorityAccount,
+      ethAccount,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    });
+
+    const newTrackKeypair = anchor.web3.Keypair.generate();
+    const trackMetadata = randomCID();
+    await testCreateTrack({
+      trackMetadata,
+      newTrackKeypair,
+      adminStgKeypair,
+      userAuthorityKeypair: newUserKeypair,
+      trackOwnerPDA: newUserAcctPDA,
+    })
+ 
+    const adminAccount = await program.account.audiusAdmin.fetch(
+      adminStgKeypair.publicKey
+    );
+
+    const adminTrackId = adminAccount.trackId
+
+    try {
+      const tx = await saveTrack({
+        program,
+        baseAuthorityAccount,
+        adminStgPublicKey: adminStgKeypair.publicKey,
+        userStgAccountPDA: newUserAcctPDA,
+        userAuthorityKeypair: newUserKeypair,
+        handleBytesArray,
+        bumpSeed,
+        trackAction: TrackActionEnumValues.save,
+        trackId: adminAccount.trackId,
+      })
+      console.log({ tx })
+    } catch (e) {
+      console.log({e})
+    }
+
+  
+    await expect(saveTrack({
+      program,
+      baseAuthorityAccount,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: newUserAcctPDA,
+      userAuthorityKeypair: newUserKeypair,
+      handleBytesArray,
+      bumpSeed,
+      trackAction: TrackActionEnumValues.save,
+      trackId: adminAccount.trackId,
+    })).to.eventually.be.rejected.and.property('msg').to.include(
+      `Invalid Id.`
+    )
+  });
+
 });
