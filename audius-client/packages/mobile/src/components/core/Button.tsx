@@ -57,12 +57,26 @@ const useStyles = makeStyles(
         icon: {
           color: palette.neutral
         }
+      },
+      commonAlt: {
+        root: {
+          borderColor: palette.neutralLight6,
+          borderWidth: 1,
+          backgroundColor: palette.white
+        },
+        text: {
+          color: palette.neutral
+        },
+        icon: {
+          color: palette.neutral
+        }
       }
     }
 
     const variantPressingStyles = {
       secondary: variantStyles.primary,
-      common: variantStyles.primary
+      common: variantStyles.primary,
+      commonAlt: variantStyles.commonAlt
     }
 
     const sizeStyles = {
@@ -166,7 +180,7 @@ export type ButtonProps = RNButtonProps &
       icon: ViewStyle
       text: TextStyle
     }>
-    variant?: 'primary' | 'secondary' | 'common'
+    variant?: 'primary' | 'secondary' | 'common' | 'commonAlt'
   }
 
 export const Button = (props: ButtonProps) => {
@@ -194,13 +208,20 @@ export const Button = (props: ButtonProps) => {
     handlePressOut: handlePressOutScale
   } = usePressScaleAnimation(0.97, false)
 
-  const { primaryDark1 } = useThemeColors()
+  const { primaryDark1, neutralLight10 } = useThemeColors()
+
+  const pressColor = {
+    primary: primaryDark1,
+    secondary: primaryDark1,
+    common: primaryDark1,
+    commonAlt: neutralLight10
+  }
 
   const {
     color,
     handlePressIn: handlePressInColor,
     handlePressOut: handlePressOutColor
-  } = useColorAnimation(styles.root.backgroundColor, primaryDark1)
+  } = useColorAnimation(styles.root.backgroundColor, pressColor[variant])
 
   const handlePressIn = useCallback(
     event => {

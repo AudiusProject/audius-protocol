@@ -21,43 +21,54 @@ export const fontByWeight: Record<FontWeight, string> = {
   ultraLight: 'AvenirNextLTPro-UltLt'
 }
 
+const fontSize = {
+  xs: 12,
+  small: 14,
+  medium: 16,
+  large: 18,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32
+}
+
 export const font = (weight: FontWeight): TextStyle => ({
   fontFamily: fontByWeight[weight]
 })
 
 export const typography = {
   h1: {
-    fontSize: 18,
+    fontSize: fontSize.large,
     fontFamily: fontByWeight.bold,
-    marginBottom: 18 * 0.35
+    marginBottom: fontSize.large * 0.35
   },
   h2: {
-    fontSize: 16,
+    fontSize: fontSize.medium,
     fontFamily: fontByWeight.bold,
-    marginBottom: 16 * 0.35
+    marginBottom: fontSize.medium * 0.35
   },
   h3: {
-    fontSize: 14,
+    fontSize: fontSize.small,
     fontFamily: fontByWeight.bold,
-    marginBottom: 14 * 0.35
+    marginBottom: fontSize.medium * 0.35
   },
   h4: {
-    fontSize: 14,
+    fontSize: fontSize.small,
     fontFamily: fontByWeight.medium,
-    marginBottom: 14 * 0.35
+    marginBottom: fontSize.medium * 0.35
   },
   body: {
-    fontSize: 14,
+    fontSize: fontSize.small,
     fontFamily: fontByWeight.medium
   },
   body1: {
-    fontSize: 14,
+    fontSize: fontSize.small,
     fontFamily: fontByWeight.regular
   },
   body2: {
-    fontSize: 12,
+    fontSize: fontSize.xs,
     fontFamily: fontByWeight.medium,
-    marginBottom: 12 * 0.2
+    marginBottom: fontSize.xs * 0.2
   },
-  fontByWeight
+  fontByWeight,
+  fontSize
 }

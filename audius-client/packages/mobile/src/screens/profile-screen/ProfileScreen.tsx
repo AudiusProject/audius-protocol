@@ -21,6 +21,7 @@ import { ProfileInfo } from './ProfileInfo'
 import { ProfileMetrics } from './ProfileMetrics'
 import { ProfileSocials } from './ProfileSocials'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
+import { UploadTrackButton } from './UploadTrackButton'
 import { getProfile } from './selectors'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -115,6 +116,7 @@ export const ProfileScreen = () => {
               onClose={handleCloseArtistRecs}
             />
           )}
+          {!isOwner ? null : <UploadTrackButton />}
         </View>
         <View style={styles.navigator}>
           <ProfileTabNavigator profile={profile} />

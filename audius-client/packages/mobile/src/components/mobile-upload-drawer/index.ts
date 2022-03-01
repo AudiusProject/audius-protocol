@@ -1,1 +1,1 @@
-export { MobileUploadDrawer } from './MobileUploadDrawer'
+export * from './MobileUploadDrawer'
