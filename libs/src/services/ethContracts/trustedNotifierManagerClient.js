@@ -1,11 +1,12 @@
 const GovernedContractClient = require('../contracts/GovernedContractClient')
 
 class TrustedNotifierManagerClient extends GovernedContractClient {
-  async registerNotifier (wallet, endpoint, privateKey = null) {
+  async registerNotifier (wallet, endpoint, email, privateKey = null) {
     const method = await this.getGovernedMethod(
       'registerNotifier',
       wallet,
-      endpoint
+      endpoint,
+      email
     )
     return this.web3Manager.sendTransaction(
       method,
@@ -45,6 +46,12 @@ class TrustedNotifierManagerClient extends GovernedContractClient {
     const method = await this.getMethod('getEndpointForWallet', wallet)
     const endpoint = await method.call()
     return endpoint.replace(/\/$/, '')
+  }
+
+  async getEmailForWallet (wallet) {
+    const method = await this.getMethod('getEmailForWallet', wallet)
+    const email = await method.call()
+    return email
   }
 
   async getWalletForEndpoint (endpoint) {
