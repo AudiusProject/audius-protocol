@@ -539,9 +539,9 @@ class Rewards extends Base {
     while (needsAttestations.length && retryCount <= maxAttempts)
 
     if (needsAttestations.length || unrecoverableError) {
-      logger.info(`Failed to aggregate attestations for challenge ${challengeId}, userId: ${encodedUserId}`)
+      logger.info(`Failed to aggregate attestations for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}]`)
     } else {
-      logger.info(`Successfully aggregated attestations for challenge ${challengeId}, userId: ${encodedUserId}`)
+      logger.info(`Successfully aggregated attestations for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}]`)
     }
     return completedAttestations
   }
