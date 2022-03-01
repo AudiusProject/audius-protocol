@@ -135,7 +135,7 @@ export const confirmLogInTransaction = async (
   let logs = info.meta.logMessages;
   let stringFound = false;
   logs.forEach((v) => {
-    if (v.indexOf(log) > 0) {
+    if (v.indexOf(log) != -1) {
       stringFound = true;
     }
   });
