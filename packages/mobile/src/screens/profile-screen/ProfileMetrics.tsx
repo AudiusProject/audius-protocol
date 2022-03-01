@@ -29,12 +29,14 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   value: {
     fontSize: 14,
     fontFamily: typography.fontByWeight.heavy,
+    lineHeight: 14,
     color: palette.neutral,
     marginRight: spacing(1)
   },
   label: {
     fontSize: 14,
     fontFamily: typography.fontByWeight.demiBold,
+    lineHeight: 14,
     color: palette.neutralLight4,
     textTransform: 'capitalize'
   }

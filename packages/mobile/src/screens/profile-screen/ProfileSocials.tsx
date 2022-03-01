@@ -1,10 +1,15 @@
+import { useCallback } from 'react'
+
 import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
 import { View } from 'react-native'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
+import IconTikTok from 'app/assets/images/iconTikTok.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import { IconButton, useLink } from 'app/components/core'
 import { makeStyles } from 'app/styles/makeStyles'
-import { useThemeColors } from 'app/utils/theme'
+import { EventNames } from 'app/types/analytics'
+import { make, track } from 'app/utils/analytics'
 
 import { ProfileBadge } from './ProfileBadge'
 
@@ -27,17 +32,79 @@ type ProfileSocialsProps = {
 }
 
 export const ProfileSocials = ({ profile }: ProfileSocialsProps) => {
-  const { twitter_handle, instagram_handle } = profile
+  const { handle, twitter_handle, instagram_handle, tiktok_handle } = profile
   const styles = useStyles()
-  const { neutral } = useThemeColors()
+  const sanitizedHandle = handle.replace('@', '')
+
+  const { onPress: onPressTwitter } = useLink(
+    `https://twitter.com/${twitter_handle}`
+  )
+
+  const { onPress: onPressInstagram } = useLink(
+    `https://instagram.com/${instagram_handle}`
+  )
+
+  const { onPress: onPressTikTok } = useLink(
+    `https://tiktok.com/@${tiktok_handle}`
+  )
+
+  const handlePressTwitter = useCallback(() => {
+    track(
+      make({
+        eventName: EventNames.PROFILE_PAGE_CLICK_TWITTER,
+        handle: sanitizedHandle,
+        twitterHandle: twitter_handle as string
+      })
+    )
+    onPressTwitter()
+  }, [onPressTwitter, sanitizedHandle, twitter_handle])
+
+  const handlePressInstagram = useCallback(() => {
+    track(
+      make({
+        eventName: EventNames.PROFILE_PAGE_CLICK_INSTAGRAM,
+        handle: sanitizedHandle,
+        instagramHandle: instagram_handle as string
+      })
+    )
+    onPressInstagram()
+  }, [onPressInstagram, sanitizedHandle, instagram_handle])
+
+  const handlePressTikTok = useCallback(() => {
+    track(
+      make({
+        eventName: EventNames.PROFILE_PAGE_CLICK_TIKTOK,
+        handle: sanitizedHandle,
+        tikTokHandle: tiktok_handle as string
+      })
+    )
+    onPressTikTok()
+  }, [onPressTikTok, sanitizedHandle, tiktok_handle])
 
   return (
     <View style={styles.socials}>
       <ProfileBadge profile={profile} />
       {twitter_handle ? (
-        <IconTwitterBird style={styles.icon} fill={neutral} />
+        <IconButton
+          icon={IconTwitterBird}
+          styles={{ icon: styles.icon }}
+          onPress={handlePressTwitter}
+        />
       ) : null}
-      {instagram_handle ? <IconInstagram style={styles.icon} /> : null}
+      {instagram_handle ? (
+        <IconButton
+          icon={IconInstagram}
+          styles={{ icon: styles.icon }}
+          onPress={handlePressInstagram}
+        />
+      ) : null}
+      {tiktok_handle ? (
+        <IconButton
+          icon={IconTikTok}
+          styles={{ icon: styles.icon }}
+          onPress={handlePressTikTok}
+        />
+      ) : null}
     </View>
   )
 }

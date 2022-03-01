@@ -29,7 +29,7 @@ export const launchSelectImageActionSheet = (
         name: response.fileName ?? response.uri?.split('/').pop() ?? '',
         size: response.fileSize ?? 0,
         fileType: response.type ?? '',
-        uri: response.uri ?? '',
+        url: response.uri ?? '',
         file: `data:${response.type};base64,${response.base64}`
       }
       callback(image)

@@ -10,9 +10,11 @@ import {
 } from 'react-native'
 import { useToggle } from 'react-use'
 
+import { Hyperlink } from 'app/components/core'
 import { makeStyles } from 'app/styles/makeStyles'
 
 import { Sites } from './Sites'
+import { squashNewLines } from './utils'
 
 const messages = {
   showMore: 'show more',
@@ -83,13 +85,15 @@ export const ExpandableBio = ({ profile }: ExpandableBioProps) => {
     <View style={styles.root}>
       <View>
         {bio ? (
-          <Text
-            numberOfLines={fullBioHeight && !isExpanded ? 2 : 0}
-            style={styles.bio}
-            onLayout={handleBioLayout}
-          >
-            {bio}
-          </Text>
+          <Hyperlink source='profile page'>
+            <Text
+              numberOfLines={fullBioHeight && !isExpanded ? 2 : 0}
+              style={styles.bio}
+              onLayout={handleBioLayout}
+            >
+              {squashNewLines(bio)}
+            </Text>
+          </Hyperlink>
         ) : null}
         {hasSites && isExpanded ? <Sites profile={profile} /> : null}
       </View>

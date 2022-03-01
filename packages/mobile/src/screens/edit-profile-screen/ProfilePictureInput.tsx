@@ -24,7 +24,8 @@ const useStyles = makeStyles(({ palette }) => ({
     borderStyle: 'solid',
     borderColor: palette.white,
     zIndex: 100,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    backgroundColor: palette.neutralLight6
   },
   profilePictureImage: {
     backgroundColor: palette.neutral
@@ -79,7 +80,7 @@ export const ProfilePictureInput = () => {
     >
       <DynamicImage
         styles={{ image: styles.profilePictureImage }}
-        source={{ uri: value.uri }}
+        source={{ uri: value.url }}
         onLoad={() => setIsLoading(false)}
       >
         <View style={styles.backdrop} />
