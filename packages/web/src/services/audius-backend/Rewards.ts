@@ -155,17 +155,26 @@ export class ClientRewardsReporter {
     challengeId,
     amount,
     error,
-    specifier
+    specifier,
+    reason
   }: {
     userId: string
     challengeId: string
     amount: number
     error: string
     specifier: string
+    reason: 'hcaptcha' | 'cognito' | 'blocked'
   }) {
     ;(async () => {
+      const map: Record<'hcaptcha' | 'cognito' | 'blocked', Name> = {
+        hcaptcha: Name.REWARDS_CLAIM_HCAPTCHA,
+        cognito: Name.REWARDS_CLAIM_COGNITO,
+        blocked: Name.REWARDS_CLAIM_BLOCKED
+      }
+      const event = map[reason]
+
       try {
-        await track(Name.REWARDS_CLAIM_BLOCKED, {
+        await track(event, {
           userId,
           challengeId,
           amount,
@@ -181,7 +190,8 @@ export class ClientRewardsReporter {
           amount,
           error,
           source: this.source,
-          specifier
+          specifier,
+          reason
         })
       } catch (e) {
         console.log(`Report AAO rejection failure: ${e}`)
