@@ -2,6 +2,41 @@
   transition: opacity 1s ease-in-out;
 }
 
+.folderButtonContentContainer {
+  height: 100%;
+  line-height: unset;
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+}
+
+.folderNameContainer {
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.iconFolder path {
+  align-self: flex-end;
+  fill: none;
+  stroke-width: 1px;
+  stroke: var(--nav-column-link);
+}
+
+.iconFolder {
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.iconCaret {
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.iconFolder.iconFolderUpdated {
+  color: var(--secondary);
+}
+
 .dragging {
   opacity: 0.5;
 }

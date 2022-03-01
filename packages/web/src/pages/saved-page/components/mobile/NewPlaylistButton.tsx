@@ -51,7 +51,7 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    open: () => dispatch(createPlaylistActions.open())
+    open: () => dispatch(createPlaylistActions.open(undefined, true))
   }
 }
 

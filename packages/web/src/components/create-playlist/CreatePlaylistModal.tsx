@@ -16,7 +16,7 @@ import zIndex from 'utils/zIndex'
 
 import styles from './CreatePlaylistModal.module.css'
 import FolderForm from './FolderForm'
-import PlaylistForm from './PlaylistForm'
+import PlaylistForm, { PlaylistFormFields } from './PlaylistForm'
 
 const messages = {
   createPlaylistTabTitle: 'Create Playlist',
@@ -28,13 +28,17 @@ const INITIAL_TAB = 'create-playlist' as TabName
 
 type CreatePlaylistModalProps = {
   visible?: boolean
+  hideFolderTab?: boolean
   onCancel: () => void
-  onCreatePlaylist: () => void
+  onCreatePlaylist: (metadata: PlaylistFormFields) => void
+  onCreateFolder: (name: string) => void
 }
 
 const CreatePlaylistModal = ({
   visible = true,
+  hideFolderTab = false,
   onCancel,
+  onCreateFolder,
   onCreatePlaylist
 }: CreatePlaylistModalProps) => {
   const { isEnabled: isPlaylistFoldersEnabled } = useFlag(
@@ -103,7 +107,7 @@ const CreatePlaylistModal = ({
         />
       </ModalHeader>
       <ModalContent>
-        {!isPlaylistFoldersEnabled ? null : (
+        {!isPlaylistFoldersEnabled || hideFolderTab ? null : (
           <div className={styles.segmentedControlContainer}>
             <SegmentedControl
               options={tabOptions}
@@ -119,7 +123,7 @@ const CreatePlaylistModal = ({
             onSave={onCreatePlaylist}
           />
         ) : (
-          <FolderForm onSubmit={() => {}} />
+          <FolderForm onSubmit={onCreateFolder} />
         )}
       </ModalContent>
     </Modal>

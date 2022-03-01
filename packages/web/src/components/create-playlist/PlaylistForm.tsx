@@ -22,7 +22,7 @@ const messages = {
   createPlaylistButtonText: 'Create Playlist'
 }
 
-type PlaylistFormFields = Partial<Collection> & {
+export type PlaylistFormFields = Partial<Collection> & {
   artwork: {
     file: Blob
     url: string

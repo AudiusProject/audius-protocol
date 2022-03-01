@@ -5,6 +5,7 @@ import {
   PlaylistLibraryIdentifier
 } from 'common/models/PlaylistLibrary'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
+import { uuid } from 'common/utils/uid'
 
 /**
  * Finds an item by id in the playlist library
@@ -90,6 +91,7 @@ export const removeFromPlaylistLibrary = (
         const res = removeFromPlaylistLibrary(item, playlistId)
         removed = res.removed
         newItem = {
+          id: item.id,
           type: item.type,
           name: item.name,
           contents: res.library.contents
@@ -115,6 +117,34 @@ export const removeFromPlaylistLibrary = (
       contents: newContents
     },
     removed
+  }
+}
+
+export const constructPlaylistFolder = (
+  name: string,
+  contents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[] = []
+): PlaylistLibraryFolder => {
+  return {
+    id: uuid(),
+    type: 'folder',
+    name,
+    contents: contents
+  }
+}
+
+/**
+ * Adds new folder to a playlist library and returns the result.
+ * Does not mutate.
+ * @param library
+ * @param folder
+ */
+export const addFolderToLibrary = (
+  library: PlaylistLibrary | null,
+  folder: PlaylistLibraryFolder
+): PlaylistLibrary => {
+  return {
+    ...(library || {}),
+    contents: [...(library?.contents || []), folder]
   }
 }
 

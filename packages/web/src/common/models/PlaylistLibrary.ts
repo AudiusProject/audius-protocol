@@ -22,6 +22,7 @@ export type PlaylistLibraryIdentifier =
   | TempPlaylistIdentifier
 
 export type PlaylistLibraryFolder = {
+  id: string
   type: 'folder'
   name: string
   contents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[]

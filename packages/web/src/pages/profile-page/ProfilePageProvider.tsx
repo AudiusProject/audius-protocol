@@ -1058,7 +1058,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     fetchFollowUsers: (followGroup: any, limit: number, offset: number) =>
       dispatch(profileActions.fetchFollowUsers(followGroup, limit, offset)),
 
-    openCreatePlaylistModal: () => dispatch(createPlaylistModalActions.open()),
+    openCreatePlaylistModal: () =>
+      dispatch(createPlaylistModalActions.open(undefined, true)),
     setNotificationSubscription: (userId: ID, isSubscribed: boolean) =>
       dispatch(
         profileActions.setNotificationSubscription(userId, isSubscribed, true)

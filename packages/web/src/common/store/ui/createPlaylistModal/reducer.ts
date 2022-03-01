@@ -5,22 +5,28 @@ import { CreatePlaylistModalState } from './types'
 
 const initialState = {
   isOpen: false,
-  collectionId: null
+  collectionId: null,
+  hideFolderTab: false
 }
 
 const actionsMap = {
-  [OPEN](state: CreatePlaylistModalState, action: { collectionId: ID }) {
+  [OPEN](
+    state: CreatePlaylistModalState,
+    action: { collectionId: ID; hideFolderTab: boolean }
+  ) {
     return {
       ...state,
       isOpen: true,
-      collectionId: action.collectionId
+      collectionId: action.collectionId,
+      hideFolderTab: action.hideFolderTab
     }
   },
   [CLOSE](state: CreatePlaylistModalState) {
     return {
       ...state,
       isOpen: false,
-      collectionId: null
+      collectionId: null,
+      hideFolderTab: false
     }
   }
 }
