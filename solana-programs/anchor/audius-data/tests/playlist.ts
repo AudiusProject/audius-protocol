@@ -15,7 +15,7 @@ import {
   testCreateUser,
 } from "./test-helpers";
 
-describe("playlist", () => {
+describe("playlist", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -26,11 +26,11 @@ describe("playlist", () => {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  let adminKeypair = anchor.web3.Keypair.generate();
-  let adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
-  it("Initializing admin account!", async () => {
+  it("Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
@@ -41,7 +41,7 @@ describe("playlist", () => {
       playlistIdOffset: new anchor.BN("0"),
     });
 
-    let adminAccount = await program.account.audiusAdmin.fetch(
+    const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
@@ -54,7 +54,7 @@ describe("playlist", () => {
     }
   });
 
-  describe("create, update, delete", () => {
+  describe("create, update, delete", function () {
     const testCreatePlaylist = async ({
       newPlaylistKeypair,
       playlistOwnerPDA,
@@ -132,7 +132,9 @@ describe("playlist", () => {
       }
 
       if (playlistAcctBalance > 0) {
-        throw new Error(`Failed to deallocate playlist - Remaining balance ${playlistAcctBalance}`);
+        throw new Error(
+          `Failed to deallocate playlist - Remaining balance ${playlistAcctBalance}`
+        );
       }
 
       console.log(
@@ -147,7 +149,7 @@ describe("playlist", () => {
     let newUserKeypair: anchor.web3.Keypair;
 
     // Initialize user for each test
-    beforeEach(async () => {
+    beforeEach(async function () {
       const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
@@ -172,7 +174,7 @@ describe("playlist", () => {
         isWriteEnabled: false,
         adminStgAccount: adminStgKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
-      })
+      });
 
       await testCreateUser({
         provider,
@@ -189,7 +191,7 @@ describe("playlist", () => {
       });
     });
 
-    it("create playlist", async () => {
+    it("create playlist", async function () {
       await testCreatePlaylist({
         newPlaylistKeypair: anchor.web3.Keypair.generate(),
         userAuthorityKeypair: newUserKeypair,
@@ -199,7 +201,7 @@ describe("playlist", () => {
       });
     });
 
-    it("update playlist", async () => {
+    it("update playlist", async function () {
       const newPlaylistKeypair = anchor.web3.Keypair.generate();
 
       await testCreatePlaylist({
@@ -218,7 +220,7 @@ describe("playlist", () => {
       });
     });
 
-    it("delete playlist", async () => {
+    it("delete playlist", async function () {
       const newPlaylistKeypair = anchor.web3.Keypair.generate();
 
       await testCreatePlaylist({

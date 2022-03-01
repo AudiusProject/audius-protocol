@@ -11,8 +11,8 @@ pub mod audius_data {
     use anchor_lang::solana_program::sysvar;
     use std::str::FromStr;
 
-    const ETH_ADDRESS_OFFSET:usize = 12;
-    const MESSAGE_OFFSET:usize = 97;
+    const ETH_ADDRESS_OFFSET: usize = 12;
+    const MESSAGE_OFFSET: usize = 97;
 
     /*
         User & Admin Functions
@@ -178,7 +178,6 @@ pub mod audius_data {
         }
 
         // Eth_address offset (12) + address (20) + signature (65) + message (32)
-        let eth_address_offset = 12;
         let secp_data =
             sysvar::instructions::load_instruction_at_checked(0, &ctx.accounts.sysvar_program)?;
 
@@ -186,7 +185,7 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
         let instruction_signer =
-            secp_data.data[eth_address_offset..eth_address_offset + 20].to_vec();
+            secp_data.data[ETH_ADDRESS_OFFSET..ETH_ADDRESS_OFFSET + 20].to_vec();
         if instruction_signer != eth_address {
             return Err(ErrorCode::Unauthorized.into());
         }
@@ -195,8 +194,7 @@ pub mod audius_data {
         audius_user_acct.eth_address = eth_address;
         audius_user_acct.authority = user_authority;
 
-        let message_offset = 97;
-        let message = secp_data.data[message_offset..].to_vec();
+        let message = secp_data.data[MESSAGE_OFFSET..].to_vec();
 
         if message != user_authority.to_bytes() {
             return Err(ErrorCode::Unauthorized.into());

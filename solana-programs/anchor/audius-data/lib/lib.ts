@@ -110,10 +110,7 @@ export const initUserSolPubkey = async ({
   userSolPubkey,
   userStgAccount,
 }: InitUserSolPubkeyParams) => {
-  const { signature, recoveryId } = signBytes(
-    message,
-    ethPrivateKey
-  );
+  const { signature, recoveryId } = signBytes(message, ethPrivateKey);
 
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
@@ -122,22 +119,23 @@ export const initUserSolPubkey = async ({
 
   const tx = new Transaction();
 
-  tx.add(Secp256k1Program.createInstructionWithPublicKey({
-    publicKey: ethPubkey,
-    message: message,
-    recoveryId: recoveryId,
-    signature: signature
-  }));
+  tx.add(
+    Secp256k1Program.createInstructionWithPublicKey({
+      publicKey: ethPubkey,
+      message: message,
+      recoveryId: recoveryId,
+      signature: signature,
+    })
+  );
 
-  tx.add(program.instruction.initUserSol(
-    userSolPubkey,
-    {
+  tx.add(
+    program.instruction.initUserSol(userSolPubkey, {
       accounts: {
         user: userStgAccount,
         sysvarProgram: SystemSysVarProgramKey,
       },
-    },
-  ));
+    })
+  );
 
   return provider.send(tx);
 };
@@ -170,42 +168,46 @@ export const createUser = async ({
   userStgAccount,
   adminStgPublicKey,
 }: CreateUserParams) => {
-  const { signature, recoveryId } = signBytes(
-    message,
-    ethAccount.privateKey
-  );
+  const { signature, recoveryId } = signBytes(message, ethAccount.privateKey);
 
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
-    .publicKeyCreate(anchor.utils.bytes.hex.decode(ethAccount.privateKey), false)
+    .publicKeyCreate(
+      anchor.utils.bytes.hex.decode(ethAccount.privateKey),
+      false
+    )
     .slice(1);
 
   const tx = new Transaction();
 
-  tx.add(Secp256k1Program.createInstructionWithPublicKey({
-    publicKey: ethPubkey,
-    message: message,
-    signature,
-    recoveryId,
-  }));
+  tx.add(
+    Secp256k1Program.createInstructionWithPublicKey({
+      publicKey: ethPubkey,
+      message: message,
+      signature,
+      recoveryId,
+    })
+  );
 
-  tx.add(program.instruction.createUser(
-    baseAuthorityAccount,
-    [...anchor.utils.bytes.hex.decode(ethAccount.address)],
-    handleBytesArray,
-    bumpSeed,
-    metadata,
-    userSolPubkey,
-    {
-      accounts: {
-        payer: provider.wallet.publicKey,
-        user: userStgAccount,
-        systemProgram: SystemProgram.programId,
-        sysvarProgram: SystemSysVarProgramKey,
-        audiusAdmin: adminStgPublicKey,
-      },
-    },
-  ));
+  tx.add(
+    program.instruction.createUser(
+      baseAuthorityAccount,
+      [...anchor.utils.bytes.hex.decode(ethAccount.address)],
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      userSolPubkey,
+      {
+        accounts: {
+          payer: provider.wallet.publicKey,
+          user: userStgAccount,
+          systemProgram: SystemProgram.programId,
+          sysvarProgram: SystemSysVarProgramKey,
+          audiusAdmin: adminStgPublicKey,
+        },
+      }
+    )
+  );
 
   return provider.send(tx);
 };
@@ -224,16 +226,13 @@ export const updateUser = async ({
   userStgAccount,
   userAuthorityKeypair,
 }: UpdateUserParams) => {
-  return program.rpc.updateUser(
-    metadata,
-    {
-      accounts: {
-        user: userStgAccount,
-        userAuthority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
-  );
+  return program.rpc.updateUser(metadata, {
+    accounts: {
+      user: userStgAccount,
+      userAuthority: userAuthorityKeypair.publicKey,
+    },
+    signers: [userAuthorityKeypair],
+  });
 };
 
 // Update Audius Admin account
@@ -250,16 +249,13 @@ export const updateAdmin = async ({
   adminStgAccount,
   adminAuthorityKeypair,
 }: UpdateAdminParams) => {
-  return program.rpc.updateAdmin(
-    isWriteEnabled,
-    {
-      accounts: {
-        admin: adminStgAccount,
-        adminAuthority: adminAuthorityKeypair.publicKey,
-      },
-      signers: [adminAuthorityKeypair],
+  return program.rpc.updateAdmin(isWriteEnabled, {
+    accounts: {
+      admin: adminStgAccount,
+      adminAuthority: adminAuthorityKeypair.publicKey,
     },
-  );
+    signers: [adminAuthorityKeypair],
+  });
 };
 
 /// Verify user with authenticatorKeypair
@@ -279,7 +275,7 @@ export const updateIsVerified = async ({
   verifierKeypair,
   baseAuthorityAccount,
   handleBytesArray,
-  bumpSeed
+  bumpSeed,
 }: UpdateIsVerifiedParams) => {
   return program.rpc.updateIsVerified(
     baseAuthorityAccount,
@@ -344,17 +340,14 @@ export const updateTrack = async ({
   userAuthorityKeypair,
   userStgAccountPDA,
 }: UpdateTrackParams) => {
-  return program.rpc.updateTrack(
-    metadata,
-    {
-      accounts: {
-        track: trackPDA,
-        user: userStgAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
-  );
+  return program.rpc.updateTrack(metadata, {
+    accounts: {
+      track: trackPDA,
+      user: userStgAccountPDA,
+      authority: userAuthorityKeypair.publicKey,
+    },
+    signers: [userAuthorityKeypair],
+  });
 };
 
 /// Initialize a user from the Audius Admin account
