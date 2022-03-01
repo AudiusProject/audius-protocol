@@ -1,13 +1,13 @@
+import concurrent.futures
 import logging
 from datetime import datetime
-from typing import Any, Dict, Set, Tuple, TypedDict
+from typing import Any, Dict, List, Set, Tuple, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
-from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -35,6 +35,7 @@ def user_state_update(
     blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
+    begin_user_state_update = datetime.now()
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -51,7 +52,11 @@ def user_state_update(
     # NOTE - events are stored only for debugging purposes and not used or persisted anywhere
     user_events_lookup: Dict[int, Dict[str, Any]] = {}
 
-    # for each user factory transaction, loop through every tx
+    # Array of transactions by user to be applied in parallel
+    # Map(user_id=1 <-> [tx1, tx2], user_id=2 <-> [tx1])
+    user_transactions_lookup: Dict[int, List[Tuple]] = {}
+
+    # For each user factory transaction, loop through every tx
     # loop through all audius event types within that tx and get all event logs
     # for each event, apply changes to the user in user_events_lookup
     for tx_receipt in user_factory_txs:
@@ -59,91 +64,51 @@ def user_state_update(
         for event_type in user_event_types_arr:
             user_events_tx = get_user_events_tx(update_task, event_type, tx_receipt)
             # if record does not get added, do not count towards num_total_changes
-            processedEntries = 0
             for entry in user_events_tx:
-                existing_user_record = None
                 user_id = helpers.get_tx_arg(entry, "_userId")
-                try:
-                    # look up or populate existing record
-                    if user_id in user_events_lookup:
-                        existing_user_record = user_events_lookup[user_id]["user"]
-                    else:
-                        existing_user_record = lookup_user_record(
-                            update_task,
-                            session,
-                            entry,
-                            block_number,
-                            block_timestamp,
-                            txhash,
-                        )
+                if user_id not in user_transactions_lookup:
+                    user_transactions_lookup[user_id] = []
+                # Append to user level list
+                user_transactions_lookup[user_id].append(
+                    (entry, event_type, tx_receipt, txhash)
+                )
 
-                    # parse user event to add metadata to record
-                    if event_type == user_event_types_lookup["update_multihash"]:
-                        metadata_multihash = helpers.multihash_digest_to_cid(
-                            helpers.get_tx_arg(entry, "_multihashDigest")
-                        )
-                        user_record = (
-                            parse_user_event(
-                                self,
-                                update_task,
-                                session,
-                                tx_receipt,
-                                block_number,
-                                entry,
-                                event_type,
-                                existing_user_record,
-                                ipfs_metadata[metadata_multihash],
-                                block_timestamp,
-                            )
-                            if metadata_multihash not in blacklisted_cids
-                            else None
-                        )
-                    else:
-                        user_record = parse_user_event(
-                            self,
-                            update_task,
-                            session,
-                            tx_receipt,
-                            block_number,
-                            entry,
-                            event_type,
-                            existing_user_record,
-                            None,
-                            block_timestamp,
-                        )
+            # num_total_changes += processedEntries
 
-                    # process user record
-                    if user_record is not None:
-                        if user_id not in user_events_lookup:
-                            user_events_lookup[user_id] = {
-                                "user": user_record,
-                                "events": [],
-                            }
-                        else:
-                            user_events_lookup[user_id]["user"] = user_record
-                        user_events_lookup[user_id]["events"].append(event_type)
-                        user_ids.add(user_id)
-                        processedEntries += 1
-                except EntityMissingRequiredFieldError as e:
-                    logger.warning(f"Skipping tx {txhash} with error {e}")
-                    skipped_tx_count += 1
-                    add_node_level_skipped_transaction(
-                        session, block_number, blockhash, txhash
-                    )
-                    pass
-                except Exception as e:
-                    logger.error("Error in parse user transaction")
-                    raise IndexingError(
-                        "user", block_number, blockhash, txhash, str(e)
-                    ) from e
-
-            num_total_changes += processedEntries
-
+    # Process each user in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        process_user_txs_futures = {}
+        for user_id in user_transactions_lookup.keys():
+            user_txs = user_transactions_lookup[user_id]
+            process_user_txs_futures[
+                executor.submit(
+                    process_user_txs_serial,
+                    self,
+                    user_id,
+                    user_txs,
+                    session,
+                    user_events_lookup,
+                    update_task,
+                    blacklisted_cids,
+                    block_number,
+                    block_timestamp,
+                    blockhash,
+                    ipfs_metadata,
+                    user_ids,
+                    skipped_tx_count,
+                )
+            ] = user_id
+        for future in concurrent.futures.as_completed(process_user_txs_futures):
+            try:
+                processed_entries = future.result()
+                num_total_changes += processed_entries
+            except Exception as exc:
+                raise exc
     logger.info(
         f"index.py | users.py | There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
     )
 
-    # for each record in user_events_lookup, invalidate the old record and add the new record
+    # For each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_events_lookup.items():
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
@@ -152,15 +117,112 @@ def user_state_update(
             challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
             session.add(value_obj["user"])
 
+    if num_total_changes:
+        logger.info(
+            f"index.py | users.py | user_state_update | finished user_state_update in {datetime.now() - begin_user_state_update} // per event: {(datetime.now() - begin_user_state_update) / num_total_changes} secs"
+        )
     return num_total_changes, user_ids
 
 
+def process_user_txs_serial(
+    self,
+    user_id,
+    user_txs,
+    session,
+    user_events_lookup,
+    update_task,
+    blacklisted_cids,
+    block_number,
+    block_timestamp,
+    blockhash,
+    ipfs_metadata,
+    user_ids,
+    skipped_tx_count,
+):
+    processed_entries = 0
+    for user_tx in user_txs:
+        try:
+            entry = user_tx[0]
+            event_type = user_tx[1]
+            tx_receipt = user_tx[2]
+            txhash = user_tx[3]
+
+            # look up or populate existing record
+            if user_id in user_events_lookup:
+                existing_user_record = user_events_lookup[user_id]["user"]
+            else:
+                existing_user_record = lookup_user_record(
+                    update_task,
+                    session,
+                    entry,
+                    block_number,
+                    block_timestamp,
+                    txhash,
+                )
+
+            # parse user event to add metadata to record
+            if event_type == user_event_types_lookup["update_multihash"]:
+                metadata_multihash = helpers.multihash_digest_to_cid(
+                    helpers.get_tx_arg(entry, "_multihashDigest")
+                )
+                user_record = (
+                    parse_user_event(
+                        self,
+                        update_task,
+                        session,
+                        tx_receipt,
+                        block_number,
+                        entry,
+                        event_type,
+                        existing_user_record,
+                        ipfs_metadata[metadata_multihash],
+                        block_timestamp,
+                    )
+                    if metadata_multihash not in blacklisted_cids
+                    else None
+                )
+            else:
+                user_record = parse_user_event(
+                    self,
+                    update_task,
+                    session,
+                    tx_receipt,
+                    block_number,
+                    entry,
+                    event_type,
+                    existing_user_record,
+                    None,
+                    block_timestamp,
+                )
+            # process user record
+            if user_record is not None:
+                if user_id not in user_events_lookup:
+                    user_events_lookup[user_id] = {
+                        "user": user_record,
+                        "events": [],
+                    }
+                else:
+                    user_events_lookup[user_id]["user"] = user_record
+                user_events_lookup[user_id]["events"].append(event_type)
+                user_ids.add(user_id)
+
+            processed_entries += 1
+        except EntityMissingRequiredFieldError as e:
+            logger.warning(f"Skipping tx {txhash} with error {e}")
+            skipped_tx_count += 1
+            add_node_level_skipped_transaction(session, block_number, blockhash, txhash)
+            pass
+        except Exception as e:
+            logger.error("Error in parse user transaction")
+            raise IndexingError("user", block_number, blockhash, txhash, str(e)) from e
+
+    return processed_entries
+
+
 def get_user_events_tx(update_task, event_type, tx_receipt):
-    user_abi = update_task.abi_values["UserFactory"]["abi"]
-    user_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["user_factory"], abi=user_abi
+    return getattr(update_task.user_contract.events, event_type)().processReceipt(
+        tx_receipt
     )
-    return getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_user_record(

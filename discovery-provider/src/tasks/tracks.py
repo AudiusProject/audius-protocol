@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
 from sqlalchemy.sql import functions, null
-from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -34,6 +33,8 @@ def track_state_update(
     blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
+    begin_track_state_update = datetime.now()
+
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
     skipped_tx_count = 0
@@ -139,15 +140,17 @@ def track_state_update(
             invalidate_old_track(session, track_id)
             session.add(value_obj["track"])
 
+    if num_total_changes:
+        logger.info(
+            f"index.py | tracks.py | track_state_update | finished track_state_update in {datetime.now() - begin_track_state_update} // per event: {(datetime.now() - begin_track_state_update) / num_total_changes} secs"
+        )
     return num_total_changes, track_ids
 
 
 def get_track_events_tx(update_task, event_type, tx_receipt):
-    track_abi = update_task.abi_values["TrackFactory"]["abi"]
-    track_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["track_factory"], abi=track_abi
+    return getattr(update_task.track_contract.events, event_type)().processReceipt(
+        tx_receipt
     )
-    return getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_track_record(

@@ -4,6 +4,7 @@ import {
   createPlaylist,
   deletePlaylist,
   initAdmin,
+  updateAdmin,
   updatePlaylist,
 } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
@@ -27,13 +28,15 @@ describe("playlist", () => {
 
   let adminKeypair = anchor.web3.Keypair.generate();
   let adminStgKeypair = anchor.web3.Keypair.generate();
+  const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("Initializing admin account!", async () => {
     await initAdmin({
-      provider: provider,
-      program: program,
-      adminKeypair: adminKeypair,
-      adminStgKeypair: adminStgKeypair,
+      provider,
+      program,
+      adminKeypair,
+      adminStgKeypair,
+      verifierKeypair,
       trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("0"),
     });
@@ -162,6 +165,14 @@ describe("playlist", () => {
       // Generate signed SECP instruction
       // Message as the incoming public key
       const message = newUserKeypair.publicKey.toString();
+
+      // disable admin writes
+      await updateAdmin({
+        program,
+        isWriteEnabled: false,
+        adminStgAccount: adminStgKeypair.publicKey,
+        adminAuthorityKeypair: adminKeypair,
+      })
 
       await testCreateUser({
         provider,
