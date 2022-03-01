@@ -96,6 +96,11 @@ describe("follows", () => {
       newUser1Key = anchor.web3.Keypair.generate();
       newUser2Key = anchor.web3.Keypair.generate();
 
+      // Generate signed SECP instruction
+      // Message as the incoming public key
+      const message1 = newUser1Key.publicKey.toBytes();
+      const message2 = newUser2Key.publicKey.toBytes();
+
       // disable admin writes
       await updateAdmin({
         program,
@@ -107,6 +112,7 @@ describe("follows", () => {
       await testCreateUser({
         provider,
         program,
+        message: message1,
         baseAuthorityAccount,
         ethAccount: constants1.ethAccount,
         handleBytesArray: handleBytesArray1,
@@ -120,6 +126,7 @@ describe("follows", () => {
       await testCreateUser({
         provider,
         program,
+        message: message2,
         baseAuthorityAccount,
         ethAccount: constants2.ethAccount,
         handleBytesArray: handleBytesArray2,

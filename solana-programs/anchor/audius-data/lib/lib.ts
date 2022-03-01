@@ -94,6 +94,7 @@ export type initUserSolPubkeyArgs = {
   provider: Provider;
   program: Program<AudiusData>;
   ethPrivateKey: string;
+  message: Uint8Array;
   userSolPubkey: anchor.web3.PublicKey;
   userStgAccount: anchor.web3.PublicKey;
 };
@@ -102,11 +103,10 @@ export const initUserSolPubkey = async ({
   provider,
   program,
   ethPrivateKey,
+  message,
   userSolPubkey,
   userStgAccount,
 }: initUserSolPubkeyArgs) => {
-  const message = userSolPubkey.toBytes()
-
   const { signature, recoveryId } = signBytes(
     message,
     ethPrivateKey
@@ -144,6 +144,7 @@ type createUserParams = {
   provider: Provider;
   program: Program<AudiusData>;
   ethAccount: Account;
+  message: Uint8Array;
   handleBytesArray: number[];
   bumpSeed: number;
   metadata: string;
@@ -157,6 +158,7 @@ export const createUser = async ({
   baseAuthorityAccount,
   program,
   ethAccount,
+  message,
   handleBytesArray,
   bumpSeed,
   metadata,
@@ -165,8 +167,6 @@ export const createUser = async ({
   userStgAccount,
   adminStgPublicKey,
 }: createUserParams) => {
-
-  const message = userSolPubkey.toBytes();
   const { signature, recoveryId } = signBytes(
     message,
     ethAccount.privateKey
