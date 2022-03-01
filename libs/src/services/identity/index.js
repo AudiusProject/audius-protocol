@@ -405,10 +405,11 @@ class IdentityService {
    *  specifier: string
    *  error?: string,
    *  phase?: string,
-   * }} { status, userId, challengeId, amount, error, phase, specifier }
+   *  reason?: string
+   * }} { status, userId, challengeId, amount, error, phase, specifier, reason }
    * @memberof IdentityService
    */
-  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier, reason }) {
     return this._makeRequest({
       url: '/rewards/attestation_result',
       method: 'post',
@@ -420,7 +421,8 @@ class IdentityService {
         error,
         phase,
         source,
-        specifier
+        specifier,
+        reason
       }
     })
   }
