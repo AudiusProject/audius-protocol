@@ -169,7 +169,17 @@ pub mod audius_data {
     /// Permissioned function to log an update to User metadata
     pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
         msg!("Audius::UpdateUser");
-        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
+        let user_acct: User = User::try_deserialize(&mut &ctx.accounts.user.try_borrow_data()?[..])?;
+        if user_acct.authority != ctx.accounts.user_authority.key() {
+            msg!("Initial validation failed");
+            // let (derived_base, _) = Pubkey::find_program_address(
+            //     &[
+            //         &ctx.accounts.user.key().to_bytes()[..32],
+            //         &ctx.accounts.user_authority.key().to_bytes()[..32]
+            //     ],
+            //     ctx.program_id,
+            // );
+            // msg!("Initial validation failed, {:?}", derived_base);
             return Err(ErrorCode::Unauthorized.into());
         }
         msg!("AudiusUserMetadata = {:?}", metadata);
@@ -427,9 +437,10 @@ pub struct CreateUser<'info> {
 /// `user_authority` is a signer field which must match the `authority` field in the User account.
 #[derive(Accounts)]
 pub struct UpdateUser<'info> {
-    #[account(mut)]
-    pub user: Account<'info, User>,
-    #[account(mut)]
+    /// CHECK: Fallback account, optionally null
+    #[account()]
+    pub user: AccountInfo<'info>,
+    #[account()]
     pub user_authority: Signer<'info>,
 }
 
@@ -557,7 +568,7 @@ pub struct CreatePlaylist<'info> {
 pub struct UpdatePlaylist<'info> {
     #[account()]
     pub playlist: Account<'info, Playlist>,
-    #[account(mut)]
+    #[account()]
     pub user: Account<'info, User>,
     #[account(mut)]
     pub authority: Signer<'info>,

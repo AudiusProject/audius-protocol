@@ -109,7 +109,7 @@ describe("audius-data", () => {
     );
   };
 
-  it.only("Initializing admin account!", async () => {
+  it("Initializing admin account!", async () => {
     await initAdmin({
       provider: provider,
       program: program,
@@ -419,7 +419,7 @@ describe("audius-data", () => {
     );
   });
 
-  it.only("Delegating user authority", async () => {
+  it("Delegating user authority", async () => {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } =
@@ -443,6 +443,7 @@ describe("audius-data", () => {
     // Generate signed SECP instruction
     // Message as the incoming public key
     const message = newUserKeypair.publicKey.toString();
+    console.log(`creating user...`)
 
     await testCreateUser({
       provider,
@@ -460,6 +461,7 @@ describe("audius-data", () => {
 
     // New sol key that will be used as user authority delegate
     const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
+    console.log(`newUserAcctPDA: ${newUserAcctPDA}`)
     console.log(`userAuthKeypair: ${userAuthorityDelegateKeypair.publicKey}`)
 
     const userDelSeed = [
@@ -495,9 +497,16 @@ describe("audius-data", () => {
 
     let acctState = await program.account.userAuthorityDelegate.fetch(userDelPDA)
     let userStgPdaFromChain = acctState.userStorageAccount
-    expect(userStgPdaFromChain.toString(), "user stg pda").to.equal(newUserAcctPDA.toString());
     let delegateAuthorityFromChain = acctState.delegateAuthority
+    expect(userStgPdaFromChain.toString(), "user stg pda").to.equal(newUserAcctPDA.toString());
     expect(userAuthorityDelegateKeypair.publicKey.toString(), "del auth pda").to.equal(delegateAuthorityFromChain.toString());
+    const updatedCID = randomCID();
+    const tx = await updateUser({
+      program,
+      metadata: updatedCID,
+      userStgAccount: newUserAcctPDA,
+      userAuthorityKeypair: userAuthorityDelegateKeypair,
+    });
   })
 
   it("creating initialized user should fail", async () => {
