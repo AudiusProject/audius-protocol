@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Name } from 'audius-client/src/common/models/Analytics'
 import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
 import { feedActions } from 'audius-client/src/common/store/pages/feed/lineup/actions'
@@ -11,7 +10,7 @@ import {
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { isEqual } from 'lodash'
 
-import { FeedStackParamList } from 'app/components/app-navigator/types'
+import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { Lineup } from 'app/components/lineup'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -20,15 +19,13 @@ import { make, track } from 'app/utils/analytics'
 
 import { FeedFilterButton } from './FeedFilterButton'
 
-type Props = NativeStackScreenProps<FeedStackParamList, 'feed-stack'>
-
 const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
 
 const messages = {
   header: 'Your Feed'
 }
 
-export const FeedScreen = ({ navigation }: Props) => {
+export const FeedScreen = () => {
   const dispatchWeb = useDispatchWeb()
   const feedLineup = useSelectorWeb(getFeedLineup, isEqual)
   const feedFilter = useSelectorWeb(getFeedFilter)
@@ -55,7 +52,7 @@ export const FeedScreen = ({ navigation }: Props) => {
   }, [dispatchWeb])
 
   return (
-    <>
+    <Screen>
       <Header text={messages.header}>
         <FeedFilterButton
           onPress={handleFilterButtonPress}
@@ -71,6 +68,6 @@ export const FeedScreen = ({ navigation }: Props) => {
         refreshing={isRefreshing && feedLineup.isMetadataLoading}
         selfLoad
       />
-    </>
+    </Screen>
   )
 }

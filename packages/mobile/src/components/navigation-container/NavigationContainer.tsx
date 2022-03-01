@@ -24,25 +24,25 @@ const linking: LinkingOptions<AppStackParamList> = {
         screens: {
           feed: {
             screens: {
-              'feed-stack': 'feed',
-              track: '*/*',
-              profile: '*'
+              FeedStack: 'feed',
+              Track: '*/*',
+              Profile: '*'
             }
           },
           trending: {
             screens: {
-              'trending-stack': {
+              TrendingStack: {
                 screens: {
-                  thisWeek: 'trending/thisWeek',
-                  thisMonth: 'trending/thisMonth',
-                  thisYear: 'trending/thisYear'
+                  ThisWeek: 'trending/thisWeek',
+                  ThisMonth: 'trending/thisMonth',
+                  ThisYear: 'trending/thisYear'
                 }
               }
             }
           },
           explore: {
             screens: {
-              'explore-stack': {
+              ExploreStack: {
                 screens: {
                   forYou: 'explore/forYou',
                   moods: 'explore/moods',
@@ -54,7 +54,7 @@ const linking: LinkingOptions<AppStackParamList> = {
           },
           favorites: {
             screens: {
-              'favorites-stack': {
+              FavoritesStack: {
                 screens: {
                   tracks: 'favorites/tracks',
                   albums: 'favorites/albums',
@@ -65,14 +65,13 @@ const linking: LinkingOptions<AppStackParamList> = {
           },
           profile: {
             screens: {
-              'profile-stack': {
+              ProfileStack: {
                 screens: {
-                  // tracks: '*',
-                  tracks: '*/tracks',
-                  albums: '*/albums',
-                  playlists: '*/playlists',
-                  reposts: '*/reposts',
-                  collectibles: '*/collectibles/*'
+                  Tracks: '*/tracks',
+                  Albums: '*/albums',
+                  Playlists: '*/playlists',
+                  Reposts: '*/reposts',
+                  Collectibles: '*/collectibles/*'
                 }
               }
             }

@@ -128,7 +128,7 @@ const CollectionTileComponent = ({
   const handlePressTitle = useCallback(() => {
     navigation.push({
       // TODO: update to `collection` screen
-      native: { screen: 'track', params: { id: playlist_id } },
+      native: { screen: 'Track', params: { id: playlist_id } },
       web: { route: routeWeb }
     })
   }, [playlist_id, routeWeb, navigation])

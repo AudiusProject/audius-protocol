@@ -40,12 +40,12 @@ export const SeeMoreResultsButton = () => {
     const route = getSearchRoute(searchResultQuery)
 
     if (IS_MAIN_NAVIGATION_ENABLED) {
-      navigation.navigate({
+      navigation.push({
         native: {
           screen: 'SearchResults',
           params: { query: searchResultQuery }
         },
-        web: { route }
+        web: { route, fromPage: 'search' }
       })
     } else {
       pushWebRoute(route, 'search')

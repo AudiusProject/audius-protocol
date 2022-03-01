@@ -1,21 +1,17 @@
-import { useMemo } from 'react'
-
 import TimeRange from 'audius-client/src/common/models/TimeRange'
 import { getTrendingGenre } from 'audius-client/src/common/store/pages/trending/selectors'
-import { Dimensions, View } from 'react-native'
 
 import IconAllTime from 'app/assets/images/iconAllTime.svg'
 import IconDay from 'app/assets/images/iconDay.svg'
 import IconMonth from 'app/assets/images/iconMonth.svg'
 import TopTabNavigator from 'app/components/app-navigator/TopTabNavigator'
 import { RewardsBanner } from 'app/components/audio-rewards'
+import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { TrendingFilterButton } from './TrendingFilterButton'
 import { TrendingLineup } from './TrendingLineup'
-
-const screenHeight = Dimensions.get('window').height
 
 const ThisWeekTab = () => {
   const trendingGenre = useSelectorWeb(getTrendingGenre)
@@ -35,37 +31,34 @@ const ThisYearTab = () => {
   return <TrendingLineup timeRange={TimeRange.ALL_TIME} />
 }
 
-export const TrendingScreen = () => {
-  const screens = useMemo(
-    () => [
-      {
-        name: 'thisWeek',
-        label: 'This Week',
-        Icon: IconDay,
-        component: ThisWeekTab
-      },
-      {
-        name: 'thisMonth',
-        label: 'This Month',
-        Icon: IconMonth,
-        component: ThisMonthTab
-      },
-      {
-        name: 'thisYear',
-        label: 'This Year',
-        Icon: IconAllTime,
-        component: ThisYearTab
-      }
-    ],
-    []
-  )
+const trendingScreens = [
+  {
+    name: 'ThisWeek',
+    label: 'This Week',
+    Icon: IconDay,
+    component: ThisWeekTab
+  },
+  {
+    name: 'ThisMonth',
+    label: 'This Month',
+    Icon: IconMonth,
+    component: ThisMonthTab
+  },
+  {
+    name: 'ThisYear',
+    label: 'This Year',
+    Icon: IconAllTime,
+    component: ThisYearTab
+  }
+]
 
+export const TrendingScreen = () => {
   return (
-    <View style={{ height: screenHeight }}>
+    <Screen>
       <Header text='Trending'>
         <TrendingFilterButton />
       </Header>
-      <TopTabNavigator initialScreenName='tracks' screens={screens} />
-    </View>
+      <TopTabNavigator screens={trendingScreens} />
+    </Screen>
   )
 }

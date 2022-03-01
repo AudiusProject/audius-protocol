@@ -1,4 +1,3 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { LineupState } from 'audius-client/src/common/models/Lineup'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
@@ -14,7 +13,6 @@ import { trackRemixesPage } from 'audius-client/src/utils/route'
 import { isEqual } from 'lodash'
 import { StyleSheet, View } from 'react-native'
 
-import { BaseStackParamList } from 'app/components/app-navigator/types'
 import { Lineup } from 'app/components/lineup'
 import Text from 'app/components/text'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
@@ -24,10 +22,6 @@ import { ThemeColors } from 'app/utils/theme'
 
 import { TrackScreenHeader } from './TrackScreenHeader'
 import { TrackScreenRemixes } from './TrackScreenRemixes'
-
-// We might need to allow BaseStackParamList to be generic here
-// to get all the relevant params
-type Props = NativeStackScreenProps<BaseStackParamList, 'track'>
 
 const getMoreByArtistLineup = makeGetLineupMetadatas(getLineup)
 
@@ -120,7 +114,7 @@ const TrackScreenMainContent = ({
 /**
  * `TrackScreen` displays a single track and a Lineup of more tracks by the artist
  */
-export const TrackScreen = ({ route, navigation }: Props) => {
+export const TrackScreen = () => {
   const lineup = useSelectorWeb(getMoreByArtistLineup, isEqual)
   const track = useSelectorWeb(getTrack)
   const user = useSelectorWeb(getUser)

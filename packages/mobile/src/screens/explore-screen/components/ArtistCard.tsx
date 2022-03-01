@@ -23,7 +23,7 @@ export const ArtistCard = ({ artist, style }: ArtistCardProps) => {
   const navigation = useNavigation()
   const handlePress = useCallback(() => {
     navigation.push({
-      native: { screen: 'profile', params: { handle } },
+      native: { screen: 'Profile', params: { handle } },
       web: { route: handle, fromPage: EXPLORE_PAGE }
     })
   }, [navigation, handle])
