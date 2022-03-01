@@ -75,31 +75,58 @@ module.exports = function (app) {
           headers
         })
 
+        // https://cognitohq.com/docs/reference#flow_get_flow_session
+        // user is always present
         const userInfo = flowSessionResponse.data.user
+
+        // id_number is always present but nullable
+        // phone is always present but nullable
+        // date_of_birth is always present but nullable
+        // address is always present but nullable
+        // name is always present but nullable
         const { id_number: idNumber, phone, date_of_birth: dob, address, name } = userInfo
 
-        let identity = null
+        // make cognito identities unique on:
+        // - phone number, or
+        // - combination of date of birth and name, or
+        // - id number
+        //    - if no id number, then we assume some sort of combination of phone, dob, address, and name
+        const identities = []
+        if (phone) {
+          identities.push(phone)
+        }
+        if (dob && name) {
+          identities.push(JSON.stringify({ dob, name }))
+        }
         if (idNumber) {
           const { value, category, type } = idNumber
-          identity = `${value}::${category}::${type}`
+          // reason why we did not JSON.stringify here is because
+          // there are already users whose masked identities were based on this format
+          identities.push(`${value}::${category}::${type}`)
         } else {
-          identity = JSON.stringify({ phone, dob, address, name })
+          // if webhook does not include id number, then we are expecting a few of the items below
+          identities.push(JSON.stringify({ phone, dob, address, name }))
         }
 
-        const maskedIdentity = createMaskedCognitoIdentity(identity)
-        const record = await models.CognitoFlowIdentities.findOne({ where: { maskedIdentity } })
+        const maskedIdentities = identities.map(createMaskedCognitoIdentity)
+        const records = await models.CognitoFlowIdentities.findAll({
+          where: {
+            maskedIdentity: { [models.Sequelize.Op.in]: maskedIdentities }
+          }
+        })
 
-        if (record) {
+        if (records.length) {
           logger.info(`cognito_webhook flow | this identity has already been used previously | sessionId: ${sessionId}, handle: ${handle}`)
           cognitoIdentityAlreadyExists = true
         } else {
           const now = Date.now()
-          await models.CognitoFlowIdentities.create(
-            {
-              maskedIdentity,
-              createdAt: now,
-              updatedAt: now
-            },
+          const toCreate = maskedIdentities.map(maskedIdentity => ({
+            maskedIdentity,
+            createdAt: now,
+            updatedAt: now
+          }))
+          await models.CognitoFlowIdentities.bulkCreate(
+            toCreate,
             { transaction }
           )
         }
