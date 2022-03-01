@@ -18,6 +18,12 @@ const { uploadTrack } = require('./lib/helpers')
 const DELEGATE_OWNER_WALLET = '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
 const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
 
+// throwaway wallet pair to set as notifier + sign for the request
+const trustedNotifierConfig = {
+  wallet: '0xb01831D0bD5A6eB083C0C4412EC91062B79Bed89',
+  privateKey: 'fb0486224fc0221d1c23c00379cb10ce5f99aff2b0e5c1afd828c08b57f21429'
+}
+
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 describe('test ContentBlacklist', function () {
@@ -46,6 +52,9 @@ describe('test ContentBlacklist', function () {
   afterEach(async () => {
     // Reinitialize BlacklistManager and clear redis state
     BlacklistManager.initialized = false
+
+    // clear TrustedNotifier wallet key
+    mockServiceRegistry.trustedNotifierManager.trustedNotifierData.wallet = null
 
     for (const id of ids) {
       await redis.del(BlacklistManager.getRedisTrackIdToCIDsKey(id))
@@ -124,11 +133,6 @@ describe('test ContentBlacklist', function () {
   })
 
   it('should return the proper userIds, trackIds, and segments when sent by trusted notifier', async () => {
-    // throwaway wallet pair to set as notifier + sign for the request
-    const trustedNotifierConfig = {
-      wallet: '0xb01831D0bD5A6eB083C0C4412EC91062B79Bed89',
-      privateKey: 'fb0486224fc0221d1c23c00379cb10ce5f99aff2b0e5c1afd828c08b57f21429'
-    }
     mockServiceRegistry.trustedNotifierManager.trustedNotifierData.wallet = trustedNotifierConfig.wallet
 
     ids = [43021]

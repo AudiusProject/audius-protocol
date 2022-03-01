@@ -211,17 +211,26 @@ function verifyRequest(data, signature, trustedNotifierManager) {
   const trustedNotifierWallet =
     trustedNotifierManager.getTrustedNotifier().wallet
   const recoveredPublicWallet = recoverWallet(data, signature)
+  console.log(
+    `trustedNotifierWallet: ${trustedNotifierWallet}, delegateOwnerWallet: ${config.get(
+      'delegateOwnerWallet'
+    )}, recoveredPublicWallet: ${recoveredPublicWallet}`
+  )
 
   if (
-    recoveredPublicWallet.toLowerCase() !==
-      config.get('delegateOwnerWallet').toLowerCase() &&
+    recoveredPublicWallet.toLowerCase() ===
+    config.get('delegateOwnerWallet').toLowerCase()
+  )
+    return
+  if (
     trustedNotifierWallet &&
-    recoveredPublicWallet.toLowerCase() !== trustedNotifierWallet.toLowerCase()
-  ) {
-    throw new Error(
-      "Requester's public key does does not match Creator Node's delegate owner wallet or Trusted Notifier."
-    )
-  }
+    trustedNotifierWallet.toLowerCase() === recoveredPublicWallet.toLowerCase()
+  )
+    return
+
+  throw new Error(
+    "Requester's public key does does not match Creator Node's delegate owner wallet or Trusted Notifier."
+  )
 }
 
 /**
