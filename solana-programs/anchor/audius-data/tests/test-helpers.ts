@@ -160,9 +160,10 @@ export const confirmLogInTransaction = async (
 export const createSolanaUser = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
-  adminStgKeypair: anchor.web3.Keypair,
-  testConsts: InitTestConsts
+  adminStgKeypair: anchor.web3.Keypair
 ) => {
+  const testConsts = initTestConstants()
+
   const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } = await findDerivedPair(
     program.programId,
     adminStgKeypair.publicKey,
@@ -176,7 +177,7 @@ export const createSolanaUser = async (
   // Message as the incoming public key
   const message = newUserKeypair.publicKey.toString();
 
-  let tx = await createUser({
+  await createUser({
     provider,
     program,
     ethAccount: testConsts.ethAccount,

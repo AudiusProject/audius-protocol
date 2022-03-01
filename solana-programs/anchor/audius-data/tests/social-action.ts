@@ -66,12 +66,10 @@ describe("social-actions", () => {
   });
 
   it("Save a track with a low track id", async () => {
-    const testConsts = initTestConstants();
     const user = await createSolanaUser(
       program,
       provider,
-      adminStgKeypair,
-      testConsts
+      adminStgKeypair
     );
 
     const tx = await saveTrack({
@@ -102,12 +100,10 @@ describe("social-actions", () => {
   });
 
   it("Unsave a track", async () => {
-    const testConsts = initTestConstants();
     const user = await createSolanaUser(
       program,
       provider,
-      adminStgKeypair,
-      testConsts
+      adminStgKeypair
     );
 
     const tx = await saveTrack({
@@ -138,13 +134,10 @@ describe("social-actions", () => {
   });
 
   it("Save a newly created track", async () => {
-    const testConsts = initTestConstants();
-
     const user = await createSolanaUser(
       program,
       provider,
-      adminStgKeypair,
-      testConsts
+      adminStgKeypair
     );
 
     const track = await createSolanaTrack(
@@ -183,13 +176,10 @@ describe("social-actions", () => {
   });
 
   it("Error on saving an invalid track", async () => {
-    const testConsts = initTestConstants();
-
     const user = await createSolanaUser(
       program,
       provider,
-      adminStgKeypair,
-      testConsts
+      adminStgKeypair
     );
 
     const adminAccount = await program.account.audiusAdmin.fetch(
