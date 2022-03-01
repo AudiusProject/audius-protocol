@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 
 import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconUpload } from 'assets/img/iconGradientUpload.svg'
-import { getIsOpen } from 'common/store/ui/mobile-upload-drawer/selectors'
+import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 
@@ -19,14 +19,19 @@ const messages = {
   clear: 'Crystal Clear 320kbps'
 }
 
-const MobileUploadDrawer = ({ onClose }: { onClose: () => void }) => {
-  const isOpen = useSelector(getIsOpen)
+const MobileUploadDrawer = () => {
+  const [isOpen, setIsOpen] = useModalState('MobileUpload')
   const keyboardVisible = useSelector(getKeyboardVisibility)
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false)
+  }, [setIsOpen])
+
   return (
     <Drawer
       isOpen={!NATIVE_MOBILE && isOpen}
       keyboardVisible={keyboardVisible}
-      onClose={onClose}
+      onClose={handleClose}
     >
       <div className={styles.drawer}>
         <div className={styles.top}>

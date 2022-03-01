@@ -1,117 +1,80 @@
-import { getIsOpen } from 'audius-client/src/common/store/ui/mobile-upload-drawer/selectors'
-import { hide } from 'audius-client/src/common/store/ui/mobile-upload-drawer/slice'
-import { Image, StyleSheet, View } from 'react-native'
+import { Image, View } from 'react-native'
 
-import HeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
-import IconUpload from 'app/assets/images/iconGradientUpload.svg'
-import { GradientText } from 'app/components/core'
-import Drawer from 'app/components/drawer'
-import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useThemeColors } from 'app/utils/theme'
+import checkMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
+import IconUpload from 'app/assets/images/iconUpload.svg'
+import { Text, GradientText, GradientIcon } from 'app/components/core'
+import { AppDrawer } from 'app/components/drawer/AppDrawer'
+import { makeStyles } from 'app/styles'
 
-const styles = StyleSheet.create({
+export const MODAL_NAME = 'MobileUpload'
+
+const messages = {
+  title: 'Start Uploading',
+  description: 'Visit audius.co from a desktop browser',
+  unlimited: 'Unlimited Uploads',
+  clear: 'Crystal Clear 320kbps',
+  exclusive: 'Exclusive Conent'
+}
+
+const checks = [messages.unlimited, messages.clear, messages.exclusive]
+
+const useStyles = makeStyles(({ typography, spacing }) => ({
   drawer: {
-    height: 460,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-evenly',
-    width: '100%',
-    padding: 40
+    paddingVertical: spacing(10),
+    paddingHorizontal: spacing(9)
   },
-
-  cta: {
-    marginTop: 16,
-    fontSize: 32,
-    lineHeight: 34,
+  top: {
+    alignItems: 'center',
+    marginBottom: spacing(6)
+  },
+  icon: {
+    height: 80,
+    width: 80
+  },
+  title: {
+    fontSize: typography.fontSize.xxxl,
+    fontFamily: typography.fontByWeight.heavy,
+    marginBottom: spacing(2)
+  },
+  description: {
+    fontSize: typography.fontSize.xxl,
+    fontFamily: typography.fontByWeight.medium,
     textAlign: 'center'
   },
-
-  visit: {
-    fontSize: 24,
-    lineHeight: 29,
-    textAlign: 'center',
-    marginTop: 4
-  },
-
-  top: {
-    display: 'flex',
-    marginTop: 0,
-    flexDirection: 'column',
-    alignItems: 'center'
-  },
-
-  bottom: {
-    marginBottom: 16
-  },
-
-  action: {
-    display: 'flex',
+  bullet: {
     flexDirection: 'row',
     alignItems: 'center'
   },
-
-  actionLabel: {
-    fontSize: 24,
-    lineHeight: 40
+  bulletIcon: {
+    width: spacing(6),
+    height: spacing(6),
+    marginRight: spacing(4)
   },
-
-  iconCheck: {
-    marginRight: 16,
-    height: 24,
-    width: 24
+  bulletText: {
+    fontSize: typography.fontSize.xxl,
+    fontFamily: typography.fontByWeight.bold,
+    lineHeight: 40
   }
-})
-
-const messages = {
-  start: 'Start Uploading',
-  visit: 'Visit audius.co from a desktop browser',
-  unlimited: 'Unlimited Uploads',
-  exclusive: 'Exclusive Content',
-  clear: 'Crystal Clear 320kbps'
-}
+}))
 
 export const MobileUploadDrawer = () => {
-  const isOpen = useSelectorWeb(getIsOpen)
-  const dispatchWeb = useDispatchWeb()
-  const close = () => dispatchWeb(hide())
-
-  const {
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
-
-  const CheckMark = () => (
-    <Image style={styles.iconCheck} source={HeavyCheckMark} />
-  )
+  const styles = useStyles()
 
   return (
-    <Drawer isOpen={isOpen} onClose={close}>
+    <AppDrawer modalName={MODAL_NAME}>
       <View style={styles.drawer}>
         <View style={styles.top}>
-          <IconUpload
-            height={66}
-            width={66}
-            fill={pageHeaderGradientColor2}
-            fillSecondary={pageHeaderGradientColor1}
-          />
-          <GradientText style={styles.cta}>{messages.start}</GradientText>
-          <View>
-            <Text style={styles.visit}>{messages.visit}</Text>
+          <GradientIcon {...styles.icon} icon={IconUpload} />
+          <GradientText style={styles.title}>{messages.title}</GradientText>
+          <Text style={styles.description}>{messages.description}</Text>
+        </View>
+        {checks.map(bulletText => (
+          <View key={bulletText} style={styles.bullet}>
+            <Image source={checkMark} style={styles.bulletIcon} />
+            <Text style={styles.bulletText}>{bulletText}</Text>
           </View>
-        </View>
-        <View style={styles.bottom}>
-          {[messages.unlimited, messages.clear, messages.exclusive].map(m => (
-            <View style={styles.action} key={m}>
-              <CheckMark />
-              <Text style={styles.actionLabel} weight='bold'>
-                {m}
-              </Text>
-            </View>
-          ))}
-        </View>
+        ))}
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }
