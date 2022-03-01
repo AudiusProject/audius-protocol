@@ -38,7 +38,7 @@ export const testInitUser = async ({
   adminStgKeypair,
   adminKeypair,
 }) => {
-  let tx = await initUser({
+  const tx = await initUser({
     provider,
     program,
     ethAddress,
@@ -100,7 +100,7 @@ export const testCreateUser = async ({
   userStgAccount,
   adminStgPublicKey,
 }) => {
-  let tx = await createUser({
+  const tx = await createUser({
     provider,
     program,
     ethAccount,
@@ -131,8 +131,8 @@ export const confirmLogInTransaction = async (
   tx: string,
   log: string
 ) => {
-  let info = await getTransaction(provider, tx);
-  let logs = info.meta.logMessages;
+  const info = await getTransaction(provider, tx);
+  const logs = info.meta.logMessages;
   let stringFound = false;
   logs.forEach((v) => {
     if (v.indexOf(log) != -1) {

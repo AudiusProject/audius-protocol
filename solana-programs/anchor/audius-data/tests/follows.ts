@@ -27,8 +27,8 @@ describe("follows", () => {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  let adminKeypair = anchor.web3.Keypair.generate();
-  let adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("follows - Initializing admin account!", async () => {
@@ -42,7 +42,7 @@ describe("follows", () => {
       playlistIdOffset: new anchor.BN("0"),
     });
 
-    let adminAccount = await program.account.audiusAdmin.fetch(
+    const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
@@ -142,7 +142,7 @@ describe("follows", () => {
 
     it("follow user", async () => {
       // Submit a tx where user 1 follows user 2
-      let followArgs = {
+      const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
@@ -152,14 +152,14 @@ describe("follows", () => {
         },
         signers: [newUser1Key],
       };
-      let followTx = await program.rpc.followUser(
+      const followTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.followUser,
         { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
         { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
-      let txInfo = await confirmLogInTransaction(
+      const txInfo = await confirmLogInTransaction(
         provider,
         followTx,
         "Audius::FollowUser"
@@ -187,7 +187,7 @@ describe("follows", () => {
 
     it("unfollow user", async () => {
       // Submit a tx where user 1 follows user 2
-      let followArgs = {
+      const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
@@ -197,14 +197,14 @@ describe("follows", () => {
         },
         signers: [newUser1Key],
       };
-      let unfollowTx = await program.rpc.followUser(
+      const unfollowTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.unfollowUser,
         { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
         { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
-      let unFollowtxInfo = await confirmLogInTransaction(
+      const unFollowtxInfo = await confirmLogInTransaction(
         provider,
         unfollowTx,
         "Audius::UnfollowUser"
@@ -229,7 +229,7 @@ describe("follows", () => {
     it("submit invalid follow action", async () => {
       // Submit a tx where user 1 follows user 2
       let expectedErrorFound = false;
-      let followArgs = {
+      const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
@@ -241,7 +241,7 @@ describe("follows", () => {
       };
       try {
         // Use invalid enum value and confirm failure
-        let txHash = await program.rpc.followUser(
+        const txHash = await program.rpc.followUser(
           baseAuthorityAccount,
           UserActionEnumValues.invalidEnumValue,
           { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
@@ -249,8 +249,8 @@ describe("follows", () => {
           followArgs
         );
         console.log(`invalid follow txHash=${txHash}`);
-      } catch (e: any) {
-        let index = e.toString().indexOf("unable to infer src variant");
+      } catch (e) {
+        const index = e.toString().indexOf("unable to infer src variant");
         if (index > 0) expectedErrorFound = true;
       }
       assert.equal(expectedErrorFound, true, "Unable to infer src variant");
@@ -259,8 +259,8 @@ describe("follows", () => {
     it("follow invalid user", async () => {
       // Submit a tx where user 1 follows user 2
       // and user 2 account is not a PDA
-      let wrongUserKeypair = anchor.web3.Keypair.generate();
-      let followArgs = {
+      const wrongUserKeypair = anchor.web3.Keypair.generate();
+      const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
@@ -281,7 +281,7 @@ describe("follows", () => {
           followArgs
         );
       } catch (e) {
-        let index = e.toString().indexOf(expectedErrorString);
+        const index = e.toString().indexOf(expectedErrorString);
         console.dir(e, { depth: 5 })
         if (index >= 0) expectedErrorFound = true;
       }
@@ -303,7 +303,7 @@ describe("follows", () => {
           followArgs
         );
       } catch (e) {
-        let index = e.toString().indexOf(expectedErrorString);
+        const index = e.toString().indexOf(expectedErrorString);
         console.dir(e, { depth: 5 })
         if (index >= 0) expectedErrorFound = true;
       }

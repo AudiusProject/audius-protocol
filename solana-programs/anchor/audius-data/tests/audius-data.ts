@@ -469,7 +469,7 @@ describe("audius-data", () => {
   it("creating user with incorrect bump seed / pda should fail", async () => {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
-    const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } =
+    const { baseAuthorityAccount, bumpSeed } =
       await findDerivedPair(
         program.programId,
         adminStgKeypair.publicKey,
@@ -539,7 +539,7 @@ describe("audius-data", () => {
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
-    let tx = await updateIsVerified({
+    const tx = await updateIsVerified({
       program,
       adminKeypair: adminStgKeypair,
       userStgAccount: newUserAcctPDA,

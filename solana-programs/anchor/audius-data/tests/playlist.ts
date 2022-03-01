@@ -26,8 +26,8 @@ describe("playlist", () => {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  let adminKeypair = anchor.web3.Keypair.generate();
-  let adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("Initializing admin account!", async () => {
@@ -41,7 +41,7 @@ describe("playlist", () => {
       playlistIdOffset: new anchor.BN("0"),
     });
 
-    let adminAccount = await program.account.audiusAdmin.fetch(
+    const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
