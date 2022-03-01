@@ -159,11 +159,6 @@ describe("playlist", () => {
 
       // New sol key that will be used to permission user updates
       newUserKeypair = anchor.web3.Keypair.generate();
-
-      // Generate signed SECP instruction
-      // Message as the incoming public key
-      const message = newUserKeypair.publicKey.toBytes();
-
       // disable admin writes
       await updateAdmin({
         program,
@@ -175,7 +170,6 @@ describe("playlist", () => {
       await testCreateUser({
         provider,
         program,
-        message,
         baseAuthorityAccount,
         ethAccount,
         handleBytesArray,

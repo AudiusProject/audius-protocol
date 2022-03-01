@@ -66,7 +66,6 @@ export const testInitUser = async ({
 export const testInitUserSolPubkey = async ({
   provider,
   program,
-  message,
   ethPrivateKey,
   newUserKeypair,
   newUserAcctPDA,
@@ -75,7 +74,6 @@ export const testInitUserSolPubkey = async ({
     provider,
     program,
     ethPrivateKey,
-    message,
     userSolPubkey: newUserKeypair.publicKey,
     userStgAccount: newUserAcctPDA,
   });
@@ -90,7 +88,6 @@ export const testInitUserSolPubkey = async ({
 export const testCreateUser = async ({
   provider,
   program,
-  message,
   baseAuthorityAccount,
   ethAccount,
   handleBytesArray,
@@ -104,7 +101,6 @@ export const testCreateUser = async ({
     provider,
     program,
     ethAccount,
-    message,
     handleBytesArray,
     bumpSeed,
     metadata,

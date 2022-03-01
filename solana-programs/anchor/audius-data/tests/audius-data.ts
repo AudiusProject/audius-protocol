@@ -178,14 +178,9 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
-
     await testInitUserSolPubkey({
       provider,
       program,
-      message,
       ethPrivateKey: ethAccount.privateKey,
       newUserKeypair,
       newUserAcctPDA,
@@ -218,14 +213,10 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
 
     await testInitUserSolPubkey({
       provider,
       program,
-      message,
       ethPrivateKey: ethAccount.privateKey,
       newUserKeypair,
       newUserAcctPDA,
@@ -267,14 +258,9 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
-
     await testInitUserSolPubkey({
       provider,
       program,
-      message,
       ethPrivateKey: ethAccount.privateKey,
       newUserKeypair,
       newUserAcctPDA,
@@ -342,14 +328,10 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
 
    await expect (testCreateUser({
       provider,
       program,
-      message,
       ethAccount,
       baseAuthorityAccount,
       handleBytesArray,
@@ -383,14 +365,10 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
 
     await testCreateUser({
       provider,
       program,
-      message,
       ethAccount,
       baseAuthorityAccount,
       handleBytesArray,
@@ -404,7 +382,6 @@ describe("audius-data", () => {
     await expect(testCreateUser({
       provider,
       program,
-      message,
       ethAccount,
       baseAuthorityAccount,
       handleBytesArray,
@@ -444,14 +421,9 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
-
     await expect(testCreateUser({
       provider,
       program,
-      message,
       ethAccount,
       baseAuthorityAccount,
       handleBytesArray,
@@ -478,9 +450,6 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
 
     const { handleBytesArray: incorrectHandleBytesArray } = initTestConstants();
 
@@ -494,7 +463,6 @@ describe("audius-data", () => {
     await expect(testCreateUser({
       provider,
       program,
-      message,
       ethAccount,
       baseAuthorityAccount,
       handleBytesArray,
@@ -522,14 +490,10 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
 
     await testCreateUser({
       provider,
       program,
-      message,
       baseAuthorityAccount,
       ethAccount,
       handleBytesArray,
@@ -571,14 +535,9 @@ describe("audius-data", () => {
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
-
     await testCreateUser({
       provider,
       program,
-      message,
       baseAuthorityAccount,
       ethAccount,
       handleBytesArray,

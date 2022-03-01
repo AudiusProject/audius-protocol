@@ -1,6 +1,10 @@
 {
     "dependencies": {
-        "@project-serum/anchor": "^0.22.0"
+        "@project-serum/anchor": "^0.22.0",
+        "@typescript-eslint/eslint-plugin": "^5.13.0",
+        "@typescript-eslint/parser": "^5.13.0",
+        "eslint": "^8.10.0",
+        "eslint-plugin-react": "^7.29.2"
     },
     "devDependencies": {
         "@types/chai": "^4.3.0",
