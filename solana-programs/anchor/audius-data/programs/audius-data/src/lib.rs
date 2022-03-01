@@ -44,9 +44,8 @@ pub mod audius_data {
     pub fn update_is_verified(
         ctx: Context<UpdateIsVerified>,
         base: Pubkey,
-        _user_handle: UserHandle
+        _user_handle: UserHandle,
     ) -> Result<()> {
-
         // Validate that the audius admin verifier matches the verifier passed in
         if ctx.accounts.audius_admin.verifier != ctx.accounts.verifier.key() {
             return Err(ErrorCode::Unauthorized.into());
@@ -216,8 +215,9 @@ pub mod audius_data {
     }
 
     /// Permissioned function to log an update to Admin metadata
-    pub fn update_admin(ctx: Context<UpdateAdmin>,  is_write_enabled: bool) -> Result<()> {
-        if ctx.accounts.admin.authority != ctx.accounts.admin_authority.key() { // could be has_one
+    pub fn update_admin(ctx: Context<UpdateAdmin>, is_write_enabled: bool) -> Result<()> {
+        if ctx.accounts.admin.authority != ctx.accounts.admin_authority.key() {
+            // could be has_one
             return Err(ErrorCode::Unauthorized.into());
         }
         ctx.accounts.admin.is_write_enabled = is_write_enabled;
@@ -271,6 +271,32 @@ pub mod audius_data {
         ctx.accounts.track.owner = dummy_owner_field;
         Ok(())
     }
+
+    pub fn save_track(
+        ctx: Context<SaveTrack>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _track_action: TrackAction,
+        track_id: u64,
+    ) -> Result<()> {
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if track_id >= ctx.accounts.audius_admin.track_id {
+            return Err(ErrorCode::InvalidId.into());
+        }
+        Ok(())
+    }
+
     /*
         Playlist related functions
     */
@@ -506,6 +532,20 @@ pub struct DeleteTrack<'info> {
     pub payer: Signer<'info>,
 }
 
+/// Instruction container for save track event
+/// Confirm that the user authority matches signer authority field
+#[derive(Accounts)]
+#[instruction(base: Pubkey, user_handle: UserHandle)]
+pub struct SaveTrack<'info> {
+    #[account()]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
+    pub user: Account<'info, User>,
+    #[account()]
+    // User authority field
+    pub authority: Signer<'info>,
+}
+
 /// Instruction container for follow
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_instr:UserAction, follower_handle: UserHandle, followee_handle: UserHandle)]
@@ -619,6 +659,8 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("Signature verification failed.")]
     SignatureVerification,
+    #[msg("Invalid Id.")]
+    InvalidId,
 }
 
 // User actions enum, used to follow/unfollow based on function arguments
@@ -628,10 +670,16 @@ pub enum UserAction {
     UnfollowUser,
 }
 
+// Track actions enum, used to save/unsave based on function arguments
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum TrackAction {
+    Save,
+    Unsave,
+}
+
 // Seed & bump used to validate the user's handle with the account base
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub struct UserHandle {
-    pub seed: [u8;16],
+    pub seed: [u8; 16],
     pub bump: u8,
 }
-
