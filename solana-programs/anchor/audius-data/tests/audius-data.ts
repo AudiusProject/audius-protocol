@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { createTrack, initAdmin, updateUser, updateAdmin, updateTrack, deleteTrack, updateIsVerified } from "../lib/lib";
+import { createTrack, initAdmin, updateUser, updateAdmin, updateTrack, deleteTrack, saveTrack, updateIsVerified, TrackActionEnumValues } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -664,4 +664,75 @@ describe("audius-data", () => {
     ]);
     console.log(`Created 3 tracks in ${Date.now() - start}ms`);
   });
+
+  it("Save a track", async () => {
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+
+    const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toString();
+
+    await testCreateUser({
+      provider,
+      program,
+      message,
+      baseAuthorityAccount,
+      ethAccount,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    });
+
+    const newTrackKeypair = anchor.web3.Keypair.generate();
+    const trackMetadata = randomCID();
+    await testCreateTrack({
+      trackMetadata,
+      newTrackKeypair,
+      adminStgKeypair,
+      userAuthorityKeypair: newUserKeypair,
+      trackOwnerPDA: newUserAcctPDA,
+    })
+ 
+    const tx3 = await saveTrack({
+      program,
+      baseAuthorityAccount,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: newUserAcctPDA,
+      userAuthorityKeypair: newUserKeypair,
+      handleBytesArray,
+      bumpSeed,
+      trackAction: TrackActionEnumValues.save,
+      trackId: new anchor.BN("1"),
+    })
+
+    await confirmLogInTransaction(provider, tx3, 'success');
+
+    const tx4 = await saveTrack({
+      program,
+      baseAuthorityAccount,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: newUserAcctPDA,
+      userAuthorityKeypair: newUserKeypair,
+      handleBytesArray,
+      bumpSeed,
+      trackAction: TrackActionEnumValues.unsave,
+      trackId: new anchor.BN("1"),
+    })
+
+    await confirmLogInTransaction(provider, tx4, 'success');
+  });
+
 });

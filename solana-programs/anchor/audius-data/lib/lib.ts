@@ -11,6 +11,14 @@ import { AudiusData } from "../target/types/audius_data";
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
+export const TrackActionEnumValues = {
+  save: { save: {} },
+  unsave: { unsave: {} },
+};
+
+type TrackActionKeys = keyof typeof TrackActionEnumValues;
+type TrackActionValues = typeof TrackActionEnumValues[TrackActionKeys];
+
 /// Initialize an Audius Admin instance
 type initAdminParams = {
   provider: Provider;
@@ -382,6 +390,46 @@ export const deleteTrack = async ({
     },
     signers: [userAuthorityKeypair],
   });
+};
+
+/// save a track
+export type SaveTrackArgs = {
+  program: Program<AudiusData>;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  userAuthorityKeypair: Keypair;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  handleBytesArray: number[];
+  bumpSeed: number;
+  trackAction: TrackActionValues;
+  trackId: anchor.BN;
+};
+
+export const saveTrack = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  trackAction,
+  trackId,
+}: SaveTrackArgs) => {
+  return program.rpc.saveTrack(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    trackAction,
+    trackId,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Create a playlist
