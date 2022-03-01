@@ -135,12 +135,12 @@ const TrackScreenRemixComponent = ({
 
   const handlePressTrack = useCallback(() => {
     pushRouteWeb(permalink)
-    navigation.push('track', { id: track_id })
+    navigation.push('Track', { id: track_id })
   }, [navigation, permalink, pushRouteWeb, track_id])
 
   const handlePressArtist = useCallback(() => {
     pushRouteWeb(profilePage(handle))
-    navigation.push('profile', { handle })
+    navigation.push('Profile', { handle })
   }, [handle, navigation, pushRouteWeb])
 
   const images = (

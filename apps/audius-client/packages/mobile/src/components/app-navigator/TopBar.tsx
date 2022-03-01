@@ -99,9 +99,8 @@ export const TopBar = memo(
     }, [navigation])
 
     const handlePressSearch = useCallback(() => {
-      navigation.navigate({
-        native: { screen: 'Search', params: undefined },
-        web: { route: 'search' }
+      navigation.push({
+        native: { screen: 'Search', params: undefined }
       })
     }, [navigation])
 

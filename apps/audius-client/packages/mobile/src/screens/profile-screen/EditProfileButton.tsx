@@ -9,7 +9,8 @@ export const EditProfileButton = (props: EditProfileButtonProps) => {
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.navigate({
+    // goBack does not trigger web pop in BaseStackNavigator
+    navigation.push({
       native: { screen: 'EditProfile', params: undefined }
     })
   }, [navigation])
