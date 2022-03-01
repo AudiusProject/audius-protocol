@@ -1,12 +1,15 @@
 import React, { useCallback, useState } from 'react'
 
+import { IconCaretRight, IconFolder } from '@audius/stems'
 import cn from 'classnames'
+import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 
 import { Name } from 'common/models/Analytics'
 import { SmartCollection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
+import { PlaylistLibraryFolder } from 'common/models/PlaylistLibrary'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { AccountCollection } from 'common/store/account/reducer'
 import {
@@ -32,7 +35,7 @@ import { playlistPage, getPathname } from 'utils/route'
 import navColumnStyles from './NavColumn.module.css'
 import styles from './PlaylistLibrary.module.css'
 
-type DraggableNavLinkProps = NavLinkProps & {
+type PlaylistNavLinkProps = NavLinkProps & {
   droppableKey: ID | SmartCollectionVariant
   playlistId: ID | SmartCollectionVariant
   name: string
@@ -43,7 +46,11 @@ type DraggableNavLinkProps = NavLinkProps & {
   link?: string
 }
 
-const DraggableNavLink = ({
+type PlaylistFolderNavButtonProps = React.ComponentPropsWithoutRef<'button'> & {
+  onReorder: () => void
+}
+
+const PlaylistNavLink = ({
   droppableKey,
   playlistId,
   name,
@@ -52,7 +59,7 @@ const DraggableNavLink = ({
   children,
   className,
   ...navLinkProps
-}: DraggableNavLinkProps) => {
+}: PlaylistNavLinkProps) => {
   const [isDragging, setIsDragging] = useState(false)
   const onDrag = useCallback(() => {
     setIsDragging(true)
@@ -86,6 +93,108 @@ const DraggableNavLink = ({
           {children}
         </NavLink>
       </Draggable>
+    </Droppable>
+  )
+}
+
+const FolderNavLink = ({
+  id,
+  name,
+  onReorder,
+  children,
+  className,
+  ...buttonProps
+}: PlaylistFolderNavButtonProps) => {
+  const [isDragging, setIsDragging] = useState(false)
+  const onDrag = useCallback(() => {
+    setIsDragging(true)
+  }, [setIsDragging])
+  const onDrop = useCallback(() => {
+    setIsDragging(false)
+  }, [setIsDragging])
+
+  return (
+    <Droppable
+      key={id}
+      className={styles.droppable}
+      hoverClassName={styles.droppableHover}
+      onDrop={(id: ID | SmartCollectionVariant) => onReorder()}
+      acceptedKinds={['library-playlist', 'playlist-folder']}
+    >
+      <Draggable
+        id={id}
+        text={name}
+        kind='playlist-folder'
+        onDrag={onDrag}
+        onDrop={onDrop}
+      >
+        <button
+          {...buttonProps}
+          draggable={false}
+          className={cn(className, styles.navLink, {
+            [styles.dragging]: isDragging
+          })}
+        >
+          {children}
+        </button>
+      </Draggable>
+    </Droppable>
+  )
+}
+
+const PlaylistFolderNavItem = ({
+  folder,
+  hasUpdate = false,
+  dragging,
+  draggingKind
+}: {
+  folder: PlaylistLibraryFolder
+  hasUpdate: boolean
+  dragging: boolean
+  draggingKind: string
+}) => {
+  const { id, name, contents } = folder
+  const isDroppableKind =
+    draggingKind === 'track' ||
+    draggingKind === 'playlist' ||
+    draggingKind === 'playlist-folder'
+
+  return (
+    <Droppable
+      key={id}
+      className={navColumnStyles.droppable}
+      hoverClassName={navColumnStyles.droppableHover}
+      onDrop={() => {}}
+      acceptedKinds={['library-playlist']}
+    >
+      <FolderNavLink
+        id={id}
+        name={name}
+        onReorder={() => {}}
+        className={cn(navColumnStyles.link, {
+          [navColumnStyles.droppableLink]: dragging && isDroppableKind,
+          [navColumnStyles.disabledLink]:
+            dragging && !isDroppableKind && draggingKind !== 'library-playlist'
+        })}
+        onClick={() => {}}
+      >
+        <div className={styles.folderButtonContentContainer}>
+          <IconFolder
+            width={12}
+            height={12}
+            className={cn(styles.iconFolder, {
+              [styles.iconFolderEmpty]: isEmpty(contents),
+              [styles.iconFolderUpdated]: hasUpdate
+            })}
+          />
+          <div className={styles.folderNameContainer}>
+            <span>{name}</span>
+          </div>
+          <IconCaretRight height={11} width={11} className={styles.iconCaret} />
+        </div>
+      </FolderNavLink>
+
+      {/* Loop over contents and render playlist list */}
     </Droppable>
   )
 }
@@ -124,7 +233,7 @@ const PlaylistLibrary = ({
     const name = playlist.playlist_name
     const url = playlist.link
     return (
-      <DraggableNavLink
+      <PlaylistNavLink
         playlistId={name as SmartCollectionVariant}
         droppableKey={name as SmartCollectionVariant}
         name={name}
@@ -139,7 +248,7 @@ const PlaylistLibrary = ({
         })}
       >
         {name}
-      </DraggableNavLink>
+      </PlaylistNavLink>
     )
   }
 
@@ -172,7 +281,7 @@ const PlaylistLibrary = ({
         acceptedKinds={['track']}
         disabled={!isOwner}
       >
-        <DraggableNavLink
+        <PlaylistNavLink
           droppableKey={id}
           playlistId={id}
           name={name}
@@ -215,7 +324,7 @@ const PlaylistLibrary = ({
           ) : (
             <span>{name}</span>
           )}
-        </DraggableNavLink>
+        </PlaylistNavLink>
       </Droppable>
     )
   }
@@ -236,25 +345,25 @@ const PlaylistLibrary = ({
       {account &&
         playlists &&
         library &&
-        library.contents.map(identifier => {
-          switch (identifier.type) {
+        library.contents.map(content => {
+          switch (content.type) {
             case 'explore_playlist': {
-              const playlist = SMART_COLLECTION_MAP[identifier.playlist_id]
+              const playlist = SMART_COLLECTION_MAP[content.playlist_id]
               if (!playlist) return null
               return renderExplorePlaylist(playlist)
             }
             case 'playlist': {
-              const playlist = playlists[identifier.playlist_id]
+              const playlist = playlists[content.playlist_id]
               if (playlist) {
-                delete playlistsNotInLibrary[identifier.playlist_id]
+                delete playlistsNotInLibrary[content.playlist_id]
               }
               return renderPlaylist(playlist)
             }
             case 'temp_playlist': {
               try {
-                const playlist = playlists[parseInt(identifier.playlist_id)]
+                const playlist = playlists[parseInt(content.playlist_id)]
                 if (playlist) {
-                  delete playlistsNotInLibrary[parseInt(identifier.playlist_id)]
+                  delete playlistsNotInLibrary[parseInt(content.playlist_id)]
                 }
                 return renderPlaylist(playlist)
               } catch (e) {
@@ -263,15 +372,21 @@ const PlaylistLibrary = ({
               }
             }
             case 'folder':
-              // TODO support folders!
-              break
+              return (
+                <PlaylistFolderNavItem
+                  folder={content}
+                  hasUpdate={false}
+                  dragging={dragging}
+                  draggingKind={draggingKind}
+                />
+              )
           }
           return null
         })}
       {Object.values(playlistsNotInLibrary).map(playlist => {
         return renderPlaylist(playlist)
       })}
-      {playlists && Object.keys(playlists).length === 0 ? (
+      {library && isEmpty(library.contents) ? (
         <div className={cn(navColumnStyles.link, navColumnStyles.disabled)}>
           Create your first playlist!
         </div>

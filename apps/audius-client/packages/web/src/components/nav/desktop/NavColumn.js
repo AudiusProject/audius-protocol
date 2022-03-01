@@ -11,9 +11,11 @@ import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
 import { Name, CreatePlaylistSource } from 'common/models/Analytics'
 import { SquareSizes } from 'common/models/ImageSizes'
 import Status from 'common/models/Status'
+import { FeatureFlags } from 'common/services/remote-config'
 import {
   getAccountUser,
-  getAccountStatus
+  getAccountStatus,
+  getPlaylistLibrary
 } from 'common/store/account/selectors'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import {
@@ -24,7 +26,10 @@ import { makeGetCurrent } from 'common/store/queue/selectors'
 import { saveCollection } from 'common/store/social/collections/actions'
 import { saveTrack } from 'common/store/social/tracks/actions'
 import * as createPlaylistModalActions from 'common/store/ui/createPlaylistModal/actions'
-import { getIsOpen } from 'common/store/ui/createPlaylistModal/selectors'
+import {
+  getHideFolderTab,
+  getIsOpen
+} from 'common/store/ui/createPlaylistModal/selectors'
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
 import Droppable from 'components/dragndrop/Droppable'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -43,6 +48,7 @@ import Pill from 'components/pill/Pill'
 import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import { resetState as resetUploadState } from 'pages/upload-page/store/actions'
@@ -50,6 +56,11 @@ import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { make, useRecord } from 'store/analytics/actions'
 import { getIsDragging } from 'store/dragndrop/selectors'
+import {
+  addFolderToLibrary,
+  constructPlaylistFolder
+} from 'store/playlist-library/helpers'
+import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import {
   FEED_PAGE,
   TRENDING_PAGE,
@@ -68,11 +79,16 @@ import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
 import PlaylistLibrary from './PlaylistLibrary'
 
+const messages = {
+  newPlaylistOrFolderTooltip: 'New Playlist or Folder',
+  newPlaylistTooltip: 'New Playlist'
+}
+
 const NavColumn = ({
   account,
-  metadata,
   showActionRequiresAccount,
   createPlaylist,
+  library,
   openCreatePlaylistModal,
   closeCreatePlaylistModal,
   isElectron,
@@ -80,11 +96,12 @@ const NavColumn = ({
   notificationPanelIsOpen,
   toggleNotificationPanel,
   showCreatePlaylistModal,
+  hideCreatePlaylistModalFolderTab,
+  updatePlaylistLibrary,
   currentQueueItem,
   dragging: { dragging, kind, isOwner: draggingIsOwner },
   saveTrack,
   saveCollection,
-  addTrackToPlaylist,
   upload,
   accountStatus,
   updatePlaylistLastViewedAt,
@@ -104,6 +121,9 @@ const NavColumn = ({
       record(make(Name.CREATE_ACCOUNT_OPEN, { source }))
     },
     [record, routeToSignup]
+  )
+  const { isEnabled: isPlaylistFoldersEnabled } = useFlag(
+    FeatureFlags.PLAYLIST_FOLDERS
   )
 
   const onClickNavProfile = useCallback(() => goToSignIn('nav profile'), [
@@ -131,6 +151,18 @@ const NavColumn = ({
       goToRoute(playlistPage(account.handle, metadata.playlist_name, tempId))
     },
     [account, createPlaylist, closeCreatePlaylistModal, goToRoute]
+  )
+
+  const onCreateFolder = useCallback(
+    folderName => {
+      const newLibrary = addFolderToLibrary(
+        library,
+        constructPlaylistFolder(folderName)
+      )
+      updatePlaylistLibrary(newLibrary)
+      closeCreatePlaylistModal()
+    },
+    [library, updatePlaylistLibrary, closeCreatePlaylistModal]
   )
 
   const openCreatePlaylist = useCallback(() => {
@@ -363,7 +395,14 @@ const NavColumn = ({
                 >
                   Playlists
                   <div className={styles.newPlaylist}>
-                    <Tooltip text='New Playlist' mount='parent'>
+                    <Tooltip
+                      text={
+                        isPlaylistFoldersEnabled
+                          ? messages.newPlaylistOrFolderTooltip
+                          : messages.newPlaylistTooltip
+                      }
+                      mount='parent'
+                    >
                       <span>
                         <Pill
                           text='New'
@@ -384,7 +423,9 @@ const NavColumn = ({
         <CreatePlaylistModal
           visible={showCreatePlaylistModal}
           onCreatePlaylist={onCreatePlaylist}
+          onCreateFolder={onCreateFolder}
           onCancel={closeCreatePlaylistModal}
+          hideFolderTab={hideCreatePlaylistModalFolderTab}
         />
       </div>
       <div className={styles.navAnchor}>
@@ -426,7 +467,9 @@ const makeMapStateToProps = () => {
       notificationCount: getNotificationUnreadCount(state),
       notificationPanelIsOpen: getNotificationPanelIsOpen(state),
       upload: state.upload,
+      library: getPlaylistLibrary(state),
       showCreatePlaylistModal: getIsOpen(state),
+      hideCreatePlaylistModalFolderTab: getHideFolderTab(state),
       dominantColors: getDominantColorsByTrack(state, {
         track: currentQueueItem.track
       })
@@ -451,6 +494,8 @@ const mapDispatchToProps = dispatch => ({
   closeCreatePlaylistModal: () => dispatch(createPlaylistModalActions.close()),
   updatePlaylistLastViewedAt: playlistId =>
     dispatch(updatePlaylistLastViewedAt(playlistId)),
+  updatePlaylistLibrary: newLibrary =>
+    dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary })),
   goToUpload: () => dispatch(pushRoute(UPLOAD_PAGE)),
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
