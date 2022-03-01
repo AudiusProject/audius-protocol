@@ -93,12 +93,12 @@ const startApp = async () => {
     throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
   }
 
-  const trustedNotifierEnabled = !!config.get('trustedNotifierSelection')
+  const trustedNotifierEnabled = !!config.get('trustedNotifierID')
   const nodeOperatorEmailAddress = config.get('nodeOperatorEmailAddress')
 
   if (!trustedNotifierEnabled && !nodeOperatorEmailAddress) {
     exitWithError(
-      'Cannot startup without a trustedNotifierSelection or nodeOperatorEmailAddress'
+      'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
     )
   }
 

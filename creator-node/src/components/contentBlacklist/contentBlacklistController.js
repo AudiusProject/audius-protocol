@@ -206,10 +206,11 @@ function parseQueryParams(queryParams) {
  * @param {number[]} data.values[] the ids of either users or tracks, or segments
  * @param {string} data.timestamp the timestamp of when the data was signed
  * @param {string} signature the signature generated from signing the data
+ * @param {Object} trustedNotifierManager initialized instance of TrustedNotifierManager
  */
 function verifyRequest(data, signature, trustedNotifierManager) {
   const trustedNotifierWallet =
-    trustedNotifierManager.getTrustedNotifier().wallet
+    trustedNotifierManager.getTrustedNotifierData().wallet
   const recoveredPublicWallet = recoverWallet(data, signature)
   console.log(
     `trustedNotifierWallet: ${trustedNotifierWallet}, delegateOwnerWallet: ${config.get(

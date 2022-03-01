@@ -67,6 +67,7 @@ class ServiceRegistry {
     this.libs = await this._initAudiusLibs()
 
     this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
+    // do not await on this, if we cannot fetch the notifier from chain, it will stop the content node from coming up
     this.trustedNotifierManager.init()
 
     // Intentionally not awaitted

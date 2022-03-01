@@ -6,7 +6,7 @@ module.exports = function (app) {
     handleResponse(async (req, res) => {
       const trustedNotifierManager = req.app.get('trustedNotifierManager')
       const emailAddress =
-        trustedNotifierManager.getTrustedNotifier().emailAddress ||
+        trustedNotifierManager.getTrustedNotifierData().emailAddress ||
         'Email address unavailable at the moment'
       const response = {
         emailAddress
