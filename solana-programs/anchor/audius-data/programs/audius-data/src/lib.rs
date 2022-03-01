@@ -2,12 +2,15 @@
 //! Anchor framework
 
 use anchor_lang::prelude::*;
+pub mod utils;
+use crate::utils::*;
 
 declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 
 #[program]
 pub mod audius_data {
     use anchor_lang::solana_program::secp256k1_program;
+    use anchor_lang::solana_program::system_program;
     use anchor_lang::solana_program::sysvar;
     use std::str::FromStr;
 
@@ -169,26 +172,45 @@ pub mod audius_data {
     /// Permissioned function to log an update to User metadata
     pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
         msg!("Audius::UpdateUser");
-        let user_acct: User = User::try_deserialize(&mut &ctx.accounts.user.try_borrow_data()?[..])?;
-        if user_acct.authority != ctx.accounts.user_authority.key() {
-            msg!("Initial validation failed");
-            // let (derived_base, _) = Pubkey::find_program_address(
-            //     &[
-            //         &ctx.accounts.user.key().to_bytes()[..32],
-            //         &ctx.accounts.user_authority.key().to_bytes()[..32]
-            //     ],
-            //     ctx.program_id,
-            // );
-            // msg!("Initial validation failed, {:?}", derived_base);
-            return Err(ErrorCode::Unauthorized.into());
+        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
+            // Reject if system program provided as user delegate_auth
+            if ctx.accounts.user_delegate_authority.key() == system_program::id() {
+                return Err(ErrorCode::Unauthorized.into());
+            }
+
+            // Derive a target delegation account address from the user's storage PDA and provided user authority
+            // In the happy case this will match the account created in add_user_authority_delegate
+            // If there is a mismatch between the provided and derived value, we reject the transaction
+            let (derived_delegate_auth_acct, _) = Pubkey::find_program_address(
+                &[
+                    &ctx.accounts.user.key().to_bytes()[..32],
+                    &ctx.accounts.user_authority.key().to_bytes()[..32],
+                ],
+                ctx.program_id,
+            );
+            // Reject if PDA derivation is mismatched
+            if derived_delegate_auth_acct != ctx.accounts.user_delegate_authority.key() {
+                return Err(ErrorCode::Unauthorized.into());
+            }
+            // Attempt to deserialize data from the derived delegate account
+            let user_del_acct: UserAuthorityDelegate = UserAuthorityDelegate::try_deserialize(
+                &mut &ctx.accounts.user_delegate_authority.try_borrow_data()?[..],
+            )?;
+            // Confirm that the delegate authority and user match the function parameters
+            if user_del_acct.user_storage_account != ctx.accounts.user.key()
+                || user_del_acct.delegate_authority != ctx.accounts.user_authority.key()
+            {
+                return Err(ErrorCode::Unauthorized.into());
+            }
         }
         msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
     }
 
     /// Permissioned function to log an update to Admin metadata
-    pub fn update_admin(ctx: Context<UpdateAdmin>,  is_write_enabled: bool) -> Result<()> {
-        if ctx.accounts.admin.authority != ctx.accounts.admin_authority.key() { // could be has_one
+    pub fn update_admin(ctx: Context<UpdateAdmin>, is_write_enabled: bool) -> Result<()> {
+        if ctx.accounts.admin.authority != ctx.accounts.admin_authority.key() {
+            // could be has_one
             return Err(ErrorCode::Unauthorized.into());
         }
         ctx.accounts.admin.is_write_enabled = is_write_enabled;
@@ -323,21 +345,44 @@ pub mod audius_data {
         Ok(())
     }
 
+    // Enable an account to perform actions on behalf of a given user
     pub fn add_user_authority_delegate(
         ctx: Context<AddUserAuthorityDelegate>,
-        base: Pubkey,
+        _base: Pubkey,
         _handle_seed: [u8; 16],
         _user_bump: u8,
-        user_authority_delegate: Pubkey
+        user_authority_delegate: Pubkey,
     ) -> Result<()> {
-
+        // Only permitted to user authority
         if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
-
         // Assign incoming delegate fields
-        ctx.accounts.user_authority_delegate_pda.user_storage_account = ctx.accounts.user.key();
+        // Maintain the user's storage account and the incoming delegate authority key
+        ctx.accounts
+            .user_authority_delegate_pda
+            .user_storage_account = ctx.accounts.user.key();
         ctx.accounts.user_authority_delegate_pda.delegate_authority = user_authority_delegate;
+        Ok(())
+    }
+
+    // Disable an account that has been delegated authority for this user
+    pub fn remove_user_authority_delegate(
+        ctx: Context<RemoveUserAuthorityDelegate>,
+        _base: Pubkey,
+        _handle_seed: [u8; 16],
+        _user_bump: u8,
+        _user_authority_delegate: Pubkey,
+        _delegate_bump: u8
+    ) -> Result<()> {
+        // Only permitted to user authority
+        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
+        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+        ctx.accounts.user_authority_delegate_pda.delegate_authority = dummy_owner_field;
+        ctx.accounts.user_authority_delegate_pda.user_storage_account = dummy_owner_field;
         Ok(())
     }
 }
@@ -437,11 +482,13 @@ pub struct CreateUser<'info> {
 /// `user_authority` is a signer field which must match the `authority` field in the User account.
 #[derive(Accounts)]
 pub struct UpdateUser<'info> {
-    /// CHECK: Fallback account, optionally null
     #[account()]
-    pub user: AccountInfo<'info>,
+    pub user: Account<'info, User>,
     #[account()]
     pub user_authority: Signer<'info>,
+    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    #[account()]
+    pub user_delegate_authority: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -457,10 +504,9 @@ pub struct UpdateAdmin<'info> {
 #[derive(Accounts)]
 #[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)]
 pub struct AddUserAuthorityDelegate<'info> {
-    #[account(mut)]
+    #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        mut,
         seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
         bump = user_bump
     )]
@@ -473,7 +519,33 @@ pub struct AddUserAuthorityDelegate<'info> {
         space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
     )]
     pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    #[account()]
+    pub user_authority: Signer<'info>,
     #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+/// Instruction container to remove allocated user authority delegation
+/// Returns funds to payer
+#[derive(Accounts)]
+#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey, delegate_bump:u8)]
+pub struct RemoveUserAuthorityDelegate<'info> {
+    #[account()]
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        bump = user_bump
+    )]
+    pub user: Account<'info, User>,
+    #[account(
+        mut,
+        close = payer,
+        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        bump = delegate_bump
+    )]
+    pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    #[account()]
     pub user_authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -627,7 +699,7 @@ pub struct UserAuthorityDelegate {
     // The account that is given permission to operate on this user's behalf
     pub delegate_authority: Pubkey,
     // PDA of user storage account enabling operations
-    pub user_storage_account: Pubkey
+    pub user_storage_account: Pubkey,
 }
 
 // Errors

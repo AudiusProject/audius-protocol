@@ -8,6 +8,7 @@ import { AudiusData } from "../target/types/audius_data";
 import {
   confirmLogInTransaction,
   initTestConstants,
+  pollAccountBalance,
   testCreateUser,
   testInitUser,
   testInitUserSolPubkey,
@@ -109,7 +110,7 @@ describe("audius-data", () => {
     );
   };
 
-  it("Initializing admin account!", async () => {
+  it.only("Initializing admin account!", async () => {
     await initAdmin({
       provider: provider,
       program: program,
@@ -238,6 +239,8 @@ describe("audius-data", () => {
       metadata: updatedCID,
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: newUserKeypair,
+      // No delegate authority needs to be provided in this happy path, so use the SystemProgram ID
+      userDelegateAuthority: SystemProgram.programId
     });
     await confirmLogInTransaction(provider, tx, updatedCID);
   });
@@ -419,7 +422,7 @@ describe("audius-data", () => {
     );
   });
 
-  it("Delegating user authority", async () => {
+  it.only("Delegating user authority", async () => {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } =
@@ -473,7 +476,7 @@ describe("audius-data", () => {
     let res = await PublicKey.findProgramAddress(userDelSeed, program.programId)
     let userDelPDA = res[0]
     let userDelBump = res[1]
-    console.log(`res: ${res}, ${userDelPDA}, ${userDelBump}`)
+    console.log(`res: ${userDelPDA}, ${userDelBump}`)
 
     let addUserDelArgs = {
       accounts: {
@@ -500,13 +503,62 @@ describe("audius-data", () => {
     let delegateAuthorityFromChain = acctState.delegateAuthority
     expect(userStgPdaFromChain.toString(), "user stg pda").to.equal(newUserAcctPDA.toString());
     expect(userAuthorityDelegateKeypair.publicKey.toString(), "del auth pda").to.equal(delegateAuthorityFromChain.toString());
+    console.log(`User delegate authority account ${userDelPDA} validated`)
     const updatedCID = randomCID();
-    const tx = await updateUser({
+    await updateUser({
       program,
       metadata: updatedCID,
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: userAuthorityDelegateKeypair,
+      userDelegateAuthority: userDelPDA
     });
+    console.log(`Updated successfully from delegate authority ${userAuthorityDelegateKeypair.publicKey}`)
+    let removeUserDelArgs = {
+      accounts: {
+        admin: adminStgKeypair.publicKey,
+        user: newUserAcctPDA,
+        userAuthorityDelegatePda: userDelPDA,
+        userAuthority: newUserKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId
+      },
+      signers: [newUserKeypair]
+    }
+
+    console.log(`Removing delegate authority ${userDelPDA}`)
+    await program.rpc.removeUserAuthorityDelegate(
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      userAuthorityDelegateKeypair.publicKey,
+      userDelBump,
+      removeUserDelArgs
+    )
+
+    // Confirm account deallocated after removal
+    await pollAccountBalance(provider, userDelPDA, 0, 100)
+    // try {
+    //   // Expected failure when attempting to use invalid PDA
+    //   await updateUser({
+    //     program,
+    //     metadata: randomCID(),
+    //     userStgAccount: newUserAcctPDA,
+    //     userAuthorityKeypair: userAuthorityDelegateKeypair,
+    //     userDelegateAuthority: userDelPDA
+    //   });
+    // } catch(e) {
+    //   console.log(e)
+    // }
+    await expect(updateUser({
+      program,
+      metadata: randomCID(),
+      userStgAccount: newUserAcctPDA,
+      userAuthorityKeypair: userAuthorityDelegateKeypair,
+      userDelegateAuthority: userDelPDA
+    })
+    ).to.eventually.be.rejected.and.property('msg').to.include(
+      `No 8 byte discriminator was found on the account`
+    )
   })
 
   it("creating initialized user should fail", async () => {
