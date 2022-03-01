@@ -83,7 +83,7 @@ export const LineupTileMetadata = ({
 
   const handleArtistPress = useCallback(() => {
     navigation.push({
-      native: { screen: 'profile', params: { handle: user.handle } },
+      native: { screen: 'Profile', params: { handle: user.handle } },
       web: { route: `/${user.handle}` }
     })
   }, [navigation, user])

@@ -7,8 +7,6 @@ import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 
 import SignOnNavigator from 'app/components/signon/SignOnNavigator'
-import { SearchResultsScreen } from 'app/screens/search-results-screen'
-import { SearchScreen } from 'app/screens/search-screen'
 import {
   getDappLoaded,
   getIsSignedIn,
@@ -18,7 +16,6 @@ import { getAccountAvailable } from 'app/store/signon/selectors'
 import { getNavigationStateAtRoute } from 'app/utils/navigation'
 
 import { BottomTabNavigator } from './BottomTabNavigator'
-import { TopBar } from './TopBar'
 
 // This enables the RN bottom bar and navigation
 const IS_MAIN_NAVIGATION_ENABLED = Config.NATIVE_NAVIGATION_ENABLED === 'true'
@@ -42,12 +39,6 @@ const styles = StyleSheet.create({
 })
 
 const Stack = createStackNavigator()
-
-const forFade = ({ current }) => ({
-  cardStyle: {
-    opacity: current.progress
-  }
-})
 
 /**
  * The top level navigator. Switches between sign on screens and main tab navigator
@@ -115,28 +106,10 @@ const AppNavigator = () => {
             >
               {() => (
                 <BottomTabNavigator
-                  nativeScreens={nativeScreens}
                   onBottomTabBarLayout={handleBottomTabBarLayout}
                 />
               )}
             </Stack.Screen>
-            <Stack.Group
-              screenOptions={{
-                header: props => <TopBar {...props} />,
-                headerStyle: { height: 87 },
-                headerMode: 'float'
-              }}
-            >
-              <Stack.Screen
-                name='Search'
-                component={SearchScreen}
-                options={{ cardStyleInterpolator: forFade }}
-              />
-              <Stack.Screen
-                name='SearchResults'
-                component={SearchResultsScreen}
-              />
-            </Stack.Group>
           </>
         ) : (
           <Stack.Screen name='sign-on' component={SignOnNavigator} />

@@ -97,7 +97,7 @@ const TrackTileComponent = ({
 
   const handlePressTitle = useCallback(() => {
     navigation.push({
-      native: { screen: 'track', params: { id: track_id } },
+      native: { screen: 'Track', params: { id: track_id } },
       web: { route: permalink }
     })
   }, [navigation, permalink, track_id])

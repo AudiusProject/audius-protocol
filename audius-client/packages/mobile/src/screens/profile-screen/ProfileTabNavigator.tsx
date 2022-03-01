@@ -27,38 +27,38 @@ export const ProfileTabNavigator = ({ profile }: ProfileTabNavigatiorProps) => {
   const showCollectiblesTab = useShouldShowCollectiblesTab(profile)
 
   const trackScreen = tabScreen({
-    name: 'tracks',
+    name: 'Tracks',
     Icon: IconNote,
     component: TracksTab
   })
 
   const albumsScreen = tabScreen({
-    name: 'albums',
+    name: 'Albums',
     Icon: IconAlbum,
     component: AlbumsTab
   })
 
   const playlistsScreen = tabScreen({
-    name: 'playlists',
+    name: 'Playlists',
     Icon: IconPlaylists,
     component: PlaylistsTab
   })
 
   const repostsScreen = tabScreen({
-    name: 'reposts',
+    name: 'Reposts',
     Icon: IconRepost,
     component: RepostsTab
   })
 
   const collectiblesScreen = tabScreen({
-    name: 'collectibles',
+    name: 'Collectibles',
     Icon: IconCollectibles,
     component: CollectiblesTab
   })
 
   if (isArtist) {
     return (
-      <TabNavigator initialScreenName='tracks'>
+      <TabNavigator>
         {trackScreen}
         {albumsScreen}
         {playlistsScreen}
@@ -69,7 +69,7 @@ export const ProfileTabNavigator = ({ profile }: ProfileTabNavigatiorProps) => {
   }
 
   return (
-    <TabNavigator initialScreenName='reposts'>
+    <TabNavigator>
       {repostsScreen}
       {playlistsScreen}
       {showCollectiblesTab ? collectiblesScreen : null}

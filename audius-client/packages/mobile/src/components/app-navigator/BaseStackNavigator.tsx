@@ -5,8 +5,9 @@ import {
 import { MessageType } from 'audius-client/src/services/native-mobile-interface/types'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { EditProfileScreen } from 'app/screens/edit-profile-screen/EditProfileScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
+import { SearchResultsScreen } from 'app/screens/search-results-screen'
+import { SearchScreen } from 'app/screens/search-screen'
 import { TrackScreen } from 'app/screens/track-screen'
 import {
   FavoritedScreen,
@@ -16,6 +17,12 @@ import {
 } from 'app/screens/user-list-screen'
 
 import { TopBar } from './TopBar'
+
+const forFade = ({ current }) => ({
+  cardStyle: {
+    opacity: current.progress
+  }
+})
 
 type BaseNavigatorProps = {
   baseScreen: (
@@ -57,9 +64,16 @@ export const BaseStackNavigator = ({
       })}
     >
       {baseScreen(Stack)}
-      <Stack.Screen name='track' component={TrackScreen} />
-      <Stack.Screen name='profile' component={ProfileScreen} />
-      <Stack.Screen name='EditProfile' component={EditProfileScreen} />
+      <Stack.Screen name='Track' component={TrackScreen} />
+      <Stack.Screen name='Profile' component={ProfileScreen} />
+      <Stack.Group>
+        <Stack.Screen
+          name='Search'
+          component={SearchScreen}
+          options={{ cardStyleInterpolator: forFade }}
+        />
+        <Stack.Screen name='SearchResults' component={SearchResultsScreen} />
+      </Stack.Group>
       <Stack.Group>
         <Stack.Screen name='FollowersScreen' component={FollowersScreen} />
         <Stack.Screen name='FollowingScreen' component={FollowingScreen} />
