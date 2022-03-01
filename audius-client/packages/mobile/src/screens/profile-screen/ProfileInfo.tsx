@@ -78,7 +78,9 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
           <EditProfileButton style={styles.followButton} />
         ) : (
           <>
-            {does_current_user_follow ? <SubscribeButton /> : null}
+            {does_current_user_follow ? (
+              <SubscribeButton profile={profile} />
+            ) : null}
             <FollowButton
               style={styles.followButton}
               profile={profile}

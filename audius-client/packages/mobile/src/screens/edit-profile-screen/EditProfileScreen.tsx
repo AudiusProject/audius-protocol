@@ -1,52 +1,45 @@
-import { useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { useNavigation } from '@react-navigation/native'
 import {
   SquareSizes,
   WidthSizes
 } from 'audius-client/src/common/models/ImageSizes'
+import { updateProfile } from 'audius-client/src/common/store/pages/profile/actions'
 import { Formik, FormikProps } from 'formik'
-import { Dimensions, View } from 'react-native'
+import { View } from 'react-native'
 
 import IconDonate from 'app/assets/images/iconDonate.svg'
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import { TextButton } from 'app/components/core'
+import { Screen, TextButton } from 'app/components/core'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
-import { makeStyles } from 'app/styles'
 
 import { getProfile } from '../profile-screen/selectors'
 
 import { CoverPhotoInput } from './CoverPhotoInput'
 import { ProfilePictureInput } from './ProfilePictureInput'
 import { ProfileTextInput } from './ProfileTextInput'
-import { ProfileValues } from './types'
+import { ProfileValues, UpdatedProfile } from './types'
 
 const messages = {
   save: 'Save',
   cancel: 'Cancel'
 }
 
-const screenHeight = Dimensions.get('window').height
-
-const useStyles = makeStyles(({ palette }) => ({
-  screen: {
-    height: screenHeight,
-    backgroundColor: palette.white
-  }
-}))
-
 const EditProfileForm = (props: FormikProps<ProfileValues>) => {
   const { handleSubmit, handleReset } = props
   const navigation = useNavigation()
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
+  return (
+    <Screen
+      variant='secondary'
+      topbarLeft={
         <TextButton
           title={messages.cancel}
           variant='secondary'
@@ -55,8 +48,8 @@ const EditProfileForm = (props: FormikProps<ProfileValues>) => {
             handleReset()
           }}
         />
-      ),
-      headerRight: () => (
+      }
+      topbarRight={
         <TextButton
           title={messages.save}
           variant='primary'
@@ -65,12 +58,8 @@ const EditProfileForm = (props: FormikProps<ProfileValues>) => {
             navigation.goBack()
           }}
         />
-      )
-    })
-  }, [handleReset, handleSubmit, navigation])
-
-  return (
-    <View>
+      }
+    >
       <CoverPhotoInput />
       <ProfilePictureInput />
       <View style={{ paddingTop: 64 }}>
@@ -98,13 +87,13 @@ const EditProfileForm = (props: FormikProps<ProfileValues>) => {
         <ProfileTextInput name='website' label='Website' icon={IconLink} />
         <ProfileTextInput name='donation' label='Donation' icon={IconDonate} />
       </View>
-    </View>
+    </Screen>
   )
 }
 
 export const EditProfileScreen = () => {
   const { profile } = useSelectorWeb(getProfile)
-  const styles = useStyles()
+  const dispatchWeb = useDispatchWeb()
 
   const coverPhoto = useUserCoverPhoto(
     profile?.user_id ?? null,
@@ -118,17 +107,41 @@ export const EditProfileScreen = () => {
     SquareSizes.SIZE_150_BY_150
   )
 
+  const handleSubmit = useCallback(
+    (values: ProfileValues) => {
+      if (!profile) return
+      const { cover_photo, profile_picture, ...restValues } = values
+
+      // @ts-ignore typing is hard here, will come back
+      const newProfile: UpdatedProfile = {
+        ...profile,
+        ...restValues
+      }
+      if (cover_photo.file) {
+        newProfile.updatedCoverPhoto = cover_photo
+      }
+
+      if (profile_picture.file) {
+        newProfile.updatedProfilePicture = cover_photo
+      }
+      dispatchWeb(updateProfile(newProfile))
+    },
+    [dispatchWeb, profile]
+  )
+
   if (!profile) return null
 
+  // these values are actually Nullable<string>, but types think they are
+  // string | undefined. For now, explicitly casting to null
   const {
     name,
     bio,
     location,
-    twitter_handle,
-    instagram_handle,
-    tiktok_handle,
-    website,
-    donation
+    twitter_handle = null,
+    instagram_handle = null,
+    tiktok_handle = null,
+    website = null,
+    donation = null
   } = profile
 
   const initialValues = {
@@ -140,17 +153,15 @@ export const EditProfileScreen = () => {
     tiktok_handle,
     website,
     donation,
-    cover_photo: { uri: coverPhoto },
-    profile_picture: { uri: profilePicture }
+    cover_photo: { url: coverPhoto },
+    profile_picture: { url: profilePicture }
   }
 
   return (
-    <View style={styles.screen}>
-      <Formik
-        initialValues={initialValues}
-        onSubmit={values => console.log(values)}
-        component={EditProfileForm}
-      />
-    </View>
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      component={EditProfileForm}
+    />
   )
 }

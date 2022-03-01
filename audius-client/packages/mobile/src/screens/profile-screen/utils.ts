@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import {
   badgeTiers,
   makeGetTierAndVerifiedForUser
@@ -72,4 +73,13 @@ export const useShouldShowCollectiblesTab = (profile: ProfileUser) => {
   if (hasCollectibles && isUserOnTheirProfile) return true
 
   return false
+}
+
+/**
+ * Reduces multiple sequential newlines (> 3) into max `\n\n` and
+ * trims both leading and trailing newlines
+ * @param {string} str
+ */
+export const squashNewLines = (str: Nullable<string>) => {
+  return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : str
 }

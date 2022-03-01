@@ -1,5 +1,11 @@
+import { useCallback } from 'react'
+
+import { User } from 'audius-client/src/common/models/User'
+import { setNotificationSubscription } from 'audius-client/src/common/store/pages/profile/actions'
+
 import IconNotification from 'app/assets/images/iconNotification.svg'
 import { Button } from 'app/components/core'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
@@ -19,9 +25,20 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const SubscribeButton = () => {
+type SubscribeButtonProps = {
+  profile: User
+}
+
+export const SubscribeButton = (props: SubscribeButtonProps) => {
   const styles = useStyles()
+  const { profile } = props
+  const { user_id } = profile
   const { isSubscribed } = useSelectorWeb(getProfile)
+  const dispatchWeb = useDispatchWeb()
+
+  const handlePress = useCallback(() => {
+    dispatchWeb(setNotificationSubscription(user_id, !isSubscribed, true))
+  }, [dispatchWeb, user_id, isSubscribed])
 
   return (
     <Button
@@ -31,6 +48,7 @@ export const SubscribeButton = () => {
       icon={IconNotification}
       variant={isSubscribed ? 'primary' : 'common'}
       size='small'
+      onPress={handlePress}
     />
   )
 }

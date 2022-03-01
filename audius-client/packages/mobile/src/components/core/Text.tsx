@@ -2,7 +2,7 @@ import { Text as RNText, TextProps as RNTextProps } from 'react-native'
 
 import { makeStyles, typography } from 'app/styles'
 
-type TextProps = RNTextProps & {
+export type TextProps = RNTextProps & {
   variant?: keyof typeof typography
   noGutter?: boolean
   color?: 'primary' | 'secondary' | 'neutral'

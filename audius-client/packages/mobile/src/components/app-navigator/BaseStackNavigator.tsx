@@ -46,10 +46,13 @@ export const BaseStackNavigator = ({
       }}
       screenListeners={({ navigation }) => ({
         beforeRemove: e => {
-          // When a screen is removed, notify the web layer to pop navigation
-          dispatchWeb({
-            type: MessageType.POP_ROUTE
-          })
+          // hack for now to prevent pop for some pages
+          if (!e.target?.includes('EditProfile')) {
+            // When a screen is removed, notify the web layer to pop navigation
+            dispatchWeb({
+              type: MessageType.POP_ROUTE
+            })
+          }
         }
       })}
     >
