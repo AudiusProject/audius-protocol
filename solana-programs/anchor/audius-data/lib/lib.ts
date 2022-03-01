@@ -191,7 +191,7 @@ export const createUser = async ({
 
   tx.add(program.instruction.createUser(
     baseAuthorityAccount,
-    anchor.utils.bytes.hex.decode(ethAccount.address),
+    [...anchor.utils.bytes.hex.decode(ethAccount.address)],
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -267,7 +267,7 @@ type UpdateIsVerifiedParams = {
   program: Program<AudiusData>;
   userStgAccount: anchor.web3.PublicKey;
   verifierKeypair: anchor.web3.Keypair;
-  baseAuthorityAccount: anchor.web3.Keypair;
+  baseAuthorityAccount: anchor.web3.PublicKey;
   adminKeypair: Keypair;
   handleBytesArray: number[];
   bumpSeed: number;
