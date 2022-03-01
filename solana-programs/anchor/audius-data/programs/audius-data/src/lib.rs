@@ -44,17 +44,17 @@ pub mod audius_data {
         _user_handle: UserHandle
     ) -> Result<()> {
 
+        // Validate that the audius admin verifier matches the verifier passed in
+        if ctx.accounts.audius_admin.verifier != ctx.accounts.verifier.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
         // Confirm the base PDA matches the expected value provided the target audius admin
         if base_pda != base {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        // Validate that the audius admin verifier matches the verifier passed in
-        if ctx.accounts.audius_admin.verifier != ctx.accounts.verifier.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -617,6 +617,7 @@ pub enum UserAction {
     UnfollowUser,
 }
 
+// Seed & bump used to validate the user's handle with the account base
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub struct UserHandle {
     pub seed: [u8;16],
