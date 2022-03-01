@@ -96,8 +96,7 @@ pub mod audius_data {
             return Err(ErrorCode::SignatureVerification.into());
         }
 
-        // Eth_address offset (12) + address (20) + signature (65) = 97
-        // TODO: Validate message contents
+        // Eth_address offset (12) + address (20) + signature (65) + message (32)
         let eth_address_offset = 12;
         let secp_data =
             sysvar::instructions::load_instruction_at_checked(0, &ctx.accounts.sysvar_program)?;
@@ -108,10 +107,19 @@ pub mod audius_data {
         let instruction_signer =
             secp_data.data[eth_address_offset..eth_address_offset + 20].to_vec();
 
-        // Update if valid
-        if instruction_signer == audius_user_acct.eth_address {
-            audius_user_acct.authority = user_authority;
+        if instruction_signer != audius_user_acct.eth_address {
+            return Err(ErrorCode::Unauthorized.into());
         }
+
+        audius_user_acct.authority = user_authority;
+
+        let message_offset = 97;
+        let message = secp_data.data[message_offset..].to_vec();
+
+        if message != user_authority.to_bytes() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         Ok(())
     }
 
@@ -142,8 +150,7 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        // Eth_address offset (12) + address (20) + signature (65) = 97
-        // TODO: Validate message contents
+        // Eth_address offset (12) + address (20) + signature (65) + message (32)
         let eth_address_offset = 12;
         let secp_data =
             sysvar::instructions::load_instruction_at_checked(0, &ctx.accounts.sysvar_program)?;
@@ -161,6 +168,13 @@ pub mod audius_data {
         audius_user_acct.eth_address = eth_address;
         audius_user_acct.authority = user_authority;
 
+        let message_offset = 97;
+        let message = secp_data.data[message_offset..].to_vec();
+
+        if message != user_authority.to_bytes() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        
         msg!("AudiusUserMetadata = {:?}", metadata);
 
         Ok(())

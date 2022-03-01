@@ -180,7 +180,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     await testInitUserSolPubkey({
       provider,
@@ -220,7 +220,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     await testInitUserSolPubkey({
       provider,
@@ -269,7 +269,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     await testInitUserSolPubkey({
       provider,
@@ -344,7 +344,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
    await expect (testCreateUser({
       provider,
@@ -385,7 +385,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     await testCreateUser({
       provider,
@@ -446,7 +446,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     await expect(testCreateUser({
       provider,
@@ -480,7 +480,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     const { handleBytesArray: incorrectHandleBytesArray } = initTestConstants();
 
@@ -524,7 +524,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     await testCreateUser({
       provider,
@@ -573,7 +573,7 @@ describe("audius-data", () => {
 
     // Generate signed SECP instruction
     // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toString();
+    const message = newUserKeypair.publicKey.toBytes();
 
     await testCreateUser({
       provider,

@@ -94,7 +94,7 @@ export type initUserSolPubkeyArgs = {
   provider: Provider;
   program: Program<AudiusData>;
   ethPrivateKey: string;
-  message: string;
+  message: Uint8Array;
   userSolPubkey: anchor.web3.PublicKey;
   userStgAccount: anchor.web3.PublicKey;
 };
@@ -108,7 +108,7 @@ export const initUserSolPubkey = async ({
   userStgAccount,
 }: initUserSolPubkeyArgs) => {
   const { signature, recoveryId } = signBytes(
-    Buffer.from(message),
+    message,
     ethPrivateKey
   );
 
@@ -121,9 +121,9 @@ export const initUserSolPubkey = async ({
 
   tx.add(Secp256k1Program.createInstructionWithPublicKey({
     publicKey: ethPubkey,
-    message: Buffer.from(message),
-    signature,
-    recoveryId,
+    message: message, // message into a buffer
+    recoveryId: recoveryId,
+    signature: signature
   }));
 
   tx.add(program.instruction.initUserSol(
@@ -144,7 +144,7 @@ type createUserParams = {
   provider: Provider;
   program: Program<AudiusData>;
   ethAccount: Account;
-  message: string;
+  message: Uint8Array;
   handleBytesArray: number[];
   bumpSeed: number;
   metadata: string;
@@ -168,7 +168,7 @@ export const createUser = async ({
   adminStgPublicKey,
 }: createUserParams) => {
   const { signature, recoveryId } = signBytes(
-    Buffer.from(message),
+    message,
     ethAccount.privateKey
   );
 
@@ -181,14 +181,14 @@ export const createUser = async ({
 
   tx.add(Secp256k1Program.createInstructionWithPublicKey({
     publicKey: ethPubkey,
-    message: Buffer.from(message),
+    message: message,
     signature,
     recoveryId,
   }));
 
   tx.add(program.instruction.createUser(
     baseAuthorityAccount,
-    anchor.utils.bytes.hex.decode(ethAccount.address),
+    [...anchor.utils.bytes.hex.decode(ethAccount.address)],
     handleBytesArray,
     bumpSeed,
     metadata,
