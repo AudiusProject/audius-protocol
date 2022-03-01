@@ -23,15 +23,41 @@ pub mod audius_data {
     pub fn init_admin(
         ctx: Context<Initialize>,
         authority: Pubkey,
+        verifier: Pubkey,
         track_id_offset: u64,
         playlist_id_offset: u64,
     ) -> Result<()> {
         msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
+        audius_admin.verifier = verifier;
         audius_admin.track_id = track_id_offset;
         audius_admin.playlist_id = playlist_id_offset;
         audius_admin.is_write_enabled = true;
+        Ok(())
+    }
+
+    /// Verifies a user by asserting that the audius_admin's verifier matches the signed verifier account
+    pub fn update_is_verified(
+        ctx: Context<UpdateIsVerified>,
+        base: Pubkey,
+        _user_handle: UserHandle
+    ) -> Result<()> {
+
+        // Validate that the audius admin verifier matches the verifier passed in
+        if ctx.accounts.audius_admin.verifier != ctx.accounts.verifier.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         Ok(())
     }
 
@@ -317,8 +343,8 @@ pub mod audius_data {
     }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8 + 8 + 1;
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 1;
 
 /// Size of user account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
@@ -531,12 +557,24 @@ pub struct DeletePlaylist<'info> {
     pub payer: Signer<'info>,
 }
 
+/// Instruction container for verifying a user
+#[derive(Accounts)]
+#[instruction(base: Pubkey, user_handle: UserHandle)]
+pub struct UpdateIsVerified<'info> {
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    // Confirm the follower PDA matches the expected value provided the target handle and base
+    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
+    pub user: Account<'info, User>,
+    pub verifier: Signer<'info>,
+}
+
 // END Instructions
 
 /// Audius root account
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
+    pub verifier: Pubkey,
     pub track_id: u64,
     pub playlist_id: u64,
     pub is_write_enabled: bool,
@@ -578,3 +616,11 @@ pub enum UserAction {
     FollowUser,
     UnfollowUser,
 }
+
+// Seed & bump used to validate the user's handle with the account base
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub struct UserHandle {
+    pub seed: [u8;16],
+    pub bump: u8,
+}
+

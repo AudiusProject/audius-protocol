@@ -17,6 +17,7 @@ type initAdminParams = {
   program: Program<AudiusData>;
   adminKeypair: Keypair;
   adminStgKeypair: Keypair;
+  verifierKeypair: Keypair;
   trackIdOffset: anchor.BN;
   playlistIdOffset: anchor.BN;
 };
@@ -26,11 +27,13 @@ export const initAdmin = async ({
   program,
   adminKeypair,
   adminStgKeypair,
+  verifierKeypair,
   trackIdOffset,
   playlistIdOffset,
 }: initAdminParams) => {
   return program.rpc.initAdmin(
     adminKeypair.publicKey,
+    verifierKeypair.publicKey,
     trackIdOffset,
     playlistIdOffset,
     {
@@ -188,7 +191,7 @@ export const createUser = async ({
 
   tx.add(program.instruction.createUser(
     baseAuthorityAccount,
-    anchor.utils.bytes.hex.decode(ethAccount.address),
+    [...anchor.utils.bytes.hex.decode(ethAccount.address)],
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -256,6 +259,39 @@ export const updateAdmin = async ({
       },
       signers: [adminAuthorityKeypair],
     },
+  );
+};
+
+/// Verify user with authenticatorKeypair
+type UpdateIsVerifiedParams = {
+  program: Program<AudiusData>;
+  userStgAccount: anchor.web3.PublicKey;
+  verifierKeypair: anchor.web3.Keypair;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  adminKeypair: Keypair;
+  handleBytesArray: number[];
+  bumpSeed: number;
+};
+export const updateIsVerified = async ({
+  program,
+  adminKeypair,
+  userStgAccount,
+  verifierKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed
+}: UpdateIsVerifiedParams) => {
+  return program.rpc.updateIsVerified(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    {
+      accounts: {
+        user: userStgAccount,
+        audiusAdmin: adminKeypair.publicKey,
+        verifier: verifierKeypair.publicKey,
+      },
+      signers: [verifierKeypair],
+    }
   );
 };
 
