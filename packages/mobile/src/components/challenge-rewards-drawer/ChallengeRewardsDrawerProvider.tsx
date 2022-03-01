@@ -15,7 +15,6 @@ import {
   ClaimStatus,
   resetAndCancelClaimReward
 } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import { show as showMobileUploadDrawer } from 'audius-client/src/common/store/ui/mobile-upload-drawer/slice'
 import {
   getModalVisibility,
   setVisibility
@@ -238,7 +237,7 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   const openUploadModal = useCallback(() => {
     onClose()
-    dispatchWeb(showMobileUploadDrawer())
+    dispatchWeb(setVisibility({ modal: 'MobileUpload', visible: true }))
   }, [dispatchWeb, onClose])
 
   // Claim rewards button config
