@@ -10,7 +10,7 @@ class BaseRewardsReporter {
 
   async reportFailure ({ userId, challengeId, amount, error, phase }) {}
 
-  async reportAAORejection ({ userId, challengeId, amount, error }) {}
+  async reportAAORejection ({ userId, challengeId, amount, error, reason }) {}
 }
 
 const MAX_DISBURSED_CACHE_SIZE = 100
@@ -654,6 +654,12 @@ class RewardsAttester {
           // `noRetry` errors are never retried, so
           // they're always logged as failure or AAO
           if (isAAO) {
+            const errorType = {
+              [errors.HCAPTCHA]: 'hcaptcha',
+              [errors.COGNITO_FLOW]: 'cognito',
+              [errors.BLOCKED]: 'blocked'
+            }[res.error]
+            report.reason = errorType
             this.reporter.reportAAORejection(report)
           } else {
             this.reporter.reportFailure(report)
