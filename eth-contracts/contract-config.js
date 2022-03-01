@@ -10,8 +10,7 @@ module.exports = {
     solanaRecipientAddress: null,
     initialNotifierWallet: null,
     initialNotifierEndpoint: null,
-    initialNotifierWallet: null,
-    initialNotifierEndpoint: null
+    initialNotifierEmail: null
   },
   'test_local': {
     proxyDeployerAddress: null,
@@ -21,7 +20,8 @@ module.exports = {
     antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null,
     initialNotifierWallet: null,
-    initialNotifierEndpoint: null
+    initialNotifierEndpoint: null,
+    initialNotifierEmail: null
   },
   'soliditycoverage': {
     proxyDeployerAddress: null,
@@ -31,7 +31,8 @@ module.exports = {
     antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null,
     initialNotifierWallet: null,
-    initialNotifierEndpoint: null
+    initialNotifierEndpoint: null,
+    initialNotifierEmail: null
   },
   'audius_private': {
     proxyDeployerAddress: null,
@@ -41,7 +42,8 @@ module.exports = {
     antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null,
     initialNotifierWallet: null,
-    initialNotifierEndpoint: null
+    initialNotifierEndpoint: null,
+    initialNotifierEmail: null
   },
   'staging': {
     proxyDeployerAddress: null,
@@ -51,7 +53,8 @@ module.exports = {
     antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null,
     initialNotifierWallet: null,
-    initialNotifierEndpoint: null
+    initialNotifierEndpoint: null,
+    initialNotifierEmail: null
   },
   'production': {
     proxyDeployerAddress: null,
@@ -61,6 +64,7 @@ module.exports = {
     antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null,
     initialNotifierWallet: null,
-    initialNotifierEndpoint: null
+    initialNotifierEndpoint: null,
+    initialNotifierEmail: null
   }
 }

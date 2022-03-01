@@ -10,27 +10,31 @@ contract TrustedNotifierManager is InitializableV2 {
 
     address governanceAddress;
 
-    uint256 private latestID;
-
+    /// @notice All fields - wallet, endpoint, email - are unique
     struct TrustedNotifier {
         address wallet;
         string endpoint;
+        string email;
     }
+
+    uint256 private latestID;
 
     mapping(uint256 => TrustedNotifier) IDToTrustedNotifierMap;
 
+    /// @notice wallet is unique - i.e. each wallet maps to at most one ID
     mapping(address => uint256) walletToIDMap;
 
+    /// @notice endpoint is unique - i.e. each endpoint maps to at most one ID
     mapping(bytes32 => uint256) endpointToIDMap;
 
-    /**
-     * @notice Function to initialize the contract
-     * @param _governanceAddress - Governance proxy address
-     */
+    /// @notice email is unique - i.e. each email maps to at most one ID
+    mapping(bytes32 => uint256) emailToIDMap;
+
     function initialize (
         address _governanceAddress,
         address _initialNotifierWallet,
-        string memory _initialNotiferEndpoint
+        string memory _initialNotiferEndpoint,
+        string memory _initialNotiferEmail
     ) public initializer {
         _updateGovernanceAddress(_governanceAddress);
 
@@ -39,18 +43,21 @@ contract TrustedNotifierManager is InitializableV2 {
 
         IDToTrustedNotifierMap[ID] = TrustedNotifier({
             wallet: _initialNotifierWallet,
-            endpoint: _initialNotiferEndpoint
+            endpoint: _initialNotiferEndpoint,
+            email: _initialNotiferEmail
         });
 
         walletToIDMap[_initialNotifierWallet] = ID;
 
         endpointToIDMap[keccak256(bytes(_initialNotiferEndpoint))] = ID;
 
+        emailToIDMap[keccak256(bytes(_initialNotiferEmail))] = ID;
+
         InitializableV2.initialize();
     }
 
     function registerNotifier(
-        address _wallet, string calldata _endpoint
+        address _wallet, string calldata _endpoint, string calldata _email
     ) external returns (uint256) {
         _requireIsInitialized();
 
@@ -71,17 +78,26 @@ contract TrustedNotifierManager is InitializableV2 {
             "TrustedNotifierManager: Endpoint already registered."
         );
 
+        // Ensure email isn't already registered
+        require(
+            emailToIDMap[keccak256(bytes(_email))] == 0,
+            "TrustedNotifierManager: Email already registered."
+        );
+
         uint256 ID = latestID.add(1);
         latestID = ID;
 
         IDToTrustedNotifierMap[ID] = TrustedNotifier({
             wallet: _wallet,
-            endpoint: _endpoint
+            endpoint: _endpoint,
+            email: _email
         });
 
         walletToIDMap[_wallet] = ID;
 
         endpointToIDMap[keccak256(bytes(_endpoint))] = ID;
+
+        emailToIDMap[keccak256(bytes(_email))] = ID;
 
         return ID;
     }
@@ -100,6 +116,7 @@ contract TrustedNotifierManager is InitializableV2 {
         delete IDToTrustedNotifierMap[ID];
         delete walletToIDMap[_wallet];
         delete endpointToIDMap[keccak256(bytes(notifier.endpoint))];
+        delete emailToIDMap[keccak256(bytes(notifier.email))];
 
         return ID;
     }
@@ -109,21 +126,30 @@ contract TrustedNotifierManager is InitializableV2 {
     }
 
     function getNotifierForID(uint256 _ID) external view
-    returns (address wallet, string memory endpoint) {
+    returns (address wallet, string memory endpoint, string memory email) {
         TrustedNotifier memory notifier = IDToTrustedNotifierMap[_ID];
-        return (notifier.wallet, notifier.endpoint);
+        return (notifier.wallet, notifier.endpoint, notifier.email);
     }
 
-    function getEndpointForWallet(address _wallet) external view returns (string memory) {
-        uint256 ID = walletToIDMap[_wallet];
-        TrustedNotifier memory notifier = IDToTrustedNotifierMap[ID];
-        return notifier.endpoint;
+    function getNotifierForWallet(address _wallet) external view
+    returns (uint256 ID, string memory endpoint, string memory email) {
+        uint256 notifierID = walletToIDMap[_wallet];
+        TrustedNotifier memory notifier = IDToTrustedNotifierMap[notifierID];
+        return (notifierID, notifier.endpoint, notifier.email);
     }
 
-    function getWalletForEndpoint(string calldata _endpoint) external view returns (address) {
-        uint256 ID = endpointToIDMap[keccak256(bytes(_endpoint))];
-        TrustedNotifier memory notifier = IDToTrustedNotifierMap[ID];
-        return notifier.wallet;
+    function getNotifierForEndpoint(string calldata _endpoint) external view
+    returns (uint256 ID, address wallet, string memory email) {
+        uint256 notifierID = endpointToIDMap[keccak256(bytes(_endpoint))];
+        TrustedNotifier memory notifier = IDToTrustedNotifierMap[notifierID];
+        return (notifierID, notifier.wallet, notifier.email);
+    }
+
+    function getNotifierForEmail(string calldata _email) external view
+    returns (uint256 ID, address wallet, string memory endpoint) {
+        uint256 notifierID = emailToIDMap[keccak256(bytes(_email))];
+        TrustedNotifier memory notifier = IDToTrustedNotifierMap[notifierID];
+        return (notifierID, notifier.wallet, notifier.endpoint);
     }
 
     /// @notice Get the Governance address
