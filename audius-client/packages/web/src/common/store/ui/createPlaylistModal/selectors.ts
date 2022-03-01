@@ -7,6 +7,8 @@ export const getBaseState = (state: CommonState) => state.ui.createPlaylistModal
 
 export const getIsOpen = (state: CommonState) => getBaseState(state).isOpen
 export const getId = (state: CommonState) => getBaseState(state).collectionId
+export const getHideFolderTab = (state: CommonState) =>
+  getBaseState(state).hideFolderTab
 
 export const getMetadata = (state: CommonState) => {
   const id = getId(state)

@@ -249,7 +249,7 @@ svg.logo path {
   overflow: hidden;
   list-style: none;
   margin: 0;
-  padding: 0px;
+  padding: 0;
 }
 .navColumn .links .linkGroup {
   margin: 0px 16px 25px;
@@ -261,7 +261,7 @@ svg.logo path {
   font-size: var(--font-l);
   font-weight: var(--font-heavy);
   line-height: 22px;
-  padding-bottom: 8px;
+  padding-bottom: 2px;
   padding-left: 16px;
   color: var(--nav-column-group-header);
 
@@ -273,14 +273,14 @@ svg.logo path {
 .navColumn .links .link {
   font-size: var(--font-s);
   font-weight: var(--font-medium);
-  line-height: 8px;
   position: relative;
   display: table;
   min-width: 100px;
 
   /* negative margin so the link hover chip shows up. */
   margin-left: -16px;
-  padding: 6px 0 6px 40px;
+  /* left padding is visibly (32px + -16px margin =) 16px to match the left padding of .groupHeader */
+  padding: 6px 0 6px 32px;
   color: var(--nav-column-link);
   transition: color 0.07s ease-in-out;
 
@@ -288,9 +288,17 @@ svg.logo path {
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
+  border: 0;
+  background: none;
+  text-align: inherit;
 }
 
-.navColumn .links a.link {
+.navColumn .links .link:hover {
+  cursor: pointer;
+}
+
+.navColumn .links a.link,
+.navColumn .links button.link {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -300,6 +308,7 @@ svg.logo path {
 
 .navColumn .links a.link.disabledLink {
   opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .navColumn .links a.link.droppableLink {
@@ -392,10 +401,10 @@ svg.logo path {
 .updateDotContainer {
   display: flex;
   align-items: center;
-  position: absolute;
-  left: 30px;
+  /* margin left = -(6px width + 4px margin-right on update dot element) so that list items stay aligned */
+  margin-left: -10px;
 }
 
 .updateDotTooltip :global(.ant-tooltip-arrow) {
-  left: 33px;
+  left: 24px;
 }
