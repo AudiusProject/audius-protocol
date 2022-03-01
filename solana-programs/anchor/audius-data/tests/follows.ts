@@ -155,10 +155,8 @@ describe("follows", () => {
       let followTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.followUser,
-        handleBytesArray1,
-        handle1DerivedInfo.bumpSeed,
-        handleBytesArray2,
-        handle2DerivedInfo.bumpSeed,
+        { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
       let txInfo = await confirmLogInTransaction(
@@ -177,10 +175,10 @@ describe("follows", () => {
       const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
       const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
       const instructionFollowerHandle = String.fromCharCode(
-        ...instructions["followerHandleSeed"]
+        ...instructions["followerHandle"]["seed"]
       );
       const instructionFolloweeHandle = String.fromCharCode(
-        ...instructions["followeeHandleSeed"]
+        ...instructions["followeeHandle"]["seed"]
       );
       assert.equal(user1Handle, instructionFollowerHandle);
       assert.equal(user2Handle, instructionFolloweeHandle);
@@ -202,10 +200,8 @@ describe("follows", () => {
       let unfollowTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.unfollowUser,
-        handleBytesArray1,
-        handle1DerivedInfo.bumpSeed,
-        handleBytesArray2,
-        handle2DerivedInfo.bumpSeed,
+        { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
       let unFollowtxInfo = await confirmLogInTransaction(
@@ -219,10 +215,10 @@ describe("follows", () => {
       );
       const unfollowInstructions = unFollowdecodedInstruction.data;
       const unfInstructionFollowerHandle = String.fromCharCode(
-        ...unfollowInstructions["followerHandleSeed"]
+        ...unfollowInstructions["followerHandle"]["seed"]
       );
       const unfInstructionFolloweeHandle = String.fromCharCode(
-        ...unfollowInstructions["followeeHandleSeed"]
+        ...unfollowInstructions["followeeHandle"]["seed"]
       );
       const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
       const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
@@ -248,10 +244,8 @@ describe("follows", () => {
         let txHash = await program.rpc.followUser(
           baseAuthorityAccount,
           UserActionEnumValues.invalidEnumValue,
-          handleBytesArray1,
-          handle1DerivedInfo.bumpSeed,
-          handleBytesArray2,
-          handle2DerivedInfo.bumpSeed,
+          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+          { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
           followArgs
         );
         console.log(`invalid follow txHash=${txHash}`);
@@ -282,10 +276,8 @@ describe("follows", () => {
         await program.rpc.followUser(
           baseAuthorityAccount,
           UserActionEnumValues.followUser,
-          handleBytesArray1,
-          handle1DerivedInfo.bumpSeed,
-          handleBytesArray2,
-          handle2DerivedInfo.bumpSeed,
+          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+          { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
           followArgs
         );
       } catch (e) {
@@ -305,11 +297,9 @@ describe("follows", () => {
         await program.rpc.followUser(
           baseAuthorityAccount,
           UserActionEnumValues.followUser,
-          handleBytesArray1,
-          handle1DerivedInfo.bumpSeed,
+          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
           // Note the intentionally incorrect handle bytes below for followee target PDA
-          handleBytesArray1,
-          handle1DerivedInfo.bumpSeed,
+          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
           followArgs
         );
       } catch (e) {

@@ -311,10 +311,8 @@ pub mod audius_data {
         ctx: Context<FollowUser>,
         base: Pubkey,
         user_action: UserAction,
-        _follower_handle_seed: [u8; 16],
-        _follower_bump: u8,
-        _followee_handle_seed: [u8; 16],
-        _followee_bump: u8,
+        _follower_handle: UserHandle,
+        _followee_handle: UserHandle,
     ) -> Result<()> {
         match user_action {
             UserAction::FollowUser => {
@@ -497,15 +495,15 @@ pub struct DeleteTrack<'info> {
 
 /// Instruction container for follow
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_instr:UserAction, follower_handle_seed: [u8;16], follower_handle_bump:u8, followee_handle_seed: [u8;16], followee_handle_bump:u8)]
+#[instruction(base: Pubkey, user_instr:UserAction, follower_handle: UserHandle, followee_handle: UserHandle)]
 pub struct FollowUser<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     // Confirm the follower PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], follower_handle_seed.as_ref()], bump = follower_handle_bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], follower_handle.seed.as_ref()], bump = follower_handle.bump)]
     pub follower_user_storage: Account<'info, User>,
     // Confirm the followee PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle_seed.as_ref()], bump = followee_handle_bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle.seed.as_ref()], bump = followee_handle.bump)]
     pub followee_user_storage: Account<'info, User>,
     // User update authority field
     #[account(mut)]
