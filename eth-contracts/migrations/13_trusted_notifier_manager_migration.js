@@ -14,9 +14,11 @@ module.exports = (deployer, network, accounts) => {
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
     const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
+    // Get Governance contract instance
     const governanceAddress = process.env.governanceAddress
     const governance = await Governance.at(governanceAddress)
 
+    // Get initial Trusted Notifier configs
     const initialNotifierWallet = config.initialNotifierWallet || accounts[20]
     const initialNotifierEndpoint = config.initialNotifierEndpoint || 'default.trustednotifier'
     const initialNotifierEmail = config.initialNotifierEmail || 'email@default.trustednotifier'

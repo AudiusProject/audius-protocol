@@ -13,7 +13,7 @@ const VOTING_PERIOD = 10
 const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
 
-contract('TrustedNotifierManager', async function (accounts) {
+contract.only('TrustedNotifierManager', async function (accounts) {
   let registry, governance, trustedNotifierManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
@@ -51,7 +51,6 @@ contract('TrustedNotifierManager', async function (accounts) {
     let notifier
 
     notifier = await trustedNotifierManager.getNotifierForID.call(expectedNotifierID)
-    console.log(`getNotifierForID: ${JSON.stringify(notifier)}`)
     assert.isTrue(notifier.wallet === expectedWallet)
     assert.isTrue(notifier.endpoint === expectedEndpoint)
     assert.isTrue(notifier.email === expectedEmail)
@@ -61,29 +60,26 @@ contract('TrustedNotifierManager', async function (accounts) {
     }
 
     notifier = await trustedNotifierManager.getNotifierForWallet.call(expectedWallet)
-    console.log(`getNotifierForWallet: ${JSON.stringify(notifier)} // id: `)
     assert.isTrue(notifier.ID.eq(_lib.toBN(expectedNotifierID)))
     // assert.isTrue(notifier.ID === expectedNotifierID)
-    console.log(`getNotifierForWallet: id equal`)
     assert.isTrue(notifier.endpoint === expectedEndpoint)
-    console.log(`getNotifierForWallet: endpoint equal`)
     assert.isTrue(notifier.email === expectedEmail)
-    console.log(`getNotifierForWallet: email equal`)
 
     notifier = await trustedNotifierManager.getNotifierForEndpoint.call(expectedEndpoint)
-    console.log(`getNotifierForEndpoint: ${JSON.stringify(notifier)}`)
     assert.isTrue(notifier.ID.eq(_lib.toBN(expectedNotifierID)))
     assert.isTrue(notifier.wallet === expectedWallet)
     assert.isTrue(notifier.email === expectedEmail)
 
     notifier = await trustedNotifierManager.getNotifierForEmail.call(expectedEmail)
-    console.log(`getNotifierForEmail: ${JSON.stringify(notifier)}`)
     assert.isTrue(notifier.ID.eq(_lib.toBN(expectedNotifierID)))
     assert.isTrue(notifier.wallet === expectedWallet)
     assert.isTrue(notifier.endpoint === expectedEndpoint)
   }
 
-  // Init contracts - Registry, Governance, TrustedNotifierManager
+  /**
+   * Init Registry & Governance contracts
+   * Init TrustedNotifierManager contract with initial TrustedNotifier
+   */
   beforeEach(async function () {
     // Deploy Registry
     registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
@@ -142,6 +138,42 @@ contract('TrustedNotifierManager', async function (accounts) {
     await _lib.assertRevert(
       trustedNotifierManager.registerNotifier(notifier2Wallet, notifier2Endpoint, notifier2Email, { from: notifier2Wallet }),
       'TrustedNotifierManager: Only callable by Governance contract.'
+    )
+
+    // Register fails when wallet is zero address
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        trustedNotifierManagerKey,
+        _lib.CallValueZero,
+        'registerNotifier(address,string,string)',
+        _lib.abiEncode(['address', 'string', 'string'], [_lib.addressZero, notifier2Endpoint, notifier2Email]),
+        { from: guardianAddress }
+      ),
+      'Governance: Transaction failed.'
+    )
+
+    // Register fails when endpoint is empty string
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        trustedNotifierManagerKey,
+        _lib.CallValueZero,
+        'registerNotifier(address,string,string)',
+        _lib.abiEncode(['address', 'string', 'string'], [notifier2Wallet, '', notifier2Email]),
+        { from: guardianAddress }
+      ),
+      'Governance: Transaction failed.'
+    )
+
+    // Register fails when email is empty string
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        trustedNotifierManagerKey,
+        _lib.CallValueZero,
+        'registerNotifier(address,string,string)',
+        _lib.abiEncode(['address', 'string', 'string'], [notifier2Wallet, notifier2Endpoint, '']),
+        { from: guardianAddress }
+      ),
+      'Governance: Transaction failed.'
     )
 
     // Register notifier
@@ -210,7 +242,6 @@ contract('TrustedNotifierManager', async function (accounts) {
       expectedEndpoint: notifier1Endpoint,
       expectedEmail: notifier1Email
     })
-    console.log(1)
 
     // Register notifier
     await governance.guardianExecuteTransaction(
@@ -220,7 +251,6 @@ contract('TrustedNotifierManager', async function (accounts) {
       _lib.abiEncode(['address', 'string', 'string'], [notifier2Wallet, notifier2Endpoint, notifier2Email]),
       { from: guardianAddress }
     )
-    console.log(2)
 
     // Confirm exists
     await confirmNotifierState({
@@ -231,7 +261,6 @@ contract('TrustedNotifierManager', async function (accounts) {
       expectedEndpoint: notifier2Endpoint,
       expectedEmail: notifier2Email
     })
-    console.log(3)
 
      // Deregister notifier via governance
      await governance.guardianExecuteTransaction(
@@ -241,7 +270,6 @@ contract('TrustedNotifierManager', async function (accounts) {
       _lib.abiEncode(['address'], [notifier2Wallet]),
       { from: guardianAddress }
     )
-    console.log(4)
 
     // Confirm no longer exists
     await confirmNotifierState({
@@ -253,7 +281,6 @@ contract('TrustedNotifierManager', async function (accounts) {
       expectedEmail: '',
       expectedToExist: false
     })
-    console.log(5)
   })
 
   it('Deregister notifier directly', async function () {
