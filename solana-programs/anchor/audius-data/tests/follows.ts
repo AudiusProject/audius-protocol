@@ -100,8 +100,8 @@ describe("follows", () => {
 
       // Generate signed SECP instruction
       // Message as the incoming public key
-      const message1 = newUser1Key.publicKey.toString();
-      const message2 = newUser2Key.publicKey.toString();
+      const message1 = newUser1Key.publicKey.toBytes();
+      const message2 = newUser2Key.publicKey.toBytes();
 
       // disable admin writes
       await updateAdmin({
