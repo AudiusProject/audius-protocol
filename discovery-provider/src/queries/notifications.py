@@ -938,8 +938,8 @@ def notifications():
         users_that_favorited_playlists_dict = {}
         for result in playlist_favorites_results:
             if result.save_item_id in users_that_favorited_playlists_dict:
-                users_that_favorited_playlists_dict[result.save_item_id].extend(
-                    [result.user_id]
+                users_that_favorited_playlists_dict[result.save_item_id].append(
+                    result.user_id
                 )
             else:
                 users_that_favorited_playlists_dict[result.save_item_id] = [
