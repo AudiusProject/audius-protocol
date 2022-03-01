@@ -14,8 +14,10 @@ import { Image, ProfileValues } from './types'
 
 const useStyles = makeStyles(({ palette }) => ({
   root: {
-    height: 96,
-    overflow: 'hidden'
+    height: 96
+  },
+  image: {
+    height: '100%'
   },
   centerIcon: {
     position: 'absolute',
@@ -61,12 +63,12 @@ export const CoverPhotoInput = () => {
   return (
     <Pressable
       onPress={handlePress}
-      style={styles.root}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
     >
       <DynamicImage
-        source={{ uri: value.uri }}
+        source={{ uri: value.url }}
+        styles={{ root: styles.root, image: styles.image }}
         onLoad={() => setIsLoading(false)}
       >
         <View style={styles.backdrop} />

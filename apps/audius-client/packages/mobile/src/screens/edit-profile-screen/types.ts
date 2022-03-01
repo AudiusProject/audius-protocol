@@ -6,7 +6,7 @@ export type Image = {
   name?: string
   size?: number
   fileType?: string
-  uri: string
+  url: string
   file?: string
 }
 
@@ -14,11 +14,19 @@ export type ProfileValues = {
   name: string
   bio: Nullable<string>
   location: Nullable<string>
-  twitter_handle?: string
-  instagram_handle?: string
-  tiktok_handle?: string
-  website?: string
-  donation?: string
+  twitter_handle: Nullable<string>
+  instagram_handle: Nullable<string>
+  tiktok_handle: Nullable<string>
+  website: Nullable<string>
+  donation: Nullable<string>
   cover_photo: Image
   profile_picture: Image
+}
+
+export type UpdatedProfile = Omit<
+  ProfileValues,
+  'cover_photo' | 'profile_picture'
+> & {
+  updatedCoverPhoto?: Image
+  updatedProfilePicture?: Image
 }
