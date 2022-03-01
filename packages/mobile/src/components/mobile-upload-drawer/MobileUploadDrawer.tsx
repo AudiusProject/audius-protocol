@@ -32,7 +32,7 @@ const useStyles = makeStyles(({ typography, spacing }) => ({
     width: 80
   },
   title: {
-    fontSize: typography.fontSize.xxxl,
+    fontSize: typography.fontSize.xxxxl,
     fontFamily: typography.fontByWeight.heavy,
     marginBottom: spacing(2)
   },
