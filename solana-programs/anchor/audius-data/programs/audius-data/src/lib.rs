@@ -185,9 +185,6 @@ pub mod audius_data {
         Ok(())
     }
 
-    // User TODOS:
-    // - Enable happy path flow with both eth address and sol key
-
     /*
         Track related functions
     */
@@ -315,6 +312,24 @@ pub mod audius_data {
 
         Ok(())
     }
+
+    pub fn add_user_authority_delegate(
+        ctx: Context<AddUserAuthorityDelegate>,
+        base: Pubkey,
+        _handle_seed: [u8; 16],
+        _user_bump: u8,
+        user_authority_delegate: Pubkey
+    ) -> Result<()> {
+
+        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Assign incoming delegate fields
+        ctx.accounts.user_authority_delegate_pda.user_storage_account = ctx.accounts.user.key();
+        ctx.accounts.user_authority_delegate_pda.delegate_authority = user_authority_delegate;
+        Ok(())
+    }
 }
 
 /// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
@@ -331,6 +346,10 @@ pub const TRACK_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 /// Size of playlist account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
 pub const PLAYLIST_ACCOUNT_SIZE: usize = 8 + 32 + 8;
+
+/// Size of user authority delegation account
+/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
+pub const USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE: usize = 8 + 32 + 32;
 
 /// Instructions
 #[derive(Accounts)]
@@ -420,6 +439,34 @@ pub struct UpdateAdmin<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
     pub admin_authority: Signer<'info>,
+}
+
+/// Instruction container to allow user delegation
+/// Allocates a new account that will be used for fallback in auth scenarios
+#[derive(Accounts)]
+#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)]
+pub struct AddUserAuthorityDelegate<'info> {
+    #[account(mut)]
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(
+        mut,
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        bump = user_bump
+    )]
+    pub user: Account<'info, User>,
+    #[account(
+        init,
+        payer = payer,
+        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        bump,
+        space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
+    )]
+    pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    #[account(mut)]
+    pub user_authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 /// Instruction container for track creation
@@ -561,6 +608,15 @@ pub struct Track {
 pub struct Playlist {
     pub owner: Pubkey,
     pub playlist_id: u64,
+}
+
+/// User delegated authority account
+#[account]
+pub struct UserAuthorityDelegate {
+    // The account that is given permission to operate on this user's behalf
+    pub delegate_authority: Pubkey,
+    // PDA of user storage account enabling operations
+    pub user_storage_account: Pubkey
 }
 
 // Errors

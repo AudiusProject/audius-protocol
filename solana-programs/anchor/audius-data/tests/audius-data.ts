@@ -12,6 +12,7 @@ import {
   testInitUser,
   testInitUserSolPubkey,
 } from "./test-helpers";
+const { PublicKey, SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
 
@@ -108,7 +109,7 @@ describe("audius-data", () => {
     );
   };
 
-  it("Initializing admin account!", async () => {
+  it.only("Initializing admin account!", async () => {
     await initAdmin({
       provider: provider,
       program: program,
@@ -417,6 +418,87 @@ describe("audius-data", () => {
       `Allocate: account Address { address: ${newUserAcctPDA.toString()}, base: None } already in use`
     );
   });
+
+  it.only("Delegating user authority", async () => {
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+
+    const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } =
+      await findDerivedPair(
+        program.programId,
+        adminStgKeypair.publicKey,
+        Buffer.from(handleBytesArray)
+      );
+
+    // disable admin writes
+    await updateAdmin({
+      program,
+      isWriteEnabled: false,
+      adminStgAccount: adminStgKeypair.publicKey,
+      adminAuthorityKeypair: adminKeypair,
+    })
+
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toString();
+
+    await testCreateUser({
+      provider,
+      program,
+      message,
+      ethAccount,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userStgAccount: newUserAcctPDA,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+    });
+
+    // New sol key that will be used as user authority delegate
+    const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
+    console.log(`userAuthKeypair: ${userAuthorityDelegateKeypair.publicKey}`)
+
+    const userDelSeed = [
+      newUserAcctPDA.toBytes().slice(0, 32),
+      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32)
+    ]
+
+    console.log(`userDelSeed: ${userDelSeed}`)
+    let res = await PublicKey.findProgramAddress(userDelSeed, program.programId)
+    let userDelPDA = res[0]
+    let userDelBump = res[1]
+    console.log(`res: ${res}, ${userDelPDA}, ${userDelBump}`)
+
+    let addUserDelArgs = {
+      accounts: {
+        admin: adminStgKeypair.publicKey,
+        user: newUserAcctPDA,
+        userAuthorityDelegatePda: userDelPDA,
+        userAuthority: newUserKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId
+      },
+      signers: [newUserKeypair]
+    }
+
+    await program.rpc.addUserAuthorityDelegate(
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      userAuthorityDelegateKeypair.publicKey,
+      addUserDelArgs
+    )
+
+    let acctState = await program.account.userAuthorityDelegate.fetch(userDelPDA)
+    let userStgPdaFromChain = acctState.userStorageAccount
+    expect(userStgPdaFromChain.toString(), "user stg pda").to.equal(newUserAcctPDA.toString());
+    let delegateAuthorityFromChain = acctState.delegateAuthority
+    expect(userAuthorityDelegateKeypair.publicKey.toString(), "del auth pda").to.equal(delegateAuthorityFromChain.toString());
+  })
 
   it("creating initialized user should fail", async () => {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
