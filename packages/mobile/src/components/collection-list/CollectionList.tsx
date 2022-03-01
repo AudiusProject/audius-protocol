@@ -10,7 +10,6 @@ type ListProps = Omit<
 
 type CollectionListProps = {
   collection: UserCollection[]
-  emptyTabText?: string
 } & ListProps
 
 export const CollectionList = (props: CollectionListProps) => {

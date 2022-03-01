@@ -1,14 +1,8 @@
 import { useCallback } from 'react'
 
-import {
-  FlatList,
-  FlatListProps,
-  ListRenderItem,
-  Text,
-  View
-} from 'react-native'
+import { FlatList, FlatListProps, ListRenderItem, View } from 'react-native'
 
-import { EmptyCard } from './EmptyCard'
+import { EmptyTile } from './EmptyTile'
 
 export type CardListProps<ItemT> = FlatListProps<ItemT> & {
   emptyListText?: string
@@ -37,11 +31,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
       renderItem={handleRenderItem}
       numColumns={2}
       ListEmptyComponent={
-        emptyListText ? (
-          <EmptyCard>
-            <Text>{emptyListText}</Text>
-          </EmptyCard>
-        ) : undefined
+        emptyListText ? <EmptyTile message={emptyListText} /> : undefined
       }
       {...other}
     />
