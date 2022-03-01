@@ -164,7 +164,7 @@ describe("playlist", () => {
 
       // Generate signed SECP instruction
       // Message as the incoming public key
-      const message = newUserKeypair.publicKey.toString();
+      const message = newUserKeypair.publicKey.toBytes();
 
       // disable admin writes
       await updateAdmin({
