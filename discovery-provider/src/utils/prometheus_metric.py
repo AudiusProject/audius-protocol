@@ -8,7 +8,7 @@ class PrometheusMetric:
     histograms: Dict[str, Histogram] = {}
 
     def __init__(self, name, description, labelnames=()):
-        self.start_time = time()
+        self.reset_timer()
 
         # set metric prefix of audius_project_
         name = f"audius_dn_{name}"
@@ -22,11 +22,16 @@ class PrometheusMetric:
             )
         self.h = PrometheusMetric.histograms[name]
 
-    def elapsed(self):
-        return time() - self.start_time
+    def reset_timer(self):
+        self.start_time = time()
 
-    def save_time(self, labels=None):
-        self.save(self.elapsed(), labels)
+    def elapsed(self, start_time=None):
+        if start_time is None:
+            start_time = self.start_time
+        return time() - start_time
+
+    def save_time(self, labels=None, start_time=None):
+        self.save(self.elapsed(start_time), labels)
 
     def save(self, value, labels=None):
         if labels:
