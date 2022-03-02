@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { View, Text } from 'react-native'
 
@@ -47,7 +47,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 }))
 
 type ProfileBadgeProps = {
-  profile: ProfileUser
+  profile: User
 }
 
 export const ProfileBadge = ({ profile }: ProfileBadgeProps) => {

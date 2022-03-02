@@ -1,7 +1,6 @@
-import { getProfileUser } from 'audius-client/src/common/store/pages/profile/selectors'
 import { Text, View } from 'react-native'
 
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useProfile } from 'app/hooks/selectors'
 import { makeStyles } from 'app/styles'
 
 import { AppDrawer } from '../drawer/AppDrawer'
@@ -68,7 +67,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 export const TiersExplainerDrawer = () => {
   const styles = useStyles()
 
-  const profile = useSelectorWeb(getProfileUser)
+  const profile = useProfile()
+
   if (!profile) return null
 
   const tier = getUserAudioTier(profile)

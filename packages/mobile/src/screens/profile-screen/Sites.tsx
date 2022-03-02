@@ -1,4 +1,4 @@
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 import { View, Text } from 'react-native'
 
 import IconDonate from 'app/assets/images/iconDonate.svg'
@@ -6,10 +6,6 @@ import IconLink from 'app/assets/images/iconLink.svg'
 import { Link } from 'app/components/core'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
-
-type SitesProps = {
-  profile: ProfileUser
-}
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   sites: {
@@ -27,6 +23,10 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     color: palette.neutral
   }
 }))
+
+type SitesProps = {
+  profile: User
+}
 
 export const Sites = ({ profile }: SitesProps) => {
   const styles = useStyles()

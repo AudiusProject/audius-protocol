@@ -1,14 +1,12 @@
 import { useMemo } from 'react'
 
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-
-import { CollectionList } from '../../components/collection-list/CollectionList'
+import { CollectionList } from 'app/components/collection-list'
 
 import { useEmptyProfileText } from './EmptyProfileTile'
-import { getProfile } from './selectors'
+import { useProfilePlaylists } from './selectors'
 
 export const PlaylistsTab = () => {
-  const { profile, playlists } = useSelectorWeb(getProfile)
+  const { profile, playlists } = useProfilePlaylists()
 
   const userPlaylists = useMemo(() => {
     if (profile && playlists) {

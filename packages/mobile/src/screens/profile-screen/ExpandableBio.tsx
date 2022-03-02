@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 import {
   Pressable,
   View,
@@ -40,7 +40,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 }))
 
 type ExpandableBioProps = {
-  profile: ProfileUser
+  profile: User
 }
 
 export const ExpandableBio = ({ profile }: ExpandableBioProps) => {

@@ -1,9 +1,8 @@
 import { User } from 'audius-client/src/common/models/User'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 
 import { EmptyTile } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useAccountUser } from 'app/hooks/selectors'
 
 const messages = {
   you: 'You',
@@ -18,7 +17,7 @@ const messages = {
 type Tab = 'tracks' | 'albums' | 'playlists' | 'reposts'
 
 export const useEmptyProfileText = (profile: Nullable<User>, tab: Tab) => {
-  const accountUser = useSelectorWeb(getAccountUser)
+  const accountUser = useAccountUser()
 
   if (!profile) return ''
   const { user_id, name } = profile
