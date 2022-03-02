@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 import { View } from 'react-native'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
@@ -28,7 +28,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 type ProfileSocialsProps = {
-  profile: ProfileUser
+  profile: User
 }
 
 export const ProfileSocials = ({ profile }: ProfileSocialsProps) => {

@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
@@ -9,8 +8,8 @@ import IconSettings from 'app/assets/images/iconSettings.svg'
 import { TopBarIconButton } from 'app/components/app-navigator/TopBarIconButton'
 import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { ProfilePhoto } from 'app/components/user'
+import { useAccountUser, useProfile } from 'app/hooks/selectors'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -22,7 +21,6 @@ import { ProfileMetrics } from './ProfileMetrics'
 import { ProfileSocials } from './ProfileSocials'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { UploadTrackButton } from './UploadTrackButton'
-import { getProfile } from './selectors'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
@@ -50,26 +48,27 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 export const ProfileScreen = () => {
   const styles = useStyles()
-  const { profile } = useSelectorWeb(getProfile)
-  const accountUser = useSelectorWeb(getAccountUser)
+  const profile = useProfile()
+  const accountUser = useAccountUser()
+
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { accentOrange } = useThemeColors()
 
   const navigation = useNavigation()
 
-  const handleNavigateSettings = () => {
+  const handleNavigateSettings = useCallback(() => {
     navigation.push({
       native: { screen: 'SettingsScreen', params: undefined },
       web: { route: '/settings' }
     })
-  }
+  }, [navigation])
 
-  const handleNavigateAudio = () => {
+  const handleNavigateAudio = useCallback(() => {
     navigation.push({
       native: { screen: 'AudioScreen', params: undefined },
       web: { route: '/audio ' }
     })
-  }
+  }, [navigation])
 
   const handleFollow = useCallback(() => {
     if (!profile?.does_current_user_follow) {

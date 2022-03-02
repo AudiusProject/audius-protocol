@@ -1,7 +1,7 @@
 import { Fragment, useCallback } from 'react'
 
 import { FollowSource } from 'audius-client/src/common/models/Analytics'
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 import {
   followUser,
   unfollowUser
@@ -66,7 +66,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 type ArtistRecommendationsProps = {
-  profile: ProfileUser
+  profile: User
   onClose: () => void
 }
 
@@ -90,8 +90,9 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
     )
   })
 
-  const suggestedArtists = useSelectorWeb(state =>
-    getRelatedArtistIds(state, { id: user_id })
+  const suggestedArtists = useSelectorWeb(
+    state => getRelatedArtistIds(state, { id: user_id }),
+    (a, b) => a.length === b.length
   )
 
   const isFollowingAllArtists = suggestedArtists.every(

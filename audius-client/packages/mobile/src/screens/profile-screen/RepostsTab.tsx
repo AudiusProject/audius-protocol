@@ -1,18 +1,14 @@
-import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
 import { feedActions } from 'audius-client/src/common/store/pages/profile/lineups/feed/actions'
-import { getProfileFeedLineup } from 'audius-client/src/common/store/pages/profile/selectors'
 
 import { Lineup } from 'app/components/lineup'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useProfile } from 'app/hooks/selectors'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
-import { getProfile } from './selectors'
-
-const getUserFeedMetadatas = makeGetLineupMetadatas(getProfileFeedLineup)
+import { useProfileFeedLineup } from './selectors'
 
 export const RepostsTab = () => {
-  const { profile } = useSelectorWeb(getProfile)
-  const lineup = useSelectorWeb(getUserFeedMetadatas)
+  const profile = useProfile()
+  const lineup = useProfileFeedLineup()
 
   if (!profile) return null
 

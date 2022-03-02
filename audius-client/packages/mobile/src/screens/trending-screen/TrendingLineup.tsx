@@ -15,7 +15,6 @@ import {
   getDiscoverTrendingMonthLineup,
   getDiscoverTrendingWeekLineup
 } from 'audius-client/src/common/store/pages/trending/selectors'
-import { isEqual } from 'lodash'
 
 import { Lineup } from 'app/components/lineup'
 import { LineupProps } from 'app/components/lineup/types'
@@ -55,7 +54,10 @@ type TrendingLineupProps = BaseLineupProps & {
 
 export const TrendingLineup = (props: TrendingLineupProps) => {
   const { timeRange, ...other } = props
-  const trendingLineup = useSelectorWeb(selectorsMap[timeRange], isEqual)
+  const trendingLineup = useSelectorWeb(
+    selectorsMap[timeRange],
+    (a, b) => a.entries.length === b.entries.length
+  )
   const [isRefreshing, setIsRefreshing] = useState(false)
   const navigation = useNavigation()
   const dispatchWeb = useDispatchWeb()

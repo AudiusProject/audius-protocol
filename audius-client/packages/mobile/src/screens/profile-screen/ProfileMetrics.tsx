@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 import { setFollowers } from 'audius-client/src/common/store/user-list/followers/actions'
 import { setFollowing } from 'audius-client/src/common/store/user-list/following/actions'
 import { Pressable, Text, View } from 'react-native'
@@ -43,7 +43,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 }))
 
 type ProfileMetricsProps = {
-  profile: ProfileUser
+  profile: User
 }
 
 export const ProfileMetrics = ({ profile }: ProfileMetricsProps) => {

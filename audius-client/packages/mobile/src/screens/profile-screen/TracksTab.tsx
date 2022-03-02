@@ -1,18 +1,17 @@
 import { useCallback } from 'react'
 
 import { tracksActions } from 'audius-client/src/common/store/pages/profile/lineups/tracks/actions'
-import { getProfileTracksLineup } from 'audius-client/src/common/store/pages/profile/selectors'
 
 import { Lineup } from 'app/components/lineup'
+import { useProfile } from 'app/hooks/selectors'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
-import { getProfile } from './selectors'
+import { useProfileTracksLineup } from './selectors'
 
 export const TracksTab = () => {
-  const { profile } = useSelectorWeb(getProfile)
-  const lineup = useSelectorWeb(getProfileTracksLineup)
+  const profile = useProfile()
+  const lineup = useProfileTracksLineup()
   const dispatchWeb = useDispatchWeb()
 
   const loadMore = useCallback(
