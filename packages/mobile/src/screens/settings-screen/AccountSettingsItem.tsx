@@ -16,6 +16,7 @@ type AccountSettingsItemProps = {
   description: string
   buttonTitle: string
   buttonIcon: ComponentType<SvgProps>
+  onPress?: () => void
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -31,7 +32,14 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 export const AccountSettingsItem = (props: AccountSettingsItemProps) => {
-  const { title, titleIconSource, description, buttonTitle, buttonIcon } = props
+  const {
+    title,
+    titleIconSource,
+    description,
+    buttonTitle,
+    buttonIcon,
+    onPress
+  } = props
   const styles = useStyles()
 
   return (
@@ -45,6 +53,7 @@ export const AccountSettingsItem = (props: AccountSettingsItemProps) => {
         iconPosition='left'
         variant='common'
         fullWidth
+        onPress={onPress}
       />
     </SettingsRow>
   )

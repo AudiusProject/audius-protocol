@@ -1,4 +1,7 @@
+import { useCallback } from 'react'
+
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
+import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { ScrollView, Text, View } from 'react-native'
 
 import Key from 'app/assets/images/emojis/key.png'
@@ -10,6 +13,7 @@ import IconSignOut from 'app/assets/images/iconSignOut.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { Screen } from 'app/components/core'
 import { ProfilePhoto } from 'app/components/user'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
@@ -54,7 +58,12 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const AccountSettingsScreen = () => {
   const styles = useStyles()
+  const dispatchWeb = useDispatchWeb()
   const accountUser = useSelectorWeb(getAccountUser)
+
+  const openSignOutDrawer = useCallback(() => {
+    dispatchWeb(setVisibility({ modal: 'SignOutConfirmation', visible: true }))
+  }, [dispatchWeb])
 
   if (!accountUser) return null
 
@@ -95,6 +104,7 @@ export const AccountSettingsScreen = () => {
           description={messages.signOutDescription}
           buttonTitle={messages.signOutButtonTitle}
           buttonIcon={IconSignOut}
+          onPress={openSignOutDrawer}
         />
       </ScrollView>
     </Screen>

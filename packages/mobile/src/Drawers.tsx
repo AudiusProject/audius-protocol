@@ -15,6 +15,7 @@ import { MobileUploadDrawer } from 'app/components/mobile-upload-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
+import { SignOutConfirmationDrawer } from 'app/components/sign-out-confirmation-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
@@ -42,6 +43,7 @@ export const Drawers = () => {
       <FeedFilterDrawer />
       <TrendingFilterDrawer />
       <TiersExplainerDrawer />
+      <SignOutConfirmationDrawer />
       {/* Disable the audio breakdown drawer until we get
       the feature flags to work for native mobile */}
       {/* <AudioBreakdownDrawer /> */}
