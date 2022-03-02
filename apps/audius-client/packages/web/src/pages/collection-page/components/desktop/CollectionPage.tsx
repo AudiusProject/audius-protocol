@@ -4,14 +4,14 @@ import { Collection, SmartCollection, Variant } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
-import CollectionHeader from 'components/collection/desktop/CollectionHeader'
-import Page from 'components/page/Page'
-import TracksTable from 'components/tracks-table/TracksTable'
 import {
   CollectionTrack,
   TrackRecord,
   CollectionsPageType
-} from 'pages/collection-page/store/types'
+} from 'common/store/pages/collection/types'
+import CollectionHeader from 'components/collection/desktop/CollectionHeader'
+import Page from 'components/page/Page'
+import TracksTable from 'components/tracks-table/TracksTable'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'

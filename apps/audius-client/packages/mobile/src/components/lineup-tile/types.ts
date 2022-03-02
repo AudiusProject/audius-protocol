@@ -2,9 +2,11 @@ import { ReactNode } from 'react'
 
 import { PlaybackSource } from 'audius-client/src/common/models/Analytics'
 import { Collection } from 'audius-client/src/common/models/Collection'
+import { FavoriteType } from 'audius-client/src/common/models/Favorite'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
+import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 
 import { GestureResponderHandler } from 'app/types/gesture'
 
@@ -43,6 +45,9 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** Duration of the tile's tracks */
   duration?: number
 
+  /** Favorite type used for the favorited user list */
+  favoriteType: FavoriteType
+
   /** Hide the play count */
   hidePlays?: boolean
 
@@ -51,6 +56,9 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
 
   /** ID of the item */
   id: ID
+
+  /** Url of the image */
+  imageUrl: string
 
   /** The item (track or collection) */
   item: Track | Collection
@@ -75,6 +83,9 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
 
   /** Amount of plays on this item */
   playCount?: number
+
+  /** Repost type used for the reposted user list */
+  repostType: RepostType
 
   /** Title of the item */
   title: string

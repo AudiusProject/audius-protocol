@@ -6,7 +6,11 @@ import { Track, UserTrack } from 'common/models/Track'
 import { getAccountStatus, getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
-import { setSmartCollection } from 'pages/collection-page/store/actions'
+import { setSmartCollection } from 'common/store/pages/collection/actions'
+import {
+  fetchSmartCollection,
+  fetchSmartCollectionSucceeded
+} from 'common/store/pages/smart-collection/slice'
 import Explore from 'services/audius-backend/Explore'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getLuckyTracks } from 'store/recommendation/sagas'
@@ -21,8 +25,6 @@ import {
   UNDER_THE_RADAR,
   REMIXABLES
 } from '../smartCollections'
-
-import { fetchSmartCollection, fetchSmartCollectionSucceeded } from './slice'
 
 const COLLECTIONS_LIMIT = 25
 

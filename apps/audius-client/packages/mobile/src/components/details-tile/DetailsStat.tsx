@@ -6,7 +6,7 @@ import { flexRowCentered } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 import { useThemeColors, ThemeColors } from 'app/utils/theme'
 
-type TrackScreenStatProps = {
+type DetailsTileStatProps = {
   count: number
   onPress?: () => void
   renderLabel: (color: string) => JSX.Element
@@ -31,11 +31,11 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-export const TrackScreenStat = ({
+export const DetailsTileStat = ({
   count,
   onPress,
   renderLabel
-}: TrackScreenStatProps) => {
+}: DetailsTileStatProps) => {
   const styles = useThemedStyles(createStyles)
   const { neutralLight4 } = useThemeColors()
 

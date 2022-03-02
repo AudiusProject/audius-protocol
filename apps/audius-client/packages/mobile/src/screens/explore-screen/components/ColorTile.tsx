@@ -1,4 +1,4 @@
-import { ReactNode, useCallback } from 'react'
+import { ComponentType, ReactNode, useCallback } from 'react'
 
 import {
   Image,
@@ -11,8 +11,10 @@ import {
   ViewStyle
 } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
+import { SvgProps } from 'react-native-svg'
 
 import IconAudioRewardsPill from 'app/assets/images/iconAudioRewardsPill.svg'
+import { ExploreStackParamList } from 'app/components/app-navigator/types'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -23,13 +25,13 @@ type ColorTileProps = {
   style?: StyleProp<ViewStyle>
   title: string
   link: string
-  screen?: 'TrendingUnderground'
+  screen?: 'TrendingUnderground' | 'UnderTheRadar'
   description?: string
   gradientColors?: string[]
   gradientAngle?: number
   shadowColor?: string
   shadowOpacity?: number
-  icon?: React.FC
+  icon?: ComponentType<SvgProps>
   emoji?: ReactNode
   isIncentivized?: boolean
 }
@@ -132,7 +134,7 @@ export const ColorTile = ({
   isIncentivized
 }: ColorTileProps) => {
   const styles = useThemedStyles(createStyles)
-  const navigation = useNavigation()
+  const navigation = useNavigation<ExploreStackParamList>()
 
   const handlePress = useCallback(() => {
     if (screen) {

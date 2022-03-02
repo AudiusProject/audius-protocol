@@ -1,5 +1,6 @@
-import { ReactNode } from 'react'
+import { ComponentType, ReactNode } from 'react'
 
+import { SvgProps } from 'react-native-svg'
 import {
   EXPLORE_LET_THEM_DJ_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
@@ -28,7 +29,7 @@ export type ExploreCollection = {
   gradientAngle: number
   shadowColor: string
   shadowOpacity: number
-  icon?: React.FC
+  icon?: ComponentType<SvgProps>
   incentivized?: boolean // Whether we reward winners with $AUDIO
   link: string
   screen?: 'TrendingUnderground'

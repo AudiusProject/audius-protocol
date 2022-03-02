@@ -114,6 +114,7 @@ export const Lineup = ({
   refresh,
   refreshing,
   showLeadingElementArtistPick = true,
+  start = 0,
   variant = LineupVariant.MAIN,
   listKey,
   selfLoad
@@ -255,6 +256,8 @@ export const Lineup = ({
   // Calculate the sections of data to provide to SectionList
   const sections: Section[] = useMemo(() => {
     const { deleted, entries, hasMore, isMetadataLoading, page } = lineup
+
+    const items = entries.slice(start, count)
     const itemDisplayCount = page <= 1 ? itemCounts.initial : pageItemCount
 
     const getSkeletonCount = () => {
@@ -264,17 +267,17 @@ export const Lineup = ({
         // Data is loading
         isMetadataLoading &&
         // There are fewer items than the max count
-        entries.length < countOrDefault
+        items.length < countOrDefault
 
       if (shouldCalculateSkeletons) {
         // Calculate the number of skeletons to display: total # requested - # rendered - # deleted
         // If the `count` prop is provided, render the count - # loaded tiles
         const loadingSkeletonDifferential = Math.max(
-          itemDisplayCount - entries.length - deleted,
+          itemDisplayCount - items.length - deleted,
           0
         )
         return count
-          ? Math.min(count - entries.length, MAX_COUNT_LOADING_TILES)
+          ? Math.min(count - items.length, MAX_COUNT_LOADING_TILES)
           : loadingSkeletonDifferential
       }
       return 0
@@ -286,7 +289,7 @@ export const Lineup = ({
 
     if (delineate) {
       return [
-        ...delineateByTime(entries),
+        ...delineateByTime(items),
         {
           delineate: false,
           data: skeletonItems
@@ -295,7 +298,7 @@ export const Lineup = ({
     }
 
     if (leadingElementId && showLeadingElementArtistPick) {
-      const [artistPick, ...restEntries] = [...entries, ...skeletonItems]
+      const [artistPick, ...restEntries] = [...items, ...skeletonItems]
 
       return [
         { delineate: false, data: [artistPick] },
@@ -306,7 +309,7 @@ export const Lineup = ({
     return [
       {
         delineate: false,
-        data: [...entries, ...skeletonItems]
+        data: [...items, ...skeletonItems]
       }
     ]
   }, [
@@ -317,7 +320,8 @@ export const Lineup = ({
     lineup,
     pageItemCount,
     leadingElementId,
-    showLeadingElementArtistPick
+    showLeadingElementArtistPick,
+    start
   ])
 
   return (

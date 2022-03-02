@@ -133,13 +133,6 @@
   width: 100%;
 }
 
-.infoDuration {
-  color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
-}
-
 .trackHeader > span {
   width: 100%;
 }

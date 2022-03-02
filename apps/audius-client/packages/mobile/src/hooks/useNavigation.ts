@@ -6,34 +6,15 @@ import {
 } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
-import {
-  BaseStackParamList,
-  ProfileStackParamList,
-  SearchParamList
-} from 'app/components/app-navigator/types'
+import { BaseStackParamList } from 'app/components/app-navigator/types'
 
 import { usePushRouteWeb } from './usePushRouteWeb'
-
-type AppParamList = BaseStackParamList &
-  ProfileStackParamList &
-  SearchParamList & {
-    feed: undefined
-    trending: undefined
-    explore: undefined
-    favorites: undefined
-    EditProfile: undefined
-    FollowersScreen: undefined
-    FollowingScreen: undefined
-    FavoritedScreen: undefined
-    RepostsScreen: undefined
-    TrendingUnderground: undefined
-  }
 
 type UseNavigationConfig<
   ParamList extends ParamListBase,
   RouteName extends keyof ParamList
 > = {
-  native: { screen: RouteName; params: ParamList[RouteName] }
+  native: { screen: RouteName; params?: ParamList[RouteName] }
   web?: {
     route: string
     fromPage?: string
@@ -41,15 +22,17 @@ type UseNavigationConfig<
   }
 }
 
-type NavigationType = NativeStackNavigationProp<AppParamList>
-
-export const useNavigation = () => {
-  const nativeNavigation = useNavigationNative<NavigationType>()
+export const useNavigation = <
+  ParamList extends ParamListBase = BaseStackParamList
+>() => {
+  const nativeNavigation = useNavigationNative<
+    NativeStackNavigationProp<ParamList>
+  >()
   const pushRouteWeb = usePushRouteWeb()
 
   const performNavigation = useCallback(
-    method => <RouteName extends keyof AppParamList>(
-      config: UseNavigationConfig<AppParamList, RouteName>
+    method => <RouteName extends keyof ParamList>(
+      config: UseNavigationConfig<ParamList, RouteName>
     ) => {
       const { native, web } = config
       method(native.screen, native.params)
@@ -57,6 +40,8 @@ export const useNavigation = () => {
         pushRouteWeb(web.route, web.fromPage, web.fromNativeNotifications)
       }
     },
+    // eslint thinks ParamList is a variable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [pushRouteWeb]
   )
 

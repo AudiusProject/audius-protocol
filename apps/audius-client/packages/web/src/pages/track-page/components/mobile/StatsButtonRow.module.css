@@ -1,5 +1,5 @@
 .countContainer {
-  display: inline-flex;
+  display: flex;
   width: 100%;
   justify-content: center;
   align-items: center;
@@ -41,12 +41,12 @@
   text-align: center;
 }
 
-.countLabel svg {
+.countContainer svg {
   height: 16px !important;
   width: 16px !important;
 }
 
-.countLabel svg path {
+.countContainer svg path {
   fill: var(--neutral-light-4);
 }
 

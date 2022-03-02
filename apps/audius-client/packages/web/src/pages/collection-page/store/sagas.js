@@ -3,11 +3,10 @@ import { call, put, takeLatest, takeEvery } from 'redux-saga/effects'
 import Kind from 'common/models/Kind'
 import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
+import * as collectionActions from 'common/store/pages/collection/actions'
+import { tracksActions } from 'common/store/pages/collection/lineup/actions.js'
 import { makeUid } from 'common/utils/uid'
-import { tracksActions } from 'pages/collection-page/store/lineups/tracks/actions.js'
 import tracksSagas from 'pages/collection-page/store/lineups/tracks/sagas'
-
-import * as collectionActions from './actions'
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {

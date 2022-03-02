@@ -19,6 +19,8 @@ import { UsersCacheState } from 'common/store/cache/users/types'
 import { sagas as castSagas } from 'common/store/cast/sagas'
 import cast from 'common/store/cast/slice'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
+import collection from 'common/store/pages/collection/reducer'
+import { CollectionsPageState } from 'common/store/pages/collection/types'
 import exploreCollectionsReducer from 'common/store/pages/explore/exploreCollections/slice'
 import explorePageReducer from 'common/store/pages/explore/slice'
 import feed from 'common/store/pages/feed/reducer'
@@ -30,6 +32,7 @@ import searchResults from 'common/store/pages/search-results/reducer'
 import { SearchPageState } from 'common/store/pages/search-results/types'
 import settings from 'common/store/pages/settings/reducer'
 import { SettingsPageState } from 'common/store/pages/settings/types'
+import smartCollection from 'common/store/pages/smart-collection/slice'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
@@ -133,10 +136,12 @@ export const reducers = (ctx: CommonStoreContext) => ({
   // Pages
   pages: combineReducers({
     audioRewards: audioRewardsSlice.reducer,
+    collection,
     feed,
     explore: explorePageReducer,
     exploreCollections: exploreCollectionsReducer,
     profile: profileReducer,
+    smartCollection,
     savedPage: savedPageReducer,
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
@@ -184,6 +189,8 @@ export const sagas = (ctx: CommonStoreContext) => ({
   // store/lineup/sagas.js
   // pages/feed/store/lineups/feed/sagas.js
   // pages/feed/store/sagas.js
+  // pages/collection/store/lineups/tracks/sagas.js
+  // pages/collection/store/sagas.js
   // pages/track/store/lineups/tracks/sagas.js
   // pages/track/store/sagas.js
   // store/ui/stemsUpload/sagas.ts
@@ -198,6 +205,7 @@ export const sagas = (ctx: CommonStoreContext) => ({
   // pages/trending-page/store/lineups/trending/sagas.ts
   // pages/trending-underground-page/store/lineups/tracks/sagas.ts
   // pages/trending-underground-page/store/sagas.ts
+  // pages/smart-collection/store/sagas.ts
   // store/application/ui/theme/sagas.ts
   // pages/search-page/store/sagas.ts
   // pages/search-page/store/lineups/tracks/sagas.ts
@@ -248,9 +256,11 @@ export type CommonState = {
 
   pages: {
     audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
+    collection: CollectionsPageState
     feed: FeedPageState
     explore: ReturnType<typeof explorePageReducer>
     exploreCollections: ReturnType<typeof exploreCollectionsReducer>
+    smartCollection: ReturnType<typeof smartCollection>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     track: TrackPageState
     profile: ProfilePageState
