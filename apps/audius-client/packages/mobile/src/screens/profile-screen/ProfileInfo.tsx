@@ -1,9 +1,8 @@
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 import { View, Text } from 'react-native'
 
 import { FollowButton } from 'app/components/user'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useAccountUser } from 'app/hooks/selectors'
 import { makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
@@ -51,7 +50,7 @@ const messages = {
 }
 
 type ProfileInfoProps = {
-  profile: ProfileUser
+  profile: User
   onFollow: () => void
 }
 
@@ -59,7 +58,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { profile, onFollow } = props
   const styles = useStyles()
   const { does_current_user_follow, does_follow_current_user } = profile
-  const accountUser = useSelectorWeb(getAccountUser)
+  const accountUser = useAccountUser()
   const isOwner = accountUser?.user_id === profile.user_id
 
   return (

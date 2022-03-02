@@ -1,4 +1,4 @@
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 
 import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconCollectibles from 'app/assets/images/iconCollectibles.svg'
@@ -18,7 +18,7 @@ import { TracksTab } from './TracksTab'
 import { useShouldShowCollectiblesTab } from './utils'
 
 type ProfileTabNavigatiorProps = {
-  profile: ProfileUser
+  profile: User
 }
 
 export const ProfileTabNavigator = ({ profile }: ProfileTabNavigatiorProps) => {

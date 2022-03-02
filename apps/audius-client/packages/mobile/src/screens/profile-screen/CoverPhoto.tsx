@@ -1,5 +1,5 @@
 import { WidthSizes } from 'audius-client/src/common/models/ImageSizes'
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'
 import { DynamicImage } from 'app/components/core'
@@ -21,7 +21,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type CoverPhotoProps = {
-  profile: ProfileUser
+  profile: User
 }
 
 export const CoverPhoto = ({ profile }: CoverPhotoProps) => {

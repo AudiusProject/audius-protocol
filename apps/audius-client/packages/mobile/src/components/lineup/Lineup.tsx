@@ -220,6 +220,7 @@ export const Lineup = ({
     index: number
     item: LineupItem | LoadingLineupItem
   }) => {
+    if (!item) return null
     if ('_loading' in item) {
       if (item._loading) {
         return (

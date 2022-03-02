@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
 
 import { ID } from 'audius-client/src/common/models/Identifiers'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { ProfileUser } from 'audius-client/src/common/store/pages/profile/types'
+import { User } from 'audius-client/src/common/models/User'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import {
   badgeTiers,
   makeGetTierAndVerifiedForUser
 } from 'audius-client/src/components/user-badges/utils'
 
+import { useAccountUser } from 'app/hooks/selectors'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { MIN_COLLECTIBLES_TIER } from './constants'
@@ -39,7 +39,7 @@ export const useSelectTierInfo = (userId: ID) => {
  * If the user is viewing their own profile, the collectibles don't
  * need to be ordered
  */
-export const useShouldShowCollectiblesTab = (profile: ProfileUser) => {
+export const useShouldShowCollectiblesTab = (profile: User) => {
   const {
     user_id,
     has_collectibles,
@@ -47,7 +47,7 @@ export const useShouldShowCollectiblesTab = (profile: ProfileUser) => {
     solanaCollectibleList,
     collectibles
   } = profile
-  const accountUser = useSelectorWeb(getAccountUser)
+  const accountUser = useAccountUser()
   const { tierNumber } = useSelectTierInfo(user_id)
 
   const hasCollectiblesTierRequirement =
