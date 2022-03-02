@@ -50,7 +50,7 @@ module.exports = function (app) {
   app.post('/cognito_webhook/flow', cognitoFlowMiddleware, handleResponse(async (req) => {
     const { id, event, data } = req.body
 
-    logger.info(`cognito_webhook_flow: ${is} | ${event} | ${data}`)
+    logger.info(`cognito_webhook_flow: ${id} | ${event} | ${data}`)
     logger.info(`cognito_webhook_flow: ${JSON.stringify({ id, event, data })}`)
 
     // if event is not of type status, meaning the event denotes of a step in the flow, but not the completion
