@@ -39,6 +39,7 @@ import PlayerReducer from 'store/player/slice'
 import PlaylistLibraryReducer from 'store/playlist-library/slice'
 
 import { CookieBannerState } from './application/ui/cookieBanner/types'
+import { EditFolderModalState } from './application/ui/editFolderModal/slice'
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
 import EditTrackModalState from './application/ui/editTrackModal/types'
 import { MobileKeyboardState } from './application/ui/mobileKeyboard/types'
@@ -76,6 +77,7 @@ export type AppState = CommonState & {
       cookieBanner: CookieBannerState
       createPlaylistModal: CreatePlaylistModalState
       editPlaylistModal: EditPlaylistModalState
+      editFolderModal: EditFolderModalState
       editTrackModal: EditTrackModalState
       embedModal: EmbedModalState
       deactivateAccount: DeactivateAccountState

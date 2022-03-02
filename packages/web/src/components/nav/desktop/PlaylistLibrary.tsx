@@ -1,11 +1,17 @@
 import React, { useCallback, useState } from 'react'
 
-import { IconCaretRight, IconFolder } from '@audius/stems'
+import {
+  IconCaretRight,
+  IconFolder,
+  IconKebabHorizontal,
+  IconFolderOutline
+} from '@audius/stems'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 
+import { useModalState } from 'common/hooks/useModalState'
 import { Name } from 'common/models/Analytics'
 import { SmartCollection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
@@ -20,12 +26,14 @@ import {
 import { addTrackToPlaylist } from 'common/store/cache/collections/actions'
 import Draggable from 'components/dragndrop/Draggable'
 import Droppable from 'components/dragndrop/Droppable'
+import IconButton from 'components/icon-button/IconButton'
 import { getPlaylistUpdates } from 'components/notification/store/selectors'
 import Tooltip from 'components/tooltip/Tooltip'
 import UpdateDot from 'components/update-dot/UpdateDot'
 import { useArePlaylistUpdatesEnabled } from 'hooks/useRemoteConfig'
 import { SMART_COLLECTION_MAP } from 'pages/smart-collection/smartCollections'
 import { make, useRecord } from 'store/analytics/actions'
+import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { reorderPlaylistLibrary } from 'store/playlist-library/helpers'
 import { update } from 'store/playlist-library/slice'
@@ -131,7 +139,7 @@ const FolderNavLink = ({
         <button
           {...buttonProps}
           draggable={false}
-          className={cn(className, styles.navLink, {
+          className={cn(className, styles.folderButton, styles.navLink, {
             [styles.dragging]: isDragging
           })}
         >
@@ -146,18 +154,21 @@ const PlaylistFolderNavItem = ({
   folder,
   hasUpdate = false,
   dragging,
-  draggingKind
+  draggingKind,
+  onClickEdit
 }: {
   folder: PlaylistLibraryFolder
   hasUpdate: boolean
   dragging: boolean
   draggingKind: string
+  onClickEdit: (folderId: string) => void
 }) => {
   const { id, name, contents } = folder
   const isDroppableKind =
     draggingKind === 'track' ||
     draggingKind === 'playlist' ||
     draggingKind === 'playlist-folder'
+  const [isHovering, setIsHovering] = useState(false)
 
   return (
     <Droppable
@@ -168,6 +179,10 @@ const PlaylistFolderNavItem = ({
       acceptedKinds={['library-playlist']}
     >
       <FolderNavLink
+        onMouseEnter={() => {
+          setIsHovering(true)
+        }}
+        onMouseLeave={() => setIsHovering(false)}
         id={id}
         name={name}
         onReorder={() => {}}
@@ -179,18 +194,36 @@ const PlaylistFolderNavItem = ({
         onClick={() => {}}
       >
         <div className={styles.folderButtonContentContainer}>
-          <IconFolder
-            width={12}
-            height={12}
-            className={cn(styles.iconFolder, {
-              [styles.iconFolderEmpty]: isEmpty(contents),
-              [styles.iconFolderUpdated]: hasUpdate
-            })}
-          />
+          {isEmpty(contents) ? (
+            <IconFolderOutline
+              width={12}
+              height={12}
+              className={styles.iconFolder}
+            />
+          ) : (
+            <IconFolder
+              width={12}
+              height={12}
+              className={cn(styles.iconFolder, {
+                [styles.iconFolderUpdated]: hasUpdate
+              })}
+            />
+          )}
           <div className={styles.folderNameContainer}>
             <span>{name}</span>
           </div>
           <IconCaretRight height={11} width={11} className={styles.iconCaret} />
+          <IconButton
+            className={cn(styles.iconKebabHorizontal, {
+              [styles.hidden]: !isHovering || dragging
+            })}
+            icon={<IconKebabHorizontal height={11} width={11} />}
+            onClick={e => {
+              e.preventDefault()
+              e.stopPropagation()
+              onClickEdit(id)
+            }}
+          />
         </div>
       </FolderNavLink>
 
@@ -216,6 +249,15 @@ const PlaylistLibrary = ({
     isEnabled: arePlaylistUpdatesEnabled
   } = useArePlaylistUpdatesEnabled()
   const record = useRecord()
+  const [, setIsEditFolderModalOpen] = useModalState('EditFolder')
+
+  const handleClickEditFolder = useCallback(
+    folderId => {
+      dispatch(setEditFolderModalFolderId(folderId))
+      setIsEditFolderModalOpen(true)
+    },
+    [dispatch, setIsEditFolderModalOpen]
+  )
 
   const onReorder = useCallback(
     (
@@ -378,6 +420,7 @@ const PlaylistLibrary = ({
                   hasUpdate={false}
                   dragging={dragging}
                   draggingKind={draggingKind}
+                  onClickEdit={handleClickEditFolder}
                 />
               )
           }

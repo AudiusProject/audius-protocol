@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
 
-import { Button, ButtonType, IconCheck } from '@audius/stems'
-
 import { Collection, CollectionMetadata } from 'common/models/Collection'
 import { SquareSizes } from 'common/models/ImageSizes'
-import { Nullable, DeepNullable } from 'common/utils/typeUtils'
+import { DeepNullable, Nullable } from 'common/utils/typeUtils'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import UploadArtwork from 'components/upload/UploadArtwork'
@@ -12,6 +10,7 @@ import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import * as schemas from 'schemas'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
+import { CreateActions, EditActions } from './FormActions'
 import styles from './PlaylistForm.module.css'
 
 const messages = {
@@ -61,76 +60,6 @@ type PlaylistFormProps = {
   /** Only applies to edit mode */
   onCancel?: () => void
   onSave: (formFields: PlaylistFormFields) => void
-}
-
-const EditPlaylistActions = ({
-  isAlbum,
-  onDelete,
-  onCancel,
-  onSave,
-  disabled = false
-}: {
-  isAlbum: boolean
-  onDelete?: () => void
-  onCancel?: () => void
-  onSave: () => void
-  disabled?: boolean
-}) => {
-  return (
-    <div className={styles.editPlaylistActionsContainer}>
-      <div>
-        <Button
-          text={
-            isAlbum
-              ? messages.deleteAlbumButtonText
-              : messages.deletePlaylistButtonText
-          }
-          type={ButtonType.SECONDARY}
-          onClick={onDelete}
-          disabled={disabled}
-          className={styles.deleteButton}
-          textClassName={styles.deleteButtonText}
-        />
-      </div>
-      <div>
-        <Button
-          text={messages.cancelButtonText}
-          type={ButtonType.SECONDARY}
-          disabled={disabled}
-          className={styles.cancelButton}
-          textClassName={styles.cancelButtonText}
-          onClick={onCancel}
-        />
-        <Button
-          className={styles.saveChangesButton}
-          text={messages.editPlaylistButtonText}
-          disabled={disabled}
-          type={ButtonType.SECONDARY}
-          onClick={onSave}
-        />
-      </div>
-    </div>
-  )
-}
-
-const CreatePlaylistActions = ({
-  disabled = false,
-  onSave
-}: {
-  disabled?: boolean
-  onSave: () => void
-}) => {
-  return (
-    <div className={styles.createPlaylistActionsContainer}>
-      <Button
-        rightIcon={<IconCheck />}
-        text={messages.createPlaylistButtonText}
-        type={ButtonType.PRIMARY}
-        disabled={disabled}
-        onClick={onSave}
-      />
-    </div>
-  )
 }
 
 const PlaylistForm = ({
@@ -255,18 +184,29 @@ const PlaylistForm = ({
           />
         </div>
       </div>
-
-      {isEditMode ? (
-        <EditPlaylistActions
-          isAlbum={isAlbum}
-          onCancel={onCancel}
-          onDelete={onDelete}
-          onSave={onSave}
-          disabled={hasSubmitted}
-        />
-      ) : (
-        <CreatePlaylistActions onSave={onSave} disabled={hasSubmitted} />
-      )}
+      <div className={styles.actionsWrapper}>
+        {isEditMode ? (
+          <EditActions
+            deleteText={
+              isAlbum
+                ? messages.deleteAlbumButtonText
+                : messages.deletePlaylistButtonText
+            }
+            saveText={messages.editPlaylistButtonText}
+            cancelText={messages.cancelButtonText}
+            onCancel={onCancel}
+            onDelete={onDelete}
+            onSave={onSave}
+            disabled={hasSubmitted}
+          />
+        ) : (
+          <CreateActions
+            onSave={onSave}
+            disabled={hasSubmitted}
+            saveText={messages.createPlaylistButtonText}
+          />
+        )}
+      </div>
     </div>
   )
 }
