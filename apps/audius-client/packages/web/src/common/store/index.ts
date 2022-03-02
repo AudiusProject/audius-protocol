@@ -38,6 +38,7 @@ import trending from 'common/store/pages/trending/reducer'
 import { TrendingPageState } from 'common/store/pages/trending/types'
 import queue from 'common/store/queue/slice'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
+import signOutSagas from 'common/store/sign-out/sagas'
 import solanaReducer from 'common/store/solana/slice'
 import stemsUpload from 'common/store/stems-upload/slice'
 import addToPlaylistReducer, {
@@ -165,7 +166,8 @@ export const sagas = (ctx: CommonStoreContext) => ({
   tracks: tracksSagas,
   users: usersSagas,
   remoteConfig: remoteConfigSagas,
-  cast: castSagas(ctx)
+  cast: castSagas(ctx),
+  signOut: signOutSagas
 
   // TODO:
   // pull in the following from web
