@@ -149,6 +149,33 @@ const CollectionHeader = ({
     [record]
   )
 
+  const collectionLabels = [
+    {
+      label: 'Tracks',
+      value: formatCount(numTracks)
+    },
+    {
+      label: 'Duration',
+      value: formatSecondsAsText(duration)
+    },
+    {
+      label: 'Modified',
+      value: formatDate(modified),
+      isHidden: variant === Variant.SMART
+    }
+  ].filter(({ isHidden, value }) => !isHidden && !!value)
+
+  const renderCollectionLabels = () => {
+    return collectionLabels.map(infoFact => {
+      return (
+        <div key={infoFact.label} className={styles.infoFact}>
+          <h2 className={styles.infoLabel}>{infoFact.label}</h2>
+          <h2 className={styles.infoValue}>{infoFact.value}</h2>
+        </div>
+      )
+    })
+  }
+
   return (
     <div className={styles.collectionHeader}>
       <div className={styles.typeLabel}>
@@ -232,26 +259,9 @@ const CollectionHeader = ({
               onClickReposts={onClickReposts}
             />
           )}
-          {numTracks > 0 && duration > 0 && (
-            <div className={styles.infoLabelsSection}>
-              <span
-                className={cn(styles.infoDuration, styles.infoFact)}
-              >{`${formatCount(numTracks)} Track${
-                numTracks === 1 ? '' : 's'
-              }`}</span>
-              <span className={cn(styles.infoDuration, styles.infoFact)}>
-                {formatSecondsAsText(duration)}
-              </span>
-              {variant !== Variant.SMART && (
-                <div className={cn(styles.modifiedContainer, styles.infoFact)}>
-                  <span className={styles.infoModifed}>{'modified'}</span>
-                  <span className={styles.infoDuration}>
-                    {formatDate(modified)}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
+          <div className={cn(styles.infoSection)}>
+            {renderCollectionLabels()}
+          </div>
           {description ? (
             <Linkify
               options={{ attributes: { onClick: onDescriptionExternalLink } }}

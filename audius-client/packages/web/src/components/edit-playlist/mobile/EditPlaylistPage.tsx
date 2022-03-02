@@ -17,6 +17,7 @@ import {
   orderPlaylist,
   removeTrackFromPlaylist
 } from 'common/store/cache/collections/actions'
+import { tracksActions } from 'common/store/pages/collection/lineup/actions'
 import * as createPlaylistActions from 'common/store/ui/createPlaylistModal/actions'
 import {
   getMetadata,
@@ -33,7 +34,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import TrackList from 'components/track/mobile/TrackList'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
-import { tracksActions } from 'pages/collection-page/store/lineups/tracks/actions'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import * as schemas from 'schemas'
 import RandomImage from 'services/RandomImage'

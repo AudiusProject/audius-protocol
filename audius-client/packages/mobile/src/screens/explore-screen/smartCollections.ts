@@ -1,3 +1,7 @@
+import { ComponentType } from 'react'
+
+import { SmartCollectionVariant } from 'audius-client/src/common/models/SmartCollectionVariant'
+import { SvgProps } from 'react-native-svg'
 import {
   EXPLORE_HEAVY_ROTATION_PAGE,
   EXPLORE_BEST_NEW_RELEASES_PAGE,
@@ -14,30 +18,27 @@ import IconExploreRemixables from 'app/assets/images/iconExploreRemixables.svg'
 import IconExploreRotation from 'app/assets/images/iconExploreRotation.svg'
 import IconExploreUnderRadar from 'app/assets/images/iconExploreUnderRadar.svg'
 
-import { SmartCollectionVariant } from './types'
-
-type Variant = 'user-generated' | 'smart'
-
-type SmartCollection = {
-  variant: Variant
-  title: SmartCollectionVariant
+export type SmartCollection = {
+  variant: SmartCollectionVariant
+  title: string
   description?: string
   gradientColors: string[]
   gradientAngle: number
   shadowColor: string
   shadowOpacity: number
-  icon?: React.FC
+  icon?: ComponentType<SvgProps>
   link: string
   // TODO: Need to implement this when adding data for smart collections
   // playlist_contents?: PlaylistContents
   has_current_user_saved?: boolean
   incentivized?: boolean // Whether we reward winners with Audio
   cardSensitivity?: number
+  screen?: 'TrendingUnderground' | 'UnderTheRadar'
 }
 
 export const HEAVY_ROTATION: SmartCollection = {
-  variant: 'smart',
   title: 'Heavy Rotation',
+  variant: SmartCollectionVariant.HEAVY_ROTATION,
   description: 'Your top tracks, in one place',
   gradientColors: ['#C751C0', '#4158D0'],
   gradientAngle: 316,
@@ -48,8 +49,8 @@ export const HEAVY_ROTATION: SmartCollection = {
 }
 
 export const BEST_NEW_RELEASES: SmartCollection = {
-  variant: 'smart',
   title: 'Best New Releases',
+  variant: SmartCollectionVariant.BEST_NEW_RELEASES,
   description: 'From the artists you follow',
   gradientColors: ['#FF3C6C', '#A04B8E'],
   gradientAngle: 135,
@@ -60,8 +61,9 @@ export const BEST_NEW_RELEASES: SmartCollection = {
 }
 
 export const UNDER_THE_RADAR: SmartCollection = {
-  variant: 'smart',
   title: 'Under The Radar',
+  variant: SmartCollectionVariant.UNDER_THE_RADAR,
+  screen: 'UnderTheRadar',
   description: 'Tracks you might have missed from the artists you follow',
   gradientColors: ['#FFA63B', '#FF2525'],
   gradientAngle: 135,
@@ -72,8 +74,8 @@ export const UNDER_THE_RADAR: SmartCollection = {
 }
 
 export const MOST_LOVED: SmartCollection = {
-  variant: 'smart',
   title: 'Most Loved',
+  variant: SmartCollectionVariant.MOST_LOVED,
   description: 'Tracks favorited by the people you follow',
   gradientColors: ['#896BFF', '#0060FF'],
   gradientAngle: 135,
@@ -84,8 +86,8 @@ export const MOST_LOVED: SmartCollection = {
 }
 
 export const REMIXABLES: SmartCollection = {
-  variant: 'smart',
   title: 'Remixables',
+  variant: SmartCollectionVariant.REMIXABLES,
   description:
     'Popular tracks with remixes & stems you can use in your own tracks.',
   // TODO: Need custom start and stop values for graident for this and maybe all of them
@@ -99,8 +101,8 @@ export const REMIXABLES: SmartCollection = {
 }
 
 export const FEELING_LUCKY: SmartCollection = {
-  variant: 'smart',
   title: 'Feeling Lucky?',
+  variant: SmartCollectionVariant.FEELING_LUCKY,
   description: 'A purely random collection of tracks from Audius',
   gradientColors: ['#19CCA2', '#61FA66'],
   gradientAngle: 135,

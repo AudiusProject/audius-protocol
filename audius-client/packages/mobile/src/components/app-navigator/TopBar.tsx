@@ -17,6 +17,7 @@ import { useThemeColors } from 'app/utils/theme'
 import { IconButton } from '../core/IconButton'
 
 import { TopBarArrowBack } from './TopBarArrowBack'
+import { MainParamList, SearchParamList } from './types'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   root: {
@@ -75,7 +76,7 @@ export const TopBar = memo(
     const styles = useStyles()
 
     const { neutralLight4 } = useThemeColors()
-    const navigation = useNavigation()
+    const navigation = useNavigation<MainParamList & SearchParamList>()
     const dispatch = useDispatch()
     const dispatchWeb = useDispatchWeb()
 

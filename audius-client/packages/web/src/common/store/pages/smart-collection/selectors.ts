@@ -1,10 +1,9 @@
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
-import { AppState } from 'store/types'
+import { CommonState } from 'common/store'
 
-const getBaseState = (state: AppState) =>
-  state.application.pages.smartCollection
+const getBaseState = (state: CommonState) => state.pages.smartCollection
 
 export const getCollection = (
-  state: AppState,
+  state: CommonState,
   { variant }: { variant: SmartCollectionVariant }
 ) => getBaseState(state)[variant]

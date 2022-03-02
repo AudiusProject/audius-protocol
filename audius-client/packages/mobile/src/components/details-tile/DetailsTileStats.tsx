@@ -1,6 +1,3 @@
-import { useCallback } from 'react'
-
-import { ID } from 'audius-client/src/common/models/Identifiers'
 import { StyleSheet, View } from 'react-native'
 
 import IconFavorite from 'app/assets/images/iconHeart.svg'
@@ -8,22 +5,24 @@ import IconRepost from 'app/assets/images/iconRepost.svg'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
+import { GestureResponderHandler } from 'app/types/gesture'
 import { ThemeColors } from 'app/utils/theme'
 
-import { TrackScreenStat } from './TrackScreenStat'
+import { DetailsTileStat } from './DetailsStat'
 
 const messages = {
   plays: 'Plays'
 }
 
-type TrackScreenStatsProps = {
-  favoriteCount: number
+type DetailsTileStatsProps = {
+  favoriteCount?: number
+  hideFavoriteCount?: boolean
+  hideListenCount?: boolean
+  hideRepostCount?: boolean
+  onPressFavorites?: GestureResponderHandler
+  onPressReposts?: GestureResponderHandler
   playCount?: number
-  repostCount: number
-  showFavoriteCount: boolean
-  showListenCount: boolean
-  showRepostCount: boolean
-  trackId: ID
+  repostCount?: number
 }
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -43,32 +42,24 @@ const createStyles = (themeColors: ThemeColors) =>
 /**
  * The stats displayed on track and playlist screens
  */
-export const TrackScreenStats = ({
+export const DetailsTileStats = ({
   favoriteCount,
+  hideFavoriteCount,
+  hideListenCount,
+  hideRepostCount,
+  onPressFavorites,
+  onPressReposts,
   playCount = 0,
-  repostCount,
-  showFavoriteCount,
-  showListenCount,
-  showRepostCount,
-  trackId
-}: TrackScreenStatsProps) => {
+  repostCount
+}: DetailsTileStatsProps) => {
   const styles = useThemedStyles(createStyles)
-  const onPressFavorites = useCallback(() => {
-    // TODO: navigate to favorites
-    // goToFavoritesPage(trackId)
-  }, [])
-
-  const onPressReposts = useCallback(() => {
-    // TODO: navigate to reposts
-    // goToRepostsPage(trackId)
-  }, [])
 
   return (
     <>
-      {(showListenCount || showFavoriteCount || showRepostCount) && (
+      {(!hideListenCount || !hideFavoriteCount || !hideRepostCount) && (
         <View style={styles.statsContainer}>
-          {showListenCount && (
-            <TrackScreenStat
+          {hideListenCount ? null : (
+            <DetailsTileStat
               count={playCount}
               renderLabel={color => (
                 <Text style={[styles.countLabel, { color }]}>
@@ -77,18 +68,18 @@ export const TrackScreenStats = ({
               )}
             />
           )}
-          {showFavoriteCount && (
-            <TrackScreenStat
-              count={favoriteCount}
+          {hideFavoriteCount ? null : (
+            <DetailsTileStat
+              count={favoriteCount ?? 0}
               onPress={onPressFavorites}
               renderLabel={color => (
                 <IconFavorite fill={color} height={16} width={16} />
               )}
             />
           )}
-          {showRepostCount && (
-            <TrackScreenStat
-              count={repostCount}
+          {hideRepostCount ? null : (
+            <DetailsTileStat
+              count={repostCount ?? 0}
               onPress={onPressReposts}
               renderLabel={color => (
                 <IconRepost fill={color} height={18} width={18} />

@@ -47,9 +47,7 @@ const StatsButtonRow = ({
     return (
       <div className={styles.countContainer} onClick={onClickFavorites}>
         <span className={styles.count}>{formatCount(favoriteCount)}</span>
-        <div className={styles.countLabel}>
-          <IconFavorite />
-        </div>
+        <IconFavorite />
       </div>
     )
   }
@@ -58,9 +56,7 @@ const StatsButtonRow = ({
     return (
       <div className={styles.countContainer} onClick={onClickReposts}>
         <span className={styles.count}>{formatCount(repostCount)}</span>
-        <div className={styles.countLabel}>
-          <IconRepost />
-        </div>
+        <IconRepost />
       </div>
     )
   }

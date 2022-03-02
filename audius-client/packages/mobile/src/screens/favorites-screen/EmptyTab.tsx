@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { MainParamList } from 'app/components/app-navigator/types'
 import { Button, EmptyTile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -13,11 +14,11 @@ type EmptyTabProps = {
 }
 
 export const EmptyTab = ({ message }: EmptyTabProps) => {
-  const navigation = useNavigation()
+  const navigation = useNavigation<MainParamList>()
 
   const onPress = useCallback(() => {
     navigation.navigate({
-      native: { screen: 'trending', params: undefined },
+      native: { screen: 'trending' },
       web: { route: 'trending' }
     })
   }, [navigation])

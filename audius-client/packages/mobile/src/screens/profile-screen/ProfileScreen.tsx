@@ -6,6 +6,7 @@ import { useToggle } from 'react-use'
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import { TopBarIconButton } from 'app/components/app-navigator/TopBarIconButton'
+import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { ProfilePhoto } from 'app/components/user'
 import { useAccountUser, useProfile } from 'app/hooks/selectors'
@@ -54,7 +55,7 @@ export const ProfileScreen = () => {
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { accentOrange } = useThemeColors()
 
-  const navigation = useNavigation()
+  const navigation = useNavigation<ProfileStackParamList>()
 
   const handleNavigateSettings = useCallback(() => {
     navigation.push({

@@ -92,6 +92,11 @@ export type LineupProps = {
   showLeadingElementArtistPick?: boolean
 
   /**
+   * Which item to start the lineup at (previous items will not be rendered)
+   */
+  start?: number
+
+  /**
    * The variant of the Lineup
    */
   variant?: LineupVariant

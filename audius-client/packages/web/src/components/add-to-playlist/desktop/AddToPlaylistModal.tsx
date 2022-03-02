@@ -14,6 +14,7 @@ import {
   addTrackToPlaylist,
   createPlaylist
 } from 'common/store/cache/collections/actions'
+import { getCollectionId } from 'common/store/pages/collection/selectors'
 import { close } from 'common/store/ui/add-to-playlist/actions'
 import {
   getIsOpen,
@@ -25,7 +26,6 @@ import SearchBar from 'components/search-bar/SearchBar'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { getCollectionId } from 'pages/collection-page/store/selectors'
 import { newCollectionMetadata } from 'schemas'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'

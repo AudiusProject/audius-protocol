@@ -6,10 +6,11 @@ import { SmartCollection } from 'common/models/Collection'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 
+import { CollectionsPageType } from '../../common/store/pages/collection/types'
+
 import CollectionPageProvider from './CollectionPageProvider'
 import DesktopCollectionPage from './components/desktop/CollectionPage'
 import MobileCollectionPage from './components/mobile/CollectionPage'
-import { CollectionsPageType } from './store/types'
 
 type OwnProps = {
   type: CollectionsPageType

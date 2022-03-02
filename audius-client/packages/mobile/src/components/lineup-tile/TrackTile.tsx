@@ -6,6 +6,8 @@ import {
   RepostSource,
   ShareSource
 } from 'audius-client/src/common/models/Analytics'
+import { FavoriteType } from 'audius-client/src/common/models/Favorite'
+import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
@@ -22,6 +24,7 @@ import {
   OverflowSource
 } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
+import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import { isEqual } from 'lodash'
 
@@ -29,6 +32,7 @@ import { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 
 import { LineupTile } from './LineupTile'
 
@@ -76,6 +80,7 @@ const TrackTileComponent = ({
   const currentUserId = useSelectorWeb(getUserId)
 
   const {
+    _cover_art_sizes,
     duration,
     field_visibility,
     is_unlisted,
@@ -90,6 +95,12 @@ const TrackTileComponent = ({
   const { user_id } = user
 
   const isOwner = user_id === currentUserId
+
+  const imageUrl = useTrackCoverArt(
+    track_id,
+    _cover_art_sizes,
+    SquareSizes.SIZE_150_BY_150
+  )
 
   const handlePress = useCallback(() => {
     togglePlay(lineupTileProps.uid, track_id, PlaybackSource.TRACK_TILE)
@@ -180,9 +191,12 @@ const TrackTileComponent = ({
     <LineupTile
       {...lineupTileProps}
       duration={duration}
+      favoriteType={FavoriteType.TRACK}
+      repostType={RepostType.TRACK}
       hideShare={hideShare}
       hidePlays={hidePlays}
       id={track_id}
+      imageUrl={imageUrl}
       isUnlisted={is_unlisted}
       onPress={handlePress}
       onPressOverflow={handlePressOverflow}

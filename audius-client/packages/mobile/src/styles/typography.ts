@@ -71,6 +71,10 @@ export const typography = {
     fontFamily: fontByWeight.medium,
     marginBottom: fontSize.xs * 0.2
   },
+  label: {
+    fontSize: 10,
+    fontFamily: fontByWeight.bold
+  },
   fontByWeight,
   fontSize
 }
