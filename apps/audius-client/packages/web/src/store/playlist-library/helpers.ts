@@ -133,6 +133,38 @@ export const constructPlaylistFolder = (
 }
 
 /**
+ * Changes name of folder with given id to the given new name and returns the resulting
+ * updated library. Does not mutate the given library object.
+ * Note that this assumes that folders cannot be nested within one another.
+ * If we enable nesting folders in the future, this function must be updated.
+ * @param library
+ * @param folderId
+ * @param newName
+ * @returns the updated playlist library
+ */
+export const renamePlaylistFolderInLibrary = (
+  library: PlaylistLibrary,
+  folderId: string,
+  newName: string
+): PlaylistLibrary => {
+  if (!library.contents) return library
+  const folder = library.contents.find(item => {
+    return item.type === 'folder' && item.id === folderId
+  })
+  if (!folder) return library
+  const folderIndex = library.contents.findIndex(item => {
+    return item.type === 'folder' && item.id === folderId
+  })
+  const updatedFolder = { ...folder, name: newName }
+  const newContents = [...library.contents]
+  newContents.splice(folderIndex, 1, updatedFolder)
+  return {
+    ...library,
+    contents: newContents
+  }
+}
+
+/**
  * Adds new folder to a playlist library and returns the result.
  * Does not mutate.
  * @param library
