@@ -823,10 +823,14 @@ class FullRemixingRoute(Resource):
       limit?: (number) default=25, max=100
 """
 best_new_releases_parser = reqparse.RequestParser()
-best_new_releases_parser.add_argument("window", required=True, choices=('week', 'month', 'year'), type=str)
+best_new_releases_parser.add_argument(
+    "window", required=True, choices=("week", "month", "year"), type=str
+)
 best_new_releases_parser.add_argument("user_id", required=True, type=str)
 best_new_releases_parser.add_argument("limit", required=False, default=25, type=int)
-best_new_releases_parser.add_argument("with_users", required=False, default=True, type=bool)
+best_new_releases_parser.add_argument(
+    "with_users", required=False, default=True, type=bool
+)
 
 
 @full_ns.route("/best_new_releases")
@@ -840,12 +844,12 @@ class BestNewReleases(Resource):
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100),
-            "user_id": get_current_user_id(request_args)
+            "user_id": get_current_user_id(request_args),
         }
         tracks = get_top_followee_windowed("track", window, args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
-    
+
 
 """
 Discovery Provider Social Feed Overview
@@ -863,14 +867,22 @@ This is generated in the following manner:
 
 under_the_radar_parser = reqparse.RequestParser()
 under_the_radar_parser.add_argument("user_id", required=True, type=str)
-under_the_radar_parser.add_argument("filter", required=False, default='all', choices=('all', 'repost', 'original'), type=str)
+under_the_radar_parser.add_argument(
+    "filter",
+    required=False,
+    default="all",
+    choices=("all", "repost", "original"),
+    type=str,
+)
 under_the_radar_parser.add_argument("limit", required=False, default=25, type=int)
 under_the_radar_parser.add_argument("offset", required=False, default=0, type=int)
 under_the_radar_parser.add_argument("tracks_only", required=False, type=bool)
-under_the_radar_parser.add_argument("with_users", required=False, default=True, type=bool)
+under_the_radar_parser.add_argument(
+    "with_users", required=False, default=True, type=bool
+)
 
 
-@full_ns.route('/under_the_radar')
+@full_ns.route("/under_the_radar")
 class UnderTheRadar(Resource):
     @record_metrics
     @cache(ttl_sec=10)
@@ -883,12 +895,12 @@ class UnderTheRadar(Resource):
             "limit": format_limit(request_args, 100, 25),
             "offset": format_offset(request_args),
             "user_id": get_current_user_id(request_args),
-            "filter": request_args.get("filter")
+            "filter": request_args.get("filter"),
         }
         feed_results = get_feed(args)
         feed_results = list(map(extend_track, feed_results))
         return success_response(feed_results)
-    
+
 
 """
     Gets a global view into the most saved of `type` amongst followees. Requires an account.
@@ -901,7 +913,7 @@ most_loved_parser.add_argument("limit", required=False, default=25, type=int)
 most_loved_parser.add_argument("with_users", required=False, type=bool)
 
 
-@full_ns.route('/most_loved')
+@full_ns.route("/most_loved")
 class MostLoved(Resource):
     @record_metrics
     @cache(ttl_sec=10)
@@ -911,24 +923,37 @@ class MostLoved(Resource):
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100, 25),
-            "user_id": get_current_user_id(request_args)
+            "user_id": get_current_user_id(request_args),
         }
-        tracks = get_top_followee_saves('track', args)
+        tracks = get_top_followee_saves("track", args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
 
-@ns.route('/latest')
+@ns.route("/latest")
 class LatestTrack(Resource):
     @record_metrics
     def get(self):
-        latest = get_max_id('track')
+        latest = get_max_id("track")
         return success_response(latest)
 
 
 by_ids_parser = reqparse.RequestParser()
 by_ids_parser.add_argument("id", required=True, action="append")
-by_ids_parser.add_argument("sort", required=False, choices=('date', 'plays', 'created_at', "create_date", "release_date", "blocknumber", "track_id"), type=str)
+by_ids_parser.add_argument(
+    "sort",
+    required=False,
+    choices=(
+        "date",
+        "plays",
+        "created_at",
+        "create_date",
+        "release_date",
+        "blocknumber",
+        "track_id",
+    ),
+    type=str,
+)
 by_ids_parser.add_argument("limit", required=False, default=100, type=int)
 by_ids_parser.add_argument("offset", required=False, default=0, type=int)
 by_ids_parser.add_argument("user_id", required=False, type=str)
@@ -938,7 +963,7 @@ by_ids_parser.add_argument("filter_deleted", required=False, type=bool)
 by_ids_parser.add_argument("with_users", required=False, type=bool)
 
 
-@full_ns.route('/by_ids')
+@full_ns.route("/by_ids")
 class TracksByIDs(Resource):
     @record_metrics
     @cache(ttl_sec=10)

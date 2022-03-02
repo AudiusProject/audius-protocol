@@ -1,11 +1,8 @@
-import logging  # pylint: disable=C0302
-
 from sqlalchemy import desc, text
 from src import exceptions
 from src.models import Follow, Track
 from src.models.models import AggregateTrack
 from src.queries.query_helpers import (
-    get_current_user_id,
     get_users_by_id,
     get_users_ids,
     populate_track_metadata,
