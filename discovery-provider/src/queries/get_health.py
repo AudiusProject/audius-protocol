@@ -20,7 +20,11 @@ from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.utils.index_blocks_performance import get_average_index_blocks_ms_since
+from src.utils.index_blocks_performance import (
+    get_average_add_indexed_block_to_db_ms_since,
+    get_average_fetch_ipfs_metadata_ms_since,
+    get_average_index_blocks_ms_since,
+)
 from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
@@ -360,27 +364,85 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         health_results["tables"] = table_size_info_json
 
         # Get index blocks performance
-        index_blocks_minute = get_average_index_blocks_ms_since(
-            redis, MINUTE_IN_SECONDS
-        )
-        index_blocks_ten_minutes = get_average_index_blocks_ms_since(
-            redis, TEN_MINUTES_IN_SECONDS
-        )
-        index_blocks_hour = get_average_index_blocks_ms_since(redis, HOUR_IN_SECONDS)
-        index_blocks_six_hours = get_average_index_blocks_ms_since(
-            redis, SIX_HOURS_IN_SECONDS
-        )
-        index_blocks_twelve_hours = get_average_index_blocks_ms_since(
-            redis, TWELVE_HOURS_IN_SECONDS
-        )
-        index_blocks_day = get_average_index_blocks_ms_since(redis, DAY_IN_SECONDS)
         health_results["index_blocks_avg_ms"] = {
-            "minute": index_blocks_minute,
-            "ten_minutes": index_blocks_ten_minutes,
-            "hour": index_blocks_hour,
-            "six_hours": index_blocks_six_hours,
-            "twelve_hours": index_blocks_twelve_hours,
-            "day": index_blocks_day,
+            "minute": get_average_index_blocks_ms_since(
+                redis,
+                MINUTE_IN_SECONDS,
+            ),
+            "ten_minutes": get_average_index_blocks_ms_since(
+                redis,
+                TEN_MINUTES_IN_SECONDS,
+            ),
+            "hour": get_average_index_blocks_ms_since(
+                redis,
+                HOUR_IN_SECONDS,
+            ),
+            "six_hours": get_average_index_blocks_ms_since(
+                redis,
+                SIX_HOURS_IN_SECONDS,
+            ),
+            "twelve_hours": get_average_index_blocks_ms_since(
+                redis,
+                TWELVE_HOURS_IN_SECONDS,
+            ),
+            "day": get_average_index_blocks_ms_since(
+                redis,
+                DAY_IN_SECONDS,
+            ),
+        }
+
+        health_results["fetch_ipfs_metadata_avg_ms"] = {
+            "minute": get_average_fetch_ipfs_metadata_ms_since(
+                redis,
+                MINUTE_IN_SECONDS,
+            ),
+            "ten_minutes": get_average_fetch_ipfs_metadata_ms_since(
+                redis,
+                TEN_MINUTES_IN_SECONDS,
+            ),
+            "hour": get_average_fetch_ipfs_metadata_ms_since(
+                redis,
+                HOUR_IN_SECONDS,
+            ),
+            "six_hours": get_average_fetch_ipfs_metadata_ms_since(
+                redis,
+                SIX_HOURS_IN_SECONDS,
+            ),
+            "twelve_hours": get_average_fetch_ipfs_metadata_ms_since(
+                redis,
+                TWELVE_HOURS_IN_SECONDS,
+            ),
+            "day": get_average_fetch_ipfs_metadata_ms_since(
+                redis,
+                DAY_IN_SECONDS,
+            ),
+        }
+
+        health_results["add_indexed_block_to_db_avg_ms"] = {
+            "minute": get_average_add_indexed_block_to_db_ms_since(
+                redis,
+                MINUTE_IN_SECONDS,
+            ),
+            "ten_minutes": get_average_add_indexed_block_to_db_ms_since(
+                redis,
+                TEN_MINUTES_IN_SECONDS,
+            ),
+            "hour": get_average_add_indexed_block_to_db_ms_since(
+                redis,
+                HOUR_IN_SECONDS,
+            ),
+            "six_hours": get_average_add_indexed_block_to_db_ms_since(
+                redis,
+                SIX_HOURS_IN_SECONDS,
+            ),
+            "twelve_hours": get_average_add_indexed_block_to_db_ms_since(
+                redis,
+                TWELVE_HOURS_IN_SECONDS,
+            ),
+            "day": get_average_add_indexed_block_to_db_ms_since(
+                redis,
+                DAY_IN_SECONDS,
+            ),
         }
 
     unhealthy_blocks = bool(
