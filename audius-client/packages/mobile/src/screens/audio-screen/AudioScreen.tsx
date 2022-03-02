@@ -1,3 +1,9 @@
+import { useCallback } from 'react'
+
+import {
+  setModalState,
+  setModalVisibility
+} from 'audius-client/src/common/store/pages/token-dashboard/slice'
 import { Dimensions, Image, Linking, View } from 'react-native'
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
@@ -12,6 +18,7 @@ import Silver from 'app/assets/images/tokenBadgeSilver108.png'
 import TokenStill from 'app/assets/images/tokenSpinStill.png'
 import { Button, GradientText, Text, Tile } from 'app/components/core'
 import { Header } from 'app/components/header'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -114,10 +121,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginTop: spacing(2),
     marginBottom: spacing(2),
     height: spacing(12),
-    width: 244
+    width: 260
   },
   button: {
-    paddingHorizontal: 0
+    paddingHorizontal: spacing(2)
   },
   buttonText: {
     padding: 0,
@@ -136,6 +143,7 @@ export const AudioScreen = () => {
     pageHeaderGradientColor1,
     pageHeaderGradientColor2
   } = useThemeColors()
+  const dispatchWeb = useDispatchWeb()
 
   const renderAudioTile = () => {
     return (
@@ -238,6 +246,11 @@ export const AudioScreen = () => {
     )
   }
 
+  const onPressLaunchDiscord = useCallback(() => {
+    dispatchWeb(setModalState({ modalState: { stage: 'DISCORD_CODE' } }))
+    dispatchWeb(setModalVisibility({ isVisible: true }))
+  }, [dispatchWeb])
+
   const renderTierTile = () => {
     return (
       <Tile
@@ -293,6 +306,7 @@ export const AudioScreen = () => {
           }}
           variant='commonAlt'
           size='medium'
+          onPress={() => Linking.openURL(LEARN_MORE_LINK)}
         />
         <Button
           title={messages.launchDiscord}
@@ -305,6 +319,7 @@ export const AudioScreen = () => {
           size='medium'
           iconPosition='left'
           icon={IconDiscord}
+          onPress={onPressLaunchDiscord}
         />
       </Tile>
     )
