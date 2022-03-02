@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
+import { BorshInstructionCoder, Program } from "@project-serum/anchor";
 import chai, { assert, expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
@@ -85,10 +85,12 @@ describe("social-actions", () => {
     });
     let info = await getTransaction(provider, tx);
 
-    const decodedInstruction = program.coder.instruction.decode(
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder
+    const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
+
     const userHandle = String.fromCharCode(...user.handleBytesArray);
     const instructionHandle = String.fromCharCode(
       ...decodedInstruction.data.userHandle.seed
@@ -118,8 +120,8 @@ describe("social-actions", () => {
       trackId: new anchor.BN("1"),
     });
     let info = await getTransaction(provider, tx);
-
-    const decodedInstruction = program.coder.instruction.decode(
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
@@ -160,8 +162,8 @@ describe("social-actions", () => {
       trackId: track.track.trackId,
     });
     let info = await getTransaction(provider, tx);
-
-    const decodedInstruction = program.coder.instruction.decode(
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
