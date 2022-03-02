@@ -5,3 +5,9 @@
   overflow-y: visible !important;
   overflow-x: visible !important;
 }
+
+.spinner {
+  margin: 0 auto;
+  width: 100px;
+  height: 100px;
+}
