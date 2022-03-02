@@ -14,6 +14,8 @@ const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 export const TrackActionEnumValues = {
   save: { save: {} },
   unsave: { unsave: {} },
+  repost: { repost: {} },
+  unrepost: { unrepost: {} },
 };
 
 type TrackActionKeys = keyof typeof TrackActionEnumValues;
@@ -418,12 +420,53 @@ export const saveTrack = async ({
       accounts: {
         audiusAdmin: adminStgPublicKey,
         user: userStgAccountPDA,
-        authority: userAuthorityKeypair.publicKey
+        authority: userAuthorityKeypair.publicKey,
       },
       signers: [userAuthorityKeypair],
     }
   );
 };
+
+/// repost a track
+export type RepostTrackArgs = {
+  program: Program<AudiusData>;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  userAuthorityKeypair: Keypair;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  handleBytesArray: number[];
+  bumpSeed: number;
+  trackAction: TrackActionValues;
+  trackId: anchor.BN;
+};
+
+export const repostTrack = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  trackAction,
+  trackId,
+}: RepostTrackArgs) => {
+  return program.rpc.repostTrack(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    trackAction,
+    trackId,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
 
 /// Create a playlist
 export type CreatePlaylistParams = {

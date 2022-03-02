@@ -297,6 +297,31 @@ pub mod audius_data {
         Ok(())
     }
 
+    pub fn repost_track(
+        ctx: Context<RepostTrack>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _track_action: TrackAction,
+        track_id: u64,
+    ) -> Result<()> {
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if track_id >= ctx.accounts.audius_admin.track_id {
+            return Err(ErrorCode::InvalidId.into());
+        }
+        Ok(())
+    }
+
     /*
         Playlist related functions
     */
@@ -546,6 +571,20 @@ pub struct SaveTrack<'info> {
     pub authority: Signer<'info>,
 }
 
+/// Instruction container for repost track event
+/// Confirm that the user authority matches signer authority field
+#[derive(Accounts)]
+#[instruction(base: Pubkey, user_handle: UserHandle)]
+pub struct RepostTrack<'info> {
+    #[account()]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
+    pub user: Account<'info, User>,
+    #[account()]
+    // User authority field
+    pub authority: Signer<'info>,
+}
+
 /// Instruction container for follow
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_instr:UserAction, follower_handle: UserHandle, followee_handle: UserHandle)]
@@ -675,6 +714,8 @@ pub enum UserAction {
 pub enum TrackAction {
     Save,
     Unsave,
+    Repost,
+    Unrepost,
 }
 
 // Seed & bump used to validate the user's handle with the account base
