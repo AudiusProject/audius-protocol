@@ -221,7 +221,9 @@ def process_user_txs_serial(
                 user_ids.add(user_id)
 
             processed_entries += 1
-            metric.save_time({"scope": "user_tx"}, start_time=process_user_txs_start_time)
+            metric.save_time(
+                {"scope": "user_tx"}, start_time=process_user_txs_start_time
+            )
         except EntityMissingRequiredFieldError as e:
             logger.warning(f"Skipping tx {txhash} with error {e}")
             skipped_tx_count += 1

@@ -135,7 +135,9 @@ def track_state_update(
                     raise IndexingError(
                         "track", block_number, blockhash, txhash, str(e)
                     ) from e
-                metric.save_time({"scope": "track_event"}, start_time=track_event_start_time)
+                metric.save_time(
+                    {"scope": "track_event"}, start_time=track_event_start_time
+                )
 
             num_total_changes += processedEntries
 

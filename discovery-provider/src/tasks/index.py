@@ -594,7 +594,10 @@ def index_blocks(self, db, blocks_list):
                     """
                     fetch_tx_receipts_start_time = time.time()
                     tx_receipt_dict = fetch_tx_receipts(self, block)
-                    metric.save_time({"task_name": "fetch_tx_receipts"}, start_time=fetch_tx_receipts_start_time)
+                    metric.save_time(
+                        {"task_name": "fetch_tx_receipts"},
+                        start_time=fetch_tx_receipts_start_time,
+                    )
                     logger.info(
                         f"index.py | index_blocks - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
                     )
@@ -631,7 +634,10 @@ def index_blocks(self, db, blocks_list):
                             )
                             if contract_type:
                                 txs_grouped_by_type[contract_type].append(tx_receipt)
-                    metric.save_time({"task_name": "parse_tx_receipts"}, start_time=parse_tx_receipts_start_time)
+                    metric.save_time(
+                        {"task_name": "parse_tx_receipts"},
+                        start_time=parse_tx_receipts_start_time,
+                    )
                     logger.info(
                         f"index.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
                     )
@@ -649,7 +655,10 @@ def index_blocks(self, db, blocks_list):
                         block_number,
                         block_hash,
                     )
-                    metric.save_time({"task_name": "fetch_ipfs_metadata"}, start_time=fetch_ipfs_metadata_start_time)
+                    metric.save_time(
+                        {"task_name": "fetch_ipfs_metadata"},
+                        start_time=fetch_ipfs_metadata_start_time,
+                    )
                     logger.info(
                         f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
                     )
@@ -659,7 +668,10 @@ def index_blocks(self, db, blocks_list):
                     """
                     add_indexed_block_to_db_start_time = time.time()
                     add_indexed_block_to_db(session, block)
-                    metric.save_time({"task_name": "add_indexed_block_to_db"}, start_time=add_indexed_block_to_db_start_time)
+                    metric.save_time(
+                        {"task_name": "add_indexed_block_to_db"},
+                        start_time=add_indexed_block_to_db_start_time,
+                    )
                     logger.info(
                         f"index.py | index_blocks - add_indexed_block_to_db in {time.time() - add_indexed_block_to_db_start_time}s"
                     )
@@ -679,7 +691,10 @@ def index_blocks(self, db, blocks_list):
                         txs_grouped_by_type,
                         block,
                     )
-                    metric.save_time({"task_name": "process_state_changes"}, start_time=process_state_changes_start_time)
+                    metric.save_time(
+                        {"task_name": "process_state_changes"},
+                        start_time=process_state_changes_start_time,
+                    )
                     logger.info(
                         f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
@@ -690,7 +705,9 @@ def index_blocks(self, db, blocks_list):
             try:
                 commit_start_time = time.time()
                 session.commit()
-                metric.save_time({"task_name": "commit_time"}, start_time=commit_start_time)
+                metric.save_time(
+                    {"task_name": "commit_time"}, start_time=commit_start_time
+                )
                 logger.info(
                     f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
