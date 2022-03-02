@@ -20,6 +20,8 @@ import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
+import { DiscordDrawer } from './components/discord-drawer'
+
 export const Drawers = () => {
   return (
     <>
@@ -44,6 +46,7 @@ export const Drawers = () => {
       <TrendingFilterDrawer />
       <TiersExplainerDrawer />
       <SignOutConfirmationDrawer />
+      <DiscordDrawer />
       {/* Disable the audio breakdown drawer until we get
       the feature flags to work for native mobile */}
       {/* <AudioBreakdownDrawer /> */}

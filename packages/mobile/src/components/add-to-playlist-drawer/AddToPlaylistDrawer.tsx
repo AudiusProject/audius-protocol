@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import { CreatePlaylistSource } from 'audius-client/src/common/models/Analytics'
 import { getAccountWithOwnPlaylists } from 'audius-client/src/common/store/account/selectors'
