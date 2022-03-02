@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { Text, View } from 'react-native'
 
+import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { ProfilePhoto } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -26,7 +27,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 export const AccountSettingsRow = () => {
   const styles = useStyles()
   const accountUser = useSelectorWeb(getAccountUser)
-  const navigation = useNavigation()
+  const navigation = useNavigation<ProfileStackParamList>()
 
   const handlePress = useCallback(() => {
     navigation.push({

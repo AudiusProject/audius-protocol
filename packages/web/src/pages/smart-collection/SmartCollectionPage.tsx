@@ -5,12 +5,11 @@ import { Dispatch } from 'redux'
 
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { getPlaylistLibrary } from 'common/store/account/selectors'
+import { getCollection } from 'common/store/pages/smart-collection/selectors'
+import { fetchSmartCollection } from 'common/store/pages/smart-collection/slice'
 import CollectionPage from 'pages/collection-page/CollectionPage'
 import { findInPlaylistLibrary } from 'store/playlist-library/helpers'
 import { AppState } from 'store/types'
-
-import { getCollection } from './store/selectors'
-import { fetchSmartCollection } from './store/slice'
 
 type OwnProps = {
   variant: SmartCollectionVariant

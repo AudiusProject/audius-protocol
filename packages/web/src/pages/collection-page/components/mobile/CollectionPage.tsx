@@ -4,6 +4,10 @@ import { Collection, SmartCollection, Variant } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
+import {
+  CollectionsPageType,
+  CollectionTrack
+} from 'common/store/pages/collection/types'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -15,10 +19,6 @@ import NavContext, {
 } from 'components/nav/store/context'
 import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkConnectivityMonitor'
 import TrackList from 'components/track/mobile/TrackList'
-import {
-  CollectionsPageType,
-  CollectionTrack
-} from 'pages/collection-page/store/types'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'

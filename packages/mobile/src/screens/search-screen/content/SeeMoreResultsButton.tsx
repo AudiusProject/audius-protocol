@@ -5,6 +5,7 @@ import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
+import { SearchParamList } from 'app/components/app-navigator/types'
 import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
@@ -29,7 +30,7 @@ const messages = {
 export const SeeMoreResultsButton = () => {
   const styles = useStyles()
   const searchResultQuery = useSelector(getSearchResultQuery)
-  const navigation = useNavigation()
+  const navigation = useNavigation<SearchParamList>()
   const dispatch = useDispatch()
 
   const handleClose = useCallback(() => dispatch(close()), [dispatch])

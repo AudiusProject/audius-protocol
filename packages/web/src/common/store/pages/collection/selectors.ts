@@ -2,28 +2,29 @@ import { createSelector } from 'reselect'
 
 import { UID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
+import { CommonState } from 'common/store'
 import { getCollection as getCachedCollection } from 'common/store/cache/collections/selectors'
 import { getUser as getCachedUser } from 'common/store/cache/users/selectors'
-import { getCollection as getSmartCollection } from 'pages/smart-collection/store/selectors'
-import { AppState } from 'store/types'
+import { getCollection as getSmartCollection } from 'common/store/pages/smart-collection/selectors'
 
-export const getCollectionUid = (state: AppState) =>
-  state.collection.collectionUid
-export const getCollectionId = (state: AppState) =>
-  state.collection.collectionId
-export const getUserUid = (state: AppState) => state.collection.userUid
-export const getCollectionStatus = (state: AppState) => state.collection.status
-export const getSmartCollectionVariant = (state: AppState) =>
-  state.collection.smartCollectionVariant
+export const getCollectionUid = (state: CommonState) =>
+  state.pages.collection.collectionUid
+export const getCollectionId = (state: CommonState) =>
+  state.pages.collection.collectionId
+export const getUserUid = (state: CommonState) => state.pages.collection.userUid
+export const getCollectionStatus = (state: CommonState) =>
+  state.pages.collection.status
+export const getSmartCollectionVariant = (state: CommonState) =>
+  state.pages.collection.smartCollectionVariant
 
-export const getCollection = (state: AppState) => {
+export const getCollection = (state: CommonState) => {
   const smartCollectionVariant = getSmartCollectionVariant(state)
   if (smartCollectionVariant) {
     return getSmartCollection(state, { variant: smartCollectionVariant })
   }
   return getCachedCollection(state, { uid: getCollectionUid(state) })
 }
-export const getUser = (state: AppState) =>
+export const getUser = (state: CommonState) =>
   getCachedUser(state, { uid: getUserUid(state) })
 
 export const makeGetCollection = () =>
@@ -40,5 +41,5 @@ export const makeGetCollection = () =>
     }
   )
 
-export const getCollectionTracksLineup = (state: AppState) =>
-  state.collection.tracks
+export const getCollectionTracksLineup = (state: CommonState) =>
+  state.pages.collection.tracks

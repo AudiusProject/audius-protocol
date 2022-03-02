@@ -1,5 +1,3 @@
-import { ParamListBase } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { ScrollView, StyleSheet, View } from 'react-native'
 
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -26,10 +24,6 @@ const messages = {
   infoHeader: 'Just For You',
   infoText:
     'Content curated for you based on your likes, reposts, and follows. Refreshes often so if you like a track, favorite it.'
-}
-
-type Props = {
-  navigation: NativeStackNavigationProp<ParamListBase, keyof ParamListBase>
 }
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -63,7 +57,7 @@ const tiles = [
   FEELING_LUCKY
 ]
 
-export const ForYouTab = ({ navigation }: Props) => {
+export const ForYouTab = () => {
   const styles = useThemedStyles(createStyles)
 
   return (
@@ -71,7 +65,7 @@ export const ForYouTab = ({ navigation }: Props) => {
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
         {tiles.map(tile => (
-          <ColorTile style={styles.tile} key={tile.title} {...tile} />
+          <ColorTile style={styles.tile} key={tile.variant} {...tile} />
         ))}
       </View>
     </ScrollView>

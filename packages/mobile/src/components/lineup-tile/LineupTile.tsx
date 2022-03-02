@@ -23,9 +23,11 @@ export const LineupTile = ({
   children,
   coSign,
   duration,
+  favoriteType,
   hidePlays,
   hideShare,
   id,
+  imageUrl,
   index,
   isTrending,
   isUnlisted,
@@ -37,6 +39,7 @@ export const LineupTile = ({
   onPressShare,
   onPressTitle,
   playCount,
+  repostType,
   showArtistPick,
   showRankIcon,
   title,
@@ -45,7 +48,6 @@ export const LineupTile = ({
   user
 }: LineupTileProps) => {
   const {
-    _cover_art_sizes,
     has_current_user_reposted,
     has_current_user_saved,
     repost_count,
@@ -94,8 +96,7 @@ export const LineupTile = ({
         <LineupTileMetadata
           artistName={name}
           coSign={coSign}
-          coverArtSizes={_cover_art_sizes}
-          id={id}
+          imageUrl={imageUrl}
           onPressTitle={onPressTitle}
           isPlaying={uid === playingUid && isPlaying}
           setArtworkLoaded={setArtworkLoaded}
@@ -104,6 +105,8 @@ export const LineupTile = ({
         />
         {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
         <LineupTileStats
+          favoriteType={favoriteType}
+          repostType={repostType}
           hidePlays={hidePlays}
           id={id}
           index={index}

@@ -154,17 +154,25 @@ const TrackHeader = ({
   }
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
-  const trackLabels: { value: any; label: string }[] = [
-    { value: formatSeconds(duration), label: 'Duration' },
-    { value: getCanonicalName(genre), label: 'Genre' },
-    { value: formatDate(released), label: 'Released' },
+  const trackLabels: { isHidden?: boolean; label: string; value: any }[] = [
     {
-      // @ts-ignore
-      value: mood && mood in moodMap ? moodMap[mood] : mood,
-      label: 'Mood'
+      label: 'Duration',
+      value: formatSeconds(duration)
     },
-    { value: credits, label: 'Credit' }
-  ].filter(info => !!info.value)
+    {
+      label: 'Genre',
+      isHidden: isUnlisted && !fieldVisibility?.genre,
+      value: getCanonicalName(genre)
+    },
+    { value: formatDate(released), label: 'Released', isHidden: isUnlisted },
+    {
+      isHidden: isUnlisted && !fieldVisibility?.mood,
+      label: 'Mood',
+      // @ts-ignore
+      value: mood && mood in moodMap ? moodMap[mood] : mood
+    },
+    { label: 'Credit', value: credits }
+  ].filter(({ isHidden, value }) => !isHidden && !!value)
 
   const record = useRecord()
   const onExternalLinkClick = useCallback(
@@ -236,11 +244,6 @@ const TrackHeader = ({
 
   const renderTrackLabels = () => {
     return trackLabels.map(infoFact => {
-      if (infoFact.label === 'Genre' && isUnlisted && !fieldVisibility.genre)
-        return null
-      if (infoFact.label === 'Released' && isUnlisted) return null
-      if (infoFact.label === 'Mood' && isUnlisted && !fieldVisibility.mood)
-        return null
       return (
         <div key={infoFact.label} className={styles.infoFact}>
           <h2 className={styles.infoLabel}>{infoFact.label}</h2>

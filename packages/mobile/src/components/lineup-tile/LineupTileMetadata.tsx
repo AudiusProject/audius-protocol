@@ -1,7 +1,5 @@
 import { useCallback } from 'react'
 
-import { ID } from 'audius-client/src/common/models/Identifiers'
-import { CoverArtSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Remix } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import { Pressable, StyleSheet, View } from 'react-native'
@@ -56,8 +54,7 @@ const messages = {
 type Props = {
   artistName: string
   coSign?: Remix | null
-  coverArtSizes: CoverArtSizes
-  id: ID
+  imageUrl: string
   isPlaying: boolean
   onPressTitle?: GestureResponderHandler
   setArtworkLoaded: (loaded: boolean) => void
@@ -68,8 +65,7 @@ type Props = {
 export const LineupTileMetadata = ({
   artistName,
   coSign,
-  coverArtSizes,
-  id,
+  imageUrl,
   isPlaying,
   onPressTitle,
   setArtworkLoaded,
@@ -91,10 +87,8 @@ export const LineupTileMetadata = ({
   return (
     <View style={styles.metadata}>
       <LineupTileArt
-        id={id}
-        isTrack={true}
+        imageUrl={imageUrl}
         onLoad={() => setArtworkLoaded(true)}
-        coverArtSizes={coverArtSizes}
         coSign={coSign}
         style={trackTileStyles.imageContainer}
       />

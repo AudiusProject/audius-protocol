@@ -17,6 +17,7 @@ import {
   createPlaylist,
   addTrackToPlaylist
 } from 'common/store/cache/collections/actions'
+import { getCollectionId } from 'common/store/pages/collection/selectors'
 import {
   saveTrack,
   unsaveTrack,
@@ -27,7 +28,6 @@ import {
 import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
-import { getCollectionId } from 'pages/collection-page/store/selectors'
 import { newCollectionMetadata } from 'schemas'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'

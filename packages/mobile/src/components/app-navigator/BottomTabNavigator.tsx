@@ -10,6 +10,7 @@ import NowPlayingDrawer from 'app/components/now-playing-drawer/NowPlayingDrawer
 import { AudioScreen } from 'app/screens/audio-screen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import ExploreScreen from 'app/screens/explore-screen'
+import { UNDER_THE_RADAR } from 'app/screens/explore-screen/smartCollections'
 import { TrendingUndergroundScreen } from 'app/screens/explore-screen/tabs/ForYouTab'
 import FavoritesScreen from 'app/screens/favorites-screen'
 import { FeedScreen } from 'app/screens/feed-screen'
@@ -20,6 +21,7 @@ import {
   NotificationSettingsScreen,
   SettingsScreen
 } from 'app/screens/settings-screen'
+import { SmartCollectionScreen } from 'app/screens/smart-collection-screen/SmartCollectionScreen'
 import { TrendingScreen } from 'app/screens/trending-screen'
 
 import { BaseStackNavigator } from './BaseStackNavigator'
@@ -71,6 +73,12 @@ const ExploreStackScreen = createStackScreen<ExploreStackParamList>(Stack => (
     <Stack.Screen
       name='TrendingUnderground'
       component={TrendingUndergroundScreen}
+    />
+    <Stack.Screen
+      name='UnderTheRadar'
+      component={() => (
+        <SmartCollectionScreen smartCollection={UNDER_THE_RADAR} />
+      )}
     />
   </>
 ))

@@ -1,6 +1,6 @@
 import Status from 'common/models/Status'
 import { asLineup } from 'common/store/lineup/reducer'
-import tracksReducer from 'pages/collection-page/store/lineups/tracks/reducer'
+import tracksReducer from 'common/store/pages/collection/lineup/reducer'
 
 import {
   FETCH_COLLECTION,
@@ -9,9 +9,9 @@ import {
   RESET_COLLECTION,
   SET_SMART_COLLECTION
 } from './actions'
-import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
+import { PREFIX as tracksPrefix } from './lineup/actions'
 
-const initialState = {
+export const initialState = {
   collectionId: null,
   collectionUid: null,
   userUid: null,

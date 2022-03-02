@@ -589,12 +589,16 @@ class CollectionHeader extends PureComponent {
                   labelValue={formatDate(modified)}
                 />
               )}
-              <span className={styles.infoDuration}>
-                {formatSecondsAsText(duration)}
-              </span>
-              <span className={styles.infoDuration}>{`${numTracks} Track${
-                numTracks === 1 ? '' : 's'
-              }`}</span>
+              <InfoLabel
+                className={styles.infoLabelPlacement}
+                labelName='duration'
+                labelValue={formatSecondsAsText(duration)}
+              />
+              <InfoLabel
+                className={styles.infoLabelPlacement}
+                labelName='tracks'
+                labelValue={numTracks}
+              />
             </div>
             <div className={cn(styles.description, fadeIn)}>
               <Linkify

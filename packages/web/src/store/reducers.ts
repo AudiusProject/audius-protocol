@@ -18,14 +18,12 @@ import searchBar from 'components/search-bar/store/reducer'
 import serviceSelection from 'components/service-selection/store/slice'
 import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/reducers'
 import dashboard from 'pages/artist-dashboard-page/store/reducer'
-import collection from 'pages/collection-page/store/reducer'
 import deactivateAccount from 'pages/deactivate-account-page/store/slice'
 import deleted from 'pages/deleted-page/store/slice'
 import history from 'pages/history-page/store/reducer'
 import notificationUsers from 'pages/notification-users-page/store/reducers'
 import remixes from 'pages/remixes-page/store/slice'
 import signOn from 'pages/sign-on/store/reducer'
-import smartCollection from 'pages/smart-collection/store/slice'
 import trendingPlaylists from 'pages/trending-playlists/store/slice'
 import upload from 'pages/upload-page/store/reducer'
 import visualizer from 'pages/visualizer/store/slice'
@@ -77,7 +75,6 @@ const createRootReducer = (routeHistory: History) =>
     signOn,
     history,
     searchBar,
-    collection,
     notification,
     serviceSelection,
 
@@ -115,7 +112,6 @@ const createRootReducer = (routeHistory: History) =>
         notificationUsers,
         nowPlaying,
         remixes,
-        smartCollection,
         trendingPlaylists,
         unfollowConfirmation
       })

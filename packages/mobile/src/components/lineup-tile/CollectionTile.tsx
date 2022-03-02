@@ -7,6 +7,8 @@ import {
   ShareSource
 } from 'audius-client/src/common/models/Analytics'
 import { Collection } from 'audius-client/src/common/models/Collection'
+import { FavoriteType } from 'audius-client/src/common/models/Favorite'
+import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
@@ -27,10 +29,12 @@ import {
   OverflowSource
 } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
+import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { albumPage, playlistPage } from 'audius-client/src/utils/route'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import { isEqual } from 'lodash'
 
+import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -96,6 +100,7 @@ const CollectionTileComponent = ({
   const currentUserId = useSelectorWeb(getUserId)
 
   const {
+    _cover_art_sizes,
     has_current_user_reposted,
     has_current_user_saved,
     is_album,
@@ -105,6 +110,12 @@ const CollectionTileComponent = ({
   } = collection
 
   const isOwner = playlist_owner_id === currentUserId
+
+  const imageUrl = useCollectionCoverArt(
+    playlist_id,
+    _cover_art_sizes,
+    SquareSizes.SIZE_150_BY_150
+  )
 
   const routeWeb = useMemo(() => {
     return collection.is_album
@@ -127,8 +138,7 @@ const CollectionTileComponent = ({
 
   const handlePressTitle = useCallback(() => {
     navigation.push({
-      // TODO: update to `collection` screen
-      native: { screen: 'Track', params: { id: playlist_id } },
+      native: { screen: 'Collection', params: { id: playlist_id } },
       web: { route: routeWeb }
     })
   }, [playlist_id, routeWeb, navigation])
@@ -214,7 +224,10 @@ const CollectionTileComponent = ({
     <LineupTile
       {...lineupTileProps}
       duration={duration}
+      favoriteType={FavoriteType.PLAYLIST}
+      repostType={RepostType.COLLECTION}
       id={playlist_id}
+      imageUrl={imageUrl}
       onPress={handlePress}
       onPressOverflow={handlePressOverflow}
       onPressRepost={handlePressRepost}
