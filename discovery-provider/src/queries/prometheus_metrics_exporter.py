@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint("prometheus_metrics_exporter", __name__)
 
 
-@bp.route("/metrics", methods=["GET"])
+@bp.route("/prometheus_metrics", methods=["GET"])
 def prometheus_metrics_exporter():
     registry = CollectorRegistry()
     multiprocess.MultiProcessCollector(registry)

@@ -5,6 +5,8 @@ const RewardEventNames = {
   REWARDS_CLAIM_SUCCESS: 'Rewards Claim: Success',
   REWARDS_CLAIM_RETRY: 'Rewards Claim: Retry',
   REWARDS_CLAIM_FAILURE: 'Rewards Claim: Failure',
+  REWARDS_CLAIM_HCAPTCHA: 'Rewards Claim: Hcaptcha',
+  REWARDS_CLAIM_COGNITO: 'Rewards Claim: Cognito',
   REWARDS_CLAIM_BLOCKED: 'Rewards Claim: Blocked'
 }
 
@@ -143,7 +145,7 @@ class RewardsReporter {
     }
   }
 
-  async reportAAORejection ({ userId, challengeId, amount, error, specifier }) {
+  async reportAAORejection ({ userId, challengeId, amount, error, specifier, reason }) {
     try {
       const report = {
         status: 'rejection',
@@ -152,14 +154,18 @@ class RewardsReporter {
         amount: amount.toString(),
         error: error.toString(),
         source: this.source,
-        specifier
+        specifier,
+        reason
       }
-      const slackMessage = this.errorReporter.getJsonSlackMessage(report)
-      await this.errorReporter.postToSlack({ message: slackMessage })
       this.childLogger.info(report, `Rewards Reporter`)
 
       if (this.shouldReportAnalytics) {
-        this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_BLOCKED, userId, {
+        const event = {
+          'hcaptcha': RewardEventNames.REWARDS_CLAIM_HCAPTCHA,
+          'cognito': RewardEventNames.REWARDS_CLAIM_COGNITO,
+          'blocked': RewardEventNames.REWARDS_CLAIM_BLOCKED
+        }[reason] || RewardEventNames.REWARDS_CLAIM_BLOCKED
+        this.analyticsProvider.track(event, userId, {
           userId,
           challengeId,
           amount,
