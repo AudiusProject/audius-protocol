@@ -253,9 +253,12 @@ const run = async () => {
         // hardcoded in trusted-notifier .env.dev
         const wallet = '0xe82a5a2948d2b5e71232f640777346869817fbae'
         const endpoint = 'http://trusted_notifier_service:8000'
+        const email = 'email@trusted_notifier_service:8000'
         await audiusLibs.ethContracts.TrustedNotifierManagerClient.registerNotifier(
           wallet,
-          endpoint)
+          endpoint,
+          email
+        )
         break
 
       case 'query-trusted-notifier':

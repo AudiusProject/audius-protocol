@@ -2,7 +2,7 @@ const { logger } = require('../logging')
 const axios = require('axios')
 const { timeout } = require('../utils')
 
-const TEN_MINS = 1000 * 60 * 10
+const TEN_MINS_IN_MS = 1000 * 60 * 10
 class TrustedNotifierManager {
   constructor(nodeConfig, audiusLibs) {
     this.nodeConfig = nodeConfig
@@ -59,7 +59,7 @@ class TrustedNotifierManager {
         this.logInfo(
           `Could not recover a trustedNotifier at index ${this.trustedNotifierID}, trying again soon`
         )
-        await timeout(TEN_MINS, false)
+        await timeout(TEN_MINS_IN_MS, false)
         return this.init()
       }
     } catch (e) {

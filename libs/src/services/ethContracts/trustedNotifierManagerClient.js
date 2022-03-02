@@ -38,7 +38,8 @@ class TrustedNotifierManagerClient extends GovernedContractClient {
     const notifier = await method.call()
     return {
       wallet: notifier.wallet,
-      endpoint: notifier.endpoint.replace(/\/$/, '')
+      endpoint: notifier.endpoint.replace(/\/$/, ''),
+      email: notifier.email
     }
   }
 

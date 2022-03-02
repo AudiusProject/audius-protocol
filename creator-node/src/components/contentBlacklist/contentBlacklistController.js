@@ -51,7 +51,6 @@ const contentBlacklistAddController = async (req) => {
       trustedNotifierManager
     )
   } catch (e) {
-    console.error('ERROR IN VERIFY', e)
     return errorResponseUnauthorized('Unauthorized user.')
   }
 
@@ -212,11 +211,6 @@ function verifyRequest(data, signature, trustedNotifierManager) {
   const trustedNotifierWallet =
     trustedNotifierManager.getTrustedNotifierData().wallet
   const recoveredPublicWallet = recoverWallet(data, signature)
-  console.log(
-    `trustedNotifierWallet: ${trustedNotifierWallet}, delegateOwnerWallet: ${config.get(
-      'delegateOwnerWallet'
-    )}, recoveredPublicWallet: ${recoveredPublicWallet}`
-  )
 
   if (
     recoveredPublicWallet.toLowerCase() ===
