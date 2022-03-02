@@ -19,7 +19,8 @@ module.exports = (sequelize, DataTypes) => {
     // allowNull is true because associate will set handle later
     handle: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
+      index: true
     },
     IP: {
       type: DataTypes.STRING,

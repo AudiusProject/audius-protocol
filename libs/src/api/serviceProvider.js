@@ -118,12 +118,14 @@ class ServiceProvider extends Base {
    * unique service operators.
    * Throws if unable to find a large enough list.
    * @param {number} quorumSize
+   * @param {any[]} discoveryProviders the verbose list of discovery providers to select from
    */
-  async getUniquelyOwnedDiscoveryNodes (quorumSize) {
-    const selectable = await this.discoveryProvider.serviceSelector.findAll({ verbose: true })
-
+  async getUniquelyOwnedDiscoveryNodes (quorumSize, discoveryProviders = []) {
+    if (!discoveryProviders || discoveryProviders.length === 0) {
+      discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true })
+    }
     // Group nodes by owner
-    const grouped = selectable.reduce((acc, curr) => {
+    const grouped = discoveryProviders.reduce((acc, curr) => {
       if (curr.owner in acc) {
         acc[curr.owner].push(curr)
       } else {

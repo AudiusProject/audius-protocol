@@ -91,13 +91,30 @@ const instructionSchema = new Map([
   ]
 ])
 
-let feePayer
+let feePayerKeypair = null
+let feePayerKeypairs = null
 
-function getFeePayer () {
-  if (!feePayer) {
-    feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
+// Optionally returns the existing singleFeePayer
+// Ensures other usages of this function do not break as we upgrade to multiple
+function getFeePayerKeypair (singleFeePayer = true) {
+  if (!feePayerKeypairs) {
+    feePayerKeypairs = config.get('solanaFeePayerWallets')
+      ? config.get('solanaFeePayerWallets')
+        .map(item => item.privateKey)
+        .map(key => solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(key)))
+      : null
   }
-  return feePayer
+  if (!feePayerKeypair) {
+    feePayerKeypair = (feePayerKeypairs && feePayerKeypairs[0]) || null
+  }
+  // Ensure legacy usage of single feePayer is not broken
+  // If multiple feepayers are not provided, default to single value as well
+  if (singleFeePayer || feePayerKeypairs === null || feePayerKeypairs.length === 0) {
+    return feePayerKeypair
+  }
+
+  const randomFeePayerIndex = Math.floor(Math.random() * feePayerKeypairs.length)
+  return feePayerKeypairs[randomFeePayerIndex]
 }
 
 async function createAndVerifyMessage (
@@ -147,7 +164,8 @@ async function createAndVerifyMessage (
     instructionData
   )
 
-  let transaction = new solanaWeb3.Transaction()
+  let recentBlockHash = connection.getRecentBlockhash('confirmed')
+  let transaction = new solanaWeb3.Transaction(recentBlockHash)
 
   let secpInstruction = solanaWeb3.Secp256k1Program.createInstructionWithPublicKey(
     {
@@ -172,14 +190,14 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
-  let feePayerAccount = getFeePayer()
+  let feePayerAccount = getFeePayerKeypair(false)
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
     connection,
     transaction,
     [feePayerAccount],
     {
-      skipPreflight: true,
+      skipPreflight: false,
       commitment: config.get('solanaTxCommitmentLevel'),
       preflightCommitment: config.get('solanaTxCommitmentLevel')
     }
@@ -189,4 +207,4 @@ async function createAndVerifyMessage (
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage
-exports.getFeePayer = getFeePayer
+exports.getFeePayerKeypair = getFeePayerKeypair

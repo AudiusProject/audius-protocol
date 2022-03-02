@@ -22,17 +22,34 @@ function update_redirect_weights (premature)
         return
     end
 
-    local httpc = resty_http.new()
-    local res = httpc:request_uri(config.public_url .. "/redirect_weights", { method = "GET" })
+    ngx.log(ngx.NOTICE, "updating redirect weights")
 
-    for endpoint, weight in pairs(cjson.decode(res.body)) do
-        redirect_weights[endpoint] = weight
+    local httpc = resty_http.new()
+    local res, err = httpc:request_uri("http://127.0.0.1:3000/redirect_weights", { method = "GET" })
+
+    if not res then
+        ngx.log(ngx.ERR, "failed to get redirect weights: ", err)
+        return
+    end
+
+    redirect_weights = cjson.decode(res.body).data
+
+    ngx.log(ngx.INFO, "cleared existing weights")
+    for endpoint, weight in pairs(redirect_weights) do
+        ngx.log(ngx.INFO, "set weight for endpoint ", endpoint, " to ", weight)
     end
 end
 
 function _M.start_update_redirect_weights_timer ()
-    update_redirect_weights ()
-    ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
+    -- use lock to ensure that only one timer will run
+    local locked = ngx.shared.locks:get("redirect_weights_timer")
+    if locked == nil then
+        ngx.shared.locks:set("redirect_weights_timer", true)
+        ngx.log(ngx.NOTICE, "starting redirect weights timer")
+        -- deplay first run by 10 seconds to ensure that discovery provider is running
+        ngx.timer.at(10, update_redirect_weights)
+        ngx.timer.every(config.update_redirect_weights_every, update_redirect_weights)
+    end
 end
 
 function get_cached_public_key (discovery_provider)
@@ -75,6 +92,11 @@ function get_redirect_target ()
 end
 
 function verify_signature (discovery_provider, nonce, signature)
+    -- reject if all of the parameter are not provided
+    if discovery_provider == nil and nonce == nil and signature == nil then
+        return false
+    end
+
     -- reject if one of the parameter is not provided
     if discovery_provider == nil or nonce == nil or signature == nil then
         ngx.log(
@@ -160,6 +182,10 @@ function _M.limit_to_rps ()
         return
     end
 
+    if ngx.req.get_method() == "OPTIONS" then
+        return
+    end
+
     if verify_signature(ngx.var.openresty_redirect_from, ngx.var.openresty_redirect_nonce, ngx.var.openresty_redirect_sig) then
         -- if signature is correct remove signature args and skip rate limit logic
         local args, err = ngx.req.get_uri_args()
@@ -191,19 +217,24 @@ function _M.limit_to_rps ()
             local args, err = ngx.req.get_uri_args()
             args.openresty_redirect_from, args.openresty_redirect_nonce, args.openresty_redirect_sig = get_redirect_args()
             ngx.req.set_uri_args(args)
-            local url = get_redirect_target() .. ngx.var.request_uri
-            ngx.log(
-                ngx.INFO,
-                "Redirecting: ",
-                "target=", url,
-                ", signature=", args.openresty_redirect_sig,
-                ", nonce=", args.openresty_redirect_nonce
-            )
-            return ngx.redirect(url)
+            local redirect_target = get_redirect_target()
+            if redirect_target ~= nil then
+                local url = redirect_target .. ngx.var.request_uri
+                ngx.log(
+                    ngx.INFO,
+                    "Redirecting: ",
+                    "target=", url,
+                    ", signature=", args.openresty_redirect_sig,
+                    ", nonce=", args.openresty_redirect_nonce
+                )
+                return ngx.redirect(url)
+            end
         end
 
-        ngx.log(ngx.ERR, "failed to limit req: ", err)
-        return ngx.exit(500)
+        if rate_limit_hit == false then
+            ngx.log(ngx.ERR, "failed to limit req: ", err)
+            return ngx.exit(500)
+        end
     end
 
     local remaining = err

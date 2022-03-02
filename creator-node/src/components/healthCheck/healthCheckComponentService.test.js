@@ -81,9 +81,9 @@ const TranscodingQueueMock = (active = 0, waiting = 0) => {
   }
 }
 
-const FileProcessingQueueMock = (active = 0, waiting = 0) => {
+const AsyncProcessingQueueMock = (active = 0, waiting = 0) => {
   return {
-    getFileProcessingQueueJobs: async () => {
+    getAsyncProcessingQueueJobs: async () => {
       return { active, waiting }
     }
   }
@@ -101,6 +101,7 @@ describe('Test Health Check', function () {
 
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
+    config.set('dataProviderUrl', 'http://test.dataProviderUrl')
 
     const res = await healthCheck(
       { libs: libsMock, snapbackSM: snapbackSMMock },
@@ -108,7 +109,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
 
@@ -122,6 +123,7 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -171,7 +173,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
 
@@ -185,6 +187,7 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -226,7 +229,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
 
@@ -240,6 +243,7 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -294,7 +298,7 @@ describe('Test Health Check Verbose', function () {
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
 
     assert.deepStrictEqual(res, {
@@ -307,6 +311,7 @@ describe('Test Health Check Verbose', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
 
       country: 'US',
       latitude: '37.7749',
@@ -358,7 +363,7 @@ describe('Test Health Check Verbose', function () {
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
     const defaultRes = await healthCheck(
       { libs: libsMock, snapbackSM: snapbackSMMock },
@@ -366,7 +371,7 @@ describe('Test Health Check Verbose', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      FileProcessingQueueMock(0, 2).getFileProcessingQueueJobs,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
 

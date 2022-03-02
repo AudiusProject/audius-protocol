@@ -32,11 +32,11 @@
 		"starting_block": 25346436
 	},
 	{
-		"id": "referrals-verified",
+		"id": "ref-v",
 		"type": "aggregate",
 		"amount": "1",
 		"active": true,
-		"step_count": 500,
+		"step_count": 5000,
 		"starting_block": 25346436
 	},
 	{

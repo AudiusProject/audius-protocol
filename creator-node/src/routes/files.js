@@ -42,7 +42,6 @@ const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
 const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
@@ -56,19 +55,29 @@ const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT = 5
 
 /**
  * Helper method to stream file from file system on creator node
- * Serves partial content using range requests
+ * Serves partial content if specified using range requests
+ * By default, checks path for file existence before proceeding
+ * If not provided, checks fs stats for path
  */
-const streamFromFileSystem = async (req, res, path) => {
+const streamFromFileSystem = async (
+  req,
+  res,
+  path,
+  checkExistence = true,
+  fsStats = null
+) => {
   try {
-    // If file cannot be found on disk, throw error
-    if (!fs.existsSync(path)) {
-      throw new Error('File could not be found on disk.')
+    if (checkExistence) {
+      // If file cannot be found on disk, throw error
+      if (!fs.existsSync(path)) {
+        throw new Error(`File could not be found on disk, path=${path}`)
+      }
     }
 
     // Stream file from file system
     let fileStream
 
-    const stat = await fsStat(path)
+    const stat = fsStats || (await fsStat(path))
     // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
       res.set('Accept-Ranges', 'bytes')
@@ -125,7 +134,23 @@ const streamFromFileSystem = async (req, res, path) => {
 
 const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
-// Gets a CID, streaming from the filesystem if available and falling back to IPFS if not
+const logGetCIDDecisionTree = (decisionTree, req) => {
+  try {
+    req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
+  } catch (e) {
+    console.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
+  }
+}
+
+/**
+ * Given a CID, return the appropriate file
+ * 1. Check if file exists at expected storage path (current and legacy)
+ * 1. If found, stream from FS
+ * 2. Else, check if CID exists in DB. If not, return 404 error
+ * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
+ * 4. If not avail in CN network, fetch file from IPFS and stream from IPFS
+ * 5. If not avail in IPFS, respond with 400 server error
+ */
 const getCID = async (req, res) => {
   if (!(req.params && req.params.CID)) {
     return sendResponse(
@@ -135,99 +160,382 @@ const getCID = async (req, res) => {
     )
   }
 
-  // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
-  const BlacklistManager = req.app.get('blacklistManager')
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
+  const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}` }]
+  const logPrefix = `[getCID] [CID=${CID}]`
+
+  /**
+   * Check if CID is servable from BlacklistManager; return error if not
+   */
+  let startMs = Date.now()
+  const BlacklistManager = req.app.get('blacklistManager')
   const isServable = await BlacklistManager.isServable(CID, trackId)
+  decisionTree.push({
+    stage: `BLACKLIST_MANAGER_CHECK_IS_SERVABLE`,
+    time: `${Date.now() - startMs}ms`
+  })
   if (!isServable) {
+    decisionTree.push({
+      stage: `CID_IS_BLACKLISTED`
+    })
+
+    logGetCIDDecisionTree(decisionTree, req)
     return sendResponse(
       req,
       res,
-      errorResponseForbidden(`CID=${CID} has been blacklisted by this node`)
+      errorResponseForbidden(
+        `${logPrefix} CID has been blacklisted by this node`
+      )
     )
   }
 
-  const cacheKey = getStoragePathQueryCacheKey(CID)
-
-  let storagePath = await redisClient.get(cacheKey)
-  if (!storagePath) {
-    // Don't serve if not found in DB.
-    const queryResults = await models.File.findOne({
-      where: {
-        multihash: CID
-      },
-      order: [['clock', 'DESC']]
+  // Compute expected storagePath for CID
+  let storagePath
+  try {
+    storagePath = DiskManager.computeFilePath(CID, false)
+    decisionTree.push({
+      stage: `COMPUTE_FILE_PATH_COMPLETE`
     })
-    if (!queryResults) {
-      return sendResponse(
-        req,
-        res,
-        errorResponseNotFound(`No valid file found for provided CID: ${CID}`)
-      )
-    }
+  } catch (e) {
+    decisionTree.push({
+      stage: `COMPUTE_FILE_PATH_FAILURE`
+    })
+    logGetCIDDecisionTree(decisionTree, req)
+    return sendResponse(
+      req,
+      res,
+      errorResponseBadRequest(`${logPrefix} Invalid CID`)
+    )
+  }
 
-    if (queryResults.type === 'dir') {
+  /**
+   * Check if file exists on FS at storagePath
+   * If found and not of file type, return error
+   * If found and file type, continue
+   * If not found, continue
+   */
+  startMs = Date.now()
+  let fileFoundOnFS = false
+  let fsStats
+  try {
+    /**
+     * fs.stat returns instance of fs.stats class, used to check if exists, an dir vs file
+     * Throws error if nothing found
+     * https://nodejs.org/api/fs.html#fspromisesstatpath-options
+     */
+    fsStats = await fs.stat(storagePath)
+    decisionTree.push({
+      stage: `FS_STATS`,
+      time: `${Date.now() - startMs}ms`
+    })
+
+    if (fsStats.isFile()) {
+      decisionTree.push({
+        stage: `CID_CONFIRMED_FILE`
+      })
+      fileFoundOnFS = true
+    } else if (fsStats.isDirectory()) {
+      decisionTree.push({
+        stage: `CID_CONFIRMED_DIRECTORY`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
       return sendResponse(
         req,
         res,
         errorResponseBadRequest('this dag node is a directory')
       )
+    } else {
+      decisionTree.push({
+        stage: `CID_INVALID_TYPE`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest('CID is of invalid file type')
+      )
     }
-
-    storagePath = queryResults.storagePath
-    redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
+  } catch (e) {
+    decisionTree.push({
+      stage: `FS_STATS_CID_NOT_FOUND`,
+      time: `${Date.now() - startMs}ms`
+    })
+    // continue
   }
 
-  redisClient.incr('ipfsStandaloneReqs')
-  const totalStandaloneIpfsReqs = parseInt(
-    await redisClient.get('ipfsStandaloneReqs')
-  )
-  req.logger.info(
-    `IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`
-  )
+  /**
+   * If not found on FS at storagePath, check legacyStoragePath
+   */
+  if (!fileFoundOnFS) {
+    // Compute expected legacyStoragePath for CID
+    let legacyStoragePath
+    try {
+      legacyStoragePath = DiskManager.computeLegacyFilePath(CID)
+      decisionTree.push({
+        stage: `COMPUTE_LEGACY_FILE_PATH_COMPLETE`
+      })
+    } catch (e) {
+      decisionTree.push({
+        stage: `COMPUTE_LEGACY_FILE_PATH_FAILURE`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest(`${logPrefix} Invalid CID`)
+      )
+    }
+
+    /**
+     * Check if file exists on FS at legacyStoragePath
+     * If found and not of file type, return error
+     * If found and of type file, continue with legacyStoragePath
+     * If not found, continue
+     */
+    startMs = Date.now()
+    try {
+      // Will throw if path does not exist
+      // If exists, returns an instance of fs.stats class
+      fsStats = await fs.stat(legacyStoragePath)
+      decisionTree.push({
+        stage: `FS_STATS_LEGACY_STORAGE_PATH`,
+        time: `${Date.now() - startMs}ms`
+      })
+
+      if (fsStats.isFile()) {
+        decisionTree.push({
+          stage: `CID_CONFIRMED_FILE_LEGACY_STORAGE_PATH`
+        })
+        fileFoundOnFS = true
+      } else if (fsStats.isDirectory()) {
+        decisionTree.push({
+          stage: `CID_CONFIRMED_DIRECTORY_LEGACY_STORAGE_PATH`
+        })
+        logGetCIDDecisionTree(decisionTree, req)
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest('this dag node is a directory')
+        )
+      } else {
+        decisionTree.push({
+          stage: `CID_INVALID_TYPE_LEGACY_STORAGE_PATH`
+        })
+        logGetCIDDecisionTree(decisionTree, req)
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest('CID is of invalid file type')
+        )
+      }
+    } catch (e) {
+      decisionTree.push({
+        stage: `FS_STATS_LEGACY_STORAGE_PATH_CID_NOT_FOUND`,
+        time: `${Date.now() - startMs}ms`
+      })
+      // continue
+    }
+
+    if (fileFoundOnFS) {
+      storagePath = legacyStoragePath
+    }
+  }
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
   if (req.query.filename) {
     res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
   }
 
-  // Set the CID cache-control so that client cache the response for 30 days
+  // Set the CID cache-control so that client caches the response for 30 days
   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
 
-  try {
-    // Add a rehydration task to the queue to be processed in the background
-    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, storagePath, {
-      logContext: req.logContext
-    })
-    // Attempt to stream file to client.
-    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
-    return await streamFromFileSystem(req, res, storagePath)
-  } catch (e) {
-    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
-
-    // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
+  /**
+   * If file found on file system:
+   * 1. add background task to rehydrate from disk to IPFS
+   * 2. stream from FS
+   */
+  if (fileFoundOnFS) {
+    /**
+     * 1. add background task to rehydrate from disk to IPFS
+     */
+    startMs = Date.now()
     try {
-      const libs = req.app.get('audiusLibs')
-      await findCIDInNetwork(storagePath, CID, req.logger, libs, trackId)
-      return await streamFromFileSystem(req, res, storagePath)
-    } catch (e) {
-      req.logger.error(
-        `Error calling findCIDInNetwork for path ${storagePath}`,
-        e
+      RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(
+        CID,
+        storagePath,
+        {
+          logContext: req.logContext
+        }
       )
+      decisionTree.push({
+        stage: `ADD_REHYDRATE_IPFS_FROM_FS`,
+        time: `${Date.now() - startMs}ms`
+      })
+    } catch (e) {
+      decisionTree.push({
+        stage: `ADD_REHYDRATE_IPFS_FROM_ERROR`,
+        time: `${Date.now() - startMs}ms`,
+        error: `${e.message}`
+      })
+    }
+
+    /**
+     * 2. stream from FS
+     */
+    startMs = Date.now()
+    try {
+      const fsStream = await streamFromFileSystem(
+        req,
+        res,
+        storagePath,
+        false,
+        fsStats
+      )
+      decisionTree.push({
+        stage: `STREAM_FROM_FILE_SYSTEM_COMPLETE`,
+        time: `${Date.now() - startMs}ms`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return fsStream
+    } catch (e) {
+      decisionTree.push({
+        stage: `STREAM_FROM_FILE_SYSTEM_FAILED`,
+        time: `${Date.now() - startMs}ms`
+      })
     }
   }
 
+  /**
+   * If not found on FS, check if CID record is in DB, error if not found
+   */
+  startMs = Date.now()
   try {
+    const queryResults = await models.File.findOne({
+      where: {
+        multihash: CID
+      },
+      order: [['clock', 'DESC']]
+    })
+    decisionTree.push({
+      stage: `DB_CID_QUERY`,
+      time: `${Date.now() - startMs}ms`
+    })
+
+    if (!queryResults) {
+      decisionTree.push({
+        stage: `DB_CID_QUERY_CID_NOT_FOUND`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return sendResponse(
+        req,
+        res,
+        errorResponseNotFound(
+          `${logPrefix} No valid file found for provided CID`
+        )
+      )
+    } else if (queryResults.type === 'dir') {
+      decisionTree.push({
+        stage: `DB_CID_QUERY_CONFIRMED_DIR`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest('this dag node is a directory')
+      )
+    } else {
+      decisionTree.push({
+        stage: `DB_CID_QUERY_CID_FOUND`
+      })
+      // This should never happen, logging in case it does
+      if (storagePath !== queryResults.storagePath) {
+        req.logger.error(
+          `${logPrefix} Found unexpected storagePath. Expected ${storagePath}, found ${queryResults.storagePath}.`
+        )
+      }
+      storagePath = queryResults.storagePath
+    }
+  } catch (e) {
+    decisionTree.push({
+      stage: `DB_CID_QUERY_ERROR`,
+      time: `${Date.now() - startMs}ms`,
+      error: `${e.message}`
+    })
+    logGetCIDDecisionTree(decisionTree, req)
+    return sendResponse(
+      req,
+      res,
+      errorResponseServerError(`${logPrefix} DB query failed`)
+    )
+  }
+
+  /**
+   * If found in DB (means not found in FS):
+   * 1. Attempt to retrieve file from network and save to file system
+   * 2. If retrieved, stream from file system
+   * 3. Else, continue
+   */
+  let blockStartMs = Date.now()
+  try {
+    startMs = Date.now()
+    const libs = req.app.get('audiusLibs')
+    const found = await findCIDInNetwork(
+      storagePath,
+      CID,
+      req.logger,
+      libs,
+      trackId
+    )
+    if (!found) {
+      throw new Error('Not found in network')
+    }
+    decisionTree.push({
+      stage: `FIND_CID_IN_NETWORK_COMPLETE`,
+      time: `${Date.now() - startMs}ms`
+    })
+
+    startMs = Date.now()
+    const fsStream = await streamFromFileSystem(req, res, storagePath, false)
+    decisionTree.push({
+      stage: `STREAM_FROM_FILE_SYSTEM_AFTER_FIND_CID_IN_NETWORK_COMPLETE`,
+      time: `${Date.now() - startMs}ms`
+    })
+
+    logGetCIDDecisionTree(decisionTree, req)
+    return fsStream
+  } catch (e) {
+    decisionTree.push({
+      stage: `FIND_CID_IN_NETWORK_ERROR`,
+      time: `${Date.now() - blockStartMs}ms`,
+      error: `${e.message}`
+    })
+    // continue
+  }
+
+  /**
+   * If found in DB, but not file system or network:
+   * 1. Check avail on IPFS
+   * 2. If avail, stream from IPFS
+   * 3. Else, error
+   */
+  blockStartMs = Date.now()
+  try {
+    // If the IPFS stat call fails or times out, an error is thrown
+    startMs = Date.now()
+    const stat = await ipfsStat(CID, req.logContext, 500 /** timeoutMs */)
+    decisionTree.push({
+      stage: `IPFS_STAT_COMPLETE`,
+      time: `${Date.now() - startMs}ms`
+    })
+
     // Add content length headers
-    // If the IPFS stat call fails or timesout, an error is thrown
-    const stat = await ipfsStat(CID, req.logContext, 500)
     res.set('Accept-Ranges', 'bytes')
 
     // Stream file from ipfs if cat one byte takes under 500ms
     // If catReadableStream() promise is rejected, throw an error and stream from file system
+    startMs = Date.now()
     await new Promise((resolve, reject) => {
       let stream
       // If a range header is present, use that to create the ipfs stream
@@ -237,6 +545,11 @@ const getCID = async (req, res) => {
         let { start, end } = range
         if (end >= stat.size) {
           // Set "Requested Range Not Satisfiable" header and exit
+          decisionTree.push({
+            stage: `ERROR_REQUESTED_RANGE_NOT_SATISFIABLE`,
+            time: `${Date.now() - startMs}ms`
+          })
+          logGetCIDDecisionTree(decisionTree, req)
           res.status(416)
           return sendResponse(
             req,
@@ -249,6 +562,7 @@ const getCID = async (req, res) => {
         end = end || stat.size - 1
 
         // Set length to be end - start + 1 so it matches behavior of fs.createReadStream
+        startMs = Date.now()
         const length = end - start + 1
         stream = req.app
           .get('ipfsAPI')
@@ -258,20 +572,40 @@ const getCID = async (req, res) => {
         res.set('Content-Length', end - start + 1)
         // set 206 "Partial Content" success status response code
         res.status(206)
+        decisionTree.push({
+          stage: `IPFS_CAT_READABLE_STREAM_PARTIAL_CONTENT_COMPLETE`,
+          time: `${Date.now() - startMs}ms`
+        })
       } else {
         stream = req.app.get('ipfsAPI').catReadableStream(CID)
         res.set('Content-Length', stat.size)
+        decisionTree.push({
+          stage: `IPFS_CAT_READABLE_STREAM_COMPLETE`,
+          time: `${Date.now() - startMs}ms`
+        })
       }
 
+      startMs = Date.now()
       stream
         .on('data', (streamData) => {
           res.write(streamData)
         })
         .on('end', () => {
           res.end()
+          decisionTree.push({
+            stage: `STREAM_WRITE_COMPLETE`,
+            time: `${Date.now() - startMs}ms`
+          })
+          logGetCIDDecisionTree(decisionTree, req)
           resolve()
         })
         .on('error', (e) => {
+          decisionTree.push({
+            stage: `STREAM_WRITE_ERROR`,
+            time: `${Date.now() - startMs}ms`,
+            val: `${e.message}`
+          })
+          logGetCIDDecisionTree(decisionTree, req)
           reject(e)
         })
     })
@@ -279,7 +613,12 @@ const getCID = async (req, res) => {
     // Unset the cache-control header so that a bad response is not cached
     res.removeHeader('cache-control')
 
-    // If the file cannot be retrieved through IPFS, return 500 without attempting to stream file.
+    decisionTree.push({
+      stage: 'STREAM_FROM_IPFS_FAILURE',
+      time: `${Date.now() - blockStartMs}ms`
+    })
+
+    logGetCIDDecisionTree(decisionTree, req)
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }
@@ -515,11 +854,16 @@ async function _addToIpfsWithRetries({
 }
 
 module.exports = function (app) {
+  /**
+   * TODO: Eventually deprecate '/track_content_status'
+   */
   app.get(
-    '/track_content_status',
+    ['/track_content_status', '/async_processing_status'],
     handleResponse(async (req, res) => {
-      const redisKey = constructProcessKey(
-        PROCESS_NAMES.transcode,
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
+
+      const redisKey = AsyncProcessingQueue.constructAsyncProcessingKey(
         req.query.uuid
       )
       const value = (await redisClient.get(redisKey)) || '{}'
@@ -905,3 +1249,4 @@ module.exports = function (app) {
 }
 
 module.exports.getCID = getCID
+module.exports.streamFromFileSystem = streamFromFileSystem

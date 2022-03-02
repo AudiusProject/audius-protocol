@@ -2,29 +2,33 @@ const AudiusLibs = require('@audius/libs')
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
-const MonitoringQueue = require('./monitors/MonitoringQueue')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
+
+const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
+const AsyncProcessingQueue = require('./AsyncProcessingQueue')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
  * services for use throughout CreatorNode.
  *
  * Services:
+ *  - `nodeConfig`: exposes config object
  *  - `redis`: Redis Client
  *  - `ipfs`: IPFS Client
  *  - `ipfsLatest`: IPFS Client, latest version
  *  - `blackListManager`: responsible for handling blacklisted content
- *  - `libs`: an instance of Audius Libs
  *  - `monitoringQueue`: recurring job to monitor node state & performance metrics
  *  - `sessionExpirationQueue`: recurring job to clear expired session tokens from Redis and DB
- *  - `nodeConfig`: exposes config object
+ *  - `asyncProcessingQueue`: queue that processes jobs and adds job responses into redis
+ *
+ *  - `libs`: an instance of Audius Libs
  *  - `snapbackSM`: SnapbackStateMachine is responsible for recurring sync and reconfig operations
  *  - `URSMRegistrationManager`: registers node on L2 URSM contract, no-ops afterward
  *
@@ -39,6 +43,7 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
+    this.asyncProcessingQueue = new AsyncProcessingQueue()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
@@ -187,7 +192,7 @@ class ServiceRegistry {
     }
 
     this.logInfo(
-      `Successfully recovered node L1 identity for endpoint ${endpoint} on attempt #${attempt}. spID =  ${this.nodeConfig.get(
+      `Successfully recovered node L1 identity for endpoint ${endpoint} on attempt #${attempt}. spID = ${this.nodeConfig.get(
         'spID'
       )}`
     )
@@ -325,7 +330,15 @@ class ServiceRegistry {
         config.get('delegatePrivateKey').replace('0x', '')
       ),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-        discoveryProviderWhitelist
+        discoveryProviderWhitelist,
+        /* blacklist */ null,
+        /* reselectTimeout */ null,
+        /* selectionCallback */ null,
+        /* monitoringCallbacks */ {},
+        /* selectionRequestTimeout */ null,
+        /* selectionRequestRetries */ null,
+        /* unhealthySlotDiffPlays */ null,
+        /* unhealthyBlockDiff */ 500
       ),
       // If an identity service config is present, set up libs with the connection, otherwise do nothing
       identityServiceConfig: identityService

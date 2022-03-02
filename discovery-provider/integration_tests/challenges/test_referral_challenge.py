@@ -105,7 +105,7 @@ def test_referral_challenge(app):
             or_(
                 Challenge.id == "referred",
                 Challenge.id == "referrals",
-                Challenge.id == "referrals-verified",
+                Challenge.id == "ref-v",
             )
         ).update({"active": True, "starting_block": BLOCK_NUMBER})
 
@@ -173,7 +173,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == referrer.user_id,
-                UserChallenge.challenge_id == "referrals-verified",
+                UserChallenge.challenge_id == "ref-v",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -224,7 +224,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == verified_user.user_id,
-                UserChallenge.challenge_id == "referrals-verified",
+                UserChallenge.challenge_id == "ref-v",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -232,26 +232,29 @@ def test_referral_challenge(app):
         assert len(challenges) == 1
 
         # Test: verified max count
-        #  - Ensure with > 500 verified referrals, we cap at 500
+        #  - Ensure with > 5000 verified referrals, we cap at 5000
         #  - No regular referrals are made
 
-        for i in range(510):
+        for i in range(5010):
             dispatch_new_user_signup(verified_user.user_id, 14 + i, session, bus)
+            if i % 500 == 0:
+                bus.flush()
+                bus.process_events(session)
 
         bus.flush()
         bus.process_events(session)
 
-        # Ensure 500 verified referral created
+        # Ensure 5000 verified referral created
         challenges = (
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == verified_user.user_id,
-                UserChallenge.challenge_id == "referrals-verified",
+                UserChallenge.challenge_id == "ref-v",
                 UserChallenge.is_complete == True,
             )
             .all()
         )
-        assert len(challenges) == 500
+        assert len(challenges) == 5000
 
         # Ensure no regular referral created
         challenges = (

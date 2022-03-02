@@ -1,8 +1,11 @@
 const express = require('express')
 const crypto = require('crypto')
 
+const { parameterizedAuthMiddleware } = require('../authMiddleware')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
-const { getFeePayer } = require('../solana-client')
+const { getFeePayerKeypair } = require('../solana-client')
+const { isSendInstruction, doesUserHaveSocialProof } = require('../utils/relayHelpers')
+const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 const {
   PublicKey,
@@ -21,49 +24,82 @@ const isValidInstruction = (instr) => {
   return true
 }
 
-solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
-  const redis = req.app.get('redis')
-  const libs = req.app.get('audiusLibs')
+solanaRouter.post(
+  '/relay',
+  parameterizedAuthMiddleware({ shouldResponseBadRequest: false }),
+  handleResponse(async (req, res, next) => {
+    const redis = req.app.get('redis')
+    const libs = req.app.get('audiusLibs')
+    let optimizelyClient
+    let socialProofRequiredToSend = true
 
-  let { instructions = [], skipPreflight } = req.body
+    let { instructions = [], skipPreflight, feePayerOverride } = req.body
+    try {
+      optimizelyClient = req.app.get('optimizelyClient')
+      socialProofRequiredToSend = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED)
+    } catch (error) {
+      req.logger.error(`failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`)
+    }
+    if (socialProofRequiredToSend && isSendInstruction(instructions)) {
+      if (!req.user) {
+        return errorResponseServerError(
+          `User has no auth record`,
+          { error: 'No auth record' }
+        )
+      }
 
-  const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
+      const userHasSocialProof = await doesUserHaveSocialProof(req.user)
+      if (!userHasSocialProof) {
+        const handle = req.user.handle || ''
+        return errorResponseServerError(
+          `User ${handle} is missing social proof`,
+          { error: 'Missing social proof' }
+        )
+      }
+    }
 
-  instructions = instructions.filter(isValidInstruction).map((instr) => {
-    const keys = instr.keys.map(key => ({
-      pubkey: new PublicKey(key.pubkey),
-      isSigner: key.isSigner,
-      isWritable: key.isWritable
-    }))
-    return new TransactionInstruction({
-      keys,
-      programId: new PublicKey(instr.programId),
-      data: Buffer.from(instr.data)
+    const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
+
+    instructions = instructions.filter(isValidInstruction).map((instr) => {
+      const keys = instr.keys.map(key => ({
+        pubkey: new PublicKey(key.pubkey),
+        isSigner: key.isSigner,
+        isWritable: key.isWritable
+      }))
+      return new TransactionInstruction({
+        keys,
+        programId: new PublicKey(instr.programId),
+        data: Buffer.from(instr.data)
+      })
     })
-  })
 
-  const transactionHandler = libs.solanaWeb3Manager.transactionHandler
-  const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({ instructions, skipPreflight })
+    const transactionHandler = libs.solanaWeb3Manager.transactionHandler
+    const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({
+      instructions,
+      skipPreflight,
+      feePayerOverride
+    })
 
-  if (error) {
-    // if the tx fails, store it in redis with a 24 hour expiration
-    await redis.setex(`solanaFailedTx:${reqBodySHA}`, 60 /* seconds */ * 60 /* minutes */ * 24 /* hours */, JSON.stringify(req.body))
-    req.logger.error('Error in solana transaction:', error, reqBodySHA)
-    const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
-    return errorResponseServerError(errorString, { errorCode, error })
+    if (error) {
+      // if the tx fails, store it in redis with a 24 hour expiration
+      await redis.setex(`solanaFailedTx:${reqBodySHA}`, 60 /* seconds */ * 60 /* minutes */ * 24 /* hours */, JSON.stringify(req.body))
+      req.logger.error('Error in solana transaction:', error, reqBodySHA)
+      const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
+      return errorResponseServerError(errorString, { errorCode, error })
+    }
+
+    return successResponse({ transactionSignature })
   }
-
-  return successResponse({ transactionSignature })
-}))
+  ))
 
 /**
  * The raw relay uses the `sendAndConfirmRawTransaction` as opposed to the `sendAndConfirmTransaction` method
- * This is required becuase of a bug in the solana web3 transction that overwrites the singers to prevent the
+ * This is required becuase of a bug in the solana web3 transction that overwrites the signers to prevent the
  * transaction from being formatted correcly.
  * Additionally, signatures are transfered over the wire and added to the transaction manually to prevent the
  * library from incorrecly dropping/re-ordering the signatures.
  * Finally, the transaction must be partially signed so as to not overwrite the other signatures - need as a
- * work-around becuase of another bug in the solana web3 api
+ * work-around because of another bug in the solana web3 api
  */
 solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
@@ -108,7 +144,7 @@ solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
       })
     })
 
-    const feePayerAccount = getFeePayer()
+    const feePayerAccount = getFeePayerKeypair()
     tx.partialSign(feePayerAccount)
 
     const connection = libs.solanaWeb3Manager.connection
@@ -128,6 +164,14 @@ solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
     const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
     return errorResponseServerError(errorString, { error })
   }
+}))
+
+solanaRouter.get('/random_fee_payer', handleResponse(async () => {
+  const feePayerAccount = getFeePayerKeypair(false)
+  if (!feePayerAccount) {
+    return errorResponseServerError('There is no fee payer.')
+  }
+  return successResponse({ feePayer: feePayerAccount.publicKey.toString() })
 }))
 
 module.exports = function (app) {

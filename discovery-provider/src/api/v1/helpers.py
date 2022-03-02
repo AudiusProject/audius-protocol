@@ -105,6 +105,8 @@ def extend_user(user, current_user_id=None):
         not current_user_id or current_user_id != user["user_id"]
     ):
         del user["playlist_library"]
+    # Marshal wallets into clear names
+    user["erc_wallet"] = user["wallet"]
 
     return user
 

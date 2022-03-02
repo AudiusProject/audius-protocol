@@ -68,7 +68,7 @@ function setup_python() {
     sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
-    pip install wheel
+    pip install wheel yq
     pip install pre-commit==2.16.0
 }
 
@@ -141,9 +141,15 @@ function setup_audius_repos() {
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up
 }
 
+function install_zsh_tooling() {
+    sh -c "$(curl -fsSL https://git.io/zinit-install)"
+    zinit self-update
+}
+
 function setup() {
     if [ "$FAST_PROVISIONED" -eq "1" ]; then # run full setup
         setup_linux_toolchains
+        install_zsh_tooling
         setup_ssh_timeouts
         setup_vscode
         setup_postgres

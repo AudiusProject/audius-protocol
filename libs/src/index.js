@@ -44,6 +44,7 @@ class AudiusLibs {
    * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
    * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
    * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
+   * @param {number?} unhealthyBlockDiff the number of blocks we would consider a discovery node unhealthy
    */
   static configDiscoveryProvider (
     whitelist = null,
@@ -53,7 +54,8 @@ class AudiusLibs {
     monitoringCallbacks = {},
     selectionRequestTimeout = null,
     selectionRequestRetries = null,
-    unhealthySlotDiffPlays = null
+    unhealthySlotDiffPlays = null,
+    unhealthyBlockDiff = null
   ) {
     return {
       whitelist,
@@ -63,7 +65,8 @@ class AudiusLibs {
       monitoringCallbacks,
       selectionRequestTimeout,
       selectionRequestRetries,
-      unhealthySlotDiffPlays
+      unhealthySlotDiffPlays,
+      unhealthyBlockDiff
     }
   }
 
@@ -240,7 +243,7 @@ class AudiusLibs {
    * @param {string} rewardsManagerProgramPDA Rewards Manager PDA
    * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
    * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
-   * @param {Uint8Array} [feePayerSecretKey] optional fee payer secret key, if not using relay
+   * @param {Uint8Array} feePayerSecretKeys fee payer secret keys, if client wants to switch between different fee payers during relay
    * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
    */
   static configSolanaWeb3 ({
@@ -254,7 +257,7 @@ class AudiusLibs {
     rewardsManagerProgramPDA,
     rewardsManagerTokenPDA,
     useRelay,
-    feePayerSecretKey = null,
+    feePayerSecretKeys,
     confirmationTimeout
   }) {
     return {
@@ -268,7 +271,7 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null,
+      feePayerKeypairs: feePayerSecretKeys ? feePayerSecretKeys.map(key => Keypair.fromSecretKey(key)) : null,
       confirmationTimeout
     }
   }
@@ -379,6 +382,9 @@ class AudiusLibs {
         this.isServer
       )
       await this.web3Manager.init()
+      if (this.identityService) {
+        this.identityService.setWeb3Manager(this.web3Manager)
+      }
     }
     if (this.solanaWeb3Config) {
       this.solanaWeb3Manager = new SolanaWeb3Manager(
@@ -419,7 +425,7 @@ class AudiusLibs {
         this.ethContracts,
         this.identityService,
         this.solanaWeb3Manager,
-        this.wormholeConfig.rpcHost,
+        this.wormholeConfig.rpcHosts,
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
@@ -440,7 +446,8 @@ class AudiusLibs {
         this.discoveryProviderConfig.monitoringCallbacks,
         this.discoveryProviderConfig.selectionRequestTimeout,
         this.discoveryProviderConfig.selectionRequestRetries,
-        this.discoveryProviderConfig.unhealthySlotDiffPlays
+        this.discoveryProviderConfig.unhealthySlotDiffPlays,
+        this.discoveryProviderConfig.unhealthyBlockDiff
       )
       await this.discoveryProvider.init()
     }

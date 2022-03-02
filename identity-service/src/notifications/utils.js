@@ -1,7 +1,10 @@
 const axios = require('axios')
+const moment = require('moment-timezone')
+const Hashids = require('hashids/cjs')
+
+const { dayInHours, weekInHours } = require('./constants')
 const models = require('../models')
 const config = require('../config')
-const Hashids = require('hashids/cjs')
 const { logger } = require('../logging')
 const audiusLibsWrapper = require('../audiusLibsInstance')
 
@@ -208,6 +211,40 @@ function decodeHashId (id) {
   return ids[0]
 }
 
+const EmailFrequency = Object.freeze({
+  OFF: 'off',
+  LIVE: 'live',
+  DAILY: 'daily',
+  WEEKLY: 'weekly'
+})
+
+const MAX_HOUR_TIME_DIFFERENCE = 2
+
+/**
+ * Checks if the user should recieve an email base on notification settings and time
+ * If setting is live then send email
+ * If email was never sent to user then send email
+ * If ~1 day has passed for daily frequency, or ~1 week has passed for weekly frequency then send email
+ * @param {EmailFrequency} frequency live | daily | weekly
+ * @param {moment} currentUtcTime moment datetime
+ * @param {moment} lastSentTimestamp moment datetime
+ * @param {number} hrsSinceStartOfDay
+ * @returns boolean
+ */
+const shouldSendEmail = (frequency, currentUtcTime, lastSentTimestamp, hrsSinceStartOfDay) => {
+  if (frequency === EmailFrequency.OFF) return false
+  if (frequency === EmailFrequency.LIVE) return true
+
+  // If this is the first email, then it should render
+  if (!lastSentTimestamp) return true
+
+  const isValidFrequency = [EmailFrequency.DAILY, EmailFrequency.WEEKLY].includes(frequency)
+  const timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
+  const timeThreshold = (frequency === 'daily' ? dayInHours : weekInHours) - 1
+  const hasValidTimeDifference = hrsSinceStartOfDay < MAX_HOUR_TIME_DIFFERENCE
+  return hasValidTimeDifference && isValidFrequency && timeSinceEmail >= timeThreshold
+}
+
 module.exports = {
   encodeHashId,
   decodeHashId,
@@ -216,5 +253,8 @@ module.exports = {
   calculateTrackListenMilestonesFromDiscovery,
   getHighestBlockNumber,
   getHighestSlot,
-  shouldNotifyUser
+  shouldNotifyUser,
+  EmailFrequency,
+  shouldSendEmail,
+  MAX_HOUR_TIME_DIFFERENCE
 }

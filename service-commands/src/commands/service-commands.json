@@ -133,6 +133,7 @@
     ],
     "up-web-server": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
+      "cd libs/; node initScripts/local.js configure-discprov-wallet #",
       "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
