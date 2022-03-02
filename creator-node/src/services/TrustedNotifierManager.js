@@ -62,6 +62,8 @@ class TrustedNotifierManager {
         await timeout(TEN_MINS_IN_MS, false)
         return this.init()
       }
+
+      this.trustedNotifierData = this.trustedNotifierChainData
     } catch (e) {
       console.error(e)
     }
