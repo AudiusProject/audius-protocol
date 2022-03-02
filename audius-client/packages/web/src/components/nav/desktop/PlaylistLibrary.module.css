@@ -36,7 +36,7 @@
 .iconKebabHorizontal {
   color: var(--nav-column-link);
   opacity: 100;
-  transition: all 0.1s ease-in-out;
+  transition: opacity 0.1s ease-in-out;
 }
 
 .iconKebabHorizontal:hover,
