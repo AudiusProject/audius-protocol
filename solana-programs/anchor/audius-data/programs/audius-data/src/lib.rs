@@ -2,8 +2,6 @@
 //! Anchor framework
 
 use anchor_lang::prelude::*;
-pub mod utils;
-use crate::utils::*;
 
 declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 
@@ -373,7 +371,7 @@ pub mod audius_data {
         _handle_seed: [u8; 16],
         _user_bump: u8,
         _user_authority_delegate: Pubkey,
-        _delegate_bump: u8
+        _delegate_bump: u8,
     ) -> Result<()> {
         // Only permitted to user authority
         if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
@@ -382,7 +380,9 @@ pub mod audius_data {
         // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
         let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
         ctx.accounts.user_authority_delegate_pda.delegate_authority = dummy_owner_field;
-        ctx.accounts.user_authority_delegate_pda.user_storage_account = dummy_owner_field;
+        ctx.accounts
+            .user_authority_delegate_pda
+            .user_storage_account = dummy_owner_field;
         Ok(())
     }
 }
