@@ -1,11 +1,15 @@
 const assert = require('assert')
-const { AttestationDelayCalculator } = require('../src/services/solanaWeb3Manager/rewardsAttester')
+const sinon = require('sinon')
+const RewardsAttester  = require('../src/services/solanaWeb3Manager/rewardsAttester')
 
-function MockLibs (getSlot, getBlockNumber) {
+const { AttestationDelayCalculator } = RewardsAttester
+
+function MockLibs (getSlot = () => 100, getBlockNumber = () => 100) {
   this.getSlot = getSlot
   this.getBlockNumber = getBlockNumber
   this.solanaWeb3Manager = {
-      getSlot: () => this.getSlot()
+      getSlot: () => this.getSlot(),
+      hasBalance: ({ publicKey}) => true,
   }
   this.web3Manager = {
       getWeb3: () => ({
@@ -14,6 +18,22 @@ function MockLibs (getSlot, getBlockNumber) {
         }
       })
     }
+  this.Rewards = {
+    submitAndEvaluate: (args) => {},
+    getUndisbursedChallenges: (args) => {},
+    ServiceProvider: {
+      getUniquelyOwnedDiscoveryNodes: (quorumSize, nodes) => {
+        return nodes.slice(0, quorumSize)
+      }
+    }
+  }
+  this.discoveryProvider = {
+    serviceSelector: {
+      findAll: ({ whitelist }) => {
+        return whitelist
+      }
+    }
+  }
 }
 
 let calc = null
@@ -110,5 +130,97 @@ describe('Delay calculator tests', () => {
     assert.strictEqual(slotThreshold2, 84)
 
     clearInterval(i)
+  })
+})
+
+describe('Rewards Attester Tests', () => {
+  afterEach(async () => {
+    sinon.restore()
+  })
+
+  it('Should handle happy path attestation loop', async () => {
+    const libs = new MockLibs()
+
+    const attester = new RewardsAttester({
+      libs,
+      startingBlock: 0,
+      offset: 0,
+      parallelization: 2,
+      quorumSize: 2,
+      aaoEndpoint: 'https://fakeaao.co',
+      aaoAddress: '0xFakeOracle',
+      challengeIdsDenyList: [],
+      endpoints: ['https://dn1.co', 'https://dn2.co', 'https://dn3.co'],
+      isSolanaChallenge: () => false,
+      feePayerOverride: 'test feepayer override'
+    })
+
+    const rewardsMock = sinon.mock(libs.Rewards)
+
+    rewardsMock.expects("getUndisbursedChallenges")
+      .exactly(3)
+      .onFirstCall()
+      .returns({
+        success: [
+          {
+            challenge_id: "profile-completion",
+            user_id: "7eP5n",
+            specifier: "1",
+            amount: "1",
+            completed_blocknumber: 1,
+            handle: "firstUser",
+            wallet: "0xFirstUser"
+          },
+          {
+            challenge_id: "profile-completion",
+            user_id: "ML51L",
+            specifier: "2",
+            amount: "1",
+            completed_blocknumber: 2,
+            handle: "secondUser",
+            wallet: "0xSecondUser"
+          }
+        ]
+      })
+      .onSecondCall()
+      .returns({
+        success: [
+          {
+            challenge_id: "profile-completion",
+            user_id: "lebQD",
+            specifier: "3",
+            amount: "1",
+            completed_blocknumber: 3,
+            handle: "thirdUser",
+            wallet: "0xThirdUser"
+          },
+          {
+            challenge_id: "profile-completion",
+            user_id: "ELKzn",
+            specifier: "4",
+            amount: "1",
+            completed_blocknumber: 4,
+            handle: "fourthUser",
+            wallet: "0xFouthUser"
+          }
+        ]
+      })
+      .onThirdCall()
+      .callsFake(() => {
+        attester.stop()
+        return {
+          success: []
+        }
+      })
+
+    rewardsMock.expects("submitAndEvaluate")
+      .exactly(4)
+      .returns({ success: true })
+
+
+    await attester.start()
+    assert.equal(attester.startingBlock, 3)
+    assert.equal(attester.offset, 0)
+    rewardsMock.verify()
   })
 })

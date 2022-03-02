@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
-from src.app import get_contract_addresses, get_eth_abi_values
+from src.app import get_eth_abi_values
 from src.database_task import DatabaseTask
 from src.models import URSMContentNode, User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
@@ -79,7 +79,7 @@ def user_replica_set_state_update(
                     # if the user id is not in the lookup object, it hasn't been initialized yet
                     # first, get the user object from the db(if exists or create a new one)
                     # then set the lookup object for user_id with the appropriate props
-                    if user_id and (user_id not in user_replica_set_events_lookup):
+                    if user_id:
                         existing_user_record = lookup_user_record(
                             update_task,
                             session,
@@ -89,7 +89,7 @@ def user_replica_set_state_update(
                             txhash,
                         )
 
-                    if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):
+                    if cnode_sp_id:
                         existing_cnode_record = lookup_ursm_cnode(
                             update_task,
                             session,
@@ -193,14 +193,9 @@ def user_replica_set_state_update(
 
 
 def get_user_replica_set_mgr_tx(update_task, event_type, tx_receipt):
-    user_replica_set_manager_abi = update_task.abi_values["UserReplicaSetManager"][
-        "abi"
-    ]
-    user_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["user_replica_set_manager"],
-        abi=user_replica_set_manager_abi,
-    )
-    return getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
+    return getattr(
+        update_task.user_replica_set_manager_contract.events, event_type
+    )().processReceipt(tx_receipt)
 
 
 # Reconstruct endpoint string from primary and secondary IDs

@@ -91,26 +91,30 @@ const instructionSchema = new Map([
   ]
 ])
 
-let feePayer
-
-const feePayers = config.get('solanaFeePayerWallets')
+let feePayerKeypair = null
+let feePayerKeypairs = null
 
 // Optionally returns the existing singleFeePayer
 // Ensures other usages of this function do not break as we upgrade to multiple
-function getFeePayer (singleFeePayer = true) {
-  if (!feePayer) {
-    feePayer = config.get('solanaFeePayerWallet') ? solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(config.get('solanaFeePayerWallet'))) : null
+function getFeePayerKeypair (singleFeePayer = true) {
+  if (!feePayerKeypairs) {
+    feePayerKeypairs = config.get('solanaFeePayerWallets')
+      ? config.get('solanaFeePayerWallets')
+        .map(item => item.privateKey)
+        .map(key => solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(key)))
+      : null
+  }
+  if (!feePayerKeypair) {
+    feePayerKeypair = (feePayerKeypairs && feePayerKeypairs[0]) || null
   }
   // Ensure legacy usage of single feePayer is not broken
   // If multiple feepayers are not provided, default to single value as well
-  if (singleFeePayer || !feePayers) {
-    return feePayer
+  if (singleFeePayer || feePayerKeypairs === null || feePayerKeypairs.length === 0) {
+    return feePayerKeypair
   }
 
-  const randomFeePayerIndex = Math.floor(Math.random() * feePayers.length)
-  const randomFeePayer = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(feePayers[randomFeePayerIndex].privateKey))
-
-  return randomFeePayer
+  const randomFeePayerIndex = Math.floor(Math.random() * feePayerKeypairs.length)
+  return feePayerKeypairs[randomFeePayerIndex]
 }
 
 async function createAndVerifyMessage (
@@ -160,7 +164,8 @@ async function createAndVerifyMessage (
     instructionData
   )
 
-  let transaction = new solanaWeb3.Transaction()
+  let recentBlockHash = connection.getRecentBlockhash('confirmed')
+  let transaction = new solanaWeb3.Transaction(recentBlockHash)
 
   let secpInstruction = solanaWeb3.Secp256k1Program.createInstructionWithPublicKey(
     {
@@ -185,14 +190,14 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
-  let feePayerAccount = getFeePayer(false)
+  let feePayerAccount = getFeePayerKeypair(false)
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
     connection,
     transaction,
     [feePayerAccount],
     {
-      skipPreflight: true,
+      skipPreflight: false,
       commitment: config.get('solanaTxCommitmentLevel'),
       preflightCommitment: config.get('solanaTxCommitmentLevel')
     }
@@ -202,4 +207,4 @@ async function createAndVerifyMessage (
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage
-exports.getFeePayer = getFeePayer
+exports.getFeePayerKeypair = getFeePayerKeypair

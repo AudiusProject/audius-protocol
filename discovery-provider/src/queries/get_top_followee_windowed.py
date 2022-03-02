@@ -3,8 +3,8 @@ import logging  # pylint: disable=C0302
 from sqlalchemy import desc, text
 from src import exceptions
 from src.models import Follow, Track
+from src.models.models import AggregateTrack
 from src.queries.query_helpers import (
-    create_save_repost_count_subquery,
     get_current_user_id,
     get_users_by_id,
     get_users_ids,
@@ -29,8 +29,6 @@ def get_top_followee_windowed(type, window, args):
     current_user_id = args.get("user_id")
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        # Construct a subquery to get the summed save + repost count for the `type`
-        count_subquery = create_save_repost_count_subquery(session, type)
 
         followee_user_ids = session.query(Follow.followee_user_id).filter(
             Follow.follower_user_id == current_user_id,
@@ -48,7 +46,7 @@ def get_top_followee_windowed(type, window, args):
                 followee_user_ids_subquery,
                 Track.owner_id == followee_user_ids_subquery.c.followee_user_id,
             )
-            .join(count_subquery, Track.track_id == count_subquery.c["id"])
+            .join(AggregateTrack, Track.track_id == AggregateTrack.track_id)
             .filter(
                 Track.is_current == True,
                 Track.is_delete == False,
@@ -57,7 +55,10 @@ def get_top_followee_windowed(type, window, args):
                 # Query only tracks created `window` time ago (week, month, etc.)
                 Track.created_at >= text(f"NOW() - interval '1 {window}'"),
             )
-            .order_by(desc(count_subquery.c["count"]), desc(Track.track_id))
+            .order_by(
+                desc(AggregateTrack.repost_count + AggregateTrack.save_count),
+                desc(Track.track_id),
+            )
             .limit(limit)
         )
 

@@ -101,6 +101,7 @@ describe('Test Health Check', function () {
 
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
+    config.set('dataProviderUrl', 'http://test.dataProviderUrl')
 
     const res = await healthCheck(
       { libs: libsMock, snapbackSM: snapbackSMMock },
@@ -122,6 +123,7 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -185,6 +187,7 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -240,6 +243,7 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -307,6 +311,7 @@ describe('Test Health Check Verbose', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      dataProviderUrl: config.get('dataProviderUrl'),
 
       country: 'US',
       latitude: '37.7749',

@@ -106,6 +106,20 @@ class Utils {
       size: parseInt(base16Multihash[1])
     }
   }
+  /**
+ * Given a digest value (written on chain, obtained through AudiusABIDecoder.decodeMethod),
+ * convert back to a IFPS CIDv0
+ * @param {String} multihashDigest digest value from decodeMultihash
+ * @returns String CID value
+ */
+  static encodeMultihash (multihashDigest) {
+    // the 1220 is from reconstructing the hashFn and size with digest, the opposite of decodeMultihash
+    // since IPFS CIDv0 has a fixed hashFn and size, the first two values are always 12 and 20
+    // concat them together with digest and encode back to base58
+    var digestStr = `1220${multihashDigest.replace('0x', '')}`
+    // convert digestStr from hex to base 58
+    return bs58.encode(Buffer.from(digestStr, 'hex'))
+  }
 
   static parseDataFromResponse (response) {
     if (!response || !response.data) return null
@@ -192,6 +206,20 @@ class Utils {
       console.error(`Failed to encode ${id}`, e)
       return null
     }
+  }
+
+  /**
+   * If `promise` responds before `timeoutMs`,
+   * this function returns its response; else rejects with `timeoutMessage`
+   * @param {Promise} promise
+   * @param {number} timeoutMs
+   * @param {string} timeoutMessage
+   */
+  static async racePromiseWithTimeout (promise, timeoutMs, timeoutMessage) {
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
+    })
+    return Promise.race([promise, timeoutPromise])
   }
 }
 

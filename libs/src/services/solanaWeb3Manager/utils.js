@@ -152,6 +152,11 @@ class SolanaUtils {
     // result in truncated arrays, while eth spec is always 20 bytes
     return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be', 20))
   }
+
+  // Safely create pubkey from nullable val
+  static newPublicKeyNullable (val) {
+    return val ? new PublicKey(val) : null
+  }
 }
 
 /**
