@@ -6,6 +6,7 @@ import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import ConfirmAudioToWAudioModal from 'components/confirm-audio-to-waudio/desktop/ConfirmAudioToWAudioModal'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
+import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EditPlaylistModal from 'components/edit-playlist/desktop/EditPlaylistModal'
 import EditTrackModal from 'components/edit-track/EditTrackModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
@@ -51,6 +52,7 @@ const Modals = () => {
         <>
           <EmbedModal />
           <EditPlaylistModal />
+          <EditFolderModal />
           <AddToPlaylistModal />
           <ConnectedUserListModal />
           <AppCTAModal />

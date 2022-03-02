@@ -24,6 +24,7 @@ export type Modals =
   | 'TrendingGenreSelection'
   | 'SocialProof'
   | 'MobileUpload'
+  | 'EditFolder'
 
 export type ModalsState = { [modal in Modals]: boolean }
 
@@ -48,7 +49,8 @@ const initialState: ModalsState = {
   FeedFilter: false,
   TrendingGenreSelection: false,
   SocialProof: false,
-  MobileUpload: false
+  MobileUpload: false,
+  EditFolder: false
 }
 
 const slice = createSlice({

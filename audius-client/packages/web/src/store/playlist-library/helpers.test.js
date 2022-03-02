@@ -1,9 +1,11 @@
 import {
+  addFolderToLibrary,
   containsTempPlaylist,
   findIndexInPlaylistLibrary,
   findInPlaylistLibrary,
   removeFromPlaylistLibrary,
   removePlaylistLibraryDuplicates,
+  renamePlaylistFolderInLibrary,
   reorderPlaylistLibrary
 } from './helpers'
 
@@ -441,5 +443,153 @@ describe('containsTempPlaylist', () => {
     }
     const ret = containsTempPlaylist(library)
     expect(ret).toEqual(false)
+  })
+})
+
+describe('addFolderToLibrary', () => {
+  it('Adds a new folder to the end of a playlist library and returns the result', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+    const folder = {
+      id: 'fake-uuid',
+      name: 'Foldero',
+      contents: [],
+      type: 'folder'
+    }
+    const result = addFolderToLibrary(library, folder)
+    const expectedResult = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' },
+        {
+          id: 'fake-uuid',
+          name: 'Foldero',
+          contents: [],
+          type: 'folder'
+        }
+      ]
+    }
+    expect(result).toEqual(expectedResult)
+  })
+
+  it('works with a null library', () => {
+    const library = null
+    const folder = {
+      id: 'fake-uuid',
+      name: 'Foldero',
+      contents: [],
+      type: 'folder'
+    }
+    const result = addFolderToLibrary(library, folder)
+    const expectedResult = {
+      contents: [
+        {
+          id: 'fake-uuid',
+          name: 'Foldero',
+          contents: [],
+          type: 'folder'
+        }
+      ]
+    }
+    expect(result).toEqual(expectedResult)
+  })
+
+  it('works with an empty library', () => {
+    const emptyLibrary1 = {
+      contents: []
+    }
+    const folder = {
+      id: 'fake-uuid',
+      name: 'Foldero',
+      contents: [],
+      type: 'folder'
+    }
+    const result1 = addFolderToLibrary(emptyLibrary1, folder)
+    const expectedResult1 = {
+      contents: [
+        {
+          id: 'fake-uuid',
+          name: 'Foldero',
+          contents: [],
+          type: 'folder'
+        }
+      ]
+    }
+    expect(result1).toEqual(expectedResult1)
+
+    const emptyLibrary2 = null
+    const result2 = addFolderToLibrary(emptyLibrary2, folder)
+    const expectedResult2 = {
+      contents: [
+        {
+          id: 'fake-uuid',
+          name: 'Foldero',
+          contents: [],
+          type: 'folder'
+        }
+      ]
+    }
+    expect(result2).toEqual(expectedResult2)
+  })
+})
+
+describe('renamePlaylistFolderInLibrary', () => {
+  it('changes the name of given folder in library', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'folder', name: 'Foldero', id: 'fake-uuid', contents: [] },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+
+    const result = renamePlaylistFolderInLibrary(
+      library,
+      'fake-uuid',
+      'Foldera'
+    )
+    const expectedResult = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        {
+          id: 'fake-uuid',
+          name: 'Foldera',
+          contents: [],
+          type: 'folder'
+        },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+    expect(result).toEqual(expectedResult)
+  })
+
+  it('is a no op if the given folder is not in the library', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'folder', name: 'Foldero', id: 'fake-uuid', contents: [] },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+    const result = renamePlaylistFolderInLibrary(
+      library,
+      'fake-uuid-not-in-library',
+      'new name'
+    )
+    expect(result).toEqual({ ...library })
   })
 })

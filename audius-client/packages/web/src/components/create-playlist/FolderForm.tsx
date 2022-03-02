@@ -1,22 +1,34 @@
 import React, { FormEvent, useState } from 'react'
 
-import { Button, ButtonType, IconCheck } from '@audius/stems'
 import { isEmpty } from 'lodash'
 
 import Input from 'components/data-entry/Input'
 
 import styles from './FolderForm.module.css'
+import { CreateActions, EditActions } from './FormActions'
 
 const messages = {
-  createFolderButtonText: 'Create Folder'
+  createFolderButtonText: 'Create Folder',
+  deleteFolderButtonText: 'Delete Folder',
+  editFolderButtonText: 'Save Changes',
+  cancelButtonText: 'Cancel'
 }
 
 type FolderFormProps = {
   onSubmit: (folderName: string) => void
+  isEditMode?: boolean
+  onCancel?: () => void
+  onDelete?: () => void
   initialFolderName?: string
 }
 
-const FolderForm = ({ onSubmit, initialFolderName = '' }: FolderFormProps) => {
+const FolderForm = ({
+  onSubmit,
+  onCancel,
+  onDelete,
+  isEditMode = false,
+  initialFolderName = ''
+}: FolderFormProps) => {
   const [folderName, setFolderName] = useState(initialFolderName)
   const [inputHasError, setInputHasError] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
@@ -47,15 +59,24 @@ const FolderForm = ({ onSubmit, initialFolderName = '' }: FolderFormProps) => {
           onChange={onChangeFolderName}
           characterLimit={64}
         />
-        <div className={styles.folderFormButtonContainer}>
-          <Button
-            buttonType='submit'
-            type={hasSubmitted ? ButtonType.DISABLED : ButtonType.PRIMARY}
-            disabled={hasSubmitted}
-            text={messages.createFolderButtonText}
-            name='continue'
-            rightIcon={<IconCheck />}
-          />
+        <div className={styles.actionsContainer}>
+          {isEditMode ? (
+            <EditActions
+              onDelete={onDelete}
+              onCancel={onCancel}
+              isForm
+              deleteText={messages.deleteFolderButtonText}
+              cancelText={messages.cancelButtonText}
+              saveText={messages.editFolderButtonText}
+              disabled={hasSubmitted}
+            />
+          ) : (
+            <CreateActions
+              disabled={hasSubmitted}
+              saveText={messages.createFolderButtonText}
+              isForm
+            />
+          )}
         </div>
       </form>
     </div>

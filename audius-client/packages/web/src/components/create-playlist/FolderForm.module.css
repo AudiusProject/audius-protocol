@@ -1,6 +1,3 @@
-.folderFormButtonContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.actionsContainer {
   margin-top: 24px;
 }

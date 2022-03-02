@@ -104,7 +104,6 @@ const EditPlaylistModal = ({
       <Modal
         bodyClassName={styles.modalBody}
         modalKey='editplaylist'
-        title={editPlaylistModalTitle}
         dismissOnClickOutside={!isArtworkPopupOpen}
         isOpen={isOpen}
         onClose={onClose}
