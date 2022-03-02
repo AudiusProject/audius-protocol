@@ -26,7 +26,7 @@ export const getTransaction = async (provider: Provider, tx: string) => {
 };
 
 /// Sign any bytes object with the provided eth private key
-export const signBytes = (bytes: any, ethPrivateKey: string) => {
+export const signBytes = (bytes: Uint8Array, ethPrivateKey: string) => {
   const ethPrivateKeyArr = anchor.utils.bytes.hex.decode(ethPrivateKey);
   const msgHash = keccak256(bytes);
   const signatureObj = secp256k1.ecdsaSign(
@@ -68,7 +68,7 @@ export const randomCID = () => {
 /// Derive a program address with pubkey as the seed
 export const findProgramAddress = (
   programId: anchor.web3.PublicKey,
-  pubkey: any
+  pubkey: anchor.web3.PublicKey
 ) => {
   return PublicKey.findProgramAddress(
     [pubkey.toBytes().slice(0, 32)],
@@ -81,7 +81,7 @@ export const findProgramAddress = (
 export const findDerivedAddress = async (
   programId: anchor.web3.PublicKey,
   base: anchor.web3.PublicKey,
-  seed: any
+  seed: Buffer | Uint8Array
 ) => {
   const finalSeed = [base.toBytes().slice(0, 32), seed];
   const result = await PublicKey.findProgramAddress(finalSeed, programId);

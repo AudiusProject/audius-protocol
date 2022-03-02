@@ -1,25 +1,30 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import ethWeb3 from "web3";
+import Web3 from "web3";
 import { Account } from "web3-core";
 import { randomBytes } from "crypto";
 import { expect } from "chai";
 import { findDerivedPair, getTransaction, randomCID } from "../lib/utils";
-import { createUser, createTrack, initUser, initUserSolPubkey } from "../lib/lib";
+import {
+  createUser,
+  createTrack,
+  initUser,
+  initUserSolPubkey,
+} from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
 const { PublicKey } = anchor.web3;
 
-const EthWeb3 = new ethWeb3();
+const EthWeb3 = new Web3();
 const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
 type InitTestConsts = {
-  ethAccount: Account,
-  handle: string,
-  handleBytes: Buffer,
-  handleBytesArray: number[],
-  metadata: string
-}
+  ethAccount: Account;
+  handle: string;
+  handleBytes: Buffer;
+  handleBytesArray: number[];
+  metadata: string;
+};
 
 export const initTestConstants = (): InitTestConsts => {
   const ethAccount = EthWeb3.eth.accounts.create();
@@ -49,7 +54,7 @@ export const testInitUser = async ({
   adminStgKeypair,
   adminKeypair,
 }) => {
-  let tx = await initUser({
+  const tx = await initUser({
     provider,
     program,
     ethAddress,
@@ -111,7 +116,7 @@ export const testCreateUser = async ({
   userStgAccount,
   adminStgPublicKey,
 }) => {
-  let tx = await createUser({
+  const tx = await createUser({
     provider,
     program,
     ethAccount,
@@ -128,7 +133,9 @@ export const testCreateUser = async ({
   const account = await program.account.user.fetch(userStgAccount);
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
-  expect(chainEthAddress, "eth address").to.equal(ethAccount.address.toLowerCase());
+  expect(chainEthAddress, "eth address").to.equal(
+    ethAccount.address.toLowerCase()
+  );
 
   const chainAuthority = account.authority.toString();
   const expectedAuthority = newUserKeypair.publicKey.toString();
@@ -142,11 +149,11 @@ export const confirmLogInTransaction = async (
   tx: string,
   log: string
 ) => {
-  let info = await getTransaction(provider, tx);
-  let logs = info.meta.logMessages;
+  const info = await getTransaction(provider, tx);
+  const logs = info.meta.logMessages;
   let stringFound = false;
   logs.forEach((v) => {
-    if (v.indexOf(log) != -1) {
+    if (v.indexOf(log) !== -1) {
       stringFound = true;
     }
   });
@@ -162,9 +169,13 @@ export const createSolanaUser = async (
   provider: anchor.Provider,
   adminStgKeypair: anchor.web3.Keypair
 ) => {
-  const testConsts = initTestConstants()
+  const testConsts = initTestConstants();
 
-  const { baseAuthorityAccount, bumpSeed, derivedAddress: newUserAcctPDA } = await findDerivedPair(
+  const {
+    baseAuthorityAccount,
+    bumpSeed,
+    derivedAddress: newUserAcctPDA,
+  } = await findDerivedPair(
     program.programId,
     adminStgKeypair.publicKey,
     Buffer.from(testConsts.handleBytesArray)
@@ -175,7 +186,7 @@ export const createSolanaUser = async (
 
   // Generate signed SECP instruction
   // Message as the incoming public key
-  const message = newUserKeypair.publicKey.toString();
+  const message = newUserKeypair.publicKey.toBytes();
 
   await createUser({
     provider,
@@ -199,10 +210,9 @@ export const createSolanaUser = async (
     handleBytesArray: testConsts.handleBytesArray,
     bumpSeed,
     keypair: newUserKeypair,
-    authority: baseAuthorityAccount
-  }
-} 
-
+    authority: baseAuthorityAccount,
+  };
+};
 
 export const createSolanaTrack = async (
   program: Program<AudiusData>,
@@ -211,7 +221,6 @@ export const createSolanaTrack = async (
   userAuthorityKeypair: anchor.web3.Keypair,
   ownerPDA: anchor.web3.PublicKey
 ) => {
-
   const newTrackKeypair = anchor.web3.Keypair.generate();
   const trackMetadata = randomCID();
 
@@ -225,16 +234,14 @@ export const createSolanaTrack = async (
     adminStgPublicKey: adminStgKeypair.publicKey,
   });
 
-  const track = await program.account.track.fetch(
-    newTrackKeypair.publicKey
-  );
+  const track = await program.account.track.fetch(newTrackKeypair.publicKey);
 
   if (!track) {
-    throw new Error('unable to create track account')
+    throw new Error("unable to create track account");
   }
 
   return {
     track,
-    trackMetadata: trackMetadata
-  }
-} 
+    trackMetadata: trackMetadata,
+  };
+};
