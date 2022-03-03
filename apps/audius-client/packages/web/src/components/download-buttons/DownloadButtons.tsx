@@ -3,7 +3,7 @@ import React, { memo, useCallback } from 'react'
 import { IconDownload } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 import {
   ButtonState,
@@ -147,7 +147,8 @@ const DownloadButtons = ({
   className
 }: DownloadButtonsProps) => {
   const dispatch = useDispatch()
-  const { pathname } = useLocation()
+  const { location } = useHistory()
+  const { pathname } = location
 
   const onNotLoggedInClick = useCallback(() => {
     dispatch(updateRouteOnCompletion(pathname))

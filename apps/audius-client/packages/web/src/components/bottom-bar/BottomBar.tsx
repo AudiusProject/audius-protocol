@@ -6,7 +6,7 @@ import React, {
   useEffect
 } from 'react'
 
-import { useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import ExploreButton from 'components/bottom-bar/buttons/ExploreButton'
@@ -53,7 +53,8 @@ const BottomBar = ({
   useEffect(() => {
     setTempCurrentPage(currentPage)
   }, [currentPage, setTempCurrentPage])
-  const { pathname } = useLocation()
+  const { location } = useHistory()
+  const { pathname } = location
 
   const onClick = useCallback(
     (callback: () => void, page: string | null) => () => {

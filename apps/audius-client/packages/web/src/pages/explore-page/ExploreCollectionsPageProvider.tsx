@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
-import { useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { FavoriteType } from 'common/models/Favorite'
@@ -68,7 +68,7 @@ const ExploreCollectionsPageProvider = ({
   setModalVisibility,
   children: Children
 }: ExploreCollectionsPageProviderProps) => {
-  const location = useLocation()
+  const { location } = useHistory()
   const [info, setInfo] = useState<
     ExploreCollection | ExploreMoodCollection | null
   >(null)
