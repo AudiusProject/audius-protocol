@@ -1,16 +1,8 @@
-import { useCallback } from 'react'
-
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
 import { StyleSheet, View } from 'react-native'
 
 import { GradientText } from 'app/components/core'
-import Drawer from 'app/components/drawer'
+import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
 
@@ -44,21 +36,15 @@ const createStyles = (themeColors: ThemeColors) =>
 
 export const EditCollectiblesDrawer = () => {
   const styles = useThemedStyles(createStyles)
-  const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
-  const dispatchWeb = useDispatchWeb()
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
-  }, [dispatchWeb])
 
   return (
-    <Drawer onClose={handleClose} isOpen={isOpen}>
+    <AppDrawer modalName={MODAL_NAME}>
       <View style={styles.container}>
         <GradientText style={styles.title}>{messages.title}</GradientText>
         <Text style={styles.text} weight='medium'>
           {messages.text}
         </Text>
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }

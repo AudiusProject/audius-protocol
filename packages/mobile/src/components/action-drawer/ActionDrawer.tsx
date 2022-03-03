@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { Modals } from 'audius-client/src/common/store/ui/modals/slice'
 import {
   StyleSheet,
   TextStyle,
@@ -8,7 +9,6 @@ import {
   ViewStyle
 } from 'react-native'
 
-import Drawer from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import {
@@ -17,6 +17,8 @@ import {
   useThemeColors,
   useThemeVariant
 } from 'app/utils/theme'
+
+import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 
 export type ActionDrawerRow = {
   text: string
@@ -27,9 +29,8 @@ export type ActionDrawerRow = {
 }
 
 type ActionSheetModalProps = {
+  modalName: Modals
   rows: ActionDrawerRow[]
-  isOpen: boolean
-  onClose: () => void
   title?: string
   renderTitle?: () => React.ReactNode
   styles?: { row?: ViewStyle }
@@ -74,13 +75,14 @@ const createStyles = (themeColors: ThemeColors) =>
 
 // `ActionDrawer` is a drawer that presents a list of clickable rows with text
 const ActionDrawer = ({
+  modalName,
   rows,
-  isOpen,
-  onClose,
   title,
   renderTitle,
   styles: stylesProp = {}
 }: ActionSheetModalProps) => {
+  const { onClose } = useDrawerState(modalName)
+
   const didSelectRow = (index: number) => {
     const { callback } = rows[index]
     onClose()
@@ -95,7 +97,7 @@ const ActionDrawer = ({
   const { neutralLight9, staticWhite } = useThemeColors()
 
   return (
-    <Drawer onClose={onClose} isOpen={isOpen}>
+    <AppDrawer modalName={modalName}>
       <View style={styles.container}>
         {renderTitle
           ? renderTitle()
@@ -125,7 +127,7 @@ const ActionDrawer = ({
           </TouchableHighlight>
         ))}
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }
 

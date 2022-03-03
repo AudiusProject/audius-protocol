@@ -139,6 +139,7 @@ export type DrawerProps = {
    * Callback fired when the drawer is closed or swiped away
    */
   onClose: () => void
+  onClosed?: () => void
   /**
    * Callback fired when the drawer is opened or summoned
    */
@@ -301,6 +302,7 @@ export const Drawer: DrawerComponent = ({
   isOpen,
   children,
   onClose,
+  onClosed,
   onOpen,
   title,
   titleIcon,
@@ -360,9 +362,10 @@ export const Drawer: DrawerComponent = ({
 
   const slideOut = useCallback(
     (position: number) => {
-      springToValue(translationAnim, position, animationStyle, () =>
+      springToValue(translationAnim, position, animationStyle, () => {
         setIsBackgroundVisible(false)
-      )
+        onClosed?.()
+      })
       if (isFullscreen) {
         springToValue(borderRadiusAnim, BORDER_RADIUS, animationStyle)
       }
@@ -378,7 +381,8 @@ export const Drawer: DrawerComponent = ({
       borderRadiusAnim,
       isFullscreen,
       shouldBackgroundDim,
-      animationStyle
+      animationStyle,
+      onClosed
     ]
   )
 

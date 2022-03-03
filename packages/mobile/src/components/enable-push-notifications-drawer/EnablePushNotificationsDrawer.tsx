@@ -15,7 +15,7 @@ import IconNewReleases from 'app/assets/images/iconNewReleases.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import { Button, GradientText } from 'app/components/core'
-import Drawer from 'app/components/drawer'
+import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -118,7 +118,7 @@ const createStyles = (themeColors: ThemeColors) =>
 
 export const EnablePushNotificationsDrawer = () => {
   const dispatchWeb = useDispatchWeb()
-  const [isOpen, setIsOpen] = useDrawer('EnablePushNotifications')
+  const { onClose } = useDrawer('EnablePushNotifications')
   const styles = useThemedStyles(createStyles)
   const {
     background,
@@ -126,10 +126,6 @@ export const EnablePushNotificationsDrawer = () => {
     pageHeaderGradientColor1,
     pageHeaderGradientColor2
   } = useThemeColors()
-
-  const onClose = useCallback(() => {
-    setIsOpen(false)
-  }, [setIsOpen])
 
   const enablePushNotifications = useCallback(() => {
     dispatchWeb(
@@ -139,7 +135,7 @@ export const EnablePushNotificationsDrawer = () => {
   }, [dispatchWeb, onClose])
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose}>
+    <NativeDrawer drawerName='EnablePushNotifications'>
       <View style={styles.drawer}>
         <View style={styles.top}>
           <IconNotification
@@ -174,6 +170,6 @@ export const EnablePushNotificationsDrawer = () => {
           fullWidth
         />
       </View>
-    </Drawer>
+    </NativeDrawer>
   )
 }

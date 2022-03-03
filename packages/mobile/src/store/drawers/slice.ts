@@ -7,7 +7,7 @@ export type Drawer =
   | 'ForgotPassword'
   | 'NowPlaying'
 
-export type DrawersState = { [drawer in Drawer]: boolean }
+export type DrawersState = { [drawer in Drawer]: boolean | 'closing' }
 
 const initialState: DrawersState = {
   EnablePushNotifications: false,
@@ -25,7 +25,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         drawer: Drawer
-        visible: boolean
+        visible: boolean | 'closing'
       }>
     ) => {
       const { drawer, visible } = action.payload

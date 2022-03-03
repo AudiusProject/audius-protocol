@@ -1,9 +1,8 @@
 import { StyleSheet, View } from 'react-native'
 
 import IconQuestionMark from 'app/assets/images/iconQuestionMark.svg'
-import Drawer from 'app/components/drawer'
+import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
-import { useDrawer } from 'app/hooks/useDrawer'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useThemeColors, ThemeColors } from 'app/utils/theme'
 
@@ -108,13 +107,11 @@ const messages = {
 }
 
 export const ForgotPasswordDrawer = () => {
-  const [isOpen, setIsOpen] = useDrawer('ForgotPassword')
-
   const styles = useThemedStyles(createStyles)
   const { neutral } = useThemeColors()
 
   return (
-    <Drawer isOpen={isOpen} onClose={() => setIsOpen(false)}>
+    <NativeDrawer drawerName='ForgotPassword'>
       <View style={styles.mainView}>
         <View style={styles.headerView}>
           <IconQuestionMark
@@ -141,6 +138,6 @@ export const ForgotPasswordDrawer = () => {
           </View>
         </View>
       </View>
-    </Drawer>
+    </NativeDrawer>
   )
 }

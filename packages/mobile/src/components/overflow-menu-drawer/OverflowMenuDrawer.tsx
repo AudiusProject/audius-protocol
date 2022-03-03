@@ -1,14 +1,10 @@
-import { useCallback } from 'react'
-
 import { getMobileOverflowModal } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
-import { close } from 'audius-client/src/common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource
 } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 
 import ActionDrawer from 'app/components/action-drawer'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import CollectionOverflowMenuDrawer from './CollectionOverflowMenuDrawer'
@@ -38,17 +34,13 @@ const rowMessageMap = {
 }
 
 export const OverflowMenuDrawer = () => {
-  const dispatchWeb = useDispatchWeb()
-
-  const onClose = useCallback(() => dispatchWeb(close()), [dispatchWeb])
-
   const overflowMenu = useSelectorWeb(getMobileOverflowModal)
 
   if (!overflowMenu?.id) {
     return <></>
   }
 
-  const { source, overflowActions, isOpen } = overflowMenu
+  const { source, overflowActions } = overflowMenu
 
   const OverflowDrawerComponent =
     {
@@ -65,7 +57,7 @@ export const OverflowMenuDrawer = () => {
           text: rowMessageMap[action],
           callback: callbacks[action]
         }))
-        return <ActionDrawer rows={rows} isOpen={isOpen} onClose={onClose} />
+        return <ActionDrawer modalName='Overflow' rows={rows} />
       }}
     />
   )

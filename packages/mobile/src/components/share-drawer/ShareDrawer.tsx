@@ -5,10 +5,6 @@ import { getAccountUser } from 'audius-client/src/common/store/account/selectors
 import { shareCollection } from 'audius-client/src/common/store/social/collections/actions'
 import { shareTrack } from 'audius-client/src/common/store/social/tracks/actions'
 import { shareUser } from 'audius-client/src/common/store/social/users/actions'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
 import { getShareState } from 'audius-client/src/common/store/ui/share-modal/selectors'
 import { requestOpen as requestOpenTikTokModal } from 'audius-client/src/common/store/ui/share-sound-to-tiktok-modal/slice'
 import { Linking, StyleSheet, View } from 'react-native'
@@ -78,7 +74,6 @@ export const ShareDrawer = () => {
   const themeVariant = useThemeVariant()
   const isLightMode = themeVariant === Theme.DEFAULT
   const dispatchWeb = useDispatchWeb()
-  const isOpen = useSelectorWeb(state => getModalVisibility(state, 'Share'))
   const { content, source } = useSelectorWeb(getShareState)
   const account = useSelectorWeb(getAccountUser)
   const { toast } = useContext(ToastContext)
@@ -87,10 +82,6 @@ export const ShareDrawer = () => {
     account &&
     account.user_id === content.artist.user_id
   const shareType = content?.type ?? 'track'
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: 'Share', visible: false }))
-  }, [dispatchWeb])
 
   const handleShareToTwitter = useCallback(async () => {
     if (!content) return
@@ -101,24 +92,20 @@ export const ShareDrawer = () => {
     } else {
       console.error(`Can't open: ${twitterShareUrl}`)
     }
-
-    handleClose()
-  }, [content, handleClose])
+  }, [content])
 
   const handleShareToTikTok = useCallback(() => {
     if (content?.type === 'track') {
       dispatchWeb(requestOpenTikTokModal({ id: content.track.track_id }))
     }
-    handleClose()
-  }, [content, dispatchWeb, handleClose])
+  }, [content, dispatchWeb])
 
   const handleCopyLink = useCallback(() => {
     if (!content) return
     const link = getContentUrl(content)
     Clipboard.setString(link)
     toast({ content: messages.toast(shareType), type: 'info' })
-    handleClose()
-  }, [toast, content, handleClose, shareType])
+  }, [toast, content, shareType])
 
   const handleOpenShareSheet = useCallback(() => {
     if (!source || !content) return
@@ -136,8 +123,7 @@ export const ShareDrawer = () => {
         dispatchWeb(shareCollection(content.playlist.playlist_id, source))
         break
     }
-    handleClose()
-  }, [dispatchWeb, content, source, handleClose])
+  }, [dispatchWeb, content, source])
 
   const shouldIncludeTikTokAction = Boolean(
     content?.type === 'track' &&
@@ -203,8 +189,7 @@ export const ShareDrawer = () => {
 
   return (
     <ActionDrawer
-      isOpen={isOpen}
-      onClose={handleClose}
+      modalName='Share'
       rows={getRows()}
       renderTitle={() => (
         <View style={styles.title}>

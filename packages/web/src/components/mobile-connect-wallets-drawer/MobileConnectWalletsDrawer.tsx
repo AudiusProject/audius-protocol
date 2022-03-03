@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { getModalVisibility } from 'common/store/ui/modals/slice'
+import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 import { useSelector } from 'utils/reducer'
@@ -15,9 +15,7 @@ const messages = {
 
 const MobileConnectWalletsDrawer = ({ onClose }: { onClose: () => void }) => {
   const keyboardVisible = useSelector(getKeyboardVisibility)
-  const isOpen = useSelector(state =>
-    getModalVisibility(state, 'MobileConnectWalletsDrawer')
-  )
+  const [isOpen] = useModalState('MobileConnectWalletsDrawer')
 
   return (
     <Drawer isOpen={isOpen} keyboardVisible={keyboardVisible} onClose={onClose}>
