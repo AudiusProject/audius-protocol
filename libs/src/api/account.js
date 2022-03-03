@@ -189,7 +189,7 @@ class Account extends Base {
       phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
     } catch (e) {
-      return { error: e.message, phase }
+      return { error: e.message, phase, errorStatus: e.response ? e.response.status : null }
     }
     return { blockHash, blockNumber, userId }
   }
