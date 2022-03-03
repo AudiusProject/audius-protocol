@@ -4,8 +4,8 @@ import chai, { assert, expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
   initAdmin,
-  saveTrack,
-  TrackActionEnumValues,
+  writeTrackSocialAction,
+  TrackSocialActionEnumValues,
   updateAdmin,
 } from "../lib/lib";
 import { getTransaction } from "../lib/utils";
@@ -14,7 +14,7 @@ import { createSolanaUser, createSolanaTrack } from "./test-helpers";
 
 chai.use(chaiAsPromised);
 
-describe("social-actions", function () {
+describe("track-actions", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -29,7 +29,7 @@ describe("social-actions", function () {
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
-  it("social actions - Initializing admin account!", async function () {
+  it("track actions - Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
@@ -63,7 +63,7 @@ describe("social-actions", function () {
 
   it("Save a track with a low track id", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await saveTrack({
+    const tx = await writeTrackSocialAction({
       program,
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
@@ -71,7 +71,7 @@ describe("social-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      trackAction: TrackActionEnumValues.save,
+      trackSocialAction: TrackSocialActionEnumValues.addSave,
       trackId: new anchor.BN("1"),
     });
 
@@ -87,15 +87,14 @@ describe("social-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackAction).to.deep.equal(
-      TrackActionEnumValues.save
+    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
+      TrackSocialActionEnumValues.addSave
     );
   });
 
-  it("Unsave a track", async function () {
+  it("Repost a track with a low track id", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
-
-    const tx = await saveTrack({
+    const tx = await writeTrackSocialAction({
       program,
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
@@ -103,7 +102,39 @@ describe("social-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      trackAction: TrackActionEnumValues.unsave,
+      trackSocialAction: TrackSocialActionEnumValues.addRepost,
+      trackId: new anchor.BN("1"),
+    });
+
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+
+    const userHandle = String.fromCharCode(...user.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
+      TrackSocialActionEnumValues.addRepost
+    );
+  });
+
+  it("Delete save for a track", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+
+    const tx = await writeTrackSocialAction({
+      program,
+      baseAuthorityAccount: user.authority,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
+      userAuthorityKeypair: user.keypair,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
+      trackSocialAction: TrackSocialActionEnumValues.deleteSave,
       trackId: new anchor.BN("1"),
     });
     const info = await getTransaction(provider, tx);
@@ -117,8 +148,8 @@ describe("social-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackAction).to.deep.equal(
-      TrackActionEnumValues.unsave
+    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
+      TrackSocialActionEnumValues.deleteSave
     );
   });
 
@@ -133,7 +164,7 @@ describe("social-actions", function () {
       user.pda
     );
 
-    const tx = await saveTrack({
+    const tx = await writeTrackSocialAction({
       program,
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
@@ -141,7 +172,7 @@ describe("social-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      trackAction: TrackActionEnumValues.save,
+      trackSocialAction: TrackSocialActionEnumValues.addSave,
       trackId: track.track.trackId,
     });
     const info = await getTransaction(provider, tx);
@@ -155,8 +186,8 @@ describe("social-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackAction).to.deep.equal(
-      TrackActionEnumValues.save
+    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
+      TrackSocialActionEnumValues.addSave
     );
   });
 
@@ -168,7 +199,7 @@ describe("social-actions", function () {
     );
 
     await expect(
-      saveTrack({
+      writeTrackSocialAction({
         program,
         baseAuthorityAccount: user.authority,
         adminStgPublicKey: adminStgKeypair.publicKey,
@@ -176,11 +207,12 @@ describe("social-actions", function () {
         userAuthorityKeypair: user.keypair,
         handleBytesArray: user.handleBytesArray,
         bumpSeed: user.bumpSeed,
-        trackAction: TrackActionEnumValues.unsave,
+        trackSocialAction: TrackSocialActionEnumValues.deleteSave,
         trackId: adminAccount.trackId,
       })
     )
       .to.eventually.be.rejected.and.property("msg")
       .to.include(`Invalid Id.`);
   });
+
 });

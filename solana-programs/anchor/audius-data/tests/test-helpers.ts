@@ -8,6 +8,7 @@ import { findDerivedPair, getTransaction, randomCID } from "../lib/utils";
 import {
   createUser,
   createTrack,
+  createPlaylist,
   initUser,
   initUserSolPubkey,
 } from "../lib/lib";
@@ -243,5 +244,39 @@ export const createSolanaTrack = async (
   return {
     track,
     trackMetadata: trackMetadata,
+  };
+};
+
+export const createSolanaPlaylist = async (
+  program: Program<AudiusData>,
+  provider: anchor.Provider,
+  adminStgKeypair: anchor.web3.Keypair,
+  userAuthorityKeypair: anchor.web3.Keypair,
+  ownerPDA: anchor.web3.PublicKey
+) => {
+  const newPlaylistKeypair = anchor.web3.Keypair.generate();
+  const playlistMetadata = randomCID();
+
+  await createPlaylist({
+    provider,
+    program,
+    newPlaylistKeypair,
+    userAuthorityKeypair,
+    userStgAccountPDA: ownerPDA,
+    metadata: playlistMetadata,
+    adminStgPublicKey: adminStgKeypair.publicKey,
+  });
+
+  const playlist = await program.account.playlist.fetch(
+    newPlaylistKeypair.publicKey
+  );
+
+  if (!playlist) {
+    throw new Error("unable to create playlist account");
+  }
+
+  return {
+    playlist,
+    playlistkMetadata: playlistMetadata,
   };
 };

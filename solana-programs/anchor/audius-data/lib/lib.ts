@@ -11,13 +11,27 @@ import { AudiusData } from "../target/types/audius_data";
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
-export const TrackActionEnumValues = {
-  save: { save: {} },
-  unsave: { unsave: {} },
+export const TrackSocialActionEnumValues = {
+  addSave: { addSave: {} },
+  deleteSave: { deleteSave: {} },
+  addRepost: { addRepost: {} },
+  deleteRepost: { deleteRepost: {} },
 };
 
-type TrackActionKeys = keyof typeof TrackActionEnumValues;
-type TrackActionValues = typeof TrackActionEnumValues[TrackActionKeys];
+export const PlaylistSocialActionEnumValues = {
+  addSave: { addSave: {} },
+  deleteSave: { deleteSave: {} },
+  addRepost: { addRepost: {} },
+  deleteRepost: { deleteRepost: {} },
+};
+
+type TrackSocialActionKeys = keyof typeof TrackSocialActionEnumValues;
+type TrackSocialActionValues =
+  typeof TrackSocialActionEnumValues[TrackSocialActionKeys];
+
+type PlaylistSocialActionKeys = keyof typeof PlaylistSocialActionEnumValues;
+type PlaylistSocialActionValues =
+  typeof PlaylistSocialActionEnumValues[PlaylistSocialActionKeys];
 
 /// Initialize an Audius Admin instance
 type InitAdminParams = {
@@ -386,7 +400,7 @@ export const deleteTrack = async ({
 };
 
 /// save a track
-export type SaveTrackArgs = {
+export type TrackSocialActionArgs = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   userStgAccountPDA: anchor.web3.PublicKey;
@@ -394,11 +408,24 @@ export type SaveTrackArgs = {
   adminStgPublicKey: anchor.web3.PublicKey;
   handleBytesArray: number[];
   bumpSeed: number;
-  trackAction: TrackActionValues;
+  trackSocialAction: TrackSocialActionValues;
   trackId: anchor.BN;
 };
 
-export const saveTrack = async ({
+export type PlaylistSocialActionArgs = {
+  program: Program<AudiusData>;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  userAuthorityKeypair: Keypair;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  handleBytesArray: number[];
+  bumpSeed: number;
+  playlistSocialAction: PlaylistSocialActionValues;
+  playlistId: anchor.BN;
+};
+
+
+export const writeTrackSocialAction = async ({
   program,
   baseAuthorityAccount,
   userStgAccountPDA,
@@ -406,13 +433,13 @@ export const saveTrack = async ({
   handleBytesArray,
   bumpSeed,
   adminStgPublicKey,
-  trackAction,
+  trackSocialAction,
   trackId,
-}: SaveTrackArgs) => {
-  return program.rpc.saveTrack(
+}: TrackSocialActionArgs) => {
+  return program.rpc.writeTrackSocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    trackAction,
+    trackSocialAction,
     trackId,
     {
       accounts: {
@@ -424,6 +451,35 @@ export const saveTrack = async ({
     }
   );
 };
+
+export const writePlaylistSocialAction = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  playlistSocialAction,
+  playlistId,
+}: PlaylistSocialActionArgs) => {
+  console.log("playlistId: " + playlistId)
+  return program.rpc.writePlaylistSocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    playlistSocialAction,
+    playlistId,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
 
 /// Create a playlist
 export type CreatePlaylistParams = {
