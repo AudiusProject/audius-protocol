@@ -2,7 +2,7 @@ const { logger } = require('../logging')
 const axios = require('axios')
 const { timeout } = require('../utils')
 
-const TEN_MINS_IN_MS = 1000 * 60 // * 10
+const TEN_MINS_IN_MS = 1000 * 60 * 10
 class TrustedNotifierManager {
   constructor(nodeConfig, audiusLibs) {
     this.nodeConfig = nodeConfig
