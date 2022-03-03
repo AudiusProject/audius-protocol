@@ -8,10 +8,6 @@ import {
 } from 'audius-client/src/common/store/pages/trending/lineup/actions'
 import { getTrendingGenre } from 'audius-client/src/common/store/pages/trending/selectors'
 import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
-import {
   ELECTRONIC_PREFIX,
   ELECTRONIC_SUBGENRES,
   Genre,
@@ -20,7 +16,7 @@ import {
 import { FlatList, View } from 'react-native'
 
 import { SearchInput, Button } from 'app/components/core'
-import Drawer from 'app/components/drawer'
+import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
@@ -51,8 +47,8 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const TrendingFilterDrawer = () => {
   const styles = useStyles()
   const [searchValue, setSearchValue] = useState('')
-  const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
   const trendingGenre = useSelectorWeb(getTrendingGenre) ?? Genre.ALL
+  const { onClose } = useDrawerState(MODAL_NAME)
   const dispatchWeb = useDispatchWeb()
 
   const genres = useMemo(() => {
@@ -61,10 +57,6 @@ export const TrendingFilterDrawer = () => {
       genre.toLowerCase().includes(searchValueLower)
     )
   }, [searchValue])
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
-  }, [dispatchWeb])
 
   const handleSelect = useCallback(
     (genre: string) => {
@@ -78,18 +70,17 @@ export const TrendingFilterDrawer = () => {
         dispatchWeb(trendingWeekActions.reset())
         dispatchWeb(trendingMonthActions.reset())
         dispatchWeb(trendingAllTimeActions.reset())
-        handleClose()
+        onClose()
       }
 
       return handlePress
     },
-    [dispatchWeb, handleClose]
+    [dispatchWeb, onClose]
   )
 
   return (
-    <Drawer
-      isOpen={isOpen}
-      onClose={handleClose}
+    <AppDrawer
+      modalName={MODAL_NAME}
       isFullscreen
       title={messages.title}
       isGestureSupported={false}
@@ -120,6 +111,6 @@ export const TrendingFilterDrawer = () => {
           }}
         />
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }

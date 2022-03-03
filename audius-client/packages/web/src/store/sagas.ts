@@ -11,6 +11,7 @@ import explorePageSagas from 'common/store/pages/explore/sagas'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import artistRecommendationsSagas from 'common/store/ui/artist-recommendations/sagas'
+import overflowMenuSagas from 'common/store/ui/mobile-overflow-menu/sagas'
 import shareModalSagas from 'common/store/ui/share-modal/sagas'
 import toastSagas from 'common/store/ui/toast/sagas'
 import addToPlaylistSagas from 'components/add-to-playlist/store/sagas'
@@ -144,6 +145,7 @@ export default function* rootSaga() {
     repostPageSagas(),
     scrollLockSagas(),
     shareModalSagas(),
+    overflowMenuSagas(),
     toastSagas(),
     shareSoundToTikTokModalSagas(),
     smartCollectionPageSagas(),

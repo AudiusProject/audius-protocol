@@ -3,10 +3,9 @@ import { useCallback } from 'react'
 import { Platform, StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import Drawer from 'app/components/drawer'
+import { NativeDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
-import { useDrawer } from 'app/hooks/useDrawer'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import {
   getDownloadedPercentage,
@@ -66,22 +65,19 @@ const messages = {
 }
 
 export const DownloadTrackProgressDrawer = () => {
-  const [isOpen, setIsOpen] = useDrawer('DownloadTrackProgress')
-
   const downloadPercentage = useSelector(getDownloadedPercentage)
   const fetchCancel = useSelector(getFetchCancel)
   const fileName = useSelector(getFileName)
 
   const handleClose = useCallback(() => {
     fetchCancel?.()
-    setIsOpen(false)
-  }, [fetchCancel, setIsOpen])
+  }, [fetchCancel])
 
   const styles = useThemedStyles(createStyles)
   const spinnerColor = useColor('actionSheetText')
 
   return (
-    <Drawer isOpen={isOpen} onClose={handleClose}>
+    <NativeDrawer drawerName='DownloadTrackProgress' onClose={handleClose}>
       <View style={styles.view}>
         <Text style={styles.title} weight='bold'>
           {messages.title}
@@ -98,6 +94,6 @@ export const DownloadTrackProgressDrawer = () => {
           ) : null}
         </View>
       </View>
-    </Drawer>
+    </NativeDrawer>
   )
 }

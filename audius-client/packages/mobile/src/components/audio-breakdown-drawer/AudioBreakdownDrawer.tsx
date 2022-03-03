@@ -4,10 +4,6 @@ import { Chain } from 'audius-client/src/common/models/Chain'
 import { BNWei } from 'audius-client/src/common/models/Wallet'
 import { getAssociatedWallets } from 'audius-client/src/common/store/pages/token-dashboard/selectors'
 import { AssociatedWallet } from 'audius-client/src/common/store/pages/token-dashboard/types'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
 import { getAccountBalance } from 'audius-client/src/common/store/wallet/selectors'
 import {
   formatWei,
@@ -27,9 +23,8 @@ import IconInfo from 'app/assets/images/iconInfo.svg'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import { GradientText } from 'app/components/core'
-import Drawer from 'app/components/drawer'
+import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -186,8 +181,6 @@ const messages = {
 const AudioBreakdownDrawer = () => {
   const styles = useThemedStyles(createStyles)
 
-  const dispatchWeb = useDispatchWeb()
-
   const accountBalance = (useSelectorWeb(getAccountBalance) ??
     new BN('0')) as BNWei
 
@@ -207,20 +200,10 @@ const AudioBreakdownDrawer = () => {
     }, new BN('0')) ?? new BN('0')) as BNWei
 
   const totalBalance = accountBalance.add(linkedWalletsBalance) as BNWei
-  const isOpen = useSelectorWeb(state =>
-    getModalVisibility(state, AUDIO_BREAKDOWN_MODAL_NAME)
-  )
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(
-      setVisibility({ modal: AUDIO_BREAKDOWN_MODAL_NAME, visible: false })
-    )
-  }, [dispatchWeb])
 
   return (
-    <Drawer
-      isOpen={isOpen}
-      onClose={handleClose}
+    <AppDrawer
+      modalName={AUDIO_BREAKDOWN_MODAL_NAME}
       title={messages.modalTitle}
       isFullscreen
     >
@@ -300,7 +283,7 @@ const AudioBreakdownDrawer = () => {
           </View>
         </View>
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }
 

@@ -1,18 +1,12 @@
 import { useCallback } from 'react'
 
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
 import { Image, ImageStyle, Linking, StyleSheet, View } from 'react-native'
 
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
 import ButtonWithArrow from 'app/components/button-with-arrow'
 import { GradientText } from 'app/components/core'
-import Drawer from 'app/components/drawer'
+import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
 
@@ -59,21 +53,14 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 export const ApiRewardsDrawer = () => {
-  const dispatchWeb = useDispatchWeb()
   const styles = useThemedStyles(createStyles)
-
-  const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
-  }, [dispatchWeb])
 
   const onClickAudiusAPI = useCallback(() => {
     Linking.openURL(API_LINK)
   }, [])
 
   return (
-    <Drawer isOpen={isOpen} onClose={handleClose}>
+    <AppDrawer modalName={MODAL_NAME}>
       <View style={styles.content}>
         <GradientText style={styles.drawerTitle}>
           {messages.modalTitle}
@@ -91,6 +78,6 @@ export const ApiRewardsDrawer = () => {
           onPress={onClickAudiusAPI}
         />
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }

@@ -1,24 +1,26 @@
+import { useCallback } from 'react'
+
 import { useDispatch, useSelector } from 'react-redux'
 
 import { getVisibility } from 'app/store/drawers/selectors'
 import { Drawer, setVisibility } from 'app/store/drawers/slice'
 
-/**
- * Hook to get and set the visibility of a drawer
- * @param drawer
- * @returns [isOpen, setIsOpen]
- *
- * Example:
- *
- * const [isOpen, setIsOpen] = useDrawer('EnablePushNotificationsReminder')
- */
-export const useDrawer = (
-  drawer: Drawer
-): [boolean, (isVisible: boolean) => void] => {
+export const useDrawer = (drawerName: Drawer) => {
   const dispatch = useDispatch()
-  const isOpen = useSelector(getVisibility(drawer))
-  const setIsOpen = (visible: boolean) =>
-    dispatch(setVisibility({ drawer, visible }))
+  const visibleState = useSelector(getVisibility(drawerName))
 
-  return [isOpen, setIsOpen]
+  const isOpen = visibleState === true
+  const onClose = useCallback(() => {
+    dispatch(setVisibility({ drawer: drawerName, visible: 'closing' }))
+  }, [dispatch, drawerName])
+
+  const onClosed = useCallback(() => {
+    dispatch(setVisibility({ drawer: drawerName, visible: false }))
+  }, [dispatch, drawerName])
+
+  const onOpen = useCallback(() => {
+    dispatch(setVisibility({ drawer: drawerName, visible: true }))
+  }, [dispatch, drawerName])
+
+  return { isOpen, onClose, onClosed, onOpen, visibleState }
 }

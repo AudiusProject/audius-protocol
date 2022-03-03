@@ -3,10 +3,6 @@ import { useCallback, useMemo } from 'react'
 import { Chain } from 'audius-client/src/common/models/Chain'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
 import { getCollectible } from 'audius-client/src/common/store/ui/collectible-details/selectors'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import Config from 'react-native-config'
 
@@ -14,9 +10,8 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import Button from 'app/components/button'
-import Drawer from 'app/components/drawer'
+import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 import share from 'app/utils/share'
@@ -120,15 +115,8 @@ const getHostname = (url: string) => {
 }
 
 export const CollectibleDetailsDrawer = () => {
-  const dispatchWeb = useDispatchWeb()
-
   const handle = useSelectorWeb(getUserHandle)
-  const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
   const collectible = useSelectorWeb(getCollectible)
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
-  }, [dispatchWeb])
 
   const formattedLink = useMemo(() => {
     const url = collectible?.externalLink
@@ -150,13 +138,8 @@ export const CollectibleDetailsDrawer = () => {
   const buttonIconColor = useColor('neutralLight4')
 
   return (
-    <Drawer
-      isGestureSupported={false}
-      isOpen={isOpen}
-      onClose={handleClose}
-      isFullscreen
-    >
-      {collectible && isOpen && (
+    <AppDrawer modalName={MODAL_NAME} isGestureSupported={false} isFullscreen>
+      {collectible && (
         <ScrollView showsVerticalScrollIndicator={false} style={styles.root}>
           <CollectibleMedia collectible={collectible} />
 
@@ -230,6 +213,6 @@ export const CollectibleDetailsDrawer = () => {
           </View>
         </ScrollView>
       )}
-    </Drawer>
+    </AppDrawer>
   )
 }

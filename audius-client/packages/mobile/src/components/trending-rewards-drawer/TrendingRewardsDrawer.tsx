@@ -8,10 +8,6 @@ import {
   TrendingRewardsModalType
 } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
-import {
   TRENDING_PAGE,
   TRENDING_PLAYLISTS_PAGE,
   TRENDING_UNDERGROUND_PAGE
@@ -29,7 +25,6 @@ import {
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import ButtonWithArrow from 'app/components/button-with-arrow'
 import { SegmentedControl, GradientText } from 'app/components/core'
-import Drawer from 'app/components/drawer'
 import Text from 'app/components/text'
 import TweetEmbed from 'app/components/tweet-embed'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -38,6 +33,8 @@ import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors, useThemeVariant } from 'app/utils/theme'
+
+import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 
 const TRENDING_REWARDS_DRAWER_NAME = 'TrendingRewardsExplainer'
 const TOS_URL = 'https://blog.audius.co/posts/audio-rewards'
@@ -175,23 +172,13 @@ const useIsDark = () => {
 }
 
 export const TrendingRewardsDrawer = () => {
-  const dispatchWeb = useDispatchWeb()
   const pushRouteWeb = usePushRouteWeb()
+  const { onClose } = useDrawerState(TRENDING_REWARDS_DRAWER_NAME)
   const styles = useThemedStyles(createStyles)
   const [modalType, setModalType] = useRewardsType()
   const isDark = useIsDark()
 
-  const isOpen = useSelectorWeb(state =>
-    getModalVisibility(state, TRENDING_REWARDS_DRAWER_NAME)
-  )
-
   const tweetId = useTweetId(modalType)
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(
-      setVisibility({ modal: TRENDING_REWARDS_DRAWER_NAME, visible: false })
-    )
-  }, [dispatchWeb])
 
   const tabOptions = [
     {
@@ -211,18 +198,17 @@ export const TrendingRewardsDrawer = () => {
   const onButtonPress = useCallback(() => {
     const page = TRENDING_PAGES[modalType]
     pushRouteWeb(page)
-    handleClose()
-  }, [pushRouteWeb, modalType, handleClose])
+    onClose()
+  }, [pushRouteWeb, modalType, onClose])
 
   const onPressToS = useCallback(() => {
     Linking.openURL(TOS_URL)
   }, [])
 
   return (
-    <Drawer
+    <AppDrawer
+      modalName={TRENDING_REWARDS_DRAWER_NAME}
       isFullscreen
-      isOpen={isOpen}
-      onClose={handleClose}
       isGestureSupported={false}
     >
       <View style={styles.content}>
@@ -280,6 +266,6 @@ export const TrendingRewardsDrawer = () => {
           </TouchableWithoutFeedback>
         </ScrollView>
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }

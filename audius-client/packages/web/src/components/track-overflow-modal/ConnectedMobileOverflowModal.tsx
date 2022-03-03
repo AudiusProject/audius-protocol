@@ -37,8 +37,8 @@ import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlis
 import { open as openEditPlaylist } from 'common/store/ui/createPlaylistModal/actions'
 import { setOpen as openDeletePlaylist } from 'common/store/ui/delete-playlist-confirmation-modal/actions'
 import { getMobileOverflowModal } from 'common/store/ui/mobile-overflow-menu/selectors'
-import { close } from 'common/store/ui/mobile-overflow-menu/slice'
 import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
+import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
 import {
   unsubscribeUser,
   hideNotification
@@ -288,8 +288,10 @@ const getAdditionalInfo = ({
 
 const mapStateToProps = (state: AppState) => {
   const modalState = getMobileOverflowModal(state)
+  const modalVisibleState = getModalVisibility(state, 'Overflow')
   return {
     ...modalState,
+    isOpen: modalVisibleState === true,
     ...getAdditionalInfo({
       state,
       id: modalState.id,
@@ -300,7 +302,8 @@ const mapStateToProps = (state: AppState) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    onClose: () => dispatch(close()),
+    onClose: () =>
+      dispatch(setVisibility({ modal: 'Overflow', visible: false })),
     // Tracks
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),

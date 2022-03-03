@@ -60,5 +60,5 @@ export const useModalState = (
     setVisibility
   ])
 
-  return [isOpen, setter]
+  return [isOpen === true, setter]
 }

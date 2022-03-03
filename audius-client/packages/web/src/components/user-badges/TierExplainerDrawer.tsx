@@ -1,8 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useDispatch } from 'react-redux'
-
-import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
+import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import {
   audioTierMapPng,
@@ -18,15 +16,12 @@ import { messages } from './TierExplainerModal'
 import { useProfileTier } from './hooks'
 
 const TierExplainerDrawer = () => {
-  // use the modal visibility state
-  const isOpen = useSelector(state =>
-    getModalVisibility(state, 'TiersExplainer')
-  )
+  const [isOpen, setIsOpen] = useModalState('TiersExplainer')
   const keyboardVisible = useSelector(getKeyboardVisibility)
-  const dispatch = useDispatch()
+
   const onClose = useCallback(() => {
-    dispatch(setVisibility({ modal: 'TiersExplainer', visible: false }))
-  }, [dispatch])
+    setIsOpen(false)
+  }, [setIsOpen])
 
   const tier = useProfileTier()
 

@@ -9,7 +9,7 @@ import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import Button, { ButtonType } from 'app/components/button'
 import { GradientText } from 'app/components/core'
-import Drawer from 'app/components/drawer'
+import { AppDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -217,8 +217,6 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 type ChallengeRewardsDrawerProps = {
-  /** Shows/hides the drawer */
-  isOpen: boolean
   /** Callback for when the drawer gets closed */
   onClose: () => void
   /** Title text for the drawer */
@@ -251,7 +249,6 @@ type ChallengeRewardsDrawerProps = {
   children?: React.ReactChild
 }
 export const ChallengeRewardsDrawer = ({
-  isOpen,
   onClose,
   title,
   titleIcon,
@@ -288,8 +285,8 @@ export const ChallengeRewardsDrawer = ({
   const claimableAmountText = `${claimableAmount} ${messages.claimableLabel}`
 
   return (
-    <Drawer
-      isOpen={isOpen}
+    <AppDrawer
+      modalName='ChallengeRewardsExplainer'
       onClose={onClose}
       isFullscreen
       isGestureSupported={false}
@@ -398,6 +395,6 @@ export const ChallengeRewardsDrawer = ({
           ) : null}
         </View>
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }
