@@ -24,6 +24,7 @@ from src.queries import (
     block_confirmation,
     get_redirect_weights,
     health_check,
+    index_block_stats,
     notifications,
     prometheus_metrics_exporter,
     queries,
@@ -327,6 +328,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+    app.register_blueprint(index_block_stats.bp)
     app.register_blueprint(get_redirect_weights.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
