@@ -9,7 +9,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import { History } from 'history'
-import { useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
 
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
@@ -122,7 +122,7 @@ const NavBar = ({
   })
 
   const { setSlideDirection } = useContext(RouterContext)
-  const location = useLocation()
+  const { location } = useHistory()
 
   const onGoBack = useCallback(() => {
     // @ts-ignore

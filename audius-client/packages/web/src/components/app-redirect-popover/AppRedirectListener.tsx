@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { MobileOS } from 'common/models/OS'
@@ -28,7 +28,8 @@ const IOS_WEBSITE_STORE_LINK =
  *   page. These correspond to links from the AppRedirectPopover.
  */
 const AppRedirectListener = ({ goToRoute }: AppRedirectListenerProps) => {
-  const { pathname } = useLocation()
+  const history = useHistory()
+  const { pathname } = history.location
 
   useEffect(() => {
     // If we're not in the redirect route, abort.
