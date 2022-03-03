@@ -92,37 +92,6 @@ describe("track-actions", function () {
     );
   });
 
-  it("Repost a track with a low track id", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await writeTrackSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.addRepost,
-      trackId: new anchor.BN("1"),
-    });
-
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.addRepost
-    );
-  });
-
   it("Delete save for a track", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
@@ -215,4 +184,126 @@ describe("track-actions", function () {
       .to.include(`Invalid Id.`);
   });
 
+  it("Repost a track with a low track id", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const tx = await writeTrackSocialAction({
+      program,
+      baseAuthorityAccount: user.authority,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
+      userAuthorityKeypair: user.keypair,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
+      trackSocialAction: TrackSocialActionEnumValues.addRepost,
+      trackId: new anchor.BN("1"),
+    });
+
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+
+    const userHandle = String.fromCharCode(...user.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
+      TrackSocialActionEnumValues.addRepost
+    );
+  });
+
+  it("Delete repost for a track", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+
+    const tx = await writeTrackSocialAction({
+      program,
+      baseAuthorityAccount: user.authority,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
+      userAuthorityKeypair: user.keypair,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
+      trackSocialAction: TrackSocialActionEnumValues.deleteRepost,
+      trackId: new anchor.BN("1"),
+    });
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+    const userHandle = String.fromCharCode(...user.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
+      TrackSocialActionEnumValues.deleteRepost
+    );
+  });
+
+  it("Repost a newly created track", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+
+    const track = await createSolanaTrack(
+      program,
+      provider,
+      adminStgKeypair,
+      user.keypair,
+      user.pda
+    );
+
+    const tx = await writeTrackSocialAction({
+      program,
+      baseAuthorityAccount: user.authority,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
+      userAuthorityKeypair: user.keypair,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
+      trackSocialAction: TrackSocialActionEnumValues.addRepost,
+      trackId: track.track.trackId,
+    });
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+    const userHandle = String.fromCharCode(...user.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
+      TrackSocialActionEnumValues.addRepost
+    );
+  });
+
+  it("Error on reposting an invalid track", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+
+    const adminAccount = await program.account.audiusAdmin.fetch(
+      adminStgKeypair.publicKey
+    );
+
+    await expect(
+      writeTrackSocialAction({
+        program,
+        baseAuthorityAccount: user.authority,
+        adminStgPublicKey: adminStgKeypair.publicKey,
+        userStgAccountPDA: user.pda,
+        userAuthorityKeypair: user.keypair,
+        handleBytesArray: user.handleBytesArray,
+        bumpSeed: user.bumpSeed,
+        trackSocialAction: TrackSocialActionEnumValues.deleteRepost,
+        trackId: adminAccount.trackId,
+      })
+    )
+      .to.eventually.be.rejected.and.property("msg")
+      .to.include(`Invalid Id.`);
+  });
 });

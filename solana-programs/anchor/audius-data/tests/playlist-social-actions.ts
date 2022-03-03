@@ -36,7 +36,7 @@ describe("playlist-actions", function () {
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
-      playlistIdOffset: new anchor.BN("0"),
+      trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("10"),
     });
 
@@ -89,37 +89,6 @@ describe("playlist-actions", function () {
     assert.equal(instructionHandle, userHandle);
     expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
       PlaylistSocialActionEnumValues.addSave
-    );
-  });
-
-  it("Repost a playlist with a low playlist id", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await writePlaylistSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.addRepost,
-      playlistId: new anchor.BN("1"),
-    });
-
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.addRepost
     );
   });
 
@@ -215,4 +184,126 @@ describe("playlist-actions", function () {
       .to.include(`Invalid Id.`);
   });
 
+  it("Repost a playlist with a low playlist id", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const tx = await writePlaylistSocialAction({
+      program,
+      baseAuthorityAccount: user.authority,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
+      userAuthorityKeypair: user.keypair,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
+      playlistSocialAction: PlaylistSocialActionEnumValues.addRepost,
+      playlistId: new anchor.BN("1"),
+    });
+
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+
+    const userHandle = String.fromCharCode(...user.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
+      PlaylistSocialActionEnumValues.addRepost
+    );
+  });
+
+  it("Delete repost for a playlist", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+
+    const tx = await writePlaylistSocialAction({
+      program,
+      baseAuthorityAccount: user.authority,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
+      userAuthorityKeypair: user.keypair,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
+      playlistSocialAction: PlaylistSocialActionEnumValues.deleteRepost,
+      playlistId: new anchor.BN("1"),
+    });
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+    const userHandle = String.fromCharCode(...user.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
+      PlaylistSocialActionEnumValues.deleteRepost
+    );
+  });
+
+  it("Repost a newly created playlist", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+
+    const playlist = await createSolanaPlaylist(
+      program,
+      provider,
+      adminStgKeypair,
+      user.keypair,
+      user.pda
+    );
+
+    const tx = await writePlaylistSocialAction({
+      program,
+      baseAuthorityAccount: user.authority,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
+      userAuthorityKeypair: user.keypair,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
+      playlistSocialAction: PlaylistSocialActionEnumValues.addRepost,
+      playlistId: playlist.playlist.playlistId,
+    });
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+    const userHandle = String.fromCharCode(...user.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
+      PlaylistSocialActionEnumValues.addRepost
+    );
+  });
+
+  it("Error on reposting an invalid playlist", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+
+    const adminAccount = await program.account.audiusAdmin.fetch(
+      adminStgKeypair.publicKey
+    );
+
+    await expect(
+      writePlaylistSocialAction({
+        program,
+        baseAuthorityAccount: user.authority,
+        adminStgPublicKey: adminStgKeypair.publicKey,
+        userStgAccountPDA: user.pda,
+        userAuthorityKeypair: user.keypair,
+        handleBytesArray: user.handleBytesArray,
+        bumpSeed: user.bumpSeed,
+        playlistSocialAction: PlaylistSocialActionEnumValues.deleteRepost,
+        playlistId: adminAccount.playlistId,
+      })
+    )
+      .to.eventually.be.rejected.and.property("msg")
+      .to.include(`Invalid Id.`);
+  });
 });

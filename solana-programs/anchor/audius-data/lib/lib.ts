@@ -424,7 +424,6 @@ export type PlaylistSocialActionArgs = {
   playlistId: anchor.BN;
 };
 
-
 export const writeTrackSocialAction = async ({
   program,
   baseAuthorityAccount,
@@ -463,7 +462,6 @@ export const writePlaylistSocialAction = async ({
   playlistSocialAction,
   playlistId,
 }: PlaylistSocialActionArgs) => {
-  console.log("playlistId: " + playlistId)
   return program.rpc.writePlaylistSocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
@@ -479,7 +477,6 @@ export const writePlaylistSocialAction = async ({
     }
   );
 };
-
 
 /// Create a playlist
 export type CreatePlaylistParams = {
