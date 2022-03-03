@@ -1,15 +1,16 @@
 import time
+from typing import Dict, List
 
 
 class SolanaIndexingLogger:
     def __init__(self, job: str):
         self.job = job
-        self.start_time = time.time()
+        self.init_time = time.time()
         self.log_time = time.time()
-        self.logs = []
-        self.timers = {}
-        self.durations = {}
-        self.context = {}
+        self.logs: List[str] = []
+        self.timers: Dict = {}
+        self.durations: Dict = {}
+        self.context: Dict = {}
 
     def start_time(self, label):
         self.timers[label] = {"start": time.time()}
@@ -32,7 +33,7 @@ class SolanaIndexingLogger:
         return {
             "job": self.job,
             "logs": ",".join(self.logs),
-            "total_time": time.time() - self.start_time,
+            "total_time": time.time() - self.init_time,
             **self.durations,
             **self.context,
         }

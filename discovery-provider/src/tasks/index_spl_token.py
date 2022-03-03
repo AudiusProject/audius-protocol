@@ -182,23 +182,6 @@ def parse_sol_tx_batch(
             logger.error(
                 f"index_spl_token.py | Error parsing sol spl token transaction: {exc}"
             )
-            # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
-            # in order to do that we need to actually clear the queue which we do here to force this
-            # task to stop execution
-            executor._threads.clear()
-            concurrent.futures.thread._threads_queues.clear()
-
-            # if we have retries left, recursively call this function again
-            if retries > 0:
-                return parse_sol_tx_batch(
-                    db,
-                    solana_client_manager,
-                    redis,
-                    tx_sig_batch_records,
-                    solana_logger,
-                    retries - 1,
-                )
-
             # if no more retries, raise
             raise exc
 

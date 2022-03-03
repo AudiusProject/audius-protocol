@@ -1,17 +1,9 @@
 from unittest.mock import create_autospec
 
 from integration_tests.utils import populate_mock_db
-from sqlalchemy import desc
-from src.models import ChallengeDisbursement, RewardManagerTransaction
-from src.models.spl_token_transaction import SPLTokenTransaction
+from src.models import SPLTokenTransaction
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.cache_user_balance import get_immediate_refresh_user_ids
-from src.tasks.index_rewards_manager import (
-    fetch_and_parse_sol_rewards_transfer_instruction,
-    parse_transfer_instruction_data,
-    parse_transfer_instruction_id,
-    process_batch_sol_reward_manager_txs,
-)
 from src.tasks.index_spl_token import (
     get_token_balance_change_owners,
     parse_sol_tx_batch,

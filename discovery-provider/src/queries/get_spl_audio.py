@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 
 from redis import Redis
 from src.models import SPLTokenTransaction
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 # Get last user_bank sol tx
-def get_latest_spl_audio() -> Optional[SPLTokenTransaction]:
+def get_latest_spl_audio() -> Optional[Dict]:
     db = get_db_read_replica()
     with db.scoped_session() as session:
         token_tx = session.query(SPLTokenTransaction).first()
