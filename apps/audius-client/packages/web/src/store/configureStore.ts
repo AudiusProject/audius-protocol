@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser'
 import { routerMiddleware, push as pushRoute } from 'connected-react-router'
-import { pick } from 'lodash'
+import { isEmpty, pick, pickBy } from 'lodash'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension/logOnlyInProduction'
 import createSagaMiddleware from 'redux-saga'
@@ -116,28 +116,41 @@ const middlewares = applyMiddleware(
 )
 
 // As long as the mobile client is dependent on the web client, we need to sync
-// the client store from web -> mobile
-const clientStoreKeys = Object.keys(commonStoreReducers)
+// the common store from web -> mobile
+const commonStateKeys = Object.keys(commonStoreReducers)
 
-const syncClientStateToNativeMobile = (store: Store) => {
+const syncCommonStateToNativeMobile = (store: Store) => {
   if (NATIVE_MOBILE) {
-    let currentState: RootState
+    let previousState: RootState
 
     store.subscribe(() => {
       const state: RootState = store.getState()
-      const previousState = currentState
-      currentState = state
-      if (
-        !previousState ||
-        clientStoreKeys.some(
-          k =>
-            currentState[k as keyof RootState] !==
-            previousState[k as keyof RootState]
-        )
-      ) {
+
+      // Sync entire commonState initially
+      if (!previousState) {
         postMessage({
-          type: MessageType.SYNC_CLIENT_STORE,
-          state: pick(state, clientStoreKeys)
+          type: MessageType.SYNC_COMMON_STATE,
+          state: pick(state, commonStateKeys)
+        })
+
+        previousState = state
+        return
+      }
+
+      // Subsequently only sync the changed slices
+      const stateToSync = pickBy(
+        state,
+        (value, key) =>
+          commonStateKeys.includes(key) &&
+          value !== previousState[key as keyof RootState]
+      )
+
+      previousState = state
+
+      if (!isEmpty(stateToSync)) {
+        postMessage({
+          type: MessageType.SYNC_COMMON_STATE,
+          state: stateToSync
         })
       }
     })
@@ -150,7 +163,7 @@ const configureStore = () => {
     createRootReducer(history),
     composeEnhancers(middlewares)
   )
-  syncClientStateToNativeMobile(store)
+  syncCommonStateToNativeMobile(store)
   sagaMiddleware.run(rootSaga)
   return store
 }

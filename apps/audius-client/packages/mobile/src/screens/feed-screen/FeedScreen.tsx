@@ -31,10 +31,13 @@ export const FeedScreen = () => {
   const feedFilter = useSelectorWeb(getFeedFilter)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const loadMore = (offset: number, limit: number, overwrite: boolean) => {
-    dispatchWeb(feedActions.fetchLineupMetadatas(offset, limit, overwrite))
-    track(make({ eventName: Name.FEED_PAGINATE, offset, limit }))
-  }
+  const loadMore = useCallback(
+    (offset: number, limit: number, overwrite: boolean) => {
+      dispatchWeb(feedActions.fetchLineupMetadatas(offset, limit, overwrite))
+      track(make({ eventName: Name.FEED_PAGINATE, offset, limit }))
+    },
+    [dispatchWeb]
+  )
 
   useEffect(() => {
     if (!feedLineup.isMetadataLoading) {
@@ -42,10 +45,10 @@ export const FeedScreen = () => {
     }
   }, [feedLineup])
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     setIsRefreshing(true)
     dispatchWeb(feedActions.refreshInView(true))
-  }
+  }, [dispatchWeb])
 
   const handleFilterButtonPress = useCallback(() => {
     dispatchWeb(setVisibility({ modal: 'FeedFilter', visible: true }))

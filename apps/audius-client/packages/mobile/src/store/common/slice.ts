@@ -5,11 +5,14 @@ const initialState: any = {}
 // Slice
 
 const slice = createSlice({
-  name: 'CLIENT_STORE',
+  name: 'COMMON',
   initialState,
   reducers: {
     receive: (state, action) => {
-      return action.payload
+      return {
+        ...state,
+        ...action.payload
+      }
     }
   }
 })
