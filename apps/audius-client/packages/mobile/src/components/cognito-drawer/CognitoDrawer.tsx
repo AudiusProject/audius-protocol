@@ -10,14 +10,10 @@ import {
   fetchCognitoFlowUrl,
   setCognitoFlowStatus
 } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
 import { StyleSheet, View } from 'react-native'
 import WebView from 'react-native-webview'
 
-import Drawer from 'app/components/drawer'
+import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -62,13 +58,12 @@ const createStyles = (themeColors: ThemeColors) =>
 export const CognitoDrawer = () => {
   const styles = useThemedStyles(createStyles)
   const dispatchWeb = useDispatchWeb()
-  const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
+  const { isOpen } = useDrawerState(MODAL_NAME)
   const uri = useSelectorWeb(getCognitoFlowUrl)
   const uriStatus = useSelectorWeb(getCognitoFlowUrlStatus)
   const [key, setKey] = useState(0)
 
   const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
     dispatchWeb(setCognitoFlowStatus({ status: CognitoFlowStatus.CLOSED }))
   }, [dispatchWeb])
 
@@ -86,10 +81,10 @@ export const CognitoDrawer = () => {
   }, [dispatchWeb, reload, isOpen, uri])
 
   return (
-    <Drawer
+    <AppDrawer
+      modalName={MODAL_NAME}
       isFullscreen
       isGestureSupported={false}
-      isOpen={isOpen}
       onClose={handleClose}
     >
       {uriStatus === Status.SUCCESS && uri ? (
@@ -105,6 +100,6 @@ export const CognitoDrawer = () => {
           </Text>
         </View>
       )}
-    </Drawer>
+    </AppDrawer>
   )
 }

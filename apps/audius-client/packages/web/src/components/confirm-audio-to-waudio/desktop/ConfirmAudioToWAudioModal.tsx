@@ -4,10 +4,9 @@ import { Button, ButtonType, Modal } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { getModalVisibility } from 'common/store/ui/modals/slice'
+import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { confirmTransferAudioToWAudio } from 'store/audio-manager/slice'
-import { useSelector } from 'utils/reducer'
 
 import { messages } from '../utils'
 
@@ -68,9 +67,8 @@ type AudioToWAudioMobileDrawerProps = {
 const ConfirmAudioToWAudioModal = () => {
   const dispatch = useDispatch()
 
-  const isOpen = useSelector(state =>
-    getModalVisibility(state, 'ConfirmAudioToWAudio')
-  )
+  const [isOpen] = useModalState('ConfirmAudioToWAudio')
+
   const [isLoading, setIsLoading] = useState(false)
 
   const onConfirm = useCallback(() => {

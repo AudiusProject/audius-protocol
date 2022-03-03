@@ -26,8 +26,9 @@ export type Modals =
   | 'MobileUpload'
   | 'EditFolder'
   | 'SignOutConfirmation'
+  | 'Overflow'
 
-export type ModalsState = { [modal in Modals]: boolean }
+export type ModalsState = { [modal in Modals]: boolean | 'closing' }
 
 const initialState: ModalsState = {
   TiersExplainer: false,
@@ -52,7 +53,8 @@ const initialState: ModalsState = {
   SocialProof: false,
   MobileUpload: false,
   EditFolder: false,
-  SignOutConfirmation: false
+  SignOutConfirmation: false,
+  Overflow: false
 }
 
 const slice = createSlice({
@@ -63,7 +65,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         modal: Modals
-        visible: boolean
+        visible: boolean | 'closing'
       }>
     ) => {
       const { modal, visible } = action.payload

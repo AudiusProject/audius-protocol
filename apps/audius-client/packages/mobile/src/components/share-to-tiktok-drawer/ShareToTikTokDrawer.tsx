@@ -1,9 +1,5 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
 import {
   getStatus,
   getTrack
@@ -20,7 +16,7 @@ import { StyleSheet, View } from 'react-native'
 import IconTikTok from 'app/assets/images/iconTikTok.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import Button from 'app/components/button'
-import Drawer from 'app/components/drawer'
+import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -93,12 +89,9 @@ const createStyles = (themeColors: ThemeColors) =>
 export const ShareToTikTokDrawer = () => {
   const styles = useThemedStyles(createStyles)
 
-  const dispatchWeb = useDispatchWeb()
-  const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
+  const { onClose } = useDrawerState(MODAL_NAME)
 
-  const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
-  }, [dispatchWeb])
+  const dispatchWeb = useDispatchWeb()
 
   const track = useSelectorWeb(getTrack)
   const status = useSelectorWeb(getStatus)
@@ -167,7 +160,7 @@ export const ShareToTikTokDrawer = () => {
     if (status === Status.SHARE_SUCCESS) {
       return (
         <View style={styles.button}>
-          <Button onPress={handleClose} title={messages.completeButton} />
+          <Button onPress={onClose} title={messages.completeButton} />
         </View>
       )
     } else {
@@ -187,7 +180,7 @@ export const ShareToTikTokDrawer = () => {
   }
 
   return (
-    <Drawer onClose={handleClose} isOpen={isOpen}>
+    <AppDrawer modalName={MODAL_NAME}>
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
@@ -200,6 +193,6 @@ export const ShareToTikTokDrawer = () => {
         {renderMessage()}
         {status === Status.SHARE_STARTED ? <LoadingSpinner /> : renderButton()}
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }

@@ -42,7 +42,6 @@ export type OverflowActionCallbacks = {
 }
 
 export type MobileOverflowModalState = {
-  isOpen: boolean
   id: ID | string | null /* Notification IDs can be strings */
   source: OverflowSource
   overflowActions: OverflowAction[]

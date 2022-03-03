@@ -15,10 +15,7 @@ import {
   ClaimStatus,
   resetAndCancelClaimReward
 } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
+import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { Maybe } from 'audius-client/src/common/utils/typeUtils'
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
@@ -26,6 +23,7 @@ import {
   TRENDING_PAGE,
   UPLOAD_PAGE
 } from 'audius-client/src/utils/route'
+import { isEqual } from 'lodash'
 import { ImageSourcePropType } from 'react-native'
 
 import Headphone from 'app/assets/images/emojis/headphone.png'
@@ -43,6 +41,7 @@ import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import Button, { ButtonType } from '../button'
+import { useDrawerState } from '../drawer/AppDrawer'
 import { ToastContext } from '../toast/ToastContext'
 
 import { ChallengeRewardsDrawer } from './ChallengeRewardsDrawer'
@@ -101,6 +100,7 @@ const messages = {
 }
 
 const MODAL_NAME = 'ChallengeRewardsExplainer'
+
 type ChallengeConfig = {
   icon: ImageSourcePropType
   title: string
@@ -192,15 +192,13 @@ const renderUploadIcon = color => <IconUpload fill={color} />
 export const ChallengeRewardsDrawerProvider = () => {
   const dispatchWeb = useDispatchWeb()
   const pushRouteWeb = usePushRouteWeb()
-  const isVisible = useSelectorWeb(state =>
-    getModalVisibility(state, MODAL_NAME)
-  )
+  const { onClose } = useDrawerState(MODAL_NAME)
   const modalType = useSelectorWeb(getChallengeRewardsModalType)
-  const userChallenges = useSelectorWeb(getOptimisticUserChallenges)
-  const onClose = useCallback(() => {
+  const userChallenges = useSelectorWeb(getOptimisticUserChallenges, isEqual)
+  const handleClose = useCallback(() => {
     dispatchWeb(resetAndCancelClaimReward())
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
-  }, [dispatchWeb])
+    onClose()
+  }, [dispatchWeb, onClose])
   const claimStatus = useSelectorWeb(getClaimStatus)
 
   const { toast } = useContext(ToastContext)
@@ -232,13 +230,13 @@ export const ChallengeRewardsDrawerProvider = () => {
       return
     }
     pushRouteWeb(config.buttonInfo.link, AUDIO_PAGE, false)
-    onClose()
-  }, [pushRouteWeb, onClose, config])
+    handleClose()
+  }, [pushRouteWeb, handleClose, config])
 
   const openUploadModal = useCallback(() => {
-    onClose()
+    handleClose()
     dispatchWeb(setVisibility({ modal: 'MobileUpload', visible: true }))
-  }, [dispatchWeb, onClose])
+  }, [dispatchWeb, handleClose])
 
   // Claim rewards button config
   const quorumSize = useRemoteVar(IntKeys.ATTESTATION_QUORUM_SIZE)
@@ -293,7 +291,7 @@ export const ChallengeRewardsDrawerProvider = () => {
       contents = (
         <ProfileCompletionChecks
           isComplete={hasChallengeCompleted}
-          onClose={onClose}
+          onClose={handleClose}
         />
       )
       break
@@ -317,8 +315,7 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   return (
     <ChallengeRewardsDrawer
-      isOpen={isVisible}
-      onClose={onClose}
+      onClose={handleClose}
       title={config.title}
       titleIcon={config.icon}
       description={config.description}

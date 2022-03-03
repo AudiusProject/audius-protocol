@@ -4,15 +4,10 @@ import { Name } from 'audius-client/src/common/models/Analytics'
 import FeedFilter from 'audius-client/src/common/models/FeedFilter'
 import { setFeedFilter } from 'audius-client/src/common/store/pages/feed/actions'
 import { feedActions } from 'audius-client/src/common/store/pages/feed/lineup/actions'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
 import { Text } from 'react-native'
 
 import ActionDrawer from 'app/components/action-drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { make, track } from 'app/utils/analytics'
 
@@ -37,18 +32,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export const FeedFilterDrawer = () => {
   const dispatchWeb = useDispatchWeb()
-  const isOpen = useSelectorWeb(state => getModalVisibility(state, MODAL_NAME))
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
-  }, [dispatchWeb])
 
   const styles = useStyles()
 
   const handleSelectFilter = useCallback(
     (filter: FeedFilter) => {
-      handleClose()
-
       dispatchWeb(setFeedFilter(filter))
       // Clear the lineup
       dispatchWeb(feedActions.reset())
@@ -58,7 +46,7 @@ export const FeedFilterDrawer = () => {
       dispatchWeb(feedActions.refreshInView(true, 10))
       track(make({ eventName: Name.FEED_CHANGE_VIEW, view: filter }))
     },
-    [dispatchWeb, handleClose]
+    [dispatchWeb]
   )
 
   const rows = useMemo(
@@ -81,10 +69,9 @@ export const FeedFilterDrawer = () => {
 
   return (
     <ActionDrawer
+      modalName={MODAL_NAME}
       renderTitle={() => <Text style={styles.title}>{messages.title}</Text>}
       rows={rows}
-      onClose={handleClose}
-      isOpen={isOpen}
     />
   )
 }

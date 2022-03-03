@@ -1,3 +1,7 @@
+import { ComponentType } from 'react'
+
+import { Modals } from 'audius-client/src/common/store/ui/modals/slice'
+
 import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
@@ -21,35 +25,99 @@ import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { DiscordDrawer } from './components/discord-drawer'
+import { useDrawerState } from './components/drawer'
+import { useDrawer } from './hooks/useDrawer'
+import { Drawer } from './store/drawers/slice'
+
+type CommonDrawerProps = {
+  modal: ComponentType
+  modalName: Modals
+}
+
+/*
+ * Conditionally renders the drawers hooked up to audius-client/src/common/ui/modal slice
+ */
+const CommonDrawer = ({ modal: Modal, modalName }: CommonDrawerProps) => {
+  const { modalState } = useDrawerState(modalName)
+
+  if (modalState === false) return null
+
+  return <Modal />
+}
+
+type NativeDrawerProps = {
+  drawer: ComponentType
+  drawerName: Drawer
+}
+
+/*
+ * Conditionally renders the drawers hooked up to native store/drawers slice
+ */
+const NativeDrawer = ({ drawer: Drawer, drawerName }: NativeDrawerProps) => {
+  const { visibleState } = useDrawer(drawerName)
+
+  if (visibleState === false) return null
+
+  return <Drawer />
+}
+
+const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
+  TiersExplainer: TiersExplainerDrawer,
+  TrendingRewardsExplainer: TrendingRewardsDrawer,
+  ChallengeRewardsExplainer: ChallengeRewardsDrawer,
+  APIRewardsExplainer: ApiRewardsDrawer,
+  TransferAudioMobileWarning: TransferAudioMobileDrawer,
+  MobileConnectWalletsDrawer: ConnectWalletsDrawer,
+  MobileEditCollectiblesDrawer: EditCollectiblesDrawer,
+  Share: ShareDrawer,
+  ShareSoundToTikTok: ShareToTikTokDrawer,
+  CollectibleDetails: CollectibleDetailsDrawer,
+  DeactivateAccountConfirmation: DeactivateAccountConfirmationDrawer,
+  Cognito: CognitoDrawer,
+  FeedFilter: FeedFilterDrawer,
+  TrendingGenreSelection: TrendingFilterDrawer,
+  MobileUpload: MobileUploadDrawer,
+  Overflow: OverflowMenuDrawer,
+  SignOutConfirmation: SignOutConfirmationDrawer
+  /* Disable the audio breakdown drawer until we get
+   * the feature flags to work for native mobile
+   * AudioBreakdown: AudioBreakdownDrawer
+   */
+}
+
+const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
+  EnablePushNotifications: EnablePushNotificationsDrawer,
+  DownloadTrackProgress: DownloadTrackProgressDrawer,
+  ForgotPassword: ForgotPasswordDrawer
+}
+
+const commonDrawers = Object.entries(commonDrawersMap) as [
+  Modals,
+  ComponentType
+][]
+
+const nativeDrawers = Object.entries(nativeDrawersMap) as [
+  Drawer,
+  ComponentType
+][]
 
 export const Drawers = () => {
   return (
     <>
-      <MobileUploadDrawer />
-      <EnablePushNotificationsDrawer />
-      <CollectibleDetailsDrawer />
-      <ConnectWalletsDrawer />
-      <EditCollectiblesDrawer />
-      <OverflowMenuDrawer />
-      <DeactivateAccountConfirmationDrawer />
-      <DownloadTrackProgressDrawer />
-      <TransferAudioMobileDrawer />
-      <TrendingRewardsDrawer />
-      <ApiRewardsDrawer />
+      {commonDrawers.map(([modalName, Modal]) => {
+        return (
+          <CommonDrawer modal={Modal} modalName={modalName} key={modalName} />
+        )
+      })}
+      {nativeDrawers.map(([drawerName, Drawer]) => (
+        <NativeDrawer
+          key={drawerName}
+          drawerName={drawerName}
+          drawer={Drawer}
+        />
+      ))}
       <AddToPlaylistDrawer />
-      <ShareToTikTokDrawer />
-      <ChallengeRewardsDrawer />
-      <CognitoDrawer />
-      <ShareDrawer />
-      <ForgotPasswordDrawer />
-      <FeedFilterDrawer />
-      <TrendingFilterDrawer />
-      <TiersExplainerDrawer />
-      <SignOutConfirmationDrawer />
       <DiscordDrawer />
-      {/* Disable the audio breakdown drawer until we get
-      the feature flags to work for native mobile */}
-      {/* <AudioBreakdownDrawer /> */}
     </>
   )
 }

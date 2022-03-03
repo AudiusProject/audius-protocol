@@ -324,7 +324,7 @@ PODS:
     - react-native-google-cast/RNGoogleCast
   - react-native-google-cast/RNGoogleCast (3.4.1):
     - React
-  - react-native-image-picker (4.0.6):
+  - react-native-image-picker (4.7.3):
     - React-Core
   - react-native-music-control (1.4.0):
     - React-Core
@@ -698,7 +698,7 @@ SPEC CHECKSUMS:
   React-logger: e522e76fa3e9ec3e7d7115b49485cc065cf4ae06
   react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
   react-native-google-cast: 9ead682d0026c857318efa8ea9c6f58b6142651a
-  react-native-image-picker: 7bda3c7297c3ea16f4f504ad6174aa7e548192ef
+  react-native-image-picker: ae1202414bd5c37c00b2a701daa5b6194a06b7d9
   react-native-music-control: 0eef94942456152af21316afd53923e1dd6360b0
   react-native-netinfo: 52cf0ee8342548a485e28f4b09e56b477567244d
   react-native-pager-view: 311c10a4eead1be627cad59062aa059d8108b943

@@ -1,11 +1,8 @@
-import { useCallback } from 'react'
-
 import { signOut } from 'audius-client/src/common/store/sign-out/slice'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { View } from 'react-native'
 
 import { Button, Text } from 'app/components/core'
-import { AppDrawer } from 'app/components/drawer/AppDrawer'
+import { AppDrawer, useDrawerState } from 'app/components/drawer/AppDrawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { makeStyles } from 'app/styles'
 
@@ -38,13 +35,11 @@ export const SignOutConfirmationDrawer = () => {
   const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
 
-  const handleClose = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: false }))
-  }, [dispatchWeb])
+  const { onClose } = useDrawerState(MODAL_NAME)
 
   const handleSignOut = () => {
     dispatchWeb(signOut)
-    handleClose()
+    onClose()
   }
 
   return (
@@ -63,7 +58,7 @@ export const SignOutConfirmationDrawer = () => {
             root: styles.buttonRoot,
             text: { textTransform: 'uppercase' }
           }}
-          onPress={handleClose}
+          onPress={onClose}
         />
         <Button
           title={messages.confirmText}

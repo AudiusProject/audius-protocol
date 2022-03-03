@@ -4,9 +4,8 @@ import { Button, ButtonSize, ButtonType, Modal } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
+import { useModalState } from 'common/hooks/useModalState'
 import { Tier } from 'pages/audio-rewards-page/Tiers'
-import { useSelector } from 'utils/reducer'
 import { DASHBOARD_PAGE } from 'utils/route'
 
 import styles from './TierExplainerModal.module.css'
@@ -24,13 +23,11 @@ const TierExplainerModal = () => {
   const dispatch = useDispatch()
   const tier = useProfileTier()
 
-  const isOpen = useSelector(state =>
-    getModalVisibility(state, 'TiersExplainer')
-  )
+  const [isOpen, setIsOpen] = useModalState('TiersExplainer')
 
   const handleDismiss = useCallback(() => {
-    dispatch(setVisibility({ modal: 'TiersExplainer', visible: false }))
-  }, [dispatch])
+    setIsOpen(false)
+  }, [setIsOpen])
 
   const onClickLearnMore = useCallback(() => {
     handleDismiss()
