@@ -55,9 +55,11 @@ from .models import (
     UserBalanceChange,
     UserChallenge,
     UserListeningHistory,
+    WalletChain,
 )
 from .related_artist import RelatedArtist
 from .reward_manager import RewardManagerTransaction
+from .spl_token_transaction import SPLTokenTransaction
 from .track_route import TrackRoute
 from .track_trending_score import TrackTrendingScore
 from .trending_param import TrendingParam
@@ -115,6 +117,7 @@ __all__ = [
     "SaveType",
     "SkippedTransaction",
     "SkippedTransactionLevel",
+    "SPLTokenTransaction",
     "Stem",
     "TagTrackUserMatview",
     "Track",
@@ -131,4 +134,5 @@ __all__ = [
     "UserBankAccount",
     "UserEvents",
     "UserListeningHistory",
+    "WalletChain",
 ]
