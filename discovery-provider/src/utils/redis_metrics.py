@@ -647,7 +647,6 @@ def record_metrics(func):
         )
         result = func(*args, **kwargs)
 
-        params = "".join(route.split("?")[1:])
         route = route.split("?")[0]
         metric.save_time({"route": route})
 
