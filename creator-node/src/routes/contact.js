@@ -2,7 +2,7 @@ const { handleResponse, successResponse } = require('../apiHelpers')
 
 module.exports = function (app) {
   app.get(
-    '/cm',
+    '/contact',
     handleResponse(async (req, res) => {
       const trustedNotifierManager = req.app.get('trustedNotifierManager')
       const email =
