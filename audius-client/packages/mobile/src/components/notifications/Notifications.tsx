@@ -14,13 +14,11 @@ import {
   PanResponder,
   View
 } from 'react-native'
-import { connect, useSelector } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import useIsStackOpen from 'app/hooks/useIsStackOpen'
 import useLocation from 'app/hooks/useLocation'
 import { MessageType } from 'app/message'
-import { AppState } from 'app/store'
 import { getIsSignedIn } from 'app/store/lifecycle/selectors'
 import * as notificationsActions from 'app/store/notifications/actions'
 import { getIsOpen } from 'app/store/notifications/selectors'
@@ -69,27 +67,39 @@ const styles = StyleSheet.create({
   }
 })
 
-type OwnProps = {
+type NotificationsProps = {
   webRef: RefObject<MessagePostingWebView>
 }
 
-type NotificationsProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
+type DrawerStatus = 'open' | 'opening' | 'closed' | 'closing'
 
 /**
  * A component that renders a user's notifications in a
  * slide out panel.
  */
-const Notifications = ({
-  webRef,
-  isSignedIn,
-  isOpen,
-  open,
-  close,
-  markAsViewed
-}: NotificationsProps) => {
+export const Notifications = ({ webRef }: NotificationsProps) => {
+  const isOpen = useSelector(getIsOpen)
+  const isSignedIn = useSelector(getIsSignedIn)
+  const dispatch = useDispatch()
   const isStackOpen = useIsStackOpen()
+  const [drawerStatus, setDrawerStatus] = useState<DrawerStatus>('closed')
+
+  useEffect(() => {
+    setDrawerStatus(isOpen ? 'open' : 'closed')
+  }, [isOpen])
+
+  const handleOpen = useCallback(() => {
+    dispatch(notificationsActions.open())
+  }, [dispatch])
+
+  const handleClose = useCallback(() => {
+    setDrawerStatus('closing')
+  }, [])
+
+  const handleClosed = useCallback(() => {
+    dispatch(notificationsActions.close())
+    dispatch(notificationsActions.markAsViewed())
+  }, [dispatch])
 
   const onLoadMore = useCallback(() => {
     if (webRef.current) {
@@ -145,15 +155,20 @@ const Notifications = ({
       tension: 150,
       friction: 25,
       useNativeDriver: true
-    }).start()
+    }).start(handleClosed)
     Animated.timing(backgroundAnim, {
       toValue: 0,
       duration: 300,
       useNativeDriver: true
     }).start()
-    close()
-    markAsViewed()
-  }, [initialPosition, close, markAsViewed, backgroundAnim, translationAnim])
+    handleClose()
+  }, [
+    initialPosition,
+    handleClosed,
+    handleClose,
+    backgroundAnim,
+    translationAnim
+  ])
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -164,7 +179,7 @@ const Notifications = ({
       )
     },
     onPanResponderMove: (e, gestureState) => {
-      if (isOpen) {
+      if (drawerStatus === 'open') {
         if (gestureState.dx < 0) {
           Animated.event(
             [
@@ -188,6 +203,7 @@ const Notifications = ({
         }
       } else {
         if (gestureState.dx > 0) {
+          setDrawerStatus('opening')
           Animated.event(
             [
               null,
@@ -213,7 +229,7 @@ const Notifications = ({
       }
     },
     onPanResponderRelease: (e, gestureState) => {
-      if (isOpen) {
+      if (drawerStatus === 'open') {
         // Close if open & drag is past cutoff
         if (
           gestureState.vx < 0 &&
@@ -230,7 +246,7 @@ const Notifications = ({
           gestureState.moveX > MOVE_CUTOFF_OPEN * width
         ) {
           slideIn()
-          open()
+          handleOpen()
         } else {
           slideOut()
         }
@@ -281,13 +297,13 @@ const Notifications = ({
     (isMainRoute || isFromNativeNotifications) && isSignedIn && !isSearchOpen
 
   useEffect(() => {
-    if (isOpen) {
+    if (drawerStatus === 'open') {
       slideIn()
       if (!anchorRoute) {
         setAnchorRoute(pathname)
       }
     }
-  }, [isOpen, slideIn, anchorRoute, pathname, setAnchorRoute])
+  }, [drawerStatus, slideIn, anchorRoute, pathname, setAnchorRoute])
 
   const containerStyle = useTheme(styles.container, {
     backgroundColor: 'background'
@@ -313,11 +329,13 @@ const Notifications = ({
       >
         <View style={containerStyle}>
           <TopBar onClose={onClickTopBarClose} />
-          <List
-            onLoadMore={onLoadMore}
-            onRefresh={onRefresh}
-            onGoToRoute={onGoToRoute}
-          />
+          {drawerStatus === 'closed' ? null : (
+            <List
+              onLoadMore={onLoadMore}
+              onRefresh={onRefresh}
+              onGoToRoute={onGoToRoute}
+            />
+          )}
         </View>
       </Animated.View>
 
@@ -334,15 +352,3 @@ const Notifications = ({
     </>
   ) : null
 }
-
-const mapStateToProps = (state: AppState) => ({
-  isOpen: getIsOpen(state),
-  isSignedIn: getIsSignedIn(state)
-})
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  open: () => dispatch(notificationsActions.open()),
-  close: () => dispatch(notificationsActions.close()),
-  markAsViewed: () => dispatch(notificationsActions.markAsViewed())
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(Notifications)
