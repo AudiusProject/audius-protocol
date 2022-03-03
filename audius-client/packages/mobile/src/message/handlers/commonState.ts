@@ -1,9 +1,9 @@
-import { receive } from 'app/store/clientStore/slice'
+import { receive } from 'app/store/common/slice'
 
 import { MessageType, MessageHandlers } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
-  [MessageType.SYNC_CLIENT_STORE]: ({ message, dispatch }) => {
+  [MessageType.SYNC_COMMON_STATE]: ({ message, dispatch }) => {
     dispatch(receive(message.state))
   }
 }

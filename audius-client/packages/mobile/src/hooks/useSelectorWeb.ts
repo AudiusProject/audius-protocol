@@ -8,7 +8,7 @@ export const useSelectorWeb = <ReturnValue>(
   equalityFn?: (left: ReturnValue, right: ReturnValue) => boolean
 ) => {
   return useSelector(
-    (state: { clientStore: CommonState }) => selector(state.clientStore),
+    (state: { common: CommonState }) => selector(state.common),
     equalityFn
   )
 }

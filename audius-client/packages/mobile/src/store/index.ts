@@ -7,7 +7,7 @@ import { composeWithDevTools } from 'redux-devtools-extension'
 import createSagaMiddleware from 'redux-saga'
 
 import audio, { AudioState } from './audio/reducer'
-import clientStore from './clientStore/slice'
+import common from './common/slice'
 import downloads, { DownloadState } from './download/slice'
 import drawers, { DrawersState } from './drawers/slice'
 import googleCast, { GoogleCastState } from './googleCast/reducer'
@@ -22,7 +22,7 @@ import web, { WebState } from './web/reducer'
 
 export type AppState = {
   audio: AudioState
-  clientStore: CommonState
+  common: CommonState
   drawers: DrawersState
   downloads: DownloadState
   googleCast: GoogleCastState
@@ -39,7 +39,7 @@ export type AppState = {
 const createRootReducer = () =>
   combineReducers({
     audio,
-    clientStore,
+    common,
     drawers,
     downloads,
     googleCast,
