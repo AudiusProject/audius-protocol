@@ -7,7 +7,7 @@ import React, {
   useCallback
 } from 'react'
 
-import { Switch, useLocation, useHistory } from 'react-router-dom'
+import { Switch, useHistory } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
 
 import useInstanceVar from 'common/hooks/useInstanceVar'
@@ -82,8 +82,9 @@ const AnimatedSwitch = ({
   const animationRef = useRef<HTMLDivElement>(null)
   const [disabled, setDisabled] = useState(false)
 
-  const location = useLocation()
   const history = useHistory()
+  const { location } = history
+
   const [getAnimation, setAnimation] = useInstanceVar(noTransition)
   // Maintain an instance var to track whether the navigation stack is reset (no animations)
   // so that `window.onpopstate` can know whether or not to set animations

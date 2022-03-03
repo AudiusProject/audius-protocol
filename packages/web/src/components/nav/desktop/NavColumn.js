@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { useLocation, withRouter, NavLink } from 'react-router-dom'
+import { withRouter, NavLink, useHistory } from 'react-router-dom'
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
 
@@ -114,7 +114,8 @@ const NavColumn = ({
   dominantColors
 }) => {
   const record = useRecord()
-  const { pathname } = useLocation()
+  const { location } = useHistory()
+  const { pathname } = location
   const goToSignUp = useCallback(
     source => {
       routeToSignup()

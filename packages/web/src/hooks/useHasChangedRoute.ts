@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 import useInstanceVar from 'common/hooks/useInstanceVar'
 
@@ -12,7 +12,8 @@ import useInstanceVar from 'common/hooks/useInstanceVar'
  * @param {function} onRouteChange the callback fired when the route changes
  */
 const useHasChangedRoute = (onRouteChange: () => void) => {
-  const { pathname } = useLocation()
+  const { location } = useHistory()
+  const { pathname } = location
   const [getCurrentRoute, setCurrentRoute] = useInstanceVar(pathname)
   useEffect(() => {
     if (pathname !== getCurrentRoute()) {
