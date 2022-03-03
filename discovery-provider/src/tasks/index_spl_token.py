@@ -133,12 +133,7 @@ def get_latest_slot(db):
         if highest_slot_query is not None:
             latest_slot = highest_slot_query[0]
 
-    # If no slots have yet been recorded, assume all are valid
-    # if latest_slot is None:
-
-    #     # 123199273
-    #     # 123199402
-    #     latest_slot = 123310630  # 123180604  # 123167240
+    # Return None if not yet cached
 
     logger.info(f"index_spl_token.py | returning {latest_slot} for highest slot")
     return latest_slot
@@ -354,7 +349,7 @@ def process_spl_token_tx(
     # Current batch
     page_count = 0
 
-    # Traverse recent records until an intersection is found with existing Plays table
+    # Traverse recent records until an intersection is found with latest slot
     while not intersection_found:
         solana_logger.add_log(f"Requesting transactions before {last_tx_signature}")
         transactions_history = solana_client_manager.get_signatures_for_address(
