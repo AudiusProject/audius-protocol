@@ -3,7 +3,6 @@ from src import exceptions
 from src.models import Follow, Save, Track
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
-    get_current_user_id,
     get_users_by_id,
     get_users_ids,
     populate_track_metadata,
@@ -18,7 +17,7 @@ def get_top_followee_saves(saveType, args):
 
     limit = args.get("limit", 25)
 
-    current_user_id = get_current_user_id()
+    current_user_id = args.get("user_id")
     db = get_db_read_replica()
     with db.scoped_session() as session:
         # Construct a subquery of all followees

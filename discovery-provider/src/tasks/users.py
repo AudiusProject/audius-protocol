@@ -1,6 +1,7 @@
 import concurrent.futures
 import logging
 from datetime import datetime
+from time import time
 from typing import Any, Dict, List, Set, Tuple, TypedDict
 
 import base58
@@ -18,6 +19,7 @@ from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
+from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 
 logger = logging.getLogger(__name__)
@@ -36,6 +38,11 @@ def user_state_update(
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
     begin_user_state_update = datetime.now()
+    metric = PrometheusMetric(
+        "user_state_update_runtime_seconds",
+        "Runtimes for src.task.users:user_state_update()",
+        ("scope",),
+    )
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -118,6 +125,7 @@ def user_state_update(
             session.add(value_obj["user"])
 
     if num_total_changes:
+        metric.save_time({"scope": "full"})
         logger.info(
             f"index.py | users.py | user_state_update | finished user_state_update in {datetime.now() - begin_user_state_update} // per event: {(datetime.now() - begin_user_state_update) / num_total_changes} secs"
         )
@@ -139,9 +147,15 @@ def process_user_txs_serial(
     user_ids,
     skipped_tx_count,
 ):
+    metric = PrometheusMetric(
+        "user_state_update_runtime_seconds",
+        "Runtimes for src.task.users:user_state_update()",
+        ("scope",),
+    )
     processed_entries = 0
     for user_tx in user_txs:
         try:
+            process_user_txs_start_time = time()
             entry = user_tx[0]
             event_type = user_tx[1]
             tx_receipt = user_tx[2]
@@ -207,6 +221,9 @@ def process_user_txs_serial(
                 user_ids.add(user_id)
 
             processed_entries += 1
+            metric.save_time(
+                {"scope": "user_tx"}, start_time=process_user_txs_start_time
+            )
         except EntityMissingRequiredFieldError as e:
             logger.warning(f"Skipping tx {txhash} with error {e}")
             skipped_tx_count += 1

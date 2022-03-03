@@ -8,6 +8,7 @@ declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 #[program]
 pub mod audius_data {
     use anchor_lang::solana_program::secp256k1_program;
+    use anchor_lang::solana_program::system_program;
     use anchor_lang::solana_program::sysvar;
     use std::str::FromStr;
 
@@ -198,7 +199,7 @@ pub mod audius_data {
         if message != user_authority.to_bytes() {
             return Err(ErrorCode::Unauthorized.into());
         }
-        
+
         msg!("AudiusUserMetadata = {:?}", metadata);
 
         Ok(())
@@ -208,7 +209,35 @@ pub mod audius_data {
     pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
         msg!("Audius::UpdateUser");
         if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
-            return Err(ErrorCode::Unauthorized.into());
+            // Reject if system program provided as user delegate_auth
+            if ctx.accounts.user_delegate_authority.key() == system_program::id() {
+                return Err(ErrorCode::Unauthorized.into());
+            }
+
+            // Derive a target delegation account address from the user's storage PDA and provided user authority
+            // In the happy case this will match the account created in add_user_authority_delegate
+            // If there is a mismatch between the provided and derived value, we reject the transaction
+            let (derived_delegate_auth_acct, _) = Pubkey::find_program_address(
+                &[
+                    &ctx.accounts.user.key().to_bytes()[..32],
+                    &ctx.accounts.user_authority.key().to_bytes()[..32],
+                ],
+                ctx.program_id,
+            );
+            // Reject if PDA derivation is mismatched
+            if derived_delegate_auth_acct != ctx.accounts.user_delegate_authority.key() {
+                return Err(ErrorCode::Unauthorized.into());
+            }
+            // Attempt to deserialize data from the derived delegate account
+            let user_del_acct: UserAuthorityDelegate = UserAuthorityDelegate::try_deserialize(
+                &mut &ctx.accounts.user_delegate_authority.try_borrow_data()?[..],
+            )?;
+            // Confirm that the delegate authority and user match the function parameters
+            if user_del_acct.user_storage_account != ctx.accounts.user.key()
+                || user_del_acct.delegate_authority != ctx.accounts.user_authority.key()
+            {
+                return Err(ErrorCode::Unauthorized.into());
+            }
         }
         msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
@@ -222,9 +251,6 @@ pub mod audius_data {
         ctx.accounts.admin.is_write_enabled = is_write_enabled;
         Ok(())
     }
-
-    // User TODOS:
-    // - Enable happy path flow with both eth address and sol key
 
     /*
         Track related functions
@@ -402,6 +428,49 @@ pub mod audius_data {
 
         Ok(())
     }
+
+    // Enable an account to perform actions on behalf of a given user
+    pub fn add_user_authority_delegate(
+        ctx: Context<AddUserAuthorityDelegate>,
+        _base: Pubkey,
+        _handle_seed: [u8; 16],
+        _user_bump: u8,
+        user_authority_delegate: Pubkey,
+    ) -> Result<()> {
+        // Only permitted to user authority
+        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Assign incoming delegate fields
+        // Maintain the user's storage account and the incoming delegate authority key
+        ctx.accounts
+            .user_authority_delegate_pda
+            .user_storage_account = ctx.accounts.user.key();
+        ctx.accounts.user_authority_delegate_pda.delegate_authority = user_authority_delegate;
+        Ok(())
+    }
+
+    // Disable an account that has been delegated authority for this user
+    pub fn remove_user_authority_delegate(
+        ctx: Context<RemoveUserAuthorityDelegate>,
+        _base: Pubkey,
+        _handle_seed: [u8; 16],
+        _user_bump: u8,
+        _user_authority_delegate: Pubkey,
+        _delegate_bump: u8,
+    ) -> Result<()> {
+        // Only permitted to user authority
+        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
+        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+        ctx.accounts.user_authority_delegate_pda.delegate_authority = dummy_owner_field;
+        ctx.accounts
+            .user_authority_delegate_pda
+            .user_storage_account = dummy_owner_field;
+        Ok(())
+    }
 }
 
 /// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
@@ -418,6 +487,10 @@ pub const TRACK_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 /// Size of playlist account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
 pub const PLAYLIST_ACCOUNT_SIZE: usize = 8 + 32 + 8;
+
+/// Size of user authority delegation account
+/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
+pub const USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE: usize = 8 + 32 + 32;
 
 /// Instructions
 #[derive(Accounts)]
@@ -495,10 +568,13 @@ pub struct CreateUser<'info> {
 /// `user_authority` is a signer field which must match the `authority` field in the User account.
 #[derive(Accounts)]
 pub struct UpdateUser<'info> {
-    #[account(mut)]
+    #[account()]
     pub user: Account<'info, User>,
-    #[account(mut)]
+    #[account()]
     pub user_authority: Signer<'info>,
+    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    #[account()]
+    pub user_delegate_authority: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -507,6 +583,59 @@ pub struct UpdateAdmin<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
     pub admin_authority: Signer<'info>,
+}
+
+/// Instruction container to allow user delegation
+/// Allocates a new account that will be used for fallback in auth scenarios
+#[derive(Accounts)]
+#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)]
+pub struct AddUserAuthorityDelegate<'info> {
+    #[account()]
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        bump = user_bump
+    )]
+    pub user: Account<'info, User>,
+    #[account(
+        init,
+        payer = payer,
+        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        bump,
+        space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
+    )]
+    pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    #[account()]
+    pub user_authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+/// Instruction container to remove allocated user authority delegation
+/// Returns funds to payer
+#[derive(Accounts)]
+#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey, delegate_bump:u8)]
+pub struct RemoveUserAuthorityDelegate<'info> {
+    #[account()]
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        bump = user_bump
+    )]
+    pub user: Account<'info, User>,
+    #[account(
+        mut,
+        close = payer,
+        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        bump = delegate_bump
+    )]
+    pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    #[account()]
+    pub user_authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 /// Instruction container for track creation
@@ -623,7 +752,7 @@ pub struct CreatePlaylist<'info> {
 pub struct UpdatePlaylist<'info> {
     #[account()]
     pub playlist: Account<'info, Playlist>,
-    #[account(mut)]
+    #[account()]
     pub user: Account<'info, User>,
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -686,6 +815,15 @@ pub struct Track {
 pub struct Playlist {
     pub owner: Pubkey,
     pub playlist_id: u64,
+}
+
+/// User delegated authority account
+#[account]
+pub struct UserAuthorityDelegate {
+    // The account that is given permission to operate on this user's behalf
+    pub delegate_authority: Pubkey,
+    // PDA of user storage account enabling operations
+    pub user_storage_account: Pubkey,
 }
 
 // Errors
