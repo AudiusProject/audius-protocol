@@ -44,7 +44,7 @@ import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
 import { withTimeout } from 'utils/network'
 import { restrictedHandles } from 'utils/restrictedHandles'
-import { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
 import { MAX_HANDLE_LENGTH } from '../utils/formatSocialProfile'
 
@@ -310,20 +310,42 @@ function* signUp() {
     confirmerActions.requestConfirmation(
       handle,
       function* () {
-        const { blockHash, blockNumber, userId, error, phase } = yield call(
-          AudiusBackend.signUp,
-          {
-            email,
-            password,
-            formFields: createUserMetadata,
-            hasWallet: alreadyExisted,
-            referrer,
-            feePayerOverride
-          }
-        )
+        const {
+          blockHash,
+          blockNumber,
+          userId,
+          error,
+          errorStatus,
+          phase
+        } = yield call(AudiusBackend.signUp, {
+          email,
+          password,
+          formFields: createUserMetadata,
+          hasWallet: alreadyExisted,
+          referrer,
+          feePayerOverride
+        })
 
         if (error) {
-          yield put(signOnActions.signUpFailed(error, phase))
+          const rateLimited = errorStatus === 429
+          const params = {
+            error,
+            phase,
+            redirectRoute: rateLimited ? SIGN_UP_PAGE : ERROR_PAGE,
+            shouldReport: !rateLimited,
+            shouldToast: rateLimited
+          }
+          if (rateLimited) {
+            params.message = 'Please try again later'
+            yield put(
+              make(Name.CREATE_ACCOUNT_RATE_LIMIT, {
+                handle,
+                email,
+                location
+              })
+            )
+          }
+          yield put(signOnActions.signUpFailed(params))
           return
         }
 

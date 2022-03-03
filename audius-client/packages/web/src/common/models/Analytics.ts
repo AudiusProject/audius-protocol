@@ -31,6 +31,8 @@ export enum Name {
   CREATE_ACCOUNT_COMPLETE_CREATING = 'Create Account: Complete Creating',
   // When the user continues past the entire signup modal
   CREATE_ACCOUNT_FINISH = 'Create Account: Finish',
+  // When the user gets rate limited during signup auth
+  CREATE_ACCOUNT_RATE_LIMIT = 'Create Account: Rate Limit',
 
   // Sign in
   SIGN_IN_OPEN = 'Sign In: Open',
