@@ -1,9 +1,12 @@
-import json
 import logging  # pylint: disable=C0302
 
 from src.models import Track
 from src.utils import helpers, redis_connection
-from src.utils.redis_cache import get_track_id_cache_key
+from src.utils.redis_cache import (
+    get_all_json_cached_key,
+    get_track_id_cache_key,
+    set_json_cached_key,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -12,21 +15,9 @@ ttl_sec = 5 * 60
 
 
 def get_cached_tracks(track_ids):
-    redis_track_id_keys = map(get_track_id_cache_key, track_ids)
+    redis_track_id_keys = list(map(get_track_id_cache_key, track_ids))
     redis = redis_connection.get_redis()
-    cached_values = redis.mget(redis_track_id_keys)
-
-    tracks = []
-    for val in cached_values:
-        if val is not None:
-            try:
-                track = json.loads(val)
-                tracks.append(track)
-            except Exception as e:
-                logger.warning(f"Unable to deserialize cached track: {e} {val}")
-                tracks.append(None)
-        else:
-            tracks.append(None)
+    tracks = get_all_json_cached_key(redis, redis_track_id_keys)
     return tracks
 
 
@@ -34,8 +25,7 @@ def set_tracks_in_cache(tracks):
     redis = redis_connection.get_redis()
     for track in tracks:
         key = get_track_id_cache_key(track["track_id"])
-        serialized = json.dumps(track)
-        redis.set(key, serialized, ttl_sec)
+        set_json_cached_key(redis, key, track, ttl_sec)
 
 
 def get_unpopulated_tracks(

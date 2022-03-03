@@ -1,8 +1,10 @@
 import functools
 import json
-import logging  # pylint: disable=C0302
+import logging
+from typing import Any, List  # pylint: disable=C0302
 
 from flask.globals import request
+from flask.json import JSONDecoder, JSONEncoder
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
 
@@ -36,12 +38,15 @@ def use_redis_cache(key, ttl_sec, work_func):
     return to_cache
 
 
-def get_json_cached_key(redis, key):
+def get_json_cached_key(redis, key: str) -> Any:
+    """
+    Gets a JSON serialized value from the cache.
+    """
     cached_value = redis.get(key)
     if cached_value:
         logger.debug(f"Redis Cache - hit {key}")
         try:
-            deserialized = json.loads(cached_value)
+            deserialized = json.loads(cached_value, cls=JSONDecoder)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize json cached response: {e}")
@@ -53,8 +58,38 @@ def get_json_cached_key(redis, key):
     return None
 
 
+def get_all_json_cached_key(redis, keys: List[str]) -> List[Any]:
+    """
+    Gets all the JSON serialized values from the cache for provided keys.
+    Returns an ordered list mapped from the provided keys.
+    If any value is not de-serializable, `None` is returned in place.
+    """
+    cached_values = redis.mget(keys)
+    results = []
+    for i in range(len(cached_values)):
+        val = cached_values[i]
+        key = keys[i]
+        if val:
+            try:
+                deserialized = json.loads(val, cls=JSONDecoder)
+                results.append(deserialized)
+            except Exception as e:
+                logger.warning(f"Unable to deserialize json cached response: {e}")
+                # In the case we are unable to deserialize, delete the key so that
+                # it may be properly re-cached.
+                redis.delete(key)
+                results.append(None)
+        else:
+            results.append(None)
+    return results
+
+
 def set_json_cached_key(redis, key, obj, ttl=None):
-    serialized = json.dumps(obj)
+    """
+    Sets an obj int the cache via JSON serialization.
+    Uses the flask JSONEncoder to handle datetime => ISO string.
+    """
+    serialized = json.dumps(obj, cls=JSONEncoder)
     redis.set(key, serialized, ttl)
 
 
