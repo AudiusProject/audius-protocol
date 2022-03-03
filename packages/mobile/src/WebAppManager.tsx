@@ -11,8 +11,8 @@ type WebAppManagerProps = {
 }
 
 export const WebAppManager = ({ webApp, children }: WebAppManagerProps) => {
-  const clientStore = useSelector((state: AppState) => state.clientStore)
-  const isClientStoreEmpty = isEmpty(clientStore)
+  const commonState = useSelector((state: AppState) => state.common)
+  const isClientStoreEmpty = isEmpty(commonState)
   return (
     <>
       {webApp}
