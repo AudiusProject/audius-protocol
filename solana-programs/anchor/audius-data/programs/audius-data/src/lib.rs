@@ -35,6 +35,8 @@ pub mod audius_data {
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         audius_admin.verifier = verifier;
+        audius_admin.initial_track_id_offset = track_id_offset;
+        audius_admin.initial_playlist_id_offset = playlist_id_offset;
         audius_admin.track_id = track_id_offset;
         audius_admin.playlist_id = playlist_id_offset;
         audius_admin.is_write_enabled = true;
@@ -282,6 +284,18 @@ pub mod audius_data {
         Ok(())
     }
 
+    pub fn update_legacy_track(ctx: Context<UpdateLegacyTrack>, track_id: u64, metadata: String) -> Result<()> {
+        msg!("Audius::UpdateTrack");
+        if track_id > ctx.accounts.audius_admin.initial_track_id_offset {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        msg!("AudiusTrackMetadata = {:?}", metadata);
+        Ok(())
+    }
+
     pub fn delete_track(ctx: Context<DeleteTrack>) -> Result<()> {
         msg!("Audius::DeleteTrack");
         if ctx.accounts.user.key() != ctx.accounts.track.owner {
@@ -317,31 +331,6 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
         if track_id >= ctx.accounts.audius_admin.track_id {
-            return Err(ErrorCode::InvalidId.into());
-        }
-        Ok(())
-    }
-
-    pub fn write_playlist_social_action(
-        ctx: Context<PlaylistSocialAction>,
-        base: Pubkey,
-        _user_handle: UserHandle,
-        _playlist_social_action: PlaylistSocialActionValues,
-        playlist_id: u64,
-    ) -> Result<()> {
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
-        let (base_pda, _bump) =
-            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
-
-        // Confirm the base PDA matches the expected value provided the target audius admin
-        if base_pda != base {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if playlist_id >= ctx.accounts.audius_admin.playlist_id {
             return Err(ErrorCode::InvalidId.into());
         }
         Ok(())
@@ -387,6 +376,31 @@ pub mod audius_data {
         // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
         let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
         ctx.accounts.playlist.owner = dummy_owner_field;
+        Ok(())
+    }
+
+    pub fn write_playlist_social_action(
+        ctx: Context<PlaylistSocialAction>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _playlist_social_action: PlaylistSocialActionValues,
+        playlist_id: u64,
+    ) -> Result<()> {
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if playlist_id >= ctx.accounts.audius_admin.playlist_id {
+            return Err(ErrorCode::InvalidId.into());
+        }
         Ok(())
     }
 
@@ -473,8 +487,8 @@ pub mod audius_data {
     }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 1;
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 8 (track id offset) + 8 (playlist id offset) + 1 (is_write_enabled)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 8 + 8 + 1;
 
 /// Size of user account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
@@ -669,6 +683,19 @@ pub struct UpdateTrack<'info> {
     pub authority: Signer<'info>,
 }
 
+/// Instruction container for legacy track updates
+/// Confirm that the user authority matches signer authority field
+#[derive(Accounts)]
+pub struct UpdateLegacyTrack<'info> {
+    #[account(mut)]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    // User update authority field
+    pub authority: Signer<'info>,
+}
+
 /// Instruction container for track deletes
 /// Removes track storage account entirely
 #[derive(Accounts)]
@@ -793,6 +820,8 @@ pub struct AudiusAdmin {
     pub verifier: Pubkey,
     pub track_id: u64,
     pub playlist_id: u64,
+    pub initial_track_id_offset: u64,
+    pub initial_playlist_id_offset: u64,
     pub is_write_enabled: bool,
 }
 

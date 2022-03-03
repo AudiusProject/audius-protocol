@@ -376,6 +376,37 @@ export const updateTrack = async ({
 };
 
 /// Initialize a user from the Audius Admin account
+type UpdateLegacyTrackParams = {
+  program: Program<AudiusData>;
+  trackPDA: anchor.web3.PublicKey;
+  trackId: anchor.BN;
+  metadata: string;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  userAuthorityKeypair: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+};
+
+export const updateLegacyTrack = async ({
+  program,
+  trackPDA,
+  trackId,
+  metadata,
+  adminStgPublicKey,
+  userAuthorityKeypair,
+  userStgAccountPDA,
+}: UpdateLegacyTrackParams) => {
+  return program.rpc.updateLegacyTrack(trackId, metadata, {
+    accounts: {
+      track: trackPDA,
+      audiusAdmin: adminStgPublicKey,
+      user: userStgAccountPDA,
+      authority: userAuthorityKeypair.publicKey,
+    },
+    signers: [userAuthorityKeypair],
+  });
+};
+
+/// Initialize a user from the Audius Admin account
 type DeleteTrackParams = {
   provider: Provider;
   program: Program<AudiusData>;

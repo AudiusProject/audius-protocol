@@ -1,5 +1,4 @@
 import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
 import Web3 from "web3";
 import { Account } from "web3-core";
 import { randomBytes } from "crypto";
@@ -155,7 +154,7 @@ export const pollAccountBalance = async (
   let numRetries = 0;
   while (currentBalance > targetBalance && numRetries < maxRetries) {
     currentBalance = await provider.connection.getBalance(targetAccount);
-    numRetries--;
+    numRetries++;
   }
   if (currentBalance > targetBalance) {
     throw new Error(
@@ -185,7 +184,7 @@ export const confirmLogInTransaction = async (
 };
 
 export const createSolanaUser = async (
-  program: Program<AudiusData>,
+  program: anchor.Program<AudiusData>,
   provider: anchor.Provider,
   adminStgKeypair: anchor.web3.Keypair
 ) => {
@@ -235,7 +234,7 @@ export const createSolanaUser = async (
 };
 
 export const createSolanaTrack = async (
-  program: Program<AudiusData>,
+  program: anchor.Program<AudiusData>,
   provider: anchor.Provider,
   adminStgKeypair: anchor.web3.Keypair,
   userAuthorityKeypair: anchor.web3.Keypair,
@@ -267,7 +266,7 @@ export const createSolanaTrack = async (
 };
 
 export const createSolanaPlaylist = async (
-  program: Program<AudiusData>,
+  program: anchor.Program<AudiusData>,
   provider: anchor.Provider,
   adminStgKeypair: anchor.web3.Keypair,
   userAuthorityKeypair: anchor.web3.Keypair,
