@@ -643,13 +643,13 @@ def record_metrics(func):
         metric = PrometheusMetric(
             "flask_route_latency_seconds",
             "Runtimes for flask routes",
-            ("route", "params"),
+            ("route"),
         )
         result = func(*args, **kwargs)
 
         params = "".join(route.split("?")[1:])
         route = route.split("?")[0]
-        metric.save_time({"route": route, "params": params})
+        metric.save_time({"route": route})
 
         return result
 
