@@ -122,6 +122,19 @@ class Upload extends Component {
   }
 
   onSelectTracks = async selectedFiles => {
+    // Disallow duplicate tracks:
+    // Filter out any tracks that already exist in `state.tracks`
+    // and any that exist multiple times in `selectedFiles`
+    const existing = new Set(
+      this.state.tracks.map(({ file }) => `${file.name}-${file.lastModified}`)
+    )
+    selectedFiles = selectedFiles.filter(({ name, lastModified }) => {
+      const id = `${name}-${lastModified}`
+      if (existing.has(id)) return false
+      existing.add(id)
+      return true
+    })
+
     const processedFiles = processFiles(
       selectedFiles,
       false,
@@ -131,6 +144,7 @@ class Upload extends Component {
     if (tracks.length === processedFiles.length) {
       this.setState({ uploadTrackerror: null })
     }
+
     let uploadType = this.state.uploadType
     if (
       this.state.uploadType === UploadType.INDIVIDUAL_TRACK &&
