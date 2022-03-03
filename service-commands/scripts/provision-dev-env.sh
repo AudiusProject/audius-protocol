@@ -113,6 +113,7 @@ function setup_profile() {
     echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> $HOME/.profile
     echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> $HOME/.profile
     echo 'export AAO_DIR=$HOME/anti-abuse-oracle' >> $HOME/.profile
+    echo 'export TN_DIR=$HOME/trusted-notifier-service' >> $HOME/.profile
 }
 
 function silence_motd() {
