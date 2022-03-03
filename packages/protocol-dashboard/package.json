@@ -6,7 +6,7 @@
   "dependencies": {
     "3box": "1.19.1",
     "@apollo/client": "3.3.7",
-    "@audius/libs": "1.2.86",
+    "@audius/libs": "1.2.90",
     "@audius/stems": "0.3.10",
     "@craco/craco": "6.4.3",
     "@reduxjs/toolkit": "1.4.0",
