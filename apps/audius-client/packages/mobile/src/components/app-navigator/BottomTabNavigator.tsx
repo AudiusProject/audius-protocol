@@ -5,7 +5,7 @@ import { ParamListBase } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { Animated, StyleSheet, View } from 'react-native'
 
-import BottomTabBar, { BottomTabBarProps } from 'app/components/bottom-tab-bar'
+import BottomTabBar from 'app/components/bottom-tab-bar'
 import NowPlayingDrawer from 'app/components/now-playing-drawer/NowPlayingDrawer'
 import { AudioScreen } from 'app/screens/audio-screen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
@@ -107,20 +107,13 @@ const ProfileStackScreen = createStackScreen<ProfileStackParamList>(Stack => (
 
 const Tab = createBottomTabNavigator()
 
-type BottomTabNavigatorProps = {
-  onBottomTabBarLayout: BottomTabBarProps['onLayout']
-}
-
 /**
  * The bottom tab navigator
  *
  * TODO: This navigator is only displayed when the user is authed, so we should
- * move drawers, modals, notifications in here. Need to wait until fully migrated to RN
- * because of the way the top level navigator is hidden to display the WebView
+ * move drawers, modals, notifications in here
  */
-export const BottomTabNavigator = ({
-  onBottomTabBarLayout
-}: BottomTabNavigatorProps) => {
+export const BottomTabNavigator = () => {
   // Set handlers for the NowPlayingDrawer and BottomTabBar
   // When the drawer is open, the bottom bar should hide (animated away).
   // When the drawer is closed, the bottom bar should reappear (animated in).
@@ -150,7 +143,6 @@ export const BottomTabNavigator = ({
             />
             <BottomTabBar
               {...props}
-              onLayout={onBottomTabBarLayout}
               display={bottomBarDisplay}
               translationAnim={bottomBarTranslationAnim}
             />
