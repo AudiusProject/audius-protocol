@@ -2,7 +2,7 @@ const { logger } = require('../logging')
 const axios = require('axios')
 const { timeout } = require('../utils')
 
-const TEN_MINS_IN_MS = 1000 * 60 * 10
+const TEN_MINS_IN_MS = 1000 * 60 // * 10
 class TrustedNotifierManager {
   constructor(nodeConfig, audiusLibs) {
     this.nodeConfig = nodeConfig
@@ -15,7 +15,7 @@ class TrustedNotifierManager {
 
     // will be set in init
     this.trustedNotifierData = {
-      emailAddress: null,
+      email: null,
       wallet: null,
       endpoint: null
     }
@@ -41,7 +41,7 @@ class TrustedNotifierManager {
       const nodeOperatorEmailAddress = this.nodeConfig.get(
         'nodeOperatorEmailAddress'
       )
-      this.trustedNotifierData.emailAddress = nodeOperatorEmailAddress
+      this.trustedNotifierData.email = nodeOperatorEmailAddress
       return
     }
 

@@ -5,11 +5,11 @@ module.exports = function (app) {
     '/cm',
     handleResponse(async (req, res) => {
       const trustedNotifierManager = req.app.get('trustedNotifierManager')
-      const emailAddress =
-        trustedNotifierManager.getTrustedNotifierData().emailAddress ||
+      const email =
+        trustedNotifierManager.getTrustedNotifierData().email ||
         'Email address unavailable at the moment'
       const response = {
-        emailAddress
+        email
       }
       return successResponse(response)
     })
