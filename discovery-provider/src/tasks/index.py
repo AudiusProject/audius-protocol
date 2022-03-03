@@ -552,7 +552,7 @@ def index_blocks(self, db, blocks_list):
     latest_block_timestamp = None
     changed_entity_ids_map = {}
     metric = PrometheusMetric(
-        "index_metrics_runtime_seconds",
+        "index_blocks_runtime_seconds",
         "Runtimes for src.task.index:index_blocks()",
         ("task_name",),
     )
