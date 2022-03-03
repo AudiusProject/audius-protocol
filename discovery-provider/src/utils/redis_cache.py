@@ -45,6 +45,9 @@ def get_json_cached_key(redis, key):
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize json cached response: {e}")
+            # In the case we are unable to deserialize, delete the key so that
+            # it may be properly re-cached.
+            redis.delete(key)
             return None
     logger.debug(f"Redis Cache - miss {key}")
     return None
@@ -103,30 +106,23 @@ def cache(**kwargs):
             )
             key = extract_key(request.path, request.args.items(), cache_prefix_override)
             if not has_user_id:
+                cached_resp = get_json_cached_key(redis, key)
+                if cached_resp:
+                    if transform is not None:
+                        return transform(cached_resp)
+                    return cached_resp, 200
+
                 cached_resp = redis.get(key)
 
-                if cached_resp:
-                    logger.debug(f"Redis Cache - hit {key}")
-                    try:
-                        deserialized = json.loads(cached_resp)
-                        if transform is not None:
-                            return transform(deserialized)  # pylint: disable=E1102
-                        return deserialized, 200
-                    except Exception as e:
-                        logger.warning(f"Unable to deserialize cached response: {e}")
-
-                logger.debug(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
 
             if len(response) == 2:
                 resp, status_code = response
                 if status_code < 400:
-                    serialized = json.dumps(resp)
-                    redis.set(key, serialized, ttl_sec)
+                    set_json_cached_key(redis, key, resp, ttl_sec)
                 return resp, status_code
-            serialized = json.dumps(response)
-            redis.set(key, serialized, ttl_sec)
-            return transform(response)  # pylint: disable=E1102
+            set_json_cached_key(redis, key, resp, ttl_sec)
+            return transform(response)
 
         return inner_wrap
 
