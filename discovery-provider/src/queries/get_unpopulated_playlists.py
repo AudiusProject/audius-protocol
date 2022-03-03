@@ -1,5 +1,5 @@
+import json
 import logging  # pylint: disable=C0302
-import pickle
 
 from src.models import Playlist
 from src.utils import helpers, redis_connection
@@ -20,7 +20,7 @@ def get_cached_playlists(playlist_ids):
     for val in cached_values:
         if val is not None:
             try:
-                playlist = pickle.loads(val)
+                playlist = json.loads(val)
                 playlists.append(playlist)
             except Exception as e:
                 logger.warning(f"Unable to deserialize cached playlist: {e}")
@@ -34,7 +34,7 @@ def set_playlists_in_cache(playlists):
     redis = redis_connection.get_redis()
     for playlist in playlists:
         key = get_playlist_id_cache_key(playlist["playlist_id"])
-        serialized = pickle.dumps(playlist)
+        serialized = json.dumps(playlist)
         redis.set(key, serialized, ttl_sec)
 
 

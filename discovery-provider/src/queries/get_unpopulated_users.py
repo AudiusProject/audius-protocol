@@ -1,5 +1,5 @@
+import json
 import logging  # pylint: disable=C0302
-import pickle
 
 from src.models import User
 from src.utils import helpers, redis_connection
@@ -20,7 +20,7 @@ def get_cached_users(user_ids):
     for val in cached_values:
         if val is not None:
             try:
-                user = pickle.loads(val)
+                user = json.loads(val)
                 users.append(user)
             except Exception as e:
                 logger.warning(f"Unable to deserialize cached user: {e}")
@@ -34,7 +34,7 @@ def set_users_in_cache(users):
     redis = redis_connection.get_redis()
     for user in users:
         key = get_user_id_cache_key(user["user_id"])
-        serialized = pickle.dumps(user)
+        serialized = json.dumps(user)
         redis.set(key, serialized, ttl_sec)
 
 

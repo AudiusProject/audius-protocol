@@ -1,7 +1,6 @@
 import functools
 import json
 import logging  # pylint: disable=C0302
-import pickle
 
 from flask.globals import request
 from src.utils import redis_connection
@@ -26,37 +25,14 @@ def extract_key(path, arg_items, cache_prefix_override=None):
     return key
 
 
-# NOTE: This function is deprecated in favor of `get_json_cached_key`
-# The value must also be set with `set_json_cached_key`
-def get_pickled_key(redis, key):
-    cached_value = redis.get(key)
-    if cached_value:
-        logger.debug(f"Redis Cache - hit {key}")
-        try:
-            deserialized = pickle.loads(cached_value)
-            return deserialized
-        except Exception as e:
-            logger.warning(f"Unable to deserialize cached response: {e}")
-            return None
-    logger.debug(f"Redis Cache - miss {key}")
-    return None
-
-
-# NOTE: This function is deprecated in favor of `set_json_cached_key`
-# The value must also be retrieved with `get_json_cached_key`
-def pickle_and_set(redis, key, obj, ttl=None):
-    serialized = pickle.dumps(obj)
-    redis.set(key, serialized, ttl)
-
-
 def use_redis_cache(key, ttl_sec, work_func):
     """Attempts to return value by key, otherwise caches and returns `work_func`"""
     redis = redis_connection.get_redis()
-    cached_value = get_pickled_key(redis, key)
+    cached_value = get_json_cached_key(redis, key)
     if cached_value:
         return cached_value
     to_cache = work_func()
-    pickle_and_set(redis, key, to_cache, ttl_sec)
+    set_json_cached_key(redis, key, to_cache, ttl_sec)
     return to_cache
 
 
@@ -132,7 +108,7 @@ def cache(**kwargs):
                 if cached_resp:
                     logger.debug(f"Redis Cache - hit {key}")
                     try:
-                        deserialized = pickle.loads(cached_resp)
+                        deserialized = json.loads(cached_resp)
                         if transform is not None:
                             return transform(deserialized)  # pylint: disable=E1102
                         return deserialized, 200
@@ -145,10 +121,10 @@ def cache(**kwargs):
             if len(response) == 2:
                 resp, status_code = response
                 if status_code < 400:
-                    serialized = pickle.dumps(resp)
+                    serialized = json.dumps(resp)
                     redis.set(key, serialized, ttl_sec)
                 return resp, status_code
-            serialized = pickle.dumps(response)
+            serialized = json.dumps(response)
             redis.set(key, serialized, ttl_sec)
             return transform(response)  # pylint: disable=E1102
 
