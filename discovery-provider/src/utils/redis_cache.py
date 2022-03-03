@@ -121,7 +121,7 @@ def cache(**kwargs):
                 if status_code < 400:
                     set_json_cached_key(redis, key, resp, ttl_sec)
                 return resp, status_code
-            set_json_cached_key(redis, key, resp, ttl_sec)
+            set_json_cached_key(redis, key, response, ttl_sec)
             return transform(response)
 
         return inner_wrap
