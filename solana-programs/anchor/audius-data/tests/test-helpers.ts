@@ -128,6 +128,22 @@ export const testCreateUser = async ({
   await confirmLogInTransaction(provider, tx, metadata);
 };
 
+export const pollAccountBalance = async (
+  provider: anchor.Provider,
+  targetAccount: anchor.web3.PublicKey,
+  targetBalance: Number,
+  maxRetries: Number
+) => {
+  let currentBalance = await provider.connection.getBalance(targetAccount)
+  let numRetries = 0
+  while (currentBalance > targetBalance && numRetries < maxRetries) {
+    currentBalance = await provider.connection.getBalance(targetAccount)
+  }
+  if (currentBalance > targetBalance) {
+    throw new Error(`Account ${targetAccount} failed to reach target balance ${targetBalance} in ${maxRetries} retries. Current balance = ${currentBalance}`)
+  }
+}
+
 export const confirmLogInTransaction = async (
   provider: anchor.Provider,
   tx: string,

@@ -552,9 +552,9 @@ def index_blocks(self, db, blocks_list):
     latest_block_timestamp = None
     changed_entity_ids_map = {}
     metric = PrometheusMetric(
-        "index_metrics_runtime_seconds",
+        "index_blocks_runtime_seconds",
         "Runtimes for src.task.index:index_blocks()",
-        ("task_name",),
+        ("scope",),
     )
     for i in block_order_range:
         start_time = time.time()
@@ -595,7 +595,7 @@ def index_blocks(self, db, blocks_list):
                     fetch_tx_receipts_start_time = time.time()
                     tx_receipt_dict = fetch_tx_receipts(self, block)
                     metric.save_time(
-                        {"task_name": "fetch_tx_receipts"},
+                        {"scope": "fetch_tx_receipts"},
                         start_time=fetch_tx_receipts_start_time,
                     )
                     logger.info(
@@ -635,7 +635,7 @@ def index_blocks(self, db, blocks_list):
                             if contract_type:
                                 txs_grouped_by_type[contract_type].append(tx_receipt)
                     metric.save_time(
-                        {"task_name": "parse_tx_receipts"},
+                        {"scope": "parse_tx_receipts"},
                         start_time=parse_tx_receipts_start_time,
                     )
                     logger.info(
@@ -656,7 +656,7 @@ def index_blocks(self, db, blocks_list):
                         block_hash,
                     )
                     metric.save_time(
-                        {"task_name": "fetch_ipfs_metadata"},
+                        {"scope": "fetch_ipfs_metadata"},
                         start_time=fetch_ipfs_metadata_start_time,
                     )
                     logger.info(
@@ -669,7 +669,7 @@ def index_blocks(self, db, blocks_list):
                     add_indexed_block_to_db_start_time = time.time()
                     add_indexed_block_to_db(session, block)
                     metric.save_time(
-                        {"task_name": "add_indexed_block_to_db"},
+                        {"scope": "add_indexed_block_to_db"},
                         start_time=add_indexed_block_to_db_start_time,
                     )
                     logger.info(
@@ -692,7 +692,7 @@ def index_blocks(self, db, blocks_list):
                         block,
                     )
                     metric.save_time(
-                        {"task_name": "process_state_changes"},
+                        {"scope": "process_state_changes"},
                         start_time=process_state_changes_start_time,
                     )
                     logger.info(
@@ -705,9 +705,7 @@ def index_blocks(self, db, blocks_list):
             try:
                 commit_start_time = time.time()
                 session.commit()
-                metric.save_time(
-                    {"task_name": "commit_time"}, start_time=commit_start_time
-                )
+                metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
                 logger.info(
                     f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
@@ -751,7 +749,7 @@ def index_blocks(self, db, blocks_list):
         )
 
         # Record the time this took in redis
-        metric.save_time({"task_name": "index_blocks"})
+        metric.save_time({"scope": "full"})
         duration_ms = round(time.time() - start_time * 1000)
         record_index_blocks_ms(redis, duration_ms)
         # Sweep records older than 30 days every day

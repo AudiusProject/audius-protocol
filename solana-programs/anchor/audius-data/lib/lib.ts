@@ -217,6 +217,7 @@ type UpdateUserParams = {
   program: Program<AudiusData>;
   metadata: string;
   userStgAccount: anchor.web3.PublicKey;
+  userDelegateAuthority: anchor.web3.PublicKey;
   userAuthorityKeypair: anchor.web3.Keypair;
 };
 
@@ -225,14 +226,19 @@ export const updateUser = async ({
   metadata,
   userStgAccount,
   userAuthorityKeypair,
+  userDelegateAuthority
 }: UpdateUserParams) => {
-  return program.rpc.updateUser(metadata, {
-    accounts: {
-      user: userStgAccount,
-      userAuthority: userAuthorityKeypair.publicKey,
-    },
-    signers: [userAuthorityKeypair],
-  });
+  return program.rpc.updateUser(
+    metadata,
+    {
+      accounts: {
+        user: userStgAccount,
+        userAuthority: userAuthorityKeypair.publicKey,
+        userDelegateAuthority
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 // Update Audius Admin account
