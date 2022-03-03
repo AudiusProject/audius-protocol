@@ -16,7 +16,7 @@ import {
   getPathname,
   profilePage
 } from 'audius-client/src/utils/route'
-import { Animated, LayoutChangeEvent, StyleSheet } from 'react-native'
+import { Animated, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
@@ -100,10 +100,6 @@ export type BottomTabBarProps = {
    */
   display: { isShowing: boolean }
   /**
-   * A function called when the compononent layout is complete
-   */
-  onLayout: (e: LayoutChangeEvent) => void
-  /**
    * Translation animation to move the bottom bar as drawers
    * are opened behind it
    */
@@ -114,8 +110,7 @@ const BottomTabBar = ({
   display,
   state,
   navigation,
-  translationAnim,
-  onLayout
+  translationAnim
 }: BottomTabBarProps & RNBottomTabBarProps) => {
   const pushRouteWeb = usePushRouteWeb()
   const bottomBarStyle = useTheme(styles.bottomBar, {
@@ -257,7 +252,6 @@ const BottomTabBar = ({
         style={bottomBarStyle}
         edges={['bottom']}
         pointerEvents='auto'
-        onLayout={onLayout}
       >
         {state.routes.map((route, index) => {
           const isFocused = state.index === index
