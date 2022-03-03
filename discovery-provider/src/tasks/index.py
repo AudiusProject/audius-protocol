@@ -705,9 +705,7 @@ def index_blocks(self, db, blocks_list):
             try:
                 commit_start_time = time.time()
                 session.commit()
-                metric.save_time(
-                    {"scope": "commit_time"}, start_time=commit_start_time
-                )
+                metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
                 logger.info(
                     f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
