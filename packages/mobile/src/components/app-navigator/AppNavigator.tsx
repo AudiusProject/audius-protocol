@@ -1,8 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
-import { useNavigationState } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 
@@ -13,21 +12,11 @@ import {
   getOnSignUp
 } from 'app/store/lifecycle/selectors'
 import { getAccountAvailable } from 'app/store/signon/selectors'
-import { getNavigationStateAtRoute } from 'app/utils/navigation'
 
 import { BottomTabNavigator } from './BottomTabNavigator'
 
 // This enables the RN bottom bar and navigation
 const IS_MAIN_NAVIGATION_ENABLED = Config.NATIVE_NAVIGATION_ENABLED === 'true'
-
-// As screens get migrated to RN, add them to this set.
-// This set should only include the screens accessible from the bottom bar
-// (sign on screens are implicitly included)
-const nativeScreens = new Set(
-  IS_MAIN_NAVIGATION_ENABLED
-    ? ['trending', 'explore', 'feed', 'profile', 'favorites']
-    : []
-)
 
 const styles = StyleSheet.create({
   appNavigator: {
@@ -45,11 +34,6 @@ const Stack = createStackNavigator()
  * based on if the user is authed
  */
 const AppNavigator = () => {
-  const [bottomTabBarHeight, setBottomTabBarHeight] = useState(0)
-  const mainNavigationState = useNavigationState(
-    getNavigationStateAtRoute(['main'])
-  )
-
   const dappLoaded = useSelector(getDappLoaded)
   const signedIn = useSelector(getIsSignedIn)
   const onSignUp = useSelector(getOnSignUp)
@@ -64,31 +48,17 @@ const AppNavigator = () => {
     )
   }, [dappLoaded, isAccountAvailable, signedIn, onSignUp])
 
-  const isNativeScreen = useMemo(() => {
-    return (
-      !mainNavigationState ||
-      nativeScreens.has(
-        mainNavigationState.routes[mainNavigationState.index]?.name
-      )
-    )
-  }, [mainNavigationState])
-
+  // Set the height of the navigator to be 0
+  // in cases where the webview needs to be shown.
+  // Janky but required to get touch events etc. working properly
+  // Can be removed when fully migrated to RN
   const navigatorHeight = useMemo(() => {
     if (!IS_MAIN_NAVIGATION_ENABLED && isAuthed) {
       return 0
     }
 
-    return isNativeScreen ? '100%' : bottomTabBarHeight
-  }, [isAuthed, isNativeScreen, bottomTabBarHeight])
-
-  // Set the height of the navigator to be the height of the bottom tab bar
-  // in cases where the webview needs to be shown.
-  // Janky but required to get touch events etc. working properly
-  // Can be removed when fully migrated to RN
-  const handleBottomTabBarLayout = useCallback((e: LayoutChangeEvent) => {
-    const { height } = e.nativeEvent.layout
-    setBottomTabBarHeight(height)
-  }, [])
+    return '100%'
+  }, [isAuthed])
 
   return (
     <View style={[styles.appNavigator, { height: navigatorHeight }]}>
@@ -98,19 +68,13 @@ const AppNavigator = () => {
         }}
       >
         {isAuthed ? (
-          <>
-            <Stack.Screen
-              name='main'
-              navigationKey='main'
-              options={{ headerShown: false }}
-            >
-              {() => (
-                <BottomTabNavigator
-                  onBottomTabBarLayout={handleBottomTabBarLayout}
-                />
-              )}
-            </Stack.Screen>
-          </>
+          <Stack.Screen
+            name='main'
+            navigationKey='main'
+            options={{ headerShown: false }}
+          >
+            {() => (IS_MAIN_NAVIGATION_ENABLED ? <BottomTabNavigator /> : null)}
+          </Stack.Screen>
         ) : (
           <Stack.Screen name='sign-on' component={SignOnNavigator} />
         )}
