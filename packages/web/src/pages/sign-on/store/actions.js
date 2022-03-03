@@ -149,10 +149,21 @@ export const signUpSucceeded = () => ({ type: SIGN_UP_SUCCEEDED })
 export function signUpSucceededWithId(userId) {
   return { type: SIGN_UP_SUCCEEDED_WITH_ID, userId }
 }
-export const signUpFailed = (error, phase) => ({
+export const signUpFailed = ({
+  error,
+  phase,
+  redirectRoute,
+  shouldReport,
+  shouldToast,
+  message
+}) => ({
   type: SIGN_UP_FAILED,
   error,
-  phase
+  phase,
+  redirectRoute,
+  shouldReport,
+  shouldToast,
+  message
 })
 
 /**

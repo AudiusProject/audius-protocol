@@ -22,13 +22,17 @@ function* handleError(action: errorActions.HandleErrorAction) {
   }
 
   if (action.shouldRedirect) {
-    yield put(
-      make(Name.ERROR_PAGE, {
-        error: action.message,
-        name: action.name
-      })
-    )
-    yield put(pushRoute(ERROR_PAGE))
+    if (action.redirectRoute) {
+      yield put(pushRoute(action.redirectRoute))
+    } else {
+      yield put(
+        make(Name.ERROR_PAGE, {
+          error: action.message,
+          name: action.name
+        })
+      )
+      yield put(pushRoute(ERROR_PAGE))
+    }
   }
   if (action.shouldToast) {
     yield put(toast({ content: action.message }))
