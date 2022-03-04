@@ -1,9 +1,9 @@
 import moment from 'moment'
-import { createSelector } from 'reselect'
 
 import { CommonState } from 'common/store'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUser, getUsers } from 'common/store/cache/users/selectors'
+import { createDeepEqualSelector } from 'common/utils/selectorHelpers'
 import { removeNullable } from 'common/utils/typeUtils'
 
 import { CollectionSortMode } from './types'
@@ -37,7 +37,7 @@ export const getProfileTracksLineup = (state: CommonState) =>
   state.pages.profile.tracks
 
 export const makeGetProfile = () => {
-  return createSelector(
+  return createDeepEqualSelector(
     [
       getProfileStatus,
       getProfileError,
