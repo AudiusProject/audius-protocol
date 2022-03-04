@@ -55,6 +55,13 @@ TX_SIGNATURES_PROCESSING_SIZE = 100
 
 logger = logging.getLogger(__name__)
 
+# Parse a spl token transaction information to check if the token balances change
+# by comparing the pre token balance and post token balance fields
+# NOTE: that the account index is used instead of the owner field
+# because the owner could be the same for both - in the case for user bank accts
+# Return a tuple of the owners - corresponding to the root accounts and the
+# token accounts which are the accounts in the transaction account keys
+
 
 def get_token_balance_change_owners(
     tx_result: TransactionInfoResult,
@@ -69,7 +76,7 @@ def get_token_balance_change_owners(
         or "message" not in tx_result["transaction"]
         or "accountKeys" not in tx_result["transaction"]["message"]
     ):
-        logger.info("iomnvalid format, return early")
+        logger.error("invalid format, return early")
         return (root_accounts_to_refresh, token_accounts_to_refresh)
     owner_balance_dict = {}
     account_keys = tx_result["transaction"]["message"]["accountKeys"]
@@ -78,19 +85,18 @@ def get_token_balance_change_owners(
             "amount"
         ]
     for post_balance in tx_result["meta"]["postTokenBalances"]:
-        if (
-            post_balance["accountIndex"] not in owner_balance_dict
-            and post_balance["uiTokenAmount"]["amount"] != "0"
-        ):
-            root_accounts_to_refresh.add(post_balance["owner"])
-            token_accounts_to_refresh.add(account_keys[post_balance["accountIndex"]])
+        account_index = post_balance["accountIndex"]
+        amount = post_balance["uiTokenAmount"]["amount"]
+        owner = post_balance["owner"]
+        if account_index not in owner_balance_dict and amount != "0":
+            root_accounts_to_refresh.add(owner)
+            token_accounts_to_refresh.add(account_keys[account_index])
         elif (
-            post_balance["accountIndex"] in owner_balance_dict
-            and post_balance["uiTokenAmount"]["amount"]
-            != owner_balance_dict[post_balance["accountIndex"]]
+            account_index in owner_balance_dict
+            and amount != owner_balance_dict[account_index]
         ):
-            root_accounts_to_refresh.add(post_balance["owner"])
-            token_accounts_to_refresh.add(account_keys[post_balance["accountIndex"]])
+            root_accounts_to_refresh.add(owner)
+            token_accounts_to_refresh.add(account_keys[account_index])
     return (root_accounts_to_refresh, token_accounts_to_refresh)
 
 
@@ -145,7 +151,6 @@ def parse_sol_tx_batch(
     redis: Redis,
     tx_sig_batch_records: List[ConfirmedSignatureForAddressResult],
     solana_logger: SolanaIndexingLogger,
-    retries=10,
 ):
     """
     Parse a batch of solana transactions in parallel by calling parse_spl_token_transaction
@@ -182,7 +187,6 @@ def parse_sol_tx_batch(
             logger.error(
                 f"index_spl_token.py | Error parsing sol spl token transaction: {exc}"
             )
-            # if no more retries, raise
             raise exc
 
     update_user_ids: Set[int] = set()
@@ -301,6 +305,7 @@ def process_spl_token_tx(
     solana_client_manager: SolanaClientManager, db: SessionManager, redis: Redis
 ):
     solana_logger = SolanaIndexingLogger("index_spl_token")
+    solana_logger.start_time("fetch_batches")
     try:
         base58.b58decode(SPL_TOKEN_PROGRAM)
     except ValueError:
@@ -393,6 +398,8 @@ def process_spl_token_tx(
     transaction_signatures.reverse()
     logger.info("index_spl_token.py | intersection found")
     totals = {"user_ids": 0, "root_accts": 0, "token_accts": 0}
+    solana_logger.end_time("fetch_batches")
+    solana_logger.start_time("parse_batches")
     for tx_sig_batch in transaction_signatures:
         for tx_sig_batch_records in split_list(
             tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
@@ -404,6 +411,7 @@ def process_spl_token_tx(
             totals["root_accts"] += len(root_accounts)
             totals["token_accts"] += len(token_accounts)
 
+    solana_logger.end_time("parse_batches")
     solana_logger.add_context("total_user_ids_updated", totals["user_ids"])
     solana_logger.add_context("total_root_accts_updated", totals["root_accts"])
     solana_logger.add_context("total_token_accts_updated", totals["token_accts"])
