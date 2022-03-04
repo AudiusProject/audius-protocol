@@ -6,6 +6,7 @@ import {
   PlaybackSource
 } from 'audius-client/src/common/models/Analytics'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
+import { LineupState } from 'audius-client/src/common/models/Lineup'
 import Status from 'audius-client/src/common/models/Status'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
@@ -46,8 +47,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   container: {
     marginVertical: spacing(4),
     marginHorizontal: spacing(3),
-    // TODO: Need to fix this spacing issue on the bottom of pages to account for the bottom bar and now playlist drawer
-    marginBottom: 240,
     borderRadius: 6
   },
   trackListContainer: {
@@ -69,7 +68,7 @@ export const TracksTab = ({ navigation }) => {
   const isPlaying = useSelector(getPlaying)
   const playingUid = useSelector(getPlayingUid)
   const savedTracksStatus = useSelectorWeb(getSavedTracksStatus)
-  const savedTracks = useSelectorWeb(getSavedTracksLineup)
+  const savedTracks: LineupState<Track> = useSelectorWeb(getSavedTracksLineup)
 
   const trackIds = savedTracks.entries.map(e => e.id)
   const tracks = useSelectorWeb(
@@ -85,7 +84,7 @@ export const TracksTab = ({ navigation }) => {
 
   const tracksWithUsers = Object.values(tracks).map(track => ({
     ...track,
-    uid: savedTracks.entries.find(t => t.id === track.track_id).uid,
+    uid: savedTracks.entries.find(t => t.id === track.track_id)?.uid,
     user: artists[track.owner_id]
   }))
 
@@ -132,7 +131,7 @@ export const TracksTab = ({ navigation }) => {
   const togglePlay = useCallback(
     (uid: UID, id: ID) => {
       if (uid !== playingUid || (uid === playingUid && !isPlaying)) {
-        tracksActions.play(uid)
+        dispatchWeb(tracksActions.play(uid))
         track(
           make({
             eventName: Name.PLAYBACK_PLAY,
@@ -141,7 +140,7 @@ export const TracksTab = ({ navigation }) => {
           })
         )
       } else if (uid === playingUid && isPlaying) {
-        tracksActions.pause()
+        dispatchWeb(tracksActions.pause())
         track(
           make({
             eventName: Name.PLAYBACK_PAUSE,
@@ -151,7 +150,7 @@ export const TracksTab = ({ navigation }) => {
         )
       }
     },
-    [isPlaying, playingUid]
+    [dispatchWeb, isPlaying, playingUid]
   )
 
   // TODO: Use the dot spinner

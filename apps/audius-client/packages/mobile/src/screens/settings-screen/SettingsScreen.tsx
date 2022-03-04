@@ -38,6 +38,13 @@ export const SettingsScreen = () => {
 
   const navigation = useNavigation<ProfileStackParamList>()
 
+  const handlePressHistory = useCallback(() => {
+    navigation.push({
+      native: { screen: 'ListeningHistoryScreen', params: undefined },
+      web: { route: '/history' }
+    })
+  }, [navigation])
+
   const handlePressNotifications = useCallback(() => {
     navigation.push({
       native: { screen: 'NotificationSettingsScreen', params: undefined },
@@ -56,7 +63,7 @@ export const SettingsScreen = () => {
     <Screen title={messages.title} topbarRight={null} variant='secondary'>
       <Image source={audiusLogoHorizontal} style={styles.logo} />
       <AccountSettingsRow />
-      <SettingsRow onPress={() => null}>
+      <SettingsRow onPress={handlePressHistory}>
         <SettingsRowLabel
           label={messages.listeningHistory}
           iconSource={Headphone}

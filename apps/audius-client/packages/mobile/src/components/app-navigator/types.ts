@@ -32,6 +32,7 @@ export type ProfileStackParamList = BaseStackParamList & {
   EditProfile: undefined
   SettingsScreen: undefined
   AboutScreen: undefined
+  ListeningHistoryScreen: undefined
   AccountSettingsScreen: undefined
   NotificationSettingsScreen: undefined
   AudioScreen: undefined

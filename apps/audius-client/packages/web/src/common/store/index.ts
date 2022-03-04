@@ -25,6 +25,7 @@ import exploreCollectionsReducer from 'common/store/pages/explore/exploreCollect
 import explorePageReducer from 'common/store/pages/explore/slice'
 import feed from 'common/store/pages/feed/reducer'
 import { FeedPageState } from 'common/store/pages/feed/types'
+import historyPageReducer from 'common/store/pages/history-page/reducer'
 import profileReducer from 'common/store/pages/profile/reducer'
 import { ProfilePageState } from 'common/store/pages/profile/types'
 import savedPageReducer from 'common/store/pages/saved-page/reducer'
@@ -140,6 +141,7 @@ export const reducers = (ctx: CommonStoreContext) => ({
     feed,
     explore: explorePageReducer,
     exploreCollections: exploreCollectionsReducer,
+    historyPage: historyPageReducer,
     profile: profileReducer,
     smartCollection,
     savedPage: savedPageReducer,
@@ -262,6 +264,7 @@ export type CommonState = {
     exploreCollections: ReturnType<typeof exploreCollectionsReducer>
     smartCollection: ReturnType<typeof smartCollection>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
+    historyPage: ReturnType<typeof historyPageReducer>
     track: TrackPageState
     profile: ProfilePageState
     savedPage: ReturnType<typeof savedPageReducer>

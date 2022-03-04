@@ -15,9 +15,10 @@ import { ID, UID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { getUserId } from 'common/store/account/selectors'
 import { makeGetTableMetadatas } from 'common/store/lineup/selectors'
+import { tracksActions } from 'common/store/pages/history-page/lineups/tracks/actions'
+import { getHistoryTracksLineup } from 'common/store/pages/history-page/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import * as socialActions from 'common/store/social/tracks/actions'
-import { getHistoryTracksLineup } from 'pages/history-page/store/selectors'
 import { useRecord, make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { AppState } from 'store/types'
@@ -26,7 +27,6 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
 import { HistoryPageProps as MobileHistoryPageProps } from './components/mobile/HistoryPage'
-import { tracksActions } from './store/lineups/tracks/actions'
 
 const messages = {
   title: 'History',
