@@ -33,3 +33,6 @@ latest_sol_rewards_manager_db_tx_key = "latest_sol_program_tx:rewards_manager:db
 
 latest_sol_user_bank_program_tx_key = "latest_sol_program_tx:user_bank:chain"
 latest_sol_user_bank_db_tx_key = "latest_sol_program_tx:user_bank:db"
+
+latest_sol_spl_token_program_tx_key = "latest_sol_program_tx:spl_token:chain"
+latest_sol_spl_token_db_key = "latest_sol_program_tx:spl_token:db"
