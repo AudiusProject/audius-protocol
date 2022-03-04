@@ -72,9 +72,8 @@ const AppNavigator = () => {
             name='main'
             navigationKey='main'
             options={{ headerShown: false }}
-          >
-            {() => (IS_MAIN_NAVIGATION_ENABLED ? <BottomTabNavigator /> : null)}
-          </Stack.Screen>
+            component={IS_MAIN_NAVIGATION_ENABLED ? BottomTabNavigator : View}
+          />
         ) : (
           <Stack.Screen name='sign-on' component={SignOnNavigator} />
         )}
