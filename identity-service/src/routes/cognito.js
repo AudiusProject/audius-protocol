@@ -100,6 +100,9 @@ module.exports = function (app) {
           identities.push(phone)
         }
         if (dob && name) {
+          // legacy check against dob and name
+          identities.push(JSON.stringify({ dob, name }))
+          // deduping against lowercased names
           identities.push(JSON.stringify({ dob, name: nameLowercased }))
         }
         if (idNumber) {
@@ -108,8 +111,10 @@ module.exports = function (app) {
           // there are already users whose masked identities were based on this format
           identities.push(`${value}::${category}::${type}`)
         } else {
-          // if webhook does not include id number, then we are expecting a few of the items below
-          identities.push(JSON.stringify({ phone, dob, address, name: nameLowercased }))
+          // if webhook does not include id number, then we are expecting a few of the items below.
+          // this is left here for backwards compatibility as it was the original lightning check
+          // before we checked for dob and name
+          identities.push(JSON.stringify({ phone, dob, address, name }))
         }
 
         const maskedIdentities = identities.map(createMaskedCognitoIdentity)
