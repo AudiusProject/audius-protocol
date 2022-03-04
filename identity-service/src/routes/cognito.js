@@ -87,7 +87,7 @@ module.exports = function (app) {
         const { id_number: idNumber, phone, date_of_birth: dob, address, name } = userInfo
         const nameLowercased = name
           // if name is not null, then first and last are always present according to api
-          ? { first: name.first.toLowerCase(), last: name.last.toLowerCase() }
+          ? { first: (name.first && name.first.toLowerCase()) || '', last: (name.last && name.last.toLowerCase()) || '' }
           : null
 
         // make cognito identities unique on:
