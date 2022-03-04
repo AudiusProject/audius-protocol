@@ -1,3 +1,4 @@
+import { isEqual } from 'lodash'
 import { createSelectorCreator, defaultMemoize } from 'reselect'
 
 const shallowCompare = (a: Record<string, any>, b: Record<string, any>) =>
@@ -12,4 +13,9 @@ const shallowCompare = (a: Record<string, any>, b: Record<string, any>) =>
 export const createShallowSelector = createSelectorCreator(
   defaultMemoize,
   shallowCompare
+)
+
+export const createDeepEqualSelector = createSelectorCreator(
+  defaultMemoize,
+  isEqual
 )

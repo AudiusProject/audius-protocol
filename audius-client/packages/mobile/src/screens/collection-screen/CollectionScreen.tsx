@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   FavoriteSource,
@@ -59,9 +59,6 @@ export const CollectionScreen = () => {
   const user = useSelectorWeb(getUser)
 
   if (!collection || !user) {
-    console.warn(
-      'Collection or user missing for CollectionScreen, preventing render'
-    )
     return null
   }
 
@@ -109,12 +106,15 @@ const CollectionScreenComponent = ({
   const currentUserId = useSelectorWeb(getUserId)
   const isOwner = currentUserId === playlist_owner_id
 
-  const extraDetails = [
-    {
-      label: 'Modified',
-      value: formatDate(updated_at)
-    }
-  ]
+  const extraDetails = useMemo(
+    () => [
+      {
+        label: 'Modified',
+        value: formatDate(updated_at)
+      }
+    ],
+    [updated_at]
+  )
 
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
