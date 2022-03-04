@@ -117,7 +117,8 @@ module.exports = function (app) {
           identities.push(JSON.stringify({ phone, dob, address, name }))
         }
 
-        const maskedIdentities = identities.map(createMaskedCognitoIdentity)
+        const identitySet = new Set(identities)
+        const maskedIdentities = [...identitySet].map(createMaskedCognitoIdentity)
         const records = await models.CognitoFlowIdentities.findAll({
           where: {
             maskedIdentity: { [models.Sequelize.Op.in]: maskedIdentities }
