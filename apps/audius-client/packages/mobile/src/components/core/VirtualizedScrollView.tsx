@@ -21,6 +21,7 @@ export const VirtualizedScrollView = (props: VirtualizedScrollViewProps) => {
       ListHeaderComponent={listHeader}
       data={null}
       renderItem={() => null}
+      scrollIndicatorInsets={{ right: Number.MIN_VALUE }}
     />
   )
 }

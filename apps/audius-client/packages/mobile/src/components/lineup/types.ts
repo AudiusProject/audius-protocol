@@ -3,7 +3,7 @@ import Kind from 'audius-client/src/common/models/Kind'
 import { Lineup as LineupData } from 'audius-client/src/common/models/Lineup'
 import { LineupActions } from 'audius-client/src/common/store/lineup/actions'
 import { Maybe } from 'audius-client/src/common/utils/typeUtils'
-import { SectionListProps } from 'react-native'
+import { ScrollViewProps, SectionListProps } from 'react-native'
 
 export enum LineupVariant {
   MAIN = 'main',
@@ -106,4 +106,4 @@ export type LineupProps = {
    * another VirtualizedList.
    */
   listKey?: string
-}
+} & Pick<ScrollViewProps, 'showsVerticalScrollIndicator'>
