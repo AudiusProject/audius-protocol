@@ -28,7 +28,7 @@ import ExplainerTile from './components/ExplainerTile'
 
 export const messages = {
   title: '$AUDIO & Rewards',
-  description: 'View important stats like plays, reposts, and more.'
+  description: 'Complete tasks to earn $AUDIO tokens!'
 }
 
 export const RewardsContent = () => {
