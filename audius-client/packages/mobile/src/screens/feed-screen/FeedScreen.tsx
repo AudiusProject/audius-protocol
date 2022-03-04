@@ -70,6 +70,7 @@ export const FeedScreen = () => {
         refresh={refresh}
         refreshing={isRefreshing && feedLineup.isMetadataLoading}
         selfLoad
+        showsVerticalScrollIndicator={false}
       />
     </Screen>
   )
