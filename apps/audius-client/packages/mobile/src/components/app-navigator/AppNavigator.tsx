@@ -64,14 +64,14 @@ const AppNavigator = () => {
     <View style={[styles.appNavigator, { height: navigatorHeight }]}>
       <Stack.Navigator
         screenOptions={{
-          gestureEnabled: false
+          gestureEnabled: false,
+          headerShown: false
         }}
       >
         {isAuthed ? (
           <Stack.Screen
             name='main'
             navigationKey='main'
-            options={{ headerShown: false }}
             component={IS_MAIN_NAVIGATION_ENABLED ? BottomTabNavigator : View}
           />
         ) : (
