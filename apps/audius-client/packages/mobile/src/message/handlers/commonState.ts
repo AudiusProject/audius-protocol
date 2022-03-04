@@ -1,4 +1,4 @@
-import { receive } from 'app/store/common/slice'
+import { receive } from 'app/store/common/actions'
 
 import { MessageType, MessageHandlers } from '../types'
 

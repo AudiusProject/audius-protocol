@@ -7,7 +7,7 @@ import { composeWithDevTools } from 'redux-devtools-extension'
 import createSagaMiddleware from 'redux-saga'
 
 import audio, { AudioState } from './audio/reducer'
-import common from './common/slice'
+import { reducer as common } from './common/reducer'
 import downloads, { DownloadState } from './download/slice'
 import drawers, { DrawersState } from './drawers/slice'
 import googleCast, { GoogleCastState } from './googleCast/reducer'
