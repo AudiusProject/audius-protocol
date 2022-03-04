@@ -1,5 +1,10 @@
-import { Animated, StyleProp, View, ViewStyle } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import {
+  Animated,
+  StyleProp,
+  TouchableOpacity,
+  View,
+  ViewStyle
+} from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'

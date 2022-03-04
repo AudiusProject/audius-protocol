@@ -20,7 +20,7 @@ type Props = {
 
 const useStyles = makeStyles(({ spacing }) => ({
   contentContainer: {
-    paddingBottom: 240
+    paddingBottom: spacing(8)
   },
   header: {
     marginBottom: spacing(2)

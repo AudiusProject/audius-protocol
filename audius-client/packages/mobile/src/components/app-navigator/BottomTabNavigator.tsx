@@ -18,6 +18,7 @@ import { ProfileScreen } from 'app/screens/profile-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
+  ListeningHistoryScreen,
   NotificationSettingsScreen,
   SettingsScreen
 } from 'app/screens/settings-screen'
@@ -90,6 +91,10 @@ const ProfileStackScreen = createStackScreen<ProfileStackParamList>(Stack => (
     <Stack.Screen name='EditProfile' component={EditProfileScreen} />
     <Stack.Screen name='SettingsScreen' component={SettingsScreen} />
     <Stack.Screen name='AboutScreen' component={AboutScreen} />
+    <Stack.Screen
+      name='ListeningHistoryScreen'
+      component={ListeningHistoryScreen}
+    />
     <Stack.Screen
       name='AccountSettingsScreen'
       component={AccountSettingsScreen}

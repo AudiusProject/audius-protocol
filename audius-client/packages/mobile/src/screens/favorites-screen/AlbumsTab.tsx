@@ -51,7 +51,7 @@ export const AlbumsTab = () => {
             listKey='favorites-albums'
             scrollEnabled={false}
             collection={userAlbums ?? []}
-            style={{ marginVertical: 12, marginBottom: 240 }}
+            style={{ marginVertical: 12 }}
           />
         </>
       )}

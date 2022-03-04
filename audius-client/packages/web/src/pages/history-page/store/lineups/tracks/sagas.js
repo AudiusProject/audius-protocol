@@ -7,7 +7,7 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import {
   PREFIX,
   tracksActions
-} from 'pages/history-page/store/lineups/tracks/actions'
+} from 'common/store/pages/history-page/lineups/tracks/actions'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { LineupSagas } from 'store/lineup/sagas'
 
@@ -58,7 +58,8 @@ class TracksSagas extends LineupSagas {
     super(
       PREFIX,
       tracksActions,
-      store => store.history.tracks,
+      // store => store.history.tracks,
+      store => store.pages.historyPage.tracks,
       getHistoryTracks,
       keepTrackIdAndDateListened,
       /* removeDeleted */ false,

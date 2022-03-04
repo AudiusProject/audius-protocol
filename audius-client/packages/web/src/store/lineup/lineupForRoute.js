@@ -2,12 +2,12 @@ import { matchPath } from 'react-router'
 
 import { getCollectionTracksLineup } from 'common/store/pages/collection/selectors'
 import { getDiscoverFeedLineup } from 'common/store/pages/feed/selectors'
+import { getHistoryTracksLineup } from 'common/store/pages/history-page/selectors'
 import { getProfileTracksLineup } from 'common/store/pages/profile/selectors'
 import { getSavedTracksLineup } from 'common/store/pages/saved-page/selectors'
 import { getSearchTracksLineup } from 'common/store/pages/search-results/selectors'
 import { getLineup } from 'common/store/pages/track/selectors'
 import { getCurrentDiscoverTrendingLineup } from 'common/store/pages/trending/selectors'
-import { getHistoryTracksLineup } from 'pages/history-page/store/selectors'
 import {
   FEED_PAGE,
   TRENDING_PAGE,

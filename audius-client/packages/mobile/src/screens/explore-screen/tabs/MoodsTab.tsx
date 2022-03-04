@@ -35,9 +35,7 @@ const createStyles = (themeColors: ThemeColors) =>
       flexDirection: 'row',
       flexWrap: 'wrap',
       padding: 12,
-      paddingVertical: 24,
-      // TODO: Fix this
-      marginBottom: 240
+      paddingVertical: 24
     }
   })
 

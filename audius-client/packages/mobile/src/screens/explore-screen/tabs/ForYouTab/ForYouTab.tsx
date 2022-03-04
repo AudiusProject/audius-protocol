@@ -35,9 +35,7 @@ const createStyles = (themeColors: ThemeColors) =>
     contentContainer: {
       display: 'flex',
       padding: 12,
-      paddingVertical: 24,
-      // TODO: Fix this
-      marginBottom: 240
+      paddingVertical: 24
     },
     tile: {
       marginBottom: 8
