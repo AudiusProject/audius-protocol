@@ -4,6 +4,7 @@ import { Modals } from 'audius-client/src/common/store/ui/modals/slice'
 
 import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
+import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { CognitoDrawer } from 'app/components/cognito-drawer/CognitoDrawer'
@@ -118,6 +119,7 @@ export const Drawers = () => {
       ))}
       <AddToPlaylistDrawer />
       <DiscordDrawer />
+      <AudioBreakdownDrawer />
     </>
   )
 }

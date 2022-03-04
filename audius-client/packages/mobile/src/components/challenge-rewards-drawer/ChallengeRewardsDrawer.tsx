@@ -3,7 +3,6 @@ import React from 'react'
 import { UserChallengeState } from 'audius-client/src/common/models/AudioRewards'
 import { ClaimStatus } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import { StyleSheet, View, ImageSourcePropType } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
@@ -11,10 +10,11 @@ import Button, { ButtonType } from 'app/components/button'
 import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
+import { ProgressBar } from 'app/components/progress-bar'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
-import { ThemeColors, useThemeColors } from 'app/utils/theme'
+import { ThemeColors } from 'app/utils/theme'
 
 const messages = {
   task: 'Task',
@@ -29,84 +29,6 @@ const messages = {
     'Something has gone wrong, not all your rewards were claimed. Please try again.',
   claimableLabel: '$AUDIO available to claim',
   claimedLabel: '$AUDIO claimed so far'
-}
-
-const createProgressBarStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    progressBarContainer: {
-      backgroundColor: themeColors.neutralLight9,
-      borderRadius: 22,
-      height: 24,
-      marginVertical: 14,
-      overflow: 'hidden'
-    },
-    progressBar: {
-      backgroundColor: 'black',
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      bottom: 0
-    },
-    shadow: {
-      position: 'absolute',
-      backgroundColor: 'white',
-      alignSelf: 'center',
-      shadowColor: 'black',
-      shadowRadius: 4,
-      shadowOpacity: 0.1,
-      shadowOffset: { width: 0, height: 0 },
-      elevation: -1
-    },
-    shadowTop: {
-      top: -10,
-      height: 10,
-      width: '100%'
-    },
-    shadowBottom: {
-      bottom: -10,
-      height: 10,
-      width: '100%'
-    },
-    shadowLeft: {
-      left: -10,
-      height: '100%',
-      width: 10
-    },
-    shadowRight: {
-      right: -10,
-      height: '100%',
-      width: 10
-    }
-  })
-
-const ProgressBar = ({ progress, max }) => {
-  const {
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
-  const styles = useThemedStyles(createProgressBarStyles)
-  return (
-    <View style={styles.progressBarContainer}>
-      <LinearGradient
-        colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-        useAngle={true}
-        angle={315}
-        style={[
-          styles.progressBar,
-          {
-            width:
-              progress > max
-                ? '100%'
-                : `${Math.round((progress * 100 * 100.0) / max) / 100.0}%`
-          }
-        ]}
-      />
-      <View style={[styles.shadow, styles.shadowTop]} />
-      <View style={[styles.shadow, styles.shadowBottom]} />
-      <View style={[styles.shadow, styles.shadowLeft]} />
-      <View style={[styles.shadow, styles.shadowRight]} />
-    </View>
-  )
 }
 
 const createStyles = (themeColors: ThemeColors) =>

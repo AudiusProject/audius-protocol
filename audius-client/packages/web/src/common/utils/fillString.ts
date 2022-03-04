@@ -1,4 +1,4 @@
-const fillString = (str: string, ...args: string[]): string => {
+export const fillString = (str: string, ...args: string[]): string => {
   const insertFlags: string[] | null = str.match(/%(\d+)/g)
   if (insertFlags === null || !args.length) return str
 
@@ -10,5 +10,3 @@ const fillString = (str: string, ...args: string[]): string => {
   }
   return output
 }
-
-export default fillString

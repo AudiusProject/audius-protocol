@@ -178,7 +178,7 @@ const messages = {
   audio: '$AUDIO'
 }
 
-const AudioBreakdownDrawer = () => {
+export const AudioBreakdownDrawer = () => {
   const styles = useThemedStyles(createStyles)
 
   const accountBalance = (useSelectorWeb(getAccountBalance) ??
@@ -337,5 +337,3 @@ const Wallet = ({ chain, address, balance }: WalletProps) => {
     </View>
   )
 }
-
-export default AudioBreakdownDrawer

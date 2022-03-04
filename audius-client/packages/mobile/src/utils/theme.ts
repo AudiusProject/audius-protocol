@@ -165,6 +165,7 @@ export const matrixTheme = {
   white: '#1F211F',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  accentGreen: '#23AD1A',
   staticAccentGreenLight1: '#23AD1A',
   pageHeaderGradientColor1: '#4FF069',
   pageHeaderGradientColor2: '#09BD51',

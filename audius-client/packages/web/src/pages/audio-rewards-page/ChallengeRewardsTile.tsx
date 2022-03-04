@@ -20,11 +20,11 @@ import {
   fetchUserChallenges,
   setChallengeRewardsModalType
 } from 'common/store/pages/audio-rewards/slice'
+import { fillString } from 'common/utils/fillString'
 import { removeNullable } from 'common/utils/typeUtils'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import fillString from 'utils/fillString'
 
 import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'

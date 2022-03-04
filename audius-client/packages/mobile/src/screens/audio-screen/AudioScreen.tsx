@@ -1,14 +1,22 @@
 import { useCallback } from 'react'
 
+import { BNWei } from 'audius-client/src/common/models/Wallet'
+import { getHasAssociatedWallets } from 'audius-client/src/common/store/pages/token-dashboard/selectors'
 import {
   setModalState,
   setModalVisibility
 } from 'audius-client/src/common/store/pages/token-dashboard/slice'
+import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+import { getAccountTotalBalance } from 'audius-client/src/common/store/wallet/selectors'
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
+import { formatWei } from 'audius-client/src/common/utils/wallet'
+import BN from 'bn.js'
 import { Dimensions, Image, Linking, View } from 'react-native'
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconDiscord from 'app/assets/images/iconDiscord.svg'
+import IconInfo from 'app/assets/images/iconInfo.svg'
 import IconReceive from 'app/assets/images/iconReceive.svg'
 import IconSend from 'app/assets/images/iconSend.svg'
 import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
@@ -19,16 +27,20 @@ import TokenStill from 'app/assets/images/tokenSpinStill.png'
 import { Button, GradientText, Text, Tile } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import { ChallengeRewards } from './ChallengeRewards'
 import { Tier } from './Tier'
+import { TrendingRewards } from './TrendingRewards'
 
 const LEARN_MORE_LINK = 'https://blog.audius.co/posts/community-meet-audio'
 
 const messages = {
   title: '$AUDIO & Rewards',
   audio: '$AUDIO',
+  totalAudio: 'Total $AUDIO',
   send: 'Send $AUDIO',
   receive: 'Receive $AUDIO',
   connect: 'Connect Other Wallets',
@@ -103,6 +115,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 15
   },
+  audioInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing(4)
+  },
   audioText: {
     fontSize: typography.fontSize.xxl,
     fontFamily: typography.fontByWeight.bold,
@@ -111,7 +128,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     textShadowColor: 'rgba(0,0,0,0.1)',
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 15,
-    marginBottom: spacing(4)
+    textTransform: 'uppercase',
+    marginRight: spacing(1)
   },
   buttonRoot: {
     marginTop: spacing(2),
@@ -141,6 +159,12 @@ export const AudioScreen = () => {
   } = useThemeColors()
   const dispatchWeb = useDispatchWeb()
 
+  const totalBalance: Nullable<BNWei> =
+    useSelectorWeb(getAccountTotalBalance) ?? null
+  const hasMultipleWallets = useSelectorWeb(getHasAssociatedWallets)
+  const onPressWalletInfo = useCallback(() => {
+    dispatchWeb(setVisibility({ modal: 'AudioBreakdown', visible: true }))
+  }, [dispatchWeb])
   const renderAudioTile = () => {
     return (
       <Tile
@@ -154,11 +178,48 @@ export const AudioScreen = () => {
           content: styles.tileContent
         }}
       >
-        <Text style={styles.audioAmount}>10,000</Text>
-        <Text style={styles.audioText}>{messages.audio}</Text>
+        <Text style={styles.audioAmount}>
+          {formatWei(totalBalance || (new BN(0) as BNWei), true, 0)}{' '}
+        </Text>
+        <View style={styles.audioInfo}>
+          {hasMultipleWallets ? (
+            <>
+              <Text style={styles.audioText}>{messages.totalAudio}</Text>
+              <TouchableOpacity
+                hitSlop={{ left: 4, top: 4, bottom: 4, right: 4 }}
+                onPress={onPressWalletInfo}
+                activeOpacity={0.7}
+              >
+                <IconInfo
+                  height={16}
+                  width={16}
+                  fill={'rgba(255,255,255,0.5)'}
+                />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <Text style={styles.audioText}>{messages.audio}</Text>
+          )}
+        </View>
       </Tile>
     )
   }
+
+  const onPressSend = useCallback(() => {
+    dispatchWeb(
+      setVisibility({ modal: 'TransferAudioMobileWarning', visible: true })
+    )
+  }, [dispatchWeb])
+  const onPressReceive = useCallback(() => {
+    dispatchWeb(
+      setVisibility({ modal: 'TransferAudioMobileWarning', visible: true })
+    )
+  }, [dispatchWeb])
+  const onPressConnectWallets = useCallback(() => {
+    dispatchWeb(
+      setVisibility({ modal: 'MobileConnectWalletsDrawer', visible: true })
+    )
+  }, [dispatchWeb])
 
   const renderWalletTile = () => {
     return (
@@ -180,6 +241,7 @@ export const AudioScreen = () => {
           iconPosition='left'
           size='medium'
           icon={IconSend}
+          onPress={onPressSend}
         />
         <Button
           title={messages.receive}
@@ -192,6 +254,7 @@ export const AudioScreen = () => {
           iconPosition='left'
           size='medium'
           icon={IconReceive}
+          onPress={onPressReceive}
         />
         <Button
           title={messages.connect}
@@ -202,6 +265,7 @@ export const AudioScreen = () => {
           }}
           variant='commonAlt'
           size='medium'
+          onPress={onPressConnectWallets}
         />
       </Tile>
     )
@@ -221,6 +285,7 @@ export const AudioScreen = () => {
         </GradientText>
         <Text style={styles.tileSubheader}>{messages.rewardsBody1}</Text>
         <Text style={styles.tileSubheader}>{messages.rewardsBody2}</Text>
+        <ChallengeRewards />
       </Tile>
     )
   }
@@ -238,6 +303,7 @@ export const AudioScreen = () => {
           {messages.trending}
         </GradientText>
         <Text style={styles.tileSubheader}>{messages.trendingBody1}</Text>
+        <TrendingRewards />
       </Tile>
     )
   }
