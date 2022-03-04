@@ -32,6 +32,7 @@ import {
   CognitoFlowStatus,
   claimChallengeReward
 } from 'common/store/pages/audio-rewards/slice'
+import { fillString } from 'common/utils/fillString'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { show as showConfetti } from 'components/music-confetti/store/slice'
 import Toast from 'components/toast/Toast'
@@ -43,7 +44,6 @@ import { challengeRewardsConfig } from 'pages/audio-rewards-page/config'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
-import fillString from 'utils/fillString'
 import { openTwitterLink } from 'utils/tweet'
 
 import PurpleBox from '../PurpleBox'
