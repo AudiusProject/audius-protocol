@@ -117,7 +117,8 @@ export const Lineup = ({
   start = 0,
   variant = LineupVariant.MAIN,
   listKey,
-  selfLoad
+  selfLoad,
+  ...scrollViewProps
 }: LineupProps) => {
   const dispatchWeb = useDispatchWeb()
 
@@ -326,6 +327,7 @@ export const Lineup = ({
 
   return (
     <SectionList
+      {...scrollViewProps}
       ListHeaderComponent={header}
       ListFooterComponent={<View style={{ height: 160 }} />}
       onEndReached={handleLoadMore}
