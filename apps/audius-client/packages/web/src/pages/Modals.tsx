@@ -25,10 +25,14 @@ import RewardsModals from 'pages/audio-rewards-page/components/modals/RewardsMod
 import { getClient } from 'utils/clientUtil'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+const NATIVE_NAVIGATION_ENABLED =
+  process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
 
 const Modals = () => {
   const client = getClient()
   const isMobileClient = client === Client.MOBILE
+
+  if (NATIVE_NAVIGATION_ENABLED) return null
 
   return (
     <>
