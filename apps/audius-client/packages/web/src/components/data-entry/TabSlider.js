@@ -31,11 +31,12 @@ const TabSlider = props => {
       selectedRefIdx = 0
     }
 
-    const { clientWidth: width, offsetLeft: left } = optionRefs.current[
-      selectedRefIdx
-    ].current
+    const optionRef = optionRefs.current[selectedRefIdx].current
 
-    setAnimatedProps({ to: { left: `${left}px`, width: `${width}px` } })
+    if (optionRef) {
+      const { clientWidth: width, offsetLeft: left } = optionRef
+      setAnimatedProps({ to: { left: `${left}px`, width: `${width}px` } })
+    }
   }, [
     props.options,
     selectedOption,

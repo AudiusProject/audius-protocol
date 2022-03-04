@@ -159,6 +159,7 @@ import { DeactivateAccountPage } from './deactivate-account-page/DeactivateAccou
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
+import SettingsPage from './settings-page/SettingsPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
 
@@ -166,10 +167,6 @@ const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
 const SignOn = React.lazy(() => import('pages/sign-on/SignOn'))
 
-const SettingsPage = lazyWithPreload(
-  () => import('pages/settings-page/SettingsPage'),
-  0
-)
 const UploadPage = lazyWithPreload(
   () => import('pages/upload-page/UploadPage'),
   0
