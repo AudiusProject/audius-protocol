@@ -127,6 +127,15 @@ const AnimatedButton = ({
     return isActive ? 1 : 0
   }, [isPlaying, isActive, hasMultipleStates])
 
+  // For binary state buttons, reset the animation
+  // when not playing. This prevents the animation from getting stuck
+  // in the active state when many rerenders are happening
+  useEffect(() => {
+    if (!hasMultipleStates && !isActive && !isPlaying) {
+      animationRef.current?.reset()
+    }
+  }, [hasMultipleStates, isActive, isPlaying])
+
   return (
     <TouchableHighlight
       onPress={handleClick}

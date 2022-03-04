@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
@@ -13,31 +13,18 @@ import {
   TRENDING_PAGE,
   EXPLORE_PAGE,
   FAVORITES_PAGE,
-  getPathname,
   profilePage
 } from 'audius-client/src/utils/route'
 import { Animated, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 
-import IconExploreDark from 'app/assets/animations/iconExploreDark.json'
-import IconExploreLight from 'app/assets/animations/iconExploreLight.json'
-import IconFavoriteDark from 'app/assets/animations/iconFavoriteDark.json'
-import IconFavoriteLight from 'app/assets/animations/iconFavoriteLight.json'
-import IconFeedDark from 'app/assets/animations/iconFeedDark.json'
-import IconFeedLight from 'app/assets/animations/iconFeedLight.json'
-import IconProfileDark from 'app/assets/animations/iconProfileDark.json'
-import IconProfileLight from 'app/assets/animations/iconProfileLight.json'
-import IconTrendingDark from 'app/assets/animations/iconTrendingDark.json'
-import IconTrendingLight from 'app/assets/animations/iconTrendingLight.json'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
-import { getLocation } from 'app/store/lifecycle/selectors'
 import { Theme, useTheme, useThemeVariant } from 'app/utils/theme'
 
-import AnimatedBottomButton from './buttons/AnimatedBottomButton'
+import { BottomTabBarButton } from './BottomTabBarButton'
 
 type NavigationRoute = RNBottomTabBarProps['state']['routes'][0]
 
@@ -62,23 +49,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly'
   }
 })
-
-const icons = {
-  light: {
-    feed: IconFeedLight,
-    trending: IconTrendingLight,
-    explore: IconExploreLight,
-    favorites: IconFavoriteLight,
-    profile: IconProfileLight
-  },
-  dark: {
-    feed: IconFeedDark,
-    trending: IconTrendingDark,
-    explore: IconExploreDark,
-    favorites: IconFavoriteDark,
-    profile: IconProfileDark
-  }
-}
 
 const springToValue = (
   animation: Animated.Value,
@@ -106,7 +76,7 @@ export type BottomTabBarProps = {
   translationAnim: Animated.Value
 }
 
-const BottomTabBar = ({
+export const BottomTabBar = ({
   display,
   state,
   navigation,
@@ -123,7 +93,6 @@ const BottomTabBar = ({
 
   // Selectors
   const handle = useSelectorWeb(getUserHandle)
-  const location = useSelector(getLocation)
 
   // Actions
   const dispatchWeb = useDispatchWeb()
@@ -160,27 +129,7 @@ const BottomTabBar = ({
     }
   }, [display, slideIn, slideOut])
 
-  const userProfilePage = handle ? profilePage(handle) : null
-  const navRoutes = new Set([
-    FEED_PAGE,
-    TRENDING_PAGE,
-    EXPLORE_PAGE,
-    FAVORITES_PAGE,
-    userProfilePage
-  ])
-
-  const [lastNavRoute, setNavRoute] = useState(FEED_PAGE)
-  const currentRoute = location && getPathname(location)
-
-  if (lastNavRoute !== currentRoute) {
-    // If the current route isn't what we memoized, check if it's a nav route
-    // and update the current route if so
-    if (navRoutes.has(currentRoute)) {
-      setNavRoute(currentRoute)
-    }
-  }
-
-  const onPress = useCallback(
+  const navigate = useCallback(
     (route: NavigationRoute, isFocused) => {
       // Web navigation
       if (isFocused) {
@@ -257,13 +206,12 @@ const BottomTabBar = ({
           const isFocused = state.index === index
           const key = `${route.name}-button`
           return (
-            <AnimatedBottomButton
+            <BottomTabBarButton
+              route={route}
               key={key}
-              isActive={isFocused}
+              isFocused={isFocused}
               isDarkMode={isDarkMode}
-              onPress={() => onPress(route, isFocused)}
-              iconLightJSON={icons.light[route.name]}
-              iconDarkJSON={icons.dark[route.name]}
+              navigate={navigate}
             />
           )
         })}
@@ -271,5 +219,3 @@ const BottomTabBar = ({
     </Animated.View>
   )
 }
-
-export default BottomTabBar
