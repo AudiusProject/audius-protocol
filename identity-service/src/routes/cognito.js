@@ -85,6 +85,10 @@ module.exports = function (app) {
         // address is always present but nullable
         // name is always present but nullable
         const { id_number: idNumber, phone, date_of_birth: dob, address, name } = userInfo
+        const nameLowercased = name
+          // if name is not null, then first and last are always present according to api
+          ? { first: name.first.toLowerCase(), last: name.last.toLowerCase() }
+          : null
 
         // make cognito identities unique on:
         // - phone number, or
@@ -96,7 +100,7 @@ module.exports = function (app) {
           identities.push(phone)
         }
         if (dob && name) {
-          identities.push(JSON.stringify({ dob, name }))
+          identities.push(JSON.stringify({ dob, name: nameLowercased }))
         }
         if (idNumber) {
           const { value, category, type } = idNumber
@@ -105,7 +109,7 @@ module.exports = function (app) {
           identities.push(`${value}::${category}::${type}`)
         } else {
           // if webhook does not include id number, then we are expecting a few of the items below
-          identities.push(JSON.stringify({ phone, dob, address, name }))
+          identities.push(JSON.stringify({ phone, dob, address, name: nameLowercased }))
         }
 
         const maskedIdentities = identities.map(createMaskedCognitoIdentity)
