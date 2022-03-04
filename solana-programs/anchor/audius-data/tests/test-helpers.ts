@@ -85,7 +85,7 @@ export const testInitUserSolPubkey = async ({
   program,
   message,
   ethPrivateKey,
-  newUserKeypair,
+  newUserPublicKey,
   newUserAcctPDA,
 }) => {
   await initUserSolPubkey({
@@ -93,14 +93,14 @@ export const testInitUserSolPubkey = async ({
     program,
     ethPrivateKey,
     message,
-    userSolPubkey: newUserKeypair.publicKey,
+    userSolPubkey: newUserPublicKey,
     userStgAccount: newUserAcctPDA,
   });
 
   const account = await program.account.user.fetch(newUserAcctPDA);
 
   const chainAuthority = account.authority.toString();
-  const expectedAuthority = newUserKeypair.publicKey.toString();
+  const expectedAuthority = newUserPublicKey.toString();
   expect(chainAuthority, "authority").to.equal(expectedAuthority);
 };
 
@@ -148,18 +148,21 @@ export const testCreateUser = async ({
 export const pollAccountBalance = async (
   provider: anchor.Provider,
   targetAccount: anchor.web3.PublicKey,
-  targetBalance: Number,
-  maxRetries: Number
+  targetBalance: number,
+  maxRetries: number
 ) => {
-  let currentBalance = await provider.connection.getBalance(targetAccount)
-  let numRetries = 0
+  let currentBalance = await provider.connection.getBalance(targetAccount);
+  let numRetries = 0;
   while (currentBalance > targetBalance && numRetries < maxRetries) {
-    currentBalance = await provider.connection.getBalance(targetAccount)
+    currentBalance = await provider.connection.getBalance(targetAccount);
+    numRetries--;
   }
   if (currentBalance > targetBalance) {
-    throw new Error(`Account ${targetAccount} failed to reach target balance ${targetBalance} in ${maxRetries} retries. Current balance = ${currentBalance}`)
+    throw new Error(
+      `Account ${targetAccount} failed to reach target balance ${targetBalance} in ${maxRetries} retries. Current balance = ${currentBalance}`
+    );
   }
-}
+};
 
 export const confirmLogInTransaction = async (
   provider: anchor.Provider,

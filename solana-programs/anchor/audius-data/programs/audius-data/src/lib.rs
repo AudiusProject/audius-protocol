@@ -149,7 +149,7 @@ pub mod audius_data {
 
         Ok(())
     }
-
+    
     /// Functionality to create user without admin privileges
     pub fn create_user(
         ctx: Context<CreateUser>,
