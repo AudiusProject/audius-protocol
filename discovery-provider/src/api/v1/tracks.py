@@ -9,12 +9,14 @@ from src.api.v1.helpers import (
     abort_bad_path_param,
     abort_bad_request_param,
     abort_not_found,
+    decode_ids_array,
     decode_with_abort,
     extend_track,
     extend_user,
     format_limit,
     format_offset,
     full_trending_parser,
+    get_authed_user_id,
     get_current_user_id,
     get_default_max,
     get_encoded_track_id,
@@ -26,6 +28,8 @@ from src.api.v1.helpers import (
     trending_parser,
 )
 from src.api.v1.models.users import user_model_full
+from src.queries.get_feed import get_feed
+from src.queries.get_max_id import get_max_id
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
     get_full_recommended_tracks,
@@ -37,6 +41,8 @@ from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_stems_of import get_stems_of
+from src.queries.get_top_followee_saves import get_top_followee_saves
+from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
@@ -802,5 +808,187 @@ class FullRemixingRoute(Resource):
             "offset": format_offset(request_args),
         }
         tracks = get_remix_track_parents(args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+"""
+  Gets a windowed (over a certain timerange) view into the "top" of a certain type
+  amongst followees. Requires an account.
+  This endpoint is useful in generating views like:
+      - New releases
+
+  Args:
+      window: (string) The window from now() to look back over. Supports  all standard SqlAlchemy interval notation (week, month, year, etc.).
+      limit?: (number) default=25, max=100
+"""
+best_new_releases_parser = reqparse.RequestParser()
+best_new_releases_parser.add_argument(
+    "window", required=True, choices=("week", "month", "year"), type=str
+)
+best_new_releases_parser.add_argument("user_id", required=True, type=str)
+best_new_releases_parser.add_argument("limit", required=False, default=25, type=int)
+best_new_releases_parser.add_argument(
+    "with_users", required=False, default=True, type=bool
+)
+
+
+@full_ns.route("/best_new_releases")
+class BestNewReleases(Resource):
+    @record_metrics
+    @cache(ttl_sec=10)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        request_args = best_new_releases_parser.parse_args()
+        window = request_args.get("window")
+        args = {
+            "with_users": request_args.get("with_users"),
+            "limit": format_limit(request_args, 100),
+            "user_id": get_current_user_id(request_args),
+        }
+        tracks = get_top_followee_windowed("track", window, args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+"""
+Discovery Provider Social Feed Overview
+For a given user, current_user, we provide a feed of relevant content from around the audius network.
+This is generated in the following manner:
+  - Generate list of users followed by current_user, known as 'followees'
+  - Query all track and public playlist reposts from followees
+    - Generate list of reposted track ids and reposted playlist ids
+  - Query all track and public playlists reposted OR created by followees, ordered by timestamp
+    - At this point, 2 separate arrays one for playlists / one for tracks
+  - Query additional metadata around feed entries in each array, repost + save counts, user repost boolean
+  - Combine unsorted playlist and track arrays
+  - Sort combined results by 'timestamp' field and return
+"""
+
+under_the_radar_parser = reqparse.RequestParser()
+under_the_radar_parser.add_argument("user_id", required=True, type=str)
+under_the_radar_parser.add_argument(
+    "filter",
+    required=False,
+    default="all",
+    choices=("all", "repost", "original"),
+    type=str,
+)
+under_the_radar_parser.add_argument("limit", required=False, default=25, type=int)
+under_the_radar_parser.add_argument("offset", required=False, default=0, type=int)
+under_the_radar_parser.add_argument("tracks_only", required=False, type=bool)
+under_the_radar_parser.add_argument(
+    "with_users", required=False, default=True, type=bool
+)
+
+
+@full_ns.route("/under_the_radar")
+class UnderTheRadar(Resource):
+    @record_metrics
+    @cache(ttl_sec=10)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        request_args = under_the_radar_parser.parse_args()
+        args = {
+            "tracks_only": request_args.get("tracks_only"),
+            "with_users": request_args.get("with_users"),
+            "limit": format_limit(request_args, 100, 25),
+            "offset": format_offset(request_args),
+            "user_id": get_current_user_id(request_args),
+            "filter": request_args.get("filter"),
+        }
+        feed_results = get_feed(args)
+        feed_results = list(map(extend_track, feed_results))
+        return success_response(feed_results)
+
+
+"""
+    Gets a global view into the most saved of `type` amongst followees. Requires an account.
+    This endpoint is useful in generating views like:
+        - Most favorited
+"""
+most_loved_parser = reqparse.RequestParser()
+most_loved_parser.add_argument("user_id", required=True, type=str)
+most_loved_parser.add_argument("limit", required=False, default=25, type=int)
+most_loved_parser.add_argument("with_users", required=False, type=bool)
+
+
+@full_ns.route("/most_loved")
+class MostLoved(Resource):
+    @record_metrics
+    @cache(ttl_sec=10)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        request_args = most_loved_parser.parse_args()
+        args = {
+            "with_users": request_args.get("with_users"),
+            "limit": format_limit(request_args, 100, 25),
+            "user_id": get_current_user_id(request_args),
+        }
+        tracks = get_top_followee_saves("track", args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+@ns.route("/latest")
+class LatestTrack(Resource):
+    @record_metrics
+    def get(self):
+        latest = get_max_id("track")
+        return success_response(latest)
+
+
+by_ids_parser = reqparse.RequestParser()
+by_ids_parser.add_argument("id", required=True, action="append")
+by_ids_parser.add_argument(
+    "sort",
+    required=False,
+    choices=(
+        "date",
+        "plays",
+        "created_at",
+        "create_date",
+        "release_date",
+        "blocknumber",
+        "track_id",
+    ),
+    type=str,
+)
+by_ids_parser.add_argument("limit", required=False, default=100, type=int)
+by_ids_parser.add_argument("offset", required=False, default=0, type=int)
+by_ids_parser.add_argument("user_id", required=False, type=str)
+by_ids_parser.add_argument("authed_user_id", required=False, type=str)
+by_ids_parser.add_argument("min_block_number", required=False, type=int)
+by_ids_parser.add_argument("filter_deleted", required=False, type=bool)
+by_ids_parser.add_argument("with_users", required=False, type=bool)
+
+
+@full_ns.route("/by_ids")
+class TracksByIDs(Resource):
+    @record_metrics
+    @cache(ttl_sec=10)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        request_args = by_ids_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
+        ids_array = decode_ids_array(request_args.get("id"))
+
+        args = {
+            "id": ids_array,
+            "limit": format_limit(request_args, 100, 25),
+            "offset": format_offset(request_args),
+            "current_user_id": current_user_id,
+            "filter_deleted": request_args.get("filter_deleted"),
+            "with_users": request_args.get("with_users"),
+        }
+        if request_args.get("sort"):
+            args["sort"] = request_args.get("sort")
+        if request_args.get("user_id"):
+            args["user_id"] = get_current_user_id(request_args)
+        if request_args.get("authed_user_id"):
+            args["authed_user_id"] = get_authed_user_id(request_args)
+        if request_args.get("min_block_number"):
+            args["min_block_number"] = request_args.get("min_block_number")
+        tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)

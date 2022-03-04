@@ -7,7 +7,8 @@ from src.queries.get_feed import get_feed
 from src.queries.get_follow_intersection_users import get_follow_intersection_users
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
-from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
+
+# from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
 from src.queries.get_max_id import get_max_id
 from src.queries.get_playlist_repost_intersection_users import (
     get_playlist_repost_intersection_users,
@@ -189,6 +190,8 @@ def get_feed_route():
         args["followee_user_ids"] = parse_id_array_param(
             request.args.getlist("followee_user_id")
         )
+    user_id = get_current_user_id()
+    args["user_id"] = user_id
     feed_results = get_feed(args)
     return api_helpers.success_response(feed_results)
 
@@ -463,7 +466,8 @@ def get_top_followee_windowed_route(type, window):
         args["limit"] = 25
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-
+    user_id = get_current_user_id()
+    args["user_id"] = user_id
     try:
         tracks = get_top_followee_windowed(type, window, args)
         return api_helpers.success_response(tracks)
@@ -491,7 +495,8 @@ def get_top_followee_saves_route(type):
         args["limit"] = 25
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-
+    user_id = get_current_user_id()
+    args["user_id"] = user_id
     try:
         tracks = get_top_followee_saves(type, args)
         return api_helpers.success_response(tracks)
@@ -604,13 +609,13 @@ def get_ursm_content_nodes():
 
 
 # Get this discovery provider's ipfs peer info
-@bp.route("/ipfs_peer_info", methods=("GET",))
-def get_ipfs_peer_info_route():
-    try:
-        ipfs_peer_info = get_ipfs_peer_info()
-        return api_helpers.success_response(ipfs_peer_info)
-    except exceptions.ArgumentError as e:
-        return api_helpers.error_response(str(e), 400)
+# @bp.route("/ipfs_peer_info", methods=("GET",))
+# def get_ipfs_peer_info_route():
+#     try:
+#         ipfs_peer_info = get_ipfs_peer_info()
+#         return api_helpers.success_response(ipfs_peer_info)
+#     except exceptions.ArgumentError as e:
+#         return api_helpers.error_response(str(e), 400)
 
 
 # Get details for a single play written to Solana
