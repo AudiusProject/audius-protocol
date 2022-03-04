@@ -20,7 +20,6 @@ import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/r
 import dashboard from 'pages/artist-dashboard-page/store/reducer'
 import deactivateAccount from 'pages/deactivate-account-page/store/slice'
 import deleted from 'pages/deleted-page/store/slice'
-import history from 'pages/history-page/store/reducer'
 import notificationUsers from 'pages/notification-users-page/store/reducers'
 import remixes from 'pages/remixes-page/store/slice'
 import signOn from 'pages/sign-on/store/reducer'
@@ -73,7 +72,6 @@ const createRootReducer = (routeHistory: History) =>
     profile,
     dashboard,
     signOn,
-    history,
     searchBar,
     notification,
     serviceSelection,

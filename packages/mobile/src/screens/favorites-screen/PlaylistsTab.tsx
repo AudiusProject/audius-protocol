@@ -67,7 +67,6 @@ export const PlaylistsTab = ({ navigation }) => {
         listKey='favorites-playlists'
         scrollEnabled={false}
         collection={userPlaylists ?? []}
-        style={{ marginBottom: 240 }}
       />
     </VirtualizedScrollView>
   )

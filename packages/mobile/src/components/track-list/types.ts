@@ -18,4 +18,6 @@ export type ListTrackMetadata = {
   coverArtSizes?: CoverArtSizes
   isDeleted: boolean
   user: User
+  has_current_user_reposted?: boolean
+  has_current_user_saved?: boolean
 }

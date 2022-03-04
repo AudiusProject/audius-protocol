@@ -70,23 +70,10 @@ export const TrackList = ({
           />
         ) : null}
         <TrackListItem
+          {...track}
           key={track.trackId}
           index={index}
-          trackId={track.trackId}
-          isLoading={track.isLoading}
-          isSaved={track.isSaved}
-          isReposted={track.isReposted}
-          isActive={track.isActive}
-          isPlaying={track.isPlaying}
-          artistHandle={track.artistHandle}
-          artistName={track.artistName}
-          trackTitle={track.trackTitle}
-          coverArtSizes={track.coverArtSizes}
-          uid={track.uid}
-          user={track.user}
-          isDeleted={track.isDeleted}
           onSave={onSave}
-          isRemoveActive={track.isRemoveActive}
           togglePlay={togglePlay}
           trackItemAction={trackItemAction}
         />
