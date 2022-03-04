@@ -418,10 +418,10 @@ def configure_celery(celery, test_config=None):
                 "task": "synchronize_metrics",
                 "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL),
             },
-            "update_materialized_views": {
-                "task": "update_materialized_views",
-                "schedule": timedelta(seconds=300),
-            },
+            # "update_materialized_views": {
+            #     "task": "update_materialized_views",
+            #     "schedule": timedelta(seconds=300),
+            # },
             "update_aggregate_plays": {
                 "task": "update_aggregate_plays",
                 "schedule": timedelta(seconds=15),
