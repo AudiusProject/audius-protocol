@@ -96,6 +96,13 @@ function* sendAsync({
           yield put(sendFailed({ error: 'Missing social proof' }))
           return
         }
+        if (
+          (e as Error)?.message ===
+          'Recipient has no $AUDIO token account. Please install Phantom-Wallet to create one.'
+        ) {
+          yield put(sendFailed({ error: (e as Error).message }))
+          return
+        }
       }
     }
 
