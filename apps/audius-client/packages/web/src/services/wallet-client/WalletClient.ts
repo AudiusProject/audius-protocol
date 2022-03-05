@@ -145,6 +145,12 @@ class WalletClient {
         if (error === 'Missing social proof') {
           throw new Error(error)
         }
+        if (
+          error ===
+          'Recipient has no $AUDIO token account. Please install Phantom-Wallet to create one.'
+        ) {
+          throw new Error(error)
+        }
         console.error(
           `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
             `with error ${error.toString()} and errorCode: ${errorCode}`
