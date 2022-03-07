@@ -643,13 +643,18 @@ def record_metrics(func):
         metric = PrometheusMetric(
             "flask_route_latency_seconds",
             "Runtimes for flask routes",
-            ("route", "params"),
+            ("route",),
         )
         result = func(*args, **kwargs)
 
-        params = "".join(route.split("?")[1:])
         route = route.split("?")[0]
-        metric.save_time({"route": route, "params": params})
+        if "/v1/full/" in route or "/users/intersection/" in route:
+            route = "/".join(route.split("/")[:4])
+        elif "/v1/users/" in route and ("/followers" in route or "/following" in route):
+            route = "/".join(route.split("/")[:3] + ["*"] + route.split("/")[-1:])
+        else:
+            route = "/".join(route.split("/")[:3])
+        metric.save_time({"route": route})
 
         return result
 

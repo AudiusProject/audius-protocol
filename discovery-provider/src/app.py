@@ -44,8 +44,6 @@ from src.utils.session_manager import SessionManager
 from web3 import HTTPProvider, Web3
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
-
 # these global vars will be set in create_celery function
 web3endpoint = None
 web3 = None
@@ -395,6 +393,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_listen_count_milestones",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
+            "src.tasks.index_spl_token",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -515,6 +514,10 @@ def configure_celery(celery, test_config=None):
                     minute="*/15",
                     hour="14, 15",
                 ),  # 8x a day during non peak hours
+            },
+            "index_spl_token": {
+                "task": "index_spl_token",
+                "schedule": timedelta(seconds=5),
             },
         },
         task_serializer="json",
