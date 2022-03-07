@@ -329,13 +329,11 @@ export const Notifications = ({ webRef }: NotificationsProps) => {
       >
         <View style={containerStyle}>
           <TopBar onClose={onClickTopBarClose} />
-          {drawerStatus === 'closed' ? null : (
-            <List
-              onLoadMore={onLoadMore}
-              onRefresh={onRefresh}
-              onGoToRoute={onGoToRoute}
-            />
-          )}
+          <List
+            onLoadMore={onLoadMore}
+            onRefresh={onRefresh}
+            onGoToRoute={onGoToRoute}
+          />
         </View>
       </Animated.View>
 

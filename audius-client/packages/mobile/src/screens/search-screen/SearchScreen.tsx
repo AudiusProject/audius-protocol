@@ -7,13 +7,28 @@ import {
   getSearchResultQuery,
   getSearchResults
 } from 'app/store/search/selectors'
+import { makeStyles } from 'app/styles'
 
 import { SearchBar } from './SearchBar'
 import SearchHistory from './SearchHistory'
 import SearchResults from './SearchResults'
 import EmptySearch from './content/EmptySearch'
 
+const useStyles = makeStyles(({ spacing }) => ({
+  topbarLeft: {
+    flexGrow: 0,
+    flexBasis: 0,
+    paddingTop: spacing(2) + 1,
+    paddingHorizontal: spacing(2)
+  },
+  topbarRight: {
+    width: '100%',
+    paddingRight: spacing(2)
+  }
+}))
+
 export const SearchScreen = () => {
+  const styles = useStyles()
   const searchQuery = useSelector(getSearchQuery)
   const searchResultQuery = useSelector(getSearchResultQuery)
   const searchResults = useSelector(getSearchResults)
@@ -34,10 +49,10 @@ export const SearchScreen = () => {
   return (
     <Screen
       topbarRight={<SearchBar />}
-      topbarRightStyle={{ flex: 1, width: '100%', paddingLeft: 16 }}
+      topbarRightStyle={styles.topbarRight}
+      topbarLeftStyle={styles.topbarLeft}
       variant='white'
-      title={null}
-      noPadding
+      title='none'
     >
       <Header text='Search' />
       {renderBody()}
