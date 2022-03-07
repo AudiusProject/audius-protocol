@@ -394,10 +394,6 @@ svg.logo path {
   justify-content: center;
 }
 
-.playlistUpdate {
-  height: 18px;
-}
-
 .playlistLinkContentContainer {
   display: flex;
   align-items: center;
