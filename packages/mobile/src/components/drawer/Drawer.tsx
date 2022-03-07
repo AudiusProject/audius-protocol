@@ -216,7 +216,7 @@ export const springToValue = (
   animation: Animated.Value,
   value: number,
   animationStyle: DrawerAnimationStyle,
-  finished?: () => void
+  finished?: ({ finished }: { finished: boolean }) => void
 ) => {
   let tension: number
   let friction: number
@@ -362,10 +362,17 @@ export const Drawer: DrawerComponent = ({
 
   const slideOut = useCallback(
     (position: number) => {
-      springToValue(translationAnim, position, animationStyle, () => {
-        setIsBackgroundVisible(false)
-        onClosed?.()
-      })
+      springToValue(
+        translationAnim,
+        position,
+        animationStyle,
+        ({ finished }) => {
+          if (finished) {
+            setIsBackgroundVisible(false)
+            onClosed?.()
+          }
+        }
+      )
       if (isFullscreen) {
         springToValue(borderRadiusAnim, BORDER_RADIUS, animationStyle)
       }
@@ -514,10 +521,11 @@ export const Drawer: DrawerComponent = ({
           if (isOpenToInitialOffset) {
             slideOut(initialOffsetOpenPosition)
             borderRadiusAnim.setValue(0)
+            onClose()
           } else {
             slideOut(initialPosition)
+            onClose()
           }
-          onClose()
         } else {
           slideIn(openPosition)
           // If an initial offset is defined, clear the border radius
@@ -550,7 +558,12 @@ export const Drawer: DrawerComponent = ({
     // The background should be visible and touchable when the drawer is open
     if (isOpen) {
       return (
-        <TouchableWithoutFeedback onPress={onClose}>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            console.log('clicking')
+            onClose()
+          }}
+        >
           {renderBackgroundView()}
         </TouchableWithoutFeedback>
       )

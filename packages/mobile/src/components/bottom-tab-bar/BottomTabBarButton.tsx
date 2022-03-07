@@ -33,7 +33,6 @@ const icons = {
 }
 
 type BottomTabBarButtonProps = {
-  key: string
   isFocused: boolean
   isDarkMode: boolean
   route: NavigationRoute
@@ -41,7 +40,6 @@ type BottomTabBarButtonProps = {
 }
 
 export const BottomTabBarButton = ({
-  key,
   isFocused,
   isDarkMode,
   route,
@@ -52,7 +50,6 @@ export const BottomTabBarButton = ({
   }, [navigate, route, isFocused])
   return (
     <AnimatedBottomButton
-      key={key}
       isActive={isFocused}
       isDarkMode={isDarkMode}
       onPress={handlePress}

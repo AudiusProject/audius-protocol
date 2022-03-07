@@ -38,7 +38,9 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   primaryText: {
     ...typography.h3,
     color: palette.neutral,
-    textAlign: 'center'
+    textAlign: 'center',
+    // needed to keep emojis from increasing text height
+    height: 18
   },
   secondaryText: {
     ...typography.body2,
