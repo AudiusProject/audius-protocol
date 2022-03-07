@@ -648,6 +648,12 @@ def record_metrics(func):
         result = func(*args, **kwargs)
 
         route = route.split("?")[0]
+        if "/v1/full/" in route or "/users/intersection/" in route:
+            route = "/".join(route.split("/")[:4])
+        elif "/v1/users/" in route and ("/followers" in route or "/following" in route):
+            route = "/".join(route.split("/")[:3] + ["*"] + route.split("/")[-1:])
+        else:
+            route = "/".join(route.split("/")[:3])
         metric.save_time({"route": route})
 
         return result

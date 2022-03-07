@@ -4,6 +4,7 @@ const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
 const SyncQueue = require('../../src/services/sync/syncQueue')
+const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
 
 // Initialize private IPFS gateway counters
 redisClient.set('ipfsGatewayReqs', 0)
@@ -33,6 +34,7 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
     nodeConfig
   }
   mockServiceRegistry.syncQueue = new SyncQueue(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient, mockServiceRegistry)
+  mockServiceRegistry.trustedNotifierManager = new TrustedNotifierManager(nodeConfig, libsClient)
 
   // Update the import to be the mocked ServiceRegistry instance
   require.cache[require.resolve('../../src/serviceRegistry')] = {
