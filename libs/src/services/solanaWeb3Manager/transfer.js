@@ -263,7 +263,7 @@ async function transferWAudioBalance ({
       data: Buffer.from(transferDataInstr)
     })
   ]
-  return transactionHandler.handleTransaction({ instructions, errorMapping: ClaimableProgramError })
+  return transactionHandler.handleTransaction({ instructions, errorMapping: ClaimableProgramError, feePayerOverride: feePayerKey })
 }
 
 module.exports = {

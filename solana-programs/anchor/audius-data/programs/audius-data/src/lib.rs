@@ -246,7 +246,6 @@ pub mod audius_data {
     /// Permissioned function to log an update to Admin metadata
     pub fn update_admin(ctx: Context<UpdateAdmin>, is_write_enabled: bool) -> Result<()> {
         if ctx.accounts.admin.authority != ctx.accounts.admin_authority.key() {
-            // could be has_one
             return Err(ErrorCode::Unauthorized.into());
         }
         ctx.accounts.admin.is_write_enabled = is_write_enabled;
@@ -297,6 +296,57 @@ pub mod audius_data {
         ctx.accounts.track.owner = dummy_owner_field;
         Ok(())
     }
+
+    pub fn write_track_social_action(
+        ctx: Context<TrackSocialAction>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _track_social_action: TrackSocialActionValues,
+        track_id: u64,
+    ) -> Result<()> {
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if track_id >= ctx.accounts.audius_admin.track_id {
+            return Err(ErrorCode::InvalidId.into());
+        }
+        Ok(())
+    }
+
+    pub fn write_playlist_social_action(
+        ctx: Context<PlaylistSocialAction>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _playlist_social_action: PlaylistSocialActionValues,
+        playlist_id: u64,
+    ) -> Result<()> {
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if playlist_id >= ctx.accounts.audius_admin.playlist_id {
+            return Err(ErrorCode::InvalidId.into());
+        }
+        Ok(())
+    }
+ 
     /*
         Playlist related functions
     */
@@ -635,6 +685,32 @@ pub struct DeleteTrack<'info> {
     pub payer: Signer<'info>,
 }
 
+/// Instruction container for track social action event
+/// Confirm that the user authority matches signer authority field
+#[derive(Accounts)]
+#[instruction(base: Pubkey, user_handle: UserHandle)]
+pub struct TrackSocialAction<'info> {
+    #[account()]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
+    pub user: Account<'info, User>,
+    #[account()]
+    // User authority field
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+#[instruction(base: Pubkey, user_handle: UserHandle)]
+pub struct PlaylistSocialAction<'info> {
+    #[account()]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
+    pub user: Account<'info, User>,
+    #[account()]
+    // User authority field
+    pub authority: Signer<'info>,
+}
+
 /// Instruction container for follow
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_instr:UserAction, follower_handle: UserHandle, followee_handle: UserHandle)]
@@ -757,6 +833,8 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("Signature verification failed.")]
     SignatureVerification,
+    #[msg("Invalid Id.")]
+    InvalidId,
 }
 
 // User actions enum, used to follow/unfollow based on function arguments
@@ -764,6 +842,23 @@ pub enum ErrorCode {
 pub enum UserAction {
     FollowUser,
     UnfollowUser,
+}
+
+// Track actions enum, used to save / repost based on function arguments
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum TrackSocialActionValues {
+    AddSave,
+    DeleteSave,
+    AddRepost,
+    DeleteRepost,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum PlaylistSocialActionValues {
+    AddSave,
+    DeleteSave,
+    AddRepost,
+    DeleteRepost,
 }
 
 // Seed & bump used to validate the user's handle with the account base
