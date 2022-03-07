@@ -5,7 +5,7 @@ import { DynamicImage, DynamicImageProps } from 'app/components/core'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import { makeStyles } from 'app/styles/makeStyles'
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   profilePhoto: {
     height: 82,
     width: 82,

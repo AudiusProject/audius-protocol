@@ -1,4 +1,4 @@
-import { ComponentType, useCallback, useState } from 'react'
+import { ComponentType, useCallback, useRef, useState } from 'react'
 
 import { merge } from 'lodash'
 import {
@@ -8,7 +8,9 @@ import {
   Animated,
   PressableProps,
   ViewStyle,
-  TextStyle
+  TextStyle,
+  View,
+  LayoutChangeEvent
 } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
@@ -199,9 +201,9 @@ export const Button = (props: ButtonProps) => {
     variant = 'primary',
     ...other
   } = props
-
   const [isPressing, setIsPressing] = useState(false)
   const styles = useStyles({ isPressing, size, variant })
+  const rootHeightRef = useRef(0)
   const {
     scale,
     handlePressIn: handlePressInScale,
@@ -243,6 +245,14 @@ export const Button = (props: ButtonProps) => {
     [onPressOut, handlePressOutScale, handlePressOutColor]
   )
 
+  // Ensures button takes up a static height even when scaling
+  const handleRootLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      rootHeightRef.current = event.nativeEvent.layout.height
+    },
+    [rootHeightRef]
+  )
+
   const icon = Icon ? (
     <Icon
       style={[
@@ -259,33 +269,38 @@ export const Button = (props: ButtonProps) => {
   ) : null
 
   return (
-    <Animated.View
-      style={[
-        styles.root,
-        { transform: [{ scale }], backgroundColor: color },
-        fullWidth && { width: '100%' },
-        style,
-        stylesProp?.root
-      ]}
+    <View
+      style={rootHeightRef.current ? { height: rootHeightRef.current } : null}
+      onLayout={handleRootLayout}
     >
-      <Pressable
+      <Animated.View
         style={[
-          styles.button,
+          styles.root,
+          { transform: [{ scale }], backgroundColor: color },
           fullWidth && { width: '100%' },
-          stylesProp?.button
+          style,
+          stylesProp?.root
         ]}
-        accessibilityRole='button'
-        accessibilityLabel={noText ? title : undefined}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        {...other}
       >
-        {iconPosition !== 'left' ? null : icon}
-        {noText ? null : (
-          <Text style={[styles.text, stylesProp?.text]}>{title}</Text>
-        )}
-        {iconPosition !== 'right' ? null : icon}
-      </Pressable>
-    </Animated.View>
+        <Pressable
+          style={[
+            styles.button,
+            fullWidth && { width: '100%' },
+            stylesProp?.button
+          ]}
+          accessibilityRole='button'
+          accessibilityLabel={noText ? title : undefined}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          {...other}
+        >
+          {iconPosition !== 'left' ? null : icon}
+          {noText ? null : (
+            <Text style={[styles.text, stylesProp?.text]}>{title}</Text>
+          )}
+          {iconPosition !== 'right' ? null : icon}
+        </Pressable>
+      </Animated.View>
+    </View>
   )
 }

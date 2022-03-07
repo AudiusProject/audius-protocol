@@ -123,6 +123,9 @@ const createStyles = (themeColors: ThemeColors) =>
       color: themeColors.neutralLight4,
       fontSize: 13
     },
+    trendingControl: {
+      paddingHorizontal: 28
+    },
     lastWeek: {
       textAlign: 'center',
       marginBottom: 16,
@@ -223,14 +226,16 @@ export const TrendingRewardsDrawer = () => {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <SegmentedControl
-            options={tabOptions}
-            selected={modalType}
-            onSelectOption={option =>
-              setModalType(option as TrendingRewardsModalType)
-            }
-            key={`rewards-slider-${tabOptions.length}`}
-          />
+          <View style={styles.trendingControl}>
+            <SegmentedControl
+              options={tabOptions}
+              selected={modalType}
+              onSelectOption={option =>
+                setModalType(option as TrendingRewardsModalType)
+              }
+              key={`rewards-slider-${tabOptions.length}`}
+            />
+          </View>
           <View style={styles.titles}>
             <Text style={styles.title} weight='bold'>
               {textMap[modalType].title}
