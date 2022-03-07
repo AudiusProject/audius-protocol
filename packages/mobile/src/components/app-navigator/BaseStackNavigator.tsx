@@ -1,7 +1,4 @@
-import {
-  CardStyleInterpolators,
-  createStackNavigator
-} from '@react-navigation/stack'
+import { createStackNavigator } from '@react-navigation/stack'
 import { MessageType } from 'audius-client/src/services/native-mobile-interface/types'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -17,7 +14,7 @@ import {
   RepostsScreen
 } from 'app/screens/user-list-screen'
 
-import { TopBar } from './TopBar'
+import { useScreenOptions } from './baseStackScreenOptions'
 
 const forFade = ({ current }) => ({
   cardStyle: {
@@ -41,21 +38,20 @@ export const BaseStackNavigator = ({
   Stack
 }: BaseNavigatorProps) => {
   const dispatchWeb = useDispatchWeb()
+  const screenOptions = useScreenOptions()
   return (
     <Stack.Navigator
-      screenOptions={{
-        cardOverlayEnabled: true,
-        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-        gestureEnabled: true,
-        gestureResponseDistance: 1000,
-        header: props => <TopBar {...props} />,
-        headerStyle: { height: 87 },
-        headerMode: 'float'
-      }}
-      screenListeners={({ navigation }) => ({
+      screenOptions={screenOptions}
+      screenListeners={() => ({
         beforeRemove: e => {
           // hack for now to prevent pop for some pages
-          if (!e.target?.includes('EditProfile')) {
+          if (
+            !e.target?.includes('EditProfile') &&
+            !(
+              e.target?.includes('Search') &&
+              !e.target?.includes('SearchResults')
+            )
+          ) {
             // When a screen is removed, notify the web layer to pop navigation
             dispatchWeb({
               type: MessageType.POP_ROUTE
