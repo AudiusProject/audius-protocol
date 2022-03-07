@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { FavoriteSource } from 'audius-client/src/common/models/Analytics'
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
@@ -33,7 +33,7 @@ import AnimatedButtonProvider from '../animated-button/AnimatedButtonProvider'
 
 import { TrackingBar } from './TrackingBar'
 
-const SEEK_INTERVAL = 1000
+const SEEK_INTERVAL = 200
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -132,16 +132,22 @@ export const PlayBar = ({
   const isDarkMode = themeVariant === Theme.DARK
   const [percentComplete, setPercentComplete] = useState(0)
 
+  const intervalRef = useRef<NodeJS.Timeout>()
   useEffect(() => {
-    setInterval(() => {
-      const { currentTime, playableDuration } = global.progress
-      if (playableDuration !== undefined) {
-        setPercentComplete(currentTime / playableDuration)
+    intervalRef.current = setInterval(() => {
+      const { currentTime, seekableDuration } = global.progress
+      if (seekableDuration !== undefined) {
+        setPercentComplete(currentTime / seekableDuration)
       } else {
         setPercentComplete(0)
       }
     }, SEEK_INTERVAL)
-  }, [setPercentComplete])
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [setPercentComplete, intervalRef])
 
   const isPlaying = useSelector(getPlaying)
 

@@ -15,12 +15,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
 import Drawer from 'app/components/drawer'
+import { Scrubber } from 'app/components/scrubber'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import {
   getPlaying,
   getTrack as getNativeTrack
 } from 'app/store/audio/selectors'
+import { attachToDy } from 'app/utils/animation'
 
 import { DrawerAnimationStyle, springToValue } from '../drawer/Drawer'
 
@@ -29,7 +31,6 @@ import { Artwork } from './Artwork'
 import { AudioControls } from './AudioControls'
 import { Logo } from './Logo'
 import { PlayBar } from './PlayBar'
-import { Scrubber } from './Scrubber'
 import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
 
@@ -59,20 +60,6 @@ const styles = StyleSheet.create({
     marginRight: 60
   }
 })
-
-const attachToDy = (animation: Animated.Value, newValue: number) => (
-  e: GestureResponderEvent
-) => {
-  Animated.event(
-    [
-      null,
-      {
-        dy: animation
-      }
-    ],
-    { useNativeDriver: false }
-  )(e, { dy: newValue })
-}
 
 type NowPlayingDrawerProps = {
   onOpen: () => void
@@ -172,6 +159,8 @@ const NowPlayingDrawer = ({
     [drawerPercentOpen, bottomBarTranslationAnim, playBarOpacityAnim, isOpen]
   )
 
+  const [isGestureEnabled, setIsGestureEnabled] = useState(true)
+
   // TODO: As we move away from the audio store slice in mobile-client
   // in favor of player/queue selectors in common, getNativeTrack calls
   // should be replaced
@@ -182,6 +171,28 @@ const NowPlayingDrawer = ({
   const user = useSelectorWeb(state =>
     getUser(state, track ? { id: track.owner_id } : {})
   )
+
+  const trackId = trackInfo?.trackId
+  const [mediaKey, setMediaKey] = useState(0)
+  useEffect(() => {
+    setMediaKey(mediaKey => mediaKey + 1)
+  }, [trackId])
+
+  const onNext = useCallback(() => {
+    setMediaKey(mediaKey => mediaKey + 1)
+  }, [setMediaKey])
+
+  const onPrevious = useCallback(() => {
+    setMediaKey(mediaKey => mediaKey + 1)
+  }, [setMediaKey])
+
+  const onPressScrubberIn = useCallback(() => {
+    setIsGestureEnabled(false)
+  }, [setIsGestureEnabled])
+
+  const onPressScrubberOut = useCallback(() => {
+    setIsGestureEnabled(true)
+  }, [setIsGestureEnabled])
 
   return (
     <Drawer
@@ -198,6 +209,7 @@ const NowPlayingDrawer = ({
       drawerStyle={{ top: -1 * insets.top, overflow: 'visible' }}
       onPercentOpen={onDrawerPercentOpen}
       onPanResponderMove={onPanResponderMove}
+      isGestureSupported={isGestureEnabled}
     >
       <View style={styles.container}>
         {track && user && (
@@ -219,10 +231,16 @@ const NowPlayingDrawer = ({
               <TrackInfo track={track} user={user} />
             </View>
             <View style={styles.scrubberContainer}>
-              <Scrubber mediaKey='1' />
+              <Scrubber
+                mediaKey={`${mediaKey}`}
+                isPlaying={isPlaying}
+                onPressIn={onPressScrubberIn}
+                onPressOut={onPressScrubberOut}
+                duration={track.duration}
+              />
             </View>
             <View style={styles.controlsContainer}>
-              <AudioControls />
+              <AudioControls onNext={onNext} onPrevious={onPrevious} />
               <ActionsBar track={track} />
             </View>
           </>
