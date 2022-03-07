@@ -63,7 +63,7 @@ export const ForYouTab = () => {
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
         {tiles.map(tile => (
-          <ColorTile style={styles.tile} key={tile.variant} {...tile} />
+          <ColorTile style={styles.tile} key={tile.title} {...tile} />
         ))}
       </View>
     </ScrollView>

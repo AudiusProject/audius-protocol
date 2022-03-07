@@ -4,6 +4,7 @@ import { useField } from 'formik'
 import { Animated, Pressable, View } from 'react-native'
 
 import IconUpload from 'app/assets/images/iconUpload.svg'
+import imageCoverPhotoBlank from 'app/assets/images/imageCoverPhotoBlank.jpg'
 import { DynamicImage } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
@@ -50,6 +51,10 @@ export const CoverPhotoInput = () => {
     'cover_photo'
   )
 
+  const source = value.url?.match(/imageCoverPhotoBlank/)
+    ? imageCoverPhotoBlank
+    : { uri: value.url }
+
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
 
   const handlePress = useCallback(() => {
@@ -67,7 +72,7 @@ export const CoverPhotoInput = () => {
       onPressOut={handlePressOut}
     >
       <DynamicImage
-        source={{ uri: value.url }}
+        source={source}
         styles={{ root: styles.root, image: styles.image }}
         onLoad={() => setIsLoading(false)}
       >

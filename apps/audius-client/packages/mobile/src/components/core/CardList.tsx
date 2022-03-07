@@ -18,6 +18,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
       const style = {
         paddingVertical: 12,
         paddingBottom: 0,
+        paddingHorizontal: 6,
         [`padding${isInLeftColumn ? 'Left' : 'Right'}`]: 12,
         width: '50%'
       }

@@ -102,7 +102,7 @@ export const TrendingFilterDrawer = () => {
             return (
               <Button
                 fullWidth
-                variant={isSelected ? 'primary' : 'common'}
+                variant={isSelected ? 'primary' : 'commonAlt'}
                 title={genre}
                 style={styles.genreButton}
                 onPress={handleSelect(genre)}
