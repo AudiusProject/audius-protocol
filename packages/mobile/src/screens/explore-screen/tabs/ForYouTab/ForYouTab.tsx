@@ -1,5 +1,8 @@
+import { useRef } from 'react'
+
 import { ScrollView, StyleSheet, View } from 'react-native'
 
+import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
 
@@ -58,8 +61,16 @@ const tiles = [
 export const ForYouTab = () => {
   const styles = useThemedStyles(createStyles)
 
+  const ref = useRef<ScrollView>(null)
+  useScrollToTop(() => {
+    ref.current?.scrollTo({
+      y: 0,
+      animated: true
+    })
+  })
+
   return (
-    <ScrollView style={styles.tabContainer}>
+    <ScrollView style={styles.tabContainer} ref={ref}>
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
         {tiles.map(tile => (

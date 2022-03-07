@@ -1,6 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
 import { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
+import { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
+import { NavigationHelpers, ParamListBase } from '@react-navigation/native'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
 import { setTab } from 'audius-client/src/common/store/pages/explore/slice'
 import { Tabs } from 'audius-client/src/common/store/pages/explore/types'
@@ -63,7 +65,7 @@ const springToValue = (
   }).start(finished)
 }
 
-export type BottomTabBarProps = {
+export type BottomTabBarProps = RNBottomTabBarProps & {
   /**
    * Display properties on the bottom bar to control whether
    * the bottom bar is showing
@@ -74,6 +76,15 @@ export type BottomTabBarProps = {
    * are opened behind it
    */
   translationAnim: Animated.Value
+
+  navigation: NavigationHelpers<
+    ParamListBase,
+    BottomTabNavigationEventMap & {
+      scrollToTop: {
+        data: undefined
+      }
+    }
+  >
 }
 
 export const BottomTabBar = ({
@@ -179,10 +190,20 @@ export const BottomTabBar = ({
 
       if (!isFocused && !event.defaultPrevented) {
         navigation.navigate(route.name)
+      } else if (isFocused) {
+        navigation.emit({
+          type: 'scrollToTop'
+        })
       }
     },
     [navigation, pushRouteWeb, handle, openSignOn, resetExploreTab, scrollToTop]
   )
+
+  const handleLongPress = () => {
+    navigation.emit({
+      type: 'scrollToTop'
+    })
+  }
 
   return (
     <Animated.View
@@ -212,6 +233,7 @@ export const BottomTabBar = ({
               isFocused={isFocused}
               isDarkMode={isDarkMode}
               navigate={navigate}
+              onLongPress={handleLongPress}
             />
           )
         })}

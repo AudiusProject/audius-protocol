@@ -23,6 +23,7 @@ export const AlbumsTab = () => {
       listKey='profile-albums'
       collection={userAlbums}
       emptyListText={emptyListText}
+      disableTopTabScroll
     />
   )
 }

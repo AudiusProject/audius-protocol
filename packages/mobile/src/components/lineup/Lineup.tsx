@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import { Name, PlaybackSource } from 'audius-client/src/common/models/Analytics'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
@@ -14,6 +14,7 @@ import {
   LineupTileSkeleton
 } from 'app/components/lineup-tile'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { make, track } from 'app/utils/analytics'
 
@@ -105,6 +106,7 @@ export const Lineup = ({
   actions,
   count,
   delineate,
+  disableTopTabScroll,
   isTrending,
   leadingElementId,
   lineup,
@@ -121,6 +123,14 @@ export const Lineup = ({
   ...scrollViewProps
 }: LineupProps) => {
   const dispatchWeb = useDispatchWeb()
+  const ref = useRef<SectionList>(null)
+  useScrollToTop(() => {
+    ref.current?.scrollToLocation({
+      sectionIndex: 0,
+      itemIndex: 0,
+      animated: true
+    })
+  }, disableTopTabScroll)
 
   const playing = useSelector(getPlaying)
   const playingUid = useSelector(getPlayingUid)
@@ -328,6 +338,7 @@ export const Lineup = ({
   return (
     <SectionList
       {...scrollViewProps}
+      ref={ref}
       ListHeaderComponent={header}
       ListFooterComponent={<View style={{ height: 160 }} />}
       onEndReached={handleLoadMore}
