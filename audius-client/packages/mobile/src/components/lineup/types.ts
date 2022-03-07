@@ -36,6 +36,11 @@ export type LineupProps = {
    */
   delineate?: boolean
 
+  /**
+   * Do not scroll to top of lineup when containing tab navigator tab is pressed
+   */
+  disableTopTabScroll?: boolean
+
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
 

@@ -40,6 +40,7 @@ export const TracksTab = () => {
       lineup={lineup}
       limit={profile.track_count}
       loadMore={loadMore}
+      disableTopTabScroll
     />
   )
 }

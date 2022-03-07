@@ -10,6 +10,7 @@ import { useColor } from 'app/utils/theme'
 export type BaseAnimatedButtonProps = {
   iconIndex?: number
   onPress?: GestureResponderHandler
+  onLongPress?: GestureResponderHandler
   isActive?: boolean
   isDisabled?: boolean
   showUnderlay?: boolean
@@ -27,6 +28,7 @@ const AnimatedButton = ({
   iconIndex: externalIconIndex,
   iconJSON,
   onPress,
+  onLongPress,
   isActive,
   isDisabled = false,
   showUnderlay = false,
@@ -81,25 +83,22 @@ const AnimatedButton = ({
     externalIconIndex
   ])
 
-  const handleClick = useCallback(() => {
-    if (isDisabled) {
-      return
-    }
-
+  const handlePress = useCallback(() => {
     if (hasMultipleStates || !isActive) {
       setIsPlaying(true)
       animationRef.current?.play()
     }
 
     onPress?.()
-  }, [
-    isDisabled,
-    onPress,
-    isActive,
-    setIsPlaying,
-    hasMultipleStates,
-    animationRef
-  ])
+  }, [onPress, isActive, setIsPlaying, hasMultipleStates, animationRef])
+
+  const handleLongPress = useCallback(() => {
+    if (onLongPress) {
+      onLongPress()
+    } else {
+      handlePress()
+    }
+  }, [onLongPress, handlePress])
 
   // For multi state buttons, when `isActive` flips, trigger
   // the animation to run
@@ -138,8 +137,9 @@ const AnimatedButton = ({
 
   return (
     <TouchableHighlight
-      onPress={handleClick}
-      onLongPress={handleClick}
+      disabled={isDisabled}
+      onPress={handlePress}
+      onLongPress={handleLongPress}
       hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
       style={style}
       underlayColor={showUnderlay ? underlayColor : null}

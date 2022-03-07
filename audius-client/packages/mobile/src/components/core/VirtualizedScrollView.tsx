@@ -1,6 +1,8 @@
-import { ReactElement } from 'react'
+import { ReactElement, useRef } from 'react'
 
 import { StyleProp, ViewStyle, FlatList } from 'react-native'
+
+import { useScrollToTop } from 'app/hooks/useScrollToTop'
 
 type VirtualizedScrollViewProps = {
   children: ReactElement | ReactElement[]
@@ -14,8 +16,17 @@ type VirtualizedScrollViewProps = {
 export const VirtualizedScrollView = (props: VirtualizedScrollViewProps) => {
   const { children, listKey, style } = props
   const listHeader = Array.isArray(children) ? <>{children}</> : children
+  const ref = useRef<FlatList>(null)
+  useScrollToTop(() => {
+    ref.current?.scrollToOffset({
+      offset: 0,
+      animated: true
+    })
+  })
+
   return (
     <FlatList
+      ref={ref}
       listKey={listKey}
       style={style}
       ListHeaderComponent={listHeader}
