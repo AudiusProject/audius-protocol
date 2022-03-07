@@ -6,6 +6,7 @@ import {
   initAdmin,
   updateAdmin,
   updatePlaylist,
+  updateLegacyPlaylist,
 } from "../lib/lib";
 import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
@@ -95,6 +96,23 @@ describe("playlist", function () {
       });
       await confirmLogInTransaction(provider, tx, playlistMetadata);
     };
+
+    const testUpdateLegacyPlaylist = async ({
+      playlistKeypair,
+      playlistOwnerPDA,
+      userAuthorityKeypair,
+      playlistMetadata,
+    }) => {
+      const tx = await updateLegacyPlaylist({
+        program,
+        playlistPublicKey: playlistKeypair.publicKey,
+        userStgAccountPDA: playlistOwnerPDA,
+        userAuthorityKeypair,
+        metadata: playlistMetadata,
+      });
+      await confirmLogInTransaction(provider, tx, playlistMetadata);
+    };
+
 
     const testDeletePlaylist = async ({
       playlistKeypair,
@@ -213,6 +231,13 @@ describe("playlist", function () {
       });
 
       await testUpdatePlaylist({
+        playlistKeypair: newPlaylistKeypair,
+        userAuthorityKeypair: newUserKeypair,
+        playlistOwnerPDA: newUserAcctPDA,
+        playlistMetadata: randomCID(),
+      });
+
+      await testUpdateLegacyPlaylist({
         playlistKeypair: newPlaylistKeypair,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,

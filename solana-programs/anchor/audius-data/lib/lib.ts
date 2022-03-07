@@ -349,7 +349,7 @@ export const createTrack = async ({
   });
 };
 
-/// Initialize a user from the Audius Admin account
+/// Update a track
 type UpdateTrackParams = {
   program: Program<AudiusData>;
   trackPDA: anchor.web3.PublicKey;
@@ -375,30 +375,24 @@ export const updateTrack = async ({
   });
 };
 
-/// Initialize a user from the Audius Admin account
+/// Update a legacy track
 type UpdateLegacyTrackParams = {
   program: Program<AudiusData>;
-  trackPDA: anchor.web3.PublicKey;
   trackId: anchor.BN;
   metadata: string;
-  adminStgPublicKey: anchor.web3.PublicKey;
   userAuthorityKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
 };
 
 export const updateLegacyTrack = async ({
   program,
-  trackPDA,
   trackId,
   metadata,
-  adminStgPublicKey,
   userAuthorityKeypair,
   userStgAccountPDA,
 }: UpdateLegacyTrackParams) => {
   return program.rpc.updateLegacyTrack(trackId, metadata, {
     accounts: {
-      track: trackPDA,
-      audiusAdmin: adminStgPublicKey,
       user: userStgAccountPDA,
       authority: userAuthorityKeypair.publicKey,
     },
@@ -564,6 +558,31 @@ export const updatePlaylist = async ({
   return program.rpc.updatePlaylist(metadata, {
     accounts: {
       playlist: playlistPublicKey,
+      user: userStgAccountPDA,
+      authority: userAuthorityKeypair.publicKey,
+    },
+    signers: [userAuthorityKeypair],
+  });
+};
+
+/// Update a legacy playlist
+type UpdateLegacyPlaylistParams = {
+  program: Program<AudiusData>;
+  playlistId: anchor.BN;
+  metadata: string;
+  userAuthorityKeypair: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+};
+
+export const updateLegacyPlaylist = async ({
+  program,
+  playlistId,
+  metadata,
+  userAuthorityKeypair,
+  userStgAccountPDA,
+}: UpdateLegacyPlaylistParams) => {
+  return program.rpc.updateLegacyTrack(playlistId, metadata, {
+    accounts: {
       user: userStgAccountPDA,
       authority: userAuthorityKeypair.publicKey,
     },

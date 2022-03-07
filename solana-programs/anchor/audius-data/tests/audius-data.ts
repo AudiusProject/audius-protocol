@@ -438,7 +438,7 @@ describe("audius-data", function () {
       program,
       message,
       ethPrivateKey: ethAccount.privateKey,
-      newUserKeypair,
+      newUserPublicKey: newUserKeypair.publicKey,
       newUserAcctPDA,
     });
 
@@ -452,61 +452,6 @@ describe("audius-data", function () {
       metadata: updatedTrackMetadata,
     });
     await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
-  });
-
-  it("Initializing + claiming user, creating + updating legacy track with new track id", async function () {
-    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
-
-    const {
-      baseAuthorityAccount,
-      bumpSeed,
-      derivedAddress: newUserAcctPDA,
-    } = await findDerivedPair(
-      program.programId,
-      adminStgKeypair.publicKey,
-      Buffer.from(handleBytesArray)
-    );
-
-    await testInitUser({
-      provider,
-      program,
-      baseAuthorityAccount,
-      ethAddress: ethAccount.address,
-      handleBytesArray,
-      bumpSeed,
-      metadata,
-      userStgAccount: newUserAcctPDA,
-      adminStgKeypair,
-      adminKeypair,
-    });
-
-    // New sol key that will be used to permission user updates
-    const newUserKeypair = anchor.web3.Keypair.generate();
-
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
-
-    await testInitUserSolPubkey({
-      provider,
-      program,
-      message,
-      ethPrivateKey: ethAccount.privateKey,
-      newUserKeypair,
-      newUserAcctPDA,
-    });
-
-    const updatedTrackMetadata = randomCID();
-    await expect(
-      updateLegacyTrack({
-        program,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-        userStgAccountPDA: newUserAcctPDA,
-        userAuthorityKeypair: newUserKeypair,
-        trackId: new anchor.BN("3"),
-        metadata: updatedTrackMetadata,
-      })
-    ).to.be.rejectedWith(Error);
   });
 
   it("Creating user with admin writes enabled should fail", async function () {

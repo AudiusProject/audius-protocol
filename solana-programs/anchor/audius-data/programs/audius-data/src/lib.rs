@@ -35,8 +35,6 @@ pub mod audius_data {
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         audius_admin.verifier = verifier;
-        audius_admin.initial_track_id_offset = track_id_offset;
-        audius_admin.initial_playlist_id_offset = playlist_id_offset;
         audius_admin.track_id = track_id_offset;
         audius_admin.playlist_id = playlist_id_offset;
         audius_admin.is_write_enabled = true;
@@ -284,14 +282,17 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn update_legacy_track(ctx: Context<UpdateLegacyTrack>, track_id: u64, metadata: String) -> Result<()> {
-        msg!("Audius::UpdateTrack");
-        if track_id > ctx.accounts.audius_admin.initial_track_id_offset {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+    pub fn update_legacy_track(
+        ctx: Context<UpdateLegacyTrack>,
+        track_id: u64,
+        metadata: String,
+    ) -> Result<()> {
+        msg!("Audius::UpdateLegacyTrack");
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
+        // TODO any metadata validation?
+        msg!("AudiusTrackId= {:?}", track_id);
         msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
     }
@@ -335,7 +336,7 @@ pub mod audius_data {
         }
         Ok(())
     }
- 
+
     /*
         Playlist related functions
     */
@@ -354,12 +355,26 @@ pub mod audius_data {
 
     pub fn update_playlist(ctx: Context<UpdatePlaylist>, metadata: String) -> Result<()> {
         msg!("Audius::UpdatePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner {
+        if (ctx.accounts.user.key() != ctx.accounts.playlist.owner)
+            || (ctx.accounts.authority.key() != ctx.accounts.user.authority)
+        {
             return Err(ErrorCode::Unauthorized.into());
         }
+
+        msg!("AudiusPlaylistMetadata = {:?}", metadata);
+        Ok(())
+    }
+
+    pub fn update_legacy_playlist(
+        ctx: Context<UpdateLegacyPlaylist>,
+        playlist_id: u64,
+        metadata: String,
+    ) -> Result<()> {
+        msg!("Audius::UpdateLegacyPlaylist");
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
+        msg!("AudiusPlaylistId= {:?}", playlist_id);
         msg!("AudiusPlaylistMetadata = {:?}", metadata);
         Ok(())
     }
@@ -487,8 +502,8 @@ pub mod audius_data {
     }
 }
 
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 8 (track id offset) + 8 (playlist id offset) + 1 (is_write_enabled)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 8 + 8 + 1;
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 1;
 
 /// Size of user account
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
@@ -688,7 +703,16 @@ pub struct UpdateTrack<'info> {
 #[derive(Accounts)]
 pub struct UpdateLegacyTrack<'info> {
     #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    // User update authority field
+    pub authority: Signer<'info>,
+}
+
+/// Instruction container for legacy playlist updates
+/// Confirm that the user authority matches signer authority field
+#[derive(Accounts)]
+pub struct UpdateLegacyPlaylist<'info> {
     #[account(mut)]
     pub user: Account<'info, User>,
     #[account(mut)]
@@ -820,8 +844,6 @@ pub struct AudiusAdmin {
     pub verifier: Pubkey,
     pub track_id: u64,
     pub playlist_id: u64,
-    pub initial_track_id_offset: u64,
-    pub initial_playlist_id_offset: u64,
     pub is_write_enabled: bool,
 }
 
