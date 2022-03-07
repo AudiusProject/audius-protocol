@@ -1,15 +1,26 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { FlatList, FlatListProps, ListRenderItem, View } from 'react-native'
+
+import { useScrollToTop } from 'app/hooks/useScrollToTop'
 
 import { EmptyTile } from './EmptyTile'
 
 export type CardListProps<ItemT> = FlatListProps<ItemT> & {
   emptyListText?: string
+  disableTopTabScroll?: boolean
 }
 
 export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
-  const { renderItem, emptyListText, ...other } = props
+  const { renderItem, emptyListText, disableTopTabScroll, ...other } = props
+
+  const ref = useRef<FlatList>(null)
+  useScrollToTop(() => {
+    ref.current?.scrollToOffset({
+      offset: 0,
+      animated: true
+    })
+  }, disableTopTabScroll)
 
   const handleRenderItem: ListRenderItem<ItemT> = useCallback(
     info => {
@@ -29,6 +40,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
 
   return (
     <FlatList
+      ref={ref}
       renderItem={handleRenderItem}
       numColumns={2}
       ListEmptyComponent={

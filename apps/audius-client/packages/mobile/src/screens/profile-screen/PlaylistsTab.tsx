@@ -23,6 +23,7 @@ export const PlaylistsTab = () => {
       listKey='profile-playlists'
       collection={userPlaylists}
       emptyListText={emptyListText}
+      disableTopTabScroll
     />
   )
 }

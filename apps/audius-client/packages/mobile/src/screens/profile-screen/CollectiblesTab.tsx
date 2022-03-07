@@ -1,7 +1,10 @@
+import { useRef } from 'react'
+
 import { View, Pressable, Text, FlatList } from 'react-native'
 
 import IconShare from 'app/assets/images/iconShare.svg'
 import { Tile, GradientText } from 'app/components/core'
+import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -74,6 +77,14 @@ export const CollectiblesTab = () => {
   const { neutralLight4 } = useThemeColors()
   const { profile } = useSelectorWeb(getProfile)
 
+  const ref = useRef<FlatList>(null)
+  useScrollToTop(() => {
+    ref.current?.scrollToOffset({
+      offset: 0,
+      animated: true
+    })
+  }, true)
+
   if (!profile) return null
 
   const { collectibleList = [], solanaCollectibleList = [] } = profile
@@ -84,6 +95,7 @@ export const CollectiblesTab = () => {
     <View style={styles.root}>
       <Tile styles={{ tile: styles.tile, content: styles.tileContent }}>
         <FlatList
+          ref={ref}
           listKey='profile-collectibles'
           ListHeaderComponent={
             <View style={styles.header}>

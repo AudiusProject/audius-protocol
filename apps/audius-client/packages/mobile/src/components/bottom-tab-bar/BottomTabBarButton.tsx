@@ -12,6 +12,7 @@ import IconProfileDark from 'app/assets/animations/iconProfileDark.json'
 import IconProfileLight from 'app/assets/animations/iconProfileLight.json'
 import IconTrendingDark from 'app/assets/animations/iconTrendingDark.json'
 import IconTrendingLight from 'app/assets/animations/iconTrendingLight.json'
+import { GestureResponderHandler } from 'app/types/gesture'
 
 import AnimatedBottomButton from './buttons/AnimatedBottomButton'
 
@@ -37,13 +38,15 @@ type BottomTabBarButtonProps = {
   isDarkMode: boolean
   route: NavigationRoute
   navigate: (route: NavigationRoute, isFocused: boolean) => void
+  onLongPress: GestureResponderHandler
 }
 
 export const BottomTabBarButton = ({
   isFocused,
   isDarkMode,
   route,
-  navigate
+  navigate,
+  onLongPress
 }: BottomTabBarButtonProps) => {
   const handlePress = useCallback(() => {
     navigate(route, isFocused)
@@ -53,6 +56,7 @@ export const BottomTabBarButton = ({
       isActive={isFocused}
       isDarkMode={isDarkMode}
       onPress={handlePress}
+      onLongPress={onLongPress}
       iconLightJSON={icons.light[route.name]}
       iconDarkJSON={icons.dark[route.name]}
     />

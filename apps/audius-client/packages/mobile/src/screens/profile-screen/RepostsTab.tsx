@@ -22,6 +22,7 @@ export const RepostsTab = () => {
       actions={feedActions}
       lineup={lineup}
       selfLoad
+      disableTopTabScroll
     />
   )
 }
