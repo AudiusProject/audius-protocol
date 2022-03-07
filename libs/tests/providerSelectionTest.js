@@ -5,6 +5,8 @@ const ContractClient = require('../src/services/contracts/ContractClient')
 const Web3Manager = require('../src/services/web3Manager/index')
 const EthWeb3Manager = require('../src/services/ethWeb3Manager/index')
 
+const CONTRACT_INIT_MAX_ATTEMPTS = 5
+
 let contractClient
 
 describe.only('Testing ContractClient class with ProviderSelection', () => {
@@ -35,10 +37,11 @@ describe.only('Testing ContractClient class with ProviderSelection', () => {
    * Given: both gatetways are unhealthy
    * When: we do contract logic
    * Should: try both gateways and then log error
+   * 
+   * @notice when web3 is set to a new object, the second call will throw a different error
+   *    that is acceptable as we don't care about what the error is
    */
-  // note: when web3 is set to a new object, the second call will throw a different error. that is acceptable
-  // as we don't care about what the error is
-  it.only('should log error if both audius gateway and public gateway are unhealthy', async () => {
+  it('should log error if both audius gateway and public gateway are unhealthy', async () => {
     contractClient = createContractClientWithInternalWeb3()
     sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'init')
@@ -46,8 +49,8 @@ describe.only('Testing ContractClient class with ProviderSelection', () => {
 
     await contractClient.init()
 
-    assert(initWithProviderSelectionSpy.calledTwice)
-    assert(consoleSpy.callCount === 5) // 5 = CONTRACT_INIT_MAX_ATTEMPTS
+    assert(initWithProviderSelectionSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
+    assert(consoleSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
   })
 
   /**
@@ -73,7 +76,7 @@ describe.only('Testing ContractClient class with ProviderSelection', () => {
    * When: contract logic fails
    * Should: do not do retry logic and log error
    */
-  it('should log error if web3Manager is instanceof ethWeb3Manager and contract logic fails', async () => {
+  it.only('should log error if web3Manager is instanceof ethWeb3Manager and contract logic fails', async () => {
     contractClient = createContractClientWithEthWeb3Manager()
     sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'init')
@@ -82,8 +85,8 @@ describe.only('Testing ContractClient class with ProviderSelection', () => {
     await contractClient.init()
 
     assert.strictEqual(contractClient.web3Manager.getWeb3().currentProvider.host, 'https://eth.network')
-    assert(initWithProviderSelectionSpy.calledOnce)
-    assert(consoleSpy.calledOnce)
+    assert(initWithProviderSelectionSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
+    assert(consoleSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
   })
 
   /**
@@ -109,7 +112,7 @@ describe.only('Testing ContractClient class with ProviderSelection', () => {
    * When: contract logic fails
    * Should: do not do retry logic and log error
    */
-  it('should log error if useExternalWeb3 is true and contract logic fails', async () => {
+  it.only('should log error if useExternalWeb3 is true and contract logic fails', async () => {
     contractClient = createContractClientWithExternalWeb3()
     sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'init')
@@ -117,8 +120,8 @@ describe.only('Testing ContractClient class with ProviderSelection', () => {
 
     await contractClient.init()
 
-    assert(initWithProviderSelectionSpy.calledOnce)
-    assert(consoleSpy.calledOnce)
+    assert(initWithProviderSelectionSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
+    assert(consoleSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
   })
 })
 // Helper stub and functions for providerSelectionTest

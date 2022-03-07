@@ -38,7 +38,7 @@ class ContractClient {
   }
 
   /** Inits the contract if necessary */
-  async init (selectNewEndpointOnRetry = true) {
+  async init () {
     // No-op if we are already initted
     if (this._isInitialized) return
 
@@ -80,9 +80,9 @@ class ContractClient {
       }
 
       const selectNewEndpoint = !!this.providerSelector
-      console.error(`Failed to initialize ${this.contractRegistryKey} on attempt #${this._initAttempts}. Retrying with selectNewEndpoint=${selectNewEndpoint} selectNewEndpointOnRetry=${selectNewEndpointOnRetry}`)
+      console.error(`Failed to initialize ${this.contractRegistryKey} on attempt #${this._initAttempts}. Retrying with selectNewEndpoint=${selectNewEndpoint}`)
       this._isInitializing = false
-      await this.retryInit(selectNewEndpoint && selectNewEndpointOnRetry)
+      await this.retryInit(selectNewEndpoint)
     }
   }
 
