@@ -126,7 +126,6 @@ export const PlaylistNavItem = ({
         isActive={() => url === getPathname()}
         activeClassName='active'
         className={cn(navColumnStyles.link, {
-          [navColumnStyles.playlistUpdate]: hasUpdate,
           [navColumnStyles.droppableLink]:
             isOwner &&
             dragging &&
