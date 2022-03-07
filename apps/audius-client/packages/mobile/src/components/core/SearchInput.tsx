@@ -13,7 +13,8 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     borderRadius: 8,
     borderWidth: 1,
     paddingVertical: spacing(2),
-    paddingHorizontal: spacing(3),
+    paddingLeft: spacing(3),
+    paddingRight: spacing(1),
     borderColor: palette.neutralLight7,
     backgroundColor: palette.neutralLight10
   },

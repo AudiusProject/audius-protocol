@@ -1,7 +1,3 @@
-import { useCallback, useEffect, useRef } from 'react'
-
-import { Animated } from 'react-native'
-
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -16,36 +12,20 @@ const useStyles = makeStyles(() => ({
   }
 }))
 
-export const TopBarArrowBack = ({ onPress }) => {
+type TopBarArrowBackButton = {
+  onPress?: () => void
+}
+
+export const TopBarArrowBack = (props: TopBarArrowBackButton) => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
-  const fadeAnim = useRef(new Animated.Value(0)).current
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true
-    }).start()
-  }, [fadeAnim])
-
-  const handlePress = useCallback(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 500,
-      useNativeDriver: true
-    }).start()
-    onPress()
-  }, [fadeAnim, onPress])
 
   return (
-    <Animated.View style={{ opacity: fadeAnim }}>
-      <IconButton
-        icon={IconCaretRight}
-        fill={neutralLight4}
-        styles={{ icon: styles.icon }}
-        onPress={handlePress}
-      />
-    </Animated.View>
+    <IconButton
+      icon={IconCaretRight}
+      fill={neutralLight4}
+      styles={{ icon: styles.icon }}
+      {...props}
+    />
   )
 }
