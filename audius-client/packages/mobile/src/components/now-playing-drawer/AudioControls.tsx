@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { getRepeat, getShuffle } from 'common/store/queue/selectors'
-import { shuffle, repeat } from 'common/store/queue/slice'
+import { shuffle, repeat, next, previous } from 'common/store/queue/slice'
 import { RepeatMode } from 'common/store/queue/types'
 import { View, StyleSheet } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -22,6 +22,7 @@ import IconNext from 'app/assets/images/iconNext.svg'
 import IconPrev from 'app/assets/images/iconPrev.svg'
 import AnimatedButtonProvider from 'app/components/animated-button/AnimatedButtonProvider'
 import { IconButton } from 'app/components/core'
+import * as haptics from 'app/haptics'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -57,7 +58,12 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-export const AudioControls = () => {
+type AudioControlsProps = {
+  onNext: () => void
+  onPrevious: () => void
+}
+
+export const AudioControls = ({ onNext, onPrevious }: AudioControlsProps) => {
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
 
@@ -70,6 +76,7 @@ export const AudioControls = () => {
   const repeatMode = useSelectorWeb(getRepeat)
 
   const onPressPlayButton = useCallback(() => {
+    haptics.light()
     if (isPlaying) {
       dispatch(pause())
     } else {
@@ -103,6 +110,16 @@ export const AudioControls = () => {
     dispatchWeb(repeat({ mode }))
   }, [dispatchWeb, repeatMode])
 
+  const onPressNext = useCallback(() => {
+    onNext()
+    dispatchWeb(next({ skip: true }))
+  }, [onNext, dispatchWeb])
+
+  const onPressPrevious = useCallback(() => {
+    onPrevious()
+    dispatchWeb(previous({}))
+  }, [onPrevious, dispatchWeb])
+
   const renderRepeatButton = () => {
     return (
       <AnimatedButtonProvider
@@ -126,6 +143,7 @@ export const AudioControls = () => {
   const renderPreviousButton = () => {
     return (
       <IconButton
+        onPress={onPressPrevious}
         icon={IconPrev}
         styles={{ root: styles.button, icon: styles.nextPrevIcons }}
       />
@@ -147,6 +165,7 @@ export const AudioControls = () => {
   const renderNextButton = () => {
     return (
       <IconButton
+        onPress={onPressNext}
         icon={IconNext}
         styles={{ root: styles.button, icon: styles.nextPrevIcons }}
       />

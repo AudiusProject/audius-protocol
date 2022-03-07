@@ -88,8 +88,6 @@ const Audio = ({
   const isPlaying = useRef<boolean>(false)
   const hasEnabledControls = useRef<boolean>(false)
 
-  // const [updateOnProgress, setUpdateOnProgress] = useState(false)
-
   const elapsedTime = useRef(0)
   // It is important for duration to be null when it isn't set
   // to the correct value or else MusicControl gets confused.
