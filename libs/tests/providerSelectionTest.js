@@ -9,7 +9,7 @@ const CONTRACT_INIT_MAX_ATTEMPTS = 5
 
 let contractClient
 
-describe.only('Testing ContractClient class with ProviderSelection', () => {
+describe('Testing ContractClient class with ProviderSelection', () => {
   afterEach(async () => {
     // Reset stub
     sinon.restore()
@@ -76,7 +76,7 @@ describe.only('Testing ContractClient class with ProviderSelection', () => {
    * When: contract logic fails
    * Should: do not do retry logic and log error
    */
-  it.only('should log error if web3Manager is instanceof ethWeb3Manager and contract logic fails', async () => {
+  it('should log error if web3Manager is instanceof ethWeb3Manager and contract logic fails', async () => {
     contractClient = createContractClientWithEthWeb3Manager()
     sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'init')
@@ -112,7 +112,7 @@ describe.only('Testing ContractClient class with ProviderSelection', () => {
    * When: contract logic fails
    * Should: do not do retry logic and log error
    */
-  it.only('should log error if useExternalWeb3 is true and contract logic fails', async () => {
+  it('should log error if useExternalWeb3 is true and contract logic fails', async () => {
     contractClient = createContractClientWithExternalWeb3()
     sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'init')
