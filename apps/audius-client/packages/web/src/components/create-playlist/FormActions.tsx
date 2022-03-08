@@ -41,6 +41,7 @@ export const EditActions = ({
           onClick={onDelete}
           className={styles.deleteButton}
           textClassName={styles.deleteButtonText}
+          buttonType='button'
         />
       </div>
       <div>
@@ -51,6 +52,7 @@ export const EditActions = ({
           onClick={onCancel}
           className={styles.cancelButton}
           textClassName={styles.cancelButtonText}
+          buttonType='button'
         />
         <Button
           text={saveText}
