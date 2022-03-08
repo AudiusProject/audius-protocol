@@ -8,7 +8,6 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import {
@@ -27,7 +26,6 @@ import {
 import * as cacheActions from 'common/store/cache/actions'
 import { makeKindId } from 'common/utils/uid'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
-import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getResult } from 'store/confirmer/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
@@ -98,11 +96,6 @@ function* watchUpdatePlaylistLibrary() {
       // Otherwise, just write the profile update
       yield fork(updateProfileAsync, { metadata: account })
     }
-
-    const event = make(Name.PLAYLIST_LIBRARY_REORDER, {
-      containsTemporaryPlaylists: containsTemps
-    })
-    yield put(event)
   })
 }
 

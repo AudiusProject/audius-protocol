@@ -25,7 +25,10 @@ import { make, useRecord } from 'store/analytics/actions'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
-import { reorderPlaylistLibrary } from 'store/playlist-library/helpers'
+import {
+  containsTempPlaylist,
+  reorderPlaylistLibrary
+} from 'store/playlist-library/helpers'
 import { update } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { getPathname, playlistPage } from 'utils/route'
@@ -80,8 +83,13 @@ const PlaylistLibrary = ({
       if (!library) return
       const newLibrary = reorderPlaylistLibrary(library, draggingId, droppingId)
       dispatch(update({ playlistLibrary: newLibrary }))
+      record(
+        make(Name.PLAYLIST_LIBRARY_REORDER, {
+          containsTemporaryPlaylists: containsTempPlaylist(newLibrary)
+        })
+      )
     },
-    [dispatch, library]
+    [dispatch, library, record]
   )
 
   const renderExplorePlaylist = (playlist: SmartCollection) => {
