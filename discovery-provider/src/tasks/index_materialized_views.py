@@ -8,27 +8,6 @@ logger = logging.getLogger(__name__)
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
 
-# Vacuum can't happen inside a db txn, so we have to acquire
-# a new connection and set it's isolation level to AUTOCOMMIT
-# as per: https://stackoverflow.com/questions/1017463/postgresql-how-to-run-vacuum-from-code-outside-transaction-block
-# (note that connections have their isolation level wiped before being returned
-# to the conn pool: https://docs.sqlalchemy.org/en/14/core/connections.html
-def vacuum_matviews(db):
-    logger.info("index_materialized_views.py | Beginning vacuum")
-    vacuum_start = time.time()
-
-    engine = db._engine
-    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as connection:
-        connection.execute("VACUUM ANALYZE track_lexeme_dict")
-        connection.execute("VACUUM ANALYZE user_lexeme_dict")
-        connection.execute("VACUUM ANALYZE playlist_lexeme_dict")
-        connection.execute("VACUUM ANALYZE album_lexeme_dict")
-
-    logger.info(
-        f"index_materialized_views.py | vacuumed in {time.time() - vacuum_start} sec."
-    )
-
-
 def update_views(self, db):
     with db.scoped_session() as session:
         start_time = time.time()
@@ -38,8 +17,6 @@ def update_views(self, db):
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY playlist_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY album_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY tag_track_user")
-
-    # vacuum_matviews(db)
 
     logger.info(
         f"index_materialized_views.py | Finished updating materialized views in: {time.time() - start_time} sec."
