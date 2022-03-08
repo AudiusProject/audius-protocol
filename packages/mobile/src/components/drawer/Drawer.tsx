@@ -554,7 +554,6 @@ export const Drawer: DrawerComponent = ({
       return (
         <TouchableWithoutFeedback
           onPress={() => {
-            console.log('clicking')
             onClose()
           }}
         >
