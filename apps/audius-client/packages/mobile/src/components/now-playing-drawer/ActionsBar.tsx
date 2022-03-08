@@ -168,7 +168,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         isDarkMode={isDarkMode}
         iconLightJSON={[IconRepostOnLight, IconRepostOffLight]}
         iconDarkJSON={[IconRepostOnDark, IconRepostOffDark]}
-        isActive={track?.has_current_user_reposted ?? false}
+        iconIndex={track.has_current_user_reposted ? 1 : 0}
         onPress={onToggleRepost}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
@@ -181,7 +181,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         isDarkMode={isDarkMode}
         iconLightJSON={[IconFavoriteOnLight, IconFavoriteOffLight]}
         iconDarkJSON={[IconFavoriteOnDark, IconFavoriteOffDark]}
-        isActive={track?.has_current_user_saved ?? false}
+        iconIndex={track.has_current_user_saved ? 1 : 0}
         onPress={onToggleFavorite}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}

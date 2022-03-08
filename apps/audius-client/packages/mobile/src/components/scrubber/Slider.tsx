@@ -306,7 +306,6 @@ export const Slider = memo(
           >
             {/* While dragging, show the gradient tracker */}
             <Animated.View
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               style={[
                 {
                   flex: 1,
@@ -331,7 +330,6 @@ export const Slider = memo(
         </Animated.View>
         <Animated.View
           {...panResponder.panHandlers}
-          hitSlop={{ top: 8, bottom: 8, right: 8, left: 8 }}
           style={[
             styles.handleContainer,
             { transform: [{ translateX: translationAnim }] }
@@ -339,7 +337,7 @@ export const Slider = memo(
         >
           <Animated.View
             onTouchStart={onPressHandle}
-            // onTouchEnd={onReleaseHandle}
+            hitSlop={{ top: 16, bottom: 16, right: 16, left: 16 }}
             style={[styles.handle, { transform: [{ scale: handleScale }] }]}
           />
         </Animated.View>
