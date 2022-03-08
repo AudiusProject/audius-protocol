@@ -13,6 +13,7 @@ def mean(arr):
 
 def percentile(arr, percent):
     """Returns `percent`th percentile of arr"""
+    arr = sorted(arr)
     if not arr:
         return None
     k = (len(arr) - 1) * percent
@@ -63,6 +64,7 @@ def get_index_blocks_ms_stats_since(redis, seconds_ago):
         "mean": mean(ms_per_block),
         "median": percentile(ms_per_block, 0.5),
         "p95": percentile(ms_per_block, 0.95),
+        "p99": percentile(ms_per_block, 0.99),
     }
 
 
@@ -75,6 +77,7 @@ def get_fetch_ipfs_metadata_ms_stats_since(redis, seconds_ago):
         "mean": mean(ms_per_block),
         "median": percentile(ms_per_block, 0.5),
         "p95": percentile(ms_per_block, 0.95),
+        "p99": percentile(ms_per_block, 0.99),
     }
 
 
@@ -87,6 +90,7 @@ def get_add_indexed_block_to_db_ms_stats_since(redis, seconds_ago):
         "mean": mean(ms_per_block),
         "median": percentile(ms_per_block, 0.5),
         "p95": percentile(ms_per_block, 0.95),
+        "p99": percentile(ms_per_block, 0.99),
     }
 
 
