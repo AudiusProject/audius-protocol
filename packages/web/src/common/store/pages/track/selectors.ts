@@ -12,7 +12,11 @@ export const getBaseState = (state: CommonState) => state.pages.track
 export const getTrackId = (state: CommonState) => getBaseState(state).trackId
 export const getTrackPermalink = (state: CommonState) =>
   getBaseState(state).trackPermalink
-export const getTrack = (state: CommonState) => {
+export const getTrack = (state: CommonState, params?: { id?: ID }) => {
+  if (params?.id) {
+    return getCachedTrack(state, { id: params.id })
+  }
+
   const id = getTrackId(state)
   if (id) {
     return getCachedTrack(state, { id })
@@ -35,10 +39,10 @@ export const getRemixParentTrack = (state: CommonState) => {
   return null
 }
 
-export const getUser = (state: CommonState) => {
-  const track = getTrack(state)
-  if (!track) return null
-  return getCachedUser(state, { id: track.owner_id })
+export const getUser = (state: CommonState, params?: { id?: ID }) => {
+  const trackId = params?.id ?? getTrack(state)?.owner_id
+  if (!trackId) return null
+  return getCachedUser(state, { id: trackId })
 }
 export const getStatus = (state: CommonState) =>
   getCachedTrackStatus(state, { id: getTrackId(state) as ID })

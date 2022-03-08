@@ -11,6 +11,7 @@ import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { ProfilePhoto } from 'app/components/user'
 import { useAccountUser, useProfile } from 'app/hooks/selectors'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -54,8 +55,10 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 export const ProfileScreen = () => {
   const styles = useStyles()
-  const profile = useProfile()
   const accountUser = useAccountUser()
+  const { handle } = accountUser
+  const { params = { handle } } = useRoute<'Profile'>()
+  const profile = useProfile(params)
 
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { accentOrange } = useThemeColors()
