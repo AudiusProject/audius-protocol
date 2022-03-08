@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { UID } from 'common/models/Identifiers'
+import { ID, UID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { CommonState } from 'common/store'
 import { getCollection as getCachedCollection } from 'common/store/cache/collections/selectors'
@@ -17,15 +17,23 @@ export const getCollectionStatus = (state: CommonState) =>
 export const getSmartCollectionVariant = (state: CommonState) =>
   state.pages.collection.smartCollectionVariant
 
-export const getCollection = (state: CommonState) => {
+export const getCollection = (state: CommonState, params?: { id: ID }) => {
   const smartCollectionVariant = getSmartCollectionVariant(state)
   if (smartCollectionVariant) {
     return getSmartCollection(state, { variant: smartCollectionVariant })
   }
-  return getCachedCollection(state, { uid: getCollectionUid(state) })
+
+  const config = params?.id
+    ? { id: params.id }
+    : { uid: getCollectionUid(state) }
+
+  return getCachedCollection(state, config)
 }
-export const getUser = (state: CommonState) =>
-  getCachedUser(state, { uid: getUserUid(state) })
+
+export const getUser = (state: CommonState, params?: { id?: ID }) => {
+  const props = params?.id ? { id: params.id } : { uid: getUserUid(state) }
+  return getCachedUser(state, props)
+}
 
 export const makeGetCollection = () =>
   createSelector(

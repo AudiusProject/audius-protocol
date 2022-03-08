@@ -1,5 +1,6 @@
 import moment from 'moment'
 
+import { ID } from 'common/models/Identifiers'
 import { CommonState } from 'common/store'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUser, getUsers } from 'common/store/cache/users/selectors'
@@ -28,8 +29,10 @@ export const getFolloweeFollows = (state: CommonState) =>
   state.pages.profile.followeeFollows
 export const getIsSubscribed = (state: CommonState) =>
   state.pages.profile.isNotificationSubscribed
-export const getProfileUser = (state: CommonState) =>
-  getUser(state, { id: getProfileUserId(state) })
+export const getProfileUser = (
+  state: CommonState,
+  params: { handle?: string | null; id?: ID } = { id: getProfileUserId(state) }
+) => getUser(state, params)
 
 export const getProfileFeedLineup = (state: CommonState) =>
   state.pages.profile.feed

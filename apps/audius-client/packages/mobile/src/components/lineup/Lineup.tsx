@@ -3,6 +3,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import { Name, PlaybackSource } from 'audius-client/src/common/models/Analytics'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import Kind from 'audius-client/src/common/models/Kind'
+import Status from 'audius-client/src/common/models/Status'
 import { range } from 'lodash'
 import { Dimensions, SectionList, StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -144,7 +145,7 @@ export const Lineup = ({
   const countOrDefault = count !== undefined ? count : MAX_TILES_COUNT
 
   const handleLoadMore = useCallback(() => {
-    const { deleted, entries, hasMore, page } = lineup
+    const { deleted, entries, hasMore, page, status } = lineup
 
     const lineupLength = entries.length
     const offset = lineupLength + deleted
@@ -155,7 +156,8 @@ export const Lineup = ({
       // Number of loaded items does not exceed max count
       lineupLength < countOrDefault &&
       // Page item count doesn't exceed current offset
-      (page === 0 || pageItemCount <= offset)
+      (page === 0 || pageItemCount <= offset) &&
+      status !== Status.LOADING
 
     if (shouldLoadMore) {
       const itemLoadCount = itemCounts.initial + page * itemCounts.loadMore

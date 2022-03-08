@@ -33,10 +33,11 @@ import { getCollection, getUser } from 'common/store/pages/collection/selectors'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import { View } from 'react-native'
 
-import { VirtualizedScrollView } from 'app/components/core'
+import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useRoute } from 'app/hooks/useRoute'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
@@ -55,19 +56,24 @@ const useStyles = makeStyles(({ spacing }) => ({
  * `CollectionScreen` displays the details of a collection
  */
 export const CollectionScreen = () => {
-  const collection = useSelectorWeb(getCollection)
-  const user = useSelectorWeb(getUser)
+  const { params } = useRoute<'Collection'>()
+
+  const collection = useSelectorWeb(state =>
+    getCollection(state, params)
+  ) as Collection
+
+  const user = useSelectorWeb(state =>
+    getUser(state, { id: collection?.playlist_owner_id })
+  )
 
   if (!collection || !user) {
+    console.warn(
+      'Collection or user missing for CollectionScreen, preventing render'
+    )
     return null
   }
 
-  return (
-    <CollectionScreenComponent
-      collection={collection as Collection}
-      user={user}
-    />
-  )
+  return <CollectionScreenComponent collection={collection} user={user} />
 }
 
 type CollectionScreenComponentProps = {
@@ -198,31 +204,33 @@ const CollectionScreenComponent = ({
   }, [dispatchWeb, playlist_id, navigation])
 
   return (
-    <VirtualizedScrollView
-      listKey={`playlist-${collection.playlist_id}`}
-      style={styles.root}
-    >
-      <View style={styles.headerContainer}>
-        <CollectionScreenDetailsTile
-          description={description ?? ''}
-          extraDetails={extraDetails}
-          hasReposted={has_current_user_reposted}
-          hasSaved={has_current_user_saved}
-          imageUrl={imageUrl}
-          isAlbum={is_album}
-          isPrivate={is_private}
-          onPressFavorites={handlePressFavorites}
-          onPressOverflow={handlePressOverflow}
-          onPressRepost={handlePressRepost}
-          onPressReposts={handlePressReposts}
-          onPressSave={handlePressSave}
-          onPressShare={handlePressShare}
-          repostCount={repost_count}
-          saveCount={save_count}
-          title={playlist_name}
-          user={user}
-        />
-      </View>
-    </VirtualizedScrollView>
+    <Screen>
+      <VirtualizedScrollView
+        listKey={`playlist-${collection.playlist_id}`}
+        style={styles.root}
+      >
+        <View style={styles.headerContainer}>
+          <CollectionScreenDetailsTile
+            description={description ?? ''}
+            extraDetails={extraDetails}
+            hasReposted={has_current_user_reposted}
+            hasSaved={has_current_user_saved}
+            imageUrl={imageUrl}
+            isAlbum={is_album}
+            isPrivate={is_private}
+            onPressFavorites={handlePressFavorites}
+            onPressOverflow={handlePressOverflow}
+            onPressRepost={handlePressRepost}
+            onPressReposts={handlePressReposts}
+            onPressSave={handlePressSave}
+            onPressShare={handlePressShare}
+            repostCount={repost_count}
+            saveCount={save_count}
+            title={playlist_name}
+            user={user}
+          />
+        </View>
+      </VirtualizedScrollView>
+    </Screen>
   )
 }
