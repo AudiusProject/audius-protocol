@@ -148,16 +148,47 @@ export const renamePlaylistFolderInLibrary = (
   newName: string
 ): PlaylistLibrary => {
   if (!library.contents) return library
-  const folder = library.contents.find(item => {
+  const folderIndex = library.contents.findIndex(item => {
     return item.type === 'folder' && item.id === folderId
   })
+  if (folderIndex < 0) return library
+  const folder = library.contents[folderIndex]
+  const updatedFolder = { ...folder, name: newName }
+  const newContents = [...library.contents]
+  newContents.splice(folderIndex, 1, updatedFolder)
+  return {
+    ...library,
+    contents: newContents
+  }
+}
+
+/**
+ * Removes folder with given id from the library.
+ * Any playlists or temporary playlists in the deleted
+ * folder are moved out of the folder.
+ * Note that this assumes that folders cannot be nested within one another.
+ * If we enable nesting folders in the future, this function must be updated.
+ * @param library
+ * @param folderId
+ * @returns the updated playlist library
+ */
+export const removePlaylistFolderInLibrary = (
+  library: PlaylistLibrary,
+  folderId: string
+): PlaylistLibrary => {
+  if (!library.contents) return library
+  const folder = library.contents.find(item => {
+    return item.type === 'folder' && item.id === folderId
+    // Need to cast here because TS doesn't know that the result has to be a folder or undefined due to `item.type === 'folder'`
+  }) as PlaylistLibraryFolder | undefined
   if (!folder) return library
   const folderIndex = library.contents.findIndex(item => {
     return item.type === 'folder' && item.id === folderId
   })
-  const updatedFolder = { ...folder, name: newName }
   const newContents = [...library.contents]
-  newContents.splice(folderIndex, 1, updatedFolder)
+  // Move contents of folder out
+  const removedFolderContents = folder.contents
+  newContents.splice(folderIndex, 1, ...removedFolderContents)
   return {
     ...library,
     contents: newContents
@@ -196,6 +227,11 @@ export const removePlaylistLibraryDuplicates = (
   for (const item of library.contents) {
     switch (item.type) {
       case 'folder': {
+        // If we've seen this folder already, don't include it in our final result.
+        if (ids.has(item.id)) {
+          break
+        }
+        ids.add(item.id)
         const folder = removePlaylistLibraryDuplicates(
           item,
           ids
@@ -206,6 +242,7 @@ export const removePlaylistLibraryDuplicates = (
       case 'playlist':
       case 'explore_playlist':
       case 'temp_playlist':
+        // If we've seen this playlist already, don't include it in our final result.
         if (ids.has(`${item.playlist_id}`)) {
           break
         }

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import {
   IconFolder,
@@ -13,9 +13,13 @@ import { useModalState } from 'common/hooks/useModalState'
 import { PlaylistLibraryFolder } from 'common/models/PlaylistLibrary'
 import { getPlaylistLibrary } from 'common/store/account/selectors'
 import FolderForm from 'components/create-playlist/FolderForm'
+import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import { getFolderId } from 'store/application/ui/editFolderModal/selectors'
 import { setFolderId } from 'store/application/ui/editFolderModal/slice'
-import { renamePlaylistFolderInLibrary } from 'store/playlist-library/helpers'
+import {
+  removePlaylistFolderInLibrary,
+  renamePlaylistFolderInLibrary
+} from 'store/playlist-library/helpers'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { zIndex } from 'utils/zIndex'
@@ -23,7 +27,13 @@ import { zIndex } from 'utils/zIndex'
 import styles from './EditFolderModal.module.css'
 
 const messages = {
-  editPlaylistFolderModalTitle: 'Edit Folder'
+  editFolderModalTitle: 'Edit Folder',
+  confirmDeleteFolderModalTitle: 'Delete Folder',
+  confirmDeleteFolderModalHeader:
+    'Are you sure you want to delete this folder?',
+  confirmDeleteFolderModalDescription:
+    'Any playlists inside will be moved out before the folder is deleted.',
+  folderEntity: 'Folder'
 }
 
 const EditFolderModal = () => {
@@ -36,6 +46,8 @@ const EditFolderModal = () => {
       : (playlistLibrary.contents.find(
           item => item.type === 'folder' && item.id === folderId
         ) as PlaylistLibraryFolder | undefined)
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
+  const onCancelDelete = () => setShowDeleteConfirmation(false)
 
   const dispatch = useDispatch()
 
@@ -46,8 +58,10 @@ const EditFolderModal = () => {
 
   const handleSubmit = useCallback(
     (newName: string) => {
-      if (playlistLibrary == null || folderId == null || folder == null) return
-      if (newName !== folder.name) {
+      if (
+        !(playlistLibrary == null || folderId == null || folder == null) &&
+        newName !== folder.name
+      ) {
         const newLibrary = renamePlaylistFolderInLibrary(
           playlistLibrary,
           folderId,
@@ -60,30 +74,57 @@ const EditFolderModal = () => {
     [dispatch, folder, folderId, handleClose, playlistLibrary]
   )
 
+  const handleClickDelete = useCallback(() => {
+    setShowDeleteConfirmation(true)
+  }, [])
+
+  const handleConfirmDelete = useCallback(() => {
+    if (!(playlistLibrary == null || folderId == null || folder == null)) {
+      const newLibrary = removePlaylistFolderInLibrary(
+        playlistLibrary,
+        folderId
+      )
+      setShowDeleteConfirmation(false)
+      dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary }))
+    }
+    handleClose()
+  }, [dispatch, folder, folderId, handleClose, playlistLibrary])
+
   return (
-    <Modal
-      modalKey='editfolder'
-      isOpen={isOpen}
-      onClose={handleClose}
-      zIndex={zIndex.CREATE_PLAYLIST_MODAL}
-      bodyClassName={styles.modalBody}
-    >
-      <ModalHeader onClose={handleClose}>
-        <ModalTitle
-          icon={<IconFolder />}
-          title={messages.editPlaylistFolderModalTitle}
-        />
-      </ModalHeader>
-      <ModalContent>
-        <FolderForm
-          isEditMode
-          onSubmit={handleSubmit}
-          onCancel={handleClose}
-          onDelete={() => {}}
-          initialFolderName={folder?.name}
-        />
-      </ModalContent>
-    </Modal>
+    <>
+      <Modal
+        modalKey='editfolder'
+        isOpen={isOpen}
+        onClose={handleClose}
+        zIndex={zIndex.EDIT_PLAYLIST_MODAL}
+        bodyClassName={styles.modalBody}
+      >
+        <ModalHeader onClose={handleClose}>
+          <ModalTitle
+            icon={<IconFolder />}
+            title={messages.editFolderModalTitle}
+          />
+        </ModalHeader>
+        <ModalContent>
+          <FolderForm
+            isEditMode
+            onSubmit={handleSubmit}
+            onCancel={handleClose}
+            onDelete={handleClickDelete}
+            initialFolderName={folder?.name}
+          />
+        </ModalContent>
+      </Modal>
+      <DeleteConfirmationModal
+        customHeader={messages.confirmDeleteFolderModalHeader}
+        customDescription={messages.confirmDeleteFolderModalDescription}
+        title={messages.confirmDeleteFolderModalTitle}
+        entity={messages.folderEntity}
+        visible={showDeleteConfirmation}
+        onDelete={handleConfirmDelete}
+        onCancel={onCancelDelete}
+      />
+    </>
   )
 }
 

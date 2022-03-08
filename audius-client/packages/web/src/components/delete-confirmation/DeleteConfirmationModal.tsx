@@ -1,13 +1,30 @@
 import React, { memo } from 'react'
 
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
-import PropTypes from 'prop-types'
+
+import { Nullable } from 'common/utils/typeUtils'
 
 import styles from './DeleteConfirmationModal.module.css'
 
-const DeleteConfirmationModal = props => {
-  const header = `This ${props.entity} Will Disappear For Everyone`
-  const description = `Are you sure you want to delete this ${props.entity.toLowerCase()}?`
+type DeleteConfirmationModalProps = {
+  title: string
+  customHeader?: Nullable<string>
+  customDescription?: Nullable<string>
+  visible: boolean
+  entity: string
+  onDelete: () => void
+  onCancel: () => void
+}
+
+const DeleteConfirmationModal = (props: DeleteConfirmationModalProps) => {
+  const header =
+    props.customHeader == null
+      ? `This ${props.entity} Will Disappear For Everyone`
+      : props.customHeader
+  const description =
+    props.customDescription == null
+      ? `Are you sure you want to delete this ${props.entity.toLowerCase()}?`
+      : props.customDescription
 
   return (
     <Modal
@@ -30,7 +47,7 @@ const DeleteConfirmationModal = props => {
           <Button
             className={styles.deleteButton}
             textClassName={styles.deleteButtonText}
-            text={`DELETE ${props.entity}`}
+            text={`Delete ${props.entity}`}
             size={ButtonSize.MEDIUM}
             type={ButtonType.COMMON}
             onClick={props.onDelete}
@@ -46,18 +63,6 @@ const DeleteConfirmationModal = props => {
       </div>
     </Modal>
   )
-}
-
-DeleteConfirmationModal.propTypes = {
-  title: PropTypes.string,
-  visible: PropTypes.bool,
-  entity: PropTypes.string,
-  onDelete: PropTypes.func,
-  onCancel: PropTypes.func
-}
-
-DeleteConfirmationModal.defaultProps = {
-  visible: false
 }
 
 export default memo(DeleteConfirmationModal)

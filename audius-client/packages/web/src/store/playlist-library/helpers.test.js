@@ -4,6 +4,7 @@ import {
   findIndexInPlaylistLibrary,
   findInPlaylistLibrary,
   removeFromPlaylistLibrary,
+  removePlaylistFolderInLibrary,
   removePlaylistLibraryDuplicates,
   renamePlaylistFolderInLibrary,
   reorderPlaylistLibrary
@@ -273,6 +274,72 @@ describe('removePlaylistLibraryDuplicates', () => {
         }
       ]
     })
+  })
+
+  it('can remove dupe folders', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        {
+          type: 'folder',
+          name: 'favorites',
+          id: 'my-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 4 },
+            { type: 'playlist', playlist_id: 5 },
+            { type: 'playlist', playlist_id: 6 }
+          ]
+        },
+        {
+          type: 'folder',
+          name: 'favorites',
+          id: 'my-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 4 },
+            { type: 'playlist', playlist_id: 5 },
+            { type: 'playlist', playlist_id: 6 }
+          ]
+        },
+        {
+          type: 'folder',
+          name: 'favorites',
+          id: 'different-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 4 },
+            { type: 'playlist', playlist_id: 5 },
+            { type: 'playlist', playlist_id: 6 }
+          ]
+        }
+      ]
+    }
+    const result = removePlaylistLibraryDuplicates(library)
+
+    const expectedResult = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        {
+          type: 'folder',
+          name: 'favorites',
+          id: 'my-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 4 },
+            { type: 'playlist', playlist_id: 5 },
+            { type: 'playlist', playlist_id: 6 }
+          ]
+        },
+        {
+          type: 'folder',
+          name: 'favorites',
+          id: 'different-uuid',
+          contents: []
+        }
+      ]
+    }
+    expect(result).toEqual(expectedResult)
   })
 })
 
@@ -589,6 +656,89 @@ describe('renamePlaylistFolderInLibrary', () => {
       library,
       'fake-uuid-not-in-library',
       'new name'
+    )
+    expect(result).toEqual({ ...library })
+  })
+})
+
+describe('removePlaylistFolderInLibrary', () => {
+  it('removes folder from library', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'folder', name: 'Foldero', id: 'fake-uuid', contents: [] },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+
+    const result = removePlaylistFolderInLibrary(library, 'fake-uuid')
+    const expectedResult = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+    expect(result).toEqual(expectedResult)
+  })
+
+  it('moves contents of folder to upper level before deleting', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        {
+          type: 'folder',
+          name: 'Foldero',
+          id: 'fake-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 4 },
+            { type: 'playlist', playlist_id: 5 },
+            { type: 'temp_playlist', playlist_id: 'ghji' },
+            {
+              type: 'folder',
+              name: 'Folderino',
+              id: 'fake-uuid-2',
+              contents: []
+            }
+          ]
+        },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+    const result = removePlaylistFolderInLibrary(library, 'fake-uuid')
+    const expectedResult = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 4 },
+        { type: 'playlist', playlist_id: 5 },
+        { type: 'temp_playlist', playlist_id: 'ghji' },
+        { type: 'folder', name: 'Folderino', id: 'fake-uuid-2', contents: [] },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+    expect(result).toEqual(expectedResult)
+  })
+
+  it('is a no op if the given folder is not in the library', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'folder', name: 'Foldero', id: 'fake-uuid', contents: [] },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'temp_playlist', playlist_id: 'asdf' }
+      ]
+    }
+    const result = removePlaylistFolderInLibrary(
+      library,
+      'fake-uuid-not-in-library'
     )
     expect(result).toEqual({ ...library })
   })
