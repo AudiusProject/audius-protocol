@@ -248,19 +248,16 @@ export const updateUser = async ({
   metadata,
   userStgAccount,
   userAuthorityKeypair,
-  userDelegateAuthority
+  userDelegateAuthority,
 }: UpdateUserParams) => {
-  return program.rpc.updateUser(
-    metadata,
-    {
-      accounts: {
-        user: userStgAccount,
-        userAuthority: userAuthorityKeypair.publicKey,
-        userDelegateAuthority
-      },
-      signers: [userAuthorityKeypair],
-    }
-  );
+  return program.rpc.updateUser(metadata, {
+    accounts: {
+      user: userStgAccount,
+      userAuthority: userAuthorityKeypair.publicKey,
+      userDelegateAuthority,
+    },
+    signers: [userAuthorityKeypair],
+  });
 };
 
 // Update Audius Admin account
@@ -568,4 +565,9 @@ export const deletePlaylist = async ({
     },
     signers: [userAuthorityKeypair],
   });
+};
+
+/// Get keypair from secret key
+export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
+  return Keypair.fromSecretKey(Uint8Array.from(secretKey));
 };
