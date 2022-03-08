@@ -80,10 +80,10 @@ export const useScreenOptions = () => {
 
   const screenOptions: StackNavigationOptions = useMemo(
     () => ({
+      detachPreviousScreen: false,
       cardOverlayEnabled: true,
       cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
       gestureEnabled: true,
-      gestureResponseDistance: 1000,
       headerLeftContainerStyle: styles.headerLeft,
       headerLeft: props => {
         const { canGoBack, ...other } = props
