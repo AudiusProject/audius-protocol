@@ -1,9 +1,10 @@
 import functools
 import json
-import logging  # pylint: disable=C0302
-import pickle
+import logging
+from typing import Any, List  # pylint: disable=C0302
 
 from flask.globals import request
+from flask.json import JSONDecoder, JSONEncoder
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
 
@@ -26,56 +27,69 @@ def extract_key(path, arg_items, cache_prefix_override=None):
     return key
 
 
-# NOTE: This function is deprecated in favor of `get_json_cached_key`
-# The value must also be set with `set_json_cached_key`
-def get_pickled_key(redis, key):
-    cached_value = redis.get(key)
-    if cached_value:
-        logger.debug(f"Redis Cache - hit {key}")
-        try:
-            deserialized = pickle.loads(cached_value)
-            return deserialized
-        except Exception as e:
-            logger.warning(f"Unable to deserialize cached response: {e}")
-            return None
-    logger.debug(f"Redis Cache - miss {key}")
-    return None
-
-
-# NOTE: This function is deprecated in favor of `set_json_cached_key`
-# The value must also be retrieved with `get_json_cached_key`
-def pickle_and_set(redis, key, obj, ttl=None):
-    serialized = pickle.dumps(obj)
-    redis.set(key, serialized, ttl)
-
-
 def use_redis_cache(key, ttl_sec, work_func):
     """Attempts to return value by key, otherwise caches and returns `work_func`"""
     redis = redis_connection.get_redis()
-    cached_value = get_pickled_key(redis, key)
+    cached_value = get_json_cached_key(redis, key)
     if cached_value:
         return cached_value
     to_cache = work_func()
-    pickle_and_set(redis, key, to_cache, ttl_sec)
+    set_json_cached_key(redis, key, to_cache, ttl_sec)
     return to_cache
 
 
-def get_json_cached_key(redis, key):
+def get_json_cached_key(redis, key: str) -> Any:
+    """
+    Gets a JSON serialized value from the cache.
+    """
     cached_value = redis.get(key)
     if cached_value:
         logger.debug(f"Redis Cache - hit {key}")
         try:
-            deserialized = json.loads(cached_value)
+            deserialized = json.loads(cached_value, cls=JSONDecoder)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize json cached response: {e}")
+            # In the case we are unable to deserialize, delete the key so that
+            # it may be properly re-cached.
+            redis.delete(key)
             return None
     logger.debug(f"Redis Cache - miss {key}")
     return None
 
 
+def get_all_json_cached_key(redis, keys: List[str]) -> List[Any]:
+    """
+    Gets all the JSON serialized values from the cache for provided keys.
+    Returns an ordered list mapped from the provided keys.
+    If any value is not de-serializable, `None` is returned in place.
+    """
+    cached_values = redis.mget(keys)
+    results = []
+    for i in range(len(cached_values)):
+        val = cached_values[i]
+        key = keys[i]
+        if val:
+            try:
+                deserialized = json.loads(val, cls=JSONDecoder)
+                results.append(deserialized)
+            except Exception as e:
+                logger.warning(f"Unable to deserialize json cached response: {e}")
+                # In the case we are unable to deserialize, delete the key so that
+                # it may be properly re-cached.
+                redis.delete(key)
+                results.append(None)
+        else:
+            results.append(None)
+    return results
+
+
 def set_json_cached_key(redis, key, obj, ttl=None):
-    serialized = json.dumps(obj)
+    """
+    Sets an obj int the cache via JSON serialization.
+    Uses the flask JSONEncoder to handle datetime => ISO string.
+    """
+    serialized = json.dumps(obj, cls=JSONEncoder)
     redis.set(key, serialized, ttl)
 
 
@@ -127,30 +141,23 @@ def cache(**kwargs):
             )
             key = extract_key(request.path, request.args.items(), cache_prefix_override)
             if not has_user_id:
+                cached_resp = get_json_cached_key(redis, key)
+                if cached_resp:
+                    if transform is not None:
+                        return transform(cached_resp)
+                    return cached_resp, 200
+
                 cached_resp = redis.get(key)
 
-                if cached_resp:
-                    logger.debug(f"Redis Cache - hit {key}")
-                    try:
-                        deserialized = pickle.loads(cached_resp)
-                        if transform is not None:
-                            return transform(deserialized)  # pylint: disable=E1102
-                        return deserialized, 200
-                    except Exception as e:
-                        logger.warning(f"Unable to deserialize cached response: {e}")
-
-                logger.debug(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
 
             if len(response) == 2:
                 resp, status_code = response
                 if status_code < 400:
-                    serialized = pickle.dumps(resp)
-                    redis.set(key, serialized, ttl_sec)
+                    set_json_cached_key(redis, key, resp, ttl_sec)
                 return resp, status_code
-            serialized = pickle.dumps(response)
-            redis.set(key, serialized, ttl_sec)
-            return transform(response)  # pylint: disable=E1102
+            set_json_cached_key(redis, key, response, ttl_sec)
+            return transform(response)
 
         return inner_wrap
 

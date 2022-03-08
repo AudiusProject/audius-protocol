@@ -20,7 +20,7 @@ from src.trending_strategies.trending_strategy_factory import TrendingStrategyFa
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
 from src.utils.prometheus_metric import PrometheusMetric
-from src.utils.redis_cache import pickle_and_set
+from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
 from web3 import Web3
@@ -162,7 +162,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
                             session, genre, time_range, strategy
                         )
                     key = make_trending_cache_key(time_range, genre, version)
-                    pickle_and_set(redis, key, res)
+                    set_json_cached_key(redis, key, res)
                     cache_end_time = time.time()
                     total_time = cache_end_time - cache_start_time
                     logger.info(
@@ -181,7 +181,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
             cache_start_time = time.time()
             res = make_get_unpopulated_tracks(session, redis, strategy)()
             key = make_underground_trending_cache_key(version)
-            pickle_and_set(redis, key, res)
+            set_json_cached_key(redis, key, res)
             cache_end_time = time.time()
             total_time = cache_end_time - cache_start_time
             logger.info(
