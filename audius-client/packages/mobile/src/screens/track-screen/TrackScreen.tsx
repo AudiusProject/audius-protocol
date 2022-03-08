@@ -12,9 +12,11 @@ import { trackRemixesPage } from 'audius-client/src/utils/route'
 import { isEqual } from 'lodash'
 import { StyleSheet, View } from 'react-native'
 
+import { Screen } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import Text from 'app/components/text'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { useRoute } from 'app/hooks/useRoute'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors } from 'app/utils/theme'
@@ -111,9 +113,10 @@ const TrackScreenMainContent = ({
  * `TrackScreen` displays a single track and a Lineup of more tracks by the artist
  */
 export const TrackScreen = () => {
+  const { params } = useRoute<'Track'>()
+  const track = useSelectorWeb(state => getTrack(state, params))
+  const user = useSelectorWeb(state => getUser(state, { id: track?.owner_id }))
   const lineup = useSelectorWeb(getMoreByArtistLineup, isEqual)
-  const track = useSelectorWeb(getTrack)
-  const user = useSelectorWeb(getUser)
 
   if (!track || !user || !lineup) {
     console.warn(
@@ -123,7 +126,7 @@ export const TrackScreen = () => {
   }
 
   return (
-    <View>
+    <Screen noPadding>
       <Lineup
         actions={tracksActions}
         count={6}
@@ -133,6 +136,6 @@ export const TrackScreen = () => {
         lineup={lineup}
         start={1}
       />
-    </View>
+    </Screen>
   )
 }

@@ -4,8 +4,8 @@ import { isEqual } from 'lodash'
 
 import { useSelectorWeb } from './useSelectorWeb'
 
-export const useProfile = () => {
-  return useSelectorWeb(getProfileUser, isEqual)
+export const useProfile = (params?: { handle?: string }) => {
+  return useSelectorWeb(state => getProfileUser(state, params), isEqual)
 }
 
 export const useAccountUser = () => {
