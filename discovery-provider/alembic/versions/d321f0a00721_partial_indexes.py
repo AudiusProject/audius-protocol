@@ -1,15 +1,16 @@
-"""partial_created_at_idx
+"""partial_indexes
 
-Revision ID: ac0c6f94dd8d
-Revises: df4709b4391b
-Create Date: 2022-03-03 21:11:42.415590
+Revision ID: d321f0a00721
+Revises: 58c87cf2c7e6
+Create Date: 2022-03-07 21:37:26.247264
 
 """
+import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "ac0c6f94dd8d"
-down_revision = "df4709b4391b"
+revision = "d321f0a00721"
+down_revision = "58c87cf2c7e6"
 branch_labels = None
 depends_on = None
 
