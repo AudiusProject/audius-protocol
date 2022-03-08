@@ -2,13 +2,7 @@
   transition: opacity 1s ease-in-out;
 }
 
-.folderButton {
-  /** Add 12px to the width so that we can free up some space for the horizontal kebab (which only appears on hover). This won't cause
-  overflow because there is already a -16px margin on nav link buttons. */
-  width: calc(100% + 12px);
-}
-
-.folderButtonContentContainer {
+.libraryLinkContentContainer {
   height: 100%;
   line-height: normal;
   display: inline-flex;
@@ -16,10 +10,11 @@
   align-items: center;
 }
 
-.folderNameContainer {
+.libraryLinkTextContainer {
   overflow-x: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  flex-shrink: 1;
 }
 
 .iconFolder {

@@ -57,7 +57,7 @@ const FolderNavLink = ({
         <button
           {...buttonProps}
           draggable={false}
-          className={cn(className, styles.folderButton, styles.navLink, {
+          className={cn(className, styles.navLink, {
             [styles.dragging]: isDragging
           })}
         >
@@ -104,14 +104,14 @@ export const PlaylistFolderNavItem = ({
         id={id}
         name={name}
         onReorder={() => {}}
-        className={cn(navColumnStyles.link, {
+        className={cn(navColumnStyles.link, navColumnStyles.editable, {
           [navColumnStyles.droppableLink]: dragging && isDroppableKind,
           [navColumnStyles.disabledLink]:
             dragging && !isDroppableKind && draggingKind !== 'library-playlist'
         })}
         onClick={() => {}}
       >
-        <div className={styles.folderButtonContentContainer}>
+        <div className={styles.libraryLinkContentContainer}>
           {isEmpty(contents) ? (
             <IconFolderOutline
               width={12}
@@ -127,7 +127,7 @@ export const PlaylistFolderNavItem = ({
               })}
             />
           )}
-          <div className={styles.folderNameContainer}>
+          <div className={styles.libraryLinkTextContainer}>
             <span>{name}</span>
           </div>
           <IconCaretRight height={11} width={11} className={styles.iconCaret} />

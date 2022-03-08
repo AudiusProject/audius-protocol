@@ -280,7 +280,7 @@ svg.logo path {
   /* negative margin so the link hover chip shows up. */
   margin-left: -16px;
   /* left padding is visibly (32px + -16px margin =) 16px to match the left padding of .groupHeader */
-  padding: 6px 0 6px 32px;
+  padding: 5px 0 5px 32px;
   color: var(--nav-column-link);
   transition: color 0.07s ease-in-out;
 
@@ -304,6 +304,13 @@ svg.logo path {
   white-space: nowrap;
   width: 100%;
   display: inline-block;
+}
+
+.navColumn .links a.link.editable,
+.navColumn .links button.link.editable {
+  /** Add 12px to the width so that we can free up some space for the horizontal kebab (which only appears on hover). This won't cause
+  overflow because there is already a -16px margin on nav link buttons. */
+  width: calc(100% + 12px);
 }
 
 .navColumn .links a.link.disabledLink {
@@ -392,11 +399,6 @@ svg.logo path {
 .profileCompletionContainer {
   display: flex;
   justify-content: center;
-}
-
-.playlistLinkContentContainer {
-  display: flex;
-  align-items: center;
 }
 
 .updateDotContainer {

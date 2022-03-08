@@ -130,6 +130,7 @@ export const PlaylistNavItem = ({
             isOwner &&
             dragging &&
             (draggingKind === 'track' || draggingKind === 'playlist'),
+          [navColumnStyles.editable]: isOwner && onClickEdit != null,
           [navColumnStyles.disabledLink]:
             dragging &&
             ((draggingKind !== 'track' &&
@@ -143,7 +144,7 @@ export const PlaylistNavItem = ({
         }}
         onMouseLeave={() => setIsHovering(false)}
       >
-        <div className={navColumnStyles.playlistLinkContentContainer}>
+        <div className={styles.libraryLinkContentContainer}>
           {!hasUpdate ? null : (
             <div className={navColumnStyles.updateDotContainer}>
               <Tooltip
@@ -160,7 +161,9 @@ export const PlaylistNavItem = ({
               </Tooltip>
             </div>
           )}
-          <span>{name}</span>
+          <div className={styles.libraryLinkTextContainer}>
+            <span>{name}</span>
+          </div>
           {!isOwner || !onClickEdit ? null : (
             <IconButton
               className={cn(styles.iconKebabHorizontal, {
