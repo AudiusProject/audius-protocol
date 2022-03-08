@@ -1,12 +1,6 @@
-import {
-  Animated,
-  Dimensions,
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from 'react-native'
+import { Animated, Dimensions, TouchableOpacity, View } from 'react-native'
 
-import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 // How much the tab indicator should horizontally stretch
@@ -37,57 +31,55 @@ const getSinAnimationRanges = (len: number) => {
   }
 }
 
-const createTabBarStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    tabBarContainer: {
-      elevation: 3,
-      flexDirection: 'row',
-      marginBottom: -4,
-      paddingBottom: 4,
-      position: 'relative',
-      zIndex: 100,
-      shadowColor: themeColors.neutralDark1,
-      shadowOpacity: 0.12,
-      shadowOffset: { height: 2, width: 0 },
-      shadowRadius: 2
-    },
+const useStyles = makeStyles(({ palette, typography, spacing }) => ({
+  tabBarContainer: {
+    elevation: 3,
+    flexDirection: 'row',
+    marginBottom: -1 * spacing(1),
+    paddingBottom: spacing(1),
+    position: 'relative',
+    zIndex: 100,
+    shadowColor: palette.neutralDark1,
+    shadowOpacity: 0.12,
+    shadowOffset: { height: 2, width: 0 },
+    shadowRadius: 2
+  },
 
-    tabContainer: {
-      backgroundColor: themeColors.white,
-      flex: 1,
-      height: 48
-    },
+  tabContainer: {
+    backgroundColor: palette.white,
+    flex: 1,
+    height: spacing(12)
+  },
 
-    tab: {
-      alignItems: 'center',
-      flex: 1,
-      flexDirection: 'column',
-      height: 48,
-      justifyContent: 'space-evenly'
-    },
+  tab: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'column',
+    height: spacing(12),
+    justifyContent: 'space-evenly'
+  },
 
-    tabText: {
-      color: themeColors.neutral,
-      fontSize: 10,
-      fontWeight: '700',
-      textTransform: 'uppercase'
-    },
+  tabText: {
+    ...typography.label,
+    color: palette.neutral,
+    textTransform: 'uppercase'
+  },
 
-    tabIndicator: {
-      backgroundColor: themeColors.primary,
-      borderBottomLeftRadius: 20,
-      borderBottomRightRadius: 20,
-      height: 3,
-      position: 'absolute',
-      top: 48,
-      zIndex: 9
-    }
-  })
+  tabIndicator: {
+    backgroundColor: palette.primary,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    height: 3,
+    position: 'absolute',
+    top: spacing(12),
+    zIndex: 9
+  }
+}))
 
 export const TopTabBar = ({ state, descriptors, navigation, position }) => {
   const screenWidth = Dimensions.get('screen').width
   const isFocused = tabIndex => state.index === tabIndex
-  const styles = useThemedStyles(createTabBarStyles)
+  const styles = useStyles()
   const { neutral } = useThemeColors()
 
   const onPress = (route, tabIndex: number) => {
@@ -140,6 +132,7 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
               accessibilityLabel={options.tabBarAccessibilityLabel}
               accessibilityRole='button'
               accessibilityState={{ selected: isFocused(index) }}
+              activeOpacity={0.8}
               onLongPress={() => onLongPress(route, index)}
               onPress={() => onPress(route, index)}
               style={styles.tab}
