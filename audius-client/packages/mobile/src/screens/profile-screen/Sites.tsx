@@ -7,7 +7,7 @@ import { Link } from 'app/components/core'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   sites: {
     marginBottom: spacing(2)
   },
@@ -20,7 +20,10 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginTop: spacing(3)
   },
   siteText: {
-    color: palette.neutral
+    color: palette.neutral,
+    fontSize: typography.fontSize.small,
+    fontFamily: typography.fontByWeight.medium,
+    letterSpacing: 0.5
   }
 }))
 

@@ -73,7 +73,8 @@ export const typography = {
   },
   label: {
     fontSize: 10,
-    fontFamily: fontByWeight.bold
+    fontFamily: fontByWeight.bold,
+    letterSpacing: 0.15
   },
   fontByWeight,
   fontSize

@@ -13,18 +13,29 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     ...typography.h1,
     color: palette.neutral
   },
+  handleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignContent: 'center'
+  },
   handle: {
+    marginRight: spacing(2),
+    textAlignVertical: 'bottom'
+  },
+  handleText: {
     ...typography.h4,
     color: palette.neutralLight4
   },
   followsYou: {
-    color: palette.neutralLight4,
     borderRadius: 4,
     overflow: 'hidden',
     borderColor: palette.neutralLight4,
     borderWidth: 1,
-    paddingVertical: 3,
-    width: spacing(20),
+    paddingVertical: spacing(1),
+    paddingHorizontal: spacing(2)
+  },
+  followsYouText: {
+    color: palette.neutralLight4,
     textAlign: 'center',
     fontFamily: typography.fontByWeight.heavy,
     fontSize: 10,
@@ -67,10 +78,16 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
         <Text accessibilityRole='header' style={styles.username}>
           {profile.name}
         </Text>
-        <Text style={styles.handle}>@{profile.handle}</Text>
-        {does_follow_current_user ? (
-          <Text style={styles.followsYou}>{messages.followsYou}</Text>
-        ) : null}
+        <View style={styles.handleInfo}>
+          <View style={styles.handle}>
+            <Text style={styles.handleText}>@{profile.handle}</Text>
+          </View>
+          {does_follow_current_user ? (
+            <View style={styles.followsYou}>
+              <Text style={styles.followsYouText}>{messages.followsYou}</Text>
+            </View>
+          ) : null}
+        </View>
       </View>
       <View style={styles.actionButtons}>
         {isOwner ? (
