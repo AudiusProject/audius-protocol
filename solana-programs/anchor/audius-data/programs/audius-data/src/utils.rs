@@ -2,6 +2,8 @@ use crate::{ErrorCode, User, UserAuthorityDelegate};
 
 use anchor_lang::{prelude::*, solana_program::system_program};
 
+/// Validate the authority account that signed the transaction
+///  is the user's authority or the user's delegate authority
 pub fn validate_user_authority<'info>(
     program_id: &Pubkey,
     user: &Account<'info, User>,
