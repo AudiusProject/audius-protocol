@@ -99,6 +99,7 @@ export const useScreenOptions = () => {
           />
         )
       },
+      title: '',
       headerTitle: ({ children }) => {
         if (children === 'none') return null
         if (children) {
