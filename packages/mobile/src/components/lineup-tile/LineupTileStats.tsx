@@ -37,11 +37,10 @@ const createStyles = (themeColors: ThemeColors) =>
     stats: {
       flexDirection: 'row',
       flex: 0,
-      flexBasis: 26,
       alignItems: 'stretch',
       paddingVertical: 2,
       marginRight: 10,
-      height: 30
+      height: 26
     },
     listenCount: {
       ...flexRowCentered(),
