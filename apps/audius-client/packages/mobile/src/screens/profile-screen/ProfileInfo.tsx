@@ -1,3 +1,4 @@
+import { FollowSource } from 'audius-client/src/common/models/Analytics'
 import { User } from 'audius-client/src/common/models/User'
 import { View, Text } from 'react-native'
 
@@ -101,6 +102,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
               style={styles.followButton}
               profile={profile}
               onPress={onFollow}
+              followSource={FollowSource.PROFILE_PAGE}
             />
           </>
         )}
