@@ -3,13 +3,7 @@ import { useCallback } from 'react'
 import { Name } from 'audius-client/src/common/models/Analytics'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { squashNewLines } from 'audius-client/src/common/utils/formatUtil'
-import {
-  ImageStyle,
-  Linking,
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from 'react-native'
+import { ImageStyle, Linking, TouchableOpacity, View } from 'react-native'
 import HyperLink from 'react-native-hyperlink'
 import { useSelector } from 'react-redux'
 
@@ -22,11 +16,9 @@ import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { getPlaying } from 'app/store/audio/selectors'
-import { flexRowCentered } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 import { make, track } from 'app/utils/analytics'
-import { ThemeColors } from 'app/utils/theme'
 
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileStats } from './DetailsTileStats'
@@ -37,124 +29,121 @@ const messages = {
   pause: 'pause'
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    topContent: {
-      paddingHorizontal: 24,
-      paddingTop: 16,
-      width: '100%',
-      alignItems: 'center'
-    },
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  topContent: {
+    paddingHorizontal: spacing(6),
+    paddingTop: spacing(4),
+    width: '100%',
+    alignItems: 'center'
+  },
 
-    typeLabel: {
-      marginBottom: 15,
-      height: 18,
-      color: themeColors.neutralLight4,
-      fontSize: 14,
-      letterSpacing: 2,
-      textAlign: 'center',
-      textTransform: 'uppercase'
-    },
+  typeLabel: {
+    marginBottom: spacing(4),
+    height: 18,
+    color: palette.neutralLight4,
+    fontSize: 14,
+    letterSpacing: 2,
+    textAlign: 'center',
+    textTransform: 'uppercase'
+  },
 
-    coverArtWrapper: {
-      borderWidth: 1,
-      borderColor: themeColors.neutralLight8,
-      borderRadius: 4,
-      overflow: 'hidden',
-      height: 195,
-      width: 195,
-      marginBottom: 23
-    },
+  coverArtWrapper: {
+    borderWidth: 1,
+    borderColor: palette.neutralLight8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    height: 195,
+    width: 195,
+    marginBottom: spacing(6)
+  },
 
-    coverArt: {
-      borderRadius: 4,
-      overflow: 'hidden'
-    },
+  coverArt: {
+    borderRadius: 4,
+    overflow: 'hidden'
+  },
 
-    title: {
-      fontSize: 18,
-      textAlign: 'center',
-      marginBottom: 8
-    },
+  title: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: spacing(4)
+  },
 
-    artistContainer: {
-      ...flexRowCentered(),
-      marginBottom: 16
-    },
+  artistContainer: {
+    ...flexRowCentered(),
+    marginBottom: spacing(4)
+  },
 
-    artist: {
-      color: themeColors.secondary,
-      fontSize: 18
-    },
+  artist: {
+    color: palette.secondary,
+    fontSize: 18
+  },
 
-    badge: {
-      marginLeft: 4
-    },
+  badge: {
+    marginLeft: spacing(1)
+  },
 
-    descriptionContainer: {
-      width: '100%'
-    },
+  descriptionContainer: {
+    width: '100%'
+  },
 
-    description: {
-      fontSize: 16,
-      textAlign: 'left',
-      width: '100%',
-      marginBottom: 24
-    },
+  description: {
+    fontSize: 16,
+    textAlign: 'left',
+    width: '100%',
+    marginBottom: spacing(6)
+  },
 
-    buttonSection: {
-      width: '100%',
-      marginBottom: 12
-    },
+  buttonSection: {
+    width: '100%',
+    marginBottom: spacing(3)
+  },
 
-    playButtonText: {
-      textTransform: 'uppercase'
-    },
+  playButtonText: {
+    textTransform: 'uppercase'
+  },
 
-    infoSection: {
-      borderTopWidth: 1,
-      borderTopColor: themeColors.neutralLight7,
-      flexWrap: 'wrap',
-      flexDirection: 'row',
-      width: '100%',
-      paddingTop: 24,
-      paddingBottom: 8
-    },
+  infoSection: {
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+    width: '100%',
+    paddingTop: spacing(4),
+    paddingBottom: spacing(2)
+  },
 
-    noStats: {
-      borderWidth: 0
-    },
+  noStats: {
+    borderWidth: 0
+  },
 
-    infoFact: {
-      ...flexRowCentered(),
-      flexBasis: '50%',
-      marginBottom: 16
-    },
+  infoFact: {
+    ...flexRowCentered(),
+    flexBasis: '50%',
+    marginBottom: spacing(4)
+  },
 
-    infoLabel: {
-      ...flexRowCentered(),
-      color: themeColors.neutralLight5,
-      fontSize: 14,
-      lineHeight: 14,
-      textTransform: 'uppercase',
-      marginRight: 8
-    },
+  infoLabel: {
+    ...flexRowCentered(),
+    color: palette.neutralLight5,
+    fontSize: 14,
+    lineHeight: 14,
+    textTransform: 'uppercase',
+    marginRight: spacing(2)
+  },
 
-    infoValue: {
-      flexShrink: 1,
-      lineHeight: 14,
-      color: themeColors.neutral,
-      fontSize: 14
-    },
+  infoValue: {
+    flexShrink: 1,
+    lineHeight: 14,
+    color: palette.neutral,
+    fontSize: 14
+  },
 
-    infoIcon: {
-      marginTop: -4
-    },
+  infoIcon: {
+    marginTop: -spacing(1)
+  },
 
-    link: {
-      color: themeColors.primary
-    }
-  })
+  link: {
+    color: palette.primary
+  }
+}))
 
 /**
  * The details shown at the top of the Track Screen and Collection Screen
@@ -191,7 +180,7 @@ export const DetailsTile = ({
   title,
   user
 }: DetailsTileProps) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const navigation = useNavigation()
 
   const isPlaying = useSelector(getPlaying)
@@ -330,7 +319,11 @@ export const DetailsTile = ({
               onPress={handleExternalLinkClick}
               linkStyle={styles.link}
             >
-              <Text style={styles.description} suppressHighlighting>
+              <Text
+                style={styles.description}
+                suppressHighlighting
+                weight='medium'
+              >
                 {squashNewLines(description)}
               </Text>
             </HyperLink>

@@ -63,16 +63,8 @@ export const MoodsTab = ({ navigation }: Props) => {
               marginBottom: 8
             }}
             key={tile.title}
-            title={tile.title}
-            description={tile.description}
-            link={tile.link}
-            emoji={tile.emoji}
-            gradientColors={tile.gradientColors}
-            gradientAngle={tile.gradientAngle}
-            shadowColor={tile.shadowColor}
-            shadowOpacity={tile.shadowOpacity}
-            icon={tile.icon}
             isIncentivized={tile.incentivized}
+            {...tile}
           />
         ))}
       </View>

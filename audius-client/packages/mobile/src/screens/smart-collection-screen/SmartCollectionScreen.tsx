@@ -8,6 +8,7 @@ import { getCollection } from 'common/store/pages/smart-collection/selectors'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
+import { VirtualizedScrollView } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
@@ -99,7 +100,10 @@ const SmartCollectionScreenComponent = ({
   }
 
   return (
-    <View style={styles.root}>
+    <VirtualizedScrollView
+      listKey={`${playlist_name}_Playlist_Screen`}
+      style={styles.root}
+    >
       <View style={styles.headerContainer}>
         <CollectionScreenDetailsTile
           description={description ?? ''}
@@ -114,6 +118,6 @@ const SmartCollectionScreenComponent = ({
           title={playlist_name}
         />
       </View>
-    </View>
+    </VirtualizedScrollView>
   )
 }

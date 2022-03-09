@@ -128,7 +128,7 @@ export const TrackListItem = ({
   const themeColors = useThemeColors()
   const currentUserId = useSelectorWeb(getUserId)
 
-  const onClickTrack = () => {
+  const onPressTrack = () => {
     if (uid && !isDeleted && togglePlay) togglePlay(uid, trackId)
   }
 
@@ -185,7 +185,7 @@ export const TrackListItem = ({
     >
       <TouchableOpacity
         style={styles.trackInnerContainer}
-        onPress={onClickTrack}
+        onPress={onPressTrack}
       >
         {coverArtSizes ? (
           <TrackArtwork
@@ -197,7 +197,12 @@ export const TrackListItem = ({
           />
         ) : isActive && !isDeleted ? (
           <View style={styles.playButtonContainer}>
-            <TablePlayButton playing paused={!isPlaying} hideDefault={false} />
+            <TablePlayButton
+              playing
+              paused={!isPlaying}
+              hideDefault={false}
+              onPress={onPressTrack}
+            />
           </View>
         ) : null}
         <View style={styles.nameArtistContainer}>
