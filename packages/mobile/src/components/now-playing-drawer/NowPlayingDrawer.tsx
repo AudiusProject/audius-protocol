@@ -13,6 +13,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
 
 import Drawer from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
@@ -75,8 +76,10 @@ const NowPlayingDrawer = ({
   const insets = useSafeAreaInsets()
 
   const { isOpen, onOpen, onClose } = useDrawer('NowPlaying')
+  const previousIsOpen = usePrevious(isOpen)
   const isPlaying = useSelector(getPlaying)
   const [isPlayBarShowing, setIsPlayBarShowing] = useState(false)
+  const [isSwipedClosed, setIsSwipedClosed] = useState(false)
 
   // When audio starts playing, open the playbar to the initial offset
   useEffect(() => {
@@ -92,18 +95,31 @@ const NowPlayingDrawer = ({
 
   useEffect(() => {
     if (isOpen) {
+      setIsSwipedClosed(false)
       StatusBar.setHidden(true, 'fade')
     } else {
       StatusBar.setHidden(false, 'fade')
     }
   }, [isOpen])
 
-  const onDrawerClose = useCallback(() => {
+  const handleDrawerClose = useCallback(() => {
     springToValue(playBarOpacityAnim, 1, DrawerAnimationStyle.SPRINGY)
-    onClose()
     setIsPlayBarShowing(true)
     onCloseProp()
-  }, [setIsPlayBarShowing, onClose, onCloseProp, playBarOpacityAnim])
+  }, [setIsPlayBarShowing, onCloseProp, playBarOpacityAnim])
+
+  const handleDrawerCloseFromSwipe = useCallback(() => {
+    onClose()
+    handleDrawerClose()
+    setIsSwipedClosed(true)
+  }, [onClose, handleDrawerClose])
+
+  useEffect(() => {
+    // drawer was requested to be closed from an external action
+    if (!isOpen && previousIsOpen && !isSwipedClosed) {
+      handleDrawerClose()
+    }
+  })
 
   const onDrawerOpen = useCallback(() => {
     springToValue(playBarOpacityAnim, 0, DrawerAnimationStyle.SPRINGY)
@@ -199,7 +215,7 @@ const NowPlayingDrawer = ({
       // Appears below bottom bar whereas normally drawers appear above
       zIndex={3}
       isOpen={isOpen}
-      onClose={onDrawerClose}
+      onClose={handleDrawerCloseFromSwipe}
       onOpen={onDrawerOpen}
       initialOffsetPosition={PLAY_BAR_HEIGHT}
       isOpenToInitialOffset={!isOpen && isPlayBarShowing}
@@ -222,7 +238,7 @@ const NowPlayingDrawer = ({
             />
             <Logo opacityAnim={playBarOpacityAnim} />
             <View style={styles.titleBarContainer}>
-              <TitleBar onClose={onDrawerClose} />
+              <TitleBar onClose={handleDrawerClose} />
             </View>
             <View style={styles.artworkContainer}>
               <Artwork track={track} />
