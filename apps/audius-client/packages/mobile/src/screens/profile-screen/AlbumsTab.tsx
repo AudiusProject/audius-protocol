@@ -24,6 +24,7 @@ export const AlbumsTab = () => {
       collection={userAlbums}
       emptyListText={emptyListText}
       disableTopTabScroll
+      fromPage='profile'
     />
   )
 }

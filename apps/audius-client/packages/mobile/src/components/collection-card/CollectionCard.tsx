@@ -1,14 +1,12 @@
+import { useCallback } from 'react'
+
 import { UserCollection } from 'audius-client/src/common/models/Collection'
-import {
-  albumPage,
-  EXPLORE_PAGE,
-  playlistPage
-} from 'audius-client/src/utils/route'
 import { StyleProp, ViewStyle } from 'react-native'
 
 import { Card } from 'app/components/card'
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { formatCount } from 'app/utils/format'
+import { getCollectionRoute } from 'app/utils/routes'
 
 const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
   const savesText = saves === 1 ? 'Favorite' : 'Favorites'
@@ -18,19 +16,26 @@ const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
 
 type CollectionCardProps = {
   collection: UserCollection
+  /**
+   * Optional source page that establishes the `fromPage` for web-routes.
+   */
+  fromPage?: string
   style?: StyleProp<ViewStyle>
 }
 
-export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
-  const pushRouteWeb = usePushRouteWeb()
-  const collectionPage = collection.is_album ? albumPage : playlistPage
-  const route = collectionPage(
-    collection.user.handle,
-    collection.playlist_name,
-    collection.playlist_id
-  )
-
-  const goToRoute = () => pushRouteWeb(route, EXPLORE_PAGE)
+export const CollectionCard = ({
+  collection,
+  fromPage,
+  style
+}: CollectionCardProps) => {
+  const navigation = useNavigation()
+  const handlePress = useCallback(() => {
+    const collectionRoute = getCollectionRoute(collection)
+    navigation.push({
+      native: { screen: 'Collection', params: { id: collection.playlist_id } },
+      web: { route: collectionRoute, fromPage }
+    })
+  }, [navigation, collection, fromPage])
 
   return (
     <Card
@@ -43,7 +48,7 @@ export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
         collection.save_count,
         collection.playlist_contents.track_ids.length
       )}
-      onPress={goToRoute}
+      onPress={handlePress}
       user={collection.user}
     />
   )
