@@ -358,6 +358,7 @@ export const Lineup = ({
         return section.delineate ? <Delineator text={section.title} /> : null
       }}
       listKey={listKey}
+      scrollIndicatorInsets={{ right: Number.MIN_VALUE }}
     />
   )
 }
