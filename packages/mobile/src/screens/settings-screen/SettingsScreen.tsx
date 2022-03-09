@@ -10,6 +10,7 @@ import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
+import { Theme } from 'app/utils/theme'
 
 import { AccountSettingsRow } from './AccountSettingsRow'
 import { AppearanceSettingsRow } from './AppearanceSettingsRow'
@@ -24,12 +25,13 @@ const messages = {
   about: 'About'
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, palette, type }) => ({
   logo: {
     width: '80%',
     height: 85,
     marginVertical: spacing(6),
-    alignSelf: 'center'
+    alignSelf: 'center',
+    tintColor: type === Theme.DEFAULT ? undefined : palette.staticWhite
   }
 }))
 
