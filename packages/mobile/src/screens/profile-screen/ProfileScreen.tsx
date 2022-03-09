@@ -1,5 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
+import Status from 'audius-client/src/common/models/Status'
+import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
+import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'
 import { LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
@@ -10,8 +13,10 @@ import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { ProfilePhoto } from 'app/components/user'
 import { useAccountUser, useProfile } from 'app/hooks/selectors'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -59,7 +64,9 @@ export const ProfileScreen = () => {
   const { handle } = accountUser
   const { params = { handle } } = useRoute<'Profile'>()
   const profile = useProfile(params)
-
+  const dispatchWeb = useDispatchWeb()
+  const status = useSelectorWeb(getProfileStatus)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { accentOrange } = useThemeColors()
 
@@ -91,6 +98,20 @@ export const ProfileScreen = () => {
     setHasUserFollowed(false)
   }, [setHasUserFollowed])
 
+  const handleRefresh = useCallback(() => {
+    if (profile) {
+      setIsRefreshing(true)
+      const { handle, user_id } = profile
+      dispatchWeb(fetchProfile(handle, user_id, true, true, true))
+    }
+  }, [profile, dispatchWeb])
+
+  useEffect(() => {
+    if (status === Status.SUCCESS) {
+      setIsRefreshing(false)
+    }
+  }, [status])
+
   const isOwner = accountUser?.user_id === profile?.user_id
 
   const topbarLeft = isOwner ? (
@@ -108,7 +129,11 @@ export const ProfileScreen = () => {
   return (
     <Screen topbarLeft={topbarLeft}>
       {!profile ? null : (
-        <VirtualizedScrollView listKey='profile-screen'>
+        <VirtualizedScrollView
+          listKey='profile-screen'
+          onRefresh={handleRefresh}
+          refreshing={isRefreshing}
+        >
           <CoverPhoto profile={profile} />
           <ProfilePhoto style={styles.profilePicture} profile={profile} />
           <View style={styles.header}>
