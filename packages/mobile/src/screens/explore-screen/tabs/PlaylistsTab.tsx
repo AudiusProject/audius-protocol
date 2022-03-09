@@ -1,6 +1,7 @@
 import { ParamListBase } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { makeGetExplore } from 'audius-client/src/common/store/pages/explore/selectors'
+import { EXPLORE_PAGE } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -41,6 +42,7 @@ export const PlaylistsTab = ({ navigation }: Props) => {
       }
       contentContainerStyle={styles.contentContainer}
       collection={playlists}
+      fromPage={EXPLORE_PAGE}
     />
   )
 }

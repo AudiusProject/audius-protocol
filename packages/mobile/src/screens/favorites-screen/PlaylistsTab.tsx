@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { getAccountWithPlaylists } from 'audius-client/src/common/store/account/selectors'
+import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
 import { Shadow } from 'react-native-shadow-2'
 
 import Button, { ButtonType } from 'app/components/button'
@@ -67,6 +68,7 @@ export const PlaylistsTab = ({ navigation }) => {
         listKey='favorites-playlists'
         scrollEnabled={false}
         collection={userPlaylists ?? []}
+        fromPage={FAVORITES_PAGE}
       />
     </VirtualizedScrollView>
   )

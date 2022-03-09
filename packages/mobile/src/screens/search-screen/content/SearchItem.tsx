@@ -24,8 +24,6 @@ import {
 } from 'app/utils/routes'
 import { useColor, useTheme } from 'app/utils/theme'
 
-import { usePushSearchRoute } from '../utils'
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -125,16 +123,22 @@ const TrackSearchResult = ({ isLast, item: track }: TrackSearchResultProps) => {
     backgroundColor: 'neutralLight4'
   })
 
-  const pushRoute = usePushSearchRoute()
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
   const { appendSearchItem } = useSearchHistory()
-  const onPress = useCallback(() => {
+
+  const handlePress = useCallback(() => {
     appendSearchItem(track.title)
     const trackRoute = getTrackRoute(track)
-    pushRoute(trackRoute, 'search')
-  }, [track, pushRoute, appendSearchItem])
+    dispatch(closeSearch())
+    navigation.push({
+      native: { screen: 'Track', params: { id: track.track_id } },
+      web: { route: trackRoute, fromPage: 'search' }
+    })
+  }, [track, dispatch, navigation, appendSearchItem])
 
   return (
-    <ItemContainer isLast={isLast} onPress={onPress}>
+    <ItemContainer isLast={isLast} onPress={handlePress}>
       <TrackImage
         track={track}
         user={track.user}
@@ -165,16 +169,22 @@ const PlaylistSearchResult = ({
     backgroundColor: 'neutralLight4'
   })
 
-  const pushRoute = usePushSearchRoute()
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
   const { appendSearchItem } = useSearchHistory()
-  const onPress = useCallback(() => {
+
+  const handlePress = useCallback(() => {
     appendSearchItem(playlist.playlist_name)
     const collectionRoute = getCollectionRoute(playlist as any)
-    pushRoute(collectionRoute, 'search')
-  }, [playlist, pushRoute, appendSearchItem])
+    dispatch(closeSearch())
+    navigation.push({
+      native: { screen: 'Collection', params: { id: playlist.playlist_id } },
+      web: { route: collectionRoute, fromPage: 'search' }
+    })
+  }, [playlist, dispatch, navigation, appendSearchItem])
 
   return (
-    <ItemContainer isLast={isLast} onPress={onPress}>
+    <ItemContainer isLast={isLast} onPress={handlePress}>
       <PlaylistImage
         playlist={playlist}
         user={playlist.user}
@@ -205,16 +215,22 @@ const AlbumSearchResult = ({
     backgroundColor: 'neutralLight4'
   })
 
-  const pushRoute = usePushSearchRoute()
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
   const { appendSearchItem } = useSearchHistory()
-  const onPress = useCallback(() => {
+
+  const handlePress = useCallback(() => {
     appendSearchItem(playlist.playlist_name)
     const collectionRoute = getCollectionRoute(playlist as any)
-    pushRoute(collectionRoute, 'search')
-  }, [playlist, pushRoute, appendSearchItem])
+    dispatch(closeSearch())
+    navigation.push({
+      native: { screen: 'Collection', params: { id: playlist.playlist_id } },
+      web: { route: collectionRoute, fromPage: 'search' }
+    })
+  }, [playlist, dispatch, navigation, appendSearchItem])
 
   return (
-    <ItemContainer isLast={isLast} onPress={onPress}>
+    <ItemContainer isLast={isLast} onPress={handlePress}>
       <PlaylistImage
         playlist={playlist}
         user={playlist.user}

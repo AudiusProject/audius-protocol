@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { getAccountWithAlbums } from 'audius-client/src/common/store/account/selectors'
+import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
 
 import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView } from 'app/components/core'
@@ -52,6 +53,7 @@ export const AlbumsTab = () => {
             scrollEnabled={false}
             collection={userAlbums ?? []}
             style={{ marginVertical: 12 }}
+            fromPage={FAVORITES_PAGE}
           />
         </>
       )}
