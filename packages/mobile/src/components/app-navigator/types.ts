@@ -1,12 +1,14 @@
 import { NavigatorScreenParams } from '@react-navigation/native'
+import { FavoriteType } from 'audius-client/src/common/models/Favorite'
 import { ID } from 'audius-client/src/common/models/Identifiers'
+import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 
 export type BaseStackParamList = {
   Track: { id: ID }
   Profile: { handle: string }
   Collection: { id: ID }
-  FavoritedScreen: undefined
-  RepostsScreen: undefined
+  Favorited: { id: ID; favoriteType: FavoriteType }
+  Reposts: { id: ID; repostType: RepostType }
 }
 
 export type FeedStackParamList = BaseStackParamList & {
@@ -36,8 +38,8 @@ export type ProfileStackParamList = BaseStackParamList & {
   AccountSettingsScreen: undefined
   NotificationSettingsScreen: undefined
   AudioScreen: undefined
-  FollowersScreen: undefined
-  FollowingScreen: undefined
+  Followers: { userId: ID }
+  Following: { userId: ID }
 }
 
 export type SearchParamList = BaseStackParamList & {

@@ -212,7 +212,10 @@ export const TrackScreenDetailsTile = ({
   const handlePressFavorites = useCallback(() => {
     dispatchWeb(setFavorite(track_id, FavoriteType.TRACK))
     navigation.push({
-      native: { screen: 'FavoritedScreen', params: undefined },
+      native: {
+        screen: 'Favorited',
+        params: { id: track_id, favoriteType: FavoriteType.TRACK }
+      },
       web: { route: FAVORITING_USERS_ROUTE }
     })
   }, [dispatchWeb, track_id, navigation])
@@ -220,7 +223,10 @@ export const TrackScreenDetailsTile = ({
   const handlePressReposts = useCallback(() => {
     dispatchWeb(setRepost(track_id, RepostType.TRACK))
     navigation.push({
-      native: { screen: 'RepostsScreen', params: undefined },
+      native: {
+        screen: 'Reposts',
+        params: { id: track_id, repostType: RepostType.TRACK }
+      },
       web: { route: REPOSTING_USERS_ROUTE }
     })
   }, [dispatchWeb, track_id, navigation])

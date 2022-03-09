@@ -190,7 +190,10 @@ const CollectionScreenComponent = ({
   const handlePressFavorites = useCallback(() => {
     dispatchWeb(setFavorite(playlist_id, FavoriteType.PLAYLIST))
     navigation.push({
-      native: { screen: 'FavoritedScreen', params: undefined },
+      native: {
+        screen: 'Favorited',
+        params: { id: playlist_id, favoriteType: FavoriteType.PLAYLIST }
+      },
       web: { route: FAVORITING_USERS_ROUTE }
     })
   }, [dispatchWeb, playlist_id, navigation])
@@ -198,7 +201,10 @@ const CollectionScreenComponent = ({
   const handlePressReposts = useCallback(() => {
     dispatchWeb(setRepost(playlist_id, RepostType.COLLECTION))
     navigation.push({
-      native: { screen: 'RepostsScreen', params: undefined },
+      native: {
+        screen: 'Reposts',
+        params: { id: playlist_id, repostType: RepostType.COLLECTION }
+      },
       web: { route: REPOSTING_USERS_ROUTE }
     })
   }, [dispatchWeb, playlist_id, navigation])

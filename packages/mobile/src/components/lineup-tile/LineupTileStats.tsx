@@ -105,7 +105,7 @@ export const LineupTileStats = ({
   const handlePressFavorites = useCallback(() => {
     dispatchWeb(setFavorite(id, favoriteType))
     navigation.push({
-      native: { screen: 'FavoritedScreen', params: undefined },
+      native: { screen: 'Favorited', params: { id, favoriteType } },
       web: { route: FAVORITING_USERS_ROUTE }
     })
   }, [dispatchWeb, id, navigation, favoriteType])
@@ -113,7 +113,10 @@ export const LineupTileStats = ({
   const handlePressReposts = useCallback(() => {
     dispatchWeb(setRepost(id, repostType))
     navigation.push({
-      native: { screen: 'RepostsScreen', params: undefined },
+      native: {
+        screen: 'Reposts',
+        params: { id, repostType }
+      },
       web: { route: REPOSTING_USERS_ROUTE }
     })
   }, [dispatchWeb, id, navigation, repostType])

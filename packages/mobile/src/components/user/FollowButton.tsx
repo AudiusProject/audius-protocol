@@ -22,10 +22,11 @@ type FollowButtonsProps = Partial<ButtonProps> & {
   profile: User
   noIcon?: boolean
   style?: StyleProp<ViewStyle>
+  followSource: FollowSource
 }
 
 export const FollowButton = (props: FollowButtonsProps) => {
-  const { profile, noIcon, style, onPress } = props
+  const { profile, noIcon, style, onPress, followSource } = props
   const { does_current_user_follow, user_id } = profile
   const isFollowing = does_current_user_follow
   const dispatchWeb = useDispatchWeb()
@@ -38,12 +39,12 @@ export const FollowButton = (props: FollowButtonsProps) => {
     (event: GestureResponderEvent) => {
       onPress?.(event)
       if (does_current_user_follow) {
-        dispatchWeb(unfollowUser(user_id, FollowSource.PROFILE_PAGE))
+        dispatchWeb(unfollowUser(user_id, followSource))
       } else {
-        dispatchWeb(followUser(user_id, FollowSource.PROFILE_PAGE))
+        dispatchWeb(followUser(user_id, followSource))
       }
     },
-    [onPress, dispatchWeb, does_current_user_follow, user_id]
+    [onPress, dispatchWeb, does_current_user_follow, user_id, followSource]
   )
 
   return (
