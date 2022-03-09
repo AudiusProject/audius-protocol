@@ -30,7 +30,8 @@ import {
 import { profilePage } from 'audius-client/src/utils/route'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { useDrawer } from 'app/hooks/useDrawer'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 type Props = {
@@ -38,8 +39,9 @@ type Props = {
 }
 
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
+  const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
+  const navigation = useNavigation()
   const dispatchWeb = useDispatchWeb()
-  const pushRouteWeb = usePushRouteWeb()
   const { id: modalId } = useSelectorWeb(getMobileOverflowModal)
   const id = modalId as ID
 
@@ -72,11 +74,20 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       dispatchWeb(shareTrack(id, ShareSource.OVERFLOW)),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
       dispatchWeb(openAddToPlaylistModal(id, title)),
-    [OverflowAction.VIEW_TRACK_PAGE]: () =>
-      permalink === undefined
-        ? console.error(`Permalink missing for track ${id}`)
-        : pushRouteWeb(permalink),
-    [OverflowAction.VIEW_ARTIST_PAGE]: () => pushRouteWeb(profilePage(handle)),
+    [OverflowAction.VIEW_TRACK_PAGE]: () => {
+      closeNowPlayingDrawer()
+      navigation.navigate({
+        native: { screen: 'Track', params: { id } },
+        web: { route: permalink }
+      })
+    },
+    [OverflowAction.VIEW_ARTIST_PAGE]: () => {
+      closeNowPlayingDrawer()
+      navigation.navigate({
+        native: { screen: 'Profile', params: { handle } },
+        web: { route: profilePage(handle) }
+      })
+    },
     [OverflowAction.FOLLOW_ARTIST]: () =>
       dispatchWeb(followUser(owner_id, FollowSource.OVERFLOW)),
     [OverflowAction.UNFOLLOW_ARTIST]: () =>

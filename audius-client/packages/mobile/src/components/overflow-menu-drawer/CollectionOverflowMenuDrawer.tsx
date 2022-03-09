@@ -31,7 +31,7 @@ import {
 } from 'audius-client/src/utils/route'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 type Props = {
@@ -40,7 +40,7 @@ type Props = {
 
 const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const dispatchWeb = useDispatchWeb()
-  const pushRouteWeb = usePushRouteWeb()
+  const navigation = useNavigation()
   const { id: modalId } = useSelectorWeb(getMobileOverflowModal)
   const id = modalId as ID
 
@@ -73,11 +73,24 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
       dispatchWeb(unsaveCollection(id, FavoriteSource.OVERFLOW)),
     [OverflowAction.SHARE]: () =>
       dispatchWeb(shareCollection(id, ShareSource.OVERFLOW)),
-    [OverflowAction.VIEW_ALBUM_PAGE]: () =>
-      pushRouteWeb(
-        (is_album ? albumPage : playlistPage)(handle, playlist_name, id)
-      ),
-    [OverflowAction.VIEW_ARTIST_PAGE]: () => pushRouteWeb(profilePage(handle)),
+    [OverflowAction.VIEW_ALBUM_PAGE]: () => {
+      navigation.navigate({
+        native: { screen: 'Collection', params: { id } },
+        web: {
+          route: (is_album ? albumPage : playlistPage)(
+            handle,
+            playlist_name,
+            id
+          )
+        }
+      })
+    },
+    [OverflowAction.VIEW_ARTIST_PAGE]: () => {
+      navigation.navigate({
+        native: { screen: 'Profile', params: { handle } },
+        web: { route: profilePage(handle) }
+      })
+    },
     [OverflowAction.EDIT_PLAYLIST]: () => dispatchWeb(openEditPlaylist(id)),
     [OverflowAction.DELETE_PLAYLIST]: () => dispatchWeb(openDeletePlaylist(id)),
     [OverflowAction.PUBLISH_PLAYLIST]: () =>
