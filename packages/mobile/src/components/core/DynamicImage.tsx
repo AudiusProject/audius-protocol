@@ -23,7 +23,6 @@ import {
   ViewStyle
 } from 'react-native'
 
-import transparentPlaceholderImg from 'app/assets/images/1x1-transparent.png'
 import { ImageSkeleton } from 'app/components/image-skeleton'
 import { StylesProp } from 'app/styles'
 
@@ -38,8 +37,6 @@ export type DynamicImageProps = {
   style?: StyleProp<ViewStyle>
   // Whether or not to immediately animate
   immediate?: boolean
-  // Whether or not to use the default placeholder
-  usePlaceholder?: boolean
   // overlays rendered above image
   children?: ReactNode
   // callback when image finishes loading
@@ -91,36 +88,26 @@ const isImageEqual = (
 }
 
 type ImageWithPlaceholderProps = {
-  usePlaceholder: boolean
   source?: ImageSourcePropType
   style: StyleProp<ImageStyle>
 }
 
-const ImageWithPlaceholder = ({
-  usePlaceholder,
-  source,
-  style
-}: ImageWithPlaceholderProps) => {
+const ImageWithPlaceholder = ({ source, style }: ImageWithPlaceholderProps) => {
   if (source) {
     return <Image source={source} style={style} />
   }
 
-  if (usePlaceholder) {
-    return <ImageSkeleton styles={{ root: style as ViewStyle }} />
-  }
-
-  return <Image source={transparentPlaceholderImg} style={style} />
+  return <ImageSkeleton styles={{ root: style as ViewStyle }} />
 }
 
 /**
- * A dynamic image that transitions between changes to the `image` prop.
+ * A dynamic image that transitions between changes to the `source` prop.
  */
 export const DynamicImage = memo(function DynamicImage({
   source,
   style,
   styles: stylesProp,
   immediate,
-  usePlaceholder = true,
   children,
   onLoad
 }: DynamicImageProps) {
@@ -161,13 +148,13 @@ export const DynamicImage = memo(function DynamicImage({
     if (isFirstImageActive) {
       setIsFirstImageActive(false)
       setFirstImage(source)
-      animateTo(firstOpacity, 1, onLoad)
-      animateTo(secondOpacity, 0)
+      firstOpacity.setValue(1)
+      animateTo(secondOpacity, 0, onLoad)
     } else {
       setIsFirstImageActive(true)
       setSecondImage(source)
-      animateTo(firstOpacity, 0)
-      animateTo(secondOpacity, 1, onLoad)
+      secondOpacity.setValue(1)
+      animateTo(firstOpacity, 0, onLoad)
     }
   }, [
     animateTo,
@@ -202,7 +189,6 @@ export const DynamicImage = memo(function DynamicImage({
         <ImageWithPlaceholder
           source={firstImage}
           style={[{ width: firstSize, height: firstSize }, stylesProp?.image]}
-          usePlaceholder={usePlaceholder}
         />
       </Animated.View>
       <Animated.View
@@ -216,7 +202,6 @@ export const DynamicImage = memo(function DynamicImage({
         <ImageWithPlaceholder
           source={secondImage}
           style={[{ width: secondSize, height: secondSize }, stylesProp?.image]}
-          usePlaceholder={usePlaceholder}
         />
       </Animated.View>
       {children ? <View style={styles.children}>{children}</View> : null}

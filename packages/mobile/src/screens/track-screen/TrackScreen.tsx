@@ -1,3 +1,4 @@
+import { ID } from 'audius-client/src/common/models/Identifiers'
 import { LineupState } from 'audius-client/src/common/models/Lineup'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
@@ -9,7 +10,7 @@ import {
   getUser
 } from 'audius-client/src/common/store/pages/track/selectors'
 import { trackRemixesPage } from 'audius-client/src/utils/route'
-import { isEqual } from 'lodash'
+import { isEqual, omit } from 'lodash'
 import { StyleSheet, View } from 'react-native'
 
 import { Screen } from 'app/components/core'
@@ -51,7 +52,7 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 type TrackScreenMainContentProps = {
-  lineup: LineupState<Track>
+  lineup: LineupState<{ id: ID }>
   track: Track
   user: User
 }
@@ -114,9 +115,27 @@ const TrackScreenMainContent = ({
  */
 export const TrackScreen = () => {
   const { params } = useRoute<'Track'>()
-  const track = useSelectorWeb(state => getTrack(state, params))
-  const user = useSelectorWeb(state => getUser(state, { id: track?.owner_id }))
-  const lineup = useSelectorWeb(getMoreByArtistLineup, isEqual)
+  const track = useSelectorWeb(
+    state => getTrack(state, params),
+    // Omitting uneeded fields from the equality check because they are
+    // causing extra renders when added to the `track` object
+    (a, b) => {
+      const omitUneeded = o => omit(o, ['_stems', '_remix_parents'])
+      return isEqual(omitUneeded(a), omitUneeded(b))
+    }
+  )
+
+  const user = useSelectorWeb(
+    state => getUser(state, { id: track?.owner_id }),
+    isEqual
+  )
+
+  const lineup = useSelectorWeb(
+    getMoreByArtistLineup,
+    // Checking for equality between the entries themselves, because
+    // lineup reset state changes cause extra renders
+    (a, b) => (!a.entries && !b.entries) || isEqual(a.entries, b.entries)
+  )
 
   if (!track || !user || !lineup) {
     console.warn(
