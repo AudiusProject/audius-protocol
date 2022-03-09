@@ -6,14 +6,16 @@ const defaultNavigationtTheme: Theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    background: defaultTheme.background
+    background: defaultTheme.background,
+    card: defaultTheme.white
   }
 }
 const darkNavigationTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: darkTheme.background
+    background: darkTheme.background,
+    card: darkTheme.white
   }
 }
 
@@ -21,7 +23,8 @@ const matrixNavigationTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: matrixTheme.background
+    background: matrixTheme.background,
+    card: matrixTheme.white
   }
 }
 
