@@ -1,7 +1,7 @@
 import { makeGetSearchArtists } from 'audius-client/src/common/store/pages/search-results/selectors'
 
+import { ArtistCard } from 'app/components/artist-card'
 import { CardList } from 'app/components/core'
-import { FollowArtistCard } from 'app/components/signon/FirstFollows'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { SearchResultsTab } from './SearchResultsTab'
@@ -16,7 +16,7 @@ export const ProfilesTab = () => {
       <CardList
         data={users}
         renderItem={({ item }) => (
-          <FollowArtistCard isSelected={false} user={item} />
+          <ArtistCard artist={item} fromPage='search' />
         )}
       />
     </SearchResultsTab>

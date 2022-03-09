@@ -12,7 +12,11 @@ export const PlaylistsTab = () => {
   const playlists = useSelectorWeb(getSearchPlaylists, isEqual)
   return (
     <SearchResultsTab noResults={playlists.length === 0}>
-      <CollectionList listKey='search-playlists' collection={playlists} />
+      <CollectionList
+        listKey='search-playlists'
+        collection={playlists}
+        fromPage='search'
+      />
     </SearchResultsTab>
   )
 }
