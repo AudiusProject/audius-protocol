@@ -25,7 +25,20 @@ const TYPES_SET = new Set([types.cid, types.user, types.track])
 // Controllers
 
 const contentBlacklistGetAllController = async (req) => {
-  const blacklistedContent = await getAllContentBlacklist()
+  // If no query params are passed in, fetch everything
+  if (Object.keys(req.query).length === 0) {
+    req.query = {
+      users: true,
+      tracks: true,
+      segments: true
+    }
+  }
+  const blacklistedContent = await getAllContentBlacklist({
+    getUserIds: !!req.query.users,
+    getTrackIds: !!req.query.tracks,
+    getSegments: !!req.query.segments
+  })
+
   return successResponse(blacklistedContent)
 }
 
@@ -38,7 +51,9 @@ const contentBlacklistAddController = async (req) => {
     parsedQueryParams = parseQueryParams(req.query)
   } catch (e) {
     return errorResponseBadRequest(
-      `Improper blacklist input data: ${JSON.stringify(req.query)}`
+      `Improper blacklist input data: ${JSON.stringify(req.query)} | error=${
+        e.message
+      }`
     )
   }
 
