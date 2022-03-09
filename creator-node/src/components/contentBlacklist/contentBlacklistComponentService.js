@@ -31,10 +31,13 @@ const getAllContentBlacklist = async ({
     const individuallyBlacklistedSegments = segmentsFromCBL.map(
       (entry) => entry.value
     )
-    const allSegments = await BlacklistManager.getAllCIDs()
     blacklistedContent.individualSegments = individuallyBlacklistedSegments
-    blacklistedContent.numberOfSegments = allSegments.length
+    blacklistedContent.numberOfIndividualSegments =
+      individuallyBlacklistedSegments.length
+
+    const allSegments = await BlacklistManager.getAllCIDs()
     blacklistedContent.allSegments = allSegments
+    blacklistedContent.numberOfSegments = allSegments.length
   }
 
   return blacklistedContent
