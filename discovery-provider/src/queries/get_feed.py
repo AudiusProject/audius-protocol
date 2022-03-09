@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import and_, desc, func, or_
+from sqlalchemy import and_, desc, func, or_, text
 from src import api_helpers
 from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track
 from src.queries import response_name_constants
@@ -19,7 +19,160 @@ from src.utils.db_session import get_db_read_replica
 trackDedupeMaxMinutes = 10
 
 
+# drop index playlist_created_at_idx;
+# drop index track_created_at_idx;
+# drop index repost_created_at_idx;
+sql = """
+-- fast feed query
+with my_follows as (
+  select followee_user_id as user_id
+  from follows
+  where
+    is_current
+    and not is_delete
+    and follower_user_id = :current_user_id
+)
+select * from (
+
+  (
+    select
+      'playlist' as src,
+      playlist_owner_id as user_id,
+      playlist_id as id,
+      created_at
+    from playlists
+    where 
+      is_current
+      and not is_delete
+      and not is_private
+      and playlist_owner_id in (select user_id from my_follows)
+    order by created_at desc
+    limit :limit
+  )
+
+  union all
+
+  (
+    select
+      'track',
+      owner_id as user_id,
+      track_id,
+      created_at
+    from tracks 
+    where 
+      is_current 
+      and not is_delete
+      and not is_unlisted
+      and stem_of is null
+      and owner_id in (select user_id from my_follows)
+    order by created_at desc
+    limit :limit
+  )
+
+  union all
+
+  (
+    select
+      'repost_' || repost_type,
+      user_id,
+      repost_item_id,
+      created_at
+    from reposts 
+    where 
+      is_current 
+      and not is_delete 
+      and user_id in (select user_id from my_follows)
+    order by created_at desc
+    limit :limit
+  )
+
+) news
+order by created_at desc;
+"""
+
+
+def _fast(args):
+    current_user_id = args.get("user_id")
+    (limit, _) = get_pagination_vars()
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        rows = session.execute(
+            text(sql), {"limit": limit, "current_user_id": current_user_id}
+        )
+
+        # collect tracks + playlists we need to fetch
+        fetch_track_ids = set()
+        fetch_playlist_ids = set()
+
+        # go oldest to newest and remove any newer duplicates
+        rows = list(rows)
+        rows.reverse()
+        news = []
+        for row in rows:
+            if row.src.endswith("playlist"):
+                if row.id not in fetch_playlist_ids:
+                    fetch_playlist_ids.add(row.id)
+                    news.append(row)
+            else:
+                if row.id not in fetch_track_ids:
+                    fetch_track_ids.add(row.id)
+                    news.append(row)
+        news.reverse()
+
+        playlists = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True,
+                Playlist.is_delete == False,
+                Playlist.playlist_id.in_(fetch_playlist_ids),
+            )
+            .all()
+        )
+
+        # keyed_playlists = {}
+        for playlist in playlists:
+            # keyed_playlists[playlist.playlist_id] = dict(playlist)
+            for track in playlist.playlist_contents["track_ids"]:
+                fetch_track_ids.add(track["track"])
+
+        tracks = (
+            session.query(Track)
+            .filter(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.track_id.in_(fetch_track_ids),
+            )
+            .all()
+        )
+
+        # keyed_tracks = {}
+        # for track in tracks:
+        #     keyed_tracks[track.track_id] = dict(track)
+
+        keyed_playlists = {
+            p["playlist_id"]: p for p in helpers.query_result_to_list(playlists)
+        }
+        keyed_tracks = {p["track_id"]: p for p in helpers.query_result_to_list(tracks)}
+        # keyed_tracks = {}
+
+        final = []
+        for row in news:
+            if row.src.endswith("playlist"):
+                obj = keyed_playlists.get(row.id)
+            else:
+                obj = keyed_tracks.get(row.id)
+            if not obj:
+                continue
+            obj["activity_timestamp"] = row.created_at
+            final.append(obj)
+
+        return {"data": final}
+
+
 def get_feed(args):
+    if "fast" in args:
+        return _fast(args)
+
     feed_results = []
     db = get_db_read_replica()
 
