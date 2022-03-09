@@ -21,8 +21,24 @@ export type TrendingStackParamList = BaseStackParamList & {
 
 export type ExploreStackParamList = BaseStackParamList & {
   ExploreStack: undefined
-  TrendingUnderground: undefined
+  // Smart Collection Screens
   UnderTheRadar: undefined
+  MostLoved: undefined
+  FeelingLucky: undefined
+  HeavyRotation: undefined
+  BestNewReleases: undefined
+  Remixables: undefined
+  // Collection Screens
+  TrendingUnderground: undefined
+  LetThemDJ: undefined
+  TopAlbums: undefined
+  TrendingPlaylists: undefined
+  // Mood Screens
+  ChillPlaylist: undefined
+  IntensePlaylist: undefined
+  IntimatePlaylist: undefined
+  UpbeatPlaylist: undefined
+  ProvokingPlaylist: undefined
 }
 
 export type FavoritesStackParamList = BaseStackParamList & {

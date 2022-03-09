@@ -10,7 +10,13 @@ import NowPlayingDrawer from 'app/components/now-playing-drawer/NowPlayingDrawer
 import { AudioScreen } from 'app/screens/audio-screen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import ExploreScreen from 'app/screens/explore-screen'
-import { UNDER_THE_RADAR } from 'app/screens/explore-screen/smartCollections'
+import {
+  UNDER_THE_RADAR,
+  BEST_NEW_RELEASES,
+  REMIXABLES,
+  FEELING_LUCKY,
+  MOST_LOVED
+} from 'app/screens/explore-screen/smartCollections'
 import { TrendingUndergroundScreen } from 'app/screens/explore-screen/tabs/ForYouTab'
 import FavoritesScreen from 'app/screens/favorites-screen'
 import { FeedScreen } from 'app/screens/feed-screen'
@@ -33,6 +39,14 @@ import {
   ProfileStackParamList,
   TrendingStackParamList
 } from './types'
+
+const smartCollections = [
+  UNDER_THE_RADAR,
+  BEST_NEW_RELEASES,
+  REMIXABLES,
+  MOST_LOVED,
+  FEELING_LUCKY
+]
 
 const styles = StyleSheet.create({
   tabNavigator: {
@@ -75,9 +89,11 @@ const ExploreStackScreen = createStackScreen<ExploreStackParamList>(Stack => (
       name='TrendingUnderground'
       component={TrendingUndergroundScreen}
     />
-    <Stack.Screen name='UnderTheRadar'>
-      {() => <SmartCollectionScreen smartCollection={UNDER_THE_RADAR} />}
-    </Stack.Screen>
+    {smartCollections.map(collection => (
+      <Stack.Screen name={collection.screen} key={collection.screen}>
+        {() => <SmartCollectionScreen smartCollection={collection} />}
+      </Stack.Screen>
+    ))}
   </>
 ))
 
