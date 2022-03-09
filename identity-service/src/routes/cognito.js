@@ -230,6 +230,41 @@ module.exports = function (app) {
   }))
 
   /**
+   * This endpoint is not programatically called.
+   * It exists in case we want to retrieve a flow session for a handle
+   */
+  app.post('/cognito_retrieve/:sessionId', handleResponse(async (req) => {
+    const sessionId = req.params.sessionId
+
+    if (req.headers['x-cognito-retrieve'] !== config.get('cognitoRetrySecret')) {
+      return errorResponseForbidden(`Not permissioned to retrieve flow session id ${sessionId}`)
+    }
+
+    try {
+      const baseUrl = config.get('cognitoBaseUrl')
+      const path = `/flow_sessions/${sessionId}`
+      const method = 'GET'
+      const body = ''
+      const headers = createCognitoHeaders({ path, method, body })
+      const url = `${baseUrl}${path}`
+      const flowSessionResponse = await axios({
+        adapter: axiosHttpAdapter,
+        url,
+        method,
+        headers
+      })
+      const data = flowSessionResponse.data
+
+      logger.info(`cognito_retrieve | Successfully retrieved flow session id ${sessionId}`)
+      return successResponse(data)
+    } catch (err) {
+      logger.error(`cognito_retrieve | Failed request to retrieve flow session id ${sessionId} with error message: ${err.message}`)
+      logger.error(`cognito_retrieve | The full retrieve error payload for session id ${sessionId} is: ${JSON.stringify(err)}`)
+      return errorResponseServerError(err.message)
+    }
+  }))
+
+  /**
    * Returns whether a recent cognito entry exists for a given handle.
    * This is so that the client can poll this endpoint to check whether
    * or not to proceed with a reward claim retry.
