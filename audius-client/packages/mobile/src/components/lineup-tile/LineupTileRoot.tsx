@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native'
 
-import { Tile, TileProps } from '../core'
+import { Tile, TileProps } from 'app/components/core'
 
 const styles = StyleSheet.create({
   tile: {

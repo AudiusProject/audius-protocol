@@ -1,14 +1,13 @@
-import { ImageStyle, StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton } from 'app/components/core'
 import FavoriteButton from 'app/components/favorite-button'
 import RepostButton from 'app/components/repost-button'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { flexRowCentered } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 import { GestureResponderHandler } from 'app/types/gesture'
-import { ThemeColors, useThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 type Props = {
   disabled?: boolean
@@ -23,30 +22,27 @@ type Props = {
   onPressShare?: GestureResponderHandler
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    bottomButtons: {
-      ...flexRowCentered(),
-      justifyContent: 'space-between',
-      marginVertical: 2,
-      marginHorizontal: 12,
-      height: 36,
-      borderTopWidth: 1,
-      borderTopColor: themeColors.neutralLight8
-    },
-    button: {
-      marginHorizontal: 16
-    },
-    firstButton: {
-      marginLeft: 0
-    },
-    leftButtons: {
-      ...flexRowCentered()
-    },
-    lastButton: {
-      marginRight: 0
-    }
-  })
+const useStyles = makeStyles(({ spacing, palette }) => ({
+  bottomButtons: {
+    ...flexRowCentered(),
+    justifyContent: 'space-between',
+    marginVertical: spacing(0.5),
+    marginHorizontal: spacing(3),
+    height: spacing(9),
+    borderTopWidth: 1,
+    borderTopColor: palette.neutralLight8
+  },
+  button: {
+    height: 22,
+    width: 22
+  },
+  buttonMargin: {
+    marginRight: spacing(8)
+  },
+  leftButtons: {
+    ...flexRowCentered()
+  }
+}))
 
 export const LineupTileActionButtons = ({
   disabled,
@@ -61,24 +57,26 @@ export const LineupTileActionButtons = ({
   onPressShare
 }: Props) => {
   const { neutralLight4 } = useThemeColors()
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
 
   const repostButton = (
-    <RepostButton
-      onPress={onPressRepost}
-      isActive={hasReposted}
-      isDisabled={disabled || isOwner}
-      style={[styles.button, styles.firstButton] as ImageStyle}
-    />
+    <View style={[styles.button, styles.buttonMargin]}>
+      <RepostButton
+        onPress={onPressRepost}
+        isActive={hasReposted}
+        isDisabled={disabled || isOwner}
+      />
+    </View>
   )
 
   const favoriteButton = (
-    <FavoriteButton
-      onPress={onPressSave}
-      isActive={hasSaved}
-      isDisabled={disabled || isOwner}
-      style={styles.button as ImageStyle}
-    />
+    <View style={[styles.button, styles.buttonMargin]}>
+      <FavoriteButton
+        onPress={onPressSave}
+        isActive={hasSaved}
+        isDisabled={disabled || isOwner}
+      />
+    </View>
   )
 
   const shareButton = (
@@ -87,7 +85,6 @@ export const LineupTileActionButtons = ({
       icon={IconShare}
       isDisabled={disabled}
       onPress={onPressShare}
-      styles={{ root: styles.button }}
     />
   )
 
@@ -97,7 +94,7 @@ export const LineupTileActionButtons = ({
       icon={IconKebabHorizontal}
       isDisabled={disabled}
       onPress={onPressOverflow}
-      styles={{ root: styles.lastButton, icon: { height: 22, width: 22 } }}
+      styles={{ icon: styles.button }}
     />
   )
 
