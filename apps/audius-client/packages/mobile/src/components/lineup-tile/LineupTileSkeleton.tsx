@@ -43,7 +43,7 @@ export const LineupTileSkeleton = () => {
       </View>
 
       <View style={styles.bottomButtons}>
-        <LineupTileActionButtons />
+        <LineupTileActionButtons disabled />
       </View>
     </LineupTileRoot>
   )
