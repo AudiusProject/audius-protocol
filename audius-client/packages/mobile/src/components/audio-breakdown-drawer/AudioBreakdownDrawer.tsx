@@ -11,6 +11,7 @@ import {
   shortenSPLAddress
 } from 'audius-client/src/common/utils/wallet'
 import BN from 'bn.js'
+import { isEqual } from 'lodash'
 import {
   StyleSheet,
   TouchableWithoutFeedback,
@@ -181,10 +182,11 @@ const messages = {
 export const AudioBreakdownDrawer = () => {
   const styles = useThemedStyles(createStyles)
 
-  const accountBalance = (useSelectorWeb(getAccountBalance) ??
-    new BN('0')) as BNWei
+  const accountBalance = (useSelectorWeb(getAccountBalance, (a: BN, b: BN) =>
+    a.eq(b)
+  ) ?? new BN('0')) as BNWei
 
-  const associatedWallets = useSelectorWeb(getAssociatedWallets)
+  const associatedWallets = useSelectorWeb(getAssociatedWallets, isEqual)
   const {
     connectedEthWallets: ethWallets,
     connectedSolWallets: solWallets

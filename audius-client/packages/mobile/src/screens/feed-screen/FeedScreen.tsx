@@ -8,7 +8,7 @@ import {
   getFeedFilter
 } from 'audius-client/src/common/store/pages/feed/selectors'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
-import { isEqual } from 'lodash'
+import { isEqual, omit } from 'lodash'
 
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
@@ -27,7 +27,10 @@ const messages = {
 
 export const FeedScreen = () => {
   const dispatchWeb = useDispatchWeb()
-  const feedLineup = useSelectorWeb(getFeedLineup, isEqual)
+  const feedLineup = useSelectorWeb(getFeedLineup, (a, b) => {
+    const omitUneeded = o => omit(o, ['inView'])
+    return isEqual(omitUneeded(a), omitUneeded(b))
+  })
   const feedFilter = useSelectorWeb(getFeedFilter)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
