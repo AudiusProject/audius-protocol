@@ -1,5 +1,9 @@
 FROM ubuntu:20.04
 
+ENV NODE_VERSION="v14.18.1"
+ENV HOME="/root"
+ENV PATH="${HOME}/.cargo/bin:${PATH}"
+
 WORKDIR /usr/src/app
 
 RUN ln -snf /usr/share/zoneinfo/UTC /etc/localtime && \
@@ -11,6 +15,25 @@ RUN apt-get update && \
     curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     sh -c "$(curl -sSfL https://release.solana.com/v1.8.9/install)"
 
+
+# Install rust.
+RUN curl "https://sh.rustup.rs" -sfo rustup.sh && \
+    sh rustup.sh -y && \
+    rustup component add rustfmt clippy
+
+
+#install node / npm / yarn
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+ENV NVM_DIR="${HOME}/.nvm"
+RUN . $NVM_DIR/nvm.sh && \
+    nvm install ${NODE_VERSION} && \
+    nvm use ${NODE_VERSION} && \
+    nvm alias default node && \
+    npm install -g yarn
+
+# Install anchor.
+RUN cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
+
 ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"
 
 COPY audius_eth_registry audius_eth_registry
@@ -18,6 +41,7 @@ COPY track_listen_count track_listen_count
 COPY cli cli
 COPY claimable-tokens claimable-tokens
 COPY reward-manager reward-manager
+COPY anchor anchor
 
 RUN cd audius_eth_registry && \
     cargo build-bpf && \
