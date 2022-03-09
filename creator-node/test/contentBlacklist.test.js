@@ -202,6 +202,18 @@ describe('test ContentBlacklist', function () {
         assert.deepStrictEqual(resp.body.data.numberOfIndividualSegments, 1)
         assert.deepStrictEqual(resp.body.data.individualSegments[0], cids[0])
       })
+
+    await request(app)
+      .get('/blacklist')
+      .expect(200)
+      .expect((resp) => {
+        assert.deepStrictEqual(resp.body.data.numberOfTrackIds, 1)
+        assert.deepStrictEqual(resp.body.data.trackIds[0], '43021')
+        assert.deepStrictEqual(resp.body.data.numberOfUserIds, 1)
+        assert.deepStrictEqual(resp.body.data.userIds[0], '43021')
+        assert.deepStrictEqual(resp.body.data.numberOfIndividualSegments, 1)
+        assert.deepStrictEqual(resp.body.data.individualSegments[0], cids[0])
+      })
   })
 
   it('should return the proper userIds, trackIds, and segments when sent by trusted notifier', async () => {
