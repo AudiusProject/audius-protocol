@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { FollowSource } from 'audius-client/src/common/models/Analytics'
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { User } from 'audius-client/src/common/models/User'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
@@ -55,15 +56,19 @@ export const UserChip = (props: UserChipProps) => {
         <View>
           <Text style={styles.name} numberOfLines={1}>
             {name}
+            <UserBadges user={user} badgeSize={10} hideName />
           </Text>
-          <UserBadges user={user} badgeSize={10} hideName />
           <Text style={styles.followers}>
             {follower_count} {messages.followers(follower_count)}
           </Text>
         </View>
       </Pressable>
       {user.user_id === currentUserId ? null : (
-        <FollowButton profile={user} noIcon />
+        <FollowButton
+          profile={user}
+          noIcon
+          followSource={FollowSource.USER_LIST}
+        />
       )}
     </View>
   )

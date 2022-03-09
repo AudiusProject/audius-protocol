@@ -73,10 +73,10 @@ export const BaseStackNavigator = ({
         <Stack.Screen name='SearchResults' component={SearchResultsScreen} />
       </Stack.Group>
       <Stack.Group>
-        <Stack.Screen name='FollowersScreen' component={FollowersScreen} />
-        <Stack.Screen name='FollowingScreen' component={FollowingScreen} />
-        <Stack.Screen name='FavoritedScreen' component={FavoritedScreen} />
-        <Stack.Screen name='RepostsScreen' component={RepostsScreen} />
+        <Stack.Screen name='Followers' component={FollowersScreen} />
+        <Stack.Screen name='Following' component={FollowingScreen} />
+        <Stack.Screen name='Favorited' component={FavoritedScreen} />
+        <Stack.Screen name='Reposts' component={RepostsScreen} />
       </Stack.Group>
     </Stack.Navigator>
   )
