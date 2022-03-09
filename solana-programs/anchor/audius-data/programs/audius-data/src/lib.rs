@@ -4,11 +4,8 @@
 pub mod constants;
 pub mod error;
 
+use crate::{constants::*, error::ErrorCode};
 use anchor_lang::prelude::*;
-use crate::{
-    error::ErrorCode,
-    constants::*,
-};
 
 declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 
@@ -153,7 +150,7 @@ pub mod audius_data {
 
         Ok(())
     }
-    
+
     /// Functionality to create user without admin privileges
     pub fn create_user(
         ctx: Context<CreateUser>,
@@ -350,7 +347,7 @@ pub mod audius_data {
         }
         Ok(())
     }
- 
+
     /*
         Playlist related functions
     */
