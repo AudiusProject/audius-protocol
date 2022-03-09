@@ -181,6 +181,7 @@ export const CollectionScreenDetailsTile = ({
   return (
     <DetailsTile
       {...detailsTileProps}
+      description={description}
       descriptionLinkPressSource='collection page'
       details={details}
       headerText={headerText}

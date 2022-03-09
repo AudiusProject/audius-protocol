@@ -18,6 +18,14 @@ import IconExploreRemixables from 'app/assets/images/iconExploreRemixables.svg'
 import IconExploreRotation from 'app/assets/images/iconExploreRotation.svg'
 import IconExploreUnderRadar from 'app/assets/images/iconExploreUnderRadar.svg'
 
+export type SmartCollectionScreen =
+  | 'UnderTheRadar'
+  | 'MostLoved'
+  | 'FeelingLucky'
+  | 'HeavyRotation'
+  | 'BestNewReleases'
+  | 'Remixables'
+
 export type SmartCollection = {
   variant: SmartCollectionVariant
   title: string
@@ -33,12 +41,13 @@ export type SmartCollection = {
   has_current_user_saved?: boolean
   incentivized?: boolean // Whether we reward winners with Audio
   cardSensitivity?: number
-  screen?: 'TrendingUnderground' | 'UnderTheRadar'
+  screen: SmartCollectionScreen
 }
 
 export const HEAVY_ROTATION: SmartCollection = {
   title: 'Heavy Rotation',
   variant: SmartCollectionVariant.HEAVY_ROTATION,
+  screen: 'HeavyRotation',
   description: 'Your top tracks, in one place',
   gradientColors: ['#C751C0', '#4158D0'],
   gradientAngle: 316,
@@ -51,6 +60,7 @@ export const HEAVY_ROTATION: SmartCollection = {
 export const BEST_NEW_RELEASES: SmartCollection = {
   title: 'Best New Releases',
   variant: SmartCollectionVariant.BEST_NEW_RELEASES,
+  screen: 'BestNewReleases',
   description: 'From the artists you follow',
   gradientColors: ['#FF3C6C', '#A04B8E'],
   gradientAngle: 135,
@@ -76,6 +86,7 @@ export const UNDER_THE_RADAR: SmartCollection = {
 export const MOST_LOVED: SmartCollection = {
   title: 'Most Loved',
   variant: SmartCollectionVariant.MOST_LOVED,
+  screen: 'MostLoved',
   description: 'Tracks favorited by the people you follow',
   gradientColors: ['#896BFF', '#0060FF'],
   gradientAngle: 135,
@@ -88,6 +99,7 @@ export const MOST_LOVED: SmartCollection = {
 export const REMIXABLES: SmartCollection = {
   title: 'Remixables',
   variant: SmartCollectionVariant.REMIXABLES,
+  screen: 'Remixables',
   description:
     'Popular tracks with remixes & stems you can use in your own tracks.',
   // TODO: Need custom start and stop values for graident for this and maybe all of them
@@ -103,6 +115,7 @@ export const REMIXABLES: SmartCollection = {
 export const FEELING_LUCKY: SmartCollection = {
   title: 'Feeling Lucky?',
   variant: SmartCollectionVariant.FEELING_LUCKY,
+  screen: 'FeelingLucky',
   description: 'A purely random collection of tracks from Audius',
   gradientColors: ['#19CCA2', '#61FA66'],
   gradientAngle: 135,

@@ -21,11 +21,14 @@ import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { font } from 'app/styles'
 import { ThemeColors } from 'app/utils/theme'
 
+import { CollectionScreen, MoodScreen } from '../collections'
+import { SmartCollectionScreen } from '../smartCollections'
+
 type ColorTileProps = {
   style?: StyleProp<ViewStyle>
   title: string
   link: string
-  screen?: 'TrendingUnderground' | 'UnderTheRadar'
+  screen: MoodScreen | CollectionScreen | SmartCollectionScreen
   description?: string
   gradientColors?: string[]
   gradientAngle?: number
@@ -174,7 +177,6 @@ export const ColorTile = ({
             )}
             {Icon && (
               <View style={styles.icon}>
-                {/* @ts-ignore */}
                 <Icon style={styles.iconSvg} height={260} width={260} />
               </View>
             )}
