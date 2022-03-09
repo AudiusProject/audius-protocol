@@ -1,10 +1,10 @@
 //! The Audius Data Program is intended to bring all user data functionality to Solana through the
 //! Anchor framework
-
 pub mod constants;
 pub mod error;
+pub mod utils;
 
-use crate::{constants::*, error::ErrorCode};
+use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
 
 declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
@@ -12,7 +12,6 @@ declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 #[program]
 pub mod audius_data {
     use anchor_lang::solana_program::secp256k1_program;
-    use anchor_lang::solana_program::system_program;
     use anchor_lang::solana_program::sysvar;
     use std::str::FromStr;
 
@@ -209,37 +208,12 @@ pub mod audius_data {
     /// Permissioned function to log an update to User metadata
     pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
         msg!("Audius::UpdateUser");
-        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
-            // Reject if system program provided as user delegate_auth
-            if ctx.accounts.user_delegate_authority.key() == system_program::id() {
-                return Err(ErrorCode::Unauthorized.into());
-            }
-
-            // Derive a target delegation account address from the user's storage PDA and provided user authority
-            // In the happy case this will match the account created in add_user_authority_delegate
-            // If there is a mismatch between the provided and derived value, we reject the transaction
-            let (derived_delegate_auth_acct, _) = Pubkey::find_program_address(
-                &[
-                    &ctx.accounts.user.key().to_bytes()[..32],
-                    &ctx.accounts.user_authority.key().to_bytes()[..32],
-                ],
-                ctx.program_id,
-            );
-            // Reject if PDA derivation is mismatched
-            if derived_delegate_auth_acct != ctx.accounts.user_delegate_authority.key() {
-                return Err(ErrorCode::Unauthorized.into());
-            }
-            // Attempt to deserialize data from the derived delegate account
-            let user_del_acct: UserAuthorityDelegate = UserAuthorityDelegate::try_deserialize(
-                &mut &ctx.accounts.user_delegate_authority.try_borrow_data()?[..],
-            )?;
-            // Confirm that the delegate authority and user match the function parameters
-            if user_del_acct.user_storage_account != ctx.accounts.user.key()
-                || user_del_acct.delegate_authority != ctx.accounts.user_authority.key()
-            {
-                return Err(ErrorCode::Unauthorized.into());
-            }
-        }
+        validate_user_authority(
+            ctx.program_id,
+            &ctx.accounts.user,
+            &ctx.accounts.user_delegate_authority,
+            &ctx.accounts.user_authority,
+        )?;
         msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
     }
