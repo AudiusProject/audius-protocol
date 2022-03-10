@@ -78,7 +78,7 @@ module.exports = function (app) {
         // https://cognitohq.com/docs/reference#flow_get_flow_session
         // user is always present
         // documentary_verification is nullable but always present
-        const { user: userInfo, documentary_verification: documentVerification } = flowSessionResponse.data
+        const { user: userInfo, documentary_verification: documentaryVerification } = flowSessionResponse.data
 
         // id_number is always present but nullable
         // phone is always present but nullable
@@ -106,10 +106,10 @@ module.exports = function (app) {
           // deduping against lowercased names
           identities.push(JSON.stringify({ dob, name: nameLowercased }))
         }
-        if (documentVerification && documentVerification.status === 'success') {
+        if (documentaryVerification && documentaryVerification.status === 'success') {
           // if document verification is not null, then status and documents are always present
           // within each document, the status is always present, and the extracted_data is always present but nullable
-          const successfullyExtractedIdNumbers = documentVerification.documents
+          const successfullyExtractedIdNumbers = documentaryVerification.documents
             .filter(document => document.status === 'success' && document.extracted_data && document.extracted_data.id_number)
             .map(document => document.extracted_data.id_number)
           successfullyExtractedIdNumbers.forEach(item => identities.push(item))
