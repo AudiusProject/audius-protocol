@@ -26,9 +26,6 @@ RUN . $NVM_DIR/nvm.sh && \
     nvm alias default node && \
     npm install -g yarn
 
-# Install Solana tools.
-RUN sh -c "$(curl -sSfL https://release.solana.com/v1.8.9/install)"
-
 # Install anchor.
 RUN cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
 
@@ -52,7 +49,9 @@ RUN cd audius_eth_registry && \
     cd ../../reward-manager/program && \
     cargo build-bpf && \
     cd ../cli && \
-    cargo build
+    cargo build && \
+    cd ../../anchor/audius-data && \
+    anchor build 
 
 COPY start.sh ./
 
