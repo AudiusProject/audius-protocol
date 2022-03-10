@@ -70,6 +70,11 @@ function setup_python() {
     sudo apt install -y "python$PYTHON_VERSION-dev"
     pip install wheel yq
     pip install pre-commit==2.16.0
+
+    (
+        cd $PROTOCOL_DIR/discovery-provider
+        pip install -r requirements.txt
+    )
 }
 
 function setup_docker() {
