@@ -24,7 +24,11 @@ import {
   FEELING_LUCKY,
   MOST_LOVED
 } from 'app/screens/explore-screen/smartCollections'
-import { TrendingUndergroundScreen } from 'app/screens/explore-screen/tabs/ForYouTab'
+import {
+  LetThemDJScreen,
+  TopAlbumsScreen,
+  TrendingUndergroundScreen
+} from 'app/screens/explore-screen/tabs/ForYouTab'
 import FavoritesScreen from 'app/screens/favorites-screen'
 import { FeedScreen } from 'app/screens/feed-screen'
 import { MoodCollectionScreen } from 'app/screens/mood-collection-screen/MoodCollectionScreen'
@@ -101,6 +105,8 @@ const TrendingStackScreen = createStackScreen<TrendingStackParamList>(Stack => (
 const ExploreStackScreen = createStackScreen<ExploreStackParamList>(Stack => (
   <>
     <Stack.Screen name='ExploreStack' component={ExploreScreen} />
+    <Stack.Screen name='LetThemDJ' component={LetThemDJScreen} />
+    <Stack.Screen name='TopAlbums' component={TopAlbumsScreen} />
     <Stack.Screen
       name='TrendingUnderground'
       component={TrendingUndergroundScreen}
