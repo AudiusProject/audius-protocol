@@ -11,6 +11,13 @@ import { AudioScreen } from 'app/screens/audio-screen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import ExploreScreen from 'app/screens/explore-screen'
 import {
+  CHILL_PLAYLISTS,
+  INTENSE_PLAYLISTS,
+  INTIMATE_PLAYLISTS,
+  PROVOKING_PLAYLISTS,
+  UPBEAT_PLAYLISTS
+} from 'app/screens/explore-screen/collections'
+import {
   UNDER_THE_RADAR,
   BEST_NEW_RELEASES,
   REMIXABLES,
@@ -20,6 +27,7 @@ import {
 import { TrendingUndergroundScreen } from 'app/screens/explore-screen/tabs/ForYouTab'
 import FavoritesScreen from 'app/screens/favorites-screen'
 import { FeedScreen } from 'app/screens/feed-screen'
+import { MoodCollectionScreen } from 'app/screens/mood-collection-screen/MoodCollectionScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import {
   AboutScreen,
@@ -39,6 +47,14 @@ import {
   ProfileStackParamList,
   TrendingStackParamList
 } from './types'
+
+const moodCollections = [
+  CHILL_PLAYLISTS,
+  INTENSE_PLAYLISTS,
+  INTIMATE_PLAYLISTS,
+  PROVOKING_PLAYLISTS,
+  UPBEAT_PLAYLISTS
+]
 
 const smartCollections = [
   UNDER_THE_RADAR,
@@ -92,6 +108,11 @@ const ExploreStackScreen = createStackScreen<ExploreStackParamList>(Stack => (
     {smartCollections.map(collection => (
       <Stack.Screen name={collection.screen} key={collection.screen}>
         {() => <SmartCollectionScreen smartCollection={collection} />}
+      </Stack.Screen>
+    ))}
+    {moodCollections.map(collection => (
+      <Stack.Screen name={collection.screen} key={collection.screen}>
+        {() => <MoodCollectionScreen collection={collection} />}
       </Stack.Screen>
     ))}
   </>

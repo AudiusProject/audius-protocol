@@ -34,11 +34,11 @@ export type ExploreStackParamList = BaseStackParamList & {
   TopAlbums: undefined
   TrendingPlaylists: undefined
   // Mood Screens
-  ChillPlaylist: undefined
-  IntensePlaylist: undefined
-  IntimatePlaylist: undefined
-  UpbeatPlaylist: undefined
-  ProvokingPlaylist: undefined
+  ChillPlaylists: undefined
+  IntensePlaylists: undefined
+  IntimatePlaylists: undefined
+  UpbeatPlaylists: undefined
+  ProvokingPlaylists: undefined
 }
 
 export type FavoritesStackParamList = BaseStackParamList & {
