@@ -83,6 +83,7 @@
     "react-twitter-auth": "0.0.13",
     "react-twitter-embed": "3.0.3",
     "react-use-gesture": "7.0.0-beta.5",
+    "react-use-measure": "2.1.1",
     "redux": "4.0.5",
     "redux-devtools-extension": "2.13.8",
     "redux-saga": "1.1.3",

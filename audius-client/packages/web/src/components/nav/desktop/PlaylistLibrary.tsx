@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
@@ -6,11 +6,13 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { Name } from 'common/models/Analytics'
-import { SmartCollection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
+import {
+  PlaylistLibrary as PlaylistLibraryType,
+  PlaylistLibraryFolder
+} from 'common/models/PlaylistLibrary'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { FeatureFlags } from 'common/services/remote-config'
-import { AccountCollection } from 'common/store/account/reducer'
 import {
   getAccountNavigationPlaylists,
   getAccountUser,
@@ -40,6 +42,43 @@ import { PlaylistNavItem, PlaylistNavLink } from './PlaylistNavItem'
 
 type PlaylistLibraryProps = {
   onClickNavLinkWithAccount: () => void
+}
+
+type LibraryContentsLevelProps = {
+  contents: PlaylistLibraryType['contents']
+  renderPlaylist: (playlistId: number) => void
+  renderExplorePlaylist: (playlistId: SmartCollectionVariant) => void
+  renderFolder: (folder: PlaylistLibraryFolder) => void
+}
+/** Function component for rendering a single level of the playlist library.
+ * Playlist library consists of up to two content levels (root + inside a folder) */
+const LibraryContentsLevel = ({
+  contents,
+  renderPlaylist,
+  renderExplorePlaylist,
+  renderFolder
+}: LibraryContentsLevelProps) => {
+  return (
+    <>
+      {contents.map(content => {
+        switch (content.type) {
+          case 'explore_playlist': {
+            return renderExplorePlaylist(content.playlist_id)
+          }
+          case 'playlist': {
+            return renderPlaylist(content.playlist_id)
+          }
+          case 'temp_playlist': {
+            return renderPlaylist(parseInt(content.playlist_id))
+          }
+          case 'folder':
+            return renderFolder(content)
+          default:
+            return null
+        }
+      })}
+    </>
+  )
 }
 
 const PlaylistLibrary = ({
@@ -92,7 +131,9 @@ const PlaylistLibrary = ({
     [dispatch, library, record]
   )
 
-  const renderExplorePlaylist = (playlist: SmartCollection) => {
+  const renderExplorePlaylist = (playlistId: SmartCollectionVariant) => {
+    const playlist = SMART_COLLECTION_MAP[playlistId]
+    if (!playlist) return null
     const name = playlist.playlist_name
     const url = playlist.link
     return (
@@ -116,7 +157,7 @@ const PlaylistLibrary = ({
     )
   }
 
-  const onClick = useCallback(
+  const onClickPlaylist = useCallback(
     (playlistId: ID, hasUpdate: boolean) => {
       onClickNavLinkWithAccount()
       record(
@@ -128,8 +169,8 @@ const PlaylistLibrary = ({
     },
     [record, onClickNavLinkWithAccount]
   )
-
-  const renderPlaylist = (playlist: AccountCollection) => {
+  const renderPlaylist = (playlistId: ID) => {
+    const playlist = playlists[playlistId]
     if (!account || !playlist) return null
     const { id, name } = playlist
     const url = playlistPage(playlist.user.handle, name, id)
@@ -147,7 +188,7 @@ const PlaylistLibrary = ({
         onReorder={onReorder}
         dragging={dragging}
         draggingKind={draggingKind}
-        onClickPlaylist={onClick}
+        onClickPlaylist={onClickPlaylist}
         onClickEdit={
           isOwner && isPlaylistFoldersEnabled
             ? handleClickEditPlaylist
@@ -157,10 +198,59 @@ const PlaylistLibrary = ({
     )
   }
 
-  // Iterate over playlist library and render out available explore/smart
-  // playlists and ordered playlists. Remaining playlists that are unordered
-  // are rendered aftewards by sort order.
-  const playlistsNotInLibrary = { ...playlists }
+  const renderFolder = (folder: PlaylistLibraryFolder) => {
+    return (
+      <PlaylistFolderNavItem
+        key={folder.id}
+        folder={folder}
+        hasUpdate={false}
+        dragging={dragging}
+        draggingKind={draggingKind}
+        onClickEdit={handleClickEditFolder}
+      >
+        {isEmpty(folder.contents) ? null : (
+          <div className={styles.folderContentsContainer}>
+            <LibraryContentsLevel
+              contents={folder.contents}
+              renderPlaylist={renderPlaylist}
+              renderExplorePlaylist={renderExplorePlaylist}
+              renderFolder={renderFolder}
+            />
+          </div>
+        )}
+      </PlaylistFolderNavItem>
+    )
+  }
+
+  /** We want to ensure that all playlists attached to the user's account show up in the library UI, even
+  /* if the user's library itself does not contain some of the playlists (for example, if a write failed).
+  /* This computes those playlists that are attached to the user's account but are not in the user library. */
+  const playlistsNotInLibrary = useMemo(() => {
+    const result = { ...playlists }
+    const helpComputePlaylistsNotInLibrary = (
+      libraryContentsLevel: PlaylistLibraryType['contents']
+    ) => {
+      libraryContentsLevel.forEach(content => {
+        if (content.type === 'temp_playlist' || content.type === 'playlist') {
+          const playlist = playlists[Number(content.playlist_id)]
+          if (playlist) {
+            delete result[Number(content.playlist_id)]
+          }
+        } else if (content.type === 'folder') {
+          helpComputePlaylistsNotInLibrary(content.contents)
+        }
+      })
+    }
+
+    if (library && playlists) {
+      helpComputePlaylistsNotInLibrary(library.contents)
+    }
+    return result
+  }, [library, playlists])
+
+  /** Iterate over playlist library and render out available explore/smart
+  /* playlists and ordered playlists. Remaining playlists that are unordered
+  /* are rendered afterwards by sort order. */
   return (
     <>
       <Droppable
@@ -170,53 +260,18 @@ const PlaylistLibrary = ({
         onDrop={(id: ID | SmartCollectionVariant) => onReorder(id, -1)}
         acceptedKinds={['library-playlist']}
       />
-      {account &&
-        playlists &&
-        library &&
-        library.contents.map(content => {
-          switch (content.type) {
-            case 'explore_playlist': {
-              const playlist = SMART_COLLECTION_MAP[content.playlist_id]
-              if (!playlist) return null
-              return renderExplorePlaylist(playlist)
-            }
-            case 'playlist': {
-              const playlist = playlists[content.playlist_id]
-              if (playlist) {
-                delete playlistsNotInLibrary[content.playlist_id]
-              }
-              return renderPlaylist(playlist)
-            }
-            case 'temp_playlist': {
-              try {
-                const playlist = playlists[parseInt(content.playlist_id)]
-                if (playlist) {
-                  delete playlistsNotInLibrary[parseInt(content.playlist_id)]
-                }
-                return renderPlaylist(playlist)
-              } catch (e) {
-                console.debug(e)
-                break
-              }
-            }
-            case 'folder':
-              return (
-                <PlaylistFolderNavItem
-                  key={content.id}
-                  folder={content}
-                  hasUpdate={false}
-                  dragging={dragging}
-                  draggingKind={draggingKind}
-                  onClickEdit={handleClickEditFolder}
-                />
-              )
-          }
-          return null
-        })}
+      {account && playlists && library ? (
+        <LibraryContentsLevel
+          contents={library.contents || []}
+          renderPlaylist={renderPlaylist}
+          renderExplorePlaylist={renderExplorePlaylist}
+          renderFolder={renderFolder}
+        />
+      ) : null}
       {Object.values(playlistsNotInLibrary).map(playlist => {
-        return renderPlaylist(playlist)
+        return renderPlaylist(playlist.id)
       })}
-      {library && isEmpty(library.contents) ? (
+      {isEmpty(library?.contents) ? (
         <div className={cn(navColumnStyles.link, navColumnStyles.disabled)}>
           Create your first playlist!
         </div>
