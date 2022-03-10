@@ -643,9 +643,23 @@ def record_metrics(func):
         metric = PrometheusMetric(
             "flask_route_latency_seconds",
             "Runtimes for flask routes",
-            ("route",),
+            (
+                "route",
+                "code",
+            ),
         )
+
         result = func(*args, **kwargs)
+
+        try:
+            code = result[1]
+        except Exception as e:
+            code = -1
+            logger.error(
+                "Error extracting response code from type<%s>: %s",
+                type(result),
+                e.message,
+            )
 
         route = route.split("?")[0]
         if "/v1/full/" in route or "/users/intersection/" in route:
@@ -654,7 +668,8 @@ def record_metrics(func):
             route = "/".join(route.split("/")[:3] + ["*"] + route.split("/")[-1:])
         else:
             route = "/".join(route.split("/")[:3])
-        metric.save_time({"route": route})
+
+        metric.save_time({"route": route, "code": code})
 
         return result
 
