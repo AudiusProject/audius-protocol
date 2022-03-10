@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
+import { BorshInstructionCoder, Program } from "@project-serum/anchor";
 import { assert } from "chai";
 import { initAdmin, updateAdmin } from "../lib/lib";
 import { findDerivedPair } from "../lib/utils";
@@ -164,10 +164,14 @@ describe("follows", function () {
         followTx,
         "Audius::FollowUser"
       );
-      const decodedInstruction = program.coder.instruction.decode(
+
+      const instructionCoder = program.coder
+        .instruction as BorshInstructionCoder;
+      const decodedInstruction = instructionCoder.decode(
         txInfo.transaction.message.instructions[0].data,
         "base58"
       );
+
       // Validate deserialized instructions match input
       // Confirms user handles passed on chain validation
       // Can be used during indexing or external tx inspection
@@ -208,7 +212,9 @@ describe("follows", function () {
         unfollowTx,
         "Audius::UnfollowUser"
       );
-      const unFollowdecodedInstruction = program.coder.instruction.decode(
+      const instructionCoder = program.coder
+        .instruction as BorshInstructionCoder;
+      const unFollowdecodedInstruction = instructionCoder.decode(
         unFollowtxInfo.transaction.message.instructions[0].data,
         "base58"
       );

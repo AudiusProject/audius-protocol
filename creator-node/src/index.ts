@@ -13,7 +13,7 @@ const { serviceRegistry } = require('./serviceRegistry')
 const { pinCID } = require('./pinCID')
 
 const exitWithError = (...msg: any[]) => {
-  logger.error(...msg)
+  logger.error('ERROR: ', ...msg)
   process.exit(1)
 }
 
@@ -91,6 +91,15 @@ const startApp = async () => {
     EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
   if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
+  }
+
+  const trustedNotifierEnabled = !!config.get('trustedNotifierID')
+  const nodeOperatorEmailAddress = config.get('nodeOperatorEmailAddress')
+
+  if (!trustedNotifierEnabled && !nodeOperatorEmailAddress) {
+    exitWithError(
+      'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
+    )
   }
 
   const mode = getMode()

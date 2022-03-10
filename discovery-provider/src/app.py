@@ -24,6 +24,7 @@ from src.queries import (
     block_confirmation,
     get_redirect_weights,
     health_check,
+    index_block_stats,
     notifications,
     prometheus_metrics_exporter,
     queries,
@@ -42,8 +43,6 @@ from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERV
 from src.utils.session_manager import SessionManager
 from web3 import HTTPProvider, Web3
 from werkzeug.middleware.proxy_fix import ProxyFix
-
-SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -327,6 +326,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+    app.register_blueprint(index_block_stats.bp)
     app.register_blueprint(get_redirect_weights.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
@@ -393,6 +393,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_listen_count_milestones",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
+            "src.tasks.index_spl_token",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -513,6 +514,10 @@ def configure_celery(celery, test_config=None):
                     minute="*/15",
                     hour="14, 15",
                 ),  # 8x a day during non peak hours
+            },
+            "index_spl_token": {
+                "task": "index_spl_token",
+                "schedule": timedelta(seconds=5),
             },
         },
         task_serializer="json",

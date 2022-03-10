@@ -77,7 +77,8 @@ module.exports = function (app) {
 
         // https://cognitohq.com/docs/reference#flow_get_flow_session
         // user is always present
-        const userInfo = flowSessionResponse.data.user
+        // documentary_verification is nullable but always present
+        const { user: userInfo, documentary_verification: documentaryVerification } = flowSessionResponse.data
 
         // id_number is always present but nullable
         // phone is always present but nullable
@@ -85,6 +86,10 @@ module.exports = function (app) {
         // address is always present but nullable
         // name is always present but nullable
         const { id_number: idNumber, phone, date_of_birth: dob, address, name } = userInfo
+        const nameLowercased = name
+          // if name is not null, then first and last are always present according to api
+          ? { first: (name.first && name.first.toLowerCase()) || '', last: (name.last && name.last.toLowerCase()) || '' }
+          : null
 
         // make cognito identities unique on:
         // - phone number, or
@@ -96,7 +101,18 @@ module.exports = function (app) {
           identities.push(phone)
         }
         if (dob && name) {
+          // legacy check against dob and name
           identities.push(JSON.stringify({ dob, name }))
+          // deduping against lowercased names
+          identities.push(JSON.stringify({ dob, name: nameLowercased }))
+        }
+        if (documentaryVerification && documentaryVerification.status === 'success') {
+          // if document verification is not null, then status and documents are always present
+          // within each document, the status is always present, and the extracted_data is always present but nullable
+          const successfullyExtractedIdNumbers = documentaryVerification.documents
+            .filter(document => document.status === 'success' && document.extracted_data && document.extracted_data.id_number)
+            .map(document => document.extracted_data.id_number)
+          successfullyExtractedIdNumbers.forEach(item => identities.push(item))
         }
         if (idNumber) {
           const { value, category, type } = idNumber
@@ -104,11 +120,14 @@ module.exports = function (app) {
           // there are already users whose masked identities were based on this format
           identities.push(`${value}::${category}::${type}`)
         } else {
-          // if webhook does not include id number, then we are expecting a few of the items below
+          // if webhook does not include id number, then we are expecting a few of the items below.
+          // this is left here for backwards compatibility as it was the original lightning check
+          // before we checked for dob and name
           identities.push(JSON.stringify({ phone, dob, address, name }))
         }
 
-        const maskedIdentities = identities.map(createMaskedCognitoIdentity)
+        const identitySet = new Set(identities)
+        const maskedIdentities = [...identitySet].map(createMaskedCognitoIdentity)
         const records = await models.CognitoFlowIdentities.findAll({
           where: {
             maskedIdentity: { [models.Sequelize.Op.in]: maskedIdentities }

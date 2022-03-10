@@ -5,6 +5,8 @@ const ContractClient = require('../src/services/contracts/ContractClient')
 const Web3Manager = require('../src/services/web3Manager/index')
 const EthWeb3Manager = require('../src/services/ethWeb3Manager/index')
 
+const CONTRACT_INIT_MAX_ATTEMPTS = 5
+
 let contractClient
 
 describe('Testing ContractClient class with ProviderSelection', () => {
@@ -35,9 +37,10 @@ describe('Testing ContractClient class with ProviderSelection', () => {
    * Given: both gatetways are unhealthy
    * When: we do contract logic
    * Should: try both gateways and then log error
+   * 
+   * @notice when web3 is set to a new object, the second call will throw a different error
+   *    that is acceptable as we don't care about what the error is
    */
-  // note: when web3 is set to a new object, the second call will throw a different error. that is acceptable
-  // as we don't care about what the error is
   it('should log error if both audius gateway and public gateway are unhealthy', async () => {
     contractClient = createContractClientWithInternalWeb3()
     sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
@@ -46,8 +49,8 @@ describe('Testing ContractClient class with ProviderSelection', () => {
 
     await contractClient.init()
 
-    assert(initWithProviderSelectionSpy.calledTwice)
-    assert(consoleSpy.calledOnce)
+    assert(initWithProviderSelectionSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
+    assert(consoleSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
   })
 
   /**
@@ -82,8 +85,8 @@ describe('Testing ContractClient class with ProviderSelection', () => {
     await contractClient.init()
 
     assert.strictEqual(contractClient.web3Manager.getWeb3().currentProvider.host, 'https://eth.network')
-    assert(initWithProviderSelectionSpy.calledOnce)
-    assert(consoleSpy.calledOnce)
+    assert(initWithProviderSelectionSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
+    assert(consoleSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
   })
 
   /**
@@ -117,8 +120,8 @@ describe('Testing ContractClient class with ProviderSelection', () => {
 
     await contractClient.init()
 
-    assert(initWithProviderSelectionSpy.calledOnce)
-    assert(consoleSpy.calledOnce)
+    assert(initWithProviderSelectionSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
+    assert(consoleSpy.callCount === CONTRACT_INIT_MAX_ATTEMPTS)
   })
 })
 // Helper stub and functions for providerSelectionTest
