@@ -555,7 +555,7 @@ jobs:
   test-solana-programs:
     docker:
       # specify the version you desire here
-      - image: cimg/rust:1.53.0
+      - image: cimg/rust:1.53.0-node
     steps:
       - checkout
       - diff-if-necessary:
@@ -566,6 +566,10 @@ jobs:
           command: |
             sh -c "$(curl -sSfL https://release.solana.com/v1.8.9/install)"
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
+
+      - run:
+          name: Setup Anchor
+          command: cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
 
       - restore_cache:
           keys:
@@ -598,6 +602,12 @@ jobs:
           paths:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
+      - run:
+          name: anchor tests
+          command: |
+            cd solana-programs/anchor/audius-data
+            npm i
+            anchor test
 
       # - restore_cache:
       #     keys:
