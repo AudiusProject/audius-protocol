@@ -203,7 +203,6 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const {
     fullDescription,
     progressLabel,
-    stepCount,
     modalButtonInfo,
     verifiedChallenge
   } = challengeRewardsConfig[modalType]
@@ -272,7 +271,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           {fillString(
             progressLabel,
             currentStepCount.toString(),
-            stepCount.toString()
+            challenge?.max_steps?.toString() ?? ''
           )}
         </h3>
       )}
@@ -354,7 +353,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                   <ProgressBar
                     className={wm(styles.progressBar)}
                     value={currentStepCount}
-                    max={stepCount}
+                    max={challenge?.max_steps}
                   />
                 </div>
               ) : null}
@@ -375,7 +374,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               <ProgressBar
                 className={wm(styles.progressBar)}
                 value={currentStepCount}
-                max={stepCount}
+                max={challenge?.max_steps}
               />
             </div>
           )}

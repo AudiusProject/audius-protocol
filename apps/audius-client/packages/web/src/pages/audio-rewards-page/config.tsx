@@ -64,7 +64,6 @@ type ChallengeRewardsInfo = {
   progressLabel: string
   remainingLabel?: string
   amount: number
-  stepCount: number
   panelButtonText: string
   modalButtonInfo: {
     incomplete: LinkButtonInfo | null
@@ -89,7 +88,6 @@ export const challengeRewardsConfig: Record<
     progressLabel: '%0/%1 Invites Accepted',
     remainingLabel: '%0/%1 Invites Remain',
     amount: amounts.referrals,
-    stepCount: 5,
     panelButtonText: 'Invite your Friends',
     modalButtonInfo: {
       incomplete: null,
@@ -107,7 +105,6 @@ export const challengeRewardsConfig: Record<
     progressLabel: '%0/%1 Invites Accepted',
     remainingLabel: '%0/%1 Invites Remain',
     amount: amounts.referrals,
-    stepCount: 500,
     panelButtonText: 'Invite your Fans',
     modalButtonInfo: {
       incomplete: null,
@@ -124,7 +121,6 @@ export const challengeRewardsConfig: Record<
     fullDescription: () => `You earned $AUDIO for being invited`,
     progressLabel: '%0/%1 Invites',
     amount: amounts.referrals,
-    stepCount: 1,
     panelButtonText: 'More Info',
     modalButtonInfo: {
       incomplete: null,
@@ -142,7 +138,6 @@ export const challengeRewardsConfig: Record<
       'Get verified on Audius by linking your verified Twitter or Instagram account!',
     progressLabel: 'Not Linked',
     amount: amounts['connect-verified'],
-    stepCount: 1,
     panelButtonText: 'Link Verified Account',
     modalButtonInfo: {
       incomplete: linkButtonMap.verifyAccount,
@@ -160,7 +155,6 @@ export const challengeRewardsConfig: Record<
       'Sign in and listen to at least one track every day for 7 days',
     progressLabel: '%0/%1 Days',
     amount: amounts['listen-streak'],
-    stepCount: 7,
     panelButtonText: 'Trending on Audius',
     modalButtonInfo: {
       incomplete: linkButtonMap.trendingTracks,
@@ -177,7 +171,6 @@ export const challengeRewardsConfig: Record<
       'Install the Audius app for iPhone and Android and Sign in to your account!',
     progressLabel: 'Not Installed',
     amount: amounts['mobile-install'],
-    stepCount: 1,
     panelButtonText: 'Get the App',
     modalButtonInfo: {
       incomplete: null,
@@ -195,7 +188,6 @@ export const challengeRewardsConfig: Record<
       'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
     progressLabel: '%0/%1 Complete',
     amount: amounts['profile-completion'],
-    stepCount: 7,
     panelButtonText: 'More Info',
     modalButtonInfo: {
       incomplete: linkButtonMap.profile,
@@ -211,7 +203,6 @@ export const challengeRewardsConfig: Record<
     fullDescription: () => 'Upload 3 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
     amount: amounts['track-upload'],
-    stepCount: 3,
     panelButtonText: 'Upload Tracks',
     modalButtonInfo: {
       incomplete: linkButtonMap.trackUpload,
