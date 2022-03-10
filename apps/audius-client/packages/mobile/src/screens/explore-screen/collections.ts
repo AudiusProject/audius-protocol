@@ -28,11 +28,11 @@ export type CollectionScreen =
   | 'TrendingUnderground'
 
 export type MoodScreen =
-  | 'IntensePlaylist'
-  | 'ChillPlaylist'
-  | 'ProvokingPlaylist'
-  | 'IntimatePlaylist'
-  | 'UpbeatPlaylist'
+  | 'IntensePlaylists'
+  | 'ChillPlaylists'
+  | 'ProvokingPlaylists'
+  | 'IntimatePlaylists'
+  | 'UpbeatPlaylists'
 
 export type ExploreCollection = {
   variant: ExploreCollectionsVariant
@@ -113,7 +113,7 @@ export const TRENDING_UNDERGROUND: ExploreCollection = {
 export const CHILL_PLAYLISTS: ExploreMoodCollection = {
   variant: 'Mood',
   title: 'Chill',
-  screen: 'ChillPlaylist',
+  screen: 'ChillPlaylists',
   emoji: EmojiDoveOfPeace,
   gradientColors: ['#2CD1FF', '#FA8BFF'],
   gradientAngle: 135,
@@ -126,7 +126,7 @@ export const CHILL_PLAYLISTS: ExploreMoodCollection = {
 export const PROVOKING_PLAYLISTS: ExploreMoodCollection = {
   variant: 'Mood',
   title: 'Provoking',
-  screen: 'ProvokingPlaylist',
+  screen: 'ProvokingPlaylists',
   emoji: EmojiThinkingFace,
   gradientColors: ['#3FECF4', '#16A085'],
   gradientAngle: 135,
@@ -139,7 +139,7 @@ export const PROVOKING_PLAYLISTS: ExploreMoodCollection = {
 export const INTIMATE_PLAYLISTS: ExploreMoodCollection = {
   variant: 'Mood',
   title: 'Intimate',
-  screen: 'IntimatePlaylist',
+  screen: 'IntimatePlaylists',
   emoji: EmojiHeartWithArrow,
   gradientColors: ['#F24FDF', '#C881FF'],
   gradientAngle: 315,
@@ -152,7 +152,7 @@ export const INTIMATE_PLAYLISTS: ExploreMoodCollection = {
 export const UPBEAT_PLAYLISTS: ExploreMoodCollection = {
   variant: 'Mood',
   title: 'Upbeat',
-  screen: 'UpbeatPlaylist',
+  screen: 'UpbeatPlaylists',
   emoji: EmojiRaisedHands,
   gradientColors: ['#896BFF', '#0060FF'],
   gradientAngle: 135,
@@ -165,7 +165,7 @@ export const UPBEAT_PLAYLISTS: ExploreMoodCollection = {
 export const INTENSE_PLAYLISTS: ExploreMoodCollection = {
   variant: 'Mood',
   title: 'Intense',
-  screen: 'IntensePlaylist',
+  screen: 'IntensePlaylists',
   emoji: EmojiFire,
   gradientColors: ['#FBAB7E', '#F7CE68'],
   gradientAngle: 315,
