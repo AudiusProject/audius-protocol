@@ -211,7 +211,7 @@ async function run () {
     console.log(`Error: ${e.message}`)
   }
 }
-if (require?.main === module) {
+if (require && require.main === module) {
   run()
 }
 
