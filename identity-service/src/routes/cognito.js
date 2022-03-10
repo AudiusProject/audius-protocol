@@ -109,10 +109,10 @@ module.exports = function (app) {
         if (documentVerification && documentVerification.status === 'success') {
           // if document verification is not null, then status and documents are always present
           // within each document, the status is always present, and the extracted_data is always present but nullable
-          const successfulExtractedDataList = documentVerification.documents
-            .filter(document => document.status === 'success' && document.extracted_data)
-            .map(document => JSON.stringify(document.extracted_data))
-          successfulExtractedDataList.forEach(item => identities.push(item))
+          const successfullyExtractedIdNumbers = documentVerification.documents
+            .filter(document => document.status === 'success' && document.extracted_data && document.extracted_data.id_number)
+            .map(document => document.extracted_data.id_number)
+          successfullyExtractedIdNumbers.forEach(item => identities.push(item))
         }
         if (idNumber) {
           const { value, category, type } = idNumber
