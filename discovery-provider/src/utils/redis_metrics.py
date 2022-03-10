@@ -651,7 +651,16 @@ def record_metrics(func):
 
         result = func(*args, **kwargs)
 
-        code = result[1]
+        try:
+            code = result[1]
+        except Exception as e:
+            code = -1
+            logger.error(
+                "Error extracting response code from type<%s>: %s",
+                type(result),
+                e.message,
+            )
+
         route = route.split("?")[0]
         if "/v1/full/" in route or "/users/intersection/" in route:
             route = "/".join(route.split("/")[:4])
