@@ -1,20 +1,34 @@
-import { memo, useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import {
+  memo,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  ReactNode
+} from 'react'
 
 import LottieView from 'lottie-react-native'
-import { StyleProp, TouchableHighlight, View, ViewStyle } from 'react-native'
+import {
+  Pressable,
+  PressableProps,
+  PressableStateCallbackType,
+  StyleProp,
+  View,
+  ViewStyle
+} from 'react-native'
 import { usePrevious } from 'react-use'
 
 import { GestureResponderHandler } from 'app/types/gesture'
-import { useColor } from 'app/utils/theme'
 
 export type BaseAnimatedButtonProps = {
   iconIndex?: number
-  onPress?: GestureResponderHandler
-  onLongPress?: GestureResponderHandler
   isActive?: boolean
   isDisabled?: boolean
-  showUnderlay?: boolean
-  style?: StyleProp<ViewStyle>
+  onLongPress?: GestureResponderHandler
+  onPress?: GestureResponderHandler
+  renderUnderlay?: (state: PressableStateCallbackType) => ReactNode
+  style?: PressableProps['style']
   wrapperStyle?: StyleProp<ViewStyle>
 }
 
@@ -27,17 +41,16 @@ type AnimatedButtonProps = {
 const AnimatedButton = ({
   iconIndex: externalIconIndex,
   iconJSON,
-  onPress,
-  onLongPress,
   isActive,
   isDisabled = false,
-  showUnderlay = false,
+  onLongPress,
+  onPress,
+  renderUnderlay,
   style,
   wrapperStyle
 }: AnimatedButtonProps) => {
   const [iconIndex, setIconIndex] = useState<number>(externalIconIndex ?? 0)
   const [isPlaying, setIsPlaying] = useState(false)
-  const underlayColor = useColor('neutralLight8')
   const animationRef = useRef<LottieView | null>()
   const previousExternalIconIndex = usePrevious(externalIconIndex)
   const previousActiveState = usePrevious(isActive)
@@ -136,24 +149,28 @@ const AnimatedButton = ({
   }, [hasMultipleStates, isActive, isPlaying])
 
   return (
-    <TouchableHighlight
+    <Pressable
       disabled={isDisabled}
       onPress={handlePress}
       onLongPress={handleLongPress}
       hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
       style={style}
-      underlayColor={showUnderlay ? underlayColor : null}
     >
-      <View style={wrapperStyle}>
-        <LottieView
-          ref={animation => (animationRef.current = animation)}
-          onAnimationFinish={handleAnimationFinish}
-          progress={progress}
-          loop={false}
-          source={source}
-        />
-      </View>
-    </TouchableHighlight>
+      {pressableState => (
+        <>
+          {renderUnderlay?.(pressableState)}
+          <View style={wrapperStyle}>
+            <LottieView
+              ref={animation => (animationRef.current = animation)}
+              onAnimationFinish={handleAnimationFinish}
+              progress={progress}
+              loop={false}
+              source={source}
+            />
+          </View>
+        </>
+      )}
+    </Pressable>
   )
 }
 

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { NavigationRoute } from '@sentry/react-native/dist/js/tracing/reactnavigation'
+import LinearGradient from 'react-native-linear-gradient'
 
 import IconExploreDark from 'app/assets/animations/iconExploreDark.json'
 import IconExploreLight from 'app/assets/animations/iconExploreLight.json'
@@ -12,9 +13,10 @@ import IconProfileDark from 'app/assets/animations/iconProfileDark.json'
 import IconProfileLight from 'app/assets/animations/iconProfileLight.json'
 import IconTrendingDark from 'app/assets/animations/iconTrendingDark.json'
 import IconTrendingLight from 'app/assets/animations/iconTrendingLight.json'
+import AnimatedButtonProvider from 'app/components/animated-button/AnimatedButtonProvider'
+import { makeStyles } from 'app/styles'
 import { GestureResponderHandler } from 'app/types/gesture'
-
-import AnimatedBottomButton from './buttons/AnimatedBottomButton'
+import { useThemeColors } from 'app/utils/theme'
 
 const icons = {
   light: {
@@ -34,12 +36,29 @@ const icons = {
 }
 
 type BottomTabBarButtonProps = {
-  isFocused: boolean
   isDarkMode: boolean
-  route: NavigationRoute
+  isFocused: boolean
   navigate: (route: NavigationRoute, isFocused: boolean) => void
   onLongPress: GestureResponderHandler
+  route: NavigationRoute
 }
+
+const useStyles = makeStyles(() => ({
+  animatedButton: {
+    width: '20%',
+    display: 'flex',
+    alignItems: 'center'
+  },
+  iconWrapper: {
+    width: 28,
+    height: 49
+  },
+  underlay: {
+    width: '100%',
+    height: 49,
+    position: 'absolute'
+  }
+}))
 
 export const BottomTabBarButton = ({
   isFocused,
@@ -48,17 +67,29 @@ export const BottomTabBarButton = ({
   navigate,
   onLongPress
 }: BottomTabBarButtonProps) => {
+  const styles = useStyles()
+  const { neutralLight8, neutralLight10 } = useThemeColors()
   const handlePress = useCallback(() => {
     navigate(route, isFocused)
   }, [navigate, route, isFocused])
   return (
-    <AnimatedBottomButton
+    <AnimatedButtonProvider
+      iconDarkJSON={icons.dark[route.name]}
+      iconLightJSON={icons.light[route.name]}
       isActive={isFocused}
       isDarkMode={isDarkMode}
-      onPress={handlePress}
       onLongPress={onLongPress}
-      iconLightJSON={icons.light[route.name]}
-      iconDarkJSON={icons.dark[route.name]}
+      onPress={handlePress}
+      style={styles.animatedButton}
+      wrapperStyle={styles.iconWrapper}
+      renderUnderlay={({ pressed }) =>
+        pressed ? (
+          <LinearGradient
+            style={styles.underlay}
+            colors={[neutralLight8, neutralLight10]}
+          />
+        ) : null
+      }
     />
   )
 }
