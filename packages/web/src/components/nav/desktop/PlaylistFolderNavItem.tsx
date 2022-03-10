@@ -7,7 +7,8 @@ import {
   IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
-import { isEmpty } from 'lodash'
+import { useSpring, animated } from 'react-spring'
+import useMeasure from 'react-use-measure'
 
 import { ID } from 'common/models/Identifiers'
 import { PlaylistLibraryFolder } from 'common/models/PlaylistLibrary'
@@ -68,25 +69,36 @@ const FolderNavLink = ({
   )
 }
 
-export const PlaylistFolderNavItem = ({
-  folder,
-  hasUpdate = false,
-  dragging,
-  draggingKind,
-  onClickEdit
-}: {
+type PlaylistFolderNavItemProps = {
   folder: PlaylistLibraryFolder
   hasUpdate: boolean
   dragging: boolean
   draggingKind: string
   onClickEdit: (folderId: string) => void
-}) => {
-  const { id, name, contents } = folder
+  children?: React.ReactNode
+}
+
+export const PlaylistFolderNavItem = ({
+  folder,
+  hasUpdate = false,
+  dragging,
+  draggingKind,
+  onClickEdit,
+  children
+}: PlaylistFolderNavItemProps) => {
+  const { id, name } = folder
   const isDroppableKind =
     draggingKind === 'track' ||
     draggingKind === 'playlist' ||
     draggingKind === 'playlist-folder'
   const [isHovering, setIsHovering] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [ref, bounds] = useMeasure()
+  const contentsStyle = useSpring({
+    height: isExpanded ? bounds.height : 0,
+    opacity: isExpanded ? 100 : 0,
+    overflow: 'hidden'
+  })
 
   return (
     <Droppable
@@ -109,10 +121,14 @@ export const PlaylistFolderNavItem = ({
           [navColumnStyles.disabledLink]:
             dragging && !isDroppableKind && draggingKind !== 'library-playlist'
         })}
-        onClick={() => {}}
+        onClick={e => {
+          e.preventDefault()
+          e.stopPropagation()
+          setIsExpanded(!isExpanded)
+        }}
       >
         <div className={styles.libraryLinkContentContainer}>
-          {isEmpty(contents) ? (
+          {children == null ? (
             <IconFolderOutline
               width={12}
               height={12}
@@ -130,7 +146,13 @@ export const PlaylistFolderNavItem = ({
           <div className={styles.libraryLinkTextContainer}>
             <span>{name}</span>
           </div>
-          <IconCaretRight height={11} width={11} className={styles.iconCaret} />
+          <IconCaretRight
+            height={11}
+            width={11}
+            className={cn(styles.iconCaret, {
+              [styles.iconCaretDown]: isExpanded
+            })}
+          />
           <IconButton
             className={cn(styles.iconKebabHorizontal, {
               [styles.hidden]: !isHovering || dragging
@@ -144,8 +166,11 @@ export const PlaylistFolderNavItem = ({
           />
         </div>
       </FolderNavLink>
-
-      {/* Loop over contents and render playlist list */}
+      {children == null ? null : (
+        <animated.div style={contentsStyle}>
+          <div ref={ref}>{children}</div>
+        </animated.div>
+      )}
     </Droppable>
   )
 }
