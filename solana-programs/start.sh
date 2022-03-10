@@ -111,6 +111,17 @@
     echo "Testing create sender"
     cargo run create-sender --eth-operator-address 0xF24936714293a0FaF39A022138aF58D874289132  --eth-sender-address 0xF24936714293a0FaF39A022138aF58D874289133 --reward-manager $reward_manager_account_key
 
+
+    # anchor
+    cd ../../anchor/audius-data
+
+    anchor build
+
+    # replace program ID with solana pubkey generated from anchor build
+    sed -i "s/ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" Anchor.toml
+    sed -i "s/ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" programs/audius-data/src/lib.rs
+
+
 } >&2
 
 # Back up 2 directories to audius-protocol/solana-programs
