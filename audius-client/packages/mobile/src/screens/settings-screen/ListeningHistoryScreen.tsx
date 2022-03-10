@@ -13,9 +13,9 @@ import { getHistoryTracksLineup } from 'audius-client/src/common/store/pages/his
 import { shallowEqual, useSelector } from 'react-redux'
 
 import { Screen, Tile, VirtualizedScrollView } from 'app/components/core'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { TrackList } from 'app/components/track-list'
 import { ListTrackMetadata } from 'app/components/track-list/types'
+import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
@@ -36,10 +36,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     backgroundColor: palette.white,
     borderRadius: 6,
     overflow: 'hidden'
-  },
-  loadingSpinner: {
-    alignSelf: 'center',
-    marginTop: spacing(4)
   }
 }))
 
@@ -126,9 +122,7 @@ export const ListeningHistoryScreen = () => {
 
   return (
     <Screen title={messages.title} topbarRight={null} variant='secondary'>
-      {status === Status.LOADING ? (
-        <LoadingSpinner style={styles.loadingSpinner} />
-      ) : (
+      <WithLoader loading={status === Status.LOADING}>
         <VirtualizedScrollView listKey='listening-history-screen'>
           <Tile
             styles={{
@@ -144,7 +138,7 @@ export const ListeningHistoryScreen = () => {
             />
           </Tile>
         </VirtualizedScrollView>
-      )}
+      </WithLoader>
     </Screen>
   )
 }

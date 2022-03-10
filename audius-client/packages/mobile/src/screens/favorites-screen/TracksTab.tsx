@@ -22,13 +22,12 @@ import {
   saveTrack,
   unsaveTrack
 } from 'audius-client/src/common/store/social/tracks/actions'
-import { View } from 'react-native'
 import { shallowEqual, useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { TrackList } from 'app/components/track-list'
 import { ListTrackMetadata } from 'app/components/track-list/types'
+import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
@@ -153,44 +152,37 @@ export const TracksTab = ({ navigation }) => {
     [dispatchWeb, isPlaying, playingUid]
   )
 
-  // TODO: Use the dot spinner
-  if (savedTracksStatus === Status.LOADING) {
-    return (
-      <View style={styles.spinnerContainer}>
-        <LoadingSpinner />
-      </View>
-    )
-  }
-
   return (
-    <VirtualizedScrollView listKey='favorites-screen'>
-      {!trackList.length && !filterValue ? (
-        <EmptyTab message={messages.emptyTabText} />
-      ) : (
-        <>
-          <FilterInput
-            value={filterValue}
-            placeholder={messages.inputPlaceholder}
-            onChangeText={setFilterValue}
-          />
-          {trackList.length ? (
-            <Tile
-              styles={{
-                root: styles.container,
-                tile: styles.trackListContainer
-              }}
-            >
-              <TrackList
-                tracks={trackList ?? []}
-                showDivider
-                onSave={onToggleSave}
-                togglePlay={togglePlay}
-                trackItemAction='save'
-              />
-            </Tile>
-          ) : null}
-        </>
-      )}
-    </VirtualizedScrollView>
+    <WithLoader loading={savedTracksStatus === Status.LOADING}>
+      <VirtualizedScrollView listKey='favorites-screen'>
+        {!trackList.length && !filterValue ? (
+          <EmptyTab message={messages.emptyTabText} />
+        ) : (
+          <>
+            <FilterInput
+              value={filterValue}
+              placeholder={messages.inputPlaceholder}
+              onChangeText={setFilterValue}
+            />
+            {trackList.length ? (
+              <Tile
+                styles={{
+                  root: styles.container,
+                  tile: styles.trackListContainer
+                }}
+              >
+                <TrackList
+                  tracks={trackList ?? []}
+                  showDivider
+                  onSave={onToggleSave}
+                  togglePlay={togglePlay}
+                  trackItemAction='save'
+                />
+              </Tile>
+            ) : null}
+          </>
+        )}
+      </VirtualizedScrollView>
+    </WithLoader>
   )
 }
