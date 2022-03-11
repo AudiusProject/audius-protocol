@@ -8,6 +8,7 @@ import {
   OptimisticUserChallenge,
   TrendingRewardID
 } from 'common/models/AudioRewards'
+import { formatNumberCommas } from 'common/utils/formatUtil'
 import { Nullable } from 'common/utils/typeUtils'
 import {
   profilePage,
@@ -99,7 +100,8 @@ export const challengeRewardsConfig: Record<
     id: 'ref-v' as ChallengeRewardID,
     title: 'Invite your Fans',
     icon: <i className='emoji large incoming-envelope' />,
-    description: challenge => `Earn up to ${challenge?.totalAmount} $AUDIO`,
+    description: challenge =>
+      `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
     fullDescription: challenge =>
       `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
     progressLabel: '%0/%1 Invites Accepted',
