@@ -4,7 +4,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
-import { getIsOpen } from 'common/store/ui/add-to-playlist/selectors'
+import { getModalVisibility } from 'common/store/ui/modals/slice'
 import NowPlayingDrawer from 'components/now-playing/NowPlayingDrawer'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 import { getUid as getPlayingUid } from 'store/player/selectors'
@@ -38,7 +38,7 @@ const PlayBarProvider = ({
         <NowPlayingDrawer
           isPlaying={!!playingUid}
           keyboardVisible={keyboardVisible}
-          shouldClose={addToPlaylistOpen}
+          shouldClose={addToPlaylistOpen === true}
         />
       ) : (
         <>
@@ -55,7 +55,7 @@ function mapStateToProps(state: AppState) {
     playingUid: getPlayingUid(state),
     isMobile: isMobile(),
     keyboardVisible: getKeyboardVisibility(state),
-    addToPlaylistOpen: getIsOpen(state)
+    addToPlaylistOpen: getModalVisibility(state, 'AddToPlaylist')
   }
 }
 

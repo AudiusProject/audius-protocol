@@ -29,7 +29,7 @@ export const useScrollToTop = (
         })
       )
 
-      const removeTabListeners = (navigation.getState().type === 'tab' &&
+      const removeTabListeners = (navigation.getState()?.type === 'tab' &&
       !disableTopTabScroll
         ? ['tabPress', 'tabLongPress']
         : []

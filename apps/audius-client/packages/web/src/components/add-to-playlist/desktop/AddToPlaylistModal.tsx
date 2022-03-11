@@ -9,6 +9,7 @@ import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselect
 import { CreatePlaylistSource } from 'common/models/Analytics'
 import { Collection } from 'common/models/Collection'
 import { SquareSizes } from 'common/models/ImageSizes'
+import { CommonState } from 'common/store'
 import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
 import {
   addTrackToPlaylist,
@@ -17,10 +18,10 @@ import {
 import { getCollectionId } from 'common/store/pages/collection/selectors'
 import { close } from 'common/store/ui/add-to-playlist/actions'
 import {
-  getIsOpen,
   getTrackId,
   getTrackTitle
 } from 'common/store/ui/add-to-playlist/selectors'
+import { getModalVisibility } from 'common/store/ui/modals/slice'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -45,7 +46,9 @@ const AddToPlaylistModal = () => {
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
 
-  const isOpen = useSelector(getIsOpen)
+  const isOpen = useSelector((state: CommonState) =>
+    getModalVisibility(state, 'AddToPlaylist')
+  )
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const currentCollectionId = useSelector(getCollectionId)
@@ -106,7 +109,7 @@ const AddToPlaylistModal = () => {
 
   return (
     <Modal
-      isOpen={isOpen}
+      isOpen={isOpen === true}
       showTitleHeader
       showDismissButton
       title={messages.title}

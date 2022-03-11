@@ -79,11 +79,9 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   TrendingGenreSelection: TrendingFilterDrawer,
   MobileUpload: MobileUploadDrawer,
   Overflow: OverflowMenuDrawer,
-  SignOutConfirmation: SignOutConfirmationDrawer
-  /* Disable the audio breakdown drawer until we get
-   * the feature flags to work for native mobile
-   * AudioBreakdown: AudioBreakdownDrawer
-   */
+  SignOutConfirmation: SignOutConfirmationDrawer,
+  AddToPlaylist: AddToPlaylistDrawer,
+  AudioBreakdown: AudioBreakdownDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
@@ -117,9 +115,7 @@ export const Drawers = () => {
           drawer={Drawer}
         />
       ))}
-      <AddToPlaylistDrawer />
       <DiscordDrawer />
-      <AudioBreakdownDrawer />
     </>
   )
 }
