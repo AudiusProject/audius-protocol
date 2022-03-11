@@ -4,6 +4,7 @@ import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 
 import redis
+from flask import Response
 from flask.globals import request
 from src.models import (
     AggregateDailyAppNameMetrics,
@@ -652,13 +653,16 @@ def record_metrics(func):
         result = func(*args, **kwargs)
 
         try:
-            code = result[1]
+            if isinstance(result, Response):
+                code = result.status_code
+            else:
+                code = result[1]
         except Exception as e:
             code = -1
             logger.error(
                 "Error extracting response code from type<%s>: %s",
                 type(result),
-                e.message,
+                e,
             )
 
         route = route.split("?")[0]
