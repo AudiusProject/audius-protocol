@@ -32,6 +32,7 @@ def get_remixes_of(args):
     db = get_db_read_replica()
 
     with db.scoped_session() as session:
+
         def get_unpopulated_remixes():
 
             # Fetch the parent track to get the track's owner id
@@ -107,7 +108,8 @@ def get_remixes_of(args):
                     ),
                     # Order by saves + reposts
                     desc(
-                        func.coalesce(AggregateTrack.repost_count, 0) + func.coalesce(AggregateTrack.save_count, 0)
+                        func.coalesce(AggregateTrack.repost_count, 0)
+                        + func.coalesce(AggregateTrack.save_count, 0)
                     ),
                     # Ties, pick latest track id
                     desc(Track.track_id),
