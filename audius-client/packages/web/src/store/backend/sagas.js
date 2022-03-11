@@ -14,6 +14,7 @@ import * as accountActions from 'common/store/account/reducer'
 import { hydrateStoreFromCache } from 'common/store/cache/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import fingerprintClient from 'services/fingerprint/FingerprintClient'
 import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecycle'
 import * as backendActions from 'store/backend/actions'
 import * as reachabilityActions from 'store/reachability/actions'
@@ -77,6 +78,8 @@ export function* setupBackend() {
 
   // Init APICLient
   yield call(() => apiClient.init())
+  // Fire-and-forget init fp
+  fingerprintClient.init()
   yield put(accountActions.fetchAccount())
   const { web3Error, libsError } = yield call(AudiusBackend.setup)
   if (libsError) {
