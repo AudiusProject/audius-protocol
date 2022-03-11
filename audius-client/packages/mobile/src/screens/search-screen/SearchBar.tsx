@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
+import { TextInput } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { SearchInput } from 'app/components/core'
@@ -16,6 +17,8 @@ export const SearchBar = () => {
   const query = useSelector(getSearchQuery)
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
+  const [clearable, setClearable] = useState(false)
+  const inputRef = useRef<TextInput>(null)
 
   const handleChangeText = useCallback(
     (text: string) => {
@@ -26,21 +29,36 @@ export const SearchBar = () => {
           query: text
         })
       }
+      if (text !== '') {
+        setClearable(true)
+      } else {
+        setClearable(false)
+      }
     },
-    [dispatch, dispatchWeb]
+    [dispatch, dispatchWeb, setClearable]
   )
+
+  const onClear = useCallback(() => {
+    dispatch(updateQuery(''))
+    setClearable(false)
+    inputRef.current?.focus()
+  }, [dispatch, setClearable])
 
   const searchResultQuery = useSelector(getSearchResultQuery)
   const isTagSearch = query.startsWith('#')
   const hasText = query !== ''
   const isLoading = !isTagSearch && hasText && searchResultQuery !== query
+  const icon = isLoading ? LoadingSpinner : undefined
 
   return (
     <SearchInput
       autoFocus
+      ref={inputRef}
       value={query}
       onChangeText={handleChangeText}
-      Icon={isLoading ? LoadingSpinner : undefined}
+      Icon={icon}
+      clearable={!isLoading && clearable}
+      onClear={onClear}
     />
   )
 }
