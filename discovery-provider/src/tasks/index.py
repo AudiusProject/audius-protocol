@@ -41,7 +41,11 @@ from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
+    record_add_indexed_block_to_db_ms,
+    record_fetch_ipfs_metadata_ms,
     record_index_blocks_ms,
+    sweep_old_add_indexed_block_to_db_ms,
+    sweep_old_fetch_ipfs_metadata_ms,
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
@@ -655,12 +659,17 @@ def index_blocks(self, db, blocks_list):
                         block_number,
                         block_hash,
                     )
+                    # Record the time this took in redis
+                    duration_ms = round(
+                        (time.time() - fetch_ipfs_metadata_start_time) * 1000
+                    )
+                    record_fetch_ipfs_metadata_ms(redis, duration_ms)
                     metric.save_time(
                         {"scope": "fetch_ipfs_metadata"},
                         start_time=fetch_ipfs_metadata_start_time,
                     )
                     logger.info(
-                        f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
+                        f"index.py | index_blocks - fetch_ipfs_metadata in {duration_ms}ms"
                     )
 
                     """
@@ -668,12 +677,17 @@ def index_blocks(self, db, blocks_list):
                     """
                     add_indexed_block_to_db_start_time = time.time()
                     add_indexed_block_to_db(session, block)
+                    # Record the time this took in redis
+                    duration_ms = round(
+                        (time.time() - add_indexed_block_to_db_start_time) * 1000
+                    )
+                    record_add_indexed_block_to_db_ms(redis, duration_ms)
                     metric.save_time(
                         {"scope": "add_indexed_block_to_db"},
                         start_time=add_indexed_block_to_db_start_time,
                     )
                     logger.info(
-                        f"index.py | index_blocks - add_indexed_block_to_db in {time.time() - add_indexed_block_to_db_start_time}s"
+                        f"index.py | index_blocks - add_indexed_block_to_db in {duration_ms}ms"
                     )
 
                     """
@@ -752,9 +766,12 @@ def index_blocks(self, db, blocks_list):
         metric.save_time({"scope": "full"})
         duration_ms = round(time.time() - start_time * 1000)
         record_index_blocks_ms(redis, duration_ms)
+
         # Sweep records older than 30 days every day
         if block_number % BLOCKS_PER_DAY == 0:
             sweep_old_index_blocks_ms(redis, 30)
+            sweep_old_fetch_ipfs_metadata_ms(redis, 30)
+            sweep_old_add_indexed_block_to_db_ms(redis, 30)
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")

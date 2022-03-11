@@ -1,6 +1,10 @@
 //! The Audius Data Program is intended to bring all user data functionality to Solana through the
 //! Anchor framework
+pub mod constants;
+pub mod error;
+pub mod utils;
 
+use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
 
 declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
@@ -8,12 +12,8 @@ declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
 #[program]
 pub mod audius_data {
     use anchor_lang::solana_program::secp256k1_program;
-    use anchor_lang::solana_program::system_program;
     use anchor_lang::solana_program::sysvar;
     use std::str::FromStr;
-
-    const ETH_ADDRESS_OFFSET: usize = 12;
-    const MESSAGE_OFFSET: usize = 97;
 
     /*
         User & Admin Functions
@@ -208,37 +208,12 @@ pub mod audius_data {
     /// Permissioned function to log an update to User metadata
     pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
         msg!("Audius::UpdateUser");
-        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
-            // Reject if system program provided as user delegate_auth
-            if ctx.accounts.user_delegate_authority.key() == system_program::id() {
-                return Err(ErrorCode::Unauthorized.into());
-            }
-
-            // Derive a target delegation account address from the user's storage PDA and provided user authority
-            // In the happy case this will match the account created in add_user_authority_delegate
-            // If there is a mismatch between the provided and derived value, we reject the transaction
-            let (derived_delegate_auth_acct, _) = Pubkey::find_program_address(
-                &[
-                    &ctx.accounts.user.key().to_bytes()[..32],
-                    &ctx.accounts.user_authority.key().to_bytes()[..32],
-                ],
-                ctx.program_id,
-            );
-            // Reject if PDA derivation is mismatched
-            if derived_delegate_auth_acct != ctx.accounts.user_delegate_authority.key() {
-                return Err(ErrorCode::Unauthorized.into());
-            }
-            // Attempt to deserialize data from the derived delegate account
-            let user_del_acct: UserAuthorityDelegate = UserAuthorityDelegate::try_deserialize(
-                &mut &ctx.accounts.user_delegate_authority.try_borrow_data()?[..],
-            )?;
-            // Confirm that the delegate authority and user match the function parameters
-            if user_del_acct.user_storage_account != ctx.accounts.user.key()
-                || user_del_acct.delegate_authority != ctx.accounts.user_authority.key()
-            {
-                return Err(ErrorCode::Unauthorized.into());
-            }
-        }
+        validate_user_authority(
+            ctx.program_id,
+            &ctx.accounts.user,
+            &ctx.accounts.user_delegate_authority,
+            &ctx.accounts.user_authority,
+        )?;
         msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
     }
@@ -346,7 +321,7 @@ pub mod audius_data {
         }
         Ok(())
     }
- 
+
     /*
         Playlist related functions
     */
@@ -472,25 +447,6 @@ pub mod audius_data {
         Ok(())
     }
 }
-
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 32 (PublicKey) + 8 (track id) + 8 (playlist id) + 1 (is_write_enabled)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 1;
-
-/// Size of user account
-/// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
-pub const USER_ACCOUNT_SIZE: usize = 8 + 32 + 20;
-
-/// Size of track account
-/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track offset ID)
-pub const TRACK_ACCOUNT_SIZE: usize = 8 + 32 + 8;
-
-/// Size of playlist account
-/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
-pub const PLAYLIST_ACCOUNT_SIZE: usize = 8 + 32 + 8;
-
-/// Size of user authority delegation account
-/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
-pub const USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE: usize = 8 + 32 + 32;
 
 /// Instructions
 #[derive(Accounts)]
@@ -824,17 +780,6 @@ pub struct UserAuthorityDelegate {
     pub delegate_authority: Pubkey,
     // PDA of user storage account enabling operations
     pub user_storage_account: Pubkey,
-}
-
-// Errors
-#[error_code]
-pub enum ErrorCode {
-    #[msg("You are not authorized to perform this action.")]
-    Unauthorized,
-    #[msg("Signature verification failed.")]
-    SignatureVerification,
-    #[msg("Invalid Id.")]
-    InvalidId,
 }
 
 // User actions enum, used to follow/unfollow based on function arguments
