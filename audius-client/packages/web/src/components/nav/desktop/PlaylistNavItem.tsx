@@ -52,7 +52,10 @@ export const PlaylistNavLink = ({
       key={droppableKey}
       className={styles.droppable}
       hoverClassName={styles.droppableHover}
-      onDrop={(id: ID | SmartCollectionVariant) => onReorder(id, playlistId)}
+      onDrop={(id: ID | SmartCollectionVariant) => {
+        onReorder(id, playlistId)
+      }}
+      stopPropogationOnDrop={true}
       acceptedKinds={['library-playlist']}
     >
       <Draggable

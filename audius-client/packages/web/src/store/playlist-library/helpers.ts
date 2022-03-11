@@ -15,7 +15,7 @@ import { uuid } from 'common/utils/uid'
  */
 export const findInPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
-  playlistId: ID | SmartCollectionVariant
+  playlistId: ID | SmartCollectionVariant | string
 ): PlaylistLibraryIdentifier | false => {
   if (!library.contents) return false
 
@@ -45,7 +45,7 @@ export const findInPlaylistLibrary = (
  */
 export const findIndexInPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
-  playlistId: ID | SmartCollectionVariant
+  playlistId: ID | SmartCollectionVariant | string
 ): number => {
   if (!library.contents) return -1
 
@@ -75,7 +75,7 @@ export const findIndexInPlaylistLibrary = (
  */
 export const removeFromPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
-  playlistId: ID | SmartCollectionVariant
+  playlistId: ID | SmartCollectionVariant | string
 ): {
   library: PlaylistLibrary | PlaylistLibraryFolder
   removed: PlaylistLibraryIdentifier | null
@@ -89,7 +89,9 @@ export const removeFromPlaylistLibrary = (
     switch (item.type) {
       case 'folder': {
         const res = removeFromPlaylistLibrary(item, playlistId)
-        removed = res.removed
+        if (res.removed) {
+          removed = res.removed
+        }
         newItem = {
           id: item.id,
           type: item.type,
@@ -129,6 +131,87 @@ export const constructPlaylistFolder = (
     type: 'folder',
     name,
     contents: contents
+  }
+}
+
+const playlistIdToPlaylistLibraryIdentifier = (
+  playlistId: ID | SmartCollectionVariant | string
+): PlaylistLibraryIdentifier => {
+  if (typeof playlistId === 'number') {
+    return {
+      type: 'playlist',
+      playlist_id: playlistId
+    }
+  } else if (
+    (Object.values(SmartCollectionVariant) as string[]).includes(playlistId)
+  ) {
+    return {
+      type: 'explore_playlist',
+      playlist_id: playlistId as SmartCollectionVariant
+    }
+  } else {
+    // This is a temp ID which requires special attention
+    return {
+      type: 'temp_playlist',
+      playlist_id: playlistId
+    }
+  }
+}
+
+/**
+ * Adds playlist with given id to folder with given id and returns the resulting updated library.
+ * If the playlist is already in the library but not in the folder, it removes the playlist from its current position and into the folder.
+ * This is a no op if the folder is not in the library or the playlist is already in the target folder. In these cases, the original library is returned.
+ * @param library
+ * @param playlistId
+ * @param folderId
+ * @returns the updated playlist library
+ */
+export const addPlaylistToFolder = (
+  library: PlaylistLibrary,
+  playlistId: ID | SmartCollectionVariant | string,
+  folderId: string
+): PlaylistLibrary => {
+  if (!library.contents) return library
+  let folderIndex = library.contents.findIndex(item => {
+    return item.type === 'folder' && item.id === folderId
+  })
+  if (folderIndex < 0) return library
+  const folder = library.contents[folderIndex] as PlaylistLibraryFolder
+  // If the playlist is in the right folder already, return the original library.
+  if (findInPlaylistLibrary(folder, playlistId) !== false) {
+    return library
+  }
+
+  // Remove the playlist from the library if it's already there but not in the given folder
+  let entry: PlaylistLibraryIdentifier | null
+  const { library: newLibrary, removed } = removeFromPlaylistLibrary(
+    library,
+    playlistId
+  )
+
+  entry = removed
+
+  if (!entry) {
+    entry = playlistIdToPlaylistLibraryIdentifier(playlistId)
+  } else {
+    // If playlist was removed the folder index might be different now.
+    folderIndex = newLibrary.contents.findIndex(item => {
+      return item.type === 'folder' && item.id === folderId
+    })
+  }
+  const updatedFolder = reorderPlaylistLibrary(
+    folder,
+    playlistId,
+    -1
+  ) as PlaylistLibraryFolder
+  const newContents = [...newLibrary.contents]
+
+  newContents.splice(folderIndex, 1, updatedFolder)
+
+  return {
+    ...newLibrary,
+    contents: newContents
   }
 }
 
@@ -266,8 +349,8 @@ export const removePlaylistLibraryDuplicates = (
  */
 export const reorderPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
-  draggingId: ID | SmartCollectionVariant,
-  droppingId: ID | SmartCollectionVariant
+  draggingId: ID | SmartCollectionVariant | string,
+  droppingId: ID | SmartCollectionVariant | string
 ) => {
   // Find the dragging id and remove it from the library if present.
   let entry: PlaylistLibraryIdentifier | null
@@ -277,23 +360,7 @@ export const reorderPlaylistLibrary = (
   )
   entry = removed
   if (!entry) {
-    if (typeof draggingId === 'number') {
-      entry = {
-        type: 'playlist',
-        playlist_id: draggingId
-      }
-    } else if (Object.values(SmartCollectionVariant).includes(draggingId)) {
-      entry = {
-        type: 'explore_playlist',
-        playlist_id: draggingId
-      }
-    } else {
-      // This is a temp ID. We want to reorder it, but pay special attention
-      entry = {
-        type: 'temp_playlist',
-        playlist_id: draggingId
-      }
-    }
+    entry = playlistIdToPlaylistLibraryIdentifier(draggingId)
   }
 
   const newContents = [...newLibrary.contents]
