@@ -165,7 +165,6 @@ export const testCreateTrack = async ({
   trackMetadata,
   userAuthorityKeypair,
   trackOwnerPDA,
-  adminStgKeypair,
 }) => {
   const tx = await createTrack({
     id,
@@ -173,7 +172,6 @@ export const testCreateTrack = async ({
     userAuthorityKeypair,
     userStgAccountPDA: trackOwnerPDA,
     metadata: trackMetadata,
-    adminStgPublicKey: adminStgKeypair.publicKey,
   });
 
   const info = await getTransaction(provider, tx);
