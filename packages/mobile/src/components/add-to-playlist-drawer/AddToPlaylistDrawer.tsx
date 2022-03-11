@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
 import { CreatePlaylistSource } from 'audius-client/src/common/models/Analytics'
 import { getAccountWithOwnPlaylists } from 'audius-client/src/common/store/account/selectors'
@@ -6,9 +6,7 @@ import {
   addTrackToPlaylist,
   createPlaylist
 } from 'audius-client/src/common/store/cache/collections/actions'
-import { close } from 'audius-client/src/common/store/ui/add-to-playlist/actions'
 import {
-  getIsOpen,
   getTrackId,
   getTrackTitle
 } from 'audius-client/src/common/store/ui/add-to-playlist/selectors'
@@ -20,7 +18,7 @@ import { Shadow } from 'react-native-shadow-2'
 import Button, { ButtonType } from 'app/components/button'
 import { Card } from 'app/components/card'
 import { CardList } from 'app/components/core'
-import Drawer from 'app/components/drawer'
+import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
@@ -36,17 +34,15 @@ export const AddToPlaylistDrawer = () => {
   const { toast } = useContext(ToastContext)
   const dispatchWeb = useDispatchWeb()
   const pushRouteWeb = usePushRouteWeb()
-  const isOpen = useSelectorWeb(getIsOpen)
+  const { onClose } = useDrawerState('AddToPlaylist')
   const trackId = useSelectorWeb(getTrackId)
   const trackTitle = useSelectorWeb(getTrackTitle)
   const user = useSelectorWeb(getAccountWithOwnPlaylists)
   const [isDrawerGestureSupported, setIsDrawerGestureSupported] = useState(true)
 
-  const handleClose = useCallback(() => {
-    dispatchWeb(close())
-  }, [dispatchWeb])
-
-  if (!user || !trackId || !trackTitle) return null
+  if (!user || !trackId || !trackTitle) {
+    return null
+  }
   const userPlaylists = user.playlists ?? []
 
   const addToNewPlaylist = () => {
@@ -61,7 +57,7 @@ export const AddToPlaylistDrawer = () => {
     dispatchWeb(addTrackToPlaylist(trackId!, tempId))
     toast({ content: messages.createdToast })
     pushRouteWeb(playlistPage(user.handle, trackTitle, tempId), FEED_PAGE)
-    handleClose()
+    onClose()
   }
 
   const handleScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -75,9 +71,8 @@ export const AddToPlaylistDrawer = () => {
   }
 
   return (
-    <Drawer
-      isOpen={isOpen}
-      onClose={handleClose}
+    <AppDrawer
+      modalName='AddToPlaylist'
       isFullscreen
       isGestureSupported={isDrawerGestureSupported}
       title={messages.title}
@@ -112,13 +107,13 @@ export const AddToPlaylistDrawer = () => {
               onPress={() => {
                 toast({ content: messages.addedToast })
                 dispatchWeb(addTrackToPlaylist(trackId!, item.playlist_id))
-                handleClose()
+                onClose()
               }}
               user={user}
             />
           )}
         />
       </View>
-    </Drawer>
+    </AppDrawer>
   )
 }

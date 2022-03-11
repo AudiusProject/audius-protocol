@@ -7,7 +7,6 @@ import * as actions from './actions'
 type AddToPlaylistActions = ActionType<typeof actions>
 
 export type AddToPlaylistState = {
-  isOpen: boolean
   trackId: ID | null
   trackTitle: string | null
 }
@@ -24,7 +23,6 @@ const reducer = createReducer<AddToPlaylistState, AddToPlaylistActions>(
     [actions.OPEN](state, action) {
       return {
         ...state,
-        isOpen: true,
         trackId: action.trackId,
         trackTitle: action.trackTitle
       }
@@ -32,7 +30,6 @@ const reducer = createReducer<AddToPlaylistState, AddToPlaylistActions>(
     [actions.CLOSE](state, action) {
       return {
         ...state,
-        isOpen: false,
         trackId: null,
         trackTitle: null
       }

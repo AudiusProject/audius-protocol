@@ -33,7 +33,11 @@ import useKeyboardListeners from 'app/hooks/useKeyboardListeners'
 import { Message, MessageType, handleMessage } from 'app/message'
 import { AppState } from 'app/store'
 import { getTrack, getIndex } from 'app/store/audio/selectors'
-import { getIsOnFirstPage, getIsSignedIn } from 'app/store/lifecycle/selectors'
+import {
+  getDappLoaded,
+  getIsOnFirstPage,
+  getIsSignedIn
+} from 'app/store/lifecycle/selectors'
 import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import {
   postMessage,
@@ -140,14 +144,11 @@ type Props = OwnProps &
 const WebApp = ({
   onMessage,
   webRef,
-  state,
   trackInfo,
   trackIndex,
   isOnFirstPage,
   isSignedIn,
-  state: {
-    lifecycle: { dappLoaded }
-  }
+  dappLoaded
 }: Props) => {
   // Start the local static asset server
   const [url, setUrl] = useState<string>('')
@@ -561,7 +562,7 @@ const useSplashScreenKey = (dappLoaded: boolean) => {
 }
 
 const mapStateToProps = (state: AppState) => ({
-  state,
+  dappLoaded: getDappLoaded(state),
   trackInfo: getTrack(state),
   trackIndex: getIndex(state),
   isOnFirstPage: getIsOnFirstPage(state),
