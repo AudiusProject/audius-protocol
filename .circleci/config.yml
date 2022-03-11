@@ -601,13 +601,14 @@ jobs:
 
       - run:
           name: Setup Anchor
-          command: cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
+          command: |
+            sudo apt-get update
+            sudo apt-get install pkg-config libssl-dev
+            cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
 
       - run:
           name: anchor tests
           command: |
-            apt-get update
-            apt-get install pkg-config libssl-dev
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/anchor/audius-data
             yarn
