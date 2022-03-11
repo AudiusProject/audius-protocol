@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import logging
+import math
 from operator import itemgetter
 
 from src.app import get_contract_addresses
@@ -41,6 +42,7 @@ from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
+from src.utils.get_all_other_nodes import get_all_other_nodes
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_constants import (
     latest_block_hash_redis_key,
@@ -54,9 +56,22 @@ logger = logging.getLogger(__name__)
 
 
 # ####### CONSTANTS ####### #
-CONTRACT_NAME_TO_MODEL = {
+CONTRACT_NAME_TO_MODEL = {}
 
-}
+USER_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.USER_FACTORY]
+TRACK_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.TRACK_FACTORY]
+SOCIAL_FEATURE_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
+    CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY
+]
+PLAYLIST_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
+    CONTRACT_TYPES.PLAYLIST_FACTORY
+]
+USER_LIBRARY_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
+    CONTRACT_TYPES.USER_LIBRARY_FACTORY
+]
+USER_REPLICA_SET_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
+    CONTRACT_TYPES.USER_REPLICA_SET_MANAGER
+]
 
 # ####### HELPER FUNCTIONS ####### #
 def get_skipped_transactions(session):
@@ -92,19 +107,18 @@ def fetch_missing_tx_receipts(txs):
 
 # parse receipt and return array of missing objects for that receipt w/ IDs
 def get_backfill_info(receipt):
-    backfill_info = []
-    contract_name = get_contract_type_for_tx(receipt) # TODO
-    event_type = get_event_type_for_tx(receipt) # TODO
-    parse_event_fn = CONTRACT_TYPE_TO_PARSE_HANDLER[contract_name] # TODO name or type?
-    parsed_event = parse_event_fn(receipt)
-    # playlist - dependencies dont matter as much as track, user, ursm - actually maybe just do this in the backfill route - dependency graph of models. return an array of all the dependent objects in backfill 
-    for id_key in get_id_keys(parsed_event): # TODO - maybe easier to just use emitted keys from receipt
-        model = get_model_for_receipt(event_type, id_key)
-            backfill_info.append({
-            "model": model,
-            "id_value": parsed_event[id_key]
-        })
-    return backfill_info
+    backfill_info = {"model": model}
+    # contract_name = USER_FACTORY_CONTRACT_NAME # get_contract_name_for_tx(receipt) # TODO
+    # event_type = get_event_type_for_tx(receipt) # TODO
+
+    # # playlist - dependencies dont matter as much as track, user, ursm - actually maybe just do this in the backfill route - dependency graph of models. return an array of all the dependent objects in backfill
+    # for id_key in get_id_keys(parsed_event): # TODO - maybe easier to just use emitted keys from receipt
+    #     model = get_model_for_receipt(event_type, id_key)
+    #         backfill_info.append({
+    #         "model": model,
+    #         "id_value": parsed_event[id_key]
+    #     })
+    # return backfill_info
 
 
 # fetch receipts, parse and convert to array of missing objects - TODO whether to make missing object a struct or enum class?
@@ -115,22 +129,87 @@ def get_entities_from_skipped_tx(txs):
         missing_entities += get_backfill_info(receipt)
 
 
-# confirm whether we have anything more recent for that object in 
+# confirm whether we have anything more recent for that object in
 def missing_from_db(obj, session):
     model = obj.model
     missing_tx_blocknumber = obj.block_number
-    existing_object = session.query(model).filter(model.blocknumber >= missing_tx_blocknumber, model.is_current == True).first()
+    existing_object = (
+        session.query(model)
+        .filter(model.blocknumber >= missing_tx_blocknumber, model.is_current == True)
+        .first()
+    )
     return False if existing_object else True
 
 
-def backfill_data_from_network(missing_objects, session):
-    # /full?model=model_name&id=id
-    all_dn_endpoints = # TODO
-    
+def get_backfill_data(obj):
+    # concurrently query network for a given object
+    # obj has model_type and other kv pairs for querying by rows
+    # /full?model_type=model_name&id=id
+    (all_dn_endpoints,) = get_all_other_nodes()
+    BACKFILL_FROM_NETWORK_TIMEOUT = 5  # seconds
+    CONSENSUS_NUMBER = math.floor(0.75 * len(all_dn_endpoints))
+    BACKFILL_PATH = "full_data"
+
+    model_version_count = {}
+    for endpoint in all_dn_endpoints:
+        query_uri = f"{endpoint}/{BACKFILL_PATH}"
+        threads = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            threads.append(
+                executor.submit(
+                    helpers.get_request,
+                    query_uri,
+                    BACKFILL_FROM_NETWORK_TIMEOUT,
+                    obj,  # no is_current here, but that's returned from the route side - everything but created_at and updated_at
+                )
+            )
+            for future in concurrent.futures.as_completed(threads):
+                model = future.result()
+                try:
+                    if model is not None:
+                        model["model_type"] = obj["model_type"]
+                        if model_version_count[model]:
+                            model_version_count[model] += 1
+                        else:
+                            model_version_count[model] = 1
+                except Exception as exc:
+                    logger.error(
+                        f"backfill_missing_data_from_network.py | backfill_data_from_network trying to retrieve {obj} from {query_uri} generated {exc}"
+                    )
+    consensus_model = next(
+        (m for m in model_version_count.entries() if m[1] >= CONSENSUS_NUMBER), None
+    )
+    if consensus_model == None:
+        logger.warning(
+            f"backfill_missing_data_from_network.py | backfill_data_from_network trying to retrieve {obj} from network was unable to reach consensus."
+        )
+    return consensus_model
+
+
+def backfill_data_from_network(
+    missing_objects, session
+):  # concurrently query for each missing obj
+    retrieved_objects = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        retrieved_objects.append(
+            executor.submit(get_backfill_data, o) for o in missing_objects
+        )
+        for future in concurrent.futures.as_completed(retrieved_objects):
+            try:
+                model_to_save = future.result()
+                if model_to_save is not None:
+                    model_type = model_to_save["model_type"]
+
+            except Exception as exc:
+                logger.error(
+                    f"backfill_missing_data_from_network.py | backfill_data_from_network {tx} generated {exc}"
+                )
+
 
 def save_to_db(data_models, session):
     for model in data_models:
         session.add(model)
+
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="backfill_missing_data_from_network", bind=True)
@@ -159,7 +238,10 @@ def backfill_task(self):
                 entities_from_skipped_tx = get_entities_from_skipped_tx(
                     transactions_to_backfill
                 )
-                missing_objects = filter(lambda object: missing_from_db(object, session), entities_from_skipped_tx)
+                missing_objects = filter(
+                    lambda object: missing_from_db(object, session),
+                    entities_from_skipped_tx,
+                )
                 backfilled_data_models = backfill_data_from_network(
                     missing_objects, session
                 )

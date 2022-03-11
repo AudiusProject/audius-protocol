@@ -20,6 +20,25 @@ from src import exceptions
 from . import multihash
 
 
+def filter_dict(keys_to_exclude, dict_to_filter):
+    new_dict = dict()
+    for (key, value) in dict_to_filter.items():
+        if key not in keys_to_exclude:
+            new_dict[key] = value
+    return new_dict
+
+
+def get_request(uri, timeout, params):
+    try:
+        resp = requests.get(
+            uri, params=params, timeout=timeout
+        )  # TODO header for DN to DN communication?
+        resp.raise_for_status()
+        return resp.json()
+    except requests.exceptions.RequestException:
+        return None
+
+
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
