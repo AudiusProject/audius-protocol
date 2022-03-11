@@ -2,6 +2,8 @@ import React from 'react'
 
 import { UserChallengeState } from 'audius-client/src/common/models/AudioRewards'
 import { ClaimStatus } from 'audius-client/src/common/store/pages/audio-rewards/slice'
+import { fillString } from 'audius-client/src/common/utils/fillString'
+import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 import { StyleSheet, View, ImageSourcePropType } from 'react-native'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
@@ -200,11 +202,19 @@ export const ChallengeRewardsDrawer = ({
   const statusText = hasCompleted
     ? messages.complete
     : isInProgress
-    ? `${currentStep}/${stepCount} ${progressLabel}`
+    ? fillString(
+        progressLabel,
+        formatNumberCommas(currentStep),
+        formatNumberCommas(stepCount)
+      )
     : messages.incomplete
 
-  const claimedAmountText = `(${claimedAmount} ${messages.claimedLabel})`
-  const claimableAmountText = `${claimableAmount} ${messages.claimableLabel}`
+  const claimedAmountText = `(${formatNumberCommas(claimedAmount)} ${
+    messages.claimedLabel
+  })`
+  const claimableAmountText = `${formatNumberCommas(claimableAmount)} ${
+    messages.claimableLabel
+  }`
 
   return (
     <AppDrawer
@@ -240,7 +250,7 @@ export const ChallengeRewardsDrawer = ({
                 {messages.reward}
               </Text>
               <GradientText style={styles.audioAmount}>
-                {`${amount}`}
+                {formatNumberCommas(amount)}
               </GradientText>
               <Text style={styles.audioLabel} weight='heavy'>
                 {messages.audio}
