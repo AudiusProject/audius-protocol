@@ -1118,7 +1118,6 @@ describe('test Polling Tracks with real IPFS', function () {
      const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
      const {
        track_segments: trackSegments,
-       transcodedTrackCID,
        transcodedTrackUUID,
        source_file: sourceFile
       } = await handleTrackContentRoute(
@@ -1161,7 +1160,6 @@ describe('test Polling Tracks with real IPFS', function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const {
       track_segments: trackSegments,
-      transcodedTrackCID,
       transcodedTrackUUID,
       source_file: sourceFile
      } = await handleTrackContentRoute(
@@ -1173,7 +1171,6 @@ describe('test Polling Tracks with real IPFS', function () {
     const { fileUUID: fileUUID2, fileDir: fileDir2 } = saveFileToStorage(testAudioFilePath)
     const {
       track_segments: track2Segments,
-      transcodedTrackCID: transcodedTrack2CID,
       transcodedTrackUUID: transcodedTrack2UUID,
       source_file: sourceFile2
      } = await handleTrackContentRoute(
