@@ -37,6 +37,7 @@ import smartCollection from 'common/store/pages/smart-collection/slice'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
 import TrackPageState from 'common/store/pages/track/types'
+import trendingPlaylists from 'common/store/pages/trending-playlists/slice'
 import trendingUnderground from 'common/store/pages/trending-underground/slice'
 import trending from 'common/store/pages/trending/reducer'
 import { TrendingPageState } from 'common/store/pages/trending/types'
@@ -149,6 +150,7 @@ export const reducers = (ctx: CommonStoreContext) => ({
     tokenDashboard: tokenDashboardSlice.reducer,
     track,
     trending,
+    trendingPlaylists,
     trendingUnderground,
     settings
   }),
@@ -271,6 +273,7 @@ export type CommonState = {
     searchResults: SearchPageState
     settings: SettingsPageState
     trending: TrendingPageState
+    trendingPlaylists: ReturnType<typeof trendingPlaylists>
     trendingUnderground: ReturnType<typeof trendingUnderground>
   }
 
