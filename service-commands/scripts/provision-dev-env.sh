@@ -68,8 +68,16 @@ function setup_python() {
     sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
-    pip install wheel yq
-    pip install pre-commit==2.16.0
+    pip install \
+        ipython \
+        pre-commit==2.16.0 \
+        wheel \
+        yq
+
+    (
+        cd $PROTOCOL_DIR/discovery-provider
+        pip install -r requirements.txt
+    )
 }
 
 function setup_docker() {
