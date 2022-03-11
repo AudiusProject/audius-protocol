@@ -603,7 +603,7 @@ jobs:
           name: Setup Anchor
           command: |
             sudo apt-get update
-            sudo apt-get install pkg-config libssl-dev
+            sudo apt-get install pkg-config libssl-dev libudev-dev
             cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
 
       - run:
