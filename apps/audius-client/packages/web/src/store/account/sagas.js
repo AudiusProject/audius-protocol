@@ -41,6 +41,7 @@ import {
   clearAudiusAccountUser
 } from 'services/LocalStorage'
 import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
+import fingerprintClient from 'services/fingerprint/FingerprintClient'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { setSentryUser } from 'services/sentry'
@@ -219,6 +220,8 @@ export function* fetchAccountAsync(action) {
 
   // Set account ID in remote-config provider
   remoteConfigInstance.setUserId(account.user_id)
+  // Fire-and-forget fp identify
+  fingerprintClient.identify(account.user_id)
 
   // Cache the account and fire the onFetch callback. We're done.
   yield call(cacheAccount, account)
