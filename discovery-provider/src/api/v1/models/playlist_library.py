@@ -43,6 +43,7 @@ playlist_library_folder = ns.model(
     "playlist_library_folder",
     {
         "type": "folder",
+        "id": fields.String(required=True),
         "name": fields.String(required=True),
         "contents": fields.List(PlaylistLibraryIdentifier),
     },
