@@ -567,10 +567,6 @@ jobs:
             sh -c "$(curl -sSfL https://release.solana.com/v1.8.9/install)"
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
 
-      - run:
-          name: Setup Anchor
-          command: cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
-
       - restore_cache:
           keys:
             - audius-eth-registry-deps-2-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
@@ -602,9 +598,15 @@ jobs:
           paths:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
+
+      - run:
+          name: Setup Anchor
+          command: cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
+
       - run:
           name: anchor tests
           command: |
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/anchor/audius-data
             npm i
             anchor test
