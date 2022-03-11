@@ -27,6 +27,7 @@ export type Modals =
   | 'EditFolder'
   | 'SignOutConfirmation'
   | 'Overflow'
+  | 'AddToPlaylist'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }
 
@@ -54,7 +55,8 @@ const initialState: ModalsState = {
   MobileUpload: false,
   EditFolder: false,
   SignOutConfirmation: false,
-  Overflow: false
+  Overflow: false,
+  AddToPlaylist: false
 }
 
 const slice = createSlice({

@@ -4,7 +4,6 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getIsOpen as getIsAddToPlaylistPageOpen } from 'common/store/ui/add-to-playlist/selectors'
 import { getIsOpen as getIsCreatePlaylistModalOpen } from 'common/store/ui/createPlaylistModal/selectors'
 import { getModalVisibility } from 'common/store/ui/modals/slice'
 import AddToPlaylistPage from 'components/add-to-playlist/mobile/AddToPlaylist'
@@ -56,7 +55,7 @@ const TopLevelPage = ({
 function mapStateToProps(state: AppState) {
   return {
     showCreatePlaylist: getIsCreatePlaylistModalOpen(state),
-    showAddToPlaylist: getIsAddToPlaylistPageOpen(state),
+    showAddToPlaylist: getModalVisibility(state, 'AddToPlaylist'),
     showConvertAudioToWAudio: getModalVisibility(state, 'ConfirmAudioToWAudio')
   }
 }
