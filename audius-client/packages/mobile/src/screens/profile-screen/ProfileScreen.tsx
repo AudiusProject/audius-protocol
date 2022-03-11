@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import Status from 'audius-client/src/common/models/Status'
+import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
 import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'
 import { LayoutAnimation, View } from 'react-native'
@@ -11,11 +12,8 @@ import IconSettings from 'app/assets/images/iconSettings.svg'
 import { TopBarIconButton } from 'app/components/app-navigator/TopBarIconButton'
 import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { Screen, VirtualizedScrollView } from 'app/components/core'
-import { ProfilePhoto } from 'app/components/user'
-import { useAccountUser, useProfile } from 'app/hooks/selectors'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRoute } from 'app/hooks/useRoute'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
@@ -25,9 +23,11 @@ import { CoverPhoto } from './CoverPhoto'
 import { ExpandableBio } from './ExpandableBio'
 import { ProfileInfo } from './ProfileInfo'
 import { ProfileMetrics } from './ProfileMetrics'
+import { ProfilePicture } from './ProfilePicture'
 import { ProfileSocials } from './ProfileSocials'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { UploadTrackButton } from './UploadTrackButton'
+import { useSelectProfileRoot } from './selectors'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
@@ -60,10 +60,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 export const ProfileScreen = () => {
   const styles = useStyles()
-  const accountUser = useAccountUser()
-  const { handle } = accountUser
-  const { params = { handle } } = useRoute<'Profile'>()
-  const profile = useProfile(params)
+  const profile = useSelectProfileRoot(['user_id', 'does_current_user_follow'])
+  const accountId = useSelectorWeb(getUserId)
   const dispatchWeb = useDispatchWeb()
   const status = useSelectorWeb(getProfileStatus)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -112,7 +110,7 @@ export const ProfileScreen = () => {
     }
   }, [status])
 
-  const isOwner = accountUser?.user_id === profile?.user_id
+  const isOwner = profile?.user_id === accountId
 
   const topbarLeft = isOwner ? (
     <View style={styles.topBarIcons}>
@@ -134,23 +132,20 @@ export const ProfileScreen = () => {
           onRefresh={handleRefresh}
           refreshing={isRefreshing}
         >
-          <CoverPhoto profile={profile} />
-          <ProfilePhoto style={styles.profilePicture} profile={profile} />
+          <CoverPhoto />
+          <ProfilePicture style={styles.profilePicture} />
           <View style={styles.header}>
-            <ProfileInfo profile={profile} onFollow={handleFollow} />
-            <ProfileMetrics profile={profile} />
-            <ProfileSocials profile={profile} />
-            <ExpandableBio profile={profile} />
+            <ProfileInfo onFollow={handleFollow} />
+            <ProfileMetrics />
+            <ProfileSocials />
+            <ExpandableBio />
             {!hasUserFollowed ? null : (
-              <ArtistRecommendations
-                profile={profile}
-                onClose={handleCloseArtistRecs}
-              />
+              <ArtistRecommendations onClose={handleCloseArtistRecs} />
             )}
             {!isOwner ? null : <UploadTrackButton />}
           </View>
           <View style={styles.navigator}>
-            <ProfileTabNavigator profile={profile} />
+            <ProfileTabNavigator />
           </View>
         </VirtualizedScrollView>
       )}

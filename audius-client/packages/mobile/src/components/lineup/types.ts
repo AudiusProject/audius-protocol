@@ -3,7 +3,7 @@ import Kind from 'audius-client/src/common/models/Kind'
 import { Lineup as LineupData } from 'audius-client/src/common/models/Lineup'
 import { LineupActions } from 'audius-client/src/common/store/lineup/actions'
 import { Maybe } from 'audius-client/src/common/utils/typeUtils'
-import { ScrollViewProps, SectionListProps } from 'react-native'
+import { SectionListProps } from 'react-native'
 
 export enum LineupVariant {
   MAIN = 'main',
@@ -67,7 +67,7 @@ export type LineupProps = {
    * A header to display at the top of the lineup,
    * will scroll with the rest of the content
    */
-  header?: SectionListProps<any>['ListHeaderComponent']
+  header?: SectionListProps<unknown>['ListHeaderComponent']
 
   /**
    * Function called on refresh
@@ -111,4 +111,13 @@ export type LineupProps = {
    * another VirtualizedList.
    */
   listKey?: string
-} & Pick<ScrollViewProps, 'showsVerticalScrollIndicator'>
+
+  /**
+   * When `true` don't load more while lineup status is `LOADING`.
+   * This helps prevent collisions with any in-flight loading from web-app
+   */
+  includeLineupStatus?: boolean
+} & Pick<
+  SectionListProps<unknown>,
+  'showsVerticalScrollIndicator' | 'ListEmptyComponent'
+>
