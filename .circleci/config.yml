@@ -608,7 +608,7 @@ jobs:
           command: |
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/anchor/audius-data
-            npm i
+            yarn
             anchor test
 
       # - restore_cache:
