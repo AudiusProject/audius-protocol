@@ -71,7 +71,7 @@ export const challenges = {
   referreralsVerifiedTitle: 'Invite your Fans',
   referralsVerifiedDescription:
     'Invite your fans! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
-  referralsVerifiedShortDescription: 'Earn up to 5000 $AUDIO',
+  referralsVerifiedShortDescription: 'Earn up to 5,000 $AUDIO',
   referralsVerifiedProgressLabel: '%0/%1 Invites Accepted',
   referralsVerifiedRemainingLabel: '%0/%1 Invites Remain',
 

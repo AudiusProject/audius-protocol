@@ -21,6 +21,7 @@ import {
   setChallengeRewardsModalType
 } from 'common/store/pages/audio-rewards/slice'
 import { fillString } from 'common/utils/fillString'
+import { formatNumberCommas } from 'common/utils/formatUtil'
 import { removeNullable } from 'common/utils/typeUtils'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -82,15 +83,17 @@ const RewardPanel = ({
     // Count down
     progressLabelFilled = fillString(
       remainingLabel ?? '',
-      (challenge?.max_steps - challenge?.current_step_count)?.toString() ?? '',
-      challenge?.max_steps?.toString() ?? ''
+      formatNumberCommas(
+        (challenge?.max_steps - challenge?.current_step_count)?.toString() ?? ''
+      ),
+      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
     )
   } else {
     // Count up
     progressLabelFilled = fillString(
       progressLabel,
-      challenge?.current_step_count?.toString() ?? '',
-      challenge?.max_steps?.toString() ?? ''
+      formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
     )
   }
 

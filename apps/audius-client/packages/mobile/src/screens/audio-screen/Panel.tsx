@@ -1,5 +1,6 @@
 import { OptimisticUserChallenge } from 'audius-client/src/common/models/AudioRewards'
 import { fillString } from 'audius-client/src/common/utils/fillString'
+import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -95,14 +96,14 @@ export const Panel = ({
         remainingLabel ?? '',
         (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
           '',
-        stepCount.toString()
+        formatNumberCommas(stepCount.toString())
       )
     } else {
       // Count up
       progressLabelFilled = fillString(
         progressLabel,
         challenge?.current_step_count?.toString() ?? '',
-        stepCount.toString()
+        formatNumberCommas(stepCount.toString())
       )
     }
   }

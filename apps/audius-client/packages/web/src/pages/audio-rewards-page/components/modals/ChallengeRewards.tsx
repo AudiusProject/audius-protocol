@@ -33,6 +33,7 @@ import {
   claimChallengeReward
 } from 'common/store/pages/audio-rewards/slice'
 import { fillString } from 'common/utils/fillString'
+import { formatNumberCommas } from 'common/utils/formatUtil'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { show as showConfetti } from 'components/music-confetti/store/slice'
 import Toast from 'components/toast/Toast'
@@ -245,7 +246,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const progressReward = (
     <div className={wm(styles.progressReward)}>
       <h3>Reward</h3>
-      <h2>{challenge?.totalAmount}</h2>
+      <h2>{formatNumberCommas(challenge?.totalAmount ?? '')}</h2>
       <h4>$AUDIO</h4>
     </div>
   )
@@ -270,8 +271,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         <h3 className={styles.inProgress}>
           {fillString(
             progressLabel,
-            currentStepCount.toString(),
-            challenge?.max_steps?.toString() ?? ''
+            formatNumberCommas(currentStepCount.toString()),
+            formatNumberCommas(challenge?.max_steps?.toString() ?? '')
           )}
         </h3>
       )}
@@ -438,7 +439,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         ) : null}
         {audioClaimedSoFar > 0 && challenge?.state !== 'disbursed' ? (
           <div className={styles.claimRewardClaimedAmountLabel}>
-            {`(${audioClaimedSoFar} ${messages.claimedSoFar})`}
+            {`(${formatNumberCommas(audioClaimedSoFar)} ${
+              messages.claimedSoFar
+            })`}
           </div>
         ) : null}
       </div>
