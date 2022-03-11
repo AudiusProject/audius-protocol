@@ -36,8 +36,8 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.removeIndex('Fingerprints', ['userId'])
-      .then(() => queryInterface.removeIndex('Fingerprints', ['visitorId']))
+    return queryInterface.removeIndex('Fingerprints', ['visitorId'])
+      .then(() => queryInterface.removeIndex('Fingerprints', ['userId']))
       .then(() => queryInterface.dropTable('Fingerprints'))
   }
 }

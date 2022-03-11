@@ -11,7 +11,7 @@ const getDeviceIDCountForUserId = async (userId) => {
   // Get the # of users sharing any visitorID
   // associated with `userId` on any platform
   const res = await models.sequelize.query(
-    `select count(*), "Fingerprints"."userId"
+    `select "Fingerprints"."userId"
      from "Fingerprints"
      where "visitorId" in (
       select distinct "visitorId"

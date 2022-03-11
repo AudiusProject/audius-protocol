@@ -10,11 +10,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      index: true
     },
     visitorId: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      index: true
     },
     origin: {
       type: DataTypes.ENUM({
