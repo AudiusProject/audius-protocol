@@ -1,8 +1,9 @@
-import { User } from 'audius-client/src/common/models/User'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
+import { getUserId } from 'audius-client/src/common/store/account/selectors'
 
 import { EmptyTile } from 'app/components/core'
-import { useAccountUser } from 'app/hooks/selectors'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+
+import { useSelectProfile } from './selectors'
 
 const messages = {
   you: 'You',
@@ -16,25 +17,24 @@ const messages = {
 
 type Tab = 'tracks' | 'albums' | 'playlists' | 'reposts'
 
-export const useEmptyProfileText = (profile: Nullable<User>, tab: Tab) => {
-  const accountUser = useAccountUser()
+export const useEmptyProfileText = (tab: Tab) => {
+  const { user_id, name } = useSelectProfile(['user_id', 'name'])
+  const accountId = useSelectorWeb(getUserId)
 
-  if (!profile) return ''
-  const { user_id, name } = profile
-  const isOwner = user_id === accountUser?.user_id
+  const isOwner = user_id === accountId
+
   const youAction = `${messages.you} ${messages.haveNot}`
   const nameAction = `${name} ${messages.hasNot}`
   return `${isOwner ? youAction : nameAction} ${messages[tab]}`
 }
 
 type EmptyProfileTileProps = {
-  profile: User
   tab: Tab
 }
 
 export const EmptyProfileTile = (props: EmptyProfileTileProps) => {
-  const { tab, profile } = props
-  const emptyText = useEmptyProfileText(profile, tab)
+  const { tab } = props
+  const emptyText = useEmptyProfileText(tab)
 
   return <EmptyTile message={emptyText} />
 }

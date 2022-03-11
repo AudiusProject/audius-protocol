@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { View, Text } from 'react-native'
 
@@ -13,6 +12,8 @@ import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
 import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { makeStyles } from 'app/styles/makeStyles'
+
+import { useSelectProfile } from './selectors'
 
 const messages = {
   tier: 'tier'
@@ -46,11 +47,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
-type ProfileBadgeProps = {
-  profile: User
-}
-
-export const ProfileBadge = ({ profile }: ProfileBadgeProps) => {
+export const ProfileBadge = () => {
+  const profile = useSelectProfile(['balance', 'associated_wallets_balance'])
   const styles = useStyles()
   const tier = getUserAudioTier(profile)
   const tierRank = getAudioTierRank(tier)

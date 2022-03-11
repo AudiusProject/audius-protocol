@@ -1,17 +1,16 @@
 import { useMemo } from 'react'
 
 import { ID } from 'audius-client/src/common/models/Identifiers'
-import { User } from 'audius-client/src/common/models/User'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import {
   badgeTiers,
   makeGetTierAndVerifiedForUser
 } from 'audius-client/src/components/user-badges/utils'
 
-import { useAccountUser } from 'app/hooks/selectors'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { MIN_COLLECTIBLES_TIER } from './constants'
+import { getIsOwner, useSelectProfile } from './selectors'
 
 /**
  * Wraps our reselect tier selector in useMemo and useSelector
@@ -39,15 +38,21 @@ export const useSelectTierInfo = (userId: ID) => {
  * If the user is viewing their own profile, the collectibles don't
  * need to be ordered
  */
-export const useShouldShowCollectiblesTab = (profile: User) => {
+export const useShouldShowCollectiblesTab = () => {
   const {
     user_id,
     has_collectibles,
     collectibleList,
     solanaCollectibleList,
     collectibles
-  } = profile
-  const accountUser = useAccountUser()
+  } = useSelectProfile([
+    'user_id',
+    'has_collectibles',
+    'collectibleList',
+    'solanaCollectibleList',
+    'collectibles'
+  ])
+  const isOwner = useSelectorWeb(getIsOwner)
   const { tierNumber } = useSelectTierInfo(user_id)
 
   const hasCollectiblesTierRequirement =
@@ -66,11 +71,10 @@ export const useShouldShowCollectiblesTab = (profile: User) => {
   const neverSetCollectiblesOrder = !collectibles
   const hasVisibleCollectibles =
     hasCollectibles && (neverSetCollectiblesOrder || hasCollectiblesOrder)
-  const isUserOnTheirProfile = accountUser?.user_id === user_id
 
   if (hasVisibleCollectibles) return true
 
-  if (hasCollectibles && isUserOnTheirProfile) return true
+  if (hasCollectibles && isOwner) return true
 
   return false
 }

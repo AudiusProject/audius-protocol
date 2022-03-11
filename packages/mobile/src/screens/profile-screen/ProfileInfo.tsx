@@ -1,13 +1,13 @@
 import { FollowSource } from 'audius-client/src/common/models/Analytics'
-import { User } from 'audius-client/src/common/models/User'
 import { View, Text } from 'react-native'
 
 import { FollowButton } from 'app/components/user'
-import { useAccountUser } from 'app/hooks/selectors'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
 import { SubscribeButton } from './SubscribeButton'
+import { getIsOwner, useSelectProfile } from './selectors'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   username: {
@@ -62,26 +62,38 @@ const messages = {
 }
 
 type ProfileInfoProps = {
-  profile: User
   onFollow: () => void
 }
 
 export const ProfileInfo = (props: ProfileInfoProps) => {
-  const { profile, onFollow } = props
+  const { onFollow } = props
   const styles = useStyles()
-  const { does_current_user_follow, does_follow_current_user } = profile
-  const accountUser = useAccountUser()
-  const isOwner = accountUser?.user_id === profile.user_id
+  const profile = useSelectProfile([
+    'user_id',
+    'name',
+    'handle',
+    'does_current_user_follow',
+    'does_follow_current_user'
+  ])
+
+  const {
+    name,
+    handle,
+    does_current_user_follow,
+    does_follow_current_user
+  } = profile
+
+  const isOwner = useSelectorWeb(getIsOwner)
 
   return (
     <View style={styles.info}>
       <View>
         <Text accessibilityRole='header' style={styles.username}>
-          {profile.name}
+          {name}
         </Text>
         <View style={styles.handleInfo}>
           <View style={styles.handle}>
-            <Text style={styles.handleText}>@{profile.handle}</Text>
+            <Text style={styles.handleText}>@{handle}</Text>
           </View>
           {does_follow_current_user ? (
             <View style={styles.followsYou}>

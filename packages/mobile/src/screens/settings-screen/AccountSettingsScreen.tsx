@@ -12,7 +12,7 @@ import IconMail from 'app/assets/images/iconMail.svg'
 import IconSignOut from 'app/assets/images/iconSignOut.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { Screen } from 'app/components/core'
-import { ProfilePhoto } from 'app/components/user'
+import { ProfilePicture } from 'app/components/user'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
@@ -73,7 +73,7 @@ export const AccountSettingsScreen = () => {
     <Screen title={messages.title} topbarRight={null} variant='secondary'>
       <ScrollView>
         <View style={styles.header}>
-          <ProfilePhoto profile={accountUser} style={styles.profilePhoto} />
+          <ProfilePicture profile={accountUser} style={styles.profilePhoto} />
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.handle}>@{handle}</Text>
         </View>

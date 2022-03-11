@@ -1,6 +1,9 @@
 import { ComponentType, ReactNode } from 'react'
 
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
+import {
+  createMaterialTopTabNavigator,
+  MaterialTopTabNavigationOptions
+} from '@react-navigation/material-top-tabs'
 import { SvgProps } from 'react-native-svg'
 
 import { TopTabBar } from 'app/components/top-tab-bar'
@@ -17,11 +20,13 @@ const useStyles = makeStyles(({ palette }) => ({
 type TabNavigatorProps = {
   initialScreenName?: string
   children: ReactNode
+  screenOptions?: MaterialTopTabNavigationOptions
 }
 
 export const TabNavigator = ({
   initialScreenName,
-  children
+  children,
+  screenOptions
 }: TabNavigatorProps) => {
   const styles = useStyles()
   return (
@@ -31,7 +36,8 @@ export const TabNavigator = ({
       screenOptions={{
         tabBarStyle: styles.root,
         tabBarLabelStyle: styles.label,
-        tabBarIndicatorStyle: styles.indicator
+        tabBarIndicatorStyle: styles.indicator,
+        ...screenOptions
       }}
     >
       {children}
@@ -48,10 +54,11 @@ type ScreenConfig = {
 
 type TabScreenConfig = ScreenConfig & {
   key?: string
+  initialParams?: Record<string, unknown>
 }
 
 export const tabScreen = (config: TabScreenConfig) => {
-  const { key, name, label, Icon, component } = config
+  const { key, name, label, Icon, component, initialParams } = config
   return (
     <Tab.Screen
       key={key}
@@ -61,6 +68,7 @@ export const tabScreen = (config: TabScreenConfig) => {
         tabBarLabel: label ?? name,
         tabBarIcon: ({ color }) => <Icon fill={color} />
       }}
+      initialParams={initialParams}
     />
   )
 }

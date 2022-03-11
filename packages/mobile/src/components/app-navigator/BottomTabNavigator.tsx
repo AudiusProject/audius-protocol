@@ -130,7 +130,11 @@ const FavoritesStackScreen = createStackScreen<FavoritesStackParamList>(
 
 const ProfileStackScreen = createStackScreen<ProfileStackParamList>(Stack => (
   <>
-    <Stack.Screen name='ProfileStack' component={ProfileScreen} />
+    <Stack.Screen
+      name='ProfileStack'
+      component={ProfileScreen}
+      initialParams={{ handle: 'accountUser' }}
+    />
     <Stack.Screen name='EditProfile' component={EditProfileScreen} />
     <Stack.Screen name='SettingsScreen' component={SettingsScreen} />
     <Stack.Screen name='AboutScreen' component={AboutScreen} />

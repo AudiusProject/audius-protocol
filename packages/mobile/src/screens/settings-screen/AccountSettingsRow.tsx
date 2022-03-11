@@ -4,7 +4,7 @@ import { getAccountUser } from 'audius-client/src/common/store/account/selectors
 import { Text, View } from 'react-native'
 
 import { ProfileStackParamList } from 'app/components/app-navigator/types'
-import { ProfilePhoto } from 'app/components/user'
+import { ProfilePicture } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
@@ -43,7 +43,7 @@ export const AccountSettingsRow = () => {
   return (
     <SettingsRow style={styles.root} onPress={handlePress}>
       <View style={styles.content}>
-        <ProfilePhoto profile={accountUser} style={styles.profilePicture} />
+        <ProfilePicture profile={accountUser} style={styles.profilePicture} />
         <View style={styles.info}>
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.handle}>@{handle}</Text>
