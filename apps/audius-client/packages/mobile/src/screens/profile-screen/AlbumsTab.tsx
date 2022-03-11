@@ -1,27 +1,19 @@
-import { useMemo } from 'react'
+import { getProfileAlbums } from 'audius-client/src/common/store/pages/profile/selectors'
 
 import { CollectionList } from 'app/components/collection-list/CollectionList'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { useEmptyProfileText } from './EmptyProfileTile'
-import { useProfileAlbums } from './selectors'
 
 export const AlbumsTab = () => {
-  const { profile, albums } = useProfileAlbums()
+  const albums = useSelectorWeb(getProfileAlbums)
 
-  const userAlbums = useMemo(() => {
-    if (profile && albums) {
-      return albums.map(album => ({ ...album, user: profile }))
-    }
-  }, [profile, albums])
-
-  const emptyListText = useEmptyProfileText(profile, 'albums')
-
-  if (!userAlbums) return null
+  const emptyListText = useEmptyProfileText('albums')
 
   return (
     <CollectionList
       listKey='profile-albums'
-      collection={userAlbums}
+      collection={albums}
       emptyListText={emptyListText}
       disableTopTabScroll
       fromPage='profile'

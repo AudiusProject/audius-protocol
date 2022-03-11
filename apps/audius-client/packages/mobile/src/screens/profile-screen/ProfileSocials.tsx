@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
 import { View } from 'react-native'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
@@ -12,6 +11,7 @@ import { EventNames } from 'app/types/analytics'
 import { make, track } from 'app/utils/analytics'
 
 import { ProfileBadge } from './ProfileBadge'
+import { useSelectProfile } from './selectors'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   socials: {
@@ -27,12 +27,19 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-type ProfileSocialsProps = {
-  profile: User
-}
+export const ProfileSocials = () => {
+  const {
+    handle,
+    twitter_handle,
+    instagram_handle,
+    tiktok_handle
+  } = useSelectProfile([
+    'handle',
+    'twitter_handle',
+    'instagram_handle',
+    'tiktok_handle'
+  ])
 
-export const ProfileSocials = ({ profile }: ProfileSocialsProps) => {
-  const { handle, twitter_handle, instagram_handle, tiktok_handle } = profile
   const styles = useStyles()
   const sanitizedHandle = handle.replace('@', '')
 
@@ -83,7 +90,7 @@ export const ProfileSocials = ({ profile }: ProfileSocialsProps) => {
 
   return (
     <View style={styles.socials}>
-      <ProfileBadge profile={profile} />
+      <ProfileBadge />
       {twitter_handle ? (
         <IconButton
           icon={IconTwitterBird}

@@ -1,7 +1,6 @@
 import { Fragment, useCallback } from 'react'
 
 import { FollowSource } from 'audius-client/src/common/models/Analytics'
-import { User } from 'audius-client/src/common/models/User'
 import {
   followUser,
   unfollowUser
@@ -15,13 +14,14 @@ import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
 import IconClose from 'app/assets/images/iconRemove.svg'
 import { Button, IconButton, Text } from 'app/components/core'
-import { ProfilePhoto } from 'app/components/user'
+import { ProfilePicture } from 'app/components/user'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { track, make } from 'app/utils/analytics'
 
 import { EventNames } from '../../../types/analytics'
+import { useSelectProfile } from '../selectors'
 
 import { ArtistLink } from './ArtistLink'
 
@@ -66,16 +66,15 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 type ArtistRecommendationsProps = {
-  profile: User
   onClose: () => void
 }
 
 const getRelatedArtistIds = makeGetRelatedArtists()
 
 export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
+  const { onClose } = props
   const styles = useStyles()
-  const { profile, onClose } = props
-  const { user_id, name } = profile
+  const { user_id, name } = useSelectProfile(['user_id', 'name'])
 
   const dispatchWeb = useDispatchWeb()
 
@@ -133,7 +132,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
       </View>
       <View style={styles.suggestedArtistsPhotos}>
         {suggestedArtists.map(artist => (
-          <ProfilePhoto
+          <ProfilePicture
             key={artist.user_id}
             profile={artist}
             style={styles.suggestedArtistPhoto}

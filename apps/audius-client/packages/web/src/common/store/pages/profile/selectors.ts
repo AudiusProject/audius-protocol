@@ -1,5 +1,6 @@
 import moment from 'moment'
 
+import { UserCollection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import { CommonState } from 'common/store'
 import { getCollections } from 'common/store/cache/collections/selectors'
@@ -38,6 +39,37 @@ export const getProfileFeedLineup = (state: CommonState) =>
   state.pages.profile.feed
 export const getProfileTracksLineup = (state: CommonState) =>
   state.pages.profile.tracks
+
+export const getProfileCollections = createDeepEqualSelector(
+  [getProfileUserId, getUsers, getCollections],
+  (userId, users, collections) => {
+    const user = users[userId]
+    if (!user) return []
+    const { handle, _collectionIds } = user
+    const userCollections = _collectionIds
+      ?.map(collectionId => collections[(collectionId as unknown) as number])
+      .filter(collection => {
+        if (collection) {
+          const { is_delete, _marked_deleted, _moved } = collection
+          return !(is_delete || _marked_deleted) || _moved
+        }
+      })
+      .map(
+        collection => ({ ...collection, user: { handle } } as UserCollection)
+      )
+    return userCollections ?? []
+  }
+)
+
+export const getProfileAlbums = createDeepEqualSelector(
+  [getProfileCollections],
+  collections => collections?.filter(({ is_album }) => is_album)
+)
+
+export const getProfilePlaylists = createDeepEqualSelector(
+  [getProfileCollections],
+  collections => collections?.filter(({ is_album }) => !is_album)
+)
 
 export const makeGetProfile = () => {
   return createDeepEqualSelector(

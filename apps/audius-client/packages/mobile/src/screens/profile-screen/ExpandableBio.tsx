@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
 import {
   Pressable,
   View,
@@ -14,6 +13,7 @@ import { Hyperlink } from 'app/components/core'
 import { makeStyles } from 'app/styles/makeStyles'
 
 import { Sites } from './Sites'
+import { useSelectProfile } from './selectors'
 import { squashNewLines } from './utils'
 
 const messages = {
@@ -39,12 +39,12 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   }
 }))
 
-type ExpandableBioProps = {
-  profile: User
-}
-
-export const ExpandableBio = ({ profile }: ExpandableBioProps) => {
-  const { bio, website, donation } = profile
+export const ExpandableBio = () => {
+  const { bio, website, donation } = useSelectProfile([
+    'bio',
+    'website',
+    'donation'
+  ])
   const styles = useStyles()
   const [fullBioHeight, setFullBioHeight] = useState(0)
   const hasSites = Boolean(website || donation)
@@ -95,7 +95,7 @@ export const ExpandableBio = ({ profile }: ExpandableBioProps) => {
             </Text>
           </Hyperlink>
         ) : null}
-        {hasSites && isExpanded ? <Sites profile={profile} /> : null}
+        {hasSites && isExpanded ? <Sites /> : null}
       </View>
       {shouldShowMore ? (
         <Pressable style={styles.expandButton} onPress={handleToggleExpanded}>

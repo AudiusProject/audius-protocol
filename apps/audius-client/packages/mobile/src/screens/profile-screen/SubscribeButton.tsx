@@ -9,7 +9,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
-import { getProfile } from './selectors'
+import { getIsSubscribed } from './selectors'
 
 const messages = {
   subscribe: 'subscribe',
@@ -33,7 +33,7 @@ export const SubscribeButton = (props: SubscribeButtonProps) => {
   const styles = useStyles()
   const { profile } = props
   const { user_id } = profile
-  const { isSubscribed } = useSelectorWeb(getProfile)
+  const isSubscribed = useSelectorWeb(getIsSubscribed)
   const dispatchWeb = useDispatchWeb()
 
   const handlePress = useCallback(() => {

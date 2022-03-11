@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
 import { setFollowers } from 'audius-client/src/common/store/user-list/followers/actions'
 import { setFollowing } from 'audius-client/src/common/store/user-list/following/actions'
 import { Pressable, Text, View } from 'react-native'
@@ -9,6 +8,8 @@ import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles/makeStyles'
+
+import { useSelectProfile } from './selectors'
 
 const messages = {
   tracks: 'tracks',
@@ -43,13 +44,19 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   }
 }))
 
-type ProfileMetricsProps = {
-  profile: User
-}
-
-export const ProfileMetrics = ({ profile }: ProfileMetricsProps) => {
+export const ProfileMetrics = () => {
   const styles = useStyles()
-  const { user_id, track_count, follower_count, followee_count } = profile
+  const {
+    user_id,
+    track_count,
+    follower_count,
+    followee_count
+  } = useSelectProfile([
+    'user_id',
+    'track_count',
+    'follower_count',
+    'followee_count'
+  ])
 
   const navigation = useNavigation<ProfileStackParamList>()
   const dispatchWeb = useDispatchWeb()

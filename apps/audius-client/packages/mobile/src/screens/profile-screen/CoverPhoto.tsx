@@ -1,11 +1,12 @@
 import { WidthSizes } from 'audius-client/src/common/models/ImageSizes'
-import { User } from 'audius-client/src/common/models/User'
 
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'
 import imageCoverPhotoBlank from 'app/assets/images/imageCoverPhotoBlank.jpg'
 import { DynamicImage } from 'app/components/core'
 import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { makeStyles } from 'app/styles/makeStyles'
+
+import { useSelectProfile } from './selectors'
 
 const useStyles = makeStyles(({ spacing }) => ({
   artistBadge: {
@@ -21,13 +22,13 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type CoverPhotoProps = {
-  profile: User
-}
-
-export const CoverPhoto = ({ profile }: CoverPhotoProps) => {
+export const CoverPhoto = () => {
   const styles = useStyles()
-  const { user_id, _cover_photo_sizes, track_count } = profile
+  const { user_id, _cover_photo_sizes, track_count } = useSelectProfile([
+    'user_id',
+    '_cover_photo_sizes',
+    'track_count'
+  ])
 
   const coverPhoto = useUserCoverPhoto(
     user_id,

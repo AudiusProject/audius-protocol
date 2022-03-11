@@ -6,7 +6,7 @@ import { User } from 'audius-client/src/common/models/User'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { View, Text, Pressable } from 'react-native'
 
-import { ProfilePhoto, FollowButton } from 'app/components/user'
+import { ProfilePicture, FollowButton } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -52,7 +52,7 @@ export const UserChip = (props: UserChipProps) => {
   return (
     <View style={styles.root}>
       <Pressable style={styles.details} onPress={handlePress}>
-        <ProfilePhoto profile={user} style={styles.photo} />
+        <ProfilePicture profile={user} style={styles.photo} />
         <View>
           <Text style={styles.name} numberOfLines={1}>
             {name}
