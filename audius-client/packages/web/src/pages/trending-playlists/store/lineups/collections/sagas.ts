@@ -4,12 +4,14 @@ import { Collection, UserCollectionMetadata } from 'common/models/Collection'
 import { StringKeys } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
+import {
+  PREFIX,
+  trendingPlaylistLineupActions
+} from 'common/store/pages/trending-playlists/lineups/actions'
+import { getLineup } from 'common/store/pages/trending-playlists/lineups/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { LineupSagas } from 'store/lineup/sagas'
-
-import { PREFIX, trendingPlaylistLineupActions } from './actions'
-import { getLineup } from './selectors'
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   yield call(remoteConfigInstance.waitForRemoteConfig)

@@ -30,7 +30,6 @@ import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import { NotificationUsersPageState } from 'pages/notification-users-page/store/types'
 import RemixesPageReducer from 'pages/remixes-page/store/slice'
 import SignOnPageState from 'pages/sign-on/store/types'
-import trendingPlaylistsReducer from 'pages/trending-playlists/store/slice'
 import { UploadPageState } from 'pages/upload-page/store/types'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
@@ -102,7 +101,6 @@ export type AppState = CommonState & {
       smartCollection: SmartCollectionState
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
-      trendingPlaylists: ReturnType<typeof trendingPlaylistsReducer>
     }
   }
 

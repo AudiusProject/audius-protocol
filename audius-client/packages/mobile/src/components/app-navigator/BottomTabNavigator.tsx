@@ -22,11 +22,13 @@ import {
   BEST_NEW_RELEASES,
   REMIXABLES,
   FEELING_LUCKY,
-  MOST_LOVED
+  MOST_LOVED,
+  HEAVY_ROTATION
 } from 'app/screens/explore-screen/smartCollections'
 import {
   LetThemDJScreen,
   TopAlbumsScreen,
+  TrendingPlaylistsScreen,
   TrendingUndergroundScreen
 } from 'app/screens/explore-screen/tabs/ForYouTab'
 import FavoritesScreen from 'app/screens/favorites-screen'
@@ -65,7 +67,8 @@ const smartCollections = [
   BEST_NEW_RELEASES,
   REMIXABLES,
   MOST_LOVED,
-  FEELING_LUCKY
+  FEELING_LUCKY,
+  HEAVY_ROTATION
 ]
 
 const styles = StyleSheet.create({
@@ -107,6 +110,10 @@ const ExploreStackScreen = createStackScreen<ExploreStackParamList>(Stack => (
     <Stack.Screen name='ExploreStack' component={ExploreScreen} />
     <Stack.Screen name='LetThemDJ' component={LetThemDJScreen} />
     <Stack.Screen name='TopAlbums' component={TopAlbumsScreen} />
+    <Stack.Screen
+      name='TrendingPlaylists'
+      component={TrendingPlaylistsScreen}
+    />
     <Stack.Screen
       name='TrendingUnderground'
       component={TrendingUndergroundScreen}

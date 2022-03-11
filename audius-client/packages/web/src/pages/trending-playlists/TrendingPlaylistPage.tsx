@@ -2,6 +2,8 @@ import React, { useEffect } from 'react'
 
 import { useDispatch } from 'react-redux'
 
+import { trendingPlaylistLineupActions } from 'common/store/pages/trending-playlists/lineups/actions'
+import { getLineup } from 'common/store/pages/trending-playlists/lineups/selectors'
 import DesktopHeader from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Lineup from 'components/lineup/Lineup'
@@ -14,8 +16,6 @@ import { isMobile } from 'utils/clientUtil'
 import { BASE_URL, TRENDING_PLAYLISTS_PAGE } from 'utils/route'
 
 import styles from './TrendingPlaylistPage.module.css'
-import { trendingPlaylistLineupActions } from './store/lineups/collections/actions'
-import { getLineup } from './store/lineups/collections/selectors'
 
 const messages = {
   trendingPlaylistTile: 'Trending Playlists',
