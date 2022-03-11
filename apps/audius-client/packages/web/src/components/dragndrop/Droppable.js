@@ -36,9 +36,13 @@ const Droppable = props => {
   }
 
   const drop = e => {
+    if (props.stopPropogationOnDrop) {
+      e.stopPropagation()
+    }
     const id = props.dragging.id
+    const kind = props.dragging.kind
     if (id) {
-      props.onDrop(id)
+      props.onDrop(id, kind)
     }
     setHovered(false)
   }
@@ -91,13 +95,15 @@ Droppable.propTypes = {
   acceptedKinds: PropTypes.arrayOf(PropTypes.string),
   disabled: PropTypes.bool,
   acceptOwner: PropTypes.bool,
-  children: PropTypes.any
+  children: PropTypes.any,
+  stopPropogationOnDrop: PropTypes.bool
 }
 
 Droppable.defaultProps = {
-  onDrop: id => {},
+  onDrop: (id, kind) => {},
   acceptedKinds: ['track', 'album', 'playlist', 'library-playlist'],
   disabled: false,
+  stopPropogationOnDrop: false,
   acceptOwner: true
 }
 

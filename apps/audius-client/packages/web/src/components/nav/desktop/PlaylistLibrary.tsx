@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
@@ -21,6 +21,7 @@ import {
 import { addTrackToPlaylist } from 'common/store/cache/collections/actions'
 import Droppable from 'components/dragndrop/Droppable'
 import { getPlaylistUpdates } from 'components/notification/store/selectors'
+import { ToastContext } from 'components/toast/ToastContext'
 import { useArePlaylistUpdatesEnabled, useFlag } from 'hooks/useRemoteConfig'
 import { SMART_COLLECTION_MAP } from 'pages/smart-collection/smartCollections'
 import { make, useRecord } from 'store/analytics/actions'
@@ -28,7 +29,9 @@ import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import {
+  addPlaylistToFolder,
   containsTempPlaylist,
+  findInPlaylistLibrary,
   reorderPlaylistLibrary
 } from 'store/playlist-library/helpers'
 import { update } from 'store/playlist-library/slice'
@@ -50,6 +53,12 @@ type LibraryContentsLevelProps = {
   renderExplorePlaylist: (playlistId: SmartCollectionVariant) => void
   renderFolder: (folder: PlaylistLibraryFolder) => void
 }
+
+const messages = {
+  playlistMovedToFolderToast: (folderName: string) =>
+    `This playlist was already in your library. It has now been moved to ${folderName}!`
+}
+
 /** Function component for rendering a single level of the playlist library.
  * Playlist library consists of up to two content levels (root + inside a folder) */
 const LibraryContentsLevel = ({
@@ -96,6 +105,7 @@ const PlaylistLibrary = ({
   const { isEnabled: isPlaylistFoldersEnabled } = useFlag(
     FeatureFlags.PLAYLIST_FOLDERS
   )
+  const { toast } = useContext(ToastContext)
   const record = useRecord()
   const [, setIsEditFolderModalOpen] = useModalState('EditFolder')
 
@@ -113,6 +123,34 @@ const PlaylistLibrary = ({
     },
     [dispatch]
   )
+
+  const handleDropInFolder = useCallback(
+    (
+      folder: PlaylistLibraryFolder,
+      droppedKind: 'playlist' | 'library-playlist',
+      droppedId: ID | string | SmartCollectionVariant
+    ) => {
+      if (!library) return
+      const newLibrary = addPlaylistToFolder(library, droppedId, folder.id)
+
+      // Show a toast if playlist dragged from outside of library was already in the library so it simply got moved to the target folder.
+      if (
+        droppedKind === 'playlist' &&
+        library !== newLibrary &&
+        findInPlaylistLibrary(library, droppedId)
+      ) {
+        toast(messages.playlistMovedToFolderToast(folder.name))
+      }
+      if (library !== newLibrary) {
+        dispatch(update({ playlistLibrary: newLibrary }))
+      }
+    },
+    [dispatch, library, toast]
+  )
+
+  const handleDropBelowFolder = useCallback(() => {
+    // TODO
+  }, [])
 
   const onReorder = useCallback(
     (
@@ -207,6 +245,8 @@ const PlaylistLibrary = ({
         dragging={dragging}
         draggingKind={draggingKind}
         onClickEdit={handleClickEditFolder}
+        onDropBelowFolder={handleDropBelowFolder}
+        onDropInFolder={handleDropInFolder}
       >
         {isEmpty(folder.contents) ? null : (
           <div className={styles.folderContentsContainer}>

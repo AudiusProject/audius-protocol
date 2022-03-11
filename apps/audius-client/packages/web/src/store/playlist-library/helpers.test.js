@@ -7,7 +7,8 @@ import {
   removePlaylistFolderInLibrary,
   removePlaylistLibraryDuplicates,
   renamePlaylistFolderInLibrary,
-  reorderPlaylistLibrary
+  reorderPlaylistLibrary,
+  addPlaylistToFolder
 } from './helpers'
 
 describe('findInPlaylistLibrary', () => {
@@ -741,5 +742,133 @@ describe('removePlaylistFolderInLibrary', () => {
       'fake-uuid-not-in-library'
     )
     expect(result).toEqual({ ...library })
+  })
+})
+
+describe('addPlaylistToFolder', () => {
+  it('adds playlist to given folder', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        {
+          type: 'folder',
+          name: 'Foldero',
+          id: 'fake-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 3 },
+            { type: 'temp_playlist', playlist_id: 'asdf' }
+          ]
+        }
+      ]
+    }
+
+    const result = addPlaylistToFolder(library, 'Heavy Rotation', 'fake-uuid')
+    const expectedResult = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        {
+          type: 'folder',
+          name: 'Foldero',
+          id: 'fake-uuid',
+          contents: [
+            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            { type: 'playlist', playlist_id: 3 },
+            { type: 'temp_playlist', playlist_id: 'asdf' }
+          ]
+        }
+      ]
+    }
+    expect(result).toEqual(expectedResult)
+  })
+
+  it('returns the original unchanged library if the playlist is already in the folder', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        {
+          type: 'folder',
+          name: 'Foldero',
+          id: 'fake-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 3 },
+            { type: 'temp_playlist', playlist_id: 'asdf' }
+          ]
+        }
+      ]
+    }
+
+    const result = addPlaylistToFolder(library, 'asdf', 'fake-uuid')
+    expect(result).toBe(library)
+  })
+
+  it('returns the original unchanged library if folder does not exist', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        {
+          type: 'folder',
+          name: 'Foldero',
+          id: 'fake-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 3 },
+            { type: 'temp_playlist', playlist_id: 'asdf' }
+          ]
+        }
+      ]
+    }
+
+    const result = addPlaylistToFolder(
+      library,
+      'Heavy Rotation',
+      'uuid-doesnt-exist'
+    )
+    expect(result).toBe(library)
+  })
+
+  it('returns the original unchanged library if the library has no contents', () => {
+    const library = {}
+
+    const result = addPlaylistToFolder(library, 'Heavy Rotation', 'fake-uuid')
+    expect(result).toBe(library)
+  })
+
+  it('moves the playlist into the folder if the playlist is already in the library but not in the folder', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        {
+          type: 'folder',
+          name: 'Foldero',
+          id: 'fake-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 3 },
+            { type: 'temp_playlist', playlist_id: 'asdf' }
+          ]
+        }
+      ]
+    }
+
+    const result = addPlaylistToFolder(library, 2, 'fake-uuid')
+    const expectedResult = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        {
+          type: 'folder',
+          name: 'Foldero',
+          id: 'fake-uuid',
+          contents: [
+            { type: 'playlist', playlist_id: 2 },
+            { type: 'playlist', playlist_id: 3 },
+            { type: 'temp_playlist', playlist_id: 'asdf' }
+          ]
+        }
+      ]
+    }
+    expect(result).toEqual(expectedResult)
   })
 })

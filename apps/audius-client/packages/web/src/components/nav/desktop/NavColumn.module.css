@@ -313,7 +313,8 @@ svg.logo path {
   width: calc(100% + 12px);
 }
 
-.navColumn .links a.link.disabledLink {
+.navColumn .links a.link.disabledLink,
+.navColumn .links button.link.disabledLink {
   opacity: 0.6;
   cursor: not-allowed;
 }
