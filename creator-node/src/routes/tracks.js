@@ -210,14 +210,9 @@ module.exports = function (app) {
       } = req.body
 
       // Input validation
-      if (
-        !blockchainTrackId ||
-        !blockNumber ||
-        !metadataFileUUID ||
-        !transcodedTrackUUID
-      ) {
+      if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
         return errorResponseBadRequest(
-          'Must include blockchainTrackId, blockNumber, metadataFileUUID, and transcodedTrackUUID.'
+          'Must include blockchainTrackId, blockNumber, and metadataFileUUID.'
         )
       }
 
@@ -308,6 +303,10 @@ module.exports = function (app) {
 
         // if track created, ensure files exist with trackBlockchainId = null and update them
         if (!existingTrackEntry) {
+          if (!transcodedTrackUUID) {
+            throw new Error('Cannot create track without transcodedTrackUUID.')
+          }
+
           // Associate the transcode file db record with trackUUID
           const transcodedFile = await models.File.findOne({
             where: {
@@ -388,20 +387,22 @@ module.exports = function (app) {
            * If track updated, ensure files exist with trackBlockchainId
            */
 
-          // Ensure transcode file db record exists
-          const transcodedFile = await models.File.findOne({
-            where: {
-              fileUUID: transcodedTrackUUID,
-              cnodeUserUUID,
-              trackBlockchainId: track.blockchainId,
-              type: 'copy320'
-            },
-            transaction
-          })
-          if (!transcodedFile) {
-            throw new Error(
-              'Did not find the corresponding transcoded file for the provided track UUID.'
-            )
+          // Ensure transcode file db record exists, if uuid provided
+          if (transcodedTrackUUID) {
+            const transcodedFile = await models.File.findOne({
+              where: {
+                fileUUID: transcodedTrackUUID,
+                cnodeUserUUID,
+                trackBlockchainId: track.blockchainId,
+                type: 'copy320'
+              },
+              transaction
+            })
+            if (!transcodedFile) {
+              throw new Error(
+                'Did not find the corresponding transcoded file for the provided track UUID.'
+              )
+            }
           }
 
           // Ensure segment file db records exist for all CIDs
