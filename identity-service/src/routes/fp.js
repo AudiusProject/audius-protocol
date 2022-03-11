@@ -55,7 +55,7 @@ module.exports = function (app) {
 
   app.get('/fp', handleResponse(async (req) => {
     const { userId, origin } = req.query
-    if (!userId || !origin) return errorResponseBadRequest()
+    if (!userId || !origin || !['web', 'mobile', 'desktop'].includes(origin)) return errorResponseBadRequest()
 
     try {
       const count = (await models.Fingerprints.findAll({
