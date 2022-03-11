@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
+import { Program, BorshInstructionCoder } from "@project-serum/anchor";
 import Web3 from "web3";
 import { Account } from "web3-core";
 import { randomBytes } from "crypto";
@@ -11,8 +11,10 @@ import {
   createPlaylist,
   initUser,
   initUserSolPubkey,
+  deleteTrack,
 } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
+import { decode } from "punycode";
 
 const { PublicKey } = anchor.web3;
 
@@ -72,12 +74,23 @@ export const testInitUser = async ({
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
   expect(chainEthAddress, "eth address").to.equal(ethAddress.toLowerCase());
-
   const chainAuthority = account.authority.toString();
   const expectedAuthority = DefaultPubkey.toString();
   expect(chainAuthority, "authority").to.equal(expectedAuthority);
 
-  await confirmLogInTransaction(provider, tx, metadata);
+  const info = await getTransaction(provider, tx);
+  const data = info.transaction.message.instructions[0].data
+  const accountIndexes = info.transaction.message.instructions[0].accounts
+  const accountKeys = info.transaction.message.accountKeys
+  const decodedInstruction = decodeInstruction(program, data)
+  console.log(decodedInstruction)
+  let accountPubKeys = []
+  for (var i of accountIndexes) {
+    accountPubKeys.push(accountKeys[i].toString())
+  }
+  const decodedData = decodedInstruction.data
+  expect(decodedInstruction.name).to.equal('initUser')
+  expect(decodedData['metadata']).to.equal(metadata)
 };
 
 export const testInitUserSolPubkey = async ({
@@ -145,6 +158,81 @@ export const testCreateUser = async ({
   await confirmLogInTransaction(provider, tx, metadata);
 };
 
+export const testCreateTrack = async ({
+  provider,
+  program,
+  id,
+  trackMetadata,
+  userAuthorityKeypair,
+  trackOwnerPDA,
+  adminStgKeypair,
+}) => {
+  const tx = await createTrack({
+    id,
+    program,
+    userAuthorityKeypair,
+    userStgAccountPDA: trackOwnerPDA,
+    metadata: trackMetadata,
+    adminStgPublicKey: adminStgKeypair.publicKey,
+  });
+
+  const info = await getTransaction(provider, tx);
+  let data = info.transaction.message.instructions[0].data
+  const decodedInstruction = decodeInstruction(program, data)
+  const decodedData = decodedInstruction.data
+  console.log(info.transaction.message.instructions)
+  console.log(decodedInstruction)
+  console.log(decodedData)
+
+  // Validate instruction data
+  expect(decodedInstruction['name']).to.equal('createTrack')
+  expect(decodedData['id']).to.equal(id)
+  expect(decodedData['metadata']).to.equal(trackMetadata)
+
+  const accountIndexes = info.transaction.message.instructions[0].accounts
+  const accountKeys = info.transaction.message.accountKeys
+  console.log(decodedInstruction)
+  let accountPubKeys = []
+  for (var i of accountIndexes) {
+    accountPubKeys.push(accountKeys[i].toString())
+  }
+  console.log(`user: ${trackOwnerPDA}`)
+  console.log(`payer: ${provider.wallet.publicKey}`)
+  console.log(`createTrack: ${accountPubKeys}`)
+  // Retrieve user ownership information
+  // const track = await program.account.track.fetch(newTrackKeypair.publicKey);
+  // const chainOwner = track.owner.toString();
+  // const expectedOwner = trackOwnerPDA.toString();
+  // expect(chainOwner, "track owner").to.equal(expectedOwner);
+  // console.log(`track: ${trackMetadata}, trackId assigned = ${track.trackId}`);
+  // await confirmLogInTransaction(provider, tx, trackMetadata);
+};
+
+export const testDeleteTrack = async ({
+    provider,
+    program,
+    id,
+    trackOwnerPDA,
+    userAuthorityKeypair,
+  }) => {
+    await deleteTrack({
+      id,
+      provider,
+      program,
+      userStgAccountPDA: trackOwnerPDA,
+      userAuthorityKeypair: userAuthorityKeypair,
+    });
+  };
+
+export const decodeInstruction = (program: anchor.Program, data: string) => {
+  const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+  const decodedInstruction = instructionCoder.decode(
+    data,
+    "base58"
+  );
+  return decodedInstruction
+}
+
 export const pollAccountBalance = async (
   provider: anchor.Provider,
   targetAccount: anchor.web3.PublicKey,
@@ -170,6 +258,7 @@ export const confirmLogInTransaction = async (
   log: string
 ) => {
   const info = await getTransaction(provider, tx);
+
   const logs = info.meta.logMessages;
   let stringFound = false;
   logs.forEach((v) => {
@@ -245,9 +334,8 @@ export const createSolanaTrack = async (
   const trackMetadata = randomCID();
 
   await createTrack({
-    provider,
+    id: "eh",
     program,
-    newTrackKeypair,
     userAuthorityKeypair,
     userStgAccountPDA: ownerPDA,
     metadata: trackMetadata,

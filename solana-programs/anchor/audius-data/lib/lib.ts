@@ -318,88 +318,85 @@ export const updateIsVerified = async ({
 
 /// Create a track
 export type CreateTrackParams = {
-  provider: Provider;
   program: Program<AudiusData>;
-  newTrackKeypair: Keypair;
   userAuthorityKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
-  adminStgPublicKey: anchor.web3.PublicKey;
   metadata: string;
+  id: string;
 };
 
 export const createTrack = async ({
-  provider,
+  id,
   program,
-  newTrackKeypair,
   userAuthorityKeypair,
   userStgAccountPDA,
-  adminStgPublicKey,
   metadata,
 }: CreateTrackParams) => {
-  return program.rpc.createTrack(metadata, {
+  return program.rpc.createTrack(
+    id,
+    metadata,
+    {
     accounts: {
-      track: newTrackKeypair.publicKey,
       user: userStgAccountPDA,
       authority: userAuthorityKeypair.publicKey,
-      payer: provider.wallet.publicKey,
-      audiusAdmin: adminStgPublicKey,
-      systemProgram: SystemProgram.programId,
     },
-    signers: [userAuthorityKeypair, newTrackKeypair],
+    signers: [userAuthorityKeypair],
   });
 };
 
 /// Initialize a user from the Audius Admin account
 type UpdateTrackParams = {
   program: Program<AudiusData>;
-  trackPDA: anchor.web3.PublicKey;
   metadata: string;
+  id: string;
   userAuthorityKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
 };
 
 export const updateTrack = async ({
   program,
-  trackPDA,
+  id,
   metadata,
   userAuthorityKeypair,
   userStgAccountPDA,
 }: UpdateTrackParams) => {
-  return program.rpc.updateTrack(metadata, {
-    accounts: {
-      track: trackPDA,
-      user: userStgAccountPDA,
-      authority: userAuthorityKeypair.publicKey,
-    },
-    signers: [userAuthorityKeypair],
-  });
+  return program.rpc.updateTrack(
+    id,
+    metadata,
+    {
+      accounts: {
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    });
 };
 
 /// Initialize a user from the Audius Admin account
 type DeleteTrackParams = {
   provider: Provider;
   program: Program<AudiusData>;
-  trackPDA: Keypair;
+  id: string;
   userAuthorityKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
 };
 
 export const deleteTrack = async ({
-  provider,
   program,
-  trackPDA,
+  id,
   userStgAccountPDA,
   userAuthorityKeypair,
 }: DeleteTrackParams) => {
-  return program.rpc.deleteTrack({
-    accounts: {
-      track: trackPDA,
-      user: userStgAccountPDA,
-      authority: userAuthorityKeypair.publicKey,
-      payer: provider.wallet.publicKey,
-    },
-    signers: [userAuthorityKeypair],
-  });
+  return program.rpc.deleteTrack(
+    id,
+    {
+      accounts: {
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// save a track

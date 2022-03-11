@@ -31,7 +31,6 @@ pub mod audius_data {
         track_id_offset: u64,
         playlist_id_offset: u64,
     ) -> Result<()> {
-        msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         audius_admin.verifier = verifier;
@@ -75,9 +74,8 @@ pub mod audius_data {
         eth_address: [u8; 20],
         handle_seed: [u8; 16],
         _user_bump: u8,
-        metadata: String,
+        _metadata: String,
     ) -> Result<()> {
-        msg!("Audius::InitUser");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
             &[&ctx.accounts.admin.key().to_bytes()[..32]],
@@ -103,8 +101,6 @@ pub mod audius_data {
 
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
-
-        msg!("AudiusUserMetadata = {:?}", metadata);
 
         Ok(())
     }
@@ -230,45 +226,27 @@ pub mod audius_data {
     /*
         Track related functions
     */
-    pub fn create_track(ctx: Context<CreateTrack>, metadata: String) -> Result<()> {
-        msg!("Audius::CreateTrack");
+    pub fn create_track(ctx: Context<CreateTrack>, _id: String, _metadata: String) -> Result<()> {
+        // Reject if update submitted with invalid user authority
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        // Set owner to user storage account
-        ctx.accounts.track.owner = ctx.accounts.user.key();
-        ctx.accounts.track.track_id = ctx.accounts.audius_admin.track_id;
-        // Increment global track ID after assignment to this track in particular
-        // Ensures each track has a unique numeric ID
-        ctx.accounts.audius_admin.track_id = ctx.accounts.audius_admin.track_id + 1;
-        msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
     }
 
-    pub fn update_track(ctx: Context<UpdateTrack>, metadata: String) -> Result<()> {
-        msg!("Audius::UpdateTrack");
-        if ctx.accounts.user.key() != ctx.accounts.track.owner {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+    pub fn update_track(ctx: Context<UpdateTrack>, _id: String, _metadata: String) -> Result<()> {
+        // Reject if update submitted with invalid user authority
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
     }
 
-    pub fn delete_track(ctx: Context<DeleteTrack>) -> Result<()> {
-        msg!("Audius::DeleteTrack");
-        if ctx.accounts.user.key() != ctx.accounts.track.owner {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+    pub fn delete_track(ctx: Context<DeleteTrack>, _id: String) -> Result<()> {
+        // Reject if update submitted with invalid user authority
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        // Manually overwrite owner field
-        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
-        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
-        ctx.accounts.track.owner = dummy_owner_field;
         Ok(())
     }
 
@@ -596,20 +574,12 @@ pub struct RemoveUserAuthorityDelegate<'info> {
 
 /// Instruction container for track creation
 /// Confirms that user.authority matches signer authority field
-/// Payer is provided to facilitate an independent feepayer
 #[derive(Accounts)]
 pub struct CreateTrack<'info> {
-    #[account(init, payer = payer, space = TRACK_ACCOUNT_SIZE)]
-    pub track: Account<'info, Track>,
-    #[account(mut)]
+    #[account()]
     pub user: Account<'info, User>,
-    #[account(mut)]
+    #[account()]
     pub authority: Signer<'info>,
-    #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
 }
 
 /// Instruction container for track updates
@@ -617,10 +587,8 @@ pub struct CreateTrack<'info> {
 #[derive(Accounts)]
 pub struct UpdateTrack<'info> {
     #[account()]
-    pub track: Account<'info, Track>,
-    #[account(mut)]
     pub user: Account<'info, User>,
-    #[account(mut)]
+    #[account()]
     // User update authority field
     pub authority: Signer<'info>,
 }
@@ -629,16 +597,11 @@ pub struct UpdateTrack<'info> {
 /// Removes track storage account entirely
 #[derive(Accounts)]
 pub struct DeleteTrack<'info> {
-    // Return funds to the payer of this transaction
-    #[account(mut, close = payer)]
-    pub track: Account<'info, Track>,
-    #[account(mut)]
+    #[account()]
     pub user: Account<'info, User>,
     // User update authority field
-    #[account(mut)]
+    #[account()]
     pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
 }
 
 /// Instruction container for track social action event
