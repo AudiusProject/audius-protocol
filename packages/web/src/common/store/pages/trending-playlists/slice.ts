@@ -2,8 +2,8 @@ import { combineReducers, createSlice } from '@reduxjs/toolkit'
 
 import { asLineup } from 'common/store/lineup/reducer'
 
-import { PREFIX } from './lineups/collections/actions'
-import playlistsReducer from './lineups/collections/reducer'
+import { PREFIX } from './lineups/actions'
+import playlistsReducer from './lineups/reducer'
 
 const initialState = {}
 

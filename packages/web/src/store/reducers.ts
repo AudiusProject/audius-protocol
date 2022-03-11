@@ -23,7 +23,6 @@ import deleted from 'pages/deleted-page/store/slice'
 import notificationUsers from 'pages/notification-users-page/store/reducers'
 import remixes from 'pages/remixes-page/store/slice'
 import signOn from 'pages/sign-on/store/reducer'
-import trendingPlaylists from 'pages/trending-playlists/store/slice'
 import upload from 'pages/upload-page/store/reducer'
 import visualizer from 'pages/visualizer/store/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
@@ -110,7 +109,6 @@ const createRootReducer = (routeHistory: History) =>
         notificationUsers,
         nowPlaying,
         remixes,
-        trendingPlaylists,
         unfollowConfirmation
       })
     })
