@@ -555,7 +555,7 @@ jobs:
   test-solana-programs:
     docker:
       # specify the version you desire here
-      - image: cimg/rust:1.53.0-node
+      - image: cimg/rust:1.57.0-node
     steps:
       - checkout
       - diff-if-necessary:
