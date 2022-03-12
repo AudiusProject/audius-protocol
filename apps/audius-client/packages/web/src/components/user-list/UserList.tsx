@@ -11,7 +11,7 @@ import { getUserId } from 'common/store/account/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { setNotificationSubscription } from 'common/store/pages/profile/actions'
 import * as socialActions from 'common/store/social/users/actions'
-import { loadMore, setPageSize } from 'common/store/user-list/actions'
+import { loadMore, reset } from 'common/store/user-list/actions'
 import { UserListStoreState } from 'common/store/user-list/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { AppState } from 'store/types'
@@ -25,9 +25,6 @@ type ConnectedUserListOwnProps = {
   // Because multiple lists may exist, all listening to the same actions,
   // the tag is required to forward actions to a particular UserList.
   tag: string
-
-  // # of items per page.
-  pageSize: number
 
   // Selector pointing to this particular instance of the UserList in the global store.
   stateSelector: (state: AppState) => UserListStoreState
@@ -59,18 +56,18 @@ const ConnectedUserList = (props: ConnectedUserListProps) => {
     props.onClickArtistName(handle)
   }
 
-  const { setPageSize, loadMore, pageSize } = props
+  const { loadMore, reset } = props
 
   useEffect(() => {
     // Load initially
-    setPageSize(pageSize)
     loadMore()
-  }, [setPageSize, loadMore, pageSize])
+  }, [loadMore])
 
-  // If page size changes, set it in the store
   useEffect(() => {
-    setPageSize(pageSize)
-  }, [setPageSize, pageSize])
+    return () => {
+      reset()
+    }
+  }, [reset])
 
   return (
     <UserList
@@ -125,8 +122,7 @@ function mapDispatchToProps(
     onClickArtistName: (handle: string) =>
       dispatch(pushRoute(profilePage(handle))),
     loadMore: () => dispatch(loadMore(ownProps.tag)),
-    setPageSize: (pageSize: number) =>
-      dispatch(setPageSize(ownProps.tag, pageSize))
+    reset: () => dispatch(reset(ownProps.tag))
   }
 }
 

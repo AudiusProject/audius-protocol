@@ -9,17 +9,14 @@ import IconBronzeBadge from 'assets/img/tokenBadgeBronze108@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
+import { BadgeTier } from 'common/models/BadgeTier'
 import { getAccountUser } from 'common/store/account/selectors'
 import { pressDiscord } from 'common/store/pages/token-dashboard/slice'
 import { Nullable } from 'common/utils/typeUtils'
 import { show } from 'components/music-confetti/store/slice'
 import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
 import { useSelectTierInfo } from 'components/user-badges/hooks'
-import {
-  BadgeTier,
-  badgeTiers,
-  getTierNumber
-} from 'components/user-badges/utils'
+import { badgeTiers, getTierNumber } from 'components/user-badges/utils'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'

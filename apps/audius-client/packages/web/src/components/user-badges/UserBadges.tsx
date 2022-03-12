@@ -11,12 +11,12 @@ import IconBronzeBadge from 'assets/img/tokenBadgeBronze40@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum40@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver40@2x.png'
+import { BadgeTier } from 'common/models/BadgeTier'
 import { ID } from 'common/models/Identifiers'
 import { Nullable } from 'common/utils/typeUtils'
 
 import styles from './UserBadges.module.css'
 import { useSelectTierInfo } from './hooks'
-import { BadgeTier } from './utils'
 
 const audioTierMapSVG: { [tier in BadgeTier]: Nullable<ReactElement> } = {
   none: null,
@@ -62,7 +62,7 @@ const UserBadges: React.FC<UserBadgesProps> = ({
   let { tier, isVerified } = useSelectTierInfo(userId)
   tier = overrideTier || tier
   const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng
-  const audioBadge = tierMap[tier]
+  const audioBadge = tierMap[tier as BadgeTier]
 
   if (inline) {
     return (

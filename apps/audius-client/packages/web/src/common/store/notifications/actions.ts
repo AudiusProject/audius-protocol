@@ -1,6 +1,5 @@
 import { ID } from 'common/models/Identifiers'
-
-import { Notification } from './types'
+import { Notification } from 'common/store/notifications/types'
 
 export const FETCH_NOTIFICATIONS = 'NOTIFICATION/FETCH_NOTIFICATIONS'
 export const FETCH_NOTIFICATIONS_REQUESTED =
@@ -9,6 +8,8 @@ export const FETCH_NOTIFICATIONS_SUCCEEDED =
   'NOTIFICATION/FETCH_NOTIFICATIONS_SUCCEEDED'
 export const FETCH_NOTIFICATIONS_FAILED =
   'NOTIFICATION/FETCH_NOTIFICATIONS_FAILED'
+
+export const REFRESH_NOTIFICATIONS = 'NOTIFICATION/REFRESH_NOTIFICATIONS'
 
 export const SET_NOTIFICATIONS = 'NOTIFICATION/SET_NOTIFICATIONS'
 
@@ -63,6 +64,10 @@ export const fetchNotificationSucceeded = (
   totalUnread
 })
 
+export const refreshNotifications = () => ({
+  type: REFRESH_NOTIFICATIONS
+})
+
 export const setNotifications = (
   notifications: Notification[],
   totalUnread: number,
@@ -74,11 +79,13 @@ export const setNotifications = (
   totalUnread
 })
 
-export const setNotificationUsers = (userIds: ID[] = [], limit = 0) => ({
-  type: SET_NOTIFICATION_USERS,
-  userIds,
-  limit
-})
+export const setNotificationUsers = (userIds: ID[] = [], limit = 0) => {
+  return {
+    type: SET_NOTIFICATION_USERS,
+    userIds,
+    limit
+  }
+}
 export const fetchNotificationUsers = (limit = 10) => ({
   type: FETCH_NOTIFICATIONS_USERS,
   limit
@@ -150,6 +157,7 @@ export type FetchNotificationsFailed = ReturnType<
 export type FetchNotificationsSucceeded = ReturnType<
   typeof fetchNotificationSucceeded
 >
+export type RefreshNotifications = ReturnType<typeof refreshNotifications>
 export type SetNotifications = ReturnType<typeof setNotifications>
 export type SetNotificationUsers = ReturnType<typeof setNotificationUsers>
 export type FetchNotificationUsers = ReturnType<typeof fetchNotificationUsers>
@@ -180,6 +188,7 @@ export type NotificationAction =
   | FetchNotificationsRequested
   | FetchNotificationsFailed
   | FetchNotificationsSucceeded
+  | RefreshNotifications
   | SetNotifications
   | SetNotificationUsers
   | FetchNotificationUsers

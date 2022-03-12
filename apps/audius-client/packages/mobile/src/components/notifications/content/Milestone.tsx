@@ -1,11 +1,11 @@
 import { ReactNode } from 'react'
 
-import { StyleSheet, Text, View } from 'react-native'
-
 import {
   Achievement,
   Milestone as MilestoneNotification
-} from 'app/store/notifications/types'
+} from 'audius-client/src/common/store/notifications/types'
+import { StyleSheet, Text, View } from 'react-native'
+
 import { formatCount } from 'app/utils/format'
 import { useTheme } from 'app/utils/theme'
 
@@ -22,10 +22,9 @@ const styles = StyleSheet.create({
 
 type MilestoneProps = {
   notification: MilestoneNotification
-  onGoToRoute: (route: string) => void
 }
 
-const Milestone = ({ notification, onGoToRoute }: MilestoneProps) => {
+const Milestone = ({ notification }: MilestoneProps) => {
   let body: ReactNode
   if (notification.achievement === Achievement.Followers) {
     body = (
@@ -45,11 +44,7 @@ const Milestone = ({ notification, onGoToRoute }: MilestoneProps) => {
     body = (
       <>
         <Text>{`Your ${notification.entityType.toLowerCase()} `}</Text>
-        <Entity
-          entity={entity}
-          entityType={entityType}
-          onGoToRoute={onGoToRoute}
-        />
+        <Entity entity={entity} entityType={entityType} />
         <Text>
           {` has reached over ${formatCount(
             notification.value ?? 0

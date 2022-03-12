@@ -18,6 +18,7 @@ import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
 import { sagas as castSagas } from 'common/store/cast/sagas'
 import cast from 'common/store/cast/slice'
+import notifications from 'common/store/notifications/reducer'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
 import collection from 'common/store/pages/collection/reducer'
 import { CollectionsPageState } from 'common/store/pages/collection/types'
@@ -75,6 +76,7 @@ import toastReducer, { ToastState } from 'common/store/ui/toast/slice'
 import favoritesUserListReducer from 'common/store/user-list/favorites/reducers'
 import followersUserListReducer from 'common/store/user-list/followers/reducers'
 import followingUserListReducer from 'common/store/user-list/following/reducers'
+import notificationsUserListReducer from 'common/store/user-list/notifications/reducers'
 import repostsUserListReducer from 'common/store/user-list/reposts/reducers'
 import wallet from 'common/store/wallet/slice'
 
@@ -130,7 +132,8 @@ export const reducers = (ctx: CommonStoreContext) => ({
       followers: followersUserListReducer,
       following: followingUserListReducer,
       reposts: repostsUserListReducer,
-      favorites: favoritesUserListReducer
+      favorites: favoritesUserListReducer,
+      notifications: notificationsUserListReducer
     }),
     theme
   }),
@@ -152,7 +155,8 @@ export const reducers = (ctx: CommonStoreContext) => ({
     trending,
     trendingPlaylists,
     trendingUnderground,
-    settings
+    settings,
+    notifications
   }),
 
   // Solana
@@ -213,6 +217,8 @@ export const sagas = (ctx: CommonStoreContext) => ({
   // store/application/ui/theme/sagas.ts
   // pages/search-page/store/sagas.ts
   // pages/search-page/store/lineups/tracks/sagas.ts
+  // notifications/store/sagas.ts
+  // notifications/store/mobileSagas.ts
   //
   // pull in the following from web
   // once the player and dependencies are migrated
@@ -254,6 +260,7 @@ export type CommonState = {
       following: ReturnType<typeof followingUserListReducer>
       reposts: ReturnType<typeof repostsUserListReducer>
       favorites: ReturnType<typeof favoritesUserListReducer>
+      notifications: ReturnType<typeof notificationsUserListReducer>
     }
     theme: ThemeState
   }
@@ -275,6 +282,7 @@ export type CommonState = {
     trending: TrendingPageState
     trendingPlaylists: ReturnType<typeof trendingPlaylists>
     trendingUnderground: ReturnType<typeof trendingUnderground>
+    notifications: ReturnType<typeof notifications>
   }
 
   solana: ReturnType<typeof solanaReducer>

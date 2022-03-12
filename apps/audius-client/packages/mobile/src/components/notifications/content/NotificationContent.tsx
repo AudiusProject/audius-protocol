@@ -1,4 +1,7 @@
-import { Notification, NotificationType } from 'app/store/notifications/types'
+import {
+  Notification,
+  NotificationType
+} from 'audius-client/src/common/store/notifications/types'
 
 import Announcement from './Announcement'
 import ChallengeReward from './ChallengeReward'
@@ -14,45 +17,32 @@ import Trending from './Trending'
 
 type NotificationContentProps = {
   notification: Notification
-  onGoToRoute: (route: string) => void
 }
 
-const NotificationContent = ({
-  notification,
-  onGoToRoute
-}: NotificationContentProps) => {
+const NotificationContent = ({ notification }: NotificationContentProps) => {
   switch (notification.type) {
     case NotificationType.Announcement:
       return <Announcement notification={notification} />
     case NotificationType.Follow:
-      return <Follow notification={notification} onGoToRoute={onGoToRoute} />
+      return <Follow notification={notification} />
     case NotificationType.UserSubscription:
-      return (
-        <Subscription notification={notification} onGoToRoute={onGoToRoute} />
-      )
+      return <Subscription notification={notification} />
     case NotificationType.Favorite:
-      return <Favorite notification={notification} onGoToRoute={onGoToRoute} />
+      return <Favorite notification={notification} />
     case NotificationType.Repost:
-      return <Repost notification={notification} onGoToRoute={onGoToRoute} />
+      return <Repost notification={notification} />
     case NotificationType.Milestone:
-      return <Milestone notification={notification} onGoToRoute={onGoToRoute} />
+      return <Milestone notification={notification} />
     case NotificationType.RemixCosign:
-      return <Cosign notification={notification} onGoToRoute={onGoToRoute} />
+      return <Cosign notification={notification} />
     case NotificationType.RemixCreate:
-      return <Remix notification={notification} onGoToRoute={onGoToRoute} />
+      return <Remix notification={notification} />
     case NotificationType.TrendingTrack:
-      return <Trending notification={notification} onGoToRoute={onGoToRoute} />
+      return <Trending notification={notification} />
     case NotificationType.ChallengeReward:
-      return (
-        <ChallengeReward
-          notification={notification}
-          onGoToRoute={onGoToRoute}
-        />
-      )
+      return <ChallengeReward notification={notification} />
     case NotificationType.TierChange:
-      return (
-        <TierChange notification={notification} onGoToRoute={onGoToRoute} />
-      )
+      return <TierChange notification={notification} />
   }
 }
 

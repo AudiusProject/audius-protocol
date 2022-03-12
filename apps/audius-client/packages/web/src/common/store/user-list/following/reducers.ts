@@ -10,7 +10,7 @@ import { FollowingOwnState } from './types'
 
 type FollowingActions = ActionType<typeof actions>
 
-const userListReducer = UserListReducerFactory.createReducer(USER_LIST_TAG)
+const userListReducer = UserListReducerFactory.createReducer(USER_LIST_TAG, 15)
 
 const initialState = {
   id: null

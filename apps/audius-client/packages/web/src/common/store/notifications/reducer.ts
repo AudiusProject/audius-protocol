@@ -208,7 +208,7 @@ const actionsMap: any = {
 const reducer = (
   state: NotificationState = initialState,
   action: actions.NotificationAction
-) => {
+): NotificationState => {
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
   return matchingReduceFunction(state, action)

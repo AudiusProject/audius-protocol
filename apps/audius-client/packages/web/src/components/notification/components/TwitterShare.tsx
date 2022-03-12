@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
 import { Name } from 'common/models/Analytics'
+import { BadgeTier } from 'common/models/BadgeTier'
 import { Collection } from 'common/models/Collection'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
@@ -14,8 +15,7 @@ import {
   TrendingTrack,
   ChallengeReward,
   TierChange
-} from 'components/notification/store/types'
-import { BadgeTier } from 'components/user-badges/utils'
+} from 'common/store/notifications/types'
 import AudiusBackend from 'services/AudiusBackend'
 import { make, useRecord, TrackEvent } from 'store/analytics/actions'
 import {

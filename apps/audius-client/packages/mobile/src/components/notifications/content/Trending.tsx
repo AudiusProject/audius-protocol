@@ -1,6 +1,6 @@
+import { TrendingTrack } from 'audius-client/src/common/store/notifications/types'
 import { StyleSheet, Text, View } from 'react-native'
 
-import { TrendingTrack as TrendingNotification } from 'app/store/notifications/types'
 import { useTheme } from 'app/utils/theme'
 
 import Entity from './Entity'
@@ -22,11 +22,10 @@ const styles = StyleSheet.create({
 })
 
 type TrendingProps = {
-  notification: TrendingNotification
-  onGoToRoute: (route: string) => void
+  notification: TrendingTrack
 }
 
-const Trending = ({ notification, onGoToRoute }: TrendingProps) => {
+const Trending = ({ notification }: TrendingProps) => {
   const entityType = notification.entityType
   const { rank, entity } = notification
   const rankSuffix = getRankSuffix(rank)
@@ -39,11 +38,7 @@ const Trending = ({ notification, onGoToRoute }: TrendingProps) => {
     <View>
       <Text style={textWrapperStyle}>
         {`Your track `}
-        <Entity
-          entity={entity}
-          entityType={entityType}
-          onGoToRoute={onGoToRoute}
-        />
+        <Entity entity={entity} entityType={entityType} />
         {` is ${rank}${rankSuffix} on Trending Right Now! `}
       </Text>
       <TwitterShare notification={notification} />

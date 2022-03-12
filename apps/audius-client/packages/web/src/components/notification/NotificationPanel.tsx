@@ -9,6 +9,7 @@ import SimpleBar from 'simplebar-react'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
+import { Notification } from 'common/store/notifications/types'
 import { Nullable } from 'common/utils/typeUtils'
 import zIndex from 'utils/zIndex'
 
@@ -17,7 +18,6 @@ import NotificationProvider from './NotificationProvider'
 import EmptyNotifications from './components/EmptyNotifications'
 import NotificationItem from './components/desktop/Notification'
 import NotificationModal from './components/desktop/NotificationModal'
-import { Notification } from './store/types'
 
 const messages = {
   title: 'Notifications',

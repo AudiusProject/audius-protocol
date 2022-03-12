@@ -22,6 +22,14 @@ import {
   createPlaylist,
   addTrackToPlaylist
 } from 'common/store/cache/collections/actions'
+import {
+  toggleNotificationPanel,
+  updatePlaylistLastViewedAt
+} from 'common/store/notifications/actions'
+import {
+  getNotificationPanelIsOpen,
+  getNotificationUnreadCount
+} from 'common/store/notifications/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { saveCollection } from 'common/store/social/collections/actions'
 import { saveTrack } from 'common/store/social/tracks/actions'
@@ -36,14 +44,6 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import CurrentlyPlaying from 'components/nav/desktop/CurrentlyPlaying'
 import NavButton from 'components/nav/desktop/NavButton'
 import RouteNav from 'components/nav/desktop/RouteNav'
-import {
-  toggleNotificationPanel,
-  updatePlaylistLastViewedAt
-} from 'components/notification/store/actions'
-import {
-  getNotificationPanelIsOpen,
-  getNotificationUnreadCount
-} from 'components/notification/store/selectors'
 import Pill from 'components/pill/Pill'
 import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
 import Tooltip from 'components/tooltip/Tooltip'

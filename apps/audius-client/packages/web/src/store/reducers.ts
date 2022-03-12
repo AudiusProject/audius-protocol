@@ -3,6 +3,7 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 
 import { reducers as clientStoreReducers } from 'common/store'
+import notification from 'common/store/notifications/reducer'
 import profile from 'common/store/pages/profile/reducer'
 import queue from 'common/store/queue/slice'
 import remoteConfig from 'common/store/remote-config/slice'
@@ -10,7 +11,6 @@ import changePassword from 'components/change-password/store/slice'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
 import musicConfetti from 'components/music-confetti/store/slice'
-import notification from 'components/notification/store/reducer'
 import nowPlaying from 'components/now-playing/store/reducers'
 import passwordReset from 'components/password-reset/store/reducer'
 import remixSettingsModal from 'components/remix-settings-modal/store/slice'
@@ -20,7 +20,6 @@ import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/r
 import dashboard from 'pages/artist-dashboard-page/store/reducer'
 import deactivateAccount from 'pages/deactivate-account-page/store/slice'
 import deleted from 'pages/deleted-page/store/slice'
-import notificationUsers from 'pages/notification-users-page/store/reducers'
 import remixes from 'pages/remixes-page/store/slice'
 import signOn from 'pages/sign-on/store/reducer'
 import upload from 'pages/upload-page/store/reducer'
@@ -106,7 +105,6 @@ const createRootReducer = (routeHistory: History) =>
       }),
       pages: combineReducers({
         deleted,
-        notificationUsers,
         nowPlaying,
         remixes,
         unfollowConfirmation
