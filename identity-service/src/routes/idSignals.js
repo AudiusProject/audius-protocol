@@ -3,6 +3,7 @@ const { handleResponse, successResponse, errorResponseForbidden, errorResponseBa
 const models = require('../models')
 const { QueryTypes } = require('sequelize')
 const userHandleMiddleware = require('../userHandleMiddleware')
+const { getDeviceIDCountForUserId } = require('../utils/fpHelpers')
 
 module.exports = function (app) {
   app.get('/id_signals', userHandleMiddleware, handleResponse(async req => {
@@ -57,7 +58,9 @@ module.exports = function (app) {
       }
     })
 
-    const response = { captchaScores, cognitoFlowScores, socialSignals: {}, emailAddress: req.user.email }
+    const deviceUserCount = await getDeviceIDCountForUserId(req.user.blockchainUserId)
+
+    const response = { captchaScores, cognitoFlowScores, socialSignals: {}, deviceUserCount, emailAddress: req.user.email }
     if (socialHandles) {
       response.socialSignals = {
         ...socialHandles.dataValues,
