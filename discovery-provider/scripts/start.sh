@@ -69,6 +69,10 @@ export PYTHONUNBUFFERED=1
 
 audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 
+# remove data that may have been persisted via a k8s emptyDir
+export audius_prometheus_container=server
+rm -rf /${PROMETHEUS_MULTIPROC_DIR}/*${audius_prometheus_container}*
+
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
