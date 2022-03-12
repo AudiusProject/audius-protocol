@@ -1,10 +1,9 @@
 import { Track } from 'audius-client/src/common/models/Track'
-import { StyleSheet, Text, View } from 'react-native'
-
 import {
-  RemixCreate as RemixNotification,
-  Entity as EntityType
-} from 'app/store/notifications/types'
+  Entity as EntityType,
+  RemixCreate
+} from 'audius-client/src/common/store/notifications/types'
+import { StyleSheet, Text, View } from 'react-native'
 
 import Entity from './Entity'
 import TwitterShare from './TwitterShare'
@@ -33,11 +32,10 @@ const styles = StyleSheet.create({
 })
 
 type RemixProps = {
-  notification: RemixNotification
-  onGoToRoute: (route: string) => void
+  notification: RemixCreate
 }
 
-const Remix = ({ notification, onGoToRoute }: RemixProps) => {
+const Remix = ({ notification }: RemixProps) => {
   const user = notification.user
   if (!user) return null
 
@@ -52,27 +50,15 @@ const Remix = ({ notification, onGoToRoute }: RemixProps) => {
     <View>
       <Text style={styles.titleText}>
         <Text>{`New remix of your track `}</Text>
-        <Entity
-          entity={original}
-          entityType={EntityType.Track}
-          onGoToRoute={onGoToRoute}
-        />
+        <Entity entity={original} entityType={EntityType.Track} />
       </Text>
 
       <View style={styles.body}>
-        <UserImages
-          notification={notification}
-          users={[user]}
-          onGoToRoute={onGoToRoute}
-        />
+        <UserImages notification={notification} users={[user]} />
         <Text style={styles.bodyText}>
-          <Entity
-            entity={entity}
-            entityType={EntityType.Track}
-            onGoToRoute={onGoToRoute}
-          />
+          <Entity entity={entity} entityType={EntityType.Track} />
           <Text>{` by `}</Text>
-          <User user={user} onGoToRoute={onGoToRoute} />
+          <User user={user} />
         </Text>
       </View>
       <TwitterShare notification={notification} />

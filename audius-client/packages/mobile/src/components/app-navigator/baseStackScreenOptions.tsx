@@ -4,7 +4,7 @@ import {
   CardStyleInterpolators,
   StackNavigationOptions
 } from '@react-navigation/stack'
-import { markAllAsViewed } from 'audius-client/src/components/notification/store/actions'
+import { markAllAsViewed } from 'audius-client/src/common/store/notifications/actions'
 import { Platform, Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 

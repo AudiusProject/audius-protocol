@@ -2,8 +2,7 @@ import { put, takeEvery } from 'redux-saga/effects'
 
 import * as errorActions from 'common/store/errors/actions'
 import { Level } from 'common/store/errors/level'
-
-import * as notificationActions from './actions'
+import * as notificationActions from 'common/store/notifications/actions'
 
 const noRedirectSet = new Set([
   // Failed to fetch notifications

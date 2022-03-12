@@ -21,6 +21,23 @@ import { getUserId, getHasAccount } from 'common/store/account/selectors'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
+import * as notificationActions from 'common/store/notifications/actions'
+import {
+  getLastNotification,
+  getNotificationById,
+  getNotificationUserList,
+  getNotificationPanelIsOpen,
+  getNotificationStatus,
+  makeGetAllNotifications,
+  getAllNotifications,
+  getPlaylistUpdates
+} from 'common/store/notifications/selectors'
+import {
+  Notification,
+  Entity,
+  NotificationType,
+  Achievement
+} from 'common/store/notifications/types'
 import { getBalance } from 'common/store/wallet/slice'
 import AudiusBackend from 'services/AudiusBackend'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
@@ -31,20 +48,8 @@ import { getIsReachable } from 'store/reachability/selectors'
 import { isElectron } from 'utils/clientUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 
-import * as notificationActions from './actions'
 import { watchNotificationError } from './errorSagas'
 import mobileSagas from './mobileSagas'
-import {
-  getLastNotification,
-  getNotificationById,
-  getNotificationUserList,
-  getNotificationPanelIsOpen,
-  getNotificationStatus,
-  makeGetAllNotifications,
-  getAllNotifications,
-  getPlaylistUpdates
-} from './selectors'
-import { Notification, Entity, NotificationType, Achievement } from './types'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -378,6 +383,19 @@ function* watchFetchNotifications() {
   yield takeEvery(notificationActions.FETCH_NOTIFICATIONS, fetchNotifications)
 }
 
+function* watchRefreshNotifications() {
+  yield takeEvery(notificationActions.REFRESH_NOTIFICATIONS, function* () {
+    yield call(getNotifications, true)
+    yield put(
+      notificationActions.fetchNotificationSucceeded(
+        [], // notifications
+        0, // totalUnread
+        false // hasMore
+      )
+    )
+  })
+}
+
 function* watchFetchNotificationUsers() {
   yield takeEvery(
     notificationActions.FETCH_NOTIFICATIONS_USERS,
@@ -647,6 +665,7 @@ function* watchTogglePanel() {
 export default function sagas() {
   const sagas: (() => Generator)[] = [
     watchFetchNotifications,
+    watchRefreshNotifications,
     watchFetchNotificationUsers,
     watchMarkNotificationsRead,
     watchMarkAllNotificationsViewed,

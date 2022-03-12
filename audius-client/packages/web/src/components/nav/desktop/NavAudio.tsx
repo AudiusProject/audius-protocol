@@ -6,6 +6,7 @@ import { animated, Transition } from 'react-spring/renderprops'
 
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
+import { BadgeTier } from 'common/models/BadgeTier'
 import { BNWei } from 'common/models/Wallet'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
@@ -40,7 +41,7 @@ const NavAudio = () => {
   // we only show the audio balance and respective badge when there is an account
   // so below null-coalescing is okay
   const { tier } = useSelectTierInfo(account?.user_id ?? 0)
-  const audioBadge = audioTierMapPng[tier]
+  const audioBadge = audioTierMapPng[tier as BadgeTier]
 
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const hasClaimableTokens = Object.values(userChallenges).some(

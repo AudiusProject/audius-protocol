@@ -6,6 +6,7 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
+import { Notification } from 'common/store/notifications/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkConnectivityMonitor'
@@ -14,7 +15,6 @@ import styles from './NotificationPage.module.css'
 import NotificationProvider from './NotificationProvider'
 import EmptyNotifications from './components/EmptyNotifications'
 import ConnectedNotification from './components/mobile/ConnectedNotification'
-import { Notification } from './store/types'
 
 const messages = {
   documentTitle: 'Notifications',

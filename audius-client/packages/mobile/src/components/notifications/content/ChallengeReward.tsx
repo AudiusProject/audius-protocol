@@ -1,7 +1,7 @@
 import { ChallengeRewardID } from 'audius-client/src/common/models/AudioRewards'
+import { ChallengeReward as ChallengeRewardNotification } from 'audius-client/src/common/store/notifications/types'
 import { StyleSheet, Text, View } from 'react-native'
 
-import { ChallengeReward as ChallengeRewardType } from 'app/store/notifications/types'
 import { useTheme } from 'app/utils/theme'
 
 import TwitterShare from './TwitterShare'
@@ -19,8 +19,7 @@ const styles = StyleSheet.create({
 })
 
 type ChallengeRewardProps = {
-  notification: ChallengeRewardType
-  onGoToRoute: (route: string) => void
+  notification: ChallengeRewardNotification
 }
 
 const challengeInfoMap: Record<
@@ -61,10 +60,7 @@ const challengeInfoMap: Record<
   }
 }
 
-const ChallengeReward = ({
-  notification,
-  onGoToRoute
-}: ChallengeRewardProps) => {
+const ChallengeReward = ({ notification }: ChallengeRewardProps) => {
   const { challengeId } = notification
 
   const mainTextStyle = useTheme(styles.text, {

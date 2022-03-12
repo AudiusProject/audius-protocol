@@ -1,8 +1,6 @@
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 import { MessageType, MessageHandlers } from 'app/message/types'
 import PushNotifications from 'app/notifications'
-import * as notificationsActions from 'app/store/notifications/actions'
-import { Status } from 'app/types/status'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.ENABLE_PUSH_NOTIFICATIONS]: async ({ message, postMessage }) => {
@@ -31,23 +29,5 @@ export const messageHandlers: Partial<MessageHandlers> = {
   },
   [MessageType.PROMPT_PUSH_NOTIFICATION_REMINDER]: ({ dispatch }) => {
     remindUserToTurnOnNotifications(dispatch)
-  },
-  [MessageType.OPEN_NOTIFICATIONS]: ({ dispatch, postMessage }) => {
-    dispatch(notificationsActions.open())
-    postMessage({
-      type: MessageType.MARK_ALL_NOTIFICATIONS_AS_VIEWED,
-      isAction: true
-    })
-  },
-  [MessageType.FETCH_NOTIFICATIONS_SUCCESS]: ({ message, dispatch }) => {
-    dispatch(notificationsActions.append(Status.SUCCESS, message.notifications))
-  },
-  [MessageType.FETCH_NOTIFICATIONS_REPLACE]: ({ message, dispatch }) => {
-    dispatch(
-      notificationsActions.replace(Status.SUCCESS, message.notifications)
-    )
-  },
-  [MessageType.FETCH_NOTIFICATIONS_FAILURE]: ({ dispatch }) => {
-    dispatch(notificationsActions.append(Status.FAILURE, []))
   }
 }

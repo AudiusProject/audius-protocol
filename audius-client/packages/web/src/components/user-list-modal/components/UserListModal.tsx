@@ -33,8 +33,6 @@ const messages = {
   following: 'FOLLOWING'
 }
 
-const PAGE_SIZE = 15
-
 const getScrollParent = () => {
   const simpleBarElement = window.document.getElementById(SIMPLE_BAR_ID)
   return simpleBarElement || null
@@ -99,7 +97,6 @@ const UserListModal = ({
         <UserList
           stateSelector={selector!}
           tag={tag}
-          pageSize={PAGE_SIZE}
           getScrollParent={getScrollParent}
           beforeClickArtistName={onClose}
         />

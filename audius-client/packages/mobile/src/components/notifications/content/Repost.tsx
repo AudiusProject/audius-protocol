@@ -1,6 +1,6 @@
+import { Repost as RepostNotification } from 'audius-client/src/common/store/notifications/types'
 import { StyleSheet, Text, View } from 'react-native'
 
-import { Repost as RepostNotification } from 'app/store/notifications/types'
 import { formatCount } from 'app/utils/format'
 import { useTheme } from 'app/utils/theme'
 
@@ -17,15 +17,14 @@ const styles = StyleSheet.create({
 
 type RepostProps = {
   notification: RepostNotification
-  onGoToRoute: (route: string) => void
 }
 
-const Repost = ({ notification, onGoToRoute }: RepostProps) => {
+const Repost = ({ notification }: RepostProps) => {
   const textWrapperStyle = useTheme(styles.textWrapper, {
     color: 'neutral'
   })
 
-  const firstUser = notification.users[0]
+  const firstUser = notification?.users?.[0]
   if (!firstUser) return null
 
   let otherUsers = ''
@@ -38,19 +37,13 @@ const Repost = ({ notification, onGoToRoute }: RepostProps) => {
 
   return (
     <View>
-      <UserImages
-        notification={notification}
-        users={notification.users}
-        onGoToRoute={onGoToRoute}
-      />
+      {notification.users ? (
+        <UserImages notification={notification} users={notification.users} />
+      ) : null}
       <Text style={textWrapperStyle}>
-        <User user={firstUser} onGoToRoute={onGoToRoute} />
+        <User user={firstUser} />
         {`${otherUsers} Reposted your ${entityType.toLowerCase()} `}
-        <Entity
-          entity={entity}
-          entityType={entityType}
-          onGoToRoute={onGoToRoute}
-        />
+        <Entity entity={entity} entityType={entityType} />
       </Text>
     </View>
   )

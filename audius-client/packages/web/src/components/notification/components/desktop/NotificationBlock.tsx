@@ -6,15 +6,15 @@ import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHoriz
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
-import { formatCount } from 'common/utils/formatUtil'
-import { Nullable } from 'common/utils/typeUtils'
-import Menu from 'components/menu/Menu'
-import { OwnProps as NotificationMenuProps } from 'components/menu/NotificationMenu'
 import {
   Entity,
   NotificationType,
   Achievement
-} from 'components/notification/store/types'
+} from 'common/store/notifications/types'
+import { formatCount } from 'common/utils/formatUtil'
+import { Nullable } from 'common/utils/typeUtils'
+import Menu from 'components/menu/Menu'
+import { OwnProps as NotificationMenuProps } from 'components/menu/NotificationMenu'
 import { make, useRecord } from 'store/analytics/actions'
 import { AUDIO_PAGE, profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'

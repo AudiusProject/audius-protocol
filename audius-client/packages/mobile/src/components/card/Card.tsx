@@ -1,3 +1,4 @@
+import { ID } from 'audius-client/src/common/models/Identifiers'
 import {
   CoverArtSizes,
   ProfilePictureSizes,
@@ -10,7 +11,6 @@ import { DynamicImage, Tile } from 'app/components/core'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
-import { ID } from 'app/store/notifications/types'
 import { makeStyles } from 'app/styles'
 
 export type CardType = 'user' | 'collection'

@@ -16,6 +16,15 @@ import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import {
+  unsubscribeUser,
+  hideNotification
+} from 'common/store/notifications/actions'
+import { getNotificationById } from 'common/store/notifications/selectors'
+import {
+  Notification,
+  NotificationType
+} from 'common/store/notifications/types'
+import {
   repostCollection,
   undoRepostCollection,
   saveCollection,
@@ -39,15 +48,6 @@ import { setOpen as openDeletePlaylist } from 'common/store/ui/delete-playlist-c
 import { getMobileOverflowModal } from 'common/store/ui/mobile-overflow-menu/selectors'
 import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
 import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
-import {
-  unsubscribeUser,
-  hideNotification
-} from 'components/notification/store/actions'
-import { getNotificationById } from 'components/notification/store/selectors'
-import {
-  Notification,
-  NotificationType
-} from 'components/notification/store/types'
 import { AppState } from 'store/types'
 import { profilePage, playlistPage, albumPage } from 'utils/route'
 

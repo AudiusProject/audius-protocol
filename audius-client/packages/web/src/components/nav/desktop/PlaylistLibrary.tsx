@@ -19,8 +19,8 @@ import {
   getPlaylistLibrary
 } from 'common/store/account/selectors'
 import { addTrackToPlaylist } from 'common/store/cache/collections/actions'
+import { getPlaylistUpdates } from 'common/store/notifications/selectors'
 import Droppable from 'components/dragndrop/Droppable'
-import { getPlaylistUpdates } from 'components/notification/store/selectors'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useArePlaylistUpdatesEnabled, useFlag } from 'hooks/useRemoteConfig'
 import { SMART_COLLECTION_MAP } from 'pages/smart-collection/smartCollections'

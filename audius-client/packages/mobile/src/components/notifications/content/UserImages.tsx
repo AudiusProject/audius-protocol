@@ -1,22 +1,22 @@
-import { useState } from 'react'
+import { useCallback } from 'react'
 
+import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { User } from 'audius-client/src/common/models/User'
-import {
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from 'react-native'
-import Config from 'react-native-config'
+import { Notification } from 'audius-client/src/common/store/notifications/types'
+import { setNotificationId } from 'audius-client/src/common/store/user-list/notifications/actions'
+import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
-import { Notification } from 'app/store/notifications/types'
+import { DynamicImage } from 'app/components/core'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
+import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
+import { close } from 'app/store/notifications/actions'
 import { getUserRoute } from 'app/utils/routes'
 import { useTheme } from 'app/utils/theme'
 
 import { getUserListRoute } from '../routeUtil'
-
-const USER_METADATA_NODE = Config.USER_METADATA_NODE
 
 const styles = StyleSheet.create({
   touchable: {
@@ -30,75 +30,87 @@ const styles = StyleSheet.create({
     height: 32,
     width: 32,
     borderRadius: 16,
-    marginRight: 4
+    marginRight: 4,
+    overflow: 'hidden'
   }
 })
 
 type UserImagesProps = {
   notification: Notification
   users: User[]
-  onGoToRoute: (route: string) => void
 }
 
-const getImageURI = (user: any) => {
-  let node: string
-  if (user.creator_node_endpoint) {
-    node = user.creator_node_endpoint.split(',')[0]
-  } else {
-    node = USER_METADATA_NODE
-  }
-  if (user.profile_picture) {
-    return `${node}/ipfs/${user.profile_picture}`
-  }
-  if (user.profile_picture_sizes) {
-    return `${node}/ipfs/${user.profile_picture_sizes}/150x150.jpg`
-  }
-  return null
-}
+const UserImage = ({
+  user,
+  allowPress = true
+}: {
+  user: User
+  allowPress?: boolean
+}) => {
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
 
-const UserImage = ({ source }: { source: ImageSourcePropType }) => {
+  const handlePress = useCallback(() => {
+    navigation.navigate({
+      native: { screen: 'Profile', params: { handle: user.handle } },
+      web: { route: getUserRoute(user), fromPage: NOTIFICATION_PAGE }
+    })
+    dispatch(close())
+  }, [navigation, user, dispatch])
+
+  const profilePicture = useUserProfilePicture(
+    user?.user_id,
+    user?._profile_picture_sizes,
+    SquareSizes.SIZE_150_BY_150
+  )
+
   const imageStyle = useTheme(styles.image, {
     backgroundColor: 'neutralLight4'
   })
-  const [didError, setDidError] = useState(false)
   return (
-    <Image
-      style={imageStyle}
-      source={
-        didError
-          ? require('app/assets/images/imageProfilePicEmpty2X.png')
-          : source
-      }
-      // TODO: Gracefully handle error and select secondary node
-      onError={() => setDidError(true)}
-    />
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={allowPress ? handlePress : undefined}
+    >
+      <DynamicImage
+        styles={{ root: imageStyle }}
+        source={{ uri: profilePicture }}
+      />
+    </TouchableOpacity>
   )
 }
 
-const UserImages = ({ notification, users, onGoToRoute }: UserImagesProps) => {
+const UserImages = ({ notification, users }: UserImagesProps) => {
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
+  const dispatchWeb = useDispatchWeb()
+
   const isMultiUser = users.length > 1
+
+  const handlePress = useCallback(() => {
+    dispatchWeb(setNotificationId(notification.id))
+    navigation.navigate({
+      native: {
+        screen: 'NotificationUsers',
+        params: {
+          notificationType: notification.type,
+          count: users.length,
+          id: notification.id
+        }
+      },
+      web: {
+        route: getUserListRoute(notification),
+        fromPage: NOTIFICATION_PAGE
+      }
+    })
+    dispatch(close())
+  }, [navigation, notification, dispatch, dispatchWeb, users.length])
 
   const renderUsers = () => (
     <View style={styles.container}>
       {users.map(user => {
-        const uri = getImageURI(user)
-        let source: ImageSourcePropType
-        if (uri) {
-          source = { uri }
-        } else {
-          source = require('app/assets/images/imageProfilePicEmpty2X.png')
-        }
-        const image = <UserImage source={source} key={user.user_id} />
-        return isMultiUser ? (
-          image
-        ) : (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => onGoToRoute(getUserRoute(user))}
-            key={user.user_id}
-          >
-            {image}
-          </TouchableOpacity>
+        return (
+          <UserImage allowPress={!isMultiUser} user={user} key={user.user_id} />
         )
       })}
     </View>
@@ -108,7 +120,7 @@ const UserImages = ({ notification, users, onGoToRoute }: UserImagesProps) => {
     <TouchableOpacity
       style={styles.touchable}
       activeOpacity={0.7}
-      onPress={() => onGoToRoute(getUserListRoute(notification))}
+      onPress={handlePress}
     >
       {renderUsers()}
     </TouchableOpacity>
