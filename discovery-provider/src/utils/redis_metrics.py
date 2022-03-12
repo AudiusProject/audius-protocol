@@ -4,7 +4,7 @@ import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 
 import redis
-from flask import Response
+from flask import Response as fResponse
 from flask.globals import request
 from src.models import (
     AggregateDailyAppNameMetrics,
@@ -18,6 +18,7 @@ from src.utils.config import shared_config
 from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.query_params import app_name_param, stringify_query_params
+from werkzeug.wrappers.response import Response as wResponse
 
 logger = logging.getLogger(__name__)
 
@@ -653,8 +654,10 @@ def record_metrics(func):
         result = func(*args, **kwargs)
 
         try:
-            if isinstance(result, Response):
+            if isinstance(result, fResponse):
                 code = result.status_code
+            elif isinstance(result, wResponse):
+                code = result.status
             else:
                 code = result[1]
         except Exception as e:
