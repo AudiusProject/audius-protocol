@@ -109,7 +109,7 @@ platform :ios do
         initial_build_number: 1,
         version: versionNumber.to_s,
         live: false
-      ) + 1,
+      ) + 2,
     )
 
     # Build ios
