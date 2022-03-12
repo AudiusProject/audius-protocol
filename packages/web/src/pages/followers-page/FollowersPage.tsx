@@ -10,9 +10,6 @@ const messages = {
   title: 'Followers'
 }
 
-// Eventually calculate a custom page size
-export const PAGE_SIZE = 15
-
 const FollowersPage = () => {
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
 
@@ -24,11 +21,7 @@ const FollowersPage = () => {
 
   return (
     <MobilePageContainer fullHeight>
-      <UserList
-        stateSelector={getUserList}
-        tag={USER_LIST_TAG}
-        pageSize={PAGE_SIZE}
-      />
+      <UserList stateSelector={getUserList} tag={USER_LIST_TAG} />
     </MobilePageContainer>
   )
 }

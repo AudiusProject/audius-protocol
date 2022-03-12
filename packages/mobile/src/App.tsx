@@ -12,7 +12,7 @@ import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
-import { Notifications } from 'app/components/notifications/Notifications'
+import { NotificationsScreen } from 'app/components/notifications/NotificationsScreen'
 import OAuth from 'app/components/oauth/OAuth'
 import { ThemeProvider } from 'app/components/theme/ThemeContext'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
@@ -82,7 +82,7 @@ const App = () => {
                     <GoogleCast webRef={webRef} />
                     <AppNavigator />
                     <SearchScreenLegacy />
-                    <Notifications webRef={webRef} />
+                    <NotificationsScreen />
                     <Drawers />
                     <Modals />
                     <Audio webRef={webRef} />

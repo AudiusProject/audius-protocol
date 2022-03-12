@@ -46,7 +46,7 @@ export const getTrackRoute = (
   return fullUrl ? `${AUDIUS_URL}${route}` : route
 }
 
-export const getUserRoute = (user: UserHandle, fullUrl = false) => {
+export const getUserRoute = (user: User | UserHandle, fullUrl = false) => {
   const route = `/${user.handle}`
   return fullUrl ? `${AUDIUS_URL}${route}` : route
 }

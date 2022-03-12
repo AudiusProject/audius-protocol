@@ -3,11 +3,11 @@ import { useCallback } from 'react'
 import { setFollowing } from 'audius-client/src/common/store/user-list/following/actions'
 import { getUserList } from 'audius-client/src/common/store/user-list/following/selectors'
 
+import { Screen } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
-import { UserListScreen } from './UserListScreen'
 
 const messages = {
   title: 'Following'
@@ -23,12 +23,12 @@ export const FollowingScreen = () => {
   }, [dispatchWeb, userId])
 
   return (
-    <UserListScreen title={messages.title}>
+    <Screen title={messages.title} variant='secondary'>
       <UserList
         userSelector={getUserList}
         tag='FOLLOWING'
         setUserList={handleSetFollowing}
       />
-    </UserListScreen>
+    </Screen>
   )
 }

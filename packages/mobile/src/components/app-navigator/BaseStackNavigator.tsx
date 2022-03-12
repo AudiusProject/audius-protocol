@@ -11,7 +11,8 @@ import {
   FavoritedScreen,
   FollowersScreen,
   FollowingScreen,
-  RepostsScreen
+  RepostsScreen,
+  NotificationUsersScreen
 } from 'app/screens/user-list-screen'
 
 import { useScreenOptions } from './baseStackScreenOptions'
@@ -77,6 +78,10 @@ export const BaseStackNavigator = ({
         <Stack.Screen name='Following' component={FollowingScreen} />
         <Stack.Screen name='Favorited' component={FavoritedScreen} />
         <Stack.Screen name='Reposts' component={RepostsScreen} />
+        <Stack.Screen
+          name='NotificationUsers'
+          component={NotificationUsersScreen}
+        />
       </Stack.Group>
     </Stack.Navigator>
   )

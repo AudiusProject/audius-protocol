@@ -2,21 +2,21 @@ import { useCallback } from 'react'
 
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
+import {
+  Achievement,
+  Notification,
+  Entity,
+  NotificationType,
+  TrendingTrack,
+  RemixCreate,
+  RemixCosign,
+  ChallengeReward,
+  TierChange
+} from 'audius-client/src/common/store/notifications/types'
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { AudioTier } from 'app/components/audio-rewards'
-import {
-  Achievement,
-  ChallengeReward,
-  Entity,
-  Notification,
-  NotificationType,
-  RemixCosign,
-  RemixCreate,
-  TierChange,
-  TrendingTrack
-} from 'app/store/notifications/types'
 import { getUserRoute } from 'app/utils/routes'
 import { getTwitterLink } from 'app/utils/twitter'
 
@@ -88,7 +88,7 @@ const getRemixCreateText = async (notification: RemixCreate) => {
   if (!track) return
   const link = getEntityRoute(track, Entity.Track, true)
 
-  let twitterHandle = notification.user.twitterHandle
+  let twitterHandle = notification.user.twitter_handle
   if (!twitterHandle) twitterHandle = notification.user.name
   else twitterHandle = `@${twitterHandle}`
 
@@ -98,12 +98,7 @@ const getRemixCreateText = async (notification: RemixCreate) => {
   }
 }
 
-const getRemixCosignText = async (
-  notification: RemixCosign & {
-    user: User
-    entities: (Track & { user: User })[]
-  }
-) => {
+const getRemixCosignText = async (notification: RemixCosign) => {
   const parentTrack = notification.entities.find(
     (t: Track) => t.owner_id === notification.parentTrackUserId
   )
@@ -113,7 +108,7 @@ const getRemixCosignText = async (
 
   if (!parentTrack || !childtrack) return { text: '', link: '' }
 
-  let twitterHandle = notification.user.twitterHandle
+  let twitterHandle = notification.user.twitter_handle
   if (!twitterHandle) twitterHandle = notification.user.name
   else twitterHandle = `@${twitterHandle}`
 

@@ -1,7 +1,7 @@
+import { Announcement as AnnouncementNotification } from 'audius-client/src/common/store/notifications/types'
 import { View } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 
-import { Announcement as AnnouncementNotification } from 'app/store/notifications/types'
 import { useTheme } from 'app/utils/theme'
 
 type AnnouncementProps = {

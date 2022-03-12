@@ -1,17 +1,10 @@
 import { ChallengeRewardID } from 'common/models/AudioRewards'
+import { BadgeTier } from 'common/models/BadgeTier'
 import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
-import { BadgeTier } from 'components/user-badges/utils'
-
-import {
-  getNotificationEntities,
-  getNotificationEntity,
-  getNotificationUser,
-  getNotificationUsers
-} from './selectors'
 
 export enum NotificationType {
   Announcement = 'Announcement',
@@ -38,6 +31,7 @@ export type BaseNotification = {
   id: string
   isRead: boolean
   isHidden: boolean
+  isViewed: boolean
   timestamp: string
   timeLabel?: string
 }
@@ -91,6 +85,7 @@ export type Favorite = BaseNotification & {
   type: NotificationType.Favorite
   entityId: ID
   userIds: ID[]
+  users?: User[]
 } & (
     | {
         entityType: Entity.Playlist | Entity.Album
@@ -110,8 +105,7 @@ export enum Achievement {
   Followers = 'Followers'
 }
 
-export type Milestone = BaseNotification &
-  (
+export type Milestone = BaseNotification & { user: User } & (
     | {
         type: NotificationType.Milestone
         entityType: Entity
@@ -202,11 +196,4 @@ export default interface NotificationState {
   hasMore: boolean
   hasLoaded: boolean
   playlistUpdates: number[]
-}
-
-export type ConnectedNotification = Notification & {
-  user: ReturnType<typeof getNotificationUser>
-  users: ReturnType<typeof getNotificationUsers>
-  entity: ReturnType<typeof getNotificationEntity>
-  entities: ReturnType<typeof getNotificationEntities>
 }

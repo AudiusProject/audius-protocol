@@ -4,16 +4,16 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
-import { Nullable } from 'common/utils/typeUtils'
-import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
-import { OwnProps as NotificationMenuProps } from 'components/menu/NotificationMenu'
 import {
   getNotificationUser,
   getNotificationUsers,
   getNotificationEntity,
   getNotificationEntities
-} from 'components/notification/store/selectors'
-import { NotificationType } from 'components/notification/store/types'
+} from 'common/store/notifications/selectors'
+import { NotificationType } from 'common/store/notifications/types'
+import { Nullable } from 'common/utils/typeUtils'
+import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
+import { OwnProps as NotificationMenuProps } from 'components/menu/NotificationMenu'
 import { AppState } from 'store/types'
 
 import Announcement from './Announcement'

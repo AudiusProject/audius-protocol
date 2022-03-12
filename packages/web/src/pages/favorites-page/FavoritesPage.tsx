@@ -10,9 +10,6 @@ const messages = {
   title: 'Favorites'
 }
 
-// Eventually calculate a custom page size
-export const PAGE_SIZE = 15
-
 const FavoritesPage = () => {
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
 
@@ -24,11 +21,7 @@ const FavoritesPage = () => {
 
   return (
     <MobilePageContainer fullHeight>
-      <UserList
-        stateSelector={getUserList}
-        tag={USER_LIST_TAG}
-        pageSize={PAGE_SIZE}
-      />
+      <UserList stateSelector={getUserList} tag={USER_LIST_TAG} />
     </MobilePageContainer>
   )
 }

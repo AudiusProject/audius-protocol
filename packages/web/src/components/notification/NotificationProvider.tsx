@@ -6,8 +6,6 @@ import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
-import { AppState } from 'store/types'
-
 import {
   markAsRead,
   markAllAsRead,
@@ -18,7 +16,7 @@ import {
   setNotificationUsers,
   markAllAsViewed,
   toggleNotificationPanel
-} from './store/actions'
+} from 'common/store/notifications/actions'
 import {
   getNotificationHasLoaded,
   getNotificationStatus,
@@ -27,7 +25,8 @@ import {
   getNotificationModalIsOpen,
   makeGetAllNotifications,
   getModalNotification
-} from './store/selectors'
+} from 'common/store/notifications/selectors'
+import { AppState } from 'store/types'
 
 type OwnProps = {
   children: React.ComponentType<any>

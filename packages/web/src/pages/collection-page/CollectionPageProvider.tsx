@@ -34,6 +34,8 @@ import {
   makeGetTableMetadatas,
   makeGetLineupOrder
 } from 'common/store/lineup/selectors'
+import { updatePlaylistLastViewedAt } from 'common/store/notifications/actions'
+import { getPlaylistUpdates } from 'common/store/notifications/selectors'
 import * as collectionActions from 'common/store/pages/collection/actions'
 import { tracksActions } from 'common/store/pages/collection/lineup/actions'
 import {
@@ -64,8 +66,6 @@ import { setRepost } from 'common/store/user-list/reposts/actions'
 import { RepostType } from 'common/store/user-list/reposts/types'
 import { formatUrlName } from 'common/utils/formatUtil'
 import { Uid } from 'common/utils/uid'
-import { updatePlaylistLastViewedAt } from 'components/notification/store/actions'
-import { getPlaylistUpdates } from 'components/notification/store/selectors'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'

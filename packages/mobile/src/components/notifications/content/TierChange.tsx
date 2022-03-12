@@ -1,7 +1,7 @@
+import { TierChange as TierChangeNotification } from 'audius-client/src/common/store/notifications/types'
 import { StyleSheet, Text, View } from 'react-native'
 
 import { AudioTier } from 'app/components/audio-rewards'
-import { TierChange as TierChangeType } from 'app/store/notifications/types'
 import { useTheme } from 'app/utils/theme'
 
 import TwitterShare from './TwitterShare'
@@ -45,11 +45,10 @@ export const tierInfoMap: Record<
 }
 
 type TierChangeProps = {
-  notification: TierChangeType
-  onGoToRoute: (route: string) => void
+  notification: TierChangeNotification
 }
 
-const TierChange = ({ notification, onGoToRoute }: TierChangeProps) => {
+const TierChange = ({ notification }: TierChangeProps) => {
   const { tier } = notification
 
   const textStyle = useTheme(styles.text, {

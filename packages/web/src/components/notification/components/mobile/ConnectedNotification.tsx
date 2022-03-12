@@ -4,19 +4,19 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
+import {
+  getNotificationUser,
+  getNotificationUsers,
+  getNotificationEntity,
+  getNotificationEntities
+} from 'common/store/notifications/selectors'
+import { NotificationType } from 'common/store/notifications/types'
 import { open } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
-import {
-  getNotificationUser,
-  getNotificationUsers,
-  getNotificationEntity,
-  getNotificationEntities
-} from 'components/notification/store/selectors'
-import { NotificationType } from 'components/notification/store/types'
 import { AppState } from 'store/types'
 
 import Announcement from './Announcement'

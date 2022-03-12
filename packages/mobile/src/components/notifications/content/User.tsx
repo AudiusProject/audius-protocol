@@ -1,7 +1,12 @@
 import { useCallback } from 'react'
 
+import { User as UserType } from 'audius-client/src/common/models/User'
+import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { StyleSheet, Text } from 'react-native'
+import { useDispatch } from 'react-redux'
 
+import { useNavigation } from 'app/hooks/useNavigation'
+import { close } from 'app/store/notifications/actions'
 import { getUserRoute } from 'app/utils/routes'
 import { useTheme } from 'app/utils/theme'
 
@@ -13,14 +18,20 @@ const styles = StyleSheet.create({
 })
 
 type UserProps = {
-  user: any
-  onGoToRoute: (route: string) => void
+  user: UserType
 }
 
-const User = ({ user, onGoToRoute }: UserProps) => {
+const User = ({ user }: UserProps) => {
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
+
   const onPress = useCallback(() => {
-    onGoToRoute(getUserRoute(user))
-  }, [user, onGoToRoute])
+    navigation.navigate({
+      native: { screen: 'Profile', params: { handle: user.handle } },
+      web: { route: getUserRoute(user), fromPage: NOTIFICATION_PAGE }
+    })
+    dispatch(close())
+  }, [user, navigation, dispatch])
 
   const textStyle = useTheme(styles.text, {
     color: 'secondary'

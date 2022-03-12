@@ -1,24 +1,28 @@
 import { useCallback } from 'react'
 
+import Status from 'audius-client/src/common/models/Status'
+import {
+  fetchNotifications,
+  refreshNotifications
+} from 'audius-client/src/common/store/notifications/actions'
+import {
+  getNotificationHasMore,
+  getNotificationStatus,
+  makeGetAllNotifications
+} from 'audius-client/src/common/store/notifications/selectors'
+import { Notification } from 'audius-client/src/common/store/notifications/types'
 import { StyleSheet, FlatList, View, RefreshControl } from 'react-native'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
 
 import LoadingSpinner from 'app/components/loading-spinner'
 import * as haptics from 'app/haptics'
-import { AppState } from 'app/store'
-import * as notificationsActions from 'app/store/notifications/actions'
-import {
-  getEndReached,
-  getNotifications,
-  getStatus
-} from 'app/store/notifications/selectors'
-import { Notification } from 'app/store/notifications/types'
-import { Status } from 'app/types/status'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useColor } from 'app/utils/theme'
 
 import Empty from './Empty'
 import NotificationBlock from './NotificationBlock'
+
+const NOTIFICATION_PAGE_SIZE = 10
 
 const styles = StyleSheet.create({
   list: {
@@ -37,37 +41,24 @@ const styles = StyleSheet.create({
   }
 })
 
-type OwnProps = {
-  onLoadMore: () => void
-  onRefresh: () => void
-  onGoToRoute: (route: string) => void
-}
+export const List = () => {
+  const dispatchWeb = useDispatchWeb()
 
-type ListProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
+  const getNotifications = makeGetAllNotifications()
+  const notifications = useSelectorWeb(getNotifications)
+  const status = useSelectorWeb(getNotificationStatus)
+  const hasMore = useSelectorWeb(getNotificationHasMore)
 
-const List = ({
-  notifications,
-  status,
-  setStatus,
-  onLoadMore,
-  onRefresh,
-  onGoToRoute,
-  endReached
-}: ListProps) => {
   const onEndReached = useCallback(() => {
-    if (status !== Status.LOADING && !endReached) {
-      setStatus(Status.LOADING)
-      onLoadMore()
+    if (status !== Status.LOADING && hasMore) {
+      dispatchWeb(fetchNotifications(NOTIFICATION_PAGE_SIZE))
     }
-  }, [status, setStatus, onLoadMore, endReached])
+  }, [status, dispatchWeb, hasMore])
 
   const onPullRefresh = useCallback(() => {
     haptics.light()
-    setStatus(Status.LOADING)
-    onRefresh()
-  }, [setStatus, onRefresh])
+    dispatchWeb(refreshNotifications())
+  }, [dispatchWeb])
 
   const refreshColor = useColor('neutralLight6')
   const spinnerColor = useColor('neutralLight4')
@@ -97,7 +88,7 @@ const List = ({
       keyExtractor={(item: Notification) => `${item.id}`}
       renderItem={({ item }) => (
         <View style={styles.itemContainer}>
-          <NotificationBlock notification={item} onGoToRoute={onGoToRoute} />
+          <NotificationBlock notification={item} />
         </View>
       )}
       ListFooterComponent={() =>
@@ -113,15 +104,3 @@ const List = ({
     />
   )
 }
-
-const mapStateToProps = (state: AppState) => ({
-  notifications: getNotifications(state),
-  status: getStatus(state),
-  endReached: getEndReached(state)
-})
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setStatus: (status: Status) =>
-    dispatch(notificationsActions.setStatus(status))
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(List)

@@ -6,11 +6,11 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { getNotificationById } from 'common/store/notifications/selectors'
+import { Notification } from 'common/store/notifications/types'
 import Header from 'components/header/mobile/Header'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
-import { getNotificationById } from 'components/notification/store/selectors'
-import { Notification } from 'components/notification/store/types'
 import { AppState } from 'store/types'
 import { NOTIFICATION_PAGE } from 'utils/route'
 

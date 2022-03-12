@@ -1,10 +1,10 @@
 import { Track } from 'audius-client/src/common/models/Track'
+import {
+  Entity as EntityType,
+  RemixCosign
+} from 'audius-client/src/common/store/notifications/types'
 import { StyleSheet, Text, View } from 'react-native'
 
-import {
-  RemixCosign as CosignNotification,
-  Entity as EntityType
-} from 'app/store/notifications/types'
 import { useTheme } from 'app/utils/theme'
 
 import Entity from './Entity'
@@ -27,11 +27,10 @@ const styles = StyleSheet.create({
 })
 
 type CosignProps = {
-  notification: CosignNotification
-  onGoToRoute: (route: string) => void
+  notification: RemixCosign
 }
 
-const Cosign = ({ notification, onGoToRoute }: CosignProps) => {
+const Cosign = ({ notification }: CosignProps) => {
   const textWrapperStyle = useTheme(styles.textWrapper, {
     color: 'neutral'
   })
@@ -45,19 +44,11 @@ const Cosign = ({ notification, onGoToRoute }: CosignProps) => {
   return (
     <View>
       <View style={styles.container}>
-        <UserImages
-          notification={notification}
-          users={[user]}
-          onGoToRoute={onGoToRoute}
-        />
+        <UserImages notification={notification} users={[user]} />
         <Text style={textWrapperStyle}>
-          <User user={user} onGoToRoute={onGoToRoute} />
+          <User user={user} />
           <Text>{` Co-signed your Remix of `}</Text>
-          <Entity
-            entity={entity}
-            entityType={EntityType.Track}
-            onGoToRoute={onGoToRoute}
-          />
+          <Entity entity={entity} entityType={EntityType.Track} />
         </Text>
       </View>
       <TwitterShare notification={notification} />

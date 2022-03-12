@@ -2,13 +2,14 @@ import React, { useCallback } from 'react'
 
 import cn from 'classnames'
 
-import { formatCount } from 'common/utils/formatUtil'
-import ArtistPopover from 'components/artist/ArtistPopover'
+import { BadgeTier } from 'common/models/BadgeTier'
 import {
   Notification,
   NotificationType,
   Achievement
-} from 'components/notification/store/types'
+} from 'common/store/notifications/types'
+import { formatCount } from 'common/utils/formatUtil'
+import ArtistPopover from 'components/artist/ArtistPopover'
 import UserBadges, { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { badgeTiers } from 'components/user-badges/utils'
 import { challengeRewardsConfig } from 'pages/audio-rewards-page/config'
@@ -437,7 +438,7 @@ export const formatBody = (
           <span
             className={cn(styles.tierTitle, { [styles.isMobile]: isMobile })}
           >
-            {audioTierMapPng[tier]}
+            {audioTierMapPng[tier as BadgeTier]}
             {`${tier.toUpperCase()} TIER UNLOCKED`}
           </span>
           {`Congrats, you’ve reached ${tier} Tier by having over ${humanReadableAmount} $AUDIO! You now have access to exclusive features & a shiny new badge by your name.`}

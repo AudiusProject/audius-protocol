@@ -3,10 +3,10 @@ import React, { useCallback } from 'react'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import { BadgeTier } from 'common/models/BadgeTier'
 import { ID } from 'common/models/Identifiers'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
-import { BadgeTier } from 'components/user-badges/utils'
 
 import styles from './ProfilePageBadge.module.css'
 import { useSelectTierInfo } from './hooks'
@@ -83,7 +83,7 @@ const ProfilePageBadge = ({
 
   if (tier === 'none') return null
 
-  const badge = audioTierMapPng[tier]
+  const badge = audioTierMapPng[tier as BadgeTier]
 
   return (
     <div
