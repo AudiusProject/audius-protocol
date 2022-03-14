@@ -27,7 +27,6 @@ import { ReactComponent as IconMute } from 'assets/img/iconVolume0.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { Chain } from 'common/models/Chain'
 import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
-import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getCollectible } from 'common/store/ui/collectible-details/selectors'
 import { setCollectible } from 'common/store/ui/collectible-details/slice'
@@ -39,7 +38,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useSelectTierInfo } from 'components/user-badges/hooks'
 import { badgeTiers } from 'components/user-badges/utils'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useScript } from 'hooks/useScript'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -184,15 +182,11 @@ const CollectibleDetailsModal = ({
     false
   )
 
-  const { isEnabled: isCollectibleOptionEnabledFlag } = useFlag(
-    FeatureFlags.NFT_IMAGE_PICKER_TAB
-  )
   const accountUser = useSelector(getAccountUser)
   const userId = accountUser?.user_id ?? 0
   const { tierNumber } = useSelectTierInfo(userId)
 
   const isCollectibleOptionEnabled =
-    isCollectibleOptionEnabledFlag &&
     tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
 
   const handleClose = useCallback(() => {

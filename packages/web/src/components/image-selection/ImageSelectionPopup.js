@@ -232,16 +232,12 @@ const ImageSelectionPopup = ({
     solanaCollectibleList,
     user_id: userId
   } = useSelector(getAccountUser)
-  const { isEnabled: isCollectibleOptionEnabledFlag } = useFlag(
-    FeatureFlags.NFT_IMAGE_PICKER_TAB
-  )
   const { isEnabled: isSolanaCollectiblesEnabled } = useFlag(
     FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
   )
 
   const { tierNumber } = useSelectTierInfo(userId ?? 0)
   const isCollectibleOptionEnabled =
-    isCollectibleOptionEnabledFlag &&
     tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
 
   const allCollectibles = [
