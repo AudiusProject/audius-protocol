@@ -2,14 +2,11 @@ import { useEffect } from 'react'
 
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
-import {
-  TabNavigator,
-  tabScreen
-} from 'app/components/app-navigator/TopTabNavigator'
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
+import { TabNavigator, tabScreen } from 'app/components/top-tab-bar'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSearchRoute } from 'app/hooks/useRoute'
+import { useRoute } from 'app/hooks/useRoute'
 import { MessageType } from 'app/message'
 
 import { ProfilesTab } from './tabs/ProfilesTab'
@@ -25,7 +22,7 @@ const messages = {
  */
 export const TagSearchScreen = () => {
   const dispatchWeb = useDispatchWeb()
-  const { params } = useSearchRoute<'TagSearch'>()
+  const { params } = useRoute<'TagSearch'>()
   const { query } = params
 
   useEffect(() => {
@@ -48,7 +45,7 @@ export const TagSearchScreen = () => {
   })
 
   return (
-    <Screen topbarRight={null} noPadding>
+    <Screen topbarRight={null}>
       <Header text={messages.header} />
       <TabNavigator initialScreenName='Tracks'>
         {tracksScreen}

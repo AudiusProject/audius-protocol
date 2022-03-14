@@ -41,6 +41,8 @@ import { AudioTier } from 'app/components/audio-rewards'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { AppTabScreenParamList } from 'app/screens/app-screen'
+import { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTabScreen'
 import { close } from 'app/store/notifications/actions'
 import { useColor, useTheme } from 'app/utils/theme'
 
@@ -181,7 +183,9 @@ const NotificationBlock = ({ notification }: NotificationBlockProps) => {
 
   const notificationScreen = getNotificationScreen(notification)
   const notificationRoute = getNotificationRoute(notification)
-  const navigation = useNavigation()
+  const navigation = useNavigation<
+    AppTabScreenParamList & ProfileTabScreenParamList
+  >()
 
   const onPress = useCallback(() => {
     if (notificationRoute && notificationScreen) {

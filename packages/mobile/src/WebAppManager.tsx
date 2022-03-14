@@ -1,29 +1,36 @@
-import { ReactNode } from 'react'
+import { ReactNode, RefObject } from 'react'
 
-import { isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
 
-import { AppState } from './store'
+import { SplashScreen, useSplashScreenKey } from 'app/screens/splash-screen'
+
+import WebApp from './components/web/WebApp'
+import { getCommonStoreLoaded } from './store/lifecycle/selectors'
+import { MessagePostingWebView } from './types/MessagePostingWebView'
 
 type WebAppManagerProps = {
-  webApp: JSX.Element
+  webRef: RefObject<MessagePostingWebView>
   children: ReactNode
 }
 
-export const WebAppManager = ({ webApp, children }: WebAppManagerProps) => {
-  const isClientStoreEmpty = useSelector((state: AppState) =>
-    isEmpty(state.common)
-  )
+export const WebAppManager = ({ webRef, children }: WebAppManagerProps) => {
+  const isCommonStoreLoaded = useSelector(getCommonStoreLoaded)
+
+  // Rekey the splash animation if the dapp loading
+  // state changes
+  const splashKey = useSplashScreenKey()
+
   return (
     <>
-      {webApp}
+      <SplashScreen key={`splash-${splashKey}`} />
+      <WebApp webRef={webRef} />
       {/*
         Note: it is very important that native components are rendered after WebApp.
         On Android, regardless of position: absolute, WebApp will steal all of
         touch targets and onPress will not work. We also check if the client store
         is initialized before continuing.
       */}
-      {isClientStoreEmpty ? null : children}
+      {isCommonStoreLoaded ? children : null}
     </>
   )
 }

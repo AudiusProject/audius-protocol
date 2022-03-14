@@ -5,21 +5,22 @@ import {
   NavigationContainer as RNNavigationContainer
 } from '@react-navigation/native'
 
-import { AppStackParamList } from 'app/components/app-navigator/types'
+import { RootScreenParamList } from 'app/screens/root-screen/RootScreen'
 
-import { navigationThemes } from '../app-navigator/navigationThemes'
 import { ThemeContext } from '../theme/ThemeContext'
+
+import { navigationThemes } from './navigationThemes'
 
 type Props = {
   children: ReactNode
 }
 
-const linking: LinkingOptions<AppStackParamList> = {
+const linking: LinkingOptions<RootScreenParamList> = {
   prefixes: ['https://audius.co'],
   // configuration for matching screens with paths
   config: {
     screens: {
-      main: {
+      App: {
         initialRouteName: 'feed',
         screens: {
           feed: {

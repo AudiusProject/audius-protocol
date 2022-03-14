@@ -3,10 +3,7 @@ import IconCollectibles from 'app/assets/images/iconCollectibles.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
-import {
-  TabNavigator,
-  tabScreen
-} from 'app/components/app-navigator/TopTabNavigator'
+import { TabNavigator, tabScreen } from 'app/components/top-tab-bar'
 
 import { AlbumsTab } from './AlbumsTab'
 import { CollectiblesTab } from './CollectiblesTab'

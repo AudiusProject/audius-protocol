@@ -6,11 +6,12 @@ import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.p
 import Bell from 'app/assets/images/emojis/bell.png'
 import Headphone from 'app/assets/images/emojis/headphone.png'
 import SpeechBalloon from 'app/assets/images/emojis/speech-balloon.png'
-import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
+
+import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { AccountSettingsRow } from './AccountSettingsRow'
 import { AppearanceSettingsRow } from './AppearanceSettingsRow'
@@ -38,7 +39,7 @@ const useStyles = makeStyles(({ spacing, palette, type }) => ({
 export const SettingsScreen = () => {
   const styles = useStyles()
 
-  const navigation = useNavigation<ProfileStackParamList>()
+  const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePressHistory = useCallback(() => {
     navigation.push({

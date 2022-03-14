@@ -2,7 +2,7 @@ import { IconButton, IconButtonProps } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(() => ({
   icon: {
     height: 28,
     width: 28
