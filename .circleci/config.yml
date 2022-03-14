@@ -599,14 +599,16 @@ jobs:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
 
-      - run:
-          name: Setup Anchor
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y pkg-config libssl-dev libudev-dev
-            sudo npm install -g @project-serum/anchor-cli
-            # cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
+      # - run:
+      #     name: Setup Anchor
+      #     command: |
+      #       sudo apt-get update
+      #       sudo apt-get install -y pkg-config libssl-dev libudev-dev
 
+      - restore_cache:
+          keys:
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+            - anchor-node-deps-
       - run:
           name: anchor tests
           command: |
@@ -614,7 +616,11 @@ jobs:
             solana-keygen new --no-bip39-passphrase
             cd solana-programs/anchor/audius-data
             yarn
-            anchor test
+            npx anchor test
+      - save_cache:
+          paths:
+            - solana-programs/anchor/audius-data/node_modules
+          key: anchor-ndoe-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
 
       # - restore_cache:
       #     keys:
