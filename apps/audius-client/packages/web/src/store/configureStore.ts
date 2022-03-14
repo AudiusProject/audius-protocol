@@ -1,13 +1,15 @@
 import * as Sentry from '@sentry/browser'
 import { routerMiddleware, push as pushRoute } from 'connected-react-router'
-import { isEmpty, pick, pickBy } from 'lodash'
+import { debounce, isEmpty, pick, pickBy } from 'lodash'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension/logOnlyInProduction'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 
+import { CommonState } from 'common/store'
 import { Level } from 'common/store/errors/level'
 import { reportToSentry } from 'common/store/errors/reportToSentry'
+import { Nullable } from 'common/utils/typeUtils'
 import { postMessage } from 'services/native-mobile-interface/helpers'
 import { MessageType } from 'services/native-mobile-interface/types'
 import { track as amplitudeTrack } from 'store/analytics/providers/amplitude'
@@ -119,6 +121,22 @@ const middlewares = applyMiddleware(
 // the common store from web -> mobile
 const commonStateKeys = Object.keys(commonStoreReducers)
 
+let aggregateStateToSync: Nullable<Partial<CommonState>> = null
+
+const debouncedPostMessage = debounce(
+  () => {
+    if (!isEmpty(aggregateStateToSync)) {
+      postMessage({
+        type: MessageType.SYNC_COMMON_STATE,
+        state: aggregateStateToSync
+      })
+      aggregateStateToSync = null
+    }
+  },
+  200,
+  { leading: true }
+)
+
 const syncCommonStateToNativeMobile = (store: Store) => {
   if (NATIVE_MOBILE) {
     let previousState: RootState
@@ -145,14 +163,14 @@ const syncCommonStateToNativeMobile = (store: Store) => {
           value !== previousState[key as keyof RootState]
       )
 
+      // Aggregate state to sync across debounces
+      aggregateStateToSync = aggregateStateToSync
+        ? { ...aggregateStateToSync, ...stateToSync }
+        : stateToSync
+
       previousState = state
 
-      if (!isEmpty(stateToSync)) {
-        postMessage({
-          type: MessageType.SYNC_COMMON_STATE,
-          state: stateToSync
-        })
-      }
+      debouncedPostMessage()
     })
   }
 }
