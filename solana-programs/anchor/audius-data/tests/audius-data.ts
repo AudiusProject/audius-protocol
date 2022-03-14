@@ -27,7 +27,6 @@ const { PublicKey, SystemProgram } = anchor.web3;
 chai.use(chaiAsPromised);
 
 describe("audius-data", function () {
-  // eslint-disable-next-line mocha/no-setup-in-describe
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
