@@ -222,25 +222,9 @@ pub mod audius_data {
     }
 
     /*
-        Track related functions
+        Entity related functions
     */
-    pub fn create_track(ctx: Context<CreateTrack>, _id: String, _metadata: String) -> Result<()> {
-        // Reject if update submitted with invalid user authority
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        Ok(())
-    }
-
-    pub fn update_track(ctx: Context<UpdateTrack>, _id: String, _metadata: String) -> Result<()> {
-        // Reject if update submitted with invalid user authority
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        Ok(())
-    }
-
-    pub fn delete_track(ctx: Context<DeleteTrack>, _id: String) -> Result<()> {
+    pub fn manage_entity(ctx: Context<ManageEntity>, _entity_type: EntityTypes, _management_action: ManagementActions, _id: String, _metadata: String) -> Result<()> {
         // Reject if update submitted with invalid user authority
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
@@ -570,7 +554,7 @@ pub struct RemoveUserAuthorityDelegate<'info> {
 /// Instruction container for track creation
 /// Confirms that user.authority matches signer authority field
 #[derive(Accounts)]
-pub struct CreateTrack<'info> {
+pub struct ManageEntity<'info> {
     #[account()]
     pub user: Account<'info, User>,
     #[account()]
@@ -758,10 +742,16 @@ pub enum PlaylistSocialActionValues {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
-pub enum TrackManagementActions {
+pub enum ManagementActions {
     Create,
     Update,
     Delete
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum EntityTypes {
+    Track,
+    Playlist
 }
 
 // Seed & bump used to validate the user's handle with the account base

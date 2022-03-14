@@ -27,28 +27,33 @@ export const getTransaction = async (provider: Provider, tx: string) => {
 
 export const decodeInstruction = (program: anchor.Program, data: string) => {
   const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-  const decodedInstruction = instructionCoder.decode(
-    data,
-    "base58"
-  );
-  return decodedInstruction
-}
+  const decodedInstruction = instructionCoder.decode(data, "base58");
+  return decodedInstruction;
+};
 
-export const getTransactionWithData = async (program: anchor.Program, provider: Provider, tx: string) => {
+export const getTransactionWithData = async (
+  program: anchor.Program,
+  provider: Provider,
+  tx: string
+) => {
   const info = await getTransaction(provider, tx);
-  const data = info.transaction.message.instructions[0].data
-  const decodedInstruction = decodeInstruction(program, data)
-  const accountIndexes = info.transaction.message.instructions[0].accounts
-  const accountKeys = info.transaction.message.accountKeys
-  let accountPubKeys = []
-  for (var i of accountIndexes) {
-    accountPubKeys.push(accountKeys[i].toString())
+  const data = info.transaction.message.instructions[0].data;
+  const decodedInstruction = decodeInstruction(program, data);
+  const accountIndexes = info.transaction.message.instructions[0].accounts;
+  const accountKeys = info.transaction.message.accountKeys;
+  const accountPubKeys = [];
+  for (const i of accountIndexes) {
+    accountPubKeys.push(accountKeys[i].toString());
   }
-  const decodedData = decodedInstruction.data
+  const decodedData = decodedInstruction.data;
   return {
-    info, data, decodedInstruction, decodedData, accountPubKeys
-  }
-}
+    info,
+    data,
+    decodedInstruction,
+    decodedData,
+    accountPubKeys,
+  };
+};
 
 /// Sign any bytes object with the provided eth private key
 export const signBytes = (bytes: Uint8Array, ethPrivateKey: string) => {

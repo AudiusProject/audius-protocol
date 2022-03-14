@@ -71,7 +71,7 @@ describe("track-actions", function () {
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       trackSocialAction: TrackSocialActionEnumValues.addSave,
-      trackId: randomString(44)
+      trackId: randomString(44),
     });
 
     const info = await getTransaction(provider, tx);
@@ -103,7 +103,7 @@ describe("track-actions", function () {
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       trackSocialAction: TrackSocialActionEnumValues.deleteSave,
-      trackId: randomString(10)
+      trackId: randomString(10),
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -125,14 +125,14 @@ describe("track-actions", function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
     const trackMetadata = randomCID();
-    const trackID = randomString(10)
+    const trackID = randomString(10);
     await testCreateTrack({
       provider,
       program,
       id: trackID,
       trackMetadata,
       userAuthorityKeypair: user.keypair,
-      trackOwnerPDA: user.pda
+      trackOwnerPDA: user.pda,
     });
 
     const tx = await writeTrackSocialAction({
@@ -144,7 +144,7 @@ describe("track-actions", function () {
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       trackSocialAction: TrackSocialActionEnumValues.addSave,
-      trackId: trackID
+      trackId: trackID,
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -173,7 +173,7 @@ describe("track-actions", function () {
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       trackSocialAction: TrackSocialActionEnumValues.addRepost,
-      trackId: randomString(10)
+      trackId: randomString(10),
     });
 
     const info = await getTransaction(provider, tx);
@@ -205,7 +205,7 @@ describe("track-actions", function () {
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       trackSocialAction: TrackSocialActionEnumValues.deleteRepost,
-      trackId: randomString(30)
+      trackId: randomString(30),
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;

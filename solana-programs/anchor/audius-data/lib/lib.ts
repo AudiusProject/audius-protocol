@@ -25,6 +25,17 @@ export const PlaylistSocialActionEnumValues = {
   deleteRepost: { deleteRepost: {} },
 };
 
+export const EntityTypesEnumValues = {
+  track: { track: {} },
+  playlist: { playlist: {} },
+};
+
+export const ManagementActions = {
+  create: { create: {} },
+  update: { update: {} },
+  delete: { delete: {} },
+};
+
 type TrackSocialActionKeys = keyof typeof TrackSocialActionEnumValues;
 type TrackSocialActionValues =
   typeof TrackSocialActionEnumValues[TrackSocialActionKeys];
@@ -329,16 +340,19 @@ export const createTrack = async ({
   userStgAccountPDA,
   metadata,
 }: CreateTrackParams) => {
-  return program.rpc.createTrack(
+  return program.rpc.manageEntity(
+    EntityTypesEnumValues.track,
+    ManagementActions.create,
     id,
     metadata,
     {
-    accounts: {
-      user: userStgAccountPDA,
-      authority: userAuthorityKeypair.publicKey,
-    },
-    signers: [userAuthorityKeypair],
-  });
+      accounts: {
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Initialize a user from the Audius Admin account
@@ -357,7 +371,9 @@ export const updateTrack = async ({
   userAuthorityKeypair,
   userStgAccountPDA,
 }: UpdateTrackParams) => {
-  return program.rpc.updateTrack(
+  return program.rpc.manageEntity(
+    EntityTypesEnumValues.track,
+    ManagementActions.update,
     id,
     metadata,
     {
@@ -366,7 +382,8 @@ export const updateTrack = async ({
         authority: userAuthorityKeypair.publicKey,
       },
       signers: [userAuthorityKeypair],
-    });
+    }
+  );
 };
 
 /// Initialize a user from the Audius Admin account
@@ -384,8 +401,11 @@ export const deleteTrack = async ({
   userStgAccountPDA,
   userAuthorityKeypair,
 }: DeleteTrackParams) => {
-  return program.rpc.deleteTrack(
+  return program.rpc.manageEntity(
+    EntityTypesEnumValues.track,
+    ManagementActions.delete,
     id,
+    "", // Empty string for metadata in delete
     {
       accounts: {
         user: userStgAccountPDA,

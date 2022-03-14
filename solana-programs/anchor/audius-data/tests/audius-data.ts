@@ -1,18 +1,15 @@
 import * as anchor from "@project-serum/anchor";
-import { Program, BorshInstructionCoder } from "@project-serum/anchor";
+import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
-  createTrack,
   initAdmin,
   updateUser,
   updateAdmin,
-  updateTrack,
-  deleteTrack,
   updateIsVerified,
   getKeypairFromSecretKey,
 } from "../lib/lib";
-import { findDerivedPair, getTransaction, randomCID, randomString } from "../lib/utils";
+import { findDerivedPair, randomCID, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreateTrack,
@@ -44,7 +41,6 @@ describe("audius-data", function () {
   const adminKeypair = anchor.web3.Keypair.generate();
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
-
 
   it("Initializing admin account!", async function () {
     await initAdmin({
@@ -287,7 +283,7 @@ describe("audius-data", function () {
     });
 
     const trackMetadata = randomCID();
-    const trackID = randomString(10)
+    const trackID = randomString(10);
 
     await testCreateTrack({
       provider,
@@ -798,7 +794,7 @@ describe("audius-data", function () {
     });
 
     const trackMetadata = randomCID();
-    const trackID = randomString(10)
+    const trackID = randomString(10);
 
     await testCreateTrack({
       provider,
