@@ -1,6 +1,6 @@
 import logging
 from glob import glob
-from os import environ, getenv, getpid, remove
+from os import getenv, getpid, remove
 
 from flask import Blueprint, Response
 from prometheus_client import (
