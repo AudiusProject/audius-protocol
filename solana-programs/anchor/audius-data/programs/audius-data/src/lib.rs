@@ -267,9 +267,6 @@ pub mod audius_data {
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        // if track_id >= ctx.accounts.audius_admin.track_id {
-        //     return Err(ErrorCode::InvalidId.into());
-        // }
         Ok(())
     }
 

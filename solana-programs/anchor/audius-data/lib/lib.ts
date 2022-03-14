@@ -406,7 +406,7 @@ export type TrackSocialActionArgs = {
   handleBytesArray: number[];
   bumpSeed: number;
   trackSocialAction: TrackSocialActionValues;
-  trackId: anchor.BN;
+  trackId: string;
 };
 
 export type PlaylistSocialActionArgs = {
