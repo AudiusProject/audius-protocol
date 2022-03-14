@@ -599,12 +599,6 @@ jobs:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
 
-      # - run:
-      #     name: Setup Anchor
-      #     command: |
-      #       sudo apt-get update
-      #       sudo apt-get install -y pkg-config libssl-dev libudev-dev
-
       - restore_cache:
           keys:
             - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}

@@ -22,7 +22,7 @@ describe("follows", function () {
     commitment: "confirmed",
   });
 
-  // Configure the client to use the local cluster
+  // Configure the client to use the local cluster.
   anchor.setProvider(anchor.Provider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
