@@ -18,12 +18,11 @@ bp = Blueprint("prometheus_metrics_exporter", __name__)
 # hacky short-term solution since we only have two options: server/worker
 # we cannot support another container type that's not explicitly setting
 # $audius_prometheus_container
-if not getenv("audius_prometheus_container", False):
-    environ["audius_prometheus_container"] = "worker"
+audius_prometheus_container = getenv("audius_prometheus_container", "worker")
 
 # remove all *container*.db files since we're restarting the process
 files = glob(
-    f"/{getenv('PROMETHEUS_MULTIPROC_DIR')}/*{getenv('audius_prometheus_container')}*"
+    f"/{getenv('PROMETHEUS_MULTIPROC_DIR')}/*{audius_prometheus_container}*"
 )
 for f in files:
     logger.info(f"Removing prometheus file: {f}")
@@ -31,7 +30,7 @@ for f in files:
 
 
 def process_identifier():
-    return f"{getenv('audius_prometheus_container')}_{getpid()}"
+    return f"{audius_prometheus_container}_{getpid()}"
 
 
 @bp.route("/prometheus_metrics", methods=["GET"])
