@@ -1,5 +1,5 @@
 const config = require('../config')
-const { handleResponse, successResponse, errorResponseForbidden, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseForbidden, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const models = require('../models')
 const { QueryTypes } = require('sequelize')
 const userHandleMiddleware = require('../userHandleMiddleware')
@@ -88,22 +88,27 @@ module.exports = function (app) {
 
   app.post('/record_ip', authMiddleware, handleResponse(async req => {
     const { blockchainUserId, handle } = req.user
-    const userIP = getIP(req)
-    req.logger.info(`idSignals | record_ip | User IP is ${userIP} for user with id ${blockchainUserId} and handle ${handle}`)
 
-    const record = await models.UserIPs.findOne({ where: { handle } })
-    if (!record) {
-      req.logger.info(`idSignals | record_ip | Saving IP ${userIP} for user ${handle}`)
-      await models.UserIPs.create({
-        handle,
-        userIP
-      })
-    } else {
-      // update even if IP has not changed so that we can later use updatedAt value if necessary
-      req.logger.info(`idSignals | record_ip | Updating IP from ${record.userIP} to ${userIP} for user ${handle}`)
-      await record.update({ userIP, updatedAt: Date.now() })
+    try {
+      const userIP = getIP(req)
+      req.logger.info(`idSignals | record_ip | User IP is ${userIP} for user with id ${blockchainUserId} and handle ${handle}`)
+
+      const record = await models.UserIPs.findOne({ where: { handle } })
+      if (!record) {
+        req.logger.info(`idSignals | record_ip | Saving IP ${userIP} for user ${handle}`)
+        await models.UserIPs.create({
+          handle,
+          userIP
+        })
+      } else {
+        // update even if IP has not changed so that we can later use updatedAt value if necessary
+        req.logger.info(`idSignals | record_ip | Updating IP from ${record.userIP} to ${userIP} for user ${handle}`)
+        await record.update({ userIP, updatedAt: Date.now() })
+      }
+      return successResponse({ userIP })
+    } catch (e) {
+      req.logger.error(`idSignals | record_ip | Failed to record IP for user ${handle}`)
+      return errorResponseServerError(`Failed to record IP for user ${handle}`)
     }
-
-    return successResponse({ userIP })
   }))
 }
