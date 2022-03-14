@@ -72,13 +72,22 @@ export const BottomTabBarButton = ({
   const handlePress = useCallback(() => {
     navigate(route, isFocused)
   }, [navigate, route, isFocused])
+
+  const handleLongPress = useCallback(() => {
+    if (isFocused) {
+      onLongPress()
+    } else {
+      handlePress()
+    }
+  }, [isFocused, handlePress, onLongPress])
+
   return (
     <AnimatedButtonProvider
       iconDarkJSON={icons.dark[route.name]}
       iconLightJSON={icons.light[route.name]}
       isActive={isFocused}
       isDarkMode={isDarkMode}
-      onLongPress={onLongPress}
+      onLongPress={handleLongPress}
       onPress={handlePress}
       style={styles.animatedButton}
       wrapperStyle={styles.iconWrapper}

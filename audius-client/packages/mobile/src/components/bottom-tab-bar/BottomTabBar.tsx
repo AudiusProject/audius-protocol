@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
@@ -93,6 +93,7 @@ export const BottomTabBar = ({
   navigation,
   translationAnim
 }: BottomTabBarProps & RNBottomTabBarProps) => {
+  const [isNavigating, setIsNavigating] = useState(false)
   const pushRouteWeb = usePushRouteWeb()
   const bottomBarStyle = useTheme(styles.bottomBar, {
     borderTopColor: 'neutralLight8',
@@ -142,59 +143,67 @@ export const BottomTabBar = ({
 
   const navigate = useCallback(
     (route: NavigationRoute, isFocused) => {
-      // Web navigation
-      if (isFocused) {
-        scrollToTop()
-      }
-
-      resetExploreTab()
-
-      const webNavigationHandlers = {
-        feed: () => {
-          if (!handle) {
-            openSignOn()
-          } else {
-            pushRouteWeb(FEED_PAGE)
-          }
-        },
-        trending: () => {
-          pushRouteWeb(TRENDING_PAGE)
-        },
-        explore: () => {
-          pushRouteWeb(EXPLORE_PAGE)
-        },
-        favorites: () => {
-          if (!handle) {
-            openSignOn()
-          } else {
-            pushRouteWeb(FAVORITES_PAGE)
-          }
-        },
-        profile: () => {
-          if (!handle) {
-            openSignOn()
-          } else {
-            pushRouteWeb(profilePage(handle))
-          }
-        }
-      }
-
-      webNavigationHandlers[route.name]?.()
-
-      // Native navigation
+      setIsNavigating(true)
       const event = navigation.emit({
         type: 'tabPress',
         target: route.key,
         canPreventDefault: true
       })
 
-      if (!isFocused && !event.defaultPrevented) {
-        navigation.navigate(route.name)
-      } else if (isFocused) {
-        navigation.emit({
-          type: 'scrollToTop'
-        })
+      const performNavigation = () => {
+        setIsNavigating(false)
+        // Web navigation
+        if (isFocused) {
+          scrollToTop()
+        }
+
+        resetExploreTab()
+
+        const webNavigationHandlers = {
+          feed: () => {
+            if (!handle) {
+              openSignOn()
+            } else {
+              pushRouteWeb(FEED_PAGE)
+            }
+          },
+          trending: () => {
+            pushRouteWeb(TRENDING_PAGE)
+          },
+          explore: () => {
+            pushRouteWeb(EXPLORE_PAGE)
+          },
+          favorites: () => {
+            if (!handle) {
+              openSignOn()
+            } else {
+              pushRouteWeb(FAVORITES_PAGE)
+            }
+          },
+          profile: () => {
+            if (!handle) {
+              openSignOn()
+            } else {
+              pushRouteWeb(profilePage(handle))
+            }
+          }
+        }
+
+        webNavigationHandlers[route.name]?.()
+
+        // Native navigation
+        if (!isFocused && !event.defaultPrevented) {
+          navigation.navigate(route.name)
+        } else if (isFocused) {
+          navigation.emit({
+            type: 'scrollToTop'
+          })
+        }
       }
+
+      // Slight delay to allow button to rerender before
+      // new screen starts rendering
+      setTimeout(performNavigation, 50)
     },
     [navigation, pushRouteWeb, handle, openSignOn, resetExploreTab, scrollToTop]
   )
@@ -224,7 +233,7 @@ export const BottomTabBar = ({
         pointerEvents='auto'
       >
         {state.routes.map((route, index) => {
-          const isFocused = state.index === index
+          const isFocused = !isNavigating && state.index === index
           const key = `${route.name}-button`
           return (
             <BottomTabBarButton
