@@ -555,7 +555,7 @@ jobs:
   test-solana-programs:
     docker:
       # specify the version you desire here
-      - image: cimg/rust:1.53.0
+      - image: cimg/rust:1.57.0-node
     steps:
       - checkout
       - diff-if-necessary:
@@ -598,6 +598,23 @@ jobs:
           paths:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
+
+      - restore_cache:
+          keys:
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+            - anchor-node-deps-
+      - run:
+          name: anchor tests
+          command: |
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
+            solana-keygen new --no-bip39-passphrase
+            cd solana-programs/anchor/audius-data
+            yarn
+            npx anchor test
+      - save_cache:
+          paths:
+            - solana-programs/anchor/audius-data/node_modules
+          key: anchor-ndoe-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
 
       # - restore_cache:
       #     keys:
