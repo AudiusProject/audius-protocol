@@ -603,8 +603,8 @@ jobs:
           name: Setup Anchor
           command: |
             sudo apt-get update
-            sudo apt-get install -y libssl-dev
-            sudo npm install -g yarn
+            sudo apt-get install -y pkg-config libssl-dev libudev-dev
+            npm install -g yarn
             cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
 
       - run:
