@@ -3,26 +3,31 @@ import { useCallback, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { SearchParamList } from 'app/components/app-navigator/types'
 import { SearchInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { MessageType } from 'app/message'
 import { updateQuery } from 'app/store/search/actions'
 import {
   getSearchQuery,
   getSearchResultQuery
 } from 'app/store/search/selectors'
+import { getTagSearchRoute } from 'app/utils/routes'
 
 export const SearchBar = () => {
   const query = useSelector(getSearchQuery)
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
+  const navigation = useNavigation<SearchParamList>()
   const [clearable, setClearable] = useState(false)
   const inputRef = useRef<TextInput>(null)
 
   const handleChangeText = useCallback(
     (text: string) => {
       dispatch(updateQuery(text))
+      // Do nothing for tag search (no autocomplete)
       if (!text.startsWith('#')) {
         dispatchWeb({
           type: MessageType.UPDATE_SEARCH_QUERY,
@@ -37,6 +42,17 @@ export const SearchBar = () => {
     },
     [dispatch, dispatchWeb, setClearable]
   )
+
+  const handleSubmit = useCallback(() => {
+    const route = getTagSearchRoute(query)
+    navigation.push({
+      native: {
+        screen: 'TagSearch',
+        params: { query }
+      },
+      web: { route, fromPage: 'search' }
+    })
+  }, [query, navigation])
 
   const onClear = useCallback(() => {
     dispatch(updateQuery(''))
@@ -59,6 +75,7 @@ export const SearchBar = () => {
       Icon={icon}
       clearable={!isLoading && clearable}
       onClear={onClear}
+      onSubmitEditing={handleSubmit}
     />
   )
 }
