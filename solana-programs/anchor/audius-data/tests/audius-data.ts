@@ -17,7 +17,6 @@ import { AudiusData } from "../target/types/audius_data";
 import {
   testCreateTrack,
   confirmLogInTransaction,
-  decodeInstruction,
   initTestConstants,
   pollAccountBalance,
   testCreateUser,

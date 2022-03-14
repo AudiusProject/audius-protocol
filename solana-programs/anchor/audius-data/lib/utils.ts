@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Provider } from "@project-serum/anchor";
+import { BorshInstructionCoder, Provider } from "@project-serum/anchor";
 import BN from "bn.js";
 import { randomBytes } from "crypto";
 import * as secp256k1 from "secp256k1";
@@ -24,6 +24,31 @@ export const getTransaction = async (provider: Provider, tx: string) => {
   }
   return info;
 };
+
+export const decodeInstruction = (program: anchor.Program, data: string) => {
+  const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+  const decodedInstruction = instructionCoder.decode(
+    data,
+    "base58"
+  );
+  return decodedInstruction
+}
+
+export const getTransactionWithData = async (program: anchor.Program, provider: Provider, tx: string) => {
+  const info = await getTransaction(provider, tx);
+  const data = info.transaction.message.instructions[0].data
+  const decodedInstruction = decodeInstruction(program, data)
+  const accountIndexes = info.transaction.message.instructions[0].accounts
+  const accountKeys = info.transaction.message.accountKeys
+  let accountPubKeys = []
+  for (var i of accountIndexes) {
+    accountPubKeys.push(accountKeys[i].toString())
+  }
+  const decodedData = decodedInstruction.data
+  return {
+    info, data, decodedInstruction, decodedData, accountPubKeys
+  }
+}
 
 /// Sign any bytes object with the provided eth private key
 export const signBytes = (bytes: Uint8Array, ethPrivateKey: string) => {
