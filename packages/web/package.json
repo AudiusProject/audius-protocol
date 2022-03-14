@@ -9,7 +9,7 @@
     "@audius/libs": "1.2.91",
     "@audius/stems": "0.3.24",
     "@craco/craco": "6.4.3",
-    "@fingerprintjs/fingerprintjs-pro": "^3.5.6",
+    "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@hcaptcha/react-hcaptcha": "0.3.6",
     "@optimizely/optimizely-sdk": "4.0.0",
     "@project-serum/sol-wallet-adapter": "0.2.5",
