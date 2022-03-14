@@ -21,7 +21,6 @@ import {
 } from 'common/models/Collection'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
-import { FeatureFlags } from 'common/services/remote-config'
 import { getTab } from 'common/store/pages/explore/selectors'
 import { setTab } from 'common/store/pages/explore/slice'
 import {
@@ -34,7 +33,6 @@ import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
-import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
 import {
   CHILL_PLAYLISTS,
@@ -45,7 +43,6 @@ import {
   ExploreCollection,
   ExploreMoodCollection
 } from 'pages/explore-page/collections'
-import { REMIXABLES } from 'pages/smart-collection/smartCollections'
 import {
   playlistPage,
   albumPage,
@@ -136,18 +133,10 @@ const ExplorePage = ({
   formatProfileCardSecondaryText,
   goToRoute
 }: ExplorePageProps) => {
-  const { isEnabled: remixablesEnabled } = useFlag(FeatureFlags.REMIXABLES)
   useMainPageHeader()
 
   const justForYouTiles = justForYou.map(
     (t: SmartCollection | ExploreCollection) => {
-      if (
-        t.variant === CollectionVariant.SMART &&
-        t.playlist_name === REMIXABLES.playlist_name &&
-        !remixablesEnabled
-      ) {
-        return null
-      }
       const Icon = t.icon ? t.icon : React.Fragment
       if (t.variant === CollectionVariant.SMART) {
         return (
@@ -260,12 +249,7 @@ const ExplorePage = ({
         title={messages.justForYou}
         description={messages.justForYouDescription}
       >
-        <div
-          className={cn(styles.section, {
-            [styles.tripleHeaderSection]: !remixablesEnabled,
-            [styles.tripleHeaderSectionTenTile]: remixablesEnabled
-          })}
-        >
+        <div className={cn(styles.section, styles.tripleHeaderSectionTenTile)}>
           {justForYouTiles}
         </div>
       </TabBodyHeader>,
@@ -299,14 +283,7 @@ const ExplorePage = ({
         )}
       </TabBodyHeader>
     ]
-  }, [
-    playlistCards,
-    profileCards,
-    justForYouTiles,
-    lifestyleTiles,
-    status,
-    remixablesEnabled
-  ])
+  }, [playlistCards, profileCards, justForYouTiles, lifestyleTiles, status])
 
   const initialTab = useSelector(getTab)
   const dispatch = useDispatch()
