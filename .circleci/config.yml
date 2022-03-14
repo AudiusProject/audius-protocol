@@ -555,7 +555,7 @@ jobs:
   test-solana-programs:
     docker:
       # specify the version you desire here
-      - image: cimg/rust:1.57.0-node
+      - image: audius/solana-programs
     steps:
       - checkout
       - diff-if-necessary:
@@ -601,14 +601,13 @@ jobs:
 
       - run:
           name: Setup Anchor
-          command: |
-            sudo apt-get update
-            sudo apt-get install pkg-config libssl-dev libudev-dev
-            cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
+          command: cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
 
       - run:
           name: anchor tests
           command: |
+            apt-get update
+            apt-get install libssl-dev
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/anchor/audius-data
             yarn
