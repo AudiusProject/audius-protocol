@@ -608,7 +608,7 @@ jobs:
           command: |
             apt-get update
             apt-get install -y libssl-dev
-            npm install -g yarn
+            nvm use v14.18.1
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/anchor/audius-data
             yarn
