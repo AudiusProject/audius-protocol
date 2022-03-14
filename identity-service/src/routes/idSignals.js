@@ -68,7 +68,14 @@ module.exports = function (app) {
       models.UserIPs.findOne({ where: { handle } })
     ])
 
-    const response = { captchaScores, cognitoFlowScores, socialSignals: {}, deviceUserCount, userIP: userIPRecord && userIPRecord.userIP, emailAddress: req.user.email }
+    const response = {
+      captchaScores,
+      cognitoFlowScores,
+      socialSignals: {},
+      deviceUserCount,
+      userIP: userIPRecord && userIPRecord.userIP,
+      emailAddress: req.user.email
+    }
     if (socialHandles) {
       response.socialSignals = {
         ...socialHandles.dataValues,
