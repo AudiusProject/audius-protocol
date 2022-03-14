@@ -26,6 +26,7 @@ files = glob(
     f"/{getenv('PROMETHEUS_MULTIPROC_DIR')}/*{getenv('audius_prometheus_container')}*"
 )
 for f in files:
+    logger.info(f"Removing prometheus file: {f}")
     remove(f)
 
 
