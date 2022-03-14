@@ -9,7 +9,6 @@ import {
 } from 'common/models/Collection'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
-import { FeatureFlags } from 'common/services/remote-config'
 import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
 import UserArtCard from 'components/card/desktop/UserArtCard'
@@ -20,7 +19,6 @@ import PerspectiveCard, {
   EmojiInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
-import { useFlag } from 'hooks/useRemoteConfig'
 import {
   LET_THEM_DJ,
   TOP_ALBUMS,
@@ -118,7 +116,6 @@ const ExplorePage = ({
     },
     [goToRoute]
   )
-  const { isEnabled: remixablesEnabled } = useFlag(FeatureFlags.REMIXABLES_WEB)
 
   return (
     <Page
@@ -134,13 +131,6 @@ const ExplorePage = ({
         layout={Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT}
       >
         {justForYou.map(i => {
-          if (
-            i.variant === CollectionVariant.SMART &&
-            i.playlist_name === REMIXABLES.playlist_name &&
-            !remixablesEnabled
-          ) {
-            return null
-          }
           const title =
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =
