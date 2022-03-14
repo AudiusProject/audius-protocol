@@ -497,6 +497,7 @@ jobs:
             export audius_web3_port=8555
             export audius_web3_eth_provider_url=http://localhost:8556
             export PROMETHEUS_MULTIPROC_DIR=/prometheus_data
+            mkdir ${PROMETHEUS_MULTIPROC_DIR}
             ./scripts/circle-ci.sh
 
   test-identity-service:
