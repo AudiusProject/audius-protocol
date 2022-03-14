@@ -4,7 +4,10 @@ import { MessageType } from 'audius-client/src/services/native-mobile-interface/
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
-import { SearchResultsScreen } from 'app/screens/search-results-screen'
+import {
+  SearchResultsScreen,
+  TagSearchScreen
+} from 'app/screens/search-results-screen'
 import { SearchScreen } from 'app/screens/search-screen'
 import { TrackScreen } from 'app/screens/track-screen'
 import {
@@ -72,6 +75,7 @@ export const BaseStackNavigator = ({
           options={{ cardStyleInterpolator: forFade }}
         />
         <Stack.Screen name='SearchResults' component={SearchResultsScreen} />
+        <Stack.Screen name='TagSearch' component={TagSearchScreen} />
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen name='Followers' component={FollowersScreen} />

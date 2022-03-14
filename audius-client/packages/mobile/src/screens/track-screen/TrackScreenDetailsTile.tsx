@@ -41,6 +41,7 @@ import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/s
 import { Image, Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { SearchParamList } from 'app/components/app-navigator/types'
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import { DetailsTileDetail } from 'app/components/details-tile/types'
@@ -52,6 +53,7 @@ import { getPlaying, getPlayingUid, getTrack } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 import { make, track as record } from 'app/utils/analytics'
 import { moodMap } from 'app/utils/moods'
+import { getTagSearchRoute } from 'app/utils/routes'
 
 import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
 
@@ -110,6 +112,7 @@ export const TrackScreenDetailsTile = ({
 }: TrackScreenDetailsTileProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
+  const searchNavigation = useNavigation<SearchParamList>()
 
   const currentUserId = useSelectorWeb(getUserId)
   const dispatchWeb = useDispatchWeb()
@@ -231,10 +234,19 @@ export const TrackScreenDetailsTile = ({
     })
   }, [dispatchWeb, track_id, navigation])
 
-  const handlePressTag = useCallback((tag: string) => {
-    // TODO: navigate to search screen
-    // goToSearchResultsPage(`#${tag}`)
-  }, [])
+  const handlePressTag = useCallback(
+    (tag: string) => {
+      const route = getTagSearchRoute(tag)
+      searchNavigation.push({
+        native: {
+          screen: 'TagSearch',
+          params: { query: tag }
+        },
+        web: { route, fromPage: 'search' }
+      })
+    },
+    [searchNavigation]
+  )
 
   const handlePressSave = () => {
     if (!isOwner) {

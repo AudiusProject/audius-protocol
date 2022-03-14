@@ -67,6 +67,7 @@ export type ProfileStackParamList = BaseStackParamList & {
 export type SearchParamList = BaseStackParamList & {
   Search: undefined
   SearchResults: { query: string }
+  TagSearch: { query: string }
 }
 
 export type MainParamList = {
