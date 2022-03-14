@@ -1,4 +1,5 @@
-import { Program, Provider, Wallet, web3 } from "@project-serum/anchor";
+import { Program, Provider, web3 } from "@project-serum/anchor";
+import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
@@ -31,17 +32,17 @@ const opts: web3.ConfirmOptions = {
   preflightCommitment: "confirmed",
 };
 
-const keypairFromFilePath = async (path: string) => {
-  return Keypair.fromSecretKey(Uint8Array.from(await import(path)));
+const keypairFromFilePath = (path: string) => {
+  /* eslint-disable */
+  return Keypair.fromSecretKey(Uint8Array.from(require(path)));
 };
 
-const network = "https://audius.rpcpool.com/";
 
 /// Initialize constants requird for any CLI functionality
 function initializeCLI(network: string, ownerKeypairPath: string) {
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
-  const wallet = new Wallet(ownerKeypair);
+  const wallet = new NodeWallet(ownerKeypair);
   const provider = new Provider(connection, wallet, opts);
   const programID = new PublicKey(idl.metadata.address);
   const program = new Program<AudiusData>(idl, programID, provider);
@@ -60,6 +61,7 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
 type initAdminCLIParams = {
   adminKeypair: Keypair;
   adminStgKeypair: Keypair;
+  verifierKeypair: Keypair;
   ownerKeypairPath: string;
 };
 
@@ -79,14 +81,16 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     `echo "[${adminStgKeypair.secretKey.toString()}]" > adminStgKeypair.json`
   );
   // TODO: Accept variable offset
-  await initAdmin({
+  let tx = await initAdmin({
     provider: cliVars.provider,
     program: cliVars.program,
     adminKeypair,
     adminStgKeypair,
+    verifierKeypair,
     trackIdOffset: new anchor.BN("0"),
     playlistIdOffset: new anchor.BN("0"),
   });
+  await cliVars.provider.connection.confirmTransaction(tx);
 }
 
 type initUserCLIParams = {
@@ -138,7 +142,6 @@ async function timeCreateTrack(args: CreateTrackParams) {
   let retries = 5;
   let err = null;
   while (retries > 0) {
-    // TODO make sure retries is modified
     try {
       const start = Date.now();
       const tx = await createTrack({
@@ -154,11 +157,11 @@ async function timeCreateTrack(args: CreateTrackParams) {
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
-      retries--;
       return tx;
     } catch (e) {
       err = e;
     }
+    retries--;
   }
   console.log(err);
 }
@@ -182,11 +185,11 @@ async function timeCreatePlaylist(args: CreatePlaylistParams) {
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
-      retries--;
       return tx;
     } catch (e) {
       err = e;
     }
+    retries--;
   }
   console.log(err);
 }
@@ -208,11 +211,11 @@ async function timeUpdatePlaylist(args: UpdatePlaylistParams) {
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
-      retries--;
       return tx;
     } catch (e) {
       err = e;
     }
+    retries--;
   }
   console.log(err);
 }
@@ -234,11 +237,11 @@ async function timeDeletePlaylist(args: DeletePlaylistParams) {
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
-      retries--;
       return tx;
     } catch (e) {
       err = e;
     }
+    retries--;
   }
   console.log(err);
 }
@@ -257,6 +260,7 @@ const functionTypes = Object.freeze({
 
 program
   .option("-f, --function <type>", "function to invoke")
+  .option("-n, --network <string>", "solana network")
   .option("-k, --owner-keypair <keypair>", "owner keypair path")
   .option("-ak, --admin-keypair <keypair>", "admin keypair path")
   .option("-ask, --admin-storage-keypair <keypair>", "admin stg keypair path")
@@ -296,17 +300,24 @@ const userSolKeypair = options.userSolanaKeypair
   ? keypairFromFilePath(options.userSolanaKeypair)
   : anchor.web3.Keypair.generate();
 
+// Verifier keypair for audius admin
+const verifierKeypair = options.verifierKeypair
+  ? keypairFromFilePath(options.verifierKeypair)
+  : anchor.web3.Keypair.generate();
+
+const network = options.network ? options.network : "https://audius.rpcpool.com/";
+
 switch (options.function) {
-  case functionTypes.initAdmin: {
+  case functionTypes.initAdmin:
     console.log(`Initializing admin`);
     initAdminCLI(network, {
       ownerKeypairPath: options.ownerKeypair,
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
+      verifierKeypair: verifierKeypair,
     });
     break;
-  }
-  case functionTypes.initUser: {
+  case functionTypes.initUser:
     console.log(`Initializing user`);
     console.log(options);
     initUserCLI({
@@ -318,8 +329,7 @@ switch (options.function) {
       metadata: "test",
     });
     break;
-  }
-  case functionTypes.initUserSolPubkey: {
+  case functionTypes.initUserSolPubkey:
     const { ethPrivateKey } = options;
     const userSolPubkey = userSolKeypair.publicKey;
     (async () => {
@@ -327,7 +337,7 @@ switch (options.function) {
       const tx = await initUserSolPubkey({
         program: cliVars.program,
         provider: cliVars.provider,
-        message: "message",
+        message: userSolKeypair.publicKey.toBytes(),
         ethPrivateKey,
         userStgAccount: options.userStgPubkey,
         userSolPubkey,
@@ -337,11 +347,10 @@ switch (options.function) {
       );
     })();
     break;
-  }
   /**
    * Track-related functions
    */
-  case functionTypes.createTrack: {
+  case functionTypes.createTrack:
     const numTracks = options.numTracks ? options.numTracks : 1;
     console.log(
       `Number of tracks = ${numTracks}, Target User = ${options.userStgPubkey}`
@@ -367,8 +376,7 @@ switch (options.function) {
       console.log(`Processed ${numTracks} tracks in ${Date.now() - start}ms`);
     })();
     break;
-  }
-  case functionTypes.getTrackId: {
+  case functionTypes.getTrackId:
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
       const info = await cliVars.program.account.audiusAdmin.fetch(
@@ -377,11 +385,10 @@ switch (options.function) {
       console.log(`trackID high:${info.trackId}`);
     })();
     break;
-  }
   /**
    * Playlist-related functions
    */
-  case functionTypes.createPlaylist: {
+  case functionTypes.createPlaylist:
     const numPlaylists = options.numPlaylists ? options.numPlaylists : 1;
     console.log(
       `Number of playlists = ${numPlaylists}, Target User = ${options.userStgPubkey}`
@@ -409,7 +416,6 @@ switch (options.function) {
       );
     })();
     break;
-  }
   case functionTypes.updatePlaylist: {
     const playlistPublicKey = options.playlistPubkey;
     if (!playlistPublicKey) break;
@@ -454,7 +460,7 @@ switch (options.function) {
     })();
     break;
   }
-  case functionTypes.getPlaylistId: {
+  case functionTypes.getPlaylistId:
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
       const info = await cliVars.program.account.audiusAdmin.fetch(
@@ -463,5 +469,4 @@ switch (options.function) {
       console.log(`playlistID high:${info.playlistId}`);
     })();
     break;
-  }
 }

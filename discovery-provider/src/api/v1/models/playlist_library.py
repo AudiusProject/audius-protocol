@@ -7,6 +7,7 @@ from .common import ns
 playlist_identifier = ns.model(
     "playlist_identifier",
     {
+        # Use `FormattedString`s in these models to act as a constant via the source string arg ("playlist" here)
         "type": fields.FormattedString("playlist"),
         "playlist_id": fields.Integer(required=True),
     },
@@ -32,7 +33,7 @@ class PlaylistLibraryIdentifier(fields.Raw):
                 return marshal(value, playlist_library_folder)
         except Exception as e:
             raise MarshallingError(
-                "Unable to marshal as playlist library identifier"
+                f"Unable to marshal as playlist library identifier: {str(value)}"
             ) from e
 
     def output(self, key, obj, **kwargs):
@@ -42,7 +43,7 @@ class PlaylistLibraryIdentifier(fields.Raw):
 playlist_library_folder = ns.model(
     "playlist_library_folder",
     {
-        "type": "folder",
+        "type": fields.FormattedString("folder"),
         "id": fields.String(required=True),
         "name": fields.String(required=True),
         "contents": fields.List(PlaylistLibraryIdentifier),
