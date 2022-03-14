@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
 
-import { MainParamList } from 'app/components/app-navigator/types'
 import { Button, EmptyTile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+
+import { AppScreenParamList } from '../app-screen'
 
 const messages = {
   afterSaved: "Once you have, this is where you'll find them!",
@@ -14,7 +15,7 @@ type EmptyTabProps = {
 }
 
 export const EmptyTab = ({ message }: EmptyTabProps) => {
-  const navigation = useNavigation<MainParamList>()
+  const navigation = useNavigation<AppScreenParamList>()
 
   const onPress = useCallback(() => {
     navigation.navigate({

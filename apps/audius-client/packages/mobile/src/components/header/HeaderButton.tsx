@@ -15,7 +15,8 @@ const useStyles = makeStyles(({ palette, typography }) => ({
   text: {
     ...typography.body,
     fontFamily: typography.fontByWeight.bold,
-    textTransform: 'none'
+    textTransform: 'none',
+    color: palette.staticWhite
   }
 }))
 

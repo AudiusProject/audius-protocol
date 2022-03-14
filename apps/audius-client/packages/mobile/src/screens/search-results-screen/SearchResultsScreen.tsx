@@ -2,12 +2,12 @@ import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
+import { Screen } from 'app/components/core'
+import { Header } from 'app/components/header'
 import {
   TabNavigator,
   tabScreen
-} from 'app/components/app-navigator/TopTabNavigator'
-import { Screen } from 'app/components/core'
-import { Header } from 'app/components/header'
+} from 'app/components/top-tab-bar/TopTabNavigator'
 
 import { AlbumsTab } from './tabs/AlbumsTab'
 import { PlaylistsTab } from './tabs/PlaylistsTab'
@@ -44,7 +44,7 @@ export const SearchResultsScreen = () => {
   })
 
   return (
-    <Screen topbarRight={null} noPadding>
+    <Screen topbarRight={null}>
       <Header text={messages.header} />
       <TabNavigator initialScreenName='Profiles'>
         {profilesScreen}

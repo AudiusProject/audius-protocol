@@ -9,14 +9,15 @@ import { useToggle } from 'react-use'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
-import { TopBarIconButton } from 'app/components/app-navigator/TopBarIconButton'
-import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
+
+import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { ArtistRecommendations } from './ArtistRecommendations/ArtistRecommendations'
 import { CoverPhoto } from './CoverPhoto'
@@ -68,7 +69,7 @@ export const ProfileScreen = () => {
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { accentOrange } = useThemeColors()
 
-  const navigation = useNavigation<ProfileStackParamList>()
+  const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handleNavigateSettings = useCallback(() => {
     navigation.push({

@@ -1,9 +1,9 @@
 import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
-import TopTabNavigator from 'app/components/app-navigator/TopTabNavigator'
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
+import { TopTabNavigator } from 'app/components/top-tab-bar'
 
 import { AlbumsTab } from './AlbumsTab'
 import { PlaylistsTab } from './PlaylistsTab'

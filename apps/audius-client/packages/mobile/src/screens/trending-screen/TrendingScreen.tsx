@@ -4,10 +4,10 @@ import { getTrendingGenre } from 'audius-client/src/common/store/pages/trending/
 import IconAllTime from 'app/assets/images/iconAllTime.svg'
 import IconDay from 'app/assets/images/iconDay.svg'
 import IconMonth from 'app/assets/images/iconMonth.svg'
-import TopTabNavigator from 'app/components/app-navigator/TopTabNavigator'
 import { RewardsBanner } from 'app/components/audio-rewards'
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
+import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { TrendingFilterButton } from './TrendingFilterButton'

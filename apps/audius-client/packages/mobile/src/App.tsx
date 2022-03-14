@@ -7,7 +7,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import WebView from 'react-native-webview'
 import { Provider } from 'react-redux'
 
-import AppNavigator from 'app/components/app-navigator/AppNavigator'
 import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
 import HCaptcha from 'app/components/hcaptcha'
@@ -16,18 +15,17 @@ import { NotificationsScreen } from 'app/components/notifications/NotificationsS
 import OAuth from 'app/components/oauth/OAuth'
 import { ThemeProvider } from 'app/components/theme/ThemeContext'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
-import WebApp from 'app/components/web/WebApp'
 import { WebRefContextProvider } from 'app/components/web/WebRef'
 import useConnectivity from 'app/components/web/useConnectivity'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import PushNotifications from 'app/notifications'
+import { RootScreen } from 'app/screens/root-screen'
 import createStore from 'app/store'
 import { setup as setupAnalytics } from 'app/utils/analytics'
 
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { WebAppManager } from './WebAppManager'
-import SearchScreenLegacy from './screens/search-screen/SearchScreenLegacy'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -45,11 +43,7 @@ const Airplay = Platform.select({
 incrementSessionCount()
 
 const Modals = () => {
-  return (
-    <>
-      <HCaptcha />
-    </>
-  )
+  return <HCaptcha />
 }
 
 const App = () => {
@@ -76,12 +70,11 @@ const App = () => {
         <ToastContextProvider>
           <ErrorBoundary>
             <WebRefContextProvider>
-              <WebAppManager webApp={<WebApp webRef={webRef} />}>
+              <WebAppManager webRef={webRef}>
                 <ThemeProvider>
                   <NavigationContainer>
                     <GoogleCast webRef={webRef} />
-                    <AppNavigator />
-                    <SearchScreenLegacy />
+                    <RootScreen />
                     <NotificationsScreen />
                     <Drawers />
                     <Modals />

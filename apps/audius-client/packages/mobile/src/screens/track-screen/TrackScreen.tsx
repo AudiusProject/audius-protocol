@@ -145,7 +145,7 @@ export const TrackScreen = () => {
   }
 
   return (
-    <Screen noPadding>
+    <Screen>
       <Lineup
         actions={tracksActions}
         count={6}

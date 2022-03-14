@@ -3,7 +3,6 @@ import { useCallback, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { SearchParamList } from 'app/components/app-navigator/types'
 import { SearchInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -20,7 +19,7 @@ export const SearchBar = () => {
   const query = useSelector(getSearchQuery)
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
-  const navigation = useNavigation<SearchParamList>()
+  const navigation = useNavigation()
   const [clearable, setClearable] = useState(false)
   const inputRef = useRef<TextInput>(null)
 

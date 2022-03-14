@@ -4,7 +4,6 @@ import { setFollowers } from 'audius-client/src/common/store/user-list/followers
 import { setFollowing } from 'audius-client/src/common/store/user-list/following/actions'
 import { Pressable, Text, View } from 'react-native'
 
-import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles/makeStyles'
@@ -58,7 +57,7 @@ export const ProfileMetrics = () => {
     'followee_count'
   ])
 
-  const navigation = useNavigation<ProfileStackParamList>()
+  const navigation = useNavigation()
   const dispatchWeb = useDispatchWeb()
 
   const handlePressFollowers = useCallback(() => {

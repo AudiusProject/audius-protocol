@@ -41,7 +41,6 @@ import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/s
 import { Image, Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { SearchParamList } from 'app/components/app-navigator/types'
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import { DetailsTileDetail } from 'app/components/details-tile/types'
@@ -112,7 +111,6 @@ export const TrackScreenDetailsTile = ({
 }: TrackScreenDetailsTileProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
-  const searchNavigation = useNavigation<SearchParamList>()
 
   const currentUserId = useSelectorWeb(getUserId)
   const dispatchWeb = useDispatchWeb()
@@ -237,7 +235,7 @@ export const TrackScreenDetailsTile = ({
   const handlePressTag = useCallback(
     (tag: string) => {
       const route = getTagSearchRoute(tag)
-      searchNavigation.push({
+      navigation.push({
         native: {
           screen: 'TagSearch',
           params: { query: tag }
@@ -245,7 +243,7 @@ export const TrackScreenDetailsTile = ({
         web: { route, fromPage: 'search' }
       })
     },
-    [searchNavigation]
+    [navigation]
   )
 
   const handlePressSave = () => {

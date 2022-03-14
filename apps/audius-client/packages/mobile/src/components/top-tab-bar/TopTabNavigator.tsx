@@ -78,12 +78,13 @@ type TopTabsProps = {
   screens?: ScreenConfig[]
 }
 
-const TopTabNavigator = ({ initialScreenName, screens }: TopTabsProps) => {
+export const TopTabNavigator = ({
+  initialScreenName,
+  screens
+}: TopTabsProps) => {
   return (
     <TabNavigator initialScreenName={initialScreenName}>
       {screens?.map(screen => tabScreen({ key: screen.name, ...screen }))}
     </TabNavigator>
   )
 }
-
-export default TopTabNavigator
