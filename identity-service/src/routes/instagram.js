@@ -65,18 +65,29 @@ module.exports = function (app) {
       if (igUser.error) {
         return errorResponseBadRequest(new Error(igUser.error.message))
       }
-
-      // Store the access token, user id, and current profile for user in db
-      try {
-        await models.InstagramUser.upsert({
+      const existingInstagramUser = await models.InstagramUser.findOne({
+        where: {
           uuid: igUser.username,
-          profile: igUser,
-          accessToken
-        })
+          blockchainUserId: {
+            [models.Sequelize.Op.not]: null
+          }
+        }
+      })
+      if (existingInstagramUser) {
+        return errorResponseBadRequest(`Another Audius profile has already been authenticated with Instagram user @${igUser.username}!`)
+      } else {
+        // Store the access token, user id, and current profile for user in db
+        try {
+          await models.InstagramUser.upsert({
+            uuid: igUser.username,
+            profile: igUser,
+            accessToken
+          })
 
-        return successResponse(igUser)
-      } catch (err) {
-        return errorResponseBadRequest(err)
+          return successResponse(igUser)
+        } catch (err) {
+          return errorResponseBadRequest(err)
+        }
       }
     } catch (err) {
       return errorResponseBadRequest(err)
@@ -88,8 +99,7 @@ module.exports = function (app) {
     try {
       const checkFields = [
         'id',
-        'username',
-        'is_verified'
+        'username'
       ]
       const hasMinimumFields = checkFields.every(field => (field in profile))
       if (!hasMinimumFields) throw new Error('Invalid profile')
@@ -101,7 +111,7 @@ module.exports = function (app) {
         } })
         if (!igUser) throw new Error(`Could not find matching ig user in the db: ${profile.username}`)
         igUser.profile = profile
-        igUser.verified = profile.is_verified
+        igUser.verified = profile.is_verified || false
         await igUser.save()
 
         return successResponse(profile)

@@ -15,10 +15,13 @@ from src.utils.redis_constants import (
     latest_sol_play_program_tx_key,
     latest_sol_rewards_manager_db_tx_key,
     latest_sol_rewards_manager_program_tx_key,
+    latest_sol_spl_token_db_key,
+    latest_sol_spl_token_program_tx_key,
     latest_sol_user_bank_db_tx_key,
     latest_sol_user_bank_program_tx_key,
     most_recent_indexed_block_hash_redis_key,
     most_recent_indexed_block_redis_key,
+    oldest_unarchived_play_key,
 )
 
 
@@ -37,6 +40,10 @@ def cache_play_health_vars(redis_mock):
     )
     # Set latest legacy
     redis_mock.set(latest_legacy_play_db_key, 1632885758)
+
+    # Set oldest unarchived play
+    redis_mock.set(oldest_unarchived_play_key, 1517513432)
+
     # Set latest chain tx
     redis_mock.set(
         latest_sol_play_program_tx_key,
@@ -84,6 +91,28 @@ def cache_play_health_vars(redis_mock):
     # Set latest chain tx
     redis_mock.set(
         latest_sol_user_bank_db_tx_key,
+        json.dumps(
+            {
+                "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
+                "slot": 15,
+                "timestamp": 1635477758,
+            }
+        ),
+    )
+    # Set latest chain tx
+    redis_mock.set(
+        latest_sol_spl_token_program_tx_key,
+        json.dumps(
+            {
+                "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
+                "slot": 15,
+                "timestamp": 1635477758,
+            }
+        ),
+    )
+    # Set latest chain tx
+    redis_mock.set(
+        latest_sol_spl_token_db_key,
         json.dumps(
             {
                 "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",

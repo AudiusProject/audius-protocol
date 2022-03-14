@@ -1,32 +1,36 @@
 import logging  # pylint: disable=C0302
-import pickle
+from datetime import datetime
 
 from src.models import Playlist
 from src.utils import helpers, redis_connection
-from src.utils.redis_cache import get_playlist_id_cache_key
+from src.utils.redis_cache import (
+    get_all_json_cached_key,
+    get_playlist_id_cache_key,
+    set_json_cached_key,
+)
+from werkzeug.http import parse_date
 
 logger = logging.getLogger(__name__)
 
 # Cache unpopulated playlists for 5 min
 ttl_sec = 5 * 60
 
+playlist_datetime_fields = []
+for column in Playlist.__table__.c:
+    if column.type.python_type == datetime:
+        playlist_datetime_fields.append(column.name)
+
 
 def get_cached_playlists(playlist_ids):
-    redis_playlist_id_keys = map(get_playlist_id_cache_key, playlist_ids)
+    redis_playlist_id_keys = list(map(get_playlist_id_cache_key, playlist_ids))
     redis = redis_connection.get_redis()
-    cached_values = redis.mget(redis_playlist_id_keys)
-
-    playlists = []
-    for val in cached_values:
-        if val is not None:
-            try:
-                playlist = pickle.loads(val)
-                playlists.append(playlist)
-            except Exception as e:
-                logger.warning(f"Unable to deserialize cached playlist: {e}")
-                playlists.append(None)
-        else:
-            playlists.append(None)
+    playlists = get_all_json_cached_key(redis, redis_playlist_id_keys)
+    for playlist in playlists:
+        if playlist:
+            for field in playlist_datetime_fields:
+                # Parse date using the werkzeug parser, equivalent to Flask.JSONEncoder.
+                # Since werkzeug gives us timezone aware-UTC, drop the timezone.
+                playlist[field] = parse_date(playlist[field]).replace(tzinfo=None)
     return playlists
 
 
@@ -34,8 +38,7 @@ def set_playlists_in_cache(playlists):
     redis = redis_connection.get_redis()
     for playlist in playlists:
         key = get_playlist_id_cache_key(playlist["playlist_id"])
-        serialized = pickle.dumps(playlist)
-        redis.set(key, serialized, ttl_sec)
+        set_json_cached_key(redis, key, playlist, ttl_sec)
 
 
 def get_unpopulated_playlists(session, playlist_ids, filter_deleted=False):

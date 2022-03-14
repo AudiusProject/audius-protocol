@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { AuthHeaders } = require('../../constants')
 const uuid = require('../../utils/uuid')
 
 const Requests = require('./requests')
@@ -10,6 +11,11 @@ class IdentityService {
   constructor (identityServiceEndpoint, captcha) {
     this.identityServiceEndpoint = identityServiceEndpoint
     this.captcha = captcha
+    this.web3Manager = null
+  }
+
+  setWeb3Manager (web3Manager) {
+    this.web3Manager = web3Manager
   }
 
   /* ------- HEDGEHOG AUTH ------- */
@@ -348,10 +354,18 @@ class IdentityService {
   //   }
   // }
   async solanaRelay (transactionData) {
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = await this.web3Manager.sign(message)
+
     return this._makeRequest({
       url: '/solana/relay',
       method: 'post',
-      data: transactionData
+      data: transactionData,
+      headers: {
+        [AuthHeaders.MESSAGE]: message,
+        [AuthHeaders.SIGNATURE]: signature
+      }
     })
   }
 
@@ -391,10 +405,11 @@ class IdentityService {
    *  specifier: string
    *  error?: string,
    *  phase?: string,
-   * }} { status, userId, challengeId, amount, error, phase, specifier }
+   *  reason?: string
+   * }} { status, userId, challengeId, amount, error, phase, specifier, reason }
    * @memberof IdentityService
    */
-  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier, reason }) {
     return this._makeRequest({
       url: '/rewards/attestation_result',
       method: 'post',
@@ -406,7 +421,8 @@ class IdentityService {
         error,
         phase,
         source,
-        specifier
+        specifier,
+        reason
       }
     })
   }
@@ -425,6 +441,9 @@ class IdentityService {
     // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)
+      if (!resp.data) {
+        throw new Error(`Identity response missing data field for url: ${axiosRequestObj.url}, req-id: ${requestId}`)
+      }
       return resp.data
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {

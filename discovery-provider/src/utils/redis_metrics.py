@@ -4,6 +4,7 @@ import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 
 import redis
+from flask import Response
 from flask.globals import request
 from src.models import (
     AggregateDailyAppNameMetrics,
@@ -15,6 +16,7 @@ from src.models import (
 )
 from src.utils.config import shared_config
 from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
+from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.query_params import app_name_param, stringify_query_params
 
 logger = logging.getLogger(__name__)
@@ -639,6 +641,40 @@ def record_metrics(func):
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
 
-        return func(*args, **kwargs)
+        metric = PrometheusMetric(
+            "flask_route_latency_seconds",
+            "Runtimes for flask routes",
+            (
+                "route",
+                "code",
+            ),
+        )
+
+        result = func(*args, **kwargs)
+
+        try:
+            if isinstance(result, Response):
+                code = result.status_code
+            else:
+                code = result[1]
+        except Exception as e:
+            code = -1
+            logger.error(
+                "Error extracting response code from type<%s>: %s",
+                type(result),
+                e,
+            )
+
+        route = route.split("?")[0]
+        if "/v1/full/" in route or "/users/intersection/" in route:
+            route = "/".join(route.split("/")[:4])
+        elif "/v1/users/" in route and ("/followers" in route or "/following" in route):
+            route = "/".join(route.split("/")[:3] + ["*"] + route.split("/")[-1:])
+        else:
+            route = "/".join(route.split("/")[:3])
+
+        metric.save_time({"route": route, "code": code})
+
+        return result
 
     return wrap

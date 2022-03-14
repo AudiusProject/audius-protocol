@@ -6,7 +6,7 @@
 
 <!-- List the manual tests and repro instructions to verify that this PR works as anticipated. Include log analysis if possible. If this change impacts clients, make sure that you have tested the clients! -->
 
-### How will this change be monitored?
+### How will this change be monitored? Are there sufficient logs?
 
 <!-- For features that are critical or could fail silently please describe the monitoring/alerting being added. -->
 

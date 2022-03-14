@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from src import models
-from src.tasks.index_aggregate_user import get_latest_blocknumber
+from src.models.models import WalletChain
+from src.tasks.aggregates import get_latest_blocknumber
 from src.utils import helpers
 from src.utils.db_session import get_db
 
@@ -92,6 +93,8 @@ def populate_mock_db(db, entities, block_offset=None):
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
+        user_bank_accounts = entities.get("user_bank_accounts", [])
+        associated_wallets = entities.get("associated_wallets", [])
 
         num_blocks = max(
             len(tracks), len(users), len(follows), len(saves), len(reposts)
@@ -355,5 +358,24 @@ def populate_mock_db(db, entities, block_offset=None):
                 current_step_count=user_challenge_meta.get("current_step_count", None),
             )
             session.add(user_challenge)
+        for i, user_bank_account in enumerate(user_bank_accounts):
+            bank = models.UserBankAccount(
+                signature=user_bank_account.get("signature", ""),
+                ethereum_address=user_bank_account.get("ethereum_address", ""),
+                bank_account=user_bank_account.get("bank_account", ""),
+                created_at=user_bank_account.get("created_at", datetime.now()),
+            )
+            session.add(bank)
+        for i, associated_wallet in enumerate(associated_wallets):
+            wallet = models.AssociatedWallet(
+                blockhash=associated_wallet.get("blockhash", hex(i + block_offset)),
+                blocknumber=associated_wallet.get("blocknumber", i + block_offset),
+                is_current=associated_wallet.get("is_current", True),
+                is_delete=associated_wallet.get("is_delete", False),
+                user_id=associated_wallet.get("user_id", 1),
+                wallet=associated_wallet.get("wallet", str(i)),
+                chain=associated_wallet.get("chain", WalletChain.sol),
+            )
+            session.add(wallet)
 
         session.flush()

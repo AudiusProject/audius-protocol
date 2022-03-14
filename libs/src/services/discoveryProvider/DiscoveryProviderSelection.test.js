@@ -163,7 +163,6 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(service, behindBlockCurrentVersion)
   })
 
-
   it('prefers a healthy plays slot diff', async () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)

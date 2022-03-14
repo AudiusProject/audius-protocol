@@ -1,4 +1,3 @@
-import functools as ft
 import logging  # pylint: disable=C0302
 from datetime import date, datetime, timedelta
 from typing import List, Tuple
@@ -876,6 +875,10 @@ def notifications():
             track_id = entry.track_id
             owner_info[const.tracks][track_id] = owner
 
+        logger.info(
+            f"notifications.py | owner info at {datetime.now() - start_time}, owners {len(track_owner_results)}"
+        )
+
         # Get playlist updates
         today = date.today()
         thirty_days_ago = today - timedelta(days=30)
@@ -892,6 +895,10 @@ def notifications():
         )
 
         playlist_update_results = playlist_update_query.all()
+
+        logger.info(
+            f"notifications.py | get playlist updates at {datetime.now() - start_time}, playlist updates {len(playlist_update_results)}"
+        )
 
         # Represents all playlist update notifications
         playlist_update_notifications = []
@@ -921,21 +928,26 @@ def notifications():
         )
         playlist_favorites_results = playlist_favorites_query.all()
 
+        logger.info(
+            f"notifications.py | get playlist favorites {datetime.now() - start_time}, playlist favorites {len(playlist_favorites_results)}"
+        )
+
         # dictionary of playlist id => users that favorited said playlist
         # e.g. { playlist1: [user1, user2, ...], ... }
         # we need this dictionary to know which users need to be notified of a playlist update
-        users_that_favorited_playlists_dict = ft.reduce(
-            lambda accumulator, current: accumulator.update(
-                {
-                    current.save_item_id: accumulator[current.save_item_id]
-                    + [current.user_id]
-                    if current.save_item_id in accumulator
-                    else [current.user_id]
-                }
-            )
-            or accumulator,
-            playlist_favorites_results,
-            {},
+        users_that_favorited_playlists_dict = {}
+        for result in playlist_favorites_results:
+            if result.save_item_id in users_that_favorited_playlists_dict:
+                users_that_favorited_playlists_dict[result.save_item_id].append(
+                    result.user_id
+                )
+            else:
+                users_that_favorited_playlists_dict[result.save_item_id] = [
+                    result.user_id
+                ]
+
+        logger.info(
+            f"notifications.py | computed users that favorited dict {datetime.now() - start_time}"
         )
 
         for playlist_id in users_that_favorited_playlists_dict:
@@ -956,7 +968,7 @@ def notifications():
         notifications_unsorted.extend(playlist_update_notifications)
 
         logger.info(
-            f"notifications.py | playlist updates at {datetime.now() - start_time}"
+            f"notifications.py | all playlist updates at {datetime.now() - start_time}"
         )
 
     # Final sort - TODO: can we sort by timestamp?
@@ -964,6 +976,10 @@ def notifications():
         notifications_unsorted,
         key=lambda i: i[const.notification_blocknumber],
         reverse=False,
+    )
+
+    logger.info(
+        f"notifications.py | sorted notifications {datetime.now() - start_time}"
     )
 
     return api_helpers.success_response(
