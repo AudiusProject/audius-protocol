@@ -31,9 +31,11 @@ def process_identifier():
     return f"{audius_prometheus_container}_{getpid()}"
 
 
+values.ValueClass = values.MultiProcessValue(process_identifier=process_identifier)
+
+
 @bp.route("/prometheus_metrics", methods=["GET"])
 def prometheus_metrics_exporter():
-    values.ValueClass = values.MultiProcessValue(process_identifier=process_identifier)
     registry = CollectorRegistry()
     multiprocess.MultiProcessCollector(registry)
     data = generate_latest(registry)
