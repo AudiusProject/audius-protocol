@@ -12,6 +12,7 @@ import {
   initUser,
   initUserSolPubkey,
   deleteTrack,
+  updateTrack,
 } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 import { decode } from "punycode";
@@ -83,7 +84,6 @@ export const testInitUser = async ({
   const accountIndexes = info.transaction.message.instructions[0].accounts
   const accountKeys = info.transaction.message.accountKeys
   const decodedInstruction = decodeInstruction(program, data)
-  console.log(decodedInstruction)
   let accountPubKeys = []
   for (var i of accountIndexes) {
     accountPubKeys.push(accountKeys[i].toString())
@@ -178,9 +178,6 @@ export const testCreateTrack = async ({
   let data = info.transaction.message.instructions[0].data
   const decodedInstruction = decodeInstruction(program, data)
   const decodedData = decodedInstruction.data
-  console.log(info.transaction.message.instructions)
-  console.log(decodedInstruction)
-  console.log(decodedData)
 
   // Validate instruction data
   expect(decodedInstruction['name']).to.equal('createTrack')
@@ -189,21 +186,17 @@ export const testCreateTrack = async ({
 
   const accountIndexes = info.transaction.message.instructions[0].accounts
   const accountKeys = info.transaction.message.accountKeys
-  console.log(decodedInstruction)
+  // Recreate the instruction data array from transaction info
   let accountPubKeys = []
   for (var i of accountIndexes) {
     accountPubKeys.push(accountKeys[i].toString())
   }
-  console.log(`user: ${trackOwnerPDA}`)
-  console.log(`payer: ${provider.wallet.publicKey}`)
-  console.log(`createTrack: ${accountPubKeys}`)
-  // Retrieve user ownership information
-  // const track = await program.account.track.fetch(newTrackKeypair.publicKey);
-  // const chainOwner = track.owner.toString();
-  // const expectedOwner = trackOwnerPDA.toString();
-  // expect(chainOwner, "track owner").to.equal(expectedOwner);
-  // console.log(`track: ${trackMetadata}, trackId assigned = ${track.trackId}`);
-  // await confirmLogInTransaction(provider, tx, trackMetadata);
+  // Assert on instruction struct
+  // 0th index = track owner user storage account
+  // 1st index = user authority keypair
+  // Indexing code must check that this
+  expect(accountPubKeys[0]).to.equal(trackOwnerPDA.toString())
+  expect(accountPubKeys[1]).to.equal(userAuthorityKeypair.publicKey.toString())
 };
 
 export const testDeleteTrack = async ({
@@ -213,7 +206,7 @@ export const testDeleteTrack = async ({
     trackOwnerPDA,
     userAuthorityKeypair,
   }) => {
-    await deleteTrack({
+    let tx = await deleteTrack({
       id,
       provider,
       program,
@@ -221,6 +214,32 @@ export const testDeleteTrack = async ({
       userAuthorityKeypair: userAuthorityKeypair,
     });
   };
+
+export const testUpdateTrack = async ({
+  provider,
+  program,
+  id,
+  userStgAccountPDA,
+  metadata,
+  userAuthorityKeypair
+}) => {
+  const tx = await updateTrack({
+    program,
+    id,
+    userStgAccountPDA,
+    metadata,
+    userAuthorityKeypair
+  })
+  const info = await getTransaction(provider, tx);
+  let data = info.transaction.message.instructions[0].data
+  const decodedInstruction = decodeInstruction(program, data)
+  const decodedData = decodedInstruction.data
+
+  // Validate instruction data
+  expect(decodedInstruction['name']).to.equal('updateTrack')
+  expect(decodedData['id']).to.equal(id)
+  expect(decodedData['metadata']).to.equal(metadata)
+}
 
 export const decodeInstruction = (program: anchor.Program, data: string) => {
   const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -318,37 +337,6 @@ export const createSolanaUser = async (
     bumpSeed,
     keypair: newUserKeypair,
     authority: baseAuthorityAccount,
-  };
-};
-
-export const createSolanaTrack = async (
-  program: Program<AudiusData>,
-  provider: anchor.Provider,
-  adminStgKeypair: anchor.web3.Keypair,
-  userAuthorityKeypair: anchor.web3.Keypair,
-  ownerPDA: anchor.web3.PublicKey
-) => {
-  const newTrackKeypair = anchor.web3.Keypair.generate();
-  const trackMetadata = randomCID();
-
-  await createTrack({
-    id: "eh",
-    program,
-    userAuthorityKeypair,
-    userStgAccountPDA: ownerPDA,
-    metadata: trackMetadata,
-    adminStgPublicKey: adminStgKeypair.publicKey,
-  });
-
-  const track = await program.account.track.fetch(newTrackKeypair.publicKey);
-
-  if (!track) {
-    throw new Error("unable to create track account");
-  }
-
-  return {
-    track,
-    trackMetadata: trackMetadata,
   };
 };
 

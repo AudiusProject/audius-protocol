@@ -8,13 +8,13 @@ import {
   TrackSocialActionEnumValues,
   updateAdmin,
 } from "../lib/lib";
-import { getTransaction } from "../lib/utils";
+import { getTransaction, randomCID, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser, createSolanaTrack } from "./test-helpers";
+import { createSolanaUser, createSolanaTrack, testCreateTrack } from "./test-helpers";
 
 chai.use(chaiAsPromised);
 
-describe("track-actions", function () {
+describe.only("track-actions", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -29,7 +29,7 @@ describe("track-actions", function () {
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
-  it("track actions - Initializing admin account!", async function () {
+  it.only("track actions - Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
@@ -122,16 +122,19 @@ describe("track-actions", function () {
     );
   });
 
-  it("Save a newly created track", async function () {
+  it.only("Save a newly created track", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
-    const track = await createSolanaTrack(
-      program,
+    const trackMetadata = randomCID();
+    const trackID = randomString(10)
+    await testCreateTrack({
       provider,
-      adminStgKeypair,
-      user.keypair,
-      user.pda
-    );
+      program,
+      id: trackID,
+      trackMetadata,
+      userAuthorityKeypair: user.keypair,
+      trackOwnerPDA: user.pda
+    });
 
     const tx = await writeTrackSocialAction({
       program,
@@ -142,7 +145,7 @@ describe("track-actions", function () {
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       trackSocialAction: TrackSocialActionEnumValues.addSave,
-      trackId: track.track.trackId,
+      trackId: trackID
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;

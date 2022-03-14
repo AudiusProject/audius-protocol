@@ -40,7 +40,6 @@ type InitAdminParams = {
   adminKeypair: Keypair;
   adminStgKeypair: Keypair;
   verifierKeypair: Keypair;
-  trackIdOffset: anchor.BN;
   playlistIdOffset: anchor.BN;
 };
 
@@ -50,13 +49,11 @@ export const initAdmin = async ({
   adminKeypair,
   adminStgKeypair,
   verifierKeypair,
-  trackIdOffset,
   playlistIdOffset,
 }: InitAdminParams) => {
   return program.rpc.initAdmin(
     adminKeypair.publicKey,
     verifierKeypair.publicKey,
-    trackIdOffset,
     playlistIdOffset,
     {
       accounts: {

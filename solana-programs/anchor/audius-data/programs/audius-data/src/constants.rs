@@ -5,7 +5,6 @@ pub const MESSAGE_OFFSET: usize = 97;
 pub const ADMIN_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 32 + // authority: Pubkey
 32 + // verifier: Pubkey
-8 + // track_id: u64
 8 +  // playlist_id: u64
 1; // is_write_enabled: bool
 
@@ -26,5 +25,5 @@ pub const PLAYLIST_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 
 /// Size of user authority delegation account
 pub const USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE: usize = 8 + // anchor prefix
-32 + // delegate_authority: Pubkey 
+32 + // delegate_authority: Pubkey
 32; // user_storage_account: Pubkey

@@ -24,6 +24,7 @@ import {
   testInitUser,
   testInitUserSolPubkey,
   testDeleteTrack,
+  testUpdateTrack,
 } from "./test-helpers";
 const { PublicKey, SystemProgram } = anchor.web3;
 
@@ -46,14 +47,13 @@ describe("audius-data", function () {
   const verifierKeypair = anchor.web3.Keypair.generate();
 
 
-  it.only("Initializing admin account!", async function () {
+  it("Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
-      trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("0"),
     });
     const adminAccount = await program.account.audiusAdmin.fetch(
@@ -245,7 +245,7 @@ describe("audius-data", function () {
     await confirmLogInTransaction(provider, tx, updatedCID);
   });
 
-  it.only("Initializing + claiming user, creating + updating track", async function () {
+  it("Initializing + claiming user, creating + updating track", async function () {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const {
@@ -316,17 +316,17 @@ describe("audius-data", function () {
     } catch (e) {
       console.log(`Error found as expected ${e}`);
     }
-    return
 
     const updatedTrackMetadata = randomCID();
     console.log(`Updating track`);
-    const tx3 = await updateTrack({
+    await testUpdateTrack({
+      provider,
       program,
+      id: trackID,
       userStgAccountPDA: newUserAcctPDA,
       userAuthorityKeypair: newUserKeypair,
       metadata: updatedTrackMetadata,
     });
-    await confirmLogInTransaction(provider, tx3, updatedTrackMetadata);
   });
 
   it("Creating user with admin writes enabled should fail", async function () {
@@ -758,7 +758,7 @@ describe("audius-data", function () {
     await confirmLogInTransaction(provider, tx, "success");
   });
 
-  it.only("creating + deleting a track", async function () {
+  it("creating + deleting a track", async function () {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const {
@@ -797,7 +797,6 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
-    console.log('b')
 
     const trackMetadata = randomCID();
     const trackID = randomString(10)
@@ -810,7 +809,6 @@ describe("audius-data", function () {
       userAuthorityKeypair: newUserKeypair,
       trackOwnerPDA: newUserAcctPDA,
     });
-    console.log('c')
 
     await testDeleteTrack({
       provider,
@@ -855,33 +853,32 @@ describe("audius-data", function () {
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
 
-    const newTrackKeypair = anchor.web3.Keypair.generate();
-    const newTrackKeypair2 = anchor.web3.Keypair.generate();
-    const newTrackKeypair3 = anchor.web3.Keypair.generate();
     const trackMetadata = randomCID();
     const trackMetadata2 = randomCID();
     const trackMetadata3 = randomCID();
     const start = Date.now();
     await Promise.all([
       testCreateTrack({
-        id: "test1",
+        provider,
+        program,
+        id: randomString(10),
         trackMetadata,
         userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
       }),
       testCreateTrack({
-        id: "test2",
+        provider,
+        program,
+        id: randomString(10),
         trackMetadata: trackMetadata2,
-        adminStgKeypair,
-        newTrackKeypair: newTrackKeypair2,
         userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
       }),
       testCreateTrack({
-        id: "test3",
+        provider,
+        program,
+        id: randomString(10),
         trackMetadata: trackMetadata3,
-        adminStgKeypair,
-        newTrackKeypair: newTrackKeypair3,
         userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
       }),

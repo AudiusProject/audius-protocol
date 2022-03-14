@@ -28,13 +28,11 @@ pub mod audius_data {
         ctx: Context<Initialize>,
         authority: Pubkey,
         verifier: Pubkey,
-        track_id_offset: u64,
         playlist_id_offset: u64,
     ) -> Result<()> {
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         audius_admin.verifier = verifier;
-        audius_admin.track_id = track_id_offset;
         audius_admin.playlist_id = playlist_id_offset;
         audius_admin.is_write_enabled = true;
         Ok(())
@@ -255,7 +253,7 @@ pub mod audius_data {
         base: Pubkey,
         _user_handle: UserHandle,
         _track_social_action: TrackSocialActionValues,
-        track_id: u64,
+        _track_id: String,
     ) -> Result<()> {
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
@@ -269,9 +267,9 @@ pub mod audius_data {
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        if track_id >= ctx.accounts.audius_admin.track_id {
-            return Err(ErrorCode::InvalidId.into());
-        }
+        // if track_id >= ctx.accounts.audius_admin.track_id {
+        //     return Err(ErrorCode::InvalidId.into());
+        // }
         Ok(())
     }
 
@@ -609,6 +607,7 @@ pub struct DeleteTrack<'info> {
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_handle: UserHandle)]
 pub struct TrackSocialAction<'info> {
+    // TODO - Verify removal here
     #[account()]
     pub audius_admin: Account<'info, AudiusAdmin>,
     #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
@@ -710,7 +709,6 @@ pub struct UpdateIsVerified<'info> {
 pub struct AudiusAdmin {
     pub authority: Pubkey,
     pub verifier: Pubkey,
-    pub track_id: u64,
     pub playlist_id: u64,
     pub is_write_enabled: bool,
 }
@@ -720,13 +718,6 @@ pub struct AudiusAdmin {
 pub struct User {
     pub eth_address: [u8; 20],
     pub authority: Pubkey,
-}
-
-/// Track storage account
-#[account]
-pub struct Track {
-    pub owner: Pubkey,
-    pub track_id: u64,
 }
 
 /// Playlist storage account
