@@ -611,6 +611,7 @@ jobs:
           name: anchor tests
           command: |
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
+            solana-keygen new --no-bip39-passphrase
             cd solana-programs/anchor/audius-data
             yarn
             anchor test
