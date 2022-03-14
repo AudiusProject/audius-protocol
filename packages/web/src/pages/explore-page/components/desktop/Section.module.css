@@ -67,33 +67,6 @@
   }
 }
 
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 1),
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 2) {
-  width: 100%;
-}
-
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 3),
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 4) {
-  width: calc(50% - 16px);
-}
-
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 5),
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 6),
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 7),
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 9) {
-  width: calc(33.33% - 16px);
-}
-
-.twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(10n + 8) {
-  width: calc(66.66% - 16px);
-}
-
-@media screen and (max-width: 1020px) {
-  .twoColumnDynamicWithDoubleLeadingElement .children > *:nth-child(n) {
-    width: 100%;
-  }
-}
-
 .twoColumnDynamicWithDoubleLeadingElementTenTile
   .children
   > *:nth-child(10n + 1),
