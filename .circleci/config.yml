@@ -604,14 +604,13 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y pkg-config libssl-dev libudev-dev
-            sudo npm install -g yarn
             sudo npm install -g @project-serum/anchor-cli
             # cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
 
       - run:
           name: anchor tests
           command: |
-            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
             cd solana-programs/anchor/audius-data
             yarn
             anchor test
