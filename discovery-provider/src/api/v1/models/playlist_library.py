@@ -7,6 +7,7 @@ from .common import ns
 playlist_identifier = ns.model(
     "playlist_identifier",
     {
+        # Use `FormattedString`s in these models to act as a constant via the source string arg ("playlist" here)
         "type": fields.FormattedString("playlist"),
         "playlist_id": fields.Integer(required=True),
     },
