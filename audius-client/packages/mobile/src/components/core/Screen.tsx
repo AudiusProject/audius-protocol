@@ -12,15 +12,13 @@ const removeUndefined = (object: Record<string, unknown>) =>
 
 const useStyles = makeStyles(({ palette }, { variant }) => ({
   root: {
-    height: '100%',
+    flex: 1,
     backgroundColor:
       variant === 'primary'
         ? palette.background
         : variant === 'secondary'
         ? palette.backgroundSecondary
-        : palette.white,
-    // TODO: figure out why screens need this. Likel related to the BottomTabNavigator
-    paddingBottom: 80
+        : palette.white
   }
 }))
 
@@ -33,7 +31,6 @@ type ScreenProps = {
   title?: Nullable<string>
   style?: StyleProp<ViewStyle>
   variant?: 'primary' | 'secondary' | 'white'
-  noPadding?: boolean
 }
 
 export const Screen = (props: ScreenProps) => {
@@ -44,8 +41,7 @@ export const Screen = (props: ScreenProps) => {
     title = null,
     topbarRightStyle,
     topbarLeftStyle,
-    variant = 'primary',
-    noPadding
+    variant = 'primary'
   } = props
   const styles = useStyles({ variant })
   const navigation = useNavigation()
@@ -74,9 +70,5 @@ export const Screen = (props: ScreenProps) => {
     title
   ])
 
-  return (
-    <View style={[styles.root, noPadding && { paddingBottom: 0 }]}>
-      {children}
-    </View>
-  )
+  return <View style={styles.root}>{children}</View>
 }

@@ -6,7 +6,7 @@ import {
 } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
-import { BaseStackParamList } from 'app/components/app-navigator/types'
+import { AppTabScreenParamList } from 'app/screens/app-screen/AppTabScreen'
 
 import { usePushRouteWeb } from './usePushRouteWeb'
 
@@ -23,7 +23,7 @@ type UseNavigationConfig<
 }
 
 export const useNavigation = <
-  ParamList extends ParamListBase = BaseStackParamList
+  ParamList extends ParamListBase = AppTabScreenParamList
 >() => {
   const nativeNavigation = useNavigationNative<
     NativeStackNavigationProp<ParamList>

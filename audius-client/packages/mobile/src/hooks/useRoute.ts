@@ -1,21 +1,14 @@
 import { RouteProp, useRoute as useRouteRN } from '@react-navigation/core'
 
-import {
-  BaseStackParamList,
-  ProfileStackParamList,
-  SearchParamList
-} from 'app/components/app-navigator/types'
+import { AppTabScreenParamList } from 'app/screens/app-screen'
+import { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTabScreen'
 
-export const useRoute = <RouteName extends keyof BaseStackParamList>() => {
-  return useRouteRN<RouteProp<BaseStackParamList, RouteName>>()
+export const useRoute = <RouteName extends keyof AppTabScreenParamList>() => {
+  return useRouteRN<RouteProp<AppTabScreenParamList, RouteName>>()
 }
 
 export const useProfileRoute = <
-  RouteName extends keyof ProfileStackParamList
+  RouteName extends keyof ProfileTabScreenParamList
 >() => {
-  return useRouteRN<RouteProp<ProfileStackParamList, RouteName>>()
-}
-
-export const useSearchRoute = <RouteName extends keyof SearchParamList>() => {
-  return useRouteRN<RouteProp<SearchParamList, RouteName>>()
+  return useRouteRN<RouteProp<ProfileTabScreenParamList, RouteName>>()
 }

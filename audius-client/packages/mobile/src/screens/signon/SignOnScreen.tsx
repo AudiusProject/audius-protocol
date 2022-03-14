@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { View, StyleSheet } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
@@ -21,23 +20,42 @@ import ProfileManual from './ProfileManual'
 import SignOn from './SignOn'
 import SignupLoadingPage from './SignupLoadingPage'
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: '100%',
-    height: '100%',
-    elevation: 1,
-    zIndex: 2,
-    backgroundColor: 'white'
-  }
-})
-
 const Stack = createNativeStackNavigator()
 
-const SignOnNavigator = () => {
+const signOnScreens = [
+  {
+    name: 'SignOn',
+    component: SignOn
+  },
+  {
+    name: 'CreatePassword',
+    component: CreatePassword
+  },
+  {
+    name: 'ProfileAuto',
+    component: ProfileAuto
+  },
+  {
+    name: 'ProfileManual',
+    component: ProfileManual
+  },
+  {
+    name: 'FirstFollows',
+    component: FirstFollows
+  },
+  {
+    name: 'SignupLoadingPage',
+    component: SignupLoadingPage
+  }
+]
+
+const screenOptions = {
+  headerShown: false,
+  gestureEnabled: false,
+  animation: 'slide_from_right' as const
+}
+
+export const SignOnScreen = () => {
   const dispatch = useDispatch()
 
   const onSignUp = useSelector(getOnSignUp)
@@ -58,55 +76,19 @@ const SignOnNavigator = () => {
     }
   }, [onSignUp, isAccountAvailable, finalEmail, finalHandle, dispatch])
 
-  const screenProps = [
-    {
-      name: 'SignOn',
-      component: SignOn
-    },
-    {
-      name: 'CreatePassword',
-      component: CreatePassword
-    },
-    {
-      name: 'ProfileAuto',
-      component: ProfileAuto
-    },
-    {
-      name: 'ProfileManual',
-      component: ProfileManual
-    },
-    {
-      name: 'FirstFollows',
-      component: FirstFollows
-    },
-    {
-      name: 'SignupLoadingPage',
-      component: SignupLoadingPage
-    }
-  ]
-
   return (
-    <View style={styles.container}>
-      <Stack.Navigator
-        initialRouteName='SignOn'
-        screenOptions={{
-          animationTypeForReplace: 'push'
-        }}
-      >
-        {screenProps.map(props => (
-          <Stack.Screen
-            key={props.name}
-            options={{
-              headerShown: false,
-              gestureEnabled: false,
-              animation: 'slide_from_right'
-            }}
-            {...props}
-          />
-        ))}
-      </Stack.Navigator>
-    </View>
+    <Stack.Navigator
+      initialRouteName='SignOn'
+      screenOptions={{ animationTypeForReplace: 'push' }}
+    >
+      {signOnScreens.map(({ name, component }) => (
+        <Stack.Screen
+          key={name}
+          name={name}
+          component={component}
+          options={screenOptions}
+        />
+      ))}
+    </Stack.Navigator>
   )
 }
-
-export default SignOnNavigator

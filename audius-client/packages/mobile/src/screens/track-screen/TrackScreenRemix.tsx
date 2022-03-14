@@ -1,7 +1,5 @@
 import { useCallback } from 'react'
 
-import { useNavigation } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Track } from 'audius-client/src/common/models/Track'
@@ -12,13 +10,12 @@ import { profilePage } from 'audius-client/src/utils/route'
 import { isEqual } from 'lodash'
 import { Pressable, StyleProp, View, ViewStyle } from 'react-native'
 
-import { BaseStackParamList } from 'app/components/app-navigator/types'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
 import { DynamicImage } from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
@@ -117,10 +114,7 @@ const TrackScreenRemixComponent = ({
 
   const { _co_sign, permalink, track_id } = track
   const { name, handle } = user
-  const pushRouteWeb = usePushRouteWeb()
-  const navigation = useNavigation<
-    NativeStackNavigationProp<BaseStackParamList>
-  >()
+  const navigation = useNavigation()
 
   const profilePictureImage = useUserProfilePicture(
     user.user_id,
@@ -134,14 +128,18 @@ const TrackScreenRemixComponent = ({
   )
 
   const handlePressTrack = useCallback(() => {
-    pushRouteWeb(permalink)
-    navigation.push('Track', { id: track_id })
-  }, [navigation, permalink, pushRouteWeb, track_id])
+    navigation.push({
+      native: { screen: 'Track', params: { id: track_id } },
+      web: { route: permalink }
+    })
+  }, [navigation, permalink, track_id])
 
   const handlePressArtist = useCallback(() => {
-    pushRouteWeb(profilePage(handle))
-    navigation.push('Profile', { handle })
-  }, [handle, navigation, pushRouteWeb])
+    navigation.push({
+      native: { screen: 'Profile', params: { handle } },
+      web: { route: profilePage(handle) }
+    })
+  }, [handle, navigation])
 
   const images = (
     <>

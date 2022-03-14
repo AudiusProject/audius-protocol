@@ -1,13 +1,14 @@
 import { useCallback } from 'react'
 
-import { ProfileStackParamList } from 'app/components/app-navigator/types'
 import { Button, ButtonProps } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+
+import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 type EditProfileButtonProps = Partial<ButtonProps>
 
 export const EditProfileButton = (props: EditProfileButtonProps) => {
-  const navigation = useNavigation<ProfileStackParamList>()
+  const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePress = useCallback(() => {
     // goBack does not trigger web pop in BaseStackNavigator

@@ -32,8 +32,8 @@ import { artistCategories, FollowArtistsCategory } from 'app/store/signon/types'
 import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
 
-import UserImage from '../image/UserImage'
-import UserBadges from '../user-badges/UserBadges'
+import UserImage from '../../components/image/UserImage'
+import UserBadges from '../../components/user-badges/UserBadges'
 
 import SignupHeader from './SignupHeader'
 import { SignOnStackParamList } from './types'
