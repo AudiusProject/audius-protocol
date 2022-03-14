@@ -757,6 +757,13 @@ pub enum PlaylistSocialActionValues {
     DeleteRepost,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum TrackManagementActions {
+    Create,
+    Update,
+    Delete
+}
+
 // Seed & bump used to validate the user's handle with the account base
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub struct UserHandle {
