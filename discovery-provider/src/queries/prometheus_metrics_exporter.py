@@ -27,6 +27,9 @@ for f in files:
     remove(f)
 
 
+# since the server and worker containers share ${PROMETHEUS_MULTIPROC_DIR}/,
+# will ensure each container uses its own prefix to avoid pid collisions between the
+# two containers when using the prometheus-client in multi-process mode
 def process_identifier():
     return f"{audius_prometheus_container}_{getpid()}"
 
