@@ -33,7 +33,7 @@ class PlaylistLibraryIdentifier(fields.Raw):
                 return marshal(value, playlist_library_folder)
         except Exception as e:
             raise MarshallingError(
-                "Unable to marshal as playlist library identifier: " + value
+                f"Unable to marshal as playlist library identifier: {str(value)}"
             ) from e
 
     def output(self, key, obj, **kwargs):
