@@ -79,7 +79,7 @@ module.exports = function (app) {
     return successResponse(response)
   }))
 
-  app.get('/record_ip', authMiddleware, handleResponse(async req => {
+  app.post('/record_ip', authMiddleware, handleResponse(async req => {
     const { blockchainUserId, handle } = req.user
     const userIP = getIP(req)
     req.logger.info(`idSignals | record_ip | User IP is ${userIP} for user with id ${blockchainUserId} and handle ${handle}`)
