@@ -32,7 +32,7 @@ class PlaylistLibraryIdentifier(fields.Raw):
                 return marshal(value, playlist_library_folder)
         except Exception as e:
             raise MarshallingError(
-                "Unable to marshal as playlist library identifier"
+                "Unable to marshal as playlist library identifier: " + value
             ) from e
 
     def output(self, key, obj, **kwargs):
@@ -42,7 +42,7 @@ class PlaylistLibraryIdentifier(fields.Raw):
 playlist_library_folder = ns.model(
     "playlist_library_folder",
     {
-        "type": "folder",
+        "type": fields.FormattedString("folder"),
         "id": fields.String(required=True),
         "name": fields.String(required=True),
         "contents": fields.List(PlaylistLibraryIdentifier),
