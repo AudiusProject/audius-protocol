@@ -9,8 +9,7 @@ const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
   solanaTrackListenCountAddress,
   solanaRewardsManagerProgramId,
-  /* secp */ 'KeccakSecp256k11111111111111111111111111111',
-  /* token program */ 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+  /* secp */ 'KeccakSecp256k11111111111111111111111111111'
 ])
 
 const isRelayAllowedProgram = instructions => {

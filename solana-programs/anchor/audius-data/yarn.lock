@@ -281,6 +281,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@project-serum/anchor-cli@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@project-serum/anchor-cli/-/anchor-cli-0.22.1.tgz#69ee4779d97e483ee6149eb2a99759ce9e7a5c3f"
+  integrity sha512-M6Y16cPhS4bwWcJ1AK8TZ/XyEH4EmXxSTxSy6S9v4yDKvQnzHH4mOSnlnquGZ7f7tzqHXVozlKwKeypEZqD+7A==
+
 "@project-serum/anchor@^0.22.0":
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@project-serum/anchor/-/anchor-0.22.0.tgz#79d182851346fb46d471577c63eabdf6f199c03e"
