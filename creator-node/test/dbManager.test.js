@@ -659,8 +659,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     server,
     ipfsMock,
     ipfsLatestMock,
-    libsMock,
-    mockServiceRegistry
+    libsMock
 
   /** Init server to run DB migrations */
   before(async () => {
@@ -760,7 +759,11 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
       )
 
       // Upload track metadata
-      const { track_segments: trackSegments, source_file: sourceFile } =
+      const {
+        track_segments: trackSegments,
+        source_file: sourceFile,
+        transcodedTrackUUID
+      } =
         trackContentResp
       const trackMetadata = {
         test: 'field1',
@@ -788,7 +791,8 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
         .send({
           blockchainTrackId: 1,
           blockNumber: 10,
-          metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID
+          metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
+          transcodedTrackUUID
         })
         .expect(200)
     }
