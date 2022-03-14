@@ -194,7 +194,7 @@ export const testCreateTrack = async ({
   // Assert on instruction struct
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
-  // Indexing code must check that this
+  // Indexing code must check that the track owner PDA is known before processing
   expect(accountPubKeys[0]).to.equal(trackOwnerPDA.toString())
   expect(accountPubKeys[1]).to.equal(userAuthorityKeypair.publicKey.toString())
 };
