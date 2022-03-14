@@ -607,7 +607,7 @@ jobs:
           name: anchor tests
           command: |
             apt-get update
-            apt-get install libssl-dev
+            apt-get install -y libssl-dev
             npm install -g yarn
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/anchor/audius-data
