@@ -32,7 +32,9 @@ import { waitForValue } from 'utils/sagaHelpers'
 
 import {
   containsTempPlaylist,
-  removePlaylistLibraryDuplicates
+  extractTempPlaylistsFromLibrary,
+  removePlaylistLibraryDuplicates,
+  replaceTempWithResolvedPlaylists
 } from './helpers'
 import { update } from './slice'
 
@@ -108,23 +110,30 @@ function* watchUpdatePlaylistLibraryWithTempPlaylist() {
   yield takeLatest(TEMP_PLAYLIST_UPDATE_HELPER, function* makeUpdate(
     action: ReturnType<typeof update>
   ) {
-    const { playlistLibrary } = action.payload
+    const { playlistLibrary: rawPlaylistLibrary } = action.payload
+    const playlistLibrary = removePlaylistLibraryDuplicates(rawPlaylistLibrary)
     const account: User = yield select(getAccountUser)
-    account.playlist_library = removePlaylistLibraryDuplicates(playlistLibrary)
 
     // Map over playlist library contents and resolve each temp id playlist
     // to one with an actual id. Once we have the actual id, we can proceed
     // with writing the library to the user metadata (profile update)
-    // TODO: Support folders here in iteration.
-    const newContents: (
-      | PlaylistLibraryIdentifier
-      | PlaylistLibraryFolder
-    )[] = yield all(
-      playlistLibrary.contents.map(playlist =>
-        call(resolveTempPlaylists, playlist)
-      )
+    const tempPlaylists = extractTempPlaylistsFromLibrary(playlistLibrary)
+    const resolvedPlaylists: PlaylistLibraryIdentifier[] = yield all(
+      tempPlaylists.map(playlist => call(resolveTempPlaylists, playlist))
     )
-    playlistLibrary.contents = newContents
+    const tempPlaylistIdToResolvedPlaylist = tempPlaylists.reduce(
+      (result, nextTempPlaylist, index) => ({
+        ...result,
+        [nextTempPlaylist.playlist_id]: resolvedPlaylists[index]
+      }),
+      {} as { [key: string]: PlaylistLibraryIdentifier }
+    )
+
+    playlistLibrary.contents = replaceTempWithResolvedPlaylists(
+      playlistLibrary,
+      tempPlaylistIdToResolvedPlaylist
+    ).contents
+    account.playlist_library = playlistLibrary
     // Update playlist library on chain via an account profile update
     yield call(updateProfileAsync, { metadata: account })
   })

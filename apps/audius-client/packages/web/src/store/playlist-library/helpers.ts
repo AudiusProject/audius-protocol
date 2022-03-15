@@ -1,3 +1,5 @@
+import isEmpty from 'lodash/isEmpty'
+
 import { ID } from 'common/models/Identifiers'
 import {
   PlaylistLibrary,
@@ -408,4 +410,54 @@ export const containsTempPlaylist = (
     }
   }
   return false
+}
+
+/**
+ * Takes a library and returns a list of all temporary playlists from that library
+ * @param library
+ * @returns PlaylistLibraryIdentifier[]
+ */
+export const extractTempPlaylistsFromLibrary = (
+  library: PlaylistLibrary | PlaylistLibraryFolder
+): PlaylistLibraryIdentifier[] => {
+  if (isEmpty(library.contents)) return []
+  return library.contents.reduce((prevResult, nextContent) => {
+    if (nextContent.type === 'folder') {
+      return prevResult.concat(extractTempPlaylistsFromLibrary(nextContent))
+    } else if (nextContent.type === 'temp_playlist') {
+      return prevResult.concat(nextContent)
+    } else {
+      return prevResult
+    }
+  }, [] as PlaylistLibraryIdentifier[])
+}
+
+/**
+ * Takes a library and mapping of temporary playlist ids to their resolved
+ * playlist identifiers, then returns the library (does not mutate original)
+ * with temporary playlists replaced by their resolved playlist identifiers.
+ * @param library
+ * @param tempPlaylistIdToResolvedPlaylist object that maps temporary playlist ids to their resolved playlist identifiers
+ * @returns PlaylistLibrary | PlaylistLibraryFolder
+ */
+export const replaceTempWithResolvedPlaylists = <
+  T extends PlaylistLibrary | PlaylistLibraryFolder
+>(
+  library: T,
+  tempPlaylistIdToResolvedPlaylist: Record<string, PlaylistLibraryIdentifier>
+): T => {
+  if (isEmpty(library.contents)) return library
+  const newContents = library.contents.map(c => {
+    if (c.type === 'folder') {
+      return replaceTempWithResolvedPlaylists(
+        c,
+        tempPlaylistIdToResolvedPlaylist
+      )
+    } else if (c.type === 'temp_playlist') {
+      return tempPlaylistIdToResolvedPlaylist[c.playlist_id] ?? c
+    } else {
+      return c
+    }
+  })
+  return { ...library, contents: newContents }
 }

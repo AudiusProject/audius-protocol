@@ -8,7 +8,9 @@ import {
   removePlaylistLibraryDuplicates,
   renamePlaylistFolderInLibrary,
   reorderPlaylistLibrary,
-  addPlaylistToFolder
+  addPlaylistToFolder,
+  extractTempPlaylistsFromLibrary,
+  replaceTempWithResolvedPlaylists
 } from './helpers'
 
 describe('findInPlaylistLibrary', () => {
@@ -870,5 +872,259 @@ describe('addPlaylistToFolder', () => {
       ]
     }
     expect(result).toEqual(expectedResult)
+  })
+})
+
+describe('extractTempPlaylistsFromLibrary', () => {
+  it('returns all temp playlists in library', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        { type: 'temp_playlist', playlist_id: 'e' },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'temp_playlist', playlist_id: 'a' },
+            { type: 'temp_playlist', playlist_id: 'b' },
+            { type: 'playlist', playlist_id: 11 },
+            { type: 'temp_playlist', playlist_id: 'c' },
+            { type: 'temp_playlist', playlist_id: 'd' }
+          ]
+        }
+      ]
+    }
+    const ret = extractTempPlaylistsFromLibrary(library)
+    expect(ret).toEqual([
+      { type: 'temp_playlist', playlist_id: 'e' },
+      { type: 'temp_playlist', playlist_id: 'a' },
+      { type: 'temp_playlist', playlist_id: 'b' },
+      { type: 'temp_playlist', playlist_id: 'c' },
+      { type: 'temp_playlist', playlist_id: 'd' }
+    ])
+  })
+
+  it('can deal with empty libraries', () => {
+    const ret = extractTempPlaylistsFromLibrary({
+      contents: []
+    })
+    expect(ret).toEqual([])
+
+    const ret2 = extractTempPlaylistsFromLibrary({})
+    expect(ret2).toEqual([])
+  })
+
+  it('returns empty array if no temp playlists in library', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'playlist', playlist_id: 11 }
+          ]
+        }
+      ]
+    }
+    const ret = extractTempPlaylistsFromLibrary(library)
+    expect(ret).toEqual([])
+  })
+})
+
+describe('replaceTempWithResolvedPlaylists', () => {
+  it('returns all temp playlists in library', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        { type: 'temp_playlist', playlist_id: 'e' },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'temp_playlist', playlist_id: 'a' },
+            { type: 'temp_playlist', playlist_id: 'b' },
+            { type: 'playlist', playlist_id: 11 },
+            { type: 'temp_playlist', playlist_id: 'c' },
+            { type: 'temp_playlist', playlist_id: 'd' }
+          ]
+        }
+      ]
+    }
+    const tempPlaylistIdToResolvedPlaylist = {
+      e: { type: 'playlist', playlist_id: 12 },
+      a: { type: 'playlist', playlist_id: 13 },
+      b: { type: 'playlist', playlist_id: 14 },
+      c: { type: 'playlist', playlist_id: 15 },
+      d: { type: 'playlist', playlist_id: 16 }
+    }
+
+    const ret = replaceTempWithResolvedPlaylists(
+      library,
+      tempPlaylistIdToResolvedPlaylist
+    )
+    expect(ret).toEqual({
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        { type: 'playlist', playlist_id: 12 },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'playlist', playlist_id: 13 },
+            { type: 'playlist', playlist_id: 14 },
+            { type: 'playlist', playlist_id: 11 },
+            { type: 'playlist', playlist_id: 15 },
+            { type: 'playlist', playlist_id: 16 }
+          ]
+        }
+      ]
+    })
+  })
+
+  it('can deal with empty libraries', () => {
+    const ret = replaceTempWithResolvedPlaylists(
+      {
+        contents: []
+      },
+      {}
+    )
+    expect(ret).toEqual({
+      contents: []
+    })
+
+    const ret2 = replaceTempWithResolvedPlaylists({})
+    expect(ret2).toEqual({})
+  })
+
+  it('can deal with empty folders', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        { type: 'temp_playlist', playlist_id: 'e' },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'temp_playlist', playlist_id: 'a' },
+            { type: 'temp_playlist', playlist_id: 'b' },
+            { type: 'playlist', playlist_id: 11 },
+            { type: 'temp_playlist', playlist_id: 'c' },
+            { type: 'temp_playlist', playlist_id: 'd' }
+          ]
+        },
+        { type: 'folder', id: 'my id 2', name: 'Favorites 2', contents: [] }
+      ]
+    }
+    const tempPlaylistIdToResolvedPlaylist = {
+      e: { type: 'playlist', playlist_id: 12 },
+      a: { type: 'playlist', playlist_id: 13 },
+      b: { type: 'playlist', playlist_id: 14 },
+      c: { type: 'playlist', playlist_id: 15 },
+      d: { type: 'playlist', playlist_id: 16 }
+    }
+
+    const ret = replaceTempWithResolvedPlaylists(
+      library,
+      tempPlaylistIdToResolvedPlaylist
+    )
+    expect(ret).toEqual({
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        { type: 'playlist', playlist_id: 12 },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'playlist', playlist_id: 13 },
+            { type: 'playlist', playlist_id: 14 },
+            { type: 'playlist', playlist_id: 11 },
+            { type: 'playlist', playlist_id: 15 },
+            { type: 'playlist', playlist_id: 16 }
+          ]
+        },
+        { type: 'folder', id: 'my id 2', name: 'Favorites 2', contents: [] }
+      ]
+    })
+  })
+
+  it('can deal with missing temp playlist mapping', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        { type: 'temp_playlist', playlist_id: 'e' },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'temp_playlist', playlist_id: 'a' },
+            { type: 'temp_playlist', playlist_id: 'b' },
+            { type: 'playlist', playlist_id: 11 },
+            { type: 'temp_playlist', playlist_id: 'c' },
+            { type: 'temp_playlist', playlist_id: 'd' }
+          ]
+        }
+      ]
+    }
+    const tempPlaylistIdToResolvedPlaylist = {
+      e: { type: 'playlist', playlist_id: 12 },
+      b: { type: 'playlist', playlist_id: 14 },
+      c: { type: 'playlist', playlist_id: 15 },
+      d: { type: 'playlist', playlist_id: 16 }
+    }
+
+    const ret = replaceTempWithResolvedPlaylists(
+      library,
+      tempPlaylistIdToResolvedPlaylist
+    )
+    expect(ret).toEqual({
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        { type: 'playlist', playlist_id: 12 },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'temp_playlist', playlist_id: 'a' },
+            { type: 'playlist', playlist_id: 14 },
+            { type: 'playlist', playlist_id: 11 },
+            { type: 'playlist', playlist_id: 15 },
+            { type: 'playlist', playlist_id: 16 }
+          ]
+        }
+      ]
+    })
   })
 })
