@@ -18,26 +18,32 @@ class CreatorNode {
    * Pulls off the primary creator node from a creator node endpoint string.
    * @param {string} endpoints user.creator_node_endpoint
    */
-  static getPrimary (endpoints) { return endpoints ? endpoints.split(',')[0] : '' }
+  static getPrimary(endpoints) {
+    return endpoints ? endpoints.split(',')[0] : ''
+  }
 
   /**
    * Pulls off the secondary creator nodes from a creator node endpoint string.
    * @param {string} endpoints user.creator_node_endpoint
    */
-  static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
+  static getSecondaries(endpoints) {
+    return endpoints ? endpoints.split(',').slice(1) : []
+  }
 
   /**
    * Pulls the user's creator nodes out of the list
    * @param {string} endpoints user.creator_node_endpoint
    */
-  static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
+  static getEndpoints(endpoints) {
+    return endpoints ? endpoints.split(',') : []
+  }
 
   /**
    * Builds the creator_node_endpoint value off of a primary and secondaries list
    * @param {string} primary the primary endpoint
    * @param {string[]} secondaries a list of secondary endpoints
    */
-  static buildEndpoint (primary, secondaries) {
+  static buildEndpoint(primary, secondaries) {
     return [primary, ...secondaries].join()
   }
 
@@ -48,7 +54,7 @@ class CreatorNode {
    * @param {number} timeout max time alloted for clock request
    * @param {Object?} [params={}] optional query string params
    */
-  static async getClockValue (endpoint, wallet, timeout, params = {}) {
+  static async getClockValue(endpoint, wallet, timeout, params = {}) {
     let baseReq = {
       url: `/users/clock_status/${wallet}`,
       method: 'get',
@@ -67,7 +73,9 @@ class CreatorNode {
       const { data: body } = await axios(baseReq)
       return body.data.clockValue
     } catch (err) {
-      throw new Error(`Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`)
+      throw new Error(
+        `Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`
+      )
     }
   }
 
@@ -76,7 +84,7 @@ class CreatorNode {
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId
    */
-  static async checkIfDownloadAvailable (endpoints, trackId) {
+  static async checkIfDownloadAvailable(endpoints, trackId) {
     const primary = CreatorNode.getPrimary(endpoints)
     if (primary) {
       const req = {
@@ -107,7 +115,7 @@ class CreatorNode {
    * @param {function} monitoringCallbacks.request
    * @param {function} monitoringCallbacks.healthCheck
    */
-  constructor (
+  constructor(
     web3Manager,
     creatorNodeEndpoint,
     isServer,
@@ -136,7 +144,7 @@ class CreatorNode {
     this.monitoringCallbacks = monitoringCallbacks
   }
 
-  async init () {
+  async init() {
     if (!this.web3Manager) throw new Error('Failed to initialize CreatorNode')
     if (!this.lazyConnect) {
       await this.connect()
@@ -144,7 +152,7 @@ class CreatorNode {
   }
 
   /** Establishes a connection to a content node endpoint */
-  async connect () {
+  async connect() {
     this.connecting = true
     await this._signupNodeUser(this.web3Manager.getWalletAddress())
     await this._loginNodeUser()
@@ -153,7 +161,7 @@ class CreatorNode {
   }
 
   /** Checks if connected, otherwise establishing a connection */
-  async ensureConnected () {
+  async ensureConnected() {
     if (!this.connected && !this.connecting) {
       await this.connect()
     } else if (this.connecting) {
@@ -168,13 +176,13 @@ class CreatorNode {
     }
   }
 
-  getEndpoint () {
+  getEndpoint() {
     return this.creatorNodeEndpoint
   }
 
   /**
    * Switch from one creatorNodeEndpoint to another including logging out from the old node, updating the endpoint and logging into new node */
-  async setEndpoint (creatorNodeEndpoint) {
+  async setEndpoint(creatorNodeEndpoint) {
     // If the endpoints are the same, no-op.
     if (this.creatorNodeEndpoint === creatorNodeEndpoint) return
 
@@ -193,7 +201,7 @@ class CreatorNode {
   }
 
   /** Clear all connection state in this class by deleting authToken and setting 'connected' = false */
-  clearConnection () {
+  clearConnection() {
     this.connected = false
     this.authToken = null
   }
@@ -202,7 +210,7 @@ class CreatorNode {
    * Uploads creator content to a creator node
    * @param {object} metadata the creator metadata
    */
-  async uploadCreatorContent (metadata, blockNumber = null) {
+  async uploadCreatorContent(metadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -230,7 +238,7 @@ class CreatorNode {
    * @param {string} metadataFileUUID unique ID for metadata file
    * @param {number} blockNumber
    */
-  async associateCreator (audiusUserId, metadataFileUUID, blockNumber) {
+  async associateCreator(audiusUserId, metadataFileUUID, blockNumber) {
     this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
       url: `/audius_users`,
@@ -250,7 +258,12 @@ class CreatorNode {
    * @param {object} metadata the metadata for the track
    * @param {function?} onProgress an optional on progerss callback
    */
-  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}) {
+  async uploadTrackContent(
+    trackFile,
+    coverArtFile,
+    metadata,
+    onProgress = () => {}
+  ) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
     let totalImageBytes = 0
@@ -259,20 +272,27 @@ class CreatorNode {
       loadedImageBytes = loaded
       if (!totalImageBytes) totalImageBytes += total
       if (totalImageBytes && totalTrackBytes) {
-        onProgress(loadedImageBytes + loadedTrackBytes, totalImageBytes + totalTrackBytes)
+        onProgress(
+          loadedImageBytes + loadedTrackBytes,
+          totalImageBytes + totalTrackBytes
+        )
       }
     }
     const onTrackProgress = (loaded, total) => {
       loadedTrackBytes = loaded
       if (!totalTrackBytes) totalTrackBytes += total
       if ((!coverArtFile || totalImageBytes) && totalTrackBytes) {
-        onProgress(loadedImageBytes + loadedTrackBytes, totalImageBytes + totalTrackBytes)
+        onProgress(
+          loadedImageBytes + loadedTrackBytes,
+          totalImageBytes + totalTrackBytes
+        )
       }
     }
 
     let uploadPromises = []
     uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
-    if (coverArtFile) uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
+    if (coverArtFile)
+      uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
     metadata.track_segments = trackContentResp.track_segments
@@ -282,7 +302,11 @@ class CreatorNode {
 
     const sourceFile = trackContentResp.source_file
     if (!sourceFile) {
-      throw new Error(`Invalid or missing sourceFile in response: ${JSON.stringify(trackContentResp)}`)
+      throw new Error(
+        `Invalid or missing sourceFile in response: ${JSON.stringify(
+          trackContentResp
+        )}`
+      )
     }
 
     if (coverArtResp) {
@@ -301,7 +325,7 @@ class CreatorNode {
    * @param {object} metadata
    * @param {string?} sourceFile
    */
-  async uploadTrackMetadata (metadata, sourceFile) {
+  async uploadTrackMetadata(metadata, sourceFile) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -310,14 +334,17 @@ class CreatorNode {
       console.error('Error validating track metadata', e)
     }
 
-    const { data: body } = await this._makeRequest({
-      url: '/tracks/metadata',
-      method: 'post',
-      data: {
-        metadata,
-        sourceFile
-      }
-    }, true)
+    const { data: body } = await this._makeRequest(
+      {
+        url: '/tracks/metadata',
+        method: 'post',
+        data: {
+          metadata,
+          sourceFile
+        }
+      },
+      true
+    )
     return body
   }
 
@@ -328,7 +355,12 @@ class CreatorNode {
    * @param {number} blockNumber
    * @param {string?} transcodedTrackUUID the CID for the transcoded master if this is a first-time upload
    */
-  async associateTrack (audiusTrackId, metadataFileUUID, blockNumber, transcodedTrackUUID) {
+  async associateTrack(
+    audiusTrackId,
+    metadataFileUUID,
+    blockNumber,
+    transcodedTrackUUID
+  ) {
     this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
       url: '/tracks',
@@ -349,8 +381,15 @@ class CreatorNode {
    * @param {number?} timeoutMs timeout in ms axios request to upload file to CN will wait
    * @return {Object} response body
    */
-  async uploadImage (file, square = true, onProgress, timeoutMs = null) {
-    const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { 'square': square }, /* retries */ undefined, timeoutMs)
+  async uploadImage(file, square = true, onProgress, timeoutMs = null) {
+    const { data: body } = await this._uploadFile(
+      file,
+      '/image_upload',
+      onProgress,
+      { square: square },
+      /* retries */ undefined,
+      timeoutMs
+    )
     return body
   }
 
@@ -359,26 +398,36 @@ class CreatorNode {
    * @param {function?} onProgress called with loaded bytes and total bytes
    * @return {Object} response body
    */
-  async uploadTrackAudio (file, onProgress) {
+  async uploadTrackAudio(file, onProgress) {
     return this.handleAsyncTrackUpload(file, onProgress)
   }
 
-  async handleAsyncTrackUpload (file, onProgress) {
-    const { data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress)
+  async handleAsyncTrackUpload(file, onProgress) {
+    const {
+      data: { uuid }
+    } = await this._uploadFile(file, '/track_content_async', onProgress)
     return this.pollProcessingStatus(uuid)
   }
 
-  async pollProcessingStatus (uuid) {
-    const route = this.creatorNodeEndpoint + '/track_content_status'
+  async pollProcessingStatus(uuid) {
+    const route = this.creatorNodeEndpoint + '/async_processing_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
       try {
-        const { status, resp } = await this.getTrackContentProcessingStatus(uuid)
+        const { status, resp } = await this.getTrackContentProcessingStatus(
+          uuid
+        )
         // Should have a body structure of:
         //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
         if (status && status === 'DONE') return resp
         if (status && status === 'FAILED') {
-          await this._handleErrorHelper(new Error(`Track content async upload failed: uuid=${uuid}, error=${resp}`), route, uuid)
+          await this._handleErrorHelper(
+            new Error(
+              `Track content async upload failed: uuid=${uuid}, error=${resp}`
+            ),
+            route,
+            uuid
+          )
         }
       } catch (e) {
         // Catch errors here and swallow them. Errors don't signify that the track
@@ -391,7 +440,13 @@ class CreatorNode {
     }
 
     // TODO: update MAX_TRACK_TRANSCODE_TIMEOUT if generalizing this method
-    await this._handleErrorHelper(new Error(`Track content async upload took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
+    await this._handleErrorHelper(
+      new Error(
+        `Track content async upload took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`
+      ),
+      route,
+      uuid
+    )
   }
 
   /**
@@ -399,9 +454,9 @@ class CreatorNode {
    * @param {string} uuid the uuid of the track transcoding task
    * @returns the status, and the success or failed response if the task is complete
    */
-  async getTrackContentProcessingStatus (uuid) {
+  async getTrackContentProcessingStatus(uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/track_content_status',
+      url: '/async_processing_status',
       params: {
         uuid
       },
@@ -417,7 +472,7 @@ class CreatorNode {
    * @param {string} endpoint
    * @param {number?} timeout ms
    */
-  async getSyncStatus (endpoint, timeout = null) {
+  async getSyncStatus(endpoint, timeout = null) {
     const user = this.userStateManager.getCurrentUser()
     if (user) {
       const req = {
@@ -433,7 +488,9 @@ class CreatorNode {
         userBlockNumber: user.blocknumber,
         trackBlockNumber: user.track_blocknumber,
         // Whether or not the endpoint is behind in syncing
-        isBehind: status.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
+        isBehind:
+          status.latestBlockNumber <
+          Math.max(user.blocknumber, user.track_blocknumber),
         isConfigured: status.latestBlockNumber !== -1
       }
     }
@@ -447,7 +504,7 @@ class CreatorNode {
    * @param {boolean} immediate whether or not this is a blocking request and handled right away
    * @param {boolean} validate whether or not to validate the provided secondary is valid
    */
-  async syncSecondary (
+  async syncSecondary(
     secondary,
     primary = null,
     immediate = false,
@@ -457,7 +514,9 @@ class CreatorNode {
     if (!primary) {
       primary = CreatorNode.getPrimary(user.creator_node_endpoint)
     }
-    const secondaries = new Set(CreatorNode.getSecondaries(user.creator_node_endpoint))
+    const secondaries = new Set(
+      CreatorNode.getSecondaries(user.creator_node_endpoint)
+    )
     if (primary && secondary && (!validate || secondaries.has(secondary))) {
       const req = {
         baseURL: secondary,
@@ -479,12 +538,15 @@ class CreatorNode {
    * Signs up a creator node user with a wallet address
    * @param {string} walletAddress
    */
-  async _signupNodeUser (walletAddress) {
-    await this._makeRequest({
-      url: '/users',
-      method: 'post',
-      data: { walletAddress }
-    }, false)
+  async _signupNodeUser(walletAddress) {
+    await this._makeRequest(
+      {
+        url: '/users',
+        method: 'post',
+        data: { walletAddress }
+      },
+      false
+    )
   }
 
   /**
@@ -492,7 +554,7 @@ class CreatorNode {
    * Requests a challenge from cnode, sends signed challenge response to cn.
    * If successful, receive and set authToken locally.
    */
-  async _loginNodeUser () {
+  async _loginNodeUser() {
     if (this.authToken) {
       return
     }
@@ -502,13 +564,16 @@ class CreatorNode {
     let url
 
     try {
-      let challengeResp = await this._makeRequest({
-        url: '/users/login/challenge',
-        method: 'get',
-        params: {
-          walletPublicKey
-        }
-      }, false)
+      let challengeResp = await this._makeRequest(
+        {
+          url: '/users/login/challenge',
+          method: 'get',
+          params: {
+            walletPublicKey
+          }
+        },
+        false
+      )
 
       clientChallengeKey = challengeResp.data.challenge
       url = '/users/login/challenge'
@@ -519,14 +584,17 @@ class CreatorNode {
 
     const signature = await this.web3Manager.sign(clientChallengeKey)
 
-    const resp = await this._makeRequest({
-      url,
-      method: 'post',
-      data: {
-        data: clientChallengeKey,
-        signature
-      }
-    }, false)
+    const resp = await this._makeRequest(
+      {
+        url,
+        method: 'post',
+        data: {
+          data: clientChallengeKey,
+          signature
+        }
+      },
+      false
+    )
     this.authToken = resp.data.sessionToken
 
     setTimeout(() => {
@@ -535,14 +603,17 @@ class CreatorNode {
   }
 
   /** Calls logout on the content node. Needs an authToken for this since logout is an authenticated endpoint */
-  async _logoutNodeUser () {
+  async _logoutNodeUser() {
     if (!this.authToken) {
       return
     }
-    await this._makeRequest({
-      url: '/users/logout',
-      method: 'post'
-    }, false)
+    await this._makeRequest(
+      {
+        url: '/users/logout',
+        method: 'post'
+      },
+      false
+    )
     this.authToken = null
   }
 
@@ -558,7 +629,7 @@ class CreatorNode {
    *
    * 'clockValue' may be null if the request to fetch the clock value fails
    */
-  async getClockValuesFromReplicaSet () {
+  async getClockValuesFromReplicaSet() {
     const user = this.userStateManager.getCurrentUser()
     if (!user || !user.creator_node_endpoint) {
       console.error('No user or Content Node endpoint found')
@@ -567,7 +638,7 @@ class CreatorNode {
 
     const replicaSet = CreatorNode.getEndpoints(user.creator_node_endpoint)
     const clockValueResponses = await Promise.all(
-      replicaSet.map(endpoint => this._clockValueRequest({ user, endpoint }))
+      replicaSet.map((endpoint) => this._clockValueRequest({ user, endpoint }))
     )
 
     return clockValueResponses
@@ -580,19 +651,25 @@ class CreatorNode {
    * @param {string} param.endpoint the Content Node endpoint to check the clock value for
    * @param {number?} [param.timeout=1000] the max time allotted for a clock request; defaulted to 1000ms
    */
-  async _clockValueRequest ({ user, endpoint, timeout = 1000 }) {
+  async _clockValueRequest({ user, endpoint, timeout = 1000 }) {
     const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
     let type = primary === endpoint ? 'primary' : 'secondary'
 
     try {
-      const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet, timeout)
+      const clockValue = await CreatorNode.getClockValue(
+        endpoint,
+        user.wallet,
+        timeout
+      )
       return {
         type,
         endpoint,
         clockValue
       }
     } catch (e) {
-      console.error(`Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`)
+      console.error(
+        `Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`
+      )
       return {
         type,
         endpoint,
@@ -608,7 +685,7 @@ class CreatorNode {
    * is connected to before the request is made.
    * @return {Object} response body
    */
-  async _makeRequest (axiosRequestObj, requiresConnection = true) {
+  async _makeRequest(axiosRequestObj, requiresConnection = true) {
     const work = async () => {
       if (requiresConnection) {
         await this.ensureConnected()
@@ -678,7 +755,11 @@ class CreatorNode {
         }
 
         // if the content node returns an invalid auth token error, clear connection and reconnect
-        if (resp.data && resp.data.error && resp.data.error.includes('Invalid authentication token')) {
+        if (
+          resp.data &&
+          resp.data.error &&
+          resp.data.error.includes('Invalid authentication token')
+        ) {
           this.clearConnection()
           try {
             await this.ensureConnected()
@@ -690,21 +771,24 @@ class CreatorNode {
         await this._handleErrorHelper(e, axiosRequestObj.url, requestId)
       }
     }
-    return retry(async (bail, num) => {
-      return work()
-    }, {
-      // Retry function 3x
-      // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
-      minTimeout: 500,
-      maxTimeout: 4000,
-      factor: 3,
-      retries: 3,
-      onRetry: (err, i) => {
-        if (err) {
-          console.log('makeRequest retry error: ', err)
+    return retry(
+      async (bail, num) => {
+        return work()
+      },
+      {
+        // Retry function 3x
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: 3,
+        onRetry: (err, i) => {
+          if (err) {
+            console.log('makeRequest retry error: ', err)
+          }
         }
       }
-    })
+    )
   }
 
   /**
@@ -713,11 +797,11 @@ class CreatorNode {
    * @param {boolean} [isTrackUpload] flag to determine if uploading track. If true, add track upload headers
    * @returns headers and formData in an object
    */
-  createFormDataAndUploadHeaders (file, extraFormDataOptions = {}) {
+  createFormDataAndUploadHeaders(file, extraFormDataOptions = {}) {
     // form data is from browser, not imported npm module
     let formData = new FormData()
     formData.append('file', file)
-    Object.keys(extraFormDataOptions).forEach(key => {
+    Object.keys(extraFormDataOptions).forEach((key) => {
       formData.append(key, extraFormDataOptions[key])
     })
 
@@ -749,10 +833,20 @@ class CreatorNode {
    * @param {number} retries max number of attempts made for axios request to upload file to CN before erroring
    * @param {number?} timeoutMs timeout in ms axios request to upload file to CN will wait
    */
-  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 2, timeoutMs = null) {
+  async _uploadFile(
+    file,
+    route,
+    onProgress = (loaded, total) => {},
+    extraFormDataOptions = {},
+    retries = 2,
+    timeoutMs = null
+  ) {
     await this.ensureConnected()
 
-    const { headers, formData } = this.createFormDataAndUploadHeaders(file, extraFormDataOptions)
+    const { headers, formData } = this.createFormDataAndUploadHeaders(
+      file,
+      extraFormDataOptions
+    )
     const requestId = headers['X-Request-ID']
 
     let total
@@ -776,7 +870,9 @@ class CreatorNode {
 
       const reqParams = {
         headers: headers,
-        adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
+        adapter: isBrowser
+          ? require('axios/lib/adapters/xhr')
+          : require('axios/lib/adapters/http'),
         // Add a 10% inherit processing time for the file upload.
         onUploadProgress: (progressEvent) => {
           if (!total) total = progressEvent.total
@@ -793,11 +889,7 @@ class CreatorNode {
         reqParams.timeout = timeoutMs
       }
 
-      const resp = await axios.post(
-        url,
-        formData,
-        reqParams
-      )
+      const resp = await axios.post(url, formData, reqParams)
 
       if (resp.data && resp.data.error) {
         throw new Error(JSON.stringify(resp.data.error))
@@ -807,10 +899,23 @@ class CreatorNode {
       return resp.data
     } catch (e) {
       if (!e.response && retries > 0) {
-        console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying`)
+        console.warn(
+          `Network Error in request ${requestId} with ${retries} retries... retrying`
+        )
         console.warn(e)
-        return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
-      } else if (e.response && e.response.data && e.response.data.error && e.response.data.error.includes('Invalid authentication token')) {
+        return this._uploadFile(
+          file,
+          route,
+          onProgress,
+          extraFormDataOptions,
+          retries - 1
+        )
+      } else if (
+        e.response &&
+        e.response.data &&
+        e.response.data.error &&
+        e.response.data.error.includes('Invalid authentication token')
+      ) {
         // if the content node returns an invalid auth token error, clear connection and reconnect
         this.clearConnection()
         try {
@@ -824,11 +929,13 @@ class CreatorNode {
     }
   }
 
-  async _handleErrorHelper (e, requestUrl, requestId = null) {
+  async _handleErrorHelper(e, requestUrl, requestId = null) {
     if (e.response && e.response.data && e.response.data.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
-      const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}, ${requestId}]`
+      const errMessage = `Server returned error: [${e.response.status.toString()}] [${
+        e.response.data.error
+      }] for request: [${cnRequestID}, ${requestId}]`
 
       console.error(errMessage)
       throw new Error(errMessage)
@@ -836,23 +943,36 @@ class CreatorNode {
       // delete headers, may contain tokens
       if (e.config && e.config.headers) delete e.config.headers
 
-      const errorMsg = `Network error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
+      const errorMsg = `Network error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(
+        e
+      )}\n`
       console.error(errorMsg, e)
 
       try {
         const newRequestId = uuid()
         const endpoint = `${this.creatorNodeEndpoint}/health_check`
-        const res = await axios(endpoint, { headers: {
-          'X-Request-ID': newRequestId
-        } })
-        console.log(`Successful health check for ${requestId}: ${JSON.stringify(res.data)}`)
+        const res = await axios(endpoint, {
+          headers: {
+            'X-Request-ID': newRequestId
+          }
+        })
+        console.log(
+          `Successful health check for ${requestId}: ${JSON.stringify(
+            res.data
+          )}`
+        )
       } catch (e) {
-        console.error(`Failed health check immediately after network error ${requestId}`, e)
+        console.error(
+          `Failed health check immediately after network error ${requestId}`,
+          e
+        )
       }
 
       throw new Error(`${errorMsg}${e}`)
     } else {
-      const errorMsg = `Unknown error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
+      const errorMsg = `Unknown error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(
+        e
+      )}\n`
       console.error(errorMsg, e)
       throw e
     }
