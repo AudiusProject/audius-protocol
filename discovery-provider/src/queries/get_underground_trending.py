@@ -35,7 +35,7 @@ from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import (
-    get_json_cached_key,
+    get_pickled_key,
     get_trending_cache_key,
     use_redis_cache,
 )
@@ -77,7 +77,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
     pt = score_params["pt"]
     trending_key = make_trending_cache_key("week", None, strategy.version)
     track_ids = []
-    old_trending = get_json_cached_key(redis_instance, trending_key)
+    old_trending = get_pickled_key(redis_instance, trending_key)
     if old_trending:
         track_ids = old_trending[1]
     exclude_track_ids = track_ids[:qr]

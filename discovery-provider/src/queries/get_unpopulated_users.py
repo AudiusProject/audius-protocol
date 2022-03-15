@@ -1,12 +1,9 @@
 import logging  # pylint: disable=C0302
+import pickle
 
 from src.models import User
 from src.utils import helpers, redis_connection
-from src.utils.redis_cache import (
-    get_all_json_cached_key,
-    get_user_id_cache_key,
-    set_json_cached_key,
-)
+from src.utils.redis_cache import get_user_id_cache_key
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +12,21 @@ ttl_sec = 5 * 60
 
 
 def get_cached_users(user_ids):
-    redis_user_id_keys = list(map(get_user_id_cache_key, user_ids))
+    redis_user_id_keys = map(get_user_id_cache_key, user_ids)
     redis = redis_connection.get_redis()
-    users = get_all_json_cached_key(redis, redis_user_id_keys)
+    cached_values = redis.mget(redis_user_id_keys)
+
+    users = []
+    for val in cached_values:
+        if val is not None:
+            try:
+                user = pickle.loads(val)
+                users.append(user)
+            except Exception as e:
+                logger.warning(f"Unable to deserialize cached user: {e}")
+                users.append(None)
+        else:
+            users.append(None)
     return users
 
 
@@ -25,7 +34,8 @@ def set_users_in_cache(users):
     redis = redis_connection.get_redis()
     for user in users:
         key = get_user_id_cache_key(user["user_id"])
-        set_json_cached_key(redis, key, user, ttl_sec)
+        serialized = pickle.dumps(user)
+        redis.set(key, serialized, ttl_sec)
 
 
 def get_unpopulated_users(session, user_ids):

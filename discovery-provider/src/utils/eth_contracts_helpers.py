@@ -2,11 +2,7 @@ import concurrent.futures
 import logging
 
 from src.utils.helpers import is_fqdn
-from src.utils.redis_cache import (
-    get_json_cached_key,
-    get_sp_id_key,
-    set_json_cached_key,
-)
+from src.utils.redis_cache import get_pickled_key, get_sp_id_key, pickle_and_set
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +14,7 @@ cnode_info_redis_ttl = 1800
 
 def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     sp_id_key = get_sp_id_key(sp_id)
-    sp_info_cached = get_json_cached_key(redis, sp_id_key)
+    sp_info_cached = get_pickled_key(redis, sp_id_key)
     if sp_info_cached:
         logger.info(
             f"eth_contract_helpers.py | Found cached value for spID={sp_id} - {sp_info_cached}"
@@ -28,7 +24,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(
         content_node_service_type, sp_id
     ).call()
-    set_json_cached_key(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl)
+    pickle_and_set(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl)
     logger.info(
         f"eth_contract_helpers.py | Configured redis {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl}"
     )

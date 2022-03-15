@@ -8,7 +8,7 @@ from src.queries.get_trending_playlists import (
 from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.utils.redis_cache import set_json_cached_key
+from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_playlists_last_completion_redis_key
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ def cache_trending(db, redis, strategy):
         for time_range in TIME_RANGES:
             key = make_trending_cache_key(time_range, strategy.version)
             res = make_get_unpopulated_playlists(session, time_range, strategy)()
-            set_json_cached_key(redis, key, res)
+            pickle_and_set(redis, key, res)
 
 
 @celery.task(name="cache_trending_playlists", bind=True)

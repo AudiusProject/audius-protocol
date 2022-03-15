@@ -15,7 +15,7 @@ from src.utils.eth_contracts_helpers import (
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.redis_cache import get_json_cached_key, get_sp_id_key
+from src.utils.redis_cache import get_pickled_key, get_sp_id_key
 from src.utils.user_event_constants import (
     user_replica_set_manager_event_types_arr,
     user_replica_set_manager_event_types_lookup,
@@ -264,7 +264,7 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
     # Get sp_id cache key
     cache_key = get_sp_id_key(sp_id)
     # Attempt to fetch from cache
-    sp_info_cached = get_json_cached_key(update_task.redis, cache_key)
+    sp_info_cached = get_pickled_key(update_task.redis, cache_key)
     if sp_info_cached:
         endpoint = sp_info_cached[1]
         logger.info(
