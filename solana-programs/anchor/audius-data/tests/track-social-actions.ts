@@ -36,7 +36,6 @@ describe("track-actions", function () {
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
-      playlistIdOffset: new anchor.BN("0"),
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
