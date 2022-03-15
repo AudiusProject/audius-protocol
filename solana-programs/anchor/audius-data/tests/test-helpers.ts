@@ -11,6 +11,7 @@ import {
   getTransactionWithData,
 } from "../lib/utils";
 import {
+  createContentNode,
   createUser,
   createTrack,
   createPlaylist,
@@ -27,7 +28,7 @@ import { AudiusData } from "../target/types/audius_data";
 
 const { PublicKey } = anchor.web3;
 
-const EthWeb3 = new Web3();
+export const EthWeb3 = new Web3();
 const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
 type InitTestConsts = {
@@ -505,4 +506,51 @@ export const createSolanaUser = async (
     keypair: newUserKeypair,
     authority: baseAuthorityAccount,
   };
+};
+
+export const createSolanaContentNode = async (props: {
+  program: Program<AudiusData>,
+  provider: anchor.Provider,
+  adminStgKeypair: anchor.web3.Keypair,
+  adminKeypair: anchor.web3.Keypair,
+  spId: anchor.BN
+}) => {
+  const ownerEth = EthWeb3.eth.accounts.create()
+  const authority = anchor.web3.Keypair.generate();
+  const seed = Buffer.concat([Buffer.from("sp_id", 'utf8'), props.spId.toBuffer('le', 2)])
+
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+  await findDerivedPair(
+    props.program.programId,
+    props.adminStgKeypair.publicKey,
+    seed
+  );
+
+  const tx = await createContentNode({
+    provider: props.provider,
+    program: props.program,
+    adminKeypair: props.adminKeypair,
+    baseAuthorityAccount,
+    adminStgPublicKey: props.adminStgKeypair.publicKey,
+    contentNodeAuthority: authority.publicKey,
+    contentNodeAcct: derivedAddress,
+    spID: props.spId,
+    ownerEthAddress: ownerEth.address
+  });
+
+  const contentNode = await props.program.account.contentNode.fetch(
+    derivedAddress
+  );
+
+  if (!contentNode) {
+    throw new Error("unable to create playlist account");
+  }
+
+  return {
+    account: contentNode,
+    pda: derivedAddress,
+    authority,
+    seedBump: { seed, bump: bumpSeed },
+    tx
+  }
 };

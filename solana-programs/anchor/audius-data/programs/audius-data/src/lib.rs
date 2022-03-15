@@ -6,13 +6,19 @@ pub mod utils;
 
 use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
+use std::collections::BTreeMap;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // default program ID to be replaced in start.sh
 
+/// Represent Ethereum pubkey bytes
+pub type EthereumAddress = [u8; 20];
+
 #[program]
 pub mod audius_data {
-    use anchor_lang::solana_program::secp256k1_program;
-    use anchor_lang::solana_program::sysvar;
+    use anchor_lang::solana_program::{
+        instruction::Instruction, secp256k1_program, system_program,
+        sysvar
+    };
     use std::str::FromStr;
 
     /*
@@ -95,6 +101,175 @@ pub mod audius_data {
 
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
+
+        Ok(())
+    }
+
+    /// Create a content node account from the admin account.
+    /// The content node's account is derived from the admin base PDA + sp_id bytes.
+    pub fn create_content_node(
+        ctx: Context<CreateContentNode>,
+        base: Pubkey,
+        sp_id: u16,
+        authority: Pubkey,
+        owner_eth_address: [u8; 20],
+    ) -> Result<()> {
+        msg!("Audius::CreateContentNode");
+
+        // Confirm that the base used for content node account seed is derived from this Audius admin storage account
+        let (derived_base, _) = Pubkey::find_program_address(
+            &[&ctx.accounts.admin.key().to_bytes()[..32]],
+            ctx.program_id,
+        );
+
+        if derived_base != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Confirm that the derived pda from base is the same as the user storage account
+        let (derived_content_node, _) = Pubkey::find_program_address(
+            &[&derived_base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, sp_id.to_le_bytes().as_ref()],
+            ctx.program_id,
+        );
+        if derived_content_node != ctx.accounts.content_node.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        if ctx.accounts.authority.key() != ctx.accounts.admin.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        let content_node = &mut ctx.accounts.content_node;
+        content_node.owner_eth_address = owner_eth_address;
+        content_node.authority = authority;
+
+        Ok(())
+    }
+
+    /// Create a content node account from other content nodes.
+    pub fn public_create_content_node(
+        ctx: Context<PublicCreateContentNode>,
+        base: Pubkey,
+        _p1: ProposerSeedBump,
+        _p2: ProposerSeedBump,
+        _p3: ProposerSeedBump,
+        sp_id: u16,
+        authority: Pubkey,
+        owner_eth_address: [u8; 20],
+    ) -> Result<()> {
+        msg!("Audius::PublicCreateContentNode");
+
+
+        // validate that there are no dupes in the replica
+        let proposers = [
+            (&ctx.accounts.proposer1, &ctx.accounts.proposer1_authority),
+            (&ctx.accounts.proposer2, &ctx.accounts.proposer2_authority),
+            (&ctx.accounts.proposer3, &ctx.accounts.proposer3_authority),
+        ];
+
+        // Ensure that no proposer's owner eth address is repeated
+        let mut eth_addresses = BTreeMap::new();
+        if !proposers.iter().all(move |(proposer, _)| return match eth_addresses.insert(proposer.owner_eth_address, true) {
+            Some(_) => false,
+            None => true
+        }) {
+            // duplicate owner eth address - err
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        if !proposers.iter().all(|(proposer, authority)| proposer.authority == authority.key()) {
+            // authority did not sign - err
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Confirm that the base used for user account seed is derived from this Audius admin storage account
+        let (derived_base, _) = Pubkey::find_program_address(
+            &[&ctx.accounts.admin.key().to_bytes()[..32]],
+            ctx.program_id,
+        );
+
+        if derived_base != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Confirm that the derived pda from base is the same as the user storage account
+        let (derived_content_node, _) = Pubkey::find_program_address(
+            &[&derived_base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, sp_id.to_le_bytes().as_ref()],
+            ctx.program_id,
+        );
+        if derived_content_node != ctx.accounts.content_node.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        let content_node = &mut ctx.accounts.content_node;
+        content_node.owner_eth_address = owner_eth_address;
+        content_node.authority = authority;
+
+        Ok(())
+    }
+
+    /// Closes a content node account from other content nodes.
+    pub fn public_delete_content_node(
+        ctx: Context<PublicDeleteContentNode>,
+        base: Pubkey,
+        _p_delete: ProposerSeedBump,
+        _p1: ProposerSeedBump,
+        _p2: ProposerSeedBump,
+        _p3: ProposerSeedBump,
+        sp_id: u16,
+    ) -> Result<()> {
+        msg!("Audius::PublicDeleteContentNode");
+
+        if &ctx.accounts.admin.authority != &ctx.accounts.admin_authority.key() {
+            // todoL break
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // validate that there are no dupes in the replica
+        let proposers = [
+            (&ctx.accounts.proposer1, &ctx.accounts.proposer1_authority),
+            (&ctx.accounts.proposer2, &ctx.accounts.proposer2_authority),
+            (&ctx.accounts.proposer3, &ctx.accounts.proposer3_authority),
+        ];
+
+        // Ensure that no proposer's owner eth address is repeated
+        let mut eth_addresses = BTreeMap::new();
+        if !proposers.iter().all(move |(proposer, _)| return match eth_addresses.insert(proposer.owner_eth_address, true) {
+            Some(_) => false,
+            None => true
+        }) {
+            // duplicate owner eth address - err
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        if !proposers.iter().all(|(proposer, authority)| proposer.authority == authority.key()) {
+            // authority did not sign - err
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Confirm that the base used for user account seed is derived from this Audius admin storage account
+        let (derived_base, _) = Pubkey::find_program_address(
+            &[&ctx.accounts.admin.key().to_bytes()[..32]],
+            ctx.program_id,
+        );
+
+        if derived_base != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Confirm that the derived pda from base is the same as the user storage account
+        let (derived_content_node, _) = Pubkey::find_program_address(
+            &[&derived_base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, sp_id.to_le_bytes().as_ref()],
+            ctx.program_id,
+        );
+        if derived_content_node != ctx.accounts.content_node.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
+        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+
+        let content_node = &mut ctx.accounts.content_node;
+        content_node.authority = dummy_owner_field;
 
         Ok(())
     }
@@ -370,6 +545,91 @@ pub struct InitializeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/// Instruction container to initialize a content node account, 
+/// must be invoked from an existing Audius `admin` account.
+/// `user` is a PDA derived from the Audius account and handle.
+/// `authority` is a signer key matching the admin value stored in AudiusAdmin root. Only the
+///  admin of this Audius root program may initialize users through this function
+/// `payer` is the account responsible for the lamports required to allocate this account.
+/// `system_program` is required for PDA derivation.
+#[derive(Accounts)]
+#[instruction(base: Pubkey, sp_id: u16)]
+pub struct CreateContentNode<'info> {
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(
+        init,
+        payer = payer,
+        seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, sp_id.to_le_bytes().as_ref()],
+        bump,
+        space = CONTENT_NODE_ACCOUNT_SIZE
+    )]
+    pub content_node: Account<'info, ContentNode>,
+    #[account()]
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(base: Pubkey, p1: ProposerSeedBump, p2: ProposerSeedBump, p3: ProposerSeedBump, sp_id: u16)]
+pub struct PublicCreateContentNode<'info> {
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(
+        init,
+        payer = payer,
+        seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, sp_id.to_le_bytes().as_ref()],
+        bump,
+        space = CONTENT_NODE_ACCOUNT_SIZE
+    )]
+    pub content_node: Account<'info, ContentNode>,
+    // NOTE: Potentially use remain_accounts and then can set a variable number of proposers 
+    // https://book.anchor-lang.com/chapter_3/the_program_module.html#context
+    #[account(seeds = [&base.to_bytes()[..32], p1.seed.as_ref()], bump = p1.bump)]
+    pub proposer1: Account<'info, ContentNode>,
+    pub proposer1_authority: Signer<'info>,
+    #[account(seeds = [&base.to_bytes()[..32], p2.seed.as_ref()], bump = p2.bump)]
+    pub proposer2: Account<'info, ContentNode>,
+    pub proposer2_authority: Signer<'info>,
+    #[account(seeds = [&base.to_bytes()[..32], p3.seed.as_ref()], bump = p3.bump)]
+    pub proposer3: Account<'info, ContentNode>,
+    pub proposer3_authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+/// TODO: comment
+#[derive(Accounts)]
+#[instruction(base: Pubkey, p_delete: ProposerSeedBump, p1: ProposerSeedBump, p2: ProposerSeedBump, p3: ProposerSeedBump, sp_id: u16)]
+pub struct PublicDeleteContentNode<'info> {
+    pub admin: Account<'info, AudiusAdmin>,
+    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    #[account()]
+    pub admin_authority: AccountInfo<'info>,    
+    #[account(
+        mut,
+        close = admin_authority,
+        seeds = [&base.to_bytes()[..32], p_delete.seed.as_ref()],
+        bump = p_delete.bump
+    )]
+    pub content_node: Account<'info, ContentNode>,
+    // NOTE: Potentially use remain_accounts and then can set a variable number of proposers 
+    // https://book.anchor-lang.com/chapter_3/the_program_module.html#context
+    #[account(seeds = [&base.to_bytes()[..32], p1.seed.as_ref()], bump = p1.bump)]
+    pub proposer1: Account<'info, ContentNode>,
+    pub proposer1_authority: Signer<'info>,
+    #[account(seeds = [&base.to_bytes()[..32], p2.seed.as_ref()], bump = p2.bump)]
+    pub proposer2: Account<'info, ContentNode>,
+    pub proposer2_authority: Signer<'info>,
+    #[account(seeds = [&base.to_bytes()[..32], p3.seed.as_ref()], bump = p3.bump)]
+    pub proposer3: Account<'info, ContentNode>,
+    pub proposer3_authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 /// Instruction container to allow a user to add their Solana public key as part of their identity.
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
@@ -550,10 +810,20 @@ pub struct AudiusAdmin {
     pub is_write_enabled: bool,
 }
 
+// pub secondary_ids: [u64; 3],
+
 /// User storage account
 #[account]
 pub struct User {
     pub eth_address: [u8; 20],
+    pub authority: Pubkey,
+    pub ursm: [u32; 3]
+}
+
+/// Content Node storage account
+#[account]
+pub struct ContentNode {
+    pub owner_eth_address: [u8; 20],
     pub authority: Pubkey,
 }
 
@@ -564,6 +834,14 @@ pub struct UserAuthorityDelegate {
     pub delegate_authority: Pubkey,
     // PDA of user storage account enabling operations
     pub user_storage_account: Pubkey,
+}
+
+#[error_code]
+pub enum EthParsingError {
+    #[msg("Wrong adress prefix.")]
+    InvalidPrefix,
+    #[msg("InvalidHexString")]
+    InvalidHexString
 }
 
 // User actions enum, used to follow/unfollow based on function arguments
@@ -599,5 +877,12 @@ pub enum EntityTypes {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub struct UserHandle {
     pub seed: [u8; 32],
+    pub bump: u8,
+}
+
+// Seed & bump used to validate a content node 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub struct ProposerSeedBump {
+    pub seed: [u8; 7],
     pub bump: u8,
 }

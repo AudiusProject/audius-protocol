@@ -248,6 +248,156 @@ export const initUserSolPubkey = async ({
   return provider.send(tx);
 };
 
+/// Verify user with authenticatorKeypair
+type CreateContentNode = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminKeypair: Keypair;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  spID: anchor.BN,
+  ownerEthAddress: string
+};
+export const createContentNode = async ({
+  provider,
+  program,
+  adminStgPublicKey,
+  adminKeypair,
+  baseAuthorityAccount,
+  spID,
+  contentNodeAuthority,
+  contentNodeAcct,
+  ownerEthAddress
+}: CreateContentNode) => {
+  return program.rpc.createContentNode(
+    baseAuthorityAccount,
+    spID.toNumber(),
+    contentNodeAuthority,
+    [...anchor.utils.bytes.hex.decode(ownerEthAddress)],
+    {
+      accounts: {
+        admin: adminStgPublicKey,
+        payer: provider.wallet.publicKey,
+        contentNode: contentNodeAcct,
+        authority: adminKeypair.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [adminKeypair],
+    }
+  );
+};
+
+type Proposer = {
+  pda: anchor.web3.PublicKey,
+  authority: anchor.web3.Keypair,
+  seedBump: { seed: Buffer, bump: number }
+}
+
+/// Create a content node with proposers
+type PublicCreateContentNode = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  spID: anchor.BN,
+  ownerEthAddress: string,
+  proposer1: Proposer,
+  proposer2: Proposer,
+  proposer3: Proposer,
+};
+export const publicCreateContentNode = async ({
+  provider,
+  program,
+  adminStgPublicKey,
+  baseAuthorityAccount,
+  spID,
+  contentNodeAcct,
+  ownerEthAddress,
+  contentNodeAuthority,
+  proposer1,
+  proposer2,
+  proposer3,
+}: PublicCreateContentNode) => {
+
+  return program.rpc.publicCreateContentNode(
+    baseAuthorityAccount,
+    { seed: [...proposer1.seedBump.seed], bump: proposer1.seedBump.bump },
+    { seed: [...proposer2.seedBump.seed], bump: proposer2.seedBump.bump },
+    { seed: [...proposer3.seedBump.seed], bump: proposer3.seedBump.bump },
+    spID.toNumber(),
+    contentNodeAuthority,
+    [...anchor.utils.bytes.hex.decode(ownerEthAddress)],
+    {
+      accounts: {
+        admin: adminStgPublicKey,
+        payer: provider.wallet.publicKey,
+        contentNode: contentNodeAcct,
+        systemProgram: SystemProgram.programId,
+        proposer1: proposer1.pda,
+        proposer1Authority: proposer1.authority.publicKey,
+        proposer2: proposer2.pda,
+        proposer2Authority: proposer2.authority.publicKey,
+        proposer3: proposer3.pda,
+        proposer3Authority: proposer3.authority.publicKey
+      },
+      signers: [proposer1.authority, proposer2.authority, proposer3.authority],
+    }
+  );
+};
+
+/// Create a content node with proposers
+type PublicDeleteContentNode = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  cnDelete: Proposer,
+  proposer1: Proposer,
+  proposer2: Proposer,
+  proposer3: Proposer,
+};
+export const publicDeleteContentNode = async ({
+  provider,
+  program,
+  adminStgPublicKey,
+  baseAuthorityAccount,
+  contentNodeAcct,
+  cnDelete,
+  proposer1,
+  proposer2,
+  proposer3,
+}: PublicDeleteContentNode) => {
+
+  return program.rpc.publicDeleteContentNode(
+    baseAuthorityAccount,
+    { seed: [...cnDelete.seedBump.seed], bump: cnDelete.seedBump.bump },
+    { seed: [...proposer1.seedBump.seed], bump: proposer1.seedBump.bump },
+    { seed: [...proposer2.seedBump.seed], bump: proposer2.seedBump.bump },
+    { seed: [...proposer3.seedBump.seed], bump: proposer3.seedBump.bump },
+    {
+      accounts: {
+        admin: adminStgPublicKey,
+        payer: provider.wallet.publicKey,
+        contentNode: contentNodeAcct,
+        systemProgram: SystemProgram.programId,
+        proposer1: proposer1.pda,
+        proposer1Authority: proposer1.authority.publicKey,
+        proposer2: proposer2.pda,
+        proposer2Authority: proposer2.authority.publicKey,
+        proposer3: proposer3.pda,
+        proposer3Authority: proposer3.authority.publicKey
+      },
+      signers: [proposer1.authority, proposer2.authority, proposer3.authority],
+    }
+  );
+};
+
+
 /// Create a user without Audius Admin account
 
 export const createUser = async ({
