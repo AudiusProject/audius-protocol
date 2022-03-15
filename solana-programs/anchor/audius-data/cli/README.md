@@ -90,8 +90,8 @@ Finally, using the parameters known from above, we can call createTrack - it is 
 yarn run ts-node cli/main.ts -f createTrack \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
---user-storage-pubkey $USER_STORAGE_PUBKEY \ 
---admin-storage-keypair $PWD/adminStgKeypair.json 
+--user-storage-pubkey $USER_STORAGE_PUBKEY \
+--admin-storage-keypair $PWD/adminStorageKeypair.json
 ```
 
 ## 4. Creating a playlist
@@ -102,11 +102,12 @@ Similar to playlist information. The metadata (currently randomly generated) poi
 yarn run ts-node cli/main.ts -f createPlaylist \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
---user-storage-pubkey $USER_STORAGE_PUBKEY
+--user-storage-pubkey $USER_STORAGE_PUBKEY \
+--admin-storage-keypair $PWD/adminStorageKeypair.json
 ```
 
 ## 4. Updating a playlist
-
+**Note** Not currently working
 Update a given playlist denoted by its public key.
 
 ```
@@ -114,11 +115,12 @@ yarn run ts-node cli/main.ts -f updatePlaylist \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
---playlist-pubkey AZZbBaE4aa85kp6ihzZJxuXtdP7xq59aLg7cmwJYpuTe
+--playlist-pubkey AZZbBaE4aa85kp6ihzZJxuXtdP7xq59aLg7cmwJYpuTe \
+--admin-storage-keypair $PWD/adminStorageKeypair.json
 ```
 
 ## 4. Delete a playlist
-
+**Note** Not currently working
 Delete a given playlist denoted by its public key. This one does not take a metadata argument.
 
 ```

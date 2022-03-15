@@ -60,6 +60,37 @@ As a prerequisite, you should run `npm run localnet-up` and `npm run deploy-dev`
 
 See [README](cli/README.md).
 
+## Troubleshooting:
+Validate any tx:
+```
+solana confirm <txhash>
+```
+
+Open up logs (in a dedicated shell) - this usually has more detailed error info:
+```
+solana logs
+```
+
+Check balance:
+```
+solana balance
+```
+
+Check an account: 
+```
+solana account <acct-pubkey-or-path-to-storage-keypair.json>
+```
+
+Check a program:
+```
+solana program show <program-id>
+```
+
+Airdrop funds:
+```
+solana airdrop <num SOL> <pubkey-or-path-to-storage-keypair.json>
+```
+
 ### Deploying to non-local cluster:
 Can also specify a particular cluster at deploy time, per the following:
 
