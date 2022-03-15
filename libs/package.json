@@ -2,8 +2,7 @@
   "name": "@audius/libs",
   "version": "1.2.92",
   "description": "",
-  "main": "src/index.js",
-  "mainDist": "dist/index.js",
+  "main": "dist/index.js",
   "browser": {
     "fs": false,
     "node-localstorage": false,
