@@ -4,7 +4,8 @@ const {
   getStartTime
 } = require('../../logging')
 
-const TrackContentUploadManager = require('./trackContentUploadManager')
+const TrackHandOffUtils = require('./trackHandOffUtils')
+const TrackHandlingUtils = require('./trackHandlingUtils')
 
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
@@ -33,7 +34,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   // Create track transcode and segments, and save all to disk
   const codeBlockTimeStart = getStartTime()
   const { transcodeFilePath, segmentFileNames } =
-    await TrackContentUploadManager.transcodeAndSegment(
+    await TrackHandlingUtils.transcodeAndSegment(
       { logContext },
       { fileName, fileDir }
     )
@@ -42,10 +43,10 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
     `Successfully re-encoded track file=${fileName}`
   )
 
-  const resp = await TrackContentUploadManager.processTranscodeAndSegments(
+  const resp = await TrackHandlingUtils.processTranscodeAndSegments(
     { logContext },
     {
-      cnodeUserUUID,
+      session: { cnodeUserUUID },
       fileName,
       fileDir,
       transcodeFilePath,
@@ -61,6 +62,72 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   return resp
 }
 
+async function handleTranscodeAndSegment(
+  { logContext },
+  { fileName, fileDir }
+) {
+  return TrackHandlingUtils.transcodeAndSegment(
+    { logContext },
+    { fileName, fileDir }
+  )
+}
+
+async function handleTrackHandOff({ logContext }, requestProps) {
+  const {
+    fileName,
+    fileDir,
+    fileDestination,
+    session,
+    libs,
+    AsyncProcessingQueue
+  } = requestProps
+  const { cnodeUserUUID } = session
+  const logger = genericLogger.child(logContext)
+
+  const codeBlockTimeStart = getStartTime()
+
+  const { transcodeFilePath, segmentFileNames, sp } =
+    await TrackHandOffUtils.handOffTrack(libs, requestProps)
+
+  // Let current node handle the track if handoff fails
+  if (!transcodeFilePath || !segmentFileNames) {
+    logInfoWithDuration(
+      { logger, startTime: codeBlockTimeStart },
+      `Failed to hand off track. Retrying upload to current node..`
+    )
+
+    await AsyncProcessingQueue.addTrackContentUploadTask({
+      logContext, // request id here is same as uuid
+      req: {
+        session: { cnodeUserUUID },
+        fileName,
+        fileDir,
+        fileDestination
+      }
+    })
+  } else {
+    // Finish with the rest of track upload flow
+    logInfoWithDuration(
+      { logger, startTime: codeBlockTimeStart },
+      `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
+    )
+
+    await AsyncProcessingQueue.addProcessTranscodeAndSegmentTask({
+      logContext,
+      req: {
+        session: { cnodeUserUUID },
+        fileName,
+        fileDir,
+        fileDestination,
+        transcodeFilePath,
+        segmentFileNames
+      }
+    })
+  }
+}
+
 module.exports = {
-  handleTrackContentRoute
+  handleTrackContentRoute,
+  handleTranscodeAndSegment,
+  handleTrackHandOff
 }
