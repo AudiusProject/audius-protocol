@@ -28,7 +28,7 @@ describe("follows", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminStorageKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("follows - Initializing admin account!", async function () {
@@ -36,14 +36,14 @@ describe("follows", function () {
       provider,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       verifierKeypair,
       trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("0"),
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
+      adminStorageKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -79,13 +79,13 @@ describe("follows", function () {
 
       handle1DerivedInfo = await findDerivedPair(
         program.programId,
-        adminStgKeypair.publicKey,
+        adminStorageKeypair.publicKey,
         Buffer.from(handleBytesArray1)
       );
 
       handle2DerivedInfo = await findDerivedPair(
         program.programId,
-        adminStgKeypair.publicKey,
+        adminStorageKeypair.publicKey,
         Buffer.from(handleBytesArray2)
       );
 
@@ -107,7 +107,7 @@ describe("follows", function () {
       await updateAdmin({
         program,
         isWriteEnabled: false,
-        adminStgAccount: adminStgKeypair.publicKey,
+        adminStorageAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
 
@@ -121,8 +121,8 @@ describe("follows", function () {
         bumpSeed: handle1DerivedInfo.bumpSeed,
         metadata: constants1.metadata,
         newUserKeypair: newUser1Key,
-        userStgAccount: userStorageAccount1,
-        adminStgPublicKey: adminStgKeypair.publicKey,
+        userStorageAccount: userStorageAccount1,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
 
       await testCreateUser({
@@ -135,8 +135,8 @@ describe("follows", function () {
         bumpSeed: handle2DerivedInfo.bumpSeed,
         metadata: constants2.metadata,
         newUserKeypair: newUser2Key,
-        userStgAccount: userStorageAccount2,
-        adminStgPublicKey: adminStgKeypair.publicKey,
+        userStorageAccount: userStorageAccount2,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
     });
 
@@ -144,7 +144,7 @@ describe("follows", function () {
       // Submit a tx where user 1 follows user 2
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
+          audiusAdmin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
@@ -192,7 +192,7 @@ describe("follows", function () {
       // Submit a tx where user 1 follows user 2
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
+          audiusAdmin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
@@ -236,7 +236,7 @@ describe("follows", function () {
       let expectedErrorFound = false;
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
+          audiusAdmin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
@@ -267,7 +267,7 @@ describe("follows", function () {
       const wrongUserKeypair = anchor.web3.Keypair.generate();
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
+          audiusAdmin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,

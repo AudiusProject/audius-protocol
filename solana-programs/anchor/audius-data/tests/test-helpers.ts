@@ -51,8 +51,8 @@ export const testInitUser = async ({
   handleBytesArray,
   bumpSeed,
   metadata,
-  userStgAccount,
-  adminStgKeypair,
+  userStorageAccount,
+  adminStorageKeypair,
   adminKeypair,
 }) => {
   const tx = await initUser({
@@ -62,13 +62,13 @@ export const testInitUser = async ({
     handleBytesArray,
     bumpSeed,
     metadata,
-    userStgAccount,
+    userStorageAccount,
     baseAuthorityAccount,
-    adminStgKey: adminStgKeypair.publicKey,
+    adminStorageKey: adminStorageKeypair.publicKey,
     adminKeypair,
   });
 
-  const account = await program.account.user.fetch(userStgAccount);
+  const account = await program.account.user.fetch(userStorageAccount);
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
   expect(chainEthAddress, "eth address").to.equal(ethAddress.toLowerCase());
@@ -94,7 +94,7 @@ export const testInitUserSolPubkey = async ({
     ethPrivateKey,
     message,
     userSolPubkey: newUserPublicKey,
-    userStgAccount: newUserAcctPDA,
+    userStorageAccount: newUserAcctPDA,
   });
 
   const account = await program.account.user.fetch(newUserAcctPDA);
@@ -114,8 +114,8 @@ export const testCreateUser = async ({
   bumpSeed,
   metadata,
   newUserKeypair,
-  userStgAccount,
-  adminStgPublicKey,
+  userStorageAccount,
+  adminStoragePublicKey,
 }) => {
   const tx = await createUser({
     provider,
@@ -126,12 +126,12 @@ export const testCreateUser = async ({
     bumpSeed,
     metadata,
     userSolPubkey: newUserKeypair.publicKey,
-    userStgAccount,
-    adminStgPublicKey,
+    userStorageAccount,
+    adminStoragePublicKey,
     baseAuthorityAccount,
   });
 
-  const account = await program.account.user.fetch(userStgAccount);
+  const account = await program.account.user.fetch(userStorageAccount);
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
   expect(chainEthAddress, "eth address").to.equal(
@@ -187,7 +187,7 @@ export const confirmLogInTransaction = async (
 export const createSolanaUser = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
-  adminStgKeypair: anchor.web3.Keypair
+  adminStorageKeypair: anchor.web3.Keypair
 ) => {
   const testConsts = initTestConstants();
 
@@ -197,7 +197,7 @@ export const createSolanaUser = async (
     derivedAddress: newUserAcctPDA,
   } = await findDerivedPair(
     program.programId,
-    adminStgKeypair.publicKey,
+    adminStorageKeypair.publicKey,
     Buffer.from(testConsts.handleBytesArray)
   );
 
@@ -217,8 +217,8 @@ export const createSolanaUser = async (
     bumpSeed,
     metadata: testConsts.metadata,
     userSolPubkey: newUserKeypair.publicKey,
-    userStgAccount: newUserAcctPDA,
-    adminStgPublicKey: adminStgKeypair.publicKey,
+    userStorageAccount: newUserAcctPDA,
+    adminStoragePublicKey: adminStorageKeypair.publicKey,
     baseAuthorityAccount,
   });
 
@@ -237,7 +237,7 @@ export const createSolanaUser = async (
 export const createSolanaTrack = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
-  adminStgKeypair: anchor.web3.Keypair,
+  adminStorageKeypair: anchor.web3.Keypair,
   userAuthorityKeypair: anchor.web3.Keypair,
   ownerPDA: anchor.web3.PublicKey
 ) => {
@@ -249,9 +249,9 @@ export const createSolanaTrack = async (
     program,
     newTrackKeypair,
     userAuthorityKeypair,
-    userStgAccountPDA: ownerPDA,
+    userStorageAccountPDA: ownerPDA,
     metadata: trackMetadata,
-    adminStgPublicKey: adminStgKeypair.publicKey,
+    adminStoragePublicKey: adminStorageKeypair.publicKey,
   });
 
   const track = await program.account.track.fetch(newTrackKeypair.publicKey);
@@ -269,7 +269,7 @@ export const createSolanaTrack = async (
 export const createSolanaPlaylist = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
-  adminStgKeypair: anchor.web3.Keypair,
+  adminStorageKeypair: anchor.web3.Keypair,
   userAuthorityKeypair: anchor.web3.Keypair,
   ownerPDA: anchor.web3.PublicKey
 ) => {
@@ -281,9 +281,9 @@ export const createSolanaPlaylist = async (
     program,
     newPlaylistKeypair,
     userAuthorityKeypair,
-    userStgAccountPDA: ownerPDA,
+    userStorageAccountPDA: ownerPDA,
     metadata: playlistMetadata,
-    adminStgPublicKey: adminStgKeypair.publicKey,
+    adminStoragePublicKey: adminStorageKeypair.publicKey,
   });
 
   const playlist = await program.account.playlist.fetch(

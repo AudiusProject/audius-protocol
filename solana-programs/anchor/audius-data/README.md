@@ -23,14 +23,44 @@ Implementation of audius data layer in Anchor (Solana framework)
 
 ---
 
+## Developing:
+
+1. Provision a fresh dev environment (ubuntu)
+2. [Install dependencies](https://project-serum.github.io/anchor/getting-started/installation.html):
+```
+npm run install-dev
+```
+3. In one terminal, run test validator: 
+```
+solana-test-validator
+```
+
 ## Deploying:
 
-- run `anchor build`
-- get generated program public key with this cmd `solana-keygen pubkey target/deploy/audius_data-keypair.json`
-- replace `declare_id!(...)` in `lib.rs` with the output of the above
-- run `anchor build`
-- run `anchor deploy`
+- Build:
+```
+npm run build-dev
+```
+- Provision localnet in one shell:
+```
+npm run localnet-up
+```
+- In another shell, deploy:
+```
+npm run deploy-dev
+```
+- kill your test validator and run tests to confirm IDL:
+```
+npm run localnet-down && npm test
+```
+**Note** that if you get error logs during tests but tests still pass, you can ignore the logs.
 
+## Sending transactions:
+As a prerequisite, you should run `npm run localnet-up` and `npm run deploy-dev` to deploy your program to the solana test validator.
+
+See [README](cli/README.md).
+
+### Deploying to non-local cluster:
 Can also specify a particular cluster at deploy time, per the following:
 
 ```

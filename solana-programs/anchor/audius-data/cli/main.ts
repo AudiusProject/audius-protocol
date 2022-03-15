@@ -21,6 +21,9 @@ import {
 import { Command } from "commander";
 import fs = require("fs");
 
+const AUDIUS_PROD_RPC_POOL = "https://audius.rpcpool.com/";
+const LOCALHOST_RPC_POOL = "http://localhost:8899";
+
 const program = new Command();
 
 const idl = JSON.parse(
@@ -60,13 +63,13 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
 
 type initAdminCLIParams = {
   adminKeypair: Keypair;
-  adminStgKeypair: Keypair;
+  adminStorageKeypair: Keypair;
   verifierKeypair: Keypair;
   ownerKeypairPath: string;
 };
 
 async function initAdminCLI(network: string, args: initAdminCLIParams) {
-  const { adminKeypair, adminStgKeypair, ownerKeypairPath } = args;
+  const { adminKeypair, adminStorageKeypair, ownerKeypairPath } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
   console.log(`AdminKeypair:`);
   console.log(adminKeypair.publicKey.toString());
@@ -74,18 +77,18 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
   console.log(
     `echo "[${adminKeypair.secretKey.toString()}]" > adminKeypair.json`
   );
-  console.log(`AdminStgKeypair:`);
-  console.log(adminStgKeypair.publicKey.toString());
-  console.log(`[${adminStgKeypair.secretKey.toString()}]`);
+  console.log(`adminStorageKeypair:`);
+  console.log(adminStorageKeypair.publicKey.toString());
+  console.log(`[${adminStorageKeypair.secretKey.toString()}]`);
   console.log(
-    `echo "[${adminStgKeypair.secretKey.toString()}]" > adminStgKeypair.json`
+    `echo "[${adminStorageKeypair.secretKey.toString()}]" > adminStorageKeypair.json`
   );
   // TODO: Accept variable offset
   let tx = await initAdmin({
     provider: cliVars.provider,
     program: cliVars.program,
     adminKeypair,
-    adminStgKeypair,
+    adminStorageKeypair,
     verifierKeypair,
     trackIdOffset: new anchor.BN("0"),
     playlistIdOffset: new anchor.BN("0"),
@@ -96,7 +99,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
 type initUserCLIParams = {
   handle: string;
   metadata: string;
-  adminStgPublicKey: PublicKey;
+  adminStoragePublicKey: PublicKey;
   ethAddress: string;
   ownerKeypairPath: string;
   adminKeypair: Keypair;
@@ -108,7 +111,7 @@ async function initUserCLI(args: initUserCLIParams) {
     ethAddress,
     ownerKeypairPath,
     metadata,
-    adminStgPublicKey,
+    adminStoragePublicKey,
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
@@ -116,11 +119,11 @@ async function initUserCLI(args: initUserCLIParams) {
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
       cliVars.program.programId,
-      adminStgKeypair.publicKey,
+      adminStorageKeypair.publicKey,
       Buffer.from(handleBytesArray)
     );
 
-  const userStgAddress = derivedAddress;
+  const userStorageAddress = derivedAddress;
   const tx = await initUser({
     provider: cliVars.provider,
     program: cliVars.program,
@@ -128,13 +131,13 @@ async function initUserCLI(args: initUserCLIParams) {
     handleBytesArray,
     bumpSeed,
     metadata,
-    userStgAccount: userStgAddress,
+    userStorageAccount: userStorageAddress,
     baseAuthorityAccount,
-    adminStgKey: adminStgPublicKey,
+    adminStorageKey: adminStoragePublicKey,
     adminKeypair,
   });
   console.log(
-    `Initialized user=${handle}, tx=${tx}, userAcct=${userStgAddress}`
+    `Initialized user=${handle}, tx=${tx}, userAcct=${userStorageAddress}`
   );
 }
 
@@ -150,12 +153,12 @@ async function timeCreateTrack(args: CreateTrackParams) {
         metadata: args.metadata,
         newTrackKeypair: args.newTrackKeypair,
         userAuthorityKeypair: args.userAuthorityKeypair,
-        userStgAccountPDA: args.userStgAccountPDA,
-        adminStgPublicKey: args.adminStgPublicKey,
+        userStorageAccountPDA: args.userStorageAccountPDA,
+        adminStoragePublicKey: args.adminStoragePublicKey,
       });
       const duration = Date.now() - start;
       console.log(
-        `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
+        `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
       );
       return tx;
     } catch (e) {
@@ -176,14 +179,14 @@ async function timeCreatePlaylist(args: CreatePlaylistParams) {
         program: args.program,
         provider: args.provider,
         newPlaylistKeypair: args.newPlaylistKeypair,
-        userStgAccountPDA: args.userStgAccountPDA,
+        userStorageAccountPDA: args.userStorageAccountPDA,
         userAuthorityKeypair: args.userAuthorityKeypair,
-        adminStgPublicKey: args.adminStgPublicKey,
+        adminStoragePublicKey: args.adminStoragePublicKey,
         metadata: randomCID(),
       });
       const duration = Date.now() - start;
       console.log(
-        `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
+        `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
       );
       return tx;
     } catch (e) {
@@ -203,13 +206,13 @@ async function timeUpdatePlaylist(args: UpdatePlaylistParams) {
       const tx = await updatePlaylist({
         program: args.program,
         playlistPublicKey: args.playlistPublicKey,
-        userStgAccountPDA: args.userStgAccountPDA,
+        userStorageAccountPDA: args.userStorageAccountPDA,
         userAuthorityKeypair: args.userAuthorityKeypair,
         metadata: args.metadata,
       });
       const duration = Date.now() - start;
       console.log(
-        `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
+        `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
       );
       return tx;
     } catch (e) {
@@ -230,12 +233,12 @@ async function timeDeletePlaylist(args: DeletePlaylistParams) {
         program: args.program,
         provider: args.provider,
         playlistPublicKey: args.playlistPublicKey,
-        userStgAccountPDA: args.userStgAccountPDA,
+        userStorageAccountPDA: args.userStorageAccountPDA,
         userAuthorityKeypair: args.userAuthorityKeypair,
       });
       const duration = Date.now() - start;
       console.log(
-        `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
+        `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
       );
       return tx;
     } catch (e) {
@@ -263,7 +266,7 @@ program
   .option("-n, --network <string>", "solana network")
   .option("-k, --owner-keypair <keypair>", "owner keypair path")
   .option("-ak, --admin-keypair <keypair>", "admin keypair path")
-  .option("-ask, --admin-storage-keypair <keypair>", "admin stg keypair path")
+  .option("-ask, --admin-storage-keypair <keypair>", "admin storage keypair path")
   .option("-h, --handle <string>", "user handle string")
   .option("-e, --eth-address <string>", "user eth address")
   .option("-u, --user-solana-keypair <string>", "user admin sol keypair path")
@@ -289,9 +292,9 @@ const adminKeypair = options.adminKeypair
   ? keypairFromFilePath(options.adminKeypair)
   : anchor.web3.Keypair.generate();
 
-// Admin stg keypair, referenced internally
+// Admin storage keypair, referenced internally
 // Keypair technically only necessary the first time this is initialized
-const adminStgKeypair = options.adminStorageKeypair
+const adminStorageKeypair = options.adminStorageKeypair
   ? keypairFromFilePath(options.adminStorageKeypair)
   : anchor.web3.Keypair.generate();
 
@@ -305,7 +308,11 @@ const verifierKeypair = options.verifierKeypair
   ? keypairFromFilePath(options.verifierKeypair)
   : anchor.web3.Keypair.generate();
 
-const network = options.network ? options.network : "https://audius.rpcpool.com/";
+const network = options.network
+  ? options.network
+  : process.env.NODE_ENV === 'production'
+    ? AUDIUS_PROD_RPC_POOL
+    : LOCALHOST_RPC_POOL;
 
 switch (options.function) {
   case functionTypes.initAdmin:
@@ -313,7 +320,7 @@ switch (options.function) {
     initAdminCLI(network, {
       ownerKeypairPath: options.ownerKeypair,
       adminKeypair: adminKeypair,
-      adminStgKeypair: adminStgKeypair,
+      adminStorageKeypair: adminStorageKeypair,
       verifierKeypair: verifierKeypair,
     });
     break;
@@ -324,7 +331,7 @@ switch (options.function) {
       ownerKeypairPath: options.ownerKeypair,
       ethAddress: options.ethAddress,
       handle: options.handle,
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
       adminKeypair,
       metadata: "test",
     });
@@ -339,11 +346,11 @@ switch (options.function) {
         provider: cliVars.provider,
         message: userSolKeypair.publicKey.toBytes(),
         ethPrivateKey,
-        userStgAccount: options.userStgPubkey,
+        userStorageAccount: options.userStoragePubkey,
         userSolPubkey,
       });
       console.log(
-        `initUserTx = ${tx}, userStgAccount = ${options.userStgPubkey}`
+        `initUserTx = ${tx}, userStorageAccount = ${options.userStoragePubkey}`
       );
     })();
     break;
@@ -353,7 +360,7 @@ switch (options.function) {
   case functionTypes.createTrack:
     const numTracks = options.numTracks ? options.numTracks : 1;
     console.log(
-      `Number of tracks = ${numTracks}, Target User = ${options.userStgPubkey}`
+      `Number of tracks = ${numTracks}, Target User = ${options.userStoragePubkey}`
     );
     (async () => {
       const promises = [];
@@ -366,8 +373,8 @@ switch (options.function) {
             metadata: randomCID(),
             newTrackKeypair: anchor.web3.Keypair.generate(),
             userAuthorityKeypair: userSolKeypair,
-            userStgAccountPDA: options.userStgPubkey,
-            adminStgPublicKey: adminStgKeypair.publicKey,
+            userStorageAccountPDA: options.userStoragePubkey,
+            adminStoragePublicKey: adminStorageKeypair.publicKey,
           })
         );
       }
@@ -380,7 +387,7 @@ switch (options.function) {
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
       const info = await cliVars.program.account.audiusAdmin.fetch(
-        adminStgKeypair.publicKey
+        adminStorageKeypair.publicKey
       );
       console.log(`trackID high:${info.trackId}`);
     })();
@@ -391,7 +398,7 @@ switch (options.function) {
   case functionTypes.createPlaylist:
     const numPlaylists = options.numPlaylists ? options.numPlaylists : 1;
     console.log(
-      `Number of playlists = ${numPlaylists}, Target User = ${options.userStgPubkey}`
+      `Number of playlists = ${numPlaylists}, Target User = ${options.userStoragePubkey}`
     );
     (async () => {
       const promises = [];
@@ -404,8 +411,8 @@ switch (options.function) {
             metadata: randomCID(),
             newPlaylistKeypair: anchor.web3.Keypair.generate(),
             userAuthorityKeypair: userSolKeypair,
-            userStgAccountPDA: options.userStgPubkey,
-            adminStgPublicKey: adminStgKeypair.publicKey,
+            userStorageAccountPDA: options.userStoragePubkey,
+            adminStoragePublicKey: adminStorageKeypair.publicKey,
           })
         );
       }
@@ -420,7 +427,7 @@ switch (options.function) {
     const playlistPublicKey = options.playlistPubkey;
     if (!playlistPublicKey) break;
     console.log(
-      `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStgPubkey}`
+      `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStoragePubkey}`
     );
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -430,7 +437,7 @@ switch (options.function) {
         metadata: randomCID(),
         playlistPublicKey,
         userAuthorityKeypair: userSolKeypair,
-        userStgAccountPDA: options.userStgPubkey,
+        userStorageAccountPDA: options.userStoragePubkey,
       });
       console.log(
         `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
@@ -442,7 +449,7 @@ switch (options.function) {
     const playlistPublicKey = options.playlistPubkey;
     if (!playlistPublicKey) break;
     console.log(
-      `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStgPubkey}`
+      `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStoragePubkey}`
     );
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -452,7 +459,7 @@ switch (options.function) {
         provider: cliVars.provider,
         playlistPublicKey,
         userAuthorityKeypair: userSolKeypair,
-        userStgAccountPDA: options.userStgPubkey,
+        userStorageAccountPDA: options.userStoragePubkey,
       });
       console.log(
         `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
@@ -464,7 +471,7 @@ switch (options.function) {
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
       const info = await cliVars.program.account.audiusAdmin.fetch(
-        adminStgKeypair.publicKey
+        adminStorageKeypair.publicKey
       );
       console.log(`playlistID high:${info.playlistId}`);
     })();

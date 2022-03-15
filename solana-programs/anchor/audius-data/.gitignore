@@ -4,3 +4,7 @@
 target
 **/*.rs.bk
 node_modules
+adminKeypair.json
+adminStgKeypair.json
+adminStorageKeypair.json
+userKeypair.json

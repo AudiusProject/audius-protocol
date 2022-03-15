@@ -27,7 +27,7 @@ describe("playlist", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminStorageKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("Initializing admin account!", async function () {
@@ -35,14 +35,14 @@ describe("playlist", function () {
       provider,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       verifierKeypair,
       trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("0"),
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
+      adminStorageKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -59,16 +59,16 @@ describe("playlist", function () {
       newPlaylistKeypair,
       playlistOwnerPDA,
       userAuthorityKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       playlistMetadata,
     }) => {
       const tx = await createPlaylist({
         provider,
         program,
         newPlaylistKeypair,
-        userStgAccountPDA: playlistOwnerPDA,
+        userStorageAccountPDA: playlistOwnerPDA,
         userAuthorityKeypair: userAuthorityKeypair,
-        adminStgPublicKey: adminStgKeypair.publicKey,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
         metadata: playlistMetadata,
       });
       await confirmLogInTransaction(provider, tx, playlistMetadata);
@@ -89,7 +89,7 @@ describe("playlist", function () {
       const tx = await updatePlaylist({
         program,
         playlistPublicKey: playlistKeypair.publicKey,
-        userStgAccountPDA: playlistOwnerPDA,
+        userStorageAccountPDA: playlistOwnerPDA,
         userAuthorityKeypair,
         metadata: playlistMetadata,
       });
@@ -112,7 +112,7 @@ describe("playlist", function () {
         provider,
         program,
         playlistPublicKey: playlistKeypair.publicKey,
-        userStgAccountPDA: playlistOwnerPDA,
+        userStorageAccountPDA: playlistOwnerPDA,
         userAuthorityKeypair,
       });
 
@@ -155,7 +155,7 @@ describe("playlist", function () {
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           program.programId,
-          adminStgKeypair.publicKey,
+          adminStorageKeypair.publicKey,
           Buffer.from(handleBytesArray)
         );
 
@@ -172,7 +172,7 @@ describe("playlist", function () {
       await updateAdmin({
         program,
         isWriteEnabled: false,
-        adminStgAccount: adminStgKeypair.publicKey,
+        adminStorageAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
 
@@ -186,8 +186,8 @@ describe("playlist", function () {
         bumpSeed,
         metadata,
         newUserKeypair,
-        userStgAccount: newUserAcctPDA,
-        adminStgPublicKey: adminStgKeypair.publicKey,
+        userStorageAccount: newUserAcctPDA,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
     });
 
@@ -196,7 +196,7 @@ describe("playlist", function () {
         newPlaylistKeypair: anchor.web3.Keypair.generate(),
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
+        adminStorageKeypair,
         playlistMetadata: randomCID(),
       });
     });
@@ -208,7 +208,7 @@ describe("playlist", function () {
         newPlaylistKeypair,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
+        adminStorageKeypair,
         playlistMetadata: randomCID(),
       });
 
@@ -227,7 +227,7 @@ describe("playlist", function () {
         newPlaylistKeypair,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
+        adminStorageKeypair,
         playlistMetadata: randomCID(),
       });
 
