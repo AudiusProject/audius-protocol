@@ -2,7 +2,8 @@
   "name": "@audius/libs",
   "version": "1.2.92",
   "description": "",
-  "main": "dist/index.cjs.js",
+  "main": "src/index.js",
+  "mainDist": "dist/index.cjs.js",
   "browser": {
     "fs": false,
     "node-localstorage": false,
