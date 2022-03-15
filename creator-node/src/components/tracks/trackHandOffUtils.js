@@ -80,6 +80,8 @@ async function handOffTrackHelper({ sp, req }) {
 
   // TODO: parallelize?
 
+  // TODO: if any part of the below fails, we should remove any tmp dirs
+
   // Get segments and write to tmp disk
   logger.info({ sp }, `Fetching ${segmentFileNames.length} segments...`)
   for (let i = 0; i < segmentFileNames.length; i++) {

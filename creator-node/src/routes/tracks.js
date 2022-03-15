@@ -114,7 +114,7 @@ module.exports = function (app) {
     ensureValidSPMiddleware,
     ensureStorageMiddleware,
     handleTrackContentUpload,
-    /* important middleware ... */ handleResponse(async (req, res) => {
+    handleResponse(async (req, res) => {
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -142,7 +142,7 @@ module.exports = function (app) {
   app.get(
     '/transcode_and_segment',
     ensureValidSPMiddleware,
-    /* important middleware ... */ async (req, res) => {
+    async (req, res) => {
       const fileName = req.query.fileName
       const fileType = req.query.fileType
 
