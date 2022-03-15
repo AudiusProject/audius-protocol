@@ -1,18 +1,22 @@
 import pkg from './package.json'
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
+import resolve from '@rollup/plugin-node-resolve'
 
 export default {
   input: 'src/index.js',
-  output: [{ file: pkg.main, format: 'cjs' }],
+  output: [
+    { file: pkg.mainDist, format: 'cjs', exports: 'named', sourcemap: true }
+  ],
   plugins: [
-    json(),
     commonjs({
       dynamicRequireTargets: [
         'data-contracts/ABIs/*.json',
         'eth-contracts/ABIs/*.json'
       ]
-    })
+    }),
+    json(),
+    resolve({ preferBuiltins: true })
   ],
   external: [
     '@audius/hedgehog',
