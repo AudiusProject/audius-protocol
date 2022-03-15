@@ -22,7 +22,7 @@ import { addTrackToPlaylist } from 'common/store/cache/collections/actions'
 import { getPlaylistUpdates } from 'common/store/notifications/selectors'
 import Droppable from 'components/dragndrop/Droppable'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useArePlaylistUpdatesEnabled, useFlag } from 'hooks/useRemoteConfig'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { SMART_COLLECTION_MAP } from 'pages/smart-collection/smartCollections'
 import { make, useRecord } from 'store/analytics/actions'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
@@ -102,11 +102,9 @@ const PlaylistLibrary = ({
   const playlists = useSelector(getAccountNavigationPlaylists)
   const library = useSelector(getPlaylistLibrary)
   const updates = useSelector(getPlaylistUpdates)
+  const updatesSet = new Set(updates)
   const { dragging, kind: draggingKind } = useSelector(getIsDragging)
   const dispatch = useDispatch()
-  const {
-    isEnabled: arePlaylistUpdatesEnabled
-  } = useArePlaylistUpdatesEnabled()
   const { isEnabled: isPlaylistFoldersEnabled } = useFlag(
     FeatureFlags.PLAYLIST_FOLDERS
   )
@@ -228,13 +226,13 @@ const PlaylistLibrary = ({
     const url = playlistPage(playlist.user.handle, name, id)
     const addTrack = (trackId: ID) => dispatch(addTrackToPlaylist(trackId, id))
     const isOwner = playlist.user.handle === account.handle
-    const hasUpdate = updates.includes(id)
+    const hasUpdate = updatesSet.has(id)
     return (
       <PlaylistNavItem
         isInsideFolder={level > 0}
         key={id}
         playlist={playlist}
-        hasUpdate={Boolean(arePlaylistUpdatesEnabled) && hasUpdate}
+        hasUpdate={hasUpdate}
         url={url}
         addTrack={addTrack}
         isOwner={isOwner}
@@ -256,7 +254,9 @@ const PlaylistLibrary = ({
       <PlaylistFolderNavItem
         key={folder.id}
         folder={folder}
-        hasUpdate={false}
+        hasUpdate={folder.contents.some(
+          c => c.type !== 'folder' && updatesSet.has(Number(c.playlist_id))
+        )}
         dragging={dragging}
         draggingKind={draggingKind}
         onClickEdit={handleClickEditFolder}
