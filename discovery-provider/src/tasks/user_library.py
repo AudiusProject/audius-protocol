@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Set, Tuple
 
-from src.app import get_contract_addresses
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -15,22 +15,20 @@ logger = logging.getLogger(__name__)
 def user_library_state_update(
     self,
     update_task: DatabaseTask,
-    session,
+    session: Session,
     user_library_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
-):
-    """Return int representing number of User Library model state changes found in transaction."""
-
+    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
+) -> Tuple[int, Set]:
+    """Return Tuple containing int representing number of User Library model state changes found in transaction and empty Set (to align with fn signature of other _state_update functions."""
+    empty_set: Set[int] = set()
     num_total_changes = 0
     if not user_library_factory_txs:
-        return num_total_changes
+        return num_total_changes, empty_set
 
-    user_library_abi = update_task.abi_values["UserLibraryFactory"]["abi"]
-    user_library_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["user_library_factory"], abi=user_library_abi
-    )
     challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
@@ -41,7 +39,7 @@ def user_library_state_update(
         try:
             add_track_save(
                 self,
-                user_library_contract,
+                update_task.user_library_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -52,7 +50,7 @@ def user_library_state_update(
 
             add_playlist_save(
                 self,
-                user_library_contract,
+                update_task.user_library_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -63,7 +61,7 @@ def user_library_state_update(
 
             delete_track_save(
                 self,
-                user_library_contract,
+                update_task.user_library_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -74,7 +72,7 @@ def user_library_state_update(
 
             delete_playlist_save(
                 self,
-                user_library_contract,
+                update_task.user_library_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -106,10 +104,12 @@ def user_library_state_update(
                 playlist_id,
                 playlist_ids[playlist_id].save_type,
             )
-            session.add(playlist_ids[playlist_id])
+            save = playlist_ids[playlist_id]
+            session.add(save)
+            dispatch_favorite(challenge_bus, save, block_number)
         num_total_changes += len(playlist_ids)
 
-    return num_total_changes
+    return num_total_changes, empty_set
 
 
 # ####### HELPERS ####### #
@@ -144,8 +144,10 @@ def add_track_save(
     track_state_changes: Dict[int, Dict[int, Save]],
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_add_track_events = user_library_contract.events.TrackSaveAdded().processReceipt(
-        tx_receipt
+    new_add_track_events = (
+        update_task.user_library_contract.events.TrackSaveAdded().processReceipt(
+            tx_receipt
+        )
     )
 
     for event in new_add_track_events:
@@ -187,7 +189,9 @@ def add_playlist_save(
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_playlist_events = (
-        user_library_contract.events.PlaylistSaveAdded().processReceipt(tx_receipt)
+        update_task.user_library_contract.events.PlaylistSaveAdded().processReceipt(
+            tx_receipt
+        )
     )
 
     for event in new_add_playlist_events:
@@ -242,7 +246,9 @@ def delete_track_save(
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_delete_track_events = (
-        user_library_contract.events.TrackSaveDeleted().processReceipt(tx_receipt)
+        update_task.user_library_contract.events.TrackSaveDeleted().processReceipt(
+            tx_receipt
+        )
     )
     for event in new_delete_track_events:
         event_args = event["args"]
@@ -283,7 +289,9 @@ def delete_playlist_save(
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_playlist_events = (
-        user_library_contract.events.PlaylistSaveDeleted().processReceipt(tx_receipt)
+        update_task.user_library_contract.events.PlaylistSaveDeleted().processReceipt(
+            tx_receipt
+        )
     )
 
     for event in new_add_playlist_events:

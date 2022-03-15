@@ -46,6 +46,8 @@ total_balance = "total_balance"
 associated_wallets_balance = "associated_wallets_balance"
 associated_sol_wallets_balance = "associated_sol_wallets_balance"
 waudio_balance = "waudio_balance"
+erc_wallet = "erc_wallet"
+spl_wallet = "spl_wallet"
 
 # current user specific
 # boolean - does current user follow given user
@@ -67,6 +69,7 @@ listen_counts = "listen_counts"
 tracks = "tracks"
 albums = "albums"
 playlists = "playlists"
+user = "user"
 
 # notifications metadata
 notification_type = "type"

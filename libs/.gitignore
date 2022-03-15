@@ -12,3 +12,4 @@ initScripts/*-config.json
 .npmrc
 .nyc_output/*
 coverage/
+dist

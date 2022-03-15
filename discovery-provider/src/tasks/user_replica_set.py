@@ -1,8 +1,10 @@
 import logging
 from datetime import datetime
+from typing import Set, Tuple
 
-from sqlalchemy.orm.session import make_transient
-from src.app import get_contract_addresses, get_eth_abi_values
+from sqlalchemy.orm.session import Session, make_transient
+from src.app import get_eth_abi_values
+from src.database_task import DatabaseTask
 from src.models import URSMContentNode, User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.users import invalidate_old_user, lookup_user_record
@@ -13,7 +15,7 @@ from src.utils.eth_contracts_helpers import (
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.redis_cache import get_pickled_key, get_sp_id_key
+from src.utils.redis_cache import get_json_cached_key, get_sp_id_key
 from src.utils.user_event_constants import (
     user_replica_set_manager_event_types_arr,
     user_replica_set_manager_event_types_lookup,
@@ -24,19 +26,22 @@ logger = logging.getLogger(__name__)
 
 def user_replica_set_state_update(
     self,
-    update_task,
-    session,
+    update_task: DatabaseTask,
+    session: Session,
     user_replica_set_mgr_txs,
     block_number,
     block_timestamp,
     block_hash,
-):
-    """Return int representing number of User model state changes found in transaction and set of user_id values"""
+    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
+) -> Tuple[int, Set]:
+    """Return Tuple containing int representing number of User model state changes found in transaction and set of user_id values"""
+
     event_blockhash = update_task.web3.toHex(block_hash)
     num_user_replica_set_changes = 0
     skipped_tx_count = 0
-    user_ids = set()
 
+    user_ids: Set[int] = set()
     if not user_replica_set_mgr_txs:
         return num_user_replica_set_changes, user_ids
 
@@ -74,7 +79,7 @@ def user_replica_set_state_update(
                     # if the user id is not in the lookup object, it hasn't been initialized yet
                     # first, get the user object from the db(if exists or create a new one)
                     # then set the lookup object for user_id with the appropriate props
-                    if user_id and (user_id not in user_replica_set_events_lookup):
+                    if user_id:
                         existing_user_record = lookup_user_record(
                             update_task,
                             session,
@@ -84,7 +89,7 @@ def user_replica_set_state_update(
                             txhash,
                         )
 
-                    if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):
+                    if cnode_sp_id:
                         existing_cnode_record = lookup_ursm_cnode(
                             update_task,
                             session,
@@ -188,14 +193,9 @@ def user_replica_set_state_update(
 
 
 def get_user_replica_set_mgr_tx(update_task, event_type, tx_receipt):
-    user_replica_set_manager_abi = update_task.abi_values["UserReplicaSetManager"][
-        "abi"
-    ]
-    user_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["user_replica_set_manager"],
-        abi=user_replica_set_manager_abi,
-    )
-    return getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
+    return getattr(
+        update_task.user_replica_set_manager_contract.events, event_type
+    )().processReceipt(tx_receipt)
 
 
 # Reconstruct endpoint string from primary and secondary IDs
@@ -264,7 +264,7 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
     # Get sp_id cache key
     cache_key = get_sp_id_key(sp_id)
     # Attempt to fetch from cache
-    sp_info_cached = get_pickled_key(update_task.redis, cache_key)
+    sp_info_cached = get_json_cached_key(update_task.redis, cache_key)
     if sp_info_cached:
         endpoint = sp_info_cached[1]
         logger.info(

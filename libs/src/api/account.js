@@ -101,7 +101,12 @@ class Account extends Base {
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
    * @param {?boolean} [host] The host url used for the recovery email
-   */
+   * @param {?boolean} [createWAudioUserBank] an optional flag to create the solana user bank account
+   * @param {?Function} [handleUserBankOutcomes] an optional callback to record user bank outcomes
+   * @param {?Object} [userBankOutcomes] an optional object with request, succes, and failure keys to record user bank outcomes
+   * @param {?string} [feePayerOverride] an optional string in case the client wants to switch between fee payers
+   * @param {?boolean} [generateRecoveryLink] an optional flag to skip generating recovery link for testing purposes
+  */
   async signUp (
     email,
     password,
@@ -110,7 +115,11 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    createWAudioUserBank = false
+    createWAudioUserBank = false,
+    handleUserBankOutcomes = () => {},
+    userBankOutcomes = {},
+    feePayerOverride = null,
+    generateRecoveryLink = true
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -136,7 +145,9 @@ class Account extends Base {
           phase = phases.HEDGEHOG_SIGNUP
           const ownerWallet = await this.hedgehog.signUp(email, password)
           await this.web3Manager.setOwnerWallet(ownerWallet)
-          await this.generateRecoveryLink({ handle: metadata.handle, host })
+          if (generateRecoveryLink) {
+            await this.generateRecoveryLink({ handle: metadata.handle, host })
+          }
         }
       }
 
@@ -144,23 +155,27 @@ class Account extends Base {
       // If userbank creation fails, we still proceed
       // through signup
       if (createWAudioUserBank && this.solanaWeb3Manager) {
-        phase = phases.SOLANA_USER_BANK_CREATION
-        try {
-          // Fire and forget createUserBank. In the case of failure, we will
-          // retry to create user banks in a later session before usage
-          (async () => {
-            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
+        phase = phases.SOLANA_USER_BANK_CREATION;
+        // Fire and forget createUserBank. In the case of failure, we will
+        // retry to create user banks in a later session before usage
+        (async () => {
+          try {
+            handleUserBankOutcomes(userBankOutcomes.Request)
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank(feePayerOverride)
             if (error || errorCode) {
               console.error(
                 `Failed to create userbank, with err: ${error}, ${errorCode}`
               )
+              handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
             } else {
               console.log(`Successfully created userbank!`)
+              handleUserBankOutcomes('Create User Bank: Success')
             }
-          })()
-        } catch (err) {
-          console.error(`Got error creating userbank: ${err}, continuing...`)
-        }
+          } catch (err) {
+            console.error(`Got error creating userbank: ${err}, continuing...`)
+            handleUserBankOutcomes(userBankOutcomes.Failure, { error: err.toString() })
+          }
+        })()
       }
 
       // Add user to chain
@@ -178,7 +193,7 @@ class Account extends Base {
       phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
     } catch (e) {
-      return { error: e.message, phase }
+      return { error: e.message, phase, errorStatus: e.response ? e.response.status : null }
     }
     return { blockHash, blockNumber, userId }
   }

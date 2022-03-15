@@ -1,8 +1,9 @@
 import logging
 from datetime import datetime
+from typing import Any, Dict, Set, Tuple
 
-from sqlalchemy.orm.session import make_transient
-from src.app import contract_addresses
+from sqlalchemy.orm.session import Session, make_transient
+from src.database_task import DatabaseTask
 from src.models import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
@@ -19,24 +20,26 @@ logger = logging.getLogger(__name__)
 
 def playlist_state_update(
     self,
-    update_task,
-    session,
+    update_task: DatabaseTask,
+    session: Session,
     playlist_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
-):
-    """Return int representing number of Playlist model state changes found in transaction."""
+    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
+) -> Tuple[int, Set]:
+    """Return Tuple containing int representing number of Playlist model state changes found in transaction and set of processed playlist IDs."""
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
     skipped_tx_count = 0
     # This stores the playlist_ids created or updated in the set of transactions
-    playlist_ids = set()
+    playlist_ids: Set[int] = set()
 
     if not playlist_factory_txs:
         return num_total_changes, playlist_ids
 
-    playlist_events_lookup = {}
+    playlist_events_lookup: Dict[int, Dict[str, Any]] = {}
     for tx_receipt in playlist_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in playlist_event_types_arr:
@@ -111,11 +114,9 @@ def playlist_state_update(
 
 
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
-    playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
-    playlist_contract = update_task.web3.eth.contract(
-        address=contract_addresses["playlist_factory"], abi=playlist_abi
+    return getattr(update_task.playlist_contract.events, event_type)().processReceipt(
+        tx_receipt
     )
-    return getattr(playlist_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_playlist_record(update_task, session, entry, block_number, txhash):

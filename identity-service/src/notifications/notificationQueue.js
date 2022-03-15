@@ -32,7 +32,7 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
   }
   let existingEntriesCheck = buffer.filter(
     entry => (
-      (entry.userId === userId) && (entry.notificationParams.message === message)
+      (entry.userId === userId) && entry.notificationParams.message === message && entry.notificationParams.title === title
     )
   )
   // Ensure no dups are added
@@ -66,7 +66,7 @@ async function _sendNotification (notifFn, bufferObj, logger) {
     logger.error(`${logPrefix} ERROR ${e.message}`)
   }
 
-  return numSentNotifs
+  return numSentNotifs || 0
 }
 
 async function drainPublishedMessages (logger) {

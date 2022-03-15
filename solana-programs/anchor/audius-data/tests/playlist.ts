@@ -1,14 +1,21 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import {
-  createPlaylist, deletePlaylist, initAdmin, initUserSolPubkey,
-  updatePlaylist
+  createPlaylist,
+  deletePlaylist,
+  initAdmin,
+  updateAdmin,
+  updatePlaylist,
 } from "../lib/lib";
-import { findDerivedPair, getTransaction, randomCID } from "../lib/utils";
+import { findDerivedPair, randomCID } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { confirmLogInTransaction, initTestConstants, testInitUser } from "./test-helpers";
+import {
+  confirmLogInTransaction,
+  initTestConstants,
+  testCreateUser,
+} from "./test-helpers";
 
-describe("playlist", () => {
+describe("playlist", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -19,44 +26,21 @@ describe("playlist", () => {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  let adminKeypair = anchor.web3.Keypair.generate();
-  let adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const verifierKeypair = anchor.web3.Keypair.generate();
 
-  const testInitUserSolPubkey = async ({
-    message,
-    pkString,
-    newUserKeypair,
-    newUserAcctPDA,
-  }) => {
-    let initUserTx = await initUserSolPubkey({
+  it("Initializing admin account!", async function () {
+    await initAdmin({
       provider,
       program,
-      privateKey: pkString,
-      message,
-      userSolPubkey: newUserKeypair.publicKey,
-      userStgAccount: newUserAcctPDA,
-    });
-
-    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA);
-    if (!newUserKeypair.publicKey.equals(userDataFromChain.authority)) {
-      throw new Error("Unexpected public key found");
-    }
-    let txInfo = await getTransaction(provider, initUserTx);
-    let fee = txInfo["meta"]["fee"];
-    console.log(`initUser tx = ${initUserTx} fee = ${fee}`);
-  };
-
-  it("Initializing admin account!", async () => {
-    await initAdmin({
-      provider: provider,
-      program: program,
-      adminKeypair: adminKeypair,
-      adminStgKeypair: adminStgKeypair,
-      trackIdOffset: new anchor.BN("0"),
+      adminKeypair,
+      adminStgKeypair,
+      verifierKeypair,
       playlistIdOffset: new anchor.BN("0"),
     });
 
-    let adminAccount = await program.account.audiusAdmin.fetch(
+    const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
@@ -69,13 +53,13 @@ describe("playlist", () => {
     }
   });
 
-  describe('create, update, delete', () => {
+  describe("create, update, delete", function () {
     const testCreatePlaylist = async ({
       newPlaylistKeypair,
       playlistOwnerPDA,
       userAuthorityKeypair,
       adminStgKeypair,
-      playlistMetadata
+      playlistMetadata,
     }) => {
       const tx = await createPlaylist({
         provider,
@@ -84,7 +68,7 @@ describe("playlist", () => {
         userStgAccountPDA: playlistOwnerPDA,
         userAuthorityKeypair: userAuthorityKeypair,
         adminStgPublicKey: adminStgKeypair.publicKey,
-        metadata: playlistMetadata
+        metadata: playlistMetadata,
       });
       await confirmLogInTransaction(provider, tx, playlistMetadata);
       const createdPlaylist = await program.account.playlist.fetch(
@@ -99,15 +83,14 @@ describe("playlist", () => {
       playlistKeypair,
       playlistOwnerPDA,
       userAuthorityKeypair,
-      playlistMetadata
+      playlistMetadata,
     }) => {
       const tx = await updatePlaylist({
-        provider,
         program,
         playlistPublicKey: playlistKeypair.publicKey,
         userStgAccountPDA: playlistOwnerPDA,
         userAuthorityKeypair,
-        metadata: playlistMetadata
+        metadata: playlistMetadata,
       });
       await confirmLogInTransaction(provider, tx, playlistMetadata);
     };
@@ -124,7 +107,7 @@ describe("playlist", () => {
         provider.wallet.publicKey
       );
 
-      const tx = await deletePlaylist({
+      await deletePlaylist({
         provider,
         program,
         playlistPublicKey: playlistKeypair.publicKey,
@@ -136,7 +119,7 @@ describe("playlist", () => {
       // Note that there appears to be a delay in the propagation, hence the retries
       let playlistAcctBalance = initialPlaylistAcctBalance;
       let payerBalance = initialPayerBalance;
-      let retries = 20;
+      let retries = 100;
       while (playlistAcctBalance > 0 && retries > 0) {
         playlistAcctBalance = await provider.connection.getBalance(
           playlistKeypair.publicKey
@@ -148,7 +131,9 @@ describe("playlist", () => {
       }
 
       if (playlistAcctBalance > 0) {
-        throw new Error("Failed to deallocate track");
+        throw new Error(
+          `Failed to deallocate playlist - Remaining balance ${playlistAcctBalance}`
+        );
       }
 
       console.log(
@@ -163,14 +148,8 @@ describe("playlist", () => {
     let newUserKeypair: anchor.web3.Keypair;
 
     // Initialize user for each test
-    beforeEach(async () => {
-      const {
-        pkString,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        metadata
-      } = initTestConstants();
+    beforeEach(async function () {
+      const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
@@ -178,38 +157,40 @@ describe("playlist", () => {
           adminStgKeypair.publicKey,
           Buffer.from(handleBytesArray)
         );
-      newUserAcctPDA = derivedAddress;
 
-      await testInitUser(
-        provider,
-        program,
-        baseAuthorityAccount,
-        testEthAddr,
-        testEthAddrBytes,
-        handleBytesArray,
-        bumpSeed,
-        metadata,
-        newUserAcctPDA,
-        adminStgKeypair,
-        adminKeypair,
-      );
+      newUserAcctPDA = derivedAddress;
 
       // New sol key that will be used to permission user updates
       newUserKeypair = anchor.web3.Keypair.generate();
 
       // Generate signed SECP instruction
       // Message as the incoming public key
-      const message = newUserKeypair.publicKey.toString();
+      const message = newUserKeypair.publicKey.toBytes();
 
-      await testInitUserSolPubkey({
+      // disable admin writes
+      await updateAdmin({
+        program,
+        isWriteEnabled: false,
+        adminStgAccount: adminStgKeypair.publicKey,
+        adminAuthorityKeypair: adminKeypair,
+      });
+
+      await testCreateUser({
+        provider,
+        program,
         message,
-        pkString,
+        baseAuthorityAccount,
+        ethAccount,
+        handleBytesArray,
+        bumpSeed,
+        metadata,
         newUserKeypair,
-        newUserAcctPDA,
+        userStgAccount: newUserAcctPDA,
+        adminStgPublicKey: adminStgKeypair.publicKey,
       });
     });
 
-    it('create playlist', async () => {
+    it("create playlist", async function () {
       await testCreatePlaylist({
         newPlaylistKeypair: anchor.web3.Keypair.generate(),
         userAuthorityKeypair: newUserKeypair,
@@ -219,7 +200,7 @@ describe("playlist", () => {
       });
     });
 
-    it('update playlist', async () => {
+    it("update playlist", async function () {
       const newPlaylistKeypair = anchor.web3.Keypair.generate();
 
       await testCreatePlaylist({
@@ -238,7 +219,7 @@ describe("playlist", () => {
       });
     });
 
-    it('delete playlist', async () => {
+    it("delete playlist", async function () {
       const newPlaylistKeypair = anchor.web3.Keypair.generate();
 
       await testCreatePlaylist({

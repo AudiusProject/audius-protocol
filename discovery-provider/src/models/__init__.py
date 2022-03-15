@@ -5,6 +5,7 @@ from .models import (
     AggregateDailyTotalUsersMetrics,
     AggregateDailyUniqueUsersMetrics,
     AggregateMonthlyAppNameMetrics,
+    AggregateMonthlyPlays,
     AggregateMonthlyTotalUsersMetrics,
     AggregateMonthlyUniqueUsersMetrics,
     AggregatePlaylist,
@@ -27,8 +28,10 @@ from .models import (
     HourlyPlayCounts,
     IndexingCheckpoints,
     IPLDBlacklistBlock,
+    ListenStreakChallenge,
     Play,
     Playlist,
+    PlaysArchive,
     ProfileCompletionChallenge,
     Remix,
     Repost,
@@ -52,9 +55,11 @@ from .models import (
     UserBalanceChange,
     UserChallenge,
     UserListeningHistory,
+    WalletChain,
 )
 from .related_artist import RelatedArtist
 from .reward_manager import RewardManagerTransaction
+from .spl_token_transaction import SPLTokenTransaction
 from .track_route import TrackRoute
 from .track_trending_score import TrackTrendingScore
 from .trending_param import TrendingParam
@@ -71,6 +76,7 @@ __all__ = [
     "AggregateMonthlyUniqueUsersMetrics",
     "AggregatePlaylist",
     "AggregatePlays",
+    "AggregateMonthlyPlays",
     "AggregateTrack",
     "AggregateUser",
     "AggregateIntervalPlay",
@@ -90,8 +96,10 @@ __all__ = [
     "HourlyPlayCounts",
     "IPLDBlacklistBlock",
     "IndexingCheckpoints",
+    "ListenStreakChallenge",
     "Milestone",
     "Play",
+    "PlaysArchive",
     "Playlist",
     "ProfileCompletionChallenge",
     "RelatedArtist",
@@ -109,6 +117,7 @@ __all__ = [
     "SaveType",
     "SkippedTransaction",
     "SkippedTransactionLevel",
+    "SPLTokenTransaction",
     "Stem",
     "TagTrackUserMatview",
     "Track",
@@ -125,4 +134,5 @@ __all__ = [
     "UserBankAccount",
     "UserEvents",
     "UserListeningHistory",
+    "WalletChain",
 ]

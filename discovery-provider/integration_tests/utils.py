@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from src import models
-from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
+from src.models.models import WalletChain
+from src.tasks.aggregates import get_latest_blocknumber
 from src.utils import helpers
 from src.utils.db_session import get_db
 
@@ -56,7 +57,7 @@ def populate_mock_db_blocks(db, min, max):
             session.flush()
 
 
-def populate_mock_db(db, entities, block_offset=0):
+def populate_mock_db(db, entities, block_offset=None):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows
 
@@ -65,6 +66,14 @@ def populate_mock_db(db, entities, block_offset=0):
         entities - dict of keys tracks, users, plays of arrays of metadata
     """
     with db.scoped_session() as session:
+        # check if blocknumber already exists for longer running tests
+        if block_offset is None:
+            block_offset = get_latest_blocknumber(session)
+            if block_offset:
+                block_offset += 1
+            else:
+                block_offset = 0
+
         tracks = entities.get("tracks", [])
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
@@ -78,11 +87,18 @@ def populate_mock_db(db, entities, block_offset=0):
         user_challenges = entities.get("user_challenges", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
+        aggregate_track = entities.get("aggregate_track", [])
+        aggregate_monthly_plays = entities.get("aggregate_monthly_plays", [])
+        aggregate_user = entities.get("aggregate_user", [])
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
+        user_bank_accounts = entities.get("user_bank_accounts", [])
+        associated_wallets = entities.get("associated_wallets", [])
 
-        num_blocks = max(len(tracks), len(users), len(follows), len(saves))
+        num_blocks = max(
+            len(tracks), len(users), len(follows), len(saves), len(reposts)
+        )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = (
                 session.query(models.Block).filter(models.Block.number == i).first()
@@ -101,10 +117,17 @@ def populate_mock_db(db, entities, block_offset=0):
                 session.flush()
 
         for i, track_meta in enumerate(tracks):
+            track_id = track_meta.get("track_id", i)
+
+            # mark previous tracks as is_current = False
+            session.query(models.Track).filter(models.Track.is_current == True).filter(
+                models.Track.track_id == track_id
+            ).update({"is_current": False})
+
             track = models.Track(
                 blockhash=hex(i + block_offset),
                 blocknumber=i + block_offset,
-                track_id=track_meta.get("track_id", i),
+                track_id=track_id,
                 title=track_meta.get("title", f"track_{i}"),
                 is_current=track_meta.get("is_current", True),
                 is_delete=track_meta.get("is_delete", False),
@@ -163,7 +186,14 @@ def populate_mock_db(db, entities, block_offset=0):
                 updated_at=user_meta.get("updated_at", datetime.now()),
                 created_at=user_meta.get("created_at", datetime.now()),
             )
+            user_bank = models.UserBankAccount(
+                signature=f"0x{i}",
+                ethereum_address=user_meta.get("wallet", str(i)),
+                bank_account=f"0x{i}",
+                created_at=datetime.now(),
+            )
             session.add(user)
+            session.add(user_bank)
 
         for i, follow_meta in enumerate(follows):
             follow = models.Follow(
@@ -220,6 +250,35 @@ def populate_mock_db(db, entities, block_offset=0):
                 count=aggregate_play_meta.get("count", 0),
             )
             session.add(aggregate_play)
+
+        for i, aggregate_track_meta in enumerate(aggregate_track):
+            aggregate_track = models.AggregateTrack(
+                track_id=aggregate_track_meta.get("track_id", i),
+                repost_count=aggregate_track_meta.get("repost_count", 0),
+                save_count=aggregate_track_meta.get("save_count", 0),
+            )
+            session.add(aggregate_track)
+
+        for i, aggregate_monthly_play_meta in enumerate(aggregate_monthly_plays):
+            aggregate_monthly_play = models.AggregateMonthlyPlays(
+                play_item_id=aggregate_monthly_play_meta.get("play_item_id", i),
+                timestamp=aggregate_monthly_play_meta.get("timestamp", i),
+                count=aggregate_monthly_play_meta.get("count", 0),
+            )
+            session.add(aggregate_monthly_play)
+
+        for i, aggregate_user_meta in enumerate(aggregate_user):
+            user = models.AggregateUser(
+                user_id=aggregate_user_meta.get("user_id", i),
+                track_count=aggregate_user_meta.get("track_count", 0),
+                playlist_count=aggregate_user_meta.get("playlist_count", 0),
+                album_count=aggregate_user_meta.get("album_count", 0),
+                follower_count=aggregate_user_meta.get("follower_count", 0),
+                following_count=aggregate_user_meta.get("following_count", 0),
+                repost_count=aggregate_user_meta.get("repost_count", 0),
+                track_save_count=aggregate_user_meta.get("track_save_count", 0),
+            )
+            session.add(user)
 
         for i, user_listening_history_meta in enumerate(user_listening_history):
             user_listening_history = models.UserListeningHistory(
@@ -299,9 +358,24 @@ def populate_mock_db(db, entities, block_offset=0):
                 current_step_count=user_challenge_meta.get("current_step_count", None),
             )
             session.add(user_challenge)
+        for i, user_bank_account in enumerate(user_bank_accounts):
+            bank = models.UserBankAccount(
+                signature=user_bank_account.get("signature", ""),
+                ethereum_address=user_bank_account.get("ethereum_address", ""),
+                bank_account=user_bank_account.get("bank_account", ""),
+                created_at=user_bank_account.get("created_at", datetime.now()),
+            )
+            session.add(bank)
+        for i, associated_wallet in enumerate(associated_wallets):
+            wallet = models.AssociatedWallet(
+                blockhash=associated_wallet.get("blockhash", hex(i + block_offset)),
+                blocknumber=associated_wallet.get("blocknumber", i + block_offset),
+                is_current=associated_wallet.get("is_current", True),
+                is_delete=associated_wallet.get("is_delete", False),
+                user_id=associated_wallet.get("user_id", 1),
+                wallet=associated_wallet.get("wallet", str(i)),
+                chain=associated_wallet.get("chain", WalletChain.sol),
+            )
+            session.add(wallet)
 
         session.flush()
-
-        session.execute(
-            UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
-        )

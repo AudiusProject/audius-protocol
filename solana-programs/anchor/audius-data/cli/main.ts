@@ -1,35 +1,30 @@
-import { Program, Provider, Wallet, web3 } from "@project-serum/anchor";
-import ethWeb3 from "web3";
+import { Program, Provider, web3 } from "@project-serum/anchor";
+import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
-const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
-import {
-  ethAddressToArray,
-  randomCID,
-  findDerivedPair,
-} from "../lib/utils";
+import { randomCID, findDerivedPair } from "../lib/utils";
 import {
   initAdmin,
   initUser,
   initUserSolPubkey,
   createTrack,
-  createTrackArgs,
-  createPlaylistArgs,
+  CreateTrackParams,
+  CreatePlaylistParams,
   createPlaylist,
-  deletePlaylistArgs,
+  DeletePlaylistParams,
   deletePlaylist,
   updatePlaylist,
-  updatePlaylistArgs,
+  UpdatePlaylistParams,
 } from "../lib/lib";
 
 import { Command } from "commander";
+import fs = require("fs");
+
 const program = new Command();
 
-const EthWeb3 = new ethWeb3();
-
 const idl = JSON.parse(
-  require("fs").readFileSync("./target/idl/audius_data.json", "utf8")
+  fs.readFileSync("./target/idl/audius_data.json", "utf8")
 );
 
 const opts: web3.ConfirmOptions = {
@@ -38,16 +33,16 @@ const opts: web3.ConfirmOptions = {
 };
 
 const keypairFromFilePath = (path: string) => {
+  /* eslint-disable */
   return Keypair.fromSecretKey(Uint8Array.from(require(path)));
 };
 
-let network = "https://audius.rpcpool.com/";
 
 /// Initialize constants requird for any CLI functionality
 function initializeCLI(network: string, ownerKeypairPath: string) {
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
-  const wallet = new Wallet(ownerKeypair);
+  const wallet = new NodeWallet(ownerKeypair);
   const provider = new Provider(connection, wallet, opts);
   const programID = new PublicKey(idl.metadata.address);
   const program = new Program<AudiusData>(idl, programID, provider);
@@ -66,6 +61,7 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
 type initAdminCLIParams = {
   adminKeypair: Keypair;
   adminStgKeypair: Keypair;
+  verifierKeypair: Keypair;
   ownerKeypairPath: string;
 };
 
@@ -85,14 +81,16 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     `echo "[${adminStgKeypair.secretKey.toString()}]" > adminStgKeypair.json`
   );
   // TODO: Accept variable offset
-  await initAdmin({
+  let tx = await initAdmin({
     provider: cliVars.provider,
     program: cliVars.program,
     adminKeypair,
     adminStgKeypair,
+    verifierKeypair,
     trackIdOffset: new anchor.BN("0"),
     playlistIdOffset: new anchor.BN("0"),
   });
+  await cliVars.provider.connection.confirmTransaction(tx);
 }
 
 type initUserCLIParams = {
@@ -115,7 +113,6 @@ async function initUserCLI(args: initUserCLIParams) {
   const cliVars = initializeCLI(network, ownerKeypairPath);
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
   const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
-  const ethAddressBytes = ethAddressToArray(ethAddress);
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
       cliVars.program.programId,
@@ -124,10 +121,10 @@ async function initUserCLI(args: initUserCLIParams) {
     );
 
   const userStgAddress = derivedAddress;
-  let tx = await initUser({
+  const tx = await initUser({
     provider: cliVars.provider,
     program: cliVars.program,
-    testEthAddrBytes: Array.from(ethAddressBytes),
+    ethAddress,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -141,13 +138,13 @@ async function initUserCLI(args: initUserCLIParams) {
   );
 }
 
-async function timeCreateTrack(args: createTrackArgs) {
+async function timeCreateTrack(args: CreateTrackParams) {
   let retries = 5;
   let err = null;
   while (retries > 0) {
     try {
-      let start = Date.now();
-      let tx = await createTrack({
+      const start = Date.now();
+      const tx = await createTrack({
         program: args.program,
         provider: args.provider,
         metadata: args.metadata,
@@ -156,7 +153,7 @@ async function timeCreateTrack(args: createTrackArgs) {
         userStgAccountPDA: args.userStgAccountPDA,
         adminStgPublicKey: args.adminStgPublicKey,
       });
-      let duration = Date.now() - start;
+      const duration = Date.now() - start;
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
@@ -164,17 +161,18 @@ async function timeCreateTrack(args: createTrackArgs) {
     } catch (e) {
       err = e;
     }
+    retries--;
   }
   console.log(err);
 }
 
-async function timeCreatePlaylist(args: createPlaylistArgs) {
+async function timeCreatePlaylist(args: CreatePlaylistParams) {
   let retries = 5;
   let err = null;
   while (retries > 0) {
     try {
-      let start = Date.now();
-      let tx = await createPlaylist({
+      const start = Date.now();
+      const tx = await createPlaylist({
         program: args.program,
         provider: args.provider,
         newPlaylistKeypair: args.newPlaylistKeypair,
@@ -183,7 +181,7 @@ async function timeCreatePlaylist(args: createPlaylistArgs) {
         adminStgPublicKey: args.adminStgPublicKey,
         metadata: randomCID(),
       });
-      let duration = Date.now() - start;
+      const duration = Date.now() - start;
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
@@ -191,25 +189,25 @@ async function timeCreatePlaylist(args: createPlaylistArgs) {
     } catch (e) {
       err = e;
     }
+    retries--;
   }
   console.log(err);
 }
 
-async function timeUpdatePlaylist(args: updatePlaylistArgs) {
+async function timeUpdatePlaylist(args: UpdatePlaylistParams) {
   let retries = 5;
   let err = null;
   while (retries > 0) {
     try {
-      let start = Date.now();
-      let tx = await updatePlaylist({
+      const start = Date.now();
+      const tx = await updatePlaylist({
         program: args.program,
-        provider: args.provider,
         playlistPublicKey: args.playlistPublicKey,
         userStgAccountPDA: args.userStgAccountPDA,
         userAuthorityKeypair: args.userAuthorityKeypair,
         metadata: args.metadata,
       });
-      let duration = Date.now() - start;
+      const duration = Date.now() - start;
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
@@ -217,24 +215,25 @@ async function timeUpdatePlaylist(args: updatePlaylistArgs) {
     } catch (e) {
       err = e;
     }
+    retries--;
   }
   console.log(err);
 }
 
-async function timeDeletePlaylist(args: deletePlaylistArgs) {
+async function timeDeletePlaylist(args: DeletePlaylistParams) {
   let retries = 5;
   let err = null;
   while (retries > 0) {
     try {
-      let start = Date.now();
-      let tx = await deletePlaylist({
+      const start = Date.now();
+      const tx = await deletePlaylist({
         program: args.program,
         provider: args.provider,
         playlistPublicKey: args.playlistPublicKey,
         userStgAccountPDA: args.userStgAccountPDA,
         userAuthorityKeypair: args.userAuthorityKeypair,
       });
-      let duration = Date.now() - start;
+      const duration = Date.now() - start;
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStgPubkey}`
       );
@@ -242,6 +241,7 @@ async function timeDeletePlaylist(args: deletePlaylistArgs) {
     } catch (e) {
       err = e;
     }
+    retries--;
   }
   console.log(err);
 }
@@ -260,6 +260,7 @@ const functionTypes = Object.freeze({
 
 program
   .option("-f, --function <type>", "function to invoke")
+  .option("-n, --network <string>", "solana network")
   .option("-k, --owner-keypair <keypair>", "owner keypair path")
   .option("-ak, --admin-keypair <keypair>", "admin keypair path")
   .option("-ask, --admin-storage-keypair <keypair>", "admin stg keypair path")
@@ -299,6 +300,13 @@ const userSolKeypair = options.userSolanaKeypair
   ? keypairFromFilePath(options.userSolanaKeypair)
   : anchor.web3.Keypair.generate();
 
+// Verifier keypair for audius admin
+const verifierKeypair = options.verifierKeypair
+  ? keypairFromFilePath(options.verifierKeypair)
+  : anchor.web3.Keypair.generate();
+
+const network = options.network ? options.network : "https://audius.rpcpool.com/";
+
 switch (options.function) {
   case functionTypes.initAdmin:
     console.log(`Initializing admin`);
@@ -306,6 +314,7 @@ switch (options.function) {
       ownerKeypairPath: options.ownerKeypair,
       adminKeypair: adminKeypair,
       adminStgKeypair: adminStgKeypair,
+      verifierKeypair: verifierKeypair,
     });
     break;
   case functionTypes.initUser:
@@ -321,15 +330,15 @@ switch (options.function) {
     });
     break;
   case functionTypes.initUserSolPubkey:
-    let privateKey = options.ethPrivateKey;
-    let userSolPubkey = userSolKeypair.publicKey;
+    const { ethPrivateKey } = options;
+    const userSolPubkey = userSolKeypair.publicKey;
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
-      let tx = await initUserSolPubkey({
+      const tx = await initUserSolPubkey({
         program: cliVars.program,
         provider: cliVars.provider,
-        message: "message",
-        privateKey,
+        message: userSolKeypair.publicKey.toBytes(),
+        ethPrivateKey,
         userStgAccount: options.userStgPubkey,
         userSolPubkey,
       });
@@ -347,9 +356,9 @@ switch (options.function) {
       `Number of tracks = ${numTracks}, Target User = ${options.userStgPubkey}`
     );
     (async () => {
-      let promises = [];
+      const promises = [];
       const cliVars = initializeCLI(network, options.ownerKeypair);
-      for (var i = 0; i < numTracks; i++) {
+      for (let i = 0; i < numTracks; i++) {
         promises.push(
           timeCreateTrack({
             program: cliVars.program,
@@ -362,7 +371,7 @@ switch (options.function) {
           })
         );
       }
-      let start = Date.now();
+      const start = Date.now();
       await Promise.all(promises);
       console.log(`Processed ${numTracks} tracks in ${Date.now() - start}ms`);
     })();
@@ -370,7 +379,7 @@ switch (options.function) {
   case functionTypes.getTrackId:
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
-      let info = await cliVars.program.account.audiusAdmin.fetch(
+      const info = await cliVars.program.account.audiusAdmin.fetch(
         adminStgKeypair.publicKey
       );
       console.log(`trackID high:${info.trackId}`);
@@ -385,9 +394,9 @@ switch (options.function) {
       `Number of playlists = ${numPlaylists}, Target User = ${options.userStgPubkey}`
     );
     (async () => {
-      let promises = [];
+      const promises = [];
       const cliVars = initializeCLI(network, options.ownerKeypair);
-      for (var i = 0; i < numPlaylists; i++) {
+      for (let i = 0; i < numPlaylists; i++) {
         promises.push(
           timeCreatePlaylist({
             program: cliVars.program,
@@ -400,9 +409,11 @@ switch (options.function) {
           })
         );
       }
-      let start = Date.now();
+      const start = Date.now();
       await Promise.all(promises);
-      console.log(`Processed ${numPlaylists} playlists in ${Date.now() - start}ms`);
+      console.log(
+        `Processed ${numPlaylists} playlists in ${Date.now() - start}ms`
+      );
     })();
     break;
   case functionTypes.updatePlaylist: {
@@ -416,13 +427,14 @@ switch (options.function) {
       const start = Date.now();
       await timeUpdatePlaylist({
         program: cliVars.program,
-        provider: cliVars.provider,
         metadata: randomCID(),
         playlistPublicKey,
         userAuthorityKeypair: userSolKeypair,
         userStgAccountPDA: options.userStgPubkey,
-      })
-      console.log(`Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`);
+      });
+      console.log(
+        `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
+      );
     })();
     break;
   }
@@ -440,9 +452,11 @@ switch (options.function) {
         provider: cliVars.provider,
         playlistPublicKey,
         userAuthorityKeypair: userSolKeypair,
-        userStgAccountPDA: options.userStgPubkey
-      })
-      console.log(`Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`);
+        userStgAccountPDA: options.userStgPubkey,
+      });
+      console.log(
+        `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
+      );
     })();
     break;
   }

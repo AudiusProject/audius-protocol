@@ -7,6 +7,7 @@ from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
     referred_challenge_manager,
+    verified_referral_challenge_manager,
 )
 from src.models.models import Block, Challenge, User, UserChallenge
 from src.models.user_events import UserEvents
@@ -84,6 +85,7 @@ def test_referral_challenge(app):
     )
 
     with db.scoped_session() as session:
+        # Setup
         bus = ChallengeEventBus(redis_conn)
         bus.register_listener(
             ChallengeEvent.referred_signup, referred_challenge_manager
@@ -91,15 +93,25 @@ def test_referral_challenge(app):
         bus.register_listener(
             ChallengeEvent.referral_signup, referral_challenge_manager
         )
-
+        bus.register_listener(
+            ChallengeEvent.referral_signup, verified_referral_challenge_manager
+        )
         session.add(block)
         session.flush()
         session.add(referrer)
         session.flush()
         # set challenge as active for purposes of test
         session.query(Challenge).filter(
-            or_(Challenge.id == "referred", Challenge.id == "referrals")
+            or_(
+                Challenge.id == "referred",
+                Challenge.id == "referrals",
+                Challenge.id == "ref-v",
+            )
         ).update({"active": True, "starting_block": BLOCK_NUMBER})
+
+        # Test:
+        # Ensure a single referral from single signup
+        # despite many challenge events
         dispatch_new_user_signup(referrer.user_id, 2, session, bus)
         for _ in range(0, 4):
             bus.dispatch(
@@ -119,6 +131,10 @@ def test_referral_challenge(app):
         )
         assert len(challenges) == 1
 
+        # Test:
+        # Multiple signups
+        # - Referrer is capped at 5
+        # - Referred can keep going
         dispatch_new_user_signup(referrer.user_id, 3, session, bus)
         dispatch_new_user_signup(referrer.user_id, 4, session, bus)
         dispatch_new_user_signup(referrer.user_id, 5, session, bus)
@@ -130,7 +146,6 @@ def test_referral_challenge(app):
         dispatch_new_user_signup(referrer.user_id, 11, session, bus)
         bus.flush()
         bus.process_events(session)
-
         challenges = (
             session.query(UserChallenge)
             .filter(
@@ -141,7 +156,6 @@ def test_referral_challenge(app):
             .all()
         )
         assert len(challenges) == 5
-
         challenges = (
             session.query(UserChallenge)
             .filter(
@@ -151,3 +165,105 @@ def test_referral_challenge(app):
             .all()
         )
         assert len(challenges) == 10
+
+        # Test:
+        # Ensure there are no verified user referrals created yet
+
+        challenges = (
+            session.query(UserChallenge)
+            .filter(
+                UserChallenge.user_id == referrer.user_id,
+                UserChallenge.challenge_id == "ref-v",
+                UserChallenge.is_complete == True,
+            )
+            .all()
+        )
+        assert len(challenges) == 0
+
+        # Test: verified users
+        # - Ensure that verified user referrals aren't counted
+        #   for referrer credit
+        # - Ensure that a verified user challenge exists
+
+        verified_user = User(
+            blockhash="0x1",
+            blocknumber=BLOCK_NUMBER,
+            txhash="xyz",
+            user_id=12,
+            is_current=True,
+            handle="VerifiedReferrer",
+            handle_lc="verifiedreferrer",
+            wallet="0x1",
+            is_creator=False,
+            is_verified=True,
+            name="referrer_name",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        session.add(verified_user)
+        session.flush()
+
+        dispatch_new_user_signup(verified_user.user_id, 13, session, bus)
+        bus.flush()
+        bus.process_events(session)
+
+        # Ensure no regular referral created
+        challenges = (
+            session.query(UserChallenge)
+            .filter(
+                UserChallenge.user_id == verified_user.user_id,
+                UserChallenge.challenge_id == "referrals",
+                UserChallenge.is_complete == True,
+            )
+            .all()
+        )
+        assert len(challenges) == 0
+
+        # Ensure one verified referral created
+        challenges = (
+            session.query(UserChallenge)
+            .filter(
+                UserChallenge.user_id == verified_user.user_id,
+                UserChallenge.challenge_id == "ref-v",
+                UserChallenge.is_complete == True,
+            )
+            .all()
+        )
+        assert len(challenges) == 1
+
+        # Test: verified max count
+        #  - Ensure with > 5000 verified referrals, we cap at 5000
+        #  - No regular referrals are made
+
+        for i in range(5010):
+            dispatch_new_user_signup(verified_user.user_id, 14 + i, session, bus)
+            if i % 500 == 0:
+                bus.flush()
+                bus.process_events(session)
+
+        bus.flush()
+        bus.process_events(session)
+
+        # Ensure 5000 verified referral created
+        challenges = (
+            session.query(UserChallenge)
+            .filter(
+                UserChallenge.user_id == verified_user.user_id,
+                UserChallenge.challenge_id == "ref-v",
+                UserChallenge.is_complete == True,
+            )
+            .all()
+        )
+        assert len(challenges) == 5000
+
+        # Ensure no regular referral created
+        challenges = (
+            session.query(UserChallenge)
+            .filter(
+                UserChallenge.user_id == verified_user.user_id,
+                UserChallenge.challenge_id == "referrals",
+                UserChallenge.is_complete == True,
+            )
+            .all()
+        )
+        assert len(challenges) == 0

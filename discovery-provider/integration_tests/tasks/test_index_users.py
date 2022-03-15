@@ -13,7 +13,13 @@ from src.models import (
     UserEvents,
 )
 from src.tasks.metadata import user_metadata_format
-from src.tasks.users import lookup_user_record, parse_user_event, user_state_update
+from src.tasks.users import (
+    UserEventsMetadata,
+    lookup_user_record,
+    parse_user_event,
+    update_user_events,
+    user_state_update,
+)
 from src.utils import helpers
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -535,6 +541,23 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
 
 @mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
+def test_self_referrals(bus_mock: mock.MagicMock, app):
+    """Test that users can't refer themselves"""
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+        bus_mock(redis)
+    with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
+        user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
+        events: UserEventsMetadata = {"referrer": 1}
+        update_user_events(session, user, events, bus_mock)
+        mock_call = mock.call.dispatch(
+            ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
+        )
+        assert mock_call not in bus_mock.method_calls
+
+
+@mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
 def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
     """Tests that users skip cursed txs without throwing an error and are able to process other tx in block"""
     with app.app_context():
@@ -655,12 +678,12 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                 update_task,
                 update_task,
                 session,
-                test_ipfs_metadata,
-                test_blacklisted_cids,
                 test_user_factory_txs,
                 test_block_number,
                 test_block_timestamp,
                 block_hash,
+                test_ipfs_metadata,
+                test_blacklisted_cids,
             )
             assert len(updated_user_ids_set) == 1
             assert list(updated_user_ids_set)[0] == blessed_user_record.user_id

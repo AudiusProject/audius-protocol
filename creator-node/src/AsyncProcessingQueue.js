@@ -25,6 +25,13 @@ const PROCESS_STATES = Object.freeze({
   FAILED: 'FAILED'
 })
 
+/**
+ * This queue accepts jobs (any function) that needs to be processed asynchonously.
+ * Once the job is complete, the response is added to redis. The response can be
+ * accessed through the `/async_processing_status` route by passing in the job uuid
+ * as part of the query params.
+ */
+
 class AsyncProcessingQueue {
   constructor() {
     this.queue = new Bull('asyncProcessing', {

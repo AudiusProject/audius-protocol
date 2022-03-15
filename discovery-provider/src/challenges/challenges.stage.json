@@ -13,7 +13,11 @@
 		"id": "referrals",
 		"active": true,
 		"starting_block": 0
-
+	},
+	{
+		"id": "ref-v",
+		"active": true,
+		"starting_block": 0
 	},
 	{
 		"id": "referred",

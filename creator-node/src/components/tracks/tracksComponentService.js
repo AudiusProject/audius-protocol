@@ -22,8 +22,12 @@ const TrackHandlingUtils = require('./trackHandlingUtils')
  */
 const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const logger = genericLogger.child(logContext)
-  const cnodeUserUUID = requestProps.session.cnodeUserUUID
-  const { fileName, fileDir, fileDestination } = requestProps
+  const {
+    fileName,
+    fileDir,
+    fileDestination,
+    session: { cnodeUserUUID }
+  } = requestProps
 
   const routeTimeStart = getStartTime()
 

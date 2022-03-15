@@ -1,4 +1,5 @@
-import logging  # pylint: disable=C0302
+import logging
+from operator import or_  # pylint: disable=C0302
 
 from src.models import User
 from src.queries.query_helpers import add_query_pagination
@@ -17,7 +18,12 @@ def get_user_history(args):
     with db.scoped_session() as session:
         user_history_query = (
             session.query(User)
-            .filter(User.user_id == user_id)
+            .filter(
+                User.user_id == user_id,
+                # Or both possibilities to allow use of composite index
+                # on user, block, is_current
+                or_(User.is_current == True, User.is_current == False),
+            )
             .order_by(User.updated_at.asc())
         )
 

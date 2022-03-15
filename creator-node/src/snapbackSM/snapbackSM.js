@@ -74,6 +74,8 @@ const RECONFIG_MODES = Object.freeze({
 
 const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
+const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 30000 // 30s
+
 /*
   SnapbackSM aka Snapback StateMachine
   Ensures file availability through recurring sync operations
@@ -173,7 +175,7 @@ class SnapbackSM {
       try {
         await this.processStateMachineOperation()
       } catch (e) {
-        this.log(`StateMachineQueue error processing ${e}`)
+        this.logError(`StateMachineQueue processing error: ${e}`)
       }
 
       await utils.timeout(this.snapbackJobInterval)
@@ -190,7 +192,7 @@ class SnapbackSM {
         try {
           await this.processSyncOperation(job, SyncType.Manual)
         } catch (e) {
-          this.log(`ManualSyncQueue processing error: ${e}`)
+          this.logError(`ManualSyncQueue processing error: ${e}`)
         }
 
         done()
@@ -204,7 +206,7 @@ class SnapbackSM {
         try {
           await this.processSyncOperation(job, SyncType.Recurring)
         } catch (e) {
-          this.log(`RecurringSyncQueue processing error ${e}`)
+          this.logError(`RecurringSyncQueue processing error ${e}`)
         }
 
         done()
@@ -212,7 +214,14 @@ class SnapbackSM {
     )
 
     // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
-    await this.stateMachineQueue.add({ startTime: Date.now() })
+    await this.stateMachineQueue.add(
+      {
+        startTime: Date.now() + STATE_MACHINE_QUEUE_INIT_DELAY_MS
+      },
+      {
+        delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS
+      }
+    )
 
     this.log(
       `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`

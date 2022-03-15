@@ -1,7 +1,7 @@
 const { sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const ethTxRelay = require('../relay/ethTxRelay')
 const crypto = require('crypto')
-const { getFeePayer } = require('../solana-client')
+const { getFeePayerKeypair } = require('../solana-client')
 
 const { NodeHttpTransport } = require('@improbable-eng/grpc-web-node-http-transport')
 
@@ -22,6 +22,18 @@ const getTxProps = (senderAddress, method) => {
   }
 }
 
+/**
+ * Transfers erc20 AUDIO into spl AUDIO via the wormhole
+ * Relays the Permit method to our wormhole contract
+ * Relays the TransferTokens method on our wormhole contract to send the funds into wormhole
+ * Redeems the funds in solana
+ * @param {*} req Node request - used for logging when passed to sendEthTransaction
+ * @param {*} audiusLibs Audius Libs instance for completing the wormhole transfer
+ * @param {*} senderAddress The sender's eth address
+ * @param {*} permit Object containing contractAddress, encodedABI and gasLimit for permit method
+ * @param {*} transferTokens Object containing contractAddress, encodedABI and gasLimit for permit method
+ * @param {*} reportError Reporter instance for logging & sending logs to slack
+ */
 const relayWormhole = async (
   req,
   audiusLibs,
@@ -31,7 +43,7 @@ const relayWormhole = async (
   reportError
 ) => {
   const logs = []
-  const context = {}
+  const context = { job: 'wormhole' }
   try {
     logs.push(`Attempting Permit for sender: ${senderAddress}`)
     const { sha: permitSHA, txProps: permitTxProps } = getTxProps(senderAddress, permit)
@@ -43,24 +55,42 @@ const relayWormhole = async (
     logs.push(`Attempting Transfer Tokens for sender: ${senderAddress}`)
     const { sha: transferTokensSHA, txProps: transferTokensTxProps } = getTxProps(senderAddress, transferTokens)
     const estimatedGas = await ethTxRelay.estimateEthTransactionGas(senderAddress, transferTokensTxProps.contractAddress, transferTokensTxProps.encodedABI)
-    const gasMultiplier = 1.5
+    const gasMultiplier = 1.05
     transferTokensTxProps.gasLimit = Math.floor(estimatedGas * gasMultiplier)
 
     const transferTokensTxResponse = await ethTxRelay.sendEthTransaction(req, transferTokensTxProps, transferTokensSHA)
     const transferTxHash = transferTokensTxResponse.txHash
     context.transferTxHash = transferTxHash
     logs.push(`Attempting Transfer Tokens for sender: ${transferTxHash}`)
-    const feePayerAccount = getFeePayer()
+    const feePayerAccount = getFeePayerKeypair()
 
     const signTransaction = async (transaction) => {
       transaction.partialSign(feePayerAccount)
       return transaction
     }
 
-    // Gather VAA attestations, submit to solana and realize the funds at the taret address
-    const response = await audiusLibs.wormholeClient.attestAndCompleteTransferEthToSol(transferTxHash, signTransaction, {
-      transport: NodeHttpTransport()
-    })
+    let response = null
+    let numRetries = 0
+    const MAX_RETRIES = 5
+    while ((!response || !response.transactionSignature) && numRetries < MAX_RETRIES) {
+      // Gather VAA attestations, submit to solana and realize the funds at the taret address
+      response = await audiusLibs.wormholeClient.attestAndCompleteTransferEthToSol(transferTxHash, signTransaction, {
+        transport: NodeHttpTransport()
+      })
+      if (response.error) {
+        if (numRetries !== MAX_RETRIES - 1) {
+          // Exponential backoff 100ms, 200ms, 400ms, 800ms
+          await new Promise(resolve => setTimeout(resolve, 2 ** (numRetries) * 100))
+        }
+        numRetries += 1
+        logs.push(`Attest and complete transfer from eth to sol failed on phase: ${
+          response.phase
+        } \n error: ${response.error} \n with logs: ${
+          response.logs.join(',')
+        } \n on retry num: ${numRetries}`)
+      }
+    }
+
     if (response.error) {
       logs.push(`Attest and complete transfer from eth to sol failed on phase: ${response.phase} \n error: ${response.error} \n with logs: ${response.logs.join(',')}`)
       const errorMessage = response.error.toString()
@@ -78,7 +108,7 @@ const relayWormhole = async (
 
     return {
       transferTxHash,
-      txHash: response.txHash
+      redeemTxSignature: response.transactionSignature
     }
   } catch (err) {
     req.logger.error(context, logs.join(','))
@@ -91,11 +121,11 @@ const relayWormhole = async (
 module.exports = function (app) {
   app.post('/wormhole_relay', async (req, res, next) => {
     const audiusLibs = req.app.get('audiusLibs')
-    const slackReporter = req.app.get('slackReporter')
+    const slackWormholeErrorReporter = req.app.get('slackWormholeErrorReporter')
     const body = req.body
     const reportError = async (errorData) => {
-      const message = slackReporter.getJsonSlackMessage(errorData)
-      await slackReporter.postToSlack({ message })
+      const message = slackWormholeErrorReporter.getJsonSlackMessage(errorData)
+      await slackWormholeErrorReporter.postToSlack({ message })
     }
 
     try {
@@ -109,7 +139,7 @@ module.exports = function (app) {
       }
       const {
         transferTxHash,
-        txHash,
+        redeemTxSignature,
         error
       } = await relayWormhole(req, audiusLibs, body.senderAddress, body.permit, body.transferTokens, reportError)
       if (error) {
@@ -121,7 +151,7 @@ module.exports = function (app) {
       }
       return sendResponse(req, res, successResponse({
         transferTxHash,
-        txHash
+        redeemTxSignature
       }))
     } catch (error) {
       req.logger.error(error.message)

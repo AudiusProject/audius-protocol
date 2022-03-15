@@ -14,6 +14,7 @@ const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
+const BlacklistManager = require('./blacklistManager')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -64,6 +65,15 @@ async function authMiddleware(req, res, next) {
     if (resp && resp.blockchainId) {
       userId = parseInt(resp.blockchainId)
     }
+  }
+
+  const userBlacklisted = await BlacklistManager.userIdIsInBlacklist(userId)
+  if (userBlacklisted) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseUnauthorized('User not allowed to make changes on node')
+    )
   }
 
   // Attach session object to request
@@ -339,16 +349,16 @@ async function issueAndWaitForSecondarySyncRequests(req) {
         }ms`
       )
     } catch (e) {
+      const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
+        Date.now() - replicationStart
+      }ms`
+      req.logger.error(errorMsg)
+
       // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
       if (enforceWriteQuorum) {
-        throw new Error(
-          `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
-            Date.now() - replicationStart
-          }ms`
-        )
+        throw new Error(errorMsg)
       }
-
-      // if !enforceWriteQuorum or >= 1 secondary synced -> do nothing (to indicate success)
+      // else do nothing
     }
 
     // If any error during replication, error if quorum is enforced
