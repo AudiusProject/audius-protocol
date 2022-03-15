@@ -215,6 +215,8 @@ export enum Name {
   REWARDS_CLAIM_HCAPTCHA = 'Rewards Claim: Hcaptcha',
   REWARDS_CLAIM_COGNITO = 'Rewards Claim: Cognito',
   REWARDS_CLAIM_BLOCKED = 'Rewards Claim: Blocked',
+  REWARDS_CLAIM_START_COGNITO_FLOW = 'Rewards Claim: Start Cognito Flow',
+  REWARDS_CLAIM_FINISH_COGNITO_FLOW = 'Rewards Claim: Finish Cognito Flow',
 
   // Social Proof
   SOCIAL_PROOF_OPEN = 'Social Proof: Open',
