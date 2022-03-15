@@ -102,14 +102,6 @@ module.exports = (sequelize, DataTypes) => {
     // sequelize does not support composite foreign keys
   }
 
-  File.Types = {
-    track: 'track',
-    copy320: 'copy320',
-    dir: 'dir',
-    image: 'image',
-    metadata: 'metadata'
-  }
-
   File.TrackTypes = [File.Types.track, File.Types.copy320]
   File.NonTrackTypes = [File.Types.dir, File.Types.image, File.Types.metadata]
 
