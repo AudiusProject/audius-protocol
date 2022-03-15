@@ -135,6 +135,7 @@ export const darkTheme = {
 }
 
 export const matrixTheme = {
+  ...darkTheme,
   background: '#1A1818',
   backgroundSecondary: '#1A1818',
   primary: '#0CF10C',
