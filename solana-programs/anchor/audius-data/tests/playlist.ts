@@ -37,7 +37,6 @@ describe("playlist", function () {
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
-      trackIdOffset: new anchor.BN("0"),
       playlistIdOffset: new anchor.BN("0"),
     });
 
