@@ -1,5 +1,4 @@
 import {
-  memo,
   useState,
   useEffect,
   useRef,
@@ -20,6 +19,7 @@ import {
 import { usePrevious } from 'react-use'
 
 import { GestureResponderHandler } from 'app/types/gesture'
+import { Theme, useThemeVariant } from 'app/utils/theme'
 
 export type BaseAnimatedButtonProps = {
   iconIndex?: number
@@ -34,13 +34,15 @@ export type BaseAnimatedButtonProps = {
 
 type IconJSON = any
 
-type AnimatedButtonProps = {
-  iconJSON: IconJSON | IconJSON[]
+export type AnimatedButtonProps = {
+  iconDarkJSON: IconJSON | IconJSON[]
+  iconLightJSON: IconJSON | IconJSON[]
 } & BaseAnimatedButtonProps
 
-const AnimatedButton = ({
+export const AnimatedButton = ({
   iconIndex: externalIconIndex,
-  iconJSON,
+  iconDarkJSON,
+  iconLightJSON,
   isActive,
   isDisabled = false,
   onLongPress,
@@ -49,11 +51,18 @@ const AnimatedButton = ({
   style,
   wrapperStyle
 }: AnimatedButtonProps) => {
+  const themeVariant = useThemeVariant()
+  const isDarkMode = themeVariant === Theme.DARK
+
   const [iconIndex, setIconIndex] = useState<number>(externalIconIndex ?? 0)
   const [isPlaying, setIsPlaying] = useState(false)
   const animationRef = useRef<LottieView | null>()
   const previousExternalIconIndex = usePrevious(externalIconIndex)
   const previousActiveState = usePrevious(isActive)
+
+  const iconJSON = useMemo(() => {
+    return isDarkMode ? iconDarkJSON : iconLightJSON
+  }, [isDarkMode, iconDarkJSON, iconLightJSON])
 
   // When externalIconIndex is updated, update iconIndex
   // if animation isn't currently playing
@@ -148,7 +157,7 @@ const AnimatedButton = ({
     }
   }, [hasMultipleStates, isActive, isPlaying])
 
-  return (
+  return iconJSON ? (
     <Pressable
       disabled={isDisabled}
       onPress={handlePress}
@@ -171,50 +180,5 @@ const AnimatedButton = ({
         </>
       )}
     </Pressable>
-  )
-}
-
-export type AnimatedButtonProviderProps = {
-  isDarkMode: boolean
-  iconDarkJSON: IconJSON | IconJSON[]
-  iconLightJSON: IconJSON | IconJSON[]
-} & BaseAnimatedButtonProps
-
-const AnimatedButtonProvider = ({
-  isDarkMode,
-  iconDarkJSON,
-  iconLightJSON,
-  ...buttonProps
-}: AnimatedButtonProviderProps) => {
-  const [iconJSON, setIconJSON] = useState<IconJSON | IconJSON[] | null>(null)
-  const defaultAnimations = useRef<IconJSON | IconJSON[] | null>(null)
-  const darkAnimations = useRef<IconJSON | IconJSON[] | null>(null)
-
-  useEffect(() => {
-    if (isDarkMode) {
-      if (!darkAnimations.current) {
-        darkAnimations.current = iconDarkJSON
-      }
-      setIconJSON(
-        Array.isArray(darkAnimations.current)
-          ? [...darkAnimations.current]
-          : { ...darkAnimations.current }
-      )
-    } else {
-      if (!defaultAnimations.current) {
-        defaultAnimations.current = iconLightJSON
-      }
-      setIconJSON(
-        Array.isArray(defaultAnimations.current)
-          ? [...defaultAnimations.current]
-          : { ...defaultAnimations.current }
-      )
-    }
-  }, [isDarkMode, setIconJSON, iconDarkJSON, iconLightJSON])
-
-  return iconJSON ? (
-    <AnimatedButton iconJSON={iconJSON} {...buttonProps} />
   ) : null
 }
-
-export default memo(AnimatedButtonProvider)
