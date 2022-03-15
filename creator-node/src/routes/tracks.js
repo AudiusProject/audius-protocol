@@ -1,12 +1,15 @@
+const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
+const readFile = promisify(fs.readFile)
 
 const config = require('../config.js')
 const models = require('../models')
 const {
   saveFileFromBufferToIPFSAndDisk,
   removeTrackFolder,
+  getTmpTrackUploadArtifactsWithUUIDInPath,
   handleTrackContentUpload
 } = require('../fileManager')
 const {
@@ -23,19 +26,22 @@ const {
   ensurePrimaryMiddleware,
   syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
-  ensureStorageMiddleware
+  ensureStorageMiddleware,
+  ensureValidSPMiddleware
 } = require('../middlewares')
-
-const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
+const { getCID, streamFromFileSystem } = require('./files')
+const { generateListenTimestampAndSignature } = require('../apiSigning.js')
+const {
+  handleTrackHandOff
+} = require('../components/tracks/tracksComponentService')
+
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
-const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const BlacklistManager = require('../blacklistManager')
+const TranscodingQueue = require('../TranscodingQueue')
 
 const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
-
-const readFile = promisify(fs.readFile)
 
 module.exports = function (app) {
   /**
@@ -50,6 +56,7 @@ module.exports = function (app) {
     syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
+      // TODO: make into component
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -58,19 +65,117 @@ module.exports = function (app) {
         return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
       }
 
-      await AsyncProcessingQueue.addTrackContentUploadTask({
-        logContext: req.logContext,
-        req: {
-          fileName: req.fileName,
-          fileDir: req.fileDir,
-          fileDestination: req.file.destination,
-          session: {
-            cnodeUserUUID: req.session.cnodeUserUUID
+      const isTranscodeQueueAvailable = await TranscodingQueue.isAvailable()
+
+      if (isTranscodeQueueAvailable) {
+        await AsyncProcessingQueue.addTrackContentUploadTask({
+          logContext: req.logContext,
+          req: {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            fileDestination: req.file.destination,
+            session: {
+              cnodeUserUUID: req.session.cnodeUserUUID
+            }
           }
-        }
-      })
+        })
+      } else {
+        handleTrackHandOff(
+          { logContext: req.logContext },
+          {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            fileNameNoExtension: req.fileNameNoExtension,
+            fileDestination: req.file.destination,
+            session: {
+              cnodeUserUUID: req.session.cnodeUserUUID
+            },
+            headers: req.headers,
+            libs: req.app.get('audiusLibs'),
+            AsyncProcessingQueue:
+              req.app.get('serviceRegistry').asyncProcessingQueue
+          }
+        )
+      }
+
       return successResponse({ uuid: req.logContext.requestID })
     })
+  )
+
+  /**
+   * TODO: (Needs to)
+   * - validate requester is a valid SP (auth)
+   * - make sure current node has enough storage (DONE)
+   * - upload track (DONE)
+   * - submit transcode and segment request (DONE)
+   */
+  app.post(
+    '/transcode_and_segment',
+    ensureValidSPMiddleware,
+    ensureStorageMiddleware,
+    handleTrackContentUpload,
+    /* important middleware ... */ handleResponse(async (req, res) => {
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
+
+      await AsyncProcessingQueue.addTranscodeAndSegmentTask(
+        {
+          logContext: req.logContext,
+          req: {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            uuid: req.logContext.requestID,
+            handOffTrack: true
+          }
+        },
+        req.app.get('audiusLibs')
+      )
+
+      return successResponse({ uuid: req.logContext.requestID })
+    })
+  )
+
+  /**
+   * TODO: (Needs to)
+   * - validate requester is a valid SP (auth)
+   */
+  app.get(
+    '/transcode_and_segment',
+    ensureValidSPMiddleware,
+    /* important middleware ... */ async (req, res) => {
+      const fileName = req.query.fileName
+      const fileType = req.query.fileType
+
+      if (!fileName || !fileType) {
+        return errorResponseBadRequest(
+          `No provided filename=${fileName} or fileType=${fileType}`
+        )
+      }
+
+      const basePath = getTmpTrackUploadArtifactsWithUUIDInPath(
+        req.query.uuidInPath
+      )
+      let pathToFile
+      if (fileType === 'transcode') {
+        pathToFile = path.join(basePath, fileName)
+      } else if (fileType === 'segment') {
+        pathToFile = path.join(basePath, 'segments', fileName)
+      } else if (fileType === 'm3u8') {
+        pathToFile = path.join(basePath, fileName)
+      }
+
+      try {
+        return await streamFromFileSystem(req, res, pathToFile)
+      } catch (e) {
+        return sendResponse(
+          req,
+          res,
+          errorResponseServerError(
+            `Could not serve content, error=${e.toString()}`
+          )
+        )
+      }
+    }
   )
 
   /**

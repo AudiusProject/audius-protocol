@@ -5,13 +5,19 @@ const redisClient = require('./redis')
 
 // Processing fns
 const {
-  handleTrackContentRoute: trackContentUpload
+  handleTrackContentRoute: trackContentUpload,
+  handleTranscodeAndSegment: transcodeAndSegment
 } = require('./components/tracks/tracksComponentService')
+const {
+  processTranscodeAndSegments
+} = require('./components/tracks/trackContentUploadManager')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
-  trackContentUpload: 'trackContentUpload'
+  trackContentUpload: 'trackContentUpload',
+  transcodeAndSegment: 'transcodeAndSegment',
+  processTranscodeAndSegments: 'processTranscodeAndSegments'
 })
 const PROCESS_STATES = Object.freeze({
   IN_PROGRESS: 'IN_PROGRESS',
@@ -91,6 +97,16 @@ class AsyncProcessingQueue {
     return this.addTask(params)
   }
 
+  async addTranscodeAndSegmentTask(params) {
+    params.task = PROCESS_NAMES.transcodeAndSegment
+    return this.addTask(params)
+  }
+
+  async addProcessTranscodeAndSegmentTask(params) {
+    params.task = PROCESS_NAMES.processTranscodeAndSegments
+    return this.addTask(params)
+  }
+
   async addTask(params) {
     const { logContext, task } = params
 
@@ -115,6 +131,10 @@ class AsyncProcessingQueue {
     switch (task) {
       case PROCESS_NAMES.trackContentUpload:
         return trackContentUpload
+      case PROCESS_NAMES.transcodeAndSegment:
+        return transcodeAndSegment
+      case PROCESS_NAMES.processTranscodeAndSegments:
+        return processTranscodeAndSegments
       default:
         return null
     }
