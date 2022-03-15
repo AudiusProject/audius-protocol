@@ -111,11 +111,11 @@ const CollectionTileComponent = ({
 
   const isOwner = playlist_owner_id === currentUserId
 
-  const imageUrl = useCollectionCoverArt(
-    playlist_id,
-    _cover_art_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const imageUrl = useCollectionCoverArt({
+    id: playlist_id,
+    sizes: _cover_art_sizes,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const routeWeb = useMemo(() => {
     return collection.is_album

@@ -43,11 +43,11 @@ type ArtworkProps = {
 
 export const Artwork = ({ track }: ArtworkProps) => {
   const styles = useThemedStyles(createStyles)
-  const image = useTrackCoverArt(
-    track.track_id,
-    track._cover_art_sizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const image = useTrackCoverArt({
+    id: track.track_id,
+    sizes: track._cover_art_sizes,
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const dominantColors = useSelectorWeb(state =>
     getDominantColorsByTrack(state, {
@@ -72,7 +72,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
         startColor={shadowColor}
       >
         <View style={styles.image}>
-          <DynamicImage source={{ uri: image }} />
+          <DynamicImage uri={image} />
         </View>
       </Shadow>
     </View>

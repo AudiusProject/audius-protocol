@@ -81,11 +81,11 @@ export const TrackArtwork = ({
   coverArtSizes
 }: TrackArtworkProps) => {
   const styles = useStyles()
-  const image = useTrackCoverArt(
-    trackId,
-    coverArtSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useTrackCoverArt({
+    id: trackId,
+    sizes: coverArtSizes,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return (
     <View style={styles.artworkContainer}>

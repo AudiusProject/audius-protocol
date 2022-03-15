@@ -141,11 +141,11 @@ export const TrackScreenDetailsTile = ({
     track_id
   } = track
 
-  const imageUrl = useTrackCoverArt(
-    track_id,
-    _cover_art_sizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const imageUrl = useTrackCoverArt({
+    id: track_id,
+    sizes: _cover_art_sizes,
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const isOwner = owner_id === currentUserId
 

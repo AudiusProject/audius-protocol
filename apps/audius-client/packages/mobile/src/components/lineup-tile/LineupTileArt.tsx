@@ -10,7 +10,7 @@ import { createStyles } from './styles'
 
 type LineupTileArtProps = {
   coSign?: Remix | null
-  imageUrl: string
+  imageUrl?: string
   onLoad: () => void
   style?: StyleProp<ViewStyle>
 }
@@ -27,7 +27,7 @@ export const LineupTileArt = ({
 
   const imageElement = (
     <DynamicImage
-      source={{ uri: imageUrl }}
+      uri={imageUrl}
       styles={{ image: styles.image as ImageStyle }}
     />
   )

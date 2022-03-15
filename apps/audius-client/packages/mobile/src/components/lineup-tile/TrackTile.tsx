@@ -96,11 +96,11 @@ const TrackTileComponent = ({
 
   const isOwner = user_id === currentUserId
 
-  const imageUrl = useTrackCoverArt(
-    track_id,
-    _cover_art_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const imageUrl = useTrackCoverArt({
+    id: track_id,
+    sizes: _cover_art_sizes,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const handlePress = useCallback(() => {
     togglePlay(lineupTileProps.uid, track_id, PlaybackSource.TRACK_TILE)

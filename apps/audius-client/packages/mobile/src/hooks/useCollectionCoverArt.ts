@@ -1,33 +1,10 @@
-import { useImageSize } from 'audius-client/src/common/hooks/useImageSize'
-import {
-  CoverArtSizes,
-  SquareSizes
-} from 'audius-client/src/common/models/ImageSizes'
+import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { fetchCoverArt } from 'audius-client/src/common/store/cache/collections/actions'
-import { useDispatch } from 'react-redux'
 
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
+import { getUseImageSizeHook } from 'app/hooks/useImageSize'
 
-import { useDispatchWeb } from './useDispatchWeb'
-
-export const useCollectionCoverArt = (
-  collectionId: number,
-  coverArtSizes: CoverArtSizes | null,
-  size: SquareSizes,
-  defaultImage: string = imageEmpty as string,
-  onDemand = false,
-  load = true
-) => {
-  const dispatch = useDispatchWeb() as typeof useDispatch
-
-  return useImageSize({
-    dispatch,
-    id: collectionId,
-    sizes: coverArtSizes,
-    size,
-    action: fetchCoverArt,
-    defaultImage,
-    onDemand,
-    load
-  })
-}
+export const useCollectionCoverArt = getUseImageSizeHook<SquareSizes>({
+  action: fetchCoverArt,
+  defaultImageSource: imageEmpty
+})
