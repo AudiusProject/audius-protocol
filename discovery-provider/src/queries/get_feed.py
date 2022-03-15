@@ -1,22 +1,20 @@
 import datetime
-from sqlalchemy import func, desc, or_, and_
 
+from sqlalchemy import and_, desc, func, or_
 from src import api_helpers
-from src.models import Track, Repost, RepostType, Follow, Playlist, SaveType
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
+from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
-    get_current_user_id,
-    populate_track_metadata,
-    populate_playlist_metadata,
     get_pagination_vars,
-    paginate_query,
     get_users_by_id,
     get_users_ids,
+    paginate_query,
+    populate_playlist_metadata,
+    populate_track_metadata,
 )
-
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 
 trackDedupeMaxMinutes = 10
 
@@ -32,7 +30,7 @@ def get_feed(args):
     followee_user_ids = args.get("followee_user_ids", [])
 
     # Current user - user for whom feed is being generated
-    current_user_id = get_current_user_id()
+    current_user_id = args.get("user_id")
     with db.scoped_session() as session:
         # Generate list of users followed by current user, i.e. 'followees'
         if not followee_user_ids:
@@ -276,8 +274,7 @@ def get_feed(args):
         # truncate feed to requested limit
         (limit, _) = get_pagination_vars()
         feed_results = sorted_feed[0:limit]
-
-        if "with_users" in args and args.get("with_users") != "false":
+        if "with_users" in args and args.get("with_users") != False:
             user_id_list = get_users_ids(feed_results)
             users = get_users_by_id(session, user_id_list)
             for result in feed_results:

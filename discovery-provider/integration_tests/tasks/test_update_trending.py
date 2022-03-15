@@ -1,15 +1,18 @@
 import logging
 from datetime import datetime, timedelta
 
-from src.models import TrackTrendingScore, TrendingParam, AggregateIntervalPlay
-from src.utils.db_session import get_db
-from src.trending_strategies.aSPET_trending_tracks_strategy import (
-    TrendingTracksStrategyaSPET,
-)
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from integration_tests.utils import populate_mock_db
+from src.models import AggregateIntervalPlay, TrackTrendingScore, TrendingParam
+from src.tasks.aggregates.index_aggregate_plays import _update_aggregate_plays
+from src.tasks.aggregates.index_aggregate_track import _update_aggregate_track
+from src.tasks.index_aggregate_user import _update_aggregate_user
+from src.trending_strategies.EJ57D_trending_tracks_strategy import (
+    TrendingTracksStrategyEJ57D,
+)
+from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
+
 
 # Setup trending from simplified metadata
 def setup_trending(db):
@@ -24,12 +27,24 @@ def setup_trending(db):
                     "user_id": i + 1,
                     "handle": str(i + 1),
                     "wallet": str(i + 1),
+                    # Legacy users have profile_picture and cover_photo (versus _sizes)
                     "profile_picture": "Qm0123456789abcdef0123456789abcdef0123456789ab",
                     "cover_photo": "Qm0123456789abcdef0123456789abcdef0123456789ab",
                     "bio": "filled in",
                 }
-                for i in range(20)
-            ]
+                for i in range(5)
+            ],
+            *[
+                {
+                    "user_id": i + 1,
+                    "handle": str(i + 1),
+                    "wallet": str(i + 1),
+                    "profile_picture_sizes": "Qm0123456789abcdef0123456789abcdef0123456789ab",
+                    "cover_photo_sizes": "Qm0123456789abcdef0123456789abcdef0123456789ab",
+                    "bio": "filled in",
+                }
+                for i in range(5, 20)
+            ],
         ],
         "tracks": [
             {"track_id": 1, "owner_id": 1},
@@ -274,7 +289,6 @@ def test_update_interval_plays(app):
         track_plays = get_track_plays(1)
         assert track_plays.week_listen_counts == 10
         assert track_plays.month_listen_counts == 20
-        assert track_plays.year_listen_counts == 30
 
 
 def test_update_trending_params(app):
@@ -286,8 +300,9 @@ def test_update_trending_params(app):
     setup_trending(db)
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        _update_aggregate_track(session)
         _update_aggregate_plays(session)
+        _update_aggregate_user(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
         trending_params = session.query(TrendingParam).all()
@@ -330,10 +345,10 @@ def test_update_track_score_query(app):
 
     # setup
     setup_trending(db)
-    udpated_strategy = TrendingTracksStrategyaSPET()
+    udpated_strategy = TrendingTracksStrategyEJ57D()
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        _update_aggregate_track(session)
         _update_aggregate_plays(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
@@ -352,11 +367,11 @@ def test_update_track_score_query(app):
 
         week_scores = get_time_sorted("week")
         month_scores = get_time_sorted("month")
-        year_scores = get_time_sorted("year")
+        all_time_scores = get_time_sorted("allTime")
 
         assert len(week_scores) == 7
         assert len(month_scores) == 7
-        assert len(year_scores) == 7
+        assert len(all_time_scores) == 7
 
         # Check that the type and version fields are correct
         for score in scores:

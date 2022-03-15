@@ -3,7 +3,7 @@ const axios = require('axios')
 const Utils = require('../../utils')
 
 const {
-  UNHEALTHY_BLOCK_DIFF,
+  DEFAULT_UNHEALTHY_BLOCK_DIFF,
   REQUEST_TIMEOUT_MS
 } = require('./constants')
 
@@ -15,6 +15,7 @@ const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
+const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
 
 /**
  * Constructs a service class for a discovery node
@@ -27,9 +28,10 @@ const MAX_MAKE_REQUEST_RETRY_COUNT = 5
  *  @param {function} monitoringCallbacks.request
  *  @param {function} monitoringCallbacks.healthCheck
  * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
-* @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+ * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+ * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
+ * @param {number?} unhealthyBlockDiff the number of blocks we would consider a discovery node unhealthy
  */
-
 class DiscoveryProvider {
   constructor (
     whitelist,
@@ -41,7 +43,9 @@ class DiscoveryProvider {
     selectionCallback,
     monitoringCallbacks = {},
     selectionRequestTimeout,
-    selectionRequestRetries
+    selectionRequestRetries,
+    unhealthySlotDiffPlays,
+    unhealthyBlockDiff
   ) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -49,16 +53,27 @@ class DiscoveryProvider {
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
 
+    this.unhealthyBlockDiff = unhealthyBlockDiff || DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection({
       whitelist: this.whitelist,
       blacklist: this.blacklist,
       reselectTimeout,
       selectionCallback,
       monitoringCallbacks,
-      requestTimeout: selectionRequestTimeout
+      requestTimeout: selectionRequestTimeout,
+      unhealthySlotDiffPlays: unhealthySlotDiffPlays,
+      unhealthyBlockDiff: this.unhealthyBlockDiff
     }, this.ethContracts)
     this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
     this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
+    this.unhealthySlotDiffPlays = unhealthySlotDiffPlays
+
+    // Keep track of the number of times a request 404s so we know when a true 404 occurs
+    // Due to incident where some discovery nodes may erroneously be missing content #flare-51,
+    // we treat 404s differently than generic 4xx's or other 5xx errors.
+    // In the case of a 404, try a few other nodes
+    this.request404Count = 0
+    this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
 
     this.monitoringCallbacks = monitoringCallbacks
   }
@@ -76,6 +91,16 @@ class DiscoveryProvider {
 
   setEndpoint (endpoint) {
     this.discoveryProviderEndpoint = endpoint
+  }
+
+  setUnhealthyBlockDiff (updatedBlockDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {
+    this.unhealthyBlockDiff = updatedBlockDiff
+    this.serviceSelector.setUnhealthyBlockDiff(updatedBlockDiff)
+  }
+
+  setUnhealthySlotDiffPlays (updatedDiff) {
+    this.unhealthySlotDiffPlays = updatedDiff
+    this.serviceSelector.setUnhealthySlotDiffPlays(updatedDiff)
   }
 
   /**
@@ -563,6 +588,7 @@ class DiscoveryProvider {
   async getUndisbursedChallenges (limit = null, offset = null, completedBlockNumber = null, encodedUserId = null) {
     const req = Requests.getUndisbursedChallenges(limit, offset, completedBlockNumber, encodedUserId)
     const res = await this._makeRequest(req)
+    if (!res) return []
     return res.map(r => ({ ...r, amount: parseInt(r.amount) }))
   }
 
@@ -575,7 +601,9 @@ class DiscoveryProvider {
    * @param {{
      endpoint: string,
      urlParams: string,
-     queryParams: object
+     queryParams: object,
+     method: string,
+     headers: object,
    }} requestObj
    * @param {string} discoveryProviderEndpoint
    * @returns
@@ -632,15 +660,85 @@ class DiscoveryProvider {
           console.error(e)
         }
       }
+      if (resp && resp.status === 404) {
+        // We have 404'd. Throw that error message back out
+        throw new Error('404')
+      }
+
       throw errMsg
     }
     return parsedResponse
   }
 
-  // requestObj consists of multiple properties
-  // endpoint - base route
-  // urlParams - string of url params to be appended after base route
-  // queryParams - object of query params to be appended to url
+  /**
+   * Gets how many blocks behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of blocks
+   * @param {Object} parsedResponse health check response object
+   * @returns {number | null} a number of blocks if behind or null if not behind
+   */
+  async _getBlocksBehind (parsedResponse) {
+    try {
+      const {
+        latest_indexed_block: indexedBlock,
+        latest_chain_block: chainBlock
+      } = parsedResponse
+
+      const blockDiff = chainBlock - indexedBlock
+      if (blockDiff > this.unhealthyBlockDiff) {
+        return blockDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return this.unhealthyBlockDiff
+    }
+  }
+
+  /**
+   * Gets how many plays slots behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of slots
+   * @param {Object} parsedResponse health check response object
+   * @returns {number | null} a number of slots if behind or null if not behind
+   */
+  async _getPlaysSlotsBehind (parsedResponse) {
+    if (!this.unhealthySlotDiffPlays) return null
+
+    try {
+      const {
+        latest_indexed_slot_plays: indexedSlotPlays,
+        latest_chain_slot_plays: chainSlotPlays
+      } = parsedResponse
+
+      const slotDiff = chainSlotPlays - indexedSlotPlays
+      if (slotDiff > this.unhealthySlotDiffPlays) {
+        return slotDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return this.unhealthySlotDiffPlays
+    }
+  }
+
+  /**
+   * Makes a request to a discovery node, reselecting if necessary
+   * @param {{
+   *  endpoint: string
+   *  urlParams: object
+   *  queryParams: object
+   *  method: string
+   *  headers: object
+   * }} {
+   *  endpoint: the base route
+   *  urlParams: string of URL params to be concatenated after base route
+   *  queryParams: URL query (search) params
+   *  method: string HTTP method
+   * }
+   * @param {boolean?} retry whether to retry on failure
+   * @param {number?} attemptedRetries number of attempted retries (stops retrying at max)
+   */
   async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
     try {
       const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
@@ -661,41 +759,66 @@ class DiscoveryProvider {
     try {
       parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
     } catch (e) {
-      const fullErrString = `Failed to make Discovery Provider request at attempt #${attemptedRetries}, error ${JSON.stringify(e.message)}, request: ${JSON.stringify(requestObj)}`
-      console.error(fullErrString)
+      const failureStr = `Failed to make Discovery Provider request, `
+      const attemptStr = `attempt #${attemptedRetries}, `
+      const errorStr = `error ${JSON.stringify(e.message)}, `
+      const requestStr = `request: ${JSON.stringify(requestObj)}`
+      const fullErrString = `${failureStr}${attemptStr}${errorStr}${requestStr}`
+
+      console.warn(fullErrString)
+
       if (retry) {
+        if (e.message === '404') {
+          this.request404Count += 1
+          if (this.request404Count < this.maxRequestsForTrue404) {
+            // In the case of a 404, retry with a different discovery node entirely
+            // using selectionRequestRetries + 1 to force reselection
+            return this._makeRequest(requestObj, retry, this.selectionRequestRetries + 1)
+          } else {
+            this.request404Count = 0
+            return null
+          }
+        }
+
+        // In the case of an unknown error, retry with attempts += 1
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
+      }
+
+      return null
+    }
+
+    // Validate health check response
+
+    // Regressed mode signals we couldn't find a node that wasn't behind by some measure
+    // so we should should pick something
+    const notInRegressedMode = this.ethContracts && !this.ethContracts.isInRegressedMode()
+
+    const blockDiff = await this._getBlocksBehind(parsedResponse)
+    if (notInRegressedMode && blockDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
         return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
       return null
     }
 
-    if (
-      this.ethContracts &&
-      !this.ethContracts.isInRegressedMode() &&
-      'latest_indexed_block' in parsedResponse &&
-      'latest_chain_block' in parsedResponse
-    ) {
-      const {
-        latest_indexed_block: indexedBlock,
-        latest_chain_block: chainBlock
-      } = parsedResponse
-
-      if (
-        !chainBlock ||
-        !indexedBlock ||
-        (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
-      ) {
-        if (retry) {
-          // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
-          // hopes it will catch up
-          const blockDiff = chainBlock && indexedBlock ? ` [block diff: ${chainBlock - indexedBlock}]` : ''
-          console.info(`${this.discoveryProviderEndpoint} is too far behind${blockDiff}. Retrying request at attempt #${attemptedRetries}...`)
-          return this._makeRequest(requestObj, retry, attemptedRetries + 1)
-        }
-        return null
+    const playsSlotDiff = await this._getPlaysSlotsBehind(parsedResponse)
+    if (notInRegressedMode && playsSlotDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
+      return null
     }
 
+    // Reset 404 counts
+    this.request404Count = 0
+
+    // Everything looks good, return the data!
     return parsedResponse.data
   }
 
@@ -748,7 +871,10 @@ class DiscoveryProvider {
       requestUrl = urlJoin(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     }
 
-    const headers = {}
+    let headers = {}
+    if (requestObj.headers) {
+      headers = requestObj.headers
+    }
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId

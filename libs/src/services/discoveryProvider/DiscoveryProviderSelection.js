@@ -2,7 +2,7 @@ const ServiceSelection = require('../../service-selection/ServiceSelection')
 const {
   DISCOVERY_PROVIDER_TIMESTAMP,
   DISCOVERY_SERVICE_NAME,
-  UNHEALTHY_BLOCK_DIFF,
+  DEFAULT_UNHEALTHY_BLOCK_DIFF,
   DISCOVERY_PROVIDER_RESELECT_TIMEOUT,
   REGRESSED_MODE_TIMEOUT
 } = require('./constants')
@@ -25,10 +25,10 @@ class DiscoveryProviderSelection extends ServiceSelection {
        * Gets the "current" expected service version as well as
        * the list of registered providers from chain
        */
-      getServices: async () => {
+      getServices: async ({ verbose = false } = {}) => {
         this.currentVersion = await ethContracts.getCurrentVersion(DISCOVERY_SERVICE_NAME)
         const services = await this.ethContracts.getServiceProviderList(DISCOVERY_SERVICE_NAME)
-        return services.map(e => e.endpoint)
+        return verbose ? services : services.map(e => e.endpoint)
       },
       ...config
     })
@@ -37,6 +37,8 @@ class DiscoveryProviderSelection extends ServiceSelection {
     this.reselectTimeout = config.reselectTimeout
     this.selectionCallback = config.selectionCallback
     this.monitoringCallbacks = config.monitoringCallbacks || {}
+    this.unhealthySlotDiffPlays = config.unhealthySlotDiffPlays
+    this.unhealthyBlockDiff = config.unhealthyBlockDiff || DEFAULT_UNHEALTHY_BLOCK_DIFF
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
@@ -118,7 +120,16 @@ class DiscoveryProviderSelection extends ServiceSelection {
    */
   isHealthy (response, urlMap) {
     const { status, data } = response
-    const { block_difference: blockDiff, service, version } = data.data
+    const {
+      block_difference: blockDiff,
+      service,
+      version,
+      plays
+    } = data.data
+    let slotDiffPlays = null
+    if (plays && plays.tx_info) {
+      slotDiffPlays = plays.tx_info.slot_diff
+    }
 
     if (this.monitoringCallbacks.healthCheck) {
       const url = new URL(response.config.url)
@@ -130,6 +141,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
           version,
           git: data.data.git,
           blockDifference: blockDiff,
+          slotDifferencePlays: slotDiffPlays,
           databaseBlockNumber: data.data.db.number,
           webBlockNumber: data.data.web.blocknumber,
           databaseSize: data.data.database_size,
@@ -164,7 +176,18 @@ class DiscoveryProviderSelection extends ServiceSelection {
     }
 
     // If this service is an unhealthy block diff behind, add it as a backup and reject
-    if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
+    if (blockDiff > this.unhealthyBlockDiff) {
+      this.addBackup(urlMap[response.config.url], data.data)
+      return false
+    }
+
+    // If this service is an unhealthy slot diff behind on the plays table, add it
+    // as a backup and reject
+    if (
+      slotDiffPlays !== null &&
+      this.unhealthySlotDiffPlays !== null &&
+      slotDiffPlays > this.unhealthySlotDiffPlays
+    ) {
       this.addBackup(urlMap[response.config.url], data.data)
       return false
     }
@@ -182,6 +205,14 @@ class DiscoveryProviderSelection extends ServiceSelection {
       console.info('Leaving regressed mode')
       this._regressedMode = false
     }, REGRESSED_MODE_TIMEOUT)
+  }
+
+  setUnhealthyBlockDiff (updatedDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {
+    this.unhealthyBlockDiff = updatedDiff
+  }
+
+  setUnhealthySlotDiffPlays (updatedDiff) {
+    this.unhealthySlotDiffPlays = updatedDiff
   }
 
   isInRegressedMode () {
@@ -259,7 +290,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     for (const version of sortedVersions) {
       const endpoints = versionMap[version]
       for (let i = 0; i < endpoints.length; ++i) {
-        if (this.backups[endpoints[i]].block_difference < UNHEALTHY_BLOCK_DIFF) {
+        if (this.backups[endpoints[i]].block_difference < this.unhealthyBlockDiff) {
           selected = endpoints[i]
           break
         }

@@ -1,7 +1,7 @@
-from contextlib import contextmanager
 import json
 import logging
 from collections import defaultdict
+from contextlib import contextmanager
 from typing import Any, DefaultDict, Dict, List, Tuple, TypedDict
 
 from sqlalchemy.orm.session import Session
@@ -14,12 +14,13 @@ from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
     referred_challenge_manager,
+    verified_referral_challenge_manager,
 )
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.challenges.trending_challenge import (
+    trending_playlist_challenge_manager,
     trending_track_challenge_manager,
     trending_underground_track_challenge_manager,
-    trending_playlist_challenge_manager,
 )
 from src.utils.redis_connection import get_redis
 
@@ -56,12 +57,16 @@ class ChallengeEventBus:
     def register_listener(self, event: ChallengeEvent, listener: ChallengeManager):
         """Registers a listener (`ChallengeManager`) to listen for a particular event type."""
         self._listeners[event].append(listener)
-        if not listener.challenge_id in self._managers:
+        if listener.challenge_id not in self._managers:
             self._managers[listener.challenge_id] = listener
 
     def get_manager(self, challenge_id: str) -> ChallengeManager:
         """Gets a manager for a given challenge_id"""
         return self._managers[challenge_id]
+
+    def does_manager_exist(self, challenge_id: str) -> bool:
+        """Returns whether or not a manager exists for a given challenge_id"""
+        return challenge_id in self._managers
 
     @contextmanager
     def use_scoped_dispatch_queue(self):
@@ -205,7 +210,11 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
+    # referral challenge managers
     bus.register_listener(ChallengeEvent.referral_signup, referral_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.referral_signup, verified_referral_challenge_manager
+    )
     bus.register_listener(ChallengeEvent.referred_signup, referred_challenge_manager)
     # connect_verified_challenge_manager listeners
     bus.register_listener(

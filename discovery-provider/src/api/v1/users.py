@@ -1,60 +1,64 @@
 import logging
-from src.queries.get_top_users import get_top_users
-from src.queries.get_related_artists import get_related_artists
-from src.utils.auth_middleware import auth_middleware
-from src.utils.helpers import encode_int_id
-from src.challenges.challenge_event_bus import setup_challenge_bus
-from src.api.v1.playlists import get_tracks_for_playlist
-from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
-from flask_restx import Resource, Namespace, fields, reqparse
-from src.api.v1.models.common import favorite
-from src.api.v1.models.users import (
-    user_model,
-    user_model_full,
-    associated_wallets,
-    encoded_user_id,
-    user_replica_set,
-    challenge_response,
-)
 
-from src.queries.get_saves import get_saves
-from src.queries.get_users import get_users
-from src.queries.search_queries import SearchKind, search
-from src.queries.get_tracks import get_tracks
-from src.queries.get_save_tracks import get_save_tracks
-from src.queries.get_track_history import get_track_history
-from src.queries.get_followees_for_user import get_followees_for_user
-from src.queries.get_followers_for_user import get_followers_for_user
-from src.queries.get_top_user_track_tags import get_top_user_track_tags
-from src.queries.get_associated_user_wallet import get_associated_user_wallet
-from src.queries.get_associated_user_id import get_associated_user_id
-from src.queries.get_users_cnode import get_users_cnode, ReplicaType
-
+from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
+    abort_bad_request_param,
     abort_not_found,
     decode_with_abort,
     extend_activity,
+    extend_challenge_response,
     extend_favorite,
     extend_track,
     extend_user,
     format_limit,
     format_offset,
     get_current_user_id,
+    get_default_max,
     make_full_response,
     make_response,
     search_parser,
     success_response,
-    abort_bad_request_param,
-    get_default_max,
-    extend_challenge_response,
 )
-from .models.tracks import track, track_full
-from .models.activities import activity_model, activity_model_full
+from src.api.v1.models.common import favorite
+from src.api.v1.models.users import (
+    associated_wallets,
+    challenge_response,
+    connected_wallets,
+    encoded_user_id,
+    user_model,
+    user_model_full,
+    user_replica_set,
+)
+from src.api.v1.playlists import get_tracks_for_playlist
+from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.queries.get_associated_user_id import get_associated_user_id
+from src.queries.get_associated_user_wallet import get_associated_user_wallet
+from src.queries.get_challenges import get_challenges
+from src.queries.get_followees_for_user import get_followees_for_user
+from src.queries.get_followers_for_user import get_followers_for_user
+from src.queries.get_related_artists import get_related_artists
+from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
+from src.queries.get_save_tracks import get_save_tracks
+from src.queries.get_saves import get_saves
+from src.queries.get_top_genre_users import get_top_genre_users
+from src.queries.get_top_user_track_tags import get_top_user_track_tags
+from src.queries.get_top_users import get_top_users
+from src.queries.get_tracks import get_tracks
+from src.queries.get_user_listening_history import (
+    GetUserListeningHistoryArgs,
+    get_user_listening_history,
+)
+from src.queries.get_users import get_users
+from src.queries.get_users_cnode import ReplicaType, get_users_cnode
+from src.queries.search_queries import SearchKind, search
+from src.utils.auth_middleware import auth_middleware
+from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import encode_int_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
-from src.queries.get_top_genre_users import get_top_genre_users
-from src.queries.get_challenges import get_challenges
-from src.utils.db_session import get_db_read_replica
+
+from .models.activities import activity_model, activity_model_full
+from .models.tracks import track, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -527,18 +531,15 @@ class TrackHistoryFull(Resource):
         args = history_route_parser.parse_args()
         decoded_id = decode_with_abort(user_id, ns)
         current_user_id = get_current_user_id(args)
-
         offset = format_offset(args)
         limit = format_limit(args)
-        get_tracks_args = {
-            "filter_deleted": False,
-            "user_id": decoded_id,
-            "current_user_id": current_user_id,
-            "limit": limit,
-            "offset": offset,
-            "with_users": True,
-        }
-        track_history = get_track_history(get_tracks_args)
+        get_tracks_args = GetUserListeningHistoryArgs(
+            user_id=decoded_id,
+            current_user_id=current_user_id,
+            limit=limit,
+            offset=offset,
+        )
+        track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
         return success_response(tracks)
 
@@ -755,7 +756,11 @@ associated_wallet_response = make_response(
 )
 
 
-@ns.route("/associated_wallets")
+@ns.deprecated
+@ns.route(
+    "/associated_wallets",
+    doc={"description": "Deprecated in favor of /<user_id>/connected_wallets"},
+)
 class UserIdByAssociatedWallet(Resource):
     @ns.expect(associated_wallet_route_parser)
     @ns.doc(
@@ -799,6 +804,31 @@ class AssociatedWalletByUserId(Resource):
         )
 
 
+connected_wallets_route_parser = reqparse.RequestParser()
+connected_wallets_route_parser.add_argument("user_id", required=False)
+connected_wallets_response = make_response(
+    "connected_wallets_response", ns, fields.Nested(connected_wallets)
+)
+
+
+@ns.route("/<string:user_id>/connected_wallets")
+class ConnectedWallets(Resource):
+    @ns.expect(connected_wallets_route_parser)
+    @ns.doc(
+        id="""Get the User's erc and spl connected wallets""",
+        params={"user_id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(connected_wallets_response)
+    @cache(ttl_sec=10)
+    def get(self, user_id):
+        decoded_id = decode_with_abort(user_id, full_ns)
+        wallets = get_associated_user_wallet({"user_id": decoded_id})
+        return success_response(
+            {"erc_wallets": wallets["eth"], "spl_wallets": wallets["sol"]}
+        )
+
+
 users_by_content_node_route_parser = reqparse.RequestParser()
 users_by_content_node_route_parser.add_argument(
     "creator_node_endpoint", required=True, type=str
@@ -816,7 +846,9 @@ class UsersByContentNode(Resource):
         """New route to call get_users_cnode with replica_type param (only consumed by content node)
         - Leaving `/users/creator_node` above untouched for backwards-compatibility
 
-        Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID }
+        Response = array of objects of schema {
+            user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID
+        }
         """
         args = users_by_content_node_route_parser.parse_args()
 

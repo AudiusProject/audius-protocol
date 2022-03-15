@@ -19,6 +19,7 @@ from src import exceptions
 
 from . import multihash
 
+
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
@@ -44,7 +45,7 @@ def redis_restore(redis, key):
         with open(filename, "rb") as f:
             dumped = f.read()
             redis.restore(key, 0, dumped)
-            logger.info(f"successfully restored redis value for key: {key}")
+            logger.debug(f"successfully restored redis value for key: {key}")
             return redis.get(key)
     except FileNotFoundError as not_found:
         logger.error(f"could not read redis dump file: {filename}")
@@ -65,18 +66,18 @@ def redis_get_json_cached_key_or_restore(redis, key):
     logger = logging.getLogger(__name__)
     cached_value = redis.get(key)
     if not cached_value:
-        logger.info(f"Redis Cache - miss {key}, restoring")
+        logger.debug(f"Redis Cache - miss {key}, restoring")
         cached_value = redis_restore(redis, key)
 
     if cached_value:
-        logger.info(f"Redis Cache - hit {key}")
+        logger.debug(f"Redis Cache - hit {key}")
         try:
             deserialized = json.loads(cached_value)
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize json cached response: {e}")
             return None
-    logger.info(f"Redis Cache - miss {key}")
+    logger.debug(f"Redis Cache - miss {key}")
     return None
 
 
@@ -87,7 +88,7 @@ def redis_dump(redis, key):
         filename = f"{key}_dump"
         with open(filename, "wb") as f:
             f.write(dumped)
-            logger.info(f"successfully performed redis dump for key: {key}")
+            logger.debug(f"successfully performed redis dump for key: {key}")
     except Exception as e:
         logger.error(f"could not perform redis dump for key: {key}")
         logger.error(e)
@@ -123,7 +124,7 @@ def bytes32_to_str(bytes32input):
 
 # Regex used to verify valid FQDN
 fqdn_regex = re.compile(
-    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
+    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
 )
 
 
@@ -280,7 +281,7 @@ def configure_flask_app_logging(app, loglevel_str):
 
         parts = []
         for name, value in log_params.items():
-            part = "{}={}".format(name, value)
+            part = f"{name}={value}"
             parts.append(part)
 
         logger.info("handle flask request", extra=log_params)
@@ -329,11 +330,11 @@ def multihash_digest_to_cid(multihash_digest):
 
 def get_web3_endpoint(shared_config):
     if shared_config["web3"]["port"] != "443":
-        web3endpoint = "http://{}:{}".format(
-            shared_config["web3"]["host"], shared_config["web3"]["port"]
+        web3endpoint = (
+            f"http://{shared_config['web3']['host']}:{shared_config['web3']['port']}"
         )
     else:
-        web3endpoint = "https://{}".format(shared_config["web3"]["host"])
+        web3endpoint = f"https://{shared_config['web3']['host']}"
     return web3endpoint
 
 
@@ -453,7 +454,7 @@ def create_track_slug(title, track_id, collision_id=0):
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.",
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"",
         "",
         sanitized_title,
     )
@@ -505,3 +506,7 @@ def time_method(func):
         return result
 
     return wrapper
+
+
+def get_tx_arg(tx, arg_name):
+    return getattr(tx["args"], arg_name)

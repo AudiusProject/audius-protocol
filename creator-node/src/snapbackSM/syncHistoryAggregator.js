@@ -25,7 +25,7 @@ class SyncHistoryAggregator {
    * Records a sync success
    * @param {Object} logContext the log context taken off of the Express req object
    */
-  static async recordSyncSuccess (wallet, logContext = {}) {
+  static async recordSyncSuccess(wallet, logContext = {}) {
     await SyncHistoryAggregator.recordSyncData({
       wallet,
       state: SYNC_STATES.success,
@@ -39,7 +39,7 @@ class SyncHistoryAggregator {
    * @param {String} wallet wallet to record the sync status of
    * @param {Object} logContext the log context taken off of the Express req object
    */
-  static async recordSyncFail (wallet, logContext = {}) {
+  static async recordSyncFail(wallet, logContext = {}) {
     await SyncHistoryAggregator.recordSyncData({
       wallet,
       state: SYNC_STATES.fail,
@@ -56,41 +56,64 @@ class SyncHistoryAggregator {
    * @param {String} timeOfEvent date in structure MM-DD-YYYYTHH:MM:SS:sssZ
    * @param {String} wallet wallet to record the sync status of
    */
-  static async recordSyncData ({ state, timeOfEvent, logContext, wallet }) {
+  static async recordSyncData({ state, timeOfEvent, logContext, wallet }) {
     const logger = genericLogger.child(logContext)
 
     try {
-      if (!wallet) throw new Error(`Required parameter wallet not passed into syncHistoryAggregator#recordSyncData`)
+      if (!wallet)
+        throw new Error(
+          `Required parameter wallet not passed into syncHistoryAggregator#recordSyncData`
+        )
 
       if (!SYNC_STATES.hasOwnProperty(state)) {
-        throw new Error(`Invalid state='${state}'. Must either be '${SYNC_STATES.success}' or '${SYNC_STATES.fail}'`)
+        throw new Error(
+          `Invalid state='${state}'. Must either be '${SYNC_STATES.success}' or '${SYNC_STATES.fail}'`
+        )
       }
 
       // Update aggregate sync data
       const aggregateSyncKeys = SyncHistoryAggregator.getAggregateSyncKeys()
 
       // Get the TTL if the key exists for the number of `state` syncs, and update the value by 1
-      const aggregateSyncKeyStateTTL = await SyncHistoryAggregator.getKeyTTL(aggregateSyncKeys[state])
+      const aggregateSyncKeyStateTTL = await SyncHistoryAggregator.getKeyTTL(
+        aggregateSyncKeys[state]
+      )
       await redisClient.incr(aggregateSyncKeys[state])
-      await redisClient.expire(aggregateSyncKeys[state], aggregateSyncKeyStateTTL)
+      await redisClient.expire(
+        aggregateSyncKeys[state],
+        aggregateSyncKeyStateTTL
+      )
 
       // Update latest sync data
       const latestSyncKeys = SyncHistoryAggregator.getLatestSyncKeys()
 
-      const latestSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(latestSyncKeys[state])
-      await redisClient.set(latestSyncKeys[state], timeOfEvent, 'EX', latestSyncKeyTTL)
+      const latestSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(
+        latestSyncKeys[state]
+      )
+      await redisClient.set(
+        latestSyncKeys[state],
+        timeOfEvent,
+        'EX',
+        latestSyncKeyTTL
+      )
 
       // Update per wallet success/fail sync data
       // Each daily wallet key stores a set of wallets, representing each unique user with a sync in that state that day
       const dailyWalletSyncKey = SyncHistoryAggregator.getUniqueSyncKeys()
-      const dailyWalletSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(dailyWalletSyncKey[state])
+      const dailyWalletSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(
+        dailyWalletSyncKey[state]
+      )
       await redisClient.sadd(dailyWalletSyncKey[state], wallet)
       await redisClient.expire(dailyWalletSyncKey[state], dailyWalletSyncKeyTTL)
 
-      logger.info(`SyncHistoryAggregator - Successfully tracked ${state} sync for wallet ${wallet} at ${timeOfEvent}`)
+      logger.info(
+        `SyncHistoryAggregator - Successfully tracked ${state} sync for wallet ${wallet} at ${timeOfEvent}`
+      )
     } catch (e) {
       // Only log error to not block any main thread
-      logger.error(`SyncHistoryAggregator - Failed to track ${state} sync for wallet ${wallet} at ${timeOfEvent}: ${e.toString()}`)
+      logger.error(
+        `SyncHistoryAggregator - Failed to track ${state} sync for wallet ${wallet} at ${timeOfEvent}: ${e.toString()}`
+      )
     }
   }
 
@@ -100,7 +123,7 @@ class SyncHistoryAggregator {
    * @param {String} key key to retrieve from redis
    * @returns expiration time in seconds
    */
-  static async getKeyTTL (key) {
+  static async getKeyTTL(key) {
     try {
       const ttl = await redisClient.ttl(key)
       return ttl && ttl > 0 ? ttl : EXPIRATION
@@ -116,9 +139,9 @@ class SyncHistoryAggregator {
    * @returns an object of the current day's aggregate sync count like
    *    {triggered: <natural number>, success: <natural number>, fail: <natural number>}
    */
-  static async getAggregateSyncData (logContext = {}) {
+  static async getAggregateSyncData(logContext = {}) {
     const logger = genericLogger.child(logContext)
-    let currentAggregateData = {
+    const currentAggregateData = {
       success: 0,
       fail: 0,
       triggered: 0
@@ -130,14 +153,18 @@ class SyncHistoryAggregator {
       let successfulSyncsCount = await redisClient.get(success)
       let failedSyncsCount = await redisClient.get(fail)
 
-      successfulSyncsCount = successfulSyncsCount ? parseInt(successfulSyncsCount) : 0
+      successfulSyncsCount = successfulSyncsCount
+        ? parseInt(successfulSyncsCount)
+        : 0
       failedSyncsCount = failedSyncsCount ? parseInt(failedSyncsCount) : 0
 
       currentAggregateData.success = successfulSyncsCount
       currentAggregateData.fail = failedSyncsCount
       currentAggregateData.triggered = successfulSyncsCount + failedSyncsCount
     } catch (e) {
-      logger.error(`syncHistoryAggregator - getAggregateSyncData() error - ${e.toString()}`)
+      logger.error(
+        `syncHistoryAggregator - getAggregateSyncData() error - ${e.toString()}`
+      )
     }
 
     // Structure: {triggered: <natural number>, success: <natural number>, fail: <natural number>}
@@ -151,9 +178,9 @@ class SyncHistoryAggregator {
    * @returns an object of the current day's aggregate sync count like
    *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
    */
-  static async getLatestSyncData (logContext = {}) {
+  static async getLatestSyncData(logContext = {}) {
     const logger = genericLogger.child(logContext)
-    let currentLatestSyncData = {
+    const currentLatestSyncData = {
       success: 0,
       fail: 0
     }
@@ -167,7 +194,9 @@ class SyncHistoryAggregator {
       currentLatestSyncData.success = latestSyncSuccessTimestamp
       currentLatestSyncData.fail = latestSyncFailTimestamp
     } catch (e) {
-      logger.error(`syncHistoryAggregator - getLatestSyncData() error - ${e.toString()}`)
+      logger.error(
+        `syncHistoryAggregator - getLatestSyncData() error - ${e.toString()}`
+      )
     }
     // Structure: {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
     return currentLatestSyncData
@@ -181,9 +210,12 @@ class SyncHistoryAggregator {
    * @returns an object of the current day's aggregate sync count like
    *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
    */
-  static async getDailyWalletSyncData (date = new Date().toISOString().split('T')[0], logContext = {}) {
+  static async getDailyWalletSyncData(
+    date = new Date().toISOString().split('T')[0],
+    logContext = {}
+  ) {
     const logger = genericLogger.child(logContext)
-    let perWalletSyncData = {
+    const perWalletSyncData = {
       success: 0,
       fail: 0
     }
@@ -198,7 +230,9 @@ class SyncHistoryAggregator {
       perWalletSyncData.success = perWalletSyncSuccess
       perWalletSyncData.fail = perWalletSyncFail
     } catch (e) {
-      logger.error(`syncHistoryAggregator - getDailyWalletSyncData() error - ${e.toString()}`)
+      logger.error(
+        `syncHistoryAggregator - getDailyWalletSyncData() error - ${e.toString()}`
+      )
     }
     // Structure: {success: <int>, fail: <int>}
     return perWalletSyncData
@@ -209,7 +243,7 @@ class SyncHistoryAggregator {
    * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
    * @returns an object of the `success` and `fail` redis keys for the aggregate sync count
    */
-  static getAggregateSyncKeys (date = new Date().toISOString().split('T')[0]) {
+  static getAggregateSyncKeys(date = new Date().toISOString().split('T')[0]) {
     const prefix = `aggregateSync:::${date}`
 
     // ex: aggregateSync:::2021-06-01:::success
@@ -224,7 +258,7 @@ class SyncHistoryAggregator {
    * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
    * @returns an object of the `succes` and `fail` redis keys for sync status by wallet
    */
-  static getUniqueSyncKeys (date = new Date().toISOString().split('T')[0]) {
+  static getUniqueSyncKeys(date = new Date().toISOString().split('T')[0]) {
     const prefix = `uniqueSync:::${date}`
 
     // ex: uniqueSync:::2021-06-1:::success
@@ -239,7 +273,7 @@ class SyncHistoryAggregator {
    * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
    * @returns an object of the `succes` and `fail` redis keys for the latest sync dates
    */
-  static getLatestSyncKeys (date = new Date().toISOString().split('T')[0]) {
+  static getLatestSyncKeys(date = new Date().toISOString().split('T')[0]) {
     const prefix = `latestSync:::${date}`
 
     // ex: latestSync:::2021-06-01:::success

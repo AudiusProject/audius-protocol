@@ -43,6 +43,8 @@ class AudiusLibs {
    *  @param {function} monitoringCallbacks.healthCheck
    * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
    * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+   * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
+   * @param {number?} unhealthyBlockDiff the number of blocks we would consider a discovery node unhealthy
    */
   static configDiscoveryProvider (
     whitelist = null,
@@ -51,7 +53,9 @@ class AudiusLibs {
     selectionCallback = null,
     monitoringCallbacks = {},
     selectionRequestTimeout = null,
-    selectionRequestRetries = null
+    selectionRequestRetries = null,
+    unhealthySlotDiffPlays = null,
+    unhealthyBlockDiff = null
   ) {
     return {
       whitelist,
@@ -60,7 +64,9 @@ class AudiusLibs {
       selectionCallback,
       monitoringCallbacks,
       selectionRequestTimeout,
-      selectionRequestRetries
+      selectionRequestRetries,
+      unhealthySlotDiffPlays,
+      unhealthyBlockDiff
     }
   }
 
@@ -193,21 +199,29 @@ class AudiusLibs {
   /**
    * Configures wormhole
    * @param {Object} config
-   * @param {string} config.rpcHost
+   * @param {string | Array<string>} config.rpcHosts
    * @param {string} config.solBridgeAddress
    * @param {string} config.solTokenBridgeAddress
    * @param {string} config.ethBridgeAddress
    * @param {string} config.ethTokenBridgeAddress
    */
   static configWormhole ({
-    rpcHost,
+    rpcHosts,
     solBridgeAddress,
     solTokenBridgeAddress,
     ethBridgeAddress,
     ethTokenBridgeAddress
   }) {
+    let rpcHostList
+    if (typeof rpcHosts === 'string') {
+      rpcHostList = rpcHosts.split(',')
+    } else if (Array.isArray(rpcHosts)) {
+      rpcHostList = rpcHosts
+    } else {
+      throw new Error('rpcHosts must be of type string or Array')
+    }
     return {
-      rpcHost,
+      rpcHosts: rpcHostList,
       solBridgeAddress,
       solTokenBridgeAddress,
       ethBridgeAddress,
@@ -229,7 +243,8 @@ class AudiusLibs {
    * @param {string} rewardsManagerProgramPDA Rewards Manager PDA
    * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
    * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
-   * @param {Uint8Array} [feePayerSecretKey] optional fee payer secret key, if not using relay
+   * @param {Uint8Array} feePayerSecretKeys fee payer secret keys, if client wants to switch between different fee payers during relay
+   * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -242,7 +257,8 @@ class AudiusLibs {
     rewardsManagerProgramPDA,
     rewardsManagerTokenPDA,
     useRelay,
-    feePayerSecretKey = null
+    feePayerSecretKeys,
+    confirmationTimeout
   }) {
     return {
       solanaClusterEndpoint,
@@ -255,7 +271,8 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null
+      feePayerKeypairs: feePayerSecretKeys ? feePayerSecretKeys.map(key => Keypair.fromSecretKey(key)) : null,
+      confirmationTimeout
     }
   }
 
@@ -281,8 +298,6 @@ class AudiusLibs {
     captchaConfig,
     isServer,
     isDebug = false,
-    useTrackContentPolling = false,
-    useResumableTrackUpload = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true
   }) {
@@ -323,8 +338,6 @@ class AudiusLibs {
     this.File = null
     this.Rewards = null
 
-    this.useTrackContentPolling = useTrackContentPolling
-    this.useResumableTrackUpload = useResumableTrackUpload
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
 
@@ -369,6 +382,9 @@ class AudiusLibs {
         this.isServer
       )
       await this.web3Manager.init()
+      if (this.identityService) {
+        this.identityService.setWeb3Manager(this.web3Manager)
+      }
     }
     if (this.solanaWeb3Config) {
       this.solanaWeb3Manager = new SolanaWeb3Manager(
@@ -402,14 +418,14 @@ class AudiusLibs {
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
-    if (this.wormholeConfig && this.hedgehog && this.ethWeb3Manager && this.ethContracts && this.identityService && this.solanaWeb3Manager) {
+    if (this.wormholeConfig && this.ethWeb3Manager && this.ethContracts && this.solanaWeb3Manager) {
       this.wormholeClient = new Wormhole(
         this.hedgehog,
         this.ethWeb3Manager,
         this.ethContracts,
         this.identityService,
         this.solanaWeb3Manager,
-        this.wormholeConfig.rpcHost,
+        this.wormholeConfig.rpcHosts,
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
@@ -429,7 +445,9 @@ class AudiusLibs {
         this.discoveryProviderConfig.selectionCallback,
         this.discoveryProviderConfig.monitoringCallbacks,
         this.discoveryProviderConfig.selectionRequestTimeout,
-        this.discoveryProviderConfig.selectionRequestRetries
+        this.discoveryProviderConfig.selectionRequestRetries,
+        this.discoveryProviderConfig.unhealthySlotDiffPlays,
+        this.discoveryProviderConfig.unhealthyBlockDiff
       )
       await this.discoveryProvider.init()
     }
@@ -450,9 +468,7 @@ class AudiusLibs {
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
-        this.creatorNodeConfig.monitoringCallbacks,
-        this.useTrackContentPolling,
-        this.useResumableTrackUpload
+        this.creatorNodeConfig.monitoringCallbacks
       )
       await this.creatorNode.init()
     }
@@ -490,7 +506,7 @@ class AudiusLibs {
     this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(this.User, ...services)
-    this.Rewards = new Rewards(...services)
+    this.Rewards = new Rewards(this.ServiceProvider, ...services)
   }
 }
 

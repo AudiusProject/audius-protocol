@@ -3,31 +3,43 @@ import datetime
 import logging
 import re
 import time
-from typing import Tuple, Optional, TypedDict, List
+from typing import List, Optional, Tuple, TypedDict
+
 import base58
 from redis import Redis
-from sqlalchemy.orm.session import Session
-from sqlalchemy import desc, and_
 from solana.publickey import PublicKey
-from src.tasks.celery_app import celery
-from src.utils.cache_solana_program import cache_latest_sol_db_tx, fetch_and_cache_latest_program_tx_redis
-from src.utils.config import shared_config
-from src.models import User, UserBankTransaction, UserBankAccount
+from sqlalchemy import and_, desc
+from sqlalchemy.orm.session import Session
+from src.models import User, UserBankAccount, UserBankTransaction
 from src.queries.get_balances import enqueue_immediate_balance_refresh
+from src.solana.constants import (
+    TX_SIGNATURES_BATCH_SIZE,
+    TX_SIGNATURES_MAX_BATCHES,
+    TX_SIGNATURES_RESIZE_LENGTH,
+)
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_helpers import get_address_pair, SPL_TOKEN_ID_PK
+from src.solana.solana_helpers import SPL_TOKEN_ID_PK, get_address_pair
+from src.solana.solana_parser import (
+    InstructionFormat,
+    SolanaInstructionType,
+    parse_instruction_data,
+)
 from src.solana.solana_transaction_types import (
+    ResultMeta,
     TransactionInfoResult,
     TransactionMessage,
     TransactionMessageInstruction,
-    ResultMeta
 )
-from src.solana.solana_parser import (
-    parse_instruction_data,
-    InstructionFormat,
-    SolanaInstructionType,
+from src.tasks.celery_app import celery
+from src.utils.cache_solana_program import (
+    cache_latest_sol_db_tx,
+    fetch_and_cache_latest_program_tx_redis,
 )
-from src.utils.redis_constants import latest_sol_user_bank_db_tx_key, latest_sol_user_bank_program_tx_key
+from src.utils.config import shared_config
+from src.utils.redis_constants import (
+    latest_sol_user_bank_db_tx_key,
+    latest_sol_user_bank_program_tx_key,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,18 +47,11 @@ logger = logging.getLogger(__name__)
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
-WAUDIO_MINT_PUBKEY = (
-    PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
-)
+WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 
-# Maximum number of batches to process at once
-TX_SIGNATURES_MAX_BATCHES = 3
-
-# Last N entries present in tx_signatures array during processing
-TX_SIGNATURES_RESIZE_LENGTH = 3
 
 # Recover ethereum public key from bytes array
 # Message formatted as follows:
@@ -73,6 +78,7 @@ def get_highest_user_bank_tx_slot(session: Session):
     if tx_query:
         slot = tx_query[0]
     return slot
+
 
 # Cache the latest value committed to DB in redis
 # Used for quick retrieval in health check
@@ -113,12 +119,15 @@ def refresh_user_balance(session: Session, redis: Redis, user_bank_acct: str):
         )
         enqueue_immediate_balance_refresh(redis, [user_id[0]])
 
+
 create_token_account_instr: List[InstructionFormat] = [
     {"name": "eth_address", "type": SolanaInstructionType.EthereumAddress},
 ]
 
+
 class CreateTokenAccount(TypedDict):
     eth_address: str
+
 
 def parse_create_token_data(data: str) -> CreateTokenAccount:
     """Parse Transfer instruction data submitted to Audius Claimable Token program
@@ -132,6 +141,7 @@ def parse_create_token_data(data: str) -> CreateTokenAccount:
     """
 
     return parse_instruction_data(data, create_token_account_instr)
+
 
 def get_valid_instruction(
     tx_message: TransactionMessage, meta: ResultMeta
@@ -156,12 +166,9 @@ def get_valid_instruction(
         )
         return None
 
+
 def process_user_bank_tx_details(
-    session: Session,
-    redis: Redis,
-    tx_info,
-    tx_sig,
-    timestamp
+    session: Session, redis: Redis, tx_info, tx_sig, timestamp
 ):
     result: TransactionInfoResult = tx_info["result"]
     meta = result["meta"]
@@ -180,8 +187,7 @@ def process_user_bank_tx_details(
         for log in meta["logMessages"]
     )
     has_claim_instruction = any(
-        log == "Program log: Instruction: Claim"
-        for log in meta["logMessages"]
+        log == "Program log: Instruction: Claim" for log in meta["logMessages"]
     )
 
     if not has_create_token_instruction and not has_claim_instruction:
@@ -199,10 +205,7 @@ def process_user_bank_tx_details(
         decoded = base58.b58decode(tx_data)[1:]
         public_key_bytes = decoded[:20]
         _, derived_address = get_address_pair(
-            WAUDIO_MINT_PUBKEY,
-            public_key_bytes,
-            USER_BANK_KEY,
-            SPL_TOKEN_ID_PK
+            WAUDIO_MINT_PUBKEY, public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
         )
         bank_acct = str(derived_address[0])
         try:
@@ -232,6 +235,7 @@ def process_user_bank_tx_details(
         )
         refresh_user_balance(session, redis, acct_1)
         refresh_user_balance(session, redis, acct_2)
+
 
 def parse_user_bank_transaction(
     session: Session, solana_client_manager: SolanaClientManager, tx_sig, redis
@@ -280,10 +284,10 @@ def process_user_bank_txs():
         latest_processed_slot = get_highest_user_bank_tx_slot(session)
         logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
         while not intersection_found:
-            transactions_history = (
-                solana_client_manager.get_signatures_for_address(
-                    USER_BANK_ADDRESS, before=last_tx_signature, limit=100
-                )
+            transactions_history = solana_client_manager.get_signatures_for_address(
+                USER_BANK_ADDRESS,
+                before=last_tx_signature,
+                limit=TX_SIGNATURES_BATCH_SIZE,
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:
@@ -343,7 +347,6 @@ def process_user_bank_txs():
     # Reverse batches aggregated so oldest transactions are processed first
     transaction_signatures.reverse()
 
-
     last_tx_sig: Optional[str] = None
     last_tx = None
     if transaction_signatures and transaction_signatures[-1]:
@@ -385,14 +388,17 @@ def process_user_bank_txs():
         )
 
     if last_tx and last_tx_sig:
-        cache_latest_sol_user_bank_db_tx(redis, {
-            "signature": last_tx_sig,
-            "slot": last_tx["slot"],
-            "timestamp": last_tx["blockTime"]
-        })
+        cache_latest_sol_user_bank_db_tx(
+            redis,
+            {
+                "signature": last_tx_sig,
+                "slot": last_tx["slot"],
+                "timestamp": last_tx["blockTime"],
+            },
+        )
 
 
-######## CELERY TASKS ########
+# ####### CELERY TASKS ####### #
 @celery.task(name="index_user_bank", bind=True)
 def index_user_bank(self):
     # Cache custom task class properties
@@ -410,7 +416,7 @@ def index_user_bank(self):
             index_user_bank.solana_client_manager,
             redis,
             USER_BANK_ADDRESS,
-            latest_sol_user_bank_program_tx_key
+            latest_sol_user_bank_program_tx_key,
         )
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)

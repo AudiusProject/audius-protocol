@@ -1,16 +1,15 @@
 import math
 from datetime import datetime, timedelta
 
+from integration_tests.utils import populate_mock_db
 from src.models.related_artist import RelatedArtist
 from src.queries.get_related_artists import (
     _calculate_related_artists_scores,
     get_related_artists,
     update_related_artist_scores_if_needed,
 )
+from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.utils.db_session import get_db
-
-from integration_tests.utils import populate_mock_db
-
 
 entities = {
     "users": [{}] * 8,
@@ -44,6 +43,7 @@ def test_calculate_related_artists_scores(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
+        _update_aggregate_user(session)
 
         # Check sampled (with large enough sample to get all rows for deterministic result)
         rows = _calculate_related_artists_scores(
@@ -127,6 +127,7 @@ def test_update_related_artist_scores_if_needed(app):
         result, _ = update_related_artist_scores_if_needed(session, 0)
         assert not result, "Don't calculate for low number of followers"
         populate_mock_db(db, entities)
+        _update_aggregate_user(session)
         result, _ = update_related_artist_scores_if_needed(session, 0)
         assert result, "Calculate when followers >= MIN_FOLLOWER_REQUIREMENT (200)"
         result, _ = update_related_artist_scores_if_needed(session, 0)

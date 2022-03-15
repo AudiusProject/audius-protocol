@@ -12,9 +12,18 @@ const Utils = require('../../utils')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
 const { submitAttestations, evaluateAttestations, createSender } = require('./rewards')
-const { WAUDIO_DECMIALS } = require('../../constants')
+const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
+
+// Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
+// Without this padding, we could reach some low non-zero number of SOL where transactions would fail
+// despite a remaining balance.
+const ZERO_SOL_EPSILON = 0.005
+const SOL_PER_LAMPORT = 0.000000001
+
+// Generous default connection confirmation timeout to better cope with RPC congestion
+const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
 
 /**
  * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
@@ -50,10 +59,11 @@ class SolanaWeb3Manager {
    *  the manager account of the rewards manager program
    * @param {string} solanaWeb3Config.rewardsManagerTokenPDA
    *  the token holder account of the rewards manager program
-   * @param {boolean} solanaWeb3Config.shouldUseRelay
+   * @param {boolean} solanaWeb3Config.useRelay
    *  whether to submit transactions via a relay, or locally
-   * @param {KeyPair} solanaWeb3Config.feePayerKepair
-   *  KeyPair for feepayer
+   * @param {KeyPair} solanaWeb3Config.feePayerKepairs
+   *  KeyPairs for feepayers
+   * @param {number} [solanaWeb3Config.confirmationTimeout] optional default confirmation timeout
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
@@ -82,59 +92,64 @@ class SolanaWeb3Manager {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair
+      feePayerKeypairs,
+      confirmationTimeout
     } = this.solanaWeb3Config
 
-    // Helper to safely create pubkey from nullable val
-    const newPublicKeyNullable = (val) => val ? new PublicKey(val) : null
-
     this.solanaClusterEndpoint = solanaClusterEndpoint
-    this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
+    this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
+      confirmTransactionInitialTimeout: confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
+    })
 
     this.transactionHandler = new TransactionHandler({
       connection: this.connection,
       useRelay,
       identityService: this.identityService,
-      feePayerKeypair
+      feePayerKeypairs
     })
 
     this.mintAddress = mintAddress
-    this.mintKey = newPublicKeyNullable(mintAddress)
+    this.mintKey = SolanaUtils.newPublicKeyNullable(mintAddress)
 
     this.solanaTokenAddress = solanaTokenAddress
-    this.solanaTokenKey = newPublicKeyNullable(solanaTokenAddress)
+    this.solanaTokenKey = SolanaUtils.newPublicKeyNullable(solanaTokenAddress)
 
-    this.feePayerAddress = feePayerAddress
-    this.feePayerKey = newPublicKeyNullable(feePayerAddress || feePayerKeypair.publicKey)
+    if (feePayerAddress) {
+      this.feePayerAddress = feePayerAddress
+      this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerAddress)
+    } else if (feePayerKeypairs && feePayerKeypairs.length) {
+      this.feePayerAddress = feePayerKeypairs[0].publicKey
+      this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerKeypairs[0].publicKey)
+    }
 
-    this.claimableTokenProgramKey = newPublicKeyNullable(claimableTokenProgramAddress)
+    this.claimableTokenProgramKey = SolanaUtils.newPublicKeyNullable(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
       this.claimableTokenProgramKey ? ((await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()) : null
     )
-    this.claimableTokenPDAKey = newPublicKeyNullable(this.claimableTokenPDA)
-    this.rewardManagerProgramId = newPublicKeyNullable(rewardsManagerProgramId)
-    this.rewardManagerProgramPDA = newPublicKeyNullable(rewardsManagerProgramPDA)
-    this.rewardManagerTokenPDA = newPublicKeyNullable(rewardsManagerTokenPDA)
+    this.claimableTokenPDAKey = SolanaUtils.newPublicKeyNullable(this.claimableTokenPDA)
+    this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramId)
+    this.rewardManagerProgramPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramPDA)
+    this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
   }
 
   /**
    * Creates a solana bank account from the web3 provider's eth address
    */
-  async createUserBank () {
+  async createUserBank (feePayerOverride) {
     if (!this.web3Manager) {
       throw new Error('A web3Manager is required for this solanaWeb3Manager method')
     }
 
     const ethAddress = this.web3Manager.getWalletAddress()
-    await createUserBankFrom({
+    return createUserBankFrom({
       ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
-      feePayerKey: this.feePayerKey,
+      feePayerKey: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       mintKey: this.mintKey,
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
-      identityService: this.identityService
+      transactionHandler: this.transactionHandler
     })
   }
 
@@ -209,11 +224,21 @@ class SolanaWeb3Manager {
    */
   async getWAudioBalance (solanaAddress) {
     try {
-      const tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
-      if (!tokenAccount) return null
+      let tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
+
+      // If the token account doesn't exist, check if solanaAddress is a root account
+      // if so, derive the associated token account & check that balance
+      if (!tokenAccount) {
+        const associatedTokenAccount = await this.findAssociatedTokenAddress(solanaAddress)
+        tokenAccount = await this.getAssociatedTokenAccountInfo(associatedTokenAccount.toString())
+        if (!tokenAccount) {
+          return null
+        }
+      }
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
-      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(WAUDIO_DECMIALS + 1, '0')))
+      const decimals = AUDIO_DECMIALS - WAUDIO_DECMIALS
+      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(decimals + 1, '0')))
     } catch (e) {
       return null
     }
@@ -265,7 +290,7 @@ class SolanaWeb3Manager {
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
-    await transferWAudioBalance({
+    return transferWAudioBalance({
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
       feePayerKey: this.feePayerKey,
@@ -291,6 +316,9 @@ class SolanaWeb3Manager {
    *     specifier: string,
    *     recipientEthAddress: string,
    *     tokenAmount: BN,
+   *     instructionsPerTransaction?: number,
+   *     logger: any
+   *     feePayerOverride: string | null
    * }} {
    *     attestations,
    *     oracleAttestation,
@@ -298,6 +326,9 @@ class SolanaWeb3Manager {
    *     specifier,
    *     recipientEthAddress,
    *     tokenAmount,
+   *     instructionsPerTransaction,
+   *     logger
+   *     feePayerOverride
    *    }
    * @memberof SolanaWeb3Manager
    */
@@ -307,7 +338,10 @@ class SolanaWeb3Manager {
     challengeId,
     specifier,
     recipientEthAddress,
-    tokenAmount
+    tokenAmount,
+    instructionsPerTransaction,
+    logger = console,
+    feePayerOverride = null
   }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -316,10 +350,12 @@ class SolanaWeb3Manager {
       oracleAttestation,
       challengeId,
       specifier,
-      feePayer: this.feePayerKey,
+      feePayer: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
-      transactionHandler: this.transactionHandler
+      transactionHandler: this.transactionHandler,
+      instructionsPerTransaction,
+      logger
     })
   }
 
@@ -331,12 +367,16 @@ class SolanaWeb3Manager {
    *    specifier: string,
    *    recipientEthAddress: string
    *    oracleEthAddress: string
+   *    logger: any
+   *    feePayerOverride: string | null
    * }} {
    *     challengeId,
    *     specifier,
    *     recipientEthAddress,
    *     oracleEthAddress,
-   *     tokenAmount
+   *     tokenAmount,
+   *     logger
+   *     feePayerOverride
    *   }
    * @memberof SolanaWeb3Manager
    */
@@ -345,7 +385,9 @@ class SolanaWeb3Manager {
     specifier,
     recipientEthAddress,
     oracleEthAddress,
-    tokenAmount
+    tokenAmount,
+    logger = console,
+    feePayerOverride = null
   }) {
     return evaluateAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
@@ -356,9 +398,10 @@ class SolanaWeb3Manager {
       recipientEthAddress,
       userBankProgramAccount: this.claimableTokenPDAKey,
       oracleEthAddress,
-      feePayer: this.feePayerKey,
+      feePayer: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       tokenAmount,
-      transactionHandler: this.transactionHandler
+      transactionHandler: this.transactionHandler,
+      logger
     })
   }
 
@@ -387,6 +430,43 @@ class SolanaWeb3Manager {
       connection: this.connection,
       transactionHandler: this.transactionHandler
     })
+  }
+
+  /**
+   * Gets the balance of a PublicKey, in SOL
+   *
+   * @param {{
+   *  publicKey: PublicKey
+   * }} { publicKey }
+   * @return {Promise<number>}
+   * @memberof SolanaWeb3Manager
+   */
+  async getBalance ({ publicKey }) {
+    const lamports = await this.connection.getBalance(publicKey)
+    return lamports * SOL_PER_LAMPORT
+  }
+
+  /**
+   * Gets whether a PublicKey has a usable balance
+   *
+   * @param {{
+   *  publicKey: PublicKey,
+   *  epsilon?: number
+   * }} { publicKey }
+   * @return {Promise<boolean>}
+   * @memberof SolanaWeb3Manager
+   */
+  async hasBalance ({ publicKey, epsilon = ZERO_SOL_EPSILON }) {
+    const balance = await this.getBalance({ publicKey })
+    return balance > epsilon
+  }
+
+  async getSlot () {
+    return this.connection.getSlot('processed')
+  }
+
+  async getRandomFeePayer () {
+    return this.identityService.getRandomFeePayer()
   }
 }
 

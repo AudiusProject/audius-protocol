@@ -56,8 +56,9 @@ const getUserNotificationSettings = async (userIdsToNotify, tx) => {
  * @param {Object} audiusLibs Instance of audius libs
  * @param {Array<Object>} notifications Array of notifications from DP
  * @param {*} tx The DB transaction to add to every DB query
+ * @param {*} optimizelyClient Optimizely client for feature flags
  */
-async function sendNotifications (audiusLibs, notifications, tx) {
+async function sendNotifications (audiusLibs, notifications, tx, optimizelyClient) {
   // Parse the notification to grab the user ids that we want to notify
   const userIdsToNotify = getUserIdsToNotify(notifications)
 
@@ -71,7 +72,7 @@ async function sendNotifications (audiusLibs, notifications, tx) {
   const metadata = await fetchNotificationMetadata(audiusLibs, users, formattedNotifications)
 
   // using the metadata, populate the notifications, and push them to the publish queue
-  await publishNotifications(formattedNotifications, metadata, userNotificationSettings, tx)
+  await publishNotifications(formattedNotifications, metadata, userNotificationSettings, tx, optimizelyClient)
 }
 
 module.exports = sendNotifications

@@ -1,19 +1,18 @@
 from sqlalchemy import desc
-
 from src import exceptions
-from src.models import RepostType, Playlist, SaveType
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
+from src.models import Playlist, RepostType, SaveType
+from src.models.models import AggregatePlaylist
 from src.queries.query_helpers import (
-    get_current_user_id,
-    populate_playlist_metadata,
-    get_users_by_id,
-    get_users_ids,
-    create_save_repost_count_subquery,
+    create_followee_playlists_subquery,
     decayed_score,
     filter_to_playlist_mood,
-    create_followee_playlists_subquery,
+    get_current_user_id,
+    get_users_by_id,
+    get_users_ids,
+    populate_playlist_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 
 
 def get_top_playlists(kind, args):
@@ -44,8 +43,6 @@ def get_top_playlists(kind, args):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        # Construct a subquery to get the summed save + repost count for the `kind`
-        count_subquery = create_save_repost_count_subquery(session, kind)
 
         # If filtering by followees, set the playlist view to be only playlists from
         # users that the current user follows.
@@ -61,20 +58,24 @@ def get_top_playlists(kind, args):
         playlist_query = (
             session.query(
                 playlists_to_query,
-                count_subquery.c["count"],
+                (AggregatePlaylist.repost_count + AggregatePlaylist.save_count).label(
+                    "count"
+                ),
                 decayed_score(
-                    count_subquery.c["count"], playlists_to_query.c.created_at
+                    AggregatePlaylist.repost_count + AggregatePlaylist.save_count,
+                    playlists_to_query.c.created_at,
                 ).label("score"),
             )
             .select_from(playlists_to_query)
             .join(
-                count_subquery,
-                count_subquery.c["id"] == playlists_to_query.c.playlist_id,
+                AggregatePlaylist,
+                AggregatePlaylist.playlist_id == playlists_to_query.c.playlist_id,
             )
             .filter(
                 playlists_to_query.c.is_current == True,
                 playlists_to_query.c.is_delete == False,
                 playlists_to_query.c.is_private == False,
+                playlists_to_query.c.is_album == (kind == "album"),
             )
         )
 

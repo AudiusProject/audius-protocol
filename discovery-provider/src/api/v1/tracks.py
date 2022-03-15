@@ -1,67 +1,66 @@
+import logging  # pylint: disable=C0302
 from typing import List
 from urllib.parse import urljoin
-import logging  # pylint: disable=C0302
+
 from flask import redirect
-from flask_restx import Resource, Namespace, fields, reqparse, inputs
-from src.queries.get_tracks import RouteArgs, get_tracks
-from src.queries.get_track_user_creator_node import get_track_user_creator_node
+from flask.globals import request
+from flask_restx import Namespace, Resource, fields, inputs, reqparse
 from src.api.v1.helpers import (
+    abort_bad_path_param,
+    abort_bad_request_param,
     abort_not_found,
+    decode_ids_array,
     decode_with_abort,
     extend_track,
+    extend_user,
+    format_limit,
+    format_offset,
+    full_trending_parser,
+    get_authed_user_id,
+    get_current_user_id,
+    get_default_max,
+    get_encoded_track_id,
     make_full_response,
     make_response,
     search_parser,
-    extend_user,
-    get_default_max,
-    trending_parser,
-    full_trending_parser,
-    success_response,
-    abort_bad_request_param,
-    to_dict,
-    format_offset,
-    format_limit,
     stem_from_track,
-    get_current_user_id,
-    get_encoded_track_id,
-    abort_bad_path_param,
+    success_response,
+    trending_parser,
 )
-from .models.tracks import (
-    track,
-    track_full,
-    stem_full,
-    remixes_response as remixes_response_model,
-)
-from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import cache
-
-from src.trending_strategies.trending_strategy_factory import (
-    TrendingStrategyFactory,
-    DEFAULT_TRENDING_VERSIONS,
-)
-from src.trending_strategies.trending_type_and_version import (
-    TrendingType,
-    TrendingVersion,
-)
-from flask.globals import request
-from src.utils.redis_metrics import record_metrics
 from src.api.v1.models.users import user_model_full
-from src.queries.get_reposters_for_track import get_reposters_for_track
-from src.queries.get_savers_for_track import get_savers_for_track
-from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
-from src.queries.get_stems_of import get_stems_of
+from src.queries.get_feed import get_feed
+from src.queries.get_max_id import get_max_id
+from src.queries.get_recommended_tracks import (
+    DEFAULT_RECOMMENDED_LIMIT,
+    get_full_recommended_tracks,
+    get_recommended_tracks,
+)
+from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_remixes_of import get_remixes_of
-from src.queries.get_remix_track_parents import get_remix_track_parents
-from src.queries.get_trending_ids import get_trending_ids
+from src.queries.get_reposters_for_track import get_reposters_for_track
+from src.queries.get_savers_for_track import get_savers_for_track
+from src.queries.get_stems_of import get_stems_of
+from src.queries.get_top_followee_saves import get_top_followee_saves
+from src.queries.get_top_followee_windowed import get_top_followee_windowed
+from src.queries.get_track_user_creator_node import get_track_user_creator_node
+from src.queries.get_tracks import RouteArgs, get_tracks
+from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_trending import get_full_trending, get_trending
+from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
-from src.queries.get_recommended_tracks import (
-    get_recommended_tracks,
-    get_full_recommended_tracks,
-    DEFAULT_RECOMMENDED_LIMIT,
-)
 from src.queries.get_underground_trending import get_underground_trending
+from src.queries.search_queries import SearchKind, search
+from src.trending_strategies.trending_strategy_factory import (
+    DEFAULT_TRENDING_VERSIONS,
+    TrendingStrategyFactory,
+)
+from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils.redis_cache import cache
+from src.utils.redis_metrics import record_metrics
+
+from .models.tracks import remixes_response as remixes_response_model
+from .models.tracks import stem_full, track, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -308,8 +307,19 @@ class TrackStream(Resource):
         if not creator_nodes:
             abort_not_found(track_id, ns)
 
+        # before redirecting to content node,
+        # make sure the track isn't deleted and the user isn't deactivated
+        args = {
+            "id": [decoded_id],
+            "with_users": True,
+        }
+        tracks = get_tracks(args)
+        track = tracks[0]
+        if track["is_delete"] or track["user"]["is_deactivated"]:
+            abort_not_found(track_id, ns)
+
         primary_node = creator_nodes[0]
-        stream_url = urljoin(primary_node, "tracks/stream/{}".format(track_id))
+        stream_url = urljoin(primary_node, f"tracks/stream/{track_id}")
 
         return stream_url
 
@@ -798,5 +808,187 @@ class FullRemixingRoute(Resource):
             "offset": format_offset(request_args),
         }
         tracks = get_remix_track_parents(args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+"""
+  Gets a windowed (over a certain timerange) view into the "top" of a certain type
+  amongst followees. Requires an account.
+  This endpoint is useful in generating views like:
+      - New releases
+
+  Args:
+      window: (string) The window from now() to look back over. Supports  all standard SqlAlchemy interval notation (week, month, year, etc.).
+      limit?: (number) default=25, max=100
+"""
+best_new_releases_parser = reqparse.RequestParser()
+best_new_releases_parser.add_argument(
+    "window", required=True, choices=("week", "month", "year"), type=str
+)
+best_new_releases_parser.add_argument("user_id", required=True, type=str)
+best_new_releases_parser.add_argument("limit", required=False, default=25, type=int)
+best_new_releases_parser.add_argument(
+    "with_users", required=False, default=True, type=bool
+)
+
+
+@full_ns.route("/best_new_releases")
+class BestNewReleases(Resource):
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
+    def get(self):
+        request_args = best_new_releases_parser.parse_args()
+        window = request_args.get("window")
+        args = {
+            "with_users": request_args.get("with_users"),
+            "limit": format_limit(request_args, 100),
+            "user_id": get_current_user_id(request_args),
+        }
+        tracks = get_top_followee_windowed("track", window, args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+"""
+Discovery Provider Social Feed Overview
+For a given user, current_user, we provide a feed of relevant content from around the audius network.
+This is generated in the following manner:
+  - Generate list of users followed by current_user, known as 'followees'
+  - Query all track and public playlist reposts from followees
+    - Generate list of reposted track ids and reposted playlist ids
+  - Query all track and public playlists reposted OR created by followees, ordered by timestamp
+    - At this point, 2 separate arrays one for playlists / one for tracks
+  - Query additional metadata around feed entries in each array, repost + save counts, user repost boolean
+  - Combine unsorted playlist and track arrays
+  - Sort combined results by 'timestamp' field and return
+"""
+
+under_the_radar_parser = reqparse.RequestParser()
+under_the_radar_parser.add_argument("user_id", required=True, type=str)
+under_the_radar_parser.add_argument(
+    "filter",
+    required=False,
+    default="all",
+    choices=("all", "repost", "original"),
+    type=str,
+)
+under_the_radar_parser.add_argument("limit", required=False, default=25, type=int)
+under_the_radar_parser.add_argument("offset", required=False, default=0, type=int)
+under_the_radar_parser.add_argument("tracks_only", required=False, type=bool)
+under_the_radar_parser.add_argument(
+    "with_users", required=False, default=True, type=bool
+)
+
+
+@full_ns.route("/under_the_radar")
+class UnderTheRadar(Resource):
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
+    def get(self):
+        request_args = under_the_radar_parser.parse_args()
+        args = {
+            "tracks_only": request_args.get("tracks_only"),
+            "with_users": request_args.get("with_users"),
+            "limit": format_limit(request_args, 100, 25),
+            "offset": format_offset(request_args),
+            "user_id": get_current_user_id(request_args),
+            "filter": request_args.get("filter"),
+        }
+        feed_results = get_feed(args)
+        feed_results = list(map(extend_track, feed_results))
+        return success_response(feed_results)
+
+
+"""
+    Gets a global view into the most saved of `type` amongst followees. Requires an account.
+    This endpoint is useful in generating views like:
+        - Most favorited
+"""
+most_loved_parser = reqparse.RequestParser()
+most_loved_parser.add_argument("user_id", required=True, type=str)
+most_loved_parser.add_argument("limit", required=False, default=25, type=int)
+most_loved_parser.add_argument("with_users", required=False, type=bool)
+
+
+@full_ns.route("/most_loved")
+class MostLoved(Resource):
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
+    def get(self):
+        request_args = most_loved_parser.parse_args()
+        args = {
+            "with_users": request_args.get("with_users"),
+            "limit": format_limit(request_args, 100, 25),
+            "user_id": get_current_user_id(request_args),
+        }
+        tracks = get_top_followee_saves("track", args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+@ns.route("/latest")
+class LatestTrack(Resource):
+    @record_metrics
+    def get(self):
+        latest = get_max_id("track")
+        return success_response(latest)
+
+
+by_ids_parser = reqparse.RequestParser()
+by_ids_parser.add_argument("id", required=True, action="append")
+by_ids_parser.add_argument(
+    "sort",
+    required=False,
+    choices=(
+        "date",
+        "plays",
+        "created_at",
+        "create_date",
+        "release_date",
+        "blocknumber",
+        "track_id",
+    ),
+    type=str,
+)
+by_ids_parser.add_argument("limit", required=False, default=100, type=int)
+by_ids_parser.add_argument("offset", required=False, default=0, type=int)
+by_ids_parser.add_argument("user_id", required=False, type=str)
+by_ids_parser.add_argument("authed_user_id", required=False, type=str)
+by_ids_parser.add_argument("min_block_number", required=False, type=int)
+by_ids_parser.add_argument("filter_deleted", required=False, type=bool)
+by_ids_parser.add_argument("with_users", required=False, type=bool)
+
+
+@full_ns.route("/by_ids")
+class TracksByIDs(Resource):
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
+    def get(self):
+        request_args = by_ids_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
+        ids_array = decode_ids_array(request_args.get("id"))
+
+        args = {
+            "id": ids_array,
+            "limit": format_limit(request_args, 100, 25),
+            "offset": format_offset(request_args),
+            "current_user_id": current_user_id,
+            "filter_deleted": request_args.get("filter_deleted"),
+            "with_users": request_args.get("with_users"),
+        }
+        if request_args.get("sort"):
+            args["sort"] = request_args.get("sort")
+        if request_args.get("user_id"):
+            args["user_id"] = get_current_user_id(request_args)
+        if request_args.get("authed_user_id"):
+            args["authed_user_id"] = get_authed_user_id(request_args)
+        if request_args.get("min_block_number"):
+            args["min_block_number"] = request_args.get("min_block_number")
+        tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)

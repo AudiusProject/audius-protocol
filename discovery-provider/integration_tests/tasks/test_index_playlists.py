@@ -1,14 +1,21 @@
 import random
 from datetime import datetime
-from web3 import Web3
-from src.tasks.playlists import parse_playlist_event, lookup_playlist_record
+
+from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
+from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.models import Block, Playlist, SkippedTransaction, SkippedTransactionLevel
+from src.tasks.playlists import (
+    lookup_playlist_record,
+    parse_playlist_event,
+    playlist_state_update,
+)
+from src.utils import helpers
 from src.utils.db_session import get_db
 from src.utils.playlist_event_constants import playlist_event_types_lookup
-from src.utils import helpers
-from src.challenges.challenge_event_bus import setup_challenge_bus
-from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
+from web3 import Web3
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
+
 
 # event_type: PlaylistCreated
 def get_playlist_created_event():
@@ -331,3 +338,166 @@ def test_index_playlist(app):
             session,
         )
         assert playlist_record.is_delete == True
+
+
+def test_playlist_indexing_skip_tx(app, mocker):
+    """Tests that playlists skip cursed txs without throwing an error and are able to process other tx in block"""
+    with app.app_context():
+        db = get_db()
+        ipfs_client = IPFSClient({})
+        web3 = Web3()
+        challenge_event_bus = setup_challenge_bus()
+        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
+
+    class TestPlaylistTransaction:
+        pass
+
+    blessed_tx_hash = (
+        "0x34004dfaf5bb7cf9998eaf387b877d72d198c6508608e309df3f89e57def4db3"
+    )
+    blessed_tx = TestPlaylistTransaction()
+    blessed_tx.transactionHash = update_task.web3.toBytes(hexstr=blessed_tx_hash)
+    cursed_tx_hash = (
+        "0x5fe51d735309d3044ae30055ad29101018a1a399066f6c53ea23800225e3a3be"
+    )
+    cursed_tx = TestPlaylistTransaction()
+    cursed_tx.transactionHash = update_task.web3.toBytes(hexstr=cursed_tx_hash)
+    test_block_number = 25278765
+    test_block_timestamp = 1
+    test_block_hash = update_task.web3.toHex(block_hash)
+    test_playlist_factory_txs = [cursed_tx, blessed_tx]
+    test_timestamp = datetime.utcfromtimestamp(test_block_timestamp)
+    blessed_playlist_record = Playlist(
+        blockhash=test_block_hash,
+        blocknumber=test_block_number,
+        txhash=blessed_tx_hash,
+        playlist_id=91232,
+        is_album=False,
+        is_private=False,
+        playlist_name="test",
+        playlist_contents={},
+        playlist_image_multihash=None,
+        playlist_image_sizes_multihash=None,
+        description="testing!",
+        upc=None,
+        is_current=True,
+        is_delete=True,
+        last_added_to=None,
+        updated_at=test_timestamp,
+        created_at=test_timestamp,
+        playlist_owner_id=1,
+    )
+    cursed_playlist_record = Playlist(
+        blockhash=test_block_hash,
+        blocknumber=test_block_number,
+        txhash=cursed_tx_hash,
+        playlist_id=91238,
+        is_album=None,
+        is_private=None,
+        playlist_name=None,
+        playlist_image_multihash=None,
+        playlist_image_sizes_multihash=None,
+        description=None,
+        upc=None,
+        is_current=True,
+        is_delete=True,
+        last_added_to=None,
+        updated_at=test_timestamp,
+        created_at=None,
+    )
+
+    mocker.patch(
+        "src.tasks.playlists.lookup_playlist_record",
+        side_effect=[cursed_playlist_record, blessed_playlist_record],
+        autospec=True,
+    )
+    mocker.patch(
+        "src.tasks.playlists.get_playlist_events_tx",
+        side_effect=[
+            [],  # no playlist created events
+            [
+                {
+                    "args": AttrDict(
+                        {
+                            "_playlistId": cursed_playlist_record.playlist_id,
+                        }
+                    )
+                },
+            ],  # playlist deleted event
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],  # second tx receipt
+            [
+                {
+                    "args": AttrDict(
+                        {
+                            "_playlistId": blessed_playlist_record.playlist_id,
+                        }
+                    )
+                },
+            ],  # playlist deleted event
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+        ],
+        autospec=True,
+    )
+    test_ipfs_metadata = {}
+    test_blacklisted_cids = {}
+
+    with db.scoped_session() as session:
+        try:
+            current_block = Block(
+                blockhash=test_block_hash,
+                parenthash=test_block_hash,
+                number=test_block_number,
+                is_current=True,
+            )
+            session.add(current_block)
+            (total_changes, updated_playlist_ids_set) = playlist_state_update(
+                update_task,
+                update_task,
+                session,
+                test_playlist_factory_txs,
+                test_block_number,
+                test_block_timestamp,
+                block_hash,
+                test_ipfs_metadata,
+                test_blacklisted_cids,
+            )
+            assert len(updated_playlist_ids_set) == 1
+            assert (
+                list(updated_playlist_ids_set)[0] == blessed_playlist_record.playlist_id
+            )
+            assert total_changes == 1
+            assert (
+                session.query(SkippedTransaction)
+                .filter(
+                    SkippedTransaction.txhash == cursed_playlist_record.txhash,
+                    SkippedTransaction.level == SkippedTransactionLevel.node,
+                )
+                .first()
+            )
+            assert (
+                session.query(Playlist)
+                .filter(Playlist.playlist_id == blessed_playlist_record.playlist_id)
+                .first()
+            )
+            assert (
+                session.query(Playlist)
+                .filter(Playlist.playlist_id == cursed_playlist_record.playlist_id)
+                .first()
+            ) == None
+        except Exception:
+            assert False

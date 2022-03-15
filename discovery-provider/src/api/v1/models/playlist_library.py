@@ -1,11 +1,13 @@
 from flask_restx import fields
 from flask_restx.fields import MarshallingError
 from flask_restx.marshalling import marshal
+
 from .common import ns
 
 playlist_identifier = ns.model(
     "playlist_identifier",
     {
+        # Use `FormattedString`s in these models to act as a constant via the source string arg ("playlist" here)
         "type": fields.FormattedString("playlist"),
         "playlist_id": fields.Integer(required=True),
     },
@@ -31,8 +33,8 @@ class PlaylistLibraryIdentifier(fields.Raw):
                 return marshal(value, playlist_library_folder)
         except Exception as e:
             raise MarshallingError(
-                f"Unable to marshal as playlist library identifier: {e}"
-            )
+                f"Unable to marshal as playlist library identifier: {str(value)}"
+            ) from e
 
     def output(self, key, obj, **kwargs):
         return self.format(obj)
@@ -41,7 +43,8 @@ class PlaylistLibraryIdentifier(fields.Raw):
 playlist_library_folder = ns.model(
     "playlist_library_folder",
     {
-        "type": "folder",
+        "type": fields.FormattedString("folder"),
+        "id": fields.String(required=True),
         "name": fields.String(required=True),
         "contents": fields.List(PlaylistLibraryIdentifier),
     },

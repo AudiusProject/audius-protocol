@@ -1,19 +1,19 @@
 import logging
+import math
 from datetime import datetime, timedelta
 from typing import List
-import math
 
 import redis
+from integration_tests.utils import populate_mock_db
 from sqlalchemy.sql.expression import desc
 from src.models.related_artist import RelatedArtist
+from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.tasks.index_related_artists import (
     process_related_artists_queue,
     queue_related_artist_calculation,
 )
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
-
-from integration_tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 
@@ -47,6 +47,8 @@ def test_index_related_artists(app):
         "tracks": [{"owner_id": i} for i in range(0, 7)],
     }
     populate_mock_db(db, entities)
+    with db.scoped_session() as session:
+        _update_aggregate_user(session)
     queue_related_artist_calculation(redis_conn, 0)
     process_related_artists_queue(db, redis_conn)
     with db.scoped_session() as session:

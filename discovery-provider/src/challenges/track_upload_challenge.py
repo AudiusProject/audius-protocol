@@ -1,12 +1,13 @@
 from collections import Counter
 from typing import List, Optional
+
 from sqlalchemy.orm.session import Session
-from src.models import Track, UserChallenge
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
     FullEventMetadata,
 )
+from src.models import Track, UserChallenge
 
 
 class TrackUploadChallengeUpdater(ChallengeUpdater):
@@ -57,6 +58,8 @@ class TrackUploadChallengeUpdater(ChallengeUpdater):
                 Track.blocknumber >= block_number,
                 Track.is_current == True,
                 Track.is_delete == False,
+                Track.is_unlisted == False,
+                Track.stem_of == None,
             )
             .all()
         )

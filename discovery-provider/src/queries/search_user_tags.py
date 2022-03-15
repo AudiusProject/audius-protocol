@@ -1,10 +1,10 @@
 import logging  # pylint: disable=C0302
 
 from sqlalchemy import func
-from src.models import User, TagTrackUserMatview
-from src.utils import helpers
+from src.models import TagTrackUserMatview, User
 from src.queries import response_name_constants
 from src.queries.query_helpers import populate_user_metadata
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 

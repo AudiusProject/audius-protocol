@@ -1,9 +1,16 @@
 const bs58 = require('bs58')
 const Web3 = require('../web3')
 const axios = require('axios')
+const Hashids = require('hashids/cjs')
 
 const MultiProvider = require('./multiProvider.js')
 const uuid = require('./uuid.js')
+
+// Hashids
+
+const HASH_SALT = 'azowernasdfoia'
+const MIN_LENGTH = 5
+const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
@@ -68,6 +75,11 @@ class Utils {
     return FQDN.test(url)
   }
 
+  static isHttps (url) {
+    const https = /^https:\/\//
+    return https.test(url)
+  }
+
   // Function to check if the endpont/health_check returns JSON object [ {'healthy':true} ]
   static async isHealthy (url) {
     try {
@@ -93,6 +105,20 @@ class Utils {
       hashFn: parseInt(base16Multihash[0]),
       size: parseInt(base16Multihash[1])
     }
+  }
+  /**
+ * Given a digest value (written on chain, obtained through AudiusABIDecoder.decodeMethod),
+ * convert back to a IFPS CIDv0
+ * @param {String} multihashDigest digest value from decodeMultihash
+ * @returns String CID value
+ */
+  static encodeMultihash (multihashDigest) {
+    // the 1220 is from reconstructing the hashFn and size with digest, the opposite of decodeMultihash
+    // since IPFS CIDv0 has a fixed hashFn and size, the first two values are always 12 and 20
+    // concat them together with digest and encode back to base58
+    var digestStr = `1220${multihashDigest.replace('0x', '')}`
+    // convert digestStr from hex to base 58
+    return bs58.encode(Buffer.from(digestStr, 'hex'))
   }
 
   static parseDataFromResponse (response) {
@@ -141,6 +167,59 @@ class Utils {
 
   static makeUuid () {
     return uuid()
+  }
+
+  /**
+   *
+   * Decodes a string id into an int. Returns null if an invalid ID.
+   * @static
+   * @param {string} id
+   * @returns {(number | null)} decoded
+   * @memberof Utils
+   */
+  static decodeHashId (id) {
+    try {
+      const ids = hashids.decode(id)
+      if (!ids.length) return null
+      const num = Number(ids[0])
+      if (isNaN(num)) return null
+      return num
+    } catch (e) {
+      console.error(`Failed to decode ${id}`, e)
+      return null
+    }
+  }
+
+  /**
+  * Encodes an int to a string based hashid
+  * @static
+  * @param {(number | null)} [id=null]
+  * @returns {(string | null)}
+  * @memberof Utils
+  */
+  static encodeHashId (id) {
+    try {
+      if (id === null) return null
+      const encodedId = hashids.encode(id)
+      return encodedId
+    } catch (e) {
+      console.error(`Failed to encode ${id}`, e)
+      return null
+    }
+  }
+
+  /**
+   * If `promise` responds before `timeoutMs`,
+   * this function returns its response; else rejects with `timeoutMessage`
+   * @param {Promise} promise
+   * @param {number} timeoutMs
+   * @param {string} timeoutMessage
+   */
+  static async racePromiseWithTimeout (promise, timeoutMs, timeoutMessage) {
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
+    })
+    return Promise.race([promise, timeoutPromise])
   }
 }
 

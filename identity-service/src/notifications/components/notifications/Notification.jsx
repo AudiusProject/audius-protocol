@@ -2,6 +2,13 @@ import React from 'react'
 import { getRankSuffix } from '../../formatNotificationMetadata'
 
 import NotificationBody from './NotificationBody'
+import {
+  WhiteHeavyCheckMarkIcon,
+  IncomingEnvelopeIcon,
+  HeadphoneIcon,
+  MobilePhoneWithArrowIcon,
+  MultipleMusicalNotesIcon,
+} from './Icons'
 
 import { formatCount } from './utils'
 
@@ -14,8 +21,44 @@ export const NotificationType = Object.freeze({
   Announcement: 'Announcement',
   RemixCreate: 'RemixCreate',
   RemixCosign: 'RemixCosign',
-  TrendingTrack: 'TrendingTrack'
+  TrendingTrack: 'TrendingTrack',
+  ChallengeReward: 'ChallengeReward'
 })
+
+const challengeRewardsConfig = {
+  referred: {
+    title: 'Invite your Friends',
+    icon: <IncomingEnvelopeIcon />
+  },
+  referrals: {
+    title: 'Invite your Friends',
+    icon: <IncomingEnvelopeIcon />
+  },
+  'ref-v': {
+    title: 'Invite your Fans',
+    icon: <IncomingEnvelopeIcon />
+  },
+  'connect-verified': {
+    title: 'Link Verified Accounts',
+    icon: <WhiteHeavyCheckMarkIcon />
+  },
+  'listen-streak': {
+    title: 'Listening Streak: 7 Days',
+    icon: <HeadphoneIcon />
+  },
+  'mobile-install': {
+    title: 'Get the Audius Mobile App',
+    icon: <MobilePhoneWithArrowIcon />
+  },
+  'profile-completion': {
+    title: 'Complete Your Profile',
+    icon: <WhiteHeavyCheckMarkIcon />
+  },
+  'track-upload': {
+    title: 'Upload 3 Tracks',
+    icon: <MultipleMusicalNotesIcon />
+  }
+}
 
 const EntityType = Object.freeze({
   Track: 'Track',
@@ -176,8 +219,32 @@ const notificationMap = {
         <HighlightText text={parentTrack.title} />
       </span>
     )
+  },
+  [NotificationType.ChallengeReward] (notification) {
+    const { rewardAmount } = notification
+    const { title, icon } = challengeRewardsConfig[notification.challengeId]
+    let bodyText
+    if (notification.challengeId === 'referred') {
+      bodyText = `You’ve received ${rewardAmount} $AUDIO for being referred! Invite your friends to join to earn more!`
+    } else {
+      bodyText = `You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`
+    }
+    return (
+          <span className={'notificationText'}>
+            <table
+              cellspacing='0'
+              cellpadding='0'
+              style={{ marginBottom: '4px' }}
+            >
+              <tr>
+                  <td>{icon}</td>
+                  <td><HighlightText text={title} /></td>
+            </tr>
+          </table>
+        <BodyText text={bodyText} />
+      </span>
+    )
   }
-
 }
 
 const getMessage = (notification) => {
@@ -259,6 +326,13 @@ const getTwitter = (notification) => {
         message: 'Share this Milestone',
         href: `http://twitter.com/share?url=${encodeURIComponent(url)
           }&text=${encodeURIComponent(text)}`
+      }
+    }
+    case NotificationType.ChallengeReward: {
+      const text = `I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards`
+      return {
+        message: 'Share this with your fans',
+        href: `http://twitter.com/share?text=${encodeURIComponent(text)}`
       }
     }
     default: 

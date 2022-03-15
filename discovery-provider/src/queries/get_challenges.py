@@ -1,11 +1,11 @@
-from functools import reduce
 from collections import defaultdict
-from typing import List, DefaultDict, Optional, TypedDict, Tuple, cast, Dict
+from functools import reduce
+from typing import DefaultDict, Dict, List, Optional, Tuple, TypedDict, cast
+
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import UserChallenge, Challenge, ChallengeType, ChallengeDisbursement
+from src.models import Challenge, ChallengeDisbursement, ChallengeType, UserChallenge
 
 
 class ChallengeResponse(TypedDict):
@@ -18,6 +18,7 @@ class ChallengeResponse(TypedDict):
     current_step_count: Optional[int]
     max_steps: Optional[int]
     challenge_type: str
+    amount: str
     metadata: Dict
 
 
@@ -47,6 +48,7 @@ def rollup_aggregates(
         "challenge_type": parent_challenge.type,
         "is_active": parent_challenge.active,
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
+        "amount": parent_challenge.amount,
         "metadata": {},
     }
     return response_dict
@@ -68,6 +70,7 @@ def to_challenge_response(
         "challenge_type": challenge.type,
         "is_active": challenge.active,
         "is_disbursed": disbursement is not None,
+        "amount": challenge.amount,
         "metadata": metadata,
     }
 
@@ -87,6 +90,7 @@ def create_empty_user_challenges(
             "challenge_type": challenge.type,
             "is_active": challenge.active,
             "is_disbursed": False,
+            "amount": challenge.amount,
             "metadata": metadatas[i],
         }
         user_challenges.append(user_challenge)
@@ -142,6 +146,14 @@ def get_challenges(
         ).filter(UserChallenge.user_id == user_id)
     ).all()
 
+    # Filter to challenges that have active managers
+    # (in practice, all challenge should)
+    challenges_and_disbursements = [
+        c
+        for c in challenges_and_disbursements
+        if event_bus.does_manager_exist(c[0].challenge_id)
+    ]
+
     # Combine aggregates
 
     all_challenges: List[Challenge] = (session.query(Challenge)).all()
@@ -182,14 +194,19 @@ def get_challenges(
                 and not user_challenge.is_complete
             ):
                 continue
-            regular_user_challenges.append(
-                to_challenge_response(
-                    user_challenge,
-                    parent_challenge,
-                    disbursements[i],
-                    existing_metadata[i],
-                )
+
+            user_challenge_dict = to_challenge_response(
+                user_challenge,
+                parent_challenge,
+                disbursements[i],
+                existing_metadata[i],
             )
+            override_step_count = event_bus.get_manager(
+                parent_challenge.id
+            ).get_override_challenge_step_count(session, user_id)
+            if override_step_count is not None and not user_challenge.is_complete:
+                user_challenge_dict["current_step_count"] = override_step_count
+            regular_user_challenges.append(user_challenge_dict)
 
     rolled_up: List[ChallengeResponse] = []
     for (challenge_id, challenges) in aggregate_user_challenges_map.items():
@@ -197,10 +214,17 @@ def get_challenges(
         rolled_up.append(rollup_aggregates(challenges, parent_challenge))
 
     # Return empty user challenges for active challenges that are non-hidden
+    # and visible for the current user
     active_non_hidden_challenges: List[Challenge] = [
         challenge
         for challenge in all_challenges
-        if (challenge.active and not challenge.type == ChallengeType.trending)
+        if (
+            challenge.active
+            and not challenge.type == ChallengeType.trending
+            and event_bus.get_manager(challenge.id).should_show_challenge_for_user(
+                session, user_id
+            )
+        )
     ]
     existing_challenge_ids = {
         user_challenge.challenge_id for user_challenge in existing_user_challenges

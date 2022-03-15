@@ -570,6 +570,18 @@ const config = convict({
     env: 'cognitoAPIKey',
     default: ''
   },
+  cognitoBaseUrl: {
+    doc: 'Base URL for Cognito API',
+    format: String,
+    env: 'cognitoBaseUrl',
+    default: ''
+  },
+  cognitoTemplateId: {
+    doc: 'Template for using Cognito Flow API',
+    format: String,
+    env: 'cognitoTemplateId',
+    default: ''
+  },
   solanaEndpoint: {
     doc: 'The Solana RPC endpoint to make requests against',
     format: String,
@@ -594,11 +606,11 @@ const config = convict({
     default: '',
     env: 'solanaValidSigner'
   },
-  solanaFeePayerWallet: {
-    doc: 'solanaFeePayerWallet',
+  solanaFeePayerWallets: {
+    doc: 'solanaFeePayerWallets - Stringified array like[{ privateKey: [] },...]',
     format: 'string-array',
-    default: null,
-    env: 'solanaFeePayerWallet'
+    default: [],
+    env: 'solanaFeePayerWallets'
   },
   solanaSignerPrivateKey: {
     doc: 'solanaSignerPrivateKey',
@@ -642,11 +654,11 @@ const config = convict({
     default: '',
     env: 'solanaRewardsManagerTokenPDA'
   },
-  rewardsParallelization: {
-    doc: 'How many requests to perform in parallel when disbursing rewards',
+  solanaConfirmationTimeout: {
+    doc: 'The timeout used to send solana transactions through solanaWeb3 connection in ms',
     format: Number,
-    default: '2',
-    env: 'rewardsParallelization'
+    default: '60000',
+    env: 'solanaConfirmationTimeout'
   },
   rewardsQuorumSize: {
     doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
@@ -702,10 +714,76 @@ const config = convict({
     env: 'minSolanaNotificationSlot',
     default: 105400000
   },
-  rewardsReporterSlackUrl: {
-    doc: 'The slack url to post messages for the rewards reporter',
+  successAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for success in audio / rewards events',
     format: String,
-    env: 'rewardsReporterSlackUrl',
+    env: 'successAudioReporterSlackUrl',
+    default: ''
+  },
+  errorAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in audio / rewards events',
+    format: String,
+    env: 'errorAudioReporterSlackUrl',
+    default: ''
+  },
+  errorWormholeReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in wormhole transfers',
+    format: String,
+    env: 'errorWormholeReporterSlackUrl',
+    default: ''
+  },
+  wormholeRPCHosts: {
+    doc: 'Wormhole RPC Host',
+    format: String,
+    env: 'wormholeRPCHosts',
+    default: ''
+  },
+  solBridgeAddress: {
+    doc: 'Sol bridge address for wormhole',
+    format: String,
+    env: 'solBridgeAddress',
+    default: ''
+  },
+  solTokenBridgeAddress: {
+    doc: 'Sol token bridge address for wormhole',
+    format: String,
+    env: 'solTokenBridgeAddress',
+    default: ''
+  },
+  ethBridgeAddress: {
+    doc: 'Eth bridge address for wormhole',
+    format: String,
+    env: 'ethBridgeAddress',
+    default: ''
+  },
+  ethTokenBridgeAddress: {
+    doc: 'Eth token bridge address for wormhole',
+    format: String,
+    env: 'ethTokenBridgeAddress',
+    default: ''
+  },
+  websiteHost: {
+    doc: 'Audius website host',
+    format: String,
+    env: 'websiteHost',
+    default: 'https://audius.co'
+  },
+  amplitudeAPIKey: {
+    doc: 'Amplitude API key',
+    format: String,
+    env: 'amplitudeAPIKey',
+    default: ''
+  },
+  cognitoIdentityHashSalt: {
+    doc: 'Hash salt',
+    format: String,
+    env: 'cognitoIdentityHashSalt',
+    default: ''
+  },
+  cognitoRetrySecret: {
+    doc: 'The secret necessary to request a retry for the cognito flow',
+    format: String,
+    env: 'cognitoRetrySecret',
     default: ''
   }
 })
@@ -734,7 +812,7 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
     solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
-    solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
+    solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
     solanaEndpoint: solanaContractConfig.endpoint,
     solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
 

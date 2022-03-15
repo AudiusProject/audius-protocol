@@ -13,7 +13,7 @@ const { serviceRegistry } = require('./serviceRegistry')
 const { pinCID } = require('./pinCID')
 
 const exitWithError = (...msg: any[]) => {
-  logger.error(...msg)
+  logger.error('ERROR: ', ...msg)
   process.exit(1)
 }
 
@@ -51,6 +51,21 @@ const getMode = () => {
   return arg
 }
 
+/**
+ * Setting a different port is necessary for OpenResty to work. If OpenResty
+ * is enabled, have the app run on port 3000. Else, run on its configured port.
+ * @returns the port number to configure the Content Node app
+ */
+const getPort = () => {
+  const openRestyCacheCIDEnabled = config.get('openRestyCacheCIDEnabled')
+
+  if (openRestyCacheCIDEnabled) {
+    return 3000
+  }
+
+  return config.get('port')
+}
+
 const startApp = async () => {
   logger.info('Configuring service...')
 
@@ -62,14 +77,29 @@ const startApp = async () => {
   const creatorNodeEndpoint = config.get('creatorNodeEndpoint')
 
   if (!delegateOwnerWallet || !delegatePrivateKey || !creatorNodeEndpoint) {
-    exitWithError('Cannot startup without delegateOwnerWallet, delegatePrivateKey, and creatorNodeEndpoint')
+    exitWithError(
+      'Cannot startup without delegateOwnerWallet, delegatePrivateKey, and creatorNodeEndpoint'
+    )
   }
 
   // fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
-  const privateKeyBuffer = Buffer.from(config.get('delegatePrivateKey').replace('0x', ''), 'hex')
-  const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
+  const privateKeyBuffer = Buffer.from(
+    config.get('delegatePrivateKey').replace('0x', ''),
+    'hex'
+  )
+  const walletAddress =
+    EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
   if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
+  }
+
+  const trustedNotifierEnabled = !!config.get('trustedNotifierID')
+  const nodeOperatorEmailAddress = config.get('nodeOperatorEmailAddress')
+
+  if (!trustedNotifierEnabled && !nodeOperatorEmailAddress) {
+    exitWithError(
+      'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
+    )
   }
 
   const mode = getMode()
@@ -89,7 +119,7 @@ const startApp = async () => {
     await serviceRegistry.initServices()
     logger.info(`Initialized services (Node running in ${nodeMode})`)
 
-    appInfo = initializeApp(config.get('port'), serviceRegistry)
+    appInfo = initializeApp(getPort(), serviceRegistry)
     logger.info('Initialized app and server')
 
     await pinCID(serviceRegistry.ipfsLatest)
@@ -106,7 +136,9 @@ const startApp = async () => {
     // use the bunyan CLI.
     logger.info('Shutting down db and express app...', signal, error)
     sequelize.close()
-    if (appInfo) { appInfo.server.close() }
+    if (appInfo) {
+      appInfo.server.close()
+    }
   })
 }
 startApp()

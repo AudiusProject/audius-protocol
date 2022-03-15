@@ -1,16 +1,29 @@
 const os = require('os')
 const express = require('express')
-const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat, sendResponse, errorResponseServerError } = require('../../apiHelpers')
-const { healthCheck, healthCheckVerbose, healthCheckDuration } = require('./healthCheckComponentService')
+const {
+  handleResponse,
+  successResponse,
+  errorResponseBadRequest,
+  handleResponseWithHeartbeat,
+  sendResponse,
+  errorResponseServerError
+} = require('../../apiHelpers')
+const {
+  healthCheck,
+  healthCheckVerbose,
+  healthCheckDuration
+} = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
-const { FileProcessingQueue } = require('../../FileProcessingQueue')
 
 const { recoverWallet } = require('../../apiSigning')
-const { handleTrackContentUpload, removeTrackFolder } = require('../../fileManager')
+const {
+  handleTrackContentUpload,
+  removeTrackFolder
+} = require('../../fileManager')
 
 const config = require('../../config')
 
@@ -25,20 +38,41 @@ const numberOfCPUs = os.cpus().length
  * Verifies that the request is made by the delegate Owner
  */
 const healthCheckVerifySignature = (req, res, next) => {
-  let { timestamp, randomBytes, signature } = req.query
-  if (!timestamp || !randomBytes || !signature) return sendResponse(req, res, errorResponseBadRequest(('Missing required query parameters')))
+  const { timestamp, randomBytes, signature } = req.query
+  if (!timestamp || !randomBytes || !signature) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseBadRequest('Missing required query parameters')
+    )
+  }
 
   const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
-  const recoveredPublicWallet = recoverWallet(recoveryObject, signature).toLowerCase()
+  const recoveredPublicWallet = recoverWallet(
+    recoveryObject,
+    signature
+  ).toLowerCase()
   const recoveredTimestampDate = new Date(timestamp)
   const currentTimestampDate = new Date()
   const requestAge = currentTimestampDate - recoveredTimestampDate
   if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
-    return sendResponse(req, res, errorResponseBadRequest(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`))
+    return sendResponse(
+      req,
+      res,
+      errorResponseBadRequest(
+        `Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`
+      )
+    )
   }
   const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
   if (recoveredPublicWallet !== delegateOwnerWallet) {
-    return sendResponse(req, res, errorResponseBadRequest("Requester's public key does does not match Creator Node's delegate owner wallet."))
+    return sendResponse(
+      req,
+      res,
+      errorResponseBadRequest(
+        "Requester's public key does does not match Creator Node's delegate owner wallet."
+      )
+    )
   }
 
   next()
@@ -55,7 +89,9 @@ const healthCheckController = async (req) => {
     return errorResponseServerError()
   }
 
-  let { randomBytesToSign } = req.query
+  const { randomBytesToSign } = req.query
+
+  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
 
   const logger = req.logger
   const response = await healthCheck(
@@ -64,7 +100,7 @@ const healthCheckController = async (req) => {
     sequelize,
     getMonitors,
     TranscodingQueue.getTranscodeQueueJobs,
-    FileProcessingQueue.getFileProcessingQueueJobs,
+    AsyncProcessingQueue.getAsyncProcessingQueueJobs,
     numberOfCPUs,
     randomBytesToSign
   )
@@ -85,7 +121,7 @@ const syncHealthCheckController = async () => {
  * Calls healthCheckComponentService
  */
 const healthCheckDurationController = async (req) => {
-  let response = await healthCheckDuration()
+  const response = await healthCheckDuration()
   return successResponse(response)
 }
 
@@ -101,6 +137,8 @@ const healthCheckVerboseController = async (req) => {
     return errorResponseServerError()
   }
 
+  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
+
   const logger = req.logger
   const healthCheckResponse = await healthCheckVerbose(
     serviceRegistry,
@@ -109,7 +147,7 @@ const healthCheckVerboseController = async (req) => {
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
-    FileProcessingQueue.getFileProcessingQueueJobs
+    AsyncProcessingQueue.getAsyncProcessingQueueJobs
   )
 
   return successResponse({
@@ -123,7 +161,10 @@ const healthCheckVerboseController = async (req) => {
  * This prunes the disc artifacts created by the process after.
  */
 const healthCheckFileUploadController = async (req) => {
-  const err = req.fileFilterError || req.fileSizeError || await removeTrackFolder(req, req.fileDir)
+  const err =
+    req.fileFilterError ||
+    req.fileSizeError ||
+    (await removeTrackFolder(req, req.fileDir))
   if (err) {
     return errorResponseServerError(err)
   }
@@ -134,9 +175,25 @@ const healthCheckFileUploadController = async (req) => {
 
 router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
-router.get('/health_check/duration', healthCheckVerifySignature, handleResponse(healthCheckDurationController))
-router.get('/health_check/duration/heartbeat', healthCheckVerifySignature, handleResponseWithHeartbeat(healthCheckDurationController))
-router.get('/health_check/verbose', handleResponse(healthCheckVerboseController))
-router.post('/health_check/fileupload', healthCheckVerifySignature, handleTrackContentUpload, handleResponseWithHeartbeat(healthCheckFileUploadController))
+router.get(
+  '/health_check/duration',
+  healthCheckVerifySignature,
+  handleResponse(healthCheckDurationController)
+)
+router.get(
+  '/health_check/duration/heartbeat',
+  healthCheckVerifySignature,
+  handleResponseWithHeartbeat(healthCheckDurationController)
+)
+router.get(
+  '/health_check/verbose',
+  handleResponse(healthCheckVerboseController)
+)
+router.post(
+  '/health_check/fileupload',
+  healthCheckVerifySignature,
+  handleTrackContentUpload,
+  handleResponseWithHeartbeat(healthCheckFileUploadController)
+)
 
 module.exports = router

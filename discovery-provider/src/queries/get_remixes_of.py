@@ -1,18 +1,16 @@
-from sqlalchemy import func, desc, case, and_
-
 from flask.globals import request
+from sqlalchemy import and_, case, desc, func
 from src import exceptions
-from src.models import Track, Repost, RepostType, Save, SaveType, Remix
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
+from src.models import Remix, Repost, RepostType, Save, SaveType, Track
+from src.models.models import AggregateTrack
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
-    populate_track_metadata,
     add_query_pagination,
     add_users_to_tracks,
-    create_save_count_subquery,
-    create_repost_count_subquery,
+    populate_track_metadata,
 )
+from src.utils import helpers
+from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import extract_key, use_redis_cache
 
 UNPOPULATED_REMIXES_CACHE_DURATION_SEC = 10
@@ -46,14 +44,6 @@ def get_remixes_of(args):
             parent_track = parent_track_res[0]
             track_owner_id = parent_track["owner_id"]
 
-            # Create subquery for save counts for sorting
-            save_count_subquery = create_save_count_subquery(session, SaveType.track)
-
-            # Create subquery for repost counts for sorting
-            repost_count_subquery = create_repost_count_subquery(
-                session, RepostType.track
-            )
-
             # Get the 'children' remix tracks
             # Use the track owner id to fetch reposted/saved tracks returned first
             base_query = (
@@ -86,11 +76,8 @@ def get_remixes_of(args):
                     ),
                 )
                 .outerjoin(
-                    repost_count_subquery,
-                    repost_count_subquery.c["id"] == Track.track_id,
-                )
-                .outerjoin(
-                    save_count_subquery, save_count_subquery.c["id"] == Track.track_id
+                    AggregateTrack,
+                    AggregateTrack.track_id == Track.track_id,
                 )
                 .filter(
                     Track.is_current == True,
@@ -114,15 +101,15 @@ def get_remixes_of(args):
                                 ),
                             ],
                             else_=(
-                                func.coalesce(repost_count_subquery.c.repost_count, 0)
-                                + func.coalesce(save_count_subquery.c.save_count, 0)
+                                func.coalesce(AggregateTrack.repost_count, 0)
+                                + func.coalesce(AggregateTrack.save_count, 0)
                             ),
                         )
                     ),
                     # Order by saves + reposts
                     desc(
-                        func.coalesce(repost_count_subquery.c.repost_count, 0)
-                        + func.coalesce(save_count_subquery.c.save_count, 0)
+                        func.coalesce(AggregateTrack.repost_count, 0)
+                        + func.coalesce(AggregateTrack.save_count, 0)
                     ),
                     # Ties, pick latest track id
                     desc(Track.track_id),

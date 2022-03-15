@@ -20,7 +20,7 @@ const {
   SOLANA_REWARDS_MANAGER_PROGRAM_ID,
   SOLANA_REWARDS_MANAGER_PROGRAM_PDA,
   SOLANA_REWARDS_MANAGER_TOKEN_PDA,
-  SOLANA_FEE_PAYER_SECRET_KEY,
+  SOLANA_FEE_PAYER_SECRET_KEYS,
 } = require('./constants')
 
 const {
@@ -63,11 +63,10 @@ const getLibsConfig = overrideConfig => {
       rewardsManagerProgramPDA: SOLANA_REWARDS_MANAGER_PROGRAM_PDA,
       rewardsManagerTokenPDA: SOLANA_REWARDS_MANAGER_TOKEN_PDA,
       useRelay: false,
-      feePayerSecretKey: SOLANA_FEE_PAYER_SECRET_KEY,
+      feePayerSecretKeys: SOLANA_FEE_PAYER_SECRET_KEYS
     }),
     isServer: true,
     enableUserReplicaSetManagerContract: true,
-    useTrackContentPolling: true
   }
   return _.merge(audiusLibsConfig, overrideConfig)
 }

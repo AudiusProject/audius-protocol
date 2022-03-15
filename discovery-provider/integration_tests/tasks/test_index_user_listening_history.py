@@ -1,14 +1,15 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List
+
+from integration_tests.utils import populate_mock_db
 from src.models.models import IndexingCheckpoints, UserListeningHistory
 from src.tasks.user_listening_history.index_user_listening_history import (
-    _index_user_listening_history,
     USER_LISTENING_HISTORY_TABLE_NAME,
+    _index_user_listening_history,
 )
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
-from integration_tests.utils.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 
@@ -18,6 +19,7 @@ TIMESTAMP_1 = datetime(2011, 1, 1)
 TIMESTAMP_2 = datetime(2012, 2, 2)
 TIMESTAMP_3 = datetime(2013, 3, 3)
 TIMESTAMP_4 = datetime(2014, 4, 4)
+
 
 # Tests
 def test_index_user_listening_history_populate(app):
@@ -39,17 +41,15 @@ def test_index_user_listening_history_populate(app):
             {"user_id": 2, "handle": "user-2"},
             {"user_id": 3, "handle": "user-3"},
         ],
-        "plays" : [
+        "plays": [
             # New Plays
-            {"item_id": 1, "user_id":1, "created_at": TIMESTAMP_1},
-            {"item_id": 1, "user_id":2, "created_at": TIMESTAMP_1},
-            {"item_id": 2, "user_id":3, "created_at": TIMESTAMP_1},
-
-            {"item_id": 2, "user_id":2, "created_at": TIMESTAMP_2},
-            {"item_id": 3, "user_id":3, "created_at": TIMESTAMP_2},
-
-            {"item_id": 1, "user_id":3, "created_at": TIMESTAMP_3},
-        ]
+            {"item_id": 1, "user_id": 1, "created_at": TIMESTAMP_1},
+            {"item_id": 1, "user_id": 2, "created_at": TIMESTAMP_1},
+            {"item_id": 2, "user_id": 3, "created_at": TIMESTAMP_1},
+            {"item_id": 2, "user_id": 2, "created_at": TIMESTAMP_2},
+            {"item_id": 3, "user_id": 3, "created_at": TIMESTAMP_2},
+            {"item_id": 1, "user_id": 3, "created_at": TIMESTAMP_3},
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -115,54 +115,60 @@ def test_index_user_listening_history_update(app):
             {"user_id": 2, "handle": "user-2"},
             {"user_id": 3, "handle": "user-3"},
             {"user_id": 4, "handle": "user-4"},
-
         ],
         "user_listening_history": [
             {
                 "user_id": 1,
-                "listening_history": [
-                    {"timestamp": str(TIMESTAMP_1), "track_id": 1}
-                ]
+                "listening_history": [{"timestamp": str(TIMESTAMP_1), "track_id": 1}],
             },
             {
                 "user_id": 2,
                 "listening_history": [
                     {"timestamp": str(TIMESTAMP_2), "track_id": 2},
-                    {"timestamp": str(TIMESTAMP_1), "track_id": 1}
-                ]
+                    {"timestamp": str(TIMESTAMP_1), "track_id": 1},
+                ],
             },
             {
                 "user_id": 3,
                 "listening_history": [
                     {"timestamp": str(TIMESTAMP_3), "track_id": 1},
                     {"timestamp": str(TIMESTAMP_2), "track_id": 3},
-                    {"timestamp": str(TIMESTAMP_1), "track_id": 2}
-                ]
+                    {"timestamp": str(TIMESTAMP_1), "track_id": 2},
+                ],
             },
         ],
-        "plays" : [
+        "plays": [
             # Current Plays
-            {"item_id": 1, "user_id":1, "created_at": TIMESTAMP_1},
-            {"item_id": 1, "user_id":2, "created_at": TIMESTAMP_1},
-            {"item_id": 2, "user_id":3, "created_at": TIMESTAMP_1},
-
-            {"item_id": 2, "user_id":2, "created_at": TIMESTAMP_2},
-            {"item_id": 3, "user_id":3, "created_at": TIMESTAMP_2},
-
-            {"item_id": 1, "user_id":3, "created_at": TIMESTAMP_3},
-
+            {"item_id": 1, "user_id": 1, "created_at": TIMESTAMP_1},
+            {"item_id": 1, "user_id": 2, "created_at": TIMESTAMP_1},
+            {"item_id": 2, "user_id": 3, "created_at": TIMESTAMP_1},
+            {"item_id": 2, "user_id": 2, "created_at": TIMESTAMP_2},
+            {"item_id": 3, "user_id": 3, "created_at": TIMESTAMP_2},
+            {"item_id": 1, "user_id": 3, "created_at": TIMESTAMP_3},
             # New play
-            {"item_id": 2, "user_id":1, "created_at": TIMESTAMP_3}, # listen to new track
-            {"item_id": 1, "user_id":1, "created_at": TIMESTAMP_4}, # re-listen to existing track, dedupe
-
-        ] + [
+            {
+                "item_id": 2,
+                "user_id": 1,
+                "created_at": TIMESTAMP_3,
+            },  # listen to new track
+            {
+                "item_id": 1,
+                "user_id": 1,
+                "created_at": TIMESTAMP_4,
+            },  # re-listen to existing track, dedupe
+        ]
+        + [
             # new user listens to many tracks
-            {"item_id": i+1, "user_id":4, "created_at": TIMESTAMP_4 + timedelta(hours=i)} for i in range(2000)
+            {
+                "item_id": i + 1,
+                "user_id": 4,
+                "created_at": TIMESTAMP_4 + timedelta(hours=i),
+            }
+            for i in range(2000)
         ],
-
         "indexing_checkpoints": [
             {"tablename": USER_LISTENING_HISTORY_TABLE_NAME, "last_checkpoint": 6}
-        ]
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -206,9 +212,8 @@ def test_index_user_listening_history_update(app):
         assert len(results[3].listening_history) == 1000
         for i in range(1000):
             assert results[3].listening_history[i]["track_id"] == 2000 - i
-            assert (
-                results[3].listening_history[i]["timestamp"] ==
-                str(datetime.fromisoformat("2014-06-26 07:00:00") - timedelta(hours=i))
+            assert results[3].listening_history[i]["timestamp"] == str(
+                datetime.fromisoformat("2014-06-26 07:00:00") - timedelta(hours=i)
             )
 
         new_checkpoint: IndexingCheckpoints = (
@@ -241,50 +246,43 @@ def test_index_user_listening_history_no_update(app):
             {"user_id": 2, "handle": "user-2"},
             {"user_id": 3, "handle": "user-3"},
             {"user_id": 4, "handle": "user-4"},
-
         ],
         "user_listening_history": [
             {
                 "user_id": 1,
-                "listening_history": [
-                    {"timestamp": str(TIMESTAMP_1), "track_id": 1}
-                ]
+                "listening_history": [{"timestamp": str(TIMESTAMP_1), "track_id": 1}],
             },
             {
                 "user_id": 2,
                 "listening_history": [
                     {"timestamp": str(TIMESTAMP_2), "track_id": 2},
-                    {"timestamp": str(TIMESTAMP_1), "track_id": 1}
-                ]
+                    {"timestamp": str(TIMESTAMP_1), "track_id": 1},
+                ],
             },
             {
                 "user_id": 3,
                 "listening_history": [
                     {"timestamp": str(TIMESTAMP_3), "track_id": 1},
                     {"timestamp": str(TIMESTAMP_2), "track_id": 3},
-                    {"timestamp": str(TIMESTAMP_1), "track_id": 2}
-                ]
+                    {"timestamp": str(TIMESTAMP_1), "track_id": 2},
+                ],
             },
         ],
-        "plays" : [
+        "plays": [
             # Current Plays
-            {"item_id": 1, "user_id":1, "created_at": TIMESTAMP_1},
-            {"item_id": 1, "user_id":2, "created_at": TIMESTAMP_1},
-            {"item_id": 2, "user_id":3, "created_at": TIMESTAMP_1},
-
-            {"item_id": 2, "user_id":2, "created_at": TIMESTAMP_2},
-            {"item_id": 3, "user_id":3, "created_at": TIMESTAMP_2},
-
-            {"item_id": 1, "user_id":3, "created_at": TIMESTAMP_3},
-
+            {"item_id": 1, "user_id": 1, "created_at": TIMESTAMP_1},
+            {"item_id": 1, "user_id": 2, "created_at": TIMESTAMP_1},
+            {"item_id": 2, "user_id": 3, "created_at": TIMESTAMP_1},
+            {"item_id": 2, "user_id": 2, "created_at": TIMESTAMP_2},
+            {"item_id": 3, "user_id": 3, "created_at": TIMESTAMP_2},
+            {"item_id": 1, "user_id": 3, "created_at": TIMESTAMP_3},
             # New anon plays
-            {"item_id": 1, "user_id":None, "created_at": TIMESTAMP_3},
-            {"item_id": 1, "user_id":None, "created_at": TIMESTAMP_4},
-
+            {"item_id": 1, "user_id": None, "created_at": TIMESTAMP_3},
+            {"item_id": 1, "user_id": None, "created_at": TIMESTAMP_4},
         ],
         "indexing_checkpoints": [
             {"tablename": USER_LISTENING_HISTORY_TABLE_NAME, "last_checkpoint": 6}
-        ]
+        ],
     }
 
     populate_mock_db(db, entities)

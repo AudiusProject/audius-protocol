@@ -1,36 +1,36 @@
 # pylint: disable=too-many-lines
-import logging
 import enum
-
+import logging
 from typing import Any
+
 from jsonschema import ValidationError
-from sqlalchemy import event
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship, validates
-from sqlalchemy.sql import null
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
     Boolean,
+    Column,
     Date,
     DateTime,
-    ForeignKey,
-    Text,
     Enum,
-    PrimaryKeyConstraint,
+    ForeignKey,
     Index,
-    func,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    Text,
     Unicode,
     UnicodeText,
+    event,
+    func,
 )
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import relationship, validates
+from sqlalchemy.sql import null
 from src.model_validator import ModelValidator
-
 
 Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
+
 
 # Listen for instrumentation of attributes on the base class
 # to add a listener on that attribute whenever it is set
@@ -568,6 +568,36 @@ updated_at={self.updated_at}\
 created_at={self.created_at})>"
 
 
+class PlaysArchive(Base):
+    __tablename__ = "plays_archive"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=True, index=False)
+    source = Column(String, nullable=True, index=False)
+    play_item_id = Column(Integer, nullable=False, index=False)
+    slot = Column(Integer, nullable=True, index=True)
+    signature = Column(String, nullable=True, index=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
+    archived_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
+
+    def __repr__(self):
+        return f"<Play(\
+id={self.id},\
+user_id={self.user_id},\
+source={self.source},\
+play_item_id={self.play_item_id}\
+slot={self.slot}\
+signature={self.signature}\
+updated_at={self.updated_at}\
+created_at={self.created_at}\
+archived_at={self.archived_at})>"
+
+
 class AggregatePlays(Base):
     __tablename__ = "aggregate_plays"
 
@@ -580,6 +610,38 @@ class AggregatePlays(Base):
         return f"<AggregatePlays(\
 play_item_id={self.play_item_id},\
 count={self.count})>"
+
+
+class AggregateMonthlyPlays(Base):
+    # Created for potential use case of year trending
+    # No dependencies as of now
+
+    __tablename__ = "aggregate_monthly_plays"
+
+    play_item_id = Column(Integer, primary_key=True, nullable=False)
+    timestamp = Column(
+        Date, primary_key=True, nullable=False, default=func.now()
+    )  # monthly timestamps
+    count = Column(Integer, nullable=False)
+
+    def __repr__(self):
+        return f"<AggregateMonthlyPlays(\
+play_item_id={self.play_item_id},\
+timestamp={self.timestamp},\
+count={self.count})>"
+
+
+class HourlyPlayCounts(Base):
+    __tablename__ = "hourly_play_counts"
+
+    hourly_timestamp = Column(DateTime, primary_key=True, nullable=False)
+    play_count = Column(Integer, nullable=False, index=False)
+
+    def __repr__(self):
+        return f"<HourlyPlayCounts(\
+hourly_timestamp={self.hourly_timestamp},\
+play_count={self.play_count})>"
+
 
 class IndexingCheckpoints(Base):
     __tablename__ = "indexing_checkpoints"
@@ -1048,6 +1110,11 @@ repost_count={self.repost_count},\
 save_count={self.save_count})>"
 
 
+class SkippedTransactionLevel(str, enum.Enum):
+    node = "node"
+    network = "network"
+
+
 class SkippedTransaction(Base):
     __tablename__ = "skipped_transactions"
 
@@ -1059,6 +1126,11 @@ class SkippedTransaction(Base):
     updated_at = Column(
         DateTime, nullable=False, default=func.now(), onupdate=func.now()
     )
+    level = Column(
+        Enum(SkippedTransactionLevel),
+        nullable=False,
+        default=SkippedTransactionLevel.node,
+    )
 
     def __repr__(self):
         return f"<SkippedTransaction(\
@@ -1066,6 +1138,7 @@ id={self.id},\
 blocknumber={self.blocknumber},\
 blockhash={self.blockhash},\
 txhash={self.txhash},\
+level={self.level},\
 created_at={self.created_at},\
 updated_at={self.updated_at})>"
 
@@ -1205,6 +1278,7 @@ class ListenStreakChallenge(Base):
 user_id={self.user_id},\
 last_listen_date={self.last_listen_date},\
 listen_streak={self.listen_streak})>"
+
 
 class UserListeningHistory(Base):
     __tablename__ = "user_listening_history"

@@ -459,6 +459,7 @@ jobs:
       - run:
           name: python-lint
           command: |
+            export PROTOCOL_DIR=/home/circleci/project
             cd discovery-provider
             source venv/bin/activate
             sh scripts/lint.sh
@@ -495,6 +496,8 @@ jobs:
             export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad
             export audius_web3_port=8555
             export audius_web3_eth_provider_url=http://localhost:8556
+            export PROMETHEUS_MULTIPROC_DIR=/home/circleci/prometheus_data
+            mkdir ${PROMETHEUS_MULTIPROC_DIR}
             ./scripts/circle-ci.sh
 
   test-identity-service:
@@ -554,7 +557,7 @@ jobs:
   test-solana-programs:
     docker:
       # specify the version you desire here
-      - image: cimg/rust:1.53.0
+      - image: cimg/rust:1.57.0-node
     steps:
       - checkout
       - diff-if-necessary:
@@ -597,6 +600,23 @@ jobs:
           paths:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
+
+      - restore_cache:
+          keys:
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+            - anchor-node-deps-
+      - run:
+          name: anchor tests
+          command: |
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
+            solana-keygen new --no-bip39-passphrase
+            cd solana-programs/anchor/audius-data
+            yarn
+            npx anchor test
+      - save_cache:
+          paths:
+            - solana-programs/anchor/audius-data/node_modules
+          key: anchor-ndoe-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
 
       # - restore_cache:
       #     keys:
@@ -672,51 +692,42 @@ workflows:
       - docker-build-and-push:
           name: build-libs
           repo: libs
-          requires:
-            - test-libs
 
       - test-contracts:
           name: test-contracts
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
-          requires:
-            - test-contracts
 
       - test-eth-contracts:
           name: test-eth-contracts
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
-          requires:
-            - test-eth-contracts
 
       - test-creator-node:
           name: test-creator-node
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
-          requires:
-            - test-creator-node
 
       - test-discovery-provider:
           name: test-discovery-provider
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
-          requires:
-            - test-discovery-provider
 
       - test-identity-service:
           name: test-identity-service
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
-          requires:
-            - test-identity-service
 
       - test-solana-programs:
           name: test-solana-programs
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
 
       - test-mad-dog-e2e:
           mad-dog-type: test

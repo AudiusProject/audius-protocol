@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List
+
 from redis import Redis
 from sqlalchemy.orm.session import Session
 from src.models import UserBalance
-from src.solana.constants import WAUDIO_DECIMALS
+from src.utils.spl_audio import to_wei
 
 logger = logging.getLogger(__name__)
 
@@ -60,10 +61,12 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
             "owner_wallet_balance": user_balance.balance,
             "associated_wallets_balance": user_balance.associated_wallets_balance,
             "associated_sol_wallets_balance": user_balance.associated_sol_wallets_balance,
+            "waudio_balance": user_balance.waudio,
             "total_balance": str(
                 int(user_balance.balance)
                 + int(user_balance.associated_wallets_balance)
-                + (int(user_balance.associated_sol_wallets_balance) * 10 ** WAUDIO_DECIMALS)
+                + to_wei(user_balance.associated_sol_wallets_balance)
+                + to_wei(user_balance.waudio)
             ),
         }
         for user_balance in query
@@ -81,6 +84,7 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
             "associated_wallets_balance": "0",
             "associated_sol_wallets_balance": "0",
             "total_balance": "0",
+            "waudio_balance": "0",
         }
         for user_id in needs_balance_set
     }

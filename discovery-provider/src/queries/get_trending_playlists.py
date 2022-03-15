@@ -1,38 +1,39 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
-from typing import cast, Optional, TypedDict
-from sqlalchemy import func, desc, Integer
+from typing import Optional, TypedDict, cast
+
+from sqlalchemy import Integer, desc, func
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.sql.type_api import TypeEngine
-from src.models import Playlist, Save, SaveType, RepostType, Follow, AggregateUser
-from src.tasks.generate_trending import time_delta_map
-from src.trending_strategies.trending_type_and_version import TrendingType
-from src.utils.db_session import get_db_read_replica
-from src.utils.helpers import decode_string_id
-from src.queries.query_helpers import (
-    get_repost_counts,
-    get_karma,
-    get_save_counts,
-    populate_playlist_metadata,
-    get_users_ids,
-    get_users_by_id,
-    populate_track_metadata,
-    add_users_to_tracks,
-)
-from src.queries import response_name_constants
-from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
-from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
-from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
-from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import (
     extend_playlist,
     extend_track,
-    format_offset,
     format_limit,
+    format_offset,
     to_dict,
 )
+from src.models import AggregateUser, Follow, Playlist, RepostType, Save, SaveType
+from src.queries import response_name_constants
+from src.queries.get_playlist_tracks import get_playlist_tracks
+from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
+from src.queries.query_helpers import (
+    add_users_to_tracks,
+    get_karma,
+    get_repost_counts,
+    get_save_counts,
+    get_users_by_id,
+    get_users_ids,
+    populate_playlist_metadata,
+    populate_track_metadata,
+)
+from src.tasks.generate_trending import time_delta_map
+from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
+from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import decode_string_id
+from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
 
 
 class jsonb_array_length(GenericFunction):  # pylint: disable=too-many-ancestors
@@ -42,7 +43,7 @@ class jsonb_array_length(GenericFunction):  # pylint: disable=too-many-ancestors
 
 @compiles(jsonb_array_length, "postgresql")
 def compile_jsonb_array_length(element, compiler, **kw):
-    return "%s(%s)" % (element.name, compiler.process(element.clauses))
+    return f"{element.name}({compiler.process(element.clauses)})"
 
 
 logger = logging.getLogger(__name__)
@@ -180,7 +181,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
                 ] = follower_count
 
     # Add karma
-    karma_scores = get_karma(session, tuple(playlist_ids), None, True, xf)
+    karma_scores = get_karma(session, tuple(playlist_ids), strategy, None, True, xf)
     for (playlist_id, karma) in karma_scores:
         playlist_map[playlist_id]["karma"] = karma
 
@@ -237,11 +238,9 @@ class GetTrendingPlaylistsArgs(TypedDict, total=False):
     offset: int
     limit: int
 
+
 def _get_trending_playlists_with_session(
-    session: Session,
-    args: GetTrendingPlaylistsArgs,
-    strategy,
-    use_request_context=True
+    session: Session, args: GetTrendingPlaylistsArgs, strategy, use_request_context=True
 ):
     """Returns Trending Playlists. Checks Redis cache for unpopulated playlists."""
     current_user_id = args.get("current_user_id", None)
@@ -272,7 +271,6 @@ def _get_trending_playlists_with_session(
         current_user_id,
     )
 
-    trimmed_track_ids = None
     for playlist in playlists:
         playlist["track_count"] = len(playlist["tracks"])
         playlist["tracks"] = playlist["tracks"][:PLAYLIST_TRACKS_LIMIT]
@@ -282,7 +280,8 @@ def _get_trending_playlists_with_session(
         playlist_track_ids = playlist["playlist_contents"]["track_ids"]
         playlist_track_ids = list(
             filter(
-                lambda track_id: track_id["track"] in trimmed_track_ids, # type: ignore
+                lambda track_id: track_id["track"]
+                in trimmed_track_ids,  # pylint: disable=W0640
                 playlist_track_ids,
             )
         )
@@ -306,9 +305,7 @@ def _get_trending_playlists_with_session(
 
         # Re-associate tracks with playlists
         # track_id -> populated_track
-        populated_track_map = {
-            track["track_id"]: track for track in populated_tracks
-        }
+        populated_track_map = {track["track_id"]: track for track in populated_tracks}
         for playlist in playlists_map.values():
             for i in range(len(playlist["tracks"])):
                 track_id = playlist["tracks"][i]["track_id"]
@@ -332,11 +329,13 @@ def _get_trending_playlists_with_session(
     playlists = list(map(extend_playlist, playlists))
     return sorted_playlists
 
+
 def get_trending_playlists(args: GetTrendingPlaylistsArgs, strategy):
     """Returns Trending Playlists. Checks Redis cache for unpopulated playlists."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
         return _get_trending_playlists_with_session(session, args, strategy)
+
 
 def get_full_trending_playlists(request, args, strategy):
     offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)

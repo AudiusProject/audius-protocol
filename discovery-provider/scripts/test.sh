@@ -22,21 +22,24 @@ pip3 install -r requirements.txt
 sleep 5
 set +e
 
+if [ -n "${VERBOSE}" ]; then
+  set -x
+fi
+
 # Reset local blockchain for deterministic test results
 cd_contracts_repo
 npm run ganache-q
 npm run ganache
 sleep 5
 node_modules/.bin/truffle migrate
-node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run
+node_modules/.bin/truffle exec scripts/migrate-contracts.js
 
 cd_eth_contracts_repo
 npm run ganache-q
 npm run ganache
 sleep 5
 node_modules/.bin/truffle migrate
-export audius_eth_contracts_registry=$(node -p "require('./migrations/migration-output.json').registryAddress")
-export audius_web3_eth_provider_url=http://localhost:8546
+node_modules/.bin/truffle exec scripts/migrate-contracts.js
 
 cd_discprov_repo
 
@@ -67,8 +70,10 @@ docker-compose \
 
 sleep 5
 
-# Unit tests
-pytest src
+if [ -z ${SKIP_TESTS+x} ]; then
+  # Unit tests
+  pytest src
 
-# Integration tests
-pytest integration_tests
+  # Integration tests
+  pytest integration_tests
+fi
