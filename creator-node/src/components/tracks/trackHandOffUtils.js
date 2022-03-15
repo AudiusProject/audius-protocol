@@ -20,7 +20,7 @@ async function handOffTrack(libs, req) {
   const logger = genericLogger.child(req.logContext)
   const sps = await selectRandomSPs(libs)
 
-  for (let sp of sps) {
+  for (const sp of sps) {
     try {
       logger.info(`Handing track off to sp=${sp}`)
 
