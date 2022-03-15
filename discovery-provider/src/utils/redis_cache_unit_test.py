@@ -1,59 +1,12 @@
-import json
-from datetime import datetime, timezone
+import pickle
 from time import sleep
 from unittest.mock import patch
 
 import flask
-from src.utils.redis_cache import (
-    cache,
-    get_all_json_cached_key,
-    get_json_cached_key,
-    set_json_cached_key,
-)
-from werkzeug.http import parse_date
+from src.utils.redis_cache import cache
 
 
-def test_json_cache_single_key(redis_mock):
-    """Test that values may be set and fetched from the redis cache"""
-    set_json_cached_key(redis_mock, "key", {"name": "joe", "favorite_band": "Pink"})
-    assert get_json_cached_key(redis_mock, "key") == {
-        "name": "joe",
-        "favorite_band": "Pink",
-    }
-
-
-def test_json_cache_multiple_keys(redis_mock):
-    set_json_cached_key(redis_mock, "key1", {"name": "captain america"})
-    set_json_cached_key(redis_mock, "key2", {"name": "thor"})
-    set_json_cached_key(redis_mock, "key3", {"name": "iron man"})
-    set_json_cached_key(redis_mock, "key4", {"name": "hulk"})
-    # skip key5, which should report None
-    set_json_cached_key(redis_mock, "key6", {"name": "hawkeye"})
-    redis_mock.set("key7", "cannot_serialize")
-    set_json_cached_key(redis_mock, "key8", {"name": "spiderman"})
-    results = get_all_json_cached_key(
-        redis_mock, ["key1", "key2", "key3", "key4", "key5", "key6", "key7", "key8"]
-    )
-    assert results == [
-        {"name": "captain america"},
-        {"name": "thor"},
-        {"name": "iron man"},
-        {"name": "hulk"},
-        None,
-        {"name": "hawkeye"},
-        None,
-        {"name": "spiderman"},
-    ]
-
-
-def test_json_cache_date_value(redis_mock):
-    date = datetime(2016, 2, 18, 9, 50, 20)
-    set_json_cached_key(redis_mock, "key", {"date": date})
-    result = get_json_cached_key(redis_mock, "key")
-    assert parse_date(result["date"]) == date.astimezone(timezone.utc)
-
-
-def test_cache_decorator(redis_mock):
+def test_cache(redis_mock):
     """Test that the redis cache decorator works"""
 
     @patch("src.utils.redis_cache.extract_key")
@@ -76,7 +29,7 @@ def test_cache_decorator(redis_mock):
             assert res[1] == 200
 
             cached_resp = redis_mock.get(mock_key_1)
-            deserialized = json.loads(cached_resp)
+            deserialized = pickle.loads(cached_resp)
             assert deserialized == {"name": "joe"}
 
             # This should call the function and return the cached response
@@ -102,7 +55,7 @@ def test_cache_decorator(redis_mock):
             assert res == {"music": "audius"}
 
             cached_resp = redis_mock.get(mock_key_1)
-            deserialized = json.loads(cached_resp)
+            deserialized = pickle.loads(cached_resp)
             assert deserialized == "audius"
 
             # This should call the function and return the cached response

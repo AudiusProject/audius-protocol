@@ -1,36 +1,32 @@
-import logging
-from datetime import datetime
+import logging  # pylint: disable=C0302
+import pickle
 
 from src.models import Track
 from src.utils import helpers, redis_connection
-from src.utils.redis_cache import (
-    get_all_json_cached_key,
-    get_track_id_cache_key,
-    set_json_cached_key,
-)
-from werkzeug.http import parse_date
+from src.utils.redis_cache import get_track_id_cache_key
 
 logger = logging.getLogger(__name__)
 
 # Cache unpopulated tracks for 5 min
 ttl_sec = 5 * 60
 
-track_datetime_fields = []
-for column in Track.__table__.c:
-    if column.type.python_type == datetime:
-        track_datetime_fields.append(column.name)
-
 
 def get_cached_tracks(track_ids):
-    redis_track_id_keys = list(map(get_track_id_cache_key, track_ids))
+    redis_track_id_keys = map(get_track_id_cache_key, track_ids)
     redis = redis_connection.get_redis()
-    tracks = get_all_json_cached_key(redis, redis_track_id_keys)
-    for track in tracks:
-        if track:
-            for field in track_datetime_fields:
-                # Parse date using the werkzeug parser, equivalent to Flask.JSONEncoder.
-                # Since werkzeug gives us timezone aware-UTC, drop the timezone.
-                track[field] = parse_date(track[field]).replace(tzinfo=None)
+    cached_values = redis.mget(redis_track_id_keys)
+
+    tracks = []
+    for val in cached_values:
+        if val is not None:
+            try:
+                track = pickle.loads(val)
+                tracks.append(track)
+            except Exception as e:
+                logger.warning(f"Unable to deserialize cached track: {e} {val}")
+                tracks.append(None)
+        else:
+            tracks.append(None)
     return tracks
 
 
@@ -38,7 +34,8 @@ def set_tracks_in_cache(tracks):
     redis = redis_connection.get_redis()
     for track in tracks:
         key = get_track_id_cache_key(track["track_id"])
-        set_json_cached_key(redis, key, track, ttl_sec)
+        serialized = pickle.dumps(track)
+        redis.set(key, serialized, ttl_sec)
 
 
 def get_unpopulated_tracks(
