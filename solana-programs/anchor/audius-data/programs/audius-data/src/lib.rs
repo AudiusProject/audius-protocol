@@ -566,7 +566,7 @@ pub struct RemoveUserAuthorityDelegate<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Instruction container for track creation
+/// Instruction container for entity management
 /// Confirms that user.authority matches signer authority field
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_handle: UserHandle, _entity_type: EntityTypes, _management_action:ManagementActions, _id: String, _metadata: String)]
@@ -580,28 +580,6 @@ pub struct ManageEntity<'info> {
         bump = user_handle.bump
     )]
     pub user: Account<'info, User>,
-    #[account()]
-    pub authority: Signer<'info>,
-}
-
-/// Instruction container for track updates
-/// Confirm that the user authority matches signer authority field
-#[derive(Accounts)]
-pub struct UpdateTrack<'info> {
-    #[account()]
-    pub user: Account<'info, User>,
-    #[account()]
-    // User update authority field
-    pub authority: Signer<'info>,
-}
-
-/// Instruction container for track deletes
-/// Removes track storage account entirely
-#[derive(Accounts)]
-pub struct DeleteTrack<'info> {
-    #[account()]
-    pub user: Account<'info, User>,
-    // User update authority field
     #[account()]
     pub authority: Signer<'info>,
 }
