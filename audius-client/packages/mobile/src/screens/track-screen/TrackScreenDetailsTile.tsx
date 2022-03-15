@@ -41,6 +41,7 @@ import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/s
 import { Image, Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import IconHidden from 'app/assets/images/iconHidden.svg'
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import { DetailsTileDetail } from 'app/components/details-tile/types'
@@ -49,16 +50,18 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { getPlaying, getPlayingUid, getTrack } from 'app/store/audio/selectors'
-import { makeStyles } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 import { make, track as record } from 'app/utils/analytics'
 import { moodMap } from 'app/utils/moods'
 import { getTagSearchRoute } from 'app/utils/routes'
+import { useThemeColors } from 'app/utils/theme'
 
 import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
 
 const messages = {
   track: 'track',
-  remix: 'remix'
+  remix: 'remix',
+  hiddenTrack: 'hidden track'
 }
 
 type TrackScreenDetailsTileProps = {
@@ -67,7 +70,7 @@ type TrackScreenDetailsTileProps = {
   uid: UID
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   tags: {
     borderTopWidth: 1,
     borderTopColor: palette.neutralLight7,
@@ -96,7 +99,18 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
 
   hiddenDetailsTileWrapper: {
-    marginBottom: spacing(3)
+    ...flexRowCentered(),
+    marginBottom: spacing(4)
+  },
+
+  hiddenTrackLabel: {
+    marginTop: spacing(1),
+    marginLeft: spacing(2),
+    color: palette.accentOrange,
+    fontFamily: typography.fontByWeight.demiBold,
+    fontSize: 14,
+    letterSpacing: 2,
+    textTransform: 'uppercase'
   },
 
   bottomContent: {
@@ -111,6 +125,7 @@ export const TrackScreenDetailsTile = ({
 }: TrackScreenDetailsTileProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
+  const { accentOrange } = useThemeColors()
 
   const currentUserId = useSelectorWeb(getUserId)
   const dispatchWeb = useDispatchWeb()
@@ -306,7 +321,8 @@ export const TrackScreenDetailsTile = ({
   const renderHiddenHeader = () => {
     return (
       <View style={styles.hiddenDetailsTileWrapper}>
-        {/* <HiddeDetailsTile /> */}
+        <IconHidden fill={accentOrange} />
+        <Text style={styles.hiddenTrackLabel}>{messages.hiddenTrack}</Text>
       </View>
     )
   }
