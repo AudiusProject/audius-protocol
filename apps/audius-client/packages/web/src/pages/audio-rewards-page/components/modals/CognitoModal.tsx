@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { Name } from 'common/models/Analytics'
 import {
   FlowUIOpenEvent,
   FlowUICloseEvent,
@@ -16,6 +17,8 @@ import {
 } from 'common/store/pages/audio-rewards/slice'
 import { useScript } from 'hooks/useScript'
 import { getCognitoSignature } from 'services/audius-backend/Cognito'
+import { track } from 'store/analytics/providers'
+import { isElectron, isMobile } from 'utils/clientUtil'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
 
@@ -55,12 +58,21 @@ export const CognitoModal = () => {
     })
 
     flow.on('ui', (event: FlowUIOpenEvent | FlowUICloseEvent) => {
+      const source = isMobile() ? 'mobile' : isElectron() ? 'electron' : 'web'
       switch (event.action) {
         case 'opened':
           dispatch(setCognitoFlowStatus({ status: CognitoFlowStatus.OPENED }))
+          track(Name.REWARDS_CLAIM_START_COGNITO_FLOW, {
+            handle,
+            source
+          })
           break
         case 'closed':
           dispatch(setCognitoFlowStatus({ status: CognitoFlowStatus.CLOSED }))
+          track(Name.REWARDS_CLAIM_FINISH_COGNITO_FLOW, {
+            handle,
+            source
+          })
           break
       }
     })
