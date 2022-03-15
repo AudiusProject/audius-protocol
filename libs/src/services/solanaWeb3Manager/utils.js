@@ -1,9 +1,9 @@
+const { padBNToUint8Array } = require('./padBNToUint8Array')
 const { PublicKey } = require('@solana/web3.js')
 const BN = require('bn.js')
 const keccak256 = require('keccak256')
 const secp256k1 = require('secp256k1')
 const { WAUDIO_DECMIALS } = require('../../constants')
-
 class SolanaUtils {
   /**
    * Signs arbitrary bytes
@@ -72,7 +72,12 @@ class SolanaUtils {
     const transferIdBytes = encoder.encode(transferId)
     const amountBytes = padBNToUint8Array(tokenAmount)
     const items = oracleAddress
-      ? [userBytes, amountBytes, transferIdBytes, SolanaUtils.ethAddressToArray(oracleAddress)]
+      ? [
+        userBytes,
+        amountBytes,
+        transferIdBytes,
+        SolanaUtils.ethAddressToArray(oracleAddress)
+      ]
       : [userBytes, amountBytes, transferIdBytes]
     const sep = encoder.encode('_')
     const res = items.slice(1).reduce((prev, cur, i) => {
@@ -107,10 +112,7 @@ class SolanaUtils {
     if (seed) {
       seedsArr.push(seed)
     }
-    return PublicKey.findProgramAddress(
-      seedsArr,
-      programId
-    )
+    return PublicKey.findProgramAddress(seedsArr, programId)
   }
 
   /**
@@ -122,22 +124,19 @@ class SolanaUtils {
    * @param {Uint8Array} seed
    * @returns {Promise<[PublicKey, PublicKey, number]>}
    */
-  static async findProgramAddressWithAuthority (
-    programId,
-    address,
-    seed
-  ) {
+  static async findProgramAddressWithAuthority (programId, address, seed) {
     // Finds the authority account by generating a PDA with the address as a seed
     const [authority] = await SolanaUtils.findProgramAddressFromPubkey(
       programId,
       address
     )
 
-    const [derivedAddress, bumpSeed] = await SolanaUtils.findProgramAddressFromPubkey(
-      programId,
-      authority,
-      seed
-    )
+    const [derivedAddress, bumpSeed] =
+      await SolanaUtils.findProgramAddressFromPubkey(
+        programId,
+        authority,
+        seed
+      )
     return [authority, derivedAddress, bumpSeed]
   }
 
@@ -150,7 +149,9 @@ class SolanaUtils {
     const strippedEthAddress = ethAddress.replace('0x', '')
     // Need to pad the array to length 20 - otherwise, hex eth keys starting with '0' would
     // result in truncated arrays, while eth spec is always 20 bytes
-    return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be', 20))
+    return Uint8Array.of(
+      ...new BN(strippedEthAddress, 'hex').toArray('be', 20)
+    )
   }
 
   // Safely create pubkey from nullable val
@@ -158,14 +159,5 @@ class SolanaUtils {
     return val ? new PublicKey(val) : null
   }
 }
-
-/**
- * Converts a BN to a Uint8Array of length 8, in little endian notation.
- * Useful for when Rust wants a u64 (8 * 8) represented as a byte array.
- * Ex: https://github.com/AudiusProject/audius-protocol/blob/master/solana-programs/reward-manager/program/src/processor.rs#L389
- *
- * @param {BN} bn
- */
-const padBNToUint8Array = (bn) => bn.toArray('le', 8)
 
 module.exports = SolanaUtils

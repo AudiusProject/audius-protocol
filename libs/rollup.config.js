@@ -1,7 +1,11 @@
-import pkg from './package.json'
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 import resolve from '@rollup/plugin-node-resolve'
+import typescript from '@rollup/plugin-typescript'
+
+import pkg from './package.json'
+
+const extensions = ['.js', '.ts']
 
 export default {
   input: 'src/index.js',
@@ -10,13 +14,15 @@ export default {
   ],
   plugins: [
     commonjs({
+      extensions,
       dynamicRequireTargets: [
         'data-contracts/ABIs/*.json',
         'eth-contracts/ABIs/*.json'
       ]
     }),
     json(),
-    resolve({ preferBuiltins: true })
+    resolve({ extensions, preferBuiltins: true }),
+    typescript()
   ],
   external: [
     '@audius/hedgehog',
