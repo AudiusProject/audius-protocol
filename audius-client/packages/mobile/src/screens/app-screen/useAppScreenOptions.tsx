@@ -5,7 +5,8 @@ import {
   StackNavigationOptions
 } from '@react-navigation/stack'
 import { markAllAsViewed } from 'audius-client/src/common/store/notifications/actions'
-import { Text } from 'react-native'
+import { getNotificationUnreadCount } from 'audius-client/src/common/store/notifications/selectors'
+import { Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
@@ -15,8 +16,10 @@ import IconSearch from 'app/assets/images/iconSearch.svg'
 import { IconButton } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { open as openNotificationPanel } from 'app/store/notifications/actions'
 import { makeStyles } from 'app/styles'
+import { formatCount } from 'app/utils/format'
 import { useThemeColors } from 'app/utils/theme'
 
 import { AppScreenParamList } from './AppScreen'
@@ -34,6 +37,19 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   iconNotification: {
     height: 28,
     width: 28
+  },
+  notificationCount: {
+    position: 'absolute',
+    left: 14,
+    borderRadius: 8,
+    backgroundColor: palette.accentRed,
+    paddingHorizontal: 6
+  },
+  notificationCountText: {
+    fontFamily: typography.fontByWeight.bold,
+    fontSize: 11,
+    textAlign: 'center',
+    color: palette.staticWhite
   },
   iconArrowBack: {
     height: 28,
@@ -53,9 +69,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export const useAppScreenOptions = () => {
   const styles = useStyles()
-  const { neutralLight4 } = useThemeColors()
+  const { accentOrangeLight1, neutralLight4 } = useThemeColors()
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
+  const notificationCount = useSelectorWeb(getNotificationUnreadCount)
   const navigation = useNavigation<
     AppScreenParamList & AppTabScreenParamList['Search']
   >()
@@ -98,12 +115,21 @@ export const useAppScreenOptions = () => {
           )
         }
         return (
-          <IconButton
-            icon={IconNotification}
-            styles={{ icon: styles.iconNotification }}
-            fill={neutralLight4}
-            onPress={handlePressNotification}
-          />
+          <View>
+            <IconButton
+              icon={IconNotification}
+              styles={{ icon: styles.iconNotification }}
+              fill={notificationCount > 0 ? accentOrangeLight1 : neutralLight4}
+              onPress={handlePressNotification}
+            />
+            {notificationCount > 0 ? (
+              <View style={styles.notificationCount}>
+                <Text style={styles.notificationCountText}>
+                  {formatCount(notificationCount)}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         )
       },
       title: '',
@@ -142,7 +168,9 @@ export const useAppScreenOptions = () => {
       handlePressHome,
       handlePressSearch,
       styles,
-      neutralLight4
+      neutralLight4,
+      accentOrangeLight1,
+      notificationCount
     ]
   )
 
