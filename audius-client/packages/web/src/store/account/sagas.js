@@ -40,6 +40,7 @@ import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
+import { recordIP } from 'services/audius-backend/RecordIP'
 import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
 import fingerprintClient from 'services/fingerprint/FingerprintClient'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
@@ -68,6 +69,25 @@ import { waitForValue } from 'utils/sagaHelpers'
 import mobileSagas, { setHasSignedInOnMobile } from './mobileSagas'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
+const IP_STORAGE_KEY = 'user-ip-timestamp'
+
+function* recordIPIfNotRecent(handle) {
+  const timeBetweenRefresh = 24 * 60 * 60 * 1000
+  const now = Date.now()
+  const minAge = now - timeBetweenRefresh
+  const storedIPStr = window.localStorage.getItem(IP_STORAGE_KEY)
+  const storedIP = storedIPStr && JSON.parse(storedIPStr)
+  if (!storedIP || !storedIP[handle] || storedIP[handle].timestamp < minAge) {
+    const { userIP, error } = yield call(recordIP)
+    if (!error) {
+      window.localStorage.setItem(
+        IP_STORAGE_KEY,
+        JSON.stringify({ ...storedIP, [handle]: { userIP, timestamp: now } })
+      )
+    }
+  }
+}
 
 // Tasks to be run on account successfully fetched, e.g.
 // recording metrics, setting user data
@@ -222,6 +242,8 @@ export function* fetchAccountAsync(action) {
   remoteConfigInstance.setUserId(account.user_id)
   // Fire-and-forget fp identify
   fingerprintClient.identify(account.user_id)
+
+  yield call(recordIPIfNotRecent, account.handle)
 
   // Cache the account and fire the onFetch callback. We're done.
   yield call(cacheAccount, account)
