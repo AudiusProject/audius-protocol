@@ -13,7 +13,7 @@ import IconProfileDark from 'app/assets/animations/iconProfileDark.json'
 import IconProfileLight from 'app/assets/animations/iconProfileLight.json'
 import IconTrendingDark from 'app/assets/animations/iconTrendingDark.json'
 import IconTrendingLight from 'app/assets/animations/iconTrendingLight.json'
-import AnimatedButtonProvider from 'app/components/animated-button/AnimatedButtonProvider'
+import { AnimatedButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
@@ -36,7 +36,6 @@ const icons = {
 }
 
 type BottomTabBarButtonProps = {
-  isDarkMode: boolean
   isFocused: boolean
   navigate: (route: NavigationRoute, isFocused: boolean) => void
   onLongPress: GestureResponderHandler
@@ -62,7 +61,6 @@ const useStyles = makeStyles(() => ({
 
 export const BottomTabBarButton = ({
   isFocused,
-  isDarkMode,
   route,
   navigate,
   onLongPress
@@ -82,11 +80,10 @@ export const BottomTabBarButton = ({
   }, [isFocused, handlePress, onLongPress])
 
   return (
-    <AnimatedButtonProvider
+    <AnimatedButton
       iconDarkJSON={icons.dark[route.name]}
       iconLightJSON={icons.light[route.name]}
       isActive={isFocused}
-      isDarkMode={isDarkMode}
       onLongPress={handleLongPress}
       onPress={handlePress}
       style={styles.animatedButton}

@@ -1,1 +1,1 @@
-export { default } from './RepostButton'
+export { RepostButton } from './RepostButton'

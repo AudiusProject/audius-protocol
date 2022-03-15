@@ -34,13 +34,12 @@ import IconAirplay from 'app/assets/images/iconAirplay.svg'
 import IconChromecast from 'app/assets/images/iconChromecast.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
-import AnimatedButtonProvider from 'app/components/animated-button/AnimatedButtonProvider'
-import { IconButton } from 'app/components/core'
+import { AnimatedButton, IconButton } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { showCastPicker } from 'app/store/googleCast/controller'
-import { Theme, ThemeColors, useThemeVariant } from 'app/utils/theme'
+import { ThemeColors } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -74,8 +73,6 @@ type ActionsBarProps = {
 
 export const ActionsBar = ({ track }: ActionsBarProps) => {
   const styles = useThemedStyles(createStyles)
-  const themeVariant = useThemeVariant()
-  const isDarkMode = themeVariant === Theme.DARK
   const currentUserId = useSelectorWeb(getUserId)
   const castMethod = useSelectorWeb(getCastMethod)
 
@@ -164,8 +161,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   }
   const renderRepostButton = () => {
     return (
-      <AnimatedButtonProvider
-        isDarkMode={isDarkMode}
+      <AnimatedButton
         iconLightJSON={[IconRepostOnLight, IconRepostOffLight]}
         iconDarkJSON={[IconRepostOnDark, IconRepostOffDark]}
         iconIndex={track.has_current_user_reposted ? 1 : 0}
@@ -177,8 +173,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   }
   const renderFavoriteButton = () => {
     return (
-      <AnimatedButtonProvider
-        isDarkMode={isDarkMode}
+      <AnimatedButton
         iconLightJSON={[IconFavoriteOnLight, IconFavoriteOffLight]}
         iconDarkJSON={[IconFavoriteOnDark, IconFavoriteOffDark]}
         iconIndex={track.has_current_user_saved ? 1 : 0}
