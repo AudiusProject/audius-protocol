@@ -28,10 +28,10 @@ const useStyles = makeStyles(
           borderWidth: 0
         },
         text: {
-          color: palette.white
+          color: palette.staticWhite
         },
         icon: {
-          color: palette.white
+          color: palette.staticWhite
         }
       },
       secondary: {
@@ -144,8 +144,8 @@ const useStyles = makeStyles(
 
     const baseStyles = {
       root: {
+        ...flexRowCentered(),
         justifyContent: 'center',
-        alignItems: 'center',
         alignSelf: 'center',
         borderRadius: 4
       },
