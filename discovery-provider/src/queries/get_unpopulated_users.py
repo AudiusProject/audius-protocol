@@ -1,5 +1,4 @@
 import logging  # pylint: disable=C0302
-from datetime import datetime
 
 from src.models import User
 from src.utils import helpers, redis_connection
@@ -8,29 +7,17 @@ from src.utils.redis_cache import (
     get_user_id_cache_key,
     set_json_cached_key,
 )
-from werkzeug.http import parse_date
 
 logger = logging.getLogger(__name__)
 
 # Cache unpopulated users for 5 min
 ttl_sec = 5 * 60
 
-user_datetime_fields = []
-for column in User.__table__.c:
-    if column.type.python_type == datetime:
-        user_datetime_fields.append(column.name)
-
 
 def get_cached_users(user_ids):
     redis_user_id_keys = list(map(get_user_id_cache_key, user_ids))
     redis = redis_connection.get_redis()
     users = get_all_json_cached_key(redis, redis_user_id_keys)
-    for user in users:
-        if user:
-            for field in user_datetime_fields:
-                # Parse date using the werkzeug parser, equivalent to Flask.JSONEncoder.
-                # Since werkzeug gives us timezone aware-UTC, drop the timezone.
-                user[field] = parse_date(user[field]).replace(tzinfo=None)
     return users
 
 
