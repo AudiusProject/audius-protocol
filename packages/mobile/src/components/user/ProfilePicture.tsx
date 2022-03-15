@@ -26,15 +26,15 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   const { styles: stylesProp, profile, ...other } = props
   const styles = useStyles()
 
-  const profilePicture = useUserProfilePicture(
-    profile?.user_id,
-    profile?._profile_picture_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const profilePicture = useUserProfilePicture({
+    id: profile?.user_id,
+    sizes: profile?._profile_picture_sizes,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return (
     <DynamicImage
-      source={{ uri: profilePicture }}
+      uri={profilePicture}
       styles={{
         ...stylesProp,
         ...{

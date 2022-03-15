@@ -58,7 +58,7 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   id: ID
 
   /** Url of the image */
-  imageUrl: string
+  imageUrl?: string
 
   /** The item (track or collection) */
   item: Track | Collection

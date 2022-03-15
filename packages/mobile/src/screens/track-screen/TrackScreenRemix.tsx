@@ -116,16 +116,17 @@ const TrackScreenRemixComponent = ({
   const { name, handle } = user
   const navigation = useNavigation()
 
-  const profilePictureImage = useUserProfilePicture(
-    user.user_id,
-    user._profile_picture_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
-  const coverArtImage = useTrackCoverArt(
-    track.track_id,
-    track._cover_art_sizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const profilePictureImage = useUserProfilePicture({
+    id: user.user_id,
+    sizes: user._profile_picture_sizes,
+    size: SquareSizes.SIZE_150_BY_150
+  })
+
+  const coverArtImage = useTrackCoverArt({
+    id: track.track_id,
+    sizes: track._cover_art_sizes,
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const handlePressTrack = useCallback(() => {
     navigation.push({
@@ -144,10 +145,10 @@ const TrackScreenRemixComponent = ({
   const images = (
     <>
       <View style={styles.profilePicture}>
-        <DynamicImage source={{ uri: profilePictureImage }} />
+        <DynamicImage uri={profilePictureImage} />
       </View>
       <View style={styles.coverArt}>
-        <DynamicImage source={{ uri: coverArtImage }} />
+        <DynamicImage uri={coverArtImage} />
       </View>
     </>
   )

@@ -54,7 +54,7 @@ const messages = {
 type Props = {
   artistName: string
   coSign?: Remix | null
-  imageUrl: string
+  imageUrl?: string
   isPlaying: boolean
   onPressTitle?: GestureResponderHandler
   setArtworkLoaded: (loaded: boolean) => void

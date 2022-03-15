@@ -80,7 +80,7 @@ export const ProfilePictureInput = () => {
     >
       <DynamicImage
         styles={{ image: styles.profilePictureImage }}
-        source={{ uri: value.url }}
+        uri={value.url}
         onLoad={() => setIsLoading(false)}
       >
         <View style={styles.backdrop} />
