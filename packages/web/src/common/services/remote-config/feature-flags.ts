@@ -8,7 +8,6 @@ export enum FeatureFlags {
   TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD = 'transfer_audio_to_waudio_on_load',
   CHALLENGE_REWARDS_UI = 'challenge_rewards_ui',
   SOL_WALLET_AUDIO_ENABLED = 'sol_wallet_audio_enabled',
-  SOLANA_COLLECTIBLES_ENABLED = 'solana_collectibles_enabled',
   ARTIST_RECOMMENDATIONS_ENABLED = 'artist_recommendations_enabled',
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
   PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
@@ -31,7 +30,6 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]: false,
   [FeatureFlags.CHALLENGE_REWARDS_UI]: false,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: false,
-  [FeatureFlags.SOLANA_COLLECTIBLES_ENABLED]: false,
   [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: false,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,
@@ -59,7 +57,6 @@ export const flagCohortType: {
   [key in FeatureFlags]: FeatureFlagCohortType
 } = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: FeatureFlagCohortType.SESSION_ID,
-  [FeatureFlags.SOLANA_COLLECTIBLES_ENABLED]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.TRENDING_UNDERGROUND]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: FeatureFlagCohortType.USER_ID,
   // Create wAudio user bank on sign up is a session id experiment because it only impacts

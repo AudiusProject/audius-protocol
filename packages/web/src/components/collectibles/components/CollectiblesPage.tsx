@@ -33,7 +33,6 @@ import { ReactComponent as IconGradientCollectibles } from 'assets/img/iconGradi
 import useInstanceVar from 'common/hooks/useInstanceVar'
 import { useModalState } from 'common/hooks/useModalState'
 import { Collectible, CollectiblesMetadata } from 'common/models/Collectible'
-import { FeatureFlags } from 'common/services/remote-config/feature-flags'
 import { ProfileUser } from 'common/store/pages/profile/types'
 import { getCollectible } from 'common/store/ui/collectible-details/selectors'
 import { setCollectible } from 'common/store/ui/collectible-details/slice'
@@ -48,7 +47,6 @@ import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import {
   BASE_GA_URL,
@@ -122,16 +120,10 @@ const CollectiblesPage: React.FC<{
 }) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
-  const { isEnabled: isSolanaCollectiblesEnabled } = useFlag(
-    FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
-  )
   const ethCollectibleList = profile?.collectibleList ?? null
   const solanaCollectibleList = useMemo(() => {
-    if (isSolanaCollectiblesEnabled === null) return null
-    return isSolanaCollectiblesEnabled
-      ? profile?.solanaCollectibleList ?? null
-      : []
-  }, [isSolanaCollectiblesEnabled, profile])
+    return profile?.solanaCollectibleList ?? null
+  }, [profile])
 
   const collectibleList = useMemo(() => {
     return ethCollectibleList || solanaCollectibleList
@@ -141,8 +133,7 @@ const CollectiblesPage: React.FC<{
   const hasCollectibles = profile?.has_collectibles ?? false
   const isLoading =
     profile.collectibleList === undefined ||
-    (isSolanaCollectiblesEnabled &&
-      profile.solanaCollectibleList === undefined) ||
+    profile.solanaCollectibleList === undefined ||
     (hasCollectibles && !profile.collectibles)
 
   useEffect(() => {
