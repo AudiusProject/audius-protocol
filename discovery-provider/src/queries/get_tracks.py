@@ -14,6 +14,7 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers, redis_connection
 from src.utils.db_session import get_db_read_replica
+from src.utils.elasticdsl import docs_and_ids, esclient, listify
 
 logger = logging.getLogger(__name__)
 
@@ -200,7 +201,10 @@ def get_tracks(args: GetTrackArgs):
 
             return (tracks, track_ids)
 
-        (tracks, track_ids) = get_tracks_and_ids()
+        try:
+            (tracks, track_ids) = _es_get_tracks_and_ids(args)
+        except:
+            (tracks, track_ids) = get_tracks_and_ids()
 
         # bundle peripheral info into track results
         current_user_id = args.get("current_user_id")
@@ -222,3 +226,26 @@ def get_tracks(args: GetTrackArgs):
                 for dict in tracks
             ]
     return tracks
+
+
+_es_fields = {
+    "handle": "artist_handle",
+    "user_id": "owner_id",
+    "route": "route_id",
+    "id": "_id",
+}
+
+
+def _es_get_tracks_and_ids(args: GetTrackArgs):
+    musts = []
+    for key, value in args.items():
+        musts.append({"terms": {_es_fields[key]: listify(value)}})
+
+    found = esclient.search(index="tracks", query={"bool": {"must": musts}})
+    print("--- es tracks took", found["took"])
+    return docs_and_ids(found)
+
+
+# if __name__ == "__main__":
+#     (tracks, ids) = _es_get_tracks_and_ids({"handle": "stereosteve"})
+#     print(tracks, ids)

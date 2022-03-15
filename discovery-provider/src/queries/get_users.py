@@ -9,6 +9,7 @@ from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import paginate_query, populate_user_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.utils.elasticdsl import docs_and_ids, esclient, listify
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,10 @@ def get_users(args):
 
             return (users, user_ids)
 
-        (users, user_ids) = get_users_and_ids()
+        try:
+            (users, user_ids) = _es_get_users_and_ids(args)
+        except:
+            (users, user_ids) = get_users_and_ids()
 
         # bundle peripheral info into user results
         users = populate_user_metadata(session, user_ids, users, current_user_id)
@@ -97,3 +101,26 @@ def get_users(args):
                 users_by_wallet[bank.ethereum_address]["has_solana_bank"] = True
 
     return users
+
+
+_es_fields = {
+    "id": "_id",
+    "handle": "handle",
+    "wallet": "wallet",  # TODO: need to index
+    "is_creator": "is_creator",
+}
+
+
+def _es_get_users_and_ids(args):
+    musts = []
+    for key, value in args.items():
+        musts.append({"terms": {_es_fields[key]: listify(value)}})
+
+    found = esclient.search(index="users", query={"bool": {"must": musts}})
+    print("--- es users took", found["took"])
+    return docs_and_ids(found)
+
+
+if __name__ == "__main__":
+    stuff = _es_get_users_and_ids({"handle": "stereosteve", "is_creator": True})
+    print(stuff)
