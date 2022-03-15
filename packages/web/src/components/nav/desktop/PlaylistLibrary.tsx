@@ -48,10 +48,14 @@ type PlaylistLibraryProps = {
 }
 
 type LibraryContentsLevelProps = {
+  level?: number
   contents: PlaylistLibraryType['contents']
-  renderPlaylist: (playlistId: number) => void
-  renderExplorePlaylist: (playlistId: SmartCollectionVariant) => void
-  renderFolder: (folder: PlaylistLibraryFolder) => void
+  renderPlaylist: (playlistId: number, level: number) => void
+  renderExplorePlaylist: (
+    playlistId: SmartCollectionVariant,
+    level: number
+  ) => void
+  renderFolder: (folder: PlaylistLibraryFolder, level: number) => void
 }
 
 const messages = {
@@ -62,6 +66,7 @@ const messages = {
 /** Function component for rendering a single level of the playlist library.
  * Playlist library consists of up to two content levels (root + inside a folder) */
 const LibraryContentsLevel = ({
+  level = 0,
   contents,
   renderPlaylist,
   renderExplorePlaylist,
@@ -72,16 +77,16 @@ const LibraryContentsLevel = ({
       {contents.map(content => {
         switch (content.type) {
           case 'explore_playlist': {
-            return renderExplorePlaylist(content.playlist_id)
+            return renderExplorePlaylist(content.playlist_id, level)
           }
           case 'playlist': {
-            return renderPlaylist(content.playlist_id)
+            return renderPlaylist(content.playlist_id, level)
           }
           case 'temp_playlist': {
-            return renderPlaylist(parseInt(content.playlist_id))
+            return renderPlaylist(parseInt(content.playlist_id), level)
           }
           case 'folder':
-            return renderFolder(content)
+            return renderFolder(content, level)
           default:
             return null
         }
@@ -148,17 +153,22 @@ const PlaylistLibrary = ({
     [dispatch, library, toast]
   )
 
-  const handleDropBelowFolder = useCallback(() => {
-    // TODO
-  }, [])
-
   const onReorder = useCallback(
     (
-      draggingId: ID | SmartCollectionVariant,
-      droppingId: ID | SmartCollectionVariant
+      draggingId: ID | SmartCollectionVariant | string,
+      droppingId: ID | SmartCollectionVariant | string,
+      draggingKind: 'library-playlist' | 'playlist' | 'playlist-folder',
+      reorderBeforeTarget = false
     ) => {
       if (!library) return
-      const newLibrary = reorderPlaylistLibrary(library, draggingId, droppingId)
+      if (draggingId === droppingId) return
+      const newLibrary = reorderPlaylistLibrary(
+        library,
+        draggingId,
+        droppingId,
+        draggingKind,
+        reorderBeforeTarget
+      )
       dispatch(update({ playlistLibrary: newLibrary }))
       record(
         make(Name.PLAYLIST_LIBRARY_REORDER, {
@@ -169,13 +179,17 @@ const PlaylistLibrary = ({
     [dispatch, library, record]
   )
 
-  const renderExplorePlaylist = (playlistId: SmartCollectionVariant) => {
+  const renderExplorePlaylist = (
+    playlistId: SmartCollectionVariant,
+    level = 0
+  ) => {
     const playlist = SMART_COLLECTION_MAP[playlistId]
     if (!playlist) return null
     const name = playlist.playlist_name
     const url = playlist.link
     return (
       <PlaylistNavLink
+        isInsideFolder={level > 0}
         key={playlist.link}
         playlistId={name as SmartCollectionVariant}
         droppableKey={name as SmartCollectionVariant}
@@ -207,7 +221,7 @@ const PlaylistLibrary = ({
     },
     [record, onClickNavLinkWithAccount]
   )
-  const renderPlaylist = (playlistId: ID) => {
+  const renderPlaylist = (playlistId: ID, level = 0) => {
     const playlist = playlists[playlistId]
     if (!account || !playlist) return null
     const { id, name } = playlist
@@ -217,6 +231,7 @@ const PlaylistLibrary = ({
     const hasUpdate = updates.includes(id)
     return (
       <PlaylistNavItem
+        isInsideFolder={level > 0}
         key={id}
         playlist={playlist}
         hasUpdate={Boolean(arePlaylistUpdatesEnabled) && hasUpdate}
@@ -236,7 +251,7 @@ const PlaylistLibrary = ({
     )
   }
 
-  const renderFolder = (folder: PlaylistLibraryFolder) => {
+  const renderFolder = (folder: PlaylistLibraryFolder, level = 0) => {
     return (
       <PlaylistFolderNavItem
         key={folder.id}
@@ -245,12 +260,31 @@ const PlaylistLibrary = ({
         dragging={dragging}
         draggingKind={draggingKind}
         onClickEdit={handleClickEditFolder}
-        onDropBelowFolder={handleDropBelowFolder}
+        onDropBelowFolder={(folderId, draggingKind, draggingId) =>
+          onReorder(draggingId, folderId, draggingKind)
+        }
         onDropInFolder={handleDropInFolder}
       >
         {isEmpty(folder.contents) ? null : (
           <div className={styles.folderContentsContainer}>
+            {/* This is the droppable area for reordering something in the first slot of the playlist folder. */}
+            <Droppable
+              className={styles.droppable}
+              hoverClassName={styles.droppableHover}
+              onDrop={(draggingId, draggingKind) => {
+                onReorder(
+                  draggingId,
+                  folder.contents[0].type === 'folder'
+                    ? folder.contents[0].id
+                    : folder.contents[0].playlist_id,
+                  draggingKind,
+                  true
+                )
+              }}
+              acceptedKinds={['playlist-folder', 'library-playlist']}
+            />
             <LibraryContentsLevel
+              level={level + 1}
               contents={folder.contents}
               renderPlaylist={renderPlaylist}
               renderExplorePlaylist={renderExplorePlaylist}
@@ -297,8 +331,10 @@ const PlaylistLibrary = ({
         key={-1}
         className={cn(styles.droppable, styles.top)}
         hoverClassName={styles.droppableHover}
-        onDrop={(id: ID | SmartCollectionVariant) => onReorder(id, -1)}
-        acceptedKinds={['library-playlist']}
+        onDrop={(id: ID | SmartCollectionVariant, kind) =>
+          onReorder(id, -1, kind)
+        }
+        acceptedKinds={['library-playlist', 'playlist-folder']}
       />
       {account && playlists && library ? (
         <LibraryContentsLevel
