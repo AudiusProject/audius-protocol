@@ -11,7 +11,7 @@ import {
 
 import { DefaultSizes } from 'common/models/ImageSizes'
 import Kind from 'common/models/Kind'
-import { DoubleKeys, FeatureFlags } from 'common/services/remote-config'
+import { DoubleKeys } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import {
@@ -47,11 +47,7 @@ import { isMobile } from 'utils/clientUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 
-const {
-  getRemoteVar,
-  getFeatureEnabled,
-  waitForRemoteConfig
-} = remoteConfigInstance
+const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
 
 function* watchFetchProfile() {
   yield takeLatest(profileActions.FETCH_PROFILE, fetchProfileAsync)
@@ -113,21 +109,11 @@ export function* fetchOpenSeaAssets(user) {
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
   yield call(waitForRemoteConfig)
-
-  if (!getFeatureEnabled(FeatureFlags.SOLANA_COLLECTIBLES_ENABLED)) {
-    return {}
-  }
-
   return yield call(SolanaClient.getAllCollectibles, wallets)
 }
 
 export function* fetchSolanaCollectibles(user) {
   yield call(waitForRemoteConfig)
-
-  if (!getFeatureEnabled(FeatureFlags.SOLANA_COLLECTIBLES_ENABLED)) {
-    return
-  }
-
   const { sol_wallets: solWallets } = yield apiClient.getAssociatedWallets({
     userID: user.user_id
   })

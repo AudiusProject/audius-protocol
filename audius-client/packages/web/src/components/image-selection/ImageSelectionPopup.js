@@ -6,14 +6,12 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
-import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import TabSlider from 'components/data-entry/TabSlider'
 import Dropzone from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 import { useSelectTierInfo } from 'components/user-badges/hooks'
 import { badgeTiers } from 'components/user-badges/utils'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import RandomImage from 'services/RandomImage'
@@ -129,15 +127,12 @@ const RandomPage = ({ onSelect }) => {
 const CollectionPage = ({ onSelect, source }) => {
   const [loadedImgs, setLoadedImgs] = useState([])
   const [page, setPage] = useState(1)
-  const { isEnabled: isSolanaCollectiblesEnabled } = useFlag(
-    FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
-  )
   const { collectibles, collectibleList, solanaCollectibleList } = useSelector(
     getAccountUser
   )
   const allCollectibles = [
     ...(collectibleList || []),
-    ...((isSolanaCollectiblesEnabled && solanaCollectibleList) || [])
+    ...(solanaCollectibleList || [])
   ]
   const collectibleIdMap = allCollectibles.reduce((acc, c) => {
     acc[c.id] = c
@@ -232,9 +227,6 @@ const ImageSelectionPopup = ({
     solanaCollectibleList,
     user_id: userId
   } = useSelector(getAccountUser)
-  const { isEnabled: isSolanaCollectiblesEnabled } = useFlag(
-    FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
-  )
 
   const { tierNumber } = useSelectTierInfo(userId ?? 0)
   const isCollectibleOptionEnabled =
@@ -242,7 +234,7 @@ const ImageSelectionPopup = ({
 
   const allCollectibles = [
     ...(collectibleList || []),
-    ...((isSolanaCollectiblesEnabled && solanaCollectibleList) || [])
+    ...(solanaCollectibleList || [])
   ]
   const visibleCollectibles = collectibles?.order
     ? allCollectibles.filter(c => collectibles?.order?.includes(c.id))
