@@ -49,7 +49,7 @@ npm run test:units
 
 # run tests
 printf '\nSTART tests:\n\n'
-node_modules/.bin/mocha tests/index.js
+node_modules/.bin/ts-mocha tests/index.js
 
 # run linter
 node_modules/.bin/standard
