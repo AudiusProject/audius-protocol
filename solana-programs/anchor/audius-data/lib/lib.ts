@@ -48,6 +48,11 @@ type InitUserParams = {
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStgKey: anchor.web3.PublicKey;
   adminKeypair: anchor.web3.Keypair;
+  ursm: number[];
+  ursmBumps: number[];
+  cn1: anchor.web3.PublicKey;
+  cn2: anchor.web3.PublicKey;
+  cn3: anchor.web3.PublicKey;
 };
 
 type CreateUserParams = {
@@ -62,6 +67,11 @@ type CreateUserParams = {
   userStgAccount: anchor.web3.PublicKey;
   adminStgPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
+  ursm: number[];
+  ursmBumps: number[];
+  cn1: anchor.web3.PublicKey;
+  cn2: anchor.web3.PublicKey;
+  cn3: anchor.web3.PublicKey;
 };
 
 type UpdateUserParams = {
@@ -176,22 +186,28 @@ export const initAdmin = async ({
 };
 
 /// Initialize a user from the Audius Admin account
-
 export const initUser = async ({
   provider,
   program,
   ethAddress,
   handleBytesArray,
   bumpSeed,
+  ursm,
+  ursmBumps,
   metadata,
   userStgAccount,
   baseAuthorityAccount,
   adminStgKey,
   adminKeypair,
+  cn1,
+  cn2,
+  cn3,
 }: InitUserParams) => {
   return program.rpc.initUser(
     baseAuthorityAccount,
     [...anchor.utils.bytes.hex.decode(ethAddress)],
+    ursm,
+    ursmBumps,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -200,6 +216,9 @@ export const initUser = async ({
         admin: adminStgKey,
         payer: provider.wallet.publicKey,
         user: userStgAccount,
+        cn1,
+        cn2,
+        cn3,
         authority: adminKeypair.publicKey,
         systemProgram: SystemProgram.programId,
       },
@@ -257,8 +276,8 @@ type CreateContentNode = {
   baseAuthorityAccount: anchor.web3.PublicKey;
   contentNodeAcct: anchor.web3.PublicKey;
   contentNodeAuthority: anchor.web3.PublicKey;
-  spID: anchor.BN,
-  ownerEthAddress: string
+  spID: anchor.BN;
+  ownerEthAddress: string;
 };
 export const createContentNode = async ({
   provider,
@@ -269,7 +288,7 @@ export const createContentNode = async ({
   spID,
   contentNodeAuthority,
   contentNodeAcct,
-  ownerEthAddress
+  ownerEthAddress,
 }: CreateContentNode) => {
   return program.rpc.createContentNode(
     baseAuthorityAccount,
@@ -290,10 +309,10 @@ export const createContentNode = async ({
 };
 
 type Proposer = {
-  pda: anchor.web3.PublicKey,
-  authority: anchor.web3.Keypair,
-  seedBump: { seed: Buffer, bump: number }
-}
+  pda: anchor.web3.PublicKey;
+  authority: anchor.web3.Keypair;
+  seedBump: { seed: Buffer; bump: number };
+};
 
 /// Create a content node with proposers
 type PublicCreateContentNode = {
@@ -303,11 +322,11 @@ type PublicCreateContentNode = {
   baseAuthorityAccount: anchor.web3.PublicKey;
   contentNodeAcct: anchor.web3.PublicKey;
   contentNodeAuthority: anchor.web3.PublicKey;
-  spID: anchor.BN,
-  ownerEthAddress: string,
-  proposer1: Proposer,
-  proposer2: Proposer,
-  proposer3: Proposer,
+  spID: anchor.BN;
+  ownerEthAddress: string;
+  proposer1: Proposer;
+  proposer2: Proposer;
+  proposer3: Proposer;
 };
 export const publicCreateContentNode = async ({
   provider,
@@ -322,7 +341,6 @@ export const publicCreateContentNode = async ({
   proposer2,
   proposer3,
 }: PublicCreateContentNode) => {
-
   return program.rpc.publicCreateContentNode(
     baseAuthorityAccount,
     { seed: [...proposer1.seedBump.seed], bump: proposer1.seedBump.bump },
@@ -342,7 +360,7 @@ export const publicCreateContentNode = async ({
         proposer2: proposer2.pda,
         proposer2Authority: proposer2.authority.publicKey,
         proposer3: proposer3.pda,
-        proposer3Authority: proposer3.authority.publicKey
+        proposer3Authority: proposer3.authority.publicKey,
       },
       signers: [proposer1.authority, proposer2.authority, proposer3.authority],
     }
@@ -356,10 +374,10 @@ type PublicDeleteContentNode = {
   adminStgPublicKey: anchor.web3.PublicKey;
   adminAuthorityPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  cnDelete: Proposer,
-  proposer1: Proposer,
-  proposer2: Proposer,
-  proposer3: Proposer,
+  cnDelete: Proposer;
+  proposer1: Proposer;
+  proposer2: Proposer;
+  proposer3: Proposer;
 };
 export const publicDeleteContentNode = async ({
   provider,
@@ -372,7 +390,6 @@ export const publicDeleteContentNode = async ({
   proposer2,
   proposer3,
 }: PublicDeleteContentNode) => {
-
   return program.rpc.publicDeleteContentNode(
     baseAuthorityAccount,
     { seed: [...cnDelete.seedBump.seed], bump: cnDelete.seedBump.bump },
@@ -391,22 +408,25 @@ export const publicDeleteContentNode = async ({
         proposer2: proposer2.pda,
         proposer2Authority: proposer2.authority.publicKey,
         proposer3: proposer3.pda,
-        proposer3Authority: proposer3.authority.publicKey
+        proposer3Authority: proposer3.authority.publicKey,
       },
       signers: [proposer1.authority, proposer2.authority, proposer3.authority],
     }
   );
 };
 
-
 /// Create a user without Audius Admin account
-
 export const createUser = async ({
   baseAuthorityAccount,
   program,
   ethAccount,
   message,
+  ursm,
+  ursmBumps,
   handleBytesArray,
+  cn1,
+  cn2,
+  cn3,
   bumpSeed,
   metadata,
   provider,
@@ -437,6 +457,8 @@ export const createUser = async ({
     program.instruction.createUser(
       baseAuthorityAccount,
       [...anchor.utils.bytes.hex.decode(ethAccount.address)],
+      ursm,
+      ursmBumps,
       handleBytesArray,
       bumpSeed,
       metadata,
@@ -445,6 +467,9 @@ export const createUser = async ({
         accounts: {
           payer: provider.wallet.publicKey,
           user: userStgAccount,
+          cn1,
+          cn2,
+          cn3,
           systemProgram: SystemProgram.programId,
           sysvarProgram: SystemSysVarProgramKey,
           audiusAdmin: adminStgPublicKey,

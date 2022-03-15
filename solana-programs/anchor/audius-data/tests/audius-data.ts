@@ -26,6 +26,7 @@ import {
   testInitUserSolPubkey,
   testDeleteTrack,
   testUpdateTrack,
+  createSolanaContentNode,
 } from "./test-helpers";
 const { PublicKey, SystemProgram } = anchor.web3;
 
@@ -45,6 +46,24 @@ describe("audius-data", function () {
   const adminKeypair = anchor.web3.Keypair.generate();
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
+  const contentNodes = {};
+  const getURSMParams = () => {
+    return {
+      ursm: [
+        contentNodes["1"].spId.toNumber(),
+        contentNodes["2"].spId.toNumber(),
+        contentNodes["3"].spId.toNumber(),
+      ],
+      ursmBumps: [
+        contentNodes["1"].seedBump.bump,
+        contentNodes["2"].seedBump.bump,
+        contentNodes["3"].seedBump.bump,
+      ],
+      cn1: contentNodes["1"].pda,
+      cn2: contentNodes["2"].pda,
+      cn3: contentNodes["3"].pda,
+    };
+  };
 
   it("Initializing admin account!", async function () {
     const tx = await initAdmin({
@@ -78,6 +97,33 @@ describe("audius-data", function () {
     expect(adminAccount.isWriteEnabled, "is_write_enabled").to.equal(true);
   });
 
+  it("Initializing Content Node accounts!", async function () {
+    const cn1 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(1),
+    });
+    const cn2 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(2),
+    });
+    const cn3 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(3),
+    });
+    contentNodes["1"] = cn1;
+    contentNodes["2"] = cn2;
+    contentNodes["3"] = cn3;
+  });
+
   it("Initializing user!", async function () {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
@@ -102,6 +148,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       adminStgKeypair,
       adminKeypair,
+      ...getURSMParams(),
     });
   });
 
@@ -129,6 +176,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       adminStgKeypair,
       adminKeypair,
+      ...getURSMParams(),
     });
 
     // New sol key that will be used to permission user updates
@@ -182,6 +230,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       adminStgKeypair,
       adminKeypair,
+      ...getURSMParams(),
     });
 
     // New sol key that will be used to permission user updates
@@ -227,6 +276,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       adminStgKeypair,
       adminKeypair,
+      ...getURSMParams(),
     });
 
     // New sol key that will be used to permission user updates
@@ -290,6 +340,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       adminStgKeypair,
       adminKeypair,
+      ...getURSMParams(),
     });
 
     // New sol key that will be used to permission user updates
@@ -401,6 +452,7 @@ describe("audius-data", function () {
         newUserKeypair,
         userStgAccount: newUserAcctPDA,
         adminStgPublicKey: adminStgKeypair.publicKey,
+        ...getURSMParams(),
       })
     ).to.be.rejectedWith(Error);
   });
@@ -446,6 +498,7 @@ describe("audius-data", function () {
         newUserKeypair,
         userStgAccount: newUserAcctPDA,
         adminStgPublicKey: adminStgKeypair.publicKey,
+        ...getURSMParams(),
       })
     ).to.be.rejectedWith(Error);
   });
@@ -490,6 +543,7 @@ describe("audius-data", function () {
       newUserKeypair,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
+      ...getURSMParams(),
     });
 
     await expect(
@@ -505,6 +559,7 @@ describe("audius-data", function () {
         newUserKeypair,
         userStgAccount: newUserAcctPDA,
         adminStgPublicKey: adminStgKeypair.publicKey,
+        ...getURSMParams(),
       })
     )
       .to.eventually.be.rejected.and.property("logs")
@@ -552,6 +607,7 @@ describe("audius-data", function () {
       newUserKeypair,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
+      ...getURSMParams(),
     });
 
     // New sol key that will be used as user authority delegate
@@ -668,6 +724,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       adminStgKeypair,
       adminKeypair,
+      ...getURSMParams(),
     });
 
     // New sol key that will be used to permission user updates
@@ -690,6 +747,7 @@ describe("audius-data", function () {
         newUserKeypair,
         userStgAccount: newUserAcctPDA,
         adminStgPublicKey: adminStgKeypair.publicKey,
+        ...getURSMParams(),
       })
     )
       .to.eventually.be.rejected.and.property("logs")
@@ -735,11 +793,12 @@ describe("audius-data", function () {
         newUserKeypair,
         userStgAccount: incorrectPDA,
         adminStgPublicKey: adminStgKeypair.publicKey,
+        ...getURSMParams(),
       })
     )
       .to.eventually.be.rejected.and.property("logs")
       .to.include(
-        `Program ${program.programId.toString()} failed: Cross-program invocation with unauthorized signer or writable account`
+        `Program ${SystemProgram.programId.toString()} failed: Cross-program invocation with unauthorized signer or writable account`
       );
   });
 
@@ -775,6 +834,7 @@ describe("audius-data", function () {
       newUserKeypair,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
+      ...getURSMParams(),
     });
     const tx = await updateIsVerified({
       program,
@@ -827,6 +887,7 @@ describe("audius-data", function () {
       newUserKeypair,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
+      ...getURSMParams(),
     });
 
     const trackMetadata = randomCID();
@@ -898,6 +959,7 @@ describe("audius-data", function () {
       newUserKeypair,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
+      ...getURSMParams(),
     });
 
     const trackMetadata = randomCID();

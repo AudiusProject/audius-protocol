@@ -10,14 +10,10 @@ import {
 } from "../lib/lib";
 import { findDerivedPair } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import {
-
-  createSolanaContentNode,
-  EthWeb3,
-} from "./test-helpers";
+import { createSolanaContentNode, EthWeb3 } from "./test-helpers";
 const { SystemProgram } = anchor.web3;
 
-describe.only("ursm", function () {
+describe("ursm", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -31,7 +27,7 @@ describe.only("ursm", function () {
   const adminKeypair = anchor.web3.Keypair.generate();
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
-  const contentNodes = {}
+  const contentNodes = {};
 
   it("Initializing admin account!", async function () {
     await initAdmin({
@@ -101,9 +97,9 @@ describe.only("ursm", function () {
       adminStgKeypair,
       spId: new anchor.BN(4),
     });
-    contentNodes[cn2.spId.toString()] = cn2
-    contentNodes[cn3.spId.toString()] = cn3
-    contentNodes[cn4.spId.toString()] = cn4
+    contentNodes[cn2.spId.toString()] = cn2;
+    contentNodes[cn3.spId.toString()] = cn3;
+    contentNodes[cn4.spId.toString()] = cn4;
 
     const spID = new anchor.BN(5);
     const ownerEth = EthWeb3.eth.accounts.create();
@@ -175,9 +171,9 @@ describe.only("ursm", function () {
       adminStgKeypair,
       spId: new anchor.BN(8),
     });
-    contentNodes[cn6.spId.toString()] = cn6
-    contentNodes[cn7.spId.toString()] = cn7
-    contentNodes[cn8.spId.toString()] = cn8
+    contentNodes[cn6.spId.toString()] = cn6;
+    contentNodes[cn7.spId.toString()] = cn7;
+    contentNodes[cn8.spId.toString()] = cn8;
 
     const spID = new anchor.BN(9);
     const ownerEth = EthWeb3.eth.accounts.create();
@@ -267,23 +263,21 @@ describe.only("ursm", function () {
     ).to.equal(ownerEth.address.toLowerCase());
   });
 
-
   it("Deletes a Content Node with the proposers", async function () {
-    const cn2 = contentNodes['2']
-    const cn3 = contentNodes['3']
-    const cn4 = contentNodes['4']
+    const cn2 = contentNodes["2"];
+    const cn3 = contentNodes["3"];
+    const cn4 = contentNodes["4"];
 
-    const cnToDelete = contentNodes['6']
+    const cnToDelete = contentNodes["6"];
 
     const spID = new anchor.BN(4);
-    const seed = Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
+    const seed = Buffer.concat([
+      Buffer.from("sp_id", "utf8"),
+      spID.toBuffer("le", 2),
+    ]);
     const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-      await findDerivedPair(
-        program.programId,
-        adminStgKeypair.publicKey,
-        seed
-      );
- 
+      await findDerivedPair(program.programId, adminStgKeypair.publicKey, seed);
+
     const initAudiusAdminBalance = await provider.connection.getBalance(
       adminKeypair.publicKey
     );
@@ -299,7 +293,7 @@ describe.only("ursm", function () {
         authority: cnToDelete.authority,
         seedBump: {
           seed,
-          bump: bumpSeed
+          bump: bumpSeed,
         },
       },
       proposer1: {
@@ -328,7 +322,7 @@ describe.only("ursm", function () {
       );
       retries--;
     }
-    
+
     if (initAudiusAdminBalance === updatedAudiusAdminBalance) {
       throw new Error("Failed to deallocate track");
     }
@@ -337,10 +331,9 @@ describe.only("ursm", function () {
       const account = await program.account.contentNode.fetch(derivedAddress);
       throw new Error("Should throw error on fetch deleted account");
     } catch (e) {
-      expect(
-        e.message,
-        "content node account should not exist"
-      ).to.contain('Account does not exist');
-      }
+      expect(e.message, "content node account should not exist").to.contain(
+        "Account does not exist"
+      );
+    }
   });
 });

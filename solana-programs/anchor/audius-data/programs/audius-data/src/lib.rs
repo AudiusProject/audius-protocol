@@ -16,7 +16,7 @@ pub type EthereumAddress = [u8; 20];
 #[program]
 pub mod audius_data {
     use anchor_lang::solana_program::{
-        instruction::Instruction, secp256k1_program, system_program,
+        secp256k1_program,
         sysvar
     };
     use std::str::FromStr;
@@ -72,7 +72,9 @@ pub mod audius_data {
         ctx: Context<InitializeUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        handle_seed: [u8; 32],
+        ursm: [u16; 3],
+        _ursm_bumps: [u8; 3],
+        handle_seed: [u8; 16],
         _user_bump: u8,
         _metadata: String,
     ) -> Result<()> {
@@ -101,6 +103,7 @@ pub mod audius_data {
 
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
+        audius_user_acct.ursm = ursm;
 
         Ok(())
     }
@@ -290,7 +293,9 @@ pub mod audius_data {
         ctx: Context<CreateUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        _handle_seed: [u8; 32],
+        ursm: [u16; 3],
+        _ursm_bumps: [u8; 3],
+        _handle_seed: [u8; 16],
         _user_bump: u8,
         _metadata: String,
         user_authority: Pubkey,
@@ -326,6 +331,7 @@ pub mod audius_data {
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
         audius_user_acct.authority = user_authority;
+        audius_user_acct.ursm = ursm;
 
         let message = secp_data.data[MESSAGE_OFFSET..].to_vec();
 
@@ -498,7 +504,7 @@ pub struct Initialize<'info> {
 /// `payer` is the account responsible for the lamports required to allocate this account.
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;32])]
+#[instruction(base: Pubkey, eth_address: [u8;20], ursm: [u16; 3], ursm_bumps:[u8; 3], handle_seed: [u8;16])]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
@@ -509,6 +515,12 @@ pub struct InitializeUser<'info> {
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[0].to_le_bytes()], bump = ursm_bumps[0])]
+    pub cn1: Account<'info, ContentNode>,
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[1].to_le_bytes()], bump = ursm_bumps[1])]
+    pub cn2: Account<'info, ContentNode>,
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[2].to_le_bytes()], bump = ursm_bumps[2])]
+    pub cn3: Account<'info, ContentNode>,
     #[account(mut)]
     pub authority: Signer<'info>,
     #[account(mut)]
@@ -616,7 +628,7 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;32])]
+#[instruction(base: Pubkey, eth_address: [u8;20], ursm: [u16; 3], ursm_bumps:[u8; 3], handle_seed: [u8;16])]
 pub struct CreateUser<'info> {
     #[account(
         init,
@@ -626,6 +638,12 @@ pub struct CreateUser<'info> {
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[0].to_le_bytes()], bump = ursm_bumps[0])]
+    pub cn1: Account<'info, ContentNode>,
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[1].to_le_bytes()], bump = ursm_bumps[1])]
+    pub cn2: Account<'info, ContentNode>,
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[2].to_le_bytes()], bump = ursm_bumps[2])]
+    pub cn3: Account<'info, ContentNode>,
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account(mut)]
@@ -788,7 +806,7 @@ pub struct AudiusAdmin {
 pub struct User {
     pub eth_address: [u8; 20],
     pub authority: Pubkey,
-    pub ursm: [u32; 3]
+    pub ursm: [u16; 3]
 }
 
 /// Content Node storage account

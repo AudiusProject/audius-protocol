@@ -14,7 +14,10 @@ import {
 } from "../lib/lib";
 import { getTransaction, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser } from "./test-helpers";
+import {
+  createSolanaContentNode,
+  createSolanaUser,
+} from "./test-helpers";
 
 chai.use(chaiAsPromised);
 
@@ -61,6 +64,61 @@ describe("track-actions", function () {
       adminStgAccount: adminStgKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+  });
+
+  it("Initializing Content Node accounts!", async function () {
+    await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(1),
+    });
+    await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(2),
+    });
+    await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(3),
+    });
+  });
+
+  it("Save a track with a low track id", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const tx = await writeTrackSocialAction({
+      program,
+      baseAuthorityAccount: user.authority,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
+      userAuthorityKeypair: user.keypair,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
+      trackSocialAction: TrackSocialActionEnumValues.addSave,
+      trackId: randomString(44),
+    });
+
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+
+    const userHandle = String.fromCharCode(...user.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
+      TrackSocialActionEnumValues.addSave
+    );
   });
 
   it("Delete save for a track", async function () {

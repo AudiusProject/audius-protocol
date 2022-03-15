@@ -66,11 +66,18 @@ export const testInitUser = async ({
   userStgAccount,
   adminStgKeypair,
   adminKeypair,
+  ursm,
+  ursmBumps,
+  cn1,
+  cn2,
+  cn3,
 }) => {
   const tx = await initUser({
     provider,
     program,
     ethAddress,
+    ursm,
+    ursmBumps,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -78,6 +85,9 @@ export const testInitUser = async ({
     baseAuthorityAccount,
     adminStgKey: adminStgKeypair.publicKey,
     adminKeypair,
+    cn1,
+    cn2,
+    cn3,
   });
 
   const account = await program.account.user.fetch(userStgAccount);
@@ -147,6 +157,11 @@ export const testCreateUser = async ({
   newUserKeypair,
   userStgAccount,
   adminStgPublicKey,
+  ursm,
+  ursmBumps,
+  cn1,
+  cn2,
+  cn3,
 }) => {
   const tx = await createUser({
     provider,
@@ -155,11 +170,16 @@ export const testCreateUser = async ({
     message,
     handleBytesArray,
     bumpSeed,
+    ursm,
+    ursmBumps,
     metadata,
     userSolPubkey: newUserKeypair.publicKey,
     userStgAccount,
     adminStgPublicKey,
     baseAuthorityAccount,
+    cn1,
+    cn2,
+    cn3,
   });
 
   const { decodedInstruction, decodedData, accountPubKeys } =
@@ -458,6 +478,27 @@ export const confirmLogInTransaction = async (
   return info;
 };
 
+export const getContentNode = async (
+  program: anchor.Program<AudiusData>,
+  adminStgPK: anchor.web3.PublicKey,
+  spId: string
+) => {
+  const seed = Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    new anchor.BN(spId).toBuffer("le", 2),
+  ]);
+
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+    await findDerivedPair(program.programId, adminStgPK, seed);
+
+  return {
+    spId: new anchor.BN(spId),
+    baseAuthorityAccount,
+    bumpSeed,
+    derivedAddress,
+  };
+};
+
 export const createSolanaUser = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
@@ -482,6 +523,10 @@ export const createSolanaUser = async (
   // Message as the incoming public key
   const message = newUserKeypair.publicKey.toBytes();
 
+  const cn1 = await getContentNode(program, adminStgKeypair.publicKey, "1");
+  const cn2 = await getContentNode(program, adminStgKeypair.publicKey, "2");
+  const cn3 = await getContentNode(program, adminStgKeypair.publicKey, "3");
+
   await createUser({
     provider,
     program,
@@ -494,6 +539,11 @@ export const createSolanaUser = async (
     userStgAccount: newUserAcctPDA,
     adminStgPublicKey: adminStgKeypair.publicKey,
     baseAuthorityAccount,
+    ursm: [1, 2, 3],
+    ursmBumps: [cn1.bumpSeed, cn2.bumpSeed, cn3.bumpSeed],
+    cn1: cn1.derivedAddress,
+    cn2: cn2.derivedAddress,
+    cn3: cn3.derivedAddress,
   });
 
   const account = await program.account.user.fetch(newUserAcctPDA);
@@ -509,22 +559,25 @@ export const createSolanaUser = async (
 };
 
 export const createSolanaContentNode = async (props: {
-  program: Program<AudiusData>,
-  provider: anchor.Provider,
-  adminStgKeypair: anchor.web3.Keypair,
-  adminKeypair: anchor.web3.Keypair,
-  spId: anchor.BN
+  program: Program<AudiusData>;
+  provider: anchor.Provider;
+  adminStgKeypair: anchor.web3.Keypair;
+  adminKeypair: anchor.web3.Keypair;
+  spId: anchor.BN;
 }) => {
-  const ownerEth = EthWeb3.eth.accounts.create()
+  const ownerEth = EthWeb3.eth.accounts.create();
   const authority = anchor.web3.Keypair.generate();
-  const seed = Buffer.concat([Buffer.from("sp_id", 'utf8'), props.spId.toBuffer('le', 2)])
+  const seed = Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    props.spId.toBuffer("le", 2),
+  ]);
 
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-  await findDerivedPair(
-    props.program.programId,
-    props.adminStgKeypair.publicKey,
-    seed
-  );
+    await findDerivedPair(
+      props.program.programId,
+      props.adminStgKeypair.publicKey,
+      seed
+    );
 
   const tx = await createContentNode({
     provider: props.provider,
@@ -535,7 +588,7 @@ export const createSolanaContentNode = async (props: {
     contentNodeAuthority: authority.publicKey,
     contentNodeAcct: derivedAddress,
     spID: props.spId,
-    ownerEthAddress: ownerEth.address
+    ownerEthAddress: ownerEth.address,
   });
 
   const contentNode = await props.program.account.contentNode.fetch(
