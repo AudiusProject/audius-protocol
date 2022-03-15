@@ -1,5 +1,5 @@
 {
-  "extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
+  "extends": "@tsconfig/node16-strictest/tsconfig.json",
   "compilerOptions": {
     "checkJs": false
   }
