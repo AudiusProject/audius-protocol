@@ -27,7 +27,6 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import { useMainPageHeader } from 'components/nav/store/context'
 import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
-import { useArePlaylistUpdatesEnabled } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
 import { make, useRecord } from 'store/analytics/actions'
 import { albumPage, TRENDING_PAGE, playlistPage } from 'utils/route'
@@ -268,9 +267,6 @@ const PlaylistCardLineup = ({
   playlistUpdates: number[]
   updatePlaylistLastViewedAt: (playlistId: number) => void
 }) => {
-  const {
-    isEnabled: arePlaylistUpdatesEnabled
-  } = useArePlaylistUpdatesEnabled()
   const record = useRecord()
 
   const filteredPlaylists = getFilteredPlaylists(playlists || [])
@@ -303,7 +299,7 @@ const PlaylistCardLineup = ({
             })
           )
         }}
-        updateDot={!!arePlaylistUpdatesEnabled && hasUpdate}
+        updateDot={hasUpdate}
       />
     )
   })
