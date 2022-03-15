@@ -347,11 +347,13 @@ module.exports = function (app) {
           solTxSignature
         })
       }, {
-        // Retry function 5x by default
-        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
-        minTimeout: 500,
-        maxTimeout: 8000,
-        factor: 3,
+        // Retry function 3x by default
+        // 1st retry delay = 6s, 2nd = 24s, 3rd = 60s (total cumulative retry delay = 90s)
+        // easy way to calculate values is this script
+        // const minTimeout = 6000, maxTimeout = 60000, factor = 4, retries=3; [...Array(retries).keys()].map(i => Math.min(minTimeout * Math.pow(factor, i), maxTimeout));
+        minTimeout: 6000,
+        maxTimeout: 60000,
+        factor: 4,
         retries: 3,
         onRetry: (err, i) => {
           if (err) {
