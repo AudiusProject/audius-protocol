@@ -354,8 +354,8 @@ type PublicDeleteContentNode = {
   provider: Provider;
   program: Program<AudiusData>;
   adminStgPublicKey: anchor.web3.PublicKey;
+  adminAuthorityPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
   cnDelete: Proposer,
   proposer1: Proposer,
   proposer2: Proposer,
@@ -365,8 +365,8 @@ export const publicDeleteContentNode = async ({
   provider,
   program,
   adminStgPublicKey,
+  adminAuthorityPublicKey,
   baseAuthorityAccount,
-  contentNodeAcct,
   cnDelete,
   proposer1,
   proposer2,
@@ -382,8 +382,9 @@ export const publicDeleteContentNode = async ({
     {
       accounts: {
         admin: adminStgPublicKey,
+        adminAuthority: adminAuthorityPublicKey,
         payer: provider.wallet.publicKey,
-        contentNode: contentNodeAcct,
+        contentNode: cnDelete.pda,
         systemProgram: SystemProgram.programId,
         proposer1: proposer1.pda,
         proposer1Authority: proposer1.authority.publicKey,

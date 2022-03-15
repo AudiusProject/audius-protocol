@@ -547,6 +547,7 @@ export const createSolanaContentNode = async (props: {
   }
 
   return {
+    spId: props.spId,
     account: contentNode,
     pda: derivedAddress,
     authority,

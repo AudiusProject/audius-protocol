@@ -2,16 +2,16 @@ import { expect } from "chai";
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { sendAndConfirmRawTransaction } from "@solana/web3.js";
-
 import {
   initAdmin,
   createContentNode,
   publicCreateContentNode,
+  publicDeleteContentNode,
 } from "../lib/lib";
 import { findDerivedPair } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
-  confirmLogInTransaction,
+
   createSolanaContentNode,
   EthWeb3,
 } from "./test-helpers";
@@ -31,6 +31,7 @@ describe.only("ursm", function () {
   const adminKeypair = anchor.web3.Keypair.generate();
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
+  const contentNodes = {}
 
   it("Initializing admin account!", async function () {
     await initAdmin({
@@ -41,12 +42,6 @@ describe.only("ursm", function () {
       verifierKeypair,
       playlistIdOffset: new anchor.BN("0"),
     });
-    const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
-    );
-
-    const chainAuthority = adminAccount.authority.toString();
-    const expectedAuthority = adminKeypair.publicKey.toString();
   });
 
   it("Creates Content Node with the Admin account", async function () {
@@ -85,27 +80,30 @@ describe.only("ursm", function () {
   });
 
   it("Creates Content Node with the proposers", async function () {
-    const cn1 = await createSolanaContentNode({
+    const cn2 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
       adminStgKeypair,
       spId: new anchor.BN(2),
     });
-    const cn2 = await createSolanaContentNode({
+    const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
       adminStgKeypair,
       spId: new anchor.BN(3),
     });
-    const cn3 = await createSolanaContentNode({
+    const cn4 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
       adminStgKeypair,
       spId: new anchor.BN(4),
     });
+    contentNodes[cn2.spId.toString()] = cn2
+    contentNodes[cn3.spId.toString()] = cn3
+    contentNodes[cn4.spId.toString()] = cn4
 
     const spID = new anchor.BN(5);
     const ownerEth = EthWeb3.eth.accounts.create();
@@ -127,14 +125,14 @@ describe.only("ursm", function () {
       contentNodeAuthority: authority.publicKey,
       ownerEthAddress: ownerEth.address,
       proposer1: {
-        pda: cn1.pda,
-        authority: cn1.authority,
-        seedBump: cn1.seedBump,
-      },
-      proposer2: {
         pda: cn2.pda,
         authority: cn2.authority,
         seedBump: cn2.seedBump,
+      },
+      proposer2: {
+        pda: cn4.pda,
+        authority: cn4.authority,
+        seedBump: cn4.seedBump,
       },
       proposer3: {
         pda: cn3.pda,
@@ -177,6 +175,9 @@ describe.only("ursm", function () {
       adminStgKeypair,
       spId: new anchor.BN(8),
     });
+    contentNodes[cn6.spId.toString()] = cn6
+    contentNodes[cn7.spId.toString()] = cn7
+    contentNodes[cn8.spId.toString()] = cn8
 
     const spID = new anchor.BN(9);
     const ownerEth = EthWeb3.eth.accounts.create();
@@ -268,51 +269,43 @@ describe.only("ursm", function () {
 
 
   it("Deletes a Content Node with the proposers", async function () {
-    const cn1 = await createSolanaContentNode({
-      program,
-      provider,
-      adminKeypair,
-      adminStgKeypair,
-      spId: new anchor.BN(2),
-    });
-    const cn2 = await createSolanaContentNode({
-      program,
-      provider,
-      adminKeypair,
-      adminStgKeypair,
-      spId: new anchor.BN(3),
-    });
-    const cn3 = await createSolanaContentNode({
-      program,
-      provider,
-      adminKeypair,
-      adminStgKeypair,
-      spId: new anchor.BN(4),
-    });
+    const cn2 = contentNodes['2']
+    const cn3 = contentNodes['3']
+    const cn4 = contentNodes['4']
 
-    const spID = new anchor.BN(5);
-    const ownerEth = EthWeb3.eth.accounts.create();
+    const cnToDelete = contentNodes['6']
 
+    const spID = new anchor.BN(4);
+    const seed = Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
     const { baseAuthorityAccount, bumpSeed, derivedAddress } =
       await findDerivedPair(
         program.programId,
         adminStgKeypair.publicKey,
-        Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
+        seed
       );
-    const authority = anchor.web3.Keypair.generate();
-    const tx = await publicCreateContentNode({
+ 
+    const initAudiusAdminBalance = await provider.connection.getBalance(
+      adminKeypair.publicKey
+    );
+
+    await publicDeleteContentNode({
       provider,
       program,
       baseAuthorityAccount,
+      adminAuthorityPublicKey: adminKeypair.publicKey,
       adminStgPublicKey: adminStgKeypair.publicKey,
-      contentNodeAcct: derivedAddress,
-      spID,
-      contentNodeAuthority: authority.publicKey,
-      ownerEthAddress: ownerEth.address,
+      cnDelete: {
+        pda: derivedAddress,
+        authority: cnToDelete.authority,
+        seedBump: {
+          seed,
+          bump: bumpSeed
+        },
+      },
       proposer1: {
-        pda: cn1.pda,
-        authority: cn1.authority,
-        seedBump: cn1.seedBump,
+        pda: cn4.pda,
+        authority: cn4.authority,
+        seedBump: cn4.seedBump,
       },
       proposer2: {
         pda: cn2.pda,
@@ -325,16 +318,29 @@ describe.only("ursm", function () {
         seedBump: cn3.seedBump,
       },
     });
+    // Confirm that the account is zero'd out
+    // Note that there appears to be a delay in the propagation, hence the retries
+    let updatedAudiusAdminBalance = initAudiusAdminBalance;
+    let retries = 20;
+    while (updatedAudiusAdminBalance == initAudiusAdminBalance && retries > 0) {
+      updatedAudiusAdminBalance = await provider.connection.getBalance(
+        adminKeypair.publicKey
+      );
+      retries--;
+    }
+    
+    if (initAudiusAdminBalance === updatedAudiusAdminBalance) {
+      throw new Error("Failed to deallocate track");
+    }
 
-    const account = await program.account.contentNode.fetch(derivedAddress);
-
-    expect(
-      account.authority.toString(),
-      "content node authority set correctly"
-    ).to.equal(authority.publicKey.toString());
-    expect(
-      anchor.utils.bytes.hex.encode(Buffer.from(account.ownerEthAddress)),
-      "content node owner eth addr set correctly"
-    ).to.equal(ownerEth.address.toLowerCase());
+    try {
+      const account = await program.account.contentNode.fetch(derivedAddress);
+      throw new Error("Should throw error on fetch deleted account");
+    } catch (e) {
+      expect(
+        e.message,
+        "content node account should not exist"
+      ).to.contain('Account does not exist');
+      }
   });
 });

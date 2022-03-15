@@ -169,16 +169,11 @@ pub mod audius_data {
 
         // Ensure that no proposer's owner eth address is repeated
         let mut eth_addresses = BTreeMap::new();
-        if !proposers.iter().all(move |(proposer, _)| return match eth_addresses.insert(proposer.owner_eth_address, true) {
+        if !proposers.iter().all(move |(proposer, authority)| return match eth_addresses.insert(proposer.owner_eth_address, true) {
             Some(_) => false,
-            None => true
+            None => proposer.authority == authority.key()
         }) {
             // duplicate owner eth address - err
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        if !proposers.iter().all(|(proposer, authority)| proposer.authority == authority.key()) {
-            // authority did not sign - err
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -189,15 +184,6 @@ pub mod audius_data {
         );
 
         if derived_base != base {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        // Confirm that the derived pda from base is the same as the user storage account
-        let (derived_content_node, _) = Pubkey::find_program_address(
-            &[&derived_base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, sp_id.to_le_bytes().as_ref()],
-            ctx.program_id,
-        );
-        if derived_content_node != ctx.accounts.content_node.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -216,7 +202,6 @@ pub mod audius_data {
         _p1: ProposerSeedBump,
         _p2: ProposerSeedBump,
         _p3: ProposerSeedBump,
-        sp_id: u16,
     ) -> Result<()> {
         msg!("Audius::PublicDeleteContentNode");
 
@@ -233,16 +218,11 @@ pub mod audius_data {
 
         // Ensure that no proposer's owner eth address is repeated
         let mut eth_addresses = BTreeMap::new();
-        if !proposers.iter().all(move |(proposer, _)| return match eth_addresses.insert(proposer.owner_eth_address, true) {
+        if !proposers.iter().all(move |(proposer, authority)| return match eth_addresses.insert(proposer.owner_eth_address, true) {
             Some(_) => false,
-            None => true
+            None => proposer.authority == authority.key()
         }) {
             // duplicate owner eth address - err
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        if !proposers.iter().all(|(proposer, authority)| proposer.authority == authority.key()) {
-            // authority did not sign - err
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -253,15 +233,6 @@ pub mod audius_data {
         );
 
         if derived_base != base {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        // Confirm that the derived pda from base is the same as the user storage account
-        let (derived_content_node, _) = Pubkey::find_program_address(
-            &[&derived_base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, sp_id.to_le_bytes().as_ref()],
-            ctx.program_id,
-        );
-        if derived_content_node != ctx.accounts.content_node.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -601,11 +572,11 @@ pub struct PublicCreateContentNode<'info> {
 
 /// TODO: comment
 #[derive(Accounts)]
-#[instruction(base: Pubkey, p_delete: ProposerSeedBump, p1: ProposerSeedBump, p2: ProposerSeedBump, p3: ProposerSeedBump, sp_id: u16)]
+#[instruction(base: Pubkey, p_delete: ProposerSeedBump, p1: ProposerSeedBump, p2: ProposerSeedBump, p3: ProposerSeedBump)]
 pub struct PublicDeleteContentNode<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
-    #[account()]
+    #[account(mut)]
     pub admin_authority: AccountInfo<'info>,    
     #[account(
         mut,
@@ -834,14 +805,6 @@ pub struct UserAuthorityDelegate {
     pub delegate_authority: Pubkey,
     // PDA of user storage account enabling operations
     pub user_storage_account: Pubkey,
-}
-
-#[error_code]
-pub enum EthParsingError {
-    #[msg("Wrong adress prefix.")]
-    InvalidPrefix,
-    #[msg("InvalidHexString")]
-    InvalidHexString
 }
 
 // User actions enum, used to follow/unfollow based on function arguments
