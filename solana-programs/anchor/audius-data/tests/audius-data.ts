@@ -26,7 +26,7 @@ const { PublicKey, SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
 
-describe("audius-data", function () {
+describe.only("audius-data", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -41,7 +41,7 @@ describe("audius-data", function () {
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
-  it("Initializing admin account!", async function () {
+  it.only("Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
@@ -287,10 +287,14 @@ describe("audius-data", function () {
     await testCreateTrack({
       provider,
       program,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
       id: trackID,
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
       trackOwnerPDA: newUserAcctPDA,
+      adminStgAccount: adminStgKeypair.publicKey,
     });
 
     // Expected signature validation failure
@@ -302,20 +306,26 @@ describe("audius-data", function () {
       await testCreateTrack({
         provider,
         program,
+        baseAuthorityAccount,
+        handleBytesArray,
+        bumpSeed,
         id: randomString(10),
         trackMetadata,
         userAuthorityKeypair: wrongUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
+        adminStgAccount: adminStgKeypair.publicKey,
       });
     } catch (e) {
       console.log(`Error found as expected ${e}`);
     }
-
     const updatedTrackMetadata = randomCID();
-    console.log(`Updating track`);
     await testUpdateTrack({
       provider,
       program,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      adminStgAccount: adminStgKeypair.publicKey,
       id: trackID,
       userStgAccountPDA: newUserAcctPDA,
       userAuthorityKeypair: newUserKeypair,
@@ -799,6 +809,10 @@ describe("audius-data", function () {
       provider,
       program,
       id: trackID,
+      baseAuthorityAccount,
+      handleBytesArray,
+      adminStgAccount: adminStgKeypair.publicKey,
+      bumpSeed,
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
       trackOwnerPDA: newUserAcctPDA,
@@ -810,10 +824,14 @@ describe("audius-data", function () {
       id: trackID,
       trackOwnerPDA: newUserAcctPDA,
       userAuthorityKeypair: newUserKeypair,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      adminStgAccount: adminStgKeypair.publicKey,
     });
   });
 
-  it("create multiple tracks in parallel", async function () {
+  it.only("create multiple tracks in parallel", async function () {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const {
@@ -855,6 +873,10 @@ describe("audius-data", function () {
       testCreateTrack({
         provider,
         program,
+        baseAuthorityAccount,
+        handleBytesArray,
+        bumpSeed,
+        adminStgAccount: adminKeypair.publicKey,
         id: randomString(10),
         trackMetadata,
         userAuthorityKeypair: newUserKeypair,
@@ -863,6 +885,10 @@ describe("audius-data", function () {
       testCreateTrack({
         provider,
         program,
+        baseAuthorityAccount,
+        handleBytesArray,
+        bumpSeed,
+        adminStgAccount: adminKeypair.publicKey,
         id: randomString(10),
         trackMetadata: trackMetadata2,
         userAuthorityKeypair: newUserKeypair,
@@ -871,6 +897,10 @@ describe("audius-data", function () {
       testCreateTrack({
         provider,
         program,
+        baseAuthorityAccount,
+        handleBytesArray,
+        bumpSeed,
+        adminStgAccount: adminKeypair.publicKey,
         id: randomString(10),
         trackMetadata: trackMetadata3,
         userAuthorityKeypair: newUserKeypair,

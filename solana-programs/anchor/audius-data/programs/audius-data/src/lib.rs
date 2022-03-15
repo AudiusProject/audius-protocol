@@ -224,7 +224,22 @@ pub mod audius_data {
     /*
         Entity related functions
     */
-    pub fn manage_entity(ctx: Context<ManageEntity>, _entity_type: EntityTypes, _management_action: ManagementActions, _id: String, _metadata: String) -> Result<()> {
+    pub fn manage_entity(
+        ctx: Context<ManageEntity>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _entity_type: EntityTypes,
+        _management_action: ManagementActions,
+        _id: String,
+        _metadata: String,
+    ) -> Result<()> {
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
         // Reject if update submitted with invalid user authority
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
@@ -554,8 +569,16 @@ pub struct RemoveUserAuthorityDelegate<'info> {
 /// Instruction container for track creation
 /// Confirms that user.authority matches signer authority field
 #[derive(Accounts)]
+#[instruction(base: Pubkey, user_handle: UserHandle, _entity_type: EntityTypes, _management_action:ManagementActions, _id: String, _metadata: String)]
+// Instruction base pda, handle
 pub struct ManageEntity<'info> {
     #[account()]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    // Audiusadmin
+    #[account(
+        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
+        bump = user_handle.bump
+    )]
     pub user: Account<'info, User>,
     #[account()]
     pub authority: Signer<'info>,
@@ -745,13 +768,13 @@ pub enum PlaylistSocialActionValues {
 pub enum ManagementActions {
     Create,
     Update,
-    Delete
+    Delete,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub enum EntityTypes {
     Track,
-    Playlist
+    Playlist,
 }
 
 // Seed & bump used to validate the user's handle with the account base

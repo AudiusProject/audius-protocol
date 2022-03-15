@@ -169,6 +169,10 @@ export const testCreateTrack = async ({
   provider,
   program,
   id,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
   trackMetadata,
   userAuthorityKeypair,
   trackOwnerPDA,
@@ -179,6 +183,10 @@ export const testCreateTrack = async ({
     userAuthorityKeypair,
     userStgAccountPDA: trackOwnerPDA,
     metadata: trackMetadata,
+    baseAuthorityAccount,
+    handleBytesArray,
+    adminStgAccount,
+    bumpSeed,
   });
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, tx);
@@ -189,11 +197,11 @@ export const testCreateTrack = async ({
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
   expect(decodedData.managementAction).to.deep.equal(ManagementActions.create);
   // Assert on instruction struct
-  // 0th index = track owner user storage account
-  // 1st index = user authority keypair
+  // 1st index = track owner user storage account
+  // 2nd index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[0]).to.equal(trackOwnerPDA.toString());
-  expect(accountPubKeys[1]).to.equal(userAuthorityKeypair.publicKey.toString());
+  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
 export const testDeleteTrack = async ({
@@ -202,6 +210,10 @@ export const testDeleteTrack = async ({
   id,
   trackOwnerPDA,
   userAuthorityKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
 }) => {
   const tx = await deleteTrack({
     id,
@@ -209,6 +221,10 @@ export const testDeleteTrack = async ({
     program,
     userStgAccountPDA: trackOwnerPDA,
     userAuthorityKeypair: userAuthorityKeypair,
+    baseAuthorityAccount,
+    handleBytesArray,
+    bumpSeed,
+    adminStgAccount,
   });
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, tx);
@@ -220,8 +236,8 @@ export const testDeleteTrack = async ({
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[0]).to.equal(trackOwnerPDA.toString());
-  expect(accountPubKeys[1]).to.equal(userAuthorityKeypair.publicKey.toString());
+  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
 export const testUpdateTrack = async ({
@@ -231,9 +247,17 @@ export const testUpdateTrack = async ({
   userStgAccountPDA,
   metadata,
   userAuthorityKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
 }) => {
   const tx = await updateTrack({
     program,
+    baseAuthorityAccount,
+    handleBytesArray,
+    bumpSeed,
+    adminStgAccount,
     id,
     userStgAccountPDA,
     metadata,
@@ -252,8 +276,8 @@ export const testUpdateTrack = async ({
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[0]).to.equal(userStgAccountPDA.toString());
-  expect(accountPubKeys[1]).to.equal(userAuthorityKeypair.publicKey.toString());
+  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
 export const pollAccountBalance = async (
