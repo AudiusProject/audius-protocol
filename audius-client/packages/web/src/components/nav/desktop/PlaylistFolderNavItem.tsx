@@ -20,14 +20,11 @@ import IconButton from 'components/icon-button/IconButton'
 import navColumnStyles from './NavColumn.module.css'
 import styles from './PlaylistLibrary.module.css'
 
-type PlaylistFolderNavButtonProps = React.ComponentPropsWithoutRef<'button'> & {
-  onReorder: () => void
-}
+type PlaylistFolderNavButtonProps = React.ComponentPropsWithoutRef<'button'>
 
 const FolderNavLink = ({
   id,
   name,
-  onReorder,
   children,
   className,
   ...buttonProps
@@ -69,13 +66,13 @@ type PlaylistFolderNavItemProps = {
   onClickEdit: (folderId: string) => void
   onDropInFolder: (
     folder: PlaylistLibraryFolder,
-    droppedKind: 'library-playlist' | 'playlist',
-    droppedId: ID | string | SmartCollectionVariant
+    draggingKind: 'library-playlist' | 'playlist',
+    draggingId: ID | string | SmartCollectionVariant
   ) => void
   onDropBelowFolder: (
     folderId: string,
-    droppedKind: 'playlist-folder' | 'library-playlist',
-    droppedId: ID | string | SmartCollectionVariant
+    draggingKind: 'playlist-folder' | 'library-playlist',
+    draggingId: ID | string | SmartCollectionVariant
   ) => void
   children?: React.ReactNode
 }
@@ -103,7 +100,7 @@ export const PlaylistFolderNavItem = ({
   })
 
   return (
-    <React.Fragment key={id}>
+    <React.Fragment>
       {/* This is the droppable area for adding a playlist into a folder */}
       <Droppable
         className={navColumnStyles.droppable}
@@ -120,14 +117,11 @@ export const PlaylistFolderNavItem = ({
           onMouseLeave={() => setIsHovering(false)}
           id={id}
           name={name}
-          onReorder={() => {}}
           className={cn(navColumnStyles.link, navColumnStyles.editable, {
             [navColumnStyles.droppableLink]: dragging && isDroppableKind,
             [navColumnStyles.disabledLink]: dragging && !isDroppableKind
           })}
-          onClick={e => {
-            e.preventDefault()
-            e.stopPropagation()
+          onClick={() => {
             setIsExpanded(!isExpanded)
           }}
         >
@@ -181,11 +175,11 @@ export const PlaylistFolderNavItem = ({
       <Droppable
         className={styles.droppable}
         hoverClassName={styles.droppableHover}
-        onDrop={(droppedId, kind) => {
-          onDropBelowFolder(id, kind, droppedId)
+        onDrop={(draggingId, kind) => {
+          onDropBelowFolder(id, kind, draggingId)
         }}
         acceptedKinds={['playlist-folder', 'library-playlist']}
-      ></Droppable>
+      />
     </React.Fragment>
   )
 }

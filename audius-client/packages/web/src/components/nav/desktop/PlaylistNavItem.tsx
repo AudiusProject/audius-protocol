@@ -24,10 +24,12 @@ type PlaylistNavLinkProps = NavLinkProps & {
   playlistId: ID | SmartCollectionVariant
   name: string
   onReorder: (
-    draggingId: ID | SmartCollectionVariant,
-    droppingId: ID | SmartCollectionVariant
+    draggingId: ID | SmartCollectionVariant | string,
+    droppingId: ID | SmartCollectionVariant | string,
+    draggingKind: 'library-playlist' | 'playlist' | 'playlist-folder'
   ) => void
   link?: string
+  isInsideFolder?: boolean
 }
 
 export const PlaylistNavLink = ({
@@ -38,6 +40,7 @@ export const PlaylistNavLink = ({
   onReorder,
   children,
   className,
+  isInsideFolder,
   ...navLinkProps
 }: PlaylistNavLinkProps) => {
   const [isDragging, setIsDragging] = useState(false)
@@ -52,11 +55,15 @@ export const PlaylistNavLink = ({
       key={droppableKey}
       className={styles.droppable}
       hoverClassName={styles.droppableHover}
-      onDrop={(id: ID | SmartCollectionVariant) => {
-        onReorder(id, playlistId)
+      onDrop={(id: ID | SmartCollectionVariant | string, draggingKind) => {
+        onReorder(id, playlistId, draggingKind)
       }}
       stopPropogationOnDrop={true}
-      acceptedKinds={['library-playlist']}
+      acceptedKinds={
+        isInsideFolder
+          ? ['library-playlist']
+          : ['library-playlist', 'playlist-folder']
+      }
     >
       <Draggable
         id={playlistId}
@@ -86,14 +93,16 @@ type PlaylistNavItemProps = {
   addTrack: (trackId: ID) => void
   isOwner: boolean
   onReorder: (
-    draggingId: ID | SmartCollectionVariant,
-    droppingId: ID | SmartCollectionVariant
+    draggingId: ID | SmartCollectionVariant | string,
+    droppingId: ID | SmartCollectionVariant | string,
+    draggingKind: 'library-playlist' | 'playlist' | 'playlist-folder'
   ) => void
   hasUpdate?: boolean
   dragging: boolean
   draggingKind: string
   onClickPlaylist: (id: ID, hasUpdate: boolean) => void
   onClickEdit?: (id: ID) => void
+  isInsideFolder?: boolean
 }
 export const PlaylistNavItem = ({
   playlist,
@@ -105,7 +114,8 @@ export const PlaylistNavItem = ({
   dragging,
   draggingKind,
   onClickPlaylist,
-  onClickEdit
+  onClickEdit,
+  isInsideFolder
 }: PlaylistNavItemProps) => {
   const { id, name } = playlist
   const [isHovering, setIsHovering] = useState(false)
@@ -120,6 +130,7 @@ export const PlaylistNavItem = ({
       disabled={!isOwner}
     >
       <PlaylistNavLink
+        isInsideFolder={isInsideFolder}
         droppableKey={id}
         playlistId={id}
         name={name}
