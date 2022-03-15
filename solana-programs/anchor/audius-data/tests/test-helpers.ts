@@ -4,13 +4,23 @@ import Web3 from "web3";
 import { Account } from "web3-core";
 import { randomBytes } from "crypto";
 import { expect } from "chai";
-import { findDerivedPair, getTransaction, randomCID } from "../lib/utils";
+import {
+  findDerivedPair,
+  decodeInstruction,
+  getTransaction,
+  randomCID,
+  getTransactionWithData,
+} from "../lib/utils";
 import {
   createUser,
   createTrack,
   createPlaylist,
   initUser,
   initUserSolPubkey,
+  deleteTrack,
+  updateTrack,
+  EntityTypesEnumValues,
+  ManagementActions,
 } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
@@ -72,12 +82,22 @@ export const testInitUser = async ({
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
   expect(chainEthAddress, "eth address").to.equal(ethAddress.toLowerCase());
-
   const chainAuthority = account.authority.toString();
   const expectedAuthority = DefaultPubkey.toString();
   expect(chainAuthority, "authority").to.equal(expectedAuthority);
 
-  await confirmLogInTransaction(provider, tx, metadata);
+  const info = await getTransaction(provider, tx);
+  const data = info.transaction.message.instructions[0].data;
+  const accountIndexes = info.transaction.message.instructions[0].accounts;
+  const accountKeys = info.transaction.message.accountKeys;
+  const decodedInstruction = decodeInstruction(program, data);
+  const accountPubKeys = [];
+  for (const i of accountIndexes) {
+    accountPubKeys.push(accountKeys[i].toString());
+  }
+  const decodedData = decodedInstruction.data;
+  expect(decodedInstruction.name).to.equal("initUser");
+  expect(decodedData.metadata).to.equal(metadata);
 };
 
 export const testInitUserSolPubkey = async ({
@@ -145,6 +165,121 @@ export const testCreateUser = async ({
   await confirmLogInTransaction(provider, tx, metadata);
 };
 
+export const testCreateTrack = async ({
+  provider,
+  program,
+  id,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
+  trackMetadata,
+  userAuthorityKeypair,
+  trackOwnerPDA,
+}) => {
+  const tx = await createTrack({
+    id,
+    program,
+    userAuthorityKeypair,
+    userStgAccountPDA: trackOwnerPDA,
+    metadata: trackMetadata,
+    baseAuthorityAccount,
+    handleBytesArray,
+    adminStgAccount,
+    bumpSeed,
+  });
+  const { decodedInstruction, decodedData, accountPubKeys } =
+    await getTransactionWithData(program, provider, tx);
+  // Validate instruction data
+  expect(decodedInstruction.name).to.equal("manageEntity");
+  expect(decodedData.id).to.equal(id);
+  expect(decodedData.metadata).to.equal(trackMetadata);
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.create);
+  // Assert on instruction struct
+  // 1st index = track owner user storage account
+  // 2nd index = user authority keypair
+  // Indexing code must check that the track owner PDA is known before processing
+  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
+};
+
+export const testDeleteTrack = async ({
+  provider,
+  program,
+  id,
+  trackOwnerPDA,
+  userAuthorityKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
+}) => {
+  const tx = await deleteTrack({
+    id,
+    provider,
+    program,
+    userStgAccountPDA: trackOwnerPDA,
+    userAuthorityKeypair: userAuthorityKeypair,
+    baseAuthorityAccount,
+    handleBytesArray,
+    bumpSeed,
+    adminStgAccount,
+  });
+  const { decodedInstruction, decodedData, accountPubKeys } =
+    await getTransactionWithData(program, provider, tx);
+  expect(decodedInstruction.name).to.equal("manageEntity");
+  expect(decodedData.id).to.equal(id);
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.delete);
+  // Assert on instruction struct
+  // 0th index = track owner user storage account
+  // 1st index = user authority keypair
+  // Indexing code must check that the track owner PDA is known before processing
+  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
+};
+
+export const testUpdateTrack = async ({
+  provider,
+  program,
+  id,
+  userStgAccountPDA,
+  metadata,
+  userAuthorityKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
+}) => {
+  const tx = await updateTrack({
+    program,
+    baseAuthorityAccount,
+    handleBytesArray,
+    bumpSeed,
+    adminStgAccount,
+    id,
+    userStgAccountPDA,
+    metadata,
+    userAuthorityKeypair,
+  });
+  const { decodedInstruction, decodedData, accountPubKeys } =
+    await getTransactionWithData(program, provider, tx);
+
+  // Validate instruction data
+  expect(decodedInstruction.name).to.equal("manageEntity");
+  expect(decodedData.id).to.equal(id);
+  expect(decodedData.metadata).to.equal(metadata);
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.update);
+  // Assert on instruction struct
+  // 0th index = track owner user storage account
+  // 1st index = user authority keypair
+  // Indexing code must check that the track owner PDA is known before processing
+  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
+};
+
 export const pollAccountBalance = async (
   provider: anchor.Provider,
   targetAccount: anchor.web3.PublicKey,
@@ -170,6 +305,7 @@ export const confirmLogInTransaction = async (
   log: string
 ) => {
   const info = await getTransaction(provider, tx);
+
   const logs = info.meta.logMessages;
   let stringFound = false;
   logs.forEach((v) => {
@@ -231,38 +367,6 @@ export const createSolanaUser = async (
     bumpSeed,
     keypair: newUserKeypair,
     authority: baseAuthorityAccount,
-  };
-};
-
-export const createSolanaTrack = async (
-  program: Program<AudiusData>,
-  provider: anchor.Provider,
-  adminStgKeypair: anchor.web3.Keypair,
-  userAuthorityKeypair: anchor.web3.Keypair,
-  ownerPDA: anchor.web3.PublicKey
-) => {
-  const newTrackKeypair = anchor.web3.Keypair.generate();
-  const trackMetadata = randomCID();
-
-  await createTrack({
-    provider,
-    program,
-    newTrackKeypair,
-    userAuthorityKeypair,
-    userStgAccountPDA: ownerPDA,
-    metadata: trackMetadata,
-    adminStgPublicKey: adminStgKeypair.publicKey,
-  });
-
-  const track = await program.account.track.fetch(newTrackKeypair.publicKey);
-
-  if (!track) {
-    throw new Error("unable to create track account");
-  }
-
-  return {
-    track,
-    trackMetadata: trackMetadata,
   };
 };
 

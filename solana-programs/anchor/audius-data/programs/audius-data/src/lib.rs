@@ -28,14 +28,11 @@ pub mod audius_data {
         ctx: Context<Initialize>,
         authority: Pubkey,
         verifier: Pubkey,
-        track_id_offset: u64,
         playlist_id_offset: u64,
     ) -> Result<()> {
-        msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         audius_admin.verifier = verifier;
-        audius_admin.track_id = track_id_offset;
         audius_admin.playlist_id = playlist_id_offset;
         audius_admin.is_write_enabled = true;
         Ok(())
@@ -75,9 +72,8 @@ pub mod audius_data {
         eth_address: [u8; 20],
         handle_seed: [u8; 16],
         _user_bump: u8,
-        metadata: String,
+        _metadata: String,
     ) -> Result<()> {
-        msg!("Audius::InitUser");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
             &[&ctx.accounts.admin.key().to_bytes()[..32]],
@@ -103,8 +99,6 @@ pub mod audius_data {
 
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
-
-        msg!("AudiusUserMetadata = {:?}", metadata);
 
         Ok(())
     }
@@ -228,47 +222,28 @@ pub mod audius_data {
     }
 
     /*
-        Track related functions
+        Entity related functions
     */
-    pub fn create_track(ctx: Context<CreateTrack>, metadata: String) -> Result<()> {
-        msg!("Audius::CreateTrack");
+    pub fn manage_entity(
+        ctx: Context<ManageEntity>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _entity_type: EntityTypes,
+        _management_action: ManagementActions,
+        _id: String,
+        _metadata: String,
+    ) -> Result<()> {
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Reject if update submitted with invalid user authority
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        // Set owner to user storage account
-        ctx.accounts.track.owner = ctx.accounts.user.key();
-        ctx.accounts.track.track_id = ctx.accounts.audius_admin.track_id;
-        // Increment global track ID after assignment to this track in particular
-        // Ensures each track has a unique numeric ID
-        ctx.accounts.audius_admin.track_id = ctx.accounts.audius_admin.track_id + 1;
-        msg!("AudiusTrackMetadata = {:?}", metadata);
-        Ok(())
-    }
-
-    pub fn update_track(ctx: Context<UpdateTrack>, metadata: String) -> Result<()> {
-        msg!("Audius::UpdateTrack");
-        if ctx.accounts.user.key() != ctx.accounts.track.owner {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        msg!("AudiusTrackMetadata = {:?}", metadata);
-        Ok(())
-    }
-
-    pub fn delete_track(ctx: Context<DeleteTrack>) -> Result<()> {
-        msg!("Audius::DeleteTrack");
-        if ctx.accounts.user.key() != ctx.accounts.track.owner {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // Manually overwrite owner field
-        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
-        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
-        ctx.accounts.track.owner = dummy_owner_field;
         Ok(())
     }
 
@@ -277,7 +252,7 @@ pub mod audius_data {
         base: Pubkey,
         _user_handle: UserHandle,
         _track_social_action: TrackSocialActionValues,
-        track_id: u64,
+        _track_id: String,
     ) -> Result<()> {
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
@@ -290,9 +265,6 @@ pub mod audius_data {
 
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
-        }
-        if track_id >= ctx.accounts.audius_admin.track_id {
-            return Err(ErrorCode::InvalidId.into());
         }
         Ok(())
     }
@@ -594,51 +566,22 @@ pub struct RemoveUserAuthorityDelegate<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Instruction container for track creation
+/// Instruction container for entity management
 /// Confirms that user.authority matches signer authority field
-/// Payer is provided to facilitate an independent feepayer
 #[derive(Accounts)]
-pub struct CreateTrack<'info> {
-    #[account(init, payer = payer, space = TRACK_ACCOUNT_SIZE)]
-    pub track: Account<'info, Track>,
-    #[account(mut)]
-    pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-/// Instruction container for track updates
-/// Confirm that the user authority matches signer authority field
-#[derive(Accounts)]
-pub struct UpdateTrack<'info> {
+#[instruction(base: Pubkey, user_handle: UserHandle, _entity_type: EntityTypes, _management_action:ManagementActions, _id: String, _metadata: String)]
+// Instruction base pda, handle
+pub struct ManageEntity<'info> {
     #[account()]
-    pub track: Account<'info, Track>,
-    #[account(mut)]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    // Audiusadmin
+    #[account(
+        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
+        bump = user_handle.bump
+    )]
     pub user: Account<'info, User>,
-    #[account(mut)]
-    // User update authority field
+    #[account()]
     pub authority: Signer<'info>,
-}
-
-/// Instruction container for track deletes
-/// Removes track storage account entirely
-#[derive(Accounts)]
-pub struct DeleteTrack<'info> {
-    // Return funds to the payer of this transaction
-    #[account(mut, close = payer)]
-    pub track: Account<'info, Track>,
-    #[account(mut)]
-    pub user: Account<'info, User>,
-    // User update authority field
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
 }
 
 /// Instruction container for track social action event
@@ -646,6 +589,7 @@ pub struct DeleteTrack<'info> {
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_handle: UserHandle)]
 pub struct TrackSocialAction<'info> {
+    // TODO - Verify removal here
     #[account()]
     pub audius_admin: Account<'info, AudiusAdmin>,
     #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
@@ -747,7 +691,6 @@ pub struct UpdateIsVerified<'info> {
 pub struct AudiusAdmin {
     pub authority: Pubkey,
     pub verifier: Pubkey,
-    pub track_id: u64,
     pub playlist_id: u64,
     pub is_write_enabled: bool,
 }
@@ -757,13 +700,6 @@ pub struct AudiusAdmin {
 pub struct User {
     pub eth_address: [u8; 20],
     pub authority: Pubkey,
-}
-
-/// Track storage account
-#[account]
-pub struct Track {
-    pub owner: Pubkey,
-    pub track_id: u64,
 }
 
 /// Playlist storage account
@@ -804,6 +740,19 @@ pub enum PlaylistSocialActionValues {
     DeleteSave,
     AddRepost,
     DeleteRepost,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum ManagementActions {
+    Create,
+    Update,
+    Delete,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum EntityTypes {
+    Track,
+    Playlist,
 }
 
 // Seed & bump used to validate the user's handle with the account base
