@@ -96,17 +96,17 @@ export const EditProfileScreen = () => {
   const { profile } = useSelectorWeb(getProfile)
   const dispatchWeb = useDispatchWeb()
 
-  const coverPhoto = useUserCoverPhoto(
-    profile?.user_id ?? null,
-    profile?._cover_photo_sizes ?? null,
-    WidthSizes.SIZE_2000
-  )
+  const coverPhoto = useUserCoverPhoto({
+    id: profile?.user_id ?? null,
+    sizes: profile?._cover_photo_sizes ?? null,
+    size: WidthSizes.SIZE_2000
+  })
 
-  const profilePicture = useUserProfilePicture(
-    profile?.user_id ?? null,
-    profile?._profile_picture_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const profilePicture = useUserProfilePicture({
+    id: profile?.user_id ?? null,
+    sizes: profile?._profile_picture_sizes ?? null,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const handleSubmit = useCallback(
     (values: ProfileValues) => {

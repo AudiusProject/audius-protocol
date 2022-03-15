@@ -8,14 +8,10 @@ import {
 } from 'react'
 
 import useInstanceVar from 'audius-client/src/common/hooks/useInstanceVar'
-import { Maybe } from 'audius-client/src/common/utils/typeUtils'
-import { isArray, isObject } from 'lodash'
 import {
   Animated,
   Image,
-  ImageSourcePropType,
   ImageStyle,
-  ImageURISource,
   LayoutChangeEvent,
   StyleProp,
   StyleSheet,
@@ -27,8 +23,8 @@ import { ImageSkeleton } from 'app/components/image-skeleton'
 import { StylesProp } from 'app/styles'
 
 export type DynamicImageProps = {
-  // Image source
-  source?: ImageSourcePropType
+  // Image uri
+  uri?: string
   styles?: StylesProp<{
     root: ViewStyle
     imageContainer: ViewStyle
@@ -60,51 +56,24 @@ const styles = StyleSheet.create({
   }
 })
 
-const isImageEqual = (
-  imageA: Maybe<ImageSourcePropType>,
-  imageB: Maybe<ImageSourcePropType>
-) => {
-  if (imageA === imageB) {
-    return true
-  }
-
-  if (
-    isArray(imageA) &&
-    isArray(imageB) &&
-    !imageA.some((v, i) => v.uri !== imageB[i].uri)
-  ) {
-    return true
-  }
-
-  if (
-    isObject(imageA) &&
-    isObject(imageB) &&
-    (imageA as ImageURISource).uri === (imageB as ImageURISource).uri
-  ) {
-    return true
-  }
-
-  return false
-}
-
 type ImageWithPlaceholderProps = {
-  source?: ImageSourcePropType
+  uri?: string
   style: StyleProp<ImageStyle>
 }
 
-const ImageWithPlaceholder = ({ source, style }: ImageWithPlaceholderProps) => {
-  if (source) {
-    return <Image source={source} style={style} />
+const ImageWithPlaceholder = ({ uri, style }: ImageWithPlaceholderProps) => {
+  if (uri) {
+    return <Image source={{ uri }} style={style} />
   }
 
   return <ImageSkeleton styles={{ root: style as ViewStyle }} />
 }
 
 /**
- * A dynamic image that transitions between changes to the `source` prop.
+ * A dynamic image that transitions between changes to the `uri` prop.
  */
 export const DynamicImage = memo(function DynamicImage({
-  source,
+  uri,
   style,
   styles: stylesProp,
   immediate,
@@ -113,18 +82,15 @@ export const DynamicImage = memo(function DynamicImage({
 }: DynamicImageProps) {
   const [firstSize, setFirstSize] = useState(0)
   const [secondSize, setSecondSize] = useState(0)
-  const [firstImage, setFirstImage] = useState<ImageSourcePropType>()
-  const [secondImage, setSecondImage] = useState<ImageSourcePropType>()
+  const [firstImage, setFirstImage] = useState<string>()
+  const [secondImage, setSecondImage] = useState<string>()
 
   const firstOpacity = useRef(new Animated.Value(0)).current
   const secondOpacity = useRef(new Animated.Value(0)).current
 
   const [isFirstImageActive, setIsFirstImageActive] = useState(true)
 
-  const [
-    getPrevImage,
-    setPrevImage
-  ] = useInstanceVar<ImageSourcePropType | null>(null) // no previous image
+  const [getPrevImage, setPrevImage] = useInstanceVar<string | null>(null) // no previous image
 
   const animateTo = useCallback(
     (anim: Animated.Value, toValue: number, callback?: () => void) =>
@@ -139,20 +105,20 @@ export const DynamicImage = memo(function DynamicImage({
   useEffect(() => {
     // Skip animation for subsequent loads where the image hasn't changed
     const previousImage = getPrevImage()
-    if (previousImage !== null && isImageEqual(previousImage, source)) {
+    if (previousImage !== null && previousImage === uri) {
       return
     }
 
-    setPrevImage(source ?? null)
+    setPrevImage(uri ?? null)
 
     if (isFirstImageActive) {
       setIsFirstImageActive(false)
-      setFirstImage(source)
+      setFirstImage(uri)
       firstOpacity.setValue(1)
       animateTo(secondOpacity, 0, onLoad)
     } else {
       setIsFirstImageActive(true)
-      setSecondImage(source)
+      setSecondImage(uri)
       secondOpacity.setValue(1)
       animateTo(firstOpacity, 0, onLoad)
     }
@@ -160,7 +126,7 @@ export const DynamicImage = memo(function DynamicImage({
     animateTo,
     firstOpacity,
     getPrevImage,
-    source,
+    uri,
     isFirstImageActive,
     secondOpacity,
     setIsFirstImageActive,
@@ -187,7 +153,7 @@ export const DynamicImage = memo(function DynamicImage({
         onLayout={handleSetFirstSize}
       >
         <ImageWithPlaceholder
-          source={firstImage}
+          uri={firstImage}
           style={[{ width: firstSize, height: firstSize }, stylesProp?.image]}
         />
       </Animated.View>
@@ -200,7 +166,7 @@ export const DynamicImage = memo(function DynamicImage({
         onLayout={handleSetSecondSize}
       >
         <ImageWithPlaceholder
-          source={secondImage}
+          uri={secondImage}
           style={[{ width: secondSize, height: secondSize }, stylesProp?.image]}
         />
       </Animated.View>

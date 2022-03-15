@@ -69,9 +69,13 @@ type CardImageProps = {
 const CardImage = ({ id, type, imageSize }: CardImageProps) => {
   const useImage =
     type === 'user' ? useUserProfilePicture : useCollectionCoverArt
-  const image = useImage(id, imageSize, SquareSizes.SIZE_150_BY_150)
+  const image = useImage({
+    id,
+    sizes: imageSize,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
-  return <DynamicImage source={{ uri: image }} />
+  return <DynamicImage uri={image} />
 }
 
 export const Card = (props: CardProps) => {

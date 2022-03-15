@@ -103,11 +103,11 @@ const CollectionScreenComponent = ({
     updated_at
   } = collection
 
-  const imageUrl = useCollectionCoverArt(
-    playlist_id,
-    _cover_art_sizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const imageUrl = useCollectionCoverArt({
+    id: playlist_id,
+    sizes: _cover_art_sizes,
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const currentUserId = useSelectorWeb(getUserId)
   const isOwner = currentUserId === playlist_owner_id

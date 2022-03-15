@@ -58,11 +58,11 @@ const UserImage = ({
     dispatch(close())
   }, [navigation, user, dispatch])
 
-  const profilePicture = useUserProfilePicture(
-    user?.user_id,
-    user?._profile_picture_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const profilePicture = useUserProfilePicture({
+    id: user?.user_id,
+    sizes: user?._profile_picture_sizes,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const imageStyle = useTheme(styles.image, {
     backgroundColor: 'neutralLight4'
@@ -72,10 +72,7 @@ const UserImage = ({
       activeOpacity={0.7}
       onPress={allowPress ? handlePress : undefined}
     >
-      <DynamicImage
-        styles={{ root: imageStyle }}
-        source={{ uri: profilePicture }}
-      />
+      <DynamicImage styles={{ root: imageStyle }} uri={profilePicture} />
     </TouchableOpacity>
   )
 }
