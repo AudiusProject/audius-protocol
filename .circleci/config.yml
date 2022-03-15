@@ -496,6 +496,8 @@ jobs:
             export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad
             export audius_web3_port=8555
             export audius_web3_eth_provider_url=http://localhost:8556
+            export PROMETHEUS_MULTIPROC_DIR=/home/circleci/prometheus_data
+            mkdir ${PROMETHEUS_MULTIPROC_DIR}
             ./scripts/circle-ci.sh
 
   test-identity-service:
