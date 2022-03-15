@@ -26,7 +26,7 @@ const { PublicKey, SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
 
-describe.only("audius-data", function () {
+describe("audius-data", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -41,7 +41,7 @@ describe.only("audius-data", function () {
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
-  it.only("Initializing admin account!", async function () {
+  it("Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
@@ -831,7 +831,7 @@ describe.only("audius-data", function () {
     });
   });
 
-  it.only("create multiple tracks in parallel", async function () {
+  it("create multiple tracks in parallel", async function () {
     const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const {
@@ -843,6 +843,14 @@ describe.only("audius-data", function () {
       adminStgKeypair.publicKey,
       Buffer.from(handleBytesArray)
     );
+
+    // Disable admin writes
+    await updateAdmin({
+      program,
+      isWriteEnabled: false,
+      adminStgAccount: adminStgKeypair.publicKey,
+      adminAuthorityKeypair: adminKeypair,
+    });
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -876,7 +884,7 @@ describe.only("audius-data", function () {
         baseAuthorityAccount,
         handleBytesArray,
         bumpSeed,
-        adminStgAccount: adminKeypair.publicKey,
+        adminStgAccount: adminStgKeypair.publicKey,
         id: randomString(10),
         trackMetadata,
         userAuthorityKeypair: newUserKeypair,
@@ -888,7 +896,7 @@ describe.only("audius-data", function () {
         baseAuthorityAccount,
         handleBytesArray,
         bumpSeed,
-        adminStgAccount: adminKeypair.publicKey,
+        adminStgAccount: adminStgKeypair.publicKey,
         id: randomString(10),
         trackMetadata: trackMetadata2,
         userAuthorityKeypair: newUserKeypair,
@@ -900,7 +908,7 @@ describe.only("audius-data", function () {
         baseAuthorityAccount,
         handleBytesArray,
         bumpSeed,
-        adminStgAccount: adminKeypair.publicKey,
+        adminStgAccount: adminStgKeypair.publicKey,
         id: randomString(10),
         trackMetadata: trackMetadata3,
         userAuthorityKeypair: newUserKeypair,

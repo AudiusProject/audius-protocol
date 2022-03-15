@@ -133,6 +133,10 @@ describe("track-actions", function () {
       trackMetadata,
       userAuthorityKeypair: user.keypair,
       trackOwnerPDA: user.pda,
+      baseAuthorityAccount: user.authority,
+      adminStgAccount: adminStgKeypair.publicKey,
+      handleBytesArray: user.handleBytesArray,
+      bumpSeed: user.bumpSeed,
     });
 
     const tx = await writeTrackSocialAction({
