@@ -24,7 +24,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
-import { Theme, useTheme, useThemeVariant } from 'app/utils/theme'
+import { useTheme } from 'app/utils/theme'
 
 import { BottomTabBarButton } from './BottomTabBarButton'
 
@@ -99,9 +99,6 @@ export const BottomTabBar = ({
     borderTopColor: 'neutralLight8',
     backgroundColor: 'neutralLight10'
   })
-
-  const themeVariant = useThemeVariant()
-  const isDarkMode = themeVariant === Theme.DARK
 
   // Selectors
   const handle = useSelectorWeb(getUserHandle)
@@ -240,7 +237,6 @@ export const BottomTabBar = ({
               route={route}
               key={key}
               isFocused={isFocused}
-              isDarkMode={isDarkMode}
               navigate={navigate}
               onLongPress={handleLongPress}
             />

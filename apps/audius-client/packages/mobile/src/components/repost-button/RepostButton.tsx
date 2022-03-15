@@ -1,13 +1,12 @@
+import { useMemo } from 'react'
+
 import { StyleSheet } from 'react-native'
 
 import IconRepostOffDark from 'app/assets/animations/iconRepostTrackTileOffDark.json'
 import IconRepostOffLight from 'app/assets/animations/iconRepostTrackTileOffLight.json'
 import IconRepostOnDark from 'app/assets/animations/iconRepostTrackTileOnDark.json'
 import IconRepostOnLight from 'app/assets/animations/iconRepostTrackTileOnLight.json'
-import AnimatedButtonProvider, {
-  AnimatedButtonProviderProps
-} from 'app/components/animated-button/AnimatedButtonProvider'
-import { Theme, useThemeVariant } from 'app/utils/theme'
+import { AnimatedButton, AnimatedButtonProps } from 'app/components/core'
 
 const styles = StyleSheet.create({
   icon: {
@@ -16,29 +15,30 @@ const styles = StyleSheet.create({
   }
 })
 
+const iconLightJSON = [IconRepostOnLight, IconRepostOffLight]
+const iconDarkJSON = [IconRepostOnDark, IconRepostOffDark]
+
 type RepostButtonProps = Omit<
-  AnimatedButtonProviderProps,
+  AnimatedButtonProps,
   'iconLightJSON' | 'iconDarkJSON' | 'isDarkMode'
 >
 
-const RepostButton = ({ isActive, ...props }: RepostButtonProps) => {
-  const themeVariant = useThemeVariant()
-  const isDarkMode = themeVariant === Theme.DARK
-
+export const RepostButton = ({ isActive, ...props }: RepostButtonProps) => {
+  const wrapperStyle = useMemo(
+    () => [
+      styles.icon,
+      props.isDisabled ? { opacity: 0.5 } : {},
+      props.wrapperStyle
+    ],
+    [props.isDisabled, props.wrapperStyle]
+  )
   return (
-    <AnimatedButtonProvider
+    <AnimatedButton
       {...props}
       iconIndex={isActive ? 1 : 0}
-      isDarkMode={isDarkMode}
-      iconLightJSON={[IconRepostOnLight, IconRepostOffLight]}
-      iconDarkJSON={[IconRepostOnDark, IconRepostOffDark]}
-      wrapperStyle={[
-        styles.icon,
-        props.isDisabled ? { opacity: 0.5 } : {},
-        props.wrapperStyle
-      ]}
+      iconLightJSON={iconLightJSON}
+      iconDarkJSON={iconDarkJSON}
+      wrapperStyle={wrapperStyle}
     />
   )
 }
-
-export default RepostButton
