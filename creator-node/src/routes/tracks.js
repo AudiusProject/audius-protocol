@@ -6,7 +6,6 @@ const config = require('../config.js')
 const models = require('../models')
 const {
   saveFileFromBufferToIPFSAndDisk,
-  saveFileToIPFSAndCopyFromFS,
   removeTrackFolder,
   handleTrackContentUpload
 } = require('../fileManager')

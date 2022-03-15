@@ -825,7 +825,6 @@ async function removeFile(storagePath) {
 
 module.exports = {
   saveFileFromBufferToIPFSAndDisk,
-  saveFileToIPFSAndCopyFromFS,
   saveFileForMultihashToFS,
   removeTrackFolder,
   upload,
