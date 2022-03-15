@@ -345,7 +345,7 @@ export const updateUser = async ({
   });
 };
 
-// Update Audius Admin account
+/// Update Audius Admin account
 
 export const updateAdmin = async ({
   program,
@@ -500,62 +500,6 @@ export const deleteTrack = async ({
   });
 };
 
-/// save a track
-export const writeTrackSocialAction = async ({
-  program,
-  baseAuthorityAccount,
-  userStgAccountPDA,
-  userAuthorityKeypair,
-  handleBytesArray,
-  bumpSeed,
-  adminStgPublicKey,
-  trackSocialAction,
-  trackId,
-}: TrackSocialActionArgs) => {
-
-  return program.rpc.writeTrackSocialAction(
-    baseAuthorityAccount,
-    { seed: handleBytesArray, bump: bumpSeed },
-    trackSocialAction,
-    trackId,
-    {
-      accounts: {
-        audiusAdmin: adminStgPublicKey,
-        user: userStgAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
-  );
-};
-
-export const writePlaylistSocialAction = async ({
-  program,
-  baseAuthorityAccount,
-  userStgAccountPDA,
-  userAuthorityKeypair,
-  handleBytesArray,
-  bumpSeed,
-  adminStgPublicKey,
-  playlistSocialAction,
-  playlistId,
-}: PlaylistSocialActionArgs) => {
-  return program.rpc.writePlaylistSocialAction(
-    baseAuthorityAccount,
-    { seed: handleBytesArray, bump: bumpSeed },
-    playlistSocialAction,
-    playlistId,
-    {
-      accounts: {
-        audiusAdmin: adminStgPublicKey,
-        user: userStgAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
-  );
-};
-
 /// Create a playlist
 
 export const createPlaylist = async ({
@@ -641,4 +585,60 @@ export const deletePlaylist = async ({
 /// Get keypair from secret key
 export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
   return Keypair.fromSecretKey(Uint8Array.from(secretKey));
+};
+
+/// Social actions
+
+export const writeTrackSocialAction = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  trackSocialAction,
+  trackId,
+}: TrackSocialActionArgs) => {
+  return program.rpc.writeTrackSocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    trackSocialAction,
+    trackId,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const writePlaylistSocialAction = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  playlistSocialAction,
+  playlistId,
+}: PlaylistSocialActionArgs) => {
+  return program.rpc.writePlaylistSocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    playlistSocialAction,
+    playlistId,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };

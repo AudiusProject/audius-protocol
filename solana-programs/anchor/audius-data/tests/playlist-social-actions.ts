@@ -59,37 +59,6 @@ describe("playlist-actions", function () {
     });
   });
 
-  it("Save a playlist with a low playlist id", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await writePlaylistSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.addSave,
-      playlistId: randomString(44),
-    });
-
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.addSave
-    );
-  });
-
   it("Delete save for a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
@@ -162,37 +131,6 @@ describe("playlist-actions", function () {
     assert.equal(instructionHandle, userHandle);
     expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
       PlaylistSocialActionEnumValues.addSave
-    );
-  });
-
-  it("Repost a playlist with a low playlist id", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await writePlaylistSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.addRepost,
-      playlistId: randomString(10),
-    });
-
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.addRepost
     );
   });
 

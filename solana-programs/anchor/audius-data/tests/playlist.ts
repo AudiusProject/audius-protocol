@@ -2,27 +2,18 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import {
-  initAdmin,
-  updateUser,
-  updateAdmin,
-  updateIsVerified,
-  getKeypairFromSecretKey,
-} from "../lib/lib";
+import { initAdmin, updateAdmin } from "../lib/lib";
 import { findDerivedPair, randomCID, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreatePlaylist,
-  confirmLogInTransaction,
   initTestConstants,
-  pollAccountBalance,
   testCreateUser,
   testInitUser,
   testInitUserSolPubkey,
   testDeletePlaylist,
   testUpdatePlaylist,
 } from "./test-helpers";
-const { PublicKey, SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
 
