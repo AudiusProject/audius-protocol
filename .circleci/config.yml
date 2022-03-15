@@ -67,6 +67,7 @@ jobs:
             source ~/.bash_profile
             nvm install 14
             npm install
+            npm run build
       - save_cache:
           name: Save libs cache
           key: v1-libs-{{ checksum "libs/package-lock.json" }}
