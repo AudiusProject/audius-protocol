@@ -10,7 +10,6 @@ const { wAudioFromWeiAudio } = require('../solanaWeb3Manager/wAudio')
 const { sign, getTransferTokensDigest } = require('../../utils/signatures')
 /** Singleton state-manager for Audius Eth Contracts */
 
-const IS_BROWSER = typeof window !== 'undefined' && window !== null
 class Wormhole {
   /**
    * Wormhole constructor
