@@ -22,18 +22,14 @@ pub mod audius_data {
     use super::*;
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
-    /// track_id_offset is the starting point for uploaded tracks
-    /// playlist_id_offset is the starting point for uploaded playlists
     pub fn init_admin(
         ctx: Context<Initialize>,
         authority: Pubkey,
         verifier: Pubkey,
-        playlist_id_offset: u64,
     ) -> Result<()> {
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         audius_admin.verifier = verifier;
-        audius_admin.playlist_id = playlist_id_offset;
         audius_admin.is_write_enabled = true;
         Ok(())
     }
@@ -274,66 +270,18 @@ pub mod audius_data {
         base: Pubkey,
         _user_handle: UserHandle,
         _playlist_social_action: PlaylistSocialActionValues,
-        playlist_id: u64,
+        _playlist_id: String,
     ) -> Result<()> {
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
-
         // Confirm the base PDA matches the expected value provided the target audius admin
         if base_pda != base {
             return Err(ErrorCode::Unauthorized.into());
         }
-
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        if playlist_id >= ctx.accounts.audius_admin.playlist_id {
-            return Err(ErrorCode::InvalidId.into());
-        }
-        Ok(())
-    }
-
-    /*
-        Playlist related functions
-    */
-    pub fn create_playlist(ctx: Context<CreatePlaylist>, metadata: String) -> Result<()> {
-        msg!("Audius::CreatePlaylist");
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // Set owner to user storage account
-        ctx.accounts.playlist.owner = ctx.accounts.user.key();
-        ctx.accounts.playlist.playlist_id = ctx.accounts.audius_admin.playlist_id;
-        ctx.accounts.audius_admin.playlist_id = ctx.accounts.audius_admin.playlist_id + 1;
-        msg!("AudiusPlaylistMetadata = {:?}", metadata);
-        Ok(())
-    }
-
-    pub fn update_playlist(ctx: Context<UpdatePlaylist>, metadata: String) -> Result<()> {
-        msg!("Audius::UpdatePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        msg!("AudiusPlaylistMetadata = {:?}", metadata);
-        Ok(())
-    }
-
-    pub fn delete_playlist(ctx: Context<DeletePlaylist>) -> Result<()> {
-        msg!("Audius::DeletePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // Manually overwrite owner field
-        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
-        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
-        ctx.accounts.playlist.owner = dummy_owner_field;
         Ok(())
     }
 
@@ -628,51 +576,6 @@ pub struct FollowUser<'info> {
     pub authority: Signer<'info>,
 }
 
-/// Instruction container for playlist creation
-/// Confirms that user.authority matches signer authority field
-/// Payer is provided to facilitate an independent feepayer
-#[derive(Accounts)]
-pub struct CreatePlaylist<'info> {
-    #[account(init, payer = payer, space = PLAYLIST_ACCOUNT_SIZE)]
-    pub playlist: Account<'info, Playlist>,
-    #[account(mut)]
-    pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-/// Instruction container for playlist updates
-/// Confirm that the user authority matches signer authority field
-#[derive(Accounts)]
-pub struct UpdatePlaylist<'info> {
-    #[account()]
-    pub playlist: Account<'info, Playlist>,
-    #[account()]
-    pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-}
-
-/// Instruction container for playlist deletes
-/// Removes playlist storage account entirely
-#[derive(Accounts)]
-pub struct DeletePlaylist<'info> {
-    // Return funds to the payer of this transaction
-    #[account(mut, close = payer)]
-    pub playlist: Account<'info, Playlist>,
-    #[account(mut)]
-    pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-}
-
 /// Instruction container for verifying a user
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_handle: UserHandle)]
@@ -691,7 +594,6 @@ pub struct UpdateIsVerified<'info> {
 pub struct AudiusAdmin {
     pub authority: Pubkey,
     pub verifier: Pubkey,
-    pub playlist_id: u64,
     pub is_write_enabled: bool,
 }
 
@@ -700,13 +602,6 @@ pub struct AudiusAdmin {
 pub struct User {
     pub eth_address: [u8; 20],
     pub authority: Pubkey,
-}
-
-/// Playlist storage account
-#[account]
-pub struct Playlist {
-    pub owner: Pubkey,
-    pub playlist_id: u64,
 }
 
 /// User delegated authority account

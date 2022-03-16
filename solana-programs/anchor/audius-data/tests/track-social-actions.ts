@@ -36,7 +36,6 @@ describe("track-actions", function () {
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
-      playlistIdOffset: new anchor.BN("0"),
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
@@ -58,37 +57,6 @@ describe("track-actions", function () {
       adminStgAccount: adminStgKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
-  });
-
-  it("Save a track with a low track id", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await writeTrackSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.addSave,
-      trackId: randomString(44),
-    });
-
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.addSave
-    );
   });
 
   it("Delete save for a track", async function () {
@@ -163,37 +131,6 @@ describe("track-actions", function () {
     assert.equal(instructionHandle, userHandle);
     expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
       TrackSocialActionEnumValues.addSave
-    );
-  });
-
-  it("Repost a track with a low track id", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await writeTrackSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.addRepost,
-      trackId: randomString(10),
-    });
-
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.addRepost
     );
   });
 
