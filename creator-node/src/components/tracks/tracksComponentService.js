@@ -5,7 +5,7 @@ const {
 } = require('../../logging')
 
 const TrackHandOffUtils = require('./trackHandOffUtils')
-const TrackHandlingUtils = require('./trackHandlingUtils')
+const TrackContentUploadManager = require('./trackContentUploadManager')
 
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
@@ -34,7 +34,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   // Create track transcode and segments, and save all to disk
   const codeBlockTimeStart = getStartTime()
   const { transcodeFilePath, segmentFileNames } =
-    await TrackHandlingUtils.transcodeAndSegment(
+    await TrackContentUploadManager.transcodeAndSegment(
       { logContext },
       { fileName, fileDir }
     )
@@ -43,7 +43,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
     `Successfully re-encoded track file=${fileName}`
   )
 
-  const resp = await TrackHandlingUtils.processTranscodeAndSegments(
+  const resp = await TrackContentUploadManager.processTranscodeAndSegments(
     { logContext },
     {
       session: { cnodeUserUUID },
@@ -66,7 +66,7 @@ async function handleTranscodeAndSegment(
   { logContext },
   { fileName, fileDir }
 ) {
-  return TrackHandlingUtils.transcodeAndSegment(
+  return TrackContentUploadManager.transcodeAndSegment(
     { logContext },
     { fileName, fileDir }
   )
