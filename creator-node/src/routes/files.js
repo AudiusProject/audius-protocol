@@ -244,7 +244,7 @@ const getCID = async (req, res) => {
       return sendResponse(
         req,
         res,
-        errorResponseBadRequest('this dag node is a directory')
+        errorResponseBadRequest(`${logPrefix} this dag node is a directory`)
       )
     } else {
       decisionTree.push({
@@ -254,7 +254,7 @@ const getCID = async (req, res) => {
       return sendResponse(
         req,
         res,
-        errorResponseBadRequest('CID is of invalid file type')
+        errorResponseBadRequest(`${logPrefix} CID is of invalid file type`)
       )
     }
   } catch (e) {
@@ -428,6 +428,10 @@ const getCID = async (req, res) => {
         stage: `DB_CID_QUERY_CID_NOT_FOUND`
       })
       logGetCIDDecisionTree(decisionTree, req)
+
+      // Unset the cache-control header so that a bad response is not cached
+      res.removeHeader('cache-control')
+
       return sendResponse(
         req,
         res,
@@ -449,6 +453,7 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `DB_CID_QUERY_CID_FOUND`
       })
+
       // This should never happen, logging in case it does
       if (storagePath !== queryResults.storagePath) {
         req.logger.error(
@@ -464,6 +469,10 @@ const getCID = async (req, res) => {
       error: `${e.message}`
     })
     logGetCIDDecisionTree(decisionTree, req)
+
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
+
     return sendResponse(
       req,
       res,
@@ -544,13 +553,18 @@ const getCID = async (req, res) => {
       if (req.params.streamable && range) {
         let { start, end } = range
         if (end >= stat.size) {
-          // Set "Requested Range Not Satisfiable" header and exit
+          // Return "Requested Range Not Satisfiable" error
+          res.status(416)
+
+          // Unset the cache-control header so that a bad response is not cached
+          res.removeHeader('cache-control')
+
           decisionTree.push({
             stage: `ERROR_REQUESTED_RANGE_NOT_SATISFIABLE`,
             time: `${Date.now() - startMs}ms`
           })
           logGetCIDDecisionTree(decisionTree, req)
-          res.status(416)
+
           return sendResponse(
             req,
             res,
@@ -1249,4 +1263,3 @@ module.exports = function (app) {
 }
 
 module.exports.getCID = getCID
-module.exports.streamFromFileSystem = streamFromFileSystem
