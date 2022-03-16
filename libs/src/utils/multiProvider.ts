@@ -37,6 +37,7 @@ export class MultiProvider extends Web3.providers.HttpProvider {
       web3Providers = providers
     }
 
+
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
     const web3ProviderInstances = web3Providers.map(provider => (new Web3(provider)).eth.currentProvider) as Providers
     super(web3ProviderInstances[0]?.host)
