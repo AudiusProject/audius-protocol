@@ -4,7 +4,7 @@ const estimateGas = require('./estimateGas.js')
 const { MultiProvider } = require('./multiProvider')
 const { promiseFight } = require('./promiseFight')
 const signatures = require('./signatures.js')
-const uuid = require('./uuid.js')
+const { uuid } = require('./uuid')
 const utils = require('./utils.js')
 
 module.exports = utils

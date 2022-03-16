@@ -1,6 +1,6 @@
 const axios = require('axios')
 const { AuthHeaders } = require('../../constants')
-const uuid = require('../../utils/uuid')
+const { uuid } = require('../../utils/uuid')
 
 const Requests = require('./requests')
 

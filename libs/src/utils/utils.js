@@ -4,7 +4,7 @@ const axios = require('axios')
 const Hashids = require('hashids/cjs')
 
 const { MultiProvider } = require('./multiProvider')
-const uuid = require('./uuid.js')
+const { uuid } = require('./uuid')
 
 // Hashids
 

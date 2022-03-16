@@ -3,7 +3,7 @@ const FormData = require('form-data')
 const retry = require('async-retry')
 
 const { wait } = require('../../utils')
-const uuid = require('../../utils/uuid')
+const { uuid } = require('../../utils/uuid')
 const SchemaValidator = require('../schemaValidator')
 
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
