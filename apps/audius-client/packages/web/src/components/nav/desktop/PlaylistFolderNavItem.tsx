@@ -10,12 +10,14 @@ import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 
+import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { PlaylistLibraryFolder } from 'common/models/PlaylistLibrary'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import Draggable from 'components/dragndrop/Draggable'
 import Droppable from 'components/dragndrop/Droppable'
 import IconButton from 'components/icon-button/IconButton'
+import { useRecord, make } from 'store/analytics/actions'
 
 import navColumnStyles from './NavColumn.module.css'
 import styles from './PlaylistLibrary.module.css'
@@ -92,12 +94,22 @@ export const PlaylistFolderNavItem = ({
     draggingKind === 'library-playlist' || draggingKind === 'playlist'
   const [isHovering, setIsHovering] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const record = useRecord()
   const [ref, bounds] = useMeasure()
   const contentsStyle = useSpring({
     height: isExpanded ? bounds.height : 0,
     opacity: isExpanded ? 100 : 0,
     overflow: 'hidden'
   })
+  const handleClickFolder = () => {
+    const prevIsExpanded = isExpanded
+    setIsExpanded(!isExpanded)
+    if (prevIsExpanded) {
+      record(make(Name.PLAYLIST_LIBRARY_COLLAPSE_FOLDER, {}))
+    } else {
+      record(make(Name.PLAYLIST_LIBRARY_EXPAND_FOLDER, {}))
+    }
+  }
 
   return (
     <React.Fragment>
@@ -121,9 +133,7 @@ export const PlaylistFolderNavItem = ({
             [navColumnStyles.droppableLink]: dragging && isDroppableKind,
             [navColumnStyles.disabledLink]: dragging && !isDroppableKind
           })}
-          onClick={() => {
-            setIsExpanded(!isExpanded)
-          }}
+          onClick={handleClickFolder}
         >
           <div className={styles.libraryLinkContentContainer}>
             {children == null ? (

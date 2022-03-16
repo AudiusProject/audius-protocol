@@ -32,6 +32,7 @@ import {
   addPlaylistToFolder,
   containsTempPlaylist,
   findInPlaylistLibrary,
+  isInsideFolder,
   reorderPlaylistLibrary
 } from 'store/playlist-library/helpers'
 import { update } from 'store/playlist-library/slice'
@@ -116,15 +117,17 @@ const PlaylistLibrary = ({
     folderId => {
       dispatch(setEditFolderModalFolderId(folderId))
       setIsEditFolderModalOpen(true)
+      record(make(Name.FOLDER_OPEN_EDIT, {}))
     },
-    [dispatch, setIsEditFolderModalOpen]
+    [dispatch, record, setIsEditFolderModalOpen]
   )
 
   const handleClickEditPlaylist = useCallback(
     playlistId => {
       dispatch(openEditPlaylistModal(playlistId))
+      record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
     },
-    [dispatch]
+    [dispatch, record]
   )
 
   const handleDropInFolder = useCallback(
@@ -145,10 +148,11 @@ const PlaylistLibrary = ({
         toast(messages.playlistMovedToFolderToast(folder.name))
       }
       if (library !== newLibrary) {
+        record(make(Name.PLAYLIST_LIBRARY_ADD_PLAYLIST_TO_FOLDER, {}))
         dispatch(update({ playlistLibrary: newLibrary }))
       }
     },
-    [dispatch, library, toast]
+    [dispatch, library, record, toast]
   )
 
   const onReorder = useCallback(
@@ -160,6 +164,7 @@ const PlaylistLibrary = ({
     ) => {
       if (!library) return
       if (draggingId === droppingId) return
+      const libraryBeforeReorder = { ...library }
       const newLibrary = reorderPlaylistLibrary(
         library,
         draggingId,
@@ -170,9 +175,23 @@ const PlaylistLibrary = ({
       dispatch(update({ playlistLibrary: newLibrary }))
       record(
         make(Name.PLAYLIST_LIBRARY_REORDER, {
-          containsTemporaryPlaylists: containsTempPlaylist(newLibrary)
+          containsTemporaryPlaylists: containsTempPlaylist(newLibrary),
+          kind: draggingKind
         })
       )
+      const isDroppingIntoFolder = isInsideFolder(
+        libraryBeforeReorder,
+        droppingId
+      )
+      const isIdInFolderBeforeReorder = isInsideFolder(
+        libraryBeforeReorder,
+        draggingId
+      )
+      if (isIdInFolderBeforeReorder && !isDroppingIntoFolder) {
+        record(make(Name.PLAYLIST_LIBRARY_MOVE_PLAYLIST_OUT_OF_FOLDER, {}))
+      } else if (!isIdInFolderBeforeReorder && isDroppingIntoFolder) {
+        record(make(Name.PLAYLIST_LIBRARY_MOVE_PLAYLIST_INTO_FOLDER, {}))
+      }
     },
     [dispatch, library, record]
   )
