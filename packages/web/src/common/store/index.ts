@@ -29,6 +29,7 @@ import { FeedPageState } from 'common/store/pages/feed/types'
 import historyPageReducer from 'common/store/pages/history-page/reducer'
 import profileReducer from 'common/store/pages/profile/reducer'
 import { ProfilePageState } from 'common/store/pages/profile/types'
+import remixes from 'common/store/pages/remixes/slice'
 import savedPageReducer from 'common/store/pages/saved-page/reducer'
 import searchResults from 'common/store/pages/search-results/reducer'
 import { SearchPageState } from 'common/store/pages/search-results/types'
@@ -156,7 +157,8 @@ export const reducers = (ctx: CommonStoreContext) => ({
     trendingPlaylists,
     trendingUnderground,
     settings,
-    notifications
+    notifications,
+    remixes
   }),
 
   // Solana
@@ -219,6 +221,8 @@ export const sagas = (ctx: CommonStoreContext) => ({
   // pages/search-page/store/lineups/tracks/sagas.ts
   // notifications/store/sagas.ts
   // notifications/store/mobileSagas.ts
+  // pages/remixes-page/store/sagas.ts
+  // pages/remixes-page/store/lineups/tracks/sagas.ts
   //
   // pull in the following from web
   // once the player and dependencies are migrated
@@ -283,6 +287,7 @@ export type CommonState = {
     trendingPlaylists: ReturnType<typeof trendingPlaylists>
     trendingUnderground: ReturnType<typeof trendingUnderground>
     notifications: ReturnType<typeof notifications>
+    remixes: ReturnType<typeof remixes>
   }
 
   solana: ReturnType<typeof solanaReducer>

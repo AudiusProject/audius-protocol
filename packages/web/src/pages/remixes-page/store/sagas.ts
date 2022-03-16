@@ -2,10 +2,13 @@ import { takeEvery, call, put } from 'redux-saga/effects'
 
 import { TrackMetadata } from 'common/models/Track'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
+import {
+  fetchTrack,
+  fetchTrackSucceeded
+} from 'common/store/pages/remixes/slice'
 import { waitForBackendSetup } from 'store/backend/sagas'
 
 import tracksSagas from './lineups/tracks/sagas'
-import { fetchTrack, fetchTrackSucceeded } from './slice'
 
 function* watchFetch() {
   yield takeEvery(fetchTrack.type, function* (

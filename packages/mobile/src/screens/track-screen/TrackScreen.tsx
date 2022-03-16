@@ -16,7 +16,7 @@ import { StyleSheet, View } from 'react-native'
 import { Screen } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import Text from 'app/components/text'
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -66,7 +66,7 @@ const TrackScreenMainContent = ({
   user
 }: TrackScreenMainContentProps) => {
   const styles = useThemedStyles(createStyles)
-  const pushRouteWeb = usePushRouteWeb()
+  const navigation = useNavigation()
 
   const remixParentTrackId = track.remix_of?.tracks?.[0]?.parent_track_id
   const remixTrackIds = track._remixes?.map(({ track_id }) => track_id) ?? null
@@ -82,8 +82,10 @@ const TrackScreenMainContent = ({
   )
 
   const goToAllRemixes = () => {
-    // TODO: sk - implement this page in RN
-    pushRouteWeb(trackRemixesPage(track.permalink))
+    navigation.push({
+      native: { screen: 'TrackRemixes', params: { id: track.track_id } },
+      web: { route: trackRemixesPage(track.permalink) }
+    })
   }
 
   return (
