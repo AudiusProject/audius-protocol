@@ -8,11 +8,11 @@ import assert from 'assert'
  * @param resolveTimeout resolves after this timeout
  * @param rejectTimeout rejects after this timeout
  */
-const p = async (
+const p = (
   id: string,
   resolveTimeout: null | number,
   rejectTimeout?: number
-) => await new Promise((resolve, reject) => {
+) => new Promise((resolve, reject) => {
   if (resolveTimeout) {
     setTimeout(() => resolve(id), resolveTimeout)
   }
