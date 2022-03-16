@@ -44,6 +44,7 @@ import trendingUnderground from 'common/store/pages/trending-underground/slice'
 import trending from 'common/store/pages/trending/reducer'
 import { TrendingPageState } from 'common/store/pages/trending/types'
 import queue from 'common/store/queue/slice'
+import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import solanaReducer from 'common/store/solana/slice'
@@ -182,7 +183,8 @@ export const sagas = (ctx: CommonStoreContext) => ({
   users: usersSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas(ctx),
-  signOut: signOutSagas
+  signOut: signOutSagas,
+  recoveryEmail: recoveryEmailSagas
 
   // TODO:
   // pull in the following from web
