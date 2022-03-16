@@ -8,6 +8,7 @@ import {
 } from 'react'
 
 import useInstanceVar from 'audius-client/src/common/hooks/useInstanceVar'
+import { Maybe } from 'audius-client/src/common/utils/typeUtils'
 import {
   Animated,
   Image,
@@ -90,7 +91,7 @@ export const DynamicImage = memo(function DynamicImage({
 
   const [isFirstImageActive, setIsFirstImageActive] = useState(true)
 
-  const [getPrevImage, setPrevImage] = useInstanceVar<string | null>(null) // no previous image
+  const [getPrevImage, setPrevImage] = useInstanceVar<Maybe<string>>(undefined)
 
   const animateTo = useCallback(
     (anim: Animated.Value, toValue: number, callback?: () => void) =>
@@ -105,11 +106,11 @@ export const DynamicImage = memo(function DynamicImage({
   useEffect(() => {
     // Skip animation for subsequent loads where the image hasn't changed
     const previousImage = getPrevImage()
-    if (previousImage !== null && previousImage === uri) {
+    if (previousImage === uri) {
       return
     }
 
-    setPrevImage(uri ?? null)
+    setPrevImage(uri)
 
     if (isFirstImageActive) {
       setIsFirstImageActive(false)
