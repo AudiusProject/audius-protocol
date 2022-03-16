@@ -61,6 +61,7 @@ wait
 # create link for libs
 cd $PROTOCOL_DIR/
 cd libs
+npm run build
 npm link
 
 # link service-commands to libs
