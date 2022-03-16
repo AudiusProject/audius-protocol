@@ -128,9 +128,7 @@ describe('test nodesync', async function () {
       /** Upload a track */
 
       const trackUploadResponse = await uploadTrack(
-        testAudioFilePath,
-        cnodeUserUUID,
-        mockServiceRegistry.blacklistManager
+        testAudioFilePath, cnodeUserUUID
       )
 
       transcodedTrackUUID = trackUploadResponse.transcodedTrackUUID

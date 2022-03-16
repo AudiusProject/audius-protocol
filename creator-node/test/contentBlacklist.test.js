@@ -824,11 +824,7 @@ describe('test ContentBlacklist', function () {
       .send(associateRequest)
 
     // Upload a track
-    let trackUploadResponse = await uploadTrack(
-      testAudioFilePath,
-      cnodeUserUUID,
-      mockServiceRegistry.blacklistManager
-    )
+    let trackUploadResponse = await uploadTrack(testAudioFilePath, cnodeUserUUID)
 
     const {
       transcodedTrackUUID,
