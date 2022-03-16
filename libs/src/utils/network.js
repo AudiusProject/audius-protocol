@@ -2,7 +2,7 @@ const axios = require('axios')
 const semver = require('semver')
 
 const Utils = require('./utils.js')
-const promiseFight = require('./promiseFight')
+const { promiseFight } = require('./promiseFight')
 
 /**
 * Fetches a url and times how long it took the request to complete.

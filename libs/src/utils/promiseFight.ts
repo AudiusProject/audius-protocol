@@ -1,14 +1,14 @@
 /**
  * Given an array of promises, it returns the first resolved promise as soon as it finishes
- * @param {Array<Promise>} promises
- * @param {boolean?} captureErrored optional capture errored promises
- * @return {Promise<T>} A promise that resolves with the first promise that resolves
+ * @param promises
+ * @param captureErrored optional capture errored promises
+ * @return A promise that resolves with the first promise that resolves
  */
-async function promiseFight (promises, captureErrored = false) {
-  const errored = []
+export async function promiseFight (promises: Promise<unknown>[], captureErrored = false) {
+  let errored: unknown[] = []
   return Promise.all(promises.map(p => {
     return p.then(
-      val => Promise.reject(val, errored),
+      val => Promise.reject(val),
       err => {
         if (captureErrored) errored.push(err)
         return Promise.resolve(err)
@@ -22,5 +22,3 @@ async function promiseFight (promises, captureErrored = false) {
     }
   )
 }
-
-module.exports = promiseFight

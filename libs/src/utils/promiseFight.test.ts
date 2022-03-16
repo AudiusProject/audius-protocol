@@ -1,17 +1,17 @@
-const promiseFight = require('./promiseFight')
+const {promiseFight} = require('./promiseFight')
 const assert = require('assert')
 
 /**
  * A promise that either resolves or rejects. If it resolves,
  * resolves with the provided id.
- * @param {string} id identifier for this promise
- * @param {number} resolveTimeout resolves after this timeout
- * @param {number} rejectTimeout rejects after this timeout
+ * @param id identifier for this promise
+ * @param resolveTimeout resolves after this timeout
+ * @param rejectTimeout rejects after this timeout
  */
 const p = (
-  id,
-  resolveTimeout,
-  rejectTimeout
+  id: string,
+  resolveTimeout: null | number,
+  rejectTimeout?: number
 ) => new Promise((resolve, reject) => {
   if (resolveTimeout) {
     setTimeout(() => resolve(id), resolveTimeout)
