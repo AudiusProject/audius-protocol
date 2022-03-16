@@ -1,5 +1,6 @@
 import datetime
 
+from flask import request
 from sqlalchemy import and_, desc, func, or_
 from src import api_helpers
 from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track
@@ -21,12 +22,17 @@ trackDedupeMaxMinutes = 10
 
 
 def get_feed(args):
+    skip_es = request.args.get("es") == "0"
     (limit, _) = get_pagination_vars()
-    return _es_get_feed(args, limit)
-    try:
-        return _es_get_feed(args, limit)
-    except:
+    if skip_es:
         return _get_feed(args)
+    else:
+        return _es_get_feed(args, limit)
+
+    # try:
+    #     return _es_get_feed(args, limit)
+    # except:
+    #     return _get_feed(args)
 
 
 def _es_get_feed(args, limit=10):
@@ -39,13 +45,20 @@ def _es_get_feed(args, limit=10):
         {"index": "reposts"},
         {
             "query": {
-                "terms": {
-                    "user_id": {
-                        "index": "users",
-                        "id": current_user_id,
-                        "path": "following_ids",
-                    },
-                },
+                "bool": {
+                    "must": [
+                        {
+                            "terms": {
+                                "user_id": {
+                                    "index": "users",
+                                    "id": current_user_id,
+                                    "path": "following_ids",
+                                },
+                            }
+                        },
+                        {"term": {"is_delete": False}},
+                    ]
+                }
             },
             # here doing some over-fetching to de-dupe later
             # to approximate min_created_at + group by in SQL.
@@ -57,13 +70,21 @@ def _es_get_feed(args, limit=10):
         {"index": "tracks"},
         {
             "query": {
-                "terms": {
-                    "owner_id": {
-                        "index": "users",
-                        "id": current_user_id,
-                        "path": "following_ids",
-                    },
-                },
+                "bool": {
+                    "must": [
+                        {
+                            "terms": {
+                                "owner_id": {
+                                    "index": "users",
+                                    "id": current_user_id,
+                                    "path": "following_ids",
+                                },
+                            },
+                        },
+                        {"term": {"is_unlisted": False}},
+                        {"term": {"is_delete": False}},
+                    ]
+                }
             },
             "size": limit,
             "sort": {"created_at": "desc"},
@@ -71,13 +92,21 @@ def _es_get_feed(args, limit=10):
         {"index": "playlists"},
         {
             "query": {
-                "terms": {
-                    "playlist_owner_id": {
-                        "index": "users",
-                        "id": current_user_id,
-                        "path": "following_ids",
-                    },
-                },
+                "bool": {
+                    "must": [
+                        {
+                            "terms": {
+                                "owner_id": {
+                                    "index": "users",
+                                    "id": current_user_id,
+                                    "path": "following_ids",
+                                },
+                            },
+                        },
+                        {"term": {"is_private": False}},
+                        {"term": {"is_delete": False}},
+                    ]
+                }
             },
             "size": limit,
             "sort": {"created_at": "desc"},
@@ -91,34 +120,43 @@ def _es_get_feed(args, limit=10):
     (reposts, tracks, playlists) = [hits(r) for r in founds["responses"]]
 
     # track timestamps and duplicates
-    activity_times = {}
+    seen = set()
+    unsorted_feed = []
+
+    for playlist in playlists:
+        seen.add(("playlist", playlist["playlist_id"]))
+        # add playlist tracks to seen?
+        unsorted_feed.append(playlist)
 
     for track in tracks:
-        track["activity_timestamp"] = track["created_at"]
-        activity_times[("track", track["track_id"])] = track["created_at"]
-    for playlist in playlists:
-        playlist["activity_timestamp"] = track["created_at"]
-        activity_times[("playlist", playlist["playlist_id"])] = playlist["created_at"]
+        seen.add(("track", track["track_id"]))
+        unsorted_feed.append(track)
 
     # remove duplicates from repost feed
     reposts.reverse()
-    reposts2 = []
-    mget_docs = []
     for r in reposts:
         k = (r["repost_type"], r["repost_item_id"])
-        if k not in activity_times:
-            reposts2.append(r)
-            activity_times[k] = r["created_at"]
-            if r["repost_type"] == "track":
-                mget_docs.append({"_index": "tracks", "_id": r["repost_item_id"]})
-            else:
-                mget_docs.append({"_index": "playlists", "_id": r["repost_item_id"]})
+        if k in seen:
+            continue
+        seen.add(k)
+        unsorted_feed.append(r)
 
-    reposts2.reverse()
+    has_reposts = sorted(
+        unsorted_feed,
+        key=lambda entry: entry["created_at"],
+        reverse=True,
+    )
+    has_reposts = has_reposts[0:limit]
 
-    # replace reposts with tracks
-    # this should happen after the [0:limit] to load less unneeded stuff
-    reposted_docs = esclient.mget(docs=mget_docs)
+    # fetch underlying item for reposts
+    mget_reposts = []
+    for r in has_reposts:
+        if r.get("repost_type") == "track":
+            mget_reposts.append({"_index": "tracks", "_id": r["repost_item_id"]})
+        elif r.get("repost_type") == "playlist":
+            mget_reposts.append({"_index": "playlists", "_id": r["repost_item_id"]})
+
+    reposted_docs = esclient.mget(docs=mget_reposts)
     keyed_reposts = {}
     for doc in reposted_docs["docs"]:
         # this might be too cute... assumes _index is 'tracks' or 'playlists'
@@ -134,33 +172,50 @@ def _es_get_feed(args, limit=10):
             continue
         keyed_reposts[(t, doc["_id"])] = doc["_source"]
 
-    reposts3 = []
-    for r in reposts2:
-        k = (r["repost_type"], r["repost_item_id"])
-        if k not in keyed_reposts:
-            # MISSING: track or playlist for repost??
-            # from above
-            continue
-        item = keyed_reposts[k]
-        item["activity_timestamp"] = activity_times[k]
-        reposts3.append(item)
-
-    unsorted_feed = reposts3 + tracks + playlists
-    sorted_feed = sorted(
-        unsorted_feed,
-        key=lambda entry: entry["activity_timestamp"],
-        reverse=True,
-    )
-    sorted_feed = sorted_feed[0:limit]
+    # replace repost with underlying items
+    sorted_feed = []
+    for x in has_reposts:
+        if "repost_type" not in x:
+            x["activity_timestamp"] = x["created_at"]
+            sorted_feed.append(x)
+        else:
+            # gotcha 2: strings vs int ids
+            k = (x["repost_type"], str(x["repost_item_id"]))
+            if k not in keyed_reposts:
+                # MISSING: track or playlist for repost??
+                # from above
+                print("missing", k)
+                continue
+            item = keyed_reposts[k]
+            item["activity_timestamp"] = x["created_at"]
+            sorted_feed.append(item)
 
     # attach users
     user_id_list = get_users_ids(sorted_feed)
+    print("---------------", current_user_id)
     user_list = esclient.mget(index="users", ids=user_id_list)
     user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
     for item in sorted_feed:
         # gotcha: es ids must be strings, but our ids are ints...
         uid = str(item.get("playlist_owner_id", item.get("owner_id")))
         item["user"] = omit_indexed_fields(user_by_id[uid])
+
+    # add context: followee_reposts, followee_saves
+    # TODO: do this in ES?
+    if False:
+        track_ids = [x["track_id"] for x in sorted_feed if "track_id" in x]
+        playlist_ids = [x["playlist_id"] for x in sorted_feed if "playlist_id" in x]
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            populate_track_metadata(session, track_ids, tracks, current_user_id)
+            populate_playlist_metadata(
+                session,
+                playlist_ids,
+                playlists,
+                [RepostType.playlist, RepostType.album],
+                [SaveType.playlist, SaveType.album],
+                current_user_id,
+            )
 
     # remove extra fields from items
     [omit_indexed_fields(item) for item in sorted_feed]
@@ -441,6 +496,8 @@ def _get_feed(args):
 
 if __name__ == "__main__":
     # PYTHONPATH=. ES_URL=http://localhost:9200 python src/queries/get_feed.py
-    # stuff = _es_get_feed({"user_id": 1})
-    stuff = esclient.mget(index="users", ids=["1", "2", "3", "4", "5"])
-    print(stuff)
+    stuff = _es_get_feed({"user_id": 1})
+    # stuff = esclient.mget(index="users", ids=["1", "2", "3", "4", "5"])
+    # print(stuff)
+    for item in stuff:
+        print(item.get("title") or item.get("playlist_name"))
