@@ -7,6 +7,14 @@ import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
+import { tracksActions } from 'common/store/pages/remixes/lineup/actions'
+import {
+  getTrack,
+  getUser,
+  getLineup,
+  getCount
+} from 'common/store/pages/remixes/selectors'
+import { fetchTrack, reset } from 'common/store/pages/remixes/slice'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { LineupVariant } from 'components/lineup/types'
 import { getPlaying, getBuffering } from 'store/player/selectors'
@@ -15,9 +23,6 @@ import { profilePage } from 'utils/route'
 
 import { RemixesPageProps as DesktopRemixesPageProps } from './components/desktop/RemixesPage'
 import { RemixesPageProps as MobileRemixesPageProps } from './components/mobile/RemixesPage'
-import { tracksActions } from './store/lineups/tracks/actions'
-import { getTrack, getUser, getLineup, getCount } from './store/selectors'
-import { fetchTrack, reset } from './store/slice'
 
 const messages = {
   title: 'Remixes',

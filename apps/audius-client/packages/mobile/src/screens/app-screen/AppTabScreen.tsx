@@ -22,10 +22,13 @@ import {
   NotificationUsersScreen
 } from 'app/screens/user-list-screen'
 
+import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
+
 import { useAppScreenOptions } from './useAppScreenOptions'
 
 export type AppTabScreenParamList = {
   Track: { id: ID }
+  TrackRemixes: { id: ID }
   Profile: { handle: string }
   Collection: { id: ID }
   Favorited: { id: ID; favoriteType: FavoriteType }
@@ -85,6 +88,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
     >
       {baseScreen(Stack)}
       <Stack.Screen name='Track' component={TrackScreen} />
+      <Stack.Screen name='TrackRemixes' component={TrackRemixesScreen} />
       <Stack.Screen name='Collection' component={CollectionScreen} />
       <Stack.Screen name='Profile' component={ProfileScreen} />
       <Stack.Group>
