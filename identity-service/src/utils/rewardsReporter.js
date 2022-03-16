@@ -164,6 +164,7 @@ class RewardsReporter {
         const event = {
           'hcaptcha': RewardEventNames.REWARDS_CLAIM_HCAPTCHA,
           'cognito': RewardEventNames.REWARDS_CLAIM_COGNITO,
+          'other': RewardEventNames.REWARDS_CLAIM_OTHER,
           'blocked': RewardEventNames.REWARDS_CLAIM_BLOCKED
         }[reason] || RewardEventNames.REWARDS_CLAIM_BLOCKED
         this.analyticsProvider.track(event, userId, {
