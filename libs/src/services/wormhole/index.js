@@ -2,6 +2,7 @@ const bs58 = require('bs58')
 const { toBuffer } = require('ethereumjs-util')
 const { zeroPad } = require('ethers/lib/utils')
 const { providers } = require('ethers/lib/index')
+const wormholeSDK = require('@certusone/wormhole-sdk')
 
 const SolanaUtils = require('../solanaWeb3Manager/utils')
 const Utils = require('../../utils')
@@ -49,13 +50,7 @@ class Wormhole {
     this.solTokenBridgeAddress = solTokenBridgeAddress
     this.ethBridgeAddress = ethBridgeAddress
     this.ethTokenBridgeAddress = ethTokenBridgeAddress
-
-    if (IS_BROWSER) {
-      this.wormholeSDK = require('@certusone/wormhole-sdk')
-    } else {
-      const requireESM = require('esm')(module)
-      this.wormholeSDK = requireESM('@certusone/wormhole-sdk')
-    }
+    this.wormholeSDK = wormholeSDK
   }
 
   async getSignedVAAWithRetry (
