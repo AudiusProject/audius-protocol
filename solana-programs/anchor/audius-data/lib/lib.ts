@@ -387,37 +387,6 @@ export const updateIsVerified = async ({
   );
 };
 
-export const manageEntity = async ({
-  id,
-  program,
-  baseAuthorityAccount,
-  userAuthorityKeypair,
-  userStgAccountPDA,
-  metadata,
-  handleBytesArray,
-  adminStgAccount,
-  bumpSeed,
-  entityType,
-  managementAction,
-}) => {
-  return program.rpc.manageEntity(
-    baseAuthorityAccount,
-    { seed: handleBytesArray, bump: bumpSeed },
-    entityType,
-    managementAction,
-    id,
-    metadata,
-    {
-      accounts: {
-        audiusAdmin: adminStgAccount,
-        user: userStgAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
-  );
-};
-
 /// Create a track
 export const createTrack = async ({
   id,
@@ -430,19 +399,22 @@ export const createTrack = async ({
   adminStgAccount,
   bumpSeed,
 }: CreateEntityParams) => {
-  return manageEntity({
-    id,
-    program,
+  return program.rpc.manageEntity(
     baseAuthorityAccount,
-    userAuthorityKeypair,
-    userStgAccountPDA,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.track,
+    ManagementActions.create,
+    id,
     metadata,
-    handleBytesArray,
-    adminStgAccount,
-    bumpSeed,
-    entityType: EntityTypesEnumValues.track,
-    managementAction: ManagementActions.create,
-  });
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Initialize a user from the Audius Admin account
@@ -458,19 +430,22 @@ export const updateTrack = async ({
   adminStgAccount,
   bumpSeed,
 }: UpdateEntityParams) => {
-  return manageEntity({
-    id,
-    program,
+  return program.rpc.manageEntity(
     baseAuthorityAccount,
-    userAuthorityKeypair,
-    userStgAccountPDA,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.track,
+    ManagementActions.update,
+    id,
     metadata,
-    handleBytesArray,
-    adminStgAccount,
-    bumpSeed,
-    entityType: EntityTypesEnumValues.track,
-    managementAction: ManagementActions.update,
-  });
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Initialize a user from the Audius Admin account
@@ -485,19 +460,22 @@ export const deleteTrack = async ({
   adminStgAccount,
   bumpSeed,
 }: DeleteEntityParams) => {
-  return manageEntity({
-    id,
-    program,
+  return program.rpc.manageEntity(
     baseAuthorityAccount,
-    userAuthorityKeypair,
-    userStgAccountPDA,
-    metadata: "",
-    handleBytesArray,
-    adminStgAccount,
-    bumpSeed,
-    entityType: EntityTypesEnumValues.track,
-    managementAction: ManagementActions.delete,
-  });
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.track,
+    ManagementActions.delete,
+    id,
+    "",
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Create a playlist
@@ -513,19 +491,22 @@ export const createPlaylist = async ({
   adminStgAccount,
   bumpSeed,
 }: CreateEntityParams) => {
-  return manageEntity({
-    id,
-    program,
+  return program.rpc.manageEntity(
     baseAuthorityAccount,
-    userAuthorityKeypair,
-    userStgAccountPDA,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.playlist,
+    ManagementActions.create,
+    id,
     metadata,
-    handleBytesArray,
-    adminStgAccount,
-    bumpSeed,
-    entityType: EntityTypesEnumValues.playlist,
-    managementAction: ManagementActions.create,
-  });
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Update a playlist
@@ -541,19 +522,22 @@ export const updatePlaylist = async ({
   adminStgAccount,
   bumpSeed,
 }: UpdateEntityParams) => {
-  return manageEntity({
-    id,
-    program,
+  return program.rpc.manageEntity(
     baseAuthorityAccount,
-    userAuthorityKeypair,
-    userStgAccountPDA,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.playlist,
+    ManagementActions.update,
+    id,
     metadata,
-    handleBytesArray,
-    adminStgAccount,
-    bumpSeed,
-    entityType: EntityTypesEnumValues.playlist,
-    managementAction: ManagementActions.update,
-  });
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Delete a playlist
@@ -567,19 +551,22 @@ export const deletePlaylist = async ({
   adminStgAccount,
   bumpSeed,
 }: DeleteEntityParams) => {
-  return manageEntity({
-    id,
-    program,
+  return program.rpc.manageEntity(
     baseAuthorityAccount,
-    userAuthorityKeypair,
-    userStgAccountPDA,
-    metadata: "",
-    handleBytesArray,
-    adminStgAccount,
-    bumpSeed,
-    entityType: EntityTypesEnumValues.playlist,
-    managementAction: ManagementActions.delete,
-  });
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.playlist,
+    ManagementActions.delete,
+    id,
+    "",
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Get keypair from secret key
