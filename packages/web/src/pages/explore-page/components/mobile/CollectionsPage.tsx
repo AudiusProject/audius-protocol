@@ -48,6 +48,7 @@ const ExplorePage = ({
         trackCount={playlist.playlist_contents.track_ids.length}
         reposts={playlist.repost_count}
         favorites={playlist.save_count}
+        isPlaylist={!playlist.is_album}
         onClickReposts={() => onClickReposts(playlist.playlist_id)}
         onClickFavorites={() => onClickFavorites(playlist.playlist_id)}
         onClick={() =>
