@@ -8,6 +8,7 @@ import { sagas as castSagas } from 'common/store/cast/sagas'
 import errorSagas from 'common/store/errors/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
 import explorePageSagas from 'common/store/pages/explore/sagas'
+import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import artistRecommendationsSagas from 'common/store/ui/artist-recommendations/sagas'
@@ -87,6 +88,7 @@ export default function* rootSaga() {
     // Account
     accountSagas(),
     playlistLibrarySagas(),
+    recoveryEmailSagas(),
     signOutSagas(),
 
     // Pages
