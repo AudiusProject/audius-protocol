@@ -7,6 +7,7 @@ const RewardEventNames = {
   REWARDS_CLAIM_FAILURE: 'Rewards Claim: Failure',
   REWARDS_CLAIM_HCAPTCHA: 'Rewards Claim: Hcaptcha',
   REWARDS_CLAIM_COGNITO: 'Rewards Claim: Cognito',
+  REWARDS_CLAIM_OTHER: 'Rewards Claim: Other',
   REWARDS_CLAIM_BLOCKED: 'Rewards Claim: Blocked'
 }
 
