@@ -10,10 +10,12 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { Name } from 'common/models/Analytics'
 import { PlaylistLibraryFolder } from 'common/models/PlaylistLibrary'
 import { getPlaylistLibrary } from 'common/store/account/selectors'
 import FolderForm from 'components/create-playlist/FolderForm'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
+import { make, useRecord } from 'store/analytics/actions'
 import { getFolderId } from 'store/application/ui/editFolderModal/selectors'
 import { setFolderId } from 'store/application/ui/editFolderModal/slice'
 import {
@@ -37,6 +39,7 @@ const messages = {
 }
 
 const EditFolderModal = () => {
+  const record = useRecord()
   const folderId = useSelector(getFolderId)
   const playlistLibrary = useSelector(getPlaylistLibrary)
   const [isOpen, setIsOpen] = useModalState('EditFolder')
@@ -56,6 +59,11 @@ const EditFolderModal = () => {
     setIsOpen(false)
   }, [dispatch, setIsOpen])
 
+  const handleClickCancel = useCallback(() => {
+    record(make(Name.FOLDER_CANCEL_EDIT, {}))
+    handleClose()
+  }, [handleClose, record])
+
   const handleSubmit = useCallback(
     (newName: string) => {
       if (
@@ -69,9 +77,10 @@ const EditFolderModal = () => {
         )
         dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary }))
       }
+      record(make(Name.FOLDER_SUBMIT_EDIT, {}))
       handleClose()
     },
-    [dispatch, folder, folderId, handleClose, playlistLibrary]
+    [dispatch, folder, folderId, handleClose, playlistLibrary, record]
   )
 
   const handleClickDelete = useCallback(() => {
@@ -87,8 +96,9 @@ const EditFolderModal = () => {
       setShowDeleteConfirmation(false)
       dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary }))
     }
+    record(make(Name.FOLDER_DELETE, {}))
     handleClose()
-  }, [dispatch, folder, folderId, handleClose, playlistLibrary])
+  }, [dispatch, folder, folderId, handleClose, playlistLibrary, record])
 
   return (
     <>
@@ -109,7 +119,7 @@ const EditFolderModal = () => {
           <FolderForm
             isEditMode
             onSubmit={handleSubmit}
-            onCancel={handleClose}
+            onCancel={handleClickCancel}
             onDelete={handleClickDelete}
             initialFolderName={folder?.name}
           />

@@ -456,6 +456,19 @@ export const containsTempPlaylist = (
 }
 
 /**
+ * Determines whether or not a playlist or folder is inside a folder
+ * @param library
+ * @param id (playlist or folder id)
+ * @returns boolean
+ */
+export const isInsideFolder = (
+  library: PlaylistLibrary | PlaylistLibraryFolder,
+  id: ID | string | SmartCollectionVariant
+): boolean => {
+  return Array.isArray(findIndexInPlaylistLibrary(library, id))
+}
+
+/**
  * Takes a library and returns a list of all temporary playlists from that library
  * @param library
  * @returns PlaylistLibraryIdentifier[]
