@@ -86,8 +86,18 @@ export enum Name {
   PLAYLIST_START_CREATE = 'Playlist: Start Create Playlist',
   PLAYLIST_COMPLETE_CREATE = 'Playlist: Complete Create Playlist',
   PLAYLIST_MAKE_PUBLIC = 'Playlist: Make Public',
+  PLAYLIST_OPEN_EDIT_FROM_LIBRARY = 'Playlist: Open Edit Playlist From Sidebar',
 
   DELETE = 'Delete',
+
+  // Folders
+  FOLDER_OPEN_CREATE = 'Folder: Open Create Playlist Folder',
+  FOLDER_SUBMIT_CREATE = 'Folder: Submit Create Playlist Folder',
+  FOLDER_CANCEL_CREATE = 'Folder: Cancel Create Playlist Folder',
+  FOLDER_OPEN_EDIT = 'Folder: Open Edit Playlist Folder',
+  FOLDER_SUBMIT_EDIT = 'Folder: Submit Edit Playlist Folder',
+  FOLDER_DELETE = 'Folder: Delete Playlist Folder',
+  FOLDER_CANCEL_EDIT = 'Folder: Cancel Edit Playlist Folder',
 
   // Embed
   EMBED_OPEN = 'Embed: Open modal',
@@ -191,6 +201,11 @@ export enum Name {
 
   // Playlist library
   PLAYLIST_LIBRARY_REORDER = 'Playlist Library: Reorder',
+  PLAYLIST_LIBRARY_MOVE_PLAYLIST_INTO_FOLDER = 'Playlist Library: Move Playlist Into Folder',
+  PLAYLIST_LIBRARY_ADD_PLAYLIST_TO_FOLDER = 'Playlist Library: Add Playlist To Folder',
+  PLAYLIST_LIBRARY_MOVE_PLAYLIST_OUT_OF_FOLDER = 'Playlist Library: Move Playlist Out of Folder',
+  PLAYLIST_LIBRARY_EXPAND_FOLDER = 'Playlist Library: Expand Folder',
+  PLAYLIST_LIBRARY_COLLAPSE_FOLDER = 'Playlist Library: Collapse Folder',
   // When an update is available in the playlist library
   PLAYLIST_LIBRARY_HAS_UPDATE = 'Playlist Library: Has Update',
   // When a user clicks on a playlist in the library
@@ -543,10 +558,44 @@ type PlaylistMakePublic = {
   id: string
 }
 
+type PlaylistOpenEditFromLibrary = {
+  eventName: Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY
+}
+
 type Delete = {
   eventName: Name.DELETE
   kind: PlayableType
   id: string
+}
+
+// Folder
+
+type FolderOpenCreate = {
+  eventName: Name.FOLDER_OPEN_CREATE
+}
+
+type FolderSubmitCreate = {
+  eventName: Name.FOLDER_SUBMIT_CREATE
+}
+
+type FolderCancelCreate = {
+  eventName: Name.FOLDER_CANCEL_CREATE
+}
+
+type FolderOpenEdit = {
+  eventName: Name.FOLDER_OPEN_EDIT
+}
+
+type FolderSubmitEdit = {
+  eventName: Name.FOLDER_SUBMIT_EDIT
+}
+
+type FolderDelete = {
+  eventName: Name.FOLDER_DELETE
+}
+
+type FolderCancelEdit = {
+  eventName: Name.FOLDER_CANCEL_EDIT
 }
 
 // Embed
@@ -930,6 +979,7 @@ type PlaylistLibraryReorder = {
   eventName: Name.PLAYLIST_LIBRARY_REORDER
   // Whether or not the reorder contains newly created temp playlists
   containsTemporaryPlaylists: boolean
+  kind: 'library-playlist' | 'playlist' | 'playlist-folder'
 }
 
 type PlaylistLibraryHasUpdate = {
@@ -941,6 +991,26 @@ type PlaylistLibraryClicked = {
   eventName: Name.PLAYLIST_LIBRARY_CLICKED
   playlistId: ID
   hasUpdate: boolean
+}
+
+type PlaylistLibraryMovePlaylistIntoFolder = {
+  eventName: Name.PLAYLIST_LIBRARY_MOVE_PLAYLIST_INTO_FOLDER
+}
+
+type PlaylistLibraryAddPlaylistToFolder = {
+  eventName: Name.PLAYLIST_LIBRARY_ADD_PLAYLIST_TO_FOLDER
+}
+
+type PlaylistLibraryMovePlaylistOutOfFolder = {
+  eventName: Name.PLAYLIST_LIBRARY_MOVE_PLAYLIST_OUT_OF_FOLDER
+}
+
+type PlaylistLibraryExpandFolder = {
+  eventName: Name.PLAYLIST_LIBRARY_EXPAND_FOLDER
+}
+
+type PlaylistLibraryCollapseFolder = {
+  eventName: Name.PLAYLIST_LIBRARY_COLLAPSE_FOLDER
 }
 
 type DeactivateAccountPageView = {
@@ -1094,6 +1164,7 @@ export type AllTrackingEvents =
   | PlaylistStartCreate
   | PlaylistCompleteCreate
   | PlaylistMakePublic
+  | PlaylistOpenEditFromLibrary
   | Delete
   | EmbedOpen
   | EmbedCopy
@@ -1164,6 +1235,11 @@ export type AllTrackingEvents =
   | PlaylistLibraryReorder
   | PlaylistLibraryHasUpdate
   | PlaylistLibraryClicked
+  | PlaylistLibraryMovePlaylistIntoFolder
+  | PlaylistLibraryAddPlaylistToFolder
+  | PlaylistLibraryMovePlaylistOutOfFolder
+  | PlaylistLibraryExpandFolder
+  | PlaylistLibraryCollapseFolder
   | TransferAudioToWAudioRequest
   | TransferAudioToWAudioSuccess
   | TransferAudioToWAudioFailure
@@ -1182,3 +1258,10 @@ export type AllTrackingEvents =
   | SocialProofOpen
   | SocialProofSuccess
   | SocialProofError
+  | FolderOpenCreate
+  | FolderSubmitCreate
+  | FolderCancelCreate
+  | FolderOpenEdit
+  | FolderSubmitEdit
+  | FolderDelete
+  | FolderCancelEdit

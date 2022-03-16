@@ -10,8 +10,10 @@ import {
   IconPlaylists
 } from '@audius/stems'
 
+import { Name } from 'common/models/Analytics'
 import { FeatureFlags } from 'common/services/remote-config'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { make, useRecord } from 'store/analytics/actions'
 import zIndex from 'utils/zIndex'
 
 import styles from './CreatePlaylistModal.module.css'
@@ -41,6 +43,7 @@ const CreatePlaylistModal = ({
   onCreateFolder,
   onCreatePlaylist
 }: CreatePlaylistModalProps) => {
+  const record = useRecord()
   const { isEnabled: isPlaylistFoldersEnabled } = useFlag(
     FeatureFlags.PLAYLIST_FOLDERS
   )
@@ -77,9 +80,27 @@ const CreatePlaylistModal = ({
   const handleSelectTabOption = useCallback(
     (key: string) => {
       setCurrentTabName(key as TabName)
+      if (key === 'create-folder') {
+        record(make(Name.FOLDER_OPEN_CREATE, {}))
+      }
     },
-    [setCurrentTabName]
+    [setCurrentTabName, record]
   )
+
+  const handleSubmitFolder = useCallback(
+    (name: string) => {
+      record(make(Name.FOLDER_SUBMIT_CREATE, {}))
+      onCreateFolder(name)
+    },
+    [onCreateFolder, record]
+  )
+
+  const handleClose = useCallback(() => {
+    if (currentTabName === 'create-folder') {
+      record(make(Name.FOLDER_CANCEL_CREATE, {}))
+    }
+    onCancel()
+  }, [currentTabName, onCancel, record])
 
   return (
     <Modal
@@ -87,10 +108,10 @@ const CreatePlaylistModal = ({
       dismissOnClickOutside={!isArtworkPopupOpen}
       bodyClassName={styles.modalBody}
       isOpen={visible}
-      onClose={onCancel}
+      onClose={handleClose}
       zIndex={zIndex.CREATE_PLAYLIST_MODAL}
     >
-      <ModalHeader onClose={onCancel}>
+      <ModalHeader onClose={handleClose}>
         <ModalTitle
           icon={
             currentTabName === 'create-playlist' ? (
@@ -123,7 +144,7 @@ const CreatePlaylistModal = ({
             onSave={onCreatePlaylist}
           />
         ) : (
-          <FolderForm onSubmit={onCreateFolder} />
+          <FolderForm onSubmit={handleSubmitFolder} />
         )}
       </ModalContent>
     </Modal>
