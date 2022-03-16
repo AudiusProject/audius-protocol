@@ -48,7 +48,6 @@ describe("audius-data", function () {
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
-      playlistIdOffset: new anchor.BN("0"),
     });
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
