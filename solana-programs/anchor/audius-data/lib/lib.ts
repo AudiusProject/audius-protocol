@@ -267,7 +267,7 @@ export const initUserSolPubkey = async ({
   return provider.send(tx);
 };
 
-/// Verify user with authenticatorKeypair
+/// Create a content node with the audius admin authority
 type CreateContentNode = {
   provider: Provider;
   program: Program<AudiusData>;
@@ -304,6 +304,58 @@ export const createContentNode = async ({
         systemProgram: SystemProgram.programId,
       },
       signers: [adminKeypair],
+    }
+  );
+};
+
+
+/// Verify user with authenticatorKeypair
+type UpdateUserReplicaSet = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  ursm: number[];
+  ursmBumps: number[];
+  contentNodeAuthority: anchor.web3.Keypair;
+  cn1: anchor.web3.PublicKey;
+  cn2: anchor.web3.PublicKey;
+  cn3: anchor.web3.PublicKey;
+  userAcct: anchor.web3.PublicKey,
+  userHandle: { seed: number[]; bump: number }
+};
+
+export const updateUserReplicaSet = async ({
+  provider,
+  program,
+  adminStgPublicKey,
+  baseAuthorityAccount,
+  ursm,
+  userAcct,
+  ursmBumps,
+  userHandle,
+  contentNodeAuthority,
+  cn1,
+  cn2,
+  cn3,
+}: UpdateUserReplicaSet) => {
+  return program.rpc.updateUserReplicaSet(
+    baseAuthorityAccount,
+    userHandle,
+    ursm,
+    ursmBumps,
+    {
+      accounts: {
+        admin: adminStgPublicKey,
+        user: userAcct,
+        cnAuthority: contentNodeAuthority.publicKey,
+        cn1,
+        cn2,
+        cn3,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [contentNodeAuthority],
     }
   );
 };

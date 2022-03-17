@@ -7,13 +7,15 @@ import {
   createContentNode,
   publicCreateContentNode,
   publicDeleteContentNode,
+  updateUserReplicaSet,
+  updateAdmin,
 } from "../lib/lib";
 import { findDerivedPair } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaContentNode, EthWeb3 } from "./test-helpers";
+import { createSolanaContentNode, createSolanaUser, EthWeb3 } from "./test-helpers";
 const { SystemProgram } = anchor.web3;
 
-describe("ursm", function () {
+describe.only("ursm", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -38,6 +40,14 @@ describe("ursm", function () {
       verifierKeypair,
       playlistIdOffset: new anchor.BN("0"),
     });
+    // disable admin writes
+    await updateAdmin({
+      program,
+      isWriteEnabled: false,
+      adminStgAccount: adminStgKeypair.publicKey,
+      adminAuthorityKeypair: adminKeypair,
+    });
+    
   });
 
   it("Creates Content Node with the Admin account", async function () {
@@ -320,6 +330,7 @@ describe("ursm", function () {
       updatedAudiusAdminBalance = await provider.connection.getBalance(
         adminKeypair.publicKey
       );
+      await new Promise(resolve => setTimeout(resolve, 100))
       retries--;
     }
 
@@ -336,4 +347,107 @@ describe("ursm", function () {
       );
     }
   });
+
+  it("Updates a user replica set with the proposers", async function () {
+    const cn2 = contentNodes["2"];
+    const cn3 = contentNodes["3"];
+    const cn6 = contentNodes["6"];
+
+    const spID = new anchor.BN(4);
+    const seed = Buffer.concat([
+      Buffer.from("sp_id", "utf8"),
+      spID.toBuffer("le", 2),
+    ]);
+    const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(program.programId, adminStgKeypair.publicKey, seed);
+
+    const user = await createSolanaUser(program, provider, adminStgKeypair)
+    const tx = await updateUserReplicaSet({
+      provider,
+      program,
+      baseAuthorityAccount,
+      userAcct: user.pda,
+      userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      ursm: [2, 3, 6],
+      ursmBumps: [cn2.seedBump.bump, cn3.seedBump.bump, cn6.seedBump.bump],
+      contentNodeAuthority: cn2.authority,
+      cn1: cn2.pda,
+      cn2: cn3.pda,
+      cn3: cn6.pda,
+    });
+    const updatedUser = await program.account.user.fetch(
+      user.pda
+    );
+    expect(updatedUser.ursm, 'Expect user ursm to be updates').to.deep.equal([2, 3, 6])
+  });
+
+  it("Updates a user replica set with the user's athority", async function () {
+    const cn6 = contentNodes["6"];
+    const cn7 = contentNodes["7"];
+    const cn8 = contentNodes["8"];
+
+    const spID = new anchor.BN(4);
+    const seed = Buffer.concat([
+      Buffer.from("sp_id", "utf8"),
+      spID.toBuffer("le", 2),
+    ]);
+    const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(program.programId, adminStgKeypair.publicKey, seed);
+
+    const user = await createSolanaUser(program, provider, adminStgKeypair)
+    const tx = await updateUserReplicaSet({
+      provider,
+      program,
+      baseAuthorityAccount,
+      userAcct: user.pda,
+      userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      ursm: [6, 7, 8],
+      ursmBumps: [cn6.seedBump.bump, cn7.seedBump.bump, cn8.seedBump.bump],
+      contentNodeAuthority: user.keypair,
+      cn1: cn6.pda,
+      cn2: cn7.pda,
+      cn3: cn8.pda,
+    });
+    const updatedUser = await program.account.user.fetch(
+      user.pda
+    );
+    expect(updatedUser.ursm, 'Expect user ursm to be updates').to.deep.equal([6, 7, 8])
+  });
+
+  it("Fail on update to a user's replica set with a non authority", async function () {
+    const cn2 = contentNodes["2"];
+    const cn7 = contentNodes["7"];
+    const cn8 = contentNodes["8"];
+
+    const spID = new anchor.BN(4);
+    const seed = Buffer.concat([
+      Buffer.from("sp_id", "utf8"),
+      spID.toBuffer("le", 2),
+    ]);
+    const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(program.programId, adminStgKeypair.publicKey, seed);
+
+    const user = await createSolanaUser(program, provider, adminStgKeypair)
+
+    await expect(
+      updateUserReplicaSet({
+        provider,
+        program,
+        baseAuthorityAccount,
+        userAcct: user.pda,
+        userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
+        adminStgPublicKey: adminStgKeypair.publicKey,
+        ursm: [2, 7, 8],
+        ursmBumps: [cn2.seedBump.bump, cn7.seedBump.bump, cn8.seedBump.bump],
+        contentNodeAuthority: cn7.authority,
+        cn1: cn2.pda,
+        cn2: cn7.pda,
+        cn3: cn8.pda,
+      })
+    )
+      .to.eventually.be.rejected.and.property("msg")
+      .to.include(`You are not authorized to perform this action.`);
+    });
 });
