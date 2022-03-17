@@ -168,7 +168,7 @@ class Account extends Base {
               )
               handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
             } else {
-              console.log(`Successfully created userbank!`)
+              console.log('Successfully created userbank!')
               handleUserBankOutcomes('Create User Bank: Success')
             }
           } catch (err) {
@@ -206,7 +206,7 @@ class Account extends Base {
   async generateRecoveryLink ({ handle, host } = {}) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     try {
-      let recoveryInfo = await this.hedgehog.generateRecoveryInfo()
+      const recoveryInfo = await this.hedgehog.generateRecoveryInfo()
       handle = handle || this.userStateManager.getCurrentUser().handle
 
       const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
@@ -296,7 +296,7 @@ class Account extends Base {
   async updateCreatorNodeEndpoint (url) {
     this.REQUIRES(Services.CREATOR_NODE)
 
-    let user = this.userStateManager.getCurrentUser()
+    const user = this.userStateManager.getCurrentUser()
     if (user.is_creator) {
       await this.creatorNode.setEndpoint(url)
       // Only a creator will have a creator node endpoint
@@ -429,7 +429,7 @@ class Account extends Base {
       ATTEST_AND_COMPLETE_TRANSFER: 'ATTEST_AND_COMPLETE_TRANSFER'
     }
     let phase = phases.PERMIT_PROXY_SEND
-    let logs = [`Send tokens from eth to sol to ${solanaAccount} for ${amount.toString()}`]
+    const logs = [`Send tokens from eth to sol to ${solanaAccount} for ${amount.toString()}`]
     try {
       const myWalletAddress = this.web3Manager.getWalletAddress()
       const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
@@ -509,13 +509,13 @@ class Account extends Base {
     const tokenAddress = this.ethContracts.AudiusTokenClient.contractAddress
 
     // Submit permit request to give address approval, via relayer
-    let nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
+    const nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
     const currentBlockNumber = await web3.eth.getBlockNumber()
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
     // 1 hour, sufficiently far in future
-    let deadline = currentBlock.timestamp + (60 * 60 * 1)
+    const deadline = currentBlock.timestamp + (60 * 60 * 1)
 
-    let digest = getPermitDigest(
+    const digest = getPermitDigest(
       web3,
       name,
       tokenAddress,
@@ -524,7 +524,7 @@ class Account extends Base {
       nonce,
       deadline
     )
-    let result = sign(digest, myPrivateKey)
+    const result = sign(digest, myPrivateKey)
     return {
       result,
       deadline

@@ -131,6 +131,7 @@ class AudiusLibs {
       }
     }
   }
+
   /**
    * Configures an internal web3 to use (via Hedgehog)
    * @param {string} registryAddress
@@ -396,7 +397,7 @@ class AudiusLibs {
     }
 
     /** Contracts - Eth and Data Contracts */
-    let contractsToInit = []
+    const contractsToInit = []
     if (this.ethWeb3Manager) {
       this.ethContracts = new EthContracts(
         this.ethWeb3Manager,
@@ -456,7 +457,7 @@ class AudiusLibs {
     /** Creator Node */
     if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
-      let creatorNodeEndpoint = currentUser
+      const creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) || this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 

@@ -73,11 +73,11 @@ class SolanaUtils {
     const amountBytes = padBNToUint8Array(tokenAmount)
     const items = oracleAddress
       ? [
-        userBytes,
-        amountBytes,
-        transferIdBytes,
-        SolanaUtils.ethAddressToArray(oracleAddress)
-      ]
+          userBytes,
+          amountBytes,
+          transferIdBytes,
+          SolanaUtils.ethAddressToArray(oracleAddress)
+        ]
       : [userBytes, amountBytes, transferIdBytes]
     const sep = encoder.encode('_')
     const res = items.slice(1).reduce((prev, cur, i) => {
