@@ -265,4 +265,47 @@ describe('Test /ipfs/:cid route', function () {
       .expect('content-length', `${Buffer.byteLength(JSON.stringify(metadata))}`)
     assert.deepStrictEqual(JSON.parse(resp.text), metadata)
   })
+
+  it('Confirm metadata file streams correctly when not on disk, in DB, not in network, but on IPFS', async function () {
+    // Enable IPFS retrieval to ensure avail
+    process.env.IPFSRetrievalEnabled = true
+
+    await init()
+    
+    let resp
+
+    const metadata = { test: 'field1 '}
+
+    resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-ID', session.userId)
+      .send({ metadata })
+      .expect(200)
+
+    const CID = resp.body.data.metadataMultihash
+
+    // Delete metadata file from disk
+    const filePath = DiskManager.computeFilePath(CID, false)
+    await fs.remove(filePath)
+
+    // Mock failure response from one other content nodes
+    const CN = ['http://mock-cn1.audius.co','http://cn2_creator-node_1:4001','http://cn3_creator-node_1:4002']
+    CN.forEach(cn => {
+      nock(cn)
+        .persist()
+        .get('/file_lookup')
+        .query(obj => {
+          return obj.filePath.includes(CID)
+        })
+        .reply(404)
+    })
+
+    resp = await request(app)
+      .get(`/ipfs/${CID}`)
+      .expect(200)
+      .expect('cache-control', 'public, max-age=2592000, immutable')
+      .expect('content-length', `${Buffer.byteLength(JSON.stringify(metadata))}`)
+    assert.deepStrictEqual(JSON.parse(resp.text), metadata)
+  })
 })
