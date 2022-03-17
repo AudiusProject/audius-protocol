@@ -418,6 +418,56 @@ export const publicCreateContentNode = async ({
   );
 };
 
+/// Update a content node with proposers
+type PublicUpdateContentNode = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  cn: Proposer;
+  proposer1: Proposer;
+  proposer2: Proposer;
+  proposer3: Proposer;
+};
+export const publicUpdateContentNode = async ({
+  provider,
+  program,
+  adminStgPublicKey,
+  baseAuthorityAccount,
+  contentNodeAcct,
+  contentNodeAuthority,
+  cn,
+  proposer1,
+  proposer2,
+  proposer3,
+}: PublicUpdateContentNode) => {
+  return program.rpc.publicUpdateContentNode(
+    baseAuthorityAccount,
+    { seed: [...cn.seedBump.seed], bump: cn.seedBump.bump },
+    { seed: [...proposer1.seedBump.seed], bump: proposer1.seedBump.bump },
+    { seed: [...proposer2.seedBump.seed], bump: proposer2.seedBump.bump },
+    { seed: [...proposer3.seedBump.seed], bump: proposer3.seedBump.bump },
+    contentNodeAuthority,
+    {
+      accounts: {
+        admin: adminStgPublicKey,
+        payer: provider.wallet.publicKey,
+        contentNode: contentNodeAcct,
+        systemProgram: SystemProgram.programId,
+        proposer1: proposer1.pda,
+        proposer1Authority: proposer1.authority.publicKey,
+        proposer2: proposer2.pda,
+        proposer2Authority: proposer2.authority.publicKey,
+        proposer3: proposer3.pda,
+        proposer3Authority: proposer3.authority.publicKey,
+      },
+      signers: [proposer1.authority, proposer2.authority, proposer3.authority],
+    }
+  );
+};
+
 /// Create a content node with proposers
 type PublicDeleteContentNode = {
   provider: Provider;

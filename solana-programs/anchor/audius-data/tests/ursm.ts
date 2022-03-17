@@ -6,6 +6,7 @@ import {
   initAdmin,
   createContentNode,
   publicCreateContentNode,
+  publicUpdateContentNode,
   publicDeleteContentNode,
   updateUserReplicaSet,
   updateAdmin,
@@ -19,7 +20,7 @@ import {
 } from "./test-helpers";
 const { SystemProgram } = anchor.web3;
 
-describe("ursm", function () {
+describe.only("ursm", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -271,6 +272,55 @@ describe("ursm", function () {
       anchor.utils.bytes.hex.encode(Buffer.from(account.ownerEthAddress)),
       "content node owner eth addr set correctly"
     ).to.equal(ownerEth.address.toLowerCase());
+  });
+
+  it("Updates a Content Node with the proposers", async function () {
+    const cn2 = contentNodes["2"];
+    const cn3 = contentNodes["3"];
+    const cn4 = contentNodes["4"];
+
+    const cnToUpdate = contentNodes["6"];
+
+    const spID = new anchor.BN(4);
+    const seed = Buffer.concat([
+      Buffer.from("sp_id", "utf8"),
+      spID.toBuffer("le", 2),
+    ]);
+    const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+      await findDerivedPair(program.programId, adminStgKeypair.publicKey, seed);
+    const updatedAuthority = anchor.web3.Keypair.generate();
+
+    await publicUpdateContentNode({
+      provider,
+      program,
+      baseAuthorityAccount,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      contentNodeAuthority: updatedAuthority.publicKey,
+      contentNodeAcct: cnToUpdate.pda,
+      cn: {
+        pda: cnToUpdate.pda,
+        authority: cnToUpdate.authority,
+        seedBump: cnToUpdate.seedBump
+      },
+      proposer1: {
+        pda: cn4.pda,
+        authority: cn4.authority,
+        seedBump: cn4.seedBump,
+      },
+      proposer2: {
+        pda: cn2.pda,
+        authority: cn2.authority,
+        seedBump: cn2.seedBump,
+      },
+      proposer3: {
+        pda: cn3.pda,
+        authority: cn3.authority,
+        seedBump: cn3.seedBump,
+      },
+    })
+
+    const account = await program.account.contentNode.fetch(cnToUpdate.pda);
+    expect(account.authority.toBase58(), 'updated content node authority to be set').to.equal(updatedAuthority.publicKey.toBase58())
   });
 
   it("Deletes a Content Node with the proposers", async function () {
