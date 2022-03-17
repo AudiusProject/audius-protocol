@@ -605,6 +605,6 @@ export const createSolanaContentNode = async (props: {
     pda: derivedAddress,
     authority,
     seedBump: { seed, bump: bumpSeed },
-    tx
-  }
+    tx,
+  };
 };

@@ -156,7 +156,7 @@ pub mod audius_data {
         _p1: ProposerSeedBump,
         _p2: ProposerSeedBump,
         _p3: ProposerSeedBump,
-        sp_id: u16,
+        _sp_id: u16,
         authority: Pubkey,
         owner_eth_address: [u8; 20],
     ) -> Result<()> {

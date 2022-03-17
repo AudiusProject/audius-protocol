@@ -308,7 +308,6 @@ export const createContentNode = async ({
   );
 };
 
-
 /// Verify user with authenticatorKeypair
 type UpdateUserReplicaSet = {
   provider: Provider;
@@ -321,8 +320,8 @@ type UpdateUserReplicaSet = {
   cn1: anchor.web3.PublicKey;
   cn2: anchor.web3.PublicKey;
   cn3: anchor.web3.PublicKey;
-  userAcct: anchor.web3.PublicKey,
-  userHandle: { seed: number[]; bump: number }
+  userAcct: anchor.web3.PublicKey;
+  userHandle: { seed: number[]; bump: number };
 };
 
 export const updateUserReplicaSet = async ({

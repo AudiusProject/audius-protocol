@@ -119,7 +119,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       adminStgKeypair,
       adminKeypair,
-      ...getURSMParams()
+      ...getURSMParams(),
     });
 
     // New sol key that will be used to permission user updates
@@ -228,6 +228,7 @@ describe("audius-data", function () {
       newUserKeypair,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
+      ...getURSMParams(),
     });
 
     const playlistMetadata = randomCID();
@@ -299,6 +300,7 @@ describe("audius-data", function () {
       newUserKeypair,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
+      ...getURSMParams(),
     });
 
     const playlistMetadata = randomCID();

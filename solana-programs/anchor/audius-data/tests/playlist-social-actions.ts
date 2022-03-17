@@ -36,23 +36,7 @@ describe("playlist-actions", function () {
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
-  const getURSMParams = () => {
-    return {
-      ursm: [
-        contentNodes["1"].spId.toNumber(),
-        contentNodes["2"].spId.toNumber(),
-        contentNodes["3"].spId.toNumber(),
-      ],
-      ursmBumps: [
-        contentNodes["1"].seedBump.bump,
-        contentNodes["2"].seedBump.bump,
-        contentNodes["3"].seedBump.bump,
-      ],
-      cn1: contentNodes["1"].pda,
-      cn2: contentNodes["2"].pda,
-      cn3: contentNodes["3"].pda,
-    };
-  };
+
   it("playlist actions - Initializing admin account!", async function () {
     await initAdmin({
       provider,
