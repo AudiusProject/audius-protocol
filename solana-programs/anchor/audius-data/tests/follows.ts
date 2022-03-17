@@ -1,8 +1,8 @@
 import * as anchor from "@project-serum/anchor";
 import { BorshInstructionCoder, Program } from "@project-serum/anchor";
-import { assert } from "chai";
+import { expect, assert } from "chai";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair } from "../lib/utils";
+import { findDerivedPair, getTransactionWithData } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   confirmLogInTransaction,
@@ -150,6 +150,7 @@ describe("follows", function () {
         },
         signers: [newUser1Key],
       };
+
       const followTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.followUser,
@@ -157,33 +158,17 @@ describe("follows", function () {
         { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
-      const txInfo = await confirmLogInTransaction(
-        provider,
-        followTx,
-        "Audius::FollowUser"
-      );
 
-      const instructionCoder = program.coder
-        .instruction as BorshInstructionCoder;
-      const decodedInstruction = instructionCoder.decode(
-        txInfo.transaction.message.instructions[0].data,
-        "base58"
-      );
+      const { decodedInstruction, decodedData, accountPubKeys } =
+        await getTransactionWithData(program, provider, followTx);
 
-      // Validate deserialized instructions match input
-      // Confirms user handles passed on chain validation
-      // Can be used during indexing or external tx inspection
-      const instructions = decodedInstruction.data;
-      const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
-      const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
-      const instructionFollowerHandle = String.fromCharCode(
-        ...instructions.followerHandle.seed
-      );
-      const instructionFolloweeHandle = String.fromCharCode(
-        ...instructions.followeeHandle.seed
-      );
-      assert.equal(user1Handle, instructionFollowerHandle);
-      assert.equal(user2Handle, instructionFolloweeHandle);
+      expect(decodedInstruction.name).to.equal("followUser");
+      expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());
+      expect(decodedData.userAction).to.deep.equal(UserActionEnumValues.followUser);
+      expect(decodedData.followerHandle.seed).to.deep.equal(constants1.handleBytesArray);
+      expect(decodedData.followeeHandle.seed).to.deep.equal(constants2.handleBytesArray);
+      expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
 
     it("unfollow user", async function () {
@@ -205,28 +190,17 @@ describe("follows", function () {
         { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
-      const unFollowtxInfo = await confirmLogInTransaction(
-        provider,
-        unfollowTx,
-        "Audius::UnfollowUser"
-      );
-      const instructionCoder = program.coder
-        .instruction as BorshInstructionCoder;
-      const unFollowdecodedInstruction = instructionCoder.decode(
-        unFollowtxInfo.transaction.message.instructions[0].data,
-        "base58"
-      );
-      const unfollowInstructions = unFollowdecodedInstruction.data;
-      const unfInstructionFollowerHandle = String.fromCharCode(
-        ...unfollowInstructions.followerHandle.seed
-      );
-      const unfInstructionFolloweeHandle = String.fromCharCode(
-        ...unfollowInstructions.followeeHandle.seed
-      );
-      const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
-      const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
-      assert.equal(user1Handle, unfInstructionFollowerHandle);
-      assert.equal(user2Handle, unfInstructionFolloweeHandle);
+
+      const { decodedInstruction, decodedData, accountPubKeys } =
+        await getTransactionWithData(program, provider, unfollowTx);
+
+      expect(decodedInstruction.name).to.equal("followUser");
+      expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());
+      expect(decodedData.userAction).to.deep.equal(UserActionEnumValues.unfollowUser);
+      expect(decodedData.followerHandle.seed).to.deep.equal(constants1.handleBytesArray);
+      expect(decodedData.followeeHandle.seed).to.deep.equal(constants2.handleBytesArray);
+      expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
 
     it("submit invalid follow action", async function () {
