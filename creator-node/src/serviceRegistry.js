@@ -79,12 +79,6 @@ class ServiceRegistry {
     this.monitoringQueue.start()
     this.sessionExpirationQueue.start()
 
-    // TODO: track handoff requires the spID env var to be set. this is to ensure that
-    // that variable in config is set before doign track handoff
-    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
-    // Retries indefinitely
-    await this._recoverNodeL1Identity()
-
     this.servicesInitialized = true
   }
 
@@ -126,7 +120,7 @@ class ServiceRegistry {
   async initServicesThatRequireServer() {
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
-    // await this._recoverNodeL1Identity()
+    await this._recoverNodeL1Identity()
 
     // SnapbackSM init (requires L1 identity)
     // Retries indefinitely
