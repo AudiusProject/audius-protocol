@@ -21,6 +21,8 @@ import {
   updateTrack,
   EntityTypesEnumValues,
   ManagementActions,
+  deletePlaylist,
+  updatePlaylist,
 } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
@@ -280,6 +282,121 @@ export const testUpdateTrack = async ({
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
+export const testCreatePlaylist = async ({
+  provider,
+  program,
+  id,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
+  playlistMetadata,
+  userAuthorityKeypair,
+  playlistOwnerPDA,
+}) => {
+  const tx = await createPlaylist({
+    id,
+    program,
+    userAuthorityKeypair,
+    userStgAccountPDA: playlistOwnerPDA,
+    metadata: playlistMetadata,
+    baseAuthorityAccount,
+    handleBytesArray,
+    adminStgAccount,
+    bumpSeed,
+  });
+  const { decodedInstruction, decodedData, accountPubKeys } =
+    await getTransactionWithData(program, provider, tx);
+  // Validate instruction data
+  expect(decodedInstruction.name).to.equal("manageEntity");
+  expect(decodedData.id).to.equal(id);
+  expect(decodedData.metadata).to.equal(playlistMetadata);
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.create);
+  // Assert on instruction struct
+  // 1st index = playlist owner user storage account
+  // 2nd index = user authority keypair
+  // Indexing code must check that the playlist owner PDA is known before processing
+  expect(accountPubKeys[1]).to.equal(playlistOwnerPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
+};
+
+export const testDeletePlaylist = async ({
+  provider,
+  program,
+  id,
+  playlistOwnerPDA,
+  userAuthorityKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
+}) => {
+  const tx = await deletePlaylist({
+    id,
+    provider,
+    program,
+    userStgAccountPDA: playlistOwnerPDA,
+    userAuthorityKeypair: userAuthorityKeypair,
+    baseAuthorityAccount,
+    handleBytesArray,
+    bumpSeed,
+    adminStgAccount,
+  });
+  const { decodedInstruction, decodedData, accountPubKeys } =
+    await getTransactionWithData(program, provider, tx);
+  expect(decodedInstruction.name).to.equal("manageEntity");
+  expect(decodedData.id).to.equal(id);
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.delete);
+  // Assert on instruction struct
+  // 0th index = playlist owner user storage account
+  // 1st index = user authority keypair
+  // Indexing code must check that the playlist owner PDA is known before processing
+  expect(accountPubKeys[1]).to.equal(playlistOwnerPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
+};
+
+export const testUpdatePlaylist = async ({
+  provider,
+  program,
+  id,
+  userStgAccountPDA,
+  metadata,
+  userAuthorityKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+  adminStgAccount,
+}) => {
+  const tx = await updatePlaylist({
+    program,
+    baseAuthorityAccount,
+    handleBytesArray,
+    bumpSeed,
+    adminStgAccount,
+    id,
+    userStgAccountPDA,
+    metadata,
+    userAuthorityKeypair,
+  });
+  const { decodedInstruction, decodedData, accountPubKeys } =
+    await getTransactionWithData(program, provider, tx);
+
+  // Validate instruction data
+  expect(decodedInstruction.name).to.equal("manageEntity");
+  expect(decodedData.id).to.equal(id);
+  expect(decodedData.metadata).to.equal(metadata);
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.update);
+  // Assert on instruction struct
+  // 0th index = playlist owner user storage account
+  // 1st index = user authority keypair
+  // Indexing code must check that the playlist owner PDA is known before processing
+  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString());
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
+};
+
 export const pollAccountBalance = async (
   provider: anchor.Provider,
   targetAccount: anchor.web3.PublicKey,
@@ -367,39 +484,5 @@ export const createSolanaUser = async (
     bumpSeed,
     keypair: newUserKeypair,
     authority: baseAuthorityAccount,
-  };
-};
-
-export const createSolanaPlaylist = async (
-  program: Program<AudiusData>,
-  provider: anchor.Provider,
-  adminStgKeypair: anchor.web3.Keypair,
-  userAuthorityKeypair: anchor.web3.Keypair,
-  ownerPDA: anchor.web3.PublicKey
-) => {
-  const newPlaylistKeypair = anchor.web3.Keypair.generate();
-  const playlistMetadata = randomCID();
-
-  await createPlaylist({
-    provider,
-    program,
-    newPlaylistKeypair,
-    userAuthorityKeypair,
-    userStgAccountPDA: ownerPDA,
-    metadata: playlistMetadata,
-    adminStgPublicKey: adminStgKeypair.publicKey,
-  });
-
-  const playlist = await program.account.playlist.fetch(
-    newPlaylistKeypair.publicKey
-  );
-
-  if (!playlist) {
-    throw new Error("unable to create playlist account");
-  }
-
-  return {
-    playlist,
-    playlistkMetadata: playlistMetadata,
   };
 };

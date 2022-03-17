@@ -4,13 +4,17 @@ import chai, { assert, expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
   initAdmin,
-  writePlaylistSocialAction,
-  PlaylistSocialActionEnumValues,
+  addPlaylistRepost,
+  addPlaylistSave,
   updateAdmin,
+  deletePlaylistSave,
+  EntitySocialActionEnumValues,
+  EntityTypesEnumValues,
+  deletePlaylistRepost,
 } from "../lib/lib";
-import { getTransaction } from "../lib/utils";
+import { getTransaction, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser, createSolanaPlaylist } from "./test-helpers";
+import { createSolanaUser } from "./test-helpers";
 
 chai.use(chaiAsPromised);
 
@@ -36,8 +40,6 @@ describe("playlist-actions", function () {
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
-      trackIdOffset: new anchor.BN("0"),
-      playlistIdOffset: new anchor.BN("10"),
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
@@ -61,41 +63,10 @@ describe("playlist-actions", function () {
     });
   });
 
-  it("Save a playlist with a low playlist id", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await writePlaylistSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.addSave,
-      playlistId: new anchor.BN("1"),
-    });
-
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.addSave
-    );
-  });
-
   it("Delete save for a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
-    const tx = await writePlaylistSocialAction({
+    const tx = await deletePlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
@@ -103,8 +74,7 @@ describe("playlist-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.deleteSave,
-      playlistId: new anchor.BN("1"),
+      id: randomString(10),
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -117,23 +87,18 @@ describe("playlist-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.deleteSave
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.deleteSave
+    );
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.playlist
     );
   });
 
   it("Save a newly created playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
-    const playlist = await createSolanaPlaylist(
-      program,
-      provider,
-      adminStgKeypair,
-      user.keypair,
-      user.pda
-    );
-
-    const tx = await writePlaylistSocialAction({
+    const tx = await addPlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
@@ -141,8 +106,7 @@ describe("playlist-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.addSave,
-      playlistId: playlist.playlist.playlistId,
+      id: randomString(10),
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -155,38 +119,18 @@ describe("playlist-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.addSave
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.addSave
+    );
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.playlist
     );
   });
 
-  it("Error on saving an invalid playlist", async function () {
+  it("Repost a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
-    const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
-    );
-
-    await expect(
-      writePlaylistSocialAction({
-        program,
-        baseAuthorityAccount: user.authority,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-        userStgAccountPDA: user.pda,
-        userAuthorityKeypair: user.keypair,
-        handleBytesArray: user.handleBytesArray,
-        bumpSeed: user.bumpSeed,
-        playlistSocialAction: PlaylistSocialActionEnumValues.deleteSave,
-        playlistId: adminAccount.playlistId,
-      })
-    )
-      .to.eventually.be.rejected.and.property("msg")
-      .to.include(`Invalid Id.`);
-  });
-
-  it("Repost a playlist with a low playlist id", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-    const tx = await writePlaylistSocialAction({
+    const tx = await addPlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
@@ -194,31 +138,31 @@ describe("playlist-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.addRepost,
-      playlistId: new anchor.BN("1"),
+      id: randomString(10),
     });
-
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
-
     const userHandle = String.fromCharCode(...user.handleBytesArray);
     const instructionHandle = String.fromCharCode(
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.addRepost
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.addRepost
+    );
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.playlist
     );
   });
 
   it("Delete repost for a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
-    const tx = await writePlaylistSocialAction({
+    const tx = await deletePlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
@@ -226,8 +170,7 @@ describe("playlist-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.deleteRepost,
-      playlistId: new anchor.BN("1"),
+      id: randomString(10),
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -240,70 +183,11 @@ describe("playlist-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.deleteRepost
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.deleteRepost
     );
-  });
-
-  it("Repost a newly created playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-
-    const playlist = await createSolanaPlaylist(
-      program,
-      provider,
-      adminStgKeypair,
-      user.keypair,
-      user.pda
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.playlist
     );
-
-    const tx = await writePlaylistSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      playlistSocialAction: PlaylistSocialActionEnumValues.addRepost,
-      playlistId: playlist.playlist.playlistId,
-    });
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.playlistSocialAction).to.deep.equal(
-      PlaylistSocialActionEnumValues.addRepost
-    );
-  });
-
-  it("Error on reposting an invalid playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
-
-    const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
-    );
-
-    await expect(
-      writePlaylistSocialAction({
-        program,
-        baseAuthorityAccount: user.authority,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-        userStgAccountPDA: user.pda,
-        userAuthorityKeypair: user.keypair,
-        handleBytesArray: user.handleBytesArray,
-        bumpSeed: user.bumpSeed,
-        playlistSocialAction: PlaylistSocialActionEnumValues.deleteRepost,
-        playlistId: adminAccount.playlistId,
-      })
-    )
-      .to.eventually.be.rejected.and.property("msg")
-      .to.include(`Invalid Id.`);
   });
 });
