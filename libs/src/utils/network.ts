@@ -76,11 +76,16 @@ function sortServiceTimings ({
       if (semver.lt(aVersion, bVersion)) return 1
     } else if (!sortByVersion && currentVersion) {
       // Only sort by version if behind current on-chain version
+      // @ts-ignore
       if (semver.gt(currentVersion, aVersion) && semver.gt(currentVersion, bVersion)) {
         if (semver.gt(aVersion, bVersion)) return -1
         if (semver.lt(aVersion, bVersion)) return 1
+
+      // @ts-ignore
       } else if (semver.gt(currentVersion, aVersion)) {
         return 1
+
+      // @ts-ignore
       } else if (semver.gt(currentVersion, bVersion)) {
         return -1
       }
@@ -232,9 +237,9 @@ interface AllRequestsConfig {
   // timeout for any request to be considered bad
   timeout: number
   /* a check invoked for each response.
- *  If invalid, the response is filtered out.
- *  (response: any) => boolean
- */
+   *  If invalid, the response is filtered out.
+   *  (response: any) => boolean
+   */
   validationCheck: (_: AxiosResponse) => boolean
 }
 
