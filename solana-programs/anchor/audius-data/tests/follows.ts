@@ -160,7 +160,7 @@ describe("follows", function () {
       );
 
       const { decodedInstruction, decodedData, accountPubKeys } =
-        await getTransactionWithData(program, provider, followTx);
+        await getTransactionWithData(program, provider, followTx, 0);
 
       expect(decodedInstruction.name).to.equal("followUser");
       expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());
@@ -192,7 +192,7 @@ describe("follows", function () {
       );
 
       const { decodedInstruction, decodedData, accountPubKeys } =
-        await getTransactionWithData(program, provider, unfollowTx);
+        await getTransactionWithData(program, provider, unfollowTx, 0);
 
       expect(decodedInstruction.name).to.equal("followUser");
       expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());

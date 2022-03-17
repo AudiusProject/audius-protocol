@@ -51,7 +51,7 @@ describe("audius-data", function () {
     });
 
     const { decodedInstruction, decodedData, accountPubKeys } =
-      await getTransactionWithData(program, provider, tx);
+      await getTransactionWithData(program, provider, tx, 0);
 
     expect(decodedInstruction.name).to.equal("initAdmin");
     expect(decodedData.authority.toString()).to.equal(adminKeypair.publicKey.toString());
@@ -247,7 +247,7 @@ describe("audius-data", function () {
     });
 
     const { decodedInstruction, decodedData, accountPubKeys } =
-      await getTransactionWithData(program, provider, tx);
+      await getTransactionWithData(program, provider, tx, 0);
 
     expect(decodedInstruction.name).to.equal("updateUser");
     expect(decodedData.metadata).to.equal(updatedCID);
