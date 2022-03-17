@@ -2,14 +2,26 @@ const assert = require('assert')
 const request = require('supertest')
 const fs = require('fs-extra')
 const path = require('path')
+const nock = require('nock')
 
 const { createStarterCNodeUser } = require('./lib/dataSeeds.js')
 const { getApp } = require('./lib/app.js')
 const { getLibsMock } = require('./lib/libsMock.js')
 const { uploadTrack } = require('./lib/helpers.js')
+const DiskManager = require('../src/diskManager.js')
+const redis = require('../src/redis')
+const utils = require('../src/utils')
 
 const ipfsClient = require('../src/ipfsClient.js')
 const BlacklistManager = require('../src/blacklistManager.js')
+
+/**
+ * Other tests that may be useful to add:
+ * - legacy storage path
+ * - bytesRange
+ * - track stream route tests
+ * - dirCID route tests
+ */
 
 describe('Test /ipfs/:cid route', function () {
   let app, server, userId, session
@@ -18,7 +30,7 @@ describe('Test /ipfs/:cid route', function () {
    * Init IPFS, libs, app, server
    * Create initial user
    */
-  beforeEach(async function () {
+  const init = async function () {
     const ipfs = ipfsClient.ipfs
     const ipfsLatest = ipfsClient.ipfsLatest
 
@@ -34,14 +46,23 @@ describe('Test /ipfs/:cid route', function () {
 
     // Create user
     session = await createStarterCNodeUser(userId)
+  }
+
+  /** flush redis */
+  beforeEach(async function () {
+    await redis.flushall()
   })
 
-  /** Close server */
+  /** Close server + reset redis */
   afterEach(async function () {
+    await redis.flushall()
     await server.close()
+    nock.cleanAll()
   })
 
   it('400 on invalid CID format', async function () {
+    await init()
+
     const CID = 'asdfasdf'
     await request(app)
       .get(`/ipfs/${CID}`)
@@ -50,26 +71,9 @@ describe('Test /ipfs/:cid route', function () {
       })
   })
 
-  it.skip('TODO blacklisted content', async function () {})
-
-  /**
-   * - error if CID on disk and other type
-   * 
-   * - if CID on disk at new storage path
-   *  - successfully streamed from disk
-   *    - track segment
-   *    - other...
-   * - if CID on disk at old storage path
-   *  - successfully streamed from disk
-   * - if CID not on disk, check DB
-   * - error if not found in DB
-   * - error if found in DB with dir type
-   * - if found in DB
-   *  - mock network request for retrieval, confirm successfully streamed
-   *  - if not found in network, error
-   */
-
   it('400 if CID points to dir', async function () {
+    await init()
+
     const imageFilePath = path.resolve(__dirname, 'assets/static_image.png')
     const file = await fs.readFile(imageFilePath)
     const resp = await request(app)
@@ -90,7 +94,9 @@ describe('Test /ipfs/:cid route', function () {
       })
   })
 
-  it('Confirm metadata file streams correctly', async function () {
+  it('Confirm metadata file streams correctly when on disk', async function () {
+    await init()
+
     let resp
 
     const metadata = { test: 'field1 '}
@@ -112,7 +118,9 @@ describe('Test /ipfs/:cid route', function () {
     assert.deepStrictEqual(JSON.parse(resp.text), metadata)
   })
 
-  it('Confirm track segment file streams correctly', async function () {
+  it('Confirm track files stream correctly when on disk', async function () {
+    await init()
+
     let resp
 
     const trackFilePath = path.resolve(__dirname, 'assets/testTrack.mp3')
@@ -128,17 +136,133 @@ describe('Test /ipfs/:cid route', function () {
     
     // TODO check full response
 
-    // TODO check segment response content-length against file storage
-    // (await fs.stat(trackFilePath)).size
-
     resp = await request(app)
       .get(`/ipfs/${transcodedTrackCID}`)
       .expect(200)
       .expect('cache-control', 'public, max-age=2592000, immutable')
 
     // TODO check full response
+  })
 
-    // TODO check segment response content-length against file storage
-    // (await fs.stat(trackFilePath)).size
+  it('404 if CID not present on disk or DB', async function () {
+    await init()
+
+    const CID = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+
+    await request(app)
+      .get(`/ipfs/${CID}`)
+      .expect(404, {
+        error: `[getCID] [CID=${CID}] No valid file found for provided CID`
+      })
+  })
+
+  it('error if CID found on DB but points to dir', async function () {
+    await init()
+    
+    const imageFilePath = path.resolve(__dirname, 'assets/static_image.png')
+    const file = await fs.readFile(imageFilePath)
+    const resp = await request(app)
+      .post('/image_upload')
+      .attach('file', file, { filename: 'filename.jpg' })
+      .field('square', true)
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .expect(200)
+
+    const CID = resp.body.data.dirCID
+
+    // Remove dir from disk
+    const dirPath = DiskManager.computeFilePath(CID, false)
+    console.log(`SIDTEST DIRPATH: ${dirPath}`)
+    await fs.remove(dirPath)
+
+    await request(app)
+      .get(`/ipfs/${CID}`)
+      .expect(400, {
+        error: `[getCID] [CID=${CID}] this dag node is a directory`
+      })
+  })
+
+  it('Confirm metadata file does not stream when not on disk, not in network, and in DB (IPFS retrieval disabled)', async function () {
+    // Disable IPFS retrieval to ensure unavail
+    process.env.IPFSRetrievalEnabled = false
+
+    await init()
+    
+    let resp
+
+    const metadata = { test: 'field1 '}
+
+    resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-ID', session.userId)
+      .send({ metadata })
+      .expect(200)
+
+    const CID = resp.body.data.metadataMultihash
+
+    // Delete metadata file from disk
+    const filePath = DiskManager.computeFilePath(CID, false)
+    await fs.remove(filePath)
+
+    // Mock failure response from one other content nodes
+    const CN = ['http://mock-cn1.audius.co','http://cn2_creator-node_1:4001','http://cn3_creator-node_1:4002']
+    CN.forEach(cn => {
+      nock(cn)
+        .persist()
+        .get('/file_lookup')
+        .query(obj => {
+          return obj.filePath.includes(CID)
+        })
+        .reply(404)
+    })
+
+    await request(app)
+      .get(`/ipfs/${CID}`)
+      .expect(404, {
+        error: `[getCID] [CID=${CID}] No valid file found for provided CID`
+      })
+  })
+
+  it('Confirm metadata file streams correctly when not on disk, in DB, and in network', async function () {
+    await init()
+    
+    let resp
+
+    const metadata = { test: 'field1 '}
+
+    resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-ID', session.userId)
+      .send({ metadata })
+      .expect(200)
+
+    const CID = resp.body.data.metadataMultihash
+
+    // Delete metadata file from disk
+    const filePath = DiskManager.computeFilePath(CID, false)
+    await fs.remove(filePath)
+
+    // Mock success response from one other content node to ensure node can retrieve content
+    const CN = ['http://mock-cn1.audius.co','http://cn2_creator-node_1:4001','http://cn3_creator-node_1:4002']
+    CN.forEach(cn => {
+      nock(cn)
+        .persist()
+        .get('/file_lookup')
+        .query(obj => {
+          return obj.filePath.includes(CID)
+        })
+        .reply(200, metadata)
+    })
+
+    resp = await request(app)
+      .get(`/ipfs/${CID}`)
+      .expect(200)
+      .expect('cache-control', 'public, max-age=2592000, immutable')
+      .expect('content-length', `${Buffer.byteLength(JSON.stringify(metadata))}`)
+    assert.deepStrictEqual(JSON.parse(resp.text), metadata)
   })
 })

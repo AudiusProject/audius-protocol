@@ -254,6 +254,8 @@ const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) =>
   })
 
 /**
+ * Attempts to retrieve file from other content nodes in network
+ * If found, writes to local disk
  *
  * @param {String} filePath location of the file on disk
  * @param {String} cid content hash of the file
@@ -331,7 +333,9 @@ async function findCIDInNetwork(
         break
       }
     } catch (e) {
-      logger.error(`findCIDInNetwork error - ${e.toString()}`)
+      logger.error(
+        `${node.endpoint} ${cid} findCIDInNetwork error - ${e.toString()}`
+      )
       // since this is a function running in the background intended to fix state, don't error
       // and stop the flow of execution for functions that call it
       continue

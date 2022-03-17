@@ -45,8 +45,9 @@ const DiskManager = require('../diskManager')
 const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
-
 const fsStat = promisify(fs.stat)
+
+const IPFSRetrievalEnabled = config.get('IPFSRetrievalEnabled')
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
@@ -156,7 +157,7 @@ const getCID = async (req, res) => {
     return sendResponse(
       req,
       res,
-      errorResponseBadRequest(`Invalid request, no CID provided`)
+      errorResponseBadRequest(`[getCID] Invalid request, no CID provided`)
     )
   }
 
@@ -244,7 +245,7 @@ const getCID = async (req, res) => {
       return sendResponse(
         req,
         res,
-        errorResponseBadRequest('this dag node is a directory')
+        errorResponseBadRequest(`${logPrefix} this dag node is a directory`)
       )
     } else {
       decisionTree.push({
@@ -254,7 +255,7 @@ const getCID = async (req, res) => {
       return sendResponse(
         req,
         res,
-        errorResponseBadRequest('CID is of invalid file type')
+        errorResponseBadRequest(`${logPrefix} CID is of invalid file type`)
       )
     }
   } catch (e) {
@@ -317,7 +318,7 @@ const getCID = async (req, res) => {
         return sendResponse(
           req,
           res,
-          errorResponseBadRequest('this dag node is a directory')
+          errorResponseBadRequest(`${logPrefix} this dag node is a directory`)
         )
       } else {
         decisionTree.push({
@@ -327,7 +328,7 @@ const getCID = async (req, res) => {
         return sendResponse(
           req,
           res,
-          errorResponseBadRequest('CID is of invalid file type')
+          errorResponseBadRequest(`${logPrefix} CID is of invalid file type`)
         )
       }
     } catch (e) {
@@ -443,7 +444,7 @@ const getCID = async (req, res) => {
       return sendResponse(
         req,
         res,
-        errorResponseBadRequest('this dag node is a directory')
+        errorResponseBadRequest(`${logPrefix} this dag node is a directory`)
       )
     } else {
       decisionTree.push({
@@ -520,6 +521,18 @@ const getCID = async (req, res) => {
    * 2. If avail, stream from IPFS
    * 3. Else, error
    */
+  if (!IPFSRetrievalEnabled) {
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
+
+    decisionTree.push({ stage: 'IPFS_RETRIEVAL_DISABLED' })
+    logGetCIDDecisionTree(decisionTree, req)
+    return sendResponse(
+      req,
+      res,
+      errorResponseNotFound(`${logPrefix} No valid file found for provided CID`)
+    )
+  }
   blockStartMs = Date.now()
   try {
     // If the IPFS stat call fails or times out, an error is thrown
@@ -554,7 +567,9 @@ const getCID = async (req, res) => {
           return sendResponse(
             req,
             res,
-            errorResponseRangeNotSatisfiable('Range not satisfiable')
+            errorResponseRangeNotSatisfiable(
+              `${logPrefix} Range not satisfiable`
+            )
           )
         }
 
@@ -619,7 +634,11 @@ const getCID = async (req, res) => {
     })
 
     logGetCIDDecisionTree(decisionTree, req)
-    return sendResponse(req, res, errorResponseServerError(e.message))
+    return sendResponse(
+      req,
+      res,
+      errorResponseServerError(`${logPrefix} Error: ${e.message}`)
+    )
   }
 }
 
