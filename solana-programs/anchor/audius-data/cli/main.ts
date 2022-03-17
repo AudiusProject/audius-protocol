@@ -86,9 +86,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     program: cliVars.program,
     adminKeypair,
     adminStgKeypair,
-    verifierKeypair,
-    trackIdOffset: new anchor.BN("0"),
-    playlistIdOffset: new anchor.BN("0"),
+    verifierKeypair
   });
   await cliVars.provider.connection.confirmTransaction(tx);
 }
