@@ -147,7 +147,7 @@ describe('Test /ipfs/:cid route', function () {
   it('404 if CID not present on disk or DB', async function () {
     await init()
 
-    const CID = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+    const CID = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8X'
 
     await request(app)
       .get(`/ipfs/${CID}`)

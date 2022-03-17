@@ -24,7 +24,7 @@ const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { saveFileToStorage } = require('./lib/helpers')
 
-const TestAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
+const TestAudioFilePath = path.resolve(__dirname, 'assets/testTrack.mp3')
 
 describe('Test createNewDataRecord()', async function () {
   const req = {

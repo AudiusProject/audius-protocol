@@ -26,14 +26,14 @@ const { stringifiedDateFields } = require('./lib/utils')
 const processSync = require('../src/services/sync/processSync')
 const { uploadTrack } = require('./lib/helpers')
 
-const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
+const testAudioFilePath = path.resolve(__dirname, 'assets/testTrack.mp3')
 const sampleExportDummyCIDPath = path.resolve(
   __dirname,
-  'syncAssets/sampleExportDummyCID.json'
+  'assets/syncAssets/sampleExportDummyCID.json'
 )
 const sampleExportDummyCIDFromClock2Path = path.resolve(
   __dirname,
-  'syncAssets/sampleExportDummyCIDFromClock2.json'
+  'assets/syncAssets/sampleExportDummyCIDFromClock2.json'
 )
 
 describe('test nodesync', async function () {

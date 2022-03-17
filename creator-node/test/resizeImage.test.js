@@ -10,7 +10,7 @@ const sinon = require('sinon')
 const assert = require('assert')
 
 // Image buffer for audiusDj.png test image
-const imageTestDir = 'resizeImageAssets'
+const imageTestDir = 'assets/resizeImageAssets'
 const imageBuffer = fs.readFileSync(path.join(__dirname, imageTestDir, 'audiusDj.png'))
 
 let storagePath = config.get('storagePath')

@@ -42,9 +42,9 @@ const req = {
   }
 }
 
-// TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
+// TODO - instead of using ./test/assets/test-segments, use ./test/assets/testTrackUploadDir
 // consts used for testing saveFileToIpfsFromFs()
-const segmentsDirPath = 'test/test-segments'
+const segmentsDirPath = 'test/assets/test-segments'
 const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
 
@@ -322,7 +322,7 @@ describe('test fileManager', () => {
 })
 
 describe('test removeTrackFolder()', async function () {
-  const testTrackUploadDir = './test/testTrackUploadDir/'
+  const testTrackUploadDir = './test/assets/testTrackUploadDir/'
   const trackSourceFileDir = path.join(storagePath, 'testTrackSourceFileDir')
 
   // copy test dir into /test_file_storage dir to be deleted by removeTrackFolder()
