@@ -647,6 +647,12 @@ const config = convict({
     env: 'IPFSAddTimeoutMs',
     default: 90000 // 90s
   },
+  IPFSRetrievalEnabled: {
+    doc: 'Boolean indicating if CN should attempt to retrieve content from IPFS',
+    format: 'BooleanCustom',
+    env: 'IPFSRetrievalEnabled',
+    default: true
+  },
   healthCheckIpfsTimeoutMs: {
     doc: 'Default timeout for the ipfs health check route in timing add content',
     format: 'nat',

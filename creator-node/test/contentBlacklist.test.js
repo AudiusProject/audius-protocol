@@ -24,7 +24,7 @@ const trustedNotifierConfig = {
   privateKey: 'fb0486224fc0221d1c23c00379cb10ce5f99aff2b0e5c1afd828c08b57f21429'
 }
 
-const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
+const testAudioFilePath = path.resolve(__dirname, 'assets/testTrack.mp3')
 
 describe('test ContentBlacklist', function () {
   let app, server, libsMock, mockServiceRegistry, userId
@@ -824,11 +824,7 @@ describe('test ContentBlacklist', function () {
       .send(associateRequest)
 
     // Upload a track
-    let trackUploadResponse = await uploadTrack(
-      testAudioFilePath,
-      cnodeUserUUID,
-      mockServiceRegistry.blacklistManager
-    )
+    let trackUploadResponse = await uploadTrack(testAudioFilePath, cnodeUserUUID)
 
     const {
       transcodedTrackUUID,

@@ -8,7 +8,7 @@ const {
   handleTrackContentRoute
 } = require('../../src/components/tracks/tracksComponentService')
 
-const uploadTrack = async (filePath, cnodeUserUUID, blacklistManager) => {
+const uploadTrack = async (filePath, cnodeUserUUID) => {
   const { fileUUID, fileDir } = saveFileToStorage(filePath)
   const resp = await handleTrackContentRoute(
     {

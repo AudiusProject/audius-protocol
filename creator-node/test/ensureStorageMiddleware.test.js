@@ -56,7 +56,7 @@ describe('test ensureStorageMiddleware', () => {
     const storagePathUsed = await monitoringQueueMock.getRedisValue(storagePathUsedRedisKey)
     assert(storagePathUsed === '100')
 
-    const testPicture = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
+    const testPicture = path.resolve(__dirname, 'assets/testTrackWrongFormat.jpg')
     let file = fs.readFileSync(testPicture)
     const resp = await request(app)
       .post('/image_upload')
@@ -93,7 +93,7 @@ describe('test ensureStorageMiddleware', () => {
     const storagePathUsed = await monitoringQueueMock.getRedisValue(storagePathUsedRedisKey)
     assert(storagePathUsed === '100')
 
-    const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
+    const testAudioFilePath = path.resolve(__dirname, 'assets/testTrack.mp3')
     const file = fs.readFileSync(testAudioFilePath)
     const resp = await request(app)
       .post('/track_content_async')

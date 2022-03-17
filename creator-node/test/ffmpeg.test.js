@@ -9,7 +9,7 @@ describe('test segmentFile()', () => {
   // Middleware would normally handle this, however, in this test
   // context, segmentFile() is unit tested directly without the middleware.
   before(() => {
-    const segmentsDirPath = path.join(__dirname, 'segments')
+    const segmentsDirPath = path.join(__dirname, 'assets/segments')
     if (!fs.existsSync(segmentsDirPath)) {
       try {
         fs.mkdirSync(segmentsDirPath)
@@ -39,7 +39,7 @@ describe('test segmentFile()', () => {
    * When: it is segmented
   */
   it('should throw an error if ffmpeg reads a bad track file (image)', async () => {
-    const fileDir = __dirname
+    const fileDir = path.resolve(__dirname, 'assets')
     const fileName = 'testTrackWrongFormat.jpg'
 
     try {
@@ -56,7 +56,7 @@ describe('test segmentFile()', () => {
    * Then: there are 32 proper track segments present in tests/segments
   */
   it('should properly segment track', async () => {
-    const fileDir = __dirname
+    const fileDir = path.resolve(__dirname, 'assets')
     const fileName = 'testTrack.mp3'
 
     try {
@@ -66,7 +66,7 @@ describe('test segmentFile()', () => {
     }
 
     // read segments assets from /test-segments
-    // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
+    // TODO - instead of using ./test/test-segments, use ./test/assets/testTrackUploadDir
     const testSegmentsPath = path.join(fileDir, 'test-segments')
     fs.readdir(testSegmentsPath, (err, files) => {
       if (err) assert.fail(`Could not read directory at ${testSegmentsPath}`)

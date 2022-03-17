@@ -27,10 +27,10 @@ const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 const { saveFileToStorage } = require('./lib/helpers')
 
-const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
+const testAudioFilePath = path.resolve(__dirname, 'assets/testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(
   __dirname,
-  'testTrackWrongFormat.jpg'
+  'assets/testTrackWrongFormat.jpg'
 )
 
 const TestAudiusTrackFileNumSegments = 32
@@ -58,8 +58,8 @@ function getReqObj(fileUUID, fileDir, session) {
 }
 
 /**
- * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir
- * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
+ * Given index of segment, returns filepath of expected segment file in /test/assets/test-segments/ dir
+ * TODO - instead of using ./test/assets/test-segments, use ./test/assets/testTrackUploadDir
  */
 function _getTestSegmentFilePathAtIndex(index) {
   let suffix = '000'
@@ -68,7 +68,7 @@ function _getTestSegmentFilePathAtIndex(index) {
   else if (index >= 10 && index < 32) suffix += `${index}`
   else throw new Error('Index must be [0, 32)')
 
-  return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
+  return path.join(__dirname, 'assets/test-segments', `segment${suffix}.ts`)
 }
 
 describe('test Polling Tracks with mocked IPFS', function () {
@@ -969,7 +969,7 @@ describe('test Polling Tracks with real IPFS', function () {
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(
       __dirname,
-      'testTranscoded320Track.mp3'
+      'assets/testTranscoded320Track.mp3'
     )
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
     const transcodedTrackPath = DiskManager.computeFilePath(transcodedTrackCID)
