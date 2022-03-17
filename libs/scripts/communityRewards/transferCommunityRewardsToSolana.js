@@ -211,5 +211,8 @@ async function run () {
     console.log(`Error: ${e.message}`)
   }
 }
+if (require && require.main === module) {
+  run()
+}
 
-run()
+export const transferCommunityRewardsToSolana = run

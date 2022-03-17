@@ -38,8 +38,6 @@ describe("follows", function () {
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
-      trackIdOffset: new anchor.BN("0"),
-      playlistIdOffset: new anchor.BN("0"),
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
