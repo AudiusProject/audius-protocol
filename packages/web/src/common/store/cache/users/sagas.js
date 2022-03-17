@@ -26,6 +26,7 @@ import {
   setAudiusAccountUser
 } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { removePlaylistLibraryTempPlaylists } from 'store/playlist-library/helpers'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 
@@ -205,9 +206,16 @@ function* watchSyncLocalStorageUser() {
       const existing = getAudiusAccountUser()
       // Merge with the new metadata
       const merged = mergeWith({}, existing, addedUser, mergeCustomizer)
-      // Remove blob urls if any
-      // Blob urls only last for the session so we don't want to store those
+      // Remove blob urls if any - blob urls only last for the session so we don't want to store those
       const cleaned = pruneBlobValues(merged)
+      // Remove temp playlists from the playlist library since they are only meant to last
+      // in the current session until the playlist is finished creating
+      // If we don't do this, temp playlists can get stuck in local storage (resulting in a corrupted state)
+      // if the user reloads before a temp playlist is resolved.
+      cleaned.playlist_library =
+        cleaned.playlist_library == null
+          ? cleaned.playlist_library
+          : removePlaylistLibraryTempPlaylists(cleaned.playlist_library)
       // Set user back to local storage
       setAudiusAccountUser(cleaned)
     }
