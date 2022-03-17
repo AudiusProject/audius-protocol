@@ -4,7 +4,7 @@ const crypto = require('crypto')
 const { parameterizedAuthMiddleware } = require('../authMiddleware')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayerKeypair } = require('../solana-client')
-const { isSendInstruction, isRelayAllowedProgram, doesUserHaveSocialProof } = require('../utils/relayHelpers')
+const { isSendInstruction, isRelayAllowedProgram, doesUserHaveSocialProof, isRelayAllowedForAuthority } = require('../utils/relayHelpers')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 const {
@@ -46,6 +46,14 @@ solanaRouter.post(
       return errorResponseServerError(
         `Invalid relay instructions`,
         { error: 'Invalid relay instructions' }
+      )
+    }
+
+    // Check for proper authority
+    if (!isRelayAllowedForAuthority(instructions)) {
+      return errorResponseServerError(
+        `Invalid relay instructions`,
+        { error: `Invalid relay instructions.` }
       )
     }
 
