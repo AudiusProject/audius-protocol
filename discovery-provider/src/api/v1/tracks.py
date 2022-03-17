@@ -836,8 +836,8 @@ best_new_releases_parser.add_argument(
 @full_ns.route("/best_new_releases")
 class BestNewReleases(Resource):
     @record_metrics
-    @cache(ttl_sec=10)
     @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
     def get(self):
         request_args = best_new_releases_parser.parse_args()
         window = request_args.get("window")
@@ -885,8 +885,8 @@ under_the_radar_parser.add_argument(
 @full_ns.route("/under_the_radar")
 class UnderTheRadar(Resource):
     @record_metrics
-    @cache(ttl_sec=10)
     @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
     def get(self):
         request_args = under_the_radar_parser.parse_args()
         args = {
@@ -916,8 +916,8 @@ most_loved_parser.add_argument("with_users", required=False, type=bool)
 @full_ns.route("/most_loved")
 class MostLoved(Resource):
     @record_metrics
-    @cache(ttl_sec=10)
     @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
     def get(self):
         request_args = most_loved_parser.parse_args()
         args = {
@@ -966,8 +966,8 @@ by_ids_parser.add_argument("with_users", required=False, type=bool)
 @full_ns.route("/by_ids")
 class TracksByIDs(Resource):
     @record_metrics
-    @cache(ttl_sec=10)
     @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
     def get(self):
         request_args = by_ids_parser.parse_args()
         current_user_id = get_current_user_id(request_args)
