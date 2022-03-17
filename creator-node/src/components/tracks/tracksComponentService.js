@@ -86,8 +86,16 @@ async function handleTrackHandOff({ logContext }, requestProps) {
 
   const codeBlockTimeStart = getStartTime()
 
-  const { transcodeFilePath, segmentFileNames, sp } =
-    await TrackHandOffUtils.handOffTrack(libs, requestProps)
+  // If the Content Ndoe is not initialized yet, the spID will not
+  // have been set yet. If so, just continue with regular track upload
+  // rather than wait
+  let transcodeFilePath, segmentFileNames, sp
+  if (config.get('spID')) {
+    const resp = await TrackHandOffUtils.handOffTrack(libs, requestProps)
+    transcodeFilePath = resp.transcodeFilePath
+    segmentFileNames = resp.segmentFileNames
+    sp = resp.sp
+  }
 
   // Let current node handle the track if handoff fails
   if (!transcodeFilePath || !segmentFileNames) {
