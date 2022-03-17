@@ -243,11 +243,11 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn write_social_action(
-        ctx: Context<SocialAction>,
+    pub fn write_entity_social_action(
+        ctx: Context<WriteEntitySocialAction>,
         base: Pubkey,
         _user_handle: UserHandle,
-        _social_action: SocialActionValues,
+        _entity_social_action: EntitySocialActionValues,
         _entity_type: EntityTypes,
         _id: String,
     ) -> Result<()> {
@@ -517,7 +517,7 @@ pub struct ManageEntity<'info> {
 /// Confirm that the user authority matches signer authority field
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_handle: UserHandle)]
-pub struct SocialAction<'info> {
+pub struct WriteEntitySocialAction<'info> {
     // TODO - Verify removal here
     #[account()]
     pub audius_admin: Account<'info, AudiusAdmin>,
@@ -591,7 +591,7 @@ pub enum UserAction {
 
 // Track actions enum, used to save / repost based on function arguments
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
-pub enum SocialActionValues {
+pub enum EntitySocialActionValues {
     AddSave,
     DeleteSave,
     AddRepost,

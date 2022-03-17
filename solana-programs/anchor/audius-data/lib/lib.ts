@@ -22,7 +22,7 @@ export const ManagementActions = {
   delete: { delete: {} },
 };
 
-export const SocialActions = {
+export const EntitySocialActions = {
   addSave: { addSave: {} },
   deleteSave: { deleteSave: {} },
   addRepost: { addRepost: {} },
@@ -134,14 +134,14 @@ type DeleteEntityParams = {
   bumpSeed: number;
 };
 
-export const SocialActionEnumValues = {
+export const EntitySocialActionEnumValues = {
   addSave: { addSave: {} },
   deleteSave: { deleteSave: {} },
   addRepost: { addRepost: {} },
   deleteRepost: { deleteRepost: {} },
 };
 
-type SocialActionArgs = {
+type EntitySocialActionArgs = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   userStgAccountPDA: anchor.web3.PublicKey;
@@ -563,11 +563,11 @@ export const addTrackSave = async ({
   bumpSeed,
   adminStgPublicKey,
   id,
-}: SocialActionArgs) => {
-  return program.rpc.writeSocialAction(
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    SocialActions.addSave,
+    EntitySocialActions.addSave,
     EntityTypesEnumValues.track,
     id,
     {
@@ -590,11 +590,11 @@ export const deleteTrackSave = async ({
   bumpSeed,
   adminStgPublicKey,
   id,
-}: SocialActionArgs) => {
-  return program.rpc.writeSocialAction(
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    SocialActions.deleteSave,
+    EntitySocialActions.deleteSave,
     EntityTypesEnumValues.track,
     id,
     {
@@ -617,11 +617,11 @@ export const addTrackRepost = async ({
   bumpSeed,
   adminStgPublicKey,
   id,
-}: SocialActionArgs) => {
-  return program.rpc.writeSocialAction(
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    SocialActions.addRepost,
+    EntitySocialActions.addRepost,
     EntityTypesEnumValues.track,
     id,
     {
@@ -644,11 +644,11 @@ export const deleteTrackRepost = async ({
   bumpSeed,
   adminStgPublicKey,
   id,
-}: SocialActionArgs) => {
-  return program.rpc.writeSocialAction(
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    SocialActions.deleteRepost,
+    EntitySocialActions.deleteRepost,
     EntityTypesEnumValues.track,
     id,
     {
@@ -671,11 +671,11 @@ export const addPlaylistSave = async ({
   bumpSeed,
   adminStgPublicKey,
   id,
-}: SocialActionArgs) => {
-  return program.rpc.writeSocialAction(
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    SocialActions.addSave,
+    EntitySocialActions.addSave,
     EntityTypesEnumValues.playlist,
     id,
     {
@@ -698,11 +698,11 @@ export const deletePlaylistSave = async ({
   bumpSeed,
   adminStgPublicKey,
   id,
-}: SocialActionArgs) => {
-  return program.rpc.writeSocialAction(
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    SocialActions.deleteSave,
+    EntitySocialActions.deleteSave,
     EntityTypesEnumValues.playlist,
     id,
     {
@@ -725,11 +725,11 @@ export const addPlaylistRepost = async ({
   bumpSeed,
   adminStgPublicKey,
   id,
-}: SocialActionArgs) => {
-  return program.rpc.writeSocialAction(
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    SocialActions.addRepost,
+    EntitySocialActions.addRepost,
     EntityTypesEnumValues.playlist,
     id,
     {
@@ -752,11 +752,11 @@ export const deletePlaylistRepost = async ({
   bumpSeed,
   adminStgPublicKey,
   id,
-}: SocialActionArgs) => {
-  return program.rpc.writeSocialAction(
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    SocialActions.deleteRepost,
+    EntitySocialActions.deleteRepost,
     EntityTypesEnumValues.playlist,
     id,
     {

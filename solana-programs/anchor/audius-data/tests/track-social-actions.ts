@@ -8,7 +8,7 @@ import {
   addTrackSave,
   updateAdmin,
   deleteTrackSave,
-  SocialActionEnumValues,
+  EntitySocialActionEnumValues,
   EntityTypesEnumValues,
   deleteTrackRepost,
 } from "../lib/lib";
@@ -87,8 +87,8 @@ describe("track-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.socialAction).to.deep.equal(
-      SocialActionEnumValues.deleteSave
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.deleteSave
     );
     expect(decodedInstruction.data.entityType).to.deep.equal(
       EntityTypesEnumValues.track
@@ -119,8 +119,8 @@ describe("track-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.socialAction).to.deep.equal(
-      SocialActionEnumValues.addSave
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.addSave
     );
     expect(decodedInstruction.data.entityType).to.deep.equal(
       EntityTypesEnumValues.track
@@ -151,8 +151,8 @@ describe("track-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.socialAction).to.deep.equal(
-      SocialActionEnumValues.addRepost
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.addRepost
     );
     expect(decodedInstruction.data.entityType).to.deep.equal(
       EntityTypesEnumValues.track
@@ -184,8 +184,8 @@ describe("track-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.socialAction).to.deep.equal(
-      SocialActionEnumValues.deleteRepost
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.deleteRepost
     );
     expect(decodedInstruction.data.entityType).to.deep.equal(
       EntityTypesEnumValues.track
