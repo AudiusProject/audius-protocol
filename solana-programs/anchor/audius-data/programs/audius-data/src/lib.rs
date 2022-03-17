@@ -243,12 +243,13 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn write_track_social_action(
-        ctx: Context<TrackSocialAction>,
+    pub fn write_entity_social_action(
+        ctx: Context<WriteEntitySocialAction>,
         base: Pubkey,
         _user_handle: UserHandle,
-        _track_social_action: TrackSocialActionValues,
-        _track_id: String,
+        _entity_social_action: EntitySocialActionValues,
+        _entity_type: EntityTypes,
+        _id: String,
     ) -> Result<()> {
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
@@ -259,26 +260,6 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        Ok(())
-    }
-
-    pub fn write_playlist_social_action(
-        ctx: Context<PlaylistSocialAction>,
-        base: Pubkey,
-        _user_handle: UserHandle,
-        _playlist_social_action: PlaylistSocialActionValues,
-        _playlist_id: String,
-    ) -> Result<()> {
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
-        let (base_pda, _bump) =
-            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
-        // Confirm the base PDA matches the expected value provided the target audius admin
-        if base_pda != base {
-            return Err(ErrorCode::Unauthorized.into());
-        }
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
@@ -536,20 +517,8 @@ pub struct ManageEntity<'info> {
 /// Confirm that the user authority matches signer authority field
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_handle: UserHandle)]
-pub struct TrackSocialAction<'info> {
+pub struct WriteEntitySocialAction<'info> {
     // TODO - Verify removal here
-    #[account()]
-    pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
-    pub user: Account<'info, User>,
-    #[account()]
-    // User authority field
-    pub authority: Signer<'info>,
-}
-
-#[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle)]
-pub struct PlaylistSocialAction<'info> {
     #[account()]
     pub audius_admin: Account<'info, AudiusAdmin>,
     #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
@@ -622,15 +591,7 @@ pub enum UserAction {
 
 // Track actions enum, used to save / repost based on function arguments
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
-pub enum TrackSocialActionValues {
-    AddSave,
-    DeleteSave,
-    AddRepost,
-    DeleteRepost,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
-pub enum PlaylistSocialActionValues {
+pub enum EntitySocialActionValues {
     AddSave,
     DeleteSave,
     AddRepost,
