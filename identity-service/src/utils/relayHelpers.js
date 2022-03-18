@@ -51,8 +51,8 @@ const rewardManagerAuthorityIndices = {
  * @see {@link [../../../solana-programs/claimable-tokens/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/2c93f29596a1d6cc8ca4e76ef1f0d2e57f0e09e6/solana-programs/claimable-tokens/program/src/instruction.rs#L21)}
  */
 const claimableTokenAuthorityIndices = {
-  0: 2,
-  1: 4
+  0: 2, // CreateTokenAccount
+  1: 4 // Transfer
 }
 
 /**
