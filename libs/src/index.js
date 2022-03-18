@@ -511,6 +511,10 @@ class AudiusLibs {
   }
 }
 
+// This is needed to ensure default and named exports are handled correctly by rollup
+// https://github.com/rollup/plugins/tree/master/packages/commonjs#defaultismoduleexports
+exports.__esModule = true
+
 module.exports = AudiusLibs
 
 module.exports.AudiusABIDecoder = AudiusABIDecoder

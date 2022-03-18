@@ -3,6 +3,7 @@ const { toBuffer } = require('ethereumjs-util')
 const { zeroPad } = require('ethers/lib/utils')
 const { providers } = require('ethers/lib/index')
 const wormholeSDK = require('@certusone/wormhole-sdk')
+const { setDefaultWasm } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')
 
 const SolanaUtils = require('../solanaWeb3Manager/utils')
 const Utils = require('../../utils')
@@ -53,7 +54,7 @@ class Wormhole {
     this.ethTokenBridgeAddress = ethTokenBridgeAddress
     this.wormholeSDK = wormholeSDK
     if (isServer) {
-      wormholeSDK.setDefaultWasm('node')
+      setDefaultWasm('node')
     }
   }
 
