@@ -4,7 +4,6 @@ import Client from 'common/models/Client'
 import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
-import ConfirmAudioToWAudioModal from 'components/confirm-audio-to-waudio/desktop/ConfirmAudioToWAudioModal'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EditPlaylistModal from 'components/edit-playlist/desktop/EditPlaylistModal'
@@ -61,7 +60,6 @@ const Modals = () => {
           <ConnectedUserListModal />
           <AppCTAModal />
           <TierExplainerModal />
-          <ConfirmAudioToWAudioModal />
         </>
       )}
 

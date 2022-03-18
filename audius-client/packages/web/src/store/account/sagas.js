@@ -1,8 +1,7 @@
-import { call, put, take, fork, select, takeEvery } from 'redux-saga/effects'
+import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
-import { FeatureFlags } from 'common/services/remote-config'
 import * as accountActions from 'common/store/account/reducer'
 import {
   getUserId,
@@ -15,21 +14,14 @@ import {
 } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
-import * as errorActions from 'common/store/errors/actions'
-import { Level } from 'common/store/errors/level'
 import {
   setBrowserNotificationPermission,
   setBrowserNotificationEnabled,
   setBrowserNotificationSettingsOn
 } from 'common/store/pages/settings/actions'
 import { getFeePayer } from 'common/store/solana/selectors'
-import {
-  getModalIsOpen,
-  getModalVisibility,
-  setVisibility
-} from 'common/store/ui/modals/slice'
+import { setVisibility } from 'common/store/ui/modals/slice'
 import * as uploadActions from 'pages/upload-page/store/actions'
-import AudioManager from 'services/AudioManager'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   getAudiusAccount,
@@ -47,7 +39,6 @@ import { SignedIn } from 'services/native-mobile-interface/lifecycle'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { setSentryUser } from 'services/sentry'
 import { identify } from 'store/analytics/actions'
-import { confirmTransferAudioToWAudio } from 'store/audio-manager/slice'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { addPlaylistsNotInLibrary } from 'store/playlist-library/sagas'
 import {
@@ -116,61 +107,8 @@ function* onFetchAccount(account) {
   // This could happen if the user creates a new playlist and then leaves their session.
   yield fork(addPlaylistsNotInLibrary)
 
-  yield fork(initAudioChecks)
-
   const feePayerOverride = yield select(getFeePayer)
   yield call(createUserBankIfNeeded, feePayerOverride)
-}
-
-/**
- * Opens the Modal for user confirmation of transfering audio to waudio
- */
-function* requestTransferAudioToWAudio() {
-  // Wait for any other modals to close
-  let modalIsOpen = yield select(getModalIsOpen)
-  while (modalIsOpen) {
-    yield take(setVisibility.type)
-    modalIsOpen = yield select(getModalIsOpen)
-  }
-  // Put an action to show modal
-  yield put(setVisibility({ modal: 'ConfirmAudioToWAudio', visible: true }))
-
-  // Take the action on result of modal
-  yield take(confirmTransferAudioToWAudio.type)
-  return true
-}
-
-function* initAudioChecks() {
-  if (
-    remoteConfigInstance.getFeatureEnabled(
-      FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD
-    )
-  ) {
-    try {
-      const audiusManager = new AudioManager({
-        requestTransferAudioToWAudio
-      })
-
-      yield call(audiusManager.getInitState)
-      yield call(audiusManager.updateState)
-    } catch (error) {
-      yield put(
-        errorActions.handleError({
-          message: 'Error in Init Audio Checks',
-          shouldRedirect: false,
-          shouldReport: true,
-          additionalInfo: { errorMessage: error.message },
-          level: Level.Critical
-        })
-      )
-    }
-    const isModalOpen = yield select(getModalVisibility, 'ConfirmAudioToWAudio')
-    if (isModalOpen) {
-      yield put(
-        setVisibility({ modal: 'ConfirmAudioToWAudio', visible: false })
-      )
-    }
-  }
 }
 
 export function* fetchAccountAsync(action) {
