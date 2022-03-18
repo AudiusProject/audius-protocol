@@ -528,6 +528,37 @@ describe("audius-data", function () {
 
     // New sol key that will be used as user authority delegate
     const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
+
+    const appDelSeed = [
+      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+    ];
+    const appRes = await PublicKey.findProgramAddress(
+      appDelSeed,
+      program.programId
+    );
+    const appDelPDA = appRes[0];
+    const appDelBump = appRes[1];
+
+    const initAppDelegateArgs = {
+      accounts: {
+        admin: adminStgKeypair.publicKey,
+        user: newUserAcctPDA,
+        userAuthorityDelegatePda: appDelPDA,
+        userAuthority: newUserKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [newUserKeypair],
+    };
+
+    await program.rpc.initAppDelegate(
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      userAuthorityDelegateKeypair.publicKey,
+      initAppDelegateArgs
+    );
+
     const userDelSeed = [
       newUserAcctPDA.toBytes().slice(0, 32),
       userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),

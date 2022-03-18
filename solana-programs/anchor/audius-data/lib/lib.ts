@@ -208,6 +208,7 @@ export const initUser = async ({
   );
 };
 
+
 /// Claim a user's account using given an eth private key
 
 export const initUserSolPubkey = async ({

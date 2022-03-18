@@ -1,4 +1,4 @@
-use crate::{ErrorCode, User, UserAuthorityDelegate};
+use crate::{ErrorCode, User, UserAuthorityDelegate, AppDelegate};
 
 use anchor_lang::{prelude::*, solana_program::system_program};
 
@@ -8,6 +8,7 @@ pub fn validate_user_authority<'info>(
     program_id: &Pubkey,
     user: &Account<'info, User>,
     user_delegate_authority: &AccountInfo<'info>,
+    app_delegate: &AccountInfo<'info>,
     authority: &Signer,
 ) -> Result<()> {
     if user.authority != authority.key() {
@@ -38,6 +39,28 @@ pub fn validate_user_authority<'info>(
         if user_del_acct.user_storage_account != user.key()
             || user_del_acct.delegate_authority != authority.key()
         {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Confirm app delegate is not revoked
+        let (derived_app_delegate, _) = Pubkey::find_program_address(
+            &[
+                &authority.key().to_bytes()[..32],
+            ],
+            program_id,
+        );
+
+        let app_del_acct: AppDelegate = AppDelegate::try_deserialize(
+            &mut &app_delegate.try_borrow_data()?[..],
+        )?;
+
+        // Reject if PDA derivation is mismatched
+        if derived_app_delegate != app_delegate.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        
+        // Reject if app delegate is revoked
+        if app_del_acct.is_revoked {
             return Err(ErrorCode::Unauthorized.into());
         }
     }
