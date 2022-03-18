@@ -33,7 +33,6 @@ import SignOnPageState from 'pages/sign-on/store/types'
 import { UploadPageState } from 'pages/upload-page/store/types'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
-import { AudioManagerState } from 'store/audio-manager/slice'
 import PlayerReducer from 'store/player/slice'
 import PlaylistLibraryReducer from 'store/playlist-library/slice'
 
@@ -63,9 +62,6 @@ export type AppState = CommonState & {
   // UI
   dragndrop: DragNDropState
   serviceSelection: ReturnType<typeof ServiceSelectionReducer>
-
-  // Wallet
-  audioManager: AudioManagerState
 
   // Global
   application: {
