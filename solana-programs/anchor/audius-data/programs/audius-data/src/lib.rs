@@ -7,7 +7,7 @@ pub mod utils;
 use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // default program ID to be replaced in start.sh
+declare_id!("Bw5ZHd3AYdCJzpAD7RbLBbc7rjunyZ3e357pnrnrurWH"); // default program ID to be replaced in start.sh
 
 #[program]
 pub mod audius_data {
