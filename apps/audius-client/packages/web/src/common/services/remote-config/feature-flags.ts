@@ -5,7 +5,6 @@ export enum FeatureFlags {
   PLAYLIST_UPDATES_ENABLED = 'playlist_updates_enabled',
   CREATE_WAUDIO_USER_BANK_ON_SIGN_UP = 'create_waudio_user_bank_on_sign_up',
   SHARE_SOUND_TO_TIKTOK = 'share_sound_to_tiktok',
-  TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD = 'transfer_audio_to_waudio_on_load',
   CHALLENGE_REWARDS_UI = 'challenge_rewards_ui',
   SOL_WALLET_AUDIO_ENABLED = 'sol_wallet_audio_enabled',
   ARTIST_RECOMMENDATIONS_ENABLED = 'artist_recommendations_enabled',
@@ -27,7 +26,6 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false,
   [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]: false,
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
-  [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]: false,
   [FeatureFlags.CHALLENGE_REWARDS_UI]: false,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: false,
   [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: false,
@@ -64,8 +62,6 @@ export const flagCohortType: {
   [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]:
     FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: FeatureFlagCohortType.USER_ID,
-  [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]:
-    FeatureFlagCohortType.USER_ID,
   [FeatureFlags.CHALLENGE_REWARDS_UI]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: FeatureFlagCohortType.USER_ID,
