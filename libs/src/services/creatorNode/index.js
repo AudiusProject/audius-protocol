@@ -369,7 +369,7 @@ class CreatorNode {
   }
 
   async pollProcessingStatus (uuid) {
-    const route = this.creatorNodeEndpoint + '/async_processing_status'
+    const route = this.creatorNodeEndpoint + '/track_content_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
       try {
@@ -401,7 +401,7 @@ class CreatorNode {
    */
   async getTrackContentProcessingStatus (uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/async_processing_status',
+      url: '/track_content_status',
       params: {
         uuid
       },
@@ -409,21 +409,6 @@ class CreatorNode {
     })
 
     return body
-  }
-
-  /**
-   * Gets all unlisted track for a user.
-   * Will only return tracks for the currently authed user.
-   *
-   * @returns {(Array)} tracks array of tracks
-   */
-  async getUnlistedTracks () {
-    const request = {
-      url: 'tracks/unlisted',
-      method: 'get'
-    }
-    const { data: body } = await this._makeRequest(request)
-    return body.tracks
   }
 
   /**

@@ -135,6 +135,34 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(service, healthy)
   })
 
+  it('prefers a healthy block diff with custom block diff', async () => {
+    const healthyBehindVersion = 'https://healthy.audius.co'
+    nock(healthyBehindVersion)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-node',
+        version: '1.2.2',
+        block_difference: 0
+      } })
+    const behindBlockCurrentVersion = 'https://behind.audius.co'
+    nock(behindBlockCurrentVersion)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-node',
+        version: '1.2.3',
+        block_difference: 20
+      } })
+
+    const s = new DiscoveryProviderSelection(
+      {
+        unhealthyBlockDiff: 25
+      },
+      mockEthContracts([healthyBehindVersion, behindBlockCurrentVersion], '1.2.3')
+    )
+    const service = await s.select()
+    assert.strictEqual(service, behindBlockCurrentVersion)
+  })
+
   it('prefers a healthy plays slot diff', async () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)

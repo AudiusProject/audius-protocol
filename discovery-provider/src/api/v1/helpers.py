@@ -4,7 +4,7 @@ from typing import Dict, cast
 
 from flask_restx import reqparse
 from src import api_helpers
-from src.models import ChallengeType, SaveType
+from src.models import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.utils.config import shared_config
@@ -107,7 +107,6 @@ def extend_user(user, current_user_id=None):
         del user["playlist_library"]
     # Marshal wallets into clear names
     user["erc_wallet"] = user["wallet"]
-    user["spl_wallet"] = user["spl_wallet"]
 
     return user
 
@@ -122,11 +121,6 @@ def extend_favorite(favorite):
     favorite["user_id"] = encode_int_id(favorite["user_id"])
     favorite["favorite_item_id"] = encode_int_id(favorite["save_item_id"])
     favorite["favorite_type"] = favorite["save_type"]
-    if "save_item" in favorite:
-        if favorite["save_type"] == SaveType.track:
-            favorite["favorite_item"] = extend_track(favorite["save_item"])
-        else:
-            favorite["favorite_item"] = extend_playlist(favorite["save_item"])
     return favorite
 
 
@@ -339,6 +333,18 @@ def get_current_user_id(args):
     if args.get("user_id"):
         return decode_string_id(args["user_id"])
     return None
+
+
+def get_authed_user_id(args):
+    """Gets authed_user_id from args featuring a "authed_user_id" key"""
+    if args.get("authed_user_id"):
+        return decode_string_id(args["authed_user_id"])
+    return None
+
+
+def decode_ids_array(ids_array):
+    """Takes string ids and decodes them"""
+    return list(map(lambda id: decode_string_id(id), ids_array))
 
 
 search_parser = reqparse.RequestParser()

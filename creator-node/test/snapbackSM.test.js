@@ -1,5 +1,3 @@
-/** Integration tests for SnapbackSM module */
-
 const nock = require('nock')
 const assert = require('assert')
 
@@ -9,6 +7,7 @@ const { getLibsMock } = require('./lib/libsMock')
 const utils = require('../src/utils')
 const { getApp } = require('./lib/app')
 const nodeConfig = require('../src/config')
+const { getIPFSMock } = require('./lib/ipfsMock')
 
 const constants = {
   primaryEndpoint: 'http://test_cn_primary.co',
@@ -71,7 +70,7 @@ describe('test SnapbackSM', function () {
 
   beforeEach(async function () {
     // init app to run migrations
-    const appInfo = await getApp()
+    const appInfo = await getApp(getIPFSMock(), getLibsMock())
     server = appInfo.server
 
     nodeConfig.set('spID', 1)

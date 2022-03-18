@@ -38,17 +38,17 @@ if [[ "$audius_openresty_enable" == true ]]; then
 
   # If a worker class is specified, use that. Otherwise, use sync workers.
   if [[ -z "${audius_gunicorn_worker_class}" ]]; then
-    exec gunicorn -b :3000 --access-logfile - --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --workers=$WORKERS --threads=$THREADS
+    exec gunicorn -b :3000 --access-logfile - --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --workers=$WORKERS --threads=$THREADS --timeout=600
   else
     WORKER_CLASS="${audius_gunicorn_worker_class}"
-    exec gunicorn -b :3000 --access-logfile - --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS
+    exec gunicorn -b :3000 --access-logfile - --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS --timeout=600
   fi
 else
   # If a worker class is specified, use that. Otherwise, use sync workers.
   if [[ -z "${audius_gunicorn_worker_class}" ]]; then
-    exec gunicorn -b :5000 --access-logfile - --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --workers=$WORKERS --threads=$THREADS
+    exec gunicorn -b :5000 --access-logfile - --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --workers=$WORKERS --threads=$THREADS --timeout=600
   else
     WORKER_CLASS="${audius_gunicorn_worker_class}"
-    exec gunicorn -b :5000 --access-logfile - --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS
+    exec gunicorn -b :5000 --access-logfile - --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS --timeout=600
   fi
 fi

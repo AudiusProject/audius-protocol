@@ -16,6 +16,7 @@ fi
 cd $PROTOCOL_DIR/
 cd service-commands/
 npm install
+npm install lodash # fry_kek
 npm link
 
 # setup mad dog
@@ -48,6 +49,7 @@ cd $PROTOCOL_DIR/
 cd libs/
 npm install
 npm install lodash # lodash isn't installed on the first run for some reason...
+npm install web3 # web3 has the same issue...
 
 # setup identity service
 cd $PROTOCOL_DIR/

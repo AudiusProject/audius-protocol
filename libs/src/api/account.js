@@ -104,6 +104,8 @@ class Account extends Base {
    * @param {?boolean} [createWAudioUserBank] an optional flag to create the solana user bank account
    * @param {?Function} [handleUserBankOutcomes] an optional callback to record user bank outcomes
    * @param {?Object} [userBankOutcomes] an optional object with request, succes, and failure keys to record user bank outcomes
+   * @param {?string} [feePayerOverride] an optional string in case the client wants to switch between fee payers
+   * @param {?boolean} [generateRecoveryLink] an optional flag to skip generating recovery link for testing purposes
   */
   async signUp (
     email,
@@ -115,7 +117,9 @@ class Account extends Base {
     host = (typeof window !== 'undefined' && window.location.origin) || null,
     createWAudioUserBank = false,
     handleUserBankOutcomes = () => {},
-    userBankOutcomes = {}
+    userBankOutcomes = {},
+    feePayerOverride = null,
+    generateRecoveryLink = true
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -141,7 +145,9 @@ class Account extends Base {
           phase = phases.HEDGEHOG_SIGNUP
           const ownerWallet = await this.hedgehog.signUp(email, password)
           await this.web3Manager.setOwnerWallet(ownerWallet)
-          await this.generateRecoveryLink({ handle: metadata.handle, host })
+          if (generateRecoveryLink) {
+            await this.generateRecoveryLink({ handle: metadata.handle, host })
+          }
         }
       }
 
@@ -155,7 +161,7 @@ class Account extends Base {
         (async () => {
           try {
             handleUserBankOutcomes(userBankOutcomes.Request)
-            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank()
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank(feePayerOverride)
             if (error || errorCode) {
               console.error(
                 `Failed to create userbank, with err: ${error}, ${errorCode}`
@@ -187,7 +193,7 @@ class Account extends Base {
       phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
     } catch (e) {
-      return { error: e.message, phase }
+      return { error: e.message, phase, errorStatus: e.response ? e.response.status : null }
     }
     return { blockHash, blockNumber, userId }
   }

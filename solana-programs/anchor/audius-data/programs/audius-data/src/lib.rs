@@ -1,9 +1,13 @@
 //! The Audius Data Program is intended to bring all user data functionality to Solana through the
 //! Anchor framework
+pub mod constants;
+pub mod error;
+pub mod utils;
 
+use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
 
-declare_id!("ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi");
+declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // default program ID to be replaced in start.sh
 
 #[program]
 pub mod audius_data {
@@ -18,19 +22,38 @@ pub mod audius_data {
     use super::*;
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
-    /// track_id_offset is the starting point for uploaded tracks
-    /// playlist_id_offset is the starting point for uploaded playlists
     pub fn init_admin(
         ctx: Context<Initialize>,
         authority: Pubkey,
-        track_id_offset: u64,
-        playlist_id_offset: u64,
-    ) -> ProgramResult {
-        msg!("Audius::InitAdmin");
+        verifier: Pubkey,
+    ) -> Result<()> {
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
-        audius_admin.track_id = track_id_offset;
-        audius_admin.playlist_id = playlist_id_offset;
+        audius_admin.verifier = verifier;
+        audius_admin.is_write_enabled = true;
+        Ok(())
+    }
+
+    /// Verifies a user by asserting that the audius_admin's verifier matches the signed verifier account
+    pub fn update_is_verified(
+        ctx: Context<UpdateIsVerified>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+    ) -> Result<()> {
+        // Validate that the audius admin verifier matches the verifier passed in
+        if ctx.accounts.audius_admin.verifier != ctx.accounts.verifier.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         Ok(())
     }
 
@@ -45,9 +68,8 @@ pub mod audius_data {
         eth_address: [u8; 20],
         handle_seed: [u8; 16],
         _user_bump: u8,
-        metadata: String,
-    ) -> ProgramResult {
-        msg!("Audius::InitUser");
+        _metadata: String,
+    ) -> Result<()> {
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
             &[&ctx.accounts.admin.key().to_bytes()[..32]],
@@ -74,8 +96,6 @@ pub mod audius_data {
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
 
-        msg!("AudiusUserMetadata = {:?}", metadata);
-
         Ok(())
     }
 
@@ -84,7 +104,7 @@ pub mod audius_data {
     pub fn init_user_sol(
         ctx: Context<InitializeUserSolIdentity>,
         user_authority: Pubkey,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
         let index_current_instruction =
@@ -95,9 +115,7 @@ pub mod audius_data {
             return Err(ErrorCode::SignatureVerification.into());
         }
 
-        // Eth_address offset (12) + address (20) + signature (65) = 97
-        // TODO: Validate message contents
-        let eth_address_offset = 12;
+        // Eth_address offset (12) + address (20) + signature (65) + message (32)
         let secp_data =
             sysvar::instructions::load_instruction_at_checked(0, &ctx.accounts.sysvar_program)?;
 
@@ -105,12 +123,20 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
         let instruction_signer =
-            secp_data.data[eth_address_offset..eth_address_offset + 20].to_vec();
+            secp_data.data[ETH_ADDRESS_OFFSET..ETH_ADDRESS_OFFSET + 20].to_vec();
 
-        // Update if valid
-        if instruction_signer == audius_user_acct.eth_address {
-            audius_user_acct.authority = user_authority;
+        if instruction_signer != audius_user_acct.eth_address {
+            return Err(ErrorCode::Unauthorized.into());
         }
+
+        audius_user_acct.authority = user_authority;
+
+        let message = secp_data.data[MESSAGE_OFFSET..].to_vec();
+
+        if message != user_authority.to_bytes() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         Ok(())
     }
 
@@ -123,7 +149,7 @@ pub mod audius_data {
         _user_bump: u8,
         metadata: String,
         user_authority: Pubkey,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         msg!("Audius::CreateUser");
 
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
@@ -136,9 +162,12 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        // Eth_address offset (12) + address (20) + signature (65) = 97
-        // TODO: Validate message contents
-        let eth_address_offset = 12;
+        // Confirm admin is disabled
+        if ctx.accounts.audius_admin.is_write_enabled {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Eth_address offset (12) + address (20) + signature (65) + message (32)
         let secp_data =
             sysvar::instructions::load_instruction_at_checked(0, &ctx.accounts.sysvar_program)?;
 
@@ -146,7 +175,7 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
         let instruction_signer =
-            secp_data.data[eth_address_offset..eth_address_offset + 20].to_vec();
+            secp_data.data[ETH_ADDRESS_OFFSET..ETH_ADDRESS_OFFSET + 20].to_vec();
         if instruction_signer != eth_address {
             return Err(ErrorCode::Unauthorized.into());
         }
@@ -155,109 +184,85 @@ pub mod audius_data {
         audius_user_acct.eth_address = eth_address;
         audius_user_acct.authority = user_authority;
 
+        let message = secp_data.data[MESSAGE_OFFSET..].to_vec();
+
+        if message != user_authority.to_bytes() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         msg!("AudiusUserMetadata = {:?}", metadata);
 
         Ok(())
     }
 
     /// Permissioned function to log an update to User metadata
-    pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> ProgramResult {
+    pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
         msg!("Audius::UpdateUser");
-        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+        validate_user_authority(
+            ctx.program_id,
+            &ctx.accounts.user,
+            &ctx.accounts.user_delegate_authority,
+            &ctx.accounts.user_authority,
+        )?;
         msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
     }
 
-    // User TODOS:
-    // - Disable audius admin signing
-    // - Enable happy path flow with both eth address and sol key
+    /// Permissioned function to log an update to Admin metadata
+    pub fn update_admin(ctx: Context<UpdateAdmin>, is_write_enabled: bool) -> Result<()> {
+        if ctx.accounts.admin.authority != ctx.accounts.admin_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        ctx.accounts.admin.is_write_enabled = is_write_enabled;
+        Ok(())
+    }
 
     /*
-        Track related functions
+        Entity related functions
     */
-    pub fn create_track(ctx: Context<CreateTrack>, metadata: String) -> ProgramResult {
-        msg!("Audius::CreateTrack");
+    pub fn manage_entity(
+        ctx: Context<ManageEntity>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _entity_type: EntityTypes,
+        _management_action: ManagementActions,
+        _id: String,
+        _metadata: String,
+    ) -> Result<()> {
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
+        if base_pda != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Reject if update submitted with invalid user authority
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        // Set owner to user storage account
-        ctx.accounts.track.owner = ctx.accounts.user.key();
-        ctx.accounts.track.track_id = ctx.accounts.audius_admin.track_id;
-        // Increment global track ID after assignment to this track in particular
-        // Ensures each track has a unique numeric ID
-        ctx.accounts.audius_admin.track_id = ctx.accounts.audius_admin.track_id + 1;
-        msg!("AudiusTrackMetadata = {:?}", metadata);
         Ok(())
     }
 
-    pub fn update_track(ctx: Context<UpdateTrack>, metadata: String) -> ProgramResult {
-        msg!("Audius::UpdateTrack");
-        if ctx.accounts.user.key() != ctx.accounts.track.owner.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        msg!("AudiusTrackMetadata = {:?}", metadata);
-        Ok(())
-    }
+    pub fn write_entity_social_action(
+        ctx: Context<WriteEntitySocialAction>,
+        base: Pubkey,
+        _user_handle: UserHandle,
+        _entity_social_action: EntitySocialActionValues,
+        _entity_type: EntityTypes,
+        _id: String,
+    ) -> Result<()> {
+        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let (base_pda, _bump) =
+            Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
-    pub fn delete_track(ctx: Context<DeleteTrack>) -> ProgramResult {
-        msg!("Audius::DeleteTrack");
-        if ctx.accounts.user.key() != ctx.accounts.track.owner.key() {
+        // Confirm the base PDA matches the expected value provided the target audius admin
+        if base_pda != base {
             return Err(ErrorCode::Unauthorized.into());
         }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // Manually overwrite owner field
-        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
-        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
-        ctx.accounts.track.owner = dummy_owner_field;
-        Ok(())
-    }
-    /*
-        Playlist related functions
-    */
-    pub fn create_playlist(ctx: Context<CreatePlaylist>, metadata: String) -> ProgramResult {
-        msg!("Audius::CreatePlaylist");
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // Set owner to user storage account
-        ctx.accounts.playlist.owner = ctx.accounts.user.key();
-        ctx.accounts.playlist.playlist_id = ctx.accounts.audius_admin.playlist_id;
-        ctx.accounts.audius_admin.playlist_id = ctx.accounts.audius_admin.playlist_id + 1;
-        msg!("AudiusPlaylistMetadata = {:?}", metadata);
-        Ok(())
-    }
 
-    pub fn update_playlist(ctx: Context<UpdatePlaylist>, metadata: String) -> ProgramResult {
-        msg!("Audius::UpdatePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
         if ctx.accounts.authority.key() != ctx.accounts.user.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
-        msg!("AudiusPlaylistMetadata = {:?}", metadata);
-        Ok(())
-    }
-
-    pub fn delete_playlist(ctx: Context<DeletePlaylist>) -> ProgramResult {
-        msg!("Audius::DeletePlaylist");
-        if ctx.accounts.user.key() != ctx.accounts.playlist.owner.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // Manually overwrite owner field
-        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
-        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
-        ctx.accounts.playlist.owner = dummy_owner_field;
         Ok(())
     }
 
@@ -271,11 +276,9 @@ pub mod audius_data {
         ctx: Context<FollowUser>,
         base: Pubkey,
         user_action: UserAction,
-        _follower_handle_seed: [u8; 16],
-        _follower_bump: u8,
-        _followee_handle_seed: [u8; 16],
-        _followee_bump: u8,
-    ) -> ProgramResult {
+        _follower_handle: UserHandle,
+        _followee_handle: UserHandle,
+    ) -> Result<()> {
         match user_action {
             UserAction::FollowUser => {
                 msg!("Audius::FollowUser");
@@ -301,22 +304,50 @@ pub mod audius_data {
 
         Ok(())
     }
+
+    // Enable an account to perform actions on behalf of a given user
+    pub fn add_user_authority_delegate(
+        ctx: Context<AddUserAuthorityDelegate>,
+        _base: Pubkey,
+        _handle_seed: [u8; 16],
+        _user_bump: u8,
+        user_authority_delegate: Pubkey,
+    ) -> Result<()> {
+        // Only permitted to user authority
+        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Assign incoming delegate fields
+        // Maintain the user's storage account and the incoming delegate authority key
+        ctx.accounts
+            .user_authority_delegate_pda
+            .user_storage_account = ctx.accounts.user.key();
+        ctx.accounts.user_authority_delegate_pda.delegate_authority = user_authority_delegate;
+        Ok(())
+    }
+
+    // Disable an account that has been delegated authority for this user
+    pub fn remove_user_authority_delegate(
+        ctx: Context<RemoveUserAuthorityDelegate>,
+        _base: Pubkey,
+        _handle_seed: [u8; 16],
+        _user_bump: u8,
+        _user_authority_delegate: Pubkey,
+        _delegate_bump: u8,
+    ) -> Result<()> {
+        // Only permitted to user authority
+        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
+        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+        ctx.accounts.user_authority_delegate_pda.delegate_authority = dummy_owner_field;
+        ctx.accounts
+            .user_authority_delegate_pda
+            .user_storage_account = dummy_owner_field;
+        Ok(())
+    }
 }
-
-/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track id) + 8 (playlist id)
-pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32 + 8 + 8;
-
-/// Size of user account
-/// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
-pub const USER_ACCOUNT_SIZE: usize = 8 + 32 + 20;
-
-/// Size of track account
-/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (track offset ID)
-pub const TRACK_ACCOUNT_SIZE: usize = 8 + 32 + 8;
-
-/// Size of playlist account
-/// 8 bytes (anchor prefix) + 32 (PublicKey) + 8 (id)
-pub const PLAYLIST_ACCOUNT_SIZE: usize = 8 + 32 + 8;
 
 /// Instructions
 #[derive(Accounts)]
@@ -337,14 +368,14 @@ pub struct Initialize<'info> {
 /// `payer` is the account responsible for the lamports required to allocate this account.
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16])]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
         init,
         payer = payer,
         seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump,
+        bump,
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
@@ -362,6 +393,7 @@ pub struct InitializeUser<'info> {
 pub struct InitializeUserSolIdentity<'info> {
     #[account(mut)]
     pub user: Account<'info, User>,
+    /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
     pub sysvar_program: AccountInfo<'info>,
 }
 
@@ -369,13 +401,13 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16])]
 pub struct CreateUser<'info> {
     #[account(
         init,
         payer = payer,
         seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump,
+        bump,
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
@@ -384,6 +416,7 @@ pub struct CreateUser<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     pub system_program: Program<'info, System>,
+    /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
     pub sysvar_program: AccountInfo<'info>,
 }
 
@@ -392,125 +425,135 @@ pub struct CreateUser<'info> {
 /// `user_authority` is a signer field which must match the `authority` field in the User account.
 #[derive(Accounts)]
 pub struct UpdateUser<'info> {
-    #[account(mut)]
+    #[account()]
     pub user: Account<'info, User>,
-    #[account(mut)]
+    #[account()]
     pub user_authority: Signer<'info>,
+    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    #[account()]
+    pub user_delegate_authority: AccountInfo<'info>,
 }
 
-/// Instruction container for track creation
-/// Confirms that user.authority matches signer authority field
-/// Payer is provided to facilitate an independent feepayer
 #[derive(Accounts)]
-pub struct CreateTrack<'info> {
-    #[account(init, payer = payer, space = TRACK_ACCOUNT_SIZE)]
-    pub track: Account<'info, Track>,
+pub struct UpdateAdmin<'info> {
     #[account(mut)]
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(mut)]
+    pub admin_authority: Signer<'info>,
+}
+
+/// Instruction container to allow user delegation
+/// Allocates a new account that will be used for fallback in auth scenarios
+#[derive(Accounts)]
+#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)]
+pub struct AddUserAuthorityDelegate<'info> {
+    #[account()]
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        bump = user_bump
+    )]
     pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(
+        init,
+        payer = payer,
+        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        bump,
+        space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
+    )]
+    pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    #[account()]
+    pub user_authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
-/// Instruction container for track updates
-/// Confirm that the user authority matches signer authority field
+/// Instruction container to remove allocated user authority delegation
+/// Returns funds to payer
 #[derive(Accounts)]
-pub struct UpdateTrack<'info> {
+#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey, delegate_bump:u8)]
+pub struct RemoveUserAuthorityDelegate<'info> {
     #[account()]
-    pub track: Account<'info, Track>,
-    #[account(mut)]
+    pub admin: Account<'info, AudiusAdmin>,
+    #[account(
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        bump = user_bump
+    )]
     pub user: Account<'info, User>,
-    #[account(mut)]
-    // User update authority field
-    pub authority: Signer<'info>,
+    #[account(
+        mut,
+        close = payer,
+        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        bump = delegate_bump
+    )]
+    pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    #[account()]
+    pub user_authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
-/// Instruction container for track deletes
-/// Removes track storage account entirely
+/// Instruction container for entity management
+/// Confirms that user.authority matches signer authority field
 #[derive(Accounts)]
-pub struct DeleteTrack<'info> {
-    // Return funds to the payer of this transaction
-    #[account(mut, close = payer)]
-    pub track: Account<'info, Track>,
-    #[account(mut)]
+#[instruction(base: Pubkey, user_handle: UserHandle, _entity_type: EntityTypes, _management_action:ManagementActions, _id: String, _metadata: String)]
+// Instruction base pda, handle
+pub struct ManageEntity<'info> {
+    #[account()]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    // Audiusadmin
+    #[account(
+        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
+        bump = user_handle.bump
+    )]
     pub user: Account<'info, User>,
-    // User update authority field
-    #[account(mut)]
+    #[account()]
     pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
+}
+
+/// Instruction container for track social action event
+/// Confirm that the user authority matches signer authority field
+#[derive(Accounts)]
+#[instruction(base: Pubkey, user_handle: UserHandle)]
+pub struct WriteEntitySocialAction<'info> {
+    // TODO - Verify removal here
+    #[account()]
+    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
+    pub user: Account<'info, User>,
+    #[account()]
+    // User authority field
+    pub authority: Signer<'info>,
 }
 
 /// Instruction container for follow
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_instr:UserAction, follower_handle_seed: [u8;16], follower_handle_bump:u8, followee_handle_seed: [u8;16], followee_handle_bump:u8)]
+#[instruction(base: Pubkey, user_instr:UserAction, follower_handle: UserHandle, followee_handle: UserHandle)]
 pub struct FollowUser<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     // Confirm the follower PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], follower_handle_seed.as_ref()], bump = follower_handle_bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], follower_handle.seed.as_ref()], bump = follower_handle.bump)]
     pub follower_user_storage: Account<'info, User>,
     // Confirm the followee PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle_seed.as_ref()], bump = followee_handle_bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle.seed.as_ref()], bump = followee_handle.bump)]
     pub followee_user_storage: Account<'info, User>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
     // User update authority field
     #[account(mut)]
     pub authority: Signer<'info>,
 }
 
-/// Instruction container for playlist creation
-/// Confirms that user.authority matches signer authority field
-/// Payer is provided to facilitate an independent feepayer
+/// Instruction container for verifying a user
 #[derive(Accounts)]
-pub struct CreatePlaylist<'info> {
-    #[account(init, payer = payer, space = PLAYLIST_ACCOUNT_SIZE)]
-    pub playlist: Account<'info, Playlist>,
-    #[account(mut)]
-    pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(mut)]
+#[instruction(base: Pubkey, user_handle: UserHandle)]
+pub struct UpdateIsVerified<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-/// Instruction container for playlist updates
-/// Confirm that the user authority matches signer authority field
-#[derive(Accounts)]
-pub struct UpdatePlaylist<'info> {
-    #[account()]
-    pub playlist: Account<'info, Playlist>,
-    #[account(mut)]
+    // Confirm the follower PDA matches the expected value provided the target handle and base
+    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
     pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-}
-
-/// Instruction container for playlist deletes
-/// Removes playlist storage account entirely
-#[derive(Accounts)]
-pub struct DeletePlaylist<'info> {
-    // Return funds to the payer of this transaction
-    #[account(mut, close = payer)]
-    pub playlist: Account<'info, Playlist>,
-    #[account(mut)]
-    pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
+    pub verifier: Signer<'info>,
 }
 
 // END Instructions
@@ -519,8 +562,8 @@ pub struct DeletePlaylist<'info> {
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
-    pub track_id: u64,
-    pub playlist_id: u64,
+    pub verifier: Pubkey,
+    pub is_write_enabled: bool,
 }
 
 /// User storage account
@@ -530,27 +573,13 @@ pub struct User {
     pub authority: Pubkey,
 }
 
-/// Track storage account
+/// User delegated authority account
 #[account]
-pub struct Track {
-    pub owner: Pubkey,
-    pub track_id: u64,
-}
-
-/// Playlist storage account
-#[account]
-pub struct Playlist {
-    pub owner: Pubkey,
-    pub playlist_id: u64,
-}
-
-// Errors
-#[error]
-pub enum ErrorCode {
-    #[msg("You are not authorized to perform this action.")]
-    Unauthorized,
-    #[msg("Signature verification failed.")]
-    SignatureVerification,
+pub struct UserAuthorityDelegate {
+    // The account that is given permission to operate on this user's behalf
+    pub delegate_authority: Pubkey,
+    // PDA of user storage account enabling operations
+    pub user_storage_account: Pubkey,
 }
 
 // User actions enum, used to follow/unfollow based on function arguments
@@ -558,4 +587,33 @@ pub enum ErrorCode {
 pub enum UserAction {
     FollowUser,
     UnfollowUser,
+}
+
+// Track actions enum, used to save / repost based on function arguments
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum EntitySocialActionValues {
+    AddSave,
+    DeleteSave,
+    AddRepost,
+    DeleteRepost,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum ManagementActions {
+    Create,
+    Update,
+    Delete,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum EntityTypes {
+    Track,
+    Playlist,
+}
+
+// Seed & bump used to validate the user's handle with the account base
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub struct UserHandle {
+    pub seed: [u8; 16],
+    pub bump: u8,
 }

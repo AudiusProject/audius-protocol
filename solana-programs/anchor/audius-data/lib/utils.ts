@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Provider } from "@project-serum/anchor";
+import { BorshInstructionCoder, Provider } from "@project-serum/anchor";
 import BN from "bn.js";
 import { randomBytes } from "crypto";
 import * as secp256k1 from "secp256k1";
@@ -13,16 +13,7 @@ export const SystemSysVarProgramKey = new PublicKey(
 /// Convert a string input to output array of Uint8
 export const ethAddressToArray = (ethAddress: string) => {
   const strippedEthAddress = ethAddress.replace("0x", "");
-  return Uint8Array.of(...new BN(strippedEthAddress, "hex").toArray("be"));
-};
-
-/// Generate a key from random bytes, used for testing
-export const getRandomPrivateKey = () => {
-  let privKey: Uint8Array;
-  do {
-    privKey = randomBytes(32);
-  } while (!secp256k1.privateKeyVerify(privKey));
-  return privKey;
+  return Uint8Array.of(...new BN(strippedEthAddress, "hex").toArray("be", 20));
 };
 
 /// Retrieve a transaction with retries
@@ -34,9 +25,39 @@ export const getTransaction = async (provider: Provider, tx: string) => {
   return info;
 };
 
+export const decodeInstruction = (program: anchor.Program, data: string) => {
+  const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+  const decodedInstruction = instructionCoder.decode(data, "base58");
+  return decodedInstruction;
+};
+
+export const getTransactionWithData = async (
+  program: anchor.Program,
+  provider: Provider,
+  tx: string
+) => {
+  const info = await getTransaction(provider, tx);
+  const data = info.transaction.message.instructions[0].data;
+  const decodedInstruction = decodeInstruction(program, data);
+  const accountIndexes = info.transaction.message.instructions[0].accounts;
+  const accountKeys = info.transaction.message.accountKeys;
+  const accountPubKeys = [];
+  for (const i of accountIndexes) {
+    accountPubKeys.push(accountKeys[i].toString());
+  }
+  const decodedData = decodedInstruction.data;
+  return {
+    info,
+    data,
+    decodedInstruction,
+    decodedData,
+    accountPubKeys,
+  };
+};
+
 /// Sign any bytes object with the provided eth private key
-export const signBytes = (bytes: any, ethPrivateKey: string) => {
-  const ethPrivateKeyArr = Buffer.from(ethPrivateKey, "hex");
+export const signBytes = (bytes: Uint8Array, ethPrivateKey: string) => {
+  const ethPrivateKeyArr = anchor.utils.bytes.hex.decode(ethPrivateKey);
   const msgHash = keccak256(bytes);
   const signatureObj = secp256k1.ecdsaSign(
     Uint8Array.from(msgHash),
@@ -77,7 +98,7 @@ export const randomCID = () => {
 /// Derive a program address with pubkey as the seed
 export const findProgramAddress = (
   programId: anchor.web3.PublicKey,
-  pubkey: any
+  pubkey: anchor.web3.PublicKey
 ) => {
   return PublicKey.findProgramAddress(
     [pubkey.toBytes().slice(0, 32)],
@@ -90,7 +111,7 @@ export const findProgramAddress = (
 export const findDerivedAddress = async (
   programId: anchor.web3.PublicKey,
   base: anchor.web3.PublicKey,
-  seed: any
+  seed: Buffer | Uint8Array
 ) => {
   const finalSeed = [base.toBytes().slice(0, 32), seed];
   const result = await PublicKey.findProgramAddress(finalSeed, programId);

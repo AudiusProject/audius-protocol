@@ -13,7 +13,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     handle: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      index: true
     },
     status: {
       type: DataTypes.STRING,

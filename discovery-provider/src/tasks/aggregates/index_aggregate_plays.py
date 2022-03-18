@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import func
 from src.models import Play
-from src.tasks.aggregates import try_updating_aggregate_table, update_aggregate_table
+from src.tasks.aggregates import init_task_and_acquire_lock, update_aggregate_table
 from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
@@ -62,6 +62,6 @@ def update_aggregate_plays(self):
     db = update_aggregate_plays.db
     redis = update_aggregate_plays.redis
 
-    try_updating_aggregate_table(
+    init_task_and_acquire_lock(
         logger, db, redis, AGGREGATE_PLAYS_TABLE_NAME, _update_aggregate_plays
     )

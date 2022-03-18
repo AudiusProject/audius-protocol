@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Any, Dict, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
-from src.app import get_contract_addresses
 from src.database_task import DatabaseTask
 from src.models import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
@@ -115,11 +114,9 @@ def playlist_state_update(
 
 
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
-    playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
-    playlist_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["playlist_factory"], abi=playlist_abi
+    return getattr(update_task.playlist_contract.events, event_type)().processReceipt(
+        tx_receipt
     )
-    return getattr(playlist_contract.events, event_type)().processReceipt(tx_receipt)
 
 
 def lookup_playlist_record(update_task, session, entry, block_number, txhash):

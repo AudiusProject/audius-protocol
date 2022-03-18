@@ -24,7 +24,9 @@ from src.queries import (
     block_confirmation,
     get_redirect_weights,
     health_check,
+    index_block_stats,
     notifications,
+    prometheus_metrics_exporter,
     queries,
     search,
     search_queries,
@@ -41,8 +43,6 @@ from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERV
 from src.utils.session_manager import SessionManager
 from web3 import HTTPProvider, Web3
 from werkzeug.middleware.proxy_fix import ProxyFix
-
-SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -229,6 +229,11 @@ def create(test_config=None, mode="app"):
         helpers.configure_flask_app_logging(
             app, shared_config["discprov"]["loglevel_flask"]
         )
+        # Create challenges. Run the create_new_challenges only in flask
+        # Running this in celery + flask init can cause a race condition
+        session_manager = app.db_session_manager
+        with session_manager.scoped_session() as session:
+            create_new_challenges(session)
         return app
 
     if mode == "celery":
@@ -321,18 +326,15 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+    app.register_blueprint(index_block_stats.bp)
     app.register_blueprint(get_redirect_weights.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
     app.register_blueprint(user_signals.bp)
+    app.register_blueprint(prometheus_metrics_exporter.bp)
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
-
-    # Create challenges
-    session_manager = app.db_session_manager
-    with session_manager.scoped_session() as session:
-        create_new_challenges(session)
 
     return app
 
@@ -390,6 +392,8 @@ def configure_celery(celery, test_config=None):
             "src.tasks.calculate_trending_challenges",
             "src.tasks.index_listen_count_milestones",
             "src.tasks.user_listening_history.index_user_listening_history",
+            "src.tasks.prune_plays",
+            "src.tasks.index_spl_token",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -504,6 +508,17 @@ def configure_celery(celery, test_config=None):
                 "task": "index_aggregate_monthly_plays",
                 "schedule": crontab(minute=0, hour=0),  # daily at midnight
             },
+            "prune_plays": {
+                "task": "prune_plays",
+                "schedule": crontab(
+                    minute="*/15",
+                    hour="14, 15",
+                ),  # 8x a day during non peak hours
+            },
+            "index_spl_token": {
+                "task": "index_spl_token",
+                "schedule": timedelta(seconds=5),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -521,8 +536,6 @@ def configure_celery(celery, test_config=None):
 
     # Initialize IPFS client for celery task context
     ipfs_client = IPFSClient(
-        shared_config["ipfs"]["host"],
-        shared_config["ipfs"]["port"],
         eth_web3,
         shared_config,
         redis_inst,
@@ -551,7 +564,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_rewards_manager_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
-    redis_inst.delete("index_user_listening_history_lock")
+    redis_inst.delete("prune_plays_lock")
 
     logger.info("Redis instance initialized!")
 
