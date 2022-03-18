@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
 
 import {
   getNotificationEntities,
@@ -43,8 +43,11 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { AppTabScreenParamList } from 'app/screens/app-screen'
 import { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTabScreen'
+import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { close } from 'app/store/notifications/actions'
 import { useColor, useTheme } from 'app/utils/theme'
+
+import { onlyAnimateOut } from '../app-screen/transitionSpec'
 
 import NotificationContent from './content/NotificationContent'
 import { getNotificationRoute, getNotificationScreen } from './routeUtil'
@@ -181,11 +184,14 @@ const NotificationBlock = ({ notification }: NotificationBlockProps) => {
   // @ts-ignore
   notification.entities = entities
 
-  const notificationScreen = getNotificationScreen(notification)
+  const notificationScreen = getNotificationScreen(notification, {
+    transitionSpec: onlyAnimateOut
+  })
   const notificationRoute = getNotificationRoute(notification)
+  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
   const navigation = useNavigation<
     AppTabScreenParamList & ProfileTabScreenParamList
-  >()
+  >({ customNativeNavigation: drawerNavigation })
 
   const onPress = useCallback(() => {
     if (notificationRoute && notificationScreen) {

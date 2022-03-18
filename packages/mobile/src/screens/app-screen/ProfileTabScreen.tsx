@@ -20,7 +20,7 @@ export type ProfileTabScreenParamList = AppTabScreenParamList & {
   ListeningHistoryScreen: undefined
   AccountSettingsScreen: undefined
   NotificationSettingsScreen: undefined
-  AudioScreen: undefined
+  AudioScreen: Record<string, unknown>
 }
 
 export const ProfileTabScreen = createAppTabScreenStack<
