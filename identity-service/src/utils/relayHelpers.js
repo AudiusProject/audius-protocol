@@ -1,11 +1,28 @@
 const models = require('../models')
 const config = require('../config')
+const SolanaUtils = require('@audius/libs/src/services/solanaWeb3Manager/utils')
+
+const solanaTrackListenCountAddress = config.get('solanaTrackListenCountAddress')
+
+const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
+const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')
 
 const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
-const solanaTrackListenCountAddress = config.get('solanaTrackListenCountAddress')
-const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
-const solanaRewardsManagerAuthority = config.get('solanaRewardsManagerAuthority')
-const solanaClaimableTokenAuthority = config.get('solanaClaimableTokenAuthority')
+const solanaMintAddress = config.get('solanaMintAddress')
+
+let authorities = null
+
+/**
+ * Gets the authorities, using existing cached values if possible or generating them if necessary
+ * @returns {Promise<{solanaClaimableTokenAuthority: string, solanaRewardsManagerAuthority: string}>} the authorities
+ */
+const getAuthorities = async () => {
+  if (authorities === null) {
+    authorities = await deriveAuthorities()
+  } else {
+    return authorities
+  }
+}
 
 const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
@@ -73,6 +90,23 @@ async function doesUserHaveSocialProof (userInstance) {
 }
 
 /**
+ * Derives the authority accounts for the programs using values from the config
+ * @returns {Promise<{solanaClaimableTokenAuthority: string, solanaRewardsManagerAuthority: string}>}
+ */
+const deriveAuthorities = async () => {
+  const solanaRewardsManagerAuthority = (await SolanaUtils.findProgramAddressFromPubkey(
+    SolanaUtils.newPublicKeyNullable(solanaRewardsManagerProgramId),
+    SolanaUtils.newPublicKeyNullable(solanaRewardsManager)))[0].toString()
+  const solanaClaimableTokenAuthority = (await SolanaUtils.findProgramAddressFromPubkey(
+    SolanaUtils.newPublicKeyNullable(solanaClaimableTokenProgramAddress),
+    SolanaUtils.newPublicKeyNullable(solanaMintAddress)))[0].toString()
+  return {
+    solanaRewardsManagerAuthority,
+    solanaClaimableTokenAuthority
+  }
+}
+
+/**
  * Gets the enum identifier of the instruction as determined by the first element of the data buffer
  * @param {Instruction} instruction
  * @returns the enum value of the given instruction
@@ -90,8 +124,9 @@ const getInstructionEnum = instruction => {
  * @param {Instruction} instruction
  * @returns true if the program authority matches, false if it doesn't, and null if not applicable
  */
-const hasAllowedAuthority = instruction => {
+const hasAllowedAuthority = async (instruction) => {
   let instructionEnum, authorityIndices, allowedAuthority
+  const { solanaClaimableTokenAuthority, solanaRewardsManagerAuthority } = await getAuthorities()
   if (instruction.programId === solanaRewardsManagerProgramId) {
     instructionEnum = getInstructionEnum(instruction)
     authorityIndices = rewardManagerAuthorityIndices
@@ -113,11 +148,10 @@ const hasAllowedAuthority = instruction => {
  * @param {Instruction[]} instructions
  * @returns true if all the instructions have allowed authorities
  */
-const isRelayAllowedForAuthority = instructions => {
-  for (const instruction of instructions) {
-    if (hasAllowedAuthority(instruction) === false) {
-      return false
-    }
+const isRelayAllowedForAuthority = async (instructions) => {
+  const results = await Promise.all(instructions.map(instruction => hasAllowedAuthority(instruction)))
+  if (results.some(result => result === false)) {
+    return false
   }
   return true
 }

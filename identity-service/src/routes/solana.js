@@ -50,7 +50,8 @@ solanaRouter.post(
     }
 
     // Check for proper authority
-    if (!isRelayAllowedForAuthority(instructions)) {
+    const isRelayAllowed = await isRelayAllowedForAuthority(instructions)
+    if (!isRelayAllowed) {
       return errorResponseServerError(
         `Invalid relay instructions`,
         { error: `Invalid relay instructions.` }

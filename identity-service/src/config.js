@@ -660,18 +660,6 @@ const config = convict({
     default: '60000',
     env: 'solanaConfirmationTimeout'
   },
-  solanaRewardsManagerAuthority: {
-    doc: 'The Reward Manager Authority that is allowed to be relayed',
-    format: String,
-    default: '',
-    env: 'solanaRewardsManagerAuthority'
-  },
-  solanaClaimableTokenAuthority: {
-    doc: 'The Claimable Token Authority that is allowed to be relayed',
-    format: String,
-    default: '',
-    env: 'solanaClaimableTokenAuthority'
-  },
   rewardsQuorumSize: {
     doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
     format: Number,
