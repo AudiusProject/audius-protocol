@@ -429,7 +429,8 @@ class AudiusLibs {
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
-        this.wormholeConfig.ethTokenBridgeAddress
+        this.wormholeConfig.ethTokenBridgeAddress,
+        this.isServer
       )
     }
 

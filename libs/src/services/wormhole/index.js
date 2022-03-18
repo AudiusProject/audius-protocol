@@ -23,6 +23,7 @@ class Wormhole {
    * @param {string} solTokenBridgeAddress
    * @param {string} ethBridgeAddress
    * @param {string} ethTokenBridgeAddress
+   * @param {boolean} isServer
   */
   constructor (
     hedgehog,
@@ -34,7 +35,8 @@ class Wormhole {
     solBridgeAddress,
     solTokenBridgeAddress,
     ethBridgeAddress,
-    ethTokenBridgeAddress
+    ethTokenBridgeAddress,
+    isServer
   ) {
     // Wormhole service dependecies
     this.hedgehog = hedgehog
@@ -50,6 +52,9 @@ class Wormhole {
     this.ethBridgeAddress = ethBridgeAddress
     this.ethTokenBridgeAddress = ethTokenBridgeAddress
     this.wormholeSDK = wormholeSDK
+    if (isServer) {
+      wormholeSDK.setDefaultWasm('node')
+    }
   }
 
   async getSignedVAAWithRetry (
