@@ -29,6 +29,8 @@ describe('Test /ipfs/:cid route', function () {
   /**
    * Init IPFS, libs, app, server
    * Create initial user
+   *
+   * @notice did this instead of `beforeEach()` so each test can run code before calling this function
    */
   const init = async function () {
     const ipfs = ipfsClient.ipfs
