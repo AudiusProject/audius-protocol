@@ -1,10 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
+import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
 import {
   ParamListBase,
   useNavigation as useNavigationNative
 } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { StackNavigationOptions } from '@react-navigation/stack'
 
 import { AppTabScreenParamList } from 'app/screens/app-screen/AppTabScreen'
 
@@ -14,7 +16,10 @@ type UseNavigationConfig<
   ParamList extends ParamListBase,
   RouteName extends keyof ParamList
 > = {
-  native: { screen: RouteName; params?: ParamList[RouteName] }
+  native: {
+    screen: RouteName
+    params?: ParamList[RouteName] & StackNavigationOptions
+  }
   web?: {
     route: string
     fromPage?: string
@@ -24,10 +29,15 @@ type UseNavigationConfig<
 
 export const useNavigation = <
   ParamList extends ParamListBase = AppTabScreenParamList
->() => {
-  const nativeNavigation = useNavigationNative<
+>({
+  customNativeNavigation
+}: {
+  customNativeNavigation?: DrawerNavigationHelpers
+} = {}) => {
+  const defaultNativeNavigation = useNavigationNative<
     NativeStackNavigationProp<ParamList>
   >()
+  const nativeNavigation = customNativeNavigation || defaultNativeNavigation
   const pushRouteWeb = usePushRouteWeb()
 
   const performNavigation = useCallback(
@@ -48,7 +58,12 @@ export const useNavigation = <
   return useMemo(
     () => ({
       navigate: performNavigation(nativeNavigation.navigate),
-      push: performNavigation(nativeNavigation.push),
+      push:
+        'push' in nativeNavigation
+          ? performNavigation(nativeNavigation.push)
+          : () => {
+              console.error('Push is not implemented for this navigator')
+            },
       // Notifying the web layer of the pop action
       // is handled in `createStackScreen`
       goBack: nativeNavigation.goBack

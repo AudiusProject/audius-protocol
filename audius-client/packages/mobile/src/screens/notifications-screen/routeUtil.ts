@@ -1,3 +1,4 @@
+import { StackNavigationOptions } from '@react-navigation/stack'
 import { Track } from 'audius-client/src/common/models/Track'
 import {
   Achievement,
@@ -40,17 +41,27 @@ export const getEntityRoute = (
   }
 }
 
-export const getEntityScreen = (entity: any, entityType: Entity) => {
+export const getEntityScreen = (
+  entity: any,
+  entityType: Entity,
+  screenOptions: StackNavigationOptions
+) => {
   switch (entityType) {
     case Entity.Track:
-      return { screen: 'Track' as const, params: { id: entity.track_id } }
+      return {
+        screen: 'Track' as const,
+        params: { id: entity.track_id, ...screenOptions }
+      }
     case Entity.User:
-      return { screen: 'Profile' as const, params: { handle: entity.handle } }
+      return {
+        screen: 'Profile' as const,
+        params: { handle: entity.handle, ...screenOptions }
+      }
     case Entity.Album:
     case Entity.Playlist:
       return {
         screen: 'Collection' as const,
-        params: { id: entity.playlist_id }
+        params: { id: entity.playlist_id, ...screenOptions }
       }
   }
 }
@@ -102,7 +113,10 @@ export const getNotificationRoute = (notification: Notification) => {
   }
 }
 
-export const getNotificationScreen = (notification: Notification) => {
+export const getNotificationScreen = (
+  notification: Notification,
+  screenOptions: StackNavigationOptions
+) => {
   switch (notification.type) {
     case NotificationType.Announcement:
       return null
@@ -113,6 +127,7 @@ export const getNotificationScreen = (notification: Notification) => {
         return {
           screen: 'NotificationUsers' as const,
           params: {
+            ...screenOptions,
             notificationType: notification.type,
             count: users.length,
             id: notification.id
@@ -123,39 +138,68 @@ export const getNotificationScreen = (notification: Notification) => {
       if (!firstUser) return null
       return {
         screen: 'Profile' as const,
-        params: { handle: firstUser.handle }
+        params: {
+          ...screenOptions,
+          handle: firstUser.handle
+        }
       }
     }
     case NotificationType.UserSubscription:
       if (!notification?.entities?.[0]) return null
-      return getEntityScreen(notification.entities[0], notification.entityType)
+      return getEntityScreen(
+        notification.entities[0],
+        notification.entityType,
+        screenOptions
+      )
     case NotificationType.Favorite:
-      return getEntityScreen(notification.entity, notification.entityType)
+      return getEntityScreen(
+        notification.entity,
+        notification.entityType,
+        screenOptions
+      )
     case NotificationType.Repost:
-      return getEntityScreen(notification.entity, notification.entityType)
+      return getEntityScreen(
+        notification.entity,
+        notification.entityType,
+        screenOptions
+      )
     case NotificationType.Milestone:
       if (notification.achievement === Achievement.Followers) {
         if (!notification.user) return ''
         const { handle } = notification.user
-        return { screen: 'Profile' as const, params: { handle } }
+        return {
+          screen: 'Profile' as const,
+          params: { ...screenOptions, handle }
+        }
       }
-      return getEntityScreen(notification.entity, notification.entityType)
+      return getEntityScreen(
+        notification.entity,
+        notification.entityType,
+        screenOptions
+      )
     case NotificationType.RemixCosign: {
       const original = notification.entities.find(
         (track: Track) => track.owner_id === notification.parentTrackUserId
       )
-      return getEntityScreen(original, Entity.Track)
+      return getEntityScreen(original, Entity.Track, screenOptions)
     }
     case NotificationType.RemixCreate: {
       const remix = notification.entities.find(
         (track: Track) => track.track_id === notification.childTrackId
       )
-      return getEntityScreen(remix, Entity.Track)
+      return getEntityScreen(remix, Entity.Track, screenOptions)
     }
     case NotificationType.TrendingTrack:
-      return getEntityScreen(notification.entity, notification.entityType)
+      return getEntityScreen(
+        notification.entity,
+        notification.entityType,
+        screenOptions
+      )
     case NotificationType.ChallengeReward:
     case NotificationType.TierChange:
-      return { screen: 'AudioScreen' as const, params: undefined }
+      return {
+        screen: 'AudioScreen' as const,
+        params: screenOptions
+      }
   }
 }

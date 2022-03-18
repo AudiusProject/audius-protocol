@@ -1,5 +1,6 @@
 source 'https://cdn.cocoapods.org/'
 platform :ios, '12.0'
+require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 project 'AudiusReactNative',
@@ -12,7 +13,6 @@ target 'AudiusReactNative' do
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
 
-  # Pods for AudiusReactNative
   pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"
   pod 'FBReactNativeSpec', :path => "../node_modules/react-native/React/FBReactNativeSpec"
   pod 'RCTRequired', :path => "../node_modules/react-native/Libraries/RCTRequired"
@@ -43,27 +43,20 @@ target 'AudiusReactNative' do
   pod 'ReactCommon/turbomodule/core', :path => "../node_modules/react-native/ReactCommon"
   pod 'Yoga', :path => '../node_modules/react-native/ReactCommon/yoga'
 
-
   pod 'DoubleConversion', :podspec => '../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec'
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec'
   pod 'boost', :podspec => '../node_modules/react-native/third-party-podspecs/boost.podspec'
 
-  # Analytics
-  pod 'Fabric', '1.10.2'
-  pod 'Crashlytics', '3.14.0'
-
-  pod 'Firebase/Analytics',  '8.7.0'
-
-  pod 'react-native-google-cast/NoBluetooth', path: '../node_modules/react-native-google-cast/ios/'
-
   use_native_modules!
+  use_flipper!({ "Flipper-DoubleConversion" => "1.1.7" })
 
   post_install do |installer|
-    installer.pods_project.build_configurations.each do |config|
-      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+    flipper_post_install(installer)
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
     end
   end
 end

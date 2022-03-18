@@ -76,7 +76,8 @@
 
   [FIRApp configure];
 
-  GCKCastOptions *options = [[GCKCastOptions alloc] initWithReceiverApplicationID:@"222B31C8"];
+  GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:@"222B31C8"];
+  GCKCastOptions* options = [[GCKCastOptions alloc] initWithDiscoveryCriteria:criteria];
   [GCKCastContext setSharedInstanceWithOptions:options];
 
   return YES;
