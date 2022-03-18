@@ -4,7 +4,9 @@ const {
   getStartTime
 } = require('../../logging')
 
-const TrackHandOffUtils = require('./trackHandOffUtils')
+const config = require('../../config')
+
+const TrackHandOffManager = require('./TrackHandOffManager')
 const TrackContentUploadManager = require('./trackContentUploadManager')
 
 /**
@@ -91,7 +93,7 @@ async function handleTrackHandOff({ logContext }, requestProps) {
   // rather than wait
   let transcodeFilePath, segmentFileNames, sp
   if (config.get('spID')) {
-    const resp = await TrackHandOffUtils.handOffTrack(libs, requestProps)
+    const resp = await TrackHandOffManager.handOffTrack(libs, requestProps)
     transcodeFilePath = resp.transcodeFilePath
     segmentFileNames = resp.segmentFileNames
     sp = resp.sp
