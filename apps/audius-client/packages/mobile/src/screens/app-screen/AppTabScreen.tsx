@@ -1,4 +1,8 @@
-import { createStackNavigator } from '@react-navigation/stack'
+import { ParamListBase, RouteProp } from '@react-navigation/native'
+import {
+  createStackNavigator,
+  StackNavigationOptions
+} from '@react-navigation/stack'
 import { FavoriteType } from 'audius-client/src/common/models/Favorite'
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { NotificationType } from 'audius-client/src/common/store/notifications/types'
@@ -58,6 +62,24 @@ type AppTabScreenProps = {
   Stack: ReturnType<typeof createStackNavigator>
 }
 
+const stackScreenOptions = ({ route }: { route: RouteProp<ParamListBase> }) => {
+  const params = route.params
+  // The manual typing is unfortunate here. There may be a better way, but
+  // the tricky bit is that StackNavigationOptions aren't known to the RouteProp.
+  // A better solution may be to wrap <Stack.Screen> in our own variant that
+  // can do some better generics & inference.
+  const options: StackNavigationOptions = {}
+  if (params) {
+    if ('animationEnabled' in params) {
+      options.animationEnabled = (params as StackNavigationOptions).animationEnabled
+    }
+    if ('transitionSpec' in params) {
+      options.transitionSpec = (params as StackNavigationOptions).transitionSpec
+    }
+  }
+  return options
+}
+
 /**
  * This is the base tab screen that includes common screens
  * like track and profile
@@ -87,27 +109,71 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       }}
     >
       {baseScreen(Stack)}
-      <Stack.Screen name='Track' component={TrackScreen} />
-      <Stack.Screen name='TrackRemixes' component={TrackRemixesScreen} />
-      <Stack.Screen name='Collection' component={CollectionScreen} />
-      <Stack.Screen name='Profile' component={ProfileScreen} />
+      <Stack.Screen
+        name='Track'
+        component={TrackScreen}
+        options={stackScreenOptions}
+      />
+      <Stack.Screen
+        name='TrackRemixes'
+        component={TrackRemixesScreen}
+        options={stackScreenOptions}
+      />
+      <Stack.Screen
+        name='Collection'
+        component={CollectionScreen}
+        options={stackScreenOptions}
+      />
+      <Stack.Screen
+        name='Profile'
+        component={ProfileScreen}
+        options={stackScreenOptions}
+      />
       <Stack.Group>
         <Stack.Screen
           name='Search'
           component={SearchScreen}
-          options={{ cardStyleInterpolator: forFade }}
+          options={props => ({
+            ...stackScreenOptions(props),
+            cardStyleInterpolator: forFade
+          })}
         />
-        <Stack.Screen name='SearchResults' component={SearchResultsScreen} />
-        <Stack.Screen name='TagSearch' component={TagSearchScreen} />
+        <Stack.Screen
+          name='SearchResults'
+          component={SearchResultsScreen}
+          options={stackScreenOptions}
+        />
+        <Stack.Screen
+          name='TagSearch'
+          component={TagSearchScreen}
+          options={stackScreenOptions}
+        />
       </Stack.Group>
       <Stack.Group>
-        <Stack.Screen name='Followers' component={FollowersScreen} />
-        <Stack.Screen name='Following' component={FollowingScreen} />
-        <Stack.Screen name='Favorited' component={FavoritedScreen} />
-        <Stack.Screen name='Reposts' component={RepostsScreen} />
+        <Stack.Screen
+          name='Followers'
+          component={FollowersScreen}
+          options={stackScreenOptions}
+        />
+        <Stack.Screen
+          name='Following'
+          component={FollowingScreen}
+          options={stackScreenOptions}
+        />
+        <Stack.Screen
+          name='Favorited'
+          component={FavoritedScreen}
+          options={stackScreenOptions}
+        />
+        <Stack.Screen
+          name='Reposts'
+          component={RepostsScreen}
+          options={stackScreenOptions}
+        />
         <Stack.Screen
           name='NotificationUsers'
           component={NotificationUsersScreen}
+          options={stackScreenOptions}
         />
       </Stack.Group>
     </Stack.Navigator>

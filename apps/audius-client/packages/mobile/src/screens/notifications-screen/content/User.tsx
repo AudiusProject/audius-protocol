@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
 
 import { User as UserType } from 'audius-client/src/common/models/User'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
@@ -6,6 +6,7 @@ import { StyleSheet, Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
+import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { close } from 'app/store/notifications/actions'
 import { getUserRoute } from 'app/utils/routes'
 import { useTheme } from 'app/utils/theme'
@@ -23,7 +24,8 @@ type UserProps = {
 
 const User = ({ user }: UserProps) => {
   const dispatch = useDispatch()
-  const navigation = useNavigation()
+  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+  const navigation = useNavigation({ customNativeNavigation: drawerNavigation })
 
   const onPress = useCallback(() => {
     navigation.navigate({

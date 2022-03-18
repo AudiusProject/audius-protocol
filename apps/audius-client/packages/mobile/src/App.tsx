@@ -11,7 +11,6 @@ import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
-import { NotificationsScreen } from 'app/components/notifications/NotificationsScreen'
 import OAuth from 'app/components/oauth/OAuth'
 import { ThemeProvider } from 'app/components/theme/ThemeContext'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
@@ -75,7 +74,6 @@ const App = () => {
                   <NavigationContainer>
                     <GoogleCast webRef={webRef} />
                     <RootScreen />
-                    <NotificationsScreen />
                     <Drawers />
                     <Modals />
                     <Audio webRef={webRef} />

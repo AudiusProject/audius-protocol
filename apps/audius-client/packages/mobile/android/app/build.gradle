@@ -76,8 +76,7 @@ import com.android.build.OutputFile
  */
 
 project.ext.react = [
-    entryFile: "index.js",
-    enableHermes: false,  // clean and rebuild if changing
+    entryFile: "index.js"
 ]
 
 project.ext.envConfigFiles = [
@@ -130,6 +129,14 @@ def enableHermes = project.ext.react.get("enableHermes", false);
  * Architectures to build native code for in debug.
  */
 def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
+
+/*
+ * For Google Cast support
+ * https://react-native-google-cast.github.io/docs/getting-started/installation
+ */
+def safeExtGet(prop, fallback) {
+  rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -232,7 +239,7 @@ dependencies {
     implementation project(':react-native-google-cast')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation "com.google.android.gms:play-services-cast-framework:${rootProject.ext.castFrameworkVersion}"
+    implementation "com.google.android.gms:play-services-cast-framework:${safeExtGet('castFrameworkVersion', '+')}"
 
     // Add the Firebase SDK for Crashlytics.
     implementation 'com.google.firebase:firebase-analytics:17.2.2'

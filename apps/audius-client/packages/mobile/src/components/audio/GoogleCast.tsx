@@ -1,10 +1,14 @@
-import { useEffect, RefObject, useCallback } from 'react'
+import {
+  // useEffect,
+  RefObject
+  // useCallback
+} from 'react'
 
-import GoogleCast, { CastButton } from 'react-native-google-cast'
+// import GoogleCast, { CastButton } from 'react-native-google-cast'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { MessageType } from 'app/message'
+// import { MessageType } from 'app/message'
 import { AppState } from 'app/store'
 import * as audioActions from 'app/store/audio/actions'
 import {
@@ -21,7 +25,7 @@ import {
   getCastStartPosition
 } from 'app/store/googleCast/selectors'
 import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
-import { postMessage } from 'app/utils/postMessage'
+// import { postMessage } from 'app/utils/postMessage'
 
 type OwnProps = {
   webRef: RefObject<MessagePostingWebView>
@@ -47,148 +51,155 @@ const Cast = ({
   startPosition,
   setCastPlayPosition
 }: CastProps) => {
-  const isCasting = useCallback(
-    (isActive: boolean) => {
-      if (webRef.current) {
-        postMessage(webRef.current, {
-          type: MessageType.IS_CASTING,
-          isCasting: isActive,
-          isAction: true
-        })
-      }
-    },
-    [webRef]
-  )
+  return null
 
-  useEffect(() => {
-    // Establishing connection to Chromecast
-    GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_STARTING, () => {
-      updateCastStatus(googleCastActions.CastStatus.Connecting)
-    })
+  // TODO(AUD-1668): Fix / upgrade implementation of Google Cast
+  // which was broken due to a version upgrade. Currently commenting out
+  // because existing implementation is messed up, but the new implementation
+  // requires a larger (separate) code change.
 
-    // Connection established
-    GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_STARTED, () => {
-      updateCastStatus(googleCastActions.CastStatus.Connected)
-      isCasting(true)
-    })
+  // const isCasting = useCallback(
+  //   (isActive: boolean) => {
+  //     if (webRef.current) {
+  //       postMessage(webRef.current, {
+  //         type: MessageType.IS_CASTING,
+  //         isCasting: isActive,
+  //         isAction: true
+  //       })
+  //     }
+  //   },
+  //   [webRef]
+  // )
 
-    // Connection failed
-    GoogleCast.EventEmitter.addListener(
-      GoogleCast.SESSION_START_FAILED,
-      error => {
-        updateCastStatus(googleCastActions.CastStatus.NotConnected)
-        isCasting(false)
-        console.error(error)
-      }
-    )
+  // useEffect(() => {
+  //   // Establishing connection to Chromecast
+  //   GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_STARTING, () => {
+  //     updateCastStatus(googleCastActions.CastStatus.Connecting)
+  //   })
 
-    // Attempting to reconnect
-    GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_RESUMING, () => {
-      updateCastStatus(googleCastActions.CastStatus.Connecting)
-    })
+  //   // Connection established
+  //   GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_STARTED, () => {
+  //     updateCastStatus(googleCastActions.CastStatus.Connected)
+  //     isCasting(true)
+  //   })
 
-    // Reconnected
-    GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_RESUMED, () => {
-      updateCastStatus(googleCastActions.CastStatus.Connected)
-      isCasting(true)
-    })
+  //   // Connection failed
+  //   GoogleCast.EventEmitter.addListener(
+  //     GoogleCast.SESSION_START_FAILED,
+  //     error => {
+  //       updateCastStatus(googleCastActions.CastStatus.NotConnected)
+  //       isCasting(false)
+  //       console.error(error)
+  //     }
+  //   )
 
-    // Disconnecting
-    GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_ENDING, () => {
-      isCasting(false)
-    })
+  //   // Attempting to reconnect
+  //   GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_RESUMING, () => {
+  //     updateCastStatus(googleCastActions.CastStatus.Connecting)
+  //   })
 
-    // Disconnected (error provides explanation if ended forcefully)
-    GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_ENDED, error => {
-      updateCastStatus(googleCastActions.CastStatus.NotConnected)
-      isCasting(false)
-      console.error(error)
-    })
+  //   // Reconnected
+  //   GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_RESUMED, () => {
+  //     updateCastStatus(googleCastActions.CastStatus.Connected)
+  //     isCasting(true)
+  //   })
 
-    // Status of the media has changed. The `mediaStatus` object contains the new status.
-    GoogleCast.EventEmitter.addListener(
-      GoogleCast.MEDIA_STATUS_UPDATED,
-      ({ mediaStatus }) => {
-        if (mediaStatus.playerState === 3 /* If paused */) {
-          if (webRef.current) {
-            postMessage(webRef.current, {
-              type: MessageType.SYNC_PLAYER,
-              isPlaying: false,
-              incrementCounter: false,
-              isAction: true
-            })
-          }
-          pause()
-        } else if (mediaStatus.playerState === 2 /* If Play */) {
-          if (webRef.current) {
-            postMessage(webRef.current, {
-              type: MessageType.SYNC_PLAYER,
-              isPlaying: true,
-              incrementCounter: false,
-              isAction: true
-            })
-          }
-          play()
-        }
-      }
-    )
+  //   // Disconnecting
+  //   GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_ENDING, () => {
+  //     isCasting(false)
+  //   })
 
-    // TODO: Improve time sycn between cast and device by adding event
-    // listeners on `GoogleCast.MEDIA_PLAYBACK_STARTED` & `GoogleCast.MEDIA_PROGRESS_UPDATED`
-    return () => {
-      GoogleCast.endSession()
-    }
-  }, [webRef, isCasting, pause, play, updateCastStatus])
+  //   // Disconnected (error provides explanation if ended forcefully)
+  //   GoogleCast.EventEmitter.addListener(GoogleCast.SESSION_ENDED, error => {
+  //     updateCastStatus(googleCastActions.CastStatus.NotConnected)
+  //     isCasting(false)
+  //     console.error(error)
+  //   })
 
-  const isConnected =
-    googleCastStatus === googleCastActions.CastStatus.Connected
+  //   // Status of the media has changed. The `mediaStatus` object contains the new status.
+  //   GoogleCast.EventEmitter.addListener(
+  //     GoogleCast.MEDIA_STATUS_UPDATED,
+  //     ({ mediaStatus }) => {
+  //       if (mediaStatus.playerState === 3 /* If paused */) {
+  //         if (webRef.current) {
+  //           postMessage(webRef.current, {
+  //             type: MessageType.SYNC_PLAYER,
+  //             isPlaying: false,
+  //             incrementCounter: false,
+  //             isAction: true
+  //           })
+  //         }
+  //         pause()
+  //       } else if (mediaStatus.playerState === 2 /* If Play */) {
+  //         if (webRef.current) {
+  //           postMessage(webRef.current, {
+  //             type: MessageType.SYNC_PLAYER,
+  //             isPlaying: true,
+  //             incrementCounter: false,
+  //             isAction: true
+  //           })
+  //         }
+  //         play()
+  //       }
+  //     }
+  //   )
 
-  // Track Info handler
-  const { uid: trackUid = undefined } = track || {}
-  useEffect(() => {
-    if (track && isConnected) {
-      GoogleCast.castMedia({
-        mediaUrl: track.uri,
-        imageUrl: track.largeArtwork,
-        title: track.title,
-        subtitle: track.artist,
-        contentType: 'application/vnd.apple.mpegurl',
-        playPosition: startPosition // seconds
-      })
-      setCastPlayPosition(0)
-    }
-  }, [trackUid, isConnected, setCastPlayPosition, startPosition, track])
+  //   // TODO: Improve time sycn between cast and device by adding event
+  //   // listeners on `GoogleCast.MEDIA_PLAYBACK_STARTED` & `GoogleCast.MEDIA_PROGRESS_UPDATED`
+  //   return () => {
+  //     GoogleCast.endSession()
+  //   }
+  // }, [webRef, isCasting, pause, play, updateCastStatus])
 
-  useEffect(() => {
-    if (trackUid && isConnected) {
-      if (playing) {
-        GoogleCast.play()
-      } else {
-        GoogleCast.pause()
-      }
-    }
-  }, [trackUid, playing, isConnected])
+  // const isConnected =
+  //   googleCastStatus === googleCastActions.CastStatus.Connected
 
-  // Seek handler
-  useEffect(() => {
-    if (seek !== null && isConnected) {
-      GoogleCast.seek(seek) // - jump to position in seconds from the beginning of the stream
-    }
-  }, [seek, isConnected])
+  // // Track Info handler
+  // const { uid: trackUid = undefined } = track || {}
+  // useEffect(() => {
+  //   if (track && isConnected) {
+  //     GoogleCast.castMedia({
+  //       mediaUrl: track.uri,
+  //       imageUrl: track.largeArtwork,
+  //       title: track.title,
+  //       subtitle: track.artist,
+  //       contentType: 'application/vnd.apple.mpegurl',
+  //       playPosition: startPosition // seconds
+  //     })
+  //     setCastPlayPosition(0)
+  //   }
+  // }, [trackUid, isConnected, setCastPlayPosition, startPosition, track])
 
-  return (
-    <CastButton
-      style={{
-        width: 0,
-        height: 0,
-        display: 'none',
-        position: 'absolute',
-        zIndex: -1,
-        top: -200,
-        left: -200
-      }}
-    />
-  )
+  // useEffect(() => {
+  //   if (trackUid && isConnected) {
+  //     if (playing) {
+  //       GoogleCast.play()
+  //     } else {
+  //       GoogleCast.pause()
+  //     }
+  //   }
+  // }, [trackUid, playing, isConnected])
+
+  // // Seek handler
+  // useEffect(() => {
+  //   if (seek !== null && isConnected) {
+  //     GoogleCast.seek(seek) // - jump to position in seconds from the beginning of the stream
+  //   }
+  // }, [seek, isConnected])
+
+  // return (
+  //   <CastButton
+  //     style={{
+  //       width: 0,
+  //       height: 0,
+  //       display: 'none',
+  //       position: 'absolute',
+  //       zIndex: -1,
+  //       top: -200,
+  //       left: -200
+  //     }}
+  //   />
+  // )
 }
 
 const mapStateToProps = (state: AppState) => ({

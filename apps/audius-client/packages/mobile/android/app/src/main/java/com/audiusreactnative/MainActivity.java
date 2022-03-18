@@ -1,6 +1,10 @@
 package co.audius.app;
 
+import android.os.Bundle;
+import androidx.annotation.Nullable;
 import com.facebook.react.ReactActivity;
+import com.google.android.gms.cast.framework.CastContext;
+
 
 public class MainActivity extends ReactActivity {
 
@@ -18,5 +22,13 @@ public class MainActivity extends ReactActivity {
       // Not calling super. invokeDefaultOnBackPressed() b/c it will close the app.
       // Instead, put the app in the backgroud to allow audio to keep playing.
       moveTaskToBack(true);
+  }
+
+  @Override
+  protected void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    // lazy load Google Cast context
+    CastContext.getSharedInstance(this);
   }
 }
