@@ -114,11 +114,11 @@ class SnapbackSM {
       'maxSyncMonitoringDurationInMs'
     )
 
-    this.ReconfigNodeWhitelist = this.nodeConfig
-      .get('reconfigNodeWhitelist')
-      .split(',')
-    this.ReconfigNodeWhitelistSet = new Set(this.ReconfigNodeWhitelist)
-
+    const reconfigNodeWhitelist = this.nodeConfig.get('reconfigNodeWhitelist')
+    this.reconfigNodeWhitelist = reconfigNodeWhitelist
+      ? new Set(reconfigNodeWhitelist.split(','))
+      : null
+    
     // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
     // ex: 1/<24> users are handled over <3600000> ms (1 hour)
     this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
@@ -1044,8 +1044,8 @@ class SnapbackSM {
         const { services: healthyServicesMap } =
           await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
             performSyncCheck: false,
-            whitelist: this.ReconfigNodeWhitelistSet,
-            log: false
+            whitelist: this.reconfigNodeWhitelist,
+            log: true
           })
 
         const healthyNodes = Object.keys(healthyServicesMap)
