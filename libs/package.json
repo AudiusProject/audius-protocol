@@ -66,6 +66,7 @@
     "nyc": "15.1.0",
     "rollup": "2.70.1",
     "sinon": "9.0.2",
+    "standard": "^16.0.4",
     "ts-mocha": "9.0.2",
     "ts-node": "^10.7.0",
     "ts-standard": "11.0.0",
