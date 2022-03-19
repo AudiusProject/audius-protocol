@@ -5,13 +5,20 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import Status from 'common/models/Status'
+import {
+  getChangePasswordStatus,
+  getCurrentPage
+} from 'common/store/change-password/selectors'
+import {
+  changePage,
+  changePassword,
+  Page
+} from 'common/store/change-password/slice'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import EnterPassword from 'components/sign-on/EnterPassword'
 
 import styles from './ChangePassword.module.css'
 import { ConfirmCredentials } from './ConfirmCredentials'
-import { getChangePasswordStatus, getCurrentPage } from './store/selectors'
-import { changePage, changePassword, Page } from './store/slice'
 
 const messages = {
   helpTexts: [

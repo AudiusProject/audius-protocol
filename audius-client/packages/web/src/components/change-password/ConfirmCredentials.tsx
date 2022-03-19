@@ -6,14 +6,14 @@ import { useDispatch } from 'react-redux'
 import { Spring } from 'react-spring/renderprops'
 
 import Status from 'common/models/Status'
+import { getConfirmCredentialsStatus } from 'common/store/change-password/selectors'
+import { confirmCredentials } from 'common/store/change-password/slice'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import StatusMessage from 'components/status-message/StatusMessage'
 import { useSelector } from 'utils/reducer'
 
 import styles from './ConfirmCredentials.module.css'
-import { getConfirmCredentialsStatus } from './store/selectors'
-import { confirmCredentials } from './store/slice'
 
 type ConfirmCredentialsProps = {
   isMobile: boolean

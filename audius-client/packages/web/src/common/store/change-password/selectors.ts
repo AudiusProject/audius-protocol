@@ -1,9 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit'
 
-import { AppState } from 'store/types'
+import { CommonState } from 'common/store'
 
-const changePasswordState = (state: AppState) =>
-  state.application.ui.changePassword
+const changePasswordState = (state: CommonState) => state.ui.changePassword
 
 export const getConfirmCredentialsStatus = createSelector(
   changePasswordState,
