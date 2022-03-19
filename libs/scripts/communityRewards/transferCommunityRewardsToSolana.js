@@ -214,4 +214,6 @@ if (require && require.main === module) {
   run()
 }
 
-export const transferCommunityRewardsToSolana = run
+module.exports = {
+  transferCommunityRewardsToSolana: run
+}
