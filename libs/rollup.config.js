@@ -10,7 +10,7 @@ const extensions = ['.js', '.ts']
 export default {
   input: 'src/index.js',
   output: [
-    { file: pkg.mainDist, format: 'cjs', exports: 'auto', sourcemap: true }
+    { file: pkg.main, format: 'cjs', exports: 'auto', sourcemap: true }
   ],
   plugins: [
     commonjs({
