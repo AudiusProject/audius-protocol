@@ -8,8 +8,7 @@ COMMENT
 
 ##### INIT DATA CONTRACTS #####
 
-if [ -d "../contracts" ]
-then
+if [ -d "../contracts" ]; then
   echo "Audius contracts repo is present"
   cd ../contracts/
 else
@@ -22,8 +21,7 @@ npm run truffle-migrate
 
 ##### INIT ETH CONTRACTS #####
 
-if [ -d "../eth-contracts" ]
-then
+if [ -d "../eth-contracts" ]; then
   echo "Audius eth-contracts repo is present"
   cd ../eth-contracts/
 else
@@ -52,4 +50,4 @@ printf '\nSTART tests:\n\n'
 node_modules/.bin/ts-mocha tests/index.js
 
 # run linter
-node_modules/.bin/standard
+npm run lint
