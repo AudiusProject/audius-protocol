@@ -7,7 +7,6 @@ import notification from 'common/store/notifications/reducer'
 import profile from 'common/store/pages/profile/reducer'
 import queue from 'common/store/queue/slice'
 import remoteConfig from 'common/store/remote-config/slice'
-import changePassword from 'components/change-password/store/slice'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
 import musicConfetti from 'components/music-confetti/store/slice'
@@ -82,7 +81,6 @@ const createRootReducer = (routeHistory: History) =>
     application: combineReducers({
       ui: combineReducers({
         appCTAModal,
-        changePassword,
         cookieBanner,
         deactivateAccount,
         editFolderModal,

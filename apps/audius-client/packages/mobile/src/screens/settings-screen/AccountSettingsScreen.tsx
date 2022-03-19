@@ -16,11 +16,11 @@ import { Screen } from 'app/components/core'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { ProfilePicture } from 'app/components/user'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-// import { useNavigation } from 'app/hooks/useNavigation'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
-// import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { AccountSettingsItem } from './AccountSettingsItem'
 
@@ -67,7 +67,7 @@ export const AccountSettingsScreen = () => {
   const { toast } = useContext(ToastContext)
   const dispatchWeb = useDispatchWeb()
   const accountUser = useSelectorWeb(getAccountUser)
-  // const navigation = useNavigation<ProfileTabScreenParamList>()
+  const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePressRecoveryEmail = useCallback(() => {
     dispatchWeb(resendRecoveryEmail)
@@ -75,18 +75,18 @@ export const AccountSettingsScreen = () => {
   }, [dispatchWeb, toast])
 
   const handlePressVerification = useCallback(() => {
-    // navigation.push({
-    //   native: { screen: 'AccountVerificationScreen', params: undefined },
-    //   web: { route: '/settings/account/verification' }
-    // })
-  }, [])
+    navigation.push({
+      native: { screen: 'AccountVerificationScreen', params: undefined },
+      web: { route: '/settings/account/verification' }
+    })
+  }, [navigation])
 
   const handlePressChangePassword = useCallback(() => {
-    // navigation.push({
-    //   native: { screen: 'ChangePasswordScreen', params: undefined },
-    //   web: { route: '/settings/change-password' }
-    // })
-  }, [])
+    navigation.push({
+      native: { screen: 'ChangePasswordScreen', params: undefined },
+      web: { route: '/settings/change-password' }
+    })
+  }, [navigation])
 
   const openSignOutDrawer = useCallback(() => {
     dispatchWeb(setVisibility({ modal: 'SignOutConfirmation', visible: true }))
