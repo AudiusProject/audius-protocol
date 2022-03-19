@@ -118,7 +118,7 @@ class SnapbackSM {
     this.reconfigNodeWhitelist = reconfigNodeWhitelist
       ? new Set(reconfigNodeWhitelist.split(','))
       : null
-    
+
     // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
     // ex: 1/<24> users are handled over <3600000> ms (1 hour)
     this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
