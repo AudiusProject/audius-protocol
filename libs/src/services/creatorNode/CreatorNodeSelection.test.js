@@ -96,6 +96,40 @@ describe('test CreatorNodeSelection', () => {
     healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
 
+  it('Return nothing if whitelist is empty set', async function () {
+    const healthy = 'https://healthy.audius.co'
+    nock(healthy)
+      .get('/health_check/verbose')
+      .reply(200, { data: defaultHealthCheckData })
+
+    const healthyButSlow = 'https://healthybutslow.audius.co'
+    nock(healthyButSlow)
+      .get('/health_check/verbose')
+      .delay(100)
+      .reply(200, { data: defaultHealthCheckData })
+
+    const healthyButSlowest = 'https://healthybutslowest.audius.co'
+    nock(healthyButSlowest)
+      .get('/health_check/verbose')
+      .delay(200)
+      .reply(200, { data: defaultHealthCheckData })
+
+    const cns = new CreatorNodeSelection({
+      creatorNode: mockCreatorNode,
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts([healthy, healthyButSlow, healthyButSlowest], '1.2.3'),
+      whitelist: new Set([]),
+      blacklist: null
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+    assert(primary === undefined)
+    assert(secondaries.length === 0)
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 0)
+  })
+
   it('select healthy nodes as the primary and secondary, and do not select unhealthy nodes', async () => {
     const upToDate = 'https://upToDate.audius.co'
     nock(upToDate)
@@ -178,7 +212,7 @@ describe('test CreatorNodeSelection', () => {
     const { primary, secondaries, services } = await cns.select()
 
     // All unhealthy are bad candidates so don't select anything
-    assert(!primary)
+    assert(primary === undefined)
     assert(secondaries.length === 0)
 
     const returnedHealthyServices = new Set(Object.keys(services))
