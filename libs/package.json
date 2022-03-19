@@ -2,7 +2,7 @@
   "name": "@audius/libs",
   "version": "1.2.92",
   "description": "",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "mainDist": "dist/index.js",
   "browser": {
     "fs": false,
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@audius/hedgehog": "1.0.12",
-    "@certusone/wormhole-sdk": "0.0.10",
+    "@certusone/wormhole-sdk": "0.1.1",
     "@ethersproject/solidity": "5.0.5",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
     "@solana/spl-token": "0.1.6",

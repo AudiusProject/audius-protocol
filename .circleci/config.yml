@@ -204,6 +204,7 @@ jobs:
             cd /home/circleci/project/service-commands/scripts/
             cd /home/circleci/project/libs/
             npm rebuild
+            npm run build
             npm link
             cd /home/circleci/project/service-commands/
             npm link

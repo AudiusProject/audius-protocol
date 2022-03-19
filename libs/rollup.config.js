@@ -6,7 +6,7 @@ import resolve from '@rollup/plugin-node-resolve'
 export default {
   input: 'src/index.js',
   output: [
-    { file: pkg.mainDist, format: 'cjs', exports: 'named', sourcemap: true }
+    { file: pkg.mainDist, format: 'cjs', exports: 'auto', sourcemap: true }
   ],
   plugins: [
     commonjs({
@@ -21,6 +21,7 @@ export default {
   external: [
     '@audius/hedgehog',
     '@certusone/wormhole-sdk',
+    '@certusone/wormhole-sdk/lib/cjs/solana/wasm',
     '@ethersproject/solidity',
     '@solana/spl-token',
     '@solana/web3.js',
