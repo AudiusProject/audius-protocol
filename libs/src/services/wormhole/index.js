@@ -2,6 +2,8 @@ const bs58 = require('bs58')
 const { toBuffer } = require('ethereumjs-util')
 const { zeroPad } = require('ethers/lib/utils')
 const { providers } = require('ethers/lib/index')
+const wormholeSDK = require('@certusone/wormhole-sdk')
+const { setDefaultWasm } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')
 
 const SolanaUtils = require('../solanaWeb3Manager/utils')
 const Utils = require('../../utils')
@@ -9,7 +11,6 @@ const { wAudioFromWeiAudio } = require('../solanaWeb3Manager/wAudio')
 const { sign, getTransferTokensDigest } = require('../../utils/signatures')
 /** Singleton state-manager for Audius Eth Contracts */
 
-const IS_BROWSER = typeof window !== 'undefined' && window !== null
 class Wormhole {
   /**
    * Wormhole constructor
@@ -23,6 +24,7 @@ class Wormhole {
    * @param {string} solTokenBridgeAddress
    * @param {string} ethBridgeAddress
    * @param {string} ethTokenBridgeAddress
+   * @param {boolean} isServer
   */
   constructor (
     hedgehog,
@@ -34,7 +36,8 @@ class Wormhole {
     solBridgeAddress,
     solTokenBridgeAddress,
     ethBridgeAddress,
-    ethTokenBridgeAddress
+    ethTokenBridgeAddress,
+    isServer
   ) {
     // Wormhole service dependecies
     this.hedgehog = hedgehog
@@ -49,12 +52,9 @@ class Wormhole {
     this.solTokenBridgeAddress = solTokenBridgeAddress
     this.ethBridgeAddress = ethBridgeAddress
     this.ethTokenBridgeAddress = ethTokenBridgeAddress
-
-    if (IS_BROWSER) {
-      this.wormholeSDK = require('@certusone/wormhole-sdk')
-    } else {
-      const requireESM = require('esm')(module)
-      this.wormholeSDK = requireESM('@certusone/wormhole-sdk')
+    this.wormholeSDK = wormholeSDK
+    if (isServer) {
+      setDefaultWasm('node')
     }
   }
 

@@ -429,7 +429,8 @@ class AudiusLibs {
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
-        this.wormholeConfig.ethTokenBridgeAddress
+        this.wormholeConfig.ethTokenBridgeAddress,
+        this.isServer
       )
     }
 
@@ -509,6 +510,10 @@ class AudiusLibs {
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
   }
 }
+
+// This is needed to ensure default and named exports are handled correctly by rollup
+// https://github.com/rollup/plugins/tree/master/packages/commonjs#defaultismoduleexports
+exports.__esModule = true
 
 module.exports = AudiusLibs
 

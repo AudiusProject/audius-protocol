@@ -6,7 +6,6 @@ const axios = require('axios')
 const Web3 = require('web3')
 const solanaWeb3 = require('@solana/web3.js')
 const { Keypair } = solanaWeb3
-const requireESM = require('esm')(module)
 const {
   getSignedVAA,
   getEmitterAddressEth,
@@ -14,7 +13,7 @@ const {
   redeemOnSolana,
   postVaaSolana,
   CHAIN_ID_ETH
-} = requireESM('@certusone/wormhole-sdk')
+} = require('@certusone/wormhole-sdk')
 const EthRewardManagerABI = require('../../eth-contracts/ABIs/EthRewardsManager.json').abi
 
 const { grpc } = require('@improbable-eng/grpc-web')
