@@ -1,5 +1,7 @@
 export * from './SettingsScreen'
 export * from './AboutScreen'
 export * from './AccountSettingsScreen'
+export * from './AccountVerificationScreen'
+export * from './ChangePasswordScreen'
 export * from './NotificationSettingsScreen'
 export * from './ListeningHistoryScreen'

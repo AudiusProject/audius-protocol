@@ -18,6 +18,9 @@ import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
 import { sagas as castSagas } from 'common/store/cast/sagas'
 import cast from 'common/store/cast/slice'
+import changePasswordReducer, {
+  ChangePasswordState
+} from 'common/store/change-password/slice'
 import notifications from 'common/store/notifications/reducer'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
 import collection from 'common/store/pages/collection/reducer'
@@ -121,6 +124,7 @@ export const reducers = (ctx: CommonStoreContext) => ({
     averageColor: averageColorReducer,
     addToPlaylist: addToPlaylistReducer,
     artistRecommendations: artistRecommendationsReducer,
+    changePassword: changePasswordReducer,
     createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
@@ -252,6 +256,7 @@ export type CommonState = {
     averageColor: ReturnType<typeof averageColorReducer>
     addToPlaylist: AddToPlaylistState
     artistRecommendations: ArtistRecommendationsState
+    changePassword: ChangePasswordState
     createPlaylistModal: CreatePlaylistModalState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState

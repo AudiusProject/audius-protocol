@@ -31,7 +31,7 @@ const initialState: ChangePasswordState = {
 }
 
 const slice = createSlice({
-  name: 'application/ui/changePassword',
+  name: 'change-password',
   initialState,
   reducers: {
     confirmCredentials: (

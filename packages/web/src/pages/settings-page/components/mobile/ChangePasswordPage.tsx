@@ -3,9 +3,9 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Name } from 'common/models/Analytics'
+import { getCurrentPage } from 'common/store/change-password/selectors'
+import { changePage, Page } from 'common/store/change-password/slice'
 import { ChangePassword } from 'components/change-password/ChangePassword'
-import { getCurrentPage } from 'components/change-password/store/selectors'
-import { changePage, Page } from 'components/change-password/store/slice'
 import NavContext, {
   CenterPreset,
   LeftPreset

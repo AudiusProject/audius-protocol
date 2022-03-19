@@ -4,6 +4,8 @@ import { ProfileScreen } from 'app/screens/profile-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
+  AccountVerificationScreen,
+  ChangePasswordScreen,
   ListeningHistoryScreen,
   NotificationSettingsScreen,
   SettingsScreen
@@ -19,6 +21,8 @@ export type ProfileTabScreenParamList = AppTabScreenParamList & {
   AboutScreen: undefined
   ListeningHistoryScreen: undefined
   AccountSettingsScreen: undefined
+  AccountVerificationScreen: undefined
+  ChangePasswordScreen: undefined
   NotificationSettingsScreen: undefined
   AudioScreen: Record<string, unknown>
 }
@@ -48,5 +52,13 @@ export const ProfileTabScreen = createAppTabScreenStack<
       component={NotificationSettingsScreen}
     />
     <Stack.Screen name='AudioScreen' component={AudioScreen} />
+    <Stack.Screen
+      name='AccountVerificationScreen'
+      component={AccountVerificationScreen}
+    />
+    <Stack.Screen
+      name='ChangePasswordScreen'
+      component={ChangePasswordScreen}
+    />
   </>
 ))
