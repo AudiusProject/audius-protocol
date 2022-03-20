@@ -487,7 +487,6 @@ describe("audius-data", function () {
   });
 
   it.only("Delegating user authority", async function () {
-
     // Disable admin writes
     await updateAdmin({
       program,
@@ -505,10 +504,7 @@ describe("audius-data", function () {
     );
 
     // Init app delegate
-    const {
-      baseAuthorityAccount,
-      bumpSeed,
-    } = await findDerivedPair(
+    const { baseAuthorityAccount, bumpSeed } = await findDerivedPair(
       program.programId,
       adminStgKeypair.publicKey,
       delegateUser.keypair.publicKey.toBytes().slice(0, 32)
@@ -555,47 +551,34 @@ describe("audius-data", function () {
 
     // Add app delegate
     // New sol key that will be used as user authority delegate
-    // const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
-    // const {
-    //   rootUserBaseAuthorityAccount,
-    //   rootUserBumpSeed,
-    //   derivedAddress: newUserAcctPDA,
-    // } = await findDerivedPair(
-    //   program.programId,
-    //   adminStgKeypair.publicKey,
-    //   Buffer.from(rootUser.handleBytesArray)
-    // );
+    const { derivedAddress: userAuthorityDelegatePda } = await findDerivedPair(
+      program.programId,
+      adminStgKeypair.publicKey,
+      [
+        rootUser.pda.toBytes().slice(0, 32),
+        delegateUser.keypair.publicKey.toBytes().slice(0, 32),
+      ]
+    );
 
-    // const userDelSeed = [
-    //   newUserAcctPDA.toBytes().slice(0, 32),
-    //   userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
-    // ];
-    // const res = await PublicKey.findProgramAddress(
-    //   userDelSeed,
-    //   program.programId
-    // );
-    // const userDelPDA = res[0];
-    // const userDelBump = res[1];
+    const addUserDelArgs = {
+      accounts: {
+        admin: adminStgKeypair.publicKey,
+        user: rootUser.pda,
+        userAuthorityDelegatePda: userAuthorityDelegatePda,
+        userAuthority: rootUser.keypair.publicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [rootUser.keypair],
+    };
 
-    // const addUserDelArgs = {
-    //   accounts: {
-    //     admin: adminStgKeypair.publicKey,
-    //     user: newUserAcctPDA,
-    //     userAuthorityDelegatePda: userDelPDA,
-    //     userAuthority: rootUser.keypair.publicKey,
-    //     payer: provider.wallet.publicKey,
-    //     systemProgram: SystemProgram.programId,
-    //   },
-    //   signers: [rootUser.keypair],
-    // };
-
-    // await program.rpc.addUserAuthorityDelegate(
-    //   rootUserBaseAuthorityAccount,
-    //   Buffer.from(rootUser.handleBytesArray),
-    //   rootUserBumpSeed,
-    //   userAuthorityDelegateKeypair.publicKey,
-    //   addUserDelArgs
-    // );
+    await program.rpc.addUserAuthorityDelegate(
+      baseAuthorityAccount,
+      Buffer.from(rootUser.handleBytesArray),
+      rootUser.bumpSeed,
+      userAuthorityDelegatePda,
+      addUserDelArgs
+    );
 
     // const acctState = await program.account.userAuthorityDelegate.fetch(
     //   userDelPDA

@@ -543,7 +543,7 @@ pub struct AddUserAuthorityDelegate<'info> {
         init,
         payer = payer,
         seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
-        bump, 
+        bump,
         space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
     )]
     pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
