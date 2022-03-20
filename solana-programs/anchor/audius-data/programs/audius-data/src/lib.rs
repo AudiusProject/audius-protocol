@@ -202,8 +202,8 @@ pub mod audius_data {
             ctx.program_id,
             &ctx.accounts.user,
             &ctx.accounts.user_delegate_authority,
-            &ctx.accounts.app_delegate
-            &ctx.accounts.user_authority,
+            &ctx.accounts.app_delegate,
+            &ctx.accounts.user_authority
         )?;
         msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
@@ -312,12 +312,8 @@ pub mod audius_data {
         _base: Pubkey,
         _handle_seed: [u8; 16],
         _user_bump: u8,
-        _user_authority_delegate: Pubkey,
     ) -> Result<()> {
-        // Only permitted to user authority
         msg!("Audius::InitAppDelegate");
-
-        // 
         ctx.accounts.app_delegate_pda.is_revoked = false;
 
         // initializes is_revoked to true
@@ -337,7 +333,7 @@ pub mod audius_data {
 
         // need to validate app user auth before revoking
 
-        ctx.accounts.app_delegate_pda.is_revoked = true;
+        // ctx.accounts.app_delegate_pda.is_revoked = true;
 
         Ok(())
     }
@@ -487,32 +483,27 @@ pub struct UpdateAdmin<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)]
+#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8)]
 pub struct InitAppDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
-    #[account(
-        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump
-    )]
+    #[account(seeds = [&base.to_bytes()[..32], handle_seed.as_ref()], bump = user_bump)]
     pub app_user: Account<'info, User>,
     #[account(
         init,
         payer = payer,
-        seeds = [&app_user.key().to_bytes()[..32]],
+        seeds = [b"app_delegate", app_user.key().as_ref()],
         bump,
         space = APP_DELEGATE_ACCOUNT_SIZE
     )]
     pub app_delegate_pda: Account<'info, AppDelegate>,
-    #[account()]
-    pub user_authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)]
+#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)] // TODO use UserHandle
 pub struct RevokeAppDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
@@ -521,19 +512,19 @@ pub struct RevokeAppDelegate<'info> {
         bump = user_bump
     )]
     pub app_user: Account<'info, User>,
-    #[account(
-        init,
-        payer = payer,
-        seeds = [&app_user.key().to_bytes()[..32]],
-        bump,
-        space = APP_DELEGATE_ACCOUNT_SIZE
-    )]
-    pub app_delegate_pda: Account<'info, AppDelegate>,
-    #[account()]
-    pub user_authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
+    // #[account(
+    //     init,
+    //     payer = payer,
+    //     seeds = [&app_user.key().to_bytes()[..32]],
+    //     bump, 
+    //     space = APP_DELEGATE_ACCOUNT_SIZE
+    // )]
+    // pub app_delegate_pda: Account<'info, AppDelegate>,
+    // #[account()]
+    // pub user_authority: Signer<'info>,
+    // #[account(mut)]
+    // pub payer: Signer<'info>,
+    // pub system_program: Program<'info, System>,
 }
 
 /// Instruction container to allow user delegation
@@ -552,7 +543,7 @@ pub struct AddUserAuthorityDelegate<'info> {
         init,
         payer = payer,
         seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
-        bump,
+        bump, 
         space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
     )]
     pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,

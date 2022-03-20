@@ -21,6 +21,7 @@ import {
   testInitUserSolPubkey,
   testDeleteTrack,
   testUpdateTrack,
+  createSolanaUser,
 } from "./test-helpers";
 const { PublicKey, SystemProgram } = anchor.web3;
 
@@ -41,7 +42,7 @@ describe("audius-data", function () {
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
-  it("Initializing admin account!", async function () {
+  it.only("Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
@@ -485,19 +486,9 @@ describe("audius-data", function () {
       );
   });
 
-  it("Delegating user authority", async function () {
-    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
-    const {
-      baseAuthorityAccount,
-      bumpSeed,
-      derivedAddress: newUserAcctPDA,
-    } = await findDerivedPair(
-      program.programId,
-      adminStgKeypair.publicKey,
-      Buffer.from(handleBytesArray)
-    );
+  it.only("Delegating user authority", async function () {
 
-    // disable admin writes
+    // Disable admin writes
     await updateAdmin({
       program,
       isWriteEnabled: false,
@@ -505,146 +496,162 @@ describe("audius-data", function () {
       adminAuthorityKeypair: adminKeypair,
     });
 
-    // New sol key that will be used to permission user updates
-    const newUserKeypair = anchor.web3.Keypair.generate();
-
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
-
-    await testCreateUser({
-      provider,
+    // Create root user and app delegate
+    const rootUser = await createSolanaUser(program, provider, adminStgKeypair);
+    const delegateUser = await createSolanaUser(
       program,
-      message,
-      ethAccount,
+      provider,
+      adminStgKeypair
+    );
+
+    // Init app delegate
+    const {
       baseAuthorityAccount,
-      handleBytesArray,
       bumpSeed,
-      metadata,
-      newUserKeypair,
-      userStgAccount: newUserAcctPDA,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-    });
+    } = await findDerivedPair(
+      program.programId,
+      adminStgKeypair.publicKey,
+      delegateUser.keypair.publicKey.toBytes().slice(0, 32)
+    );
 
-    // New sol key that will be used as user authority delegate
-    const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
+    // const initAppDelegateSeed = [
+    //   delegateUser.keypair.publicKey.toBytes().slice(0, 32),
+    // ];
+    // const initAppDelegateRes = await PublicKey.findProgramAddress(
+    //   initAppDelegateSeed,
+    //   program.programId
+    // );
+    // const initAppDelegatePda = initAppDelegateRes[0];
+    // const initAppDelegateBump = initAppDelegateRes[1];
 
-    const appDelSeed = [
-      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+    const appDelegateSeed = [
+      Buffer.from("app_delegate", "utf8"),
+      delegateUser.pda.toBytes().slice(0, 32),
     ];
-    const appRes = await PublicKey.findProgramAddress(
-      appDelSeed,
+    const res = await PublicKey.findProgramAddress(
+      appDelegateSeed,
       program.programId
     );
-    const appDelPDA = appRes[0];
-    const appDelBump = appRes[1];
+    const appDelegatePda = res[0];
 
     const initAppDelegateArgs = {
       accounts: {
         admin: adminStgKeypair.publicKey,
-        user: newUserAcctPDA,
-        userAuthorityDelegatePda: appDelPDA,
-        userAuthority: newUserKeypair.publicKey,
+        appUser: delegateUser.pda,
+        appDelegatePda: appDelegatePda,
+        // userAuthority: delegateUser.keypair.publicKey,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
       },
-      signers: [newUserKeypair],
+      // signers: [delegateUser.keypair],
     };
 
     await program.rpc.initAppDelegate(
       baseAuthorityAccount,
-      handleBytesArray,
+      delegateUser.handleBytesArray,
       bumpSeed,
-      userAuthorityDelegateKeypair.publicKey,
       initAppDelegateArgs
     );
 
-    const userDelSeed = [
-      newUserAcctPDA.toBytes().slice(0, 32),
-      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
-    ];
-    const res = await PublicKey.findProgramAddress(
-      userDelSeed,
-      program.programId
-    );
-    const userDelPDA = res[0];
-    const userDelBump = res[1];
+    // Add app delegate
+    // New sol key that will be used as user authority delegate
+    // const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
+    // const {
+    //   rootUserBaseAuthorityAccount,
+    //   rootUserBumpSeed,
+    //   derivedAddress: newUserAcctPDA,
+    // } = await findDerivedPair(
+    //   program.programId,
+    //   adminStgKeypair.publicKey,
+    //   Buffer.from(rootUser.handleBytesArray)
+    // );
 
-    const addUserDelArgs = {
-      accounts: {
-        admin: adminStgKeypair.publicKey,
-        user: newUserAcctPDA,
-        userAuthorityDelegatePda: userDelPDA,
-        userAuthority: newUserKeypair.publicKey,
-        payer: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [newUserKeypair],
-    };
+    // const userDelSeed = [
+    //   newUserAcctPDA.toBytes().slice(0, 32),
+    //   userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+    // ];
+    // const res = await PublicKey.findProgramAddress(
+    //   userDelSeed,
+    //   program.programId
+    // );
+    // const userDelPDA = res[0];
+    // const userDelBump = res[1];
 
-    await program.rpc.addUserAuthorityDelegate(
-      baseAuthorityAccount,
-      handleBytesArray,
-      bumpSeed,
-      userAuthorityDelegateKeypair.publicKey,
-      addUserDelArgs
-    );
+    // const addUserDelArgs = {
+    //   accounts: {
+    //     admin: adminStgKeypair.publicKey,
+    //     user: newUserAcctPDA,
+    //     userAuthorityDelegatePda: userDelPDA,
+    //     userAuthority: rootUser.keypair.publicKey,
+    //     payer: provider.wallet.publicKey,
+    //     systemProgram: SystemProgram.programId,
+    //   },
+    //   signers: [rootUser.keypair],
+    // };
 
-    const acctState = await program.account.userAuthorityDelegate.fetch(
-      userDelPDA
-    );
-    const userStgPdaFromChain = acctState.userStorageAccount;
-    const delegateAuthorityFromChain = acctState.delegateAuthority;
-    expect(userStgPdaFromChain.toString(), "user stg pda").to.equal(
-      newUserAcctPDA.toString()
-    );
-    expect(
-      userAuthorityDelegateKeypair.publicKey.toString(),
-      "del auth pda"
-    ).to.equal(delegateAuthorityFromChain.toString());
-    const updatedCID = randomCID();
-    await updateUser({
-      program,
-      metadata: updatedCID,
-      userStgAccount: newUserAcctPDA,
-      userAuthorityKeypair: userAuthorityDelegateKeypair,
-      userDelegateAuthority: userDelPDA,
-    });
-    const removeUserDelArgs = {
-      accounts: {
-        admin: adminStgKeypair.publicKey,
-        user: newUserAcctPDA,
-        userAuthorityDelegatePda: userDelPDA,
-        userAuthority: newUserKeypair.publicKey,
-        payer: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [newUserKeypair],
-    };
+    // await program.rpc.addUserAuthorityDelegate(
+    //   rootUserBaseAuthorityAccount,
+    //   Buffer.from(rootUser.handleBytesArray),
+    //   rootUserBumpSeed,
+    //   userAuthorityDelegateKeypair.publicKey,
+    //   addUserDelArgs
+    // );
 
-    console.log(`Removing delegate authority ${userDelPDA}`);
-    await program.rpc.removeUserAuthorityDelegate(
-      baseAuthorityAccount,
-      handleBytesArray,
-      bumpSeed,
-      userAuthorityDelegateKeypair.publicKey,
-      userDelBump,
-      removeUserDelArgs
-    );
+    // const acctState = await program.account.userAuthorityDelegate.fetch(
+    //   userDelPDA
+    // );
+    // const userStgPdaFromChain = acctState.userStorageAccount;
+    // const delegateAuthorityFromChain = acctState.delegateAuthority;
+    // expect(userStgPdaFromChain.toString(), "user stg pda").to.equal(
+    //   newUserAcctPDA.toString()
+    // );
+    // expect(
+    //   userAuthorityDelegateKeypair.publicKey.toString(),
+    //   "del auth pda"
+    // ).to.equal(delegateAuthorityFromChain.toString());
+    // const updatedCID = randomCID();
+    // await updateUser({
+    //   program,
+    //   metadata: updatedCID,
+    //   userStgAccount: newUserAcctPDA,
+    //   userAuthorityKeypair: userAuthorityDelegateKeypair,
+    //   userDelegateAuthority: userDelPDA,
+    // });
+    // const removeUserDelArgs = {
+    //   accounts: {
+    //     admin: adminStgKeypair.publicKey,
+    //     user: newUserAcctPDA,
+    //     userAuthorityDelegatePda: userDelPDA,
+    //     userAuthority: newUserKeypair.publicKey,
+    //     payer: provider.wallet.publicKey,
+    //     systemProgram: SystemProgram.programId,
+    //   },
+    //   signers: [newUserKeypair],
+    // };
 
-    // Confirm account deallocated after removal
-    await pollAccountBalance(provider, userDelPDA, 0, 100);
-    await expect(
-      updateUser({
-        program,
-        metadata: randomCID(),
-        userStgAccount: newUserAcctPDA,
-        userAuthorityKeypair: userAuthorityDelegateKeypair,
-        userDelegateAuthority: userDelPDA,
-      })
-    )
-      .to.eventually.be.rejected.and.property("msg")
-      .to.include(`No 8 byte discriminator was found on the account`);
+    // console.log(`Removing delegate authority ${userDelPDA}`);
+    // await program.rpc.removeUserAuthorityDelegate(
+    //   baseAuthorityAccount,
+    //   handleBytesArray,
+    //   bumpSeed,
+    //   userAuthorityDelegateKeypair.publicKey,
+    //   userDelBump,
+    //   removeUserDelArgs
+    // );
+
+    // // Confirm account deallocated after removal
+    // await pollAccountBalance(provider, userDelPDA, 0, 100);
+    // await expect(
+    //   updateUser({
+    //     program,
+    //     metadata: randomCID(),
+    //     userStgAccount: newUserAcctPDA,
+    //     userAuthorityKeypair: userAuthorityDelegateKeypair,
+    //     userDelegateAuthority: userDelPDA,
+    //   })
+    // )
+    //   .to.eventually.be.rejected.and.property("msg")
+    //   .to.include(`No 8 byte discriminator was found on the account`);
   });
 
   it("creating initialized user should fail", async function () {
