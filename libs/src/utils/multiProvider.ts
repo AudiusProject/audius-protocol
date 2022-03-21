@@ -5,10 +5,10 @@ import type { HttpProvider, AbstractProvider } from 'web3-core'
 import type { JsonRpcPayload } from 'web3-core-helpers'
 
 const getSendMethod = (provider: HttpProvider | AbstractProvider) => {
-      if ("sendAsync" in provider) {
-        return provider.sendAsync
-      }
-      return provider.send
+  if ('sendAsync' in provider) {
+    return provider.sendAsync
+  }
+  return provider.send
 }
 
 type Providers = [HttpProvider, ...Array<HttpProvider | AbstractProvider>]
@@ -28,7 +28,7 @@ export class MultiProvider extends Web3.providers.HttpProvider {
    * @param {Array<string | Provider> | string} - The providers to use.
    */
   constructor (providers: Providers | string) {
-    let web3Providers: Providers | StringProviders 
+    let web3Providers: Providers | StringProviders
     if (typeof providers === 'string') {
       web3Providers = providers.split(',') as StringProviders
     } else if (!Array.isArray(providers)) {
@@ -36,7 +36,6 @@ export class MultiProvider extends Web3.providers.HttpProvider {
     } else {
       web3Providers = providers
     }
-
 
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
     const web3ProviderInstances = web3Providers.map(provider => (new Web3(provider)).eth.currentProvider) as Providers

@@ -62,7 +62,7 @@ describe('timeRequests()', () => {
   })
 
   it('respects an equivalency delta', async () => {
-    let allResults: string[]  = []
+    const allResults: string[] = []
     for (let i = 0; i < 20; ++i) {
       const requests = [
         setupRequest('https://cohort1a.audius.co', 1, '1.2.3'),
