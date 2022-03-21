@@ -4,15 +4,7 @@ const axios = require('axios')
 const Hashids = require('hashids/cjs')
 
 const { MultiProvider } = require('./multiProvider')
-<<<<<<< HEAD
-<<<<<<< HEAD
 const { uuid } = require('./uuid')
-=======
-const uuid = require('./uuid.js')
->>>>>>> 188a9e54 (Refactor multiProvider to typescript)
-=======
-const { uuid } = require('./uuid')
->>>>>>> 529cb424 (Refactor uuid)
 
 // Hashids
 

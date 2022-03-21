@@ -2,18 +2,18 @@ import FormData from 'form-data'
 import axios from 'axios'
 
 declare global {
-	interface Window {
-		grecaptcha: {
-      ready: (callback: () => void) => void
-      execute(siteKey: string, config: {action: string}): Promise<string>
-    };
-	}
+  interface Window {
+    grecaptcha: {
+      ready: (callback: () => void) => Promise<void>
+      execute: (siteKey: string, config: {action: string}) => Promise<string>
+    }
+  }
 }
 
 const VERIFY_ENDPOINT = 'https://www.google.com/recaptcha/api/siteverify'
 const IS_BROWSER = typeof window !== 'undefined' && window !== null
 
-type CaptchaConfig = {
+interface CaptchaConfig {
   siteKey: string
   serviceKey: string
 }
@@ -46,7 +46,7 @@ export class Captcha {
       throw new Error('No captcha found, did you forget to import it?')
     }
 
-    return new Promise(resolve => {
+    return await new Promise(resolve => {
       window.grecaptcha.ready(() => {
         window.grecaptcha.execute(this.siteKey, { action })
           .then((token) => {

@@ -1,7 +1,7 @@
-import {ServiceSelection} from './ServiceSelection'
+import { ServiceSelection } from './ServiceSelection'
 import nock from 'nock'
 import assert from 'assert'
-import {Utils} from '../utils'
+import { Utils } from '../utils'
 import type { AxiosResponse } from 'axios'
 
 describe('ServiceSelection', () => {

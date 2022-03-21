@@ -1,6 +1,6 @@
 const _ = require('lodash')
 
-const {ServiceSelection} = require('../../service-selection/ServiceSelection')
+const { ServiceSelection } = require('../../service-selection/ServiceSelection')
 const { timeRequests, sortServiceTimings } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 

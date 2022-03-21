@@ -1,4 +1,4 @@
-import Utils  from './utils'
+import Utils from './utils'
 import { ecsign, toBuffer } from 'ethereumjs-util'
 import { pack } from '@ethersproject/solidity'
 import type Web3 from 'web3'
@@ -62,7 +62,7 @@ function getTransferTokensDigest (
   name: string,
   address: string,
   chainId: string,
-  transferTokens: {from: string, amount: string, recipientChain: string, recipient: string, arbiterFee: string} ,
+  transferTokens: {from: string, amount: string, recipientChain: string, recipient: string, arbiterFee: string},
   nonce: boolean,
   deadline: string
 ) {

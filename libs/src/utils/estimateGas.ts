@@ -2,14 +2,14 @@
 // will go through
 const GAS_LIMIT_MULTIPLIER = 1.05
 
-type Method = {
+interface Method {
   estimateGas: (config: {from: string | undefined, gas: number | undefined}) => number
   _method: {
     name: string
   }
 }
 
-type EstimateGasConfig = {
+interface EstimateGasConfig {
   method: Method
   from?: string
   gasLimitMaximum?: number

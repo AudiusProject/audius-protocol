@@ -1,7 +1,7 @@
 import assert from 'assert'
 import type Web3 from 'web3'
 
-type WalletResponse = {
+interface WalletResponse {
   signature: string
   signer: string
 }
@@ -29,7 +29,7 @@ export function recoverWallet (web3: Web3, response: WalletResponse) {
   return recoveredDelegateWallet
 }
 
-type ValueOrArray<T> = undefined | string | T | ValueOrArray<T>[]
+type ValueOrArray<T> = undefined | string | T | Array<ValueOrArray<T>>
 type SortObject = ValueOrArray<Record<string, string>>
 
 /**

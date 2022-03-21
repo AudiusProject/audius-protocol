@@ -79,10 +79,8 @@ function sortServiceTimings ({
       if (semver.gt(currentVersion, aVersion) && semver.gt(currentVersion, bVersion)) {
         if (semver.gt(aVersion, bVersion)) return -1
         if (semver.lt(aVersion, bVersion)) return 1
-
       } else if (semver.gt(currentVersion, aVersion)) {
         return 1
-
       } else if (semver.gt(currentVersion, bVersion)) {
         return -1
       }
@@ -143,6 +141,7 @@ async function timeRequests ({
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- this is a return type
 type RequestResponses = {blob: AxiosResponse, url: string} | AxiosResponse | void
 
 /**
@@ -174,7 +173,7 @@ async function raceRequests (
     // 2. We give requests the opportunity to get canceled if other's are very fast
     await Utils.wait(timeBetweenRequests * i)
     if (hasFinished) return
-    return new Promise<RequestResponses>((resolve, reject) => {
+    return await new Promise<RequestResponses>((resolve, reject) => {
       axios({
         method: 'get',
         url,

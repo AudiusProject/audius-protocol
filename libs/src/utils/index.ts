@@ -1,4 +1,4 @@
-export {default as Utils} from './utils'
+export { default as Utils } from './utils'
 export * from './apiSigning'
 export * from './captcha'
 export * from './estimateGas'

@@ -1,61 +1,62 @@
 import { sampleSize } from 'lodash'
 import { raceRequests, allRequests } from '../utils/network'
 import { DECISION_TREE_STATE } from './constants'
-import type {AxiosResponse} from 'axios'
+import type { AxiosResponse } from 'axios'
 
 export type BaseService = string
-export type VerboseService = {endpoint: string}
+export interface VerboseService {endpoint: string}
 
 type Service = BaseService | VerboseService
 
-function isVerbose(service: Service): service is VerboseService {
+function isVerbose (service: Service): service is VerboseService {
   return typeof service !== 'string'
 }
 
 export type GetServicesInput =
   (() => Promise<BaseService[]>) |
-(  (config: {verbose: false}) => Promise<BaseService[]>)|
+  ((config: {verbose: false}) => Promise<BaseService[]>)|
   ((config: {verbose: true}) => Promise<VerboseService[]>)
 
-type GetServices = {
+interface GetServices {
   (): Promise<BaseService[]>
   (config: {verbose: false}): Promise<BaseService[]>
   (config: {verbose: true}): Promise<VerboseService[]>
   (config: {verbose: boolean}): Promise<Service[]>
 }
 
-type Decision = {
-stage: DECISION_TREE_STATE, val?: unknown
+interface Decision {
+  stage: DECISION_TREE_STATE
+  val?: unknown
 }
 
-type ServiceSelectionConfig = {
+interface ServiceSelectionConfig {
   // services from this list should not be picked
-    blacklist?: Set<string>,
-// only services from this list are allowed to be picked
-    whitelist?: Set<string>,
-    /*
+  blacklist?: Set<string>
+  // only services from this list are allowed to be picked
+  whitelist?: Set<string>
+  /*
     * an (async) method to get a
    * list of services to choose from. Optionally may return a verbose object with service metadata
    */
-    getServices: GetServicesInput,
-    /*
+  getServices: GetServicesInput
+  /*
     * the maximum number of requests allowed to fire at
    * once. Tweaking this value may impact browser performance
    */
-    maxConcurrentRequests?: number
-// the timeout at which to give up on a service
-    requestTimeout?: number
-/*
+  maxConcurrentRequests?: number
+  // the timeout at which to give up on a service
+  requestTimeout?: number
+  /*
 *the point at which the unhealthy services are freed so they
    * may be tried again (re-requested)
    */
-    unhealthyTTL?: number
-    /*
+  unhealthyTTL?: number
+  /*
  * the point at which backup services are freed so they may be
    * tried again (re-requested)
    */
-    backupsTTL?: number
-  }
+  backupsTTL?: number
+}
 
 /**
  * A class that assists with autoselecting services.
@@ -89,16 +90,15 @@ export class ServiceSelection {
   whitelist: Set<string> | undefined
   getServices: GetServices
   maxConcurrentRequests: number
-    requestTimeout: number
-    unhealthyTTL: number
-    backupsTTL: number
+  requestTimeout: number
+  unhealthyTTL: number
+  backupsTTL: number
   unhealthy: Set<string>
   backups: Record<string, AxiosResponse>
   totalAttempts: number
   decisionTree: Decision[]
   unhealthyCleanupTimeout: NodeJS.Timeout | null = null
   backupCleanupTimeout: NodeJS.Timeout | null = null
-
 
   constructor ({
     blacklist,
@@ -196,7 +196,7 @@ export class ServiceSelection {
     // Mark all the errored ones as unhealthy
     errored.forEach(e => {
       if (e) {
-      this.addUnhealthy(e)
+        this.addUnhealthy(e)
       }
     })
 
@@ -206,8 +206,8 @@ export class ServiceSelection {
 
     // Recursively try this selection function if we didn't find something
     if (!best) {
-      this.decisionTree.push({ stage: DECISION_TREE_STATE.ROUND_FAILED_RETRY})
-      return this.select(/* reset */ false)
+      this.decisionTree.push({ stage: DECISION_TREE_STATE.ROUND_FAILED_RETRY })
+      return await this.select(/* reset */ false)
     }
 
     this.decisionTree.push({ stage: DECISION_TREE_STATE.MADE_A_SELECTION, val: best })
@@ -226,12 +226,12 @@ export class ServiceSelection {
     // Get all the services
     const services = await this.getServices({ verbose })
 
-    let baseServices = services.map(service => isVerbose(service) ? service.endpoint : service)
+    const baseServices = services.map(service => isVerbose(service) ? service.endpoint : service)
 
     // If a whitelist is provided, filter down to it
     if (whitelist) {
       baseServices.filter(service => whitelist.has(service))
-      }
+    }
 
     // Key the services by their health check endpoint
     const urlMap = baseServices.reduce<Record<string, string>>((acc, s) => {
@@ -255,11 +255,11 @@ export class ServiceSelection {
   /** Triggers a clean up of unhealthy and backup services so they can be retried later */
   triggerCleanup () {
     if (this.unhealthyCleanupTimeout) {
-     clearTimeout(this.unhealthyCleanupTimeout)
+      clearTimeout(this.unhealthyCleanupTimeout)
     }
 
     if (this.backupCleanupTimeout) {
-    clearTimeout(this.backupCleanupTimeout)
+      clearTimeout(this.backupCleanupTimeout)
     }
 
     this.unhealthyCleanupTimeout = setTimeout(() => { this.clearUnhealthy() }, this.unhealthyTTL)
@@ -388,6 +388,7 @@ export class ServiceSelection {
    * @param key service endpoint
    */
   removeFromBackups (key: string) {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     if (Object.prototype.hasOwnProperty.call(this.backups, key)) delete this.backups[key]
   }
 

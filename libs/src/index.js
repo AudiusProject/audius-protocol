@@ -31,9 +31,6 @@ const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 const { Keypair } = require('@solana/web3.js')
 const RewardsAttester = require('./services/solanaWeb3Manager/rewardsAttester')
 
-const {initUserSolPubkey} = require('@audius/solana')
-
-
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
