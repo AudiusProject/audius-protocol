@@ -478,7 +478,7 @@ class SolanaWeb3Manager {
    * @return {Promise<boolean>}
    * @memberof SolanaWeb3Manager
    */
-  async getIsDiscoveryNodeRegistered(senderEthAddress) {
+  async getIsDiscoveryNodeRegistered (senderEthAddress) {
     const derivedSenderSolanaAddress = await deriveSolanaSenderFromEthAddress(
       senderEthAddress,
       this.rewardManagerProgramId,
