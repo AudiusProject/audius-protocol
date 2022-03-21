@@ -131,6 +131,7 @@ class AudiusLibs {
       }
     }
   }
+
   /**
    * Configures an internal web3 to use (via Hedgehog)
    * @param {string} registryAddress
@@ -396,7 +397,7 @@ class AudiusLibs {
     }
 
     /** Contracts - Eth and Data Contracts */
-    let contractsToInit = []
+    const contractsToInit = []
     if (this.ethWeb3Manager) {
       this.ethContracts = new EthContracts(
         this.ethWeb3Manager,
@@ -429,7 +430,8 @@ class AudiusLibs {
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
-        this.wormholeConfig.ethTokenBridgeAddress
+        this.wormholeConfig.ethTokenBridgeAddress,
+        this.isServer
       )
     }
 
@@ -455,7 +457,7 @@ class AudiusLibs {
     /** Creator Node */
     if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
-      let creatorNodeEndpoint = currentUser
+      const creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) || this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 
@@ -509,6 +511,10 @@ class AudiusLibs {
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
   }
 }
+
+// This is needed to ensure default and named exports are handled correctly by rollup
+// https://github.com/rollup/plugins/tree/master/packages/commonjs#defaultismoduleexports
+exports.__esModule = true
 
 module.exports = AudiusLibs
 

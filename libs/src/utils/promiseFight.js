@@ -5,7 +5,7 @@
  * @return {Promise<T>} A promise that resolves with the first promise that resolves
  */
 async function promiseFight (promises, captureErrored = false) {
-  let errored = []
+  const errored = []
   return Promise.all(promises.map(p => {
     return p.then(
       val => Promise.reject(val, errored),

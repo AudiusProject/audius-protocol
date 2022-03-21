@@ -22,6 +22,13 @@ export const ManagementActions = {
   delete: { delete: {} },
 };
 
+export const EntitySocialActions = {
+  addSave: { addSave: {} },
+  deleteSave: { deleteSave: {} },
+  addRepost: { addRepost: {} },
+  deleteRepost: { deleteRepost: {} },
+};
+
 type InitAdminParams = {
   provider: Provider;
   program: Program<AudiusData>;
@@ -127,29 +134,14 @@ type DeleteEntityParams = {
   bumpSeed: number;
 };
 
-export const TrackSocialActionEnumValues = {
+export const EntitySocialActionEnumValues = {
   addSave: { addSave: {} },
   deleteSave: { deleteSave: {} },
   addRepost: { addRepost: {} },
   deleteRepost: { deleteRepost: {} },
 };
 
-export const PlaylistSocialActionEnumValues = {
-  addSave: { addSave: {} },
-  deleteSave: { deleteSave: {} },
-  addRepost: { addRepost: {} },
-  deleteRepost: { deleteRepost: {} },
-};
-
-type TrackSocialActionKeys = keyof typeof TrackSocialActionEnumValues;
-type TrackSocialActionValues =
-  typeof TrackSocialActionEnumValues[TrackSocialActionKeys];
-
-type PlaylistSocialActionKeys = keyof typeof PlaylistSocialActionEnumValues;
-type PlaylistSocialActionValues =
-  typeof PlaylistSocialActionEnumValues[PlaylistSocialActionKeys];
-
-type TrackSocialActionArgs = {
+type EntitySocialActionArgs = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   userStgAccountPDA: anchor.web3.PublicKey;
@@ -157,20 +149,7 @@ type TrackSocialActionArgs = {
   adminStgPublicKey: anchor.web3.PublicKey;
   handleBytesArray: number[];
   bumpSeed: number;
-  trackSocialAction: TrackSocialActionValues;
-  trackId: string;
-};
-
-type PlaylistSocialActionArgs = {
-  program: Program<AudiusData>;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  userStgAccountPDA: anchor.web3.PublicKey;
-  userAuthorityKeypair: Keypair;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  handleBytesArray: number[];
-  bumpSeed: number;
-  playlistSocialAction: PlaylistSocialActionValues;
-  playlistId: string;
+  id: string;
 };
 
 /// Initialize an Audius Admin instance
@@ -575,8 +554,7 @@ export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
 };
 
 /// Social actions
-
-export const writeTrackSocialAction = async ({
+export const addTrackSave = async ({
   program,
   baseAuthorityAccount,
   userStgAccountPDA,
@@ -584,14 +562,14 @@ export const writeTrackSocialAction = async ({
   handleBytesArray,
   bumpSeed,
   adminStgPublicKey,
-  trackSocialAction,
-  trackId,
-}: TrackSocialActionArgs) => {
-  return program.rpc.writeTrackSocialAction(
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    trackSocialAction,
-    trackId,
+    EntitySocialActions.addSave,
+    EntityTypesEnumValues.track,
+    id,
     {
       accounts: {
         audiusAdmin: adminStgPublicKey,
@@ -603,7 +581,7 @@ export const writeTrackSocialAction = async ({
   );
 };
 
-export const writePlaylistSocialAction = async ({
+export const deleteTrackSave = async ({
   program,
   baseAuthorityAccount,
   userStgAccountPDA,
@@ -611,14 +589,176 @@ export const writePlaylistSocialAction = async ({
   handleBytesArray,
   bumpSeed,
   adminStgPublicKey,
-  playlistSocialAction,
-  playlistId,
-}: PlaylistSocialActionArgs) => {
-  return program.rpc.writePlaylistSocialAction(
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
     baseAuthorityAccount,
     { seed: handleBytesArray, bump: bumpSeed },
-    playlistSocialAction,
-    playlistId,
+    EntitySocialActions.deleteSave,
+    EntityTypesEnumValues.track,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const addTrackRepost = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.addRepost,
+    EntityTypesEnumValues.track,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const deleteTrackRepost = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.deleteRepost,
+    EntityTypesEnumValues.track,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const addPlaylistSave = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.addSave,
+    EntityTypesEnumValues.playlist,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const deletePlaylistSave = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.deleteSave,
+    EntityTypesEnumValues.playlist,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const addPlaylistRepost = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.addRepost,
+    EntityTypesEnumValues.playlist,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const deletePlaylistRepost = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.deleteRepost,
+    EntityTypesEnumValues.playlist,
+    id,
     {
       accounts: {
         audiusAdmin: adminStgPublicKey,
