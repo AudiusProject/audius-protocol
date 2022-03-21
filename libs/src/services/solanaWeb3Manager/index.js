@@ -472,7 +472,7 @@ class SolanaWeb3Manager {
   }
 
   /**
-   * Gets whether a given node registered on eth with `senderEthAddress` is regsitered on Solana
+   * Gets whether a given node registered on eth with `senderEthAddress` is registered on Solana
    *
    * @param {string} senderEthAddress
    * @return {Promise<boolean>}
