@@ -523,3 +523,4 @@ module.exports.Utils = Utils
 module.exports.SolanaUtils = SolanaUtils
 module.exports.SanityChecks = SanityChecks
 module.exports.RewardsAttester = RewardsAttester
+module.exports.CreatorNode = CreatorNode
