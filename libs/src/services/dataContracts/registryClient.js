@@ -36,6 +36,7 @@ class RegistryClient {
       return this.retryInit(contractRegistryKey)
     }
   }
+
   async retryInit (contractRegistryKey) {
     try {
       await this.selectNewEndpoint()
@@ -46,6 +47,7 @@ class RegistryClient {
       console.error(e.message)
     }
   }
+
   async selectNewEndpoint () {
     this.providerSelector.addUnhealthy(this.web3Manager.getWeb3().currentProvider.host)
 

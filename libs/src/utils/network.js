@@ -14,7 +14,7 @@ async function timeRequest (request, timeout = null) {
   // This is non-perfect because of the js event loop, but enough
   // of a proximation. Don't use for mission-critical timing.
   const startTime = new Date().getTime()
-  let config = {}
+  const config = {}
   if (timeout) {
     config.timeout = timeout
   }

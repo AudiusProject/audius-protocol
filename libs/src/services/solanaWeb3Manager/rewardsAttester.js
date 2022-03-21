@@ -64,7 +64,7 @@ class AttestationDelayCalculator {
       return this.lastPOAThreshold.threshold
     }
     const currentBlock = await this.libs.web3Manager.getWeb3().eth.getBlockNumber()
-    let threshold = currentBlock - this.runBehindSec / POA_SEC_PER_BLOCK
+    const threshold = currentBlock - this.runBehindSec / POA_SEC_PER_BLOCK
     this.lastPOAThreshold = {
       threshold,
       time: Date.now()
@@ -79,7 +79,7 @@ class AttestationDelayCalculator {
       return this.lastSolanaThreshold.threshold
     }
     const currentSlot = await this.libs.solanaWeb3Manager.getSlot()
-    let threshold = currentSlot - this.runBehindSec / this.solanaSecPerSlot
+    const threshold = currentSlot - this.runBehindSec / this.solanaSecPerSlot
     this.lastSolanaThreshold = {
       threshold,
       time: Date.now()
@@ -259,13 +259,13 @@ class RewardsAttester {
 
         // If queue is still empty, sleep and return
         if (!this.undisbursedQueue.length) {
-          this.logger.info(`No undisbursed challenges. Sleeping...`)
+          this.logger.info('No undisbursed challenges. Sleeping...')
           await this._delay(1000)
           continue
         }
 
         // Get undisbursed rewards
-        let toAttest = this.undisbursedQueue.splice(0, this.parallelization)
+        const toAttest = this.undisbursedQueue.splice(0, this.parallelization)
 
         // Attest for batch in parallel
         const { highestBlock, offset, results, successCount } = await this._attestInParallel(toAttest)
@@ -301,11 +301,11 @@ class RewardsAttester {
    */
   async processChallenges (challenges) {
     await this._selectDiscoveryNodes()
-    let toProcess = [...challenges]
+    const toProcess = [...challenges]
     while (toProcess.length) {
       try {
         this.logger.info(`Processing ${toProcess.length} challenges`)
-        let toAttest = toProcess.splice(0, this.parallelization)
+        const toAttest = toProcess.splice(0, this.parallelization)
         const { accumulatedErrors: errors } = await this._attestInParallel(toAttest)
         if (errors && errors.length) {
           this.logger.error(`Got errors in processChallenges: ${JSON.stringify(errors)}`)
@@ -545,7 +545,7 @@ class RewardsAttester {
   }
 
   async _selectDiscoveryNodes () {
-    this.logger.info(`Selecting discovery nodes`, { endpointPool: this.endpointPool })
+    this.logger.info('Selecting discovery nodes', { endpointPool: this.endpointPool })
     const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll({
       verbose: true,
       whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
@@ -631,7 +631,7 @@ class RewardsAttester {
     const noRetry = []
     const successful = []
     // Filter our successful responses
-    let allErrors = responses.filter((res) => {
+    const allErrors = responses.filter((res) => {
       if (!res.error) {
         successful.push(res)
         this.reporter.reportSuccess({ userId: decodeHashId(res.userId), challengeId: res.challengeId, amount: res.amount, specifier: res.specifier })

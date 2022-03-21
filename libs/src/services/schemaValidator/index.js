@@ -1,4 +1,4 @@
-var validate = require('jsonschema').validate
+const validate = require('jsonschema').validate
 
 const TrackSchema = require('./schemas/trackSchema.json')
 const UserSchema = require('./schemas/userSchema.json')
@@ -53,8 +53,8 @@ class SchemaValidator {
     const schemaTypeObj = schema.definitions[baseDefinition]
     // iterate through every required property, ensuring it exists or setting a default value
     schemaTypeObj.required.forEach((req) => {
-      if (!obj.hasOwnProperty(req)) {
-        if (schemaTypeObj.properties[req].hasOwnProperty('default')) {
+      if (!Object.prototype.hasOwnProperty.call(obj, req)) {
+        if (Object.prototype.hasOwnProperty.call(schemaTypeObj.properties[req], 'default')) {
           obj[req] = schemaTypeObj.properties[req].default
         } else throw new Error(`Could not set default value for missing field ${req}`)
       }

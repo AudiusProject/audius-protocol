@@ -28,7 +28,7 @@ const configureLocalDiscProv = async () => {
   const rewardsManagerAddress = solanaConfig.rewardsManagerAddress
   const rewardsManagerAccount = solanaConfig.rewardsManagerAccount
   console.log(`waudioAddress: ${waudioMint}, claimableTokenAddress: ${claimableTokenAddress}, waudioMint=${waudioMint}`)
-  let envPath = path.join(process.cwd(), '../../', 'discovery-provider/compose/.env')
+  const envPath = path.join(process.cwd(), '../../', 'discovery-provider/compose/.env')
 
   await _updateDiscoveryProviderEnvFile(
     envPath,
@@ -62,7 +62,7 @@ const _updateDiscoveryProviderEnvFile = async (
     input: fileStream,
     crlfDelay: Infinity
   })
-  let output = []
+  const output = []
   let ethRegistryAddressFound = false
   let solanaTrackListenCountAddressFound = false
   let solanaEndpointFound = false

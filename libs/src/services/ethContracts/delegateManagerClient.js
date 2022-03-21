@@ -52,7 +52,7 @@ class DelegateManagerClient extends GovernedContractClient {
     } else {
       filter._serviceProvider = serviceProvider
     }
-    let events = await contract.getPastEvents('IncreaseDelegatedStake', {
+    const events = await contract.getPastEvents('IncreaseDelegatedStake', {
       fromBlock: queryStartBlock,
       filter
     })
@@ -151,7 +151,7 @@ class DelegateManagerClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('Claim', {
+    const events = await contract.getPastEvents('Claim', {
       fromBlock: queryStartBlock,
       filter: {
         _claimer: claimer
@@ -170,7 +170,7 @@ class DelegateManagerClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('Slash', {
+    const events = await contract.getPastEvents('Slash', {
       fromBlock: queryStartBlock,
       filter: {
         _target: target
@@ -189,7 +189,7 @@ class DelegateManagerClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('DelegatorRemoved', {
+    const events = await contract.getPastEvents('DelegatorRemoved', {
       fromBlock: queryStartBlock,
       filter: {
         _target: target

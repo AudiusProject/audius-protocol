@@ -8,9 +8,11 @@ const setupRequest = (url, delay, version, status = 200) => {
   nock(req.url)
     .get('/')
     .delay(delay)
-    .reply(status, { data: {
-      version
-    } })
+    .reply(status, {
+      data: {
+        version
+      }
+    })
   return req
 }
 
@@ -60,7 +62,7 @@ describe('timeRequests()', () => {
   })
 
   it('respects an equivalency delta', async () => {
-    let allResults = []
+    const allResults = []
     for (let i = 0; i < 20; ++i) {
       const requests = [
         setupRequest('https://cohort1a.audius.co', 1, '1.2.3'),
