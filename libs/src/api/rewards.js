@@ -562,12 +562,14 @@ class Rewards extends Base {
    *   senderEndpoint: string
    *   endpoints?: string[]
    *   numAttestations?: number
+   *   feePayerOverride?: string
    * }} {
    *   senderEthAddress: the new sender eth address to add. The delegate wallet.
    *   operatorEthAddress: the unique address of the operator that runs this service
    *   senderEndpoint: the new sender's service endpoint
    *   endpoints: optional endpoints from other nodes. If not provided, nodes are selected from chain.
    *   numAttestations: optional number of attestations to get from other nodes, default 3
+   *   feePayerOverride: optional override feepayer
    * }
    * @memberof Rewards
    */
@@ -576,7 +578,8 @@ class Rewards extends Base {
     operatorEthAddress,
     senderEndpoint,
     endpoints,
-    numAttestations = 3
+    numAttestations = 3,
+    feePayerOverride
   }) {
     let attestEndpoints
     if (endpoints) {
@@ -617,7 +620,8 @@ class Rewards extends Base {
     const receipt = await this.solanaWeb3Manager.createSender({
       senderEthAddress,
       operatorEthAddress,
-      attestations
+      attestations,
+      feePayerOverride
     })
     return receipt
   }
