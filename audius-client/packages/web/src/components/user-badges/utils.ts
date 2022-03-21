@@ -1,4 +1,3 @@
-import BN from 'bn.js'
 import { createSelector } from 'reselect'
 
 import { BadgeTier } from 'common/models/BadgeTier'
@@ -99,16 +98,8 @@ export const getTierAndNumberForBalance = (balance: StringWei) => {
 export const getTierNumber = (tier: BadgeTier) =>
   badgeTiers.length - badgeTiers.findIndex(t => t.tier === tier)
 
-export const getUserBalance = (user: User) => {
-  const userOwnerWalletBalance = user?.balance ?? ('0' as StringWei)
-  const userAssociatedWalletBalance =
-    user?.associated_wallets_balance ?? ('0' as StringWei)
-  const total = new BN(userOwnerWalletBalance).add(
-    new BN(userAssociatedWalletBalance)
-  )
-  return total.toString() as StringWei
-}
-
+export const getUserBalance = (user: User) =>
+  user?.total_balance ?? ('0' as StringWei)
 export const getTierForUser = (user: User) => {
   const balance = getUserBalance(user)
   return getTierAndNumberForBalance(balance).tier
