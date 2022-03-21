@@ -1,6 +1,6 @@
 const { pick, isEqual } = require('lodash')
 const { Base, Services } = require('./base')
-const Utils = require('../utils')
+const {Utils} = require('../utils')
 const CreatorNode = require('../services/creatorNode')
 const { getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
 

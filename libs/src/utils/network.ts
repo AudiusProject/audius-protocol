@@ -76,16 +76,13 @@ function sortServiceTimings ({
       if (semver.lt(aVersion, bVersion)) return 1
     } else if (!sortByVersion && currentVersion) {
       // Only sort by version if behind current on-chain version
-      // @ts-expect-error
       if (semver.gt(currentVersion, aVersion) && semver.gt(currentVersion, bVersion)) {
         if (semver.gt(aVersion, bVersion)) return -1
         if (semver.lt(aVersion, bVersion)) return 1
 
-      // @ts-expect-error
       } else if (semver.gt(currentVersion, aVersion)) {
         return 1
 
-      // @ts-expect-error
       } else if (semver.gt(currentVersion, bVersion)) {
         return -1
       }
@@ -146,6 +143,8 @@ async function timeRequests ({
   })
 }
 
+type RequestResponses = {blob: AxiosResponse, url: string} | AxiosResponse | void
+
 /**
  * Races multiple requests
  * @param urls
@@ -175,7 +174,7 @@ async function raceRequests (
     // 2. We give requests the opportunity to get canceled if other's are very fast
     await Utils.wait(timeBetweenRequests * i)
     if (hasFinished) return
-    return await new Promise((resolve, reject) => {
+    return new Promise<RequestResponses>((resolve, reject) => {
       axios({
         method: 'get',
         url,
@@ -207,12 +206,12 @@ async function raceRequests (
     requests.push(Utils.wait(timeout))
   }
   let response
-  let errored
+  let errored: AxiosResponse[]
   try {
-    const { val, errored: e } = await promiseFight(requests, /* captureErrorred */ true)
+    const { val, errored: e } = await promiseFight<RequestResponses, AxiosResponse>(requests, true)
     response = val
     errored = e
-  } catch (e) {
+  } catch (e: any) {
     response = null
     errored = e
   }
@@ -220,7 +219,7 @@ async function raceRequests (
     source.cancel('Fetch already succeeded')
   })
 
-  if (response?.url && response.blob) {
+  if (response && 'url' in response && 'blob' in response) {
     callback(response.url)
     return { response: response.blob, errored }
   }

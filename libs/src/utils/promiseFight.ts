@@ -4,14 +4,16 @@
  * @param captureErrored optional capture errored promises
  * @return A promise that resolves with the first promise that resolves
  */
-export async function promiseFight (promises: Array<Promise<unknown>>, captureErrored = false) {
-  const errored: unknown[] = []
-  return await Promise.all(promises.map(async p => {
-    return await p.then(
-      async val => await Promise.reject(val),
-      async err => {
+export async function promiseFight<T,T2>(promises: Promise<T>[]): Promise<T | T2>;
+export async function promiseFight<T,T2>(promises: Promise<T>[], captureErrored: boolean): Promise<{val: T, errored: T2[]}>
+export async function promiseFight<T,T2>(promises: Promise<T>[], captureErrored?: boolean) {
+  let errored: T2[] = []
+  return Promise.all<Promise<T | T2>[]>(promises.map(p => {
+    return p.then<T, T2>(
+      val => Promise.reject(val),
+      err => {
         if (captureErrored) errored.push(err)
-        return await Promise.resolve(err)
+        return Promise.resolve(err)
       }
     )
   })).then(

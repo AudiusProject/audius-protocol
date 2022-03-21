@@ -1,7 +1,8 @@
-const ServiceSelection = require('./ServiceSelection')
-const nock = require('nock')
-const assert = require('assert')
-const Utils = require('../utils')
+import {ServiceSelection} from './ServiceSelection'
+import nock from 'nock'
+import assert from 'assert'
+import {Utils} from '../utils'
+import type { AxiosResponse } from 'axios'
 
 describe('ServiceSelection', () => {
   it('prefers a healthy service', async () => {
@@ -15,8 +16,10 @@ describe('ServiceSelection', () => {
       .get('/health_check')
       .reply(400)
 
+    const getServices = async () => [good, bad] as string[]
+
     const s = new ServiceSelection({
-      getServices: () => [good, bad]
+      getServices
     })
     const service = await s.select()
     assert.strictEqual(service, good)
@@ -35,7 +38,7 @@ describe('ServiceSelection', () => {
       .reply(400)
 
     const s = new ServiceSelection({
-      getServices: () => [fast, slow]
+      getServices: async () => [fast, slow]
     })
     const service = await s.select()
     assert.strictEqual(service, fast)
@@ -54,7 +57,7 @@ describe('ServiceSelection', () => {
       .reply(200)
 
     const s = new ServiceSelection({
-      getServices: () => [fast, slow]
+      getServices: async () => [fast, slow]
     })
     const service = await s.select()
     assert.strictEqual(service, slow)
@@ -68,13 +71,13 @@ describe('ServiceSelection', () => {
       .get('/health_check')
       .reply(200)
     // Many bad services
-    const haystack = Array.from({ length: 20 }, (v, i) => `https://${i}.audius.co`)
+    const haystack = Array.from({ length: 20 }, (_, i) => `https://${i}.audius.co`)
     haystack.forEach(hay => {
       nock(hay).get('/health_check').reply(400)
     })
 
     const s = new ServiceSelection({
-      getServices: () => [...haystack, needle],
+      getServices: async () => [...haystack, needle],
       maxConcurrentRequests: 2,
       requestTimeout: 100
     })
@@ -94,7 +97,7 @@ describe('ServiceSelection', () => {
       .reply(400)
 
     const s = new ServiceSelection({
-      getServices: () => [bad1, bad2],
+      getServices: async () => [bad1, bad2],
       // Short timeout otherwise, we'll wait for a long time for some request to succeed
       // TODO: consider ammending promiseFight to early exit
       requestTimeout: 100
@@ -116,7 +119,7 @@ describe('ServiceSelection', () => {
       .reply(200)
 
     const s = new ServiceSelection({
-      getServices: () => [fast, slow],
+      getServices: async () => [fast, slow],
       whitelist: new Set([slow])
     })
     const service = await s.select()
@@ -136,7 +139,7 @@ describe('ServiceSelection', () => {
       .reply(200)
 
     const s = new ServiceSelection({
-      getServices: () => [fast, slow],
+      getServices: async () => [fast, slow],
       blacklist: new Set([fast])
     })
     const service = await s.select()
@@ -161,7 +164,7 @@ describe('ServiceSelection', () => {
       .reply(200)
 
     const s = new ServiceSelection({
-      getServices: () => [atFirstHealthy, atFirstUnhealthy],
+      getServices: async () => [atFirstHealthy, atFirstUnhealthy],
       unhealthyTTL: 0
     })
     const firstService = await s.select()
@@ -176,11 +179,14 @@ describe('ServiceSelection', () => {
 
 describe('ServiceSelection withBackupCriteria', () => {
   class ServiceSelectionWithBackupCriteria extends ServiceSelection {
-    isHealthy (response, urlMap) {
+    override isHealthy (response: AxiosResponse, urlMap: Record<string, string>) {
       if (response.status === 200) {
         if (response.data.behind) {
-          this.addBackup(urlMap[response.config.url], response.data)
-          return false
+          const service = urlMap[response.config.url ?? '']
+          if (service) {
+            this.addBackup(service, response.data)
+            return false
+          }
         }
         return true
       }
@@ -213,7 +219,7 @@ describe('ServiceSelection withBackupCriteria', () => {
       })
 
     const s = new ServiceSelectionWithBackupCriteria({
-      getServices: () => [behind1, behind2, ok]
+      getServices: async () => [behind1, behind2, ok]
     })
     const service = await s.select()
     assert.strictEqual(service, ok)
@@ -232,13 +238,13 @@ describe('ServiceSelection withBackupCriteria', () => {
         behind: true
       })
     // Many bad services
-    const haystack = Array.from({ length: 20 }, (v, i) => `https://${i}.audius.co`)
+    const haystack = Array.from({ length: 20 }, (_, i) => `https://${i}.audius.co`)
     haystack.forEach(hay => {
       nock(hay).get('/health_check').reply(400)
     })
 
     const s = new ServiceSelectionWithBackupCriteria({
-      getServices: () => [...haystack, needle],
+      getServices: async () => [...haystack, needle],
       maxConcurrentRequests: 2,
       requestTimeout: 100
     })
@@ -262,13 +268,13 @@ describe('ServiceSelection withBackupCriteria', () => {
         behind: true
       })
     // Many bad services
-    const haystack = Array.from({ length: 20 }, (v, i) => `https://${i}.audius.co`)
+    const haystack = Array.from({ length: 20 }, (_, i) => `https://${i}.audius.co`)
     haystack.forEach(hay => {
       nock(hay).get('/health_check').reply(400)
     })
 
     const s = new ServiceSelectionWithBackupCriteria({
-      getServices: () => [behind, ...haystack, needle],
+      getServices: async () => [behind, ...haystack, needle],
       maxConcurrentRequests: 2,
       requestTimeout: 100
     })
@@ -280,7 +286,7 @@ describe('ServiceSelection withBackupCriteria', () => {
 describe('ServiceSelection withShortCircuit', () => {
   const shortcircuit = 'https://shortcircuit.audius.co'
   class ServiceSelectionWithShortCircuit extends ServiceSelection {
-    shortcircuit () {
+    override shortcircuit () {
       return shortcircuit
     }
   }
@@ -294,7 +300,7 @@ describe('ServiceSelection withShortCircuit', () => {
       })
 
     const s = new ServiceSelectionWithShortCircuit({
-      getServices: () => [other]
+      getServices: async () => [other]
     })
     const service = await s.select()
     assert.strictEqual(service, shortcircuit)
@@ -309,7 +315,7 @@ describe('ServiceSelection withShortCircuit', () => {
       })
 
     const s = new ServiceSelectionWithShortCircuit({
-      getServices: () => [other],
+      getServices: async () => [other],
       blacklist: new Set([shortcircuit])
     })
     const service = await s.select()
@@ -335,7 +341,7 @@ describe('ServiceSelection findAll', () => {
       .reply(400)
 
     const s = new ServiceSelection({
-      getServices: () => [a, b, c]
+      getServices: async () => [a, b, c]
     })
     const all = await s.findAll()
     assert.deepStrictEqual(all, [a, b])
@@ -359,7 +365,7 @@ describe('ServiceSelection findAll', () => {
       .reply(200)
 
     const s = new ServiceSelection({
-      getServices: () => [a, b, c],
+      getServices: async () => [a, b, c],
       requestTimeout: 100
     })
     const all = await s.findAll()

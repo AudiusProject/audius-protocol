@@ -1,6 +1,6 @@
 
 const Web3 = require('web3')
-const ServiceSelection = require('../../service-selection/ServiceSelection')
+const {ServiceSelection} = require('../../service-selection')
 
 /**
  * This class provides the logic to select a healthy gateway

@@ -8,6 +8,8 @@ const config = require('../config/config')
 const DISCOVERY_NODE_ENDPOINT = 'http://dn1_web-server_1:5000'
 const MAX_INDEXING_TIMEOUT = 10000
 
+console.log('audius libs??', AudiusLibs)
+
 /**
  * Picks up envvars written by contracts init and loads them into convict
  */

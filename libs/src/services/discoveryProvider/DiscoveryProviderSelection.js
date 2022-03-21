@@ -1,4 +1,4 @@
-const ServiceSelection = require('../../service-selection/ServiceSelection')
+const {ServiceSelection} = require('../../service-selection')
 const {
   DISCOVERY_PROVIDER_TIMESTAMP,
   DISCOVERY_SERVICE_NAME,
