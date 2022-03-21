@@ -79,10 +79,8 @@ function sortServiceTimings ({
       if (semver.gt(currentVersion, aVersion) && semver.gt(currentVersion, bVersion)) {
         if (semver.gt(aVersion, bVersion)) return -1
         if (semver.lt(aVersion, bVersion)) return 1
-
       } else if (semver.gt(currentVersion, aVersion)) {
         return 1
-
       } else if (semver.gt(currentVersion, bVersion)) {
         return -1
       }
