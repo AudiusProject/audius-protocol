@@ -202,8 +202,8 @@ pub mod audius_data {
             ctx.program_id,
             &ctx.accounts.user,
             &ctx.accounts.user_delegate_authority,
-            &ctx.accounts.app_delegate,
-            &ctx.accounts.user_authority
+            &ctx.accounts.user_authority,
+            &ctx.accounts.app_delegation,
         )?;
         msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
@@ -307,33 +307,25 @@ pub mod audius_data {
     }
     
     /// Initializes a PDA for delegate: an app or user who is a delegate
-    pub fn init_app_delegate(
-        ctx: Context<InitAppDelegate>,
-        _base: Pubkey,
-        _handle_seed: [u8; 16],
-        _user_bump: u8,
+    pub fn init_app_delegation(
+        ctx: Context<InitAppDelegation>,
     ) -> Result<()> {
-        msg!("Audius::InitAppDelegate");
-        ctx.accounts.app_delegate_pda.is_revoked = false;
+        ctx.accounts.app_delegation_pda.is_revoked = false;
 
         // initializes is_revoked to true
         Ok(())
     }
 
     // revoke app delegate, could simply close the account?
-    pub fn revoke_app_delegate(
-        ctx: Context<RevokeAppDelegate>,
+    pub fn revoke_app_delegation(
+        ctx: Context<RevokeAppDelegation>,
         _base: Pubkey,
-        _handle_seed: [u8; 16],
-        _user_bump: u8,
-        _user_authority_delegate: Pubkey,
     ) -> Result<()> {
         // Only permitted to user authority
-        msg!("Audius::InitAppDelegate");
 
         // need to validate app user auth before revoking
 
-        // ctx.accounts.app_delegate_pda.is_revoked = true;
+        // ctx.accounts.app_delegation_pda.is_revoked = true;
 
         Ok(())
     }
@@ -351,7 +343,6 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        // validate user existence? need both handles?
         // validate delegate is not revoked?
 
         // Assign incoming delegate fields
@@ -469,9 +460,9 @@ pub struct UpdateUser<'info> {
     /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
     #[account()]
     pub user_delegate_authority: AccountInfo<'info>,
-    /// CHECK: App delegate is not revoked
+    /// CHECK: App delegation account, can be defaulted to SystemProgram for no-op
     #[account()]
-    pub app_delegate: AccountInfo<'info>,
+    pub app_delegation: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -483,48 +474,42 @@ pub struct UpdateAdmin<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8)]
-pub struct InitAppDelegate<'info> {
+pub struct InitAppDelegation<'info> {
+    /// CHECK: Delegate authority account
     #[account()]
-    pub admin: Account<'info, AudiusAdmin>,
-    #[account(seeds = [&base.to_bytes()[..32], handle_seed.as_ref()], bump = user_bump)]
-    pub app_user: Account<'info, User>,
+    pub delegate_authority: Signer<'info>,
     #[account(
         init,
         payer = payer,
-        seeds = [b"app_delegate", app_user.key().as_ref()],
+        seeds = [APP_DELEGATION_PREFIX, delegate_authority.key().as_ref()],
         bump,
-        space = APP_DELEGATE_ACCOUNT_SIZE
+        space = APP_DELEGATION_ACCOUNT_SIZE
     )]
-    pub app_delegate_pda: Account<'info, AppDelegate>,
+    pub app_delegation_pda: Account<'info, AppDelegation>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)] // TODO use UserHandle
-pub struct RevokeAppDelegate<'info> {
+#[instruction(base: Pubkey, user_handle: UserHandle)] // TODO use UserHandle
+pub struct RevokeAppDelegation<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
+    /// CHECK: Delegate authority account
+    #[account()]
+    pub user_delegate_authority: AccountInfo<'info>,
     #[account(
-        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump
+        init,
+        payer = payer,
+        seeds = [&base.to_bytes()[..32], b"app_delegation", user_delegate_authority.key().as_ref()],
+        bump,
+        space = APP_DELEGATION_ACCOUNT_SIZE
     )]
-    pub app_user: Account<'info, User>,
-    // #[account(
-    //     init,
-    //     payer = payer,
-    //     seeds = [&app_user.key().to_bytes()[..32]],
-    //     bump, 
-    //     space = APP_DELEGATE_ACCOUNT_SIZE
-    // )]
-    // pub app_delegate_pda: Account<'info, AppDelegate>,
-    // #[account()]
-    // pub user_authority: Signer<'info>,
-    // #[account(mut)]
-    // pub payer: Signer<'info>,
-    // pub system_program: Program<'info, System>,
+    pub app_delegation_pda: Account<'info, AppDelegation>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 /// Instruction container to allow user delegation
@@ -669,7 +654,7 @@ pub struct UserAuthorityDelegate {
 
 /// App delegation account
 #[account]
-pub struct AppDelegate {
+pub struct AppDelegation {
     // Revoke status of application / user delegate
     pub is_revoked: bool,
 }

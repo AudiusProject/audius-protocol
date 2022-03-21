@@ -69,6 +69,7 @@ type UpdateUserParams = {
   metadata: string;
   userStgAccount: anchor.web3.PublicKey;
   userDelegateAuthority: anchor.web3.PublicKey;
+  appDelegationAccount: anchor.web3.PublicKey;
   userAuthorityKeypair: anchor.web3.Keypair;
 };
 
@@ -208,7 +209,6 @@ export const initUser = async ({
   );
 };
 
-
 /// Claim a user's account using given an eth private key
 
 export const initUserSolPubkey = async ({
@@ -314,12 +314,14 @@ export const updateUser = async ({
   userStgAccount,
   userAuthorityKeypair,
   userDelegateAuthority,
+  appDelegationAccount,
 }: UpdateUserParams) => {
   return program.rpc.updateUser(metadata, {
     accounts: {
       user: userStgAccount,
       userAuthority: userAuthorityKeypair.publicKey,
       userDelegateAuthority,
+      appDelegation: appDelegationAccount,
     },
     signers: [userAuthorityKeypair],
   });
