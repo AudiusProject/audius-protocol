@@ -6,7 +6,6 @@ import { randomBytes } from "crypto";
 import { expect } from "chai";
 import {
   findDerivedPair,
-  decodeInstruction,
   getTransaction,
   randomCID,
   getTransactionWithData,
@@ -88,8 +87,12 @@ export const testInitUser = async ({
   const expectedAuthority = DefaultPubkey.toString();
   expect(chainAuthority, "authority").to.equal(expectedAuthority);
 
-  const { decodedInstruction, decodedData } =
-    await getTransactionWithData(program, provider, tx, 0);
+  const { decodedInstruction, decodedData } = await getTransactionWithData(
+    program,
+    provider,
+    tx,
+    0
+  );
 
   expect(decodedInstruction.name).to.equal("initUser");
   expect(decodedData.metadata).to.equal(metadata);
@@ -112,11 +115,17 @@ export const testInitUserSolPubkey = async ({
     userStgAccount: newUserAcctPDA,
   });
 
-  const { decodedInstruction, decodedData } =
-    await getTransactionWithData(program, provider, tx, 1);
+  const { decodedInstruction, decodedData } = await getTransactionWithData(
+    program,
+    provider,
+    tx,
+    1
+  );
 
   expect(decodedInstruction.name).to.equal("initUserSol");
-  expect(decodedData.userAuthority.toString()).to.equal(newUserPublicKey.toString());
+  expect(decodedData.userAuthority.toString()).to.equal(
+    newUserPublicKey.toString()
+  );
 
   const account = await program.account.user.fetch(newUserAcctPDA);
 
@@ -157,7 +166,9 @@ export const testCreateUser = async ({
 
   expect(decodedInstruction.name).to.equal("createUser");
   expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());
-  expect(decodedData.ethAddress).to.deep.equal([...anchor.utils.bytes.hex.decode(ethAccount.address)]);
+  expect(decodedData.ethAddress).to.deep.equal([
+    ...anchor.utils.bytes.hex.decode(ethAccount.address),
+  ]);
   expect(decodedData.handleSeed).to.deep.equal(handleBytesArray);
   expect(decodedData.userBump).to.equal(bumpSeed);
   expect(decodedData.metadata).to.equal(metadata);

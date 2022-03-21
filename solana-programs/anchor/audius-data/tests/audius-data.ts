@@ -9,7 +9,12 @@ import {
   updateIsVerified,
   getKeypairFromSecretKey,
 } from "../lib/lib";
-import { getTransactionWithData, findDerivedPair, randomCID, randomString } from "../lib/utils";
+import {
+  getTransactionWithData,
+  findDerivedPair,
+  randomCID,
+  randomString,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreateTrack,
@@ -54,8 +59,12 @@ describe("audius-data", function () {
       await getTransactionWithData(program, provider, tx, 0);
 
     expect(decodedInstruction.name).to.equal("initAdmin");
-    expect(decodedData.authority.toString()).to.equal(adminKeypair.publicKey.toString());
-    expect(decodedData.verifier.toString()).to.equal(verifierKeypair.publicKey.toString());
+    expect(decodedData.authority.toString()).to.equal(
+      adminKeypair.publicKey.toString()
+    );
+    expect(decodedData.verifier.toString()).to.equal(
+      verifierKeypair.publicKey.toString()
+    );
     expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
     expect(accountPubKeys[2]).to.equal(SystemProgram.programId.toString());
 

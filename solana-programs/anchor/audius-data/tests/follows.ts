@@ -1,14 +1,10 @@
 import * as anchor from "@project-serum/anchor";
-import { BorshInstructionCoder, Program } from "@project-serum/anchor";
+import { Program } from "@project-serum/anchor";
 import { expect, assert } from "chai";
 import { initAdmin, updateAdmin } from "../lib/lib";
 import { findDerivedPair, getTransactionWithData } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import {
-  confirmLogInTransaction,
-  initTestConstants,
-  testCreateUser,
-} from "./test-helpers";
+import { initTestConstants, testCreateUser } from "./test-helpers";
 
 const UserActionEnumValues = {
   unfollowUser: { unfollowUser: {} },
@@ -163,10 +159,18 @@ describe("follows", function () {
         await getTransactionWithData(program, provider, followTx, 0);
 
       expect(decodedInstruction.name).to.equal("followUser");
-      expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());
-      expect(decodedData.userAction).to.deep.equal(UserActionEnumValues.followUser);
-      expect(decodedData.followerHandle.seed).to.deep.equal(constants1.handleBytesArray);
-      expect(decodedData.followeeHandle.seed).to.deep.equal(constants2.handleBytesArray);
+      expect(decodedData.base.toString()).to.equal(
+        baseAuthorityAccount.toString()
+      );
+      expect(decodedData.userAction).to.deep.equal(
+        UserActionEnumValues.followUser
+      );
+      expect(decodedData.followerHandle.seed).to.deep.equal(
+        constants1.handleBytesArray
+      );
+      expect(decodedData.followeeHandle.seed).to.deep.equal(
+        constants2.handleBytesArray
+      );
       expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
       expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
@@ -195,10 +199,18 @@ describe("follows", function () {
         await getTransactionWithData(program, provider, unfollowTx, 0);
 
       expect(decodedInstruction.name).to.equal("followUser");
-      expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());
-      expect(decodedData.userAction).to.deep.equal(UserActionEnumValues.unfollowUser);
-      expect(decodedData.followerHandle.seed).to.deep.equal(constants1.handleBytesArray);
-      expect(decodedData.followeeHandle.seed).to.deep.equal(constants2.handleBytesArray);
+      expect(decodedData.base.toString()).to.equal(
+        baseAuthorityAccount.toString()
+      );
+      expect(decodedData.userAction).to.deep.equal(
+        UserActionEnumValues.unfollowUser
+      );
+      expect(decodedData.followerHandle.seed).to.deep.equal(
+        constants1.handleBytesArray
+      );
+      expect(decodedData.followeeHandle.seed).to.deep.equal(
+        constants2.handleBytesArray
+      );
       expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
       expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
