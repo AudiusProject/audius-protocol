@@ -74,18 +74,15 @@ function sortServiceTimings ({
       // Always sort by version desc
       if (semver.gt(aVersion, bVersion)) return -1
       if (semver.lt(aVersion, bVersion)) return 1
-    } else {
+    } else if (!sortByVersion && currentVersion) {
       // Only sort by version if behind current on-chain version
-      // @ts-expect-error
       if (semver.gt(currentVersion, aVersion) && semver.gt(currentVersion, bVersion)) {
         if (semver.gt(aVersion, bVersion)) return -1
         if (semver.lt(aVersion, bVersion)) return 1
 
-      // @ts-expect-error
       } else if (semver.gt(currentVersion, aVersion)) {
         return 1
 
-      // @ts-expect-error
       } else if (semver.gt(currentVersion, bVersion)) {
         return -1
       }
