@@ -1,0 +1,6 @@
+{
+  "extends": "@tsconfig/node16-strictest/tsconfig.json",
+  "compilerOptions": {
+    "checkJs": false
+  }
+}

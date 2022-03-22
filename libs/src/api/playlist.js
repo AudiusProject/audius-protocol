@@ -81,9 +81,9 @@ class Playlists extends Base {
    * @param {Array<number>} trackIds
    */
   async createPlaylist (userId, playlistName, isPrivate, isAlbum, trackIds) {
-    let maxInitialTracks = 50
-    let createInitialIdsArray = trackIds.slice(0, maxInitialTracks)
-    let postInitialIdsArray = trackIds.slice(maxInitialTracks)
+    const maxInitialTracks = 50
+    const createInitialIdsArray = trackIds.slice(0, maxInitialTracks)
+    const postInitialIdsArray = trackIds.slice(maxInitialTracks)
     let playlistId
     let receipt = {}
     try {
@@ -119,7 +119,7 @@ class Playlists extends Base {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
     const userId = this.userStateManager.getCurrentUserId()
-    let playlist = await this.discoveryProvider.getPlaylists(100, 0, [playlistId], userId)
+    const playlist = await this.discoveryProvider.getPlaylists(100, 0, [playlistId], userId)
 
     // error if playlist does not exist or hasn't been indexed by discovery provider
     if (!Array.isArray(playlist) || !playlist.length) {
@@ -145,22 +145,22 @@ class Playlists extends Base {
     }
 
     const userId = this.userStateManager.getCurrentUserId()
-    let playlist = await this.discoveryProvider.getPlaylists(100, 0, [playlistId], userId)
+    const playlist = await this.discoveryProvider.getPlaylists(100, 0, [playlistId], userId)
 
     // error if playlist does not exist or hasn't been indexed by discovery provider
     if (!Array.isArray(playlist) || !playlist.length) {
       throw new Error('Cannot order playlist - Playlist does not exist or has not yet been indexed by discovery provider')
     }
 
-    let playlistTrackIds = playlist[0].playlist_contents.track_ids.map(a => a.track)
+    const playlistTrackIds = playlist[0].playlist_contents.track_ids.map(a => a.track)
     // error if trackIds arg array length does not match playlist length
     if (trackIds.length !== playlistTrackIds.length) {
-      throw new Error(`Cannot order playlist - trackIds length must match playlist length`)
+      throw new Error('Cannot order playlist - trackIds length must match playlist length')
     }
 
     // ensure existing playlist tracks and trackIds have same content, regardless of order
-    let trackIdsSorted = [...trackIds].sort()
-    let playlistTrackIdsSorted = playlistTrackIds.sort()
+    const trackIdsSorted = [...trackIds].sort()
+    const playlistTrackIdsSorted = playlistTrackIds.sort()
     for (let i = 0; i < trackIdsSorted.length; i++) {
       if (trackIdsSorted[i] !== playlistTrackIdsSorted[i]) {
         throw new Error('Cannot order playlist - trackIds must have same content as playlist tracks')
@@ -195,7 +195,7 @@ class Playlists extends Base {
 
     // Check if each track is in the playlist
     const invalidTrackIds = []
-    for (let trackId of playlistTrackIds) {
+    for (const trackId of playlistTrackIds) {
       const trackInPlaylist = await this.contracts.PlaylistFactoryClient.isTrackInPlaylist(playlistId, trackId)
       if (!trackInPlaylist) invalidTrackIds.push(trackId)
     }
@@ -214,7 +214,7 @@ class Playlists extends Base {
   async updatePlaylistCoverPhoto (playlistId, fileData) {
     this.REQUIRES(Services.CREATOR_NODE)
 
-    let updatedPlaylistImage = await this.creatorNode.uploadImage(fileData, true)
+    const updatedPlaylistImage = await this.creatorNode.uploadImage(fileData, true)
     return this.contracts.PlaylistFactoryClient.updatePlaylistCoverPhoto(
       playlistId,
       Utils.formatOptionalMultihash(updatedPlaylistImage.dirCID))
