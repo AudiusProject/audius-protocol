@@ -11,6 +11,7 @@ import {
   collapsibleTabScreen,
   CollapsibleTabNavigator
 } from 'app/components/top-tab-bar'
+import { useRoute } from 'app/hooks/useRoute'
 
 import { AlbumsTab } from './AlbumsTab'
 import { CollectiblesTab } from './CollectiblesTab'
@@ -38,8 +39,9 @@ export const ProfileTabNavigator = ({
   animatedValue
 }: ProfileTabNavigatorProps) => {
   const { user_id, track_count } = useSelectProfile(['user_id', 'track_count'])
+  const { params } = useRoute<'Profile'>()
 
-  const initialParams = { id: user_id }
+  const initialParams = { id: user_id, handle: params.handle }
 
   const isArtist = track_count > 0
 
