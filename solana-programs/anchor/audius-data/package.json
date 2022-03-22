@@ -6,7 +6,8 @@
         "build-dev": "./scripts/build-dev.sh",
         "deploy-dev": "anchor deploy",
         "localnet-down": "killall -9 solana-test-validator",
-        "localnet-up": "solana-test-validator",
+        "localnet-up": "solana-test-validator --limit-ledger-size 100000",
+        "seed-tx": "./scripts/seed-tx.sh",
         "test": "BROWSER= anchor test"
     },
     "dependencies": {
