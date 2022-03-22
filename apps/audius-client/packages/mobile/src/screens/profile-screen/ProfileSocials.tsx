@@ -89,7 +89,7 @@ export const ProfileSocials = () => {
   }, [onPressTikTok, sanitizedHandle, tiktok_handle])
 
   return (
-    <View style={styles.socials}>
+    <View pointerEvents='box-none' style={styles.socials}>
       <ProfileBadge />
       {twitter_handle ? (
         <IconButton

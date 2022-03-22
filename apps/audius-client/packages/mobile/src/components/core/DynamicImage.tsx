@@ -38,6 +38,7 @@ export type DynamicImageProps = {
   children?: ReactNode
   // callback when image finishes loading
   onLoad?: () => void
+  animatedValue?: Animated.Value
 }
 
 const styles = StyleSheet.create({
@@ -70,6 +71,22 @@ const ImageWithPlaceholder = ({ uri, style }: ImageWithPlaceholderProps) => {
   return <ImageSkeleton styles={{ root: style as ViewStyle }} />
 }
 
+const interpolateImageScale = (animatedValue: Animated.Value) =>
+  animatedValue.interpolate({
+    inputRange: [-200, 0],
+    outputRange: [4, 1],
+    extrapolateLeft: 'extend',
+    extrapolateRight: 'clamp'
+  })
+
+const interpolateImageTranslate = (animatedValue: Animated.Value) =>
+  animatedValue.interpolate({
+    inputRange: [-200, 0],
+    outputRange: [-30, 0],
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp'
+  })
+
 /**
  * A dynamic image that transitions between changes to the `uri` prop.
  */
@@ -79,7 +96,8 @@ export const DynamicImage = memo(function DynamicImage({
   styles: stylesProp,
   immediate,
   children,
-  onLoad
+  onLoad,
+  animatedValue
 }: DynamicImageProps) {
   const [firstSize, setFirstSize] = useState(0)
   const [secondSize, setSecondSize] = useState(0)
@@ -144,7 +162,25 @@ export const DynamicImage = memo(function DynamicImage({
   }, [])
 
   return (
-    <View style={[stylesProp?.root, style]}>
+    <Animated.View
+      pointerEvents='none'
+      style={[
+        stylesProp?.root,
+        style,
+        animatedValue
+          ? {
+              transform: [
+                {
+                  scale: interpolateImageScale(animatedValue)
+                },
+                {
+                  translateY: interpolateImageTranslate(animatedValue)
+                }
+              ]
+            }
+          : {}
+      ]}
+    >
       <Animated.View
         style={[
           stylesProp?.imageContainer,
@@ -172,6 +208,6 @@ export const DynamicImage = memo(function DynamicImage({
         />
       </Animated.View>
       {children ? <View style={styles.children}>{children}</View> : null}
-    </View>
+    </Animated.View>
   )
 })

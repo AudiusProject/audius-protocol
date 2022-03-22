@@ -77,7 +77,7 @@ export const ProfileMetrics = () => {
   }, [dispatchWeb, user_id, navigation])
 
   return (
-    <View style={styles.root}>
+    <View pointerEvents='box-none' style={styles.root}>
       <View style={styles.metric}>
         <Text style={styles.value}>{track_count}</Text>
         <Text style={styles.label}>{messages.tracks}</Text>

@@ -5,10 +5,16 @@ import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import Kind from 'audius-client/src/common/models/Kind'
 import Status from 'audius-client/src/common/models/Status'
 import { range } from 'lodash'
-import { Dimensions, SectionList, StyleSheet, View } from 'react-native'
+import {
+  Dimensions,
+  SectionList as RNSectionList,
+  StyleSheet,
+  View
+} from 'react-native'
 import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
+import { SectionList } from 'app/components/core'
 import {
   CollectionTile,
   TrackTile,
@@ -123,10 +129,10 @@ export const Lineup = ({
   selfLoad,
   includeLineupStatus,
   limit = Infinity,
-  ...sectionListProps
+  ...listProps
 }: LineupProps) => {
   const dispatchWeb = useDispatchWeb()
-  const ref = useRef<SectionList>(null)
+  const ref = useRef<RNSectionList>(null)
   useScrollToTop(() => {
     ref.current?.scrollToLocation({
       sectionIndex: 0,
@@ -350,7 +356,7 @@ export const Lineup = ({
 
   return (
     <SectionList
-      {...sectionListProps}
+      {...listProps}
       ref={ref}
       ListHeaderComponent={header}
       ListFooterComponent={<View style={{ height: 160 }} />}

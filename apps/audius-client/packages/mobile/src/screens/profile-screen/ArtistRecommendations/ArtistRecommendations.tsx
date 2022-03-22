@@ -118,7 +118,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const suggestedArtistNames = suggestedArtists.slice(0, 3)
 
   return (
-    <View style={styles.root}>
+    <View pointerEvents='box-none' style={styles.root}>
       <View style={styles.header}>
         <IconButton
           icon={IconClose}

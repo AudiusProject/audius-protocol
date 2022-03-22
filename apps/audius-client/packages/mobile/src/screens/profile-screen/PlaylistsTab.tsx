@@ -17,6 +17,7 @@ export const PlaylistsTab = () => {
       emptyListText={emptyListText}
       disableTopTabScroll
       fromPage='profile'
+      showsVerticalScrollIndicator={false}
     />
   )
 }
