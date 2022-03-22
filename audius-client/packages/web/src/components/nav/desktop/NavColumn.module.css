@@ -44,25 +44,6 @@ svg.logo path {
 
 .navColumn .scrollable {
   padding-top: 24px;
-  height: 100%;
-  min-height: 0;
-}
-
-.navColumn .scrollable :global(.simplebar-scrollbar) {
-  width: 6px;
-  right: 4px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-.navColumn .scrollable :global(.simplebar-scrollbar:before) {
-  width: 6px;
-}
-
-.navColumn .scrollable :global(.simplebar-content-wrapper) {
-  padding-right: 20px !important;
-  box-sizing: content-box !important;
-  width: var(--nav-width);
 }
 
 .navColumn .userHeader {

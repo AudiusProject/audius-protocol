@@ -25,22 +25,6 @@
   padding: 0px 32px 24px;
 }
 
-.simpleBar {
-  flex: 1;
-  min-height: 0px;
-}
-
-.simpleBar :global(.simplebar-scrollbar) {
-  width: 6px;
-  right: 4px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-.simpleBar :global(.simplebar-scrollbar:before) {
-  width: 6px;
-}
-
 .list {
   cursor: pointer;
   user-select: none;
