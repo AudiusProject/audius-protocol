@@ -1,14 +1,6 @@
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 
-export type Image = {
-  height?: number
-  width?: number
-  name?: string
-  size?: number
-  fileType?: string
-  url: string
-  file?: string
-}
+import { Image } from 'app/types/image'
 
 export type ProfileValues = {
   name: string

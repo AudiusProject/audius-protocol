@@ -149,30 +149,16 @@ export const CollectionScreenDetailsTile = ({
   }, [isAlbum, isPrivate])
 
   const renderTrackList = () => {
-    const trackMetadatas = tracksLineup.entries.map(track => ({
-      isLoading: false,
-      isSaved: track.has_current_user_saved,
-      isReposted: track.has_current_user_reposted,
-      isActive: playingUid === track.uid,
-      isPlaying: isPlaying && playingUid === track.uid,
-      artistName: track.user.name,
-      artistHandle: track.user.handle,
-      trackTitle: track.title,
-      trackId: track.track_id,
-      uid: track.uid,
-      isDeleted: track.is_delete || !!track.user.is_deactivated,
-      user: track.user
-    }))
-
-    return !tracksLoading && trackMetadatas.length === 0 ? (
+    return !tracksLoading && tracksLineup.entries.length === 0 ? (
       <Text style={styles.empty}>{messages.empty}</Text>
     ) : (
       <>
         <View style={styles.trackListDivider} />
         <TrackList
-          tracks={trackMetadatas ?? []}
+          hideArt
           showDivider
           togglePlay={handlePressTrackListItemPlay}
+          tracks={tracksLineup.entries}
         />
       </>
     )

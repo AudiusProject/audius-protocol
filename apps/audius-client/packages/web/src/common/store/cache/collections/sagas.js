@@ -28,6 +28,7 @@ import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
+import { dataURLtoFile } from 'utils/fileUtils'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 
 import watchTrackErrors from './errorSagas'
@@ -275,9 +276,15 @@ function* editPlaylistAsync(action) {
     })
   )
 
-  yield call(confirmEditPlaylist, action.playlistId, userId, action.formFields)
-
   const playlist = { ...action.formFields }
+
+  // For base64 images (coming from native), convert to a blob
+  if (playlist.artwork?.type === 'base64') {
+    playlist.artwork.file = dataURLtoFile(playlist.artwork.file)
+  }
+
+  yield call(confirmEditPlaylist, action.playlistId, userId, playlist)
+
   playlist.playlist_id = action.playlistId
   if (playlist.artwork) {
     playlist._cover_art_sizes = {

@@ -10,6 +10,7 @@ import { CreatePlaylistSource } from 'common/models/Analytics'
 import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
+import RandomImage from 'common/services/RandomImage'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   createPlaylist,
@@ -36,7 +37,6 @@ import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import * as schemas from 'schemas'
-import RandomImage from 'services/RandomImage'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { playlistPage } from 'utils/route'
@@ -44,6 +44,8 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'
 import RemovePlaylistTrackDrawer from './RemovePlaylistTrackDrawer'
+
+const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const messages = {
   createPlaylist: 'Create Playlist',
@@ -408,7 +410,10 @@ const EditPlaylistPage = g(
                 maxLength={256}
               />
             </Grouping>
-            {trackList && trackList.length > 0 && (
+            {/** Don't render tracklist on native mobile. Errors
+             * get thrown because of the null renderer
+             */}
+            {!IS_NATIVE_MOBILE && trackList && trackList.length > 0 && (
               <Grouping>
                 <TrackList
                   tracks={trackList}
@@ -452,8 +457,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(editPlaylist(id, metadata)),
     orderPlaylist: (playlistId: ID, idsAndTimes: any) =>
       dispatch(orderPlaylist(playlistId, idsAndTimes)),
-    removeTrack: (playlistId: ID, trackId: ID, timestamp: number) =>
-      dispatch(removeTrackFromPlaylist(playlistId, trackId, timestamp)),
+    removeTrack: (trackId: ID, playlistId: ID, timestamp: number) =>
+      dispatch(removeTrackFromPlaylist(trackId, playlistId, timestamp)),
     refreshLineup: () => dispatch(tracksActions.fetchLineupMetadatas()),
     goToRoute: (route: string) => dispatch(pushRoute(route))
   }

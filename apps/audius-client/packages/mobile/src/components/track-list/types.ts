@@ -1,23 +1,9 @@
-import { ID } from 'audius-client/src/common/models/Identifiers'
-import { CoverArtSizes } from 'audius-client/src/common/models/ImageSizes'
-import { User } from 'audius-client/src/common/models/User'
+import { makeGetTableMetadatas } from 'audius-client/src/common/store/lineup/selectors'
+import { SetOptional } from 'type-fest'
 
-export type ListTrackMetadata = {
-  isLoading: boolean
-  isSaved?: boolean
-  isReposted?: boolean
-  isActive?: boolean
-  isPlaying?: boolean
-  isRemoveActive?: boolean
-  artistHandle: string
-  artistName: string
-  trackTitle: string
-  trackId: ID
-  uid?: string
-  time?: number
-  coverArtSizes?: CoverArtSizes
-  isDeleted: boolean
-  user: User
-  has_current_user_reposted?: boolean
-  has_current_user_saved?: boolean
-}
+export type TrackMetadata = SetOptional<
+  ReturnType<ReturnType<typeof makeGetTableMetadatas>>['entries'][0],
+  'uid' | 'kind' | 'id' | 'followeeReposts'
+>
+
+export type TracksMetadata = TrackMetadata[]

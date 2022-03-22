@@ -328,6 +328,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
     quality: 0.9
   }
 
+  // TODO: use `launchSelectImageActionSheet` util
   const handlePhoto = ({ assets }: { assets: Asset[] | undefined }) => {
     const response = assets?.[0]
     const selectedPhoto = !!response?.base64

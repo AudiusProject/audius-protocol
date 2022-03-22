@@ -44,6 +44,7 @@ import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { getIsReachable } from 'store/reachability/selectors'
 import { isMobile } from 'utils/clientUtil'
+import { dataURLtoFile } from 'utils/fileUtils'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 
@@ -344,6 +345,19 @@ export function* updateProfileAsync(action) {
       // In favor of availability, we write anyway.
       console.error(e)
     }
+  }
+
+  // For base64 images (coming from native), convert to a blob
+  if (metadata.updatedCoverPhoto?.type === 'base64') {
+    metadata.updatedCoverPhoto.file = dataURLtoFile(
+      metadata.updatedCoverPhoto.file
+    )
+  }
+
+  if (metadata.updatedProfilePicture?.type === 'base64') {
+    metadata.updatedProfilePicture.file = dataURLtoFile(
+      metadata.updatedProfilePicture.file
+    )
   }
 
   yield call(confirmUpdateProfile, metadata.user_id, metadata)
