@@ -15,8 +15,7 @@ const AudiusABIDecoder = require('./services/ABIDecoder/index')
 const SchemaValidator = require('./services/schemaValidator')
 const UserStateManager = require('./userStateManager')
 const SanityChecks = require('./sanityChecks')
-const { Utils } = require('./utils')
-const Captcha = Utils.Captcha
+const { Utils, Captcha } = require('./utils')
 
 const Account = require('./api/account')
 const User = require('./api/user')
