@@ -1,5 +1,5 @@
 {
-    "name": "@audius/solana",
+    "name": "@audius/anchor-audius-data",
     "version": "0.0.1",
     "main": "dist/index.js",
     "scripts": {
