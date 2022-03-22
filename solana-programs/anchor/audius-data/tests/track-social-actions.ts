@@ -101,8 +101,8 @@ describe("track-actions", function () {
     const tx = await addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -128,7 +128,7 @@ describe("track-actions", function () {
   });
 
   it("Repost a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await addTrackRepost({
       program,

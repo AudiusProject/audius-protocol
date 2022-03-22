@@ -171,7 +171,7 @@ describe("follows", function () {
       expect(decodedData.followeeHandle.seed).to.deep.equal(
         constants2.handleBytesArray
       );
-      expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
       expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
 
@@ -211,7 +211,7 @@ describe("follows", function () {
       expect(decodedData.followeeHandle.seed).to.deep.equal(
         constants2.handleBytesArray
       );
-      expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
       expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
 

@@ -322,7 +322,7 @@ describe("audius-data", function () {
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
       trackOwnerPDA: newUserAcctPDA,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
     });
 
     // Expected signature validation failure
@@ -341,7 +341,7 @@ describe("audius-data", function () {
         trackMetadata,
         userAuthorityKeypair: wrongUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
-        adminStgAccount: adminStgKeypair.publicKey,
+        adminStorageAccount: adminStorageKeypair.publicKey,
       });
     } catch (e) {
       console.log(`Error found as expected ${e}`);
@@ -353,9 +353,9 @@ describe("audius-data", function () {
       baseAuthorityAccount,
       handleBytesArray,
       bumpSeed,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
       id: trackID,
-      userStgAccountPDA: newUserAcctPDA,
+      userStorageAccountPDA: newUserAcctPDA,
       userAuthorityKeypair: newUserKeypair,
       metadata: updatedTrackMetadata,
     });
@@ -806,7 +806,7 @@ describe("audius-data", function () {
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
     // New sol key that will be used to permission user updates
@@ -839,7 +839,7 @@ describe("audius-data", function () {
       id: trackID,
       baseAuthorityAccount,
       handleBytesArray,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
       bumpSeed,
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
@@ -855,7 +855,7 @@ describe("audius-data", function () {
       baseAuthorityAccount,
       handleBytesArray,
       bumpSeed,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
     });
   });
 
@@ -876,7 +876,7 @@ describe("audius-data", function () {
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -912,7 +912,7 @@ describe("audius-data", function () {
         baseAuthorityAccount,
         handleBytesArray,
         bumpSeed,
-        adminStgAccount: adminStgKeypair.publicKey,
+        adminStorageAccount: adminStorageKeypair.publicKey,
         id: randomString(10),
         trackMetadata,
         userAuthorityKeypair: newUserKeypair,
@@ -924,7 +924,7 @@ describe("audius-data", function () {
         baseAuthorityAccount,
         handleBytesArray,
         bumpSeed,
-        adminStgAccount: adminStgKeypair.publicKey,
+        adminStorageAccount: adminStorageKeypair.publicKey,
         id: randomString(10),
         trackMetadata: trackMetadata2,
         userAuthorityKeypair: newUserKeypair,
@@ -936,7 +936,7 @@ describe("audius-data", function () {
         baseAuthorityAccount,
         handleBytesArray,
         bumpSeed,
-        adminStgAccount: adminStgKeypair.publicKey,
+        adminStorageAccount: adminStorageKeypair.publicKey,
         id: randomString(10),
         trackMetadata: trackMetadata3,
         userAuthorityKeypair: newUserKeypair,

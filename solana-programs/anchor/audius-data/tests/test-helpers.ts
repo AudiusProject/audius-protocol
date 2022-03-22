@@ -75,7 +75,7 @@ export const testInitUser = async ({
     metadata,
     userStorageAccount,
     baseAuthorityAccount,
-    adminStorageKey: adminStorageKeypair.publicKey,
+    adminStorageAccount: adminStorageKeypair.publicKey,
     adminKeypair,
   });
 
@@ -172,10 +172,10 @@ export const testCreateUser = async ({
   expect(decodedData.handleSeed).to.deep.equal(handleBytesArray);
   expect(decodedData.userBump).to.equal(bumpSeed);
   expect(decodedData.metadata).to.equal(metadata);
-  expect(accountPubKeys[0]).to.equal(userStgAccount.toString());
-  expect(accountPubKeys[2]).to.equal(adminStgPublicKey.toString());
+  expect(accountPubKeys[0]).to.equal(userStorageAccount.toString());
+  expect(accountPubKeys[2]).to.equal(adminStoragePublicKey.toString());
 
-  const account = await program.account.user.fetch(userStgAccount);
+  const account = await program.account.user.fetch(userStorageAccount);
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
   expect(chainEthAddress, "eth address").to.equal(
@@ -194,7 +194,7 @@ export const testCreateTrack = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStorageAccount,
   trackMetadata,
   userAuthorityKeypair,
   trackOwnerPDA,
@@ -203,11 +203,11 @@ export const testCreateTrack = async ({
     id,
     program,
     userAuthorityKeypair,
-    userStgAccountPDA: trackOwnerPDA,
+    userStorageAccountPDA: trackOwnerPDA,
     metadata: trackMetadata,
     baseAuthorityAccount,
     handleBytesArray,
-    adminStgAccount,
+    adminStorageAccount,
     bumpSeed,
   });
   const { decodedInstruction, decodedData, accountPubKeys } =
@@ -235,18 +235,18 @@ export const testDeleteTrack = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStorageAccount,
 }) => {
   const tx = await deleteTrack({
     id,
     provider,
     program,
-    userStgAccountPDA: trackOwnerPDA,
+    userStorageAccountPDA: trackOwnerPDA,
     userAuthorityKeypair: userAuthorityKeypair,
     baseAuthorityAccount,
     handleBytesArray,
     bumpSeed,
-    adminStgAccount,
+    adminStorageAccount,
   });
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, tx, 0);
@@ -266,22 +266,22 @@ export const testUpdateTrack = async ({
   provider,
   program,
   id,
-  userStgAccountPDA,
+  userStorageAccountPDA,
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStorageAccount,
 }) => {
   const tx = await updateTrack({
     program,
     baseAuthorityAccount,
     handleBytesArray,
     bumpSeed,
-    adminStgAccount,
+    adminStorageAccount,
     id,
-    userStgAccountPDA,
+    userStorageAccountPDA,
     metadata,
     userAuthorityKeypair,
   });
@@ -298,7 +298,7 @@ export const testUpdateTrack = async ({
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString());
+  expect(accountPubKeys[1]).to.equal(userStorageAccountPDA.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
@@ -309,7 +309,7 @@ export const testCreatePlaylist = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStorageAccount,
   playlistMetadata,
   userAuthorityKeypair,
   playlistOwnerPDA,
@@ -318,11 +318,11 @@ export const testCreatePlaylist = async ({
     id,
     program,
     userAuthorityKeypair,
-    userStgAccountPDA: playlistOwnerPDA,
+    userStorageAccountPDA: playlistOwnerPDA,
     metadata: playlistMetadata,
     baseAuthorityAccount,
     handleBytesArray,
-    adminStgAccount,
+    adminStorageAccount,
     bumpSeed,
   });
   const { decodedInstruction, decodedData, accountPubKeys } =
@@ -350,18 +350,18 @@ export const testDeletePlaylist = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStorageAccount,
 }) => {
   const tx = await deletePlaylist({
     id,
     provider,
     program,
-    userStgAccountPDA: playlistOwnerPDA,
+    userStorageAccountPDA: playlistOwnerPDA,
     userAuthorityKeypair: userAuthorityKeypair,
     baseAuthorityAccount,
     handleBytesArray,
     bumpSeed,
-    adminStgAccount,
+    adminStorageAccount,
   });
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, tx, 0);
@@ -381,22 +381,22 @@ export const testUpdatePlaylist = async ({
   provider,
   program,
   id,
-  userStgAccountPDA,
+  userStorageAccountPDA,
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStorageAccount,
 }) => {
   const tx = await updatePlaylist({
     program,
     baseAuthorityAccount,
     handleBytesArray,
     bumpSeed,
-    adminStgAccount,
+    adminStorageAccount,
     id,
-    userStgAccountPDA,
+    userStorageAccountPDA,
     metadata,
     userAuthorityKeypair,
   });
@@ -413,7 +413,7 @@ export const testUpdatePlaylist = async ({
   // 0th index = playlist owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the playlist owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString());
+  expect(accountPubKeys[1]).to.equal(userStorageAccountPDA.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
