@@ -212,6 +212,32 @@ type PublicCreateContentNode = {
   proposer3: Proposer;
 };
 
+type PublicUpdateContentNode = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  cn: Proposer;
+  proposer1: Proposer;
+  proposer2: Proposer;
+  proposer3: Proposer;
+};
+
+/// Create a content node with proposers
+type PublicDeleteContentNode = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  adminAuthorityPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  cnDelete: Proposer;
+  proposer1: Proposer;
+  proposer2: Proposer;
+  proposer3: Proposer;
+};
+
 /// Initialize an Audius Admin instance
 export const initAdmin = async ({
   provider,
@@ -419,18 +445,6 @@ export const publicCreateContentNode = async ({
 };
 
 /// Update a content node with proposers
-type PublicUpdateContentNode = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
-  contentNodeAuthority: anchor.web3.PublicKey;
-  cn: Proposer;
-  proposer1: Proposer;
-  proposer2: Proposer;
-  proposer3: Proposer;
-};
 export const publicUpdateContentNode = async ({
   provider,
   program,
@@ -468,18 +482,6 @@ export const publicUpdateContentNode = async ({
   );
 };
 
-/// Create a content node with proposers
-type PublicDeleteContentNode = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  adminAuthorityPublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  cnDelete: Proposer;
-  proposer1: Proposer;
-  proposer2: Proposer;
-  proposer3: Proposer;
-};
 export const publicDeleteContentNode = async ({
   provider,
   program,
