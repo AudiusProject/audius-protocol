@@ -100,7 +100,8 @@ def decode(instruction_coder: InstructionCoder, encoded_ix_data: str):
     # print(ix_sighash)
     decoder = instruction_coder.sighash_layouts.get(ix_sighash)
     if not decoder:
-        raise Exception("No decoder available")
+        print(f"No decoder available for {ix_sighash}")
+        # raise Exception("No decoder available")
     else:
         return decoder.parse(data)
 
@@ -111,13 +112,17 @@ async def parse_tx(tx_hash: str) -> Dict:
     # print(tx_info)
     await solana_client.close()
     if is_invalid_tx(tx_info):
-        raise Exception("Invalid tx hash")
+        print(f"Invalid tx hash {tx_hash}")
+        return None
+        # raise Exception("Invalid tx hash")
     idl = get_idl()
     instruction_coder = InstructionCoder(idl)
-    # print(instruction_coder.sighash_to_name)
     tx = tx_info["result"]
     for instruction in tx["transaction"]["message"]["instructions"]:
         raw_instruction_data = instruction["data"]
+        print(
+            f"instruction name: {instruction_coder.sighash_to_name.get(base58.b58decode(raw_instruction_data)[0:8])}"
+        )  # TODO if there is no name - not supported in IDL - then don't parse it or fail gracefully/log
 
         # path = Path(AUDIUS_DATA_IDL_PATH)  # not sure why path is needed
         # context = Context(
@@ -136,7 +141,11 @@ async def parse_tx(tx_hash: str) -> Dict:
 
 
 async def main(tx_hash):
-    await parse_tx(tx_hash)
+    tx_hashes = [
+        "232MZuGCHXw3kKw2EFrjwV5MEJ5xP2J4f4agerFGmHjELvdrz8NVgf17RAiKVKSbzCRJnopSLmnoZBWKw8BwUpfq"
+    ]
+    for hash in tx_hashes:
+        await parse_tx(hash)
 
 
 asyncio.run(main(os.getenv("TX_HASH")))

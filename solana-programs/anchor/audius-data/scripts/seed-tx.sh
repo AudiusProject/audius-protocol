@@ -7,6 +7,7 @@ ADMIN_KEYPAIR_PATH="$PWD/adminKeypair.json"
 ADMIN_STORAGE_KEYPAIR_PATH="$PWD/adminStorageKeypair.json"
 USER_KEYPAIR_PATH="$PWD/userKeypair.json"
 
+# TODO fix the fast fail here
 
 cd "$ANCHOR_PROGRAM_DIR"
 
@@ -32,6 +33,7 @@ echo "Generating new solana pubkey for user"
 
 solana-keygen new --no-bip39-passphrase --force -o "$USER_KEYPAIR_PATH"
 
+# creates 2 inner instructions - look into this?
 yarn run ts-node cli/main.ts -f initUserSolPubkey \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
