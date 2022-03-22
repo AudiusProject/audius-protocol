@@ -105,7 +105,6 @@ pub mod audius_data {
         ctx: Context<InitializeUserSolIdentity>,
         user_authority: Pubkey,
     ) -> Result<()> {
-        msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
         let index_current_instruction =
             sysvar::instructions::load_current_index_checked(&ctx.accounts.sysvar_program)?;
@@ -147,11 +146,9 @@ pub mod audius_data {
         eth_address: [u8; 20],
         _handle_seed: [u8; 16],
         _user_bump: u8,
-        metadata: String,
+        _metadata: String,
         user_authority: Pubkey,
     ) -> Result<()> {
-        msg!("Audius::CreateUser");
-
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
             &[&ctx.accounts.audius_admin.key().to_bytes()[..32]],
@@ -190,21 +187,17 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        msg!("AudiusUserMetadata = {:?}", metadata);
-
         Ok(())
     }
 
     /// Permissioned function to log an update to User metadata
-    pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
-        msg!("Audius::UpdateUser");
+    pub fn update_user(ctx: Context<UpdateUser>, _metadata: String) -> Result<()> {
         validate_user_authority(
             ctx.program_id,
             &ctx.accounts.user,
             &ctx.accounts.user_delegate_authority,
             &ctx.accounts.user_authority,
         )?;
-        msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
     }
 
@@ -275,19 +268,10 @@ pub mod audius_data {
     pub fn follow_user(
         ctx: Context<FollowUser>,
         base: Pubkey,
-        user_action: UserAction,
+        _user_action: UserAction,
         _follower_handle: UserHandle,
         _followee_handle: UserHandle,
     ) -> Result<()> {
-        match user_action {
-            UserAction::FollowUser => {
-                msg!("Audius::FollowUser");
-            }
-            UserAction::UnfollowUser => {
-                msg!("Audius::UnfollowUser");
-            }
-        };
-
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
