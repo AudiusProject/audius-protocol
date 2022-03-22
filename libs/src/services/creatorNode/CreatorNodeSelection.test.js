@@ -37,23 +37,23 @@ const mockCreatorNode = {
 }
 
 // Add fields as necessary
-let defaultHealthCheckData = {
-  'service': CREATOR_NODE_SERVICE_NAME,
-  'version': '1.2.3',
-  'healthy': true,
-  'country': 'US',
-  'latitude': '37.7749',
-  'longitude': '-122.4194',
-  'databaseConnections': 5,
-  'totalMemory': 6237552640,
-  'usedMemory': 6111436800,
-  'storagePathSize': 62725623808,
-  'storagePathUsed': 14723018752,
-  'maxFileDescriptors': 524288,
-  'allocatedFileDescriptors': 2912,
-  'receivedBytesPerSec': 776.7638177541248,
-  'transferredBytesPerSec': 39888.88888888889,
-  'maxStorageUsedPercent': 95
+const defaultHealthCheckData = {
+  service: CREATOR_NODE_SERVICE_NAME,
+  version: '1.2.3',
+  healthy: true,
+  country: 'US',
+  latitude: '37.7749',
+  longitude: '-122.4194',
+  databaseConnections: 5,
+  totalMemory: 6237552640,
+  usedMemory: 6111436800,
+  storagePathSize: 62725623808,
+  storagePathUsed: 14723018752,
+  maxFileDescriptors: 524288,
+  allocatedFileDescriptors: 2912,
+  receivedBytesPerSec: 776.7638177541248,
+  transferredBytesPerSec: 39888.88888888889,
+  maxStorageUsedPercent: 95
 }
 
 describe('test CreatorNodeSelection', () => {
@@ -419,7 +419,7 @@ describe('test CreatorNodeSelection', () => {
   })
 
   it('allows custom maxStorageUsedPercent as constructor param if `maxStorageUsedPercent` is not found in health check resp', async () => {
-    let healthCheckResponseWithNoMaxStorageUsedPercent = { ...defaultHealthCheckData }
+    const healthCheckResponseWithNoMaxStorageUsedPercent = { ...defaultHealthCheckData }
     delete healthCheckResponseWithNoMaxStorageUsedPercent.maxStorageUsedPercent
 
     const shouldBePrimary = 'https://primary.audius.co'
@@ -525,7 +525,7 @@ describe('test CreatorNodeSelection', () => {
   it('does not always pick the same one with equivalency delta', async () => {
     // Run this test a few times and make sure we eventually get something
     // different
-    let primaries = []
+    const primaries = []
     for (let i = 0; i < 20; ++i) {
       const one = 'https://one.audius.co'
       nock(one)

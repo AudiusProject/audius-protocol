@@ -35,10 +35,10 @@ class HedgehogWrapper {
     // we override the login function here because getFn needs both lookupKey and email
     // in identity service, but hedgehog only sends lookupKey
     hedgehog.login = async (email, password) => {
-      let lookupKey = await WalletManager.createAuthLookupKey(email, password)
+      const lookupKey = await WalletManager.createAuthLookupKey(email, password)
 
       // hedgehog property is called username so being consistent instead of calling it email
-      let data = await this.getFn({ lookupKey: lookupKey, username: email })
+      const data = await this.getFn({ lookupKey: lookupKey, username: email })
 
       if (data && data.iv && data.cipherText) {
         const { walletObj, entropy } = await WalletManager.decryptCipherTextAndRetrieveWallet(

@@ -8,7 +8,7 @@ function recoverWallet (web3, response) {
   let recoveredDelegateWallet = null
 
   const dataForRecovery = JSON.parse(JSON.stringify(response))
-  delete dataForRecovery['signature']
+  delete dataForRecovery.signature
   const dataForRecoveryStr = JSON.stringify(sortObjectKeys(dataForRecovery))
 
   try {

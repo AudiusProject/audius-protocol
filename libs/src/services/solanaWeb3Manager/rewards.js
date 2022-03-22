@@ -777,7 +777,7 @@ const generateCreateSenderInstruction = async ({
   /// 2. `[signer]` Funder
   /// 3. `[writable]` new_sender
   /// 4. `[]` Bunch of senders which prove creating another one
-  let createSenderInstructionAccounts = [
+  const createSenderInstructionAccounts = [
     {
       pubkey: rewardManagerAccount,
       isSigner: false,

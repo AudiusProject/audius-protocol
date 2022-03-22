@@ -27,13 +27,13 @@ async function fundNewClaim (audiusLibs, amountOfAUDS, privateKey = null) {
   const libOwner = audiusLibs.ethContracts.ethWeb3Manager.getWalletAddress()
 
   console.log('/---- Funding new claim')
-  let bal = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(libOwner)
+  const bal = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(libOwner)
   console.log(bal)
-  let claimAmountInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
+  const claimAmountInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
   console.log(claimAmountInAudWeiBN)
 
   // Actually perform fund op
-  let tx = await audiusLibs.ethContracts.StakingProxyClient.fundNewClaim(claimAmountInAudWeiBN, privateKey)
+  const tx = await audiusLibs.ethContracts.StakingProxyClient.fundNewClaim(claimAmountInAudWeiBN, privateKey)
   console.log(tx)
   console.log('/---- End funding new claim')
 

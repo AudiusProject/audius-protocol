@@ -52,7 +52,7 @@ class Web3Manager {
       this.useExternalWeb3 = false
 
       if (web3Config.internalWeb3Config.privateKey) {
-        let pkeyBuffer = Buffer.from(web3Config.internalWeb3Config.privateKey, 'hex')
+        const pkeyBuffer = Buffer.from(web3Config.internalWeb3Config.privateKey, 'hex')
         this.ownerWallet = EthereumWallet.fromPrivateKey(pkeyBuffer)
         return
       }
@@ -198,7 +198,7 @@ class Web3Manager {
         }
       })
 
-      const receipt = response['receipt']
+      const receipt = response.receipt
 
       // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
       // above) parses the event log into an 'events' key on the transaction receipt and
@@ -214,13 +214,13 @@ class Web3Manager {
         decoded.forEach((evt) => {
           const returnValues = {}
           evt.events.forEach((arg) => {
-            returnValues[arg['name']] = arg['value']
+            returnValues[arg.name] = arg.value
           })
-          events[evt['name']] = { returnValues }
+          events[evt.name] = { returnValues }
         })
-        receipt['events'] = events
+        receipt.events = events
       }
-      return response['receipt']
+      return response.receipt
     }
   }
 

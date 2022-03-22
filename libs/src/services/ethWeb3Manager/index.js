@@ -1,5 +1,5 @@
 const Web3 = require('../../web3')
-const MultiProvider = require('../../utils/multiProvider')
+const { MultiProvider } = require('../../utils/multiProvider')
 const EthereumTx = require('ethereumjs-tx').Transaction
 const { estimateGas } = require('../../utils/estimateGas')
 const retry = require('async-retry')
@@ -71,8 +71,8 @@ class EthWeb3Manager {
       }
       gasPrice = '0x' + gasPrice.toString(16)
 
-      let privateKeyBuffer = Buffer.from(privateKey, 'hex')
-      let walletAddress = this.getWalletAddress()
+      const privateKeyBuffer = Buffer.from(privateKey, 'hex')
+      const walletAddress = this.getWalletAddress()
       const txCount = await this.web3.eth.getTransactionCount(walletAddress)
       const encodedABI = contractMethod.encodeABI()
       const txParams = {
@@ -107,7 +107,7 @@ class EthWeb3Manager {
       return response
     }
 
-    let gasPrice = parseInt(await this.web3.eth.getGasPrice())
+    const gasPrice = parseInt(await this.web3.eth.getGasPrice())
     return contractMethod.send({ from: this.ownerWallet, gas: gasLimit, gasPrice: gasPrice })
   }
 
@@ -179,7 +179,7 @@ class EthWeb3Manager {
         }
       }
     })
-    return response['resp']
+    return response.resp
   }
 
   async getRelayMethodParams (contractAddress, contractMethod, relayerWallet) {

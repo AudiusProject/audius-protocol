@@ -1,6 +1,6 @@
 const axios = require('axios')
 const { AuthHeaders } = require('../../constants')
-const uuid = require('../../utils/uuid')
+const { uuid } = require('../../utils/uuid')
 
 const Requests = require('./requests')
 
@@ -42,7 +42,7 @@ class IdentityService {
         const token = await this.captcha.generate('identity/user')
         obj.token = token
       } catch (e) {
-        console.warn(`CAPTCHA (user) - Recaptcha failed to generate token in :`, e)
+        console.warn('CAPTCHA (user) - Recaptcha failed to generate token in :', e)
       }
     }
 
@@ -92,7 +92,7 @@ class IdentityService {
    */
   async associateTwitterUser (uuid, userId, handle) {
     return this._makeRequest({
-      url: `/twitter/associate`,
+      url: '/twitter/associate',
       method: 'post',
       data: {
         uuid,
@@ -110,7 +110,7 @@ class IdentityService {
    */
   async associateInstagramUser (uuid, userId, handle) {
     return this._makeRequest({
-      url: `/instagram/associate`,
+      url: '/instagram/associate',
       method: 'post',
       data: {
         uuid,
@@ -162,7 +162,7 @@ class IdentityService {
    * @param {number} offset - offset into list to return from (for pagination)
    */
   async getListenHistoryTracks (userId, limit = 100, offset = 0) {
-    let req = {
+    const req = {
       method: 'get',
       url: '/tracks/history',
       params: { userId, limit, offset }
@@ -210,17 +210,17 @@ class IdentityService {
       queryUrl += timeFrame
     }
 
-    let queryParams = {}
+    const queryParams = {}
     if (idsArray !== null) {
-      queryParams['id'] = idsArray
+      queryParams.id = idsArray
     }
 
     if (limit !== null) {
-      queryParams['limit'] = limit
+      queryParams.limit = limit
     }
 
     if (offset !== null) {
-      queryParams['offset'] = offset
+      queryParams.offset = offset
     }
 
     return this._makeRequest({
@@ -263,7 +263,7 @@ class IdentityService {
       try {
         token = await this.captcha.generate('identity/relay')
       } catch (e) {
-        console.warn(`CAPTCHA (relay) - Recaptcha failed to generate token:`, e)
+        console.warn('CAPTCHA (relay) - Recaptcha failed to generate token:', e)
       }
     }
 

@@ -124,9 +124,9 @@ class AudiusContracts {
       if (this.UserReplicaSetManagerClient._contractAddress === '0x0000000000000000000000000000000000000000') {
         throw new Error(`Failed retrieve address for ${this.UserReplicaSetManagerClient.contractRegistryKey}`)
       }
-      let seedComplete = await this.UserReplicaSetManagerClient.getSeedComplete()
+      const seedComplete = await this.UserReplicaSetManagerClient.getSeedComplete()
       if (!seedComplete) {
-        throw new Error(`UserReplicaSetManager pending seed operation`)
+        throw new Error('UserReplicaSetManager pending seed operation')
       }
     } catch (e) {
       // Nullify failed attempt to initialize
@@ -147,7 +147,7 @@ class AudiusContracts {
   async getRegistryAddressForContract (contractName) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
     this.contracts = this.contracts || { [this.registryAddress]: 'registry' }
-    this.contractAddresses = this.contractAddresses || { 'registry': this.registryAddress }
+    this.contractAddresses = this.contractAddresses || { registry: this.registryAddress }
 
     if (!this.contractAddresses[contractName] || Utils.isZeroAddress(this.contractAddresses[contractName])) {
       const address = await this.RegistryClient.getContract(contractName)
