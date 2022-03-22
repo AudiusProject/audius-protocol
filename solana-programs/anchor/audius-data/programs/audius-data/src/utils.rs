@@ -59,7 +59,6 @@ pub fn validate_user_authority<'info>(
         )?;
         
         // Reject if app delegate is revoked
-        msg!(&app_delegation_account.is_revoked.to_string());
         if app_delegation_account.is_revoked {
             return Err(ErrorCode::Unauthorized.into());
         }

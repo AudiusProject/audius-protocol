@@ -550,7 +550,7 @@ describe("audius-data", function () {
       signers: [userAuthorityDelegateKeypair],
     };
 
-    await program.rpc.initAppDelegation(initAppDelegationArgs);
+    await program.rpc.initAppDelegation("app_name", initAppDelegationArgs);
 
     // New sol key that will be used as user authority delegate
     const userDelSeed = [
@@ -708,7 +708,7 @@ describe("audius-data", function () {
       signers: [userAuthorityDelegateKeypair],
     };
 
-    await program.rpc.initAppDelegation(initAppDelegationArgs);
+    await program.rpc.initAppDelegation("app_name", initAppDelegationArgs);
 
     // New sol key that will be used as user authority delegate
     const userDelSeed = [

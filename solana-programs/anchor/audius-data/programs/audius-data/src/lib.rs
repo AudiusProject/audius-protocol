@@ -309,6 +309,7 @@ pub mod audius_data {
     /// Initializes a AppDelegation PDA for an authority
     pub fn init_app_delegation(
         ctx: Context<InitAppDelegation>,
+        _app_name: String,
     ) -> Result<()> {
 
         ctx.accounts.app_delegation_pda.is_revoked = false;
@@ -476,6 +477,7 @@ pub struct UpdateAdmin<'info> {
 /// `delegate_authority` is the authority that will become a delegate
 /// `app_delegation_pda` is the target PDA for the authority's delegation
 #[derive(Accounts)]
+#[instruction(app_name: String)]
 pub struct InitAppDelegation<'info> {
     /// CHECK: Delegate authority account
     #[account()]
@@ -498,7 +500,7 @@ pub struct InitAppDelegation<'info> {
 /// `delegate_authority` is the authority that will become a delegate
 /// `app_delegation_pda` is the target PDA for the authority's delegation
 #[derive(Accounts)]
-#[instruction(app_delegation_bump:u8)]
+#[instruction(app_delegation_bump: u8)]
 pub struct RevokeAppDelegation<'info> {
     /// CHECK: Delegate authority account
     #[account()]
