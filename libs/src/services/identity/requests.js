@@ -15,25 +15,25 @@ const getTrackListens = (timeFrame = null, idsArray = null, startTime = null, en
     queryUrl += timeFrame
   }
 
-  let queryParams = {}
+  const queryParams = {}
   if (idsArray !== null) {
-    queryParams['id'] = idsArray
+    queryParams.id = idsArray
   }
 
   if (limit !== null) {
-    queryParams['limit'] = limit
+    queryParams.limit = limit
   }
 
   if (offset !== null) {
-    queryParams['offset'] = offset
+    queryParams.offset = offset
   }
 
   if (startTime != null) {
-    queryParams['start'] = startTime
+    queryParams.start = startTime
   }
 
   if (endTime != null) {
-    queryParams['end'] = endTime
+    queryParams.end = endTime
   }
 
   const req = {

@@ -50,13 +50,13 @@ if (!fs.existsSync(configFilePath)) {
 const prodRelayerInfo = require(configFilePath)
 
 const generateNewAccounts = async () => {
-  let numWallets = 1
-  let wallets = []
+  const numWallets = 1
+  const wallets = []
   for (let i = 0; i < numWallets; i++) {
     const privateKey = crypto.randomBytes(32).toString('hex')
     const privateKeyBuffer = Buffer.from(privateKey, 'hex')
     const walletObj = EthereumWallet.fromPrivateKey(privateKeyBuffer)
-    let info = {
+    const info = {
       publicKey: walletObj.getAddressString(),
       privateKey
     }
@@ -68,29 +68,29 @@ const generateNewAccounts = async () => {
 
 const queryAccountBalances = async (wallets) => {
   for (let i = 0; i < wallets.length; i++) {
-    let pubKey = wallets[i].publicKey
-    let balance = await ethWeb3.eth.getBalance(pubKey)
+    const pubKey = wallets[i].publicKey
+    const balance = await ethWeb3.eth.getBalance(pubKey)
     console.log(`Found balance ${ethWeb3.utils.fromWei(balance)} eth (${balance} wei) for ${pubKey}`)
   }
   console.log(`\n\nQueried ${wallets.length} wallets`)
 }
 
 const queryRelayerBalances = async () => {
-  let gasInfo = await getGasPrice()
-  let walletInfo = await loadProdRelayerWallets()
+  const gasInfo = await getGasPrice()
+  const walletInfo = await loadProdRelayerWallets()
   await queryAccountBalances(walletInfo.relayerWallets)
   console.log(gasInfo, '\n')
 }
 
 const loadProdRelayerWallets = async () => {
-  let funder = {
+  const funder = {
     publicKey: prodRelayerInfo.funderPublicKey,
     privateKey: prodRelayerInfo.funderPrivateKey
   }
   // console.log(funder)
-  let relayerWallets = prodRelayerInfo.relayerWallets
+  const relayerWallets = prodRelayerInfo.relayerWallets
   // console.log(relayerWallets)
-  let funderbalance = await ethWeb3.eth.getBalance(funder.publicKey)
+  const funderbalance = await ethWeb3.eth.getBalance(funder.publicKey)
   console.log(`\nFunder ${funder.publicKey} balance: ${ethWeb3.utils.fromWei(funderbalance)} eth (${funderbalance} wei)`)
 
   console.log(`Minimum relayer balance: ${ethWeb3.utils.fromWei(minimumBalance.toString())} eth (${minimumBalance.toString()} wei)\n\n`)
@@ -121,7 +121,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, ga
   const gasLimit = '0xf7100'
   const nonce = await web3.eth.getTransactionCount(address)
   console.log(`Sending tx from ${sender.publicKey} to ${receiverAddress} with nonce=${nonce}, gasPrice=${gasPrice}, gasLimit=${gasLimit}`)
-  let txParams = {
+  const txParams = {
     nonce: web3.utils.toHex(nonce),
     gasPrice: gasPrice,
     gasLimit: gasLimit,
@@ -139,20 +139,20 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, ga
 }
 
 const fundEthRelayerIfEmpty = async () => {
-  let walletInfo = await loadProdRelayerWallets()
+  const walletInfo = await loadProdRelayerWallets()
 
-  let relayerWallets = walletInfo.relayerWallets
+  const relayerWallets = walletInfo.relayerWallets
 
   let gasInfo
   let gasPrice
 
   for (let i = 0; i < relayerWallets.length; i++) {
-    let relayerPublicKey = relayerWallets[i].publicKey
+    const relayerPublicKey = relayerWallets[i].publicKey
     let balance = await ethWeb3.eth.getBalance(relayerPublicKey)
-    let validBalance = parseInt(balance) >= minimumBalance
+    const validBalance = parseInt(balance) >= minimumBalance
     console.log(`${i + 1} - Found balance ${balance} for ${relayerPublicKey}, validBal=${validBalance}`)
     if (!validBalance) {
-      let missingBalance = minimumBalance - balance
+      const missingBalance = minimumBalance - balance
       console.log(`${i + 1} - Funding ${relayerPublicKey} with ${missingBalance}, currently ${balance}/${minimumBalance}`)
       gasInfo = await getGasPrice()
       gasPrice = gasInfo.fastestGweiHex
@@ -171,7 +171,7 @@ const fundEthRelayerIfEmpty = async () => {
   await queryAccountBalances(relayerWallets)
 }
 
-let args = process.argv
+const args = process.argv
 const run = async () => {
   switch (args[2]) {
     case 'fundAllRelayers':

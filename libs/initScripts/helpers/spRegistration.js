@@ -7,8 +7,8 @@ const { getEthWeb3AndAccounts, convertAudsToWeiBN } = require('./utils')
 async function getStakingParameters (audiusLibs) {
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
-  let min = await audiusLibs.ethContracts.StakingProxyClient.getMinStakeAmount()
-  let max = await audiusLibs.ethContracts.StakingProxyClient.getMaxStakeAmount()
+  const min = await audiusLibs.ethContracts.StakingProxyClient.getMinStakeAmount()
+  const max = await audiusLibs.ethContracts.StakingProxyClient.getMaxStakeAmount()
   console.log(`getStakingParameters: min: ${min}, max: ${max}`)
   return { min, max }
 }
@@ -26,12 +26,12 @@ async function registerLocalService (audiusLibs, serviceType, serviceEndpoint, a
 
   const { ethWeb3 } = await getEthWeb3AndAccounts(audiusLibs)
   console.log('\nregistering service providers/---')
-  let initialTokenInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
+  const initialTokenInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
 
   try {
     // Register service
     console.log(`registering service ${serviceType} ${serviceEndpoint}`)
-    let tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.register(
+    const tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.register(
       serviceType,
       serviceEndpoint,
       initialTokenInAudWeiBN)
@@ -73,7 +73,7 @@ async function deregisterLocalService (audiusLibs, serviceType, serviceEndpoint)
   try {
     // de-register service
     console.log(`\nde-registering service ${serviceType} ${serviceEndpoint}`)
-    let tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.deregister(
+    const tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.deregister(
       serviceType,
       serviceEndpoint)
     console.dir(tx, { depth: 5 })
@@ -97,37 +97,37 @@ async function queryLocalServices (audiusLibs, serviceTypeList, queryUserReplica
 
   for (const spType of serviceTypeList) {
     console.log(`${spType}`)
-    let spList = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(spType)
+    const spList = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(spType)
     if (spType === 'content-node') {
       cnodesInfoList = spList
     }
     for (const sp of spList) {
       console.log(sp)
       const { spID, type, endpoint } = sp
-      let idFromEndpoint =
+      const idFromEndpoint =
         await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(endpoint)
       console.log(`ID from endpoint: ${idFromEndpoint}`)
-      let infoFromId =
+      const infoFromId =
         await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(type, spID)
-      let jsonInfoFromId = JSON.stringify(infoFromId)
+      const jsonInfoFromId = JSON.stringify(infoFromId)
       console.log(`Info from ID: ${jsonInfoFromId}`)
-      let idsFromAddress =
+      const idsFromAddress =
         await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdsFromAddress(
           ethAccounts[0],
           type)
       console.log(`SP IDs from owner wallet ${ethAccounts[0]}: ${idsFromAddress}`)
     }
 
-    let numProvs = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getTotalServiceTypeProviders(spType)
+    const numProvs = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getTotalServiceTypeProviders(spType)
     console.log(`${numProvs} instances of ${spType}`)
   }
   console.log('----done querying service providers')
   if (queryUserReplicaSetManager) {
     console.log('\n----querying UserReplicaSetManager on data-contracts')
     for (const cnode of cnodesInfoList) {
-      let spInfoFromUrsm = await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnode.spID)
-      let delegateWalletFromUrsmContract = spInfoFromUrsm.delegateOwnerWallet
-      let ownerWalletFromUrsmContract = spInfoFromUrsm.ownerWallet
+      const spInfoFromUrsm = await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnode.spID)
+      const delegateWalletFromUrsmContract = spInfoFromUrsm.delegateOwnerWallet
+      const ownerWalletFromUrsmContract = spInfoFromUrsm.ownerWallet
       console.log(`spID ${cnode.spID} | \
 eth-contracts delegateWallet=${cnode.delegateOwnerWallet}, data-contracts delegateOwnerWallet=${delegateWalletFromUrsmContract}, ownerWallet=${ownerWalletFromUrsmContract}`)
     }

@@ -51,14 +51,14 @@ class ServiceTypeManagerClient extends GovernedContractClient {
 
   async getCurrentVersion (serviceType) {
     const method = await this.getMethod('getCurrentVersion', Utils.utf8ToHex(serviceType))
-    let hexVersion = await method.call()
+    const hexVersion = await method.call()
     return Utils.hexToUtf8(hexVersion)
   }
 
   async getVersion (serviceType, serviceTypeIndex) {
-    let serviceTypeBytes32 = Utils.utf8ToHex(serviceType)
+    const serviceTypeBytes32 = Utils.utf8ToHex(serviceType)
     const method = await this.getMethod('getVersion', serviceTypeBytes32, serviceTypeIndex)
-    let version = await method.call()
+    const version = await method.call()
     return Utils.hexToUtf8(version)
   }
 

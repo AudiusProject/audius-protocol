@@ -105,7 +105,7 @@ class ClaimsManagerClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ClaimProcessed', {
+    const events = await contract.getPastEvents('ClaimProcessed', {
       fromBlock: queryStartBlock,
       filter: {
         _claimer: claimer

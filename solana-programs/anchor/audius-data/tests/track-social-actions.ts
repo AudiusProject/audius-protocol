@@ -4,13 +4,17 @@ import chai, { assert, expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
   initAdmin,
-  writeTrackSocialAction,
-  TrackSocialActionEnumValues,
+  addTrackRepost,
+  addTrackSave,
   updateAdmin,
+  deleteTrackSave,
+  EntitySocialActionEnumValues,
+  EntityTypesEnumValues,
+  deleteTrackRepost,
 } from "../lib/lib";
-import { getTransaction } from "../lib/utils";
+import { getTransaction, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser, createSolanaTrack } from "./test-helpers";
+import { createSolanaUser } from "./test-helpers";
 
 chai.use(chaiAsPromised);
 
@@ -36,8 +40,6 @@ describe("track-actions", function () {
       adminKeypair,
       adminStorageKeypair,
       verifierKeypair,
-      trackIdOffset: new anchor.BN("10"),
-      playlistIdOffset: new anchor.BN("0"),
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
@@ -61,41 +63,10 @@ describe("track-actions", function () {
     });
   });
 
-  it("Save a track with a low track id", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
-    const tx = await writeTrackSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.addSave,
-      trackId: new anchor.BN("1"),
-    });
-
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.addSave
-    );
-  });
-
   it("Delete save for a track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await writeTrackSocialAction({
+    const tx = await deleteTrackSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
@@ -103,8 +74,7 @@ describe("track-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.deleteSave,
-      trackId: new anchor.BN("1"),
+      id: randomString(10),
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -117,23 +87,18 @@ describe("track-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.deleteSave
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.deleteSave
+    );
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.track
     );
   });
 
   it("Save a newly created track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const track = await createSolanaTrack(
-      program,
-      provider,
-      adminStorageKeypair,
-      user.keypair,
-      user.pda
-    );
-
-    const tx = await writeTrackSocialAction({
+    const tx = await addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
@@ -141,8 +106,7 @@ describe("track-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.addSave,
-      trackId: track.track.trackId,
+      id: randomString(10),
     });
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -155,38 +119,18 @@ describe("track-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.addSave
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.addSave
+    );
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.track
     );
   });
 
-  it("Error on saving an invalid track", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+  it("Repost a track", async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair);
 
-    const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
-    );
-
-    await expect(
-      writeTrackSocialAction({
-        program,
-        baseAuthorityAccount: user.authority,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
-        userStorageAccountPDA: user.pda,
-        userAuthorityKeypair: user.keypair,
-        handleBytesArray: user.handleBytesArray,
-        bumpSeed: user.bumpSeed,
-        trackSocialAction: TrackSocialActionEnumValues.deleteSave,
-        trackId: adminAccount.trackId,
-      })
-    )
-      .to.eventually.be.rejected.and.property("msg")
-      .to.include(`Invalid Id.`);
-  });
-
-  it("Repost a track with a low track id", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
-    const tx = await writeTrackSocialAction({
+    const tx = await addTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
@@ -194,31 +138,31 @@ describe("track-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.addRepost,
-      trackId: new anchor.BN("1"),
+      id: randomString(10),
     });
-
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
-
     const userHandle = String.fromCharCode(...user.handleBytesArray);
     const instructionHandle = String.fromCharCode(
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.addRepost
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.addRepost
+    );
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.track
     );
   });
 
   it("Delete repost for a track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await writeTrackSocialAction({
+    const tx = await deleteTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
@@ -226,9 +170,9 @@ describe("track-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.deleteRepost,
-      trackId: new anchor.BN("1"),
+      id: randomString(10),
     });
+
     const info = await getTransaction(provider, tx);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
@@ -240,70 +184,11 @@ describe("track-actions", function () {
       ...decodedInstruction.data.userHandle.seed
     );
     assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.deleteRepost
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.deleteRepost
     );
-  });
-
-  it("Repost a newly created track", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
-
-    const track = await createSolanaTrack(
-      program,
-      provider,
-      adminStorageKeypair,
-      user.keypair,
-      user.pda
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.track
     );
-
-    const tx = await writeTrackSocialAction({
-      program,
-      baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
-      bumpSeed: user.bumpSeed,
-      trackSocialAction: TrackSocialActionEnumValues.addRepost,
-      trackId: track.track.trackId,
-    });
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
-    const decodedInstruction = instructionCoder.decode(
-      info.transaction.message.instructions[0].data,
-      "base58"
-    );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
-    expect(decodedInstruction.data.trackSocialAction).to.deep.equal(
-      TrackSocialActionEnumValues.addRepost
-    );
-  });
-
-  it("Error on reposting an invalid track", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
-
-    const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
-    );
-
-    await expect(
-      writeTrackSocialAction({
-        program,
-        baseAuthorityAccount: user.authority,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
-        userStorageAccountPDA: user.pda,
-        userAuthorityKeypair: user.keypair,
-        handleBytesArray: user.handleBytesArray,
-        bumpSeed: user.bumpSeed,
-        trackSocialAction: TrackSocialActionEnumValues.deleteRepost,
-        trackId: adminAccount.trackId,
-      })
-    )
-      .to.eventually.be.rejected.and.property("msg")
-      .to.include(`Invalid Id.`);
   });
 });
