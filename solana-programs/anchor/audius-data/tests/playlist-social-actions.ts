@@ -101,8 +101,8 @@ describe("playlist-actions", function () {
     const tx = await addPlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -160,7 +160,7 @@ describe("playlist-actions", function () {
   });
 
   it("Delete repost for a playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await deletePlaylistRepost({
       program,

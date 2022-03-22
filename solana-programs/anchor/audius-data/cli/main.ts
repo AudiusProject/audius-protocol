@@ -3,23 +3,23 @@ import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
-import { randomCID, findDerivedPair } from "../lib/utils";
 import {
   initAdmin,
   initUser,
   initUserSolPubkey,
+  CreateEntityParams,
   createTrack,
-  CreateTrackParams,
-  CreatePlaylistParams,
+  ManagementActions,
+  EntityTypesEnumValues,
   createPlaylist,
-  DeletePlaylistParams,
-  deletePlaylist,
   updatePlaylist,
-  UpdatePlaylistParams,
 } from "../lib/lib";
+import { findDerivedPair, randomCID, randomString } from "../lib/utils";
 
 import { Command } from "commander";
 import fs = require("fs");
+
+import { readFileSync } from 'fs';
 
 const AUDIUS_PROD_RPC_POOL = "https://audius.rpcpool.com/";
 const LOCALHOST_RPC_POOL = "http://localhost:8899";
@@ -61,6 +61,12 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
   };
 }
 
+function getHandleBytesArray(handle: string){
+  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
+  const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
+  return handleBytesArray
+}
+
 type initAdminCLIParams = {
   adminKeypair: Keypair;
   adminStorageKeypair: Keypair;
@@ -74,24 +80,33 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
   console.log(`AdminKeypair:`);
   console.log(adminKeypair.publicKey.toString());
   console.log(`[${adminKeypair.secretKey.toString()}]`);
-  console.log(
-    `echo "[${adminKeypair.secretKey.toString()}]" > adminKeypair.json`
-  );
+  fs.writeFile('adminKeypair.json', "[" + adminKeypair.secretKey.toString() + "]",  function(err) {
+    if (err) {
+        return console.error(err);
+    }
+    console.log("Wrote to adminKeypair.json");
+  });
+
   console.log(`adminStorageKeypair:`);
   console.log(adminStorageKeypair.publicKey.toString());
   console.log(`[${adminStorageKeypair.secretKey.toString()}]`);
-  console.log(
-    `echo "[${adminStorageKeypair.secretKey.toString()}]" > adminStorageKeypair.json`
-  );
+  fs.writeFile('adminStorageKeypair.json',  "[" + adminStorageKeypair.secretKey.toString() + "]",  function(err) {
+    if (err) {
+        return console.error(err);
+    }
+    console.log("Wrote to adminStorageKeypair.json");
+  });
+
   // TODO: Accept variable offset
   let tx = await initAdmin({
     provider: cliVars.provider,
     program: cliVars.program,
     adminKeypair,
-    adminStgKeypair,
+    adminStorageKeypair,
     verifierKeypair
   });
   await cliVars.provider.connection.confirmTransaction(tx);
+  console.log("Initialized admin.")
 }
 
 type initUserCLIParams = {
@@ -102,6 +117,7 @@ type initUserCLIParams = {
   ownerKeypairPath: string;
   adminKeypair: Keypair;
 };
+
 async function initUserCLI(args: initUserCLIParams) {
   const {
     adminKeypair,
@@ -112,16 +128,11 @@ async function initUserCLI(args: initUserCLIParams) {
     adminStoragePublicKey,
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
-  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
-  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-    await findDerivedPair(
-      cliVars.program.programId,
-      adminStorageKeypair.publicKey,
-      Buffer.from(handleBytesArray)
-    );
+  const handleBytesArray = getHandleBytesArray(handle);
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStoragePublicKey, handleBytesArray);
 
   const userStorageAddress = derivedAddress;
+  console.log("initing user")
   const tx = await initUser({
     provider: cliVars.provider,
     program: cliVars.program,
@@ -131,29 +142,63 @@ async function initUserCLI(args: initUserCLIParams) {
     metadata,
     userStorageAccount: userStorageAddress,
     baseAuthorityAccount,
-    adminStorageKey: adminStoragePublicKey,
+    adminStorageAccount: adminStoragePublicKey,
     adminKeypair,
   });
+
+  await cliVars.provider.connection.confirmTransaction(tx);
+
   console.log(
     `Initialized user=${handle}, tx=${tx}, userAcct=${userStorageAddress}`
   );
 }
 
-async function timeCreateTrack(args: CreateTrackParams) {
+async function timeManageEntity(args: CreateEntityParams, provider: Provider, manageAction: any, entityType: any) {
   let retries = 5;
   let err = null;
   while (retries > 0) {
     try {
       const start = Date.now();
-      const tx = await createTrack({
-        program: args.program,
-        provider: args.provider,
-        metadata: args.metadata,
-        newTrackKeypair: args.newTrackKeypair,
-        userAuthorityKeypair: args.userAuthorityKeypair,
-        userStorageAccountPDA: args.userStorageAccountPDA,
-        adminStoragePublicKey: args.adminStoragePublicKey,
-      });
+      let tx;
+      if (manageAction == ManagementActions.create && entityType == EntityTypesEnumValues.track) {
+        tx = await createTrack({
+          id: args.id,
+          program: args.program,
+          baseAuthorityAccount: args.baseAuthorityAccount,
+          userAuthorityKeypair: args.userAuthorityKeypair,
+          userStorageAccountPDA: args.userStorageAccountPDA,
+          metadata: args.metadata,
+          handleBytesArray: args.handleBytesArray,
+          adminStorageAccount: args.adminStorageAccount,
+          bumpSeed: args.bumpSeed,
+        });
+      } else if (manageAction == ManagementActions.create && entityType == EntityTypesEnumValues.playlist) {
+        tx = await createPlaylist({
+          id: args.id,
+          program: args.program,
+          baseAuthorityAccount: args.baseAuthorityAccount,
+          userAuthorityKeypair: args.userAuthorityKeypair,
+          userStorageAccountPDA: args.userStorageAccountPDA,
+          metadata: args.metadata,
+          handleBytesArray: args.handleBytesArray,
+          adminStorageAccount: args.adminStorageAccount,
+          bumpSeed: args.bumpSeed,
+        });
+      } else if (manageAction == ManagementActions.update && entityType == EntityTypesEnumValues.playlist) {
+        tx = await updatePlaylist({
+          id: args.id,
+          program: args.program,
+          baseAuthorityAccount: args.baseAuthorityAccount,
+          userAuthorityKeypair: args.userAuthorityKeypair,
+          userStorageAccountPDA: args.userStorageAccountPDA,
+          metadata: args.metadata,
+          handleBytesArray: args.handleBytesArray,
+          adminStorageAccount: args.adminStorageAccount,
+          bumpSeed: args.bumpSeed,
+        });
+      }
+
+      await provider.connection.confirmTransaction(tx);
       const duration = Date.now() - start;
       console.log(
         `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
@@ -167,85 +212,85 @@ async function timeCreateTrack(args: CreateTrackParams) {
   console.log(err);
 }
 
-async function timeCreatePlaylist(args: CreatePlaylistParams) {
-  let retries = 5;
-  let err = null;
-  while (retries > 0) {
-    try {
-      const start = Date.now();
-      const tx = await createPlaylist({
-        program: args.program,
-        provider: args.provider,
-        newPlaylistKeypair: args.newPlaylistKeypair,
-        userStorageAccountPDA: args.userStorageAccountPDA,
-        userAuthorityKeypair: args.userAuthorityKeypair,
-        adminStoragePublicKey: args.adminStoragePublicKey,
-        metadata: randomCID(),
-      });
-      const duration = Date.now() - start;
-      console.log(
-        `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
-      );
-      return tx;
-    } catch (e) {
-      err = e;
-    }
-    retries--;
-  }
-  console.log(err);
-}
+// async function timeCreatePlaylist(args: CreateEntityParams) {
+//   let retries = 5;
+//   let err = null;
+//   while (retries > 0) {
+//     try {
+//       const start = Date.now();
+//       const tx = await createPlaylist({
+//         program: args.program,
+//         provider: args.provider,
+//         newPlaylistKeypair: args.newPlaylistKeypair,
+//         userStorageAccountPDA: args.userStorageAccountPDA,
+//         userAuthorityKeypair: args.userAuthorityKeypair,
+//         adminStoragePublicKey: args.adminStoragePublicKey,
+//         metadata: randomCID(),
+//       });
+//       const duration = Date.now() - start;
+//       console.log(
+//         `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
+//       );
+//       return tx;
+//     } catch (e) {
+//       err = e;
+//     }
+//     retries--;
+//   }
+//   console.log(err);
+// }
 
-async function timeUpdatePlaylist(args: UpdatePlaylistParams) {
-  let retries = 5;
-  let err = null;
-  while (retries > 0) {
-    try {
-      const start = Date.now();
-      const tx = await updatePlaylist({
-        program: args.program,
-        playlistPublicKey: args.playlistPublicKey,
-        userStorageAccountPDA: args.userStorageAccountPDA,
-        userAuthorityKeypair: args.userAuthorityKeypair,
-        metadata: args.metadata,
-      });
-      const duration = Date.now() - start;
-      console.log(
-        `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
-      );
-      return tx;
-    } catch (e) {
-      err = e;
-    }
-    retries--;
-  }
-  console.log(err);
-}
+// async function timeUpdatePlaylist(args: UpdateEntityParams) {
+//   let retries = 5;
+//   let err = null;
+//   while (retries > 0) {
+//     try {
+//       const start = Date.now();
+//       const tx = await updatePlaylist({
+//         program: args.program,
+//         playlistPublicKey: args.playlistPublicKey,
+//         userStorageAccountPDA: args.userStorageAccountPDA,
+//         userAuthorityKeypair: args.userAuthorityKeypair,
+//         metadata: args.metadata,
+//       });
+//       const duration = Date.now() - start;
+//       console.log(
+//         `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
+//       );
+//       return tx;
+//     } catch (e) {
+//       err = e;
+//     }
+//     retries--;
+//   }
+//   console.log(err);
+// }
 
-async function timeDeletePlaylist(args: DeletePlaylistParams) {
-  let retries = 5;
-  let err = null;
-  while (retries > 0) {
-    try {
-      const start = Date.now();
-      const tx = await deletePlaylist({
-        program: args.program,
-        provider: args.provider,
-        playlistPublicKey: args.playlistPublicKey,
-        userStorageAccountPDA: args.userStorageAccountPDA,
-        userAuthorityKeypair: args.userAuthorityKeypair,
-      });
-      const duration = Date.now() - start;
-      console.log(
-        `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
-      );
-      return tx;
-    } catch (e) {
-      err = e;
-    }
-    retries--;
-  }
-  console.log(err);
-}
+// async function timeDeletePlaylist(args: DeleteEntityParams) {
+//   let retries = 5;
+//   let err = null;
+//   while (retries > 0) {
+//     try {
+//       const start = Date.now();
+//       const tx = await deletePlaylist({
+//         program: args.program,
+//         provider: args.provider,
+//         playlistPublicKey: args.playlistPublicKey,
+//         userStorageAccountPDA: args.userStorageAccountPDA,
+//         userAuthorityKeypair: args.userAuthorityKeypair,
+//       });
+//       const duration = Date.now() - start;
+//       console.log(
+//         `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
+//       );
+//       return tx;
+//     } catch (e) {
+//       err = e;
+//     }
+//     retries--;
+//   }
+//   console.log(err);
+// }
 
 const functionTypes = Object.freeze({
   initAdmin: "initAdmin",
@@ -339,6 +384,7 @@ switch (options.function) {
     const userSolPubkey = userSolKeypair.publicKey;
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
+      
       const tx = await initUserSolPubkey({
         program: cliVars.program,
         provider: cliVars.provider,
@@ -347,6 +393,7 @@ switch (options.function) {
         userStorageAccount: options.userStoragePubkey,
         userSolPubkey,
       });
+      await cliVars.provider.connection.confirmTransaction(tx);
       console.log(
         `initUserTx = ${tx}, userStorageAccount = ${options.userStoragePubkey}`
       );
@@ -363,31 +410,27 @@ switch (options.function) {
     (async () => {
       const promises = [];
       const cliVars = initializeCLI(network, options.ownerKeypair);
+      const handleBytesArray = getHandleBytesArray(options.handle);
+      const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStorageKeypair.publicKey, handleBytesArray);
+
       for (let i = 0; i < numTracks; i++) {
         promises.push(
-          timeCreateTrack({
+          timeManageEntity({
+            id: randomString(10),
+            baseAuthorityAccount,
+            adminStorageAccount: adminStorageKeypair.publicKey,
+            handleBytesArray: handleBytesArray,
             program: cliVars.program,
-            provider: cliVars.provider,
+            bumpSeed: bumpSeed,
             metadata: randomCID(),
-            newTrackKeypair: anchor.web3.Keypair.generate(),
             userAuthorityKeypair: userSolKeypair,
             userStorageAccountPDA: options.userStoragePubkey,
-            adminStoragePublicKey: adminStorageKeypair.publicKey,
-          })
+          }, cliVars.provider, ManagementActions.create, EntityTypesEnumValues.track)
         );
       }
       const start = Date.now();
       await Promise.all(promises);
       console.log(`Processed ${numTracks} tracks in ${Date.now() - start}ms`);
-    })();
-    break;
-  case functionTypes.getTrackId:
-    (async () => {
-      const cliVars = initializeCLI(network, options.ownerKeypair);
-      const info = await cliVars.program.account.audiusAdmin.fetch(
-        adminStorageKeypair.publicKey
-      );
-      console.log(`trackID high:${info.trackId}`);
     })();
     break;
   /**
@@ -401,17 +444,22 @@ switch (options.function) {
     (async () => {
       const promises = [];
       const cliVars = initializeCLI(network, options.ownerKeypair);
+      const handleBytesArray = getHandleBytesArray(options.handle);
+      const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStorageKeypair.publicKey, handleBytesArray);
+
       for (let i = 0; i < numPlaylists; i++) {
         promises.push(
-          timeCreatePlaylist({
+          timeManageEntity({
+            id: randomString(10),
+            baseAuthorityAccount,
+            adminStorageAccount: adminStorageKeypair.publicKey,
+            handleBytesArray: handleBytesArray,
             program: cliVars.program,
-            provider: cliVars.provider,
+            bumpSeed: bumpSeed,
             metadata: randomCID(),
-            newPlaylistKeypair: anchor.web3.Keypair.generate(),
             userAuthorityKeypair: userSolKeypair,
             userStorageAccountPDA: options.userStoragePubkey,
-            adminStoragePublicKey: adminStorageKeypair.publicKey,
-          })
+          }, cliVars.provider, ManagementActions.create, EntityTypesEnumValues.playlist)
         );
       }
       const start = Date.now();
@@ -429,49 +477,55 @@ switch (options.function) {
     );
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
+      const handleBytesArray = getHandleBytesArray(options.handle);
+      const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStorageKeypair.publicKey, handleBytesArray);
       const start = Date.now();
-      await timeUpdatePlaylist({
-        program: cliVars.program,
-        metadata: randomCID(),
-        playlistPublicKey,
-        userAuthorityKeypair: userSolKeypair,
-        userStorageAccountPDA: options.userStoragePubkey,
-      });
+      await timeManageEntity({
+          id: randomString(10),
+          baseAuthorityAccount,
+          adminStorageAccount: adminStorageKeypair.publicKey,
+          handleBytesArray: handleBytesArray,
+          program: cliVars.program,
+          bumpSeed: bumpSeed,
+          metadata: randomCID(),
+          userAuthorityKeypair: userSolKeypair,
+          userStorageAccountPDA: options.userStoragePubkey,
+        }, cliVars.provider, ManagementActions.update, EntityTypesEnumValues.playlist);
       console.log(
         `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
       );
     })();
     break;
   }
-  case functionTypes.deletePlaylist: {
-    const playlistPublicKey = options.playlistPubkey;
-    if (!playlistPublicKey) break;
-    console.log(
-      `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStoragePubkey}`
-    );
-    (async () => {
-      const cliVars = initializeCLI(network, options.ownerKeypair);
-      const start = Date.now();
-      await timeDeletePlaylist({
-        program: cliVars.program,
-        provider: cliVars.provider,
-        playlistPublicKey,
-        userAuthorityKeypair: userSolKeypair,
-        userStorageAccountPDA: options.userStoragePubkey,
-      });
-      console.log(
-        `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
-      );
-    })();
-    break;
-  }
-  case functionTypes.getPlaylistId:
-    (async () => {
-      const cliVars = initializeCLI(network, options.ownerKeypair);
-      const info = await cliVars.program.account.audiusAdmin.fetch(
-        adminStorageKeypair.publicKey
-      );
-      console.log(`playlistID high:${info.playlistId}`);
-    })();
-    break;
+  // case functionTypes.deletePlaylist: {
+  //   const playlistPublicKey = options.playlistPubkey;
+  //   if (!playlistPublicKey) break;
+  //   console.log(
+  //     `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStoragePubkey}`
+  //   );
+  //   (async () => {
+  //     const cliVars = initializeCLI(network, options.ownerKeypair);
+  //     const start = Date.now();
+  //     await timeDeletePlaylist({
+  //       program: cliVars.program,
+  //       provider: cliVars.provider,
+  //       playlistPublicKey,
+  //       userAuthorityKeypair: userSolKeypair,
+  //       userStorageAccountPDA: options.userStoragePubkey,
+  //     });
+  //     console.log(
+  //       `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
+  //     );
+  //   })();
+  //   break;
+  // }
+  // case functionTypes.getPlaylistId:
+  //   (async () => {
+  //     const cliVars = initializeCLI(network, options.ownerKeypair);
+  //     const info = await cliVars.program.account.audiusAdmin.fetch(
+  //       adminStorageKeypair.publicKey
+  //     );
+  //     console.log(`playlistID high:${info.playlistId}`);
+  //   })();
+  //   break;
 }

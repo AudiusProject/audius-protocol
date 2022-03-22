@@ -51,9 +51,10 @@ describe("audius-data", function () {
       provider,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       verifierKeypair,
     });
+
 
     const { decodedInstruction, decodedData, accountPubKeys } =
       await getTransactionWithData(program, provider, tx, 0);
@@ -65,7 +66,7 @@ describe("audius-data", function () {
     expect(decodedData.verifier.toString()).to.equal(
       verifierKeypair.publicKey.toString()
     );
-    expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+    expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
     expect(accountPubKeys[2]).to.equal(SystemProgram.programId.toString());
 
     const adminAccount = await program.account.audiusAdmin.fetch(

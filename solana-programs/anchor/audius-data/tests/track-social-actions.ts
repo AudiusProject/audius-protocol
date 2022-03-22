@@ -101,8 +101,8 @@ describe("track-actions", function () {
     const tx = await addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: user.pda,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
