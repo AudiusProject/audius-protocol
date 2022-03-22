@@ -10,9 +10,6 @@ use std::collections::BTreeMap;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // default program ID to be replaced in start.sh
 
-/// Represent Ethereum pubkey bytes
-pub type EthereumAddress = [u8; 20];
-
 #[program]
 pub mod audius_data {
     use anchor_lang::solana_program::{
@@ -34,8 +31,7 @@ pub mod audius_data {
         verifier: Pubkey,
     ) -> Result<()> {
         let audius_admin = &mut ctx.accounts.admin;
-        audius_admin.authority = authority;
-        audius_admin.verifier = verifier;
+        audius_admin.authority = authority;        audius_admin.verifier = verifier;
         audius_admin.is_write_enabled = true;
         Ok(())
     }
@@ -72,8 +68,8 @@ pub mod audius_data {
         ctx: Context<InitializeUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        ursm: [u16; 3],
-        _ursm_bumps: [u8; 3],
+        replica_set: [u16; 3],
+        _replica_set_bumps: [u8; 3],
         handle_seed: [u8; 16],
         _user_bump: u8,
         _metadata: String,
@@ -103,7 +99,7 @@ pub mod audius_data {
 
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
-        audius_user_acct.ursm = ursm;
+        audius_user_acct.replica_set = replica_set;
 
         Ok(())
     }
@@ -297,40 +293,9 @@ pub mod audius_data {
         ctx: Context<UpdateUserReplicaSet>,
         base: Pubkey,
         _user_handle: UserHandle,
-        ursm: [u16;3],
-        _ursm_bumps: [u8; 3]
+        replica_set: [u16;3],
+        _replica_set_bumps: [u8; 3]
     ) -> Result<()> {
-        let user_ursm = &ctx.accounts.user.ursm;
-
-        let did_user_sign = ctx.accounts.user.authority == ctx.accounts.cn_authority.key();
-        let mut is_valid_authority = did_user_sign;
-        let proposers = [&ctx.accounts.cn1, &ctx.accounts.cn2, &ctx.accounts.cn3];
-
-        // Validate that a content node in the replica signed the tx if the user's authority did not
-        if !is_valid_authority {
-            for proposer in proposers {
-                if proposer.authority == ctx.accounts.cn_authority.key() {
-                    is_valid_authority = true;
-                    if !user_ursm.iter().any(|cn| {
-                        let (base_pda, _bump) = Pubkey::find_program_address(
-                            &[
-                                &base.to_bytes()[..32],
-                                CONTENT_NODE_SEED_PREFIX,
-                                &cn.to_le_bytes()
-                            ], &ctx.program_id);
-                        return base_pda == proposer.key();
-                    }) {
-                        msg!("Audius::UpdateUserReplicaSet bad");
-                        return Err(ErrorCode::Unauthorized.into());
-                    }
-                }
-            }    
-        }
-
-        if !is_valid_authority {
-            msg!("Audius::UpdateUserReplicaSet oterh");
-            return Err(ErrorCode::Unauthorized.into());
-        }
 
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
@@ -342,8 +307,39 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
+        let user_replica_set = &ctx.accounts.user.replica_set;
+
+        let did_user_sign = ctx.accounts.user.authority == ctx.accounts.cn_authority.key();
+        let mut is_valid_authority = did_user_sign;
+        let proposers = [&ctx.accounts.cn1, &ctx.accounts.cn2, &ctx.accounts.cn3];
+
+        // Validate that a content node in the replica signed the tx if the user's authority did not
+        if !is_valid_authority {
+            for proposer in proposers {
+                if proposer.authority == ctx.accounts.cn_authority.key() {
+                    is_valid_authority = true;
+                    // Validate that one of the user's replica set nodes signed the transaction
+                    if !user_replica_set.iter().any(|cn| {
+                        let (base_pda, _bump) = Pubkey::find_program_address(
+                            &[
+                                &base.to_bytes()[..32],
+                                CONTENT_NODE_SEED_PREFIX,
+                                &cn.to_le_bytes()
+                            ], &ctx.program_id);
+                        return base_pda == proposer.key();
+                    }) {
+                        return Err(ErrorCode::Unauthorized.into());
+                    }
+                }
+            }    
+        }
+
+        if !is_valid_authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
         let user_acct = &mut ctx.accounts.user;
-        user_acct.ursm = ursm;
+        user_acct.replica_set = replica_set;
         Ok(())
     }
     
@@ -392,8 +388,8 @@ pub mod audius_data {
         ctx: Context<CreateUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        ursm: [u16; 3],
-        _ursm_bumps: [u8; 3],
+        replica_set: [u16; 3],
+        _replica_set_bumps: [u8; 3],
         _handle_seed: [u8; 16],
         _user_bump: u8,
         _metadata: String,
@@ -430,7 +426,7 @@ pub mod audius_data {
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
         audius_user_acct.authority = user_authority;
-        audius_user_acct.ursm = ursm;
+        audius_user_acct.replica_set = replica_set;
 
         let message = secp_data.data[MESSAGE_OFFSET..].to_vec();
 
@@ -603,7 +599,7 @@ pub struct Initialize<'info> {
 /// `payer` is the account responsible for the lamports required to allocate this account.
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], ursm: [u16; 3], ursm_bumps:[u8; 3], handle_seed: [u8;16])]
+#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], handle_seed: [u8;16])]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
@@ -614,11 +610,11 @@ pub struct InitializeUser<'info> {
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[0].to_le_bytes()], bump = ursm_bumps[0])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[0].to_le_bytes()], bump = replica_set_bumps[0])]
     pub cn1: Account<'info, ContentNode>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[1].to_le_bytes()], bump = ursm_bumps[1])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[1].to_le_bytes()], bump = replica_set_bumps[1])]
     pub cn2: Account<'info, ContentNode>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[2].to_le_bytes()], bump = ursm_bumps[2])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[2].to_le_bytes()], bump = replica_set_bumps[2])]
     pub cn3: Account<'info, ContentNode>,
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -675,7 +671,7 @@ pub struct PublicCreateContentNode<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Instruction container for creating a content node with 3 proposers
+/// Instruction container for updating a content node with 3 proposers
 #[derive(Accounts)]
 #[instruction(base: Pubkey, cn: ProposerSeedBump, p1: ProposerSeedBump, p2: ProposerSeedBump, p3: ProposerSeedBump, sp_id: u16)]
 pub struct PublicUpdateContentNode<'info> {
@@ -727,18 +723,18 @@ pub struct PublicDeleteContentNode<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Instruction container for updating a user's replica set
+/// Instruction container for updating a user's replica set signed by the user's authority or a content node
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle, ursm: [u16; 3], ursm_bumps: [u8; 3])]
+#[instruction(base: Pubkey, user_handle: UserHandle, replica_set: [u16; 3], replica_set_bumps: [u8; 3])]
 pub struct UpdateUserReplicaSet<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(mut, seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump=user_handle.bump)]
     pub user: Account<'info, User>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[0].to_le_bytes()], bump = ursm_bumps[0])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[0].to_le_bytes()], bump = replica_set_bumps[0])]
     pub cn1: Account<'info, ContentNode>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[1].to_le_bytes()], bump = ursm_bumps[1])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[1].to_le_bytes()], bump = replica_set_bumps[1])]
     pub cn2: Account<'info, ContentNode>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[2].to_le_bytes()], bump = ursm_bumps[2])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[2].to_le_bytes()], bump = replica_set_bumps[2])]
     pub cn3: Account<'info, ContentNode>,
     pub cn_authority: Signer<'info>,    
     #[account(mut)]
@@ -761,7 +757,7 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], ursm: [u16; 3], ursm_bumps:[u8; 3], handle_seed: [u8;16])]
+#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], handle_seed: [u8;16])]
 pub struct CreateUser<'info> {
     #[account(
         init,
@@ -771,11 +767,11 @@ pub struct CreateUser<'info> {
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[0].to_le_bytes()], bump = ursm_bumps[0])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[0].to_le_bytes()], bump = replica_set_bumps[0])]
     pub cn1: Account<'info, ContentNode>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[1].to_le_bytes()], bump = ursm_bumps[1])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[1].to_le_bytes()], bump = replica_set_bumps[1])]
     pub cn2: Account<'info, ContentNode>,
-    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &ursm[2].to_le_bytes()], bump = ursm_bumps[2])]
+    #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[2].to_le_bytes()], bump = replica_set_bumps[2])]
     pub cn3: Account<'info, ContentNode>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -932,14 +928,12 @@ pub struct AudiusAdmin {
     pub is_write_enabled: bool,
 }
 
-// pub secondary_ids: [u64; 3],
-
 /// User storage account
 #[account]
 pub struct User {
     pub eth_address: [u8; 20],
     pub authority: Pubkey,
-    pub ursm: [u16; 3]
+    pub replica_set: [u16; 3]
 }
 
 /// Content Node storage account

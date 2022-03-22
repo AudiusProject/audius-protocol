@@ -48,8 +48,8 @@ type InitUserParams = {
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStgKey: anchor.web3.PublicKey;
   adminKeypair: anchor.web3.Keypair;
-  ursm: number[];
-  ursmBumps: number[];
+  replicaSet: number[];
+  replicaSetBumps: number[];
   cn1: anchor.web3.PublicKey;
   cn2: anchor.web3.PublicKey;
   cn3: anchor.web3.PublicKey;
@@ -67,8 +67,8 @@ type CreateUserParams = {
   userStgAccount: anchor.web3.PublicKey;
   adminStgPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  ursm: number[];
-  ursmBumps: number[];
+  replicaSet: number[];
+  replicaSetBumps: number[];
   cn1: anchor.web3.PublicKey;
   cn2: anchor.web3.PublicKey;
   cn3: anchor.web3.PublicKey;
@@ -144,6 +144,35 @@ type DeleteEntityParams = {
   bumpSeed: number;
 };
 
+/// Create a content node with the audius admin authority
+type CreateContentNode = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminKeypair: Keypair;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  spID: anchor.BN;
+  ownerEthAddress: string;
+};
+
+/// Verify user with authenticatorKeypair
+type UpdateUserReplicaSet = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  replicaSet: number[];
+  replicaSetBumps: number[];
+  contentNodeAuthority: anchor.web3.Keypair;
+  cn1: anchor.web3.PublicKey;
+  cn2: anchor.web3.PublicKey;
+  cn3: anchor.web3.PublicKey;
+  userAcct: anchor.web3.PublicKey;
+  userHandle: { seed: number[]; bump: number };
+}; 
+
 export const EntitySocialActionEnumValues = {
   addSave: { addSave: {} },
   deleteSave: { deleteSave: {} },
@@ -162,8 +191,28 @@ type EntitySocialActionArgs = {
   id: string;
 };
 
-/// Initialize an Audius Admin instance
+type Proposer = {
+  pda: anchor.web3.PublicKey;
+  authority: anchor.web3.Keypair;
+  seedBump: { seed: Buffer; bump: number };
+};
 
+/// Create a content node with proposers
+type PublicCreateContentNode = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  spID: anchor.BN;
+  ownerEthAddress: string;
+  proposer1: Proposer;
+  proposer2: Proposer;
+  proposer3: Proposer;
+};
+
+/// Initialize an Audius Admin instance
 export const initAdmin = async ({
   provider,
   program,
@@ -192,8 +241,8 @@ export const initUser = async ({
   ethAddress,
   handleBytesArray,
   bumpSeed,
-  ursm,
-  ursmBumps,
+  replicaSet,
+  replicaSetBumps,
   metadata,
   userStgAccount,
   baseAuthorityAccount,
@@ -206,8 +255,8 @@ export const initUser = async ({
   return program.rpc.initUser(
     baseAuthorityAccount,
     [...anchor.utils.bytes.hex.decode(ethAddress)],
-    ursm,
-    ursmBumps,
+    replicaSet,
+    replicaSetBumps,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -228,7 +277,6 @@ export const initUser = async ({
 };
 
 /// Claim a user's account using given an eth private key
-
 export const initUserSolPubkey = async ({
   provider,
   program,
@@ -267,18 +315,6 @@ export const initUserSolPubkey = async ({
   return provider.send(tx);
 };
 
-/// Create a content node with the audius admin authority
-type CreateContentNode = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  adminKeypair: Keypair;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
-  contentNodeAuthority: anchor.web3.PublicKey;
-  spID: anchor.BN;
-  ownerEthAddress: string;
-};
 export const createContentNode = async ({
   provider,
   program,
@@ -308,30 +344,14 @@ export const createContentNode = async ({
   );
 };
 
-/// Verify user with authenticatorKeypair
-type UpdateUserReplicaSet = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  ursm: number[];
-  ursmBumps: number[];
-  contentNodeAuthority: anchor.web3.Keypair;
-  cn1: anchor.web3.PublicKey;
-  cn2: anchor.web3.PublicKey;
-  cn3: anchor.web3.PublicKey;
-  userAcct: anchor.web3.PublicKey;
-  userHandle: { seed: number[]; bump: number };
-};
-
 export const updateUserReplicaSet = async ({
   provider,
   program,
   adminStgPublicKey,
   baseAuthorityAccount,
-  ursm,
+  replicaSet,
   userAcct,
-  ursmBumps,
+  replicaSetBumps,
   userHandle,
   contentNodeAuthority,
   cn1,
@@ -341,8 +361,8 @@ export const updateUserReplicaSet = async ({
   return program.rpc.updateUserReplicaSet(
     baseAuthorityAccount,
     userHandle,
-    ursm,
-    ursmBumps,
+    replicaSet,
+    replicaSetBumps,
     {
       accounts: {
         admin: adminStgPublicKey,
@@ -359,26 +379,6 @@ export const updateUserReplicaSet = async ({
   );
 };
 
-type Proposer = {
-  pda: anchor.web3.PublicKey;
-  authority: anchor.web3.Keypair;
-  seedBump: { seed: Buffer; bump: number };
-};
-
-/// Create a content node with proposers
-type PublicCreateContentNode = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
-  contentNodeAuthority: anchor.web3.PublicKey;
-  spID: anchor.BN;
-  ownerEthAddress: string;
-  proposer1: Proposer;
-  proposer2: Proposer;
-  proposer3: Proposer;
-};
 export const publicCreateContentNode = async ({
   provider,
   program,
@@ -522,8 +522,8 @@ export const createUser = async ({
   program,
   ethAccount,
   message,
-  ursm,
-  ursmBumps,
+  replicaSet,
+  replicaSetBumps,
   handleBytesArray,
   cn1,
   cn2,
@@ -558,8 +558,8 @@ export const createUser = async ({
     program.instruction.createUser(
       baseAuthorityAccount,
       [...anchor.utils.bytes.hex.decode(ethAccount.address)],
-      ursm,
-      ursmBumps,
+      replicaSet,
+      replicaSetBumps,
       handleBytesArray,
       bumpSeed,
       metadata,

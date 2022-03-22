@@ -66,8 +66,8 @@ export const testInitUser = async ({
   userStgAccount,
   adminStgKeypair,
   adminKeypair,
-  ursm,
-  ursmBumps,
+  replicaSet,
+  replicaSetBumps,
   cn1,
   cn2,
   cn3,
@@ -76,8 +76,8 @@ export const testInitUser = async ({
     provider,
     program,
     ethAddress,
-    ursm,
-    ursmBumps,
+    replicaSet,
+    replicaSetBumps,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -157,8 +157,8 @@ export const testCreateUser = async ({
   newUserKeypair,
   userStgAccount,
   adminStgPublicKey,
-  ursm,
-  ursmBumps,
+  replicaSet,
+  replicaSetBumps,
   cn1,
   cn2,
   cn3,
@@ -170,8 +170,8 @@ export const testCreateUser = async ({
     message,
     handleBytesArray,
     bumpSeed,
-    ursm,
-    ursmBumps,
+    replicaSet,
+    replicaSetBumps,
     metadata,
     userSolPubkey: newUserKeypair.publicKey,
     userStgAccount,
@@ -194,7 +194,7 @@ export const testCreateUser = async ({
   expect(decodedData.userBump).to.equal(bumpSeed);
   expect(decodedData.metadata).to.equal(metadata);
   expect(accountPubKeys[0]).to.equal(userStgAccount.toString());
-  expect(accountPubKeys[2]).to.equal(adminStgPublicKey.toString());
+  expect(accountPubKeys[5]).to.equal(adminStgPublicKey.toString());
 
   const account = await program.account.user.fetch(userStgAccount);
 
@@ -539,8 +539,8 @@ export const createSolanaUser = async (
     userStgAccount: newUserAcctPDA,
     adminStgPublicKey: adminStgKeypair.publicKey,
     baseAuthorityAccount,
-    ursm: [1, 2, 3],
-    ursmBumps: [cn1.bumpSeed, cn2.bumpSeed, cn3.bumpSeed],
+    replicaSet: [1, 2, 3],
+    replicaSetBumps: [cn1.bumpSeed, cn2.bumpSeed, cn3.bumpSeed],
     cn1: cn1.derivedAddress,
     cn2: cn2.derivedAddress,
     cn3: cn3.derivedAddress,

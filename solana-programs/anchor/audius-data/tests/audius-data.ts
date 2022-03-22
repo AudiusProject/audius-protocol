@@ -49,12 +49,12 @@ describe("audius-data", function () {
   const contentNodes = {};
   const getURSMParams = () => {
     return {
-      ursm: [
+      replicaSet: [
         contentNodes["1"].spId.toNumber(),
         contentNodes["2"].spId.toNumber(),
         contentNodes["3"].spId.toNumber(),
       ],
-      ursmBumps: [
+      replicaSetBumps: [
         contentNodes["1"].seedBump.bump,
         contentNodes["2"].seedBump.bump,
         contentNodes["3"].seedBump.bump,
@@ -798,7 +798,7 @@ describe("audius-data", function () {
     )
       .to.eventually.be.rejected.and.property("logs")
       .to.include(
-        `Program ${SystemProgram.programId.toString()} failed: Cross-program invocation with unauthorized signer or writable account`
+        `Program ${program.programId.toString()} failed: Cross-program invocation with unauthorized signer or writable account`
       );
   });
 

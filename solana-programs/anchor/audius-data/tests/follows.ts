@@ -33,12 +33,12 @@ describe("follows", function () {
   const contentNodes = {};
   const getURSMParams = () => {
     return {
-      ursm: [
+      replicaSet: [
         contentNodes["1"].spId.toNumber(),
         contentNodes["2"].spId.toNumber(),
         contentNodes["3"].spId.toNumber(),
       ],
-      ursmBumps: [
+      replicaSetBumps: [
         contentNodes["1"].seedBump.bump,
         contentNodes["2"].seedBump.bump,
         contentNodes["3"].seedBump.bump,

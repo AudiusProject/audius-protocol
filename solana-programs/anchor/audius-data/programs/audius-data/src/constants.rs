@@ -11,7 +11,7 @@ pub const ADMIN_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 /// Size of user account
 pub const USER_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 20 + // eth_address: [u8; 20]
-6 + // ursm: [u16; 3]
+6 + // replica set: [u16; 3]
 32; // authority: Pubkey
 
 /// Size of user authority delegation account
