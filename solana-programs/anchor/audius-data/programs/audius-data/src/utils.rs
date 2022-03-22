@@ -1,4 +1,4 @@
-use crate::{ErrorCode, User, UserAuthorityDelegate, AppDelegation, constants::APP_DELEGATION_SEED};
+use crate::{ErrorCode, User, UserAuthorityDelegate, AuthorityDelegationStatus, constants::AUTHORITY_DELEGATION_STATUS_SEED};
 
 use anchor_lang::{prelude::*, solana_program::system_program};
 
@@ -9,7 +9,7 @@ pub fn validate_user_authority<'info>(
     user: &Account<'info, User>,
     user_delegate_authority: &AccountInfo<'info>,
     authority: &Signer,
-    app_delegation_authority: &AccountInfo<'info>,
+    app_delegation_status: &AccountInfo<'info>,
 ) -> Result<()> {
     if user.authority != authority.key() {
         // Reject if system program provided as user delegate_auth
@@ -41,25 +41,25 @@ pub fn validate_user_authority<'info>(
         {
             return Err(ErrorCode::Unauthorized.into());
         }
-        let (derived_app_delegation, _) = Pubkey::find_program_address(
+        let (derived_app_delegation_status, _) = Pubkey::find_program_address(
         &[
-                APP_DELEGATION_SEED,
+            AUTHORITY_DELEGATION_STATUS_SEED,
                 &authority.key().to_bytes()[..32],
             ],
             program_id,
         );
 
         // Reject if PDA derivation is mismatched
-        if derived_app_delegation != app_delegation_authority.key() {
+        if derived_app_delegation_status != app_delegation_status.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        let app_delegation_account: AppDelegation = AppDelegation::try_deserialize(
-            &mut &app_delegation_authority.try_borrow_data()?[..],
+        let app_delegation_status_account: AuthorityDelegationStatus = AuthorityDelegationStatus::try_deserialize(
+            &mut &app_delegation_status.try_borrow_data()?[..],
         )?;
         
         // Reject if app delegate is revoked
-        if app_delegation_account.is_revoked {
+        if app_delegation_status_account.is_revoked {
             return Err(ErrorCode::Unauthorized.into());
         }
     }

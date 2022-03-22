@@ -234,7 +234,7 @@ describe("audius-data", function () {
       userAuthorityKeypair: newUserKeypair,
       // No delegate authority needs to be provided in this happy path, so use the SystemProgram ID
       userDelegateAuthority: SystemProgram.programId,
-      appDelegationAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
     });
     await confirmLogInTransaction(provider, tx, updatedCID);
   });
@@ -529,28 +529,28 @@ describe("audius-data", function () {
 
     // Init AppDelegation for a new authority
     const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
-    const appDelegationSeeds = [
-      Buffer.from("app_delegation", "utf8"),
+    const authorityDelegationStatusSeeds = [
+      Buffer.from("authority-delegation-status", "utf8"),
       userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
     ];
 
-    const appDelegationRes = await PublicKey.findProgramAddress(
-      appDelegationSeeds,
+    const authorityDelegationStatusRes = await PublicKey.findProgramAddress(
+      authorityDelegationStatusSeeds,
       program.programId
     );
-    const appDelegationPDA = appDelegationRes[0];
+    const authorityDelegationStatusPda = authorityDelegationStatusRes[0];
 
-    const initAppDelegationArgs = {
+    const initAuthorityDelegationStatusArgs = {
       accounts: {
         delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-        appDelegationPda: appDelegationPDA,
+        authorityDelegationStatusPda: authorityDelegationStatusPda,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [userAuthorityDelegateKeypair],
     };
 
-    await program.rpc.initAppDelegation("app_name", initAppDelegationArgs);
+    await program.rpc.initAuthorityDelegationStatus("app_name", initAuthorityDelegationStatusArgs);
 
     // New sol key that will be used as user authority delegate
     const userDelSeed = [
@@ -603,7 +603,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: userAuthorityDelegateKeypair,
       userDelegateAuthority: userDelPDA,
-      appDelegationAccount: appDelegationPDA,
+      authorityDelegationStatusAccount: authorityDelegationStatusPda,
     });
     const removeUserDelArgs = {
       accounts: {
@@ -636,7 +636,7 @@ describe("audius-data", function () {
         userStgAccount: newUserAcctPDA,
         userAuthorityKeypair: userAuthorityDelegateKeypair,
         userDelegateAuthority: userDelPDA,
-        appDelegationAccount: appDelegationPDA,
+        authorityDelegationStatusAccount: authorityDelegationStatusPda,
       })
     )
       .to.eventually.be.rejected.and.property("msg")
@@ -686,29 +686,32 @@ describe("audius-data", function () {
 
     // Init AppDelegation for a new authority
     const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
-    const appDelegationSeeds = [
-      Buffer.from("app_delegation", "utf8"),
+    const authorityDelegationStatusSeeds = [
+      Buffer.from("authority-delegation-status", "utf8"),
       userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
     ];
 
-    const appDelegationRes = await PublicKey.findProgramAddress(
-      appDelegationSeeds,
+    const authorityDelegationStatusRes = await PublicKey.findProgramAddress(
+      authorityDelegationStatusSeeds,
       program.programId
     );
-    const appDelegationPDA = appDelegationRes[0];
-    const appDelegationBump = appDelegationRes[1];
+    const authorityDelegationStatusPda = authorityDelegationStatusRes[0];
+    const authorityDelegationStatusBump = authorityDelegationStatusRes[1];
 
-    const initAppDelegationArgs = {
+    const initAuthorityDelegationStatusArgs = {
       accounts: {
         delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-        appDelegationPda: appDelegationPDA,
+        authorityDelegationStatusPda: authorityDelegationStatusPda,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [userAuthorityDelegateKeypair],
     };
 
-    await program.rpc.initAppDelegation("app_name", initAppDelegationArgs);
+    await program.rpc.initAuthorityDelegationStatus(
+      "app_name",
+      initAuthorityDelegationStatusArgs
+    );
 
     // New sol key that will be used as user authority delegate
     const userDelSeed = [
@@ -760,21 +763,24 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: userAuthorityDelegateKeypair,
       userDelegateAuthority: userDelPDA,
-      appDelegationAccount: appDelegationPDA, // TODO use AppDelegationPDA
+      authorityDelegationStatusAccount: authorityDelegationStatusPda,
     });
 
     // revoke app delegation
     const removeUserDelArgs = {
       accounts: {
         delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-        appDelegationPda: appDelegationPDA,
+        authorityDelegationStatusPda: authorityDelegationStatusPda,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [userAuthorityDelegateKeypair],
     };
 
-    await program.rpc.revokeAppDelegation(appDelegationBump, removeUserDelArgs);
+    await program.rpc.revokeAuthorityDelegation(
+      authorityDelegationStatusBump,
+      removeUserDelArgs
+    );
 
     // Confirm revoked delegation cannot update user
     await expect(
@@ -784,7 +790,7 @@ describe("audius-data", function () {
         userStgAccount: newUserAcctPDA,
         userAuthorityKeypair: userAuthorityDelegateKeypair,
         userDelegateAuthority: userDelPDA,
-        appDelegationAccount: appDelegationPDA, // TODO use AppDelegationPDA
+        authorityDelegationStatusAccount: authorityDelegationStatusPda, 
       })
     )
       .to.eventually.be.rejected.and.property("msg")
