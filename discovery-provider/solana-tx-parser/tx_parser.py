@@ -3,10 +3,12 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, NoReturn, Optional
 
+import base58
 from anchorpy import (
     AccountClient,
     Context,
     Idl,
+    Instruction,
     InstructionCoder,
     Program,
     Provider,
@@ -88,6 +90,20 @@ def is_invalid_tx(response: types.RPCResponse) -> bool:
         return False
 
 
+def decode(instruction_coder: InstructionCoder, encoded_ix_data: str):
+    ix = base58.b58decode(encoded_ix_data)
+    ix_sighash = ix[0:8]
+    data = ix[8:]
+    # print("DECODERS")
+    # print(instruction_coder.sighash_layouts)
+    # print(ix_sighash)
+    decoder = instruction_coder.sighash_layouts.get(ix_sighash)
+    if not decoder:
+        raise Exception("No decoder available")
+    else:
+        return decoder.parse(data)
+
+
 async def parse_tx(tx_hash: str) -> Dict:
     solana_client = AsyncClient(RPC_ADDRESS)
     tx_info = await solana_client.get_transaction(tx_hash)
@@ -96,20 +112,26 @@ async def parse_tx(tx_hash: str) -> Dict:
     if is_invalid_tx(tx_info):
         raise Exception("Invalid tx hash")
     idl = get_idl()
-    path = Path(AUDIUS_DATA_IDL_PATH)  # not sure why path is needed
     instruction_coder = InstructionCoder(idl)
+    print(instruction_coder.sighash_to_name)
     tx = tx_info["result"]
-    # for instruction in tx["transaction"]["message"]["instructions"]:
-    #     context = Context(
-    #         accounts=instruction["accounts"], signers=tx["transaction"]["signatures"]
-    #     )
-    #     slot = tx["slot"]
-    #     data = instruction_coder._decode(
-    #         (, instruction["data"]), context=context, path=path
-    #     )
-    # need to find sighash of instruction invoked
+    for instruction in tx["transaction"]["message"]["instructions"]:
+        raw_instruction_data = instruction["data"]
 
-    print(tx_info)
+        # path = Path(AUDIUS_DATA_IDL_PATH)  # not sure why path is needed
+        # context = Context(
+        #     accounts=instruction["accounts"], signers=tx["transaction"]["signatures"]
+        # )
+        # slot = tx["slot"]
+        # instruction = instruction_coder._decode(
+        #     (base58.b58decode(instruction["data"])[0:8], instruction["data"][8:]),
+        #     context=context,
+        #     path=path,
+        # )
+        decoded_data = decode(
+            instruction_coder=instruction_coder, encoded_ix_data=raw_instruction_data
+        )
+        print(repr(decoded_data))
 
 
 async def main(tx_hash):
@@ -118,6 +140,6 @@ async def main(tx_hash):
 
 asyncio.run(
     main(
-        "3DRzULtVVBYyKdrgBRBfX4LA5i3xKairNLZBrRAFrCLo7RoVX4HNupHJiPwyJwfw5YNLw1M8xks8EpwV1CARr2dw"
+        "2znGXnyNM6TGUkX8m2nqRG4Hj53TFfDdSEPeiZBNURtwdRV7b3PX1HPK59aoAYzuDHMn5W1Ws5JpE6fWDMzGru3D"
     )
 )
