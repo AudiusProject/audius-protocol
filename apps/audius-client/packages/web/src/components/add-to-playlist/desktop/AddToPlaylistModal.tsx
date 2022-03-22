@@ -1,9 +1,8 @@
 import React, { useContext, useMemo, useState } from 'react'
 
-import { Modal } from '@audius/stems'
+import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import SimpleBar from 'simplebar-react'
 
 import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselectAdd.svg'
 import { useModalState } from 'common/hooks/useModalState'
@@ -125,7 +124,7 @@ const AddToPlaylistModal = () => {
         placeholder={messages.searchPlaceholder}
         shouldAutoFocus={false}
       />
-      <SimpleBar className={styles.simpleBar}>
+      <Scrollbar>
         <div className={styles.listContent}>
           <div className={cn(styles.listItem)} onClick={handleCreatePlaylist}>
             <IconMultiselectAdd className={styles.add} />
@@ -142,7 +141,7 @@ const AddToPlaylistModal = () => {
             ))}
           </div>
         </div>
-      </SimpleBar>
+      </Scrollbar>
     </Modal>
   )
 }
