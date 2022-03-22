@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict, List, NoReturn, Optional
 
@@ -107,13 +108,13 @@ def decode(instruction_coder: InstructionCoder, encoded_ix_data: str):
 async def parse_tx(tx_hash: str) -> Dict:
     solana_client = AsyncClient(RPC_ADDRESS)
     tx_info = await solana_client.get_transaction(tx_hash)
-    print(tx_info)
+    # print(tx_info)
     await solana_client.close()
     if is_invalid_tx(tx_info):
         raise Exception("Invalid tx hash")
     idl = get_idl()
     instruction_coder = InstructionCoder(idl)
-    print(instruction_coder.sighash_to_name)
+    # print(instruction_coder.sighash_to_name)
     tx = tx_info["result"]
     for instruction in tx["transaction"]["message"]["instructions"]:
         raw_instruction_data = instruction["data"]
@@ -138,8 +139,4 @@ async def main(tx_hash):
     await parse_tx(tx_hash)
 
 
-asyncio.run(
-    main(
-        "2znGXnyNM6TGUkX8m2nqRG4Hj53TFfDdSEPeiZBNURtwdRV7b3PX1HPK59aoAYzuDHMn5W1Ws5JpE6fWDMzGru3D"
-    )
-)
+asyncio.run(main(os.getenv("TX_HASH")))
