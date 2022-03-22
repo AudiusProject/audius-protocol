@@ -91,7 +91,12 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
         web: { route: profilePage(handle) }
       })
     },
-    [OverflowAction.EDIT_PLAYLIST]: () => dispatchWeb(openEditPlaylist(id)),
+    [OverflowAction.EDIT_PLAYLIST]: () => {
+      navigation.navigate({
+        native: { screen: 'EditPlaylist', params: { id } }
+      })
+      dispatchWeb(openEditPlaylist(id))
+    },
     [OverflowAction.DELETE_PLAYLIST]: () => dispatchWeb(openDeletePlaylist(id)),
     [OverflowAction.PUBLISH_PLAYLIST]: () =>
       is_album ? () => {} : dispatchWeb(publishPlaylist(id))

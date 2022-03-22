@@ -6,7 +6,7 @@ import {
   Asset
 } from 'react-native-image-picker'
 
-import { Image } from './types'
+import { Image } from 'app/types/image'
 
 const photoOptions: ImageLibraryOptions = {
   includeBase64: true,
@@ -22,6 +22,7 @@ export const launchSelectImageActionSheet = (
   const handlePhoto = ({ assets }: { assets: Asset[] | undefined }) => {
     const response = assets?.[0]
     const selectedPhoto = !!response?.base64
+
     if (selectedPhoto) {
       const image = {
         height: response.height ?? 0,
@@ -30,7 +31,8 @@ export const launchSelectImageActionSheet = (
         size: response.fileSize ?? 0,
         fileType: response.type ?? '',
         url: response.uri ?? '',
-        file: `data:${response.type};base64,${response.base64}`
+        file: `data:${response.type};base64,${response.base64}`,
+        type: 'base64' as const
       }
       callback(image)
     }

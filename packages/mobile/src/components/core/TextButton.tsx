@@ -1,5 +1,10 @@
 import { merge } from 'lodash'
-import { ButtonProps, Pressable, PressableProps, Text } from 'react-native'
+import {
+  ButtonProps,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  Text
+} from 'react-native'
 
 import { makeStyles } from 'app/styles'
 
@@ -26,7 +31,7 @@ const useStyles = makeStyles(({ typography, palette }, { variant }) => {
   return merge(baseStyles, variantStyles[variant])
 })
 
-type TextButtonProps = PressableProps &
+type TextButtonProps = TouchableOpacityProps &
   ButtonProps & {
     variant: 'primary' | 'secondary'
   }
@@ -35,8 +40,8 @@ export const TextButton = (props: TextButtonProps) => {
   const { title, variant, ...other } = props
   const styles = useStyles({ variant })
   return (
-    <Pressable {...other}>
+    <TouchableOpacity {...other}>
       <Text style={styles.text}>{title}</Text>
-    </Pressable>
+    </TouchableOpacity>
   )
 }

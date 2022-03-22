@@ -3,10 +3,11 @@ import {
   CoverArtSizes,
   SquareSizes
 } from 'audius-client/src/common/models/ImageSizes'
-import { Image, View } from 'react-native'
+import { View } from 'react-native'
 
 import IconPause from 'app/assets/images/pbIconPauseAlt.svg'
 import IconPlay from 'app/assets/images/pbIconPlayAlt.svg'
+import { DynamicImage } from 'app/components/core'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { makeStyles } from 'app/styles'
 
@@ -90,7 +91,7 @@ export const TrackArtwork = ({
   return (
     <View style={styles.artworkContainer}>
       <View style={styles.artwork}>
-        <Image source={{ uri: image }} style={styles.artworkImage} />
+        <DynamicImage uri={image} style={styles.artworkImage} />
         {isActive ? (
           <ArtworkIcon isLoading={isLoading} isPlaying={isPlaying} />
         ) : null}
