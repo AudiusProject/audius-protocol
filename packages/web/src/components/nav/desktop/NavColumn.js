@@ -1,11 +1,10 @@
 import React, { useCallback } from 'react'
 
+import { Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, NavLink, useHistory } from 'react-router-dom'
-import SimpleBar from 'simplebar-react'
-import 'simplebar/dist/simplebar.min.css'
 
 import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
 import { Name, CreatePlaylistSource } from 'common/models/Analytics'
@@ -268,7 +267,7 @@ const NavColumn = ({
         isElectron={isElectron}
       />
       <div className={cn(styles.navContent, { [styles.show]: navLoaded })}>
-        <SimpleBar className={styles.scrollable}>
+        <Scrollbar className={styles.scrollable}>
           {account ? (
             <div className={styles.userHeader}>
               <div className={styles.accountWrapper}>
@@ -420,7 +419,7 @@ const NavColumn = ({
               </Droppable>
             </div>
           </div>
-        </SimpleBar>
+        </Scrollbar>
         <CreatePlaylistModal
           visible={showCreatePlaylistModal}
           onCreatePlaylist={onCreatePlaylist}
