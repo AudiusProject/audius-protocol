@@ -33,7 +33,7 @@ export const UploadTrackButton = () => {
   }, [dispatchWeb])
 
   return (
-    <View style={styles.root}>
+    <View pointerEvents='box-none' style={styles.root}>
       <Button
         styles={{
           text: styles.text

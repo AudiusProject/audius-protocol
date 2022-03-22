@@ -16,6 +16,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginRight: spacing(2)
   },
   site: {
+    // Flex start so the bounding box around the button is not full-width
+    alignSelf: 'flex-start',
     display: 'flex',
     flexDirection: 'row',
     marginTop: spacing(3)
@@ -41,7 +43,7 @@ export const Sites = () => {
   }
 
   return (
-    <View style={styles.sites}>
+    <View pointerEvents='box-none' style={styles.sites}>
       {website ? (
         <Link style={styles.site} url={website}>
           <IconLink {...iconProps} />

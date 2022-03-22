@@ -1,16 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useRef } from 'react'
 
-import Status from 'audius-client/src/common/models/Status'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
-import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'
-import { LayoutAnimation, View } from 'react-native'
+import { Animated, LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
-import { Screen, VirtualizedScrollView } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { TopBarIconButton } from 'app/screens/app-screen'
@@ -63,9 +59,9 @@ export const ProfileScreen = () => {
   const styles = useStyles()
   const profile = useSelectProfileRoot(['user_id', 'does_current_user_follow'])
   const accountId = useSelectorWeb(getUserId)
-  const dispatchWeb = useDispatchWeb()
-  const status = useSelectorWeb(getProfileStatus)
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  // const dispatchWeb = useDispatchWeb()
+  // const status = useSelectorWeb(getProfileStatus)
+  // const [isRefreshing, setIsRefreshing] = useState(false)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { accentOrange } = useThemeColors()
 
@@ -97,19 +93,20 @@ export const ProfileScreen = () => {
     setHasUserFollowed(false)
   }, [setHasUserFollowed])
 
-  const handleRefresh = useCallback(() => {
-    if (profile) {
-      setIsRefreshing(true)
-      const { handle, user_id } = profile
-      dispatchWeb(fetchProfile(handle, user_id, true, true, true))
-    }
-  }, [profile, dispatchWeb])
+  // TODO(AUD-1649): Fix pull to refresh
+  // const handleRefresh = useCallback(() => {
+  //   if (profile) {
+  //     setIsRefreshing(true)
+  //     const { handle, user_id } = profile
+  //     dispatchWeb(fetchProfile(handle, user_id, true, true, true))
+  //   }
+  // }, [profile, dispatchWeb])
 
-  useEffect(() => {
-    if (status === Status.SUCCESS) {
-      setIsRefreshing(false)
-    }
-  }, [status])
+  // useEffect(() => {
+  //   if (status === Status.SUCCESS) {
+  //     setIsRefreshing(false)
+  //   }
+  // }, [status])
 
   const isOwner = profile?.user_id === accountId
 
@@ -125,30 +122,43 @@ export const ProfileScreen = () => {
     </View>
   ) : undefined
 
+  const scrollY = useRef(new Animated.Value(0)).current
+
+  const renderHeader = () => {
+    return (
+      // Box-none gets us scrolling on the non-touchable parts of the header
+      // See scroll on header documentation:
+      // https://github.com/PedroBern/react-native-collapsible-tab-view/tree/v2#scroll-on-header
+      // And also known drawbacks:
+      // https://github.com/PedroBern/react-native-collapsible-tab-view/pull/30
+      <>
+        <CoverPhoto scrollY={scrollY} />
+        <ProfilePicture style={styles.profilePicture} />
+        <View pointerEvents='box-none' style={styles.header}>
+          <ProfileInfo onFollow={handleFollow} />
+          <ProfileMetrics />
+          <ProfileSocials />
+          <ExpandableBio />
+          {!hasUserFollowed ? null : (
+            <ArtistRecommendations onClose={handleCloseArtistRecs} />
+          )}
+          {!isOwner ? null : <UploadTrackButton />}
+        </View>
+      </>
+    )
+  }
+
   return (
     <Screen topbarLeft={topbarLeft}>
       {!profile ? null : (
-        <VirtualizedScrollView
-          listKey='profile-screen'
-          onRefresh={handleRefresh}
-          refreshing={isRefreshing}
-        >
-          <CoverPhoto />
-          <ProfilePicture style={styles.profilePicture} />
-          <View style={styles.header}>
-            <ProfileInfo onFollow={handleFollow} />
-            <ProfileMetrics />
-            <ProfileSocials />
-            <ExpandableBio />
-            {!hasUserFollowed ? null : (
-              <ArtistRecommendations onClose={handleCloseArtistRecs} />
-            )}
-            {!isOwner ? null : <UploadTrackButton />}
-          </View>
+        <>
           <View style={styles.navigator}>
-            <ProfileTabNavigator />
+            <ProfileTabNavigator
+              renderHeader={renderHeader}
+              animatedValue={scrollY}
+            />
           </View>
-        </VirtualizedScrollView>
+        </>
       )}
     </Screen>
   )
