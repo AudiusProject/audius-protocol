@@ -318,6 +318,7 @@ class AudiusLibs {
     this.isDebug = isDebug
 
     this.AudiusABIDecoder = AudiusABIDecoder
+    this.Utils = Utils
 
     // Services to initialize. Initialized in .init().
     this.userStateManager = null
