@@ -23,4 +23,5 @@ pub const USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 pub const APP_DELEGATION_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 1; // is_revoked: bool
 
-pub const APP_DELEGATION_PREFIX: &[u8; 14] = b"app_delegation";
+/// Seed for AppDelegation PDA
+pub const APP_DELEGATION_SEED: &[u8; 14] = b"app_delegation";

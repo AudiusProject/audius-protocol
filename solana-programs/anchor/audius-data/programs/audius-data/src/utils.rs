@@ -1,4 +1,4 @@
-use crate::{ErrorCode, User, UserAuthorityDelegate, AppDelegation, constants::APP_DELEGATION_PREFIX};
+use crate::{ErrorCode, User, UserAuthorityDelegate, AppDelegation, constants::APP_DELEGATION_SEED};
 
 use anchor_lang::{prelude::*, solana_program::system_program};
 
@@ -12,8 +12,6 @@ pub fn validate_user_authority<'info>(
     app_delegation_authority: &AccountInfo<'info>,
 ) -> Result<()> {
     if user.authority != authority.key() {
-        msg!("user doesn't match authority");
-
         // Reject if system program provided as user delegate_auth
         if user_delegate_authority.key() == system_program::id() {
             return Err(ErrorCode::Unauthorized.into());
@@ -29,9 +27,6 @@ pub fn validate_user_authority<'info>(
             ],
             program_id,
         );
-
-        msg!("derived delegate auth");
-
         // Reject if PDA derivation is mismatched
         if derived_delegate_auth_acct != user_delegate_authority.key() {
             return Err(ErrorCode::Unauthorized.into());
@@ -40,43 +35,34 @@ pub fn validate_user_authority<'info>(
         let user_del_acct: UserAuthorityDelegate = UserAuthorityDelegate::try_deserialize(
             &mut &user_delegate_authority.try_borrow_data()?[..],
         )?;
-
-        msg!("deserialized uad");
-
         // Confirm that the delegate authority and user match the function parameters
         if user_del_acct.user_storage_account != user.key()
             || user_del_acct.delegate_authority != authority.key()
         {
             return Err(ErrorCode::Unauthorized.into());
         }
-
-        // Confirm app delegate is not revoked
-        msg!("deriving app delegation");
-
         let (derived_app_delegation, _) = Pubkey::find_program_address(
         &[
-                APP_DELEGATION_PREFIX,
+                APP_DELEGATION_SEED,
                 &authority.key().to_bytes()[..32],
             ],
             program_id,
         );
 
-        msg!("derived app delegation");
-        msg!(&derived_app_delegation.to_string());
-
         // Reject if PDA derivation is mismatched
-        // if derived_app_delegation != app_delegation_authority.key() {
-        //     return Err(ErrorCode::Unauthorized.into());
-        // }
+        if derived_app_delegation != app_delegation_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
 
-        // let app_delegation_account: AppDelegation = AppDelegation::try_deserialize(
-        //     &mut &app_delegation_authority.try_borrow_data()?[..],
-        // )?;
+        let app_delegation_account: AppDelegation = AppDelegation::try_deserialize(
+            &mut &app_delegation_authority.try_borrow_data()?[..],
+        )?;
         
         // Reject if app delegate is revoked
-        // if app_delegation_account.is_revoked {
-        //     return Err(ErrorCode::Unauthorized.into());
-        // }
+        msg!(&app_delegation_account.is_revoked.to_string());
+        if app_delegation_account.is_revoked {
+            return Err(ErrorCode::Unauthorized.into());
+        }
     }
     Ok(())
 }

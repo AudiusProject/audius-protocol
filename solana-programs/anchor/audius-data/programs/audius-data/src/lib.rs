@@ -306,26 +306,24 @@ pub mod audius_data {
         Ok(())
     }
     
-    /// Initializes a PDA for delegate: an app or user who is a delegate
+    /// Initializes a AppDelegation PDA for an authority
     pub fn init_app_delegation(
         ctx: Context<InitAppDelegation>,
     ) -> Result<()> {
+
         ctx.accounts.app_delegation_pda.is_revoked = false;
 
-        // initializes is_revoked to true
         Ok(())
     }
 
-    // revoke app delegate, could simply close the account?
+    /// Revokes an authority's delegation
     pub fn revoke_app_delegation(
         ctx: Context<RevokeAppDelegation>,
-        _base: Pubkey,
+        _app_delegation_bump: u8,
     ) -> Result<()> {
-        // Only permitted to user authority
+        // TODO add user validation
 
-        // need to validate app user auth before revoking
-
-        // ctx.accounts.app_delegation_pda.is_revoked = true;
+        ctx.accounts.app_delegation_pda.is_revoked = true;
 
         Ok(())
     }
@@ -342,8 +340,8 @@ pub mod audius_data {
         if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
-
-        // validate delegate is not revoked?
+        // TODO validate user
+        // TODO validate app delegation is not revoked
 
         // Assign incoming delegate fields
         // Maintain the user's storage account and the incoming delegate authority key
@@ -473,6 +471,10 @@ pub struct UpdateAdmin<'info> {
     pub admin_authority: Signer<'info>,
 }
 
+/// Instruction container to intialize an AppDelegation.
+/// The authority initializes itself as a delegate.
+/// `delegate_authority` is the authority that will become a delegate
+/// `app_delegation_pda` is the target PDA for the authority's delegation
 #[derive(Accounts)]
 pub struct InitAppDelegation<'info> {
     /// CHECK: Delegate authority account
@@ -481,7 +483,7 @@ pub struct InitAppDelegation<'info> {
     #[account(
         init,
         payer = payer,
-        seeds = [APP_DELEGATION_PREFIX, delegate_authority.key().as_ref()],
+        seeds = [APP_DELEGATION_SEED, delegate_authority.key().as_ref()],
         bump,
         space = APP_DELEGATION_ACCOUNT_SIZE
     )]
@@ -491,20 +493,20 @@ pub struct InitAppDelegation<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/// Instruction container to revoke an AppDelegation.
+/// The authority revokes itself as a delegate.
+/// `delegate_authority` is the authority that will become a delegate
+/// `app_delegation_pda` is the target PDA for the authority's delegation
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle)] // TODO use UserHandle
+#[instruction(app_delegation_bump:u8)]
 pub struct RevokeAppDelegation<'info> {
-    #[account()]
-    pub admin: Account<'info, AudiusAdmin>,
     /// CHECK: Delegate authority account
     #[account()]
-    pub user_delegate_authority: AccountInfo<'info>,
+    pub delegate_authority: Signer<'info>,
     #[account(
-        init,
-        payer = payer,
-        seeds = [&base.to_bytes()[..32], b"app_delegation", user_delegate_authority.key().as_ref()],
-        bump,
-        space = APP_DELEGATION_ACCOUNT_SIZE
+        mut, 
+        seeds = [APP_DELEGATION_SEED, delegate_authority.key().as_ref()],
+        bump = app_delegation_bump,
     )]
     pub app_delegation_pda: Account<'info, AppDelegation>,
     #[account(mut)]
@@ -532,6 +534,13 @@ pub struct AddUserAuthorityDelegate<'info> {
         space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
     )]
     pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    // TODO
+    // #[account(
+    //     mut,
+    //     seeds = [APP_DELEGATION_PREFIX, &user_authority_delegate.to_bytes()[..32]],
+    //     bump = app_delegation_bump
+    // )]
+    // pub app_delegation_pda: Account<'info, User>,
     #[account()]
     pub user_authority: Signer<'info>,
     #[account(mut)]
@@ -655,7 +664,7 @@ pub struct UserAuthorityDelegate {
 /// App delegation account
 #[account]
 pub struct AppDelegation {
-    // Revoke status of application / user delegate
+    // Revoke status of an authority's delegation
     pub is_revoked: bool,
 }
 
