@@ -5,7 +5,6 @@ import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { squashNewLines } from 'audius-client/src/common/utils/formatUtil'
 import { ImageStyle, Linking, TouchableOpacity, View } from 'react-native'
 import HyperLink from 'react-native-hyperlink'
-import { useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
@@ -16,7 +15,6 @@ import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { getPlaying } from 'app/store/audio/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { make, track } from 'app/utils/analytics'
 
@@ -163,6 +161,7 @@ export const DetailsTile = ({
   hideRepostCount,
   hideShare,
   imageUrl,
+  isPlaying,
   onPressFavorites,
   onPressOverflow,
   onPressPlay,
@@ -183,7 +182,6 @@ export const DetailsTile = ({
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const isPlaying = useSelector(getPlaying)
   const currentUserId = useSelectorWeb(getUserId)
 
   const isOwner = user?.user_id === currentUserId

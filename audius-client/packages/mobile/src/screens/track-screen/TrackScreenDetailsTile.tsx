@@ -384,6 +384,7 @@ export const TrackScreenDetailsTile = ({
       hideFavoriteCount={is_unlisted}
       hideListenCount={is_unlisted && !field_visibility?.play_count}
       hideRepostCount={is_unlisted}
+      isPlaying={isPlaying && queueTrack?.trackId === track_id}
       onPressFavorites={handlePressFavorites}
       onPressOverflow={handlePressOverflow}
       onPressPlay={handlePressPlay}
