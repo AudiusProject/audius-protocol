@@ -38,8 +38,7 @@ const createStyles = (themeColors: ThemeColors) =>
     timestamp: {
       color: themeColors.neutral,
       fontSize: 12,
-      flexShrink: 1,
-      width: 25
+      flexShrink: 1
     }
   })
 
@@ -151,7 +150,7 @@ export const Scrubber = ({
 
   return (
     <View style={styles.root}>
-      <Text style={styles.timestamp} weight='regular'>
+      <Text style={styles.timestamp} weight='regular' numberOfLines={1}>
         {dragSeconds || timestampStart}
       </Text>
       <Slider
@@ -162,7 +161,7 @@ export const Scrubber = ({
         onDrag={onDrag}
         duration={duration}
       />
-      <Text style={styles.timestamp} weight='regular'>
+      <Text style={styles.timestamp} weight='regular' numberOfLines={1}>
         {timestampEnd}
       </Text>
     </View>
