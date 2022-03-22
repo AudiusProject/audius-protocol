@@ -6,13 +6,8 @@ import {
   PlaybackSource
 } from 'audius-client/src/common/models/Analytics'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
-import { LineupState } from 'audius-client/src/common/models/Lineup'
 import Status from 'audius-client/src/common/models/Status'
-import { Track } from 'audius-client/src/common/models/Track'
-import { User } from 'audius-client/src/common/models/User'
-import { CommonState } from 'audius-client/src/common/store'
-import { getTracks } from 'audius-client/src/common/store/cache/tracks/selectors'
-import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
+import { makeGetTableMetadatas } from 'audius-client/src/common/store/lineup/selectors'
 import { tracksActions } from 'audius-client/src/common/store/pages/saved-page/lineups/tracks/actions'
 import {
   getSavedTracksLineup,
@@ -26,7 +21,7 @@ import { shallowEqual, useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
 import { TrackList } from 'app/components/track-list'
-import { ListTrackMetadata } from 'app/components/track-list/types'
+import { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -60,63 +55,24 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const TracksTab = ({ navigation }) => {
+const getTracks = makeGetTableMetadatas(getSavedTracksLineup)
+
+export const TracksTab = () => {
   const dispatchWeb = useDispatchWeb()
   const styles = useStyles()
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)
   const playingUid = useSelector(getPlayingUid)
   const savedTracksStatus = useSelectorWeb(getSavedTracksStatus)
-  const savedTracks: LineupState<Track> = useSelectorWeb(getSavedTracksLineup)
+  const savedTracks = useSelectorWeb(getTracks, shallowEqual)
 
-  const trackIds = savedTracks.entries.map(e => e.id)
-  const tracks = useSelectorWeb(
-    (state: CommonState) => getTracks(state, { ids: trackIds }),
-    shallowEqual
-  ) as { [id: number]: Track }
-
-  const creatorIds = Object.values(tracks).map(t => t.owner_id)
-  const artists = useSelectorWeb(
-    (state: CommonState) => getUsers(state, { ids: creatorIds }),
-    shallowEqual
-  ) as { [id: number]: User }
-
-  const tracksWithUsers = Object.values(tracks).map(track => ({
-    ...track,
-    uid: savedTracks.entries.find(t => t.id === track.track_id)?.uid,
-    user: artists[track.owner_id]
-  }))
-
-  const isQueued = () => {
-    return tracksWithUsers.some((track: any) => playingUid === track.uid)
-  }
-
-  const queuedAndPlaying = isPlaying && isQueued
-
-  const matchesFilter = (track: any) => {
+  const filterTrack = (track: TrackMetadata) => {
     const matchValue = filterValue.toLowerCase()
     return (
-      track.trackTitle.toLowerCase().indexOf(matchValue) > -1 ||
-      track.artistName.toLowerCase().indexOf(matchValue) > -1
+      track.title.toLowerCase().indexOf(matchValue) > -1 ||
+      track.user.name.toLowerCase().indexOf(matchValue) > -1
     )
   }
-
-  const trackList: ListTrackMetadata[] = tracksWithUsers
-    .map(track => ({
-      isLoading: false,
-      isSaved: track.has_current_user_saved,
-      isReposted: track.has_current_user_reposted,
-      isActive: playingUid === track.uid,
-      isPlaying: queuedAndPlaying && playingUid === track.uid,
-      artistName: track.user.name,
-      artistHandle: track.user.handle,
-      trackTitle: track.title,
-      trackId: track.track_id,
-      uid: track.uid,
-      isDeleted: track.is_delete || !!track.user.is_deactivated,
-      user: track.user
-    }))
-    .filter(track => matchesFilter(track))
 
   const onToggleSave = useCallback(
     (isSaved: boolean, trackId: ID) => {
@@ -155,7 +111,7 @@ export const TracksTab = ({ navigation }) => {
   return (
     <WithLoader loading={savedTracksStatus === Status.LOADING}>
       <VirtualizedScrollView listKey='favorites-screen'>
-        {!trackList.length && !filterValue ? (
+        {!savedTracks.entries.length && !filterValue ? (
           <EmptyTab message={messages.emptyTabText} />
         ) : (
           <>
@@ -164,7 +120,7 @@ export const TracksTab = ({ navigation }) => {
               placeholder={messages.inputPlaceholder}
               onChangeText={setFilterValue}
             />
-            {trackList.length ? (
+            {savedTracks.entries.length ? (
               <Tile
                 styles={{
                   root: styles.container,
@@ -172,11 +128,12 @@ export const TracksTab = ({ navigation }) => {
                 }}
               >
                 <TrackList
-                  tracks={trackList ?? []}
-                  showDivider
                   onSave={onToggleSave}
+                  showDivider
                   togglePlay={togglePlay}
                   trackItemAction='save'
+                  tracks={savedTracks.entries.filter(filterTrack)}
+                  hideArt
                 />
               </Tile>
             ) : null}
