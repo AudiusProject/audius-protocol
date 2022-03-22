@@ -1,6 +1,18 @@
-const { promisify, callbackify } = require('util')
-const Web3 = require('../web3')
-const { shuffle } = require('lodash')
+import { promisify, callbackify } from 'util'
+import Web3 from '../web3'
+import { shuffle } from 'lodash'
+import type { HttpProvider, AbstractProvider } from 'web3-core'
+import type { JsonRpcPayload } from 'web3-core-helpers'
+
+const getSendMethod = (provider: HttpProvider | AbstractProvider) => {
+  if ('sendAsync' in provider) {
+    return provider.sendAsync
+  }
+  return provider.send
+}
+
+type Providers = [HttpProvider, ...Array<HttpProvider | AbstractProvider>]
+type StringProviders = [string, ...string[]]
 
 /**
  * web3 consumes a provider object on initialization
@@ -9,28 +21,31 @@ const { shuffle } = require('lodash')
  * MultiProvider implements HttpProvider which can be consumed by web3
  * ref for HttpProvider: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3-providers-http/types/index.d.ts#L46-L66
  */
-class MultiProvider extends Web3.providers.HttpProvider {
+export class MultiProvider extends Web3.providers.HttpProvider {
+  providers: Providers
   /**
    * Creates a MultiProvider
    * @param {Array<string | Provider> | string} - The providers to use.
    */
-  constructor (providers) {
-    let web3Providers = providers
-    if (typeof web3Providers === 'string') {
-      web3Providers = web3Providers.split(',')
-    } else if (!Array.isArray(web3Providers)) {
-      web3Providers = [web3Providers]
+  constructor (providers: Providers | string) {
+    let web3Providers: Providers | StringProviders
+    if (typeof providers === 'string') {
+      web3Providers = providers.split(',') as StringProviders
+    } else if (!Array.isArray(providers)) {
+      web3Providers = [providers]
+    } else {
+      web3Providers = providers
     }
 
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
-    web3Providers = web3Providers.map(provider => (new Web3(provider)).eth.currentProvider)
-    super(web3Providers[0].host)
+    const web3ProviderInstances = web3Providers.map(provider => (new Web3(provider)).eth.currentProvider) as Providers
+    super(web3ProviderInstances[0]?.host)
 
-    if (!web3Providers.every(provider => provider.sendAsync || provider.send)) {
+    if (!web3ProviderInstances.every(getSendMethod)) {
       throw new Error('Some providers do not have a send method to use.')
     }
 
-    this.providers = web3Providers
+    this.providers = web3ProviderInstances
 
     // We replace HttpProvider.send with a custom function that supports fallback providers.
     this.send = callbackify(this._send.bind(this)) // web3 only supports callback functions and not async
@@ -40,10 +55,10 @@ class MultiProvider extends Web3.providers.HttpProvider {
    * @method _send
    * @param {Object} payload
    */
-  async _send (payload) {
+  async _send (payload: JsonRpcPayload) {
     for (const provider of shuffle(this.providers)) {
       try {
-        const send = promisify((provider.sendAsync || provider.send).bind(provider))
+        const send = promisify(getSendMethod(provider).bind(provider))
         const result = await send(payload)
         return result
       } catch (e) {
@@ -54,5 +69,3 @@ class MultiProvider extends Web3.providers.HttpProvider {
     throw new Error('All requests failed')
   }
 }
-
-module.exports = MultiProvider

@@ -1,6 +1,8 @@
 # AudiusData <-> Anchor CLI
 
-Below are useful commands that will allow you to interact with the AudiusData program deployed with anchor commands:
+Below are useful commands that will allow you to interact with the AudiusData program deployed with anchor commands.
+
+To run everything at once with test validator running and program deployed, run `npm run seed-tx`.
 
 ## 1. Initializing admin keypair and storage accounts:
 

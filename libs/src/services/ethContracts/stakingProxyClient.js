@@ -64,7 +64,7 @@ class StakingProxyClient extends ContractClient {
 
   async getLastClaimedBlockForUser () {
     const method = await this.getMethod('lastClaimedFor', this.web3Manager.getWalletAddress())
-    let tx = await method.call()
+    const tx = await method.call()
     return tx
   }
 }

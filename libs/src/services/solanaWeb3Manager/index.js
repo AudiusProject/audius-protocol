@@ -11,7 +11,7 @@ const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
-const { submitAttestations, evaluateAttestations, createSender } = require('./rewards')
+const { submitAttestations, evaluateAttestations, createSender, deriveSolanaSenderFromEthAddress } = require('./rewards')
 const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
@@ -411,19 +411,21 @@ class SolanaWeb3Manager {
    *   senderEthAddress: string,
    *   operatorEthAddress: string,
    *   attestations: AttestationMeta[],
+   *   feePayerOverride?: string
    * }} {
    * @memberof SolanaWeb3Manager
    */
   async createSender ({
     senderEthAddress,
     operatorEthAddress,
-    attestations
+    attestations,
+    feePayerOverride = null
   }) {
     return createSender({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
       senderEthAddress,
-      feePayer: this.feePayerKey,
+      feePayer: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       operatorEthAddress,
       attestations,
       identityService: this.identityService,
@@ -467,6 +469,24 @@ class SolanaWeb3Manager {
 
   async getRandomFeePayer () {
     return this.identityService.getRandomFeePayer()
+  }
+
+  /**
+   * Gets whether a given node registered on eth with `senderEthAddress` is registered on Solana
+   *
+   * @param {string} senderEthAddress
+   * @return {Promise<boolean>}
+   * @memberof SolanaWeb3Manager
+   */
+  async getIsDiscoveryNodeRegistered (senderEthAddress) {
+    const derivedSenderSolanaAddress = await deriveSolanaSenderFromEthAddress(
+      senderEthAddress,
+      this.rewardManagerProgramId,
+      this.rewardManagerProgramPDA
+    )
+
+    const res = await this.connection.getAccountInfo(derivedSenderSolanaAddress)
+    return !!res
   }
 }
 

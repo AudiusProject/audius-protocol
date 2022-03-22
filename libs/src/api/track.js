@@ -441,7 +441,7 @@ class Track extends Base {
       throw new Error('No users loaded for this wallet')
     }
 
-    let addedToChain = []
+    const addedToChain = []
     let requestFailed = false
     await Promise.all(
       trackMultihashAndUUIDList.map(async (trackInfo, i) => {
@@ -450,7 +450,7 @@ class Track extends Base {
 
           // Write metadata to chain
           const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-          let { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
+          const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
             ownerId,
             multihashDecoded.digest,
             multihashDecoded.hashFn,
@@ -471,7 +471,7 @@ class Track extends Base {
       return { error: true, trackIds: addedToChain.filter(Boolean).map(x => x.trackId) }
     }
 
-    let associatedWithCreatorNode = []
+    const associatedWithCreatorNode = []
     try {
       await Promise.all(
         addedToChain.map(async chainTrackInfo => {
