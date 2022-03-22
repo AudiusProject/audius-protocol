@@ -61,6 +61,7 @@ ARG1=${@:$OPTIND:1}
 if [ "${ARG1}" == "standalone_creator" ]; then
   export ipfsPort=6901
   export redisPort=4377
+  export redisHost=127.0.0.1
   PG_PORT=1432
   # Ignore error on create audius_dev network
   IPFS_EXISTS=$(docker ps -q -f status=running -f name=^/${IPFS_CONTAINER}$)

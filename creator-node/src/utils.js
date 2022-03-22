@@ -649,6 +649,32 @@ async function runShellCommand(command, args, logger) {
   })
 }
 
+/**
+ * A current node can handle a track transcode if:
+ * 1. There is enough room in the TranscodingQueue to accept more jobs
+ * 2. The spID is set after app init
+ * 3. AsyncProcessingQueue libs instance is initialized
+ * @param {Object} param
+ * @param {boolean} param.transcodingQueueCanAcceptMoreJobs flag to determine if TranscodingQueue can accept more jobs
+ * @param {number} param.spID the spID of the current node
+ * @param {Object} param.libs the libs instance in AsyncProcessingQueue
+ * @returns whether or not the current node can handle the transcode
+ */
+function canCurrentNodeHandleTranscode({
+  transcodingQueueCanAcceptMoreJobs,
+  spID,
+  libs
+}) {
+  const currentNodeSPIdIsInitialized = Number.isInteger(spID)
+  const libsInstanceIsInitialized = libs !== null
+
+  return (
+    transcodingQueueCanAcceptMoreJobs &&
+    currentNodeSPIdIsInitialized &&
+    libsInstanceIsInitialized
+  )
+}
+
 module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
@@ -664,3 +690,4 @@ module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
+module.exports.canCurrentNodeHandleTranscode = canCurrentNodeHandleTranscode

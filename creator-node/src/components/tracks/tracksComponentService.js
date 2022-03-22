@@ -4,9 +4,7 @@ const {
   getStartTime
 } = require('../../logging')
 
-const config = require('../../config')
-
-const TrackHandOffManager = require('./TrackHandOffManager')
+const TranscodeDelegationManager = require('./TranscodeDelegationManager')
 const TrackContentUploadManager = require('./trackContentUploadManager')
 
 /**
@@ -74,70 +72,15 @@ async function handleTranscodeAndSegment(
   )
 }
 
-async function handleTrackHandOff({ logContext }, requestProps) {
-  const {
-    fileName,
-    fileDir,
-    fileDestination,
-    session,
-    libs,
-    AsyncProcessingQueue
-  } = requestProps
-  const { cnodeUserUUID } = session
-  const logger = genericLogger.child(logContext)
-
-  const codeBlockTimeStart = getStartTime()
-
-  // If the Content Ndoe is not initialized yet, the spID will not
-  // have been set yet. If so, just continue with regular track upload
-  // rather than wait
-  let transcodeFilePath, segmentFileNames, sp
-  if (config.get('spID')) {
-    const resp = await TrackHandOffManager.handOffTrack(libs, requestProps)
-    transcodeFilePath = resp.transcodeFilePath
-    segmentFileNames = resp.segmentFileNames
-    sp = resp.sp
-  }
-
-  // Let current node handle the track if handoff fails
-  if (!transcodeFilePath || !segmentFileNames) {
-    logInfoWithDuration(
-      { logger, startTime: codeBlockTimeStart },
-      `Failed to hand off track. Retrying upload to current node..`
-    )
-
-    await AsyncProcessingQueue.addTrackContentUploadTask({
-      logContext, // request id here is same as uuid
-      req: {
-        session: { cnodeUserUUID },
-        fileName,
-        fileDir,
-        fileDestination
-      }
-    })
-  } else {
-    // Finish with the rest of track upload flow
-    logInfoWithDuration(
-      { logger, startTime: codeBlockTimeStart },
-      `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
-    )
-
-    await AsyncProcessingQueue.addProcessTranscodeAndSegmentTask({
-      logContext,
-      req: {
-        session: { cnodeUserUUID },
-        fileName,
-        fileDir,
-        fileDestination,
-        transcodeFilePath,
-        segmentFileNames
-      }
-    })
-  }
+async function handleTranscodeHandOff({ logContext }, requestProps) {
+  return TranscodeDelegationManager.handOff({
+    ...requestProps,
+    logContext
+  })
 }
 
 module.exports = {
   handleTrackContentRoute,
   handleTranscodeAndSegment,
-  handleTrackHandOff
+  handleTranscodeHandOff
 }

@@ -16,14 +16,15 @@ const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
 const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 // 3min
 const POLL_STATUS_INTERVAL_MS = 10000 // 10s
 
-class TrackHandOffManager {
-  static async handOffTrack(libs, req) {
+class TranscodeDelegationManager {
+  static async handOff(req) {
+    const libs = req.libs
     const logger = genericLogger.child(req.logContext)
     let resp = {}
 
     let sps
     try {
-      sps = await TrackHandOffManager.selectRandomSPs(libs)
+      sps = await TranscodeDelegationManager.selectRandomSPs(libs)
     } catch (e) {
       logger.warn(`Could not select random SPs: ${e.message}`)
       return resp
@@ -33,13 +34,23 @@ class TrackHandOffManager {
       try {
         logger.info(`Handing track off to sp=${sp}`)
 
-        const { transcodeFilePath, segmentFileNames } =
-          await TrackHandOffManager.handOffTrackHelper({
+        const transcodeAndSegmentUUID =
+          await TranscodeDelegationManager.handOffToSp(logger, { sp, req })
+
+        const polledTranscodeResponse =
+          await TranscodeDelegationManager.pollForTranscode(logger, {
             sp,
-            req
+            transcodeAndSegmentUUID
           })
 
-        resp = { transcodeFilePath, segmentFileNames }
+        const localFilePaths =
+          await TranscodeDelegationManager.writeTranscodeToFs(logger, {
+            ...polledTranscodeResponse,
+            sp,
+            fileNameNoExtension: req.fileNameNoExtension
+          })
+
+        resp = localFilePaths
       } catch (e) {
         // TODO: delete tmp dir in external SP if fails and continue
         logger.warn(`Could not hand off track to sp=${sp} err=${e.toString()}`)
@@ -50,41 +61,51 @@ class TrackHandOffManager {
   }
 
   // If any call fails -> throw error
-  static async handOffTrackHelper({ sp, req }) {
-    const {
-      logContext,
-      fileDir,
-      fileName,
-      fileNameNoExtension,
-      uuid: requestID,
-      AsyncProcessingQueue
-    } = req
-    const logger = genericLogger.child(logContext)
 
-    await TrackHandOffManager.fetchHealthCheck(sp)
+  static async handOffToSp(logger, { sp, req }) {
+    const { fileDir, fileName, fileNameNoExtension, uuid: requestID } = req
+
+    await TranscodeDelegationManager.fetchHealthCheck(sp)
 
     logger.info({ sp }, `Sending off transcode and segmenting request...`)
     const transcodeAndSegmentUUID =
-      await TrackHandOffManager.sendTranscodeAndSegmentRequest({
+      await TranscodeDelegationManager.sendTranscodeAndSegmentRequest({
         sp,
         fileDir,
         fileName,
         fileNameNoExtension
       })
 
+    return transcodeAndSegmentUUID
+  }
+
+  static async pollForTranscode(logger, { transcodeAndSegmentUUID, sp }) {
     // TODO: use logWithDuration?
     logger.info(
       { sp },
       `Polling for transcode and segments with uuid=${transcodeAndSegmentUUID}...`
     )
     const { transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path } =
-      await TrackHandOffManager.pollProcessingStatus({
+      await TranscodeDelegationManager.pollProcessingStatus({
         logger,
-        taskType: AsyncProcessingQueue.PROCESS_NAMES.transcodeAndSegment,
         uuid: transcodeAndSegmentUUID,
         sp
       })
 
+    return { transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path }
+  }
+
+  static async writeTranscodeToFs(
+    logger,
+    {
+      fileNameNoExtension,
+      transcodeFilePath,
+      segmentFileNames,
+      segmentFilePaths,
+      m3u8Path,
+      sp
+    }
+  ) {
     let res
 
     // TODO: parallelize?
@@ -97,7 +118,7 @@ class TrackHandOffManager {
       const segmentFileName = segmentFileNames[i]
       const segmentFilePath = segmentFilePaths[i]
 
-      res = await TrackHandOffManager.fetchSegment(
+      res = await TranscodeDelegationManager.fetchSegment(
         sp,
         segmentFileName,
         fileNameNoExtension
@@ -108,7 +129,7 @@ class TrackHandOffManager {
     // Get transcode and write to tmp disk
     logger.info({ sp, transcodeFilePath }, 'Fetching transcode...')
     const transcodeFileName = fileNameNoExtension + '-dl.mp3'
-    res = await TrackHandOffManager.fetchTranscode(
+    res = await TranscodeDelegationManager.fetchTranscode(
       sp,
       transcodeFileName,
       fileNameNoExtension
@@ -118,7 +139,7 @@ class TrackHandOffManager {
     // Get m3u8 file and write to tmp disk
     logger.info({ sp, m3u8Path }, 'Fetching m3u8...')
     const m3u8FileName = fileNameNoExtension + '.m3u8'
-    res = await TrackHandOffManager.fetchM3U8File(
+    res = await TranscodeDelegationManager.fetchM3U8File(
       sp,
       m3u8FileName,
       fileNameNoExtension
@@ -132,15 +153,12 @@ class TrackHandOffManager {
     }
   }
 
-  static async selectRandomSPs(
-    libs,
-    numberOfSPs = NUMBER_OF_SPS_FOR_HANDOFF_TRACK
-  ) {
+  static async selectRandomSPs(libs) {
     let allSPs = await libs.ethContracts.getServiceProviderList('content-node')
     allSPs = allSPs.map((sp) => sp.endpoint)
 
     const validSPs = new Set()
-    while (validSPs.size < numberOfSPs) {
+    while (validSPs.size < NUMBER_OF_SPS_FOR_HANDOFF_TRACK) {
       const index = Utils.getRandomInt(allSPs.length)
       const currentSP = allSPs[index]
       // do not pick self or a node that has already been chosen
@@ -154,30 +172,37 @@ class TrackHandOffManager {
   }
 
   // TODO: this is the same polling fn in libs. consider initializing libs to use, or copy over fn
-  static async pollProcessingStatus({ logger, taskType, uuid, sp }) {
+  static async pollProcessingStatus({ logger, uuid, sp }) {
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_HANDOFF_TIMEOUT_MS) {
       try {
         const { status, resp } =
-          await TrackHandOffManager.fetchTrackContentProcessingStatus(sp, uuid)
+          await TranscodeDelegationManager.fetchTrackContentProcessingStatus(
+            sp,
+            uuid
+          )
         // Should have a body structure of:
         //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
         if (status && status === 'DONE') return resp
         if (status && status === 'FAILED') {
-          throw new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`)
+          throw new Error(
+            `Transcode handoff failed: uuid=${uuid}, error=${resp}`
+          )
         }
       } catch (e) {
         // Catch errors here and swallow them. Errors don't signify that the track
         // upload has failed, just that we were unable to establish a connection to the node.
-        // This allows p olling to retry
-        logger.error(`Failed to poll for processing status, ${e}`)
+        // This allows polling to retry
+        logger.error(
+          `Failed to poll for transcode handoff processing status, ${e}`
+        )
       }
 
       await Utils.timeout(POLL_STATUS_INTERVAL_MS)
     }
 
     throw new Error(
-      `${taskType} took over ${MAX_TRACK_HANDOFF_TIMEOUT_MS}ms. uuid=${uuid}`
+      `Transcode handoff took over ${MAX_TRACK_HANDOFF_TIMEOUT_MS}ms. uuid=${uuid}`
     )
   }
 
@@ -187,9 +212,8 @@ class TrackHandOffManager {
     fileName,
     fileNameNoExtension
   }) {
-    const originalTrackFormData = await TrackHandOffManager.createFormData(
-      fileDir + '/' + fileName
-    )
+    const originalTrackFormData =
+      await TranscodeDelegationManager.createFormData(fileDir + '/' + fileName)
 
     // TODO: make this constant. perhaps in a class
     const spID = config.get('spID')
@@ -320,4 +344,4 @@ class TrackHandOffManager {
   }
 }
 
-module.exports = TrackHandOffManager
+module.exports = TranscodeDelegationManager

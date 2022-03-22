@@ -331,4 +331,5 @@ async function batchSaveFileToIPFSAndCopyFromFS({
 
   return { segmentFileIPFSResps, transcodeFileIPFSResp }
 }
+
 module.exports = TrackContentUploadManager

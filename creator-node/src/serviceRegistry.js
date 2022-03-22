@@ -71,6 +71,9 @@ class ServiceRegistry {
     // init libs
     this.libs = await this._initAudiusLibs()
 
+    // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
+    this.asyncProcessingQueue.setLibs(this.libs)
+
     this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
     // do not await on this, if we cannot fetch the notifier from chain, it will stop the content node from coming up
     this.trustedNotifierManager.init()

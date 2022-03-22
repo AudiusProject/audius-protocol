@@ -6,7 +6,8 @@ const redisClient = require('./redis')
 // Processing fns
 const {
   handleTrackContentRoute: trackContentUpload,
-  handleTranscodeAndSegment: transcodeAndSegment
+  handleTranscodeAndSegment: transcodeAndSegment,
+  handleTranscodeHandOff: transcodeHandOff
 } = require('./components/tracks/tracksComponentService')
 const {
   processTranscodeAndSegments
@@ -17,7 +18,8 @@ const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
   trackContentUpload: 'trackContentUpload',
   transcodeAndSegment: 'transcodeAndSegment',
-  processTranscodeAndSegments: 'processTranscodeAndSegments'
+  processTranscodeAndSegments: 'processTranscodeAndSegments',
+  transcodeHandOff: 'transcodeHandOff'
 })
 const PROCESS_STATES = Object.freeze({
   IN_PROGRESS: 'IN_PROGRESS',
@@ -45,22 +47,49 @@ class AsyncProcessingQueue {
       }
     })
 
+    this.libs = null
+
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
       const { logContext, task } = job.data
 
       const func = this.getFn(task)
 
-      try {
-        const response = await this.monitorProgress(task, func, job.data)
-        done(null, { response })
-      } catch (e) {
-        this.logError(
-          `Could not process taskType=${task} uuid=${
-            logContext.requestID
-          }: ${e.toString()}`,
-          logContext
-        )
-        done(e.toString())
+      if (task === PROCESS_NAMES.transcodeHandOff) {
+        const { transcodeFilePath, segmentFileNames, sp } =
+          await this.monitorProgress(task, transcodeHandOff, job.data)
+
+        if (!transcodeFilePath || !segmentFileNames) {
+          this.logStatus(
+            'Failed to hand off transcode. Retrying upload to current node..'
+          )
+          await this.addTrackContentUploadTask({
+            logContext,
+            req: job.data.req
+          })
+          done(null, {})
+        } else {
+          this.logStatus(
+            `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
+          )
+          await this.addProcessTranscodeAndSegmentTask({
+            logContext,
+            req: job.data.req
+          })
+          done(null, { response: { transcodeFilePath, segmentFileNames } })
+        }
+      } else {
+        try {
+          const response = await this.monitorProgress(task, func, job.data)
+          done(null, { response })
+        } catch (e) {
+          this.logError(
+            `Could not process taskType=${task} uuid=${
+              logContext.requestID
+            }: ${e.toString()}`,
+            logContext
+          )
+          done(e.toString())
+        }
       }
     })
 
@@ -107,6 +136,11 @@ class AsyncProcessingQueue {
     return this.addTask(params)
   }
 
+  async addTranscodeHandOffTask(params) {
+    params.task = PROCESS_NAMES.transcodeHandOff
+    return this.addTask(params)
+  }
+
   async addTask(params) {
     const { logContext, task } = params
 
@@ -135,6 +169,8 @@ class AsyncProcessingQueue {
         return transcodeAndSegment
       case PROCESS_NAMES.processTranscodeAndSegments:
         return processTranscodeAndSegments
+      case PROCESS_NAMES.transcodeHandOff:
+        return transcodeHandOff
       default:
         return null
     }
@@ -161,6 +197,8 @@ class AsyncProcessingQueue {
       'EX',
       EXPIRATION_SECONDS
     )
+
+    req.libs = this.libs
 
     let response
     try {
@@ -206,6 +244,14 @@ class AsyncProcessingQueue {
 
   constructAsyncProcessingKey(uuid) {
     return `async:::${uuid}`
+  }
+
+  setLibs(libs) {
+    this.libs = libs
+  }
+
+  getLibs() {
+    return this.libs
   }
 }
 

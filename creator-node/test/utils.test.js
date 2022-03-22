@@ -1,10 +1,12 @@
 const sinon = require('sinon')
 const assert = require('assert')
 
-const utils = require('../src/utils')
 const BlacklistManager = require('../src/blacklistManager')
-const { ipfs, ipfsLatest } = require('../src/ipfsClient')
 const redis = require('../src/redis')
+const { ipfs, ipfsLatest } = require('../src/ipfsClient')
+
+// Module under test
+const Utils = require('../src/utils')
 
 // Partially tested test file!!
 
@@ -21,14 +23,21 @@ describe('test src/utils.js', () => {
     const logContext = {}
 
     // Add CID to BlacklistManager
-    await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), multihash)
+    await BlacklistManager.addToRedis(
+      BlacklistManager.getRedisSegmentCIDKey(),
+      multihash
+    )
 
     const blacklistManagerSpy = sinon.spy(BlacklistManager, 'CIDIsInBlacklist')
-    const ipfsSingleByteCatSpy = sinon.spy(utils, 'ipfsSingleByteCat')
+    const ipfsSingleByteCatSpy = sinon.spy(Utils, 'ipfsSingleByteCat')
     const ipfsAddFromFsSpy = sinon.spy(ipfs, 'addFromFs')
     const ipfsAddSpy = sinon.spy(ipfsLatest, 'add')
 
-    await utils.rehydrateIpfsFromFsIfNecessary(multihash, storagePath, logContext)
+    await Utils.rehydrateIpfsFromFsIfNecessary(
+      multihash,
+      storagePath,
+      logContext
+    )
 
     // Make sure rehydration does not occur
     assert(blacklistManagerSpy.calledOnce)
@@ -42,17 +51,67 @@ describe('test src/utils.js', () => {
     const logContext = { storagePath: 'storagePath' }
 
     // Add CID to BlacklistManager
-    await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), multihash)
+    await BlacklistManager.addToRedis(
+      BlacklistManager.getRedisSegmentCIDKey(),
+      multihash
+    )
 
     const blacklistManagerSpy = sinon.spy(BlacklistManager, 'CIDIsInBlacklist')
-    const ipfsSingleByteCatSpy = sinon.spy(utils, 'ipfsSingleByteCat')
+    const ipfsSingleByteCatSpy = sinon.spy(Utils, 'ipfsSingleByteCat')
     const ipfsAddSpy = sinon.spy(ipfsLatest, 'add')
 
-    await utils.rehydrateIpfsDirFromFsIfNecessary(multihash, logContext)
+    await Utils.rehydrateIpfsDirFromFsIfNecessary(multihash, logContext)
 
     // Make sure rehydration does not occur
     assert(blacklistManagerSpy.calledOnce)
     assert(ipfsSingleByteCatSpy.notCalled)
     assert(ipfsAddSpy.notCalled)
+  })
+
+  it('Current node cannot handle transcode if libs is null', function () {
+    assert.strictEqual(
+      Utils.canCurrentNodeHandleTranscode({
+        transcodingQueueCanAcceptMoreJobs: true,
+        libs: null,
+        spID: 1
+      }),
+      false
+    )
+  })
+
+  it('Current node cannot handle transcode if spID is not initialized', function () {
+    const mockLibs = {}
+    assert.strictEqual(
+      Utils.canCurrentNodeHandleTranscode({
+        transcodingQueueCanAcceptMoreJobs: true,
+        libs: mockLibs,
+        spID: null
+      }),
+      false
+    )
+  })
+
+  it('Current node cannot handle transcode if TranscodingQueue cannot accept more jobs', function () {
+    const mockLibs = {}
+    assert.strictEqual(
+      Utils.canCurrentNodeHandleTranscode({
+        transcodingQueueCanAcceptMoreJobs: false,
+        libs: mockLibs,
+        spID: 1
+      }),
+      false
+    )
+  })
+
+  it('Current node can handle transcode if all conditions are met', function () {
+    const mockLibs = {}
+    assert.strictEqual(
+      Utils.canCurrentNodeHandleTranscode({
+        transcodingQueueCanAcceptMoreJobs: true,
+        libs: mockLibs,
+        spID: 1
+      }),
+      true
+    )
   })
 })

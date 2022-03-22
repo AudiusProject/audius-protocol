@@ -20,7 +20,10 @@ const {
   errorResponseServerError,
   errorResponseForbidden
 } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
+const {
+  validateStateForImageDirCIDAndReturnFileUUID,
+  canCurrentNodeHandleTranscode
+} = require('../utils')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -32,9 +35,6 @@ const {
 const { decode } = require('../hashids.js')
 const { getCID, streamFromFileSystem } = require('./files')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
-const {
-  handleTrackHandOff
-} = require('../components/tracks/tracksComponentService')
 
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
@@ -56,18 +56,21 @@ module.exports = function (app) {
     syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
-      // TODO: make into component
-      const AsyncProcessingQueue =
-        req.app.get('serviceRegistry').asyncProcessingQueue
-
       if (req.fileSizeError || req.fileFilterError) {
         removeTrackFolder({ logContext: req.logContext }, req.fileDir)
         return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
       }
 
-      const isTranscodeQueueAvailable = await TranscodingQueue.isAvailable()
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
 
-      if (isTranscodeQueueAvailable) {
+      const currentNodeCanHandleTranscode = canCurrentNodeHandleTranscode({
+        transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
+        spID: config.get('spID'),
+        libs: AsyncProcessingQueue.getLibs()
+      })
+
+      if (currentNodeCanHandleTranscode) {
         await AsyncProcessingQueue.addTrackContentUploadTask({
           logContext: req.logContext,
           req: {
@@ -80,9 +83,9 @@ module.exports = function (app) {
           }
         })
       } else {
-        handleTrackHandOff(
-          { logContext: req.logContext },
-          {
+        await AsyncProcessingQueue.addTranscodeHandOffTask({
+          logContext: req.logContext,
+          req: {
             fileName: req.fileName,
             fileDir: req.fileDir,
             fileNameNoExtension: req.fileNameNoExtension,
@@ -90,12 +93,9 @@ module.exports = function (app) {
             session: {
               cnodeUserUUID: req.session.cnodeUserUUID
             },
-            headers: req.headers,
-            libs: req.app.get('audiusLibs'),
-            AsyncProcessingQueue:
-              req.app.get('serviceRegistry').asyncProcessingQueue
+            headers: req.headers
           }
-        )
+        })
       }
 
       return successResponse({ uuid: req.logContext.requestID })
