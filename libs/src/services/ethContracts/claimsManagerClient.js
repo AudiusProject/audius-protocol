@@ -1,4 +1,4 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const ContractClient = require('../contracts/ContractClient')
 
 class ClaimsManagerClient extends ContractClient {

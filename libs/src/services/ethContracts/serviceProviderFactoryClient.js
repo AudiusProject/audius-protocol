@@ -1,4 +1,4 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const GovernedContractClient = require('../contracts/GovernedContractClient')
 const axios = require('axios')
 const { range } = require('lodash')
