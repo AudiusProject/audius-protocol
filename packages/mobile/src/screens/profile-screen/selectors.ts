@@ -5,6 +5,7 @@ import {
 } from 'audius-client/src/common/store/account/selectors'
 import {
   getProfileUser,
+  getProfileUserHandle,
   getProfileUserId,
   makeGetProfile
 } from 'audius-client/src/common/store/pages/profile/selectors'
@@ -49,3 +50,14 @@ export const getIsOwner = createSelector(
   [getProfileUserId, getUserId],
   (profileUserId, accountUserId) => profileUserId === accountUserId
 )
+
+export const useIsProfileLoaded = () => {
+  const { params } = useRoute<'Profile'>()
+
+  const profileHandle = useSelectorWeb(getProfileUserHandle)
+  const isOwner = useSelectorWeb(getIsOwner)
+  return (
+    profileHandle === params.handle ||
+    (params.handle === 'accountUser' && isOwner)
+  )
+}

@@ -7,7 +7,7 @@ import { makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
 import { SubscribeButton } from './SubscribeButton'
-import { getIsOwner, useSelectProfile } from './selectors'
+import { getIsOwner, useIsProfileLoaded, useSelectProfile } from './selectors'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   username: {
@@ -68,6 +68,8 @@ type ProfileInfoProps = {
 export const ProfileInfo = (props: ProfileInfoProps) => {
   const { onFollow } = props
   const styles = useStyles()
+  const isProfileLoaded = useIsProfileLoaded()
+
   const profile = useSelectProfile([
     'user_id',
     'name',
@@ -84,6 +86,19 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   } = profile
 
   const isOwner = useSelectorWeb(getIsOwner)
+  const profileButton = isOwner ? (
+    <EditProfileButton style={styles.followButton} />
+  ) : (
+    <>
+      {does_current_user_follow ? <SubscribeButton profile={profile} /> : null}
+      <FollowButton
+        style={styles.followButton}
+        profile={profile}
+        onPress={onFollow}
+        followSource={FollowSource.PROFILE_PAGE}
+      />
+    </>
+  )
 
   return (
     <View pointerEvents='box-none' style={styles.info}>
@@ -103,21 +118,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
         </View>
       </View>
       <View style={styles.actionButtons}>
-        {isOwner ? (
-          <EditProfileButton style={styles.followButton} />
-        ) : (
-          <>
-            {does_current_user_follow ? (
-              <SubscribeButton profile={profile} />
-            ) : null}
-            <FollowButton
-              style={styles.followButton}
-              profile={profile}
-              onPress={onFollow}
-              followSource={FollowSource.PROFILE_PAGE}
-            />
-          </>
-        )}
+        {isProfileLoaded ? profileButton : null}
       </View>
     </View>
   )
