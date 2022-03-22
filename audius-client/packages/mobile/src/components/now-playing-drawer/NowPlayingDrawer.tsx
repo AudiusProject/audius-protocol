@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   scrubberContainer: {
-    marginLeft: 60,
-    marginRight: 60
+    marginLeft: 40,
+    marginRight: 40
   }
 })
 
@@ -238,7 +238,7 @@ const NowPlayingDrawer = ({
             />
             <Logo opacityAnim={playBarOpacityAnim} />
             <View style={styles.titleBarContainer}>
-              <TitleBar onClose={handleDrawerClose} />
+              <TitleBar onClose={handleDrawerCloseFromSwipe} />
             </View>
             <View style={styles.artworkContainer}>
               <Artwork track={track} />
