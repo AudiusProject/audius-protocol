@@ -30,6 +30,8 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     color: palette.neutralLight2
   },
   expandButton: {
+    // Flex start so the bounding box around the button is not full-width
+    alignSelf: 'flex-start',
     marginTop: spacing(2)
   },
   expandText: {
@@ -82,8 +84,8 @@ export const ExpandableBio = () => {
   if (!bio && !hasSites) return null
 
   return (
-    <View style={styles.root}>
-      <View>
+    <View pointerEvents='box-none' style={styles.root}>
+      <View pointerEvents='box-none'>
         {bio ? (
           <Hyperlink source='profile page'>
             <Text

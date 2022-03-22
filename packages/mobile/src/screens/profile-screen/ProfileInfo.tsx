@@ -86,7 +86,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const isOwner = useSelectorWeb(getIsOwner)
 
   return (
-    <View style={styles.info}>
+    <View pointerEvents='box-none' style={styles.info}>
       <View>
         <Text accessibilityRole='header' style={styles.username}>
           {name}
