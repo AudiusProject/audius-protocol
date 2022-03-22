@@ -58,6 +58,8 @@ npm run localnet-down && npm test
 ## Sending transactions:
 As a prerequisite, you should run `npm run localnet-up` and `npm run deploy-dev` to deploy your program to the solana test validator.
 
+To deploy program and seed tx, simply run `npm run localnet-up` in one window and then run `npm run dev-setup` in another. 
+
 See [README](cli/README.md).
 
 ## Troubleshooting:
