@@ -93,7 +93,8 @@ yarn run ts-node cli/main.ts -f createTrack \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
---admin-storage-keypair $PWD/adminStorageKeypair.json
+--admin-storage-keypair $PWD/adminStorageKeypair.json \
+--handle handlebcdef
 ```
 
 ## 4. Creating a playlist
@@ -105,30 +106,33 @@ yarn run ts-node cli/main.ts -f createPlaylist \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
---admin-storage-keypair $PWD/adminStorageKeypair.json
+--admin-storage-keypair $PWD/adminStorageKeypair.json \
+--handle handlebcdef
 ```
 
+Export the created playlist ID in logs as $PLAYLIST_ID.
+
 ## 4. Updating a playlist
-**Note** Not currently working
-Update a given playlist denoted by its public key.
+Update a given playlist denoted by its id.
 
 ```
 yarn run ts-node cli/main.ts -f updatePlaylist \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
---playlist-pubkey AZZbBaE4aa85kp6ihzZJxuXtdP7xq59aLg7cmwJYpuTe \
---admin-storage-keypair $PWD/adminStorageKeypair.json
+--admin-storage-keypair $PWD/adminStorageKeypair.json \
+--id "$PLAYLIST_ID" \
+--handle handlebcdef
 ```
 
 ## 4. Delete a playlist
-**Note** Not currently working
-Delete a given playlist denoted by its public key. This one does not take a metadata argument.
+Delete a given playlist denoted by its id.
 
 ```
 yarn run ts-node cli/main.ts -f deletePlaylist \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
---playlist-pubkey AZZbBaE4aa85kp6ihzZJxuXtdP7xq59aLg7cmwJYpuTe
+--id "$PLAYLIST_ID" \
+--handle handlebcdef
 ```

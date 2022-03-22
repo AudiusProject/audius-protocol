@@ -13,6 +13,7 @@ import {
   EntityTypesEnumValues,
   createPlaylist,
   updatePlaylist,
+  deletePlaylist
 } from "../lib/lib";
 import { findDerivedPair, randomCID, randomString } from "../lib/utils";
 
@@ -160,6 +161,9 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
     try {
       const start = Date.now();
       let tx;
+
+      console.log(`Transacting on entity with type=${JSON.stringify(entityType)}, id=${args.id}`)
+
       if (manageAction == ManagementActions.create && entityType == EntityTypesEnumValues.track) {
         tx = await createTrack({
           id: args.id,
@@ -196,12 +200,23 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
         });
+      } else if (manageAction == ManagementActions.delete && entityType == EntityTypesEnumValues.playlist) {
+        tx = await deletePlaylist({
+          id: args.id,
+          program: args.program,
+          baseAuthorityAccount: args.baseAuthorityAccount,
+          userAuthorityKeypair: args.userAuthorityKeypair,
+          userStorageAccountPDA: args.userStorageAccountPDA,
+          handleBytesArray: args.handleBytesArray,
+          adminStorageAccount: args.adminStorageAccount,
+          bumpSeed: args.bumpSeed,
+        });
       }
 
       await provider.connection.confirmTransaction(tx);
       const duration = Date.now() - start;
       console.log(
-        `Processed ${tx} in ${duration}, user=${options.userStoragePubkey}`
+        `Processed tx=${tx} in duration=${duration}, user=${options.userStoragePubkey}`
       );
       return tx;
     } catch (e) {
@@ -243,7 +258,7 @@ program
   )
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
-  .option("--playlist-pubkey <integer>", "playlist to update or delete");
+  .option("--id <string>", "ID of entity targeted by transaction");
 
 program.parse(process.argv);
 
@@ -390,10 +405,10 @@ switch (options.function) {
     })();
     break;
   case functionTypes.updatePlaylist: {
-    const playlistPublicKey = options.playlistPubkey;
-    if (!playlistPublicKey) break;
+    const playlistId = options.id;
+    if (!playlistId) break;
     console.log(
-      `Playlist public key = ${playlistPublicKey}, Target User = ${options.userStoragePubkey}`
+      `Playlist id = ${playlistId} Target User = ${options.userStoragePubkey}`
     );
     (async () => {
       const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -401,7 +416,7 @@ switch (options.function) {
       const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStorageKeypair.publicKey, handleBytesArray);
       const start = Date.now();
       await timeManageEntity({
-        id: randomString(10),
+        id: playlistId,
         baseAuthorityAccount,
         adminStorageAccount: adminStorageKeypair.publicKey,
         handleBytesArray: handleBytesArray,
@@ -412,7 +427,35 @@ switch (options.function) {
         userStorageAccountPDA: options.userStoragePubkey,
       }, cliVars.provider, ManagementActions.update, EntityTypesEnumValues.playlist);
       console.log(
-        `Processed playlist ${playlistPublicKey} in ${Date.now() - start}ms`
+        `Updated playlist ${playlistId} in ${Date.now() - start}ms`
+      );
+    })();
+    break;
+  }
+  case functionTypes.deletePlaylist: {
+    const playlistId = options.id;
+    if (!playlistId) break;
+    console.log(
+      `Playlist id = ${playlistId} Target User = ${options.userStoragePubkey}`
+    );
+    (async () => {
+      const cliVars = initializeCLI(network, options.ownerKeypair);
+      const handleBytesArray = getHandleBytesArray(options.handle);
+      const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStorageKeypair.publicKey, handleBytesArray);
+      const start = Date.now();
+      await timeManageEntity({
+        id: playlistId,
+        baseAuthorityAccount,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        handleBytesArray: handleBytesArray,
+        program: cliVars.program,
+        bumpSeed: bumpSeed,
+        metadata: randomCID(),
+        userAuthorityKeypair: userSolKeypair,
+        userStorageAccountPDA: options.userStoragePubkey,
+      }, cliVars.provider, ManagementActions.update, EntityTypesEnumValues.playlist);
+      console.log(
+        `Deleted playlist ${playlistId} in ${Date.now() - start}ms`
       );
     })();
     break;

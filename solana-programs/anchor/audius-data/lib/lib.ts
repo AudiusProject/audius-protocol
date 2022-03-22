@@ -123,7 +123,6 @@ export type CreateEntityParams = {
 };
 
 export type DeleteEntityParams = {
-  provider: Provider;
   program: Program<AudiusData>;
   id: string;
   userAuthorityKeypair: Keypair;

@@ -6,6 +6,8 @@ OWNER_KEYPAIR_PATH="$HOME/.config/solana/id.json"
 ADMIN_KEYPAIR_PATH="$PWD/adminKeypair.json"
 ADMIN_STORAGE_KEYPAIR_PATH="$PWD/adminStorageKeypair.json"
 USER_KEYPAIR_PATH="$PWD/userKeypair.json"
+
+
 cd "$ANCHOR_PROGRAM_DIR"
 
 echo "Seeding transactions..."
@@ -21,10 +23,10 @@ yarn run ts-node cli/main.ts -f initUser \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    -h handlebcdef \
+    --handle handlebcdef \
     -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 > /tmp/initUserOutput.txt
 
-export USER_STORAGE_PUBKEY=$(cut -d '=' -f 4 <<< $(cat /tmp/initUserOutput.txt | grep userAcct))
+USER_STORAGE_PUBKEY=$(cut -d '=' -f 4 <<< $(cat /tmp/initUserOutput.txt | grep userAcct))
 
 echo "Generating new solana pubkey for user"
 
@@ -43,7 +45,8 @@ yarn run ts-node cli/main.ts -f createTrack \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH"
+    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
+    --handle handlebcdef
 
 echo "Creating playlist"
 
@@ -51,6 +54,29 @@ yarn run ts-node cli/main.ts -f createPlaylist \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH"
+    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
+    --handle handlebcdef | tee -a /tmp/createPlaylistOutput.txt
+
+PLAYLIST_ID=$(cut -d '=' -f 3 <<< $(cat /tmp/createPlaylistOutput.txt | grep "Transacting on entity"))
+
+echo "Updating playlist"
+
+yarn run ts-node cli/main.ts -f updatePlaylist \
+    -k "$OWNER_KEYPAIR_PATH" \
+    --user-solana-keypair "$USER_KEYPAIR_PATH" \
+    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
+    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
+    --id "$PLAYLIST_ID" \
+    --handle handlebcdef
+
+echo "Deleting playlist"
+
+yarn run ts-node cli/main.ts -f deletePlaylist \
+    -k "$OWNER_KEYPAIR_PATH" \
+    --user-solana-keypair "$USER_KEYPAIR_PATH" \
+    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
+    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
+    --id "$PLAYLIST_ID" \
+    --handle handlebcdef
 
 echo "Successfully seeded tx."
