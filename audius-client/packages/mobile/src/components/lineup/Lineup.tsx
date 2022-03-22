@@ -359,7 +359,7 @@ export const Lineup = ({
       {...listProps}
       ref={ref}
       ListHeaderComponent={header}
-      ListFooterComponent={<View style={{ height: 160 }} />}
+      ListFooterComponent={<View style={{ height: 16 }} />}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={LOAD_MORE_THRESHOLD}
       // TODO: Either style the refreshing indicator or
