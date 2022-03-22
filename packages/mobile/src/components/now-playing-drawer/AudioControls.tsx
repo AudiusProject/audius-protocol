@@ -148,7 +148,7 @@ export const AudioControls = ({ onNext, onPrevious }: AudioControlsProps) => {
   const renderPlayButton = () => {
     return (
       <AnimatedButton
-        isActive={isPlaying}
+        iconIndex={isPlaying ? 1 : 0}
         iconLightJSON={[IconPlay, IconPause]}
         iconDarkJSON={[IconPlay, IconPause]}
         onPress={onPressPlayButton}

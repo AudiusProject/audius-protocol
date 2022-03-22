@@ -161,7 +161,7 @@ export const PlayBar = ({
         iconLightJSON={[IconPlay, IconPause]}
         iconDarkJSON={[IconPlay, IconPause]}
         onPress={onPressPlayButton}
-        isActive={isPlaying}
+        iconIndex={isPlaying ? 1 : 0}
         style={styles.button}
         wrapperStyle={styles.playIcon}
       />

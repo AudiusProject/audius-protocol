@@ -58,6 +58,9 @@ export type DetailsTileProps = {
   /** Url of the image */
   imageUrl?: string
 
+  /** Is the item playing */
+  isPlaying?: boolean
+
   /** Function to call when the favorites count is pressed */
   onPressFavorites?: GestureResponderHandler
 
