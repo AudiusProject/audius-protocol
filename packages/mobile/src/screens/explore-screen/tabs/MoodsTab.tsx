@@ -27,11 +27,9 @@ type Props = {
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     tabContainer: {
-      flex: 1,
-      display: 'flex'
+      flex: 1
     },
     contentContainer: {
-      display: 'flex',
       flexDirection: 'row',
       flexWrap: 'wrap',
       padding: 12,

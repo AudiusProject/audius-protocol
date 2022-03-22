@@ -17,40 +17,36 @@ import {
   FAVORITES_PAGE,
   profilePage
 } from 'audius-client/src/utils/route'
-import { Animated, StyleSheet } from 'react-native'
+import { Animated } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import { NOW_PLAYING_BAR_HEIGHT } from 'app/components/now-playing-drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
-import { useTheme } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 import { BottomTabBarButton } from './BottomTabBarButton'
 
 type NavigationRoute = RNBottomTabBarProps['state']['routes'][0]
 
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    width: '100%',
-
+const useStyles = makeStyles(({ palette }) => ({
+  root: {
     zIndex: 4,
     elevation: 4
   },
   bottomBar: {
     borderTopWidth: 1,
-
+    borderTopColor: palette.neutralLight8,
+    backgroundColor: palette.neutralLight10,
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'nowrap',
     alignItems: 'center',
     justifyContent: 'space-evenly'
   }
-})
+}))
 
 const springToValue = (
   animation: Animated.Value,
@@ -70,7 +66,7 @@ export type BottomTabBarProps = RNBottomTabBarProps & {
    * Display properties on the bottom bar to control whether
    * the bottom bar is showing
    */
-  display: { isShowing: boolean }
+  display: { isShowing: boolean; isPlayBarShowing: boolean }
   /**
    * Translation animation to move the bottom bar as drawers
    * are opened behind it
@@ -93,17 +89,10 @@ export const BottomTabBar = ({
   navigation,
   translationAnim
 }: BottomTabBarProps & RNBottomTabBarProps) => {
+  const styles = useStyles()
   const [isNavigating, setIsNavigating] = useState(false)
   const pushRouteWeb = usePushRouteWeb()
-  const bottomBarStyle = useTheme(styles.bottomBar, {
-    borderTopColor: 'neutralLight8',
-    backgroundColor: 'neutralLight10'
-  })
-
-  // Selectors
   const handle = useSelectorWeb(getUserHandle)
-
-  // Actions
   const dispatchWeb = useDispatchWeb()
   const openSignOn = useCallback(() => {
     dispatchWeb(_openSignOn(false))
@@ -121,7 +110,6 @@ export const BottomTabBar = ({
     [dispatchWeb]
   )
 
-  // Animations
   const slideIn = useCallback(() => {
     springToValue(translationAnim, 0)
   }, [translationAnim])
@@ -205,27 +193,22 @@ export const BottomTabBar = ({
     [navigation, pushRouteWeb, handle, openSignOn, resetExploreTab, scrollToTop]
   )
 
-  const handleLongPress = () => {
+  const handleLongPress = useCallback(() => {
     navigation.emit({
       type: 'scrollToTop'
     })
-  }
+  }, [navigation])
+
+  const rootStyle = [
+    styles.root,
+    display.isPlayBarShowing && { marginTop: NOW_PLAYING_BAR_HEIGHT + 8 },
+    { transform: [{ translateY: translationAnim }] }
+  ]
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        {
-          transform: [
-            {
-              translateY: translationAnim
-            }
-          ]
-        }
-      ]}
-    >
+    <Animated.View style={rootStyle}>
       <SafeAreaView
-        style={bottomBarStyle}
+        style={styles.bottomBar}
         edges={['bottom']}
         pointerEvents='auto'
       >

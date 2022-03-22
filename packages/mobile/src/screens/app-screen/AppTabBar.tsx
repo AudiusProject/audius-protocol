@@ -16,22 +16,28 @@ export const AppTabBar = (props: TabBarProps) => {
   // Track bottom bar display properties as an object, so every update
   // can be listened to, even if we go from hidden => hidden
   const [bottomBarDisplay, setBottomBarDisplay] = useState({
-    isShowing: true
+    isShowing: true,
+    isPlayBarShowing: false
   })
 
   const onNowPlayingDrawerOpen = useCallback(() => {
-    setBottomBarDisplay({ isShowing: false })
-  }, [setBottomBarDisplay])
+    setBottomBarDisplay(state => ({ ...state, isShowing: false }))
+  }, [])
 
   const onNowPlayingDrawerClose = useCallback(() => {
-    setBottomBarDisplay({ isShowing: true })
-  }, [setBottomBarDisplay])
+    setBottomBarDisplay(state => ({ ...state, isShowing: true }))
+  }, [])
+
+  const handlePlayBarShowing = useCallback((isPlayBarShowing: boolean) => {
+    setBottomBarDisplay(state => ({ ...state, isPlayBarShowing }))
+  }, [])
 
   return (
     <>
       <NowPlayingDrawer
         onOpen={onNowPlayingDrawerOpen}
         onClose={onNowPlayingDrawerClose}
+        onPlayBarShowing={handlePlayBarShowing}
         bottomBarTranslationAnim={bottomBarTranslationAnim}
       />
       <BottomTabBar

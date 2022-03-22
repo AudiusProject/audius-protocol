@@ -32,11 +32,9 @@ const messages = {
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     tabContainer: {
-      flex: 1,
-      display: 'flex'
+      flex: 1
     },
     contentContainer: {
-      display: 'flex',
       padding: 12,
       paddingVertical: 24
     },

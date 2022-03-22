@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
+import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
 import Drawer from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -34,14 +35,17 @@ import { Logo } from './Logo'
 import { PlayBar } from './PlayBar'
 import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
+import { NOW_PLAYING_BAR_HEIGHT } from './constants'
 
-const PLAY_BAR_HEIGHT = 84
+const combinedBottomAreaHeight = BOTTOM_BAR_HEIGHT + NOW_PLAYING_BAR_HEIGHT
+
 const STATUS_BAR_FADE_CUTOFF = 0.6
 
 const styles = StyleSheet.create({
   container: {
     paddingTop: 0,
-    height: Dimensions.get('window').height - PLAY_BAR_HEIGHT
+    height: Dimensions.get('window').height - combinedBottomAreaHeight,
+    marginBottom: 84
   },
   controlsContainer: {
     marginLeft: 24,
@@ -65,12 +69,14 @@ const styles = StyleSheet.create({
 type NowPlayingDrawerProps = {
   onOpen: () => void
   onClose: () => void
+  onPlayBarShowing: (isShowing: boolean) => void
   bottomBarTranslationAnim: Animated.Value
 }
 
 const NowPlayingDrawer = ({
   onOpen: onOpenProp,
   onClose: onCloseProp,
+  onPlayBarShowing,
   bottomBarTranslationAnim
 }: NowPlayingDrawerProps) => {
   const insets = useSafeAreaInsets()
@@ -87,6 +93,12 @@ const NowPlayingDrawer = ({
       setIsPlayBarShowing(true)
     }
   }, [isPlaying, isPlayBarShowing])
+
+  // tell the bottom-tab-bar to provide margin to prevent now-playing-bar
+  // from blocking page content
+  useEffect(() => {
+    onPlayBarShowing(isPlayBarShowing)
+  }, [onPlayBarShowing, isPlayBarShowing])
 
   // Set animation opacity for the play bar as the now playing drawer is
   // opened. The top of the now playing drawer (Audius logo)
@@ -217,7 +229,7 @@ const NowPlayingDrawer = ({
       isOpen={isOpen}
       onClose={handleDrawerCloseFromSwipe}
       onOpen={onDrawerOpen}
-      initialOffsetPosition={PLAY_BAR_HEIGHT}
+      initialOffsetPosition={combinedBottomAreaHeight}
       isOpenToInitialOffset={!isOpen && isPlayBarShowing}
       animationStyle={DrawerAnimationStyle.SPRINGY}
       shouldBackgroundDim={false}
