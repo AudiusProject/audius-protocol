@@ -68,7 +68,7 @@ type UpdateUserParams = {
   program: Program<AudiusData>;
   metadata: string;
   userStgAccount: anchor.web3.PublicKey;
-  userDelegateAuthority: anchor.web3.PublicKey;
+  userAuthorityDelegate: anchor.web3.PublicKey;
   authorityDelegationStatusAccount: anchor.web3.PublicKey;
   userAuthorityKeypair: anchor.web3.Keypair;
 };
@@ -313,14 +313,14 @@ export const updateUser = async ({
   metadata,
   userStgAccount,
   userAuthorityKeypair,
-  userDelegateAuthority,
+  userAuthorityDelegate,
   authorityDelegationStatusAccount,
 }: UpdateUserParams) => {
   return program.rpc.updateUser(metadata, {
     accounts: {
       user: userStgAccount,
       userAuthority: userAuthorityKeypair.publicKey,
-      userDelegateAuthority,
+      userAuthorityDelegate,
       authorityDelegationStatus: authorityDelegationStatusAccount,
     },
     signers: [userAuthorityKeypair],

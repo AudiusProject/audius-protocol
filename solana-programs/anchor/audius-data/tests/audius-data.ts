@@ -233,7 +233,7 @@ describe("audius-data", function () {
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: newUserKeypair,
       // No delegate authority needs to be provided in this happy path, so use the SystemProgram ID
-      userDelegateAuthority: SystemProgram.programId,
+      userAuthorityDelegate: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
     });
     await confirmLogInTransaction(provider, tx, updatedCID);
@@ -550,7 +550,10 @@ describe("audius-data", function () {
       signers: [userAuthorityDelegateKeypair],
     };
 
-    await program.rpc.initAuthorityDelegationStatus("app_name", initAuthorityDelegationStatusArgs);
+    await program.rpc.initAuthorityDelegationStatus(
+      "app_name",
+      initAuthorityDelegationStatusArgs
+    );
 
     // New sol key that will be used as user authority delegate
     const userDelSeed = [
@@ -602,7 +605,7 @@ describe("audius-data", function () {
       metadata: updatedCID,
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: userAuthorityDelegateKeypair,
-      userDelegateAuthority: userDelPDA,
+      userAuthorityDelegate: userDelPDA,
       authorityDelegationStatusAccount: authorityDelegationStatusPda,
     });
     const removeUserDelArgs = {
@@ -635,7 +638,7 @@ describe("audius-data", function () {
         metadata: randomCID(),
         userStgAccount: newUserAcctPDA,
         userAuthorityKeypair: userAuthorityDelegateKeypair,
-        userDelegateAuthority: userDelPDA,
+        userAuthorityDelegate: userDelPDA,
         authorityDelegationStatusAccount: authorityDelegationStatusPda,
       })
     )
@@ -762,7 +765,7 @@ describe("audius-data", function () {
       metadata: updatedCID,
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: userAuthorityDelegateKeypair,
-      userDelegateAuthority: userDelPDA,
+      userAuthorityDelegate: userDelPDA,
       authorityDelegationStatusAccount: authorityDelegationStatusPda,
     });
 
@@ -789,12 +792,12 @@ describe("audius-data", function () {
         metadata: randomCID(),
         userStgAccount: newUserAcctPDA,
         userAuthorityKeypair: userAuthorityDelegateKeypair,
-        userDelegateAuthority: userDelPDA,
+        userAuthorityDelegate: userDelPDA,
         authorityDelegationStatusAccount: authorityDelegationStatusPda, 
       })
     )
       .to.eventually.be.rejected.and.property("msg")
-      .to.include(`You are not authorized to perform this action`);
+      .to.include(`This authority's delegation status is revoked.`);
   });
 
   it("creating initialized user should fail", async function () {

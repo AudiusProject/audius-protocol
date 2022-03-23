@@ -201,7 +201,7 @@ pub mod audius_data {
         validate_user_authority(
             ctx.program_id,
             &ctx.accounts.user,
-            &ctx.accounts.user_delegate_authority,
+            &ctx.accounts.user_authority_delegate,
             &ctx.accounts.user_authority,
             &ctx.accounts.authority_delegation_status,
         )?;
@@ -458,7 +458,7 @@ pub struct UpdateUser<'info> {
     pub user_authority: Signer<'info>,
     /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
     #[account()]
-    pub user_delegate_authority: AccountInfo<'info>,
+    pub user_authority_delegate: AccountInfo<'info>,
     /// CHECK: Authority delegation status account, can be defaulted to SystemProgram for no-op
     #[account()]
     pub authority_delegation_status: AccountInfo<'info>,
@@ -502,7 +502,6 @@ pub struct InitAuthorityDelegationStatus<'info> {
 #[derive(Accounts)]
 #[instruction(authority_delegation_status_bump: u8)]
 pub struct RevokeAuthorityDelegationStatus<'info> {
-    /// CHECK: Delegate authority account
     #[account()]
     pub delegate_authority: Signer<'info>,
     #[account(
@@ -536,13 +535,6 @@ pub struct AddUserAuthorityDelegate<'info> {
         space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
     )]
     pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
-    // TODO
-    // #[account(
-    //     mut,
-    //     seeds = [authority_delegation_PREFIX, &user_authority_delegate.to_bytes()[..32]],
-    //     bump = authority_delegation_bump
-    // )]
-    // pub authority_delegation_pda: Account<'info, User>,
     #[account()]
     pub user_authority: Signer<'info>,
     #[account(mut)]
