@@ -405,8 +405,13 @@ jobs:
       - run:
           name: setup
           command: |
+            cd libs
+            npm install
+            npm run build
+            npm link
             cd creator-node
             npm install
+            npm link @audius/libs
       # - save_cache:
       #     paths:
       #       - creator-node/node_modules
