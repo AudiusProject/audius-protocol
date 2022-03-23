@@ -15,19 +15,25 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     color: palette.neutral
   },
   handleInfo: {
+    marginTop: -6,
     flexDirection: 'row',
     alignItems: 'center',
-    alignContent: 'center'
+    alignContent: 'center',
+    flexWrap: 'wrap',
+    maxWidth: 200
   },
   handle: {
+    flexShrink: 0,
     marginRight: spacing(2),
     textAlignVertical: 'bottom'
   },
   handleText: {
+    marginTop: 6,
     ...typography.h4,
     color: palette.neutralLight4
   },
   followsYou: {
+    marginTop: -6,
     borderRadius: 4,
     overflow: 'hidden',
     borderColor: palette.neutralLight4,
