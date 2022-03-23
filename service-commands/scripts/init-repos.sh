@@ -69,6 +69,11 @@ cd $PROTOCOL_DIR/
 cd service-commands
 npm link @audius/libs
 
+# link creator-node to libs
+cd $PROTOCOL_DIR/
+cd creator-node
+npm link @audius/libs
+
 cd $PROTOCOL_DIR/
 cd ..
 if [ -d "audius-client" ]; then
