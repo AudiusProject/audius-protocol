@@ -321,7 +321,9 @@ class ServiceRegistry {
       ? new Set(config.get('discoveryProviderWhitelist').split(','))
       : null
     const identityService = config.get('identityService')
-    const discoveryNodeUnhealthyBlockDiff = config.get('discoveryNodeUnhealthyBlockDiff')
+    const discoveryNodeUnhealthyBlockDiff = config.get(
+      'discoveryNodeUnhealthyBlockDiff'
+    )
 
     const audiusLibs = new AudiusLibs({
       ethWeb3Config: AudiusLibs.configEthWeb3(
