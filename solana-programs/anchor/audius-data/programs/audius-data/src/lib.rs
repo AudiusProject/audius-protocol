@@ -66,7 +66,7 @@ pub mod audius_data {
         ctx: Context<InitializeUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        handle_seed: [u8; 16],
+        handle_seed: [u8; 32],
         _user_bump: u8,
         _metadata: String,
     ) -> Result<()> {
@@ -105,7 +105,6 @@ pub mod audius_data {
         ctx: Context<InitializeUserSolIdentity>,
         user_authority: Pubkey,
     ) -> Result<()> {
-        msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
         let index_current_instruction =
             sysvar::instructions::load_current_index_checked(&ctx.accounts.sysvar_program)?;
@@ -145,13 +144,11 @@ pub mod audius_data {
         ctx: Context<CreateUser>,
         base: Pubkey,
         eth_address: [u8; 20],
-        _handle_seed: [u8; 16],
+        _handle_seed: [u8; 32],
         _user_bump: u8,
-        metadata: String,
+        _metadata: String,
         user_authority: Pubkey,
     ) -> Result<()> {
-        msg!("Audius::CreateUser");
-
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
             &[&ctx.accounts.audius_admin.key().to_bytes()[..32]],
@@ -190,21 +187,17 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        msg!("AudiusUserMetadata = {:?}", metadata);
-
         Ok(())
     }
 
     /// Permissioned function to log an update to User metadata
-    pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> Result<()> {
-        msg!("Audius::UpdateUser");
+    pub fn update_user(ctx: Context<UpdateUser>, _metadata: String) -> Result<()> {
         validate_user_authority(
             ctx.program_id,
             &ctx.accounts.user,
             &ctx.accounts.user_delegate_authority,
             &ctx.accounts.user_authority,
         )?;
-        msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
     }
 
@@ -275,19 +268,10 @@ pub mod audius_data {
     pub fn follow_user(
         ctx: Context<FollowUser>,
         base: Pubkey,
-        user_action: UserAction,
+        _user_action: UserAction,
         _follower_handle: UserHandle,
         _followee_handle: UserHandle,
     ) -> Result<()> {
-        match user_action {
-            UserAction::FollowUser => {
-                msg!("Audius::FollowUser");
-            }
-            UserAction::UnfollowUser => {
-                msg!("Audius::UnfollowUser");
-            }
-        };
-
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
@@ -309,7 +293,7 @@ pub mod audius_data {
     pub fn add_user_authority_delegate(
         ctx: Context<AddUserAuthorityDelegate>,
         _base: Pubkey,
-        _handle_seed: [u8; 16],
+        _handle_seed: [u8; 32],
         _user_bump: u8,
         user_authority_delegate: Pubkey,
     ) -> Result<()> {
@@ -330,7 +314,7 @@ pub mod audius_data {
     pub fn remove_user_authority_delegate(
         ctx: Context<RemoveUserAuthorityDelegate>,
         _base: Pubkey,
-        _handle_seed: [u8; 16],
+        _handle_seed: [u8; 32],
         _user_bump: u8,
         _user_authority_delegate: Pubkey,
         _delegate_bump: u8,
@@ -368,7 +352,7 @@ pub struct Initialize<'info> {
 /// `payer` is the account responsible for the lamports required to allocate this account.
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16])]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;32])]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
@@ -401,7 +385,7 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16])]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;32])]
 pub struct CreateUser<'info> {
     #[account(
         init,
@@ -445,7 +429,7 @@ pub struct UpdateAdmin<'info> {
 /// Instruction container to allow user delegation
 /// Allocates a new account that will be used for fallback in auth scenarios
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey)]
+#[instruction(base: Pubkey, handle_seed: [u8;32], user_bump:u8, user_authority_delegate: Pubkey)]
 pub struct AddUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
@@ -472,7 +456,7 @@ pub struct AddUserAuthorityDelegate<'info> {
 /// Instruction container to remove allocated user authority delegation
 /// Returns funds to payer
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;16], user_bump:u8, user_authority_delegate: Pubkey, delegate_bump:u8)]
+#[instruction(base: Pubkey, handle_seed: [u8;32], user_bump:u8, user_authority_delegate: Pubkey, delegate_bump:u8)]
 pub struct RemoveUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
@@ -614,6 +598,6 @@ pub enum EntityTypes {
 // Seed & bump used to validate the user's handle with the account base
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub struct UserHandle {
-    pub seed: [u8; 16],
+    pub seed: [u8; 32],
     pub bump: u8,
 }

@@ -49,7 +49,7 @@ cd $PROTOCOL_DIR/
 cd libs/
 npm install
 npm install lodash # lodash isn't installed on the first run for some reason...
-npm install web3 # web3 has the same issue...
+npm install web3   # web3 has the same issue...
 
 # setup identity service
 cd $PROTOCOL_DIR/
@@ -58,9 +58,10 @@ npm install --also=dev
 
 wait
 
-# create link for libs
+# build and create link for libs
 cd $PROTOCOL_DIR/
 cd libs
+npm run build
 npm link
 
 # link service-commands to libs

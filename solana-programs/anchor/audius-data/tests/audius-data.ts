@@ -9,7 +9,12 @@ import {
   updateIsVerified,
   getKeypairFromSecretKey,
 } from "../lib/lib";
-import { findDerivedPair, randomCID, randomString } from "../lib/utils";
+import {
+  getTransactionWithData,
+  findDerivedPair,
+  randomCID,
+  randomString,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreateTrack,
@@ -42,13 +47,27 @@ describe("audius-data", function () {
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("Initializing admin account!", async function () {
-    await initAdmin({
+    const tx = await initAdmin({
       provider,
       program,
       adminKeypair,
       adminStgKeypair,
       verifierKeypair,
     });
+
+    const { decodedInstruction, decodedData, accountPubKeys } =
+      await getTransactionWithData(program, provider, tx, 0);
+
+    expect(decodedInstruction.name).to.equal("initAdmin");
+    expect(decodedData.authority.toString()).to.equal(
+      adminKeypair.publicKey.toString()
+    );
+    expect(decodedData.verifier.toString()).to.equal(
+      verifierKeypair.publicKey.toString()
+    );
+    expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+    expect(accountPubKeys[2]).to.equal(SystemProgram.programId.toString());
+
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
@@ -235,7 +254,16 @@ describe("audius-data", function () {
       // No delegate authority needs to be provided in this happy path, so use the SystemProgram ID
       userDelegateAuthority: SystemProgram.programId,
     });
-    await confirmLogInTransaction(provider, tx, updatedCID);
+
+    const { decodedInstruction, decodedData, accountPubKeys } =
+      await getTransactionWithData(program, provider, tx, 0);
+
+    expect(decodedInstruction.name).to.equal("updateUser");
+    expect(decodedData.metadata).to.equal(updatedCID);
+
+    expect(accountPubKeys[0]).to.equal(newUserAcctPDA.toString());
+    expect(accountPubKeys[1]).to.equal(newUserKeypair.publicKey.toString());
+    expect(accountPubKeys[2]).to.equal(SystemProgram.programId.toString());
   });
 
   it("Initializing + claiming user, creating + updating track", async function () {
