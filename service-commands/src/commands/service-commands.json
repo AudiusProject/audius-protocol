@@ -113,7 +113,7 @@
   },
   "init-token-versions": {
     "up": [
-      "cd libs/; node initScripts/local.js init-all"
+      "cd libs/; npm run init-local init-all"
     ]
   },
   "discovery-provider": {
@@ -123,7 +123,7 @@
     "health_check_endpoint": "health_check",
     "up": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
-      "cd libs/; node initScripts/local.js configure-discprov-wallet #",
+      "cd libs/; npm run init-local configure-discprov-wallet #",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
       "cd discovery-provider; rm -f *_dump",
       "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
@@ -133,7 +133,7 @@
     ],
     "up-web-server": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
-      "cd libs/; node initScripts/local.js configure-discprov-wallet #",
+      "cd libs/; npm run init-local configure-discprov-wallet #",
       "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
@@ -143,7 +143,7 @@
       "cd discovery-provider; . compose/env/unsetShellEnv.sh"
     ],
     "register": [
-      "cd libs/; node initScripts/local.js register-discovery-node #",
+      "cd libs/; npm run init-local register-discovery-node #",
       "cd service-commands/; node scripts/rewardManagerLocal.js register-discovery-node #"
     ],
     "restart": [
@@ -174,18 +174,18 @@
     "restart": [
       "cd creator-node; . compose/env/unsetShellEnv.sh",
       "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
-      "cd libs/; node initScripts/local.js update-cnode-config #",
+      "cd libs/; npm run init-local update-cnode-config #",
       "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "register": [
-      "cd libs/; node initScripts/local.js register-cnode #"
+      "cd libs/; npm run init-local register-cnode #"
     ],
     "deregister": [
-      "cd libs/; node initScripts/local.js deregister-cnode #"
+      "cd libs/; npm run init-local deregister-cnode #"
     ],
     "update-delegate-wallet": [
-      "cd libs/; node initScripts/local.js update-cnode-config #"
+      "cd libs/; npm run init-local update-cnode-config #"
     ],
     "unset-shell-env": [
       "cd creator-node; . compose/env/unsetShellEnv.sh"
@@ -222,7 +222,7 @@
   },
   "user-replica-set-manager": {
     "up": [
-      "cd libs; node initScripts/local.js update-userreplicasetmanager-init-config",
+      "cd libs; npm run init-local update-userreplicasetmanager-init-config",
       "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
     ]
   },
@@ -251,7 +251,7 @@
       "cd $TN_DIR; . scripts/start.sh dev",
       "sleep 5",
       "echo 'TN Started, registering on chain'",
-      "cd libs/; node initScripts/local.js register-trusted-notifier"
+      "cd libs/; npm run init-local register-trusted-notifier"
     ],
     "restart": [
       "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",

@@ -10,7 +10,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    * @param {Array<number>} secondaries
    */
   async updateReplicaSet (userId, primary, secondaries) {
-    let existingReplicaSetInfo = await this.getUserReplicaSet(userId)
+    const existingReplicaSetInfo = await this.getUserReplicaSet(userId)
     return this._updateReplicaSet(
       userId,
       primary,
@@ -85,7 +85,7 @@ class UserReplicaSetManagerClient extends ContractClient {
       proposerSpId,
       nonce
     )
-    let sig = await this.web3Manager.signTypedData(signatureData)
+    const sig = await this.web3Manager.signTypedData(signatureData)
     return {
       nonce,
       signatureData,
@@ -129,7 +129,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    */
   async getContentNodeWallets (spId) {
     const method = await this.getMethod('getContentNodeWallets', spId)
-    let currentWallet = this.web3Manager.getWalletAddress()
+    const currentWallet = this.web3Manager.getWalletAddress()
     return method.call({ from: currentWallet })
   }
 
@@ -139,7 +139,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    */
   async getSeedComplete () {
     const method = await this.getMethod('getSeedComplete')
-    let currentWallet = this.web3Manager.getWalletAddress()
+    const currentWallet = this.web3Manager.getWalletAddress()
     return method.call({ from: currentWallet })
   }
 
@@ -156,10 +156,10 @@ class UserReplicaSetManagerClient extends ContractClient {
     const contractAddress = await this.getAddress()
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
-    let web3 = this.web3Manager.getWeb3()
-    let secondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', secondaries))
-    let oldSecondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', oldSecondaries))
-    let signatureData = signatureSchemas.generators.getUpdateReplicaSetRequestData(
+    const web3 = this.web3Manager.getWeb3()
+    const secondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', secondaries))
+    const oldSecondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', oldSecondaries))
+    const signatureData = signatureSchemas.generators.getUpdateReplicaSetRequestData(
       chainId,
       contractAddress,
       userId,

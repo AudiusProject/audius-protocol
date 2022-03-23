@@ -22,7 +22,7 @@ let config
 async function run () {
   try {
     const { network, cid } = parseArgs()
-    let decodedCID = decodeCID(cid)
+    const decodedCID = decodeCID(cid)
     config = contractConfig[network]
     // note: can extract private key here if necessary
     const { BLACKLISTER_PUBLIC_KEY } = await getBlacklisterKeys(network)

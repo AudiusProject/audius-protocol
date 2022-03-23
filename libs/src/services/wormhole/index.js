@@ -113,7 +113,7 @@ class Wormhole {
       REDEEM_ON_SOLANA: 'REDEEM_ON_SOLANA'
     }
     let phase = phases.GET_RECEIPT
-    let logs = [`Attest and complete transfer for eth to sol for reciept ${ethTxReceipt}`]
+    const logs = [`Attest and complete transfer for eth to sol for reciept ${ethTxReceipt}`]
     try {
       const receipt = await this.ethWeb3Manager.web3.eth.getTransactionReceipt(ethTxReceipt)
       const sequence = this.wormholeSDK.parseSequenceFromLogEth(receipt, this.ethBridgeAddress)
@@ -148,7 +148,7 @@ class Wormhole {
           const { transactionSignature } = await this.identityService.solanaRelayRaw(transactionData)
           logs.push(`Relay sol tx for postVAA with signature ${transactionSignature}`)
           return {
-            'serialize': () => {}
+            serialize: () => {}
           }
         }
         connection.sendRawTransaction = async () => ''
@@ -229,12 +229,12 @@ class Wormhole {
       REDEEM_ON_ETH: 'REDEEM_ON_ETH'
     }
     let phase = phases.GENERATE_SOL_ROOT_ACCT
-    let logs = [`Transferring ${amount} WAUDIO to ${ethTargetAddress}`]
+    const logs = [`Transferring ${amount} WAUDIO to ${ethTargetAddress}`]
     try {
       const wAudioAmount = wAudioFromWeiAudio(amount)
       // Generate a solana keypair derived from the hedgehog private key
       // NOTE: The into to fromSeed is a 32 bytes Uint8Array
-      let rootSolanaAccount = this.solanaWeb3Manager.solanaWeb3.Keypair.fromSeed(
+      const rootSolanaAccount = this.solanaWeb3Manager.solanaWeb3.Keypair.fromSeed(
         this.hedgehog.wallet.getPrivateKey()
       )
 
@@ -313,7 +313,7 @@ class Wormhole {
       phase = phases.REDEEM_ON_ETH
       const signer = (new providers.Web3Provider(window.ethereum)).getSigner()
       await this.wormholeSDK.redeemOnEth(this.ethTokenBridgeAddress, signer, vaaBytes)
-      logs.push(`Redeemed on eth`)
+      logs.push('Redeemed on eth')
       return { phase, logs, error: null }
     } catch (error) {
       return {
