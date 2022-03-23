@@ -31,7 +31,8 @@ pub mod audius_data {
         verifier: Pubkey,
     ) -> Result<()> {
         let audius_admin = &mut ctx.accounts.admin;
-        audius_admin.authority = authority;        audius_admin.verifier = verifier;
+        audius_admin.authority = authority;
+        audius_admin.verifier = verifier;
         audius_admin.is_write_enabled = true;
         Ok(())
     }
@@ -272,13 +273,13 @@ pub mod audius_data {
                     is_valid_authority = true;
                     // Validate that one of the user's replica set nodes signed the transaction
                     if !user_replica_set.iter().any(|cn| {
-                        let (base_pda, _bump) = Pubkey::find_program_address(
+                        let (cn_account_pda, _bump) = Pubkey::find_program_address(
                             &[
                                 &base.to_bytes()[..32],
                                 CONTENT_NODE_SEED_PREFIX,
                                 &cn.to_le_bytes()
                             ], &ctx.program_id);
-                        return base_pda == proposer.key();
+                        return cn_account_pda == proposer.key();
                     }) {
                         return Err(ErrorCode::Unauthorized.into());
                     }
