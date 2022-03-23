@@ -138,6 +138,7 @@ a {
 }
 /* End Reset.css */
 
+@import '~simplebar/dist/simplebar.min.css';
 @import '~assets/styles/index.css';
 
 body {
