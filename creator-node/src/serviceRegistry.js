@@ -321,6 +321,7 @@ class ServiceRegistry {
       ? new Set(config.get('discoveryProviderWhitelist').split(','))
       : null
     const identityService = config.get('identityService')
+    const discoveryNodeUnhealthyBlockDiff = config.get('discoveryNodeUnhealthyBlockDiff')
 
     const audiusLibs = new AudiusLibs({
       ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -344,7 +345,7 @@ class ServiceRegistry {
         /* selectionRequestTimeout */ null,
         /* selectionRequestRetries */ null,
         /* unhealthySlotDiffPlays */ null,
-        /* unhealthyBlockDiff */ 500
+        discoveryNodeUnhealthyBlockDiff
       ),
       // If an identity service config is present, set up libs with the connection, otherwise do nothing
       identityServiceConfig: identityService
