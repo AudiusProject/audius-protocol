@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-link_libs=false
+link_libs=true
 
 if [[ "$WAIT_HOSTS" != "" ]]; then
     /usr/bin/wait
