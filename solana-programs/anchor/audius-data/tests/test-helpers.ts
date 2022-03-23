@@ -40,9 +40,9 @@ type InitTestConsts = {
 
 export const initTestConstants = (): InitTestConsts => {
   const ethAccount = EthWeb3.eth.accounts.create();
-  const handle = randomBytes(20).toString("hex");
+  const handle = randomBytes(40).toString("hex");
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  const handleBytesArray = Array.from({ ...handleBytes, length: 16 }); // TODO: Verify this
+  const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
   const metadata = randomCID();
 
   return {
