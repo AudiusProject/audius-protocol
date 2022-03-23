@@ -5,8 +5,7 @@ import { sendAndConfirmRawTransaction } from "@solana/web3.js";
 import {
   initAdmin,
   createContentNode,
-  publicCreateContentNode,
-  publicUpdateContentNode,
+  publicCreateOrUpdateContentNode,
   publicDeleteContentNode,
   updateUserReplicaSet,
   updateAdmin,
@@ -122,7 +121,7 @@ describe("replicaSet", function () {
       Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
     );
     const authority = anchor.web3.Keypair.generate();
-    await publicCreateContentNode({
+    await publicCreateOrUpdateContentNode({
       provider,
       program,
       baseAuthorityAccount,
@@ -197,7 +196,7 @@ describe("replicaSet", function () {
     const authority = anchor.web3.Keypair.generate();
     const createTransaction = (recentBlockhash) => {
       const tx = new anchor.web3.Transaction({ recentBlockhash });
-      const txInstr = program.instruction.publicCreateContentNode(
+      const txInstr = program.instruction.publicCreateOrUpdateContentNode(
         baseAuthorityAccount,
         { seed: [...cn6.seedBump.seed], bump: cn6.seedBump.bump },
         { seed: [...cn7.seedBump.seed], bump: cn7.seedBump.bump },
@@ -290,18 +289,15 @@ describe("replicaSet", function () {
       await findDerivedPair(program.programId, adminStgKeypair.publicKey, seed);
     const updatedAuthority = anchor.web3.Keypair.generate();
 
-    await publicUpdateContentNode({
+    await publicCreateOrUpdateContentNode({
       provider,
       program,
       baseAuthorityAccount,
       adminStgPublicKey: adminStgKeypair.publicKey,
       contentNodeAuthority: updatedAuthority.publicKey,
       contentNodeAcct: cnToUpdate.pda,
-      cn: {
-        pda: cnToUpdate.pda,
-        authority: cnToUpdate.authority,
-        seedBump: cnToUpdate.seedBump
-      },
+      spID: cnToUpdate.spId,
+      ownerEthAddress: cnToUpdate.ownerEthAddress,
       proposer1: {
         pda: cn4.pda,
         authority: cn4.authority,

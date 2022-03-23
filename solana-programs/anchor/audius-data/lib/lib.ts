@@ -197,8 +197,8 @@ type Proposer = {
   seedBump: { seed: Buffer; bump: number };
 };
 
-/// Create a content node with proposers
-type PublicCreateContentNode = {
+/// Create or update a content node with proposers
+type PublicCreateOrUpdateContentNode = {
   provider: Provider;
   program: Program<AudiusData>;
   adminStgPublicKey: anchor.web3.PublicKey;
@@ -405,7 +405,7 @@ export const updateUserReplicaSet = async ({
   );
 };
 
-export const publicCreateContentNode = async ({
+export const publicCreateOrUpdateContentNode = async ({
   provider,
   program,
   adminStgPublicKey,
@@ -417,8 +417,8 @@ export const publicCreateContentNode = async ({
   proposer1,
   proposer2,
   proposer3,
-}: PublicCreateContentNode) => {
-  return program.rpc.publicCreateContentNode(
+}: PublicCreateOrUpdateContentNode) => {
+  return program.rpc.publicCreateOrUpdateContentNode(
     baseAuthorityAccount,
     { seed: [...proposer1.seedBump.seed], bump: proposer1.seedBump.bump },
     { seed: [...proposer2.seedBump.seed], bump: proposer2.seedBump.bump },

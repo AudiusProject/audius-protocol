@@ -113,7 +113,6 @@ pub mod audius_data {
         authority: Pubkey,
         owner_eth_address: [u8; 20],
     ) -> Result<()> {
-        msg!("Audius::CreateContentNode");
 
         // Confirm that the base used for content node account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
@@ -146,8 +145,8 @@ pub mod audius_data {
     }
 
     /// Create a content node account from other content nodes.
-    pub fn public_create_content_node(
-        ctx: Context<PublicCreateContentNode>,
+    pub fn public_create_or_update_content_node(
+        ctx: Context<PublicCreateOrUpdateContentNode>,
         base: Pubkey,
         _p1: ProposerSeedBump,
         _p2: ProposerSeedBump,
@@ -156,8 +155,6 @@ pub mod audius_data {
         authority: Pubkey,
         owner_eth_address: [u8; 20],
     ) -> Result<()> {
-        msg!("Audius::PublicCreateContentNode");
-
 
         // validate that there are no dupes in the replica
         let proposers = [
@@ -193,50 +190,6 @@ pub mod audius_data {
         Ok(())
     }
 
-    /// Updates a content node account from other content nodes.
-    pub fn public_update_content_node(
-        ctx: Context<PublicUpdateContentNode>,
-        base: Pubkey,
-        _cn: ProposerSeedBump,
-        _p1: ProposerSeedBump,
-        _p2: ProposerSeedBump,
-        _p3: ProposerSeedBump,
-        authority: Pubkey,
-    ) -> Result<()> {
-
-        // validate that there are no dupes in the replica
-        let proposers = [
-            (&ctx.accounts.proposer1, &ctx.accounts.proposer1_authority),
-            (&ctx.accounts.proposer2, &ctx.accounts.proposer2_authority),
-            (&ctx.accounts.proposer3, &ctx.accounts.proposer3_authority),
-        ];
-
-        // Ensure that no proposer's owner eth address is repeated
-        let mut eth_addresses = BTreeMap::new();
-        if !proposers.iter().all(move |(proposer, authority)| return match eth_addresses.insert(proposer.owner_eth_address, true) {
-            Some(_) => false,
-            None => proposer.authority == authority.key()
-        }) {
-            // duplicate owner eth address - err
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        // Confirm that the base used for user account seed is derived from this Audius admin storage account
-        let (derived_base, _) = Pubkey::find_program_address(
-            &[&ctx.accounts.admin.key().to_bytes()[..32]],
-            ctx.program_id,
-        );
-
-        if derived_base != base {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-
-        let content_node = &mut ctx.accounts.content_node;
-        content_node.authority = authority;
-
-        Ok(())
-    }
-
     /// Closes a content node account from other content nodes.
     pub fn public_delete_content_node(
         ctx: Context<PublicDeleteContentNode>,
@@ -246,7 +199,6 @@ pub mod audius_data {
         _p2: ProposerSeedBump,
         _p3: ProposerSeedBump,
     ) -> Result<()> {
-        msg!("Audius::PublicDeleteContentNode");
 
         if &ctx.accounts.admin.authority != &ctx.accounts.admin_authority.key() {
             // todoL break
@@ -647,36 +599,15 @@ pub struct CreateContentNode<'info> {
 /// Instruction container for creating a content node with 3 proposers
 #[derive(Accounts)]
 #[instruction(base: Pubkey, p1: ProposerSeedBump, p2: ProposerSeedBump, p3: ProposerSeedBump, sp_id: u16)]
-pub struct PublicCreateContentNode<'info> {
+pub struct PublicCreateOrUpdateContentNode<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        init,
+        init_if_needed,
         payer = payer,
         seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, sp_id.to_le_bytes().as_ref()],
         bump,
         space = CONTENT_NODE_ACCOUNT_SIZE
     )]
-    pub content_node: Account<'info, ContentNode>,
-    #[account(seeds = [&base.to_bytes()[..32], p1.seed.as_ref()], bump = p1.bump)]
-    pub proposer1: Account<'info, ContentNode>,
-    pub proposer1_authority: Signer<'info>,
-    #[account(seeds = [&base.to_bytes()[..32], p2.seed.as_ref()], bump = p2.bump)]
-    pub proposer2: Account<'info, ContentNode>,
-    pub proposer2_authority: Signer<'info>,
-    #[account(seeds = [&base.to_bytes()[..32], p3.seed.as_ref()], bump = p3.bump)]
-    pub proposer3: Account<'info, ContentNode>,
-    pub proposer3_authority: Signer<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-/// Instruction container for updating a content node with 3 proposers
-#[derive(Accounts)]
-#[instruction(base: Pubkey, cn: ProposerSeedBump, p1: ProposerSeedBump, p2: ProposerSeedBump, p3: ProposerSeedBump, sp_id: u16)]
-pub struct PublicUpdateContentNode<'info> {
-    pub admin: Account<'info, AudiusAdmin>,
-    #[account(mut, seeds = [&base.to_bytes()[..32], cn.seed.as_ref()], bump = cn.bump)]
     pub content_node: Account<'info, ContentNode>,
     #[account(seeds = [&base.to_bytes()[..32], p1.seed.as_ref()], bump = p1.bump)]
     pub proposer1: Account<'info, ContentNode>,
