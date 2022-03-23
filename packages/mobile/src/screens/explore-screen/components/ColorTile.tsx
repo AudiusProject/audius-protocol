@@ -1,12 +1,13 @@
 import { ComponentType, ReactNode, useCallback } from 'react'
 
 import {
+  Animated,
   Image,
   ImageSourcePropType,
   ImageStyle,
+  Pressable,
   StyleProp,
   StyleSheet,
-  TouchableOpacity,
   View,
   ViewStyle
 } from 'react-native'
@@ -16,6 +17,7 @@ import { SvgProps } from 'react-native-svg'
 import IconAudioRewardsPill from 'app/assets/images/iconAudioRewardsPill.svg'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ExploreTabScreenParamList } from 'app/screens/app-screen/ExploreTabScreen'
 import { font } from 'app/styles'
@@ -138,6 +140,11 @@ export const ColorTile = ({
 }: ColorTileProps) => {
   const styles = useThemedStyles(createStyles)
   const navigation = useNavigation<ExploreTabScreenParamList>()
+  const {
+    scale,
+    handlePressIn: handlePressInScale,
+    handlePressOut: handlePressOutScale
+  } = usePressScaleAnimation()
 
   const handlePress = useCallback(() => {
     if (screen) {
@@ -149,8 +156,12 @@ export const ColorTile = ({
   }, [navigation, screen, link])
 
   return (
-    <View
-      style={[styles.shadowContainer, { shadowColor, shadowOpacity }, style]}
+    <Animated.View
+      style={[
+        styles.shadowContainer,
+        { shadowColor, shadowOpacity, transform: [{ scale }] },
+        style
+      ]}
     >
       <LinearGradient
         colors={gradientColors}
@@ -158,9 +169,11 @@ export const ColorTile = ({
         angle={gradientAngle}
         style={styles.gradientContainer}
       >
-        <TouchableOpacity
+        <Pressable
           style={[styles.colorTile, !!emoji && styles.hasEmoji]}
           onPress={handlePress}
+          onPressIn={handlePressInScale}
+          onPressOut={handlePressOutScale}
         >
           <View style={{ backgroundColor: 'transparent' }}>
             <Text style={[styles.title, !!emoji && styles.emojiTitle]}>
@@ -186,8 +199,8 @@ export const ColorTile = ({
               <IconAudioRewardsPill />
             </View>
           ) : null}
-        </TouchableOpacity>
+        </Pressable>
       </LinearGradient>
-    </View>
+    </Animated.View>
   )
 }

@@ -17,6 +17,7 @@ import {
 import {
   LetThemDJScreen,
   TopAlbumsScreen,
+  TrendingPlaylistsScreen,
   TrendingUndergroundScreen
 } from 'app/screens/explore-screen/tabs/ForYouTab'
 import { MoodCollectionScreen } from 'app/screens/mood-collection-screen/MoodCollectionScreen'
@@ -71,6 +72,10 @@ export const ExploreTabScreen = createAppTabScreenStack<
     <Stack.Screen name='ExploreStack' component={ExploreScreen} />
     <Stack.Screen name='LetThemDJ' component={LetThemDJScreen} />
     <Stack.Screen name='TopAlbums' component={TopAlbumsScreen} />
+    <Stack.Screen
+      name='TrendingPlaylists'
+      component={TrendingPlaylistsScreen}
+    />
     <Stack.Screen
       name='TrendingUnderground'
       component={TrendingUndergroundScreen}
