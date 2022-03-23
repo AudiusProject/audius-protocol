@@ -556,22 +556,22 @@ describe("audius-data", function () {
     );
 
     // New sol key that will be used as user authority delegate
-    const userDelSeed = [
+    const userAuthorityDelegateSeeds = [
       newUserAcctPDA.toBytes().slice(0, 32),
       userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
     ];
     const res = await PublicKey.findProgramAddress(
-      userDelSeed,
+      userAuthorityDelegateSeeds,
       program.programId
     );
-    const userDelPDA = res[0];
-    const userDelBump = res[1];
+    const userAuthorityDelegatePDA = res[0];
+    const userAuthorityDelegateBump = res[1];
 
-    const addUserDelArgs = {
+    const addUserAuthorityDelegateArgs = {
       accounts: {
         admin: adminStgKeypair.publicKey,
         user: newUserAcctPDA,
-        userAuthorityDelegatePda: userDelPDA,
+        userAuthorityDelegatePda: userAuthorityDelegatePDA,
         userAuthority: newUserKeypair.publicKey,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
@@ -584,11 +584,11 @@ describe("audius-data", function () {
       handleBytesArray,
       bumpSeed,
       userAuthorityDelegateKeypair.publicKey,
-      addUserDelArgs
+      addUserAuthorityDelegateArgs
     );
 
     const acctState = await program.account.userAuthorityDelegate.fetch(
-      userDelPDA
+      userAuthorityDelegatePDA
     );
     const userStgPdaFromChain = acctState.userStorageAccount;
     const delegateAuthorityFromChain = acctState.delegateAuthority;
@@ -605,14 +605,14 @@ describe("audius-data", function () {
       metadata: updatedCID,
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: userAuthorityDelegateKeypair,
-      userAuthorityDelegate: userDelPDA,
+      userAuthorityDelegate: userAuthorityDelegatePDA,
       authorityDelegationStatusAccount: authorityDelegationStatusPda,
     });
-    const removeUserDelArgs = {
+    const removeUserAuthorityDelegateArgs = {
       accounts: {
         admin: adminStgKeypair.publicKey,
         user: newUserAcctPDA,
-        userAuthorityDelegatePda: userDelPDA,
+        userAuthorityDelegatePda: userAuthorityDelegatePDA,
         userAuthority: newUserKeypair.publicKey,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
@@ -620,25 +620,25 @@ describe("audius-data", function () {
       signers: [newUserKeypair],
     };
 
-    console.log(`Removing delegate authority ${userDelPDA}`);
+    console.log(`Removing delegate authority ${userAuthorityDelegatePDA}`);
     await program.rpc.removeUserAuthorityDelegate(
       baseAuthorityAccount,
       handleBytesArray,
       bumpSeed,
       userAuthorityDelegateKeypair.publicKey,
-      userDelBump,
-      removeUserDelArgs
+      userAuthorityDelegateBump,
+      removeUserAuthorityDelegateArgs
     );
 
     // Confirm account deallocated after removal
-    await pollAccountBalance(provider, userDelPDA, 0, 100);
+    await pollAccountBalance(provider, userAuthorityDelegatePDA, 0, 100);
     await expect(
       updateUser({
         program,
         metadata: randomCID(),
         userStgAccount: newUserAcctPDA,
         userAuthorityKeypair: userAuthorityDelegateKeypair,
-        userAuthorityDelegate: userDelPDA,
+        userAuthorityDelegate: userAuthorityDelegatePDA,
         authorityDelegationStatusAccount: authorityDelegationStatusPda,
       })
     )
@@ -717,21 +717,21 @@ describe("audius-data", function () {
     );
 
     // New sol key that will be used as user authority delegate
-    const userDelSeed = [
+    const userAuthorityDelegateSeeds = [
       newUserAcctPDA.toBytes().slice(0, 32),
       userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
     ];
     const res = await PublicKey.findProgramAddress(
-      userDelSeed,
+      userAuthorityDelegateSeeds,
       program.programId
     );
-    const userDelPDA = res[0];
+    const userAuthorityDelegatePDA = res[0];
 
-    const addUserDelArgs = {
+    const addUserAuthorityDelegateArgs = {
       accounts: {
         admin: adminStgKeypair.publicKey,
         user: newUserAcctPDA,
-        userAuthorityDelegatePda: userDelPDA,
+        userAuthorityDelegatePda: userAuthorityDelegatePDA,
         userAuthority: newUserKeypair.publicKey,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
@@ -744,11 +744,11 @@ describe("audius-data", function () {
       handleBytesArray,
       bumpSeed,
       userAuthorityDelegateKeypair.publicKey,
-      addUserDelArgs
+      addUserAuthorityDelegateArgs
     );
 
     const acctState = await program.account.userAuthorityDelegate.fetch(
-      userDelPDA
+      userAuthorityDelegatePDA
     );
     const userStgPdaFromChain = acctState.userStorageAccount;
     const delegateAuthorityFromChain = acctState.delegateAuthority;
@@ -765,12 +765,12 @@ describe("audius-data", function () {
       metadata: updatedCID,
       userStgAccount: newUserAcctPDA,
       userAuthorityKeypair: userAuthorityDelegateKeypair,
-      userAuthorityDelegate: userDelPDA,
+      userAuthorityDelegate: userAuthorityDelegatePDA,
       authorityDelegationStatusAccount: authorityDelegationStatusPda,
     });
 
     // revoke authority delegation
-    const removeUserDelArgs = {
+    const revokeAuthorityDelegationArgs = {
       accounts: {
         delegateAuthority: userAuthorityDelegateKeypair.publicKey,
         authorityDelegationStatusPda: authorityDelegationStatusPda,
@@ -782,7 +782,7 @@ describe("audius-data", function () {
 
     await program.rpc.revokeAuthorityDelegation(
       authorityDelegationStatusBump,
-      removeUserDelArgs
+      revokeAuthorityDelegationArgs
     );
 
     // Confirm revoked delegation cannot update user
@@ -792,7 +792,7 @@ describe("audius-data", function () {
         metadata: randomCID(),
         userStgAccount: newUserAcctPDA,
         userAuthorityKeypair: userAuthorityDelegateKeypair,
-        userAuthorityDelegate: userDelPDA,
+        userAuthorityDelegate: userAuthorityDelegatePDA,
         authorityDelegationStatusAccount: authorityDelegationStatusPda, 
       })
     )

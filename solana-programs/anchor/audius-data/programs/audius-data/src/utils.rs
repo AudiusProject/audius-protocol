@@ -9,7 +9,7 @@ pub fn validate_user_authority<'info>(
     user: &Account<'info, User>,
     user_authority_delegate: &AccountInfo<'info>,
     authority: &Signer,
-    app_delegation_status: &AccountInfo<'info>,
+    authority_delegation_status: &AccountInfo<'info>,
 ) -> Result<()> {
     if user.authority != authority.key() {
         // Reject if system program provided as user_authority_delegate
@@ -41,7 +41,7 @@ pub fn validate_user_authority<'info>(
         {
             return Err(ErrorCode::InvalidUserAuthorityDelegation.into());
         }
-        let (derived_app_delegation_status, _) = Pubkey::find_program_address(
+        let (derived_authority_delegation_status_account, _) = Pubkey::find_program_address(
         &[
             AUTHORITY_DELEGATION_STATUS_SEED,
                 &authority.key().to_bytes()[..32],
@@ -50,16 +50,16 @@ pub fn validate_user_authority<'info>(
         );
 
         // Reject if PDA derivation is mismatched
-        if derived_app_delegation_status != app_delegation_status.key() {
+        if derived_authority_delegation_status_account != authority_delegation_status.key() {
             return Err(ErrorCode::ProgramDerivedAddressNotFound.into());
         }
 
-        let app_delegation_status_account: AuthorityDelegationStatus = AuthorityDelegationStatus::try_deserialize(
-            &mut &app_delegation_status.try_borrow_data()?[..],
+        let authority_delegation_status_account: AuthorityDelegationStatus = AuthorityDelegationStatus::try_deserialize(
+            &mut &authority_delegation_status.try_borrow_data()?[..],
         )?;
         
         // Reject if app delegate is revoked
-        if app_delegation_status_account.is_revoked {
+        if authority_delegation_status_account.is_revoked {
             return Err(ErrorCode::RevokedAuthority.into());
         }
     }

@@ -472,7 +472,7 @@ pub struct UpdateAdmin<'info> {
     pub admin_authority: Signer<'info>,
 }
 
-/// Instruction container to intialize an AuthorityDelegationStatus.
+/// Instruction container to initialize an AuthorityDelegationStatus.
 /// The authority initializes itself as a delegate.
 /// `delegate_authority` is the authority that will become a delegate
 /// `authority_delegation_status_pda` is the target PDA for the authority's delegation
@@ -658,7 +658,7 @@ pub struct UserAuthorityDelegate {
 /// Authority delegation status account
 #[account]
 pub struct AuthorityDelegationStatus {
-    // Revoke status of an authority's delegation
+    // Revoke status for an authority's delegation eligibility
     pub is_revoked: bool,
 }
 
