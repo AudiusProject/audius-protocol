@@ -527,7 +527,7 @@ describe("audius-data", function () {
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
 
-    // Init AppDelegation for a new authority
+    // Init AuthorityDelegationStatus for a new authority
     const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
     const authorityDelegationStatusSeeds = [
       Buffer.from("authority-delegation-status", "utf8"),
@@ -551,7 +551,7 @@ describe("audius-data", function () {
     };
 
     await program.rpc.initAuthorityDelegationStatus(
-      "app_name",
+      "authority_name",
       initAuthorityDelegationStatusArgs
     );
 
@@ -687,7 +687,7 @@ describe("audius-data", function () {
       adminStgPublicKey: adminStgKeypair.publicKey,
     });
 
-    // Init AppDelegation for a new authority
+    // Init AuthorityDelegationStatus for a new authority
     const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
     const authorityDelegationStatusSeeds = [
       Buffer.from("authority-delegation-status", "utf8"),
@@ -712,7 +712,7 @@ describe("audius-data", function () {
     };
 
     await program.rpc.initAuthorityDelegationStatus(
-      "app_name",
+      "authority_name",
       initAuthorityDelegationStatusArgs
     );
 
@@ -769,7 +769,7 @@ describe("audius-data", function () {
       authorityDelegationStatusAccount: authorityDelegationStatusPda,
     });
 
-    // revoke app delegation
+    // revoke authority delegation
     const removeUserDelArgs = {
       accounts: {
         delegateAuthority: userAuthorityDelegateKeypair.publicKey,
