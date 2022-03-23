@@ -4,12 +4,12 @@ import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 import {
   View,
-  StyleSheet,
   Animated,
   GestureResponderEvent,
   PanResponderGestureState,
   StatusBar,
-  Dimensions
+  Dimensions,
+  Pressable
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
@@ -19,11 +19,13 @@ import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
 import Drawer from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import {
   getPlaying,
   getTrack as getNativeTrack
 } from 'app/store/audio/selectors'
+import { makeStyles } from 'app/styles'
 import { attachToDy } from 'app/utils/animation'
 
 import { DrawerAnimationStyle, springToValue } from '../drawer/Drawer'
@@ -41,30 +43,28 @@ const combinedBottomAreaHeight = BOTTOM_BAR_HEIGHT + NOW_PLAYING_BAR_HEIGHT
 
 const STATUS_BAR_FADE_CUTOFF = 0.6
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ spacing }) => ({
   container: {
     paddingTop: 0,
-    height: Dimensions.get('window').height - combinedBottomAreaHeight,
-    marginBottom: 84
+    height: Dimensions.get('window').height - combinedBottomAreaHeight
   },
   controlsContainer: {
-    marginLeft: 24,
-    marginRight: 24
+    marginHorizontal: spacing(6)
   },
   titleBarContainer: {
-    marginBottom: 16
+    marginBottom: spacing(4)
   },
   artworkContainer: {
-    marginBottom: 20
+    marginBottom: spacing(5)
   },
   trackInfoContainer: {
-    marginBottom: 16
+    marginHorizontal: spacing(6),
+    marginBottom: spacing(4)
   },
   scrubberContainer: {
-    marginLeft: 40,
-    marginRight: 40
+    marginHorizontal: spacing(10)
   }
-})
+}))
 
 type NowPlayingDrawerProps = {
   onOpen: () => void
@@ -79,7 +79,9 @@ const NowPlayingDrawer = ({
   onPlayBarShowing,
   bottomBarTranslationAnim
 }: NowPlayingDrawerProps) => {
+  const styles = useStyles()
   const insets = useSafeAreaInsets()
+  const navigation = useNavigation()
 
   const { isOpen, onOpen, onClose } = useDrawer('NowPlaying')
   const previousIsOpen = usePrevious(isOpen)
@@ -222,6 +224,28 @@ const NowPlayingDrawer = ({
     setIsGestureEnabled(true)
   }, [setIsGestureEnabled])
 
+  const handlePressArtist = useCallback(() => {
+    if (!user) {
+      return
+    }
+    navigation.push({
+      native: { screen: 'Profile', params: { handle: user.handle } },
+      web: { route: `/${user.handle}` }
+    })
+    handleDrawerCloseFromSwipe()
+  }, [handleDrawerCloseFromSwipe, navigation, user])
+
+  const handlePressTitle = useCallback(() => {
+    if (!track) {
+      return
+    }
+    navigation.push({
+      native: { screen: 'Track', params: { id: track.track_id } },
+      web: { route: track.permalink }
+    })
+    handleDrawerCloseFromSwipe()
+  }, [handleDrawerCloseFromSwipe, navigation, track])
+
   return (
     <Drawer
       // Appears below bottom bar whereas normally drawers appear above
@@ -252,11 +276,19 @@ const NowPlayingDrawer = ({
             <View style={styles.titleBarContainer}>
               <TitleBar onClose={handleDrawerCloseFromSwipe} />
             </View>
-            <View style={styles.artworkContainer}>
+            <Pressable
+              style={styles.artworkContainer}
+              onPress={handlePressTitle}
+            >
               <Artwork track={track} />
-            </View>
+            </Pressable>
             <View style={styles.trackInfoContainer}>
-              <TrackInfo track={track} user={user} />
+              <TrackInfo
+                onPressArtist={handlePressArtist}
+                onPressTitle={handlePressTitle}
+                track={track}
+                user={user}
+              />
             </View>
             <View style={styles.scrubberContainer}>
               <Scrubber
