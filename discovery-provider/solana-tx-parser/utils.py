@@ -38,8 +38,8 @@ async def fetch_tx_receipt(tx_hash: str) -> Optional[Dict]:
     return tx_info.get("result")
 
 
-async def get_all_txs_for_program() -> List[Dict]:
-    program_id = SYS_PROGRAM_ID
+async def get_all_txs_for_program(program_id: Optional[str]) -> List[Dict]:
+    program_id = program_id if program_id else SYS_PROGRAM_ID
     solana_client = AsyncClient(RPC_ADDRESS)
     txs = await solana_client.get_signatures_for_address(account=program_id)
     hashes = [tx.get("signature") for tx in txs.get("result")]

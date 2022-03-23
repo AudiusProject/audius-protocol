@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-set -euxo pipefail
+set -euo pipefail
 
 ANCHOR_PROGRAM_DIR="$PROTOCOL_DIR/solana-programs/anchor/audius-data"
 OWNER_KEYPAIR_PATH="$HOME/.config/solana/id.json"
 ADMIN_KEYPAIR_PATH="$PWD/adminKeypair.json"
 ADMIN_STORAGE_KEYPAIR_PATH="$PWD/adminStorageKeypair.json"
 USER_KEYPAIR_PATH="$PWD/userKeypair.json"
-
-# TODO fix the fast fail here
+AUDIUS_DATA_PROGRAM_ID=$(solana-keygen pubkey $PWD/target/deploy/audius_data-keypair.json)
 
 cd "$ANCHOR_PROGRAM_DIR"
 
@@ -16,7 +15,7 @@ echo "Seeding transactions..."
 echo "Init admin" 
 
 yarn run ts-node cli/main.ts -f initAdmin \
-    -k "$OWNER_KEYPAIR_PATH" | grep "echo" | sh
+    -k "$OWNER_KEYPAIR_PATH" | tee /tmp/initAdminOutput.txt
 
 echo "Init user"
 
@@ -25,7 +24,7 @@ yarn run ts-node cli/main.ts -f initUser \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --handle handlebcdef \
-    -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 > /tmp/initUserOutput.txt
+    -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 | tee /tmp/initUserOutput.txt
 
 USER_STORAGE_PUBKEY=$(cut -d '=' -f 4 <<< $(cat /tmp/initUserOutput.txt | grep userAcct))
 
@@ -48,7 +47,7 @@ yarn run ts-node cli/main.ts -f createTrack \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --handle handlebcdef
+    --handle handlebcdef # metadata CID that would point off-chain is randomly generated here 
 
 echo "Creating playlist"
 
@@ -57,7 +56,7 @@ yarn run ts-node cli/main.ts -f createPlaylist \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --handle handlebcdef | tee -a /tmp/createPlaylistOutput.txt
+    --handle handlebcdef | tee /tmp/createPlaylistOutput.txt # metadata CID that would point off-chain is randomly generated here 
 
 PLAYLIST_ID=$(cut -d '=' -f 3 <<< $(cat /tmp/createPlaylistOutput.txt | grep "Transacting on entity"))
 
@@ -69,7 +68,7 @@ yarn run ts-node cli/main.ts -f updatePlaylist \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --id "$PLAYLIST_ID" \
-    --handle handlebcdef
+    --handle handlebcdef # metadata CID that would point off-chain is randomly generated here 
 
 echo "Deleting playlist"
 
@@ -81,4 +80,6 @@ yarn run ts-node cli/main.ts -f deletePlaylist \
     --id "$PLAYLIST_ID" \
     --handle handlebcdef
 
-echo "Successfully seeded tx."
+echo "Successfully seeded tx:"
+
+solana transaction-history "$AUDIUS_DATA_PROGRAM_ID"
