@@ -8,7 +8,7 @@ const { logger } = require('../logging')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
-const CreatorNode = require('@audius/libs/src/services/creatorNode')
+const { CreatorNode } = require('@audius/libs')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 
