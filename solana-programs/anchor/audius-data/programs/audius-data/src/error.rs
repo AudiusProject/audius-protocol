@@ -11,8 +11,8 @@ pub enum ErrorCode {
     ProgramDerivedAddressNotFound,
     #[msg("This authority has not been delegated access to the user.")]
     InvalidUserAuthorityDelegation,
-    #[msg("The given authority does not belong to the user so a delegate must be provided.")]
-    MissingUserDelegateAuthority,
+    #[msg("The given authority does not belong to the user so delegate accounts must be provided.")]
+    MissingDelegateAccount,
     #[msg("Signature verification failed.")]
     SignatureVerification,
     #[msg("Invalid Id.")]

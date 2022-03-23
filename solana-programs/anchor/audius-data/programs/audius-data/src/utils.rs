@@ -12,9 +12,9 @@ pub fn validate_user_authority<'info>(
     authority_delegation_status: &AccountInfo<'info>,
 ) -> Result<()> {
     if user.authority != authority.key() {
-        // Reject if system program provided as user_authority_delegate
-        if user_authority_delegate.key() == system_program::id() {
-            return Err(ErrorCode::MissingUserDelegateAuthority.into());
+        // Reject if system program provided as user_authority_delegate or authority_delegation_status
+        if (user_authority_delegate.key() == system_program::id()) || (authority_delegation_status.key() == system_program::id()) {
+            return Err(ErrorCode::MissingDelegateAccount.into());
         }
 
         // Derive a target delegation account address from the user's storage PDA and provided user authority
@@ -32,12 +32,12 @@ pub fn validate_user_authority<'info>(
             return Err(ErrorCode::ProgramDerivedAddressNotFound.into());
         }
         // Attempt to deserialize data from the derived delegate account
-        let user_del_acct: UserAuthorityDelegate = UserAuthorityDelegate::try_deserialize(
+        let user_authority_delegate_account: UserAuthorityDelegate = UserAuthorityDelegate::try_deserialize(
             &mut &user_authority_delegate.try_borrow_data()?[..],
         )?;
         // Confirm that the delegate authority and user match the function parameters
-        if user_del_acct.user_storage_account != user.key()
-            || user_del_acct.delegate_authority != authority.key()
+        if user_authority_delegate_account.user_storage_account != user.key()
+            || user_authority_delegate_account.delegate_authority != authority.key()
         {
             return Err(ErrorCode::InvalidUserAuthorityDelegation.into());
         }
