@@ -70,7 +70,7 @@ pub mod audius_data {
         eth_address: [u8; 20],
         replica_set: [u16; 3],
         _replica_set_bumps: [u8; 3],
-        handle_seed: [u8; 16],
+        handle_seed: [u8; 32],
         _user_bump: u8,
         _metadata: String,
     ) -> Result<()> {
@@ -390,7 +390,7 @@ pub mod audius_data {
         eth_address: [u8; 20],
         replica_set: [u16; 3],
         _replica_set_bumps: [u8; 3],
-        _handle_seed: [u8; 16],
+        _handle_seed: [u8; 32],
         _user_bump: u8,
         _metadata: String,
         user_authority: Pubkey,
@@ -599,7 +599,7 @@ pub struct Initialize<'info> {
 /// `payer` is the account responsible for the lamports required to allocate this account.
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], handle_seed: [u8;16])]
+#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], handle_seed: [u8;32])]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
@@ -757,7 +757,7 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], handle_seed: [u8;16])]
+#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], handle_seed: [u8;32])]
 pub struct CreateUser<'info> {
     #[account(
         init,

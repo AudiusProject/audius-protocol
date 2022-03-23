@@ -110,7 +110,7 @@ async function initUserCLI(args: initUserCLIParams) {
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  const handleBytesArray = Array.from({ ...handleBytes, length: 16 });
+  const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
       cliVars.program.programId,
