@@ -1,151 +1,100 @@
 import asyncio
-import json
 import os
-from pathlib import Path
-from typing import Any, Dict, List, NoReturn, Optional
+from typing import Dict, List, Optional
 
 import base58
-from anchorpy import (
-    AccountClient,
-    Context,
-    Idl,
-    Instruction,
-    InstructionCoder,
-    Program,
-    Provider,
-    close_workspace,
-    create_workspace,
-)
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
-from solana.rpc import types
-from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Commitment
-from solana.system_program import SYS_PROGRAM_ID
-
-AUDIUS_DATA_IDL_PATH = (
-    "../../solana-programs/anchor/audius-data/target/idl/audius_data.json"
-)
-PROVIDER = Provider.local()  # testing
-RPC_ADDRESS = "http://localhost:8899"
+from anchorpy import InstructionCoder
+from construct import Container
+from utils import fetch_tx_receipt, get_all_txs_for_program, get_idl
 
 
-def get_idl():
-    path = Path(AUDIUS_DATA_IDL_PATH)
-    with path.open() as f:
-        data = json.load(f)
-    idl = Idl.from_json(data)
-    return idl
-
-
-def get_account_client(account_name: str):
-    # account names: AudiusAdmin, User, Track, Playlist, UserAuthorityDelegate
-    idl = get_idl()
-    accounts = idl.accounts
-    program_id: SYS_PROGRAM_ID
-    provider = PROVIDER
-    idl_account = next((acct for acct in accounts if acct.name == account_name), None)
-    program = Program(idl=idl, program_id=program_id, provider=provider)
-    account_client = AccountClient(
-        idl=idl,
-        idl_account=idl_account,
-        coder=program.coder,
-        program_id=program_id,
-        provider=provider,
-    )
-    return account_client
-
-
-def get_account_info(
-    account_name: str, account_address: PublicKey, commitment: Commitment
-):
-    commitment = commitment if commitment else Commitment.Finalized
-    account_client = get_account_client(account_name)
-    return account_client.fetch(address=account_address, commitment=commitment)
-
-
-def get_all_accounts_of_type(account_name: str):
-    account_client = get_account_client(account_name)
-    return account_client.all()
-
-
-async def call_instruction(instruction_name: str, args: Any) -> NoReturn:
-    # Read the deployed program from the workspace.
-    workspace = create_workspace(path="../../solana-programs/anchor/audius-data")
-    # The program to execute.
-    program = workspace["audius_data"]
-    # Execute the RPC.
-    await program.rpc[instruction_name](args)
-    # Close all HTTP clients in the workspace, otherwise we get warnings.
-    await close_workspace(workspace)
-
-
-def is_invalid_tx(response: types.RPCResponse) -> bool:
-    # a wrapper over this confusingly named error code https://github.com/michaelhly/solana-py/blob/master/tests/integration/test_http_client.py#L192-L197
-    error = response.get("error")
-    if error:
-        return (
-            error["code"] == -32602 and error["message"] == "Invalid param: WrongSize"
-        )
-    else:
-        return False
-
-
-def decode(instruction_coder: InstructionCoder, encoded_ix_data: str):
+def decode_instruction_data(
+    encoded_ix_data: str, instruction_coder: InstructionCoder
+) -> Optional[Container]:
     ix = base58.b58decode(encoded_ix_data)
     ix_sighash = ix[0:8]
     data = ix[8:]
-    # print("DECODERS")
-    # print(instruction_coder.sighash_layouts)
-    # print(ix_sighash)
     decoder = instruction_coder.sighash_layouts.get(ix_sighash)
     if not decoder:
         print(f"No decoder available for {ix_sighash}")
-        # raise Exception("No decoder available")
-    else:
-        return decoder.parse(data)
-
-
-async def parse_tx(tx_hash: str) -> Dict:
-    solana_client = AsyncClient(RPC_ADDRESS)
-    tx_info = await solana_client.get_transaction(tx_hash)
-    # print(tx_info)
-    await solana_client.close()
-    if is_invalid_tx(tx_info):
-        print(f"Invalid tx hash {tx_hash}")
         return None
-        # raise Exception("Invalid tx hash")
-    idl = get_idl()
-    instruction_coder = InstructionCoder(idl)
-    tx = tx_info["result"]
-    for instruction in tx["transaction"]["message"]["instructions"]:
-        raw_instruction_data = instruction["data"]
-        print(
-            f"instruction name: {instruction_coder.sighash_to_name.get(base58.b58decode(raw_instruction_data)[0:8])}"
-        )  # TODO if there is no name - not supported in IDL - then don't parse it or fail gracefully/log
+    else:
+        decoded_data = decoder.parse(data)
+        print(f"Transaction data: {repr(decoded_data)}")
+        return decoded_data
 
-        # path = Path(AUDIUS_DATA_IDL_PATH)  # not sure why path is needed
-        # context = Context(
-        #     accounts=instruction["accounts"], signers=tx["transaction"]["signatures"]
-        # )
-        # slot = tx["slot"]
-        # instruction = instruction_coder._decode(
-        #     (base58.b58decode(instruction["data"])[0:8], instruction["data"][8:]),
-        #     context=context,
-        #     path=path,
-        # )
-        decoded_data = decode(
-            instruction_coder=instruction_coder, encoded_ix_data=raw_instruction_data
-        )
-        print(repr(decoded_data))
+
+def get_instruction_name(
+    encoded_ix_data: str, instruction_coder: InstructionCoder
+) -> str:
+    idl_instruction_name = instruction_coder.sighash_to_name.get(
+        base58.b58decode(encoded_ix_data)[0:8]
+    )
+    print(f"Instruction name: {idl_instruction_name}")
+    if idl_instruction_name == None:
+        print(f"No instruction found in idl matching {idl_instruction_name}")
+        return ""
+    return idl_instruction_name
+
+
+# Maps account indices for ix context to pubkeys
+def get_instruction_context_accounts(
+    all_account_keys: List[str], instruction: Dict
+) -> List[str]:
+    account_indices = instruction.get("accounts")
+    return [all_account_keys[acct_idx] for acct_idx in account_indices]
+
+
+def parse_instruction(
+    instruction: Dict, instruction_coder: InstructionCoder, account_keys: List[str]
+) -> Dict:
+    encoded_ix_data = instruction.get("data")
+    idl_instruction_name = get_instruction_name(
+        encoded_ix_data=encoded_ix_data,
+        instruction_coder=instruction_coder,
+    )
+    account_addresses = get_instruction_context_accounts(account_keys, instruction)
+    decoded_data = decode_instruction_data(
+        encoded_ix_data=encoded_ix_data,
+        instruction_coder=instruction_coder,
+    )
+    return {
+        "data": decoded_data,
+        "instruction_name": idl_instruction_name,
+        "accounts": account_addresses,
+    }
+
+
+async def parse_tx(tx_hash: str) -> List[Dict]:
+    parsed_instructions = []
+    tx_info = await fetch_tx_receipt(tx_hash)
+    if tx_info is not None:
+        idl = get_idl()
+        instruction_coder = InstructionCoder(idl)
+        message = tx_info.get("transaction").get("message")
+        instructions = message.get("instructions")
+        account_keys = message.get("accountKeys")
+
+        for instruction in instructions:
+            ix_data = parse_instruction(
+                instruction=instruction,
+                instruction_coder=instruction_coder,
+                account_keys=account_keys,
+            )
+            parsed_instructions.append(ix_data)
+    return parsed_instructions
 
 
 async def main(tx_hash):
-    tx_hashes = [
-        "232MZuGCHXw3kKw2EFrjwV5MEJ5xP2J4f4agerFGmHjELvdrz8NVgf17RAiKVKSbzCRJnopSLmnoZBWKw8BwUpfq"
-    ]
+    tx_hashes = []
+    if tx_hash:
+        tx_hashes.append(tx_hash)
+    else:
+        tx_hashes = await get_all_txs_for_program()
     for hash in tx_hashes:
-        await parse_tx(hash)
+        print(f"Parsing tx {hash}")
+        parsed_tx = await parse_tx(hash)
+        print(f"Parsed tx: {parsed_tx}")
 
 
 asyncio.run(main(os.getenv("TX_HASH")))
