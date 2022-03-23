@@ -1,10 +1,9 @@
 import { useRef } from 'react'
 
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 import {
   LET_THEM_DJ,
@@ -29,19 +28,29 @@ const messages = {
     'Content curated for you based on your likes, reposts, and follows. Refreshes often so if you like a track, favorite it.'
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    tabContainer: {
-      flex: 1
-    },
-    contentContainer: {
-      padding: 12,
-      paddingVertical: 24
-    },
-    tile: {
-      marginBottom: 8
-    }
-  })
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  tabContainer: {
+    flex: 1
+  },
+  contentContainer: {
+    padding: spacing(3),
+    paddingVertical: spacing(6),
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between'
+  },
+  tile: {
+    marginBottom: spacing(2),
+    flex: 1,
+    flexBasis: '100%'
+  },
+  halfTile: {
+    flexBasis: '40%'
+  },
+  rightMargin: {
+    marginRight: spacing(2)
+  }
+}))
 
 const tiles = [
   TRENDING_PLAYLISTS,
@@ -57,7 +66,7 @@ const tiles = [
 ]
 
 export const ForYouTab = () => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
 
   const ref = useRef<ScrollView>(null)
   useScrollToTop(() => {
@@ -67,12 +76,25 @@ export const ForYouTab = () => {
     })
   })
 
+  const tenTileLayout = {
+    halfTiles: [3, 4, 5, 6, 8, 9],
+    leftHalfTiles: [3, 5, 8]
+  }
+
   return (
     <ScrollView style={styles.tabContainer} ref={ref}>
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
-        {tiles.map(tile => (
-          <ColorTile style={styles.tile} key={tile.title} {...tile} />
+        {tiles.map((tile, idx) => (
+          <ColorTile
+            style={[
+              styles.tile,
+              tenTileLayout.halfTiles.includes(idx) && styles.halfTile,
+              tenTileLayout.leftHalfTiles.includes(idx) && styles.rightMargin
+            ]}
+            key={tile.title}
+            {...tile}
+          />
         ))}
       </View>
     </ScrollView>
