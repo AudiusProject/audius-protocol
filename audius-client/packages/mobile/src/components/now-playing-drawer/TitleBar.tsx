@@ -14,7 +14,7 @@ const messages = {
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     root: {
-      marginTop: 64,
+      marginTop: 48,
       marginLeft: 16,
       marginRight: 16,
       flexDirection: 'row',
