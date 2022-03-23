@@ -685,11 +685,11 @@ class SnapbackSM {
   }
 
   /**
-   * Given map(replica set node => userWallets[]), retrieves clock values for every (node, userWallet) pair
+   * Given map(replica node => userWallets[]), retrieves clock values for every (node, userWallet) pair
    * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
    * @param {Set<string>} unhealthyPeers set of unhealthy peer endpoints
    *
-   * @returns {Object} map(replica => map(wallet => clockValue))
+   * @returns {Object} map(replica node => map(wallet => clockValue))
    */
   async retrieveClockStatusesForUsersAcrossReplicaSet(
     replicasToWalletsMap,
