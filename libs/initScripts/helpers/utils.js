@@ -17,9 +17,9 @@ function convertAudsToWeiBN (ethWeb3, amountOfAUDS) {
 }
 
 async function execParseOutput (cmd) {
-  let r = await exec(cmd)
-  let stdout = r.stdout
-  let parsed = JSON.parse(stdout)
+  const r = await exec(cmd)
+  const stdout = r.stdout
+  const parsed = JSON.parse(stdout)
   return parsed
 }
 

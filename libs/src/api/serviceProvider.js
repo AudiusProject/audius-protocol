@@ -59,7 +59,7 @@ class ServiceProvider extends Base {
       timeout
     })
 
-    let services = {}
+    const services = {}
     timings.forEach(timing => {
       if (timing.response) services[timing.request.id] = timing.response.data.data
     })
@@ -129,7 +129,7 @@ class ServiceProvider extends Base {
       if (curr.owner in acc) {
         acc[curr.owner].push(curr)
       } else {
-        acc[curr.owner] = [ curr ]
+        acc[curr.owner] = [curr]
       }
       return acc
     }, {})

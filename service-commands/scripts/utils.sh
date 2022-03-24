@@ -11,7 +11,7 @@ DEFAULT_GCP_IMAGE="project=ubuntu-os-cloud,family=ubuntu-2004-lts"
 DEFAULT_GCP_MACHINE_TYPE="n2-custom-12-24576"
 DEFAULT_PROVIDER="gcp"
 DEFAULT_USER="ubuntu"
-GCP_DEV_IMAGE="project=audius-infrastructure,image=cj-remote-zsh-bake-bake-02-10-2022"
+GCP_DEV_IMAGE="project=audius-infrastructure,image=dev-03-23-22-bake-03-23-2022"
 
 get_ssh_args() {
 	provider=$1

@@ -258,7 +258,7 @@ class Users extends Base {
       // an error.
       const { primary, secondaries } = response
       if (!primary) {
-        throw new Error(`Could not select a primary.`)
+        throw new Error('Could not select a primary.')
       }
 
       const newContentNodeEndpoints = CreatorNode.buildEndpoint(primary, secondaries)
@@ -365,7 +365,7 @@ class Users extends Base {
     this._validateUserMetadata(newMetadata)
 
     // Retrieve the current user metadata
-    let users = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, false, null)
+    const users = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, false, null)
     if (!users || !users[0]) throw new Error(`Cannot update user because no current record exists for user id ${userId}`)
 
     const oldMetadata = users[0]
@@ -398,8 +398,8 @@ class Users extends Base {
     }
 
     // Ensure libs is connected to correct CN
-    if (this.creatorNode.getEndpoint() !== CreatorNode.getPrimary(newMetadata['creator_node_endpoint'])) {
-      throw new Error(`Not connected to correct content node. Expected ${CreatorNode.getPrimary(newMetadata['creator_node_endpoint'])}, got ${this.creatorNode.getEndpoint()}`)
+    if (this.creatorNode.getEndpoint() !== CreatorNode.getPrimary(newMetadata.creator_node_endpoint)) {
+      throw new Error(`Not connected to correct content node. Expected ${CreatorNode.getPrimary(newMetadata.creator_node_endpoint)}, got ${this.creatorNode.getEndpoint()}`)
     }
 
     // Preserve old metadata object
@@ -699,8 +699,8 @@ class Users extends Base {
         const replicaSet = await this.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
         if (
           replicaSet &&
-          replicaSet.hasOwnProperty('primaryId') &&
-          replicaSet.hasOwnProperty('secondaryIds') &&
+          Object.prototype.hasOwnProperty.call(replicaSet, 'primaryId') &&
+Object.prototype.hasOwnProperty.call(replicaSet, 'secondaryIds') &&
           replicaSet.primaryId === replicaSetSPIDs[0] &&
           isEqual(replicaSet.secondaryIds, replicaSetSPIDs.slice(1, 3))
         ) {
@@ -717,10 +717,10 @@ class Users extends Base {
   }
 
   async _addUserOperations (userId, newMetadata, exclude = []) {
-    let addOps = []
+    const addOps = []
 
     // Remove excluded keys from metadata object
-    let metadata = { ...newMetadata }
+    const metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
 
     if (metadata[USER_PROP_NAME_CONSTANTS.NAME]) {
@@ -764,15 +764,15 @@ class Users extends Base {
   }
 
   async _updateUserOperations (newMetadata, currentMetadata, userId, exclude = []) {
-    let updateOps = []
+    const updateOps = []
 
     // Remove excluded keys from metadata object
-    let metadata = { ...newMetadata }
+    const metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
     for (const key in metadata) {
-      if (metadata.hasOwnProperty(key) && currentMetadata.hasOwnProperty(key) && metadata[key] !== currentMetadata[key]) {
+      if (Object.prototype.hasOwnProperty.call(metadata, key) && Object.prototype.hasOwnProperty.call(currentMetadata, key) && metadata[key] !== currentMetadata[key]) {
         if (key === USER_PROP_NAME_CONSTANTS.NAME) {
           updateOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[USER_PROP_NAME_CONSTANTS.NAME]))
         }
@@ -867,10 +867,10 @@ class Users extends Base {
   // Retrieve cached value for spID from endpoint if present, otherwise fetch from eth web3
   // Any error in the web3 fetch will short circuit the entire operation as expected
   async _retrieveSpIDFromEndpoint (endpoint) {
-    let cachedSpID = getSpIDForEndpoint(endpoint)
+    const cachedSpID = getSpIDForEndpoint(endpoint)
     let spID = cachedSpID
     if (!spID) {
-      let spEndpointInfo = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
+      const spEndpointInfo = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
         endpoint
       )
       // Throw if this spID is 0, indicating invalid
