@@ -100,12 +100,14 @@ export const UserList = (props: UserListProps) => {
     }
   }, [hasMore, isFocused, dispatchWeb, tag])
 
-  const loadingSpinner = (
-    <LoadingSpinner style={[styles.spinner, isEmpty && styles.emptySpinner]} />
-  )
-
   const data =
     isRefreshing || loading || !isFocused ? cachedUsers.current : users
+
+  const loadingSpinner = (
+    <LoadingSpinner
+      style={[styles.spinner, data.length === 0 && styles.emptySpinner]}
+    />
+  )
 
   return (
     <FlatList
@@ -114,6 +116,7 @@ export const UserList = (props: UserListProps) => {
       renderItem={({ item }) => (
         <UserChip user={item} currentUserId={currentUserId} />
       )}
+      keyExtractor={item => item.user_id.toString()}
       onEndReached={handleEndReached}
       ListFooterComponent={loading || isRefreshing ? loadingSpinner : null}
     />
