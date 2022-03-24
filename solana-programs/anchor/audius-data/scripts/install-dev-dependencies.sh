@@ -32,7 +32,6 @@ yarn install
 solana-keygen new --no-bip39-passphrase --force -o "$PROTOCOL_DIR/.config/solana/id.json"
 
 # reload shell 
-source ~/.zshrc
-source ~/.profile
+exec $SHELL
 
 echo "Installed deps for anchor development."
