@@ -821,7 +821,7 @@ describe("audius-data", function () {
         userStgAccount: newUserAcctPDA,
         userAuthorityKeypair: userAuthorityDelegateKeypair,
         userAuthorityDelegate: userAuthorityDelegatePDA,
-        authorityDelegationStatusAccount: authorityDelegationStatusPda, 
+        authorityDelegationStatusAccount: authorityDelegationStatusPda,
       })
     )
       .to.eventually.be.rejected.and.property("msg")
