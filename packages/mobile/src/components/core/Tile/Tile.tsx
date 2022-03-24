@@ -9,24 +9,29 @@ import {
   View,
   ViewStyle
 } from 'react-native'
-import { Shadow } from 'react-native-shadow-2'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles/makeStyles'
 
-const useStyles = makeStyles(({ palette }) => ({
-  tile: {
-    flexDirection: 'row',
-    borderColor: palette.neutralLight8,
-    backgroundColor: palette.white,
-    borderWidth: 1,
-    borderRadius: 8
-  },
-  content: {
-    flex: 1
+import { TileShadow } from './TileShadow'
+
+const borderRadius = 8
+
+const useStyles = makeStyles(({ palette }) => {
+  return {
+    tile: {
+      flexDirection: 'row',
+      borderColor: palette.neutralLight8,
+      backgroundColor: palette.white,
+      borderWidth: 1,
+      borderRadius
+    },
+    content: {
+      flex: 1
+    }
   }
-}))
+})
 
 const defaultElement = View
 
@@ -103,25 +108,40 @@ export const Tile = <
   )
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <Shadow
+    <Animated.View
+      style={[style, stylesProp?.root, { transform: [{ scale }] }]}
+    >
+      <TileShadow
+        offset={[0, 0]}
+        distance={1}
+        startColor='rgba(133, 129, 153, 0.1)'
+        borderRadius={borderRadius}
+        inset={0}
+      />
+      <TileShadow
         offset={[0, 1]}
-        viewStyle={{ alignSelf: 'stretch' }}
-        distance={2}
-        startColor='rgba(133,129,153,0.11)'
-        containerViewStyle={[style, stylesProp?.root]}
-      >
-        <TileComponent style={[styles.tile, stylesProp?.tile]} {...other}>
-          <Pressable
-            style={[styles.content, stylesProp?.content]}
-            onPress={onPress}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-          >
-            {children}
-          </Pressable>
-        </TileComponent>
-      </Shadow>
+        distance={0}
+        startColor='#e3e3e3'
+        borderRadius={borderRadius}
+        inset={0}
+      />
+      <TileShadow
+        offset={[0, 2]}
+        distance={7}
+        startColor='rgba(133, 129, 153, 0.1)'
+        borderRadius={borderRadius}
+        inset={4}
+      />
+      <TileComponent style={[styles.tile, stylesProp?.tile]} {...other}>
+        <Pressable
+          style={[styles.content, stylesProp?.content, { borderRadius: 4 }]}
+          onPress={onPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+        >
+          {children}
+        </Pressable>
+      </TileComponent>
     </Animated.View>
   )
 }
