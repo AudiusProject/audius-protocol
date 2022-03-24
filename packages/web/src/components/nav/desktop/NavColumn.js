@@ -29,6 +29,10 @@ import {
   getNotificationPanelIsOpen,
   getNotificationUnreadCount
 } from 'common/store/notifications/selectors'
+import {
+  addFolderToLibrary,
+  constructPlaylistFolder
+} from 'common/store/playlist-library/helpers'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { saveCollection } from 'common/store/social/collections/actions'
 import { saveTrack } from 'common/store/social/tracks/actions'
@@ -55,10 +59,6 @@ import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { make, useRecord } from 'store/analytics/actions'
 import { getIsDragging } from 'store/dragndrop/selectors'
-import {
-  addFolderToLibrary,
-  constructPlaylistFolder
-} from 'store/playlist-library/helpers'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import {
   FEED_PAGE,
