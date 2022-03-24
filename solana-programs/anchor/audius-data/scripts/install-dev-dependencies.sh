@@ -16,6 +16,9 @@ rustup component add rustfmt
 
 # install solana
 sh -c "$(curl -sSfL https://release.solana.com/$SOLANA_CLI_VERSION/install)"
+# add solana to PATH
+export PATH="/home/ubuntu/.local/share/solana/install/active_release/bin:$PATH"
+
 # install yarn
 npm install -g yarn
 # install anchor
@@ -27,5 +30,8 @@ yarn install
 
 # init solana keypair
 solana-keygen new --no-bip39-passphrase --force -o "$PROTOCOL_DIR/.config/solana/id.json"
+
+# reload shell 
+source ~/.profile
 
 echo "Installed deps for anchor development."
