@@ -25,7 +25,9 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     padding: spacing(3)
   },
   details: { flexDirection: 'row', flex: 1 },
+  userInfo: { flex: 1, marginRight: spacing(4) },
   photo: { height: 42, width: 42, marginRight: spacing(2) },
+  nameRoot: { flexDirection: 'row' },
   name: { ...typography.h3, color: palette.neutral },
   followers: { ...typography.h4, color: palette.neutral }
 }))
@@ -53,11 +55,13 @@ export const UserChip = (props: UserChipProps) => {
     <View style={styles.root}>
       <Pressable style={styles.details} onPress={handlePress}>
         <ProfilePicture profile={user} style={styles.photo} />
-        <View>
-          <Text style={styles.name} numberOfLines={1}>
-            {name}
+        <View style={styles.userInfo}>
+          <View style={styles.nameRoot}>
+            <Text style={styles.name} numberOfLines={1}>
+              {name}
+            </Text>
             <UserBadges user={user} badgeSize={10} hideName />
-          </Text>
+          </View>
           <Text style={styles.followers}>
             {follower_count} {messages.followers(follower_count)}
           </Text>
