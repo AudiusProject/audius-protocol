@@ -22,6 +22,14 @@ const createStyles = (themeColors: ThemeColors) =>
       marginBottom: 4,
       textAlign: 'center'
     },
+    infoContainer: {
+      flexDirection: 'row'
+    },
+    artistInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      maxWidth: '95%'
+    },
     artist: {
       color: themeColors.secondary,
       fontSize: 18
@@ -52,8 +60,12 @@ export const TrackInfo = ({
             </Text>
           </Pressable>
           <Pressable onPress={onPressArtist}>
-            <Text numberOfLines={1} style={styles.artist} weight='medium'>
-              {user.name}
+            <View style={styles.infoContainer}>
+              <View style={styles.artistInfo}>
+                <Text numberOfLines={1} style={styles.artist} weight='medium'>
+                  {user.name}
+                </Text>
+              </View>
               <UserBadges
                 user={{
                   balance: user.balance,
@@ -64,7 +76,7 @@ export const TrackInfo = ({
                 badgeSize={12}
                 hideName
               />
-            </Text>
+            </View>
           </Pressable>
         </>
       )}
