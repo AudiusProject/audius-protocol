@@ -18,23 +18,37 @@ const useStyles = makeStyles(({ palette }) => ({
 
 type CollapsibleTabNavigatorContextProps = {
   sceneName?: string
+  refreshing?: boolean
+  onRefresh?: () => void
+  scrollY?: Animated.Value
 }
 
 export const CollapsibleTabNavigatorContext = createContext<
   CollapsibleTabNavigatorContextProps
 >({
-  sceneName: undefined
+  sceneName: undefined,
+  refreshing: undefined,
+  onRefresh: undefined,
+  scrollY: undefined
 })
 
 export const CollapsibleTabNavigatorContextProvider = ({
   sceneName,
+  refreshing,
+  onRefresh,
+  scrollY,
   children
 }: {
   sceneName: string
+  refreshing?: boolean
+  onRefresh?: () => void
+  scrollY?: Animated.Value
   children: ReactNode
 }) => {
   return (
-    <CollapsibleTabNavigatorContext.Provider value={{ sceneName }}>
+    <CollapsibleTabNavigatorContext.Provider
+      value={{ sceneName, refreshing, onRefresh, scrollY }}
+    >
       {children}
     </CollapsibleTabNavigatorContext.Provider>
   )
@@ -70,11 +84,11 @@ export const CollapsibleTabNavigator = ({
       collapsibleOptions={{
         renderHeader,
         disableSnap: true,
-        animatedValue
+        animatedValue,
         // Lazy empirically helps with reducing "content offset" jumping.
         // Potentially related issue (not from the v2 codebase though)
         // https://github.com/PedroBern/react-native-collapsible-tab-view/pull/120
-        // lazy: true
+        lazy: true
       }}
       initialRouteName={initialScreenName}
       tabBar={props => <TopTabBar {...props} />}
@@ -100,10 +114,23 @@ type ScreenConfig = {
 type TabScreenConfig = ScreenConfig & {
   key?: string
   initialParams?: Record<string, unknown>
+  refreshing?: boolean
+  onRefresh?: () => void
+  scrollY?: Animated.Value
 }
 
 export const collapsibleTabScreen = (config: TabScreenConfig) => {
-  const { key, name, label, Icon, component: Component, initialParams } = config
+  const {
+    key,
+    name,
+    label,
+    Icon,
+    component: Component,
+    initialParams,
+    refreshing,
+    onRefresh,
+    scrollY
+  } = config
 
   return (
     <Tab.Screen
@@ -116,7 +143,12 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
       initialParams={initialParams}
     >
       {() => (
-        <CollapsibleTabNavigatorContextProvider sceneName={name}>
+        <CollapsibleTabNavigatorContextProvider
+          sceneName={name}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          scrollY={scrollY}
+        >
           <Component />
         </CollapsibleTabNavigatorContextProvider>
       )}

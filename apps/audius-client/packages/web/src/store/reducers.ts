@@ -3,7 +3,6 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 
 import { reducers as clientStoreReducers } from 'common/store'
-import notification from 'common/store/notifications/reducer'
 import profile from 'common/store/pages/profile/reducer'
 import queue from 'common/store/queue/slice'
 import remoteConfig from 'common/store/remote-config/slice'
@@ -67,7 +66,6 @@ const createRootReducer = (routeHistory: History) =>
     dashboard,
     signOn,
     searchBar,
-    notification,
     serviceSelection,
 
     // Playback

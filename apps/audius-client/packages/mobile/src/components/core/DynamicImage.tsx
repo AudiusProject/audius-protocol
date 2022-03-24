@@ -82,7 +82,7 @@ const interpolateImageScale = (animatedValue: Animated.Value) =>
 const interpolateImageTranslate = (animatedValue: Animated.Value) =>
   animatedValue.interpolate({
     inputRange: [-200, 0],
-    outputRange: [-30, 0],
+    outputRange: [-40, 0],
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp'
   })

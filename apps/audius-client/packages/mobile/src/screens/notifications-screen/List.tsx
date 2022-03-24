@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import Status from 'audius-client/src/common/models/Status'
 import {
@@ -11,10 +11,10 @@ import {
   makeGetAllNotifications
 } from 'audius-client/src/common/store/notifications/selectors'
 import { Notification } from 'audius-client/src/common/store/notifications/types'
-import { StyleSheet, FlatList, View, RefreshControl } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 
+import { FlatList } from 'app/components/core/FlatList'
 import LoadingSpinner from 'app/components/loading-spinner'
-import * as haptics from 'app/haptics'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useColor } from 'app/utils/theme'
@@ -48,6 +48,18 @@ export const List = () => {
   const notifications = useSelectorWeb(getNotifications)
   const status = useSelectorWeb(getNotificationStatus)
   const hasMore = useSelectorWeb(getNotificationHasMore)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  const onPullRefresh = useCallback(() => {
+    setIsRefreshing(true)
+    dispatchWeb(refreshNotifications())
+  }, [dispatchWeb])
+
+  useEffect(() => {
+    if (status !== Status.LOADING) {
+      setIsRefreshing(false)
+    }
+  }, [status, setIsRefreshing])
 
   const onEndReached = useCallback(() => {
     if (status !== Status.LOADING && hasMore) {
@@ -55,23 +67,7 @@ export const List = () => {
     }
   }, [status, dispatchWeb, hasMore])
 
-  const onPullRefresh = useCallback(() => {
-    haptics.light()
-    dispatchWeb(refreshNotifications())
-  }, [dispatchWeb])
-
-  const refreshColor = useColor('neutralLight6')
   const spinnerColor = useColor('neutralLight4')
-
-  const renderPullToRefresh = () => {
-    return (
-      <RefreshControl
-        refreshing={status === Status.LOADING && notifications.length > 0}
-        tintColor={refreshColor}
-        onRefresh={onPullRefresh}
-      />
-    )
-  }
 
   if (status === Status.SUCCESS && notifications.length === 0) {
     return <Empty />
@@ -83,7 +79,8 @@ export const List = () => {
       contentContainerStyle={{
         paddingBottom: 80
       }}
-      refreshControl={renderPullToRefresh()}
+      refreshing={isRefreshing}
+      onRefresh={onPullRefresh}
       data={notifications}
       keyExtractor={(item: Notification) => `${item.id}`}
       renderItem={({ item }) => (
@@ -91,12 +88,12 @@ export const List = () => {
           <NotificationBlock notification={item} />
         </View>
       )}
-      ListFooterComponent={() =>
-        status === Status.LOADING ? (
+      ListFooterComponent={
+        status === Status.LOADING && !isRefreshing ? (
           <View style={styles.footer}>
             <LoadingSpinner color={spinnerColor} />
           </View>
-        ) : null
+        ) : undefined
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.8}

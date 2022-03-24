@@ -8,7 +8,8 @@ import {
   take,
   put,
   takeEvery,
-  select
+  select,
+  takeLatest
 } from 'redux-saga/effects'
 
 import { Name } from 'common/models/Analytics'
@@ -384,7 +385,13 @@ function* watchFetchNotifications() {
 }
 
 function* watchRefreshNotifications() {
-  yield takeEvery(notificationActions.REFRESH_NOTIFICATIONS, function* () {
+  yield takeLatest(notificationActions.REFRESH_NOTIFICATIONS, function* () {
+    yield put(notificationActions.fetchNotificationsRequested())
+    // Add an artificial timeout here for the sake of debouncing the sync to
+    // react native store. Currently this refresh saga should only be called by
+    // notifications on mobile.
+    // TODO: This should be removed when we move common store to react native
+    yield delay(1000)
     yield call(getNotifications, true)
     yield put(
       notificationActions.fetchNotificationSucceeded(
@@ -481,7 +488,10 @@ export function* getNotifications(isFirstFetch: boolean) {
     const status: ReturnType<typeof getNotificationStatus> = yield select(
       getNotificationStatus
     )
-    if ((!isOpen || isFirstFetch) && status !== Status.LOADING) {
+    if (
+      (!isOpen || isFirstFetch) &&
+      (status !== Status.LOADING || isFirstFetch)
+    ) {
       isFirstFetch = false
       const limit = NOTIFICATION_LIMIT_DEFAULT
       const hasAccount: ReturnType<typeof getHasAccount> = yield select(
