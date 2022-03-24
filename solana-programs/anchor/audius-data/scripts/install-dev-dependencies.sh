@@ -9,9 +9,9 @@ cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
 echo "Installing dev deps for anchor audius-data development..."
 # install rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+source $HOME/.cargo/env
 # pin rustc version
 rustup default "$RUST_VERSION"
-source $HOME/.cargo/env
 rustup component add rustfmt
 
 # install solana
@@ -32,6 +32,7 @@ yarn install
 solana-keygen new --no-bip39-passphrase --force -o "$PROTOCOL_DIR/.config/solana/id.json"
 
 # reload shell 
+source ~/.zshrc
 source ~/.profile
 
 echo "Installed deps for anchor development."
