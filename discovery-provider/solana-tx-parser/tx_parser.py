@@ -96,6 +96,7 @@ async def main(tx_hash):
     for hash in tx_hashes:
         print(f"Parsing tx {hash}")
         parsed_tx = await parse_tx(hash)
+        print(parsed_tx)
         parsed_txs.append(parsed_tx)
     print(f"Parsed {len(parsed_txs)} txs: {parsed_txs}")
 
