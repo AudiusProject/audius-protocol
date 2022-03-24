@@ -13,9 +13,10 @@ import {
   EntityTypesEnumValues,
   createPlaylist,
   updatePlaylist,
-  deletePlaylist
+  deletePlaylist,
+  createContentNode
 } from "../lib/lib";
-import { findDerivedPair, randomCID, randomString } from "../lib/utils";
+import { findDerivedPair, getContentNode, randomCID, randomString } from "../lib/utils";
 
 import { Command } from "commander";
 import fs = require("fs");
@@ -48,6 +49,9 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
   const wallet = new NodeWallet(ownerKeypair);
   const provider = new Provider(connection, wallet, opts);
+  if (!idl.metadata) {
+    throw new Error('Missing metadata in IDL!')
+  }
   const programID = new PublicKey(idl.metadata.address);
   const program = new Program<AudiusData>(idl, programID, provider);
   console.log(`Using programID=${programID}`);
@@ -117,6 +121,11 @@ type initUserCLIParams = {
   ethAddress: string;
   ownerKeypairPath: string;
   adminKeypair: Keypair;
+  replicaSet: number[];
+  replicaSetBumps: number[];
+  cn1: PublicKey;
+  cn2: PublicKey;
+  cn3: PublicKey;
 };
 
 async function initUserCLI(args: initUserCLIParams) {
@@ -127,21 +136,15 @@ async function initUserCLI(args: initUserCLIParams) {
     ownerKeypairPath,
     metadata,
     adminStoragePublicKey,
+    replicaSet,
+    replicaSetBumps,
+    cn1,
+    cn2,
+    cn3
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
-<<<<<<< HEAD
   const handleBytesArray = getHandleBytesArray(handle);
   const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStoragePublicKey, handleBytesArray);
-=======
-  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
-  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-    await findDerivedPair(
-      cliVars.program.programId,
-      adminStgKeypair.publicKey,
-      Buffer.from(handleBytesArray)
-    );
->>>>>>> master
 
   const userStorageAddress = derivedAddress;
   console.log("Initing user")
@@ -149,6 +152,8 @@ async function initUserCLI(args: initUserCLIParams) {
     provider: cliVars.provider,
     program: cliVars.program,
     ethAddress,
+    replicaSet,
+    replicaSetBumps,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -156,6 +161,9 @@ async function initUserCLI(args: initUserCLIParams) {
     baseAuthorityAccount,
     adminStorageAccount: adminStoragePublicKey,
     adminKeypair,
+    cn1,
+    cn2,
+    cn3
   });
 
   await cliVars.provider.connection.confirmTransaction(tx);
@@ -241,6 +249,7 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
 const functionTypes = Object.freeze({
   initAdmin: "initAdmin",
   initUser: "initUser",
+  initContentNode: "initContentNode",
   initUserSolPubkey: "initUserSolPubkey",
   createTrack: "createTrack",
   getTrackId: "getTrackId",
@@ -257,7 +266,7 @@ program
   .option("-ak, --admin-keypair <keypair>", "admin keypair path")
   .option("-ask, --admin-storage-keypair <keypair>", "admin storage keypair path")
   .option("-h, --handle <string>", "user handle string")
-  .option("-e, --eth-address <string>", "user eth address")
+  .option("-e, --eth-address <string>", "user/cn eth address")
   .option("-u, --user-solana-keypair <string>", "user admin sol keypair path")
   .option(
     "-ustg, --user-storage-pubkey <string>",
@@ -269,7 +278,9 @@ program
   )
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
-  .option("--id <string>", "ID of entity targeted by transaction");
+  .option("--id <string>", "ID of entity targeted by transaction")
+  .option("--cn-sp-id <string>", "ID of incoming content node")
+  .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1");
 
 program.parse(process.argv);
 
@@ -303,6 +314,9 @@ const network = options.network
     ? AUDIUS_PROD_RPC_POOL
     : LOCALHOST_RPC_POOL;
 
+const main = async() => {
+
+const cliVars = initializeCLI(network, options.ownerKeypair);
 switch (options.function) {
   case functionTypes.initAdmin:
     console.log(`Initializing admin`);
@@ -313,9 +327,53 @@ switch (options.function) {
       verifierKeypair: verifierKeypair,
     });
     break;
+  case functionTypes.initContentNode:
+    console.log(`Initializing content node`)
+    console.log(options)
+    const contentNodeAuthority = anchor.web3.Keypair.generate();
+    console.log(`Using spID=${options.cnSpId} ethAddress=${options.ethAddress}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
+
+    (async() => {
+      const cnInfo = await getContentNode(
+        cliVars.program,
+        adminStorageKeypair.publicKey,
+        `${options.cnSpId}`
+      )
+      const { baseAuthorityAccount } = await findDerivedPair(cliVars.programID, adminStorageKeypair.publicKey, []);
+      const tx = await createContentNode({
+        provider: cliVars.provider,
+        program: cliVars.program,
+        baseAuthorityAccount,
+        adminKeypair,
+        adminStgPublicKey: adminStorageKeypair.publicKey,
+        contentNodeAuthority:contentNodeAuthority.publicKey,
+        contentNodeAcct: cnInfo.derivedAddress,
+        spID: cnInfo.spId,
+        ownerEthAddress: options.ethAddress
+      })
+      console.log(`Initialized with ${tx}`)
+    })();
+    break;
   case functionTypes.initUser:
     console.log(`Initializing user`);
-    console.log(options);
+    const userReplicaSet = options.userReplicaSet.split(',').map(x=>{
+      return parseInt(x);
+    })
+    console.log(userReplicaSet)
+    const userContentNodeInfo = await Promise.all(userReplicaSet.map(async (x) => {
+      return await getContentNode(
+        cliVars.program,
+        adminStorageKeypair.publicKey,
+        `${x}`
+      )
+    }))
+
+    const replicaSetBumps = [
+      userContentNodeInfo[0].bumpSeed,
+      userContentNodeInfo[1].bumpSeed,
+      userContentNodeInfo[2].bumpSeed
+    ]
+
     initUserCLI({
       ownerKeypairPath: options.ownerKeypair,
       ethAddress: options.ethAddress,
@@ -323,6 +381,11 @@ switch (options.function) {
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       adminKeypair,
       metadata: "test",
+      replicaSet: userReplicaSet,
+      replicaSetBumps,
+      cn1: userContentNodeInfo[0].derivedAddress,
+      cn2: userContentNodeInfo[1].derivedAddress,
+      cn3: userContentNodeInfo[2].derivedAddress,
     });
     break;
   case functionTypes.initUserSolPubkey:
@@ -472,3 +535,6 @@ switch (options.function) {
     break;
   }
 }
+
+}
+main()

@@ -9,6 +9,7 @@ import {
   getTransaction,
   randomCID,
   getTransactionWithData,
+  getContentNode,
 } from "../lib/utils";
 import {
   createContentNode,
@@ -478,26 +479,6 @@ export const confirmLogInTransaction = async (
   return info;
 };
 
-export const getContentNode = async (
-  program: anchor.Program<AudiusData>,
-  adminStgPK: anchor.web3.PublicKey,
-  spId: string
-) => {
-  const seed = Buffer.concat([
-    Buffer.from("sp_id", "utf8"),
-    new anchor.BN(spId).toBuffer("le", 2),
-  ]);
-
-  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-    await findDerivedPair(program.programId, adminStgPK, seed);
-
-  return {
-    spId: new anchor.BN(spId),
-    baseAuthorityAccount,
-    bumpSeed,
-    derivedAddress,
-  };
-};
 
 export const createSolanaUser = async (
   program: Program<AudiusData>,
