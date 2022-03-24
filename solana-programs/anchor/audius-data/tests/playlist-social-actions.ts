@@ -14,7 +14,10 @@ import {
 } from "../lib/lib";
 import { getTransaction, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser } from "./test-helpers";
+import {
+  createSolanaUser,
+  createSolanaContentNode,
+} from "./test-helpers";
 
 chai.use(chaiAsPromised);
 
@@ -32,6 +35,7 @@ describe("playlist-actions", function () {
   const adminKeypair = anchor.web3.Keypair.generate();
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
+  const contentNodes = {};
 
   it("playlist actions - Initializing admin account!", async function () {
     await initAdmin({
@@ -61,6 +65,33 @@ describe("playlist-actions", function () {
       adminStgAccount: adminStgKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+  });
+
+  it("Initializing Content Node accounts!", async function () {
+    const cn1 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(1),
+    });
+    const cn2 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(2),
+    });
+    const cn3 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(3),
+    });
+    contentNodes["1"] = cn1;
+    contentNodes["2"] = cn2;
+    contentNodes["3"] = cn3;
   });
 
   it("Delete save for a playlist", async function () {

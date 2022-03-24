@@ -11,6 +11,7 @@ import {
   getTransactionWithData,
 } from "../lib/utils";
 import {
+  createContentNode,
   createUser,
   createTrack,
   createPlaylist,
@@ -27,7 +28,7 @@ import { AudiusData } from "../target/types/audius_data";
 
 const { PublicKey } = anchor.web3;
 
-const EthWeb3 = new Web3();
+export const EthWeb3 = new Web3();
 const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
 type InitTestConsts = {
@@ -65,11 +66,18 @@ export const testInitUser = async ({
   userStgAccount,
   adminStgKeypair,
   adminKeypair,
+  replicaSet,
+  replicaSetBumps,
+  cn1,
+  cn2,
+  cn3,
 }) => {
   const tx = await initUser({
     provider,
     program,
     ethAddress,
+    replicaSet,
+    replicaSetBumps,
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -77,6 +85,9 @@ export const testInitUser = async ({
     baseAuthorityAccount,
     adminStgKey: adminStgKeypair.publicKey,
     adminKeypair,
+    cn1,
+    cn2,
+    cn3,
   });
 
   const account = await program.account.user.fetch(userStgAccount);
@@ -146,6 +157,11 @@ export const testCreateUser = async ({
   newUserKeypair,
   userStgAccount,
   adminStgPublicKey,
+  replicaSet,
+  replicaSetBumps,
+  cn1,
+  cn2,
+  cn3,
 }) => {
   const tx = await createUser({
     provider,
@@ -154,11 +170,16 @@ export const testCreateUser = async ({
     message,
     handleBytesArray,
     bumpSeed,
+    replicaSet,
+    replicaSetBumps,
     metadata,
     userSolPubkey: newUserKeypair.publicKey,
     userStgAccount,
     adminStgPublicKey,
     baseAuthorityAccount,
+    cn1,
+    cn2,
+    cn3,
   });
 
   const { decodedInstruction, decodedData, accountPubKeys } =
@@ -173,7 +194,7 @@ export const testCreateUser = async ({
   expect(decodedData.userBump).to.equal(bumpSeed);
   expect(decodedData.metadata).to.equal(metadata);
   expect(accountPubKeys[0]).to.equal(userStgAccount.toString());
-  expect(accountPubKeys[2]).to.equal(adminStgPublicKey.toString());
+  expect(accountPubKeys[5]).to.equal(adminStgPublicKey.toString());
 
   const account = await program.account.user.fetch(userStgAccount);
 
@@ -457,6 +478,27 @@ export const confirmLogInTransaction = async (
   return info;
 };
 
+export const getContentNode = async (
+  program: anchor.Program<AudiusData>,
+  adminStgPK: anchor.web3.PublicKey,
+  spId: string
+) => {
+  const seed = Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    new anchor.BN(spId).toBuffer("le", 2),
+  ]);
+
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+    await findDerivedPair(program.programId, adminStgPK, seed);
+
+  return {
+    spId: new anchor.BN(spId),
+    baseAuthorityAccount,
+    bumpSeed,
+    derivedAddress,
+  };
+};
+
 export const createSolanaUser = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
@@ -481,6 +523,10 @@ export const createSolanaUser = async (
   // Message as the incoming public key
   const message = newUserKeypair.publicKey.toBytes();
 
+  const cn1 = await getContentNode(program, adminStgKeypair.publicKey, "1");
+  const cn2 = await getContentNode(program, adminStgKeypair.publicKey, "2");
+  const cn3 = await getContentNode(program, adminStgKeypair.publicKey, "3");
+
   await createUser({
     provider,
     program,
@@ -493,6 +539,11 @@ export const createSolanaUser = async (
     userStgAccount: newUserAcctPDA,
     adminStgPublicKey: adminStgKeypair.publicKey,
     baseAuthorityAccount,
+    replicaSet: [1, 2, 3],
+    replicaSetBumps: [cn1.bumpSeed, cn2.bumpSeed, cn3.bumpSeed],
+    cn1: cn1.derivedAddress,
+    cn2: cn2.derivedAddress,
+    cn3: cn3.derivedAddress,
   });
 
   const account = await program.account.user.fetch(newUserAcctPDA);
@@ -504,5 +555,57 @@ export const createSolanaUser = async (
     bumpSeed,
     keypair: newUserKeypair,
     authority: baseAuthorityAccount,
+  };
+};
+
+export const createSolanaContentNode = async (props: {
+  program: Program<AudiusData>;
+  provider: anchor.Provider;
+  adminStgKeypair: anchor.web3.Keypair;
+  adminKeypair: anchor.web3.Keypair;
+  spId: anchor.BN;
+}) => {
+  const ownerEth = EthWeb3.eth.accounts.create();
+  const authority = anchor.web3.Keypair.generate();
+  const seed = Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    props.spId.toBuffer("le", 2),
+  ]);
+
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+    await findDerivedPair(
+      props.program.programId,
+      props.adminStgKeypair.publicKey,
+      seed
+    );
+
+  const tx = await createContentNode({
+    provider: props.provider,
+    program: props.program,
+    adminKeypair: props.adminKeypair,
+    baseAuthorityAccount,
+    adminStgPublicKey: props.adminStgKeypair.publicKey,
+    contentNodeAuthority: authority.publicKey,
+    contentNodeAcct: derivedAddress,
+    spID: props.spId,
+    ownerEthAddress: ownerEth.address,
+  });
+
+  const contentNode = await props.program.account.contentNode.fetch(
+    derivedAddress
+  );
+
+  if (!contentNode) {
+    throw new Error("unable to create playlist account");
+  }
+
+  return {
+    ownerEthAddress: ownerEth.address,
+    spId: props.spId,
+    account: contentNode,
+    pda: derivedAddress,
+    authority,
+    seedBump: { seed, bump: bumpSeed },
+    tx,
   };
 };

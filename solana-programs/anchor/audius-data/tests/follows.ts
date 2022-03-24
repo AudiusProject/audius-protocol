@@ -4,7 +4,11 @@ import { expect, assert } from "chai";
 import { initAdmin, updateAdmin } from "../lib/lib";
 import { findDerivedPair, getTransactionWithData } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { initTestConstants, testCreateUser } from "./test-helpers";
+import {
+  createSolanaContentNode,
+  initTestConstants,
+  testCreateUser,
+} from "./test-helpers";
 
 const UserActionEnumValues = {
   unfollowUser: { unfollowUser: {} },
@@ -26,6 +30,24 @@ describe("follows", function () {
   const adminKeypair = anchor.web3.Keypair.generate();
   const adminStgKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
+  const contentNodes = {};
+  const getURSMParams = () => {
+    return {
+      replicaSet: [
+        contentNodes["1"].spId.toNumber(),
+        contentNodes["2"].spId.toNumber(),
+        contentNodes["3"].spId.toNumber(),
+      ],
+      replicaSetBumps: [
+        contentNodes["1"].seedBump.bump,
+        contentNodes["2"].seedBump.bump,
+        contentNodes["3"].seedBump.bump,
+      ],
+      cn1: contentNodes["1"].pda,
+      cn2: contentNodes["2"].pda,
+      cn3: contentNodes["3"].pda,
+    };
+  };
 
   it("follows - Initializing admin account!", async function () {
     await initAdmin({
@@ -47,6 +69,33 @@ describe("follows", function () {
       console.log("Provided admin info: ", adminKeypair.publicKey.toString());
       throw new Error("Invalid returned values");
     }
+  });
+
+  it("Initializing Content Node accounts!", async function () {
+    const cn1 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(1),
+    });
+    const cn2 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(2),
+    });
+    const cn3 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStgKeypair,
+      spId: new anchor.BN(3),
+    });
+    contentNodes["1"] = cn1;
+    contentNodes["2"] = cn2;
+    contentNodes["3"] = cn3;
   });
 
   describe("follow / unfollow tests", function () {
@@ -117,6 +166,7 @@ describe("follows", function () {
         newUserKeypair: newUser1Key,
         userStgAccount: userStorageAccount1,
         adminStgPublicKey: adminStgKeypair.publicKey,
+        ...getURSMParams(),
       });
 
       await testCreateUser({
@@ -131,6 +181,7 @@ describe("follows", function () {
         newUserKeypair: newUser2Key,
         userStgAccount: userStorageAccount2,
         adminStgPublicKey: adminStgKeypair.publicKey,
+        ...getURSMParams(),
       });
     });
 
