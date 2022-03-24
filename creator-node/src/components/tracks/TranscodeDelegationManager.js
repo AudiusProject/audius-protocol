@@ -2,6 +2,7 @@ const axios = require('axios')
 const fs = require('fs')
 const fsExtra = require('fs-extra')
 const FormData = require('form-data')
+const retry = require('async-retry')
 
 const config = require('../../config.js')
 const Utils = require('../../utils')
@@ -13,13 +14,11 @@ const {
 const CREATOR_NODE_ENDPOINT = config.get('creatorNodeEndpoint')
 const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
 const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
-const MAX_TRACK_HANDOFF_TIMEOUT_MS = 180000 // 3min
-const POLL_STATUS_INTERVAL_MS = 10000 // 10s
 
 class TranscodeDelegationManager {
-  static async handOff(req) {
+  static async handOff({ req, logContext }) {
     const libs = req.libs
-    const logger = genericLogger.child(req.logContext)
+    const logger = genericLogger.child(logContext)
     let resp = {}
 
     let sps
@@ -40,11 +39,11 @@ class TranscodeDelegationManager {
         const polledTranscodeResponse =
           await TranscodeDelegationManager.pollForTranscode(logger, {
             sp,
-            transcodeAndSegmentUUID
+            uuid: transcodeAndSegmentUUID
           })
 
         const localFilePaths =
-          await TranscodeDelegationManager.writeTranscodeToFs(logger, {
+          await TranscodeDelegationManager.fetchFilesAndWriteToFs(logger, {
             ...polledTranscodeResponse,
             sp,
             fileNameNoExtension: req.fileNameNoExtension
@@ -61,6 +60,31 @@ class TranscodeDelegationManager {
   }
 
   // If any call fails -> throw error
+
+  static async selectRandomSPs(libs) {
+    let allSPs = await libs.ethContracts.getServiceProviderList('content-node')
+    allSPs = allSPs.map((sp) => sp.endpoint)
+
+    // If there are less Content Nodes than the default number, set the cap to the number
+    // of available SPs. This will probably only happen in local dev :shrugs:
+    const numberOfSps =
+      allSPs.length < NUMBER_OF_SPS_FOR_HANDOFF_TRACK
+        ? allSPs.length
+        : NUMBER_OF_SPS_FOR_HANDOFF_TRACK
+
+    const validSPs = new Set()
+    while (validSPs.size < numberOfSps) {
+      const index = Utils.getRandomInt(allSPs.length)
+      const currentSP = allSPs[index]
+      // do not pick self or a node that has already been chosen
+      if (currentSP === CREATOR_NODE_ENDPOINT || validSPs.has(currentSP)) {
+        continue
+      }
+      validSPs.add(currentSP)
+    }
+
+    return Array.from(validSPs)
+  }
 
   static async handOffToSp(logger, { sp, req }) {
     const { fileDir, fileName, fileNameNoExtension, uuid: requestID } = req
@@ -79,23 +103,43 @@ class TranscodeDelegationManager {
     return transcodeAndSegmentUUID
   }
 
-  static async pollForTranscode(logger, { transcodeAndSegmentUUID, sp }) {
-    // TODO: use logWithDuration?
+  static async pollForTranscode(logger, { uuid, sp }) {
     logger.info(
       { sp },
       `Polling for transcode and segments with uuid=${transcodeAndSegmentUUID}...`
     )
-    const { transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path } =
-      await TranscodeDelegationManager.pollProcessingStatus({
-        logger,
-        uuid: transcodeAndSegmentUUID,
-        sp
-      })
 
-    return { transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8Path }
+    return this.asyncRetry({
+      asyncFn: async (bail, num) => {
+        if (num === 50) {
+          bail(
+            new Error(`Transcode handoff max attempts reached for uuid=${uuid}`)
+          )
+          return
+        }
+
+        const { status, resp } =
+          await TranscodeDelegationManager.fetchTrackContentProcessingStatus(
+            sp,
+            uuid
+          )
+
+        if (status && status === 'DONE') return resp
+        if (status && status === 'FAILED') {
+          bail(
+            new Error(`Transcode handoff failed: uuid=${uuid}, error=${resp}`)
+          )
+          return
+        }
+      },
+      asyncFnTask: 'polling transcode',
+      retries: 50,
+      minTimeout: 10000,
+      maxTimeout: 10000
+    })
   }
 
-  static async writeTranscodeToFs(
+  static async fetchFilesAndWriteToFs(
     logger,
     {
       fileNameNoExtension,
@@ -153,59 +197,6 @@ class TranscodeDelegationManager {
     }
   }
 
-  static async selectRandomSPs(libs) {
-    let allSPs = await libs.ethContracts.getServiceProviderList('content-node')
-    allSPs = allSPs.map((sp) => sp.endpoint)
-
-    const validSPs = new Set()
-    while (validSPs.size < NUMBER_OF_SPS_FOR_HANDOFF_TRACK) {
-      const index = Utils.getRandomInt(allSPs.length)
-      const currentSP = allSPs[index]
-      // do not pick self or a node that has already been chosen
-      if (currentSP === CREATOR_NODE_ENDPOINT || validSPs.has(currentSP)) {
-        continue
-      }
-      validSPs.add(currentSP)
-    }
-
-    return Array.from(validSPs)
-  }
-
-  // TODO: this is the same polling fn in libs. consider initializing libs to use, or copy over fn
-  static async pollProcessingStatus({ logger, uuid, sp }) {
-    const start = Date.now()
-    while (Date.now() - start < MAX_TRACK_HANDOFF_TIMEOUT_MS) {
-      try {
-        const { status, resp } =
-          await TranscodeDelegationManager.fetchTrackContentProcessingStatus(
-            sp,
-            uuid
-          )
-        // Should have a body structure of:
-        //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
-        if (status && status === 'DONE') return resp
-        if (status && status === 'FAILED') {
-          throw new Error(
-            `Transcode handoff failed: uuid=${uuid}, error=${resp}`
-          )
-        }
-      } catch (e) {
-        // Catch errors here and swallow them. Errors don't signify that the track
-        // upload has failed, just that we were unable to establish a connection to the node.
-        // This allows polling to retry
-        logger.error(
-          `Failed to poll for transcode handoff processing status, ${e}`
-        )
-      }
-
-      await Utils.timeout(POLL_STATUS_INTERVAL_MS)
-    }
-
-    throw new Error(
-      `Transcode handoff took over ${MAX_TRACK_HANDOFF_TIMEOUT_MS}ms. uuid=${uuid}`
-    )
-  }
-
   static async sendTranscodeAndSegmentRequest({
     sp,
     fileDir,
@@ -220,10 +211,11 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    const resp = await axios.post(
-      `${sp}/transcode_and_segment`,
-      originalTrackFormData,
-      {
+    const resp = await this.asyncRetry({
+      asyncFn: axios,
+      asyncFnParams: {
+        url: `${sp}/transcode_and_segment`,
+        data: originalTrackFormData,
         headers: {
           ...originalTrackFormData.getHeaders()
         },
@@ -238,8 +230,9 @@ class TranscodeDelegationManager {
         // See: https://github.com/axios/axios/issues/1362
         maxContentLength: Infinity,
         maxBodyLength: Infinity
-      }
-    )
+      },
+      asyncFnTask: 'transcode and segment'
+    })
 
     return resp.data.data.uuid
   }
@@ -265,19 +258,24 @@ class TranscodeDelegationManager {
 
   /**
    * Gets the task progress given the task type and uuid associated with the task
-   * @param {string} sp the current sp selected for track processing
-   * @param {string} uuid the uuid of the track transcoding task
+   * @param {Object} param
+   * @param {string} param.sp the current sp selected for track processing
+   * @param {string} param.uuid the uuid of the track transcoding task
    * @returns the status, and the success or failed response if the task is complete
    */
-  static async fetchTrackContentProcessingStatus(sp, uuid) {
+  static async fetchTrackContentProcessingStatus({ sp, uuid }) {
     const spID = config.get('spID')
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    const { data: body } = await axios({
-      url: `${sp}/track_content_status`,
-      params: { uuid, timestamp, signature, spID },
-      method: 'get'
+    const { data: body } = await this.asyncRetry({
+      asyncFn: axios,
+      asyncFnParams: {
+        url: `${sp}/async_processing_status`,
+        params: { uuid, timestamp, signature, spID },
+        method: 'get'
+      },
+      asyncFnTask: 'fetch track content processing status'
     })
 
     return body.data
@@ -288,18 +286,22 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return axios({
-      url: `${sp}/transcode_and_segment`,
-      method: 'get',
-      params: {
-        fileName: segmentFileName,
-        fileType: 'segment',
-        uuidInPath: fileNameNoExtension,
-        timestamp,
-        signature,
-        spID
+    return this.asyncRetry({
+      asyncFn: axios,
+      asyncFnParams: {
+        url: `${sp}/transcode_and_segment`,
+        method: 'get',
+        params: {
+          fileName: segmentFileName,
+          fileType: 'segment',
+          uuidInPath: fileNameNoExtension,
+          timestamp,
+          signature,
+          spID
+        },
+        responseType: 'stream'
       },
-      responseType: 'stream'
+      asyncFnTask: 'fetch segment'
     })
   }
 
@@ -308,18 +310,22 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return axios({
-      url: `${sp}/transcode_and_segment`,
-      method: 'get',
-      params: {
-        fileName: transcodeFileName,
-        fileType: 'transcode',
-        uuidInPath: fileNameNoExtension,
-        timestamp,
-        signature,
-        spID
+    return this.asyncRetry({
+      asyncFn: axios,
+      asyncFnParams: {
+        url: `${sp}/transcode_and_segment`,
+        method: 'get',
+        params: {
+          fileName: transcodeFileName,
+          fileType: 'transcode',
+          uuidInPath: fileNameNoExtension,
+          timestamp,
+          signature,
+          spID
+        },
+        responseType: 'stream'
       },
-      responseType: 'stream'
+      asyncFnTask: 'fetch transcode'
     })
   }
 
@@ -329,18 +335,51 @@ class TranscodeDelegationManager {
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
     return axios({
-      url: `${sp}/transcode_and_segment`,
-      method: 'get',
-      params: {
-        fileName: m3u8FileName,
-        fileType: 'm3u8',
-        uuidInPath: fileNameNoExtension,
-        timestamp,
-        signature,
-        spID
+      asyncFn: axios,
+      asyncFnParams: {
+        url: `${sp}/transcode_and_segment`,
+        method: 'get',
+        params: {
+          fileName: m3u8FileName,
+          fileType: 'm3u8',
+          uuidInPath: fileNameNoExtension,
+          timestamp,
+          signature,
+          spID
+        },
+        responseType: 'stream'
       },
-      responseType: 'stream'
+      asyncFnTask: 'fetch m3u8'
     })
+  }
+
+  static async asyncRetry({
+    asyncFn,
+    asyncFnParams,
+    asyncFnTask,
+    retries = 5,
+    minTimeout = 1000, // default for async-retry
+    maxTimeout = 5000
+  }) {
+    return retry(
+      async () => {
+        if (asyncFnParams) {
+          return asyncFn(asyncFnParams)
+        }
+
+        return asyncFn()
+      },
+      {
+        retries,
+        minTimeout,
+        maxTimeout,
+        onRetry: (err, i) => {
+          if (err) {
+            console.log(`${asyncFnTask} ${i} retry error: `, err)
+          }
+        }
+      }
+    )
   }
 }
 

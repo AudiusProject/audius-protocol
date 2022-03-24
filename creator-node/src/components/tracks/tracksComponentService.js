@@ -72,9 +72,19 @@ async function handleTranscodeAndSegment(
   )
 }
 
-async function handleTranscodeHandOff({ logContext }, requestProps) {
+async function handleTranscodeHandOff(
+  { logContext },
+  { fileName, fileDir, fileNameNoExtension, fileDestination, session, headers }
+) {
   return TranscodeDelegationManager.handOff({
-    ...requestProps,
+    req: {
+      fileName,
+      fileDir,
+      fileNameNoExtension,
+      fileDestination,
+      session,
+      headers
+    },
     logContext
   })
 }
