@@ -20,7 +20,6 @@ import { RepostsPageState } from 'common/store/user-list/reposts/types'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
 import MusicConfetti from 'components/music-confetti/store/slice'
-import { NowPlayingState } from 'components/now-playing/store/types'
 import { PasswordResetState } from 'components/password-reset/store/types'
 import RemixSettingsModalReducer from 'components/remix-settings-modal/store/slice'
 import SearchBarState from 'components/search-bar/store/types'
@@ -93,7 +92,6 @@ export type AppState = CommonState & {
       following: FollowingPageState
       notificationUsers: NotificationUsersPageState
       unfollowConfirmation: UnfollowConfirmationModalState
-      nowPlaying: NowPlayingState
       smartCollection: SmartCollectionState
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
