@@ -58,15 +58,15 @@ class Attestation:
 
     def _get_encoded_amount(self):
         amt = int(self.amount) * 10 ** WAUDIO_DECIMALS
-        return amt.to_bytes(8, byteorder="little")
+        return amt.toBytes(8, byteorder="little")
 
     def get_attestation_bytes(self):
-        user_bytes = to_bytes(hexstr=self.user_address)
-        oracle_bytes = to_bytes(hexstr=self.oracle_address)
-        combined_id_bytes = to_bytes(text=self._get_combined_id())
+        user_bytes = toBytes(hexstr=self.user_address)
+        oracle_bytes = toBytes(hexstr=self.oracle_address)
+        combined_id_bytes = toBytes(text=self._get_combined_id())
         amount_bytes = self._get_encoded_amount()
         items = [user_bytes, amount_bytes, combined_id_bytes, oracle_bytes]
-        joined = to_bytes(text="_").join(items)
+        joined = toBytes(text="_").join(items)
         return joined
 
 
@@ -97,7 +97,7 @@ def sign_attestation(attestation_bytes: bytes, private_key: str):
     k = keys.PrivateKey(HexBytes(private_key))
     to_sign_hash = Web3.keccak(attestation_bytes)
     sig = k.sign_msg_hash(to_sign_hash)
-    return sig.to_hex()
+    return sig.toHex()
 
 
 def get_attestation(
@@ -204,13 +204,13 @@ def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
         raise Exception(f"Expected {new_sender_address} to be registered on chain")
 
     items = [
-        to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
+        toBytes(text=ADD_SENDER_MESSAGE_PREFIX),
         # Solana PubicKey should be coerced to bytes using the pythonic bytes method
         # See https://michaelhly.github.io/solana-py/solana.html#solana.publickey.PublicKey
         bytes(REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY),
-        to_bytes(hexstr=new_sender_address),
+        toBytes(hexstr=new_sender_address),
     ]
-    attestation_bytes = to_bytes(text="").join(items)
+    attestation_bytes = toBytes(text="").join(items)
     signed_attestation: str = sign_attestation(
         attestation_bytes, shared_config["delegate"]["private_key"]
     )

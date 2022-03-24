@@ -9,8 +9,7 @@ types-redis==3.5.4
 types-requests==2.25.0
 types-pytz==2021.1.2
 
-# web3 used to be 5.11.0 but due to a build issue in docker, downgraded to 5.8.0
-web3==5.8.0
+web3==6.0.0b1
 Flask==1.0.4
 # pin itsdangerous and markupsafe https://github.com/pallets/flask/issues/4455
 itsdangerous==1.1.0
@@ -52,9 +51,10 @@ pycparser==2.20
 PyNaCl==1.4.0
 requests==2.25.1
 six==1.15.0
-solana==0.10.0
+solana==0.21.0
 typing-extensions==3.10.0.0
 urllib3==1.26.3
+websockets==10.1
 
 # test
 pytest-mock==3.6.1

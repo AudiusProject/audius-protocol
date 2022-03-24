@@ -5,7 +5,7 @@ import time
 from contextlib import contextmanager
 from typing import Optional, Union
 
-from solana.account import Account
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from src.solana.solana_transaction_types import (
@@ -78,7 +78,7 @@ class SolanaClientManager:
 
     def get_signatures_for_address(
         self,
-        account: Union[str, Account, PublicKey],
+        account: Union[str, Keypair, PublicKey],
         before: Optional[str] = None,
         limit: Optional[int] = None,
         retries: Optional[int] = DEFAULT_MAX_RETRIES,

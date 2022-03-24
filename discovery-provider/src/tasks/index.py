@@ -123,7 +123,7 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
 
     target_blockhash = None
     target_blockhash = update_task.shared_config["discprov"]["start_block"]
-    target_block = update_task.web3.eth.getBlock(target_blockhash, True)
+    target_block = update_task.web3.eth.get_block(target_blockhash, True)
 
     with db.scoped_session() as session:
         current_block_query_result = session.query(Block).filter_by(is_current=True)
@@ -186,7 +186,7 @@ def get_latest_block(db: SessionManager):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+        latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
@@ -196,12 +196,12 @@ def get_latest_block(db: SessionManager):
         logger.info(
             f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
-        latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
+        latest_block = update_task.web3.eth.get_block(target_latest_block_number, True)
     return latest_block
 
 
 def update_latest_block_redis():
-    latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+    latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
     default_indexing_interval_seconds = int(
         update_task.shared_config["discprov"]["block_processing_interval_sec"]
     )
@@ -222,7 +222,7 @@ def update_latest_block_redis():
 def fetch_tx_receipt(transaction):
     web3 = update_task.web3
     tx_hash = web3.toHex(transaction["hash"])
-    receipt = web3.eth.getTransactionReceipt(tx_hash)
+    receipt = web3.eth.get_transaction_receipt(tx_hash)
     response = {}
     response["tx_receipt"] = receipt
     response["tx_hash"] = tx_hash
@@ -1187,7 +1187,7 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
                     else:
-                        latest_block = web3.eth.getBlock(parent_hash, True)
+                        latest_block = web3.eth.get_block(parent_hash, True)
                         intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the

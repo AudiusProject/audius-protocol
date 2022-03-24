@@ -69,7 +69,7 @@ def test_get_attestation(app):
             to_sign_hash = Web3.keccak(attestation_bytes)
             private_key = keys.PrivateKey(HexBytes(config_private_key))
             public_key = keys.PublicKey.from_private(private_key)
-            signture_bytes = to_bytes(hexstr=signature)
+            signture_bytes = toBytes(hexstr=signature)
             msg_signature = keys.Signature(signature_bytes=signture_bytes, vrs=None)
 
             recovered_pubkey = public_key.recover_from_msg_hash(
@@ -147,15 +147,15 @@ def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
 
     # Ensure we can derive the owner wallet from the signed stringified attestation
     items = [
-        to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
+        toBytes(text=ADD_SENDER_MESSAGE_PREFIX),
         bytes(PublicKey(REWARDS_MANAGER_ACCOUNT)),
-        to_bytes(hexstr=new_sender_address),
+        toBytes(hexstr=new_sender_address),
     ]
-    attestation_bytes = to_bytes(text="").join(items)
+    attestation_bytes = toBytes(text="").join(items)
     to_sign_hash = Web3.keccak(attestation_bytes)
     private_key = keys.PrivateKey(HexBytes(config_private_key))
     public_key = keys.PublicKey.from_private(private_key)
-    signture_bytes = to_bytes(hexstr=sender_attestation)
+    signture_bytes = toBytes(hexstr=sender_attestation)
     msg_signature = keys.Signature(signature_bytes=signture_bytes, vrs=None)
 
     recovered_pubkey = public_key.recover_from_msg_hash(

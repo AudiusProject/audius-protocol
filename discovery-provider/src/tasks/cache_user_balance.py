@@ -310,7 +310,7 @@ def refresh_user_ids(
                 # Write to user_balance_changes table
                 needs_balance_change_update[user_id] = {
                     "user_id": user_id,
-                    "blocknumber": eth_web3.eth.blockNumber,
+                    "blocknumber": eth_web3.eth.block_number,
                     "current_balance": str(current_total_balance),
                     "previous_balance": str(prev_total_balance),
                 }
