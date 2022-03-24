@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 
+import { PortalProvider } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform } from 'react-native'
 import Config from 'react-native-config'
@@ -66,25 +67,27 @@ const App = () => {
   return (
     <SafeAreaProvider>
       <Provider store={store}>
-        <ToastContextProvider>
-          <ErrorBoundary>
-            <WebRefContextProvider>
-              <WebAppManager webRef={webRef}>
-                <ThemeProvider>
-                  <NavigationContainer>
-                    <Airplay />
-                    <GoogleCast webRef={webRef} />
-                    <RootScreen />
-                    <Drawers />
-                    <Modals />
-                    <Audio webRef={webRef} />
-                    <OAuth webRef={webRef} />
-                  </NavigationContainer>
-                </ThemeProvider>
-              </WebAppManager>
-            </WebRefContextProvider>
-          </ErrorBoundary>
-        </ToastContextProvider>
+        <PortalProvider>
+          <ToastContextProvider>
+            <ErrorBoundary>
+              <WebRefContextProvider>
+                <WebAppManager webRef={webRef}>
+                  <ThemeProvider>
+                    <NavigationContainer>
+                      <Airplay />
+                      <GoogleCast webRef={webRef} />
+                      <RootScreen />
+                      <Drawers />
+                      <Modals />
+                      <Audio webRef={webRef} />
+                      <OAuth webRef={webRef} />
+                    </NavigationContainer>
+                  </ThemeProvider>
+                </WebAppManager>
+              </WebRefContextProvider>
+            </ErrorBoundary>
+          </ToastContextProvider>
+        </PortalProvider>
       </Provider>
     </SafeAreaProvider>
   )

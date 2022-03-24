@@ -46,9 +46,9 @@ export const FeedScreen = () => {
     if (!feedLineup.isMetadataLoading) {
       setIsRefreshing(false)
     }
-  }, [feedLineup])
+  }, [feedLineup.isMetadataLoading])
 
-  const refresh = useCallback(() => {
+  const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
     dispatchWeb(feedActions.refreshInView(true))
   }, [dispatchWeb])
@@ -70,8 +70,8 @@ export const FeedScreen = () => {
         delineate
         lineup={feedLineup}
         loadMore={loadMore}
-        refresh={refresh}
-        refreshing={isRefreshing && feedLineup.isMetadataLoading}
+        refresh={handleRefresh}
+        refreshing={isRefreshing}
         selfLoad
         showsVerticalScrollIndicator={false}
       />
