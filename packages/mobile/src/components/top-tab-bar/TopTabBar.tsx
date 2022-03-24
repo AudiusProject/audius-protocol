@@ -14,6 +14,8 @@ const INDICATOR_STRETCH_FACTOR = 0.35
 // The higher the number, the more accurate the line stretch will follow the sin function
 const INDICATOR_ANIM_GRANULARITY = 10
 
+const HORIZONTAL_PADDING = 8
+
 const getSinAnimationRanges = (len: number) => {
   const inputRange: number[] = []
   const outputRange: number[] = []
@@ -34,7 +36,6 @@ const getSinAnimationRanges = (len: number) => {
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   tabBarContainer: {
     elevation: 3,
-    flexDirection: 'row',
     marginBottom: -1 * spacing(1),
     paddingBottom: spacing(1),
     position: 'relative',
@@ -45,8 +46,12 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     shadowRadius: 2
   },
 
-  tabContainer: {
+  tabsContainer: {
     backgroundColor: palette.white,
+    flexDirection: 'row'
+  },
+
+  tabContainer: {
     flex: 1,
     height: spacing(12)
   },
@@ -61,6 +66,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 
   tabText: {
     ...typography.label,
+    letterSpacing: 0.2,
     color: palette.neutral,
     textTransform: 'uppercase'
   },
@@ -77,7 +83,13 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 }))
 
 export const TopTabBar = ({ state, descriptors, navigation, position }) => {
+  // Horizontal padding decreases as the number of tabs increases
+  const horizontalPadding =
+    Math.max(6 - state.routes.length, 0) * HORIZONTAL_PADDING
   const screenWidth = Dimensions.get('screen').width
+  const tabsWidth = screenWidth - horizontalPadding * 2
+  const tabWidth = tabsWidth / state.routes.length
+
   const isFocused = tabIndex => state.index === tabIndex
   const styles = useStyles()
   const { neutral } = useThemeColors()
@@ -102,11 +114,9 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
     })
   }
 
-  const tabWidth = 100 / state.routes.length
-
   const left = position.interpolate({
     inputRange: [0, state.routes.length],
-    outputRange: [0, screenWidth]
+    outputRange: [horizontalPadding, screenWidth - horizontalPadding]
   })
 
   const xScale = position.interpolate(
@@ -115,43 +125,47 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
 
   return (
     <View style={styles.tabBarContainer}>
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key]
-        const label = options.tabBarLabel ?? options.title ?? route.name
-        const icon = options.tabBarIcon({ color: neutral })
+      <View
+        style={[styles.tabsContainer, { paddingHorizontal: horizontalPadding }]}
+      >
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key]
+          const label = options.tabBarLabel ?? options.title ?? route.name
+          const icon = options.tabBarIcon({ color: neutral })
 
-        const inputRange = state.routes.map((_, i) => i)
-        const opacity = position.interpolate({
-          inputRange,
-          outputRange: inputRange.map(i => (i === index ? 1 : 0.52)) // opacity range
-        })
+          const inputRange = state.routes.map((_, i) => i)
+          const opacity = position.interpolate({
+            inputRange,
+            outputRange: inputRange.map(i => (i === index ? 1 : 0.52)) // opacity range
+          })
 
-        return (
-          <View key={label} style={styles.tabContainer}>
-            <TouchableOpacity
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              accessibilityRole='button'
-              accessibilityState={{ selected: isFocused(index) }}
-              activeOpacity={0.8}
-              onLongPress={() => onLongPress(route, index)}
-              onPress={() => onPress(route, index)}
-              style={styles.tab}
-              testID={options.tabBarTestID}
-            >
-              <Animated.View style={{ opacity }}>{icon}</Animated.View>
-              <Animated.Text style={[styles.tabText, { opacity }]}>
-                {label}
-              </Animated.Text>
-            </TouchableOpacity>
-          </View>
-        )
-      })}
+          return (
+            <View key={label} style={styles.tabContainer}>
+              <TouchableOpacity
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+                accessibilityRole='button'
+                accessibilityState={{ selected: isFocused(index) }}
+                activeOpacity={0.8}
+                onLongPress={() => onLongPress(route, index)}
+                onPress={() => onPress(route, index)}
+                style={styles.tab}
+                testID={options.tabBarTestID}
+              >
+                <Animated.View style={{ opacity }}>{icon}</Animated.View>
+                <Animated.Text style={[styles.tabText, { opacity }]}>
+                  {label}
+                </Animated.Text>
+              </TouchableOpacity>
+            </View>
+          )
+        })}
+      </View>
       <Animated.View
         style={[
           styles.tabIndicator,
           {
             transform: [{ translateX: left }, { scaleX: xScale }],
-            width: `${tabWidth}%`
+            width: tabWidth
           }
         ]}
       />
