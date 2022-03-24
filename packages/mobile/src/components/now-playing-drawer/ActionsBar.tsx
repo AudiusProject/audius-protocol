@@ -13,7 +13,10 @@ import {
 } from 'audius-client/src/common/store/social/tracks/actions'
 import { Track } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
-import { getMethod as getCastMethod } from 'common/store/cast/selectors'
+import {
+  getMethod as getCastMethod,
+  getIsCasting
+} from 'common/store/cast/selectors'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import {
   OverflowAction,
@@ -39,7 +42,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { showCastPicker } from 'app/store/googleCast/controller'
-import { ThemeColors } from 'app/utils/theme'
+import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -75,6 +78,8 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const styles = useThemedStyles(createStyles)
   const currentUserId = useSelectorWeb(getUserId)
   const castMethod = useSelectorWeb(getCastMethod)
+  const isCasting = useSelectorWeb(getIsCasting)
+  const { neutral, primary } = useThemeColors()
 
   const dispatchWeb = useDispatchWeb()
 
@@ -140,13 +145,18 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [track, currentUserId, dispatchWeb])
 
-  const renderCastButton = () => {
+  const onPressAirplay = useCallback(() => {
     const airplay = NativeModules.AirplayViewManager
+    airplay.click()
+  }, [])
+
+  const renderCastButton = () => {
     if (castMethod === 'airplay') {
       return (
         <IconButton
-          onPress={airplay.click}
+          onPress={onPressAirplay}
           icon={IconAirplay}
+          fill={isCasting ? primary : neutral}
           styles={{ icon: styles.icon, root: styles.button }}
         />
       )
@@ -155,6 +165,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       <IconButton
         onPress={showCastPicker}
         icon={IconChromecast}
+        fill={isCasting ? primary : neutral}
         styles={{ icon: styles.icon, root: styles.button }}
       />
     )

@@ -72,13 +72,13 @@ const App = () => {
               <WebAppManager webRef={webRef}>
                 <ThemeProvider>
                   <NavigationContainer>
+                    <Airplay />
                     <GoogleCast webRef={webRef} />
                     <RootScreen />
                     <Drawers />
                     <Modals />
                     <Audio webRef={webRef} />
                     <OAuth webRef={webRef} />
-                    <Airplay webRef={webRef} />
                   </NavigationContainer>
                 </ThemeProvider>
               </WebAppManager>

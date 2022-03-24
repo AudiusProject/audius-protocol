@@ -10,7 +10,6 @@ import remoteConfig from 'common/store/remote-config/slice'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
 import musicConfetti from 'components/music-confetti/store/slice'
-import nowPlaying from 'components/now-playing/store/reducers'
 import passwordReset from 'components/password-reset/store/reducer'
 import remixSettingsModal from 'components/remix-settings-modal/store/slice'
 import searchBar from 'components/search-bar/store/reducer'
@@ -98,7 +97,6 @@ const createRootReducer = (routeHistory: History) =>
       }),
       pages: combineReducers({
         deleted,
-        nowPlaying,
         unfollowConfirmation
       })
     })

@@ -17,7 +17,7 @@ import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
-import { getMethod } from 'common/store/cast/selectors'
+import { getIsCasting, getMethod } from 'common/store/cast/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import {
   next,
@@ -69,7 +69,6 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
-import { getIsCasting } from './store/selectors'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
