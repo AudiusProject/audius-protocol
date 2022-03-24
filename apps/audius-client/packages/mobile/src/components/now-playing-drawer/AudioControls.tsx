@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { getRepeat, getShuffle } from 'common/store/queue/selectors'
 import { shuffle, repeat, next, previous } from 'common/store/queue/slice'
 import { RepeatMode } from 'common/store/queue/types'
-import { View, StyleSheet } from 'react-native'
+import { Animated, View, StyleSheet } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/animations/iconPause.json'
@@ -23,6 +23,7 @@ import IconPrev from 'app/assets/images/iconPrev.svg'
 import { AnimatedButton, IconButton } from 'app/components/core'
 import * as haptics from 'app/haptics'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { pause, play } from 'app/store/audio/actions'
@@ -71,6 +72,12 @@ export const AudioControls = ({ onNext, onPrevious }: AudioControlsProps) => {
   const isPlaying = useSelector(getPlaying)
   const shuffleEnabled = useSelectorWeb(getShuffle)
   const repeatMode = useSelectorWeb(getRepeat)
+
+  const {
+    scale,
+    handlePressIn: handlePressInScale,
+    handlePressOut: handlePressOutScale
+  } = usePressScaleAnimation()
 
   const onPressPlayButton = useCallback(() => {
     haptics.light()
@@ -147,14 +154,18 @@ export const AudioControls = ({ onNext, onPrevious }: AudioControlsProps) => {
   }
   const renderPlayButton = () => {
     return (
-      <AnimatedButton
-        iconIndex={isPlaying ? 1 : 0}
-        iconLightJSON={[IconPlay, IconPause]}
-        iconDarkJSON={[IconPlay, IconPause]}
-        onPress={onPressPlayButton}
-        style={styles.button}
-        wrapperStyle={styles.playIcon}
-      />
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <AnimatedButton
+          iconIndex={isPlaying ? 1 : 0}
+          iconLightJSON={[IconPlay, IconPause]}
+          iconDarkJSON={[IconPlay, IconPause]}
+          onPress={onPressPlayButton}
+          onPressIn={handlePressInScale}
+          onPressOut={handlePressOutScale}
+          style={styles.button}
+          wrapperStyle={styles.playIcon}
+        />
+      </Animated.View>
     )
   }
   const renderNextButton = () => {
