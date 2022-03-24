@@ -26,7 +26,7 @@ const allowedProgramIds = new Set([
 
 /**
  * Maps the instruction enum to the index of the rewards manager authority account (derived from the base account and program id)
- * 
+ *
  * @see {@link [../../../solana-programs/reward-manager/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/db31fe03f2c8cff357379b84130539d51ccca213/solana-programs/reward-manager/program/src/instruction.rs#L60)}
  * @type {Record<number, number | null>}
  */
@@ -43,7 +43,7 @@ const rewardManagerAuthorityIndices = {
 
 /**
  * Maps the instruction enum to the index of the rewards manager account (the base account of the program)
- * 
+ *
  * @see {@link [../../../solana-programs/reward-manager/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/db31fe03f2c8cff357379b84130539d51ccca213/solana-programs/reward-manager/program/src/instruction.rs#L60)}
  * @type {Record<number, number | null>}
  */
@@ -60,14 +60,13 @@ const rewardManagerBaseAccountIndices = {
 
 /**
  * Maps the instruction enum to the index of the claimable token authority account (derived from the base token account and the program id)
- * 
+ *
  * @see {@link [../../../solana-programs/claimable-tokens/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/2c93f29596a1d6cc8ca4e76ef1f0d2e57f0e09e6/solana-programs/claimable-tokens/program/src/instruction.rs#L21)}
  */
 const claimableTokenAuthorityIndices = {
   0: 2, // CreateTokenAccount
   1: 4 // Transfer
 }
-
 
 const isRelayAllowedProgram = instructions => {
   for (const instruction of instructions) {
@@ -98,9 +97,9 @@ async function doesUserHaveSocialProof (userInstance) {
 
 const deriveRewardManagerAuthority = async () => {
   return (await SolanaUtils.findProgramAddressFromPubkey(
-      SolanaUtils.newPublicKeyNullable(solanaRewardsManagerProgramId),
-      SolanaUtils.newPublicKeyNullable(solanaRewardsManager))
-    )[0].toString()
+    SolanaUtils.newPublicKeyNullable(solanaRewardsManagerProgramId),
+    SolanaUtils.newPublicKeyNullable(solanaRewardsManager))
+  )[0].toString()
 }
 
 const deriveClaimableTokenAuthority = async () => {
@@ -148,13 +147,13 @@ const getInstructionEnum = instruction => {
 
 /**
  * Returns the index of the requested account by mapping the instruction enum to the index via enum map
- * @param {Instruction} instruction 
+ * @param {Instruction} instruction
  * @param {Record<number, number | null>} enumMap the mapping of the instruction enum to the relevant account index
  * @returns {number | null} the index of the account of interest for that instruction type, or null
  */
 const getAccountIndex = (instruction, enumMap) => {
   const instructionEnum = getInstructionEnum(instruction)
-  if (instructionEnum !== null && instructionEnum >=0 && instructionEnum < Object.keys(enumMap).length) {
+  if (instructionEnum !== null && instructionEnum >= 0 && instructionEnum < Object.keys(enumMap).length) {
     return enumMap[instructionEnum]
   }
   return null
@@ -163,10 +162,10 @@ const getAccountIndex = (instruction, enumMap) => {
 /**
  * Checks that the instruction's account at the accountIndex matches the expected account
  * Also passes if accountIndex is null, and fails if account index is outside the range of keys
- * 
- * @param {Instruction} instruction 
- * @param {number} accountIndex 
- * @param {string} expectedAccount 
+ *
+ * @param {Instruction} instruction
+ * @param {number} accountIndex
+ * @param {string} expectedAccount
  * @returns true if the account matches, or if the accountIndex is null
  */
 const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
