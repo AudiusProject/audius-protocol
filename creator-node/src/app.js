@@ -70,6 +70,7 @@ const initializeApp = (port, serviceRegistry) => {
   app.set('redisClient', serviceRegistry.redis)
   app.set('audiusLibs', serviceRegistry.libs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
+  app.set('trustedNotifierManager', serviceRegistry.trustedNotifierManager)
 
   // add a newer version of ipfs as app property
   app.set('ipfsLatestAPI', serviceRegistry.ipfsLatest)

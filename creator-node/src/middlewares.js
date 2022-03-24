@@ -13,6 +13,7 @@ const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
+const { verifyRequesterIsValidSP } = require('./apiSigning')
 const BlacklistManager = require('./blacklistManager')
 
 /**
@@ -348,16 +349,16 @@ async function issueAndWaitForSecondarySyncRequests(req) {
         }ms`
       )
     } catch (e) {
+      const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
+        Date.now() - replicationStart
+      }ms`
+      req.logger.error(errorMsg)
+
       // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
       if (enforceWriteQuorum) {
-        throw new Error(
-          `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
-            Date.now() - replicationStart
-          }ms`
-        )
+        throw new Error(errorMsg)
       }
-
-      // if !enforceWriteQuorum or >= 1 secondary synced -> do nothing (to indicate success)
+      // else do nothing
     }
 
     // If any error during replication, error if quorum is enforced
@@ -805,6 +806,32 @@ async function getReplicaSetSpIDs({
   return userReplicaSetSpIDs
 }
 
+async function ensureValidSPMiddleware(req, res, next) {
+  try {
+    const { timestamp, signature, spID } = req.query
+    if (!timestamp || !signature || !spID) {
+      throw new Error(
+        `Missing values: timestamp=${timestamp}, signature=${signature}, and/or spID=${spID}`
+      )
+    }
+
+    await verifyRequesterIsValidSP({
+      audiusLibs: req.app.get('audiusLibs'),
+      spID,
+      reqTimestamp: timestamp,
+      reqSignature: signature
+    })
+  } catch (e) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseUnauthorized(`Request unauthorized -- ${e.message}`)
+    )
+  }
+
+  next()
+}
+
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
 function _isFQDN(url) {
   if (config.get('creatorNodeIsDebug')) return true
@@ -818,6 +845,7 @@ module.exports = {
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
+  ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
   syncLockMiddleware,
   getOwnEndpoint,

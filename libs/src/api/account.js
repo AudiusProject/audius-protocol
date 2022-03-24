@@ -105,6 +105,7 @@ class Account extends Base {
    * @param {?Function} [handleUserBankOutcomes] an optional callback to record user bank outcomes
    * @param {?Object} [userBankOutcomes] an optional object with request, succes, and failure keys to record user bank outcomes
    * @param {?string} [feePayerOverride] an optional string in case the client wants to switch between fee payers
+   * @param {?boolean} [generateRecoveryLink] an optional flag to skip generating recovery link for testing purposes
   */
   async signUp (
     email,
@@ -117,7 +118,8 @@ class Account extends Base {
     createWAudioUserBank = false,
     handleUserBankOutcomes = () => {},
     userBankOutcomes = {},
-    feePayerOverride = null
+    feePayerOverride = null,
+    generateRecoveryLink = true
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -143,7 +145,9 @@ class Account extends Base {
           phase = phases.HEDGEHOG_SIGNUP
           const ownerWallet = await this.hedgehog.signUp(email, password)
           await this.web3Manager.setOwnerWallet(ownerWallet)
-          await this.generateRecoveryLink({ handle: metadata.handle, host })
+          if (generateRecoveryLink) {
+            await this.generateRecoveryLink({ handle: metadata.handle, host })
+          }
         }
       }
 
@@ -164,7 +168,7 @@ class Account extends Base {
               )
               handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
             } else {
-              console.log(`Successfully created userbank!`)
+              console.log('Successfully created userbank!')
               handleUserBankOutcomes('Create User Bank: Success')
             }
           } catch (err) {
@@ -189,7 +193,7 @@ class Account extends Base {
       phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
     } catch (e) {
-      return { error: e.message, phase }
+      return { error: e.message, phase, errorStatus: e.response ? e.response.status : null }
     }
     return { blockHash, blockNumber, userId }
   }
@@ -202,7 +206,7 @@ class Account extends Base {
   async generateRecoveryLink ({ handle, host } = {}) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     try {
-      let recoveryInfo = await this.hedgehog.generateRecoveryInfo()
+      const recoveryInfo = await this.hedgehog.generateRecoveryInfo()
       handle = handle || this.userStateManager.getCurrentUser().handle
 
       const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
@@ -292,7 +296,7 @@ class Account extends Base {
   async updateCreatorNodeEndpoint (url) {
     this.REQUIRES(Services.CREATOR_NODE)
 
-    let user = this.userStateManager.getCurrentUser()
+    const user = this.userStateManager.getCurrentUser()
     if (user.is_creator) {
       await this.creatorNode.setEndpoint(url)
       // Only a creator will have a creator node endpoint
@@ -425,7 +429,7 @@ class Account extends Base {
       ATTEST_AND_COMPLETE_TRANSFER: 'ATTEST_AND_COMPLETE_TRANSFER'
     }
     let phase = phases.PERMIT_PROXY_SEND
-    let logs = [`Send tokens from eth to sol to ${solanaAccount} for ${amount.toString()}`]
+    const logs = [`Send tokens from eth to sol to ${solanaAccount} for ${amount.toString()}`]
     try {
       const myWalletAddress = this.web3Manager.getWalletAddress()
       const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
@@ -505,13 +509,13 @@ class Account extends Base {
     const tokenAddress = this.ethContracts.AudiusTokenClient.contractAddress
 
     // Submit permit request to give address approval, via relayer
-    let nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
+    const nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
     const currentBlockNumber = await web3.eth.getBlockNumber()
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
     // 1 hour, sufficiently far in future
-    let deadline = currentBlock.timestamp + (60 * 60 * 1)
+    const deadline = currentBlock.timestamp + (60 * 60 * 1)
 
-    let digest = getPermitDigest(
+    const digest = getPermitDigest(
       web3,
       name,
       tokenAddress,
@@ -520,7 +524,7 @@ class Account extends Base {
       nonce,
       deadline
     )
-    let result = sign(digest, myPrivateKey)
+    const result = sign(digest, myPrivateKey)
     return {
       result,
       deadline

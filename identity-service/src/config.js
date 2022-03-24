@@ -726,6 +726,12 @@ const config = convict({
     env: 'errorAudioReporterSlackUrl',
     default: ''
   },
+  errorWormholeReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in wormhole transfers',
+    format: String,
+    env: 'errorWormholeReporterSlackUrl',
+    default: ''
+  },
   wormholeRPCHosts: {
     doc: 'Wormhole RPC Host',
     format: String,
@@ -766,6 +772,18 @@ const config = convict({
     doc: 'Amplitude API key',
     format: String,
     env: 'amplitudeAPIKey',
+    default: ''
+  },
+  cognitoIdentityHashSalt: {
+    doc: 'Hash salt',
+    format: String,
+    env: 'cognitoIdentityHashSalt',
+    default: ''
+  },
+  cognitoRetrySecret: {
+    doc: 'The secret necessary to request a retry for the cognito flow',
+    format: String,
+    env: 'cognitoRetrySecret',
     default: ''
   }
 })

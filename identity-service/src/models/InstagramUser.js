@@ -30,7 +30,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     }
-  }, {})
+  }, {
+    indexes: [{
+      fields: [`((profile->>'username'))`],
+      unique: false,
+      name: 'instagram_users_profile_username_idx'
+    }]
+  })
 
   return InstagramUser
 }

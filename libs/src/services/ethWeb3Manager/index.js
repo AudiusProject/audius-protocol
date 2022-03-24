@@ -1,12 +1,12 @@
 const Web3 = require('../../web3')
-const MultiProvider = require('../../utils/multiProvider')
+const { MultiProvider } = require('../../utils/multiProvider')
 const EthereumTx = require('ethereumjs-tx').Transaction
 const { estimateGas } = require('../../utils/estimateGas')
 const retry = require('async-retry')
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, ETH minimum allowed gas price
 const HIGH_GAS_PRICE = 250 * MIN_GAS_PRICE // 250 GWei
 const DEFAULT_GAS_PRICE = 100 * MIN_GAS_PRICE // 100 Gwei is a reasonably average gas price
-const MAX_GAS_LIMIT = 2000000 // ETH block gas limit is 30M, set to 1/15 of that or 2M
+const MAX_GAS_LIMIT = 5000000 // We've seen prod tx's take up to 4M. Set to the highest we've observed + a buffer
 
 /** Singleton state-manager for Audius Eth Contracts */
 class EthWeb3Manager {
@@ -71,8 +71,8 @@ class EthWeb3Manager {
       }
       gasPrice = '0x' + gasPrice.toString(16)
 
-      let privateKeyBuffer = Buffer.from(privateKey, 'hex')
-      let walletAddress = this.getWalletAddress()
+      const privateKeyBuffer = Buffer.from(privateKey, 'hex')
+      const walletAddress = this.getWalletAddress()
       const txCount = await this.web3.eth.getTransactionCount(walletAddress)
       const encodedABI = contractMethod.encodeABI()
       const txParams = {
@@ -107,7 +107,7 @@ class EthWeb3Manager {
       return response
     }
 
-    let gasPrice = parseInt(await this.web3.eth.getGasPrice())
+    const gasPrice = parseInt(await this.web3.eth.getGasPrice())
     return contractMethod.send({ from: this.ownerWallet, gas: gasLimit, gasPrice: gasPrice })
   }
 
@@ -179,7 +179,7 @@ class EthWeb3Manager {
         }
       }
     })
-    return response['resp']
+    return response.resp
   }
 
   async getRelayMethodParams (contractAddress, contractMethod, relayerWallet) {

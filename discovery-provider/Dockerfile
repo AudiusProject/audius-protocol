@@ -97,4 +97,7 @@ ENV audius_loggly_disable=$audius_loggly_disable
 ENV audius_loggly_token=$audius_loggly_token
 ENV audius_loggly_tags=$audius_loggly_tags
 
+ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
+RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
+
 CMD ["bash", "scripts/start.sh"]

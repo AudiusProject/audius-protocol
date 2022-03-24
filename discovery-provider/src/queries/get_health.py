@@ -13,9 +13,11 @@ from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
 )
 from src.queries.get_latest_play import get_latest_play
+from src.queries.get_oldest_unarchived_play import get_oldest_unarchived_play
 from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
+from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
@@ -29,6 +31,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
     most_recent_indexed_ipld_block_hash_redis_key,
     most_recent_indexed_ipld_block_redis_key,
+    oldest_unarchived_play_key,
     trending_playlists_last_completion_redis_key,
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
@@ -36,6 +39,7 @@ from src.utils.redis_constants import (
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
+
 number_of_cpus = os.cpu_count()
 
 disc_prov_version = helpers.get_discovery_provider_version()
@@ -218,6 +222,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
     rewards_manager_health_info = get_rewards_manager_health_info(redis)
     user_bank_health_info = get_user_bank_health_info(redis)
+    spl_audio_info = get_spl_audio_info(redis)
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -243,11 +248,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     user_balances_age_sec = get_elapsed_time_redis(
         redis, user_balances_refresh_last_completion_redis_key
     )
-    num_users_in_lazy_balance_refresh_queue = len(
-        redis.smembers(LAZY_REFRESH_REDIS_PREFIX)
+    num_users_in_lazy_balance_refresh_queue = int(
+        redis.scard(LAZY_REFRESH_REDIS_PREFIX)
     )
-    num_users_in_immediate_balance_refresh_queue = len(
-        redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
+    num_users_in_immediate_balance_refresh_queue = int(
+        redis.scard(IMMEDIATE_REFRESH_REDIS_PREFIX)
     )
     last_scanned_block_for_balance_refresh = redis_get_or_restore(
         redis, eth_indexing_last_scanned_block_key
@@ -260,6 +265,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if last_scanned_block_for_balance_refresh
         else None
     )
+
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -299,6 +305,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "rewards_manager": rewards_manager_health_info,
         "user_bank": user_bank_health_info,
         "openresty_public_key": openresty_public_key,
+        "spl_audio_info": spl_audio_info,
     }
 
     block_difference = abs(latest_block_num - latest_indexed_block_num)
@@ -369,10 +376,14 @@ class SolHealthInfo(TypedDict):
     time_diff_general: int
 
 
+class PlayHealthInfo(SolHealthInfo):
+    oldest_unarchived_play_created_at: str
+
+
 # Aggregate play health info across Solana and legacy storage
 def get_play_health_info(
     redis: Redis, plays_count_max_drift: Optional[int]
-) -> SolHealthInfo:
+) -> PlayHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_play_health_info")
 
@@ -403,6 +414,21 @@ def get_play_health_info(
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
+        oldest_unarchived_play = redis_get_or_restore(redis, oldest_unarchived_play_key)
+        if not oldest_unarchived_play:
+            # Query and cache oldest unarchived play
+            oldest_unarchived_play = get_oldest_unarchived_play()
+            if oldest_unarchived_play:
+                redis_set_and_dump(
+                    redis,
+                    oldest_unarchived_play_key,
+                    oldest_unarchived_play.timestamp(),
+                )
+        else:
+            # Decode bytes into float for latest timestamp
+            oldest_unarchived_play = float(oldest_unarchived_play.decode())
+            oldest_unarchived_play = datetime.utcfromtimestamp(oldest_unarchived_play)
+
         time_diff_general = (
             (current_time_utc - latest_db_play).total_seconds()
             if latest_db_play
@@ -418,6 +444,7 @@ def get_play_health_info(
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
         "time_diff_general": time_diff_general,
+        "oldest_unarchived_play_created_at": oldest_unarchived_play,
     }
 
 
@@ -430,7 +457,24 @@ def get_user_bank_health_info(
     current_time_utc = datetime.utcnow()
 
     tx_health_info = get_sol_user_bank_health_info(redis, current_time_utc)
-    # If play count max drift provided, perform comparison
+    # If user bank indexing max drift provided, perform comparison
+    is_unhealthy = bool(max_drift and max_drift < tx_health_info["time_diff"])
+
+    return {
+        "is_unhealthy": is_unhealthy,
+        "tx_info": tx_health_info,
+        "time_diff_general": tx_health_info["time_diff"],
+    }
+
+
+def get_spl_audio_info(redis: Redis, max_drift: Optional[int] = None) -> SolHealthInfo:
+    if redis is None:
+        raise Exception("Invalid arguments for get_spl_audio_info")
+
+    current_time_utc = datetime.utcnow()
+
+    tx_health_info = get_spl_audio_health_info(redis, current_time_utc)
+    # If spl audio indexing max drift provided, perform comparison
     is_unhealthy = bool(max_drift and max_drift < tx_health_info["time_diff"])
 
     return {

@@ -42,7 +42,7 @@ async function userHandleMiddleware (req, res, next) {
       throw new Error('Please provide handle.')
     }
 
-    const user = await models.User.findOne({ where: { handle } })
+    let user = await models.User.findOne({ where: { handle } })
     if (!user) {
       const discprovUser = await queryDiscprovForWalletAddressAndUserId(handle)
       const { wallet: walletAddress, user_id: blockchainUserId } = discprovUser
@@ -51,9 +51,10 @@ async function userHandleMiddleware (req, res, next) {
         throw new Error('The handle is not associated with a user')
       }
 
-      await userForWallet.update({ handle, blockchainUserId })
+      user = await userForWallet.update({ handle, blockchainUserId })
     }
 
+    req.user = user
     next()
   } catch (err) {
     const errorResponse = errorResponseBadRequest(err.message)

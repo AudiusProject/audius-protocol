@@ -3,8 +3,8 @@ const Web3 = require('../web3')
 const axios = require('axios')
 const Hashids = require('hashids/cjs')
 
-const MultiProvider = require('./multiProvider.js')
-const uuid = require('./uuid.js')
+const { MultiProvider } = require('./multiProvider')
+const { uuid } = require('./uuid')
 
 // Hashids
 
@@ -71,7 +71,7 @@ class Utils {
 
   // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
   static isFQDN (url) {
-    let FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
+    const FQDN = /(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm
     return FQDN.test(url)
   }
 
@@ -107,10 +107,25 @@ class Utils {
     }
   }
 
+  /**
+ * Given a digest value (written on chain, obtained through AudiusABIDecoder.decodeMethod),
+ * convert back to a IFPS CIDv0
+ * @param {String} multihashDigest digest value from decodeMultihash
+ * @returns String CID value
+ */
+  static encodeMultihash (multihashDigest) {
+    // the 1220 is from reconstructing the hashFn and size with digest, the opposite of decodeMultihash
+    // since IPFS CIDv0 has a fixed hashFn and size, the first two values are always 12 and 20
+    // concat them together with digest and encode back to base58
+    const digestStr = `1220${multihashDigest.replace('0x', '')}`
+    // convert digestStr from hex to base 58
+    return bs58.encode(Buffer.from(digestStr, 'hex'))
+  }
+
   static parseDataFromResponse (response) {
     if (!response || !response.data) return null
 
-    let obj = response.data
+    const obj = response.data
 
     // adapted from https://github.com/jashkenas/underscore/blob/master/underscore.js _.isEmpty function
     if (obj == null) return null
@@ -192,6 +207,20 @@ class Utils {
       console.error(`Failed to encode ${id}`, e)
       return null
     }
+  }
+
+  /**
+   * If `promise` responds before `timeoutMs`,
+   * this function returns its response; else rejects with `timeoutMessage`
+   * @param {Promise} promise
+   * @param {number} timeoutMs
+   * @param {string} timeoutMessage
+   */
+  static async racePromiseWithTimeout (promise, timeoutMs, timeoutMessage) {
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
+    })
+    return Promise.race([promise, timeoutPromise])
   }
 }
 

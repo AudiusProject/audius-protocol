@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple, TypedDict
+from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 from redis import Redis
 from solana.publickey import PublicKey
@@ -26,6 +26,7 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
 from src.utils.session_manager import SessionManager
+from src.utils.spl_audio import to_wei
 
 logger = logging.getLogger(__name__)
 audius_token_registry_key = bytes("Token", "utf-8")
@@ -38,9 +39,6 @@ WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 MAX_LAZY_REFRESH_USER_IDS = 100
-
-# Sol balances have 8 decimals, so they need to be increased to 18 to match eth balances
-SPL_TO_WEI = 10 ** 10
 
 
 class AssociatedWallets(TypedDict):
@@ -75,10 +73,6 @@ def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
 def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
     redis_user_ids = redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
     return [int(user_id.decode()) for user_id in redis_user_ids]
-
-
-def to_wei(balance: Any):
-    return int(balance) * SPL_TO_WEI if balance else 0
 
 
 # *Explanation of user balance caching*
@@ -228,7 +222,7 @@ def refresh_user_ids(
                     owner_wallet
                 ).call()
                 associated_balance = 0
-                waudio_balance = "0"
+                waudio_balance: str = "0"
                 associated_sol_balance = 0
 
                 if "associated_wallets" in wallets:
@@ -258,9 +252,8 @@ def refresh_user_ids(
                                     ],
                                     ASSOCIATED_TOKEN_PROGRAM_ID_PK,
                                 )
-                                bal_info = waudio_token.get_account_info(
-                                    derived_account
-                                )
+
+                                bal_info = waudio_token.get_balance(derived_account)
                                 associated_waudio_balance: str = bal_info["result"][
                                     "value"
                                 ]["amount"]

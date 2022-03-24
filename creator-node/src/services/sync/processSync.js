@@ -556,20 +556,6 @@ async function processSync(
       }
     }
   } catch (e) {
-    // two errors where we wipe the state on the secondary
-    // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
-    // if the secondary gets into a weird state with constraints, wipe the records before future re-syncs
-    if (
-      e.message.includes('Can only insert contiguous clock values') ||
-      e.message.includes('SequelizeForeignKeyConstraintError')
-    ) {
-      for (const wallet of walletPublicKeys) {
-        logger.error(
-          `Sync error for ${wallet} - "${e.message}". Clearing db state for wallet.`
-        )
-        await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
-      }
-    }
     errorObj = e
 
     for (const wallet of walletPublicKeys) {

@@ -7,5 +7,12 @@
     "target": "es6",
     "esModuleInterop": true,
     "resolveJsonModule": true
-  }
+  },
+  "include": [
+    "cli",
+    "lib",
+    "migrations",
+    "tests",
+    ".eslintrc.js"
+  ]
 }

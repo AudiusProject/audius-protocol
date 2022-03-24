@@ -36,4 +36,4 @@ async function cognitoFlowMiddleware (req, res, next) {
   next()
 }
 
-module.exports = cognitoFlowMiddleware
+module.exports = { cognitoFlowMiddleware, MAX_TIME_DRIFT_MILLISECONDS }

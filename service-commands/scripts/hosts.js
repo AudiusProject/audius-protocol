@@ -43,7 +43,8 @@ const SERVICES = [
   'audius_ganache_cli',
   'audius_client',
   'audius-identity-service_identity-service_1',
-  'solana'
+  'solana',
+  'trusted_notifier_service'
 ]
 
 const exitWithError = () => {

@@ -17,7 +17,7 @@ const getRemoteConfig = async (optimizely) => {
   )
 
   const endpointsString = getRemoteVar(optimizely, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
-  const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : []
+  const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : null
 
   const aaoEndpoint = getRemoteVar(
     optimizely, REMOTE_VARS.ORACLE_ENDPOINT
@@ -76,6 +76,7 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
     challengeIdsDenyList,
     reporter: rewardsReporter,
     endpoints,
+    maxAggregationAttempts: 2,
     isSolanaChallenge: (challengeId) => challengeId === 'listen-streak',
     runBehindSec,
     updateValues: async ({ startingBlock, offset, successCount }) => {
@@ -121,8 +122,7 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
   // Periodically check for new config and update the rewards attester
   setInterval(async () => {
     const { challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec, parallelization } = await getRemoteConfig(optimizely)
-    logger.info(`Pulled rewards attester remote config: endpoints ${endpoints}, aao ${aaoEndpoint} (${aaoAddress}), denyList: ${challengeIdsDenyList}, run behind: ${runBehindSec},  parallelization: ${parallelization}`)
-    attester.updateConfig({ challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, parallelization })
+    attester.updateConfig({ challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, parallelization, runBehindSec })
   }, 10000)
 
   attester.start()

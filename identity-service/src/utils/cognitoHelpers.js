@@ -1,5 +1,7 @@
 const crypto = require('crypto')
 const config = require('../config')
+const Web3 = require('web3')
+const web3 = new Web3()
 
 const sign = (reference) => {
   const apiSecret = config.get('cognitoAPISecret')
@@ -79,8 +81,14 @@ const isWebhookValid = (headers, path) => {
   return doesSignatureMatch(headers['authorization'], signature)
 }
 
+const createMaskedCognitoIdentity = (identity) => {
+  const cognitoIdentityHashSalt = config.get('cognitoIdentityHashSalt')
+  return web3.utils.sha3(`${identity}${cognitoIdentityHashSalt}`)
+}
+
 module.exports = {
   sign,
   isWebhookValid,
-  createCognitoHeaders
+  createCognitoHeaders,
+  createMaskedCognitoIdentity
 }

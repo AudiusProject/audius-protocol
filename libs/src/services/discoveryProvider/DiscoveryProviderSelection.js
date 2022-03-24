@@ -2,7 +2,7 @@ const ServiceSelection = require('../../service-selection/ServiceSelection')
 const {
   DISCOVERY_PROVIDER_TIMESTAMP,
   DISCOVERY_SERVICE_NAME,
-  UNHEALTHY_BLOCK_DIFF,
+  DEFAULT_UNHEALTHY_BLOCK_DIFF,
   DISCOVERY_PROVIDER_RESELECT_TIMEOUT,
   REGRESSED_MODE_TIMEOUT
 } = require('./constants')
@@ -38,6 +38,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     this.selectionCallback = config.selectionCallback
     this.monitoringCallbacks = config.monitoringCallbacks || {}
     this.unhealthySlotDiffPlays = config.unhealthySlotDiffPlays
+    this.unhealthyBlockDiff = config.unhealthyBlockDiff || DEFAULT_UNHEALTHY_BLOCK_DIFF
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
@@ -175,7 +176,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     }
 
     // If this service is an unhealthy block diff behind, add it as a backup and reject
-    if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
+    if (blockDiff > this.unhealthyBlockDiff) {
       this.addBackup(urlMap[response.config.url], data.data)
       return false
     }
@@ -204,6 +205,14 @@ class DiscoveryProviderSelection extends ServiceSelection {
       console.info('Leaving regressed mode')
       this._regressedMode = false
     }, REGRESSED_MODE_TIMEOUT)
+  }
+
+  setUnhealthyBlockDiff (updatedDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {
+    this.unhealthyBlockDiff = updatedDiff
+  }
+
+  setUnhealthySlotDiffPlays (updatedDiff) {
+    this.unhealthySlotDiffPlays = updatedDiff
   }
 
   isInRegressedMode () {
@@ -281,7 +290,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     for (const version of sortedVersions) {
       const endpoints = versionMap[version]
       for (let i = 0; i < endpoints.length; ++i) {
-        if (this.backups[endpoints[i]].block_difference < UNHEALTHY_BLOCK_DIFF) {
+        if (this.backups[endpoints[i]].block_difference < this.unhealthyBlockDiff) {
           selected = endpoints[i]
           break
         }

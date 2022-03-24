@@ -71,17 +71,29 @@ module.exports = function (app) {
         json: true
       }
       let userProfile = await doRequest(userRequest)
-      try {
-        let uuid = uuidv4()
-        models.TwitterUser.create({
-          twitterProfile: userProfile,
-          verified: userProfile.verified,
-          uuid: uuid
-        })
-
-        return successResponse({ profile: userProfile, uuid: uuid })
-      } catch (err) {
-        return errorResponseBadRequest(err)
+      const existingTwitterUser = await models.TwitterUser.findOne({
+        where: {
+          'twitterProfile.id': userProfile.id,
+          blockchainUserId: {
+            [models.Sequelize.Op.not]: null
+          }
+        }
+      })
+      if (existingTwitterUser) {
+        req.logger.info(`Twitter user found: ${existingTwitterUser}`)
+        return errorResponseBadRequest(`Another Audius profile has already been authenticated with this Twitter user!`)
+      } else {
+        try {
+          let uuid = uuidv4()
+          models.TwitterUser.create({
+            twitterProfile: userProfile,
+            verified: userProfile.verified,
+            uuid: uuid
+          })
+          return successResponse({ profile: userProfile, uuid: uuid })
+        } catch (err) {
+          return errorResponseBadRequest(err)
+        }
       }
     } catch (err) {
       return errorResponseBadRequest(err)

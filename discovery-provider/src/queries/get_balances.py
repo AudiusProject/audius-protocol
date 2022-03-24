@@ -5,7 +5,7 @@ from typing import List
 from redis import Redis
 from sqlalchemy.orm.session import Session
 from src.models import UserBalance
-from src.solana.constants import WAUDIO_DECIMALS
+from src.utils.spl_audio import to_wei
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +65,8 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
             "total_balance": str(
                 int(user_balance.balance)
                 + int(user_balance.associated_wallets_balance)
-                + int(user_balance.associated_sol_wallets_balance)
-                * 10 ** WAUDIO_DECIMALS
-                + int(user_balance.waudio) * 10 ** WAUDIO_DECIMALS
+                + to_wei(user_balance.associated_sol_wallets_balance)
+                + to_wei(user_balance.waudio)
             ),
         }
         for user_balance in query

@@ -1,15 +1,10 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { assert } from "chai";
-import { initAdmin } from "../lib/lib";
-import { findDerivedPair } from "../lib/utils";
+import { expect, assert } from "chai";
+import { initAdmin, updateAdmin } from "../lib/lib";
+import { findDerivedPair, getTransactionWithData } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import {
-  confirmLogInTransaction,
-  initTestConstants,
-  testInitUser,
-  testInitUserSolPubkey,
-} from "./test-helpers";
+import { initTestConstants, testCreateUser } from "./test-helpers";
 
 const UserActionEnumValues = {
   unfollowUser: { unfollowUser: {} },
@@ -17,7 +12,7 @@ const UserActionEnumValues = {
   invalidEnumValue: { invalidEnum: {} },
 };
 
-describe("follows", () => {
+describe("follows", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -28,20 +23,20 @@ describe("follows", () => {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  let adminKeypair = anchor.web3.Keypair.generate();
-  let adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const verifierKeypair = anchor.web3.Keypair.generate();
 
-  it("follows - Initializing admin account!", async () => {
+  it("follows - Initializing admin account!", async function () {
     await initAdmin({
-      provider: provider,
-      program: program,
-      adminKeypair: adminKeypair,
-      adminStgKeypair: adminStgKeypair,
-      trackIdOffset: new anchor.BN("0"),
-      playlistIdOffset: new anchor.BN("0"),
+      provider,
+      program,
+      adminKeypair,
+      adminStgKeypair,
+      verifierKeypair,
     });
 
-    let adminAccount = await program.account.audiusAdmin.fetch(
+    const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
@@ -54,7 +49,7 @@ describe("follows", () => {
     }
   });
 
-  describe("follow / unfollow tests", () => {
+  describe("follow / unfollow tests", function () {
     let constants1;
     let constants2;
     let handleBytesArray1;
@@ -69,7 +64,7 @@ describe("follows", () => {
     let handle2DerivedInfo;
 
     // Initialize user for each test
-    beforeEach(async () => {
+    beforeEach(async function () {
       // Initialize 2 users
       constants1 = initTestConstants();
       constants2 = initTestConstants();
@@ -81,9 +76,6 @@ describe("follows", () => {
         adminStgKeypair.publicKey,
         Buffer.from(handleBytesArray1)
       );
-      let derivedAddress = handle1DerivedInfo.derivedAddress;
-      let bumpSeed = handle1DerivedInfo.bumpSeed;
-      baseAuthorityAccount = handle1DerivedInfo.baseAuthorityAccount;
 
       handle2DerivedInfo = await findDerivedPair(
         program.programId,
@@ -91,34 +83,10 @@ describe("follows", () => {
         Buffer.from(handleBytesArray2)
       );
 
-      userStorageAccount1 = derivedAddress;
+      baseAuthorityAccount = handle1DerivedInfo.baseAuthorityAccount;
+
+      userStorageAccount1 = handle1DerivedInfo.derivedAddress;
       userStorageAccount2 = handle2DerivedInfo.derivedAddress;
-
-      await testInitUser({
-        provider,
-        program,
-        baseAuthorityAccount,
-        ethAddress: constants1.ethAccount.address,
-        handleBytesArray: handleBytesArray1,
-        bumpSeed,
-        metadata: constants1.metadata,
-        userStgAccount: userStorageAccount1,
-        adminKeypair,
-        adminStgKeypair,
-      });
-
-      await testInitUser({
-        provider,
-        program,
-        baseAuthorityAccount,
-        ethAddress: constants2.ethAccount.address,
-        handleBytesArray: handleBytesArray2,
-        bumpSeed: handle2DerivedInfo.bumpSeed,
-        metadata: constants2.metadata,
-        userStgAccount: userStorageAccount2,
-        adminKeypair,
-        adminStgKeypair,
-      });
 
       // New sol keys that will be used to permission user updates
       newUser1Key = anchor.web3.Keypair.generate();
@@ -126,30 +94,49 @@ describe("follows", () => {
 
       // Generate signed SECP instruction
       // Message as the incoming public key
-      let message1 = newUser1Key.publicKey.toString();
-      let message2 = newUser2Key.publicKey.toString();
+      const message1 = newUser1Key.publicKey.toBytes();
+      const message2 = newUser2Key.publicKey.toBytes();
 
-      await testInitUserSolPubkey({
+      // disable admin writes
+      await updateAdmin({
+        program,
+        isWriteEnabled: false,
+        adminStgAccount: adminStgKeypair.publicKey,
+        adminAuthorityKeypair: adminKeypair,
+      });
+
+      await testCreateUser({
         provider,
         program,
         message: message1,
-        ethPrivateKey: constants1.ethAccount.privateKey,
+        baseAuthorityAccount,
+        ethAccount: constants1.ethAccount,
+        handleBytesArray: handleBytesArray1,
+        bumpSeed: handle1DerivedInfo.bumpSeed,
+        metadata: constants1.metadata,
         newUserKeypair: newUser1Key,
-        newUserAcctPDA: userStorageAccount1,
+        userStgAccount: userStorageAccount1,
+        adminStgPublicKey: adminStgKeypair.publicKey,
       });
-      await testInitUserSolPubkey({
+
+      await testCreateUser({
         provider,
         program,
         message: message2,
-        ethPrivateKey: constants2.ethAccount.privateKey,
+        baseAuthorityAccount,
+        ethAccount: constants2.ethAccount,
+        handleBytesArray: handleBytesArray2,
+        bumpSeed: handle2DerivedInfo.bumpSeed,
+        metadata: constants2.metadata,
         newUserKeypair: newUser2Key,
-        newUserAcctPDA: userStorageAccount2,
+        userStgAccount: userStorageAccount2,
+        adminStgPublicKey: adminStgKeypair.publicKey,
       });
     });
 
-    it("follow user", async () => {
+    it("follow user", async function () {
       // Submit a tx where user 1 follows user 2
-      let followArgs = {
+      const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
@@ -159,44 +146,38 @@ describe("follows", () => {
         },
         signers: [newUser1Key],
       };
-      let followTx = await program.rpc.followUser(
+
+      const followTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.followUser,
-        handleBytesArray1,
-        handle1DerivedInfo.bumpSeed,
-        handleBytesArray2,
-        handle2DerivedInfo.bumpSeed,
+        { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
-      let txInfo = await confirmLogInTransaction(
-        provider,
-        followTx,
-        "Audius::FollowUser"
+
+      const { decodedInstruction, decodedData, accountPubKeys } =
+        await getTransactionWithData(program, provider, followTx, 0);
+
+      expect(decodedInstruction.name).to.equal("followUser");
+      expect(decodedData.base.toString()).to.equal(
+        baseAuthorityAccount.toString()
       );
-      const decodedInstruction = program.coder.instruction.decode(
-        txInfo.transaction.message.instructions[0].data,
-        "base58"
+      expect(decodedData.userAction).to.deep.equal(
+        UserActionEnumValues.followUser
       );
-      // Validate deserialized instructions match input
-      // Confirms user handles passed on chain validation
-      // Can be used during indexing or external tx inspection
-      const instructions = decodedInstruction.data;
-      const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
-      const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
-      const instructionFollowerHandle = String.fromCharCode(
-        ...instructions["followerHandleSeed"]
+      expect(decodedData.followerHandle.seed).to.deep.equal(
+        constants1.handleBytesArray
       );
-      const instructionFolloweeHandle = String.fromCharCode(
-        ...instructions["followeeHandleSeed"]
+      expect(decodedData.followeeHandle.seed).to.deep.equal(
+        constants2.handleBytesArray
       );
-      assert.equal(user1Handle, instructionFollowerHandle);
-      assert.equal(user2Handle, instructionFolloweeHandle);
-      return;
+      expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
 
-    it("unfollow user", async () => {
+    it("unfollow user", async function () {
       // Submit a tx where user 1 follows user 2
-      let followArgs = {
+      const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
@@ -206,41 +187,38 @@ describe("follows", () => {
         },
         signers: [newUser1Key],
       };
-      let unfollowTx = await program.rpc.followUser(
+      const unfollowTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.unfollowUser,
-        handleBytesArray1,
-        handle1DerivedInfo.bumpSeed,
-        handleBytesArray2,
-        handle2DerivedInfo.bumpSeed,
+        { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
-      let unFollowtxInfo = await confirmLogInTransaction(
-        provider,
-        unfollowTx,
-        "Audius::UnfollowUser"
+
+      const { decodedInstruction, decodedData, accountPubKeys } =
+        await getTransactionWithData(program, provider, unfollowTx, 0);
+
+      expect(decodedInstruction.name).to.equal("followUser");
+      expect(decodedData.base.toString()).to.equal(
+        baseAuthorityAccount.toString()
       );
-      const unFollowdecodedInstruction = program.coder.instruction.decode(
-        unFollowtxInfo.transaction.message.instructions[0].data,
-        "base58"
+      expect(decodedData.userAction).to.deep.equal(
+        UserActionEnumValues.unfollowUser
       );
-      const unfollowInstructions = unFollowdecodedInstruction.data;
-      const unfInstructionFollowerHandle = String.fromCharCode(
-        ...unfollowInstructions["followerHandleSeed"]
+      expect(decodedData.followerHandle.seed).to.deep.equal(
+        constants1.handleBytesArray
       );
-      const unfInstructionFolloweeHandle = String.fromCharCode(
-        ...unfollowInstructions["followeeHandleSeed"]
+      expect(decodedData.followeeHandle.seed).to.deep.equal(
+        constants2.handleBytesArray
       );
-      const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
-      const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
-      assert.equal(user1Handle, unfInstructionFollowerHandle);
-      assert.equal(user2Handle, unfInstructionFolloweeHandle);
+      expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
 
-    it("submit invalid follow action", async () => {
+    it("submit invalid follow action", async function () {
       // Submit a tx where user 1 follows user 2
       let expectedErrorFound = false;
-      let followArgs = {
+      const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
@@ -252,28 +230,26 @@ describe("follows", () => {
       };
       try {
         // Use invalid enum value and confirm failure
-        let txHash = await program.rpc.followUser(
+        const txHash = await program.rpc.followUser(
           baseAuthorityAccount,
           UserActionEnumValues.invalidEnumValue,
-          handleBytesArray1,
-          handle1DerivedInfo.bumpSeed,
-          handleBytesArray2,
-          handle2DerivedInfo.bumpSeed,
+          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+          { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
           followArgs
         );
         console.log(`invalid follow txHash=${txHash}`);
-      } catch (e: any) {
-        let index = e.toString().indexOf("unable to infer src variant");
+      } catch (e) {
+        const index = e.toString().indexOf("unable to infer src variant");
         if (index > 0) expectedErrorFound = true;
       }
       assert.equal(expectedErrorFound, true, "Unable to infer src variant");
     });
 
-    it("follow invalid user", async () => {
+    it("follow invalid user", async function () {
       // Submit a tx where user 1 follows user 2
       // and user 2 account is not a PDA
-      let wrongUserKeypair = anchor.web3.Keypair.generate();
-      let followArgs = {
+      const wrongUserKeypair = anchor.web3.Keypair.generate();
+      const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
@@ -284,24 +260,28 @@ describe("follows", () => {
         signers: [newUser1Key],
       };
       let expectedErrorFound = false;
-      let expectedErrorString = "account is not owned by the executing program";
+      let expectedErrorString =
+        "The program expected this account to be already initialized";
       try {
         await program.rpc.followUser(
           baseAuthorityAccount,
           UserActionEnumValues.followUser,
-          handleBytesArray1,
-          handle1DerivedInfo.bumpSeed,
-          handleBytesArray2,
-          handle2DerivedInfo.bumpSeed,
+          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+          { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
           followArgs
         );
-      } catch (e: any) {
-        let index = e.toString().indexOf(expectedErrorString);
-        if (index > 0) expectedErrorFound = true;
+      } catch (e) {
+        const index = e.toString().indexOf(expectedErrorString);
+        console.dir(e, { depth: 5 });
+        if (index >= 0) expectedErrorFound = true;
       }
-      assert.equal(expectedErrorFound, true, expectedErrorString);
+      assert.equal(
+        expectedErrorFound,
+        true,
+        `Expect to find ${expectedErrorString}`
+      );
       expectedErrorFound = false;
-      expectedErrorString = "seeds constraint was violated";
+      expectedErrorString = "A seeds constraint was violated";
       // https://github.com/project-serum/anchor/blob/77043131c210cf14a34386cadd9242b1a65daa6e/lang/syn/src/codegen/accounts/constraints.rs#L355
       // Next, submit mismatched arguments
       // followArgs will contain followee target user 2 storage PDA
@@ -311,18 +291,21 @@ describe("follows", () => {
         await program.rpc.followUser(
           baseAuthorityAccount,
           UserActionEnumValues.followUser,
-          handleBytesArray1,
-          handle1DerivedInfo.bumpSeed,
+          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
           // Note the intentionally incorrect handle bytes below for followee target PDA
-          handleBytesArray1,
-          handle1DerivedInfo.bumpSeed,
+          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
           followArgs
         );
-      } catch (e: any) {
-        let index = e.toString().indexOf(expectedErrorString);
-        if (index > 0) expectedErrorFound = true;
+      } catch (e) {
+        const index = e.toString().indexOf(expectedErrorString);
+        console.dir(e, { depth: 5 });
+        if (index >= 0) expectedErrorFound = true;
       }
-      assert.equal(expectedErrorFound, true, expectedErrorString);
+      assert.equal(
+        expectedErrorFound,
+        true,
+        `Expected to find ${expectedErrorString}`
+      );
     });
   });
 });

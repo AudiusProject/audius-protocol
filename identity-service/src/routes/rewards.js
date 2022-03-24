@@ -5,7 +5,7 @@ const { RewardsReporter } = require('../utils/rewardsReporter')
 
 const rewardsRouter = express.Router()
 
-const handleResult = async ({ status, userId, challengeId, amount, error, phase, reporter, specifier }) => {
+const handleResult = async ({ status, userId, challengeId, amount, error, phase, reporter, specifier, reason }) => {
   switch (status) {
     case 'success':
       await reporter.reportSuccess({ userId, challengeId, amount, specifier })
@@ -17,7 +17,7 @@ const handleResult = async ({ status, userId, challengeId, amount, error, phase,
       await reporter.reportRetry({ userId, challengeId, amount, error, phase, specifier })
       break
     case 'rejection':
-      await reporter.reportAAORejection({ userId, challengeId, amount, error, specifier })
+      await reporter.reportAAORejection({ userId, challengeId, amount, error, specifier, reason })
       break
     default:
       throw new Error('Bad status code')
@@ -25,7 +25,7 @@ const handleResult = async ({ status, userId, challengeId, amount, error, phase,
 }
 
 rewardsRouter.post('/attestation_result', handleResponse(async (req) => {
-  const { status, userId, challengeId, amount, error, phase, source, specifier } = req.body
+  const { status, userId, challengeId, amount, error, phase, source, specifier, reason } = req.body
   const reporter = new RewardsReporter({
     successSlackUrl: config.get('successAudioReporterSlackUrl'),
     errorSlackUrl: config.get('errorAudioReporterSlackUrl'),
@@ -33,7 +33,7 @@ rewardsRouter.post('/attestation_result', handleResponse(async (req) => {
     shouldReportAnalytics: false
   })
   try {
-    await handleResult({ status, userId, challengeId, amount, error, phase, reporter, specifier })
+    await handleResult({ status, userId, challengeId, amount, error, phase, reporter, specifier, reason })
     return successResponse()
   } catch (e) {
     return errorResponseServerError(e.message)

@@ -11,34 +11,33 @@ import { AudiusData } from "../target/types/audius_data";
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
-/// Initialize an Audius Admin instance
-type initAdminParams = {
+export const EntityTypesEnumValues = {
+  track: { track: {} },
+  playlist: { playlist: {} },
+};
+
+export const ManagementActions = {
+  create: { create: {} },
+  update: { update: {} },
+  delete: { delete: {} },
+};
+
+export const EntitySocialActions = {
+  addSave: { addSave: {} },
+  deleteSave: { deleteSave: {} },
+  addRepost: { addRepost: {} },
+  deleteRepost: { deleteRepost: {} },
+};
+
+type InitAdminParams = {
   provider: Provider;
   program: Program<AudiusData>;
   adminKeypair: Keypair;
   adminStgKeypair: Keypair;
-  trackIdOffset: anchor.BN;
-  playlistIdOffset: anchor.BN;
+  verifierKeypair: Keypair;
 };
 
-export const initAdmin = async (args: initAdminParams) => {
-  return args.program.rpc.initAdmin(
-    args.adminKeypair.publicKey,
-    args.trackIdOffset,
-    args.playlistIdOffset,
-    {
-      accounts: {
-        admin: args.adminStgKeypair.publicKey,
-        payer: args.provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [args.adminStgKeypair],
-    }
-  );
-};
-
-/// Initialize a user from the Audius Admin account
-type initUserParams = {
+type InitUserParams = {
   provider: Provider;
   program: Program<AudiusData>;
   ethAddress: string;
@@ -51,23 +50,149 @@ type initUserParams = {
   adminKeypair: anchor.web3.Keypair;
 };
 
-export const initUser = async (args: initUserParams) => {
-  const {
-    baseAuthorityAccount,
-    program,
-    ethAddress,
-    handleBytesArray,
-    bumpSeed,
-    metadata,
-    provider,
-    adminStgKey,
-    userStgAccount,
-    adminKeypair,
-  } = args;
+type CreateUserParams = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  ethAccount: Account;
+  message: Uint8Array;
+  handleBytesArray: number[];
+  bumpSeed: number;
+  metadata: string;
+  userSolPubkey: anchor.web3.PublicKey;
+  userStgAccount: anchor.web3.PublicKey;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+};
 
+type UpdateUserParams = {
+  program: Program<AudiusData>;
+  metadata: string;
+  userStgAccount: anchor.web3.PublicKey;
+  userAuthorityDelegate: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
+  userAuthorityKeypair: anchor.web3.Keypair;
+};
+
+type UpdateAdminParams = {
+  program: Program<AudiusData>;
+  isWriteEnabled: boolean;
+  adminStgAccount: anchor.web3.PublicKey;
+  adminAuthorityKeypair: anchor.web3.Keypair;
+};
+
+type UpdateIsVerifiedParams = {
+  program: Program<AudiusData>;
+  userStgAccount: anchor.web3.PublicKey;
+  verifierKeypair: anchor.web3.Keypair;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  adminKeypair: Keypair;
+  handleBytesArray: number[];
+  bumpSeed: number;
+};
+
+type InitUserSolPubkeyParams = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  ethPrivateKey: string;
+  message: Uint8Array;
+  userSolPubkey: anchor.web3.PublicKey;
+  userStgAccount: anchor.web3.PublicKey;
+};
+
+type UpdateEntityParams = {
+  program: Program<AudiusData>;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  adminStgAccount: anchor.web3.PublicKey;
+  handleBytesArray: number[];
+  bumpSeed: number;
+  metadata: string;
+  id: string;
+  userAuthorityKeypair: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+};
+
+type CreateEntityParams = {
+  program: Program<AudiusData>;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  adminStgAccount: anchor.web3.PublicKey;
+  handleBytesArray: number[];
+  bumpSeed: number;
+  userAuthorityKeypair: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  metadata: string;
+  id: string;
+};
+
+type DeleteEntityParams = {
+  provider: Provider;
+  program: Program<AudiusData>;
+  id: string;
+  userAuthorityKeypair: Keypair;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  adminStgAccount: anchor.web3.PublicKey;
+  handleBytesArray: number[];
+  bumpSeed: number;
+};
+
+export const EntitySocialActionEnumValues = {
+  addSave: { addSave: {} },
+  deleteSave: { deleteSave: {} },
+  addRepost: { addRepost: {} },
+  deleteRepost: { deleteRepost: {} },
+};
+
+type EntitySocialActionArgs = {
+  program: Program<AudiusData>;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  userStgAccountPDA: anchor.web3.PublicKey;
+  userAuthorityKeypair: Keypair;
+  adminStgPublicKey: anchor.web3.PublicKey;
+  handleBytesArray: number[];
+  bumpSeed: number;
+  id: string;
+};
+
+/// Initialize an Audius Admin instance
+
+export const initAdmin = async ({
+  provider,
+  program,
+  adminKeypair,
+  adminStgKeypair,
+  verifierKeypair,
+}: InitAdminParams) => {
+  return program.rpc.initAdmin(
+    adminKeypair.publicKey,
+    verifierKeypair.publicKey,
+    {
+      accounts: {
+        admin: adminStgKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [adminStgKeypair],
+    }
+  );
+};
+
+/// Initialize a user from the Audius Admin account
+
+export const initUser = async ({
+  provider,
+  program,
+  ethAddress,
+  handleBytesArray,
+  bumpSeed,
+  metadata,
+  userStgAccount,
+  baseAuthorityAccount,
+  adminStgKey,
+  adminKeypair,
+}: InitUserParams) => {
   return program.rpc.initUser(
     baseAuthorityAccount,
-    anchor.utils.bytes.hex.decode(ethAddress),
+    [...anchor.utils.bytes.hex.decode(ethAddress)],
     handleBytesArray,
     bumpSeed,
     metadata,
@@ -85,26 +210,17 @@ export const initUser = async (args: initUserParams) => {
 };
 
 /// Claim a user's account using given an eth private key
-export type initUserSolPubkeyArgs = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  ethPrivateKey: string;
-  message: string;
-  userSolPubkey: anchor.web3.PublicKey;
-  userStgAccount: anchor.web3.PublicKey;
-};
 
-export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
-  const {
-    message,
-    ethPrivateKey,
-    provider,
-    program,
-    userSolPubkey,
-    userStgAccount,
-  } = args;
-  const signedBytes = signBytes(Buffer.from(message), ethPrivateKey);
-  const { signature, recoveryId } = signedBytes;
+export const initUserSolPubkey = async ({
+  provider,
+  program,
+  ethPrivateKey,
+  message,
+  userSolPubkey,
+  userStgAccount,
+}: InitUserSolPubkeyParams) => {
+  const { signature, recoveryId } = signBytes(message, ethPrivateKey);
+
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
     .publicKeyCreate(anchor.utils.bytes.hex.decode(ethPrivateKey), false)
@@ -112,181 +228,169 @@ export const initUserSolPubkey = async (args: initUserSolPubkeyArgs) => {
 
   const tx = new Transaction();
 
-  tx.add(Secp256k1Program.createInstructionWithPublicKey({
-    publicKey: Buffer.from(ethPubkey),
-    message: Buffer.from(message),
-    signature,
-    recoveryId,
-  }));
+  tx.add(
+    Secp256k1Program.createInstructionWithPublicKey({
+      publicKey: ethPubkey,
+      message: message,
+      recoveryId: recoveryId,
+      signature: signature,
+    })
+  );
 
-  tx.add(program.instruction.initUserSol(
-    userSolPubkey,
-    {
+  tx.add(
+    program.instruction.initUserSol(userSolPubkey, {
       accounts: {
         user: userStgAccount,
         sysvarProgram: SystemSysVarProgramKey,
       },
-    },
-  ));
+    })
+  );
 
-  return provider.send(tx, [ /* Signers */ ]);
+  return provider.send(tx);
 };
 
 /// Create a user without Audius Admin account
-type createUserParams = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  ethAccount: Account;
-  message: string;
-  handleBytesArray: number[];
-  bumpSeed: number;
-  metadata: string;
-  userSolPubkey: anchor.web3.PublicKey;
-  userStgAccount: anchor.web3.PublicKey;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-};
 
-export const createUser = async (args: createUserParams) => {
-  const {
-    baseAuthorityAccount,
-    program,
-    ethAccount,
-    message,
-    handleBytesArray,
-    bumpSeed,
-    metadata,
-    provider,
-    userSolPubkey,
-    userStgAccount,
-    adminStgPublicKey,
-  } = args;
-
-  const signedBytes = signBytes(Buffer.from(message), ethAccount.privateKey);
-
-  const { signature, recoveryId } = signedBytes;
+export const createUser = async ({
+  baseAuthorityAccount,
+  program,
+  ethAccount,
+  message,
+  handleBytesArray,
+  bumpSeed,
+  metadata,
+  provider,
+  userSolPubkey,
+  userStgAccount,
+  adminStgPublicKey,
+}: CreateUserParams) => {
+  const { signature, recoveryId } = signBytes(message, ethAccount.privateKey);
 
   // Get the public key in a compressed format
   const ethPubkey = secp256k1
-    .publicKeyCreate(anchor.utils.bytes.hex.decode(ethAccount.privateKey), false)
+    .publicKeyCreate(
+      anchor.utils.bytes.hex.decode(ethAccount.privateKey),
+      false
+    )
     .slice(1);
 
   const tx = new Transaction();
+  tx.add(
+    Secp256k1Program.createInstructionWithPublicKey({
+      publicKey: ethPubkey,
+      message: message,
+      signature,
+      recoveryId,
+    })
+  );
+  tx.add(
+    program.instruction.createUser(
+      baseAuthorityAccount,
+      [...anchor.utils.bytes.hex.decode(ethAccount.address)],
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      userSolPubkey,
+      {
+        accounts: {
+          payer: provider.wallet.publicKey,
+          user: userStgAccount,
+          systemProgram: SystemProgram.programId,
+          sysvarProgram: SystemSysVarProgramKey,
+          audiusAdmin: adminStgPublicKey,
+        },
+      }
+    )
+  );
 
-  tx.add(Secp256k1Program.createInstructionWithPublicKey({
-    publicKey: Buffer.from(ethPubkey),
-    message: Buffer.from(message),
-    signature,
-    recoveryId,
-  }));
-
-  tx.add(program.instruction.createUser(
-    baseAuthorityAccount,
-    anchor.utils.bytes.hex.decode(ethAccount.address),
-    handleBytesArray,
-    bumpSeed,
-    metadata,
-    userSolPubkey,
-    {
-      accounts: {
-        payer: provider.wallet.publicKey,
-        user: userStgAccount,
-        systemProgram: SystemProgram.programId,
-        sysvarProgram: SystemSysVarProgramKey,
-        audiusAdmin: adminStgPublicKey,
-      },
-    },
-  ));
-
-  return provider.send(tx, [ /* Signers */ ]);
+  return provider.send(tx);
 };
 
 /// Initialize a user from the Audius Admin account
-type updateUserParams = {
-  program: Program<AudiusData>;
-  metadata: string;
-  userStgAccount: anchor.web3.PublicKey;
-  userAuthorityKeypair: anchor.web3.Keypair;
+
+export const updateUser = async ({
+  program,
+  metadata,
+  userStgAccount,
+  userAuthorityKeypair,
+  userAuthorityDelegate,
+  authorityDelegationStatusAccount,
+}: UpdateUserParams) => {
+  return program.rpc.updateUser(metadata, {
+    accounts: {
+      user: userStgAccount,
+      userAuthority: userAuthorityKeypair.publicKey,
+      userAuthorityDelegate,
+      authorityDelegationStatus: authorityDelegationStatusAccount,
+    },
+    signers: [userAuthorityKeypair],
+  });
 };
 
-export const updateUser = async (args: updateUserParams) => {
-  const {
-    program,
-    metadata,
-    userStgAccount,
-    userAuthorityKeypair,
-  } = args;
+/// Update Audius Admin account
 
-  return program.rpc.updateUser(
-    metadata,
+export const updateAdmin = async ({
+  program,
+  isWriteEnabled,
+  adminStgAccount,
+  adminAuthorityKeypair,
+}: UpdateAdminParams) => {
+  return program.rpc.updateAdmin(isWriteEnabled, {
+    accounts: {
+      admin: adminStgAccount,
+      adminAuthority: adminAuthorityKeypair.publicKey,
+    },
+    signers: [adminAuthorityKeypair],
+  });
+};
+
+/// Verify user with authenticatorKeypair
+
+export const updateIsVerified = async ({
+  program,
+  adminKeypair,
+  userStgAccount,
+  verifierKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  bumpSeed,
+}: UpdateIsVerifiedParams) => {
+  return program.rpc.updateIsVerified(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
     {
       accounts: {
         user: userStgAccount,
-        userAuthority: userAuthorityKeypair.publicKey,
+        audiusAdmin: adminKeypair.publicKey,
+        verifier: verifierKeypair.publicKey,
       },
-      signers: [userAuthorityKeypair],
+      signers: [verifierKeypair],
     }
   );
 };
 
 /// Create a track
-export type createTrackArgs = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  newTrackKeypair: Keypair;
-  userAuthorityKeypair: Keypair;
-  userStgAccountPDA: anchor.web3.PublicKey;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  metadata: string;
-};
-
-export const createTrack = async (args: createTrackArgs) => {
-  const {
-    provider,
-    program,
-    newTrackKeypair,
-    userAuthorityKeypair,
-    metadata,
-    userStgAccountPDA,
-    adminStgPublicKey,
-  } = args;
-
-  return program.rpc.createTrack(metadata, {
-    accounts: {
-      track: newTrackKeypair.publicKey,
-      user: userStgAccountPDA,
-      authority: userAuthorityKeypair.publicKey,
-      payer: provider.wallet.publicKey,
-      audiusAdmin: adminStgPublicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [userAuthorityKeypair, newTrackKeypair],
-  });
-};
-
-/// Initialize a user from the Audius Admin account
-type updateTrackParams = {
-  program: Program<AudiusData>;
-  trackPDA: anchor.web3.PublicKey;
-  metadata: string;
-  userAuthorityKeypair: Keypair;
-  userStgAccountPDA: anchor.web3.PublicKey;
-};
-
-export const updateTrack = async (args: updateTrackParams) => {
-  const {
-    program,
-    trackPDA,
-    metadata,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-  } = args;
-
-  return program.rpc.updateTrack(
+export const createTrack = async ({
+  id,
+  program,
+  baseAuthorityAccount,
+  userAuthorityKeypair,
+  userStgAccountPDA,
+  metadata,
+  handleBytesArray,
+  adminStgAccount,
+  bumpSeed,
+}: CreateEntityParams) => {
+  return program.rpc.manageEntity(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.track,
+    ManagementActions.create,
+    id,
     metadata,
     {
       accounts: {
-        track: trackPDA,
+        audiusAdmin: adminStgAccount,
         user: userStgAccountPDA,
         authority: userAuthorityKeypair.publicKey,
       },
@@ -296,122 +400,375 @@ export const updateTrack = async (args: updateTrackParams) => {
 };
 
 /// Initialize a user from the Audius Admin account
-type deleteTrackParams = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  trackPDA: Keypair;
-  userAuthorityKeypair: Keypair;
-  userStgAccountPDA: anchor.web3.PublicKey;
+
+export const updateTrack = async ({
+  program,
+  baseAuthorityAccount,
+  id,
+  metadata,
+  userAuthorityKeypair,
+  userStgAccountPDA,
+  handleBytesArray,
+  adminStgAccount,
+  bumpSeed,
+}: UpdateEntityParams) => {
+  return program.rpc.manageEntity(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.track,
+    ManagementActions.update,
+    id,
+    metadata,
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
-export const deleteTrack = async (args: deleteTrackParams) => {
-  const {
-    provider,
-    program,
-    trackPDA,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-  } = args;
+/// Initialize a user from the Audius Admin account
 
-  return program.rpc.deleteTrack({
-    accounts: {
-      track: trackPDA,
-      user: userStgAccountPDA,
-      authority: userAuthorityKeypair.publicKey,
-      payer: provider.wallet.publicKey,
-    },
-    signers: [userAuthorityKeypair],
-  });
+export const deleteTrack = async ({
+  program,
+  id,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  adminStgAccount,
+  bumpSeed,
+}: DeleteEntityParams) => {
+  return program.rpc.manageEntity(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.track,
+    ManagementActions.delete,
+    id,
+    "",
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Create a playlist
-export type createPlaylistArgs = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  newPlaylistKeypair: Keypair;
-  userStgAccountPDA: anchor.web3.PublicKey;
-  userAuthorityKeypair: Keypair;
-  adminStgPublicKey: anchor.web3.PublicKey;
-  metadata: string;
-};
 
-export const createPlaylist = async (args: createPlaylistArgs) => {
-  const {
-    provider,
-    program,
-    newPlaylistKeypair,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-    adminStgPublicKey,
+export const createPlaylist = async ({
+  id,
+  program,
+  baseAuthorityAccount,
+  userAuthorityKeypair,
+  userStgAccountPDA,
+  metadata,
+  handleBytesArray,
+  adminStgAccount,
+  bumpSeed,
+}: CreateEntityParams) => {
+  return program.rpc.manageEntity(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.playlist,
+    ManagementActions.create,
+    id,
     metadata,
-  } = args;
-
-  return program.rpc.createPlaylist(metadata, {
-    accounts: {
-      playlist: newPlaylistKeypair.publicKey,
-      user: userStgAccountPDA,
-      authority: userAuthorityKeypair.publicKey,
-      audiusAdmin: adminStgPublicKey,
-      payer: provider.wallet.publicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [newPlaylistKeypair, userAuthorityKeypair],
-  });
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Update a playlist
-export type updatePlaylistArgs = {
-  program: Program<AudiusData>;
-  playlistPublicKey: anchor.web3.PublicKey;
-  userStgAccountPDA: anchor.web3.PublicKey;
-  userAuthorityKeypair: Keypair;
-  metadata: string;
-};
 
-export const updatePlaylist = async (args: updatePlaylistArgs) => {
-  const {
-    program,
-    playlistPublicKey,
-    userStgAccountPDA,
-    userAuthorityKeypair,
+export const updatePlaylist = async ({
+  id,
+  program,
+  baseAuthorityAccount,
+  userAuthorityKeypair,
+  userStgAccountPDA,
+  metadata,
+  handleBytesArray,
+  adminStgAccount,
+  bumpSeed,
+}: UpdateEntityParams) => {
+  return program.rpc.manageEntity(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.playlist,
+    ManagementActions.update,
+    id,
     metadata,
-  } = args;
-
-  return program.rpc.updatePlaylist(metadata, {
-    accounts: {
-      playlist: playlistPublicKey,
-      user: userStgAccountPDA,
-      authority: userAuthorityKeypair.publicKey,
-    },
-    signers: [userAuthorityKeypair],
-  });
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
 /// Delete a playlist
-export type deletePlaylistArgs = {
-  provider: Provider;
-  program: Program<AudiusData>;
-  playlistPublicKey: anchor.web3.PublicKey;
-  userStgAccountPDA: anchor.web3.PublicKey;
-  userAuthorityKeypair: Keypair;
+export const deletePlaylist = async ({
+  program,
+  id,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  baseAuthorityAccount,
+  handleBytesArray,
+  adminStgAccount,
+  bumpSeed,
+}: DeleteEntityParams) => {
+  return program.rpc.manageEntity(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntityTypesEnumValues.playlist,
+    ManagementActions.delete,
+    id,
+    "",
+    {
+      accounts: {
+        audiusAdmin: adminStgAccount,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };
 
-export const deletePlaylist = async (args: deletePlaylistArgs) => {
-  const {
-    provider,
-    program,
-    playlistPublicKey,
-    userStgAccountPDA,
-    userAuthorityKeypair,
-  } = args;
+/// Get keypair from secret key
+export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
+  return Keypair.fromSecretKey(Uint8Array.from(secretKey));
+};
 
-  return program.rpc.deletePlaylist({
-    accounts: {
-      playlist: playlistPublicKey,
-      user: userStgAccountPDA,
-      authority: userAuthorityKeypair.publicKey,
-      payer: provider.wallet.publicKey,
-    },
-    signers: [userAuthorityKeypair],
-  });
+/// Social actions
+export const addTrackSave = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.addSave,
+    EntityTypesEnumValues.track,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const deleteTrackSave = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.deleteSave,
+    EntityTypesEnumValues.track,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const addTrackRepost = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.addRepost,
+    EntityTypesEnumValues.track,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const deleteTrackRepost = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.deleteRepost,
+    EntityTypesEnumValues.track,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const addPlaylistSave = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.addSave,
+    EntityTypesEnumValues.playlist,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const deletePlaylistSave = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.deleteSave,
+    EntityTypesEnumValues.playlist,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const addPlaylistRepost = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.addRepost,
+    EntityTypesEnumValues.playlist,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const deletePlaylistRepost = async ({
+  program,
+  baseAuthorityAccount,
+  userStgAccountPDA,
+  userAuthorityKeypair,
+  handleBytesArray,
+  bumpSeed,
+  adminStgPublicKey,
+  id,
+}: EntitySocialActionArgs) => {
+  return program.rpc.writeEntitySocialAction(
+    baseAuthorityAccount,
+    { seed: handleBytesArray, bump: bumpSeed },
+    EntitySocialActions.deleteRepost,
+    EntityTypesEnumValues.playlist,
+    id,
+    {
+      accounts: {
+        audiusAdmin: adminStgPublicKey,
+        user: userStgAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
 };

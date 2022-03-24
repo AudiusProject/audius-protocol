@@ -86,7 +86,7 @@ async function getAccountNonce ({
     mintKey,
     claimableTokenProgramKey
   })
-  let accInfo = await connection.getAccountInfoAndContext(transferNonceAccount)
+  const accInfo = await connection.getAccountInfoAndContext(transferNonceAccount)
   if (accInfo.value) {
     const nonceAccount = borsh.deserialize(NonceAccountSchema, NonceAccount, accInfo.value.data)
     nonce = nonceAccount.nonce
@@ -263,7 +263,7 @@ async function transferWAudioBalance ({
       data: Buffer.from(transferDataInstr)
     })
   ]
-  return transactionHandler.handleTransaction({ instructions, errorMapping: ClaimableProgramError })
+  return transactionHandler.handleTransaction({ instructions, errorMapping: ClaimableProgramError, feePayerOverride: feePayerKey })
 }
 
 module.exports = {
