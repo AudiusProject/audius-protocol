@@ -34,12 +34,14 @@ export const decodeInstruction = (program: anchor.Program, data: string) => {
 export const getTransactionWithData = async (
   program: anchor.Program,
   provider: Provider,
-  tx: string
+  tx: string,
+  instruction: number
 ) => {
   const info = await getTransaction(provider, tx);
-  const data = info.transaction.message.instructions[0].data;
+  const data = info.transaction.message.instructions[instruction].data;
   const decodedInstruction = decodeInstruction(program, data);
-  const accountIndexes = info.transaction.message.instructions[0].accounts;
+  const accountIndexes =
+    info.transaction.message.instructions[instruction].accounts;
   const accountKeys = info.transaction.message.accountKeys;
   const accountPubKeys = [];
   for (const i of accountIndexes) {

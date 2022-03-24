@@ -105,7 +105,7 @@ class ContractClient {
     this.providerSelector.addUnhealthy(currentProviderUrl)
 
     if (this.providerSelector.getUnhealthySize() === this.providerSelector.getServicesSize()) {
-      console.log(`No healthy providers available - resetting ProviderSelection and selecting.`)
+      console.log('No healthy providers available - resetting ProviderSelection and selecting.')
       this.providerSelector.clearUnhealthy()
       this.providerSelector.clearBackups()
     }

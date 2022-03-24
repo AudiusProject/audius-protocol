@@ -2,8 +2,7 @@ const untildify = require('untildify')
 const Web3 = require('web3')
 const axios = require('axios')
 const AudiusLibs = require('@audius/libs')
-const CreatorNode = require('@audius/libs/src/services/creatorNode')
-const Utils = require('@audius/libs/src/utils')
+const { CreatorNode, Utils } = require('@audius/libs')
 const config = require('../config/config')
 
 const DISCOVERY_NODE_ENDPOINT = 'http://dn1_web-server_1:5000'

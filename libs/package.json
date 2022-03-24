@@ -1,9 +1,8 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.92",
+  "version": "1.2.93",
   "description": "",
-  "main": "src/index.js",
-  "mainDist": "dist/index.js",
+  "main": "dist/index.js",
   "browser": {
     "fs": false,
     "node-localstorage": false,
@@ -12,18 +11,21 @@
     "esm": false
   },
   "scripts": {
+    "init-local": "ts-node initScripts/local.js",
     "test": "./scripts/test.sh",
     "test-circle-ci": "./scripts/circleci-test.sh",
-    "test:units": "mocha './src/**/*.test.js' --exit",
+    "test:units": "ts-mocha src/**/*.test.js --exit",
+    "test:integration": "ts-mocha tests/index.js",
     "setup": "./scripts/migrate_contracts.sh",
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "lint": "./node_modules/.bin/standard",
-    "lint:fix": "./node_modules/.bin/standard --fix"
+    "lint": "eslint ./src",
+    "lint:fix": "eslint ./src --fix",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@audius/hedgehog": "1.0.12",
-    "@certusone/wormhole-sdk": "0.0.10",
+    "@certusone/wormhole-sdk": "0.1.1",
     "@ethersproject/solidity": "5.0.5",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
     "@solana/spl-token": "0.1.6",
@@ -55,12 +57,27 @@
     "@rollup/plugin-commonjs": "21.0.2",
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "13.1.3",
-    "mocha": "5.2.0",
+    "@rollup/plugin-typescript": "8.3.1",
+    "@tsconfig/node16-strictest": "1.0.0",
+    "@types/expect": "24.3.0",
+    "@types/mocha": "9.1.0",
+    "@types/semver": "7.3.9",
+    "@typescript-eslint/eslint-plugin": "4.33.0",
+    "eslint": "7.32.0",
+    "eslint-config-standard-with-typescript": "21.0.1",
+    "eslint-plugin-import": "2.25.4",
+    "eslint-plugin-mocha": "10.0.3",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "5.2.0",
+    "mocha": "9.2.2",
     "nock": "13.1.2",
     "nyc": "15.1.0",
-    "rollup": "^2.70.1",
+    "rollup": "2.70.1",
     "sinon": "9.0.2",
-    "standard": "12.0.1"
+    "standard": "16.0.4",
+    "ts-mocha": "9.0.2",
+    "ts-node": "10.7.0",
+    "typescript": "4.6.2"
   },
   "repository": {
     "type": "git",
@@ -74,23 +91,5 @@
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
-  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/master/libs",
-  "standard": {
-    "globals": [
-      "assert",
-      "beforeEach",
-      "it",
-      "before",
-      "describe",
-      "afterEach",
-      "Blob",
-      "self",
-      "Worker",
-      "postMessage"
-    ],
-    "ignore": [
-      "examples/*.js",
-      "tests/*.js"
-    ]
-  }
+  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/master/libs"
 }

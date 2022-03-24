@@ -30,7 +30,7 @@ const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
  * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
  * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
  * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
- * @param {number?} unhealthyBlockDiff the number of blocks we would consider a discovery node unhealthy
+ * @param {number?} unhealthyBlockDiff the number of missed blocks after which we would consider a discovery node unhealthy
  */
 class DiscoveryProvider {
   constructor (
@@ -759,7 +759,7 @@ class DiscoveryProvider {
     try {
       parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
     } catch (e) {
-      const failureStr = `Failed to make Discovery Provider request, `
+      const failureStr = 'Failed to make Discovery Provider request, '
       const attemptStr = `attempt #${attemptedRetries}, `
       const errorStr = `error ${JSON.stringify(e.message)}, `
       const requestStr = `request: ${JSON.stringify(requestObj)}`
