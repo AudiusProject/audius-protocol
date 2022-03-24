@@ -1,15 +1,15 @@
-import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
-import Web3 from "web3";
-import { Account } from "web3-core";
-import { randomBytes } from "crypto";
-import { expect } from "chai";
+import * as anchor from '@project-serum/anchor'
+import { Program } from '@project-serum/anchor'
+import Web3 from 'web3'
+import { Account } from 'web3-core'
+import { randomBytes } from 'crypto'
+import { expect } from 'chai'
 import {
   findDerivedPair,
   getTransaction,
   randomCID,
-  getTransactionWithData,
-} from "../lib/utils";
+  getTransactionWithData
+} from '../lib/utils'
 import {
   createUser,
   createTrack,
@@ -21,38 +21,38 @@ import {
   EntityTypesEnumValues,
   ManagementActions,
   deletePlaylist,
-  updatePlaylist,
-} from "../lib/lib";
-import { AudiusData } from "../target/types/audius_data";
+  updatePlaylist
+} from '../lib/lib'
+import { AudiusData } from '../target/types/audius_data'
 
-const { PublicKey } = anchor.web3;
+const { PublicKey } = anchor.web3
 
-const EthWeb3 = new Web3();
-const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
+const EthWeb3 = new Web3()
+const DefaultPubkey = new PublicKey('11111111111111111111111111111111')
 
-type InitTestConsts = {
-  ethAccount: Account;
-  handle: string;
-  handleBytes: Buffer;
-  handleBytesArray: number[];
-  metadata: string;
-};
+interface InitTestConsts {
+  ethAccount: Account
+  handle: string
+  handleBytes: Buffer
+  handleBytesArray: number[]
+  metadata: string
+}
 
 export const initTestConstants = (): InitTestConsts => {
-  const ethAccount = EthWeb3.eth.accounts.create();
-  const handle = randomBytes(40).toString("hex");
-  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
-  const metadata = randomCID();
+  const ethAccount = EthWeb3.eth.accounts.create()
+  const handle = randomBytes(40).toString('hex')
+  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
+  const handleBytesArray = Array.from({ ...handleBytes, length: 32 })
+  const metadata = randomCID()
 
   return {
     ethAccount,
     handle,
     handleBytes,
     handleBytesArray,
-    metadata,
-  };
-};
+    metadata
+  }
+}
 
 export const testInitUser = async ({
   provider,
@@ -64,7 +64,7 @@ export const testInitUser = async ({
   metadata,
   userStgAccount,
   adminStgKeypair,
-  adminKeypair,
+  adminKeypair
 }) => {
   const tx = await initUser({
     provider,
@@ -76,27 +76,27 @@ export const testInitUser = async ({
     userStgAccount,
     baseAuthorityAccount,
     adminStgKey: adminStgKeypair.publicKey,
-    adminKeypair,
-  });
+    adminKeypair
+  })
 
-  const account = await program.account.user.fetch(userStgAccount);
+  const account = await program.account.user.fetch(userStgAccount)
 
-  const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
-  expect(chainEthAddress, "eth address").to.equal(ethAddress.toLowerCase());
-  const chainAuthority = account.authority.toString();
-  const expectedAuthority = DefaultPubkey.toString();
-  expect(chainAuthority, "authority").to.equal(expectedAuthority);
+  const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress)
+  expect(chainEthAddress, 'eth address').to.equal(ethAddress.toLowerCase())
+  const chainAuthority = account.authority.toString()
+  const expectedAuthority = DefaultPubkey.toString()
+  expect(chainAuthority, 'authority').to.equal(expectedAuthority)
 
   const { decodedInstruction, decodedData } = await getTransactionWithData(
     program,
     provider,
     tx,
     0
-  );
+  )
 
-  expect(decodedInstruction.name).to.equal("initUser");
-  expect(decodedData.metadata).to.equal(metadata);
-};
+  expect(decodedInstruction.name).to.equal('initUser')
+  expect(decodedData.metadata).to.equal(metadata)
+}
 
 export const testInitUserSolPubkey = async ({
   provider,
@@ -104,7 +104,7 @@ export const testInitUserSolPubkey = async ({
   message,
   ethPrivateKey,
   newUserPublicKey,
-  newUserAcctPDA,
+  newUserAcctPDA
 }) => {
   const tx = await initUserSolPubkey({
     provider,
@@ -112,27 +112,27 @@ export const testInitUserSolPubkey = async ({
     ethPrivateKey,
     message,
     userSolPubkey: newUserPublicKey,
-    userStgAccount: newUserAcctPDA,
-  });
+    userStgAccount: newUserAcctPDA
+  })
 
   const { decodedInstruction, decodedData } = await getTransactionWithData(
     program,
     provider,
     tx,
     1
-  );
+  )
 
-  expect(decodedInstruction.name).to.equal("initUserSol");
+  expect(decodedInstruction.name).to.equal('initUserSol')
   expect(decodedData.userAuthority.toString()).to.equal(
     newUserPublicKey.toString()
-  );
+  )
 
-  const account = await program.account.user.fetch(newUserAcctPDA);
+  const account = await program.account.user.fetch(newUserAcctPDA)
 
-  const chainAuthority = account.authority.toString();
-  const expectedAuthority = newUserPublicKey.toString();
-  expect(chainAuthority, "authority").to.equal(expectedAuthority);
-};
+  const chainAuthority = account.authority.toString()
+  const expectedAuthority = newUserPublicKey.toString()
+  expect(chainAuthority, 'authority').to.equal(expectedAuthority)
+}
 
 export const testCreateUser = async ({
   provider,
@@ -145,7 +145,7 @@ export const testCreateUser = async ({
   metadata,
   newUserKeypair,
   userStgAccount,
-  adminStgPublicKey,
+  adminStgPublicKey
 }) => {
   const tx = await createUser({
     provider,
@@ -158,34 +158,34 @@ export const testCreateUser = async ({
     userSolPubkey: newUserKeypair.publicKey,
     userStgAccount,
     adminStgPublicKey,
-    baseAuthorityAccount,
-  });
+    baseAuthorityAccount
+  })
 
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 1);
+    await getTransactionWithData(program, provider, tx, 1)
 
-  expect(decodedInstruction.name).to.equal("createUser");
-  expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());
+  expect(decodedInstruction.name).to.equal('createUser')
+  expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString())
   expect(decodedData.ethAddress).to.deep.equal([
-    ...anchor.utils.bytes.hex.decode(ethAccount.address),
-  ]);
-  expect(decodedData.handleSeed).to.deep.equal(handleBytesArray);
-  expect(decodedData.userBump).to.equal(bumpSeed);
-  expect(decodedData.metadata).to.equal(metadata);
-  expect(accountPubKeys[0]).to.equal(userStgAccount.toString());
-  expect(accountPubKeys[2]).to.equal(adminStgPublicKey.toString());
+    ...anchor.utils.bytes.hex.decode(ethAccount.address)
+  ])
+  expect(decodedData.handleSeed).to.deep.equal(handleBytesArray)
+  expect(decodedData.userBump).to.equal(bumpSeed)
+  expect(decodedData.metadata).to.equal(metadata)
+  expect(accountPubKeys[0]).to.equal(userStgAccount.toString())
+  expect(accountPubKeys[2]).to.equal(adminStgPublicKey.toString())
 
-  const account = await program.account.user.fetch(userStgAccount);
+  const account = await program.account.user.fetch(userStgAccount)
 
-  const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
-  expect(chainEthAddress, "eth address").to.equal(
+  const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress)
+  expect(chainEthAddress, 'eth address').to.equal(
     ethAccount.address.toLowerCase()
-  );
+  )
 
-  const chainAuthority = account.authority.toString();
-  const expectedAuthority = newUserKeypair.publicKey.toString();
-  expect(chainAuthority, "authority").to.equal(expectedAuthority);
-};
+  const chainAuthority = account.authority.toString()
+  const expectedAuthority = newUserKeypair.publicKey.toString()
+  expect(chainAuthority, 'authority').to.equal(expectedAuthority)
+}
 
 export const testCreateTrack = async ({
   provider,
@@ -197,7 +197,7 @@ export const testCreateTrack = async ({
   adminStgAccount,
   trackMetadata,
   userAuthorityKeypair,
-  trackOwnerPDA,
+  trackOwnerPDA
 }) => {
   const tx = await createTrack({
     id,
@@ -208,23 +208,23 @@ export const testCreateTrack = async ({
     baseAuthorityAccount,
     handleBytesArray,
     adminStgAccount,
-    bumpSeed,
-  });
+    bumpSeed
+  })
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, tx, 0)
   // Validate instruction data
-  expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
-  expect(decodedData.metadata).to.equal(trackMetadata);
-  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
-  expect(decodedData.managementAction).to.deep.equal(ManagementActions.create);
+  expect(decodedInstruction.name).to.equal('manageEntity')
+  expect(decodedData.id).to.equal(id)
+  expect(decodedData.metadata).to.equal(trackMetadata)
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track)
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.create)
   // Assert on instruction struct
   // 1st index = track owner user storage account
   // 2nd index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString());
-  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
-};
+  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString())
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString())
+}
 
 export const testDeleteTrack = async ({
   provider,
@@ -235,7 +235,7 @@ export const testDeleteTrack = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStgAccount
 }) => {
   const tx = await deleteTrack({
     id,
@@ -246,21 +246,21 @@ export const testDeleteTrack = async ({
     baseAuthorityAccount,
     handleBytesArray,
     bumpSeed,
-    adminStgAccount,
-  });
+    adminStgAccount
+  })
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
-  expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
-  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
-  expect(decodedData.managementAction).to.deep.equal(ManagementActions.delete);
+    await getTransactionWithData(program, provider, tx, 0)
+  expect(decodedInstruction.name).to.equal('manageEntity')
+  expect(decodedData.id).to.equal(id)
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track)
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.delete)
   // Assert on instruction struct
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString());
-  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
-};
+  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString())
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString())
+}
 
 export const testUpdateTrack = async ({
   provider,
@@ -272,7 +272,7 @@ export const testUpdateTrack = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStgAccount
 }) => {
   const tx = await updateTrack({
     program,
@@ -283,24 +283,24 @@ export const testUpdateTrack = async ({
     id,
     userStgAccountPDA,
     metadata,
-    userAuthorityKeypair,
-  });
+    userAuthorityKeypair
+  })
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, tx, 0)
 
   // Validate instruction data
-  expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
-  expect(decodedData.metadata).to.equal(metadata);
-  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
-  expect(decodedData.managementAction).to.deep.equal(ManagementActions.update);
+  expect(decodedInstruction.name).to.equal('manageEntity')
+  expect(decodedData.id).to.equal(id)
+  expect(decodedData.metadata).to.equal(metadata)
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track)
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.update)
   // Assert on instruction struct
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString());
-  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
-};
+  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString())
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString())
+}
 
 export const testCreatePlaylist = async ({
   provider,
@@ -312,7 +312,7 @@ export const testCreatePlaylist = async ({
   adminStgAccount,
   playlistMetadata,
   userAuthorityKeypair,
-  playlistOwnerPDA,
+  playlistOwnerPDA
 }) => {
   const tx = await createPlaylist({
     id,
@@ -323,23 +323,23 @@ export const testCreatePlaylist = async ({
     baseAuthorityAccount,
     handleBytesArray,
     adminStgAccount,
-    bumpSeed,
-  });
+    bumpSeed
+  })
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, tx, 0)
   // Validate instruction data
-  expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
-  expect(decodedData.metadata).to.equal(playlistMetadata);
-  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
-  expect(decodedData.managementAction).to.deep.equal(ManagementActions.create);
+  expect(decodedInstruction.name).to.equal('manageEntity')
+  expect(decodedData.id).to.equal(id)
+  expect(decodedData.metadata).to.equal(playlistMetadata)
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist)
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.create)
   // Assert on instruction struct
   // 1st index = playlist owner user storage account
   // 2nd index = user authority keypair
   // Indexing code must check that the playlist owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(playlistOwnerPDA.toString());
-  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
-};
+  expect(accountPubKeys[1]).to.equal(playlistOwnerPDA.toString())
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString())
+}
 
 export const testDeletePlaylist = async ({
   provider,
@@ -350,7 +350,7 @@ export const testDeletePlaylist = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStgAccount
 }) => {
   const tx = await deletePlaylist({
     id,
@@ -361,21 +361,21 @@ export const testDeletePlaylist = async ({
     baseAuthorityAccount,
     handleBytesArray,
     bumpSeed,
-    adminStgAccount,
-  });
+    adminStgAccount
+  })
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
-  expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
-  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
-  expect(decodedData.managementAction).to.deep.equal(ManagementActions.delete);
+    await getTransactionWithData(program, provider, tx, 0)
+  expect(decodedInstruction.name).to.equal('manageEntity')
+  expect(decodedData.id).to.equal(id)
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist)
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.delete)
   // Assert on instruction struct
   // 0th index = playlist owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the playlist owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(playlistOwnerPDA.toString());
-  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
-};
+  expect(accountPubKeys[1]).to.equal(playlistOwnerPDA.toString())
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString())
+}
 
 export const testUpdatePlaylist = async ({
   provider,
@@ -387,7 +387,7 @@ export const testUpdatePlaylist = async ({
   baseAuthorityAccount,
   handleBytesArray,
   bumpSeed,
-  adminStgAccount,
+  adminStgAccount
 }) => {
   const tx = await updatePlaylist({
     program,
@@ -398,24 +398,24 @@ export const testUpdatePlaylist = async ({
     id,
     userStgAccountPDA,
     metadata,
-    userAuthorityKeypair,
-  });
+    userAuthorityKeypair
+  })
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, tx, 0)
 
   // Validate instruction data
-  expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
-  expect(decodedData.metadata).to.equal(metadata);
-  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
-  expect(decodedData.managementAction).to.deep.equal(ManagementActions.update);
+  expect(decodedInstruction.name).to.equal('manageEntity')
+  expect(decodedData.id).to.equal(id)
+  expect(decodedData.metadata).to.equal(metadata)
+  expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist)
+  expect(decodedData.managementAction).to.deep.equal(ManagementActions.update)
   // Assert on instruction struct
   // 0th index = playlist owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the playlist owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString());
-  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
-};
+  expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString())
+  expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString())
+}
 
 export const pollAccountBalance = async (
   provider: anchor.Provider,
@@ -423,63 +423,63 @@ export const pollAccountBalance = async (
   targetBalance: number,
   maxRetries: number
 ) => {
-  let currentBalance = await provider.connection.getBalance(targetAccount);
-  let numRetries = 0;
+  let currentBalance = await provider.connection.getBalance(targetAccount)
+  let numRetries = 0
   while (currentBalance > targetBalance && numRetries < maxRetries) {
-    currentBalance = await provider.connection.getBalance(targetAccount);
-    numRetries--;
+    currentBalance = await provider.connection.getBalance(targetAccount)
+    numRetries--
   }
   if (currentBalance > targetBalance) {
     throw new Error(
       `Account ${targetAccount} failed to reach target balance ${targetBalance} in ${maxRetries} retries. Current balance = ${currentBalance}`
-    );
+    )
   }
-};
+}
 
 export const confirmLogInTransaction = async (
   provider: anchor.Provider,
   tx: string,
   log: string
 ) => {
-  const info = await getTransaction(provider, tx);
+  const info = await getTransaction(provider, tx)
 
-  const logs = info.meta.logMessages;
-  let stringFound = false;
+  const logs = info.meta.logMessages
+  let stringFound = false
   logs.forEach((v) => {
-    if (v.indexOf(log) !== -1) {
-      stringFound = true;
+    if (v.includes(log)) {
+      stringFound = true
     }
-  });
+  })
   if (!stringFound) {
-    console.log(logs);
-    throw new Error(`Failed to find ${log} in tx=${tx}`);
+    console.log(logs)
+    throw new Error(`Failed to find ${log} in tx=${tx}`)
   }
-  return info;
-};
+  return info
+}
 
 export const createSolanaUser = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
   adminStgKeypair: anchor.web3.Keypair
 ) => {
-  const testConsts = initTestConstants();
+  const testConsts = initTestConstants()
 
   const {
     baseAuthorityAccount,
     bumpSeed,
-    derivedAddress: newUserAcctPDA,
+    derivedAddress: newUserAcctPDA
   } = await findDerivedPair(
     program.programId,
     adminStgKeypair.publicKey,
     Buffer.from(testConsts.handleBytesArray)
-  );
+  )
 
   // New sol key that will be used to permission user updates
-  const newUserKeypair = anchor.web3.Keypair.generate();
+  const newUserKeypair = anchor.web3.Keypair.generate()
 
   // Generate signed SECP instruction
   // Message as the incoming public key
-  const message = newUserKeypair.publicKey.toBytes();
+  const message = newUserKeypair.publicKey.toBytes()
 
   await createUser({
     provider,
@@ -492,10 +492,10 @@ export const createSolanaUser = async (
     userSolPubkey: newUserKeypair.publicKey,
     userStgAccount: newUserAcctPDA,
     adminStgPublicKey: adminStgKeypair.publicKey,
-    baseAuthorityAccount,
-  });
+    baseAuthorityAccount
+  })
 
-  const account = await program.account.user.fetch(newUserAcctPDA);
+  const account = await program.account.user.fetch(newUserAcctPDA)
 
   return {
     account,
@@ -503,6 +503,6 @@ export const createSolanaUser = async (
     handleBytesArray: testConsts.handleBytesArray,
     bumpSeed,
     keypair: newUserKeypair,
-    authority: baseAuthorityAccount,
-  };
-};
+    authority: baseAuthorityAccount
+  }
+}

@@ -1,9 +1,9 @@
-import { Program, Provider, web3 } from "@project-serum/anchor";
-import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
-import { Connection, PublicKey, Keypair } from "@solana/web3.js";
-import { AudiusData } from "../target/types/audius_data";
-import * as anchor from "@project-serum/anchor";
-import { randomCID, findDerivedPair } from "../lib/utils";
+import { Program, Provider, web3 } from '@project-serum/anchor'
+import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet'
+import { Connection, PublicKey, Keypair } from '@solana/web3.js'
+import { AudiusData } from '../target/types/audius_data'
+import * as anchor from '@project-serum/anchor'
+import { randomCID, findDerivedPair } from '../lib/utils'
 import {
   initAdmin,
   initUser,
@@ -15,22 +15,22 @@ import {
   DeletePlaylistParams,
   deletePlaylist,
   updatePlaylist,
-  UpdatePlaylistParams,
-} from "../lib/lib";
+  UpdatePlaylistParams
+} from '../lib/lib'
 
-import { Command } from "commander";
-import fs = require("fs");
+import { Command } from 'commander'
+import fs = require('fs')
 
-const program = new Command();
+const program = new Command()
 
 const idl = JSON.parse(
-  fs.readFileSync("./target/idl/audius_data.json", "utf8")
-);
+  fs.readFileSync('./target/idl/audius_data.json', 'utf8')
+)
 
 const opts: web3.ConfirmOptions = {
   skipPreflight: true,
-  preflightCommitment: "confirmed",
-};
+  preflightCommitment: 'confirmed'
+}
 
 const keypairFromFilePath = (path: string) => {
   /* eslint-disable */

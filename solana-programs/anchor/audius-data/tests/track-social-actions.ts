@@ -1,7 +1,7 @@
-import * as anchor from "@project-serum/anchor";
-import { BorshInstructionCoder, Program } from "@project-serum/anchor";
-import chai, { assert, expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import * as anchor from '@project-serum/anchor'
+import { BorshInstructionCoder, Program } from '@project-serum/anchor'
+import chai, { assert, expect } from 'chai'
+import chaiAsPromised from 'chai-as-promised'
 import {
   initAdmin,
   addTrackRepost,
@@ -10,48 +10,48 @@ import {
   deleteTrackSave,
   EntitySocialActionEnumValues,
   EntityTypesEnumValues,
-  deleteTrackRepost,
-} from "../lib/lib";
-import { getTransaction, randomString } from "../lib/utils";
-import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser } from "./test-helpers";
+  deleteTrackRepost
+} from '../lib/lib'
+import { getTransaction, randomString } from '../lib/utils'
+import { AudiusData } from '../target/types/audius_data'
+import { createSolanaUser } from './test-helpers'
 
-chai.use(chaiAsPromised);
+chai.use(chaiAsPromised)
 
-describe("track-actions", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
-    preflightCommitment: "confirmed",
-    commitment: "confirmed",
-  });
+describe('track-actions', function () {
+  const provider = anchor.Provider.local('http://localhost:8899', {
+    preflightCommitment: 'confirmed',
+    commitment: 'confirmed'
+  })
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.Provider.env())
 
-  const program = anchor.workspace.AudiusData as Program<AudiusData>;
+  const program = anchor.workspace.AudiusData as Program<AudiusData>
 
-  const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
-  const verifierKeypair = anchor.web3.Keypair.generate();
+  const adminKeypair = anchor.web3.Keypair.generate()
+  const adminStgKeypair = anchor.web3.Keypair.generate()
+  const verifierKeypair = anchor.web3.Keypair.generate()
 
-  it("track actions - Initializing admin account!", async function () {
+  it('track actions - Initializing admin account!', async function () {
     await initAdmin({
       provider,
       program,
       adminKeypair,
       adminStgKeypair,
-      verifierKeypair,
-    });
+      verifierKeypair
+    })
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStgKeypair.publicKey
-    );
+    )
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
-        "On chain retrieved admin info: ",
+        'On chain retrieved admin info: ',
         adminAccount.authority.toString()
-      );
-      console.log("Provided admin info: ", adminKeypair.publicKey.toString());
-      throw new Error("Invalid returned values");
+      )
+      console.log('Provided admin info: ', adminKeypair.publicKey.toString())
+      throw new Error('Invalid returned values')
     }
 
     // disable admin writes
@@ -59,12 +59,12 @@ describe("track-actions", function () {
       program,
       isWriteEnabled: false,
       adminStgAccount: adminStgKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
-    });
-  });
+      adminAuthorityKeypair: adminKeypair
+    })
+  })
 
-  it("Delete save for a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+  it('Delete save for a track', async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair)
 
     const tx = await deleteTrackSave({
       program,
@@ -74,29 +74,29 @@ describe("track-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      id: randomString(10),
-    });
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+      id: randomString(10)
+    })
+    const info = await getTransaction(provider, tx)
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
-      "base58"
-    );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
+      'base58'
+    )
+    const userHandle = String.fromCharCode(...user.handleBytesArray)
     const instructionHandle = String.fromCharCode(
       ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    )
+    assert.equal(instructionHandle, userHandle)
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteSave
-    );
+    )
     expect(decodedInstruction.data.entityType).to.deep.equal(
       EntityTypesEnumValues.track
-    );
-  });
+    )
+  })
 
-  it("Save a newly created track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+  it('Save a newly created track', async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair)
 
     const tx = await addTrackSave({
       program,
@@ -106,29 +106,29 @@ describe("track-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      id: randomString(10),
-    });
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+      id: randomString(10)
+    })
+    const info = await getTransaction(provider, tx)
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
-      "base58"
-    );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
+      'base58'
+    )
+    const userHandle = String.fromCharCode(...user.handleBytesArray)
     const instructionHandle = String.fromCharCode(
       ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    )
+    assert.equal(instructionHandle, userHandle)
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addSave
-    );
+    )
     expect(decodedInstruction.data.entityType).to.deep.equal(
       EntityTypesEnumValues.track
-    );
-  });
+    )
+  })
 
-  it("Repost a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+  it('Repost a track', async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair)
 
     const tx = await addTrackRepost({
       program,
@@ -138,29 +138,29 @@ describe("track-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      id: randomString(10),
-    });
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+      id: randomString(10)
+    })
+    const info = await getTransaction(provider, tx)
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
-      "base58"
-    );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
+      'base58'
+    )
+    const userHandle = String.fromCharCode(...user.handleBytesArray)
     const instructionHandle = String.fromCharCode(
       ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    )
+    assert.equal(instructionHandle, userHandle)
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addRepost
-    );
+    )
     expect(decodedInstruction.data.entityType).to.deep.equal(
       EntityTypesEnumValues.track
-    );
-  });
+    )
+  })
 
-  it("Delete repost for a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+  it('Delete repost for a track', async function () {
+    const user = await createSolanaUser(program, provider, adminStgKeypair)
 
     const tx = await deleteTrackRepost({
       program,
@@ -170,25 +170,25 @@ describe("track-actions", function () {
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
-      id: randomString(10),
-    });
+      id: randomString(10)
+    })
 
-    const info = await getTransaction(provider, tx);
-    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const info = await getTransaction(provider, tx)
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
-      "base58"
-    );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
+      'base58'
+    )
+    const userHandle = String.fromCharCode(...user.handleBytesArray)
     const instructionHandle = String.fromCharCode(
       ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    )
+    assert.equal(instructionHandle, userHandle)
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteRepost
-    );
+    )
     expect(decodedInstruction.data.entityType).to.deep.equal(
       EntityTypesEnumValues.track
-    );
-  });
-});
+    )
+  })
+})
