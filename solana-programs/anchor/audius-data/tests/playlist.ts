@@ -15,6 +15,8 @@ import {
   testUpdatePlaylist,
 } from "./test-helpers";
 
+const { SystemProgram } = anchor.web3;
+
 chai.use(chaiAsPromised);
 
 describe("audius-data", function () {
@@ -105,6 +107,8 @@ describe("audius-data", function () {
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
       playlistOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       adminStgAccount: adminStgKeypair.publicKey,
     });
 
@@ -124,6 +128,8 @@ describe("audius-data", function () {
         playlistMetadata,
         userAuthorityKeypair: wrongUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
         adminStgAccount: adminStgKeypair.publicKey,
       });
     } catch (e) {
@@ -139,6 +145,8 @@ describe("audius-data", function () {
       adminStgAccount: adminStgKeypair.publicKey,
       id: playlistID,
       userStgAccountPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       metadata: updatedPlaylistMetadata,
     });
@@ -198,6 +206,8 @@ describe("audius-data", function () {
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
       playlistOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
     });
 
     await testDeletePlaylist({
@@ -205,6 +215,8 @@ describe("audius-data", function () {
       program,
       id: playlistID,
       playlistOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       baseAuthorityAccount,
       handleBytesArray,
@@ -271,6 +283,8 @@ describe("audius-data", function () {
         playlistMetadata,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
@@ -283,6 +297,8 @@ describe("audius-data", function () {
         playlistMetadata: playlistMetadata2,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
@@ -295,6 +311,8 @@ describe("audius-data", function () {
         playlistMetadata: playlistMetadata3,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
     ]);
     console.log(`Created 3 playlists in ${Date.now() - start}ms`);

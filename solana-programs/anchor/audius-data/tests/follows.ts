@@ -2,9 +2,19 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { expect, assert } from "chai";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair, getTransactionWithData } from "../lib/utils";
+import {
+  findDerivedPair,
+  getTransactionWithData,
+  SystemSysVarProgramKey,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { initTestConstants, testCreateUser } from "./test-helpers";
+import {
+  initTestConstants,
+  testCreateUser,
+  testCreateUserDelegate,
+} from "./test-helpers";
+
+const { PublicKey, SystemProgram } = anchor.web3;
 
 const UserActionEnumValues = {
   unfollowUser: { unfollowUser: {} },
@@ -139,10 +149,11 @@ describe("follows", function () {
       const followArgs = {
         accounts: {
           audiusAdmin: adminStgKeypair.publicKey,
-          payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
           followeeUserStorage: userStorageAccount2,
+          userAuthorityDelegate: SystemProgram.programId,
+          authorityDelegationStatus: SystemProgram.programId,
         },
         signers: [newUser1Key],
       };
@@ -172,7 +183,58 @@ describe("follows", function () {
         constants2.handleBytesArray
       );
       expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
-      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
+      expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
+    });
+
+    it("delegate follows user", async function () {
+      const delegate = await testCreateUserDelegate({
+        adminKeypair,
+        adminStorageKeypair: adminStgKeypair,
+        program,
+        provider,
+      });
+
+      // Submit a tx where user 1 follows user 2
+      const followArgs = {
+        accounts: {
+          audiusAdmin: adminStgKeypair.publicKey,
+          authority: delegate.userAuthorityDelegateKeypair.publicKey,
+          followerUserStorage: delegate.userAccountPDA,
+          followeeUserStorage: userStorageAccount2,
+          userAuthorityDelegate: delegate.userAuthorityDelegatePDA,
+          authorityDelegationStatus: delegate.authorityDelegationStatusPDA,
+        },
+        signers: [delegate.userAuthorityDelegateKeypair],
+      };
+
+      const followTx = await program.rpc.followUser(
+        baseAuthorityAccount,
+        UserActionEnumValues.followUser,
+        { seed: delegate.handleBytesArray, bump: delegate.userBumpSeed },
+        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
+        followArgs
+      );
+
+      const { decodedInstruction, decodedData, accountPubKeys } =
+        await getTransactionWithData(program, provider, followTx, 0);
+
+      expect(decodedInstruction.name).to.equal("followUser");
+      expect(decodedData.base.toString()).to.equal(
+        baseAuthorityAccount.toString()
+      );
+      expect(decodedData.userAction).to.deep.equal(
+        UserActionEnumValues.followUser
+      );
+      expect(decodedData.followerHandle.seed).to.deep.equal(
+        delegate.handleBytesArray
+      );
+      expect(decodedData.followeeHandle.seed).to.deep.equal(
+        constants2.handleBytesArray
+      );
+      expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
+      expect(accountPubKeys[5]).to.equal(
+        delegate.userAuthorityDelegateKeypair.publicKey.toString()
+      );
     });
 
     it("unfollow user", async function () {
@@ -184,6 +246,8 @@ describe("follows", function () {
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
           followeeUserStorage: userStorageAccount2,
+          userAuthorityDelegate: SystemProgram.programId,
+          authorityDelegationStatus: SystemProgram.programId,
         },
         signers: [newUser1Key],
       };
@@ -212,7 +276,7 @@ describe("follows", function () {
         constants2.handleBytesArray
       );
       expect(accountPubKeys[0]).to.equal(adminStgKeypair.publicKey.toString());
-      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
+      expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
     });
 
     it("submit invalid follow action", async function () {
@@ -225,6 +289,8 @@ describe("follows", function () {
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
           followeeUserStorage: userStorageAccount2,
+          userAuthorityDelegate: SystemProgram.programId,
+          authorityDelegationStatus: SystemProgram.programId,
         },
         signers: [newUser1Key],
       };
@@ -256,6 +322,8 @@ describe("follows", function () {
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
           followeeUserStorage: wrongUserKeypair.publicKey,
+          userAuthorityDelegate: SystemProgram.programId,
+          authorityDelegationStatus: SystemProgram.programId,
         },
         signers: [newUser1Key],
       };

@@ -12,9 +12,14 @@ import {
   EntityTypesEnumValues,
   deleteTrackRepost,
 } from "../lib/lib";
-import { getTransaction, randomString } from "../lib/utils";
+import {
+  getTransaction,
+  randomString,
+  SystemSysVarProgramKey,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser } from "./test-helpers";
+import { createSolanaUser, testCreateUserDelegate } from "./test-helpers";
+const { SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
 
@@ -71,6 +76,8 @@ describe("track-actions", function () {
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
       userStgAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -103,6 +110,8 @@ describe("track-actions", function () {
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
       userStgAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -135,6 +144,8 @@ describe("track-actions", function () {
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
       userStgAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -159,6 +170,46 @@ describe("track-actions", function () {
     );
   });
 
+  it("Delegate reposts a track", async function () {
+    const delegate = await testCreateUserDelegate({
+      adminKeypair,
+      adminStorageKeypair: adminStgKeypair,
+      program,
+      provider,
+    });
+
+    const tx = await addTrackRepost({
+      program,
+      baseAuthorityAccount: delegate.baseAuthorityAccount,
+      adminStgPublicKey: adminStgKeypair.publicKey,
+      userStgAccountPDA: delegate.userAccountPDA,
+      userAuthorityDelegateAccountPDA: delegate.userAuthorityDelegatePDA,
+      authorityDelegationStatusAccountPDA:
+        delegate.authorityDelegationStatusPDA,
+      userAuthorityKeypair: delegate.userAuthorityDelegateKeypair,
+      handleBytesArray: delegate.handleBytesArray,
+      bumpSeed: delegate.userBumpSeed,
+      id: randomString(10),
+    });
+    const info = await getTransaction(provider, tx);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+    const userHandle = String.fromCharCode(...delegate.handleBytesArray);
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.addRepost
+    );
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.track
+    );
+  });
+
   it("Delete repost for a track", async function () {
     const user = await createSolanaUser(program, provider, adminStgKeypair);
 
@@ -167,6 +218,8 @@ describe("track-actions", function () {
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
       userStgAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,

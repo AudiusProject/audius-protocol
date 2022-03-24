@@ -16,6 +16,8 @@ import { getTransaction, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import { createSolanaUser } from "./test-helpers";
 
+const { SystemProgram } = anchor.web3;
+
 chai.use(chaiAsPromised);
 
 describe("playlist-actions", function () {
@@ -71,6 +73,8 @@ describe("playlist-actions", function () {
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
       userStgAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -103,6 +107,8 @@ describe("playlist-actions", function () {
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
       userStgAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -135,6 +141,8 @@ describe("playlist-actions", function () {
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
       userStgAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -167,6 +175,8 @@ describe("playlist-actions", function () {
       baseAuthorityAccount: user.authority,
       adminStgPublicKey: adminStgKeypair.publicKey,
       userStgAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,

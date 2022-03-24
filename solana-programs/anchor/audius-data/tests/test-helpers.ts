@@ -22,10 +22,11 @@ import {
   ManagementActions,
   deletePlaylist,
   updatePlaylist,
+  updateAdmin,
 } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
-const { PublicKey } = anchor.web3;
+const { PublicKey, SystemProgram} = anchor.web3;
 
 const EthWeb3 = new Web3();
 const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
@@ -198,12 +199,16 @@ export const testCreateTrack = async ({
   trackMetadata,
   userAuthorityKeypair,
   trackOwnerPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
 }) => {
   const tx = await createTrack({
     id,
     program,
     userAuthorityKeypair,
     userStgAccountPDA: trackOwnerPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     metadata: trackMetadata,
     baseAuthorityAccount,
     handleBytesArray,
@@ -231,6 +236,8 @@ export const testDeleteTrack = async ({
   program,
   id,
   trackOwnerPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
   userAuthorityKeypair,
   baseAuthorityAccount,
   handleBytesArray,
@@ -242,6 +249,8 @@ export const testDeleteTrack = async ({
     provider,
     program,
     userStgAccountPDA: trackOwnerPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     userAuthorityKeypair: userAuthorityKeypair,
     baseAuthorityAccount,
     handleBytesArray,
@@ -267,6 +276,8 @@ export const testUpdateTrack = async ({
   program,
   id,
   userStgAccountPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
@@ -282,6 +293,8 @@ export const testUpdateTrack = async ({
     adminStgAccount,
     id,
     userStgAccountPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     metadata,
     userAuthorityKeypair,
   });
@@ -313,12 +326,16 @@ export const testCreatePlaylist = async ({
   playlistMetadata,
   userAuthorityKeypair,
   playlistOwnerPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
 }) => {
   const tx = await createPlaylist({
     id,
     program,
     userAuthorityKeypair,
     userStgAccountPDA: playlistOwnerPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     metadata: playlistMetadata,
     baseAuthorityAccount,
     handleBytesArray,
@@ -346,6 +363,8 @@ export const testDeletePlaylist = async ({
   program,
   id,
   playlistOwnerPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
   userAuthorityKeypair,
   baseAuthorityAccount,
   handleBytesArray,
@@ -357,6 +376,8 @@ export const testDeletePlaylist = async ({
     provider,
     program,
     userStgAccountPDA: playlistOwnerPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,  
     userAuthorityKeypair: userAuthorityKeypair,
     baseAuthorityAccount,
     handleBytesArray,
@@ -382,6 +403,8 @@ export const testUpdatePlaylist = async ({
   program,
   id,
   userStgAccountPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
@@ -397,6 +420,8 @@ export const testUpdatePlaylist = async ({
     adminStgAccount,
     id,
     userStgAccountPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,  
     metadata,
     userAuthorityKeypair,
   });
@@ -415,6 +440,129 @@ export const testUpdatePlaylist = async ({
   // Indexing code must check that the playlist owner PDA is known before processing
   expect(accountPubKeys[1]).to.equal(userStgAccountPDA.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
+};
+
+export const testCreateUserDelegate = async ({
+  adminKeypair,
+  adminStorageKeypair,
+  program,
+  provider,
+}) => {
+  const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+  const {
+    baseAuthorityAccount,
+    bumpSeed: userBumpSeed,
+    derivedAddress: userAccountPDA,
+  } = await findDerivedPair(
+    program.programId,
+    adminStorageKeypair.publicKey,
+    Buffer.from(handleBytesArray)
+  );
+
+  // disable admin writes
+  await updateAdmin({
+    program,
+    isWriteEnabled: false,
+    adminStgAccount: adminStorageKeypair.publicKey,
+    adminAuthorityKeypair: adminKeypair,
+  });
+
+  // New sol key that will be used to permission user updates
+  const newUserKeypair = anchor.web3.Keypair.generate();
+
+  // Generate signed SECP instruction
+  // Message as the incoming public key
+  const message = newUserKeypair.publicKey.toBytes();
+
+  await testCreateUser({
+    provider,
+    program,
+    message,
+    ethAccount,
+    baseAuthorityAccount,
+    handleBytesArray,
+    bumpSeed: userBumpSeed,
+    metadata,
+    newUserKeypair,
+    userStgAccount: userAccountPDA,
+    adminStgPublicKey: adminStorageKeypair.publicKey,
+  });
+
+  // Init AuthorityDelegationStatus for a new authority
+  const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
+  const authorityDelegationStatusSeeds = [
+    Buffer.from("authority-delegation-status", "utf8"),
+    userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+  ];
+
+  const authorityDelegationStatusRes = await PublicKey.findProgramAddress(
+    authorityDelegationStatusSeeds,
+    program.programId
+  );
+  const authorityDelegationStatusPDA = authorityDelegationStatusRes[0];
+  const authorityDelegationStatusBump = authorityDelegationStatusRes[1];
+
+  const initAuthorityDelegationStatusArgs = {
+    accounts: {
+      delegateAuthority: userAuthorityDelegateKeypair.publicKey,
+      authorityDelegationStatusPda: authorityDelegationStatusPDA,
+      payer: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId,
+    },
+    signers: [userAuthorityDelegateKeypair],
+  };
+
+  await program.rpc.initAuthorityDelegationStatus(
+    "authority_name",
+    initAuthorityDelegationStatusArgs
+  );
+
+  // New sol key that will be used as user authority delegate
+  const userAuthorityDelegateSeeds = [
+    userAccountPDA.toBytes().slice(0, 32),
+    userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+  ];
+  const res = await PublicKey.findProgramAddress(
+    userAuthorityDelegateSeeds,
+    program.programId
+  );
+  const userAuthorityDelegatePDA = res[0];
+  const userAuthorityDelegateBump = res[1];
+
+  const addUserAuthorityDelegateArgs = {
+    accounts: {
+      admin: adminStorageKeypair.publicKey,
+      user: userAccountPDA,
+      newUserAuthorityDelegate: userAuthorityDelegatePDA,
+      signerUserAuthorityDelegate: SystemProgram.programId,
+      authorityDelegationStatus: SystemProgram.programId,
+      authority: newUserKeypair.publicKey,
+      payer: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId,
+    },
+    signers: [newUserKeypair],
+  };
+
+  await program.rpc.addUserAuthorityDelegate(
+    baseAuthorityAccount,
+    handleBytesArray,
+    userBumpSeed,
+    userAuthorityDelegateKeypair.publicKey,
+    addUserAuthorityDelegateArgs
+  );
+
+  return {
+    baseAuthorityAccount,
+    handleBytesArray,
+    userBumpSeed,
+    userAccountPDA,
+    userAuthorityDelegatePDA,
+    userAuthorityDelegateBump,
+    authorityDelegationStatusPDA,
+    authorityDelegationStatusBump,
+    newUserKeypair,
+    userAuthorityDelegateKeypair,
+  };
 };
 
 export const pollAccountBalance = async (
