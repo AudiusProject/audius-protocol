@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
+import { next, previous } from 'audius-client/src/common/store/queue/slice'
+import { Genre } from 'audius-client/src/common/utils/genres'
 import {
   View,
   Animated,
@@ -12,15 +14,17 @@ import {
   Pressable
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
 import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
 import Drawer from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { SEEK, seek } from 'app/store/audio/actions'
 import {
   getPlaying,
   getTrack as getNativeTrack
@@ -42,6 +46,7 @@ import { NOW_PLAYING_BAR_HEIGHT } from './constants'
 const combinedBottomAreaHeight = BOTTOM_BAR_HEIGHT + NOW_PLAYING_BAR_HEIGHT
 
 const STATUS_BAR_FADE_CUTOFF = 0.6
+const SKIP_DURATION_SEC = 15
 
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
@@ -79,6 +84,8 @@ const NowPlayingDrawer = ({
   onPlayBarShowing,
   bottomBarTranslationAnim
 }: NowPlayingDrawerProps) => {
+  const dispatch = useDispatch()
+  const dispatchWeb = useDispatchWeb()
   const styles = useStyles()
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
@@ -209,12 +216,32 @@ const NowPlayingDrawer = ({
   }, [trackId])
 
   const onNext = useCallback(() => {
-    setMediaKey(mediaKey => mediaKey + 1)
-  }, [setMediaKey])
+    if (track?.genre === Genre.PODCASTS) {
+      if (global.progress) {
+        const { currentTime } = global.progress
+        const newPosition = currentTime + SKIP_DURATION_SEC
+        dispatch(
+          seek({ type: SEEK, seconds: Math.min(track.duration, newPosition) })
+        )
+      }
+    } else {
+      dispatchWeb(next({ skip: true }))
+      setMediaKey(mediaKey => mediaKey + 1)
+    }
+  }, [dispatch, dispatchWeb, setMediaKey, track])
 
   const onPrevious = useCallback(() => {
-    setMediaKey(mediaKey => mediaKey + 1)
-  }, [setMediaKey])
+    if (track?.genre === Genre.PODCASTS) {
+      if (global.progress) {
+        const { currentTime } = global.progress
+        const newPosition = currentTime - SKIP_DURATION_SEC
+        dispatch(seek({ type: SEEK, seconds: Math.max(0, newPosition) }))
+      }
+    } else {
+      dispatchWeb(previous({}))
+      setMediaKey(mediaKey => mediaKey + 1)
+    }
+  }, [dispatch, dispatchWeb, setMediaKey, track])
 
   const onPressScrubberIn = useCallback(() => {
     setIsGestureEnabled(false)
@@ -300,7 +327,11 @@ const NowPlayingDrawer = ({
               />
             </View>
             <View style={styles.controlsContainer}>
-              <AudioControls onNext={onNext} onPrevious={onPrevious} />
+              <AudioControls
+                onNext={onNext}
+                onPrevious={onPrevious}
+                isPodcast={track.genre === Genre.PODCASTS}
+              />
               <ActionsBar track={track} />
             </View>
           </>
