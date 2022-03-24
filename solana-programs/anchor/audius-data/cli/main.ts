@@ -129,8 +129,19 @@ async function initUserCLI(args: initUserCLIParams) {
     adminStoragePublicKey,
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
+<<<<<<< HEAD
   const handleBytesArray = getHandleBytesArray(handle);
   const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStoragePublicKey, handleBytesArray);
+=======
+  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
+  const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+    await findDerivedPair(
+      cliVars.program.programId,
+      adminStgKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    );
+>>>>>>> master
 
   const userStorageAddress = derivedAddress;
   console.log("initing user")

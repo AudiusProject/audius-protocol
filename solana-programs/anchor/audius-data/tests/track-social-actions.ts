@@ -14,7 +14,10 @@ import {
 } from "../lib/lib";
 import { getTransaction, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser } from "./test-helpers";
+import {
+  createSolanaContentNode,
+  createSolanaUser,
+} from "./test-helpers";
 
 chai.use(chaiAsPromised);
 
@@ -60,6 +63,30 @@ describe("track-actions", function () {
       isWriteEnabled: false,
       adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
+    });
+  });
+
+  it("Initializing Content Node accounts!", async function () {
+    await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(1),
+    });
+    await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(2),
+    });
+    await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(3),
     });
   });
 
