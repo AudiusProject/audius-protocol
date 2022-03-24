@@ -96,16 +96,20 @@ async function doesUserHaveSocialProof (userInstance) {
 }
 
 const deriveRewardManagerAuthority = async () => {
-  return (await SolanaUtils.findProgramAddressFromPubkey(
-    SolanaUtils.newPublicKeyNullable(solanaRewardsManagerProgramId),
-    SolanaUtils.newPublicKeyNullable(solanaRewardsManager))
+  return (
+    await SolanaUtils.findProgramAddressFromPubkey(
+      SolanaUtils.newPublicKeyNullable(solanaRewardsManagerProgramId),
+      SolanaUtils.newPublicKeyNullable(solanaRewardsManager)
+    )
   )[0].toString()
 }
 
 const deriveClaimableTokenAuthority = async () => {
-  return (await SolanaUtils.findProgramAddressFromPubkey(
-    SolanaUtils.newPublicKeyNullable(solanaClaimableTokenProgramAddress),
-    SolanaUtils.newPublicKeyNullable(solanaMintAddress))
+  return (
+    await SolanaUtils.findProgramAddressFromPubkey(
+      SolanaUtils.newPublicKeyNullable(solanaClaimableTokenProgramAddress),
+      SolanaUtils.newPublicKeyNullable(solanaMintAddress)
+    )
   )[0].toString()
 }
 
@@ -138,8 +142,12 @@ const getClaimableTokenAuthority = async () => {
  * @param {Instruction} instruction
  * @returns the enum value of the given instruction
  */
-const getInstructionEnum = instruction => {
-  if (instruction.data && instruction.data.data && instruction.data.data.length > 0) {
+const getInstructionEnum = (instruction) => {
+  if (
+    instruction.data &&
+    instruction.data.data &&
+    instruction.data.data.length > 0
+  ) {
     return instruction.data.data[0]
   }
   return null
@@ -153,7 +161,11 @@ const getInstructionEnum = instruction => {
  */
 const getAccountIndex = (instruction, enumMap) => {
   const instructionEnum = getInstructionEnum(instruction)
-  if (instructionEnum !== null && instructionEnum >= 0 && instructionEnum < Object.keys(enumMap).length) {
+  if (
+    instructionEnum !== null &&
+    instructionEnum >= 0 &&
+    instructionEnum < Object.keys(enumMap).length
+  ) {
     return enumMap[instructionEnum]
   }
   return null
@@ -171,7 +183,11 @@ const getAccountIndex = (instruction, enumMap) => {
 const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
   if (accountIndex == null) {
     return true
-  } else if (instruction.keys && accountIndex >= 0 && accountIndex < instruction.keys.length) {
+  } else if (
+    instruction.keys &&
+    accountIndex >= 0 &&
+    accountIndex < instruction.keys.length
+  ) {
     return instruction.keys[accountIndex].pubkey === expectedAccount
   }
   return false
@@ -186,12 +202,24 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
 const hasAllowedAuthority = async (instruction) => {
   if (instruction.programId === solanaRewardsManagerProgramId) {
     const rewardManagerAuthority = await getRewardManagerAuthority()
-    const hasAllowedBaseAccount = checkAccountKey(instruction, getAccountIndex(instruction, rewardManagerBaseAccountIndices), solanaRewardsManager)
-    const hasAllowedAuthority = checkAccountKey(instruction, getAccountIndex(instruction, rewardManagerAuthorityIndices), rewardManagerAuthority)
+    const hasAllowedBaseAccount = checkAccountKey(
+      instruction,
+      getAccountIndex(instruction, rewardManagerBaseAccountIndices),
+      solanaRewardsManager
+    )
+    const hasAllowedAuthority = checkAccountKey(
+      instruction,
+      getAccountIndex(instruction, rewardManagerAuthorityIndices),
+      rewardManagerAuthority
+    )
     return hasAllowedBaseAccount && hasAllowedAuthority
   } else if (instruction.programId === solanaClaimableTokenProgramAddress) {
     const claimableTokenAuthority = await getClaimableTokenAuthority()
-    return checkAccountKey(instruction, getAccountIndex(instruction, claimableTokenAuthorityIndices), claimableTokenAuthority)
+    return checkAccountKey(
+      instruction,
+      getAccountIndex(instruction, claimableTokenAuthorityIndices),
+      claimableTokenAuthority
+    )
   }
   return null
 }
@@ -202,9 +230,11 @@ const hasAllowedAuthority = async (instruction) => {
  * @returns true if all the instructions have allowed authorities/base accounts
  */
 const isRelayAllowedForAuthority = async (instructions) => {
-  const results = await Promise.all(instructions.map(instruction => hasAllowedAuthority(instruction)))
+  const results = await Promise.all(
+    instructions.map((instruction) => hasAllowedAuthority(instruction))
+  )
   // Explicitly check for false - null means N/A and should be passing
-  if (results.some(result => result === false)) {
+  if (results.some((result) => result === false)) {
     return false
   }
   return true
