@@ -195,8 +195,9 @@ pub mod audius_data {
         validate_user_authority(
             ctx.program_id,
             &ctx.accounts.user,
-            &ctx.accounts.user_delegate_authority,
+            &ctx.accounts.user_authority_delegate,
             &ctx.accounts.user_authority,
+            &ctx.accounts.authority_delegation_status,
         )?;
         Ok(())
     }
@@ -288,8 +289,31 @@ pub mod audius_data {
 
         Ok(())
     }
+    
+    /// Initializes a AuthorityDelegation PDA for an authority
+    pub fn init_authority_delegation_status(
+        ctx: Context<InitAuthorityDelegationStatus>,
+        _authority_name: String,
+    ) -> Result<()> {
 
-    // Enable an account to perform actions on behalf of a given user
+        ctx.accounts.authority_delegation_status_pda.is_revoked = false;
+
+        Ok(())
+    }
+
+    /// Revokes an authority's delegation
+    pub fn revoke_authority_delegation(
+        ctx: Context<RevokeAuthorityDelegationStatus>,
+        _authority_delegation_bump: u8,
+    ) -> Result<()> {
+        // TODO add user validation
+
+        ctx.accounts.authority_delegation_status_pda.is_revoked = true;
+
+        Ok(())
+    }
+
+    /// Enable an account to perform actions on behalf of a given user
     pub fn add_user_authority_delegate(
         ctx: Context<AddUserAuthorityDelegate>,
         _base: Pubkey,
@@ -301,6 +325,9 @@ pub mod audius_data {
         if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
+        // TODO validate user
+        // TODO validate Authority delegation is not revoked
+
         // Assign incoming delegate fields
         // Maintain the user's storage account and the incoming delegate authority key
         ctx.accounts
@@ -415,7 +442,10 @@ pub struct UpdateUser<'info> {
     pub user_authority: Signer<'info>,
     /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
     #[account()]
-    pub user_delegate_authority: AccountInfo<'info>,
+    pub user_authority_delegate: AccountInfo<'info>,
+    /// CHECK: Authority delegation status account, can be defaulted to SystemProgram for no-op
+    #[account()]
+    pub authority_delegation_status: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -424,6 +454,49 @@ pub struct UpdateAdmin<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
     pub admin_authority: Signer<'info>,
+}
+
+/// Instruction container to initialize an AuthorityDelegationStatus.
+/// The authority initializes itself as a delegate.
+/// `delegate_authority` is the authority that will become a delegate
+/// `authority_delegation_status_pda` is the target PDA for the authority's delegation
+#[derive(Accounts)]
+#[instruction(authority_name: String)]
+pub struct InitAuthorityDelegationStatus<'info> {
+    /// CHECK: Delegate authority account
+    #[account()]
+    pub delegate_authority: Signer<'info>,
+    #[account(
+        init,
+        payer = payer,
+        seeds = [AUTHORITY_DELEGATION_STATUS_SEED, delegate_authority.key().as_ref()],
+        bump,
+        space = AUTHORITY_DELEGATION_STATUS_ACCOUNT_SIZE
+    )]
+    pub authority_delegation_status_pda: Account<'info, AuthorityDelegationStatus>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+/// Instruction container to revoke an AuthorityDelegationStatus.
+/// The authority revokes itself as a delegate.
+/// `delegate_authority` is the authority that will become a delegate
+/// `authority_delegation_pda` is the target PDA for the authority's delegation
+#[derive(Accounts)]
+#[instruction(authority_delegation_status_bump: u8)]
+pub struct RevokeAuthorityDelegationStatus<'info> {
+    #[account()]
+    pub delegate_authority: Signer<'info>,
+    #[account(
+        mut, 
+        seeds = [AUTHORITY_DELEGATION_STATUS_SEED, delegate_authority.key().as_ref()],
+        bump = authority_delegation_status_bump,
+    )]
+    pub authority_delegation_status_pda: Account<'info, AuthorityDelegationStatus>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 /// Instruction container to allow user delegation
@@ -564,6 +637,13 @@ pub struct UserAuthorityDelegate {
     pub delegate_authority: Pubkey,
     // PDA of user storage account enabling operations
     pub user_storage_account: Pubkey,
+}
+
+/// Authority delegation status account
+#[account]
+pub struct AuthorityDelegationStatus {
+    // Revoke status for an authority's delegation eligibility
+    pub is_revoked: bool,
 }
 
 // User actions enum, used to follow/unfollow based on function arguments

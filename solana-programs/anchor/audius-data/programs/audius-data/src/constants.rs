@@ -17,3 +17,11 @@ pub const USER_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 pub const USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 32 + // delegate_authority: Pubkey
 32; // user_storage_account: Pubkey
+
+
+/// Size of authority delegation account
+pub const AUTHORITY_DELEGATION_STATUS_ACCOUNT_SIZE: usize = 8 + // anchor prefix
+1; // is_revoked: bool
+
+/// Seed for AuthorityDelegation PDA
+pub const AUTHORITY_DELEGATION_STATUS_SEED: &[u8; 27] = b"authority-delegation-status";
