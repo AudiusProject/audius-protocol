@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native'
+import { Text, TextStyle, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconSearch from 'app/assets/images/iconSearch.svg'
@@ -12,26 +12,35 @@ const messages = {
   title2: 'Please check your spelling or try broadening your search.'
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    flex: 1,
-    alignItems: 'center'
-  },
-  iconContainer: {
-    marginTop: 100,
-    marginBottom: 24,
-    transform: [{ scaleX: -1 }]
-  },
-  textContainer: {
-    maxWidth: 240,
+const useStyles = makeStyles(({ palette, typography, spacing }) => {
+  const textStyle: TextStyle = {
+    fontSize: typography.fontSize.medium,
+    fontFamily: typography.fontByWeight.medium,
+    marginBottom: spacing(4),
     textAlign: 'center',
-    padding: 8,
-    color: palette.neutralDark2
-  },
-  queryText: {
-    color: palette.neutralLight2
+    maxWidth: 300
   }
-}))
+
+  return {
+    root: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 100
+    },
+    searchIcon: {
+      marginBottom: spacing(6),
+      transform: [{ scaleX: -1 }]
+    },
+    textContainer: {
+      ...textStyle,
+      color: palette.neutral
+    },
+    queryText: {
+      ...textStyle,
+      color: palette.neutralLight4
+    }
+  }
+})
 
 export const EmptyResults = () => {
   const styles = useStyles()
@@ -40,9 +49,12 @@ export const EmptyResults = () => {
 
   return (
     <View style={styles.root}>
-      <View style={styles.iconContainer}>
-        <IconSearch fill={neutral} height='30' width='30' />
-      </View>
+      <IconSearch
+        style={styles.searchIcon}
+        fill={neutral}
+        height={40}
+        width={40}
+      />
       <Text style={styles.textContainer}>{messages.title1}</Text>
       <Text style={styles.queryText}>{`"${searchQuery}"`}</Text>
       <Text style={styles.textContainer}>{messages.title2}</Text>
