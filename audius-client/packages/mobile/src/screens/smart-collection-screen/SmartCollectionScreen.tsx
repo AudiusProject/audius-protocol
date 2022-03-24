@@ -1,10 +1,12 @@
 import { FavoriteSource } from 'audius-client/src/common/models/Analytics'
 import { SmartCollection } from 'audius-client/src/common/models/Collection'
+import { getPlaylistLibrary } from 'audius-client/src/common/store/account/selectors'
+import { getCollection } from 'audius-client/src/common/store/pages/smart-collection/selectors'
+import { findInPlaylistLibrary } from 'audius-client/src/common/store/playlist-library/helpers'
 import {
   saveSmartCollection,
   unsaveSmartCollection
 } from 'audius-client/src/common/store/social/collections/actions'
-import { getCollection } from 'common/store/pages/smart-collection/selectors'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -71,6 +73,12 @@ const SmartCollectionScreenComponent = ({
   const dispatchWeb = useDispatchWeb()
   const { description, has_current_user_saved, playlist_name } = collection
 
+  const playlistLibrary = useSelectorWeb(getPlaylistLibrary)
+
+  const isSaved = playlistLibrary
+    ? !!findInPlaylistLibrary(playlistLibrary, metadata.variant)
+    : false
+
   const handlePressSave = () => {
     if (has_current_user_saved) {
       dispatchWeb(
@@ -107,7 +115,7 @@ const SmartCollectionScreenComponent = ({
       <View style={styles.headerContainer}>
         <CollectionScreenDetailsTile
           description={description ?? ''}
-          hasSaved={has_current_user_saved}
+          hasSaved={isSaved}
           hideFavoriteCount
           hideOverflow
           hideRepost

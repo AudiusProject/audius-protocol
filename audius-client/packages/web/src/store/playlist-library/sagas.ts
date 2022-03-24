@@ -24,18 +24,18 @@ import {
   getPlaylistLibrary
 } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
+import {
+  containsTempPlaylist,
+  extractTempPlaylistsFromLibrary,
+  removePlaylistLibraryDuplicates,
+  replaceTempWithResolvedPlaylists
+} from 'common/store/playlist-library/helpers'
 import { makeKindId } from 'common/utils/uid'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getResult } from 'store/confirmer/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
 
-import {
-  containsTempPlaylist,
-  extractTempPlaylistsFromLibrary,
-  removePlaylistLibraryDuplicates,
-  replaceTempWithResolvedPlaylists
-} from './helpers'
 import { update } from './slice'
 
 const TEMP_PLAYLIST_UPDATE_HELPER = 'TEMP_PLAYLIST_UPDATE_HELPER'

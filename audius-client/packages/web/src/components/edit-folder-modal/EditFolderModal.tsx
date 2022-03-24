@@ -13,15 +13,15 @@ import { useModalState } from 'common/hooks/useModalState'
 import { Name } from 'common/models/Analytics'
 import { PlaylistLibraryFolder } from 'common/models/PlaylistLibrary'
 import { getPlaylistLibrary } from 'common/store/account/selectors'
+import {
+  removePlaylistFolderInLibrary,
+  renamePlaylistFolderInLibrary
+} from 'common/store/playlist-library/helpers'
 import FolderForm from 'components/create-playlist/FolderForm'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import { make, useRecord } from 'store/analytics/actions'
 import { getFolderId } from 'store/application/ui/editFolderModal/selectors'
 import { setFolderId } from 'store/application/ui/editFolderModal/slice'
-import {
-  removePlaylistFolderInLibrary,
-  renamePlaylistFolderInLibrary
-} from 'store/playlist-library/helpers'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { zIndex } from 'utils/zIndex'

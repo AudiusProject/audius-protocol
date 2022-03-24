@@ -12,7 +12,7 @@ import {
   extractTempPlaylistsFromLibrary,
   replaceTempWithResolvedPlaylists,
   removePlaylistLibraryTempPlaylists
-} from './helpers'
+} from 'common/store/playlist-library/helpers'
 
 describe('findInPlaylistLibrary', () => {
   it('finds an index in the library', () => {
