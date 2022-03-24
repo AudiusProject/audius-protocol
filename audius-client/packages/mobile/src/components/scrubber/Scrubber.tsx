@@ -36,6 +36,7 @@ const createStyles = (themeColors: ThemeColors) =>
       alignItems: 'center'
     },
     timestamp: {
+      width: 50,
       color: themeColors.neutral,
       fontSize: 12,
       flexShrink: 1
@@ -150,7 +151,11 @@ export const Scrubber = ({
 
   return (
     <View style={styles.root}>
-      <Text style={styles.timestamp} weight='regular' numberOfLines={1}>
+      <Text
+        style={[styles.timestamp, { textAlign: 'right' }]}
+        weight='regular'
+        numberOfLines={1}
+      >
         {dragSeconds || timestampStart}
       </Text>
       <Slider
