@@ -24,4 +24,8 @@ npm i -g "@project-serum/anchor-cli@$ANCHOR_CLI_VERSION"
 anchor --version
 # install dependencies
 yarn install
+
+# init solana keypair
+solana-keygen new --no-bip39-passphrase --force -o "$PROTOCOL_DIR/.config/solana/id.json"
+
 echo "Installed deps for anchor development."
