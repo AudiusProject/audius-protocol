@@ -62,7 +62,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     marginBottom: spacing(4)
   },
   scrubberContainer: {
-    marginHorizontal: spacing(10)
+    marginHorizontal: spacing(6)
   }
 }))
 

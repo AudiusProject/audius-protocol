@@ -7,7 +7,7 @@ import {
   ReactNode
 } from 'react'
 
-import LottieView from 'lottie-react-native'
+import LottieView, { AnimatedLottieViewProps } from 'lottie-react-native'
 import {
   Pressable,
   PressableProps,
@@ -21,8 +21,12 @@ import { usePrevious } from 'react-use'
 import { GestureResponderHandler } from 'app/types/gesture'
 import { Theme, useThemeVariant } from 'app/utils/theme'
 
-export type BaseAnimatedButtonProps = {
+type IconJSON = AnimatedLottieViewProps['source']
+
+export type AnimatedButtonProps = {
   iconIndex?: number
+  iconDarkJSON: IconJSON | IconJSON[]
+  iconLightJSON: IconJSON | IconJSON[]
   isActive?: boolean
   isDisabled?: boolean
   onLongPress?: GestureResponderHandler
@@ -30,14 +34,7 @@ export type BaseAnimatedButtonProps = {
   renderUnderlay?: (state: PressableStateCallbackType) => ReactNode
   style?: PressableProps['style']
   wrapperStyle?: StyleProp<ViewStyle>
-}
-
-type IconJSON = any
-
-export type AnimatedButtonProps = {
-  iconDarkJSON: IconJSON | IconJSON[]
-  iconLightJSON: IconJSON | IconJSON[]
-} & BaseAnimatedButtonProps
+} & PressableProps
 
 export const AnimatedButton = ({
   iconIndex: externalIconIndex,
@@ -49,7 +46,8 @@ export const AnimatedButton = ({
   onPress,
   renderUnderlay,
   style,
-  wrapperStyle
+  wrapperStyle,
+  ...pressableProps
 }: AnimatedButtonProps) => {
   const themeVariant = useThemeVariant()
   const isDarkMode = themeVariant === Theme.DARK
@@ -159,6 +157,7 @@ export const AnimatedButton = ({
 
   return iconJSON ? (
     <Pressable
+      {...pressableProps}
       disabled={isDisabled}
       onPress={handlePress}
       onLongPress={handleLongPress}
