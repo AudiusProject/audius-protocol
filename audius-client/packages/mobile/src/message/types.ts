@@ -19,13 +19,6 @@ export enum MessageType {
   RELOAD = 'reload',
   ACCOUNT_RECOVERY = 'account-recovery',
 
-  // Cast
-  AIRPLAY = 'airplay',
-  IS_CASTING = 'action/is-casting',
-
-  // Google Cast
-  GOOGLE_CAST = 'show-google-cast-picker',
-
   // Sign On
   SUBMIT_SIGNIN = 'submit-signin',
   SIGN_IN_FAILURE = 'sign-in-failure',

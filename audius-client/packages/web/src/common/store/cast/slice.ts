@@ -6,10 +6,12 @@ export type CastMethod = 'airplay' | 'chromecast'
 
 type CastState = {
   method: CastMethod
+  isCasting: boolean
 }
 
 const initialState: CastState = {
-  method: 'airplay'
+  method: 'airplay',
+  isCasting: false
 }
 
 const slice = createSlice({
@@ -23,10 +25,16 @@ const slice = createSlice({
       }: PayloadAction<{ method: CastMethod; persist?: boolean }>
     ) => {
       state.method = method
+    },
+    setIsCasting: (
+      state,
+      { payload: { isCasting } }: PayloadAction<{ isCasting: boolean }>
+    ) => {
+      state.isCasting = isCasting
     }
   }
 })
 
-export const { updateMethod } = slice.actions
+export const { updateMethod, setIsCasting } = slice.actions
 
 export default slice.reducer

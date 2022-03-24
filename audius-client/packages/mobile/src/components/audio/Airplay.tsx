@@ -1,14 +1,13 @@
-import { useEffect, useRef, RefObject } from 'react'
+import { useEffect, useRef } from 'react'
 
+import { setIsCasting } from 'common/store/cast/slice'
 import {
   requireNativeComponent,
   NativeEventEmitter,
   NativeModules
 } from 'react-native'
-import WebView from 'react-native-webview'
 
-import { MessageType } from 'app/message'
-import { postMessage } from 'app/utils/postMessage'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 
 const AIRPLAY_PORT_TYPE = 'AirPlay'
 
@@ -16,24 +15,23 @@ const AirplayViewManager = requireNativeComponent('AirplayView')
 const { AirplayEvent } = NativeModules
 const airplayEventListener = new NativeEventEmitter(AirplayEvent)
 
-type OwnProps = {
-  webRef: RefObject<WebView>
-}
-
 /**
  * An airplay component that talks to the native layer and
  * lets the user broadcast and receive information from
  * a native AVRoutePickerView.
  */
-const Airplay = ({ webRef }: OwnProps) => {
+const Airplay = () => {
   const listenerRef = useRef<any>(null)
+  const dispatchWeb = useDispatchWeb()
 
   useEffect(() => {
-    AirplayEvent.start()
+    // On mount, we start scanning the network for airplay devices
+    // and listen for changes to `deviceConnected`
+    AirplayEvent.startScan()
     listenerRef.current = airplayEventListener.addListener(
       'deviceConnected',
       device => {
-        console.info(`Connected to device ${device}`)
+        console.info(`Connected to device ${JSON.stringify(device)}`)
         if (
           device &&
           device.devices &&
@@ -41,23 +39,9 @@ const Airplay = ({ webRef }: OwnProps) => {
           device.devices[0].portType &&
           device.devices[0].portType === AIRPLAY_PORT_TYPE
         ) {
-          // If we've found a device, tell the web layer that we are casting
-          if (webRef.current) {
-            postMessage(webRef.current, {
-              type: MessageType.IS_CASTING,
-              isCasting: true,
-              isAction: true
-            })
-          }
+          dispatchWeb(setIsCasting({ isCasting: true }))
         } else {
-          // If we haven't found one, tell the web layer that we're not casting
-          if (webRef.current) {
-            postMessage(webRef.current, {
-              type: MessageType.IS_CASTING,
-              isCasting: false,
-              isAction: true
-            })
-          }
+          dispatchWeb(setIsCasting({ isCasting: false }))
         }
       }
     )
@@ -65,7 +49,7 @@ const Airplay = ({ webRef }: OwnProps) => {
     return () => {
       listenerRef.current?.stop?.()
     }
-  }, [webRef, listenerRef])
+  }, [listenerRef, dispatchWeb])
 
   return <AirplayViewManager />
 }
