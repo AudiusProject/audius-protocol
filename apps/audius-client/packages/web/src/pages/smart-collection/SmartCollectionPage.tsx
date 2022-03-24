@@ -7,8 +7,8 @@ import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { getPlaylistLibrary } from 'common/store/account/selectors'
 import { getCollection } from 'common/store/pages/smart-collection/selectors'
 import { fetchSmartCollection } from 'common/store/pages/smart-collection/slice'
+import { findInPlaylistLibrary } from 'common/store/playlist-library/helpers'
 import CollectionPage from 'pages/collection-page/CollectionPage'
-import { findInPlaylistLibrary } from 'store/playlist-library/helpers'
 import { AppState } from 'store/types'
 
 type OwnProps = {

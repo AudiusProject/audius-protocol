@@ -15,6 +15,7 @@ import {
   getUsers,
   getUserTimestamps
 } from 'common/store/cache/users/selectors'
+import { removePlaylistLibraryTempPlaylists } from 'common/store/playlist-library/helpers'
 import {
   getSelectedServices,
   getStatus
@@ -26,7 +27,6 @@ import {
   setAudiusAccountUser
 } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { removePlaylistLibraryTempPlaylists } from 'store/playlist-library/helpers'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 

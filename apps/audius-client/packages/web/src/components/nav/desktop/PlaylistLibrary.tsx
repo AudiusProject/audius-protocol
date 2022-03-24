@@ -20,6 +20,13 @@ import {
 } from 'common/store/account/selectors'
 import { addTrackToPlaylist } from 'common/store/cache/collections/actions'
 import { getPlaylistUpdates } from 'common/store/notifications/selectors'
+import {
+  addPlaylistToFolder,
+  containsTempPlaylist,
+  findInPlaylistLibrary,
+  isInsideFolder,
+  reorderPlaylistLibrary
+} from 'common/store/playlist-library/helpers'
 import Droppable from 'components/dragndrop/Droppable'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -28,13 +35,6 @@ import { make, useRecord } from 'store/analytics/actions'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
-import {
-  addPlaylistToFolder,
-  containsTempPlaylist,
-  findInPlaylistLibrary,
-  isInsideFolder,
-  reorderPlaylistLibrary
-} from 'store/playlist-library/helpers'
 import { update } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { getPathname, playlistPage } from 'utils/route'
