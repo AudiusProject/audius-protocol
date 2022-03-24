@@ -32,11 +32,16 @@ type ProfileTabNavigatorProps = {
    * animated value is created.
    */
   animatedValue?: Animated.Value
+
+  refreshing?: boolean
+  onRefresh?: () => void
 }
 
 export const ProfileTabNavigator = ({
   renderHeader,
-  animatedValue
+  animatedValue,
+  refreshing,
+  onRefresh
 }: ProfileTabNavigatorProps) => {
   const { user_id, track_count } = useSelectProfile(['user_id', 'track_count'])
   const { params } = useRoute<'Profile'>()
@@ -51,35 +56,50 @@ export const ProfileTabNavigator = ({
     name: 'Tracks',
     Icon: IconNote,
     component: TracksTab,
-    initialParams
+    initialParams,
+    refreshing,
+    onRefresh,
+    scrollY: animatedValue
   })
 
   const albumsScreen = collapsibleTabScreen({
     name: 'Albums',
     Icon: IconAlbum,
     component: AlbumsTab,
-    initialParams
+    initialParams,
+    refreshing,
+    onRefresh,
+    scrollY: animatedValue
   })
 
   const playlistsScreen = collapsibleTabScreen({
     name: 'Playlists',
     Icon: IconPlaylists,
     component: PlaylistsTab,
-    initialParams
+    initialParams,
+    refreshing,
+    onRefresh,
+    scrollY: animatedValue
   })
 
   const repostsScreen = collapsibleTabScreen({
     name: 'Reposts',
     Icon: IconRepost,
     component: RepostsTab,
-    initialParams
+    initialParams,
+    refreshing,
+    onRefresh,
+    scrollY: animatedValue
   })
 
   const collectiblesScreen = collapsibleTabScreen({
     name: 'Collectibles',
     Icon: IconCollectibles,
     component: CollectiblesTab,
-    initialParams
+    initialParams,
+    refreshing,
+    onRefresh,
+    scrollY: animatedValue
   })
 
   const screenOptions = {

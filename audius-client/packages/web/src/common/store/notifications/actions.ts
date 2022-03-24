@@ -37,9 +37,10 @@ export const UNSUBSCRIBE_USER = 'NOTIFICATION/UNSUBSCRIBE_USER'
 export const SET_PLAYLIST_UPDATES = 'NOTIFICATION/SET_PLAYLIST_UPDATES'
 export const UPDATE_PLAYLIST_VIEW = 'NOTIFICATION/UPDATE_PLAYLIST_VIEW'
 
-export const fetchNotifications = (limit = 10) => ({
+export const fetchNotifications = (limit = 10, fromLast = true) => ({
   type: FETCH_NOTIFICATIONS,
-  limit
+  limit,
+  fromLast
 })
 
 export const fetchNotificationsRequested = () => ({

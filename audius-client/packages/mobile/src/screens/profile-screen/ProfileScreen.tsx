@@ -1,12 +1,17 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { PortalHost } from '@gorhom/portal'
+import Status from 'audius-client/src/common/models/Status'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
+import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'
 import { Animated, LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import { Screen } from 'app/components/core'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { TopBarIconButton } from 'app/screens/app-screen'
@@ -59,9 +64,9 @@ export const ProfileScreen = () => {
   const styles = useStyles()
   const profile = useSelectProfileRoot(['user_id', 'does_current_user_follow'])
   const accountId = useSelectorWeb(getUserId)
-  // const dispatchWeb = useDispatchWeb()
-  // const status = useSelectorWeb(getProfileStatus)
-  // const [isRefreshing, setIsRefreshing] = useState(false)
+  const dispatchWeb = useDispatchWeb()
+  const status = useSelectorWeb(getProfileStatus)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { accentOrange } = useThemeColors()
 
@@ -93,20 +98,19 @@ export const ProfileScreen = () => {
     setHasUserFollowed(false)
   }, [setHasUserFollowed])
 
-  // TODO(AUD-1649): Fix pull to refresh
-  // const handleRefresh = useCallback(() => {
-  //   if (profile) {
-  //     setIsRefreshing(true)
-  //     const { handle, user_id } = profile
-  //     dispatchWeb(fetchProfile(handle, user_id, true, true, true))
-  //   }
-  // }, [profile, dispatchWeb])
+  const handleRefresh = useCallback(() => {
+    if (profile) {
+      setIsRefreshing(true)
+      const { handle, user_id } = profile
+      dispatchWeb(fetchProfile(handle, user_id, true, true, false))
+    }
+  }, [profile, dispatchWeb])
 
-  // useEffect(() => {
-  //   if (status === Status.SUCCESS) {
-  //     setIsRefreshing(false)
-  //   }
-  // }, [status])
+  useEffect(() => {
+    if (status === Status.SUCCESS) {
+      setIsRefreshing(false)
+    }
+  }, [status])
 
   const isOwner = profile?.user_id === accountId
 
@@ -153,9 +157,12 @@ export const ProfileScreen = () => {
       {!profile ? null : (
         <>
           <View style={styles.navigator}>
+            <PortalHost name='PullToRefreshPortalHost' />
             <ProfileTabNavigator
               renderHeader={renderHeader}
               animatedValue={scrollY}
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
             />
           </View>
         </>

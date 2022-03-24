@@ -28,7 +28,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 const interpolateBlurViewOpacity = (scrollY: Animated.Value) =>
   scrollY.interpolate({
     inputRange: [-100, 0],
-    outputRange: [0.5, 0],
+    outputRange: [1, 0],
     extrapolateLeft: 'extend',
     extrapolateRight: 'clamp'
   })

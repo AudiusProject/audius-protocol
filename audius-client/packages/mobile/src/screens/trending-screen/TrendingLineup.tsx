@@ -70,6 +70,12 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
     return tabPressListener
   }, [navigation, dispatchWeb, timeRange])
 
+  useEffect(() => {
+    if (!trendingLineup.isMetadataLoading) {
+      setIsRefreshing(false)
+    }
+  }, [trendingLineup.isMetadataLoading])
+
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
     dispatchWeb(trendingActions.refreshInView(true))
@@ -91,7 +97,7 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
       lineup={trendingLineup}
       actions={trendingActions}
       refresh={handleRefresh}
-      refreshing={isRefreshing && trendingLineup.isMetadataLoading}
+      refreshing={isRefreshing}
       loadMore={handleLoadMore}
       {...other}
     />
