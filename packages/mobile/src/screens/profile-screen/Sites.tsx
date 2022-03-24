@@ -30,11 +30,13 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
+const prependProtocol = (url?: string) =>
+  !url?.match(/^https?:\/\//i) ? `https://${url}` : url
+
 export const Sites = () => {
   const styles = useStyles()
   const { neutral } = useThemeColors()
   const { website, donation } = useSelectProfile(['website', 'donation'])
-
   const iconProps = {
     height: 20,
     width: 20,
@@ -45,13 +47,13 @@ export const Sites = () => {
   return (
     <View pointerEvents='box-none' style={styles.sites}>
       {website ? (
-        <Link style={styles.site} url={website}>
+        <Link style={styles.site} url={prependProtocol(website)}>
           <IconLink {...iconProps} />
           <Text style={styles.siteText}>{website}</Text>
         </Link>
       ) : null}
       {donation ? (
-        <Link style={styles.site} url={donation}>
+        <Link style={styles.site} url={prependProtocol(donation)}>
           <IconDonate {...iconProps} />
           <Text style={styles.siteText}>{donation}</Text>
         </Link>
