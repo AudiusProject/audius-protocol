@@ -23,4 +23,12 @@ pub const USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE: usize = 8 + // anchor prefix
 /// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
 pub const CONTENT_NODE_ACCOUNT_SIZE: usize = 8 + 32 + 20;
 
+/// Seed for content node accounts
 pub const CONTENT_NODE_SEED_PREFIX: &[u8; 5] = b"sp_id";
+
+/// Size of authority delegation account
+pub const AUTHORITY_DELEGATION_STATUS_ACCOUNT_SIZE: usize = 8 + // anchor prefix
+1; // is_revoked: bool
+
+/// Seed for AuthorityDelegation PDA
+pub const AUTHORITY_DELEGATION_STATUS_SEED: &[u8; 27] = b"authority-delegation-status";
