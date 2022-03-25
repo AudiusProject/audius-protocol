@@ -14,7 +14,7 @@ describe('test Solana listen tracking', function () {
   let app, server, sandbox
   beforeEach(async () => {
     sandbox = sinon.createSandbox()
-    const appInfo = await getApp(null, null)
+    const appInfo = await getApp()
     app = appInfo.app
     server = appInfo.server
     await app.get('redis').flushdb()
