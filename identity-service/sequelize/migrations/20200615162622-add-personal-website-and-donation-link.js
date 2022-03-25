@@ -1,8 +1,8 @@
 'use strict'
 
 /**
- * Adds a 'count' field to UserTrackListens, which signifies the
- * number of times a user has listened to a track
+ * Adds 'website' and 'donation' fields to SocialHandles, which
+ * signify a personal/artist website and a donation link
  */
 module.exports = {
   up: (queryInterface, Sequelize) => {

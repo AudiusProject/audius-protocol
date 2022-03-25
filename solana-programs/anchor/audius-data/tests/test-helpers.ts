@@ -10,6 +10,7 @@ import {
   randomCID,
   getTransactionWithData,
   getContentNode,
+  randomId,
 } from "../lib/utils";
 import {
   createContentNode,
@@ -38,6 +39,7 @@ type InitTestConsts = {
   handleBytes: Buffer;
   handleBytesArray: number[];
   metadata: string;
+  userId: anchor.BN;
 };
 
 export const initTestConstants = (): InitTestConsts => {
@@ -46,6 +48,7 @@ export const initTestConstants = (): InitTestConsts => {
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
   const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
   const metadata = randomCID();
+  const userId = randomId()
 
   return {
     ethAccount,
@@ -53,6 +56,7 @@ export const initTestConstants = (): InitTestConsts => {
     handleBytes,
     handleBytesArray,
     metadata,
+    userId
   };
 };
 
@@ -71,7 +75,7 @@ export const testInitUser = async ({
   replicaSetBumps,
   cn1,
   cn2,
-  cn3,
+  cn3
 }) => {
   const tx = await initUser({
     provider,
@@ -88,7 +92,7 @@ export const testInitUser = async ({
     adminKeypair,
     cn1,
     cn2,
-    cn3,
+    cn3
   });
 
   const account = await program.account.user.fetch(userStorageAccount);
@@ -163,6 +167,7 @@ export const testCreateUser = async ({
   cn1,
   cn2,
   cn3,
+  userId
 }) => {
   const tx = await createUser({
     provider,
@@ -181,6 +186,7 @@ export const testCreateUser = async ({
     cn1,
     cn2,
     cn3,
+    userId
   });
 
   const { decodedInstruction, decodedData, accountPubKeys } =
@@ -236,7 +242,7 @@ export const testCreateTrack = async ({
     await getTransactionWithData(program, provider, tx, 0);
   // Validate instruction data
   expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
+  expect(decodedData.id.toString()).to.deep.equal(id.toString());
   expect(decodedData.metadata).to.equal(trackMetadata);
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
   expect(decodedData.managementAction).to.deep.equal(ManagementActions.create);
@@ -273,7 +279,7 @@ export const testDeleteTrack = async ({
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, tx, 0);
   expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
+  expect(decodedData.id.toString()).to.equal(id.toString());
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
   expect(decodedData.managementAction).to.deep.equal(ManagementActions.delete);
   // Assert on instruction struct
@@ -312,7 +318,7 @@ export const testUpdateTrack = async ({
 
   // Validate instruction data
   expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
+  expect(decodedData.id.toString()).to.equal(id.toString());
   expect(decodedData.metadata).to.equal(metadata);
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
   expect(decodedData.managementAction).to.deep.equal(ManagementActions.update);
@@ -351,7 +357,7 @@ export const testCreatePlaylist = async ({
     await getTransactionWithData(program, provider, tx, 0);
   // Validate instruction data
   expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
+  expect(decodedData.id.toString()).to.equal(id.toString());
   expect(decodedData.metadata).to.equal(playlistMetadata);
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
   expect(decodedData.managementAction).to.deep.equal(ManagementActions.create);
@@ -388,7 +394,7 @@ export const testDeletePlaylist = async ({
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, tx, 0);
   expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
+  expect(decodedData.id.toString()).to.equal(id.toString());
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
   expect(decodedData.managementAction).to.deep.equal(ManagementActions.delete);
   // Assert on instruction struct
@@ -427,7 +433,7 @@ export const testUpdatePlaylist = async ({
 
   // Validate instruction data
   expect(decodedInstruction.name).to.equal("manageEntity");
-  expect(decodedData.id).to.equal(id);
+  expect(decodedData.id.toString()).to.equal(id.toString());
   expect(decodedData.metadata).to.equal(metadata);
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
   expect(decodedData.managementAction).to.deep.equal(ManagementActions.update);
@@ -525,6 +531,7 @@ export const createSolanaUser = async (
     cn1: cn1.derivedAddress,
     cn2: cn2.derivedAddress,
     cn3: cn3.derivedAddress,
+    userId: testConsts.userId
   });
 
   const account = await program.account.user.fetch(newUserAcctPDA);
