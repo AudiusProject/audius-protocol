@@ -4,7 +4,6 @@ from typing import Dict, List, Optional
 
 import base58
 from anchorpy import InstructionCoder
-from constants import AUDIUS_DATA_PROGRAM_ID
 from construct import Container
 from utils import fetch_tx_receipt, get_all_txs_for_program, get_idl
 
@@ -89,16 +88,17 @@ async def parse_tx(tx_hash: str) -> List[Dict]:
 async def main(tx_hash):
     tx_hashes = []
     parsed_txs = []
-    if tx_hash:
+    program_id = get_idl().metadata.address
+    if len(tx_hash):
         tx_hashes.append(tx_hash)
     else:
-        tx_hashes = await get_all_txs_for_program(AUDIUS_DATA_PROGRAM_ID)
+        tx_hashes = await get_all_txs_for_program(program_id)
     for hash in tx_hashes:
-        print(f"Parsing tx {hash}")
+        print(f"Parsing tx {hash}\n")
         parsed_tx = await parse_tx(hash)
-        print(parsed_tx)
         parsed_txs.append(parsed_tx)
-    print(f"Parsed {len(parsed_txs)} txs: {parsed_txs}")
+        print(f"\nParsed tx {hash}:\n\n{parsed_tx}")
+    print(f"\nParsed {len(parsed_txs)} txs.")
 
 
 asyncio.run(main(os.getenv("TX_HASH")))

@@ -25,11 +25,15 @@ cd $PROTOCOL_DIR/solana-programs/anchor/audius-data && npm run dev-setup
 #### All program txs
 Parse all txs found for program:
 ```
-cd $PROTOCOL_DIR/discovery-provider/solana-tx-parser && python3.9 tx_parser.py
+cd $PROTOCOL_DIR/solana-programs/anchor/audius-data && npm run parse-tx
 ```
 
 #### Parse single tx
 To parse a single tx, export TX_HASH env var when running tx_parser.py:
 ```
 cd $PROTOCOL_DIR/discovery-provider/solana-tx-parser && TX_HASH=<txhash> python3.9 tx_parser.py
+```
+Alternatively:
+```
+cd $PROTOCOL_DIR/solana-programs/anchor/audius-data && npm run parse-tx -- <txhash>
 ```
