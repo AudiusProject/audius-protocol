@@ -74,6 +74,7 @@ function getLibsMock() {
 
   libsMock.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo =
     async (serviceType, spId) => {
+      spId = parseInt(spId)
       switch (spId) {
         case 2:
           return {
@@ -108,7 +109,7 @@ function getLibsMock() {
           return {
             owner: '0x0000000000000000000000000000000000000000',
             endpoint: '',
-            spID: 100,
+            spID,
             type: 'content-node',
             blockNumber: 0,
             delegateOwnerWallet: '0x0000000000000000000000000000000000000000'
