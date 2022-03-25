@@ -5,7 +5,7 @@ const { getApp } = require('./lib/app')
 describe('test relay endpoint', function () {
   let app, server
   beforeEach(async () => {
-    const appInfo = await getApp(null, null)
+    const appInfo = await getApp()
     app = appInfo.app
     server = appInfo.server
   })
