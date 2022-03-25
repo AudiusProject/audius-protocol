@@ -126,4 +126,10 @@ describe('test Solana listen tracking', function () {
     assert.strictEqual(successBeforeCleanup, 2)
     await verifySuccessfulListens(1, 1, 1, 1)
   })
+
+  it('counts 0 submissions as 100% success', async function () {
+    await verifySuccessfulListens(0, 0, 1, 1)
+    await recordFailedListen()
+    await verifyFailedListens(0.1)
+  })
 })
