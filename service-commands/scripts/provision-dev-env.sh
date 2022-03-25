@@ -128,6 +128,11 @@ function silence_motd() {
     touch ~/.hushlogin
 }
 
+function setup_solana_dev() {
+    cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+    npm run install-dev
+}
+
 function setup_audius_repos() {
     source $HOME/.profile
     source $HOME/.bashrc
@@ -148,6 +153,8 @@ function setup_audius_repos() {
 
     # set up repos
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up
+    
+    setup_solana_dev
 }
 
 function install_zsh_tooling() {
