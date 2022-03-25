@@ -146,7 +146,7 @@ def init_contracts(config):
     # set pre-funded account as sender
     web3.eth.default_account = web3.eth.accounts[0]
 
-    registry_address = web3.to_checksum_address(config["contracts"]["registry"])
+    registry_address = web3.toChecksumAddress(config["contracts"]["registry"])
 
     abi_values = helpers.load_abi_values()
     registry_return_val = web3.eth.contract(
