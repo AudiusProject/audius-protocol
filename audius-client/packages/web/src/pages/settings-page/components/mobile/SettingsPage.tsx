@@ -205,7 +205,6 @@ const SettingsPage = (props: SettingsPageProps) => {
       />
     )
   }
-  console.log(castMethod)
   return (
     <Page
       title={messages.title}
