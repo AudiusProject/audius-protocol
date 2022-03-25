@@ -456,14 +456,14 @@ jobs:
             pip3 install -r requirements.txt
       - save_cache:
           paths:
-            - discovery-provider/venv/
+            - discovery-provider/env/
           key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
       - run:
           name: python-lint
           command: |
             export PROTOCOL_DIR=/home/circleci/project
             cd discovery-provider
-            source venv/bin/activate
+            source env/bin/activate
             sh scripts/lint.sh
       - restore_cache:
           keys:
