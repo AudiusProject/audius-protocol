@@ -51,9 +51,7 @@ function getReqObj(fileUUID, fileDir, session) {
     fileName: `${fileUUID}.mp3`,
     fileDir,
     fileDestination: fileDir,
-    session: {
-      cnodeUserUUID: session.cnodeUserUUID
-    }
+    cnodeUserUUID: session.cnodeUserUUID
   }
 }
 
@@ -72,12 +70,7 @@ function _getTestSegmentFilePathAtIndex(index) {
 }
 
 describe('test Polling Tracks with mocked IPFS', function () {
-  let app,
-    server,
-    ipfsMock,
-    ipfsLatestMock,
-    libsMock,
-    handleTrackContentRoute
+  let app, server, ipfsMock, ipfsLatestMock, libsMock, handleTrackContentRoute
   let session, userId, userWallet
 
   const spId = 1
@@ -105,7 +98,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     app = appInfo.app
     server = appInfo.server
-    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId, userWallet)
 
     // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
@@ -957,7 +949,7 @@ describe('test Polling Tracks with real IPFS', function () {
     }
   })
 
-  it('should successfully upload track + transcode and prune upload artifacts', async function () {
+  it('should successfully upload track + transcode and prune upload artifacts when TranscodingQueue is available', async function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
@@ -1115,18 +1107,18 @@ describe('test Polling Tracks with real IPFS', function () {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('POST /tracks tests', async function () {
     // Upload track content
-     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
-     const {
-       track_segments: trackSegments,
-       transcodedTrackUUID,
-       source_file: sourceFile
-      } = await handleTrackContentRoute(
-       logContext,
-       getReqObj(fileUUID, fileDir, session)
-     )
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const {
+      track_segments: trackSegments,
+      transcodedTrackUUID,
+      source_file: sourceFile
+    } = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session)
+    )
 
-     // Upload track metadata
-     const trackMetadata = {
+    // Upload track metadata
+    const trackMetadata = {
       metadata: {
         owner_id: userId,
         track_segments: trackSegments
@@ -1141,7 +1133,7 @@ describe('test Polling Tracks with real IPFS', function () {
       .expect(200)
     trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
     trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
-    
+
     // Complete track creation
     await request(app2)
       .post('/tracks')
@@ -1162,58 +1154,59 @@ describe('test Polling Tracks with real IPFS', function () {
       track_segments: trackSegments,
       transcodedTrackUUID,
       source_file: sourceFile
-     } = await handleTrackContentRoute(
+    } = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
     )
 
     // Upload same track content again
-    const { fileUUID: fileUUID2, fileDir: fileDir2 } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID: fileUUID2, fileDir: fileDir2 } =
+      saveFileToStorage(testAudioFilePath)
     const {
       track_segments: track2Segments,
       transcodedTrackUUID: transcodedTrack2UUID,
       source_file: sourceFile2
-     } = await handleTrackContentRoute(
+    } = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID2, fileDir2, session)
     )
 
     // Upload track 1 metadata
     const trackMetadata = {
-     metadata: {
-       owner_id: userId,
-       track_segments: trackSegments
-     },
-     source_file: sourceFile
-   }
-   const trackMetadataResp = await request(app2)
-     .post('/tracks/metadata')
-     .set('X-Session-ID', session.sessionToken)
-     .set('User-Id', userId)
-     .send(trackMetadata)
-     .expect(200)
-   trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
-   trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+      metadata: {
+        owner_id: userId,
+        track_segments: trackSegments
+      },
+      source_file: sourceFile
+    }
+    const trackMetadataResp = await request(app2)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', userId)
+      .send(trackMetadata)
+      .expect(200)
+    trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
+    trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
-   // Upload track 2 metadata
-   const track2Metadata = {
-    metadata: {
-      owner_id: userId,
-      track_segments: track2Segments
-    },
-    source_file: sourceFile
-  }
-  const track2MetadataResp = await request(app2)
-    .post('/tracks/metadata')
-    .set('X-Session-ID', session.sessionToken)
-    .set('User-Id', userId)
-    .send(track2Metadata)
-    .expect(200)
-  track2MetadataMultihash = track2MetadataResp.body.data.metadataMultihash
-  track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
-   
-   // Complete track1 creation
-   await request(app2)
+    // Upload track 2 metadata
+    const track2Metadata = {
+      metadata: {
+        owner_id: userId,
+        track_segments: track2Segments
+      },
+      source_file: sourceFile
+    }
+    const track2MetadataResp = await request(app2)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', userId)
+      .send(track2Metadata)
+      .expect(200)
+    track2MetadataMultihash = track2MetadataResp.body.data.metadataMultihash
+    track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
+
+    // Complete track1 creation
+    await request(app2)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
@@ -1238,4 +1231,8 @@ describe('test Polling Tracks with real IPFS', function () {
       })
       .expect(200)
   })
+
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /transcode_and_segment TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  it('')
 })

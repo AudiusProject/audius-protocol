@@ -641,14 +641,12 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
   const userId = 1
 
   // Create the req context for handleTrackContentRoute
-  function getReqObj(fileUUID, fileDir, session) {
+  function getReqObj (fileUUID, fileDir, session) {
     return {
       fileName: `${fileUUID}.mp3`,
       fileDir,
       fileDestination: fileDir,
-      session: {
-        cnodeUserUUID: session.cnodeUserUUID
-      }
+      cnodeUserUUID: session.cnodeUserUUID
     }
   }
 
