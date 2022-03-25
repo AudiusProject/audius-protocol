@@ -1,5 +1,5 @@
+import { tracksActions } from 'audius-client/src/common/store/pages/search-results/lineup/tracks/actions'
 import { getSearchTracksLineup } from 'audius-client/src/common/store/pages/search-results/selectors'
-import { tracksActions } from 'audius-client/src/common/store/pages/track/lineup/actions'
 import { isEqual } from 'lodash'
 
 import { Lineup } from 'app/components/lineup'
