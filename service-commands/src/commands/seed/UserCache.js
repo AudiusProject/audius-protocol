@@ -19,7 +19,7 @@ class UserCache {
     const activeUser = Object.entries(cache).find(([alias, details]) => {
       return details && details.active
     })
-    return activeUser || {}
+    return activeUser[1] || {}
   }
 
   setActiveUser = (alias) => {
