@@ -73,9 +73,9 @@ function getLibsMock() {
   )
 
   libsMock.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo =
-    async (serviceType, spId) => {
-      spId = parseInt(spId)
-      switch (spId) {
+    async (serviceType, spID) => {
+      spID = parseInt(spID)
+      switch (spID) {
         case 2:
           return {
             endpoint: 'http://mock-cn2.audius.co',
