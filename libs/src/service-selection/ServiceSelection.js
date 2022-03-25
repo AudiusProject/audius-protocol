@@ -328,7 +328,7 @@ class ServiceSelection {
    * @param {string} key service endpoint
    */
   removeFromBackups (key) {
-    if (this.backups.hasOwnProperty(key)) delete this.backups[key]
+    if (Object.prototype.hasOwnProperty.call(this.backups, key)) delete this.backups[key]
   }
 
   /**

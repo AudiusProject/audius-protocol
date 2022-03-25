@@ -10,10 +10,10 @@ async function distributeTokens (audiusLibs, amountOfAUDS) {
 
   const { ethWeb3, ethAccounts } = await getEthWeb3AndAccounts(audiusLibs)
 
-  let initialTokenInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
+  const initialTokenInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
   await Promise.all(ethAccounts.map(async (account) => {
     if (account === ethAccounts[0]) { return }
-    let tx = await audiusLibs.ethContracts.AudiusTokenClient.transfer(account, initialTokenInAudWeiBN)
+    const tx = await audiusLibs.ethContracts.AudiusTokenClient.transfer(account, initialTokenInAudWeiBN)
     console.log(`${tx.txReceipt.transactionHash} Transferred ${amountOfAUDS} to ${account}`)
   }))
   for (const account of ethAccounts) {

@@ -1,21 +1,24 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import {
-  createPlaylist,
-  deletePlaylist,
-  initAdmin,
-  updateAdmin,
-  updatePlaylist,
-} from "../lib/lib";
-import { findDerivedPair, randomCID } from "../lib/utils";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
+import { initAdmin, updateAdmin } from "../lib/lib";
+import { findDerivedPair, randomCID, randomId, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
-  confirmLogInTransaction,
+  testCreatePlaylist,
+  createSolanaContentNode,
   initTestConstants,
   testCreateUser,
+  testInitUser,
+  testInitUserSolPubkey,
+  testDeletePlaylist,
+  testUpdatePlaylist,
 } from "./test-helpers";
 
-describe("playlist", function () {
+chai.use(chaiAsPromised);
+
+describe("audius-data", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -27,214 +30,323 @@ describe("playlist", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminStorageKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
-
+  const contentNodes = {};
+  const getURSMParams = () => {
+    return {
+      replicaSet: [
+        contentNodes["1"].spId.toNumber(),
+        contentNodes["2"].spId.toNumber(),
+        contentNodes["3"].spId.toNumber(),
+      ],
+      replicaSetBumps: [
+        contentNodes["1"].seedBump.bump,
+        contentNodes["2"].seedBump.bump,
+        contentNodes["3"].seedBump.bump,
+      ],
+      cn1: contentNodes["1"].pda,
+      cn2: contentNodes["2"].pda,
+      cn3: contentNodes["3"].pda,
+    };
+  };
   it("Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       verifierKeypair,
-      playlistIdOffset: new anchor.BN("0"),
     });
-
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
+      adminStorageKeypair.publicKey
     );
-    if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
-      console.log(
-        "On chain retrieved admin info: ",
-        adminAccount.authority.toString()
-      );
-      console.log("Provided admin info: ", adminKeypair.publicKey.toString());
-      throw new Error("Invalid returned values");
-    }
+
+    const chainAuthority = adminAccount.authority.toString();
+    const expectedAuthority = adminKeypair.publicKey.toString();
+    expect(chainAuthority, "authority").to.equal(expectedAuthority);
+    expect(adminAccount.isWriteEnabled, "is_write_enabled").to.equal(true);
   });
 
-  describe("create, update, delete", function () {
-    const testCreatePlaylist = async ({
-      newPlaylistKeypair,
-      playlistOwnerPDA,
-      userAuthorityKeypair,
-      adminStgKeypair,
+  it("Initializing Content Node accounts!", async function () {
+    const cn1 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(1),
+    });
+    const cn2 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(2),
+    });
+    const cn3 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(3),
+    });
+    contentNodes["1"] = cn1;
+    contentNodes["2"] = cn2;
+    contentNodes["3"] = cn3;
+  });
+
+  it("Initializing + claiming user, creating + updating playlist", async function () {
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+
+    const {
+      baseAuthorityAccount,
+      bumpSeed,
+      derivedAddress: newUserAcctPDA,
+    } = await findDerivedPair(
+      program.programId,
+      adminStorageKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    );
+
+    await testInitUser({
+      provider,
+      program,
+      baseAuthorityAccount,
+      ethAddress: ethAccount.address,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      userStorageAccount: newUserAcctPDA,
+      adminStorageKeypair,
+      adminKeypair,
+      ...getURSMParams(),
+    });
+
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toBytes();
+
+    await testInitUserSolPubkey({
+      provider,
+      program,
+      message,
+      ethPrivateKey: ethAccount.privateKey,
+      newUserPublicKey: newUserKeypair.publicKey,
+      newUserAcctPDA,
+    });
+
+    const playlistMetadata = randomCID();
+    const playlistID = randomId();
+
+    await testCreatePlaylist({
+      provider,
+      program,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      id: playlistID,
       playlistMetadata,
-    }) => {
-      const tx = await createPlaylist({
+      userAuthorityKeypair: newUserKeypair,
+      playlistOwnerPDA: newUserAcctPDA,
+      adminStorageAccount: adminStorageKeypair.publicKey,
+    });
+
+    // Expected signature validation failure
+    const wrongUserKeypair = anchor.web3.Keypair.generate();
+    console.log(
+      `Expecting error with public key ${wrongUserKeypair.publicKey}`
+    );
+    try {
+      await testCreatePlaylist({
         provider,
         program,
-        newPlaylistKeypair,
-        userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKeypair: userAuthorityKeypair,
-        adminStgPublicKey: adminStgKeypair.publicKey,
-        metadata: playlistMetadata,
-      });
-      await confirmLogInTransaction(provider, tx, playlistMetadata);
-      const createdPlaylist = await program.account.playlist.fetch(
-        newPlaylistKeypair.publicKey
-      );
-      console.log(
-        `playlist: ${playlistMetadata}, playlistId assigned = ${createdPlaylist.playlistId}`
-      );
-    };
-
-    const testUpdatePlaylist = async ({
-      playlistKeypair,
-      playlistOwnerPDA,
-      userAuthorityKeypair,
-      playlistMetadata,
-    }) => {
-      const tx = await updatePlaylist({
-        program,
-        playlistPublicKey: playlistKeypair.publicKey,
-        userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKeypair,
-        metadata: playlistMetadata,
-      });
-      await confirmLogInTransaction(provider, tx, playlistMetadata);
-    };
-
-    const testDeletePlaylist = async ({
-      playlistKeypair,
-      playlistOwnerPDA,
-      userAuthorityKeypair,
-    }) => {
-      const initialPlaylistAcctBalance = await provider.connection.getBalance(
-        playlistKeypair.publicKey
-      );
-      const initialPayerBalance = await provider.connection.getBalance(
-        provider.wallet.publicKey
-      );
-
-      await deletePlaylist({
-        provider,
-        program,
-        playlistPublicKey: playlistKeypair.publicKey,
-        userStgAccountPDA: playlistOwnerPDA,
-        userAuthorityKeypair,
-      });
-
-      // Confirm that the account is zero'd out
-      // Note that there appears to be a delay in the propagation, hence the retries
-      let playlistAcctBalance = initialPlaylistAcctBalance;
-      let payerBalance = initialPayerBalance;
-      let retries = 100;
-      while (playlistAcctBalance > 0 && retries > 0) {
-        playlistAcctBalance = await provider.connection.getBalance(
-          playlistKeypair.publicKey
-        );
-        payerBalance = await provider.connection.getBalance(
-          provider.wallet.publicKey
-        );
-        retries--;
-      }
-
-      if (playlistAcctBalance > 0) {
-        throw new Error(
-          `Failed to deallocate playlist - Remaining balance ${playlistAcctBalance}`
-        );
-      }
-
-      console.log(
-        `Playlist acct lamports ${initialPlaylistAcctBalance} -> ${playlistAcctBalance}`
-      );
-      console.log(
-        `Payer acct lamports ${initialPayerBalance} -> ${payerBalance}`
-      );
-    };
-
-    let newUserAcctPDA: anchor.web3.PublicKey;
-    let newUserKeypair: anchor.web3.Keypair;
-
-    // Initialize user for each test
-    beforeEach(async function () {
-      const { ethAccount, handleBytesArray, metadata } = initTestConstants();
-
-      const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-        await findDerivedPair(
-          program.programId,
-          adminStgKeypair.publicKey,
-          Buffer.from(handleBytesArray)
-        );
-
-      newUserAcctPDA = derivedAddress;
-
-      // New sol key that will be used to permission user updates
-      newUserKeypair = anchor.web3.Keypair.generate();
-
-      // Generate signed SECP instruction
-      // Message as the incoming public key
-      const message = newUserKeypair.publicKey.toBytes();
-
-      // disable admin writes
-      await updateAdmin({
-        program,
-        isWriteEnabled: false,
-        adminStgAccount: adminStgKeypair.publicKey,
-        adminAuthorityKeypair: adminKeypair,
-      });
-
-      await testCreateUser({
-        provider,
-        program,
-        message,
         baseAuthorityAccount,
-        ethAccount,
         handleBytesArray,
         bumpSeed,
-        metadata,
-        newUserKeypair,
-        userStgAccount: newUserAcctPDA,
-        adminStgPublicKey: adminStgKeypair.publicKey,
+        id: randomId(),
+        playlistMetadata,
+        userAuthorityKeypair: wrongUserKeypair,
+        playlistOwnerPDA: newUserAcctPDA,
+        adminStorageAccount: adminStorageKeypair.publicKey,
       });
+    } catch (e) {
+      console.log(`Error found as expected ${e}`);
+    }
+    const updatedPlaylistMetadata = randomCID();
+    await testUpdatePlaylist({
+      provider,
+      program,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      adminStorageAccount: adminStorageKeypair.publicKey,
+      id: playlistID,
+      userStorageAccountPDA: newUserAcctPDA,
+      userAuthorityKeypair: newUserKeypair,
+      metadata: updatedPlaylistMetadata,
+    });
+  });
+
+  it("creating + deleting a playlist", async function () {
+    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+
+    const {
+      baseAuthorityAccount,
+      bumpSeed,
+      derivedAddress: newUserAcctPDA,
+    } = await findDerivedPair(
+      program.programId,
+      adminStorageKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    );
+
+    await updateAdmin({
+      program,
+      isWriteEnabled: false,
+      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAuthorityKeypair: adminKeypair,
+    });
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toBytes();
+
+    await testCreateUser({
+      provider,
+      program,
+      message,
+      baseAuthorityAccount,
+      ethAccount,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userId,
+      userStorageAccount: newUserAcctPDA,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      ...getURSMParams(),
     });
 
-    it("create playlist", async function () {
-      await testCreatePlaylist({
-        newPlaylistKeypair: anchor.web3.Keypair.generate(),
-        userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
-        playlistMetadata: randomCID(),
-      });
+    const playlistMetadata = randomCID();
+    const playlistID = randomId();
+
+    await testCreatePlaylist({
+      provider,
+      program,
+      id: playlistID,
+      baseAuthorityAccount,
+      handleBytesArray,
+      adminStorageAccount: adminStorageKeypair.publicKey,
+      bumpSeed,
+      playlistMetadata,
+      userAuthorityKeypair: newUserKeypair,
+      playlistOwnerPDA: newUserAcctPDA,
     });
 
-    it("update playlist", async function () {
-      const newPlaylistKeypair = anchor.web3.Keypair.generate();
+    await testDeletePlaylist({
+      provider,
+      program,
+      id: playlistID,
+      playlistOwnerPDA: newUserAcctPDA,
+      userAuthorityKeypair: newUserKeypair,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed,
+      adminStorageAccount: adminStorageKeypair.publicKey,
+    });
+  });
 
-      await testCreatePlaylist({
-        newPlaylistKeypair,
-        userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
-        playlistMetadata: randomCID(),
-      });
+  it("create multiple playlists in parallel", async function () {
+    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
 
-      await testUpdatePlaylist({
-        playlistKeypair: newPlaylistKeypair,
-        userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        playlistMetadata: randomCID(),
-      });
+    const {
+      baseAuthorityAccount,
+      bumpSeed,
+      derivedAddress: newUserAcctPDA,
+    } = await findDerivedPair(
+      program.programId,
+      adminStorageKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    );
+
+    // Disable admin writes
+    await updateAdmin({
+      program,
+      isWriteEnabled: false,
+      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAuthorityKeypair: adminKeypair,
     });
 
-    it("delete playlist", async function () {
-      const newPlaylistKeypair = anchor.web3.Keypair.generate();
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
 
-      await testCreatePlaylist({
-        newPlaylistKeypair,
-        userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        adminStgKeypair,
-        playlistMetadata: randomCID(),
-      });
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toBytes();
 
-      await testDeletePlaylist({
-        playlistKeypair: newPlaylistKeypair,
-        userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-      });
+    await testCreateUser({
+      provider,
+      program,
+      message,
+      baseAuthorityAccount,
+      ethAccount,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserKeypair,
+      userId,
+      userStorageAccount: newUserAcctPDA,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      ...getURSMParams(),
     });
+
+    const playlistMetadata = randomCID();
+    const playlistMetadata2 = randomCID();
+    const playlistMetadata3 = randomCID();
+    const start = Date.now();
+    await Promise.all([
+      testCreatePlaylist({
+        provider,
+        program,
+        baseAuthorityAccount,
+        handleBytesArray,
+        bumpSeed,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        id: randomId(),
+        playlistMetadata,
+        userAuthorityKeypair: newUserKeypair,
+        playlistOwnerPDA: newUserAcctPDA,
+      }),
+      testCreatePlaylist({
+        provider,
+        program,
+        baseAuthorityAccount,
+        handleBytesArray,
+        bumpSeed,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        id: randomId(),
+        playlistMetadata: playlistMetadata2,
+        userAuthorityKeypair: newUserKeypair,
+        playlistOwnerPDA: newUserAcctPDA,
+      }),
+      testCreatePlaylist({
+        provider,
+        program,
+        baseAuthorityAccount,
+        handleBytesArray,
+        bumpSeed,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        id: randomId(),
+        playlistMetadata: playlistMetadata3,
+        userAuthorityKeypair: newUserKeypair,
+        playlistOwnerPDA: newUserAcctPDA,
+      }),
+    ]);
+    console.log(`Created 3 playlists in ${Date.now() - start}ms`);
   });
 });

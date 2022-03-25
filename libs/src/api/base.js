@@ -59,15 +59,15 @@ class Base {
   }
 
   OBJECT_HAS_PROPS (o, props, requiredProps) {
-    let missingProps = []
+    const missingProps = []
     props.forEach(prop => {
-      if (!o.hasOwnProperty(prop)) missingProps.push(prop)
+      if (!Object.prototype.hasOwnProperty.call(o, prop)) missingProps.push(prop)
     })
     if (missingProps.length > 0) return Base._missingProps(missingProps)
 
-    let missingRequiredProps = []
+    const missingRequiredProps = []
     requiredProps.forEach(prop => {
-      if (!o.hasOwnProperty(prop) || o[prop] === '') missingRequiredProps.push(prop)
+      if (!Object.prototype.hasOwnProperty.call(o, prop) || o[prop] === '') missingRequiredProps.push(prop)
     })
     if (missingRequiredProps.length > 0) return Base._missingPropValues(missingRequiredProps)
   }

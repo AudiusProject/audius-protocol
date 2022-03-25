@@ -1,6 +1,7 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
 
+from dateutil import parser
 from src.models import Playlist
 from src.utils import helpers, redis_connection
 from src.utils.redis_cache import (
@@ -8,7 +9,6 @@ from src.utils.redis_cache import (
     get_playlist_id_cache_key,
     set_json_cached_key,
 )
-from werkzeug.http import parse_date
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +28,8 @@ def get_cached_playlists(playlist_ids):
     for playlist in playlists:
         if playlist:
             for field in playlist_datetime_fields:
-                # Parse date using the werkzeug parser, equivalent to Flask.JSONEncoder.
-                # Since werkzeug gives us timezone aware-UTC, drop the timezone.
-                playlist[field] = parse_date(playlist[field]).replace(tzinfo=None)
+                if playlist[field]:
+                    playlist[field] = parser.parse(playlist[field])
     return playlists
 
 
