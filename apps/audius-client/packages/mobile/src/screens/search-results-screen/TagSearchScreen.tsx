@@ -1,4 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
+
+import { useIsFocused } from '@react-navigation/native'
 
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
@@ -9,6 +11,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
 import { MessageType } from 'app/message'
 
+import { SearchFocusContext } from './SearchFocusContext'
 import { ProfilesTab } from './tabs/ProfilesTab'
 import { TracksTab } from './tabs/TracksTab'
 
@@ -21,6 +24,8 @@ const messages = {
  * but only displays matching tracks & profiles.
  */
 export const TagSearchScreen = () => {
+  const isFocused = useIsFocused()
+  const focusContext = useMemo(() => ({ isFocused }), [isFocused])
   const dispatchWeb = useDispatchWeb()
   const { params } = useRoute<'TagSearch'>()
   const { query } = params
@@ -47,10 +52,12 @@ export const TagSearchScreen = () => {
   return (
     <Screen topbarRight={null}>
       <Header text={messages.header} />
-      <TabNavigator initialScreenName='Tracks'>
-        {tracksScreen}
-        {profilesScreen}
-      </TabNavigator>
+      <SearchFocusContext.Provider value={focusContext}>
+        <TabNavigator initialScreenName='Tracks'>
+          {tracksScreen}
+          {profilesScreen}
+        </TabNavigator>
+      </SearchFocusContext.Provider>
     </Screen>
   )
 }
