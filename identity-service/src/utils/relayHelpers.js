@@ -2,8 +2,6 @@ const models = require('../models')
 const config = require('../config')
 const SolanaUtils = require('@audius/libs/src/services/solanaWeb3Manager/utils')
 
-const solanaTrackListenCountAddress = config.get('solanaTrackListenCountAddress')
-
 const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
 const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')
 
@@ -12,7 +10,6 @@ const solanaMintAddress = config.get('solanaMintAddress')
 
 const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
-  solanaTrackListenCountAddress,
   solanaRewardsManagerProgramId,
   /* secp */ 'KeccakSecp256k11111111111111111111111111111'
 ])
@@ -25,33 +22,17 @@ const allowedProgramIds = new Set([
  */
 
 /**
- * Maps the instruction enum to the index of the rewards manager authority account (derived from the base account and program id)
- *
- * @see {@link [../../../solana-programs/reward-manager/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/db31fe03f2c8cff357379b84130539d51ccca213/solana-programs/reward-manager/program/src/instruction.rs#L60)}
- * @type {Record<number, number | null>}
- */
-const rewardManagerAuthorityIndices = {
-  0: 4, // InitRewardManager
-  1: null, // ChangeManagerAccount doesn't have the authority passed in, rely on base account
-  2: 2, // CreateSender
-  3: 2, // DeleteSender
-  4: 1, // CreateSenderPublic
-  5: null, // DeleteSenderPublic doesn't have the authority passed in, rely on base account
-  6: 2, // SubmitAttestations
-  7: 2 // EvaluateAttestations
-}
-
-/**
  * Maps the instruction enum to the index of the rewards manager account (the base account of the program)
+ * A value of -1 means the instruction is not allowed.
  *
  * @see {@link [../../../solana-programs/reward-manager/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/db31fe03f2c8cff357379b84130539d51ccca213/solana-programs/reward-manager/program/src/instruction.rs#L60)}
  * @type {Record<number, number | null>}
  */
 const rewardManagerBaseAccountIndices = {
-  0: 0, // InitRewardManager
-  1: 1, // ChangeManagerAccount
-  2: 0, // CreateSender
-  3: 0, // DeleteSender
+  0: -1, // InitRewardManager
+  1: -1, // ChangeManagerAccount
+  2: -1, // CreateSender
+  3: -1, // DeleteSender
   4: 0, // CreateSenderPublic
   5: 0, // DeleteSenderPublic
   6: 1, // SubmitAttestations
@@ -60,11 +41,12 @@ const rewardManagerBaseAccountIndices = {
 
 /**
  * Maps the instruction enum to the index of the claimable token authority account (derived from the base token account and the program id)
+ * A value of -1 means the instruction is not allowed.
  *
  * @see {@link [../../../solana-programs/claimable-tokens/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/2c93f29596a1d6cc8ca4e76ef1f0d2e57f0e09e6/solana-programs/claimable-tokens/program/src/instruction.rs#L21)}
  */
 const claimableTokenAuthorityIndices = {
-  0: 2, // CreateTokenAccount
+  0: -1, // CreateTokenAccount
   1: 4 // Transfer
 }
 
@@ -95,15 +77,6 @@ async function doesUserHaveSocialProof (userInstance) {
   return !!twitterUser || !!instagramUser
 }
 
-const deriveRewardManagerAuthority = async () => {
-  return (
-    await SolanaUtils.findProgramAddressFromPubkey(
-      SolanaUtils.newPublicKeyNullable(solanaRewardsManagerProgramId),
-      SolanaUtils.newPublicKeyNullable(solanaRewardsManager)
-    )
-  )[0].toString()
-}
-
 const deriveClaimableTokenAuthority = async () => {
   return (
     await SolanaUtils.findProgramAddressFromPubkey(
@@ -113,22 +86,10 @@ const deriveClaimableTokenAuthority = async () => {
   )[0].toString()
 }
 
-let rewardManagerAuthority = null
-/**
- * Gets the authority account for the RewardManager program, using a cached value if possible
- * @returns {string} the reward manager authority account as a string
- */
-const getRewardManagerAuthority = async () => {
-  if (!rewardManagerAuthority) {
-    rewardManagerAuthority = await deriveRewardManagerAuthority()
-  }
-  return rewardManagerAuthority
-}
-
 let claimableTokenAuthority = null
 /**
  * Gets the authority account for the ClaimableToken program, using a cached value if possible
- * @returns {string} the claimable token authority account as a string
+ * @returns {Promise<string>} the claimable token authority account as a string
  */
 const getClaimableTokenAuthority = async () => {
   if (!claimableTokenAuthority) {
@@ -195,33 +156,36 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
 
 /**
  * Checks the authority being used for the relayed instruction, if applicable
- * Ensures we relay only for instructions relevant to the base account cared about
+ * Ensures we relay only for instructions relevant to our programs and base account
+ * 
  * @param {Instruction} instruction
  * @returns true if the program authority matches, false if it doesn't, and null if not applicable
  */
-const hasAllowedAuthority = async (instruction) => {
+const isRelayAllowedInstruction = async (instruction) => {
   if (instruction.programId === solanaRewardsManagerProgramId) {
-    const rewardManagerAuthority = await getRewardManagerAuthority()
-    const hasAllowedBaseAccount = checkAccountKey(
+    // DeleteSenderPublic doesn't have the authority passed in, so use base account instead.
+    // Since we've just checked the program ID, this is sufficient as the authority
+    // is derived from the base account and program ID
+    return checkAccountKey(
       instruction,
       getAccountIndex(instruction, rewardManagerBaseAccountIndices),
       solanaRewardsManager
     )
-    const hasAllowedAuthority = checkAccountKey(
-      instruction,
-      getAccountIndex(instruction, rewardManagerAuthorityIndices),
-      rewardManagerAuthority
-    )
-    return hasAllowedBaseAccount && hasAllowedAuthority
   } else if (instruction.programId === solanaClaimableTokenProgramAddress) {
     const claimableTokenAuthority = await getClaimableTokenAuthority()
+    // Claimable token does not include the base account for the Transfer instruction
+    // but does include the authority.
     return checkAccountKey(
       instruction,
       getAccountIndex(instruction, claimableTokenAuthorityIndices),
       claimableTokenAuthority
     )
+  } else if (isRelayAllowedProgram([instruction])) {
+    // Authority check not necessary
+    return null
   }
-  return null
+  // Not allowed program
+  return false
 }
 
 /**
@@ -229,9 +193,9 @@ const hasAllowedAuthority = async (instruction) => {
  * @param {Instruction[]} instructions
  * @returns true if all the instructions have allowed authorities/base accounts
  */
-const isRelayAllowedForAuthority = async (instructions) => {
+const areRelayAllowedInstructions = async (instructions) => {
   const results = await Promise.all(
-    instructions.map((instruction) => hasAllowedAuthority(instruction))
+    instructions.map((instruction) => isRelayAllowedInstruction(instruction))
   )
   // Explicitly check for false - null means N/A and should be passing
   if (results.some((result) => result === false)) {
@@ -243,6 +207,5 @@ const isRelayAllowedForAuthority = async (instructions) => {
 module.exports = {
   isSendInstruction,
   doesUserHaveSocialProof,
-  isRelayAllowedProgram,
-  isRelayAllowedForAuthority
+  areRelayAllowedInstructions
 }
