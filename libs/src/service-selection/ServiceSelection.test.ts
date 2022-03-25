@@ -186,6 +186,8 @@ describe('ServiceSelection withBackupCriteria', () => {
           if (service) {
             this.addBackup(service, response.data)
             return false
+          } else {
+            return true
           }
         }
         return true
