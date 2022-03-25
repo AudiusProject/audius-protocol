@@ -346,6 +346,7 @@ pub mod audius_data {
         _handle_seed: [u8; 32],
         _user_bump: u8,
         _metadata: String,
+        _id: u64,
         user_authority: Pubkey,
     ) -> Result<()> {
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
@@ -420,7 +421,7 @@ pub mod audius_data {
         _user_handle: UserHandle,
         _entity_type: EntityTypes,
         _management_action: ManagementActions,
-        _id: String,
+        _id: u64,
         _metadata: String,
     ) -> Result<()> {
         // Confirm the base PDA matches the expected value provided the target audius admin
@@ -716,7 +717,17 @@ pub struct InitializeUserSolIdentity<'info> {
 /// `user` is the target user PDA.
 /// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], handle_seed: [u8;32])]
+#[instruction(
+    base: Pubkey,
+    eth_address: [u8;20],
+    replica_set: [u16; 3],
+    replica_set_bumps:[u8; 3],
+    handle_seed: [u8;32],
+    _user_bump: u8,
+    _metadata: String,
+    _id: u64,
+    _user_authority: Pubkey,
+)]
 pub struct CreateUser<'info> {
     #[account(
         init,
@@ -865,7 +876,14 @@ pub struct RemoveUserAuthorityDelegate<'info> {
 /// Instruction container for entity management
 /// Confirms that user.authority matches signer authority field
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle, _entity_type: EntityTypes, _management_action:ManagementActions, _id: String, _metadata: String)]
+#[instruction(
+    base: Pubkey,
+    user_handle: UserHandle,
+    _entity_type: EntityTypes,
+    _management_action:ManagementActions,
+    _id: u64,
+    _metadata: String
+)]
 // Instruction base pda, handle
 pub struct ManageEntity<'info> {
     #[account()]
