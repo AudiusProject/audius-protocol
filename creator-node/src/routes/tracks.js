@@ -137,16 +137,15 @@ module.exports = function (app) {
     async (req, res) => {
       const fileName = req.query.fileName
       const fileType = req.query.fileType
+      const uuid = req.query.uuid
 
-      if (!fileName || !fileType) {
+      if (!fileName || !fileType || !uuid) {
         return errorResponseBadRequest(
-          `No provided filename=${fileName} or fileType=${fileType}`
+          `No provided filename=${fileName}, fileType=${fileType}, or uuid=${uuid}`
         )
       }
 
-      const basePath = getTmpTrackUploadArtifactsWithInputUUID(
-        req.query.uuidUsedInPath
-      )
+      const basePath = getTmpTrackUploadArtifactsWithInputUUID(uuid)
       let pathToFile
       if (fileType === 'transcode') {
         pathToFile = path.join(basePath, fileName)

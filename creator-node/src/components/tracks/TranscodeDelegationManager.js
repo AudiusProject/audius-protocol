@@ -334,7 +334,7 @@ class TranscodeDelegationManager {
         params: {
           fileName: segmentFileName,
           fileType: 'segment',
-          uuidUsedInPath: fileNameNoExtension,
+          uuid: fileNameNoExtension,
           timestamp,
           signature,
           spID
@@ -358,7 +358,7 @@ class TranscodeDelegationManager {
         params: {
           fileName: transcodeFileName,
           fileType: 'transcode',
-          uuidUsedInPath: fileNameNoExtension,
+          uuid: fileNameNoExtension,
           timestamp,
           signature,
           spID
@@ -382,7 +382,7 @@ class TranscodeDelegationManager {
         params: {
           fileName: m3u8FileName,
           fileType: 'm3u8',
-          uuidUsedInPath: fileNameNoExtension,
+          uuid: fileNameNoExtension,
           timestamp,
           signature,
           spID
