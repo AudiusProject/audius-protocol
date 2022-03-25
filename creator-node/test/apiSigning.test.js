@@ -61,13 +61,6 @@ describe('test apiSigning', function () {
   })
 
   it('if the wallets are zero addressed, throw error', async function () {
-    //     blockNumber: 11273786
-    // delegateOwnerWallet: "0xc8d0C29B6d540295e8fc8ac72456F2f4D41088c8"
-    // endpoint: "https://creatornode.audius.co"
-    // owner: "0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d"
-    // spID: 1
-    // type: "content-node"
-
     try {
       await apiSigning.verifyRequesterIsValidSP({
         audiusLibs: libsMock,
