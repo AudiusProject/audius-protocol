@@ -249,6 +249,7 @@ export const initAdmin = async ({
 };
 
 /// Initialize a user from the Audius Admin account
+/// No ID param because every user being 'initialized' from Admin already has an ID
 export const initUser = async ({
   provider,
   program,

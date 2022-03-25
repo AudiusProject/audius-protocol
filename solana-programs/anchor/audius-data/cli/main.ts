@@ -16,7 +16,7 @@ import {
   deletePlaylist,
   createContentNode
 } from "../lib/lib";
-import { findDerivedPair, getContentNode, randomCID, randomString } from "../lib/utils";
+import { findDerivedPair, getContentNode, randomCID, randomId, randomString } from "../lib/utils";
 
 import { Command } from "commander";
 import fs = require("fs");
@@ -278,7 +278,7 @@ program
   )
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
-  .option("--id <string>", "ID of entity targeted by transaction")
+  .option("--id <integer>", "ID of entity targeted by transaction")
   .option("--cn-sp-id <string>", "ID of incoming content node")
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1");
 
@@ -329,7 +329,7 @@ switch (options.function) {
     break;
   case functionTypes.initContentNode:
     console.log(`Initializing content node`)
-    console.log(options)
+    // TODO - This authority should be a delegate private key propagated from local env or passed in
     const contentNodeAuthority = anchor.web3.Keypair.generate();
     console.log(`Using spID=${options.cnSpId} ethAddress=${options.ethAddress}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
@@ -425,7 +425,7 @@ switch (options.function) {
       for (let i = 0; i < numTracks; i++) {
         promises.push(
           timeManageEntity({
-            id: randomString(10),
+            id: randomId(),
             baseAuthorityAccount,
             adminStorageAccount: adminStorageKeypair.publicKey,
             handleBytesArray: handleBytesArray,
@@ -459,7 +459,7 @@ switch (options.function) {
       for (let i = 0; i < numPlaylists; i++) {
         promises.push(
           timeManageEntity({
-            id: randomString(10),
+            id: randomId(),
             baseAuthorityAccount,
             adminStorageAccount: adminStorageKeypair.publicKey,
             handleBytesArray: handleBytesArray,
@@ -479,7 +479,7 @@ switch (options.function) {
     })();
     break;
   case functionTypes.updatePlaylist: {
-    const playlistId = options.id;
+    const playlistId = new anchor.BN(options.id);
     if (!playlistId) break;
     console.log(
       `Playlist id = ${playlistId} Target User = ${options.userStoragePubkey}`
@@ -507,7 +507,7 @@ switch (options.function) {
     break;
   }
   case functionTypes.deletePlaylist: {
-    const playlistId = options.id;
+    const playlistId = new anchor.BN(options.id);
     if (!playlistId) break;
     console.log(
       `Playlist id = ${playlistId} Target User = ${options.userStoragePubkey}`
