@@ -31,7 +31,7 @@ describe("replicaSet", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminStorageKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
 
@@ -40,14 +40,14 @@ describe("replicaSet", function () {
       provider,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       verifierKeypair,
     });
     // disable admin writes
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
   });
@@ -58,7 +58,7 @@ describe("replicaSet", function () {
     const authority = anchor.web3.Keypair.generate();
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
+      adminStorageKeypair.publicKey,
       Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
     );
 
@@ -67,7 +67,7 @@ describe("replicaSet", function () {
       program,
       adminKeypair,
       baseAuthorityAccount,
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      adminStgPublicKey: adminStorageKeypair.publicKey,
       contentNodeAuthority: authority.publicKey,
       contentNodeAcct: derivedAddress,
       spID,
@@ -91,21 +91,21 @@ describe("replicaSet", function () {
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(3),
     });
     const cn4 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(4),
     });
     contentNodes[cn2.spId.toString()] = cn2;
@@ -117,7 +117,7 @@ describe("replicaSet", function () {
 
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
+      adminStorageKeypair.publicKey,
       Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
     );
     const authority = anchor.web3.Keypair.generate();
@@ -125,7 +125,7 @@ describe("replicaSet", function () {
       provider,
       program,
       baseAuthorityAccount,
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      adminStgPublicKey: adminStorageKeypair.publicKey,
       contentNodeAcct: derivedAddress,
       spID,
       contentNodeAuthority: authority.publicKey,
@@ -164,21 +164,21 @@ describe("replicaSet", function () {
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(6),
     });
     const cn7 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(7),
     });
     const cn8 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(8),
     });
     contentNodes[cn6.spId.toString()] = cn6;
@@ -190,7 +190,7 @@ describe("replicaSet", function () {
 
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
+      adminStorageKeypair.publicKey,
       Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
     );
     const authority = anchor.web3.Keypair.generate();
@@ -206,7 +206,7 @@ describe("replicaSet", function () {
         [...anchor.utils.bytes.hex.decode(ownerEth.address)],
         {
           accounts: {
-            admin: adminStgKeypair.publicKey,
+            admin: adminStorageKeypair.publicKey,
             payer: provider.wallet.publicKey,
             contentNode: derivedAddress,
             systemProgram: SystemProgram.programId,
@@ -286,14 +286,14 @@ describe("replicaSet", function () {
       spID.toBuffer("le", 2),
     ]);
     const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-      await findDerivedPair(program.programId, adminStgKeypair.publicKey, seed);
+      await findDerivedPair(program.programId, adminStorageKeypair.publicKey, seed);
     const updatedAuthority = anchor.web3.Keypair.generate();
 
     await publicCreateOrUpdateContentNode({
       provider,
       program,
       baseAuthorityAccount,
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      adminStgPublicKey: adminStorageKeypair.publicKey,
       contentNodeAuthority: updatedAuthority.publicKey,
       contentNodeAcct: cnToUpdate.pda,
       spID: cnToUpdate.spId,
@@ -332,7 +332,7 @@ describe("replicaSet", function () {
       spID.toBuffer("le", 2),
     ]);
     const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-      await findDerivedPair(program.programId, adminStgKeypair.publicKey, seed);
+      await findDerivedPair(program.programId, adminStorageKeypair.publicKey, seed);
 
     const initAudiusAdminBalance = await provider.connection.getBalance(
       adminKeypair.publicKey
@@ -343,7 +343,7 @@ describe("replicaSet", function () {
       program,
       baseAuthorityAccount,
       adminAuthorityPublicKey: adminKeypair.publicKey,
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      adminStgPublicKey: adminStorageKeypair.publicKey,
       cnDelete: {
         pda: derivedAddress,
         authority: cnToDelete.authority,
@@ -409,18 +409,18 @@ describe("replicaSet", function () {
     ]);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
+      adminStorageKeypair.publicKey,
       seed
     );
 
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
     await updateUserReplicaSet({
       provider,
       program,
       baseAuthorityAccount,
       userAcct: user.pda,
       userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      adminStgPublicKey: adminStorageKeypair.publicKey,
       replicaSet: [2, 3, 6],
       replicaSetBumps: [cn2.seedBump.bump, cn3.seedBump.bump, cn6.seedBump.bump],
       contentNodeAuthority: cn2.authority,
@@ -446,18 +446,18 @@ describe("replicaSet", function () {
     ]);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
+      adminStorageKeypair.publicKey,
       seed
     );
 
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
     await updateUserReplicaSet({
       provider,
       program,
       baseAuthorityAccount,
       userAcct: user.pda,
       userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      adminStgPublicKey: adminStorageKeypair.publicKey,
       replicaSet: [6, 7, 8],
       replicaSetBumps: [cn6.seedBump.bump, cn7.seedBump.bump, cn8.seedBump.bump],
       contentNodeAuthority: user.keypair,
@@ -483,11 +483,11 @@ describe("replicaSet", function () {
     ]);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
+      adminStorageKeypair.publicKey,
       seed
     );
 
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     await expect(
       updateUserReplicaSet({
@@ -496,7 +496,7 @@ describe("replicaSet", function () {
         baseAuthorityAccount,
         userAcct: user.pda,
         userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
-        adminStgPublicKey: adminStgKeypair.publicKey,
+        adminStgPublicKey: adminStorageKeypair.publicKey,
         replicaSet: [2, 7, 8],
         replicaSetBumps: [cn2.seedBump.bump, cn7.seedBump.bump, cn8.seedBump.bump],
         contentNodeAuthority: cn7.authority,

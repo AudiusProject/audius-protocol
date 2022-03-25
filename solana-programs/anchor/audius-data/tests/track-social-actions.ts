@@ -33,7 +33,7 @@ describe("track-actions", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminStorageKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("track actions - Initializing admin account!", async function () {
@@ -41,12 +41,12 @@ describe("track-actions", function () {
       provider,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       verifierKeypair,
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
+      adminStorageKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -61,7 +61,7 @@ describe("track-actions", function () {
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
   });
@@ -71,33 +71,33 @@ describe("track-actions", function () {
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(1),
     });
     await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(2),
     });
     await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       spId: new anchor.BN(3),
     });
   });
 
   it("Delete save for a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await deleteTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -123,13 +123,13 @@ describe("track-actions", function () {
   });
 
   it("Save a newly created track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -155,13 +155,13 @@ describe("track-actions", function () {
   });
 
   it("Repost a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await addTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
@@ -187,13 +187,13 @@ describe("track-actions", function () {
   });
 
   it("Delete repost for a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await deleteTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
