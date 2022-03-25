@@ -450,9 +450,10 @@ jobs:
           name: python-setup
           command: |
             cd discovery-provider
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
+            python3 -m pip install --user virtualenv
+            python3 -m venv env
+            source env/bin/activate
+            pip3 install -r requirements.txt
       - save_cache:
           paths:
             - discovery-provider/venv/
