@@ -60,6 +60,7 @@ type CreateUserParams = {
   program: Program<AudiusData>;
   ethAccount: Account;
   message: Uint8Array;
+  userId: anchor.BN;
   handleBytesArray: number[];
   bumpSeed: number;
   metadata: string;
@@ -116,7 +117,7 @@ type UpdateEntityParams = {
   handleBytesArray: number[];
   bumpSeed: number;
   metadata: string;
-  id: string;
+  id: anchor.BN;
   userAuthorityKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
 };
@@ -130,13 +131,13 @@ type CreateEntityParams = {
   userAuthorityKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
   metadata: string;
-  id: string;
+  id: anchor.BN;
 };
 
 type DeleteEntityParams = {
   provider: Provider;
   program: Program<AudiusData>;
-  id: string;
+  id: anchor.BN;
   userAuthorityKeypair: Keypair;
   userStgAccountPDA: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
@@ -531,6 +532,7 @@ export const createUser = async ({
   cn1,
   cn2,
   cn3,
+  userId,
   bumpSeed,
   metadata,
   provider,
@@ -566,6 +568,7 @@ export const createUser = async ({
       handleBytesArray,
       bumpSeed,
       metadata,
+      userId,
       userSolPubkey,
       {
         accounts: {

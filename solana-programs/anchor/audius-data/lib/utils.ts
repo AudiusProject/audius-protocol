@@ -90,6 +90,12 @@ export const randomString = (size: number) => {
   return objectId;
 };
 
+/// Generate random anchor BN id
+export const randomId = () => {
+  return new anchor.BN(Math.floor(Math.random() * 10000));
+};
+
+
 /// Generate mock CID by appending `Qm` with a rand string
 export const randomCID = () => {
   const randomSuffix = randomString(44);

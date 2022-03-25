@@ -3,7 +3,7 @@ import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair, randomCID, randomString } from "../lib/utils";
+import { findDerivedPair, randomCID, randomId, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreatePlaylist,
@@ -139,7 +139,7 @@ describe("audius-data", function () {
     });
 
     const playlistMetadata = randomCID();
-    const playlistID = randomString(10);
+    const playlistID = randomId();
 
     await testCreatePlaylist({
       provider,
@@ -166,7 +166,7 @@ describe("audius-data", function () {
         baseAuthorityAccount,
         handleBytesArray,
         bumpSeed,
-        id: randomString(10),
+        id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: wrongUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
@@ -191,7 +191,7 @@ describe("audius-data", function () {
   });
 
   it("creating + deleting a playlist", async function () {
-    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -226,13 +226,14 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
+      userId,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
       ...getURSMParams(),
     });
 
     const playlistMetadata = randomCID();
-    const playlistID = randomString(10);
+    const playlistID = randomId();
 
     await testCreatePlaylist({
       provider,
@@ -261,7 +262,7 @@ describe("audius-data", function () {
   });
 
   it("create multiple playlists in parallel", async function () {
-    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -298,6 +299,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
+      userId,
       userStgAccount: newUserAcctPDA,
       adminStgPublicKey: adminStgKeypair.publicKey,
       ...getURSMParams(),
@@ -315,7 +317,7 @@ describe("audius-data", function () {
         handleBytesArray,
         bumpSeed,
         adminStgAccount: adminStgKeypair.publicKey,
-        id: randomString(10),
+        id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
@@ -327,7 +329,7 @@ describe("audius-data", function () {
         handleBytesArray,
         bumpSeed,
         adminStgAccount: adminStgKeypair.publicKey,
-        id: randomString(10),
+        id: randomId(),
         playlistMetadata: playlistMetadata2,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
@@ -339,7 +341,7 @@ describe("audius-data", function () {
         handleBytesArray,
         bumpSeed,
         adminStgAccount: adminStgKeypair.publicKey,
-        id: randomString(10),
+        id: randomId(),
         playlistMetadata: playlistMetadata3,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
