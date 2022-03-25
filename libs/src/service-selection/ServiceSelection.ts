@@ -330,11 +330,11 @@ export class ServiceSelection {
       return acc
     }, {})
 
-    let best: string | null | undefined = null
+    let best: string | null  = null
     try {
       const { errored } = await raceRequests(
         Object.keys(serviceMap),
-        (url) => { best = serviceMap[url] },
+        (url) => { best = serviceMap[url] as string },
         {},
         /* timeout */ this.requestTimeout,
         /* timeBetweenRequests */ 0,
