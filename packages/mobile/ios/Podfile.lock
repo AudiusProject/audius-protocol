@@ -5,7 +5,7 @@ PODS:
     - React-Core
   - boost (1.76.0)
   - BVLinearGradient (2.5.6):
-    - React
+    - React-Core
   - CocoaAsyncSocket (7.6.5)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.66.3)
@@ -803,7 +803,7 @@ SPEC CHECKSUMS:
   Amplitude: ef9ed339ddd33c9183edf63fa4bbaa86cf873321
   amplitude-react-native: c7d779d1e2ec4062c833207df7588cc2a9146325
   boost: a7c83b31436843459a1961bfd74b96033dc77234
-  BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
+  BVLinearGradient: 48f1964a78bddfae412d1aac5f386c2949fe0306
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
   FBLazyVector: de148e8310b8b878db304ceea2fec13f2c02e3a0
