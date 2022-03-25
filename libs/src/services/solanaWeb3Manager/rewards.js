@@ -339,7 +339,7 @@ async function createSender ({
   })
 
   const instructions = [...signerInstructions, createSenderInstruction]
-  return transactionHandler.handleTransaction({ instructions, errorMapping: RewardsManagerError })
+  return transactionHandler.handleTransaction({ instructions, errorMapping: RewardsManagerError, feePayerOverride: feePayer })
 }
 
 /**
@@ -936,5 +936,6 @@ const deriveMessageAccount = async (
 module.exports = {
   submitAttestations,
   evaluateAttestations,
-  createSender
+  createSender,
+  deriveSolanaSenderFromEthAddress
 }

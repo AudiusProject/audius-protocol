@@ -1,7 +1,16 @@
 {
     "scripts": {
         "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-        "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+        "install-dev": "./scripts/install-dev-dependencies.sh",
+        "build-dev": "./scripts/build-dev.sh",
+        "deploy-dev": "anchor deploy",
+        "localnet-down": "killall -9 solana-test-validator",
+        "localnet-up": "solana-test-validator --reset --limit-ledger-size 100000",
+        "seed-tx": "./scripts/seed-tx.sh",
+        "dev-setup": "npm run build-dev && npm run deploy-dev && npm run seed-tx",
+        "test": "BROWSER= anchor test",
+        "parse-tx": "./scripts/parse-tx.sh"
     },
     "dependencies": {
         "@project-serum/anchor": "^0.22.0"

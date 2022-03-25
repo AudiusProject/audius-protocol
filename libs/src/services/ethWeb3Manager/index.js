@@ -1,5 +1,5 @@
 const Web3 = require('../../web3')
-const MultiProvider = require('../../utils/multiProvider')
+const { MultiProvider } = require('../../utils/multiProvider')
 const EthereumTx = require('ethereumjs-tx').Transaction
 const { estimateGas } = require('../../utils/estimateGas')
 const retry = require('async-retry')

@@ -3,7 +3,7 @@ const FormData = require('form-data')
 const retry = require('async-retry')
 
 const { wait } = require('../../utils')
-const uuid = require('../../utils/uuid')
+const { uuid } = require('../../utils/uuid')
 const SchemaValidator = require('../schemaValidator')
 
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
@@ -369,7 +369,7 @@ class CreatorNode {
   }
 
   async pollProcessingStatus (uuid) {
-    const route = this.creatorNodeEndpoint + '/track_content_status'
+    const route = this.creatorNodeEndpoint + '/async_processing_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
       try {
@@ -401,7 +401,7 @@ class CreatorNode {
    */
   async getTrackContentProcessingStatus (uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/track_content_status',
+      url: '/async_processing_status',
       params: {
         uuid
       },

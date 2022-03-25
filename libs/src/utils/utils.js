@@ -3,8 +3,8 @@ const Web3 = require('../web3')
 const axios = require('axios')
 const Hashids = require('hashids/cjs')
 
-const MultiProvider = require('./multiProvider.js')
-const uuid = require('./uuid.js')
+const { MultiProvider } = require('./multiProvider')
+const { uuid } = require('./uuid')
 
 // Hashids
 

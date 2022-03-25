@@ -44,7 +44,7 @@ class AudiusLibs {
    * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
    * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
    * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
-   * @param {number?} unhealthyBlockDiff the number of blocks we would consider a discovery node unhealthy
+   * @param {number?} unhealthyBlockDiff the number of missed blocks after which we would consider a discovery node unhealthy
    */
   static configDiscoveryProvider (
     whitelist = null,
@@ -318,6 +318,7 @@ class AudiusLibs {
     this.isDebug = isDebug
 
     this.AudiusABIDecoder = AudiusABIDecoder
+    this.Utils = Utils
 
     // Services to initialize. Initialized in .init().
     this.userStateManager = null
@@ -523,3 +524,4 @@ module.exports.Utils = Utils
 module.exports.SolanaUtils = SolanaUtils
 module.exports.SanityChecks = SanityChecks
 module.exports.RewardsAttester = RewardsAttester
+module.exports.CreatorNode = CreatorNode
