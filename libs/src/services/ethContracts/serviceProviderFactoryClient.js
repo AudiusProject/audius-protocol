@@ -219,8 +219,8 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let service = { endpoint: '', delegateOwnerWallet: '' }
-    let registerEvents = await contract.getPastEvents('RegisteredServiceProvider', {
+    const service = { endpoint: '', delegateOwnerWallet: '' }
+    const registerEvents = await contract.getPastEvents('RegisteredServiceProvider', {
       fromBlock: queryStartBlock,
       filter: {
         _spID: spID,
@@ -234,7 +234,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       service.owner = _owner
     }
 
-    let endpointUpdateEvents = await contract.getPastEvents('EndpointUpdated', {
+    const endpointUpdateEvents = await contract.getPastEvents('EndpointUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         _spID: spID,
@@ -247,7 +247,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       service.endpoint = _newEndpoint
     }
 
-    let walletEvents = await contract.getPastEvents('DelegateOwnerWalletUpdated', {
+    const walletEvents = await contract.getPastEvents('DelegateOwnerWalletUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         _spID: spID,

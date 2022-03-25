@@ -1,16 +1,16 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from time import sleep
 from unittest.mock import patch
 
 import flask
+from dateutil import parser
 from src.utils.redis_cache import (
     cache,
     get_all_json_cached_key,
     get_json_cached_key,
     set_json_cached_key,
 )
-from werkzeug.http import parse_date
 
 
 def test_json_cache_single_key(redis_mock):
@@ -50,7 +50,7 @@ def test_json_cache_date_value(redis_mock):
     date = datetime(2016, 2, 18, 9, 50, 20)
     set_json_cached_key(redis_mock, "key", {"date": date})
     result = get_json_cached_key(redis_mock, "key")
-    assert parse_date(result["date"]) == date.astimezone(timezone.utc)
+    assert parser.parse(result["date"]) == date
 
 
 def test_cache_decorator(redis_mock):

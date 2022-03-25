@@ -1,11 +1,11 @@
 import * as anchor from "@project-serum/anchor";
-import { BorshInstructionCoder, Program } from "@project-serum/anchor";
-import { assert } from "chai";
+import { Program } from "@project-serum/anchor";
+import { expect, assert } from "chai";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair } from "../lib/utils";
+import { findDerivedPair, getTransactionWithData } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
-  confirmLogInTransaction,
+  createSolanaContentNode,
   initTestConstants,
   testCreateUser,
 } from "./test-helpers";
@@ -28,22 +28,38 @@ describe("follows", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminStorageKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
+  const contentNodes = {};
+  const getURSMParams = () => {
+    return {
+      replicaSet: [
+        contentNodes["1"].spId.toNumber(),
+        contentNodes["2"].spId.toNumber(),
+        contentNodes["3"].spId.toNumber(),
+      ],
+      replicaSetBumps: [
+        contentNodes["1"].seedBump.bump,
+        contentNodes["2"].seedBump.bump,
+        contentNodes["3"].seedBump.bump,
+      ],
+      cn1: contentNodes["1"].pda,
+      cn2: contentNodes["2"].pda,
+      cn3: contentNodes["3"].pda,
+    };
+  };
 
   it("follows - Initializing admin account!", async function () {
     await initAdmin({
       provider,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       verifierKeypair,
-      trackIdOffset: new anchor.BN("0"),
-      playlistIdOffset: new anchor.BN("0"),
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
+      adminStorageKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -53,6 +69,33 @@ describe("follows", function () {
       console.log("Provided admin info: ", adminKeypair.publicKey.toString());
       throw new Error("Invalid returned values");
     }
+  });
+
+  it("Initializing Content Node accounts!", async function () {
+    const cn1 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(1),
+    });
+    const cn2 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(2),
+    });
+    const cn3 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(3),
+    });
+    contentNodes["1"] = cn1;
+    contentNodes["2"] = cn2;
+    contentNodes["3"] = cn3;
   });
 
   describe("follow / unfollow tests", function () {
@@ -79,13 +122,13 @@ describe("follows", function () {
 
       handle1DerivedInfo = await findDerivedPair(
         program.programId,
-        adminStgKeypair.publicKey,
+        adminStorageKeypair.publicKey,
         Buffer.from(handleBytesArray1)
       );
 
       handle2DerivedInfo = await findDerivedPair(
         program.programId,
-        adminStgKeypair.publicKey,
+        adminStorageKeypair.publicKey,
         Buffer.from(handleBytesArray2)
       );
 
@@ -107,7 +150,7 @@ describe("follows", function () {
       await updateAdmin({
         program,
         isWriteEnabled: false,
-        adminStgAccount: adminStgKeypair.publicKey,
+        adminStorageAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
 
@@ -121,8 +164,9 @@ describe("follows", function () {
         bumpSeed: handle1DerivedInfo.bumpSeed,
         metadata: constants1.metadata,
         newUserKeypair: newUser1Key,
-        userStgAccount: userStorageAccount1,
-        adminStgPublicKey: adminStgKeypair.publicKey,
+        userStorageAccount: userStorageAccount1,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        ...getURSMParams(),
       });
 
       await testCreateUser({
@@ -135,8 +179,9 @@ describe("follows", function () {
         bumpSeed: handle2DerivedInfo.bumpSeed,
         metadata: constants2.metadata,
         newUserKeypair: newUser2Key,
-        userStgAccount: userStorageAccount2,
-        adminStgPublicKey: adminStgKeypair.publicKey,
+        userStorageAccount: userStorageAccount2,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        ...getURSMParams(),
       });
     });
 
@@ -144,7 +189,7 @@ describe("follows", function () {
       // Submit a tx where user 1 follows user 2
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
+          audiusAdmin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
@@ -152,6 +197,7 @@ describe("follows", function () {
         },
         signers: [newUser1Key],
       };
+
       const followTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.followUser,
@@ -159,40 +205,32 @@ describe("follows", function () {
         { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
-      const txInfo = await confirmLogInTransaction(
-        provider,
-        followTx,
-        "Audius::FollowUser"
-      );
 
-      const instructionCoder = program.coder
-        .instruction as BorshInstructionCoder;
-      const decodedInstruction = instructionCoder.decode(
-        txInfo.transaction.message.instructions[0].data,
-        "base58"
-      );
+      const { decodedInstruction, decodedData, accountPubKeys } =
+        await getTransactionWithData(program, provider, followTx, 0);
 
-      // Validate deserialized instructions match input
-      // Confirms user handles passed on chain validation
-      // Can be used during indexing or external tx inspection
-      const instructions = decodedInstruction.data;
-      const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
-      const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
-      const instructionFollowerHandle = String.fromCharCode(
-        ...instructions.followerHandle.seed
+      expect(decodedInstruction.name).to.equal("followUser");
+      expect(decodedData.base.toString()).to.equal(
+        baseAuthorityAccount.toString()
       );
-      const instructionFolloweeHandle = String.fromCharCode(
-        ...instructions.followeeHandle.seed
+      expect(decodedData.userAction).to.deep.equal(
+        UserActionEnumValues.followUser
       );
-      assert.equal(user1Handle, instructionFollowerHandle);
-      assert.equal(user2Handle, instructionFolloweeHandle);
+      expect(decodedData.followerHandle.seed).to.deep.equal(
+        constants1.handleBytesArray
+      );
+      expect(decodedData.followeeHandle.seed).to.deep.equal(
+        constants2.handleBytesArray
+      );
+      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
+      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
 
     it("unfollow user", async function () {
       // Submit a tx where user 1 follows user 2
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
+          audiusAdmin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
@@ -207,28 +245,25 @@ describe("follows", function () {
         { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
-      const unFollowtxInfo = await confirmLogInTransaction(
-        provider,
-        unfollowTx,
-        "Audius::UnfollowUser"
+
+      const { decodedInstruction, decodedData, accountPubKeys } =
+        await getTransactionWithData(program, provider, unfollowTx, 0);
+
+      expect(decodedInstruction.name).to.equal("followUser");
+      expect(decodedData.base.toString()).to.equal(
+        baseAuthorityAccount.toString()
       );
-      const instructionCoder = program.coder
-        .instruction as BorshInstructionCoder;
-      const unFollowdecodedInstruction = instructionCoder.decode(
-        unFollowtxInfo.transaction.message.instructions[0].data,
-        "base58"
+      expect(decodedData.userAction).to.deep.equal(
+        UserActionEnumValues.unfollowUser
       );
-      const unfollowInstructions = unFollowdecodedInstruction.data;
-      const unfInstructionFollowerHandle = String.fromCharCode(
-        ...unfollowInstructions.followerHandle.seed
+      expect(decodedData.followerHandle.seed).to.deep.equal(
+        constants1.handleBytesArray
       );
-      const unfInstructionFolloweeHandle = String.fromCharCode(
-        ...unfollowInstructions.followeeHandle.seed
+      expect(decodedData.followeeHandle.seed).to.deep.equal(
+        constants2.handleBytesArray
       );
-      const user1Handle = String.fromCharCode(...constants1.handleBytesArray);
-      const user2Handle = String.fromCharCode(...constants2.handleBytesArray);
-      assert.equal(user1Handle, unfInstructionFollowerHandle);
-      assert.equal(user2Handle, unfInstructionFolloweeHandle);
+      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
+      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
     });
 
     it("submit invalid follow action", async function () {
@@ -236,7 +271,7 @@ describe("follows", function () {
       let expectedErrorFound = false;
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
+          audiusAdmin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
@@ -267,7 +302,7 @@ describe("follows", function () {
       const wrongUserKeypair = anchor.web3.Keypair.generate();
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStgKeypair.publicKey,
+          audiusAdmin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,

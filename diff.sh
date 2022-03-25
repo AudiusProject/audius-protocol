@@ -15,7 +15,6 @@
 DIFF_BRANCH="origin/master"
 REPOS="
     libs
-    content-service
     contracts
     eth-contracts
     creator-node
