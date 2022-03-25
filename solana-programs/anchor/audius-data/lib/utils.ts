@@ -4,6 +4,7 @@ import BN from "bn.js";
 import { randomBytes } from "crypto";
 import * as secp256k1 from "secp256k1";
 import keccak256 from "keccak256";
+import { AudiusData } from "../target/types/audius_data";
 const { PublicKey } = anchor.web3;
 
 export const SystemSysVarProgramKey = new PublicKey(
@@ -146,4 +147,25 @@ export const findDerivedPair = async (programId, adminAccount, seed) => {
   const bumpSeed = derivedAddresInfo.result[1];
 
   return { baseAuthorityAccount, derivedAddress, bumpSeed };
+};
+
+export const getContentNode = async (
+  program: anchor.Program<AudiusData>,
+  adminStoragePublicKey: anchor.web3.PublicKey,
+  spId: string
+) => {
+  const seed = Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    new anchor.BN(spId).toBuffer("le", 2),
+  ]);
+
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+    await findDerivedPair(program.programId, adminStoragePublicKey, seed);
+
+  return {
+    spId: new anchor.BN(spId),
+    baseAuthorityAccount,
+    bumpSeed,
+    derivedAddress,
+  };
 };
