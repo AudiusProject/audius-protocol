@@ -74,6 +74,9 @@ if [ -z ${SKIP_TESTS+x} ]; then
   # Unit tests
   pytest src
 
+  export PROMETHEUS_DATA=./prometheus_data
+  mkdir -p $PROMETHEUS_DATA
+
   # Integration tests
   pytest integration_tests
 fi
