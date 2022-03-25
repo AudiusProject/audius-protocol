@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Image } from 'react-native'
+import { Image, Platform } from 'react-native'
 
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import Bell from 'app/assets/images/emojis/bell.png'
@@ -15,9 +15,12 @@ import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { AccountSettingsRow } from './AccountSettingsRow'
 import { AppearanceSettingsRow } from './AppearanceSettingsRow'
+import { CastSettingsRow } from './CastSettingsRow'
 import { Divider } from './Divider'
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
+
+const IS_IOS = Platform.OS === 'ios'
 
 const messages = {
   title: 'Settings',
@@ -77,6 +80,7 @@ export const SettingsScreen = () => {
         <SettingsRowLabel label={messages.notifications} iconSource={Bell} />
       </SettingsRow>
       <AppearanceSettingsRow />
+      {IS_IOS ? <CastSettingsRow /> : null}
       <Divider />
       <SettingsRow onPress={handlePressAbout}>
         <SettingsRowLabel label={messages.about} iconSource={SpeechBalloon} />
