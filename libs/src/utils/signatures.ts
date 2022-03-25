@@ -26,6 +26,8 @@ const getTransferTokensTypeHash = () => {
   return _transferTokensTypehash
 }
 
+export type ApproveTokens = {owner: string, spender: string, value: string}
+
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
 function getPermitDigest (
@@ -33,7 +35,7 @@ function getPermitDigest (
   name: string,
   address: string,
   chainId: string,
-  approve: {owner: string, spender: string, value: string},
+  approve: ApproveTokens,
   nonce: boolean,
   deadline: string
 ) {
@@ -55,6 +57,8 @@ function getPermitDigest (
   return Utils.keccak256(encoded)
 }
 
+export type TransferTokens = {from: string, amount: string, recipientChain: string, recipient: string, arbiterFee: string}
+
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `transferTokens`
 function getTransferTokensDigest (
@@ -62,7 +66,7 @@ function getTransferTokensDigest (
   name: string,
   address: string,
   chainId: string,
-  transferTokens: {from: string, amount: string, recipientChain: string, recipient: string, arbiterFee: string},
+  transferTokens: TransferTokens,
   nonce: boolean,
   deadline: string
 ) {

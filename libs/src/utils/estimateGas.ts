@@ -2,7 +2,7 @@
 // will go through
 const GAS_LIMIT_MULTIPLIER = 1.05
 
-interface Method {
+interface ContractMethod {
   estimateGas: (config: {from: string | undefined, gas: number | undefined}) => number
   _method: {
     name: string
@@ -10,7 +10,7 @@ interface Method {
 }
 
 interface EstimateGasConfig {
-  method: Method
+  method: ContractMethod
   from?: string
   gasLimitMaximum?: number
   multiplier?: number
@@ -24,7 +24,7 @@ interface EstimateGasConfig {
  * @param options.from address the method will be sent from (required if the contract requires a certain sender, e.g. guardian)
  * @param options.gasLimitMaximum the maximum amount of gas we will allow
  * (likely will return a number much smaller than this)
- * @param optionsmultipler the multiplier to safe-guard against estimates that are too low
+ * @param options.multipler the multiplier to safe-guard against estimates that are too low
  */
 export const estimateGas = async ({
   method,

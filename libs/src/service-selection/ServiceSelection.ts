@@ -3,24 +3,24 @@ import { raceRequests, allRequests } from '../utils/network'
 import { DECISION_TREE_STATE } from './constants'
 import type { AxiosResponse } from 'axios'
 
-export type BaseService = string
-export interface VerboseService {endpoint: string}
+export type ServiceName = string
+export interface ServiceWithEndpoint {endpoint: string}
 
-type Service = BaseService | VerboseService
+type Service = ServiceName | ServiceWithEndpoint
 
-function isVerbose (service: Service): service is VerboseService {
+function isVerbose (service: Service): service is ServiceWithEndpoint {
   return typeof service !== 'string'
 }
 
 export type GetServicesInput =
-  (() => Promise<BaseService[]>) |
-  ((config: {verbose: false}) => Promise<BaseService[]>)|
-  ((config: {verbose: true}) => Promise<VerboseService[]>)
+  (() => Promise<ServiceName[]>) |
+  ((config: {verbose: false}) => Promise<ServiceName[]>)|
+  ((config: {verbose: true}) => Promise<ServiceWithEndpoint[]>)
 
 interface GetServices {
-  (): Promise<BaseService[]>
-  (config: {verbose: false}): Promise<BaseService[]>
-  (config: {verbose: true}): Promise<VerboseService[]>
+  (): Promise<ServiceName[]>
+  (config: {verbose: false}): Promise<ServiceName[]>
+  (config: {verbose: true}): Promise<ServiceWithEndpoint[]>
   (config: {verbose: boolean}): Promise<Service[]>
 }
 
@@ -234,14 +234,14 @@ export class ServiceSelection {
     }
 
     // Key the services by their health check endpoint
-    const urlMap = baseServices.reduce<Record<string, string>>((acc, s) => {
-      acc[ServiceSelection.getHealthCheckEndpoint(s)] = s
-      return acc
+    const urlMap = baseServices.reduce<Record<string, string>>((urlMap, s) => {
+      urlMap[ServiceSelection.getHealthCheckEndpoint(s)] = s
+      return urlMap
     }, {})
 
     try {
       const results = await allRequests({
-        urlMap: urlMap,
+        urlMap,
         timeout: this.requestTimeout,
         validationCheck: (resp) => this.isHealthy(resp, urlMap)
       })
