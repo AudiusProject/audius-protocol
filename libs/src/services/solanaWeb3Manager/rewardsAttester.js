@@ -757,11 +757,15 @@ class RewardsAttester {
   }
 
   async _updateState (newState) {
-    this.state = {
-      ...this.state,
-      ...newState
+    try {
+      this.state = {
+        ...this.state,
+        ...newState
+      }
+      await this._updateStateCallback(this.state)
+    } catch (e) {
+      this.logger.error(`Got error updating state: ${e.message}`)
     }
-    await this._updateStateCallback(this.state)
   }
 
   async _updatePhase (phase) {
