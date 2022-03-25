@@ -99,11 +99,10 @@ module.exports = function (app) {
   )
 
   /**
-   * TODO: (Needs to)
-   * - validate requester is a valid SP (auth)
-   * - make sure current node has enough storage (DONE)
-   * - upload track (DONE)
-   * - submit transcode and segment request (DONE)
+   * Given that the requester is a valid SP, the current Content Node has enough storage,
+   * upload the track to the current node and add a transcode and segmenting job to the queue.
+   *
+   * This route is part of the transcode handoff logic.
    */
   app.post(
     '/transcode_and_segment',
@@ -128,8 +127,8 @@ module.exports = function (app) {
   )
 
   /**
-   * TODO: (Needs to)
-   * - validate requester is a valid SP (auth)
+   * Given that the request is coming from a valid SP, serve the corresponding file
+   * from the transcode handoff
    */
   app.get(
     '/transcode_and_segment',
@@ -140,8 +139,12 @@ module.exports = function (app) {
       const uuid = req.query.uuid
 
       if (!fileName || !fileType || !uuid) {
-        return errorResponseBadRequest(
-          `No provided filename=${fileName}, fileType=${fileType}, or uuid=${uuid}`
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest(
+            `No provided filename=${fileName}, fileType=${fileType}, or uuid=${uuid}`
+          )
         )
       }
 
