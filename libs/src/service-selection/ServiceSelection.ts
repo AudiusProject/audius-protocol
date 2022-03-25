@@ -330,7 +330,7 @@ export class ServiceSelection {
       return acc
     }, {})
 
-    let best: string | null  = null
+    let best: string | null = null
     try {
       const { errored } = await raceRequests(
         Object.keys(serviceMap),
