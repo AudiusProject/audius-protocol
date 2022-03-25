@@ -3,6 +3,7 @@ import time
 from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 from redis import Redis
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from spl.token.client import Token
@@ -456,7 +457,7 @@ def get_audio_token(solana_client: Client):
         conn=solana_client,
         pubkey=WAUDIO_MINT_PUBKEY,
         program_id=SPL_TOKEN_PROGRAM_ID_PUBKEY,
-        payer=[],  # not making any txs so payer is not required
+        payer=Keypair.generate(),  # not making any txs so payer is not required
     )
     return waudio_token
 
