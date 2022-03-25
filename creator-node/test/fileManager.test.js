@@ -43,7 +43,7 @@ const req = {
 }
 
 // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
-// consts used for testing saveFileToIpfsFromFs()
+// consts used for testing saveFileToIPFSFromFS()
 const segmentsDirPath = 'test/test-segments'
 const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
@@ -66,8 +66,8 @@ describe('test fileManager', () => {
     sinon.restore()
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileToIpfsFromFs() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileToIpfsFromFs()', () => {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileToIPFSFromFS() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test saveFileToIPFSFromFS()', () => {
     /**
      * Given: a file is being saved to ipfs from fs
      * When: the cnodeUserUUID is not present

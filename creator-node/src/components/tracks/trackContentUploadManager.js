@@ -280,7 +280,7 @@ async function batchSaveFileToIPFSAndCopyFromFS({
   transcodeFilePath,
   segmentFileNames
 }) {
-  const multihash = await FileManager.saveFileToIpfsFromFs(
+  const multihash = await FileManager.saveFileToIPFSFromFS(
     { logContext },
     cnodeUserUUID,
     transcodeFilePath,
@@ -311,7 +311,7 @@ async function batchSaveFileToIPFSAndCopyFromFS({
           'segments',
           segmentFileName
         )
-        const multihash = await FileManager.saveFileToIpfsFromFs(
+        const multihash = await FileManager.saveFileToIPFSFromFS(
           { logContext: logContext },
           cnodeUserUUID,
           segmentAbsolutePath,

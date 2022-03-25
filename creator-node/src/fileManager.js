@@ -59,7 +59,7 @@ async function saveFileFromBufferToIPFSAndDisk(
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIpfsFromFs(
+async function saveFileToIPFSFromFS(
   { logContext },
   cnodeUserUUID,
   srcPath,
@@ -848,7 +848,7 @@ async function removeFile(storagePath) {
 
 module.exports = {
   saveFileFromBufferToIPFSAndDisk,
-  saveFileToIpfsFromFs,
+  saveFileToIPFSFromFS,
   saveFileForMultihashToFS,
   removeTrackFolder,
   upload,
