@@ -73,7 +73,7 @@ class AsyncProcessingQueue {
           )
           await this.addProcessTranscodeAndSegmentTask({
             logContext,
-            req: job.data.req
+            req: { ...job.data.req, transcodeFilePath, segmentFileNames }
           })
           done(null, { response: { transcodeFilePath, segmentFileNames } })
         }
@@ -198,6 +198,7 @@ class AsyncProcessingQueue {
       EXPIRATION_SECONDS
     )
 
+    // Pass in libs for if async fn requires it
     req.libs = this.libs
 
     let response
@@ -226,6 +227,10 @@ class AsyncProcessingQueue {
 
       throw e
     }
+
+    // Remove passed in libs in case there are any followup jobs to be added
+    // to the queue, like for `transcodeHandOff` task
+    delete req.libs
 
     return response
   }

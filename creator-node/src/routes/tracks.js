@@ -9,7 +9,7 @@ const models = require('../models')
 const {
   saveFileFromBufferToIPFSAndDisk,
   removeTrackFolder,
-  getTmpTrackUploadArtifactsWithUUIDInPath,
+  getTmpTrackUploadArtifactsWithInputUUID,
   handleTrackContentUpload
 } = require('../fileManager')
 const {
@@ -77,9 +77,7 @@ module.exports = function (app) {
             fileName: req.fileName,
             fileDir: req.fileDir,
             fileDestination: req.file.destination,
-            session: {
-              cnodeUserUUID: req.session.cnodeUserUUID
-            }
+            cnodeUserUUID: req.session.cnodeUserUUID
           }
         })
       } else {
@@ -90,9 +88,7 @@ module.exports = function (app) {
             fileDir: req.fileDir,
             fileNameNoExtension: req.fileNameNoExtension,
             fileDestination: req.file.destination,
-            session: {
-              cnodeUserUUID: req.session.cnodeUserUUID
-            },
+            cnodeUserUUID: req.session.cnodeUserUUID,
             headers: req.headers
           }
         })
@@ -118,18 +114,14 @@ module.exports = function (app) {
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
 
-      await AsyncProcessingQueue.addTranscodeAndSegmentTask(
-        {
-          logContext: req.logContext,
-          req: {
-            fileName: req.fileName,
-            fileDir: req.fileDir,
-            uuid: req.logContext.requestID,
-            handOffTrack: true
-          }
-        },
-        req.app.get('audiusLibs')
-      )
+      await AsyncProcessingQueue.addTranscodeAndSegmentTask({
+        logContext: req.logContext,
+        req: {
+          fileName: req.fileName,
+          fileDir: req.fileDir,
+          uuid: req.logContext.requestID
+        }
+      })
 
       return successResponse({ uuid: req.logContext.requestID })
     })
@@ -152,8 +144,8 @@ module.exports = function (app) {
         )
       }
 
-      const basePath = getTmpTrackUploadArtifactsWithUUIDInPath(
-        req.query.uuidInPath
+      const basePath = getTmpTrackUploadArtifactsWithInputUUID(
+        req.query.uuidUsedInPath
       )
       let pathToFile
       if (fileType === 'transcode') {

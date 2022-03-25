@@ -16,13 +16,15 @@ const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
 const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
 
 class TranscodeDelegationManager {
-  static async handOff({ req, logContext }) {
+  static async handOff({ logContext }, req) {
+    const decisionTree = { state: null }
     const libs = req.libs
     const logger = genericLogger.child(logContext)
     let resp = {}
 
     let sps
     try {
+      decisionTree.state = 'SELECTING_RANDOM_SPS'
       sps = await TranscodeDelegationManager.selectRandomSPs(libs)
     } catch (e) {
       logger.warn(`Could not select random SPs: ${e.message}`)
@@ -30,18 +32,22 @@ class TranscodeDelegationManager {
     }
 
     for (const sp of sps) {
+      decisionTree.sp = sp
       try {
         logger.info(`Handing track off to sp=${sp}`)
+        decisionTree.state = 'HANDING_OFF_TO_SP'
 
         const transcodeAndSegmentUUID =
           await TranscodeDelegationManager.handOffToSp(logger, { sp, req })
 
+        decisionTree.state = 'POLLING_FOR_TRANSCODE'
         const polledTranscodeResponse =
           await TranscodeDelegationManager.pollForTranscode(logger, {
             sp,
             uuid: transcodeAndSegmentUUID
           })
 
+        decisionTree.state = 'FETCHING_FILES_AND_WRITING_TO_FS'
         const localFilePaths =
           await TranscodeDelegationManager.fetchFilesAndWriteToFs(logger, {
             ...polledTranscodeResponse,
@@ -50,9 +56,30 @@ class TranscodeDelegationManager {
           })
 
         resp = localFilePaths
+
+        // If any of these fields are not present, throw and retry onto the next sp
+        if (
+          !resp.transcodeFilePath ||
+          !resp.segmentFileNames ||
+          !resp.m3u8FilePath
+        ) {
+          throw new Error(
+            `Missing fields from transcode fetching response. Actual response=${JSON.stringify(
+              resp
+            )}`
+          )
+        }
+
+        // If the above asserts passed, break out of the loop
+        break
       } catch (e) {
         // TODO: delete tmp dir in external SP if fails and continue
-        logger.warn(`Could not hand off track to sp=${sp} err=${e.toString()}`)
+        logger.warn(
+          `Could not hand off track: state=${
+            decisionTree.state
+          } err=${e.toString()}`
+        )
+        console.error(e)
       }
     }
 
@@ -106,7 +133,7 @@ class TranscodeDelegationManager {
   static async pollForTranscode(logger, { uuid, sp }) {
     logger.info(
       { sp },
-      `Polling for transcode and segments with uuid=${transcodeAndSegmentUUID}...`
+      `Polling for transcode and segments with uuid=${uuid}...`
     )
 
     return this.asyncRetry({
@@ -119,17 +146,29 @@ class TranscodeDelegationManager {
         }
 
         const { status, resp } =
-          await TranscodeDelegationManager.fetchTrackContentProcessingStatus(
+          await TranscodeDelegationManager.fetchTranscodeProcessingStatus({
             sp,
             uuid
-          )
+          })
 
-        if (status && status === 'DONE') return resp
-        if (status && status === 'FAILED') {
+        // Have to throw errors to trigger a retry
+        if (!status) {
+          throw new Error(`Job for uuid=${uuid} has not begun yet...`)
+        }
+
+        if (status === 'IN_PROGRESS') {
+          throw new Error(`In progress for uuid=${uuid}...`)
+        }
+
+        if (status === 'FAILED') {
           bail(
             new Error(`Transcode handoff failed: uuid=${uuid}, error=${resp}`)
           )
           return
+        }
+
+        if (status === 'DONE') {
+          return resp
         }
       },
       asyncFnTask: 'polling transcode',
@@ -146,7 +185,7 @@ class TranscodeDelegationManager {
       transcodeFilePath,
       segmentFileNames,
       segmentFilePaths,
-      m3u8Path,
+      m3u8FilePath,
       sp
     }
   ) {
@@ -181,19 +220,19 @@ class TranscodeDelegationManager {
     await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
 
     // Get m3u8 file and write to tmp disk
-    logger.info({ sp, m3u8Path }, 'Fetching m3u8...')
+    logger.info({ sp, m3u8FilePath }, 'Fetching m3u8...')
     const m3u8FileName = fileNameNoExtension + '.m3u8'
     res = await TranscodeDelegationManager.fetchM3U8File(
       sp,
       m3u8FileName,
       fileNameNoExtension
     )
-    await Utils.writeStreamToFileSystem(res.data, m3u8Path)
+    await Utils.writeStreamToFileSystem(res.data, m3u8FilePath)
 
     return {
       transcodeFilePath,
       segmentFileNames,
-      m3u8Path
+      m3u8FilePath
     }
   }
 
@@ -215,12 +254,13 @@ class TranscodeDelegationManager {
       asyncFn: axios,
       asyncFnParams: {
         url: `${sp}/transcode_and_segment`,
+        method: 'post',
         data: originalTrackFormData,
         headers: {
           ...originalTrackFormData.getHeaders()
         },
         params: {
-          use_uuid_in_path: fileNameNoExtension,
+          uuid: fileNameNoExtension,
           timestamp,
           signature,
           spID
@@ -257,13 +297,13 @@ class TranscodeDelegationManager {
   }
 
   /**
-   * Gets the task progress given the task type and uuid associated with the task
+   * Gets the status of the transcode processing
    * @param {Object} param
    * @param {string} param.sp the current sp selected for track processing
    * @param {string} param.uuid the uuid of the track transcoding task
    * @returns the status, and the success or failed response if the task is complete
    */
-  static async fetchTrackContentProcessingStatus({ sp, uuid }) {
+  static async fetchTranscodeProcessingStatus({ sp, uuid }) {
     const spID = config.get('spID')
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
@@ -294,7 +334,7 @@ class TranscodeDelegationManager {
         params: {
           fileName: segmentFileName,
           fileType: 'segment',
-          uuidInPath: fileNameNoExtension,
+          uuidUsedInPath: fileNameNoExtension,
           timestamp,
           signature,
           spID
@@ -318,7 +358,7 @@ class TranscodeDelegationManager {
         params: {
           fileName: transcodeFileName,
           fileType: 'transcode',
-          uuidInPath: fileNameNoExtension,
+          uuidUsedInPath: fileNameNoExtension,
           timestamp,
           signature,
           spID
@@ -334,7 +374,7 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return axios({
+    return this.asyncRetry({
       asyncFn: axios,
       asyncFnParams: {
         url: `${sp}/transcode_and_segment`,
@@ -342,7 +382,7 @@ class TranscodeDelegationManager {
         params: {
           fileName: m3u8FileName,
           fileType: 'm3u8',
-          uuidInPath: fileNameNoExtension,
+          uuidUsedInPath: fileNameNoExtension,
           timestamp,
           signature,
           spID
@@ -353,6 +393,16 @@ class TranscodeDelegationManager {
     })
   }
 
+  /**
+   * Wrapper around async-retry API.
+   * @param {Object} param
+   * @param {func} param.asyncFn the fn to asynchronously retry
+   * @param {Object} param.asyncFnParams the params to pass into the fn. takes in 1 object
+   * @param {number} [retries=5] the max number of retries. defaulted to 5
+   * @param {number} [minTimeout=1000] minimum time to wait after first retry. defaulted to 1000ms
+   * @param {number} [maxTimeout=5000] maximum time to wait after first retry. defaulted to 5000ms
+   * @returns the fn response if success, or throws an error
+   */
   static async asyncRetry({
     asyncFn,
     asyncFnParams,

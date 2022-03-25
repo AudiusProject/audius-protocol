@@ -59,7 +59,7 @@ async function saveFileFromBufferToIPFSAndDisk(
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIPFSFromFS(
+async function saveFileToIpfsFromFs(
   { logContext },
   cnodeUserUUID,
   srcPath,
@@ -637,6 +637,22 @@ async function removeTrackFolder({ logContext }, fileDir) {
   }
 }
 
+const getRandomFileName = () => {
+  return getUuid()
+}
+
+const getTmpTrackUploadArtifactsWithInputUUID = (fileName) => {
+  return path.join(DiskManager.getTmpTrackUploadArtifactsPath(), fileName)
+}
+
+const getTmpSegmentsPath = (fileName) => {
+  return path.join(
+    DiskManager.getTmpTrackUploadArtifactsPath(),
+    fileName,
+    'segments'
+  )
+}
+
 // Simple in-memory storage for metadata/generic files
 const memoryStorage = multer.memoryStorage()
 const upload = multer({
@@ -654,20 +670,26 @@ const uploadTempDiskStorage = multer({
 // Custom on-disk storage for track files to prep for segmentation
 const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // save file under randomly named folders to avoid collisions
-    const randomFileName = getUuid()
-    const fileDir = path.join(
-      DiskManager.getTmpTrackUploadArtifactsPath(),
-      randomFileName
-    )
+    let fileName
+    if (req.query.uuid) {
+      // Use the file name provided in the headers during track hand off
+      fileName = req.query.uuid
+    } else {
+      // Save file under randomly named folders to avoid collisions
+      fileName = getRandomFileName()
+    }
+
+    const fileDir = getTmpTrackUploadArtifactsWithInputUUID(fileName)
+    const segmentsDir = getTmpSegmentsPath(fileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)
-    fs.mkdirSync(fileDir + '/segments')
+    fs.mkdirSync(segmentsDir)
 
     req.fileDir = fileDir
     const fileExtension = getFileExtension(file.originalname)
-    req.fileName = randomFileName + fileExtension
+    req.fileNameNoExtension = fileName
+    req.fileName = fileName + fileExtension
 
     req.logger.info(
       `Created track disk storage: ${req.fileDir}, ${req.fileName}`
@@ -724,6 +746,7 @@ function getFileExtension(fileName) {
  * @param {string} param.fileName the file name
  * @param {string} param.fileMimeType the file type
  */
+// only used for resumable upload :(  not relevant
 function checkFileType(logger, { fileName, fileMimeType }) {
   const fileExtension = getFileExtension(fileName).slice(1)
   // the function should call `cb` with a boolean to indicate if the file should be accepted
@@ -825,7 +848,7 @@ async function removeFile(storagePath) {
 
 module.exports = {
   saveFileFromBufferToIPFSAndDisk,
-  saveFileToIPFSFromFS,
+  saveFileToIpfsFromFs,
   saveFileForMultihashToFS,
   removeTrackFolder,
   upload,
@@ -835,5 +858,7 @@ module.exports = {
   hasEnoughStorageSpace,
   getFileExtension,
   checkFileMiddleware,
+  getTmpTrackUploadArtifactsWithInputUUID,
+  getTmpSegmentsPath,
   copyMultihashToFs
 }
