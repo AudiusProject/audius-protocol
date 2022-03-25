@@ -1,3 +1,7 @@
+import { useMemo } from 'react'
+
+import { useIsFocused } from '@react-navigation/native'
+
 import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
@@ -9,6 +13,7 @@ import {
   tabScreen
 } from 'app/components/top-tab-bar/TopTabNavigator'
 
+import { SearchFocusContext } from './SearchFocusContext'
 import { AlbumsTab } from './tabs/AlbumsTab'
 import { PlaylistsTab } from './tabs/PlaylistsTab'
 import { ProfilesTab } from './tabs/ProfilesTab'
@@ -19,6 +24,9 @@ const messages = {
 }
 
 export const SearchResultsScreen = () => {
+  const isFocused = useIsFocused()
+  const focusContext = useMemo(() => ({ isFocused }), [isFocused])
+
   const profilesScreen = tabScreen({
     name: 'Profiles',
     Icon: IconUser,
@@ -46,12 +54,14 @@ export const SearchResultsScreen = () => {
   return (
     <Screen topbarRight={null}>
       <Header text={messages.header} />
-      <TabNavigator initialScreenName='Profiles'>
-        {profilesScreen}
-        {tracksScreen}
-        {albumsScreen}
-        {playlistsScreen}
-      </TabNavigator>
+      <SearchFocusContext.Provider value={focusContext}>
+        <TabNavigator initialScreenName='Profiles'>
+          {profilesScreen}
+          {tracksScreen}
+          {albumsScreen}
+          {playlistsScreen}
+        </TabNavigator>
+      </SearchFocusContext.Provider>
     </Screen>
   )
 }

@@ -11,7 +11,10 @@ export const TracksTab = () => {
   const lineup = useSelectorWeb(getSearchTracksLineup, isEqual)
 
   return (
-    <SearchResultsTab noResults={lineup?.entries.length === 0}>
+    <SearchResultsTab
+      noResults={lineup?.entries.length === 0}
+      status={lineup?.status}
+    >
       <Lineup actions={tracksActions} lineup={lineup} />
     </SearchResultsTab>
   )
