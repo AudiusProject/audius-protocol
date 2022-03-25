@@ -37,7 +37,7 @@ describe('test Solana relay route without social verification', function () {
   beforeEach(async () => {
     config.set('sentryDSN', '')
     sandbox = sinon.createSandbox()
-    const appInfo = await getApp(null, null)
+    const appInfo = await getApp()
     app = appInfo.app
     server = appInfo.server
     sandbox.stub(relayHelpers, 'doesUserHaveSocialProof').resolves(false)

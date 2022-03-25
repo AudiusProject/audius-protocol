@@ -1248,7 +1248,7 @@ def update_task(self):
                 f"index.py | update_task | {self.request.id} | Processing complete within session"
             )
         else:
-            logger.error(
+            logger.warning(
                 f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
             )
     except Exception as e:
