@@ -43,14 +43,16 @@ export const SearchBar = () => {
   )
 
   const handleSubmit = useCallback(() => {
-    const route = getTagSearchRoute(query)
-    navigation.push({
-      native: {
-        screen: 'TagSearch',
-        params: { query }
-      },
-      web: { route, fromPage: 'search' }
-    })
+    if (query.startsWith('#')) {
+      const route = getTagSearchRoute(query)
+      navigation.push({
+        native: {
+          screen: 'TagSearch',
+          params: { query }
+        },
+        web: { route, fromPage: 'search' }
+      })
+    }
   }, [query, navigation])
 
   const onClear = useCallback(() => {
