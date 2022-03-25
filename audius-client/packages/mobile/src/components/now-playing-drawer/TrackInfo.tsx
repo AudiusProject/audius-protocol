@@ -1,40 +1,28 @@
-import React from 'react'
-
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, View } from 'react-native'
 
-import Text from 'app/components/text'
+import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges/UserBadges'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { makeStyles } from 'app/styles'
 import { GestureResponderHandler } from 'app/types/gesture'
-import { ThemeColors } from 'app/utils/theme'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    root: {
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
-    trackTitle: {
-      color: themeColors.neutral,
-      fontSize: 18,
-      marginBottom: 4,
-      textAlign: 'center'
-    },
-    infoContainer: {
-      flexDirection: 'row'
-    },
-    artistInfo: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      maxWidth: '95%'
-    },
-    artist: {
-      color: themeColors.secondary,
-      fontSize: 18
-    }
-  })
+const useStyles = makeStyles(({ typography, spacing }) => ({
+  root: {
+    alignItems: 'center'
+  },
+  trackTitle: {
+    textAlign: 'center'
+  },
+  artistInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing(3)
+  },
+  artist: {
+    fontFamily: typography.fontByWeight.medium
+  }
+}))
 
 type TrackInfoProps = {
   track: Track
@@ -49,37 +37,31 @@ export const TrackInfo = ({
   track,
   user
 }: TrackInfoProps) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   return (
     <View style={styles.root}>
-      {user && track && (
+      {user && track ? (
         <>
           <Pressable onPress={onPressTitle}>
-            <Text numberOfLines={2} style={styles.trackTitle} weight='bold'>
+            <Text numberOfLines={2} style={styles.trackTitle} variant='h1'>
               {track.title}
             </Text>
           </Pressable>
           <Pressable onPress={onPressArtist}>
-            <View style={styles.infoContainer}>
-              <View style={styles.artistInfo}>
-                <Text numberOfLines={1} style={styles.artist} weight='medium'>
-                  {user.name}
-                </Text>
-              </View>
-              <UserBadges
-                user={{
-                  balance: user.balance,
-                  associated_wallets_balance: user.associated_wallets_balance,
-                  name: user.name,
-                  is_verified: user.is_verified
-                }}
-                badgeSize={12}
-                hideName
-              />
+            <View style={styles.artistInfo}>
+              <Text
+                numberOfLines={1}
+                style={styles.artist}
+                variant='h1'
+                color='secondary'
+              >
+                {user.name}
+              </Text>
+              <UserBadges user={user} badgeSize={12} hideName />
             </View>
           </Pressable>
         </>
-      )}
+      ) : null}
     </View>
   )
 }
