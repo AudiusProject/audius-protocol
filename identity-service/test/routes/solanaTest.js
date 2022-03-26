@@ -9,7 +9,6 @@ const { sendInstruction, createUserBankInstruction, garbageProgramInstructions, 
 const relayHelpers = require('../../src/utils/relayHelpers')
 
 const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
-const solanaTrackListenCountAddress = config.get('solanaTrackListenCountAddress')
 const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
 
 describe('test Solana util functions', function () {
