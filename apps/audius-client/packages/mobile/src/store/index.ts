@@ -10,7 +10,6 @@ import audio, { AudioState } from './audio/reducer'
 import { reducer as common } from './common/reducer'
 import downloads, { DownloadState } from './download/slice'
 import drawers, { DrawersState } from './drawers/slice'
-import googleCast, { GoogleCastState } from './googleCast/reducer'
 import keyboard, { KeyboardState } from './keyboard/slice'
 import lifecycle, { LifecycleState } from './lifecycle/reducer'
 import notifications, { NotificationsState } from './notifications/reducer'
@@ -25,7 +24,6 @@ export type AppState = {
   common: CommonState
   drawers: DrawersState
   downloads: DownloadState
-  googleCast: GoogleCastState
   keyboard: KeyboardState
   lifecycle: LifecycleState
   notifications: NotificationsState
@@ -42,7 +40,6 @@ const createRootReducer = () =>
     common,
     drawers,
     downloads,
-    googleCast,
     keyboard,
     lifecycle,
     notifications,

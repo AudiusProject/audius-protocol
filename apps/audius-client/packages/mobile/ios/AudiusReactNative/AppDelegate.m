@@ -78,6 +78,8 @@
 
   GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:@"222B31C8"];
   GCKCastOptions* options = [[GCKCastOptions alloc] initWithDiscoveryCriteria:criteria];
+  // Allow our app to control chromecast volume
+  options.physicalVolumeButtonsWillControlDeviceVolume = YES;
   [GCKCastContext setSharedInstanceWithOptions:options];
 
   return YES;

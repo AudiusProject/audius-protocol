@@ -29,7 +29,9 @@ export const CastSettingsRow = () => {
 
   const setCastMethod = useCallback(
     (method: CastMethod) => {
-      dispatchWeb(updateMethod({ method: method }))
+      // Changes should be persisted to async storage so that the
+      // settings row value persists between sessions.
+      dispatchWeb(updateMethod({ method: method, persist: true }))
     },
     [dispatchWeb]
   )
