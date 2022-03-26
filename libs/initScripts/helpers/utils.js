@@ -24,11 +24,11 @@ async function execParseOutput (cmd) {
 }
 
 async function getDataContractAccounts () {
-  return execParseOutput('docker exec audius_ganache_cli cat contracts-ganache-accounts.json')
+  return execParseOutput('cat ../contracts/contracts-ganache-accounts.json')
 }
 
 async function getEthContractAccounts () {
-  return execParseOutput('docker exec audius_ganache_cli_eth_contracts cat eth-contracts-ganache-accounts.json')
+  return execParseOutput('cat ../eth-contracts/contracts-ganache-accounts.json')
 }
 
 module.exports = { getEthWeb3AndAccounts, convertAudsToWeiBN, getDataContractAccounts, getEthContractAccounts }

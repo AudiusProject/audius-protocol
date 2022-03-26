@@ -25,7 +25,7 @@
   "serviceCountry": "",
   "delegateOwnerWallet": "",
   "delegatePrivateKey": "",
-  "ethProviderUrl": "http://audius_ganache_cli_eth_contracts:8545",
+  "ethProviderUrl": "http://host.docker.internal:8546",
   "ethNetworkId": "",
   "ethTokenAddress": "",
   "ethRegistryAddress": "",

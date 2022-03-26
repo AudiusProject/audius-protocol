@@ -9,3 +9,6 @@ node_modules/
 !.vscode/launch.json
 
 .idea
+
+# Solana
+test-ledger

@@ -7,7 +7,7 @@ const {
   identityServiceUp,
   Service,
   SetupCommand,
-  runSetupCommand,
+  runSetupCommand
 } = ServiceCommands
 
 const NUM_CREATOR_NODES = 4
@@ -75,18 +75,23 @@ program
     'number of discovery nodes',
     NUM_DISCOVERY_NODES.toString()
   )
-  .option(
-    '-aao, --with-aao',
-    'whether to include AAO',
-    false
-  )
+  .option('-aao, --with-aao', 'whether to include AAO', false)
   .action(async opts => {
     console.log('Bringing up services...')
-    console.log(`See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`)
+    console.log(
+      `See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`
+    )
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
     const { verbose, parallel, withAao: withAAO } = opts
-    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, parallel, opts })
+    await allUp({
+      numCreatorNodes,
+      numDiscoveryNodes,
+      withAAO,
+      verbose,
+      parallel,
+      opts
+    })
   })
 
 program
@@ -154,23 +159,21 @@ program
     'number of discovery nodes',
     NUM_DISCOVERY_NODES.toString()
   )
-  .option(
-    '-aao, --with-aao',
-    'whether to include AAO',
-    false
-  )
+  .option('-aao, --with-aao', 'whether to include AAO', false)
   .action(async (service, command, opts) => {
     try {
       if (!service || !command) {
         throw new Error('Failed to parse arguments')
       }
-      let options = {}
+      let options = {
+        verbose: opts.verbose
+      }
 
-      const verbose = opts.verbose
       const serviceName = findService(service)
       const setupCommand = findCommand(command)
 
-      if (serviceName === Service.ALL && setupCommand == SetupCommand.UP) {
+      const verbose = opts.verbose
+      if (serviceName === Service.ALL && setupCommand === SetupCommand.UP) {
         const numCreatorNodes = parseInt(opts.numCnodes)
         const numDiscoveryNodes = parseInt(opts.numDn)
         const withAAO = opts.withAao

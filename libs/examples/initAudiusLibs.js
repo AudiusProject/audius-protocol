@@ -35,7 +35,7 @@ async function initAudiusLibs (
         ethWeb3ProviderEndpoint,
         ethWallet
       ),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set(['http://docker.for.mac.localhost:5000'])),
+      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
       isServer,
       isDebug,
     }

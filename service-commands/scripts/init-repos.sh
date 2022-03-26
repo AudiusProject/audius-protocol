@@ -16,7 +16,6 @@ fi
 cd $PROTOCOL_DIR/
 cd service-commands/
 npm install
-npm install lodash # fry_kek
 npm link
 
 # setup mad dog
@@ -35,6 +34,11 @@ cd $PROTOCOL_DIR/
 cd eth-contracts/
 npm install
 
+# set up solana validator & programs
+cd $PROTOCOL_DIR
+cd solana-programs
+sh init.sh
+
 # no discovery provider setup needed
 # 'pip install' is performed through Docker for development
 # TODO: Revisit whether this is optimal after hot reloading for disc prov
@@ -48,8 +52,6 @@ npm install
 cd $PROTOCOL_DIR/
 cd libs/
 npm install
-npm install lodash # lodash isn't installed on the first run for some reason...
-npm install web3   # web3 has the same issue...
 
 # setup identity service
 cd $PROTOCOL_DIR/
