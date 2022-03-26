@@ -1,5 +1,7 @@
 const config = require('../../src/config')
 const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
+const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
+const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')
 
 const sendInstruction = [
   {
@@ -1185,7 +1187,7 @@ const garbageCreateSenderInstructions = [
       "keys": []
     },
     {
-      "programId": "DqMunPig49AYjNxeJC2VUdDEHhUUE6FsM5zg4Yh1vq8",
+      "programId": solanaRewardsManagerProgramId,
       "data": {
         "type": "Buffer",
         "data": [
@@ -1772,7 +1774,7 @@ const createSenderInstructions = [
       "keys": []
     },
     {
-      "programId": "DqMunPig49AYjNxeJC2VUdDEHhUUE6FsM5zg4Yh1vq8",
+      "programId": solanaRewardsManagerProgramId,
       "data": {
         "type": "Buffer",
         "data": [
@@ -1821,7 +1823,7 @@ const createSenderInstructions = [
       },
       "keys": [
         {
-          "pubkey": "DQJ9iqMztwZWt6rX146ARjQ1PgFmFV4xCBTLgBn7br4F",
+          "pubkey": solanaRewardsManager,
           "isSigner": false,
           "isWritable": false
         },
