@@ -23,7 +23,7 @@ import {
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import { View, StyleSheet, NativeModules } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 
 import IconFavoriteOffDark from 'app/assets/animations/iconFavoriteOffDark.json'
 import IconFavoriteOffLight from 'app/assets/animations/iconFavoriteOffLight.json'
@@ -37,12 +37,14 @@ import IconAirplay from 'app/assets/images/iconAirplay.svg'
 import IconChromecast from 'app/assets/images/iconChromecast.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
+import { useAirplay } from 'app/components/audio/Airplay'
 import { AnimatedButton, IconButton } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { showCastPicker } from 'app/store/googleCast/controller'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
+
+import { useChromecast } from '../audio/GoogleCast'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -145,16 +147,14 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [track, currentUserId, dispatchWeb])
 
-  const onPressAirplay = useCallback(() => {
-    const airplay = NativeModules.AirplayViewManager
-    airplay.click()
-  }, [])
+  const { openAirplayDialog } = useAirplay()
+  const { openChromecastDialog } = useChromecast()
 
   const renderCastButton = () => {
     if (castMethod === 'airplay') {
       return (
         <IconButton
-          onPress={onPressAirplay}
+          onPress={openAirplayDialog}
           icon={IconAirplay}
           fill={isCasting ? primary : neutral}
           styles={{ icon: styles.icon, root: styles.button }}
@@ -163,7 +163,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
     return (
       <IconButton
-        onPress={showCastPicker}
+        onPress={openChromecastDialog}
         icon={IconChromecast}
         fill={isCasting ? primary : neutral}
         styles={{ icon: styles.icon, root: styles.button }}

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Image, Platform } from 'react-native'
+import { Image, Platform, ScrollView } from 'react-native'
 
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import Bell from 'app/assets/images/emojis/bell.png'
@@ -67,24 +67,26 @@ export const SettingsScreen = () => {
 
   return (
     <Screen title={messages.title} topbarRight={null} variant='secondary'>
-      <Image source={audiusLogoHorizontal} style={styles.logo} />
-      <AccountSettingsRow />
-      <SettingsRow onPress={handlePressHistory}>
-        <SettingsRowLabel
-          label={messages.listeningHistory}
-          iconSource={Headphone}
-        />
-      </SettingsRow>
-      <Divider />
-      <SettingsRow onPress={handlePressNotifications}>
-        <SettingsRowLabel label={messages.notifications} iconSource={Bell} />
-      </SettingsRow>
-      <AppearanceSettingsRow />
-      {IS_IOS ? <CastSettingsRow /> : null}
-      <Divider />
-      <SettingsRow onPress={handlePressAbout}>
-        <SettingsRowLabel label={messages.about} iconSource={SpeechBalloon} />
-      </SettingsRow>
+      <ScrollView>
+        <Image source={audiusLogoHorizontal} style={styles.logo} />
+        <AccountSettingsRow />
+        <SettingsRow onPress={handlePressHistory}>
+          <SettingsRowLabel
+            label={messages.listeningHistory}
+            iconSource={Headphone}
+          />
+        </SettingsRow>
+        <Divider />
+        <SettingsRow onPress={handlePressNotifications}>
+          <SettingsRowLabel label={messages.notifications} iconSource={Bell} />
+        </SettingsRow>
+        <AppearanceSettingsRow />
+        {IS_IOS ? <CastSettingsRow /> : null}
+        <Divider />
+        <SettingsRow onPress={handlePressAbout}>
+          <SettingsRowLabel label={messages.about} iconSource={SpeechBalloon} />
+        </SettingsRow>
+      </ScrollView>
     </Screen>
   )
 }

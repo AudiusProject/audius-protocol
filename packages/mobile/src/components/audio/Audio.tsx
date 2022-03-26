@@ -23,11 +23,10 @@ import {
   getShuffleIndex,
   getQueueAutoplay
 } from 'app/store/audio/selectors'
-import { CastStatus, setPlayPosition } from 'app/store/googleCast/actions'
-import { getGoogleCastStatus } from 'app/store/googleCast/selectors'
 import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import { postMessage } from 'app/utils/postMessage'
 
+import { useChromecast } from './GoogleCast'
 import { logListen } from './listens'
 
 declare global {
@@ -77,9 +76,7 @@ const Audio = ({
   repeatMode,
   isShuffleOn,
   shuffleIndex,
-  queueAutoplay,
-  googleCastStatus,
-  setCastPlayPosition
+  queueAutoplay
 }: Props) => {
   const videoRef = useRef<Video>(null)
   // Keep track of whether we have ever started playback.
@@ -286,43 +283,30 @@ const Audio = ({
     shuffleIndex
   ])
 
+  const { isCasting } = useChromecast()
+
   // Seek handler
   useEffect(() => {
     if (seek !== null && videoRef.current) {
       progressInvalidator.current = true
       videoRef.current.seek(seek)
       elapsedTime.current = seek
-      global.progress.currentTime = seek
+
+      // If we are casting, don't update the internal
+      // seek clock
+      if (!isCasting) {
+        global.progress.currentTime = seek
+      }
 
       MusicControl.updatePlayback({
         elapsedTime: elapsedTime.current
       })
     }
-  }, [seek, webRef, progressInvalidator, elapsedTime])
+  }, [seek, webRef, progressInvalidator, elapsedTime, isCasting])
 
   useEffect(() => {
     setListenLoggedForTrack(false)
   }, [track, setListenLoggedForTrack])
-
-  const [isCastConnecting, setIsCastConnecting] = useState(false)
-
-  useEffect(() => {
-    if (!isCastConnecting && googleCastStatus === CastStatus.Connecting) {
-      setIsCastConnecting(true)
-      if (playing) pause()
-      setCastPlayPosition(elapsedTime.current)
-    } else if (googleCastStatus !== CastStatus.Connecting) {
-      setIsCastConnecting(false)
-    }
-  }, [
-    googleCastStatus,
-    elapsedTime,
-    playing,
-    pause,
-    setCastPlayPosition,
-    setIsCastConnecting,
-    isCastConnecting
-  ])
 
   const handleError = (e: any) => {
     console.error('err ' + JSON.stringify(e))
@@ -431,11 +415,11 @@ const Audio = ({
           playWhenInactive
           allowsExternalPlayback={false}
           audioOnly
-          muted={googleCastStatus === CastStatus.Connected}
+          // Mute playback if we are casting to an external source
+          muted={isCasting}
           onError={handleError}
           onEnd={() => {
             setDuration(0)
-            setCastPlayPosition(0)
             pause()
             onNext()
           }}
@@ -460,7 +444,6 @@ const mapStateToProps = (state: AppState) => ({
   playing: getPlaying(state),
   seek: getSeek(state),
   repeatMode: getRepeatMode(state),
-  googleCastStatus: getGoogleCastStatus(state),
   isShuffleOn: getIsShuffleOn(state),
   shuffleIndex: getShuffleIndex(state),
   queueAutoplay: getQueueAutoplay(state)
@@ -471,8 +454,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   pause: () => dispatch(audioActions.pause()),
   next: () => dispatch(audioActions.next()),
   previous: () => dispatch(audioActions.previous()),
-  reset: () => dispatch(audioActions.reset()),
-  setCastPlayPosition: (position: number) => dispatch(setPlayPosition(position))
+  reset: () => dispatch(audioActions.reset())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Audio)
