@@ -6,3 +6,4 @@
 ganache_log.txt
 node_modules/
 build/
+contracts-ganache-accounts.json

@@ -1,4 +1,4 @@
-const { exec } = require('child_process')
+const { spawn } = require('child_process')
 const fs = require('fs')
 const colors = require('colors')
 const config = require('../config/config.js')
@@ -47,7 +47,6 @@ const wait = ms => {
  */
 const execShellCommand = (command, service, { verbose }) => {
   return new Promise((resolve, reject) => {
-    // Increase the max buffer to 1024*1024 bytes = ~1MB
     if (
       service !== 'STOPPING ANY PRE-EXISTING SERVICES' &&
       service !== Service.INIT_REPOS
@@ -58,22 +57,35 @@ const execShellCommand = (command, service, { verbose }) => {
       console.log(command)
     }
     OUTPUT_LOG.write(`[SERVICE]: ${service} [COMMAND]: ${command}`)
-    const proc = exec(command, { maxBuffer: 1024 * 1024, shell: '/bin/bash' })
+    const options = { shell: '/bin/bash' }
+    if (command.endsWith('&')) {
+      options.detached = true
+      options.stdio = 'ignore' // ['ignore', OUTPUT_LOG, ERROR_LOG]
+    }
+    const proc = spawn(command, options)
+    if (options.detached) {
+      proc.unref()
+      resolve()
+    }
     let output = ''
     // Stream the stdout
-    proc.stdout.on('data', data => {
-      if (verbose) {
-        verbose && process.stdout.write(`${data}`)
-        output += data
-      }
-      OUTPUT_LOG.write(data)
-    })
+    if (proc.stdout) {
+      proc.stdout.on('data', data => {
+        if (verbose) {
+          verbose && process.stdout.write(`${data}`)
+          output += data
+        }
+        OUTPUT_LOG.write(data)
+      })
+    }
 
     // Stream the stderr
-    proc.stderr.on('data', data => {
-      process.stdout.write(`${data}`.error)
-      ERROR_LOG.write(data)
-    })
+    if (proc.stderr) {
+      proc.stderr.on('data', data => {
+        process.stdout.write(`${data}`.error)
+        ERROR_LOG.write(data)
+      })
+    }
 
     // Upon completion, handle as necessary if any errors occur
     // Do additional error checking for health checks
@@ -143,7 +155,6 @@ const Service = Object.freeze({
   NETWORK: 'network',
   CONTRACTS: 'contracts',
   ETH_CONTRACTS: 'eth-contracts',
-  SOLANA_VALIDATOR: 'solana-validator',
   SOLANA_PROGRAMS: 'solana-programs',
   IPFS: 'ipfs',
   IPFS_2: 'ipfs-2',
@@ -294,18 +305,7 @@ const performHealthCheckWithRetry = async (
  */
 const performHealthCheck = async (service, serviceNumber) => {
   const url = getServiceURL(service, serviceNumber)
-  let healthCheckRequestOptions = { method: 'get', url }
-  if (service === Service.SOLANA_VALIDATOR) {
-    healthCheckRequestOptions = {
-      method: 'post',
-      data: {
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'getClusterNodes'
-      },
-      url
-    }
-  }
+  const healthCheckRequestOptions = { method: 'get', url }
 
   try {
     const resp = await axios(healthCheckRequestOptions)
@@ -337,11 +337,7 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
       .error
   )
 
-  const setup = [
-    [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
-  ]
+  const setup = [[Service.NETWORK, SetupCommand.UP]]
 
   const inParallel = [
     [Service.CONTRACTS, SetupCommand.UP],
@@ -550,11 +546,7 @@ const identityServiceUp = async (options = { verbose: false }) => {
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
   )
-  const setup = [
-    [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
-  ]
+  const setup = [[Service.NETWORK, SetupCommand.UP]]
 
   const inParallel = [
     [Service.CONTRACTS, SetupCommand.UP],
@@ -612,11 +604,7 @@ const allUp = async ({
 
   const options = { verbose }
 
-  const setup = [
-    [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
-  ]
+  const setup = [[Service.NETWORK, SetupCommand.UP]]
 
   const ipfsAndContractsCommands = [
     [Service.IPFS, SetupCommand.UP],

@@ -6,7 +6,6 @@ const solanaConfig = require('../../solana-programs/solana-program-config.json')
 
 const ETH_CONTRACTS_REGISTRY = 'audius_eth_contracts_registry'
 const SOLANA_TRACK_LISTEN_COUNT_ADDRESS = 'audius_solana_track_listen_count_address'
-const SOLANA_ENDPOINT = 'audius_solana_endpoint'
 
 const SOLANA_SIGNER_GROUP_ADDRESS = 'audius_solana_signer_group_address'
 
@@ -25,7 +24,6 @@ const configureLocalDiscProv = async () => {
   const ethRegistryAddress = ethContractsMigrationOutput.registryAddress
   const solanaTrackListenCountAddress = solanaConfig.trackListenCountAddress
   const signerGroup = solanaConfig.signerGroup
-  const solanaEndpoint = solanaConfig.endpoint
   const waudioMint = solanaConfig.splToken
   const claimableTokenAddress = solanaConfig.claimableTokenAddress
   const rewardsManagerAddress = solanaConfig.rewardsManagerAddress
@@ -40,7 +38,6 @@ const configureLocalDiscProv = async () => {
     envPath,
     ethRegistryAddress,
     solanaTrackListenCountAddress,
-    solanaEndpoint,
     signerGroup,
     waudioMint,
     claimableTokenAddress,
@@ -57,7 +54,6 @@ const _updateDiscoveryProviderEnvFile = async (
   writePath,
   ethRegistryAddress,
   solanaTrackListenCountAddress,
-  solanaEndpoint,
   signerGroup,
   waudioMint,
   claimableTokenAddress,
@@ -74,7 +70,6 @@ const _updateDiscoveryProviderEnvFile = async (
   const output = []
   let ethRegistryAddressFound = false
   let solanaTrackListenCountAddressFound = false
-  let solanaEndpointFound = false
   let signerGroupFound = false
 
   let waudioMintFound = false
@@ -86,7 +81,6 @@ const _updateDiscoveryProviderEnvFile = async (
 
   const ethRegistryAddressLine = `${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress}`
   const solanaTrackListenCountAddressLine = `${SOLANA_TRACK_LISTEN_COUNT_ADDRESS}=${solanaTrackListenCountAddress}`
-  const solanaEndpointLine = `${SOLANA_ENDPOINT}=${solanaEndpoint}`
   const signerGroupLine = `${SOLANA_SIGNER_GROUP_ADDRESS}=${signerGroup}`
   const waudioMintLine = `${SOLANA_WAUDIO_MINT}=${waudioMint}`
   const claimableTokenAddressLine = `${SOLANA_USER_BANK_ADDRESS}=${claimableTokenAddress}`
@@ -102,9 +96,6 @@ const _updateDiscoveryProviderEnvFile = async (
     } else if (line.includes(SOLANA_TRACK_LISTEN_COUNT_ADDRESS)) {
       output.push(solanaTrackListenCountAddressLine)
       solanaTrackListenCountAddressFound = true
-    } else if (line.includes(SOLANA_ENDPOINT)) {
-      output.push(solanaEndpointLine)
-      solanaEndpointFound = true
     } else if (line.includes(SOLANA_SIGNER_GROUP_ADDRESS)) {
       output.push(signerGroupLine)
       signerGroupFound = true
@@ -135,9 +126,6 @@ const _updateDiscoveryProviderEnvFile = async (
   }
   if (!solanaTrackListenCountAddressFound) {
     output.push(solanaTrackListenCountAddressLine)
-  }
-  if (!solanaEndpointFound) {
-    output.push(solanaEndpointLine)
   }
   if (!signerGroupFound) {
     output.push(signerGroupLine)

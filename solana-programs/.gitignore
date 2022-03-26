@@ -8,3 +8,4 @@ test-ledger
 solana-program-config.json
 feepayer.json
 dist
+*!lib.rs

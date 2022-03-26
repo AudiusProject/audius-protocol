@@ -10,11 +10,10 @@
   },
   "private": true,
   "scripts": {
+    "ganache": "./node_modules/ganache/dist/node/cli.js -p 8545 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5 --deterministic true",
+    "ganache-q": "if [[ $(lsof -t -i:8545) ]]; then kill -9 $(lsof -t -i:8545) ; fi",
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
-    "ganache": "docker run --name audius_ganache_cli -d -p 8545:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100",
-    "ganache-i": "docker ps",
-    "ganache-q": "docker rm -f audius_ganache_cli > /dev/null",
     "truffle-compile": "./node_modules/.bin/truffle compile",
     "truffle-migrate": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network development",
     "truffle-console": "./node_modules/.bin/truffle console --network development",
@@ -44,8 +43,9 @@
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
     "chance": "^1.0.18",
-    "standard": "^12.0.1",
-    "ipfs-api": "^24.0.1"
+    "ganache": "7.0.3",
+    "ipfs-api": "^24.0.1",
+    "standard": "^12.0.1"
   },
   "engines": {
     "node": "10.4.1",

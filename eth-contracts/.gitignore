@@ -11,3 +11,4 @@ coverage.json
 coverage.zip
 migrations/migration-output.json
 .openzeppelin/
+contracts-ganache-accounts.json
