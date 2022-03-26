@@ -9,7 +9,6 @@ import WebView from 'react-native-webview'
 import { Provider } from 'react-redux'
 
 import Audio from 'app/components/audio/Audio'
-import GoogleCast from 'app/components/audio/GoogleCast'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import OAuth from 'app/components/oauth/OAuth'
@@ -75,7 +74,6 @@ const App = () => {
                   <ThemeProvider>
                     <NavigationContainer>
                       <Airplay />
-                      <GoogleCast webRef={webRef} />
                       <RootScreen />
                       <Drawers />
                       <Modals />

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import { setIsCasting } from 'common/store/cast/slice'
 import {
@@ -15,10 +15,25 @@ const AirplayViewManager = requireNativeComponent('AirplayView')
 const { AirplayEvent } = NativeModules
 const airplayEventListener = new NativeEventEmitter(AirplayEvent)
 
+export const useAirplay = () => {
+  const openAirplayDialog = useCallback(() => {
+    const airplay = NativeModules.AirplayViewManager
+    airplay.click()
+  }, [])
+  return { openAirplayDialog }
+}
+
 /**
  * An airplay component that talks to the native layer and
  * lets the user broadcast and receive information from
  * a native AVRoutePickerView.
+ *
+ * Unlike other casting (e.g. chromecast), the Airplay
+ * interface requires a native component to be silently rendered.
+ * There may be other ways to do this, but documentation
+ * for a react-native bridge is quite sparse.
+ * See the implementation of AirplayViewManager.m in the ios
+ * codebase.
  */
 const Airplay = () => {
   const listenerRef = useRef<any>(null)
