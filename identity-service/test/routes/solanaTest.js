@@ -30,9 +30,9 @@ describe('test Solana util functions', function () {
     assert(!relayHelpers.isRelayAllowedProgram(garbageProgramInstructions))
   })
 
-  it('isRelayAlllowedInstruction', async function() {
-      assert(await relayHelpers.areRelayAllowedInstructions(createSenderInstructions))
-      assert(!(await relayHelpers.areRelayAllowedInstructions(garbageCreateSenderInstructions)))
+  it('isRelayAlllowedInstruction', async function () {
+    assert(await relayHelpers.areRelayAllowedInstructions(createSenderInstructions))
+    assert(!(await relayHelpers.areRelayAllowedInstructions(garbageCreateSenderInstructions)))
   })
 })
 

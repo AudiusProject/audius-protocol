@@ -160,7 +160,7 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
 /**
  * Checks the authority being used for the relayed instruction, if applicable
  * Ensures we relay only for instructions relevant to our programs and base account
- * 
+ *
  * @param {Instruction} instruction
  * @returns true if the program authority matches, false if it doesn't, and null if not applicable
  */
