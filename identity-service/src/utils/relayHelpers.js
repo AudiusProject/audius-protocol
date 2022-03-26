@@ -143,14 +143,17 @@ const getAccountIndex = (instruction, enumMap) => {
  */
 const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
   if (accountIndex == null) {
+    console.log('null')
     return true
   } else if (
     instruction.keys &&
     accountIndex >= 0 &&
     accountIndex < instruction.keys.length
   ) {
+    console.log(`${instruction.keys[accountIndex].pubkey} === ${expectedAccount}`)
     return instruction.keys[accountIndex].pubkey === expectedAccount
   }
+  console.log('false')
   return false
 }
 
@@ -207,5 +210,6 @@ const areRelayAllowedInstructions = async (instructions) => {
 module.exports = {
   isSendInstruction,
   doesUserHaveSocialProof,
-  areRelayAllowedInstructions
+  areRelayAllowedInstructions,
+  isRelayAllowedProgram
 }

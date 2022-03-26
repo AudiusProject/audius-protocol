@@ -5,7 +5,7 @@ const sinon = require('sinon')
 const config = require('../../src/config')
 const { getApp } = require('../lib/app')
 
-const { sendInstruction, createUserBankInstruction, garbageProgramInstructions } = require('../lib/instructionMocks')
+const { sendInstruction, createUserBankInstruction, garbageProgramInstructions, garbageCreateSenderInstructions, createSenderInstructions } = require('../lib/instructionMocks')
 const relayHelpers = require('../../src/utils/relayHelpers')
 
 const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
@@ -20,7 +20,6 @@ describe('test Solana util functions', function () {
 
   it('isRelayAllowedProgram', function () {
     assert(relayHelpers.isRelayAllowedProgram([{ programId: solanaClaimableTokenProgramAddress }]))
-    assert(relayHelpers.isRelayAllowedProgram([{ programId: solanaTrackListenCountAddress }]))
     assert(relayHelpers.isRelayAllowedProgram([{ programId: solanaRewardsManagerProgramId }]))
 
     assert(!relayHelpers.isRelayAllowedProgram([{ programId: 'wrong' }]))
@@ -29,6 +28,11 @@ describe('test Solana util functions', function () {
     assert(relayHelpers.isRelayAllowedProgram(sendInstruction))
     assert(relayHelpers.isRelayAllowedProgram(createUserBankInstruction))
     assert(!relayHelpers.isRelayAllowedProgram(garbageProgramInstructions))
+  })
+
+  it('isRelayAlllowedInstruction', async function() {
+      assert(await relayHelpers.areRelayAllowedInstructions(createSenderInstructions))
+      assert(!(await relayHelpers.areRelayAllowedInstructions(garbageCreateSenderInstructions)))
   })
 })
 
