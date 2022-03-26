@@ -15,7 +15,7 @@ const {
 
 const axios = require('axios')
 const moment = require('moment')
-const { REDIS_ATTEST_HEALTH_KEY } = require('../utils/configureAttester')
+const { REDIS_ATTESTER_STATE } = require('../utils/configureAttester.js')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
@@ -412,14 +412,30 @@ module.exports = function (app) {
     return (numConnections >= maxConnections) ? errorResponseServerError(resp) : successResponse(resp)
   }))
 
-  app.get('/rewards_check', handleResponse(async (req) => {
-    const { maxDrift } = req.query
+  /**
+   * Healthcheck the rewards attester
+   * Accepts optional query params `maxDrift` and `maxSuccessDrift`, which
+   * correspond to the last seen attempted challenge attestation, and the last sucessful
+   * attestation, respectively.
+   */
+  app.get('/rewards_check', handleResponse(async (req, res) => {
+    const { maxDrift, maxSuccessDrift } = req.query
     const redis = req.app.get('redis')
-    const lastSuccessfulDisbursement = await redis.get(REDIS_ATTEST_HEALTH_KEY)
-    const isHealthy = lastSuccessfulDisbursement && ((Date.now() - lastSuccessfulDisbursement) / 1000 < maxDrift)
-    const resp = {
-      lastSuccessfulDisbursement
+    let state = await redis.get(REDIS_ATTESTER_STATE)
+    if (!state) {
+      return errorResponseServerError('No last state')
     }
+    state = JSON.parse(state)
+
+    const { lastChallengeTime, lastSuccessChallengeTime, phase } = state
+    const lastChallengeDelta = lastChallengeTime ? (Date.now() - lastChallengeTime) / 1000 : Number.POSITIVE_INFINITY
+    const lastSuccessChallengeDelta = lastSuccessChallengeTime ? (Date.now() - lastSuccessChallengeTime) / 1000 : Number.POSITIVE_INFINITY
+
+    // Only use the deltas if the corresponding drift parameter exists
+    const isHealthy = (!maxDrift || lastChallengeDelta < maxDrift) &&
+      (!maxSuccessDrift || lastSuccessChallengeDelta < maxSuccessDrift)
+
+    const resp = { phase, lastChallengeDelta, lastSuccessChallengeDelta }
     return (isHealthy ? successResponse : errorResponseServerError)(resp)
   }))
 }
