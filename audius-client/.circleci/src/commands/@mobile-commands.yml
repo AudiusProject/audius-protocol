@@ -20,7 +20,7 @@ mobile-build-web-app:
           - packages/web/node_modules
     - run:
         name: build
-        command: cd packages/web && npm run build:<<parameters.build-type>>
+        command: cd packages/web && CI=false npm run build:<<parameters.build-type>>
     - persist_to_workspace:
         root: ./
         paths:

@@ -64,7 +64,7 @@ web-build:
         name: build
         command: |
           cd packages/web
-          npm run build:<< parameters.build-type >>
+          CI=false npm run build:<< parameters.build-type >>
     - persist_to_workspace:
         root: ./
         paths:
