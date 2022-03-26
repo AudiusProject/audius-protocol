@@ -10,15 +10,16 @@ import {
   GestureResponderEvent,
   PanResponderGestureState,
   StatusBar,
-  Dimensions,
   Pressable
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
-import { usePrevious } from 'react-use'
 
 import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
-import Drawer from 'app/components/drawer'
+import Drawer, {
+  DrawerAnimationStyle,
+  FULL_DRAWER_HEIGHT
+} from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -30,9 +31,6 @@ import {
   getTrack as getNativeTrack
 } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
-import { attachToDy } from 'app/utils/animation'
-
-import { DrawerAnimationStyle, springToValue } from '../drawer/Drawer'
 
 import { ActionsBar } from './ActionsBar'
 import { Artwork } from './Artwork'
@@ -41,9 +39,9 @@ import { Logo } from './Logo'
 import { PlayBar } from './PlayBar'
 import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
-import { NOW_PLAYING_BAR_HEIGHT } from './constants'
+import { PLAY_BAR_HEIGHT } from './constants'
 
-const combinedBottomAreaHeight = BOTTOM_BAR_HEIGHT + NOW_PLAYING_BAR_HEIGHT
+const combinedBottomAreaHeight = BOTTOM_BAR_HEIGHT + PLAY_BAR_HEIGHT
 
 const STATUS_BAR_FADE_CUTOFF = 0.6
 const SKIP_DURATION_SEC = 15
@@ -51,7 +49,7 @@ const SKIP_DURATION_SEC = 15
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
     paddingTop: 0,
-    height: Dimensions.get('window').height - combinedBottomAreaHeight
+    height: FULL_DRAWER_HEIGHT - combinedBottomAreaHeight
   },
   controlsContainer: {
     marginHorizontal: spacing(6)
@@ -72,18 +70,10 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type NowPlayingDrawerProps = {
-  onOpen: () => void
-  onClose: () => void
-  onPlayBarShowing: (isShowing: boolean) => void
-  bottomBarTranslationAnim: Animated.Value
+  translationAnim: Animated.Value
 }
 
-const NowPlayingDrawer = ({
-  onOpen: onOpenProp,
-  onClose: onCloseProp,
-  onPlayBarShowing,
-  bottomBarTranslationAnim
-}: NowPlayingDrawerProps) => {
+const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
   const styles = useStyles()
@@ -91,10 +81,8 @@ const NowPlayingDrawer = ({
   const navigation = useNavigation()
 
   const { isOpen, onOpen, onClose } = useDrawer('NowPlaying')
-  const previousIsOpen = usePrevious(isOpen)
   const isPlaying = useSelector(getPlaying)
   const [isPlayBarShowing, setIsPlayBarShowing] = useState(false)
-  const [isSwipedClosed, setIsSwipedClosed] = useState(false)
 
   // When audio starts playing, open the playbar to the initial offset
   useEffect(() => {
@@ -103,51 +91,21 @@ const NowPlayingDrawer = ({
     }
   }, [isPlaying, isPlayBarShowing])
 
-  // tell the bottom-tab-bar to provide margin to prevent now-playing-bar
-  // from blocking page content
-  useEffect(() => {
-    onPlayBarShowing(isPlayBarShowing)
-  }, [onPlayBarShowing, isPlayBarShowing])
-
-  // Set animation opacity for the play bar as the now playing drawer is
-  // opened. The top of the now playing drawer (Audius logo)
-  // animates in opposite the play bar animating out while dragging up.
-  const playBarOpacityAnim = useRef(new Animated.Value(1)).current
-
   useEffect(() => {
     if (isOpen) {
-      setIsSwipedClosed(false)
       StatusBar.setHidden(true, 'fade')
     } else {
       StatusBar.setHidden(false, 'fade')
     }
   }, [isOpen])
 
-  const handleDrawerClose = useCallback(() => {
-    springToValue(playBarOpacityAnim, 1, DrawerAnimationStyle.SPRINGY)
-    setIsPlayBarShowing(true)
-    onCloseProp()
-  }, [setIsPlayBarShowing, onCloseProp, playBarOpacityAnim])
-
   const handleDrawerCloseFromSwipe = useCallback(() => {
     onClose()
-    handleDrawerClose()
-    setIsSwipedClosed(true)
-  }, [onClose, handleDrawerClose])
-
-  useEffect(() => {
-    // drawer was requested to be closed from an external action
-    if (!isOpen && previousIsOpen && !isSwipedClosed) {
-      handleDrawerClose()
-    }
-  })
+  }, [onClose])
 
   const onDrawerOpen = useCallback(() => {
-    springToValue(playBarOpacityAnim, 0, DrawerAnimationStyle.SPRINGY)
     onOpen()
-    setIsPlayBarShowing(false)
-    onOpenProp()
-  }, [setIsPlayBarShowing, onOpen, onOpenProp, playBarOpacityAnim])
+  }, [onOpen])
 
   const drawerPercentOpen = useRef(0)
   const onDrawerPercentOpen = useCallback(
@@ -161,26 +119,6 @@ const NowPlayingDrawer = ({
   // the bottom bar as the drawer is dragged open
   const onPanResponderMove = useCallback(
     (e: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-      if (gestureState.dy > 0) {
-        // Delta is downwards
-        if (isOpen) {
-          attachToDy(
-            bottomBarTranslationAnim,
-            drawerPercentOpen.current * 100
-          )(e)
-          attachToDy(playBarOpacityAnim, 1 - drawerPercentOpen.current)(e)
-        }
-      } else if (gestureState.dy < 0) {
-        // Delta is upwards
-        if (!isOpen) {
-          attachToDy(
-            bottomBarTranslationAnim,
-            drawerPercentOpen.current * 100
-          )(e)
-          attachToDy(playBarOpacityAnim, 1 - drawerPercentOpen.current)(e)
-        }
-      }
-
       if (gestureState.vy > 0) {
         // Dragging downwards
         if (drawerPercentOpen.current < STATUS_BAR_FADE_CUTOFF) {
@@ -193,7 +131,7 @@ const NowPlayingDrawer = ({
         }
       }
     },
-    [drawerPercentOpen, bottomBarTranslationAnim, playBarOpacityAnim, isOpen]
+    [drawerPercentOpen]
   )
 
   const [isGestureEnabled, setIsGestureEnabled] = useState(true)
@@ -281,7 +219,7 @@ const NowPlayingDrawer = ({
       onClose={handleDrawerCloseFromSwipe}
       onOpen={onDrawerOpen}
       initialOffsetPosition={combinedBottomAreaHeight}
-      isOpenToInitialOffset={!isOpen && isPlayBarShowing}
+      shouldCloseToInitialOffset={isPlayBarShowing}
       animationStyle={DrawerAnimationStyle.SPRINGY}
       shouldBackgroundDim={false}
       shouldAnimateShadow={false}
@@ -289,6 +227,7 @@ const NowPlayingDrawer = ({
       onPercentOpen={onDrawerPercentOpen}
       onPanResponderMove={onPanResponderMove}
       isGestureSupported={isGestureEnabled}
+      translationAnim={translationAnim}
     >
       <View style={styles.container}>
         {track && user && (
@@ -297,9 +236,9 @@ const NowPlayingDrawer = ({
               track={track}
               user={user}
               onPress={onDrawerOpen}
-              opacityAnim={playBarOpacityAnim}
+              translationAnim={translationAnim}
             />
-            <Logo opacityAnim={playBarOpacityAnim} />
+            <Logo translationAnim={translationAnim} />
             <View style={styles.titleBarContainer}>
               <TitleBar onClose={handleDrawerCloseFromSwipe} />
             </View>

@@ -4,6 +4,8 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
+import { NOW_PLAYING_HEIGHT } from './constants'
+
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     rail: {
@@ -24,15 +26,14 @@ type TrackingBarProps = {
    */
   percentComplete: number
   /**
-   * Opacity animation that signals how "open" the now playing
-   * drawer is.
+   * Animation that signals how "open" the now playing drawer is.
    */
-  opacityAnim: Animated.Value
+  translationAnim: Animated.Value
 }
 
 export const TrackingBar = ({
   percentComplete,
-  opacityAnim
+  translationAnim
 }: TrackingBarProps) => {
   const styles = useThemedStyles(createStyles)
   const { primaryLight2, primaryDark2 } = useThemeColors()
@@ -41,14 +42,14 @@ export const TrackingBar = ({
       style={[
         styles.rail,
         {
-          opacity: opacityAnim.interpolate({
+          opacity: translationAnim.interpolate({
             // Interpolate the animation such that the tracker fades out
             // at 5% up the screen.
             // The tracker is important to fade away shortly after
             // the now playing drawer is opened so that the drawer may
             // animate in corner radius without showing at the same time
             // as the tracker.
-            inputRange: [0, 0.95, 1],
+            inputRange: [0, 0.95 * NOW_PLAYING_HEIGHT, NOW_PLAYING_HEIGHT],
             outputRange: [0, 0, 1]
           })
         }

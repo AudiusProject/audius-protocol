@@ -30,6 +30,7 @@ import { getPlaying } from 'app/store/audio/selectors'
 import { ThemeColors } from 'app/utils/theme'
 
 import { TrackingBar } from './TrackingBar'
+import { NOW_PLAYING_HEIGHT } from './constants'
 
 const SEEK_INTERVAL = 200
 
@@ -100,11 +101,7 @@ type PlayBarProps = {
   track: Track
   user: User
   onPress: () => void
-  /**
-   * Opacity animation to fade out play bar as
-   * the new playing drawer is dragged open.
-   */
-  opacityAnim: Animated.Value
+  translationAnim: Animated.Value
 }
 
 const PlayBarArtwork = ({ track }: { track: Track }) => {
@@ -120,7 +117,7 @@ export const PlayBar = ({
   track,
   user,
   onPress,
-  opacityAnim
+  translationAnim
 }: PlayBarProps) => {
   const styles = useThemedStyles(createStyles)
   const dispatch = useDispatch()
@@ -194,18 +191,19 @@ export const PlayBar = ({
       style={[
         styles.root,
         {
-          opacity: opacityAnim.interpolate({
+          opacity: translationAnim.interpolate({
             // Interpolate the animation such that the play bar fades out
             // at 25% up the screen.
-            inputRange: [0, 0.75, 1],
-            outputRange: [0, 0, 1]
+            inputRange: [0, 0.75 * NOW_PLAYING_HEIGHT, NOW_PLAYING_HEIGHT],
+            outputRange: [0, 0, 1],
+            extrapolate: 'extend'
           })
         }
       ]}
     >
       <TrackingBar
         percentComplete={percentComplete}
-        opacityAnim={opacityAnim}
+        translationAnim={translationAnim}
       />
       <View style={styles.container}>
         {renderFavoriteButton()}
