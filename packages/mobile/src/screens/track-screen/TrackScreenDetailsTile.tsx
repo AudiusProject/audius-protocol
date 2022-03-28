@@ -147,6 +147,7 @@ export const TrackScreenDetailsTile = ({
     is_unlisted,
     mood,
     owner_id,
+    play_count,
     release_date,
     remix_of,
     repost_count,
@@ -392,6 +393,7 @@ export const TrackScreenDetailsTile = ({
       onPressReposts={handlePressReposts}
       onPressSave={handlePressSave}
       onPressShare={handlePressShare}
+      playCount={play_count}
       repostCount={repost_count}
       saveCount={save_count}
       title={title}
