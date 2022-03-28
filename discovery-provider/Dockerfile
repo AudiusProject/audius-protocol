@@ -32,7 +32,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
 
 COPY requirements.txt requirements.txt
 
-RUN python3 -m pip install -r requirements.txt --no-cache-dir && \
+RUN apk add libseccomp-dev && \
+    python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
 
 RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
