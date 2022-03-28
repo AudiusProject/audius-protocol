@@ -3,7 +3,6 @@ const axios = require('axios')
 const _ = require('lodash')
 const retry = require('async-retry')
 
-const config = require('./../config')
 const utils = require('../utils')
 const models = require('../models')
 const { logger } = require('../logging')
@@ -705,12 +704,9 @@ class SnapbackSM {
         const walletsOnReplica = replicasToWalletsMap[replica]
 
         // Make requests in batches, sequentially, to ensure POST request body does not exceed max size
-        const batchSize = config.get('maxBatchClockStatusBatchSize')
+        const batchSize = this.nodeConfig.get('maxBatchClockStatusBatchSize')
         for (let i = 0; i < walletsOnReplica.length; i += batchSize) {
-          const walletsOnReplicaSlice = walletsOnReplica.slice(
-            i,
-            i + batchSize
-          )
+          const walletsOnReplicaSlice = walletsOnReplica.slice(i, i + batchSize)
 
           const axiosReqParams = {
             baseURL: replica,
