@@ -139,12 +139,13 @@ export type CreateEntityParams = {
 };
 
 export type DeleteEntityParams = {
+  provider: Provider;
   program: Program<AudiusData>;
   id: anchor.BN;
   userAuthorityKeypair: Keypair;
   userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
-  userStgAcuserStorageAccountPDAcountPDA: anchor.web3.PublicKey;
+  userStorageAccountPDA: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStorageAccount: anchor.web3.PublicKey;
   handleBytesArray: number[];

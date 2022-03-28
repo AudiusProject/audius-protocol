@@ -168,6 +168,7 @@ describe("follows", function () {
         newUserKeypair: newUser1Key,
         userStorageAccount: userStorageAccount1,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
+        userId: constants1.userId,
         ...getURSMParams(),
       });
 
@@ -183,6 +184,7 @@ describe("follows", function () {
         newUserKeypair: newUser2Key,
         userStorageAccount: userStorageAccount2,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
+        userId: constants2.userId,
         ...getURSMParams(),
       });
     });
@@ -232,31 +234,33 @@ describe("follows", function () {
     });
 
     it("delegate follows user", async function () {
-      const delegate = await testCreateUserDelegate({
+      const userDelegate = await testCreateUserDelegate({
         adminKeypair,
         adminStorageKeypair: adminStorageKeypair,
         program,
         provider,
-        ...getURSMParams(),
       });
 
       // Submit a tx where user 1 follows user 2
       const followArgs = {
         accounts: {
           audiusAdmin: adminStorageKeypair.publicKey,
-          authority: delegate.userAuthorityDelegateKeypair.publicKey,
-          followerUserStorage: delegate.userAccountPDA,
+          authority: userDelegate.userAuthorityDelegateKeypair.publicKey,
+          followerUserStorage: userDelegate.userAccountPDA,
           followeeUserStorage: userStorageAccount2,
-          userAuthorityDelegate: delegate.userAuthorityDelegatePDA,
-          authorityDelegationStatus: delegate.authorityDelegationStatusPDA,
+          userAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
+          authorityDelegationStatus: userDelegate.authorityDelegationStatusPDA,
         },
-        signers: [delegate.userAuthorityDelegateKeypair],
+        signers: [userDelegate.userAuthorityDelegateKeypair],
       };
 
       const followTx = await program.rpc.followUser(
         baseAuthorityAccount,
         UserActionEnumValues.followUser,
-        { seed: delegate.handleBytesArray, bump: delegate.userBumpSeed },
+        {
+          seed: userDelegate.userHandleBytesArray,
+          bump: userDelegate.userBumpSeed,
+        },
         { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
         followArgs
       );
@@ -272,7 +276,7 @@ describe("follows", function () {
         UserActionEnumValues.followUser
       );
       expect(decodedData.followerHandle.seed).to.deep.equal(
-        delegate.handleBytesArray
+        userDelegate.userHandleBytesArray
       );
       expect(decodedData.followeeHandle.seed).to.deep.equal(
         constants2.handleBytesArray
@@ -281,7 +285,7 @@ describe("follows", function () {
         adminStorageKeypair.publicKey.toString()
       );
       expect(accountPubKeys[5]).to.equal(
-        delegate.userAuthorityDelegateKeypair.publicKey.toString()
+        userDelegate.userAuthorityDelegateKeypair.publicKey.toString()
       );
     });
 

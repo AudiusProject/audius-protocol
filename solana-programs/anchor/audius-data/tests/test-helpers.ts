@@ -475,24 +475,7 @@ export const testCreateUserDelegate = async ({
   adminStorageKeypair,
   program,
   provider,
-  replicaSet,
-  replicaSetBumps,
-  cn1,
-  cn2,
-  cn3,
 }) => {
-  const { ethAccount, handleBytesArray, metadata, userId } =
-    initTestConstants();
-  const {
-    baseAuthorityAccount,
-    bumpSeed: userBumpSeed,
-    derivedAddress: userAccountPDA,
-  } = await findDerivedPair(
-    program.programId,
-    adminStorageKeypair.publicKey,
-    Buffer.from(handleBytesArray)
-  );
-
   // disable admin writes
   await updateAdmin({
     program,
@@ -501,32 +484,7 @@ export const testCreateUserDelegate = async ({
     adminAuthorityKeypair: adminKeypair,
   });
 
-  // New sol key that will be used to permission user updates
-  const newUserKeypair = anchor.web3.Keypair.generate();
-
-  // Generate signed SECP instruction
-  // Message as the incoming public key
-  const message = newUserKeypair.publicKey.toBytes();
-
-  await testCreateUser({
-    provider,
-    program,
-    message,
-    ethAccount,
-    baseAuthorityAccount,
-    handleBytesArray,
-    bumpSeed: userBumpSeed,
-    metadata,
-    newUserKeypair,
-    userStorageAccount: userAccountPDA,
-    adminStoragePublicKey: adminStorageKeypair.publicKey,
-    replicaSet,
-    replicaSetBumps,
-    cn1,
-    cn2,
-    cn3,
-    userId,
-  });
+  const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
   // Init AuthorityDelegationStatus for a new authority
   const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
@@ -552,14 +510,31 @@ export const testCreateUserDelegate = async ({
     signers: [userAuthorityDelegateKeypair],
   };
 
-  await program.rpc.initAuthorityDelegationStatus(
-    "authority_name",
-    initAuthorityDelegationStatusArgs
+  const initAuthorityDelegationStatusTx =
+    await program.rpc.initAuthorityDelegationStatus(
+      "authority_name",
+      initAuthorityDelegationStatusArgs
+    );
+
+  const {
+    decodedInstruction: authorityDelegationInstruction,
+    decodedData: authorityDelegationInstructionData,
+  } = await getTransactionWithData(
+    program,
+    provider,
+    initAuthorityDelegationStatusTx,
+    0
+  );
+  expect(authorityDelegationInstruction.name).to.equal(
+    "initAuthorityDelegationStatus"
+  );
+  expect(authorityDelegationInstructionData.authorityName).to.equal(
+    "authority_name"
   );
 
   // New sol key that will be used as user authority delegate
   const userAuthorityDelegateSeeds = [
-    userAccountPDA.toBytes().slice(0, 32),
+    user.pda.toBytes().slice(0, 32),
     userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
   ];
   const res = await PublicKey.findProgramAddress(
@@ -572,54 +547,82 @@ export const testCreateUserDelegate = async ({
   const addUserAuthorityDelegateArgs = {
     accounts: {
       admin: adminStorageKeypair.publicKey,
-      user: userAccountPDA,
-      newUserAuthorityDelegate: userAuthorityDelegatePDA,
+      user: user.pda,
+      currentUserAuthorityDelegate: userAuthorityDelegatePDA,
       signerUserAuthorityDelegate: SystemProgram.programId,
       authorityDelegationStatus: SystemProgram.programId,
-      authority: newUserKeypair.publicKey,
+      authority: user.keypair.publicKey,
       payer: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId,
     },
-    signers: [newUserKeypair],
+    signers: [user.keypair],
   };
 
-  await program.rpc.addUserAuthorityDelegate(
-    baseAuthorityAccount,
-    handleBytesArray,
-    userBumpSeed,
+  const addUserAuthorityDelegateTx = await program.rpc.addUserAuthorityDelegate(
+    user.authority,
+    user.handleBytesArray,
+    user.bumpSeed,
     userAuthorityDelegateKeypair.publicKey,
     addUserAuthorityDelegateArgs
   );
 
+  const {
+    decodedInstruction: addUserAuthorityDelegateInstruction,
+    decodedData: addUserAuthorityDelegateData,
+  } = await getTransactionWithData(
+    program,
+    provider,
+    addUserAuthorityDelegateTx,
+    0
+  );
+  expect(addUserAuthorityDelegateInstruction.name).to.equal(
+    "addUserAuthorityDelegate"
+  );
+
+  expect(addUserAuthorityDelegateData.base.toString()).to.equal(
+    user.authority.toString()
+  );
+  expect(addUserAuthorityDelegateData.handleSeed.toString()).to.equal(
+    user.handleBytesArray.toString()
+  );
+  expect(addUserAuthorityDelegateData.userBump).to.equal(user.bumpSeed);
+  expect(
+    addUserAuthorityDelegateData.userAuthorityDelegate.toString()
+  ).to.equal(userAuthorityDelegateKeypair.publicKey.toString());
+
   return {
-    baseAuthorityAccount,
-    handleBytesArray,
-    userBumpSeed,
-    userAccountPDA,
+    baseAuthorityAccount: user.authority,
+    userHandleBytesArray: user.handleBytesArray,
+    userBumpSeed: user.bumpSeed,
+    userAccountPDA: user.pda,
     userAuthorityDelegatePDA,
     userAuthorityDelegateBump,
     authorityDelegationStatusPDA,
     authorityDelegationStatusBump,
-    newUserKeypair,
+    userKeypair: user.keypair,
     userAuthorityDelegateKeypair,
   };
 };
 
-export const pollAccountBalance = async (
-  provider: anchor.Provider,
-  targetAccount: anchor.web3.PublicKey,
-  targetBalance: number,
-  maxRetries: number
-) => {
-  let currentBalance = await provider.connection.getBalance(targetAccount);
+export const pollAccountBalance = async (args: {
+  provider: anchor.Provider;
+  targetAccount: anchor.web3.PublicKey;
+  targetBalance: number;
+  maxRetries: number;
+}) => {
+  let currentBalance = await args.provider.connection.getBalance(
+    args.targetAccount
+  );
   let numRetries = 0;
-  while (currentBalance > targetBalance && numRetries < maxRetries) {
-    currentBalance = await provider.connection.getBalance(targetAccount);
+  while (currentBalance > args.targetBalance && numRetries < args.maxRetries) {
+    currentBalance = await args.provider.connection.getBalance(
+      args.targetAccount
+    );
     numRetries--;
   }
-  if (currentBalance > targetBalance) {
+  if (currentBalance > args.targetBalance) {
     throw new Error(
-      `Account ${targetAccount} failed to reach target balance ${targetBalance} in ${maxRetries} retries. Current balance = ${currentBalance}`
+      `Account ${args.targetAccount} failed to reach target balance ${args.targetBalance} in ${args.maxRetries} retries. Current balance = ${currentBalance}`
     );
   }
 };

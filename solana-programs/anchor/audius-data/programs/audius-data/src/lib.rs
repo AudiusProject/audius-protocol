@@ -550,9 +550,9 @@ pub mod audius_data {
         // Assign incoming delegate fields
         // Maintain the user's storage account and the incoming delegate authority key
         ctx.accounts
-            .new_user_authority_delegate
+            .current_user_authority_delegate
             .user_storage_account = ctx.accounts.user.key();
-        ctx.accounts.new_user_authority_delegate.delegate_authority = user_authority_delegate;
+        ctx.accounts.current_user_authority_delegate.delegate_authority = user_authority_delegate;
         Ok(())
     }
 
@@ -576,9 +576,9 @@ pub mod audius_data {
 
         // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
         let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
-        ctx.accounts.new_user_authority_delegate.delegate_authority = dummy_owner_field;
+        ctx.accounts.current_user_authority_delegate.delegate_authority = dummy_owner_field;
         ctx.accounts
-            .new_user_authority_delegate
+            .current_user_authority_delegate
             .user_storage_account = dummy_owner_field;
         Ok(())
     }
@@ -784,10 +784,10 @@ pub struct UpdateUser<'info> {
     pub user: Account<'info, User>,
     #[account()]
     pub user_authority: Signer<'info>,
-    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
     pub user_authority_delegate: AccountInfo<'info>,
-    /// CHECK: Authority delegation status account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
     #[account()]
     pub authority_delegation_status: AccountInfo<'info>,
 }
@@ -862,11 +862,11 @@ pub struct AddUserAuthorityDelegate<'info> {
         bump,
         space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
     )]
-    pub new_user_authority_delegate: Account<'info, UserAuthorityDelegate>,
-    /// CHECK: Signer/user delegate, can be defaulted to SystemProgram for no-op
+    pub current_user_authority_delegate: Account<'info, UserAuthorityDelegate>,
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
-    pub signer_user_authority_delegate: AccountInfo<'info>, // provided for authority authentication
-    /// CHECK: Signer's delegation status, can be defaulted to SystemProgram for no-op
+    pub signer_user_authority_delegate: AccountInfo<'info>,
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA (default SystemProgram when signer is user)
     #[account()]
     pub authority_delegation_status: AccountInfo<'info>,
     #[account()]
@@ -894,11 +894,11 @@ pub struct RemoveUserAuthorityDelegate<'info> {
         seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
         bump = delegate_bump
     )]
-    pub new_user_authority_delegate: Account<'info, UserAuthorityDelegate>,
-    /// CHECK: Signer/user delegate, can be defaulted to SystemProgram for no-op
+    pub current_user_authority_delegate: Account<'info, UserAuthorityDelegate>,
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
     pub signer_user_authority_delegate: AccountInfo<'info>, // provided for authority authentication
-    /// CHECK: Signer's delegation status, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
     #[account()]
     pub authority_delegation_status: AccountInfo<'info>,
     #[account()]
@@ -931,10 +931,10 @@ pub struct ManageEntity<'info> {
     pub user: Account<'info, User>,
     #[account()]
     pub authority: Signer<'info>,
-    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
     pub user_authority_delegate: AccountInfo<'info>,
-    /// CHECK: Authority delegation status account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
     #[account()]
     pub authority_delegation_status: AccountInfo<'info>,
 }
@@ -951,10 +951,10 @@ pub struct WriteEntitySocialAction<'info> {
     pub user: Account<'info, User>,
     #[account()]
     pub authority: Signer<'info>, 
-    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
     pub user_authority_delegate: AccountInfo<'info>,
-    /// CHECK: Authority delegation status account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
     #[account()]
     pub authority_delegation_status: AccountInfo<'info>,
 }
@@ -971,10 +971,10 @@ pub struct FollowUser<'info> {
     // Confirm the followee PDA matches the expected value provided the target handle and base
     #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle.seed.as_ref()], bump = followee_handle.bump)]
     pub followee_user_storage: Account<'info, User>,
-    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
     pub user_authority_delegate: AccountInfo<'info>,
-    /// CHECK: Authority delegation status account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
     #[account()]
     pub authority_delegation_status: AccountInfo<'info>,
     // User update authority field
