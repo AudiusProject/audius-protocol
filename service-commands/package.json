@@ -11,7 +11,7 @@
     "@solana/web3.js": "1.20.0",
     "axios": "^0.19.2",
     "borsh": "^0.4.0",
-    "colors": "^1.4.0",
+    "colors": "1.4.0",
     "commander": "^6.0.0",
     "convict": "^5.2.0",
     "ffmpeg-static": "^4.4.0",

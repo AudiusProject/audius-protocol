@@ -4,7 +4,7 @@ const { pack } = require('@ethersproject/solidity')
 
 const sign = (digest, privateKey) => {
   const buffer = toBuffer(digest)
-  let signature = ecsign(buffer, privateKey)
+  const signature = ecsign(buffer, privateKey)
   return signature
 }
 
@@ -38,11 +38,11 @@ function getPermitDigest (
 ) {
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
 
-  let innerEncoded = web3.eth.abi.encodeParameters(
+  const innerEncoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint256'],
     [getPermitTypehash(), approve.owner, approve.spender, approve.value, nonce, deadline]
   )
-  let encoded = pack(
+  const encoded = pack(
     ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
     [
       '0x19',
@@ -66,13 +66,13 @@ function getTransferTokensDigest (
   deadline
 ) {
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
-  let innerEncoded = web3.eth.abi.encodeParameters(
+  const innerEncoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'address', 'uint256', 'uint16', 'bytes32',
       'uint256', 'uint32', 'uint256'],
     [getTransferTokensTypeHash(), transferTokens.from, transferTokens.amount, transferTokens.recipientChain,
       transferTokens.recipient, transferTokens.arbiterFee, nonce, deadline]
   )
-  let encoded = pack(
+  const encoded = pack(
     ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
     [
       '0x19',

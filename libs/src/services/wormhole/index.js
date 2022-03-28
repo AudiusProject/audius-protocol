@@ -2,6 +2,8 @@ const bs58 = require('bs58')
 const { toBuffer } = require('ethereumjs-util')
 const { zeroPad } = require('ethers/lib/utils')
 const { providers } = require('ethers/lib/index')
+const wormholeSDK = require('@certusone/wormhole-sdk')
+const { setDefaultWasm } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')
 
 const SolanaUtils = require('../solanaWeb3Manager/utils')
 const Utils = require('../../utils')
@@ -9,7 +11,6 @@ const { wAudioFromWeiAudio } = require('../solanaWeb3Manager/wAudio')
 const { sign, getTransferTokensDigest } = require('../../utils/signatures')
 /** Singleton state-manager for Audius Eth Contracts */
 
-const IS_BROWSER = typeof window !== 'undefined' && window !== null
 class Wormhole {
   /**
    * Wormhole constructor
@@ -23,6 +24,7 @@ class Wormhole {
    * @param {string} solTokenBridgeAddress
    * @param {string} ethBridgeAddress
    * @param {string} ethTokenBridgeAddress
+   * @param {boolean} isServer
   */
   constructor (
     hedgehog,
@@ -34,7 +36,8 @@ class Wormhole {
     solBridgeAddress,
     solTokenBridgeAddress,
     ethBridgeAddress,
-    ethTokenBridgeAddress
+    ethTokenBridgeAddress,
+    isServer
   ) {
     // Wormhole service dependecies
     this.hedgehog = hedgehog
@@ -49,12 +52,9 @@ class Wormhole {
     this.solTokenBridgeAddress = solTokenBridgeAddress
     this.ethBridgeAddress = ethBridgeAddress
     this.ethTokenBridgeAddress = ethTokenBridgeAddress
-
-    if (IS_BROWSER) {
-      this.wormholeSDK = require('@certusone/wormhole-sdk')
-    } else {
-      const requireESM = require('esm')(module)
-      this.wormholeSDK = requireESM('@certusone/wormhole-sdk')
+    this.wormholeSDK = wormholeSDK
+    if (isServer) {
+      setDefaultWasm('node')
     }
   }
 
@@ -113,7 +113,7 @@ class Wormhole {
       REDEEM_ON_SOLANA: 'REDEEM_ON_SOLANA'
     }
     let phase = phases.GET_RECEIPT
-    let logs = [`Attest and complete transfer for eth to sol for reciept ${ethTxReceipt}`]
+    const logs = [`Attest and complete transfer for eth to sol for reciept ${ethTxReceipt}`]
     try {
       const receipt = await this.ethWeb3Manager.web3.eth.getTransactionReceipt(ethTxReceipt)
       const sequence = this.wormholeSDK.parseSequenceFromLogEth(receipt, this.ethBridgeAddress)
@@ -148,7 +148,7 @@ class Wormhole {
           const { transactionSignature } = await this.identityService.solanaRelayRaw(transactionData)
           logs.push(`Relay sol tx for postVAA with signature ${transactionSignature}`)
           return {
-            'serialize': () => {}
+            serialize: () => {}
           }
         }
         connection.sendRawTransaction = async () => ''
@@ -229,12 +229,12 @@ class Wormhole {
       REDEEM_ON_ETH: 'REDEEM_ON_ETH'
     }
     let phase = phases.GENERATE_SOL_ROOT_ACCT
-    let logs = [`Transferring ${amount} WAUDIO to ${ethTargetAddress}`]
+    const logs = [`Transferring ${amount} WAUDIO to ${ethTargetAddress}`]
     try {
       const wAudioAmount = wAudioFromWeiAudio(amount)
       // Generate a solana keypair derived from the hedgehog private key
       // NOTE: The into to fromSeed is a 32 bytes Uint8Array
-      let rootSolanaAccount = this.solanaWeb3Manager.solanaWeb3.Keypair.fromSeed(
+      const rootSolanaAccount = this.solanaWeb3Manager.solanaWeb3.Keypair.fromSeed(
         this.hedgehog.wallet.getPrivateKey()
       )
 
@@ -313,7 +313,7 @@ class Wormhole {
       phase = phases.REDEEM_ON_ETH
       const signer = (new providers.Web3Provider(window.ethereum)).getSigner()
       await this.wormholeSDK.redeemOnEth(this.ethTokenBridgeAddress, signer, vaaBytes)
-      logs.push(`Redeemed on eth`)
+      logs.push('Redeemed on eth')
       return { phase, logs, error: null }
     } catch (error) {
       return {

@@ -19,7 +19,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/libs": "1.2.89",
+    "@audius/libs": "1.2.93",
     "JSONStream": "^1.3.5",
     "axios": "^0.19.2",
     "base64-url": "^2.3.3",
@@ -35,10 +35,11 @@
     "deferential": "^1.0.0",
     "diskusage": "^1.1.3",
     "eslint-config-prettier": "^8.3.0",
-    "eth-sig-util": "^2.1.0",
+    "eth-sig-util": "2.5.4",
     "ethereumjs-tx": "2.1.2",
     "ethereumjs-util": "^6.2.1",
     "ethereumjs-wallet": "0.6.5",
+    "ethers": "5.4.7",
     "exif-parser": "^0.1.12",
     "express": "^4.16.3",
     "express-rate-limit": "5.3.0",
@@ -46,7 +47,7 @@
     "ffprobe-static": "^3.0.0",
     "form-data": "^3.0.1",
     "fs-extra": "^9.1.0",
-    "hashids": "^2.2.8",
+    "hashids": "2.2.10",
     "ioredis": "^4.27.5",
     "ipfs-http-client": "33.1.1",
     "ipfs-http-client-latest": "npm:ipfs-http-client@43.0.1",
@@ -65,7 +66,7 @@
     "ts-node": "^10.4.0",
     "umzug": "^2.3.0",
     "uuid": "3.3.2",
-    "web3": "1.2.7"
+    "web3": "1.2.8"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.5.0",

@@ -402,6 +402,12 @@ const config = convict({
     env: 'discoveryProviderWhitelist',
     default: ''
   },
+  discoveryNodeUnhealthyBlockDiff: {
+    doc: 'Number of missed blocks after which a discovery node would be considered unhealthy',
+    format: 'nat',
+    env: 'discoveryNodeUnhealthyBlockDiff',
+    default: 500
+  },
   identityService: {
     doc: 'Identity service endpoint to record creator-node driven plays against',
     format: String,
@@ -658,6 +664,12 @@ const config = convict({
     format: 'BooleanCustom',
     env: 'openRestyCacheCIDEnabled',
     default: false
+  },
+  minimumTranscodingSlotsAvailable: {
+    doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',
+    format: 'nat',
+    env: 'minimumTranscodingSlotsAvailable',
+    default: 1
   },
   trustedNotifierID: {
     doc: 'To select a trusted notifier, set to a value >= 1 corresponding to the index of the notifier on chain. 0 means no trusted notifier selected and self manage notifications',
