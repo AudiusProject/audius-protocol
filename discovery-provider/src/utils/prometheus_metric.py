@@ -58,9 +58,15 @@ class PrometheusMetric:
 
     def save(self, value, labels=None):
         if labels:
-            self.metric.labels(**labels).observe(value)
+            if metric_type == PrometheusType.HISTOGRAM:
+                self.metric.labels(**labels).observe(value)
+            elif metric_type == PrometheusType.GAUGE:
+                self.metric.labels(**labels).set(value)
         else:
-            self.metric.observe(value)
+            if metric_type == PrometheusType.HISTOGRAM:
+                self.metric.observe(value)
+            elif metric_type == PrometheusType.GAUGE:
+                self.metric.set(value)
 
     @classmethod
     def register_collector(cls, name, collector_func):
