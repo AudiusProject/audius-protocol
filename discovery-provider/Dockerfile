@@ -8,8 +8,6 @@ ENV INSTALL_PATH /audius-discovery-provider
 RUN mkdir -p $INSTALL_PATH
 WORKDIR $INSTALL_PATH
 
-COPY requirements.txt requirements.txt
-
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \
     apk add alpine-sdk && \
@@ -30,8 +28,11 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add py3-wheel && \
     apk add rsyslog && \
     apk add docker && \
-    apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0 && \
-    python3 -m pip install -r requirements.txt --no-cache-dir && \
+    apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
+
+COPY requirements.txt requirements.txt
+
+RUN python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
 
 RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
