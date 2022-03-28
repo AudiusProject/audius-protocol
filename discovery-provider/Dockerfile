@@ -30,6 +30,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add docker && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
 
+RUN apk add libseccomp-dev
+
 COPY requirements.txt requirements.txt
 
 RUN python3 -m pip install -r requirements.txt --no-cache-dir && \
