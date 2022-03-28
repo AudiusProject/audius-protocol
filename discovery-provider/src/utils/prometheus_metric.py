@@ -1,5 +1,5 @@
 from time import time
-from typing import Dict
+from typing import Callable, Dict
 
 from prometheus_client import Gauge, Histogram
 
@@ -7,7 +7,7 @@ from prometheus_client import Gauge, Histogram
 class PrometheusMetric:
     histograms: Dict[str, Histogram] = {}
     gauges: Dict[str, Gauge] = {}
-    registered_collectors: Dict[str, func] = {}
+    registered_collectors: Dict[str, Callable] = {}
 
     def __init__(self, name, description, labelnames=(), gauge=False):
         self.reset_timer()
