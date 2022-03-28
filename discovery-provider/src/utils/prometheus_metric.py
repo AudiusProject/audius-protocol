@@ -1,26 +1,35 @@
 from time import time
 from typing import Dict
 
-from prometheus_client import Histogram
+from prometheus_client import Gauge, Histogram
 
 
 class PrometheusMetric:
     histograms: Dict[str, Histogram] = {}
+    gauges: Dict[str, Gauge] = {}
+    registered_collectors: Dict[str, func] = {}
 
-    def __init__(self, name, description, labelnames=()):
+    def __init__(self, name, description, labelnames=(), gauge=False):
         self.reset_timer()
 
         # set metric prefix of audius_project_
         name = f"audius_dn_{name}"
 
         # CollectorRegistries must be uniquely named
-        if name not in PrometheusMetric.histograms:
-            # NOTE: we only set labelnames once.
-            # unsure if overloading is supported.
-            PrometheusMetric.histograms[name] = Histogram(
-                name, description, labelnames=labelnames
-            )
-        self.h = PrometheusMetric.histograms[name]
+        # NOTE: we only set labelnames once.
+        # unsure if overloading is supported.
+        if gauge:
+            if name not in PrometheusMetric.gauges:
+                PrometheusMetric.gauges[name] = Gauge(
+                    name, description, labelnames=labelnames
+                )
+            self.metric = PrometheusMetric.gauges[name]
+        else:
+            if name not in PrometheusMetric.histograms:
+                PrometheusMetric.histograms[name] = Histogram(
+                    name, description, labelnames=labelnames
+                )
+            self.metric = PrometheusMetric.histograms[name]
 
     def reset_timer(self):
         self.start_time = time()
@@ -35,6 +44,15 @@ class PrometheusMetric:
 
     def save(self, value, labels=None):
         if labels:
-            self.h.labels(**labels).observe(value)
+            self.metric.labels(**labels).observe(value)
         else:
-            self.h.observe(value)
+            self.metric.observe(value)
+
+    @classmethod
+    def register_collector(cls, name, collector_func):
+        cls.registered_collectors[name] = collector_func
+
+    @classmethod
+    def populate_collectors(cls):
+        for collector in cls.registered_collectors.values():
+            collector()
