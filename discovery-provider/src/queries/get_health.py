@@ -375,12 +375,6 @@ def health_check_prometheus_exporter():
     health_results, is_unhealthy = get_health({})
 
     PrometheusMetric(
-        "health_check_is_healthy_current",
-        "Difference between the latest block and the latest indexed block",
-        metric_type=PrometheusType.GAUGE,
-    ).save(0 if is_unhealthy else 1)
-
-    PrometheusMetric(
         "health_check_block_difference_current",
         "Difference between the latest block and the latest indexed block",
         metric_type=PrometheusType.GAUGE,
