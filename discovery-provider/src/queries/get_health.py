@@ -378,7 +378,7 @@ def health_check_prometheus_exporter():
         "health_check_is_healthy_current",
         "Difference between the latest block and the latest indexed block",
         gauge=True,
-    ).save(1 if is_unhealthy else 0)
+    ).save(0 if is_unhealthy else 1)
 
     PrometheusMetric(
         "health_check_block_difference_current",
