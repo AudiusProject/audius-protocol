@@ -1,30 +1,14 @@
-<<<<<<< Updated upstream
-const AudiusLibs = require("@audius/libs")
-const UserCache = require("./UserCache")
-const LocalStorageWrapper = require("./LocalStorageWrapper")
-
-const { RandomUtils, SeedUtils, Constants } = require("../../utils")
-=======
 const AudiusLibs = require('@audius/libs')
 const UserCache = require('./UserCache')
 const LocalStorageWrapper = require('./LocalStorageWrapper')
 
 const { RandomUtils, SeedUtils, Constants } = require('../../utils')
->>>>>>> Stashed changes
 
 const { SEED_CACHE_PATH } = Constants
 
 const { getLibsConfig } = SeedUtils
 
-<<<<<<< Updated upstream
-const {
-  getRandomEmail,
-  getRandomPassword,
-  getRandomUserMetadata,
-} = RandomUtils
-=======
 const { getRandomEmail, getRandomPassword, getRandomUserMetadata } = RandomUtils
->>>>>>> Stashed changes
 
 /*
   This class provides a JS interface to a stateful local session for seeding data
@@ -51,11 +35,7 @@ class SeedSession {
     this.cache.clear()
   }
 
-<<<<<<< Updated upstream
-  setUser = async ({ alias = "", userId = null }) => {
-=======
   setUser = async ({ alias = '', userId = null }) => {
->>>>>>> Stashed changes
     const userDetails = this.cache.findUser({ alias, userId })
     const { hedgehogEntropyKey, userAlias } = userDetails
     if (!userDetails.hedgehogEntropyKey) {
@@ -68,13 +48,8 @@ class SeedSession {
     }
     const libsConfigOverride = {
       identityServiceConfig: {
-<<<<<<< Updated upstream
-        useHedgehogLocalStorage: true,
-      },
-=======
         useHedgehogLocalStorage: true
       }
->>>>>>> Stashed changes
     }
     await this.init(libsConfigOverride)
     if (!this.libs.userStateManager.getCurrentUserId() === userDetails.userId) {
@@ -105,11 +80,7 @@ class SeedSession {
     const coverPhotoFile = null
     const hasWallet = false
     const host =
-<<<<<<< Updated upstream
-      (typeof window !== "undefined" && window.location.origin) || null
-=======
       (typeof window !== 'undefined' && window.location.origin) || null
->>>>>>> Stashed changes
     const createWAudioUserBank = true
     try {
       signUpResponse = await this.libs.Account.signUp(
@@ -133,31 +104,16 @@ class SeedSession {
     } else {
       const hedgehogEntropyKey = this.localstorage.getUserEntropy()
       const userId = signUpResponse.userId
-<<<<<<< Updated upstream
       const userAlias = !!alias ? alias : hedgehogEntropyKey
       this.cache.addUser({ alias: userAlias, hedgehogEntropyKey, userId })
       this.cache.addLoginDetails({
         entropy: hedgehogEntropyKey,
         email,
-        password,
+        password
       })
       this.cache.setActiveUser(userAlias)
       console.log(
         `Successfully seeded user with id: ${userId} and alias: ${userAlias}`
-=======
-      if (!alias) {
-        alias = hedgehogEntropyKey
-      }
-      this.cache.addUser({ alias, hedgehogEntropyKey, userId })
-      this.cache.addLoginDetails({
-        entropy: hedgehogEntropyKey,
-        email,
-        password
-      })
-      this.cache.setActiveUser(alias)
-      console.log(
-        `Successfully seeded user with id: ${userId} and alias: ${alias}`
->>>>>>> Stashed changes
       )
       return
     }

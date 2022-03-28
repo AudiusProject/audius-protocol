@@ -1,6 +1,6 @@
-const fs = require("fs")
+const fs = require('fs')
 
-const { Constants } = require("../../utils")
+const { Constants } = require('../../utils')
 
 const { SEED_CACHE_PATH } = Constants
 
@@ -9,25 +9,29 @@ class UserCache {
     this.CACHE_PATH = SEED_CACHE_PATH
   }
 
-  update = (cacheObject) => {
+  update = cacheObject => {
     fs.writeFileSync(this.CACHE_PATH, JSON.stringify(cacheObject))
     return
   }
 
   getActiveUser = () => {
     const cache = this.get()
+    const defaultAlias = null
+    const defaultDetails = {}
     const activeUser = Object.entries(cache).find(([alias, details]) => {
       return details && details.active
-    })
-    return activeUser[1] || {}
+    }) || [defaultAlias, defaultDetails]
+    const activeUserObject = activeUser[1]
+
+    return activeUserObject
   }
 
-  setActiveUser = (alias) => {
+  setActiveUser = alias => {
     let cache = this.get()
     let currentlyActiveUser = this.getActiveUser()
-    currentlyActiveUser["active"] = false
+    currentlyActiveUser['active'] = false
     let newActiveUser = cache[alias]
-    newActiveUser["active"] = true
+    newActiveUser['active'] = true
     this.update(cache)
   }
 
@@ -37,7 +41,7 @@ class UserCache {
       userId,
       hedgehogEntropyKey,
       tracks: [],
-      active: false,
+      active: false
     }
     this.update(cache)
   }
@@ -85,7 +89,7 @@ class UserCache {
 
   getTracks = () => {
     return Object.values(this.get())
-      .map((u) => u.tracks)
+      .map(u => u.tracks)
       .flat()
   }
 
