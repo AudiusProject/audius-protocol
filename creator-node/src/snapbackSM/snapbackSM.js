@@ -705,11 +705,11 @@ class SnapbackSM {
         const walletsOnReplica = replicasToWalletsMap[replica]
 
         // Make requests in batches, sequentially, to ensure POST request body does not exceed max size
-        const maxBatchSize = config.get('maxBatchClockStatusBatchSize')
-        for (let i = 0; i < walletsOnReplica.length; i += maxBatchSize) {
+        const batchSize = config.get('maxBatchClockStatusBatchSize')
+        for (let i = 0; i < walletsOnReplica.length; i += batchSize) {
           const walletsOnReplicaSlice = walletsOnReplica.slice(
             i,
-            i + maxBatchSize
+            i + batchSize
           )
 
           const axiosReqParams = {
