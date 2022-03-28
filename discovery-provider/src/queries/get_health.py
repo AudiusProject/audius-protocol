@@ -372,13 +372,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
 
 def health_check_prometheus_exporter():
-    health_results, is_unhealthy = get_health()
-
-    PrometheusMetric(
-        "health_check_is_healthy_current",
-        "Difference between the latest block and the latest indexed block",
-        metric_type=PrometheusType.GAUGE,
-    ).save(0 if is_unhealthy else 1)
+    health_results, is_unhealthy = get_health({})
 
     PrometheusMetric(
         "health_check_block_difference_current",
