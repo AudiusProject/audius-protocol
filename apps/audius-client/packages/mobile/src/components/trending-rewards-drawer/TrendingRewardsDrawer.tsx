@@ -124,7 +124,7 @@ const createStyles = (themeColors: ThemeColors) =>
       fontSize: 13
     },
     trendingControl: {
-      paddingHorizontal: 28
+      marginHorizontal: 28
     },
     lastWeek: {
       textAlign: 'center',
@@ -228,6 +228,7 @@ export const TrendingRewardsDrawer = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.trendingControl}>
             <SegmentedControl
+              fullWidth
               options={tabOptions}
               selected={modalType}
               onSelectOption={option =>
