@@ -687,7 +687,7 @@ jobs:
 
   docker-build-and-push-updated:
     docker:
-      - image: cimg/base:2021.12
+      - image: cimg/base:2021.10
     parameters:
       repo:
         type: string
