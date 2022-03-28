@@ -18,10 +18,29 @@ import {
   SystemSysVarProgramKey,
 } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaUser, testCreateUserDelegate } from "./test-helpers";
+import { createSolanaContentNode, createSolanaUser, testCreateUserDelegate } from "./test-helpers";
 const { SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
+
+const contentNodes = {};
+const getURSMParams = () => {
+  return {
+    replicaSet: [
+      contentNodes["1"].spId.toNumber(),
+      contentNodes["2"].spId.toNumber(),
+      contentNodes["3"].spId.toNumber(),
+    ],
+    replicaSetBumps: [
+      contentNodes["1"].seedBump.bump,
+      contentNodes["2"].seedBump.bump,
+      contentNodes["3"].seedBump.bump,
+    ],
+    cn1: contentNodes["1"].pda,
+    cn2: contentNodes["2"].pda,
+    cn3: contentNodes["3"].pda,
+  };
+};
 
 describe("track-actions", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
@@ -35,7 +54,7 @@ describe("track-actions", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminStorageKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("track actions - Initializing admin account!", async function () {
@@ -43,12 +62,12 @@ describe("track-actions", function () {
       provider,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminStorageKeypair,
       verifierKeypair,
     });
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
+      adminStorageKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -63,19 +82,43 @@ describe("track-actions", function () {
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
   });
 
+  it("Initializing Content Node accounts!", async function () {
+    contentNodes["1"] = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(1),
+    });
+    contentNodes["2"] = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(2),
+    });
+    contentNodes["3"] = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminStorageKeypair,
+      spId: new anchor.BN(3),
+    });
+  });
+
   it("Delete save for a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await deleteTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
@@ -103,13 +146,13 @@ describe("track-actions", function () {
   });
 
   it("Save a newly created track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
@@ -137,13 +180,13 @@ describe("track-actions", function () {
   });
 
   it("Repost a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await addTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
@@ -173,16 +216,17 @@ describe("track-actions", function () {
   it("Delegate reposts a track", async function () {
     const delegate = await testCreateUserDelegate({
       adminKeypair,
-      adminStorageKeypair: adminStgKeypair,
+      adminStorageKeypair: adminStorageKeypair,
       program,
       provider,
+      ...getURSMParams(),
     });
 
     const tx = await addTrackRepost({
       program,
       baseAuthorityAccount: delegate.baseAuthorityAccount,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: delegate.userAccountPDA,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: delegate.userAccountPDA,
       userAuthorityDelegateAccountPDA: delegate.userAuthorityDelegatePDA,
       authorityDelegationStatusAccountPDA:
         delegate.authorityDelegationStatusPDA,
@@ -211,13 +255,13 @@ describe("track-actions", function () {
   });
 
   it("Delete repost for a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStgKeypair);
+    const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     const tx = await deleteTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStgPublicKey: adminStgKeypair.publicKey,
-      userStgAccountPDA: user.pda,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
