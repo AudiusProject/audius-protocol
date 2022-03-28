@@ -5,6 +5,7 @@ import logging
 import time
 from datetime import datetime
 from operator import itemgetter, or_
+from typing import Any, Dict, Set, Tuple
 
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -271,12 +272,14 @@ def fetch_cid_metadata(
         address=get_contract_addresses()[USER_FACTORY], abi=user_abi
     )
 
-    blacklisted_cids = set()
-    cids_txhash_set = set()
-    cid_type = {}  # cid -> entity type track / user
+    blacklisted_cids: Set[str] = set()
+    cids_txhash_set: Tuple[str, Any] = set()
+    cid_type: Dict[str, str] = {}  # cid -> entity type track / user
 
     # cid -> user_id lookup to make fetching replica set more efficient
-    cid_to_user_id = {}
+    cid_to_user_id: Dict[str, int] = {}
+
+    cid_metadata: Dict[str, str] = {}  # cid -> metadata
 
     # fetch transactions
     with db.scoped_session() as session:
@@ -330,8 +333,6 @@ def fetch_cid_metadata(
         .group_by(User.user_id, User.creator_node_endpoint)
         .all()
     )
-
-    cid_metadata = {}  # cid -> metadata
 
     # first attempt - fetch all CIDs from replica set
     try:

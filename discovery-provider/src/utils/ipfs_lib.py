@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import logging
+from typing import Any, Dict, KeysView, List, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
@@ -70,7 +71,9 @@ class IPFSClient:
                     json_resp = await resp.json(content_type=None)
                     return (multihash, json_resp)
         except asyncio.TimeoutError:
-            logger.info("IPFSCLIENT | _get_metadata_async TimeoutError")
+            logger.info(
+                f"IPFSCLIENT | _get_metadata_async TimeoutError fetching gateway address - {url}"
+            )
             return None
         except Exception as e:
             logger.info(f"IPFSCLIENT | _get_metadata_async Exception - {str(e)}")
@@ -80,7 +83,7 @@ class IPFSClient:
         self, should_fetch_from_replica_set, user_id, user_to_replica_set
     ):
         if should_fetch_from_replica_set and user_id and user_id in user_to_replica_set:
-            user_replica_set = user_to_replica_set[user_id]
+            user_replica_set = user_to_replica_set.get(user_id)
             if not user_replica_set:
                 return None
             return user_replica_set.split(",")
@@ -89,15 +92,14 @@ class IPFSClient:
 
     async def fetch_metadata_from_gateway_endpoints(
         self,
-        fetched_cids,
-        cids_txhash_set,
-        cid_to_user_id,
-        user_to_replica_set,
-        cid_type,
-        should_fetch_from_replica_set=True,
-    ):
-        """
-        Fetch CID metadata from gateway endpoints and update cid_metadata dict.
+        fetched_cids: KeysView[str],
+        cids_txhash_set: Tuple[str, Any],
+        cid_to_user_id: Dict[str, int],
+        user_to_replica_set: Dict[int, List[Any]],
+        cid_type: Dict[str, str],
+        should_fetch_from_replica_set: bool = True,
+    ) -> Dict[str, int]:
+        """Fetch CID metadata from gateway endpoints and update cid_metadata dict.
 
         fetched_cids -- CIDs already successfully fetched
         cids_txhash_set -- set of cids that we want metadata for
@@ -105,11 +107,12 @@ class IPFSClient:
         cid_type -- dict of cid -> cid type
         should_fetch_from_replica_set -- boolean for if fetch should be from replica set only
         """
+
         cid_metadata = {}
 
         async with aiohttp.ClientSession() as async_session:
             futures = []
-            cid_futures_map = {}
+            cid_futures_map: Dict[str, set] = {}
 
             for cid, txhash in cids_txhash_set:
                 if cid in fetched_cids:
