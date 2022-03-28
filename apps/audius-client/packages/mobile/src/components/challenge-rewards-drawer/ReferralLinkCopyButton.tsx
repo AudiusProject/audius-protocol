@@ -75,7 +75,7 @@ export const ReferralLinkCopyButton = ({
         <LinearGradient
           style={[styles.borderRadius]}
           angleCenter={{ x: 0.5, y: 0.5 }}
-          angle={315}
+          angle={350}
           useAngle={true}
           colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
           locations={[0.0204, 1]}
