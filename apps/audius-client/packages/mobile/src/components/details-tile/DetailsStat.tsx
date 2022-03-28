@@ -17,8 +17,7 @@ const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     countContainer: {
       ...flexRowCentered(),
-      justifyContent: 'center',
-      marginHorizontal: 24,
+      marginHorizontal: 12,
       paddingVertical: 4,
       paddingHorizontal: 8
     },
