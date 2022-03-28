@@ -1,5 +1,6 @@
 const axios = require('axios')
-const uuid = require('../../utils/uuid')
+const { AuthHeaders } = require('../../constants')
+const { uuid } = require('../../utils/uuid')
 
 const Requests = require('./requests')
 
@@ -10,6 +11,11 @@ class IdentityService {
   constructor (identityServiceEndpoint, captcha) {
     this.identityServiceEndpoint = identityServiceEndpoint
     this.captcha = captcha
+    this.web3Manager = null
+  }
+
+  setWeb3Manager (web3Manager) {
+    this.web3Manager = web3Manager
   }
 
   /* ------- HEDGEHOG AUTH ------- */
@@ -36,7 +42,7 @@ class IdentityService {
         const token = await this.captcha.generate('identity/user')
         obj.token = token
       } catch (e) {
-        console.warn(`CAPTCHA (user) - Recaptcha failed to generate token in :`, e)
+        console.warn('CAPTCHA (user) - Recaptcha failed to generate token in :', e)
       }
     }
 
@@ -86,7 +92,7 @@ class IdentityService {
    */
   async associateTwitterUser (uuid, userId, handle) {
     return this._makeRequest({
-      url: `/twitter/associate`,
+      url: '/twitter/associate',
       method: 'post',
       data: {
         uuid,
@@ -104,7 +110,7 @@ class IdentityService {
    */
   async associateInstagramUser (uuid, userId, handle) {
     return this._makeRequest({
-      url: `/instagram/associate`,
+      url: '/instagram/associate',
       method: 'post',
       data: {
         uuid,
@@ -156,7 +162,7 @@ class IdentityService {
    * @param {number} offset - offset into list to return from (for pagination)
    */
   async getListenHistoryTracks (userId, limit = 100, offset = 0) {
-    let req = {
+    const req = {
       method: 'get',
       url: '/tracks/history',
       params: { userId, limit, offset }
@@ -204,17 +210,17 @@ class IdentityService {
       queryUrl += timeFrame
     }
 
-    let queryParams = {}
+    const queryParams = {}
     if (idsArray !== null) {
-      queryParams['id'] = idsArray
+      queryParams.id = idsArray
     }
 
     if (limit !== null) {
-      queryParams['limit'] = limit
+      queryParams.limit = limit
     }
 
     if (offset !== null) {
-      queryParams['offset'] = offset
+      queryParams.offset = offset
     }
 
     return this._makeRequest({
@@ -257,7 +263,7 @@ class IdentityService {
       try {
         token = await this.captcha.generate('identity/relay')
       } catch (e) {
-        console.warn(`CAPTCHA (relay) - Recaptcha failed to generate token:`, e)
+        console.warn('CAPTCHA (relay) - Recaptcha failed to generate token:', e)
       }
     }
 
@@ -348,10 +354,18 @@ class IdentityService {
   //   }
   // }
   async solanaRelay (transactionData) {
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = await this.web3Manager.sign(message)
+
     return this._makeRequest({
       url: '/solana/relay',
       method: 'post',
-      data: transactionData
+      data: transactionData,
+      headers: {
+        [AuthHeaders.MESSAGE]: message,
+        [AuthHeaders.SIGNATURE]: signature
+      }
     })
   }
 
@@ -391,10 +405,11 @@ class IdentityService {
    *  specifier: string
    *  error?: string,
    *  phase?: string,
-   * }} { status, userId, challengeId, amount, error, phase, specifier }
+   *  reason?: string
+   * }} { status, userId, challengeId, amount, error, phase, specifier, reason }
    * @memberof IdentityService
    */
-  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier }) {
+  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier, reason }) {
     return this._makeRequest({
       url: '/rewards/attestation_result',
       method: 'post',
@@ -406,7 +421,8 @@ class IdentityService {
         error,
         phase,
         source,
-        specifier
+        specifier,
+        reason
       }
     })
   }
@@ -425,6 +441,9 @@ class IdentityService {
     // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)
+      if (!resp.data) {
+        throw new Error(`Identity response missing data field for url: ${axiosRequestObj.url}, req-id: ${requestId}`)
+      }
       return resp.data
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {

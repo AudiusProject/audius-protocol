@@ -1,5 +1,4 @@
 import * as _lib from '../utils/lib.js'
-import { update } from 'lodash'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const Staking = artifacts.require('Staking')

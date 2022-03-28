@@ -1,8 +1,11 @@
 import logging
 
-from src.tasks.aggregates import try_updating_aggregate_table, update_aggregate_table
+from src.tasks.aggregates import (
+    get_latest_blocknumber,
+    init_task_and_acquire_lock,
+    update_aggregate_table,
+)
 from src.tasks.celery_app import celery
-from src.tasks.index_aggregate_user import get_latest_blocknumber
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +156,6 @@ def update_aggregate_track(self):
     db = update_aggregate_track.db
     redis = update_aggregate_track.redis
 
-    try_updating_aggregate_table(
+    init_task_and_acquire_lock(
         logger, db, redis, AGGREGATE_TRACK, _update_aggregate_track
     )

@@ -13,6 +13,7 @@ const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
 const AsyncProcessingQueue = require('./AsyncProcessingQueue')
+const TrustedNotifierManager = require('./services/TrustedNotifierManager')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -51,6 +52,7 @@ class ServiceRegistry {
     this.URSMRegistrationManager = null
     this.syncQueue = null
     this.skippedCIDsRetryQueue = null
+    this.trustedNotifierManager = null
 
     this.servicesInitialized = false
     this.servicesThatRequireServerInitialized = false
@@ -68,6 +70,10 @@ class ServiceRegistry {
 
     // init libs
     this.libs = await this._initAudiusLibs()
+
+    this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
+    // do not await on this, if we cannot fetch the notifier from chain, it will stop the content node from coming up
+    this.trustedNotifierManager.init()
 
     // Intentionally not awaitted
     this.monitoringQueue.start()
@@ -315,6 +321,9 @@ class ServiceRegistry {
       ? new Set(config.get('discoveryProviderWhitelist').split(','))
       : null
     const identityService = config.get('identityService')
+    const discoveryNodeUnhealthyBlockDiff = config.get(
+      'discoveryNodeUnhealthyBlockDiff'
+    )
 
     const audiusLibs = new AudiusLibs({
       ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -338,7 +347,7 @@ class ServiceRegistry {
         /* selectionRequestTimeout */ null,
         /* selectionRequestRetries */ null,
         /* unhealthySlotDiffPlays */ null,
-        /* unhealthyBlockDiff */ 500
+        discoveryNodeUnhealthyBlockDiff
       ),
       // If an identity service config is present, set up libs with the connection, otherwise do nothing
       identityServiceConfig: identityService

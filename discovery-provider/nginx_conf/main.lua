@@ -182,6 +182,10 @@ function _M.limit_to_rps ()
         return
     end
 
+    if ngx.req.get_method() == "OPTIONS" then
+        return
+    end
+
     if verify_signature(ngx.var.openresty_redirect_from, ngx.var.openresty_redirect_nonce, ngx.var.openresty_redirect_sig) then
         -- if signature is correct remove signature args and skip rate limit logic
         local args, err = ngx.req.get_uri_args()

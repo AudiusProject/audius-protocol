@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Dict, Set, Tuple
 
 from sqlalchemy.orm.session import Session
-from src.app import get_contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -31,11 +30,6 @@ def social_feature_state_update(
     if not social_feature_factory_txs:
         return num_total_changes, empty_set
 
-    social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
-    social_feature_factory_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["social_feature_factory"],
-        abi=social_feature_factory_abi,
-    )
     challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
@@ -51,7 +45,7 @@ def social_feature_state_update(
         try:
             add_track_repost(
                 self,
-                social_feature_factory_contract,
+                update_task.social_feature_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -61,7 +55,7 @@ def social_feature_state_update(
             )
             delete_track_repost(
                 self,
-                social_feature_factory_contract,
+                update_task.social_feature_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -71,7 +65,7 @@ def social_feature_state_update(
             )
             add_playlist_repost(
                 self,
-                social_feature_factory_contract,
+                update_task.social_feature_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -81,7 +75,7 @@ def social_feature_state_update(
             )
             delete_playlist_repost(
                 self,
-                social_feature_factory_contract,
+                update_task.social_feature_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -91,7 +85,7 @@ def social_feature_state_update(
             )
             add_follow(
                 self,
-                social_feature_factory_contract,
+                update_task.social_feature_contract,
                 update_task,
                 session,
                 tx_receipt,
@@ -101,7 +95,7 @@ def social_feature_state_update(
             )
             delete_follow(
                 self,
-                social_feature_factory_contract,
+                update_task.social_feature_contract,
                 update_task,
                 session,
                 tx_receipt,

@@ -77,8 +77,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     ipfsMock,
     ipfsLatestMock,
     libsMock,
-    handleTrackContentRoute,
-    mockServiceRegistry
+    handleTrackContentRoute
   let session, userId, userWallet
 
   const spId = 1
@@ -716,11 +715,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
     libsMock.User.getUsers.exactly(4)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
-    const resp = await handleTrackContentRoute(
+    const {
+      track_segments: trackSegments,
+      source_file: sourceFile,
+      transcodedTrackUUID
+    } = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
     )
-    const { track_segments: trackSegments, source_file: sourceFile } = resp
 
     const metadata = {
       test: 'field1',
@@ -747,7 +749,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .send({
         blockchainTrackId: 1,
         blockNumber: 10,
-        metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID
+        metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
+        transcodedTrackUUID
       })
       .expect(200)
   })
@@ -802,12 +805,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
     libsMock.User.getUsers.exactly(4)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
-    const resp = await handleTrackContentRoute(
+    const {
+      track_segments: trackSegments,
+      source_file: sourceFile,
+      transcodedTrackUUID
+    } = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
     )
-
-    const { track_segments: trackSegments, source_file: sourceFile } = resp
 
     assert.deepStrictEqual(
       trackSegments[0].multihash,
@@ -847,7 +852,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .send({
         blockchainTrackId: 1,
         blockNumber: 10,
-        metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID
+        metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
+        transcodedTrackUUID
       })
       .expect(200)
   })
@@ -861,7 +867,6 @@ describe('test Polling Tracks with real IPFS', function () {
     ipfs,
     ipfsLatest,
     handleTrackContentRoute,
-    mockServiceRegistry,
     userId
 
   /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
@@ -895,6 +900,7 @@ describe('test Polling Tracks with real IPFS', function () {
       require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
   })
 
+  /** Reset sinon & close server */
   afterEach(async () => {
     sinon.restore()
     await server.close()
@@ -1069,12 +1075,6 @@ describe('test Polling Tracks with real IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
-      .expect(function (res) {
-        if (res.body.error) {
-          console.error(res.body.error)
-          assert.fail(res.body.error)
-        }
-      })
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
@@ -1113,7 +1113,129 @@ describe('test Polling Tracks with real IPFS', function () {
   })
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  it.skip('TODO - POST /tracks tests', async function () {})
+  it('POST /tracks tests', async function () {
+    // Upload track content
+     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+     const {
+       track_segments: trackSegments,
+       transcodedTrackUUID,
+       source_file: sourceFile
+      } = await handleTrackContentRoute(
+       logContext,
+       getReqObj(fileUUID, fileDir, session)
+     )
 
-  it.skip('TODO - parallel track upload', async function () {})
+     // Upload track metadata
+     const trackMetadata = {
+      metadata: {
+        owner_id: userId,
+        track_segments: trackSegments
+      },
+      source_file: sourceFile
+    }
+    const trackMetadataResp = await request(app2)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', userId)
+      .send(trackMetadata)
+      .expect(200)
+    trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
+    trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+    
+    // Complete track creation
+    await request(app2)
+      .post('/tracks')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', userId)
+      .send({
+        blockchainTrackId: 1,
+        blockNumber: 10,
+        metadataFileUUID: trackMetadataFileUUID,
+        transcodedTrackUUID
+      })
+  })
+
+  it('parallel track upload', async function () {
+    // Upload track content
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const {
+      track_segments: trackSegments,
+      transcodedTrackUUID,
+      source_file: sourceFile
+     } = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session)
+    )
+
+    // Upload same track content again
+    const { fileUUID: fileUUID2, fileDir: fileDir2 } = saveFileToStorage(testAudioFilePath)
+    const {
+      track_segments: track2Segments,
+      transcodedTrackUUID: transcodedTrack2UUID,
+      source_file: sourceFile2
+     } = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID2, fileDir2, session)
+    )
+
+    // Upload track 1 metadata
+    const trackMetadata = {
+     metadata: {
+       owner_id: userId,
+       track_segments: trackSegments
+     },
+     source_file: sourceFile
+   }
+   const trackMetadataResp = await request(app2)
+     .post('/tracks/metadata')
+     .set('X-Session-ID', session.sessionToken)
+     .set('User-Id', userId)
+     .send(trackMetadata)
+     .expect(200)
+   trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
+   trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+
+   // Upload track 2 metadata
+   const track2Metadata = {
+    metadata: {
+      owner_id: userId,
+      track_segments: track2Segments
+    },
+    source_file: sourceFile
+  }
+  const track2MetadataResp = await request(app2)
+    .post('/tracks/metadata')
+    .set('X-Session-ID', session.sessionToken)
+    .set('User-Id', userId)
+    .send(track2Metadata)
+    .expect(200)
+  track2MetadataMultihash = track2MetadataResp.body.data.metadataMultihash
+  track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
+   
+   // Complete track1 creation
+   await request(app2)
+      .post('/tracks')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', userId)
+      .send({
+        blockchainTrackId: 1,
+        blockNumber: 10,
+        metadataFileUUID: trackMetadataFileUUID,
+        transcodedTrackUUID
+      })
+      .expect(200)
+
+    // Complete track2 creation
+    await request(app2)
+      .post('/tracks')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', userId)
+      .send({
+        blockchainTrackId: 2,
+        blockNumber: 20,
+        metadataFileUUID: track2MetadataFileUUID,
+        transcodedTrackUUID: transcodedTrack2UUID
+      })
+      .expect(200)
+  })
 })

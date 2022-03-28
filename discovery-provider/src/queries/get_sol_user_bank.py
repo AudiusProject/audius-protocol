@@ -13,7 +13,10 @@ from src.utils.cache_solana_program import (
     get_latest_sol_db_tx,
 )
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_constants import latest_sol_user_bank_db_tx_key
+from src.utils.redis_constants import (
+    latest_sol_user_bank_db_tx_key,
+    latest_sol_user_bank_program_tx_key,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +60,7 @@ def get_latest_cached_sol_user_bank_db(redis: Redis) -> Optional[CachedProgramTx
 def get_latest_cached_sol_user_bank_program_tx(redis) -> CachedProgramTxInfo:
     # Latest user_bank tx from chain
     latest_sol_user_bank_program_tx = get_latest_sol_db_tx(
-        redis, latest_sol_user_bank_db_tx_key
+        redis, latest_sol_user_bank_program_tx_key
     )
     return latest_sol_user_bank_program_tx
 

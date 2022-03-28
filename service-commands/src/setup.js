@@ -158,7 +158,8 @@ const Service = Object.freeze({
   ACCOUNT: 'account',
   INIT_REPOS: 'init-repos',
   USER_REPLICA_SET_MANAGER: 'user-replica-set-manager',
-  AAO: 'aao'
+  AAO: 'aao',
+  TN: 'tn'
 })
 
 // gets a service command, interpolating service names

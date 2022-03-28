@@ -1,6 +1,7 @@
 const Bull = require('bull')
 const axios = require('axios')
 const _ = require('lodash')
+const retry = require('async-retry')
 
 const utils = require('../utils')
 const models = require('../models')
@@ -8,7 +9,7 @@ const { logger } = require('../logging')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
-const CreatorNode = require('@audius/libs/src/services/creatorNode')
+const { CreatorNode } = require('@audius/libs')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 
@@ -23,6 +24,10 @@ const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
 
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
+
+const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = 5000
+
+const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 
 // Describes the type of sync operation
 const SyncType = Object.freeze({
@@ -175,7 +180,7 @@ class SnapbackSM {
       try {
         await this.processStateMachineOperation()
       } catch (e) {
-        this.log(`StateMachineQueue error processing ${e}`)
+        this.logError(`StateMachineQueue processing error: ${e}`)
       }
 
       await utils.timeout(this.snapbackJobInterval)
@@ -192,7 +197,7 @@ class SnapbackSM {
         try {
           await this.processSyncOperation(job, SyncType.Manual)
         } catch (e) {
-          this.log(`ManualSyncQueue processing error: ${e}`)
+          this.logError(`ManualSyncQueue processing error: ${e}`)
         }
 
         done()
@@ -206,7 +211,7 @@ class SnapbackSM {
         try {
           await this.processSyncOperation(job, SyncType.Recurring)
         } catch (e) {
-          this.log(`RecurringSyncQueue processing error ${e}`)
+          this.logError(`RecurringSyncQueue processing error ${e}`)
         }
 
         done()
@@ -680,86 +685,82 @@ class SnapbackSM {
   }
 
   /**
-   * Given map(replica set node => userWallets[]), retrieves clock values for every (node, userWallet) pair
+   * Given map(replica node => userWallets[]), retrieves clock values for every (node, userWallet) pair
    * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
    * @param {Set<string>} unhealthyPeers set of unhealthy peer endpoints
-   * @param {number?} [maxUserClockFetchAttempts=10] max number of attempts to fetch clock values
    *
-   * @returns {Object} map of peer endpoints to (map of user wallet strings to clock value of replica set node for user)
+   * @returns {Object} map(replica node => map(wallet => clockValue))
    */
   async retrieveClockStatusesForUsersAcrossReplicaSet(
-    replicaSetNodesToUserWalletsMap,
-    unhealthyPeers,
-    maxUserClockFetchAttempts = 10
+    replicasToWalletsMap,
+    unhealthyPeers
   ) {
-    const replicaSetNodesToUserClockValuesMap = {}
+    const replicasToUserClockStatusMap = {}
 
-    const replicaSetNodes = Object.keys(replicaSetNodesToUserWalletsMap)
-
-    // TODO change to batched parallel requests
+    /** In parallel for every replica, fetch clock status for all users on that replica */
+    const replicas = Object.keys(replicasToWalletsMap)
     await Promise.all(
-      replicaSetNodes.map(async (replicaSetNode) => {
-        replicaSetNodesToUserClockValuesMap[replicaSetNode] = {}
+      replicas.map(async (replica) => {
+        replicasToUserClockStatusMap[replica] = {}
 
-        const replicaSetNodeUserWallets =
-          replicaSetNodesToUserWalletsMap[replicaSetNode]
-        const { timestamp, signature } = generateTimestampAndSignature(
-          { spID: this.spID },
-          this.delegatePrivateKey
-        )
+        const walletsOnReplica = replicasToWalletsMap[replica]
 
-        const axiosReqParams = {
-          baseURL: replicaSetNode,
-          url: '/users/batch_clock_status',
-          method: 'post',
-          data: { walletPublicKeys: replicaSetNodeUserWallets },
-          timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
-          params: {
-            spID: this.spID,
-            timestamp,
-            signature
+        // Make requests in batches, sequentially, to ensure POST request body does not exceed max size
+        for (
+          let i = 0;
+          i < walletsOnReplica.length;
+          i += MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
+        ) {
+          const walletsOnReplicaSlice = walletsOnReplica.slice(
+            i,
+            i + MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
+          )
+
+          const axiosReqParams = {
+            baseURL: replica,
+            url: '/users/batch_clock_status',
+            method: 'post',
+            data: { walletPublicKeys: walletsOnReplicaSlice },
+            timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
           }
-        }
 
-        let userClockValuesResp = []
-        let userClockFetchAttempts = 0
-        let errorMsg
-        while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
+          // Sign request to other CN to bypass rate limiting
+          const { timestamp, signature } = generateTimestampAndSignature(
+            { spID: this.spID },
+            this.delegatePrivateKey
+          )
+          axiosReqParams.params = { spID: this.spID, timestamp, signature }
+
+          let batchClockStatusResp = []
+          let errorMsg
           try {
-            userClockValuesResp = (await axios(axiosReqParams)).data.data.users
+            batchClockStatusResp = (
+              await retry(async () => axios(axiosReqParams), {
+                retries: MAX_USER_BATCH_CLOCK_FETCH_RETRIES
+              })
+            ).data.data.users
           } catch (e) {
             errorMsg = e
           }
-        }
 
-        // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
-        if (userClockValuesResp.length === 0) {
-          this.logError(
-            `[retrieveClockStatusesForUsersAcrossReplicaSet] Could not fetch clock values for wallets=${replicaSetNodeUserWallets} on replica node=${replicaSetNode} ${
-              errorMsg ? ': ' + errorMsg.toString() : ''
-            }`
-          )
-          unhealthyPeers.add(replicaSetNode)
-        }
-
-        userClockValuesResp.forEach((userClockValueResp) => {
-          const { walletPublicKey, clock } = userClockValueResp
-          try {
-            replicaSetNodesToUserClockValuesMap[replicaSetNode][
-              walletPublicKey
-            ] = clock
-          } catch (e) {
-            // TODO: would this ever error actually?
-            this.log(
-              `Error updating replicaSetNodesToUserClockValuesMap for wallet ${walletPublicKey} to clock ${clock}`
+          // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
+          if (errorMsg) {
+            this.logError(
+              `[retrieveClockStatusesForUsersAcrossReplicaSet] Could not fetch clock values for wallets=${walletsOnReplica} on replica=${replica} ${errorMsg.toString()}`
             )
-            throw e
+            unhealthyPeers.add(replica)
           }
-        })
+
+          // Add batch response data to aggregate output map
+          batchClockStatusResp.forEach((userClockValueResp) => {
+            const { walletPublicKey, clock } = userClockValueResp
+            replicasToUserClockStatusMap[replica][walletPublicKey] = clock
+          })
+        }
       })
     )
 
-    return replicaSetNodesToUserClockValuesMap
+    return replicasToUserClockStatusMap
   }
 
   /**

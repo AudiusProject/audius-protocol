@@ -235,7 +235,7 @@ def setup_search(db):
         session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict;")
 
         session.execute(
-            UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
+            UPDATE_AGGREGATE_USER_QUERY, {"prev_indexed_aggregate_block": 0}
         )
         session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict;")
 

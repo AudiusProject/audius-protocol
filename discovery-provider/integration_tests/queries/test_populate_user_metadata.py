@@ -2,6 +2,7 @@ import logging
 
 from integration_tests.utils import populate_mock_db
 from src.queries import response_name_constants
+from src.queries.get_top_users import _get_top_users
 from src.queries.query_helpers import populate_user_metadata
 from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.utils.db_session import get_db
@@ -80,8 +81,14 @@ def test_populate_user_metadata(app):
             {"user_id": 5, "wallet": "0x555", "is_verified": False},
         ]
 
-        users = populate_user_metadata(session, user_ids, users, None)
+        users = populate_user_metadata(session, user_ids, users, 3)
         assert len(users) == 5
+
+        assert users[0]["does_follow_current_user"] == True
+        assert users[1]["does_follow_current_user"] == True
+        assert users[2]["does_follow_current_user"] == False
+        assert users[3]["does_follow_current_user"] == False
+        assert users[4]["does_follow_current_user"] == False
 
         assert users[0]["user_id"] == 1
         assert users[0][response_name_constants.track_count] == 2
@@ -150,3 +157,7 @@ def test_populate_user_metadata(app):
         assert users[2][response_name_constants.current_user_followee_follow_count] == 1
         assert users[2][response_name_constants.balance] == "0"
         assert users[2][response_name_constants.associated_wallets_balance] == "0"
+
+        # get_top_users: should return only artists, most followers first
+        top_user_ids = [u["user_id"] for u in _get_top_users(session, 1, 100, 0)]
+        assert top_user_ids == [3, 2, 1]

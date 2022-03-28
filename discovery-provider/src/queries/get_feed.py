@@ -6,7 +6,6 @@ from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
-    get_current_user_id,
     get_pagination_vars,
     get_users_by_id,
     get_users_ids,
@@ -31,7 +30,7 @@ def get_feed(args):
     followee_user_ids = args.get("followee_user_ids", [])
 
     # Current user - user for whom feed is being generated
-    current_user_id = get_current_user_id()
+    current_user_id = args.get("user_id")
     with db.scoped_session() as session:
         # Generate list of users followed by current user, i.e. 'followees'
         if not followee_user_ids:
@@ -275,8 +274,7 @@ def get_feed(args):
         # truncate feed to requested limit
         (limit, _) = get_pagination_vars()
         feed_results = sorted_feed[0:limit]
-
-        if "with_users" in args and args.get("with_users") != "false":
+        if "with_users" in args and args.get("with_users") != False:
             user_id_list = get_users_ids(feed_results)
             users = get_users_by_id(session, user_id_list)
             for result in feed_results:

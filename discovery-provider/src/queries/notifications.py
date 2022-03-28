@@ -1,4 +1,3 @@
-import functools as ft
 import logging  # pylint: disable=C0302
 from datetime import date, datetime, timedelta
 from typing import List, Tuple
@@ -936,19 +935,16 @@ def notifications():
         # dictionary of playlist id => users that favorited said playlist
         # e.g. { playlist1: [user1, user2, ...], ... }
         # we need this dictionary to know which users need to be notified of a playlist update
-        users_that_favorited_playlists_dict = ft.reduce(
-            lambda accumulator, current: accumulator.update(
-                {
-                    current.save_item_id: accumulator[current.save_item_id]
-                    + [current.user_id]
-                    if current.save_item_id in accumulator
-                    else [current.user_id]
-                }
-            )
-            or accumulator,
-            playlist_favorites_results,
-            {},
-        )
+        users_that_favorited_playlists_dict = {}
+        for result in playlist_favorites_results:
+            if result.save_item_id in users_that_favorited_playlists_dict:
+                users_that_favorited_playlists_dict[result.save_item_id].append(
+                    result.user_id
+                )
+            else:
+                users_that_favorited_playlists_dict[result.save_item_id] = [
+                    result.user_id
+                ]
 
         logger.info(
             f"notifications.py | computed users that favorited dict {datetime.now() - start_time}"

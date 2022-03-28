@@ -172,23 +172,34 @@ def populate_user_metadata(
     )
     track_blocknumber_dict = dict(track_blocknumbers)
 
+    follows_current_user_set = set()
     current_user_followed_user_ids = {}
     current_user_followee_follow_count_dict = {}
     if current_user_id:
-        # does current user follow any of requested user ids
-        current_user_followed_user_ids = (
-            session.query(Follow.followee_user_id)
+        # collect all incoming and outgoing follow edges for current user.
+        current_user_follow_rows = (
+            session.query(Follow.follower_user_id, Follow.followee_user_id)
             .filter(
                 Follow.is_current == True,
                 Follow.is_delete == False,
-                Follow.followee_user_id.in_(user_ids),
-                Follow.follower_user_id == current_user_id,
+                or_(
+                    and_(
+                        Follow.followee_user_id.in_(user_ids),
+                        Follow.follower_user_id == current_user_id,
+                    ),
+                    and_(
+                        Follow.followee_user_id == current_user_id,
+                        Follow.follower_user_id.in_(user_ids),
+                    ),
+                ),
             )
             .all()
         )
-        current_user_followed_user_ids = {
-            r[0]: True for r in current_user_followed_user_ids
-        }
+        for follower_id, following_id in current_user_follow_rows:
+            if follower_id == current_user_id:
+                current_user_followed_user_ids[following_id] = True
+            else:
+                follows_current_user_set.add(follower_id)
 
         # build dict of user id --> followee follow count
         current_user_followees = (
@@ -271,6 +282,7 @@ def populate_user_metadata(
         user[response_name_constants.spl_wallet] = user_banks_dict.get(
             user["wallet"], None
         )
+        user["does_follow_current_user"] = user_id in follows_current_user_set
 
     return users
 
@@ -1060,127 +1072,6 @@ def get_users_ids(results):
     # Remove duplicate user ids
     user_ids = list(set(user_ids))
     return user_ids
-
-
-def create_save_repost_count_subquery(session, type):
-    """
-    Creates a subquery for `type` that represents a combined save + repost count.
-
-    For example, to get the tracks with the largest combined save and repost count, use:
-        subquery = create_save_repost_count_subquery(session, 'track')
-        session
-            .query(tracks)
-            .join(subquery, tracks.track_id = subquery.c.id)
-            .order_by(desc(subquery.c.count))
-
-    Args:
-        session: SQLAlchemy session.
-        type: (string) The type of save/repost (album, playlist, track)
-
-    Returns: A subquery with two fields `id` and `count`.
-    """
-    # Get reposts by item id
-    reposts_count_subquery = (
-        session.query(
-            Repost.repost_item_id,
-        )
-        .filter(
-            Repost.is_current == True,
-            Repost.is_delete == False,
-            Repost.repost_type == type,
-        )
-        .subquery()
-    )
-
-    # Query saves joined against reposts grouped by id and calculate
-    # a combined count for each
-    subquery = (
-        session.query(
-            Save.save_item_id.label("id"),
-            (
-                func.count(Save.save_item_id)
-                + func.count(reposts_count_subquery.c.repost_item_id)
-            ).label("count"),
-        )
-        # Join against reposts filtering to matching ids.
-        # Inner-join drops no-match ids.
-        .join(
-            reposts_count_subquery,
-            Save.save_item_id == reposts_count_subquery.c.repost_item_id,
-        )
-        .filter(
-            Save.is_current == True, Save.is_delete == False, Save.save_type == type
-        )
-        .group_by(Save.save_item_id)
-        .subquery()
-    )
-    return subquery
-
-
-def create_save_count_subquery(session, type):
-    """
-    Creates a subquery for `type` that represents the save count.
-
-    For example, to get the tracks with the largest save count:
-        subquery = create_save_count_subquery(session, 'track')
-        session
-            .query(tracks)
-            .join(subquery, tracks.track_id = subquery.c.id)
-            .order_by(desc(subquery.c.save_count))
-
-    Args:
-        session: SQLAlchemy session.
-        type: (string) The type of save/repost (album, playlist, track)
-
-    Returns: A subquery with two fields `id` and `save_count`.
-    """
-    subquery = (
-        session.query(
-            Save.save_item_id.label("id"),
-            func.count(Save.save_item_id).label(response_name_constants.save_count),
-        )
-        .filter(
-            Save.is_current == True, Save.is_delete == False, Save.save_type == type
-        )
-        .group_by(Save.save_item_id)
-        .subquery()
-    )
-    return subquery
-
-
-def create_repost_count_subquery(session, type):
-    """
-    Creates a subquery for `type` that represents the repost count.
-
-    For example, to get the tracks with the largest repost count:
-        subquery = create_repost_count_subquery(session, 'track')
-        session
-            .query(tracks)
-            .join(subquery, tracks.track_id = subquery.c.id)
-            .order_by(desc(subquery.c.repost_count))
-
-    Args:
-        session: SQLAlchemy session.
-        type: (string) The type of save/repost (album, playlist, track)
-
-    Returns: A subquery with two fields `id` and `repost_count`.
-    """
-    subquery = (
-        session.query(
-            Repost.repost_item_id.label("id"),
-            func.count(Repost.repost_item_id).label(
-                response_name_constants.repost_count
-            ),
-        )
-        .filter(
-            Repost.is_current == True,
-            Repost.is_delete == False,
-            Repost.repost_type == type,
-        )
-        .group_by(Repost.repost_item_id)
-        .subquery()
-    )
-    return subquery
 
 
 def create_followee_playlists_subquery(session, current_user_id):

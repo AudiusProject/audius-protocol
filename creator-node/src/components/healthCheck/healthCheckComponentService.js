@@ -103,6 +103,7 @@ const healthCheck = async (
     spID: config.get('spID'),
     spOwnerWallet: config.get('spOwnerWallet'),
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
+    dataProviderUrl: config.get('dataProviderUrl'),
     numberOfCPUs,
     totalMemory,
     storagePathSize,

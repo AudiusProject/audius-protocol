@@ -16,8 +16,8 @@ from src.queries.get_underground_trending import (
     GetUndergroundTrendingTrackcArgs,
     _get_underground_trending_with_session,
 )
+from src.tasks.aggregates import get_latest_blocknumber
 from src.tasks.celery_app import celery
-from src.tasks.index_aggregate_user import get_latest_blocknumber
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.redis_constants import most_recent_indexed_block_redis_key

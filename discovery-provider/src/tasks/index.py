@@ -43,10 +43,15 @@ from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
+    record_add_indexed_block_to_db_ms,
+    record_fetch_ipfs_metadata_ms,
     record_index_blocks_ms,
+    sweep_old_add_indexed_block_to_db_ms,
+    sweep_old_fetch_ipfs_metadata_ms,
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
+from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -261,16 +266,8 @@ def fetch_cid_metadata(
     track_factory_txs,
 ):
     start_time = datetime.now()
-
-    track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]
-    track_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()["track_factory"], abi=track_abi
-    )
-
-    user_abi = update_task.abi_values[USER_FACTORY_CONTRACT_NAME]["abi"]
-    user_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[USER_FACTORY], abi=user_abi
-    )
+    user_contract = update_task.user_contract
+    track_contract = update_task.track_contract
 
     blacklisted_cids: Set[str] = set()
     cids_txhash_set: Tuple[str, Any] = set()
@@ -298,6 +295,7 @@ def fetch_cid_metadata(
                     blacklisted_cids.add(cid)
                 user_id = event_args._userId
                 cid_to_user_id[cid] = user_id
+
         for tx_receipt in track_factory_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             for event_type in [
@@ -323,16 +321,16 @@ def fetch_cid_metadata(
                         blacklisted_cids.add(cid)
                     cid_to_user_id[cid] = track_owner_id
 
-    # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
-    user_to_replica_set = dict(
-        session.query(User.user_id, User.creator_node_endpoint)
-        .filter(
-            User.is_current == True,
-            User.user_id.in_(cid_to_user_id.values()),
+        # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
+        user_to_replica_set = dict(
+            session.query(User.user_id, User.creator_node_endpoint)
+            .filter(
+                User.is_current == True,
+                User.user_id.in_(cid_to_user_id.values()),
+            )
+            .group_by(User.user_id, User.creator_node_endpoint)
+            .all()
         )
-        .group_by(User.user_id, User.creator_node_endpoint)
-        .all()
-    )
 
     # first attempt - fetch all CIDs from replica set
     try:
@@ -563,8 +561,14 @@ def index_blocks(self, db, blocks_list):
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
     changed_entity_ids_map = {}
+    metric = PrometheusMetric(
+        "index_blocks_runtime_seconds",
+        "Runtimes for src.task.index:index_blocks()",
+        ("scope",),
+    )
     for i in block_order_range:
-        start_time = datetime.now()
+        start_time = time.time()
+        metric.reset_timer()
         update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
@@ -600,6 +604,10 @@ def index_blocks(self, db, blocks_list):
                     """
                     fetch_tx_receipts_start_time = time.time()
                     tx_receipt_dict = fetch_tx_receipts(self, block)
+                    metric.save_time(
+                        {"scope": "fetch_tx_receipts"},
+                        start_time=fetch_tx_receipts_start_time,
+                    )
                     logger.info(
                         f"index.py | index_blocks - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
                     )
@@ -636,6 +644,10 @@ def index_blocks(self, db, blocks_list):
                             )
                             if contract_type:
                                 txs_grouped_by_type[contract_type].append(tx_receipt)
+                    metric.save_time(
+                        {"scope": "parse_tx_receipts"},
+                        start_time=parse_tx_receipts_start_time,
+                    )
                     logger.info(
                         f"index.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
                     )
@@ -654,14 +666,35 @@ def index_blocks(self, db, blocks_list):
                     logger.info(
                         f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
                     )
+                    # Record the time this took in redis
+                    duration_ms = round(
+                        (time.time() - fetch_ipfs_metadata_start_time) * 1000
+                    )
+                    record_fetch_ipfs_metadata_ms(redis, duration_ms)
+                    metric.save_time(
+                        {"scope": "fetch_ipfs_metadata"},
+                        start_time=fetch_ipfs_metadata_start_time,
+                    )
+                    logger.info(
+                        f"index.py | index_blocks - fetch_ipfs_metadata in {duration_ms}ms"
+                    )
 
                     """
                     Add block to db
                     """
                     add_indexed_block_to_db_start_time = time.time()
                     add_indexed_block_to_db(session, block)
+                    # Record the time this took in redis
+                    duration_ms = round(
+                        (time.time() - add_indexed_block_to_db_start_time) * 1000
+                    )
+                    record_add_indexed_block_to_db_ms(redis, duration_ms)
+                    metric.save_time(
+                        {"scope": "add_indexed_block_to_db"},
+                        start_time=add_indexed_block_to_db_start_time,
+                    )
                     logger.info(
-                        f"index.py | index_blocks - add_indexed_block_to_db in {time.time() - add_indexed_block_to_db_start_time}s"
+                        f"index.py | index_blocks - add_indexed_block_to_db in {duration_ms}ms"
                     )
 
                     """
@@ -679,7 +712,10 @@ def index_blocks(self, db, blocks_list):
                         txs_grouped_by_type,
                         block,
                     )
-
+                    metric.save_time(
+                        {"scope": "process_state_changes"},
+                        start_time=process_state_changes_start_time,
+                    )
                     logger.info(
                         f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
@@ -695,6 +731,7 @@ def index_blocks(self, db, blocks_list):
             try:
                 commit_start_time = time.time()
                 session.commit()
+                metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
                 logger.info(
                     f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
@@ -738,11 +775,15 @@ def index_blocks(self, db, blocks_list):
         )
 
         # Record the time this took in redis
-        duration_ms = round((datetime.now() - start_time).total_seconds() * 1000)
+        metric.save_time({"scope": "full"})
+        duration_ms = round(time.time() - start_time * 1000)
         record_index_blocks_ms(redis, duration_ms)
+
         # Sweep records older than 30 days every day
         if block_number % BLOCKS_PER_DAY == 0:
             sweep_old_index_blocks_ms(redis, 30)
+            sweep_old_fetch_ipfs_metadata_ms(redis, 30)
+            sweep_old_add_indexed_block_to_db_ms(redis, 30)
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
@@ -1040,13 +1081,63 @@ def update_task(self):
     web3 = update_task.web3
     redis = update_task.redis
 
+    # Initialize contracts and attach to the task singleton
+    track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]
+    track_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()["track_factory"], abi=track_abi
+    )
+
+    user_abi = update_task.abi_values[USER_FACTORY_CONTRACT_NAME]["abi"]
+    user_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[USER_FACTORY], abi=user_abi
+    )
+
+    playlist_abi = update_task.abi_values[PLAYLIST_FACTORY_CONTRACT_NAME]["abi"]
+    playlist_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[PLAYLIST_FACTORY], abi=playlist_abi
+    )
+
+    social_feature_abi = update_task.abi_values[SOCIAL_FEATURE_FACTORY_CONTRACT_NAME][
+        "abi"
+    ]
+    social_feature_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[SOCIAL_FEATURE_FACTORY],
+        abi=social_feature_abi,
+    )
+
+    user_library_abi = update_task.abi_values[USER_LIBRARY_FACTORY_CONTRACT_NAME]["abi"]
+    user_library_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[USER_LIBRARY_FACTORY], abi=user_library_abi
+    )
+
+    user_replica_set_manager_abi = update_task.abi_values[
+        USER_REPLICA_SET_MANAGER_CONTRACT_NAME
+    ]["abi"]
+    user_replica_set_manager_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[USER_REPLICA_SET_MANAGER],
+        abi=user_replica_set_manager_abi,
+    )
+
+    update_task.track_contract = track_contract
+    update_task.user_contract = user_contract
+    update_task.playlist_contract = playlist_contract
+    update_task.social_feature_contract = social_feature_contract
+    update_task.user_library_contract = user_library_contract
+    update_task.user_replica_set_manager_contract = user_replica_set_manager_contract
+
     # Update redis cache for health check queries
     update_latest_block_redis()
+
+    DEFAULT_LOCK_TIMEOUT = 60 * 10  # ten minutes
 
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("disc_prov_lock", blocking_timeout=25)
+    # blocking_timeout is duration it waits to try to acquire lock
+    # timeout is the duration the lock is held
+    update_lock = redis.lock(
+        "disc_prov_lock", blocking_timeout=25, timeout=DEFAULT_LOCK_TIMEOUT
+    )
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)

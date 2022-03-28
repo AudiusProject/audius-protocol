@@ -1,9 +1,10 @@
 import * as anchor from "@project-serum/anchor";
-import { Provider } from "@project-serum/anchor";
+import { BorshInstructionCoder, Provider } from "@project-serum/anchor";
 import BN from "bn.js";
 import { randomBytes } from "crypto";
 import * as secp256k1 from "secp256k1";
 import keccak256 from "keccak256";
+import { AudiusData } from "../target/types/audius_data";
 const { PublicKey } = anchor.web3;
 
 export const SystemSysVarProgramKey = new PublicKey(
@@ -13,7 +14,7 @@ export const SystemSysVarProgramKey = new PublicKey(
 /// Convert a string input to output array of Uint8
 export const ethAddressToArray = (ethAddress: string) => {
   const strippedEthAddress = ethAddress.replace("0x", "");
-  return Uint8Array.of(...new BN(strippedEthAddress, "hex").toArray("be"));
+  return Uint8Array.of(...new BN(strippedEthAddress, "hex").toArray("be", 20));
 };
 
 /// Retrieve a transaction with retries
@@ -25,8 +26,40 @@ export const getTransaction = async (provider: Provider, tx: string) => {
   return info;
 };
 
+export const decodeInstruction = (program: anchor.Program, data: string) => {
+  const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+  const decodedInstruction = instructionCoder.decode(data, "base58");
+  return decodedInstruction;
+};
+
+export const getTransactionWithData = async (
+  program: anchor.Program,
+  provider: Provider,
+  tx: string,
+  instruction: number
+) => {
+  const info = await getTransaction(provider, tx);
+  const data = info.transaction.message.instructions[instruction].data;
+  const decodedInstruction = decodeInstruction(program, data);
+  const accountIndexes =
+    info.transaction.message.instructions[instruction].accounts;
+  const accountKeys = info.transaction.message.accountKeys;
+  const accountPubKeys = [];
+  for (const i of accountIndexes) {
+    accountPubKeys.push(accountKeys[i].toString());
+  }
+  const decodedData = decodedInstruction.data;
+  return {
+    info,
+    data,
+    decodedInstruction,
+    decodedData,
+    accountPubKeys,
+  };
+};
+
 /// Sign any bytes object with the provided eth private key
-export const signBytes = (bytes: any, ethPrivateKey: string) => {
+export const signBytes = (bytes: Uint8Array, ethPrivateKey: string) => {
   const ethPrivateKeyArr = anchor.utils.bytes.hex.decode(ethPrivateKey);
   const msgHash = keccak256(bytes);
   const signatureObj = secp256k1.ecdsaSign(
@@ -58,6 +91,12 @@ export const randomString = (size: number) => {
   return objectId;
 };
 
+/// Generate random anchor BN id
+export const randomId = () => {
+  return new anchor.BN(Math.floor(Math.random() * 10000));
+};
+
+
 /// Generate mock CID by appending `Qm` with a rand string
 export const randomCID = () => {
   const randomSuffix = randomString(44);
@@ -68,7 +107,7 @@ export const randomCID = () => {
 /// Derive a program address with pubkey as the seed
 export const findProgramAddress = (
   programId: anchor.web3.PublicKey,
-  pubkey: any
+  pubkey: anchor.web3.PublicKey
 ) => {
   return PublicKey.findProgramAddress(
     [pubkey.toBytes().slice(0, 32)],
@@ -81,7 +120,7 @@ export const findProgramAddress = (
 export const findDerivedAddress = async (
   programId: anchor.web3.PublicKey,
   base: anchor.web3.PublicKey,
-  seed: any
+  seed: Buffer | Uint8Array
 ) => {
   const finalSeed = [base.toBytes().slice(0, 32), seed];
   const result = await PublicKey.findProgramAddress(finalSeed, programId);
@@ -108,4 +147,25 @@ export const findDerivedPair = async (programId, adminAccount, seed) => {
   const bumpSeed = derivedAddresInfo.result[1];
 
   return { baseAuthorityAccount, derivedAddress, bumpSeed };
+};
+
+export const getContentNode = async (
+  program: anchor.Program<AudiusData>,
+  adminStoragePublicKey: anchor.web3.PublicKey,
+  spId: string
+) => {
+  const seed = Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    new anchor.BN(spId).toBuffer("le", 2),
+  ]);
+
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+    await findDerivedPair(program.programId, adminStoragePublicKey, seed);
+
+  return {
+    spId: new anchor.BN(spId),
+    baseAuthorityAccount,
+    bumpSeed,
+    derivedAddress,
+  };
 };

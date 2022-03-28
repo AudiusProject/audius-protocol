@@ -146,7 +146,7 @@ class GovernanceClient extends ContractClient {
 
   async getProposals (queryStartBlock = 0) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalSubmitted', {
+    const events = await contract.getPastEvents('ProposalSubmitted', {
       fromBlock: queryStartBlock
     })
     return events.map(this.formatProposalEvent)
@@ -154,7 +154,7 @@ class GovernanceClient extends ContractClient {
 
   async getProposalsForAddresses (addresses, queryStartBlock = 0) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalSubmitted', {
+    const events = await contract.getPastEvents('ProposalSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
         _proposer: addresses
@@ -265,7 +265,7 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalVoteSubmitted', {
+    const events = await contract.getPastEvents('ProposalVoteSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
         _proposalId: proposalId
@@ -279,7 +279,7 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalVoteUpdated', {
+    const events = await contract.getPastEvents('ProposalVoteUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         _proposalId: proposalId
@@ -293,7 +293,7 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalVoteSubmitted', {
+    const events = await contract.getPastEvents('ProposalVoteSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
         _voter: addresses
@@ -307,7 +307,7 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalVoteUpdated', {
+    const events = await contract.getPastEvents('ProposalVoteUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         _voter: addresses

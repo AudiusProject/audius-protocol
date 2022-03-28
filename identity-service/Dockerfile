@@ -17,6 +17,10 @@ COPY . .
 COPY scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
+# Handle unreachable Alpine repo, revert this eventually:
+# https://github.com/gliderlabs/docker-alpine/issues/155
+RUN sed -i -e 's/dl-cdn/dl-4/' /etc/apk/repositories
+
 RUN apk update && \
     apk add rsyslog && \
     apk add python3 && \

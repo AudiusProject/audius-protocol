@@ -12,11 +12,11 @@
     feepayer_pubkey=$(solana-keygen pubkey feepayer.json)
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 10; do
-        solana airdrop 1 feepayer.json # adjust this number if running against a different endpoint
+        solana airdrop 10 feepayer.json # adjust this number if running against a different endpoint
     done
 
     while test $(solana balance | sed 's/\(\.\| \).*//') -lt 10; do
-        solana airdrop 1
+        solana airdrop 10
     done
 
     cd audius_eth_registry
@@ -46,6 +46,7 @@
     sed -i "s/$cur_address/$track_listen_count_address/g" src/lib.rs
 
     cd ../cli
+    cargo build
     # Initialize track listen count entities
     signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
     valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
@@ -110,6 +111,20 @@
 
     echo "Testing create sender"
     cargo run create-sender --eth-operator-address 0xF24936714293a0FaF39A022138aF58D874289132  --eth-sender-address 0xF24936714293a0FaF39A022138aF58D874289133 --reward-manager $reward_manager_account_key
+
+    # Build anchor program
+    cd ../../anchor/audius-data
+    anchor build
+
+    # Replace program ID with solana pubkey generated from anchor build
+    sed -i "s/Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" Anchor.toml
+    sed -i "s/Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" programs/audius-data/src/lib.rs
+
+    # Deploy anchor program
+    anchor deploy --provider.cluster $SOLANA_HOST
+
+    # Initialize Audius Admin account
+    yarn run ts-node cli/main.ts -f initAdmin -k ~/.config/solana/id.json -n $SOLANA_HOST
 
 } >&2
 

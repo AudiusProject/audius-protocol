@@ -49,6 +49,7 @@ class UiTokenAmount(TypedDict):
 class TokenBalance(TypedDict):
     accountIndex: int
     mint: str
+    owner: str
     uiTokenAmount: UiTokenAmount
 
 
@@ -61,7 +62,6 @@ class ResultMeta(TypedDict):
     postBalances: List[int]
     preTokenBalances: List[TokenBalance]
     postTokenBalances: List[TokenBalance]
-    uiTokenAmount: UiTokenAmount
     rewards: List[Any]
     status: Any
 
@@ -71,6 +71,12 @@ class TransactionInfoResult(TypedDict):
     meta: ResultMeta
     slot: int
     transaction: ResultTransction
+
+
+class ConfirmedTransaction(TypedDict):
+    jsonrpc: str
+    result: TransactionInfoResult
+    id: int
 
 
 class ConfirmedSignatureForAddressResult(TypedDict):

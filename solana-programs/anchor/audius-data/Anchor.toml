@@ -1,5 +1,5 @@
 [programs.localnet]
-audius_data = "ARByaHbLDmzBvWdSTUxu25J5MJefDSt3HSRWZBQNiTGi"
+audius_data = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS" # default anchor program ID to be replaced by start.sh
 
 [registry]
 url = "https://anchor.projectserum.com"

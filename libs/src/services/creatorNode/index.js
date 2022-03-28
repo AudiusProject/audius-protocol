@@ -3,7 +3,7 @@ const FormData = require('form-data')
 const retry = require('async-retry')
 
 const { wait } = require('../../utils')
-const uuid = require('../../utils/uuid')
+const { uuid } = require('../../utils/uuid')
 const SchemaValidator = require('../schemaValidator')
 
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
@@ -49,7 +49,7 @@ class CreatorNode {
    * @param {Object?} [params={}] optional query string params
    */
   static async getClockValue (endpoint, wallet, timeout, params = {}) {
-    let baseReq = {
+    const baseReq = {
       url: `/users/clock_status/${wallet}`,
       method: 'get',
       baseURL: endpoint
@@ -233,7 +233,7 @@ class CreatorNode {
   async associateCreator (audiusUserId, metadataFileUUID, blockNumber) {
     this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
-      url: `/audius_users`,
+      url: '/audius_users',
       method: 'post',
       data: {
         blockchainUserId: audiusUserId,
@@ -270,7 +270,7 @@ class CreatorNode {
       }
     }
 
-    let uploadPromises = []
+    const uploadPromises = []
     uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
     if (coverArtFile) uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
 
@@ -350,7 +350,7 @@ class CreatorNode {
    * @return {Object} response body
    */
   async uploadImage (file, square = true, onProgress, timeoutMs = null) {
-    const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { 'square': square }, /* retries */ undefined, timeoutMs)
+    const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { square: square }, /* retries */ undefined, timeoutMs)
     return body
   }
 
@@ -369,7 +369,7 @@ class CreatorNode {
   }
 
   async pollProcessingStatus (uuid) {
-    const route = this.creatorNodeEndpoint + '/track_content_status'
+    const route = this.creatorNodeEndpoint + '/async_processing_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
       try {
@@ -401,7 +401,7 @@ class CreatorNode {
    */
   async getTrackContentProcessingStatus (uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/track_content_status',
+      url: '/async_processing_status',
       params: {
         uuid
       },
@@ -409,21 +409,6 @@ class CreatorNode {
     })
 
     return body
-  }
-
-  /**
-   * Gets all unlisted track for a user.
-   * Will only return tracks for the currently authed user.
-   *
-   * @returns {(Array)} tracks array of tracks
-   */
-  async getUnlistedTracks () {
-    const request = {
-      url: 'tracks/unlisted',
-      method: 'get'
-    }
-    const { data: body } = await this._makeRequest(request)
-    return body.tracks
   }
 
   /**
@@ -452,7 +437,7 @@ class CreatorNode {
         isConfigured: status.latestBlockNumber !== -1
       }
     }
-    throw new Error(`No current user`)
+    throw new Error('No current user')
   }
 
   /**
@@ -512,12 +497,12 @@ class CreatorNode {
       return
     }
 
-    let walletPublicKey = this.web3Manager.getWalletAddress()
+    const walletPublicKey = this.web3Manager.getWalletAddress()
     let clientChallengeKey
     let url
 
     try {
-      let challengeResp = await this._makeRequest({
+      const challengeResp = await this._makeRequest({
         url: '/users/login/challenge',
         method: 'get',
         params: {
@@ -597,7 +582,7 @@ class CreatorNode {
    */
   async _clockValueRequest ({ user, endpoint, timeout = 1000 }) {
     const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
-    let type = primary === endpoint ? 'primary' : 'secondary'
+    const type = primary === endpoint ? 'primary' : 'secondary'
 
     try {
       const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet, timeout)
@@ -730,7 +715,7 @@ class CreatorNode {
    */
   createFormDataAndUploadHeaders (file, extraFormDataOptions = {}) {
     // form data is from browser, not imported npm module
-    let formData = new FormData()
+    const formData = new FormData()
     formData.append('file', file)
     Object.keys(extraFormDataOptions).forEach(key => {
       formData.append(key, extraFormDataOptions[key])
@@ -857,9 +842,11 @@ class CreatorNode {
       try {
         const newRequestId = uuid()
         const endpoint = `${this.creatorNodeEndpoint}/health_check`
-        const res = await axios(endpoint, { headers: {
-          'X-Request-ID': newRequestId
-        } })
+        const res = await axios(endpoint, {
+          headers: {
+            'X-Request-ID': newRequestId
+          }
+        })
         console.log(`Successful health check for ${requestId}: ${JSON.stringify(res.data)}`)
       } catch (e) {
         console.error(`Failed health check immediately after network error ${requestId}`, e)

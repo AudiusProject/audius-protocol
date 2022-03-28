@@ -44,6 +44,7 @@ class AudiusLibs {
    * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
    * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
    * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
+   * @param {number?} unhealthyBlockDiff the number of missed blocks after which we would consider a discovery node unhealthy
    */
   static configDiscoveryProvider (
     whitelist = null,
@@ -53,7 +54,8 @@ class AudiusLibs {
     monitoringCallbacks = {},
     selectionRequestTimeout = null,
     selectionRequestRetries = null,
-    unhealthySlotDiffPlays = null
+    unhealthySlotDiffPlays = null,
+    unhealthyBlockDiff = null
   ) {
     return {
       whitelist,
@@ -63,7 +65,8 @@ class AudiusLibs {
       monitoringCallbacks,
       selectionRequestTimeout,
       selectionRequestRetries,
-      unhealthySlotDiffPlays
+      unhealthySlotDiffPlays,
+      unhealthyBlockDiff
     }
   }
 
@@ -128,6 +131,7 @@ class AudiusLibs {
       }
     }
   }
+
   /**
    * Configures an internal web3 to use (via Hedgehog)
    * @param {string} registryAddress
@@ -314,6 +318,7 @@ class AudiusLibs {
     this.isDebug = isDebug
 
     this.AudiusABIDecoder = AudiusABIDecoder
+    this.Utils = Utils
 
     // Services to initialize. Initialized in .init().
     this.userStateManager = null
@@ -379,6 +384,9 @@ class AudiusLibs {
         this.isServer
       )
       await this.web3Manager.init()
+      if (this.identityService) {
+        this.identityService.setWeb3Manager(this.web3Manager)
+      }
     }
     if (this.solanaWeb3Config) {
       this.solanaWeb3Manager = new SolanaWeb3Manager(
@@ -390,7 +398,7 @@ class AudiusLibs {
     }
 
     /** Contracts - Eth and Data Contracts */
-    let contractsToInit = []
+    const contractsToInit = []
     if (this.ethWeb3Manager) {
       this.ethContracts = new EthContracts(
         this.ethWeb3Manager,
@@ -423,7 +431,8 @@ class AudiusLibs {
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
-        this.wormholeConfig.ethTokenBridgeAddress
+        this.wormholeConfig.ethTokenBridgeAddress,
+        this.isServer
       )
     }
 
@@ -440,7 +449,8 @@ class AudiusLibs {
         this.discoveryProviderConfig.monitoringCallbacks,
         this.discoveryProviderConfig.selectionRequestTimeout,
         this.discoveryProviderConfig.selectionRequestRetries,
-        this.discoveryProviderConfig.unhealthySlotDiffPlays
+        this.discoveryProviderConfig.unhealthySlotDiffPlays,
+        this.discoveryProviderConfig.unhealthyBlockDiff
       )
       await this.discoveryProvider.init()
     }
@@ -448,7 +458,7 @@ class AudiusLibs {
     /** Creator Node */
     if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
-      let creatorNodeEndpoint = currentUser
+      const creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) || this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 
@@ -503,6 +513,10 @@ class AudiusLibs {
   }
 }
 
+// This is needed to ensure default and named exports are handled correctly by rollup
+// https://github.com/rollup/plugins/tree/master/packages/commonjs#defaultismoduleexports
+exports.__esModule = true
+
 module.exports = AudiusLibs
 
 module.exports.AudiusABIDecoder = AudiusABIDecoder
@@ -510,3 +524,4 @@ module.exports.Utils = Utils
 module.exports.SolanaUtils = SolanaUtils
 module.exports.SanityChecks = SanityChecks
 module.exports.RewardsAttester = RewardsAttester
+module.exports.CreatorNode = CreatorNode

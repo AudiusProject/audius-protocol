@@ -13,7 +13,10 @@ from src.utils.cache_solana_program import (
     get_latest_sol_db_tx,
 )
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_constants import latest_sol_rewards_manager_db_tx_key
+from src.utils.redis_constants import (
+    latest_sol_rewards_manager_db_tx_key,
+    latest_sol_rewards_manager_program_tx_key,
+)
 
 
 # Get last sol rewards manager transaction in the db
@@ -56,7 +59,7 @@ def get_latest_cached_sol_rewards_manager_db(
 def get_latest_cached_sol_rewards_manager_program_tx(redis) -> CachedProgramTxInfo:
     # Latest rewards_manager tx from chain
     latest_sol_rewards_manager_program_tx = get_latest_sol_db_tx(
-        redis, latest_sol_rewards_manager_db_tx_key
+        redis, latest_sol_rewards_manager_program_tx_key
     )
     return latest_sol_rewards_manager_program_tx
 

@@ -75,7 +75,7 @@ module.exports = function (app) {
 
   /**
    * Given track metadata object, upload and share metadata to IPFS. Return metadata multihash if successful.
-   * Error if associated track segments have not already been created and stored.
+   * If metadata is for a downloadable track, ensures transcoded master record exists in DB
    */
   app.post(
     '/tracks/metadata',
@@ -180,6 +180,9 @@ module.exports = function (app) {
         await transaction.rollback()
         return errorResponseServerError(`Could not save to db db: ${e}`)
       }
+
+      // This call is not await-ed to avoid delaying or erroring
+      issueAndWaitForSecondarySyncRequests(req)
 
       return successResponse({
         metadataMultihash: multihash,
@@ -300,39 +303,41 @@ module.exports = function (app) {
 
         // if track created, ensure files exist with trackBlockchainId = null and update them
         if (!existingTrackEntry) {
+          if (!transcodedTrackUUID) {
+            throw new Error('Cannot create track without transcodedTrackUUID.')
+          }
+
           // Associate the transcode file db record with trackUUID
-          if (transcodedTrackUUID) {
-            const transcodedFile = await models.File.findOne({
+          const transcodedFile = await models.File.findOne({
+            where: {
+              fileUUID: transcodedTrackUUID,
+              cnodeUserUUID,
+              trackBlockchainId: null,
+              type: 'copy320'
+            },
+            transaction
+          })
+          if (!transcodedFile || !transcodedFile.sourceFile) {
+            throw new Error(
+              'Did not find a transcoded file for the provided CID.'
+            )
+          }
+          const transcodeAssociateNumAffectedRows = await models.File.update(
+            { trackBlockchainId: track.blockchainId },
+            {
               where: {
                 fileUUID: transcodedTrackUUID,
                 cnodeUserUUID,
                 trackBlockchainId: null,
-                type: 'copy320'
+                type: 'copy320' // TODO - replace with model enum
               },
               transaction
-            })
-            if (!transcodedFile) {
-              throw new Error(
-                'Did not find a transcoded file for the provided CID.'
-              )
             }
-            const numAffectedRows = await models.File.update(
-              { trackBlockchainId: track.blockchainId },
-              {
-                where: {
-                  fileUUID: transcodedTrackUUID,
-                  cnodeUserUUID,
-                  trackBlockchainId: null,
-                  type: 'copy320' // TODO - replace with model enum
-                },
-                transaction
-              }
+          )
+          if (transcodeAssociateNumAffectedRows === 0) {
+            throw new Error(
+              'Failed to associate the transcoded file for the provided track UUID.'
             )
-            if (numAffectedRows === 0) {
-              throw new Error(
-                'Failed to associate the transcoded file for the provided track UUID.'
-              )
-            }
           }
 
           // Associate all segment file db records with trackUUID
@@ -341,40 +346,48 @@ module.exports = function (app) {
               multihash: trackSegmentCIDs,
               cnodeUserUUID,
               trackBlockchainId: null,
-              type: 'track'
+              type: 'track',
+              sourceFile: transcodedFile.sourceFile
             },
             transaction
           })
 
-          if (trackFiles.length < trackSegmentCIDs.length) {
+          if (trackFiles.length !== trackSegmentCIDs.length) {
             req.logger.error(
               `Did not find files for every track segment CID for user ${cnodeUserUUID} ${trackFiles} ${trackSegmentCIDs}`
             )
             throw new Error('Did not find files for every track segment CID.')
           }
-          const numAffectedRows = await models.File.update(
+          const segmentsAssociateNumAffectedRows = await models.File.update(
             { trackBlockchainId: track.blockchainId },
             {
               where: {
                 multihash: trackSegmentCIDs,
                 cnodeUserUUID,
                 trackBlockchainId: null,
-                type: 'track'
+                type: 'track',
+                sourceFile: transcodedFile.sourceFile
               },
               transaction
             }
           )
-          if (parseInt(numAffectedRows, 10) < trackSegmentCIDs.length) {
+          if (
+            parseInt(segmentsAssociateNumAffectedRows, 10) !==
+            trackSegmentCIDs.length
+          ) {
             req.logger.error(
-              `Failed to associate files for every track segment CID ${cnodeUserUUID} ${track.blockchainId} ${numAffectedRows} ${trackSegmentCIDs.length}`
+              `Failed to associate files for every track segment CID ${cnodeUserUUID} ${track.blockchainId} ${segmentsAssociateNumAffectedRows} ${trackSegmentCIDs.length}`
             )
             throw new Error(
               'Failed to associate files for every track segment CID.'
             )
           }
-        } else {
-          /** If track updated, ensure files exist with trackBlockchainId. */
-          // Ensure transcode file db record exists if uuid provided
+        } /** updateTrack scenario */ else {
+          /**
+           * If track updated, ensure files exist with trackBlockchainId
+           */
+
+          // Ensure transcode file db record exists, if uuid provided
           if (transcodedTrackUUID) {
             const transcodedFile = await models.File.findOne({
               where: {
@@ -713,37 +726,5 @@ module.exports = function (app) {
       next()
     },
     getCID
-  )
-
-  /**
-   * List all unlisted tracks for a user
-   */
-  app.get(
-    '/tracks/unlisted',
-    authMiddleware,
-    handleResponse(async (req, res) => {
-      const tracks = (
-        await models.sequelize.query(
-          `select "metadataJSON"->'title' as "title", "blockchainId" from (
-        select "metadataJSON", "blockchainId", row_number() over (
-          partition by "blockchainId" order by "clock" desc
-        ) from "Tracks"
-        where "cnodeUserUUID" = :cnodeUserUUID
-        and ("metadataJSON"->>'is_unlisted')::boolean = true
-      ) as a
-      where a.row_number = 1;`,
-          {
-            replacements: { cnodeUserUUID: req.session.cnodeUserUUID }
-          }
-        )
-      )[0]
-
-      return successResponse({
-        tracks: tracks.map((track) => ({
-          title: track.title,
-          id: track.blockchainId
-        }))
-      })
-    })
   )
 }

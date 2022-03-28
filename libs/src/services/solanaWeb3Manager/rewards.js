@@ -263,7 +263,8 @@ async function submitAttestations ({
     errorMapping: RewardsManagerError,
     logger,
     skipPreflight: false,
-    feePayerOverride: feePayer
+    feePayerOverride: feePayer,
+    sendBlockhash: false
   })))
   logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results)}`)
 
@@ -338,7 +339,7 @@ async function createSender ({
   })
 
   const instructions = [...signerInstructions, createSenderInstruction]
-  return transactionHandler.handleTransaction({ instructions, errorMapping: RewardsManagerError })
+  return transactionHandler.handleTransaction({ instructions, errorMapping: RewardsManagerError, feePayerOverride: feePayer })
 }
 
 /**
@@ -516,7 +517,8 @@ const evaluateAttestations = async ({
     errorMapping: RewardsManagerError,
     logger,
     skipPreflight: false,
-    feePayerOverride: feePayer
+    feePayerOverride: feePayer,
+    sendBlockhash: false
   })
 }
 
@@ -775,7 +777,7 @@ const generateCreateSenderInstruction = async ({
   /// 2. `[signer]` Funder
   /// 3. `[writable]` new_sender
   /// 4. `[]` Bunch of senders which prove creating another one
-  let createSenderInstructionAccounts = [
+  const createSenderInstructionAccounts = [
     {
       pubkey: rewardManagerAccount,
       isSigner: false,
@@ -934,5 +936,6 @@ const deriveMessageAccount = async (
 module.exports = {
   submitAttestations,
   evaluateAttestations,
-  createSender
+  createSender,
+  deriveSolanaSenderFromEthAddress
 }

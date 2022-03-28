@@ -8,7 +8,10 @@ from typing import Optional, Union
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
-from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResponse
+from src.solana.solana_transaction_types import (
+    ConfirmedSignatureForAddressResponse,
+    ConfirmedTransaction,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +47,9 @@ class SolanaClientManager:
                     logger.info(
                         f"solana_client_manager.py | get_sol_tx_info | Fetching tx {tx_sig} {endpoint}"
                     )
-                    tx_info = client.get_confirmed_transaction(tx_sig)
+                    tx_info: ConfirmedTransaction = client.get_confirmed_transaction(
+                        tx_sig
+                    )
                     logger.info(
                         f"solana_client_manager.py | get_sol_tx_info | Finished fetching tx {tx_sig} {endpoint}"
                     )

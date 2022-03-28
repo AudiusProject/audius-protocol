@@ -1,5 +1,9 @@
 FROM ubuntu:20.04
 
+ENV NODE_VERSION="v14.18.1"
+ENV HOME="/root"
+ENV PATH="${HOME}/.nvm/versions/node/${NODE_VERSION}/bin:${PATH}"
+
 WORKDIR /usr/src/app
 
 RUN ln -snf /usr/share/zoneinfo/UTC /etc/localtime && \
@@ -13,11 +17,24 @@ RUN apt-get update && \
 
 ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"
 
+# Install node / npm / yarn.
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+ENV NVM_DIR="${HOME}/.nvm"
+RUN . $NVM_DIR/nvm.sh && \
+    nvm install ${NODE_VERSION} && \
+    nvm use ${NODE_VERSION} && \
+    nvm alias default node && \
+    npm install -g yarn
+
+# Install anchor.
+RUN cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
+
 COPY audius_eth_registry audius_eth_registry
 COPY track_listen_count track_listen_count
 COPY cli cli
 COPY claimable-tokens claimable-tokens
 COPY reward-manager reward-manager
+COPY anchor anchor
 
 RUN cd audius_eth_registry && \
     cargo build-bpf && \
@@ -32,7 +49,9 @@ RUN cd audius_eth_registry && \
     cd ../../reward-manager/program && \
     cargo build-bpf && \
     cd ../cli && \
-    cargo build
+    cargo build && \
+    cd ../../anchor/audius-data && \
+    anchor build 
 
 COPY start.sh ./
 
