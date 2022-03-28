@@ -54,7 +54,7 @@ ARG BUILD_ID
 LABEL prune=true
 LABEL build=$BUILD_ID
 COPY anchor anchor
-RUN cd ../../anchor/audius-data && \
+RUN cd anchor/audius-data && \
     anchor build 
 
 COPY start.sh ./
