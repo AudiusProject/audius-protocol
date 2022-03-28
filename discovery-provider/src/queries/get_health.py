@@ -372,7 +372,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
 
 def health_check_prometheus_exporter():
-    health_results, is_unhealthy = get_health()
+    health_results, is_unhealthy = get_health({})
 
     PrometheusMetric(
         "health_check_is_healthy_current",
