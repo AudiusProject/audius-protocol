@@ -285,12 +285,11 @@ describe("replicaSet", function () {
       Buffer.from("sp_id", "utf8"),
       spID.toBuffer("le", 2),
     ]);
-    const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-      await findDerivedPair(
-        program.programId,
-        adminStorageKeypair.publicKey,
-        seed
-      );
+    const { baseAuthorityAccount } = await findDerivedPair(
+      program.programId,
+      adminStorageKeypair.publicKey,
+      seed
+    );
     const updatedAuthority = anchor.web3.Keypair.generate();
 
     await publicCreateOrUpdateContentNode({

@@ -2,11 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { expect, assert } from "chai";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import {
-  findDerivedPair,
-  getTransactionWithData,
-  SystemSysVarProgramKey,
-} from "../lib/utils";
+import { findDerivedPair, getTransactionWithData } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   createSolanaContentNode,
@@ -15,7 +11,7 @@ import {
   testCreateUserDelegate,
 } from "./test-helpers";
 
-const { PublicKey, SystemProgram } = anchor.web3;
+const { SystemProgram } = anchor.web3;
 
 const UserActionEnumValues = {
   unfollowUser: { unfollowUser: {} },
@@ -229,7 +225,9 @@ describe("follows", function () {
       expect(decodedData.followeeHandle.seed).to.deep.equal(
         constants2.handleBytesArray
       );
-      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
+      expect(accountPubKeys[0]).to.equal(
+        adminStorageKeypair.publicKey.toString()
+      );
       expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
     });
 
@@ -279,7 +277,9 @@ describe("follows", function () {
       expect(decodedData.followeeHandle.seed).to.deep.equal(
         constants2.handleBytesArray
       );
-      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
+      expect(accountPubKeys[0]).to.equal(
+        adminStorageKeypair.publicKey.toString()
+      );
       expect(accountPubKeys[5]).to.equal(
         delegate.userAuthorityDelegateKeypair.publicKey.toString()
       );
@@ -323,7 +323,9 @@ describe("follows", function () {
       expect(decodedData.followeeHandle.seed).to.deep.equal(
         constants2.handleBytesArray
       );
-      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
+      expect(accountPubKeys[0]).to.equal(
+        adminStorageKeypair.publicKey.toString()
+      );
       expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
     });
 

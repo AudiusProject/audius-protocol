@@ -12,10 +12,8 @@ import {
 import {
   getTransactionWithData,
   findDerivedPair,
-  findProgramAddress,
   randomCID,
   randomId,
-  randomString,
 } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -157,8 +155,7 @@ describe("audius-data", function () {
   });
 
   it("Initializing + claiming user!", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } =
-      initTestConstants();
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -258,8 +255,7 @@ describe("audius-data", function () {
   });
 
   it("Initializing + claiming + updating user!", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } =
-      initTestConstants();
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -1044,7 +1040,6 @@ describe("audius-data", function () {
     // create track with delegate
     const trackMetadata = randomCID();
     const trackID = randomId();
-
 
     await expect(
       testCreateTrack({

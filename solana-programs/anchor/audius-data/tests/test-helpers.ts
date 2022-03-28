@@ -481,7 +481,8 @@ export const testCreateUserDelegate = async ({
   cn2,
   cn3,
 }) => {
-  const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+  const { ethAccount, handleBytesArray, metadata, userId } =
+    initTestConstants();
   const {
     baseAuthorityAccount,
     bumpSeed: userBumpSeed,
@@ -506,7 +507,7 @@ export const testCreateUserDelegate = async ({
   // Generate signed SECP instruction
   // Message as the incoming public key
   const message = newUserKeypair.publicKey.toBytes();
-  
+
   await testCreateUser({
     provider,
     program,

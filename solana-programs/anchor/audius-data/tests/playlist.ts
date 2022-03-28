@@ -3,12 +3,7 @@ import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import {
-  findDerivedPair,
-  randomCID,
-  randomId,
-  randomString,
-} from "../lib/utils";
+import { findDerivedPair, randomCID, randomId } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreatePlaylist,

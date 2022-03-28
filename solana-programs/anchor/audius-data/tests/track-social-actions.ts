@@ -12,13 +12,13 @@ import {
   EntityTypesEnumValues,
   deleteTrackRepost,
 } from "../lib/lib";
-import {
-  getTransaction,
-  randomString,
-  SystemSysVarProgramKey,
-} from "../lib/utils";
+import { getTransaction, randomString } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
-import { createSolanaContentNode, createSolanaUser, testCreateUserDelegate } from "./test-helpers";
+import {
+  createSolanaContentNode,
+  createSolanaUser,
+  testCreateUserDelegate,
+} from "./test-helpers";
 const { SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
