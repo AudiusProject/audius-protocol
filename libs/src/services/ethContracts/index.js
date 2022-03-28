@@ -202,7 +202,7 @@ class EthContracts {
   async getRegistryAddressForContract (contractName) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
     this.contracts = this.contracts || { [this.registryAddress]: 'registry' }
-    this.contractAddresses = this.contractAddresses || { 'registry': this.registryAddress }
+    this.contractAddresses = this.contractAddresses || { registry: this.registryAddress }
     if (!this.contractAddresses[contractName]) {
       const address = await this.RegistryClient.getContract(contractName)
       this.contracts[address] = contractName

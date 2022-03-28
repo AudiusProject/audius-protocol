@@ -1,10 +1,10 @@
 const apiSigning = require('./apiSigning.js')
 const Captcha = require('./captcha.js')
 const estimateGas = require('./estimateGas.js')
-const MultiProvider = require('./multiProvider.js')
-const promiseFight = require('./promiseFight.js')
+const { MultiProvider } = require('./multiProvider')
+const { promiseFight } = require('./promiseFight')
 const signatures = require('./signatures.js')
-const uuid = require('./uuid.js')
+const { uuid } = require('./uuid')
 const utils = require('./utils.js')
 
 module.exports = utils

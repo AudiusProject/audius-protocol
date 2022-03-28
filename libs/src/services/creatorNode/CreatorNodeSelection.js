@@ -8,7 +8,7 @@ const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants'
  * In memory dictionary used to query spID from endpoint
  * Eliminates duplicate web3 calls within same session
  */
-let contentNodeEndpointToSpID = { }
+const contentNodeEndpointToSpID = { }
 function getSpIDForEndpoint (endpoint) {
   return contentNodeEndpointToSpID[endpoint]
 }
@@ -274,7 +274,7 @@ class CreatorNodeSelection extends ServiceSelection {
           this.currentVersion,
           resp.response.data.data.version
         )
-        let { storagePathSize, storagePathUsed, maxStorageUsedPercent } = resp.response.data.data
+        const { storagePathSize, storagePathUsed, maxStorageUsedPercent } = resp.response.data.data
         if (maxStorageUsedPercent) {
           this.maxStorageUsedPercent = maxStorageUsedPercent
         } else {
@@ -291,7 +291,7 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // Create a mapping of healthy services and their responses. Used on dapp to display the healthy services for selection
     // Also update services to be healthy services
-    let servicesMap = {}
+    const servicesMap = {}
     const healthyServicesList = healthyServices.map(service => {
       servicesMap[service.request.id] = service.response.data
       return service.request.id
