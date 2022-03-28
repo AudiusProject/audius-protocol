@@ -12,6 +12,7 @@ const PeerSetManager = require('./peerSetManager')
 const { CreatorNode } = require('@audius/libs')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
+const { MAX_BATCH_CLOCK_STATUS_BATCH_SIZE } = require('../utils/constants')
 
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
@@ -24,8 +25,6 @@ const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
 
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
-
-const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = 5000
 
 const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 

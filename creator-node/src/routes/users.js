@@ -19,6 +19,7 @@ const {
 } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
+const { MAX_BATCH_CLOCK_STATUS_BATCH_SIZE } = require('../utils/constants')
 const DBManager = require('../dbManager.js')
 
 const CHALLENGE_VALUE_LENGTH = 20
@@ -269,6 +270,14 @@ module.exports = function (app) {
     handleResponse(async (req, res) => {
       const { walletPublicKeys } = req.body
       const walletPublicKeysSet = new Set(walletPublicKeys)
+
+      // Enforce max # of wallets to prevent high db query time
+      if (walletPublicKeysSet.size > MAX_BATCH_CLOCK_STATUS_BATCH_SIZE) {
+        return errorResponseBadRequest(
+          `Number of wallets must not exceed ${MAX_BATCH_CLOCK_STATUS_BATCH_SIZE}
+           (reduce 'walletPublicKeys' field in request body).`
+        )
+      }
 
       const returnFilesHash = !!req.query.returnFilesHash // default false
 

@@ -16,6 +16,7 @@ const models = require('../src/models')
 const DiskManager = require('../src/diskManager')
 const FileManager = require('../src/fileManager')
 const DBManager = require('../src/dbManager.js')
+const { MAX_BATCH_CLOCK_STATUS_BATCH_SIZE } = require('../src/utils/constants')
 
 const { getApp } = require('./lib/app')
 const {
@@ -513,6 +514,16 @@ describe('test Polling Tracks with mocked IPFS', function () {
         { walletPublicKey: pubKey2, clock: numExpectedFilesForUser }
       ]
     })
+
+    // Requests with too many wallet keys should be rejected
+    const largeWalletPublicKeys = Array.from(
+      { length: MAX_BATCH_CLOCK_STATUS_BATCH_SIZE + 1 },
+      (_, i) => i + 'a'
+    )
+    resp = await request(app)
+      .post(`/users/batch_clock_status`)
+      .send({ walletPublicKeys: largeWalletPublicKeys })
+      .expect(400)
 
     /** Non-existent user */
     const invalidWallet = 'asdf'
