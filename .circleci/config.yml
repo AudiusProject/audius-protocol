@@ -706,8 +706,8 @@ jobs:
       - run:
           name: Get tag or latest
           command: |
-            apk update
-            apk add libseccomp-dev
+            sudo apt update
+            sudo apt install libseccomp-dev
       - run:
           name: Docker login
           command: |

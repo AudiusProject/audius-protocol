@@ -1,7 +1,7 @@
 # requires authentication to Dockerhub
 FROM audius/contracts:1.0.0 as contracts
 
-FROM alpine:3.14
+FROM alpine:3.15
 LABEL maintainer="Hareesh Nagaraj <hareesh@audius.co>"
 
 ENV INSTALL_PATH /audius-discovery-provider
@@ -29,8 +29,6 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add rsyslog && \
     apk add docker && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
-
-RUN apk add libseccomp-dev
 
 COPY requirements.txt requirements.txt
 
