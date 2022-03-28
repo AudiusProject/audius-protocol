@@ -101,7 +101,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     width: '100%'
   },
   tabFullWidth: {
-    flex: 1,
+    flexGrow: 1,
     textAlign: 'center'
   }
 }))
