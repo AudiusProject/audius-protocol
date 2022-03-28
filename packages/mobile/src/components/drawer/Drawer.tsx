@@ -322,7 +322,7 @@ export const Drawer: DrawerComponent = ({
 }: DrawerProps) => {
   const styles = useThemedStyles(createStyles(zIndex, shouldAnimateShadow))
 
-  const [drawerHeight, setDrawerHeight] = useState(FULL_DRAWER_HEIGHT)
+  const [drawerHeight, setDrawerHeight] = useState(0)
   // isBackgroundVisible will be true until the close animation finishes
   const [isBackgroundVisible, setIsBackgroundVisible] = useState(false)
 
