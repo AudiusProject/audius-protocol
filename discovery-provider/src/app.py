@@ -367,7 +367,6 @@ def configure_celery(celery, test_config=None):
         imports=[
             "src.tasks.index",
             "src.tasks.index_blacklist",
-            "src.tasks.index_plays",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
             "src.tasks.aggregates.index_aggregate_plays",
@@ -403,10 +402,6 @@ def configure_celery(celery, test_config=None):
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
                 "schedule": timedelta(seconds=ipld_interval),
-            },
-            "update_play_count": {
-                "task": "update_play_count",
-                "schedule": timedelta(seconds=60),
             },
             "update_metrics": {
                 "task": "update_metrics",
