@@ -21,7 +21,7 @@ from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
@@ -377,19 +377,19 @@ def health_check_prometheus_exporter():
     PrometheusMetric(
         "health_check_is_healthy_current",
         "Difference between the latest block and the latest indexed block",
-        gauge=True,
+        metric_type=PrometheusType.GAUGE,
     ).save(0 if is_unhealthy else 1)
 
     PrometheusMetric(
         "health_check_block_difference_current",
         "Difference between the latest block and the latest indexed block",
-        gauge=True,
+        metric_type=PrometheusType.GAUGE,
     ).save(health_results["block_difference"])
 
     PrometheusMetric(
         "health_check_latest_indexed_block_num_current",
         "Latest indexed block number",
-        gauge=True,
+        metric_type=PrometheusType.GAUGE,
     ).save(health_results["web"]["blocknumber"])
 
 

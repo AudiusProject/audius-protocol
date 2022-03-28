@@ -4,12 +4,28 @@ from typing import Callable, Dict
 from prometheus_client import Gauge, Histogram
 
 
+class PrometheusType:
+    HISTOGRAM = "histogram"
+    GAUGE = "gauge"
+
+
 class PrometheusMetric:
     histograms: Dict[str, Histogram] = {}
     gauges: Dict[str, Gauge] = {}
     registered_collectors: Dict[str, Callable] = {}
 
-    def __init__(self, name, description, labelnames=(), gauge=False):
+    def __init_metric(
+        self, name, description, labelnames, collection, prometheus_metric_cls
+    ):
+        if name not in collection:
+            collection[name] = prometheus_metric_cls(
+                name, description, labelnames=labelnames
+            )
+        self.metric = collection[name]
+
+    def __init__(
+        self, name, description, labelnames=(), metric_type=PrometheusType.HISTOGRAM
+    ):
         self.reset_timer()
 
         # set metric prefix of audius_project_
@@ -18,18 +34,16 @@ class PrometheusMetric:
         # CollectorRegistries must be uniquely named
         # NOTE: we only set labelnames once.
         # unsure if overloading is supported.
-        if gauge:
-            if name not in PrometheusMetric.gauges:
-                PrometheusMetric.gauges[name] = Gauge(
-                    name, description, labelnames=labelnames
-                )
-            self.metric = PrometheusMetric.gauges[name]
+        if metric_type == PrometheusType.HISTOGRAM:
+            self.__init_metric(
+                name, description, labelnames, PrometheusMetric.histograms, Histogram
+            )
+        elif metric_type == PrometheusType.GAUGE:
+            self.__init_metric(
+                name, description, labelnames, PrometheusMetric.gauges, Gauge
+            )
         else:
-            if name not in PrometheusMetric.histograms:
-                PrometheusMetric.histograms[name] = Histogram(
-                    name, description, labelnames=labelnames
-                )
-            self.metric = PrometheusMetric.histograms[name]
+            raise TypeError(f"metric_type '{metric_type}' not found")
 
     def reset_timer(self):
         self.start_time = time()
