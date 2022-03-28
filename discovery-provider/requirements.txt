@@ -28,7 +28,7 @@ pytest-dotenv==0.5.2
 flask-cors==3.0.6
 gunicorn==20.0.4
 jsonschema==4.4.0
-flask-restx==0.2.0
+flask-restx==0.5.1
 hashids==1.2.0
 fakeredis==1.4.2
 jsonformatter==0.3.0
