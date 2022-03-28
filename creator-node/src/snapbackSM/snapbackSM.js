@@ -3,6 +3,7 @@ const axios = require('axios')
 const _ = require('lodash')
 const retry = require('async-retry')
 
+const config = require('./../config')
 const utils = require('../utils')
 const models = require('../models')
 const { logger } = require('../logging')
@@ -12,7 +13,6 @@ const PeerSetManager = require('./peerSetManager')
 const { CreatorNode } = require('@audius/libs')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
-const { MAX_BATCH_CLOCK_STATUS_BATCH_SIZE } = require('../utils/constants')
 
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
@@ -705,14 +705,11 @@ class SnapbackSM {
         const walletsOnReplica = replicasToWalletsMap[replica]
 
         // Make requests in batches, sequentially, to ensure POST request body does not exceed max size
-        for (
-          let i = 0;
-          i < walletsOnReplica.length;
-          i += MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
-        ) {
+        const maxBatchSize = config.get('maxBatchClockStatusBatchSize')
+        for (let i = 0; i < walletsOnReplica.length; i += maxBatchSize) {
           const walletsOnReplicaSlice = walletsOnReplica.slice(
             i,
-            i + MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
+            i + maxBatchSize
           )
 
           const axiosReqParams = {
