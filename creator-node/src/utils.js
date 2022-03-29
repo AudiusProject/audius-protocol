@@ -5,6 +5,7 @@ const { BufferListStream } = require('bl')
 const axios = require('axios')
 const spawn = require('child_process').spawn
 const stream = require('stream')
+const retry = require('async-retry')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
 
@@ -675,6 +676,45 @@ function canCurrentNodeHandleTranscode({
   )
 }
 
+/**
+ * Wrapper around async-retry API.
+ * @param {Object} param
+ * @param {func} param.asyncFn the fn to asynchronously retry
+ * @param {Object} param.asyncFnParams the params to pass into the fn. takes in 1 object
+ * @param {number} [retries=5] the max number of retries. defaulted to 5
+ * @param {number} [minTimeout=1000] minimum time to wait after first retry. defaulted to 1000ms
+ * @param {number} [maxTimeout=5000] maximum time to wait after first retry. defaulted to 5000ms
+ * @returns the fn response if success, or throws an error
+ */
+function asyncRetry({
+  asyncFn,
+  asyncFnParams,
+  asyncFnTask,
+  retries = 5,
+  minTimeout = 1000, // default for async-retry
+  maxTimeout = 5000
+}) {
+  return retry(
+    async () => {
+      if (asyncFnParams) {
+        return asyncFn(asyncFnParams)
+      }
+
+      return asyncFn()
+    },
+    {
+      retries,
+      minTimeout,
+      maxTimeout,
+      onRetry: (err, i) => {
+        if (err) {
+          console.log(`${asyncFnTask} ${i} retry error: `, err)
+        }
+      }
+    }
+  )
+}
+
 module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
@@ -691,3 +731,4 @@ module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
 module.exports.canCurrentNodeHandleTranscode = canCurrentNodeHandleTranscode
+module.exports.asyncRetry = asyncRetry

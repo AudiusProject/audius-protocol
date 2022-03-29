@@ -2,7 +2,6 @@ const axios = require('axios')
 const fs = require('fs')
 const fsExtra = require('fs-extra')
 const FormData = require('form-data')
-const retry = require('async-retry')
 
 const config = require('../../config.js')
 const Utils = require('../../utils')
@@ -13,18 +12,26 @@ const {
 
 const CREATOR_NODE_ENDPOINT = config.get('creatorNodeEndpoint')
 const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
+
 const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
+const HAND_OFF_STATES = Object.freeze({
+  INITIALIZED: 'INITIALIZED',
+  SELECTING_RANDOM_SPS: 'SELECTING_RANDOM_SPS',
+  HANDING_OFF_TO_SP: 'HANDING_OFF_TO_SP',
+  POLLING_FOR_TRANSCODE: 'POLLING_FOR_TRANSCODE',
+  FETCHING_FILES_AND_WRITING_TO_FS: 'FETCHING_FILES_AND_WRITING_TO_FS'
+})
 
 class TranscodeDelegationManager {
   static async handOff({ logContext }, req) {
-    const decisionTree = { state: null }
+    const decisionTree = { state: HAND_OFF_STATES.INITIALIZED }
     const libs = req.libs
     const logger = genericLogger.child(logContext)
     let resp = {}
 
     let sps
     try {
-      decisionTree.state = 'SELECTING_RANDOM_SPS'
+      decisionTree.state = HAND_OFF_STATES.SELECTING_RANDOM_SPS
       sps = await TranscodeDelegationManager.selectRandomSPs(libs)
     } catch (e) {
       logger.warn(`Could not select random SPs: ${e.message}`)
@@ -35,19 +42,19 @@ class TranscodeDelegationManager {
       decisionTree.sp = sp
       try {
         logger.info(`Handing track off to sp=${sp}`)
-        decisionTree.state = 'HANDING_OFF_TO_SP'
+        decisionTree.state = HAND_OFF_STATES.HANDING_OFF_TO_SP
 
         const transcodeAndSegmentUUID =
           await TranscodeDelegationManager.sendTrackToSp(logger, { sp, req })
 
-        decisionTree.state = 'POLLING_FOR_TRANSCODE'
+        decisionTree.state = HAND_OFF_STATES.POLLING_FOR_TRANSCODE
         const polledTranscodeResponse =
           await TranscodeDelegationManager.pollForTranscode(logger, {
             sp,
             uuid: transcodeAndSegmentUUID
           })
 
-        decisionTree.state = 'FETCHING_FILES_AND_WRITING_TO_FS'
+        decisionTree.state = HAND_OFF_STATES.FETCHING_FILES_AND_WRITING_TO_FS
         const localFilePaths =
           await TranscodeDelegationManager.fetchFilesAndWriteToFs(logger, {
             ...polledTranscodeResponse,
@@ -136,7 +143,7 @@ class TranscodeDelegationManager {
       `Polling for transcode and segments with uuid=${uuid}...`
     )
 
-    return this.asyncRetry({
+    return Utils.asyncRetry({
       asyncFn: async (bail, num) => {
         if (num === 50) {
           bail(
@@ -250,7 +257,7 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    const resp = await this.asyncRetry({
+    const resp = await Utils.asyncRetry({
       asyncFn: axios,
       asyncFnParams: {
         url: `${sp}/transcode_and_segment`,
@@ -308,7 +315,7 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    const { data: body } = await this.asyncRetry({
+    const { data: body } = await Utils.asyncRetry({
       asyncFn: axios,
       asyncFnParams: {
         url: `${sp}/async_processing_status`,
@@ -326,7 +333,7 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return this.asyncRetry({
+    return Utils.asyncRetry({
       asyncFn: axios,
       asyncFnParams: {
         url: `${sp}/transcode_and_segment`,
@@ -350,7 +357,7 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return this.asyncRetry({
+    return Utils.asyncRetry({
       asyncFn: axios,
       asyncFnParams: {
         url: `${sp}/transcode_and_segment`,
@@ -374,7 +381,7 @@ class TranscodeDelegationManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return this.asyncRetry({
+    return Utils.asyncRetry({
       asyncFn: axios,
       asyncFnParams: {
         url: `${sp}/transcode_and_segment`,
@@ -391,45 +398,6 @@ class TranscodeDelegationManager {
       },
       asyncFnTask: 'fetch m3u8'
     })
-  }
-
-  /**
-   * Wrapper around async-retry API.
-   * @param {Object} param
-   * @param {func} param.asyncFn the fn to asynchronously retry
-   * @param {Object} param.asyncFnParams the params to pass into the fn. takes in 1 object
-   * @param {number} [retries=5] the max number of retries. defaulted to 5
-   * @param {number} [minTimeout=1000] minimum time to wait after first retry. defaulted to 1000ms
-   * @param {number} [maxTimeout=5000] maximum time to wait after first retry. defaulted to 5000ms
-   * @returns the fn response if success, or throws an error
-   */
-  static async asyncRetry({
-    asyncFn,
-    asyncFnParams,
-    asyncFnTask,
-    retries = 5,
-    minTimeout = 1000, // default for async-retry
-    maxTimeout = 5000
-  }) {
-    return retry(
-      async () => {
-        if (asyncFnParams) {
-          return asyncFn(asyncFnParams)
-        }
-
-        return asyncFn()
-      },
-      {
-        retries,
-        minTimeout,
-        maxTimeout,
-        onRetry: (err, i) => {
-          if (err) {
-            console.log(`${asyncFnTask} ${i} retry error: `, err)
-          }
-        }
-      }
-    )
   }
 }
 
