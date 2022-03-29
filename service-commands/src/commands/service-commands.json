@@ -157,6 +157,12 @@
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
+    ],
+    "clean": [
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm discovery-provider/*.log"
     ]
   },
   "creator-node": {
