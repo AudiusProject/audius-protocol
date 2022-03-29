@@ -176,7 +176,7 @@ class SnapbackSM {
      */
 
     // Initialize stateMachineQueue job processor
-    this.stateMachineQueue.process(1 /** concurrency */, async (job, done) => {
+    this.stateMachineQueue.process(3 /** concurrency */, async (job, done) => {
       this.log(`SIDTEST this.stateMachineQueue.process() Called`)
       await redis.set('stateMachineQueueLatestJobStart', Date.now())
       try {
