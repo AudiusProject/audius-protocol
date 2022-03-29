@@ -18,10 +18,10 @@ export const ethAddressToArray = (ethAddress: string) => {
 };
 
 /// Retrieve a transaction with retries
-export const getTransaction = async (provider: Provider, tx: string) => {
-  let info = await provider.connection.getTransaction(tx);
+export const getTransaction = async (provider: Provider, txHash: string) => {
+  let info = await provider.connection.getTransaction(txHash);
   while (info == null) {
-    info = await provider.connection.getTransaction(tx);
+    info = await provider.connection.getTransaction(txHash);
   }
   return info;
 };
@@ -95,7 +95,6 @@ export const randomString = (size: number) => {
 export const randomId = () => {
   return new anchor.BN(Math.floor(Math.random() * 10000));
 };
-
 
 /// Generate mock CID by appending `Qm` with a rand string
 export const randomCID = () => {
