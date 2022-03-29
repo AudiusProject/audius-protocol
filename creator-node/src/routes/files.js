@@ -599,11 +599,8 @@ async function _generateContentToHash(resizeResp, dirCID) {
 }
 
 module.exports = function (app) {
-  /**
-   * TODO: Eventually deprecate '/track_content_status'
-   */
   app.get(
-    ['/track_content_status', '/async_processing_status'],
+    '/async_processing_status',
     handleResponse(async (req, res) => {
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
