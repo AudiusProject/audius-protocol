@@ -167,17 +167,6 @@ describe('test fileManager', () => {
       const syncedSegmentBuf = fs.readFileSync(syncedSegmentPath)
       const originalSegmentBuf = fs.readFileSync(srcPath)
       assert.deepStrictEqual(originalSegmentBuf.compare(syncedSegmentBuf), 0)
-
-      // the segment should be present in IPFS
-      let ipfsResp
-      try {
-        ipfsResp = await ipfs.cat(segmentCID)
-      } catch (e) {
-        // If CID is not present, will throw timeout error
-        assert.fail(e.message)
-      }
-
-      assert.deepStrictEqual(originalSegmentBuf.compare(ipfsResp), 0)
     })
   })
 
@@ -222,10 +211,10 @@ describe('test fileManager', () => {
      * When: ipfs is down
      * Then: an error is thrown
      */
-    it('should throw an error if ipfs wrapper add fails', async () => {
+    it('should throw an error if ipfs wrapper hash fails', async () => {
       sinon
-        .stub(ipfsAdd, 'ipfsAddNonImages')
-        .rejects(new Error('ipfs wrapper add failed!'))
+        .stub(ipfsAdd, 'generateNonImageMultihashes')
+        .rejects(new Error('ipfs wrapper hash failed!'))
 
       try {
         await saveFileFromBufferToDisk(
@@ -233,7 +222,7 @@ describe('test fileManager', () => {
           buffer
         )
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
+        assert.deepStrictEqual(e.message, 'ipfs wrapper hash failed!')
       }
     })
 
@@ -278,16 +267,6 @@ describe('test fileManager', () => {
       let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
       metadataFileData = sortKeys(JSON.parse(metadataFileData))
       assert.deepStrictEqual(metadataFileData, metadata)
-
-      // check that ipfs contains the metadata file with proper contents
-      let ipfsResp
-      try {
-        ipfsResp = await ipfs.cat(resp.multihash)
-      } catch (e) {
-        assert.fail(e.message)
-      }
-
-      assert.deepStrictEqual(buffer.compare(ipfsResp), 0)
     })
   })
 })

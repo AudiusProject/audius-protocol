@@ -34,7 +34,10 @@ async function saveFileFromBufferToDisk(req, buffer) {
   }
 
   // Retrieve multihash
-  const multihash = await ipfsAdd.ipfsAddNonImages(buffer, req.logContext)
+  const multihash = await ipfsAdd.generateNonImageMultihashes(
+    buffer,
+    req.logContext
+  )
 
   // Write file to disk by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -44,7 +47,7 @@ async function saveFileFromBufferToDisk(req, buffer) {
 }
 
 /**
- * Wrapper for ipfsAddNonImages for a file that's already on disk
+ * Wrapper for generateNonImageMultihashes for a file that's already on disk
  */
 async function saveFileToIPFSFromFS({ logContext }, cnodeUserUUID, srcPath) {
   // Make sure user has authenticated before saving file
@@ -52,7 +55,10 @@ async function saveFileToIPFSFromFS({ logContext }, cnodeUserUUID, srcPath) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  const multihash = await ipfsAdd.ipfsAddNonImages(srcPath, logContext)
+  const multihash = await ipfsAdd.generateNonImageMultihashes(
+    srcPath,
+    logContext
+  )
   return multihash
 }
 
@@ -469,10 +475,9 @@ async function saveFileForMultihashToFS(
         )
       }
 
-      const ipfsHashOnly = await ipfsAdd.ipfsAddNonImages(expectedStoragePath, {
-        onlyHash: true,
-        timeout: 10000
-      })
+      const ipfsHashOnly = await ipfsAdd.generateNonImageMultihashes(
+        expectedStoragePath
+      )
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({
           stage: `File contents don't match IPFS hash multihash`,

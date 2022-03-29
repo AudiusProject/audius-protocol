@@ -14,7 +14,7 @@ const { ipfsLatest } = require('./ipfsClient')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { ipfsAddNonImages } = require('./ipfsAdd')
+const { generateNonImageMultihashes } = require('./ipfsAdd')
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 const TEN_MINUTES_IN_SECONDS = 60 * 10
@@ -283,11 +283,8 @@ async function findCIDInNetwork(
       if (resp.data) {
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
-        // verify that the file written matches the hash expected if added to ipfs
-        const ipfsHashOnly = await ipfsAddNonImages(filePath, {
-          onlyHash: true,
-          timeout: 2000
-        })
+        // Verify that the file written matches the hash expected
+        const ipfsHashOnly = await generateNonImageMultihashes(filePath)
 
         if (cid !== ipfsHashOnly) {
           await fs.unlink(filePath)

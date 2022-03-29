@@ -1,5 +1,5 @@
 const { ipfs } = require('../ipfsClient')
-const { ipfsAddNonImages } = require('../ipfsAdd')
+const { generateNonImageMultihashes } = require('../ipfsAdd')
 const { logger } = require('../logging')
 
 /**
@@ -16,7 +16,7 @@ const getIPFSReadWriteStatus = async () => {
     const content = Buffer.from(timestamp)
 
     // Add new buffer created from timestamp
-    const hash = await ipfsAddNonImages(content)
+    const hash = await generateNonImageMultihashes(content)
 
     // Retrieve and validate hash from local node
     const ipfsResp = await ipfs.get(hash)

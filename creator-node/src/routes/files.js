@@ -38,7 +38,7 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { ipfsAddImages } = require('../ipfsAdd')
+const { generateImageMultihashes } = require('../ipfsAdd')
 
 const { promisify } = require('util')
 
@@ -558,29 +558,28 @@ const getDirCID = async (req, res) => {
  */
 const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
   const logger = genericLogger.child(req.logContext)
-  const content = await _generateIpfsAddContent(resizeResp, dirCID)
+  const content = await _generateContentToHash(resizeResp, dirCID)
 
   // Re-compute dirCID from all image files to ensure it matches dirCID returned above
-  const ipfsAddRespArr = await ipfsAddImages(content, req.logContext)
+  const multihashes = await generateImageMultihashes(content, req.logContext)
 
   // Ensure actual and expected dirCIDs match
-  const ipfsAddRetryDirCID =
-    ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
-  if (ipfsAddRetryDirCID !== dirCID) {
-    const errMsg = `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}.`
+  const computedDirCID = multihashes[multihashes.length - 1].cid.toString()
+  if (computedDirCID !== dirCID) {
+    const errMsg = `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} computedDirCID=${computedDirCID}.`
     logger.error(errMsg)
     throw new Error(errMsg)
   }
 }
 
 /**
- * Helper fn to generate the input for `ipfsAddImages()`
+ * Helper fn to generate the input for `generateImageMultihashes()`
  * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
  * @param {string} dirCID the directory CID from `resizeResp`
  * @returns {Object[]} follows the structure [{path: <string>, cid: <string>}, ...] with the same number of elements
  * as the size of `resizeResp`
  */
-async function _generateIpfsAddContent(resizeResp, dirCID) {
+async function _generateContentToHash(resizeResp, dirCID) {
   const ipfsAddContent = []
   try {
     await Promise.all(

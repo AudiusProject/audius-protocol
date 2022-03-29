@@ -96,13 +96,12 @@ ipfsAdd.ipfsOnlyHashImages = async (content, options = {}) => {
 }
 
 /**
- * Wrapper for ipfs.add() that generates the CID using the only hash logic.
- * Used for hashing non-images (track segments, track transcode, metadata).
+ * Wrapper that generates multihashes for non-image files (track segments, track transcode, metadata)
  * @param {Buffer|ReadStream|string} content a single Buffer, a ReadStream, or path to an existing file
  * @param {Object?} logContext
  * @returns {string} only hash response cid or ipfs daemon response cid
  */
-ipfsAdd.ipfsAddNonImages = async (content, logContext = {}) => {
+ipfsAdd.generateNonImageMultihashes = async (content, logContext = {}) => {
   const logger = genericLogger.child(logContext)
 
   const buffer = await _convertToBuffer(content, logger)
@@ -114,32 +113,31 @@ ipfsAdd.ipfsAddNonImages = async (content, logContext = {}) => {
   )
 
   logger.info(
-    `[ipfsClient - ipfsAddNonImages()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`
+    `[ipfsClient - generateNonImageMultihashes()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`
   )
   return onlyHash
 }
 
 /**
- * Wrapper for ipfs.add() to generate the CID using the only hash logic.
- * Used for adding images to also generate dir CIDs.
+ * Wrapper that generates multihashes for image files
  * @param {Object[]} content an Object[] with the structure [{ path: string, content: buffer }, ...]
  * @param {Object?} logContext
- * @returns {Object[]} only hash responses or ipfs daemon responses with the structure [{path: <string>, cid: <string>, size: <number>}]
+ * @returns {Object[]} only hash responses with the structure [{path: <string>, cid: <string>, size: <number>}]
  */
-ipfsAdd.ipfsAddImages = async (content, logContext = {}) => {
+ipfsAdd.generateImageMultihashes = async (content, logContext = {}) => {
   const logger = genericLogger.child(logContext)
 
   const startOnlyHash = hrtime.bigint()
-  const ipfsAddResp = await ipfsAdd.ipfsOnlyHashImages(content)
+  const multihashes = await ipfsAdd.ipfsOnlyHashImages(content)
   const durationOnlyHashMs = convertNanosToMillis(
     hrtime.bigint() - startOnlyHash
   )
 
-  const ipfsAddRespStr = JSON.stringify(ipfsAddResp)
+  const multihashesStr = JSON.stringify(multihashes)
   logger.info(
-    `[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddRespStr} onlyHashDuration=${durationOnlyHashMs}ms`
+    `[ipfsClient - generateImageMultihashes()] onlyHash=${multihashesStr} onlyHashDuration=${durationOnlyHashMs}ms`
   )
-  return ipfsAddResp
+  return multihashes
 }
 
 /**
@@ -158,7 +156,7 @@ function _initializeIPFSOnlyHash(content, options) {
 }
 
 /**
- * Convert content to a buffer; used in `ipfsAddNonImages()`.
+ * Convert content to a buffer; used in `generateNonImageMultihashes()`.
  * @param {ReadStream|Buffer|string} content if string, should be file path
  * @param {Object} logger
  * @returns buffer version of content
