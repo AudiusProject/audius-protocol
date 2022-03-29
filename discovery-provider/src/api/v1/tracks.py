@@ -449,7 +449,7 @@ class Trending(Resource):
 class TrendingWithVersion(Trending):
     @record_metrics
     @ns.doc(
-        id="""Get Trending Tracks For Version""",
+        id="""Get Trending Tracks With Version""",
         description="""Gets the top 100 trending (most popular) tracks on Audius using a given trending strategy version""",
         params={"version": "The strategy version of trending to use"},
     )
