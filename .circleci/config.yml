@@ -611,16 +611,16 @@ jobs:
       - checkout
       - diff-if-necessary:
           service: solana-programs
-      - restore_cache:
-          name: apt-cache
-          keys:
-            - apt_cache-{{ arch }}-{{ .Branch }}
-            - apt_cache
-      - restore_cache:
-          name: nvm-cache
-          keys:
-            - nvm_cache-{{ arch }}-{{ .Branch }}
-            - nvm_cache
+      # - restore_cache:
+      #     name: apt-cache
+      #     keys:
+      #       - apt_cache-{{ arch }}-{{ .Branch }}
+      #       - apt_cache
+      # - restore_cache:
+      #     name: nvm-cache
+      #     keys:
+      #       - nvm_cache-{{ arch }}-{{ .Branch }}
+      #       - nvm_cache
       - run:
           name: Install node
           command: |
@@ -639,11 +639,11 @@ jobs:
           key: nvm_cache-{{ arch }}-{{ .Branch }}
           paths:
             - /opt/circleci/.nvm
-      - restore_cache:
-          name: cargo-cache
-          keys:
-            - cargo_cache-{{ arch }}-{{ .Branch }}
-            - cargo_cache
+      # - restore_cache:
+      #     name: cargo-cache
+      #     keys:
+      #       - cargo_cache-{{ arch }}-{{ .Branch }}
+      #       - cargo_cache
       - run:
           name: Setup dev dependencies
           command: |
