@@ -426,13 +426,16 @@ pagination_with_current_user_parser.add_argument(
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 search_parser.add_argument("query", required=True, description="The search query")
 
-trending_parser = pagination_parser.copy()
-trending_parser.add_argument(
+full_trending_parser = pagination_parser.copy()
+full_trending_parser.add_argument(
+    "user_id", required=False, description="The user ID of the user making the request"
+)
+full_trending_parser.add_argument(
     "genre",
     required=False,
     description="Filter to trending tracks for a specified genre",
 )
-trending_parser.add_argument(
+full_trending_parser.add_argument(
     "time",
     required=False,
     description="Get trending tracks over a specified time range",
@@ -440,10 +443,10 @@ trending_parser.add_argument(
     choices=("week", "month", "year", "allTime"),
 )
 
-full_trending_parser = trending_parser.copy()
-full_trending_parser.add_argument(
-    "user_id", required=False, description="The user ID of the user making the request"
-)
+trending_parser = full_trending_parser.copy()
+trending_parser.remove_argument("limit")
+trending_parser.remove_argument("offset")
+trending_parser.remove_argument("user_id")
 
 
 def success_response(entity):
