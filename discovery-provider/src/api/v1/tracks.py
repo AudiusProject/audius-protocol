@@ -144,9 +144,17 @@ class Track(Resource):
 
 
 full_track_parser = current_user_parser.copy()
-full_track_parser.add_argument("handle")
-full_track_parser.add_argument("url_title")
-full_track_parser.add_argument("show_unlisted", type=inputs.boolean)
+full_track_parser.add_argument(
+    "handle", description="The User handle of the track owner"
+)
+full_track_parser.add_argument(
+    "url_title", description="The URLized title of the track"
+)
+full_track_parser.add_argument(
+    "show_unlisted",
+    description="Whether or not to show unlisted tracks",
+    type=inputs.boolean,
+)
 
 
 @full_ns.route(TRACK_ROUTE)
@@ -156,10 +164,7 @@ class FullTrack(Resource):
         id="""Get Track""",
         description="""Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.""",
         params={
-            "track_id": "The ID of the track",
-            "handle": "The User handle of the track owner",
-            "url_title": "The URLized title of the track",
-            "show_unlisted": "Whether or not to show unlisted tracks",
+            "track_id": "A Track ID",
         },
     )
     @full_ns.expect(full_track_parser)
