@@ -162,6 +162,8 @@
       "sudo rm -rf solana-programs/claimable-tokens/cli/target",
       "sudo rm -rf solana-programs/cli/target",
       "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
       "sudo rm discovery-provider/*.log"
     ]
   },
