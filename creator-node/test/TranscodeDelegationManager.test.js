@@ -45,6 +45,24 @@ describe('test TranscodeDelegationManager', function () {
 
   // selectRandomSPs()
 
+  it('When libs call fails to get service provider list, throw error', async function () {
+    const libsMock = {
+      ethContracts: {
+        getServiceProviderList: async () => {
+          throw new Error('getServiceProviderList() failed')
+        }
+      }
+    }
+    try {
+      await TranscodeDelegationManager.selectRandomSPs(libsMock)
+      assert.fail(
+        'Selecting random SPs should have failed if the libs called failed'
+      )
+    } catch (e) {
+      assert.ok(e.message === 'getServiceProviderList() failed')
+    }
+  })
+
   it('Selecting random SPs for transcode handoff works as expected', async function () {
     const allSPs = libsMock.ethContracts.getServiceProviderList('content-node')
     const allSPsSet = new Set(allSPs.map((sp) => sp.endpoint))
