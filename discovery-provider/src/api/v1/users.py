@@ -166,7 +166,7 @@ tracks_response = make_response(
 class TrackList(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Tracks""",
+        id="""Get Tracks by User""",
         description="""Gets the tracks created by a user using the encoded user ID""",
         params={
             "id": "A User ID",
@@ -211,7 +211,7 @@ full_tracks_response = make_full_response(
 class FullTrackList(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Tracks""",
+        id="""Get Tracks by User""",
         description="""Gets the tracks created by a user using the encoded user ID""",
         params={
             "id": "A User ID",
@@ -251,7 +251,7 @@ class FullTrackList(Resource):
 class HandleFullTrackList(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Tracks by Handle""",
+        id="""Get Tracks by User Handle""",
         description="""Gets the tracks created by a user using the user's handle""",
         params={
             "handle": "A User handle",
@@ -263,7 +263,6 @@ class HandleFullTrackList(Resource):
     @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, handle, authed_user_id=None):
-        """Fetch a list of tracks for a user."""
         args = user_tracks_route_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
