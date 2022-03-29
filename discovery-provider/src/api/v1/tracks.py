@@ -132,7 +132,7 @@ class Track(Resource):
     @record_metrics
     @ns.doc(
         id="""Get Track""",
-        description="""Gets a track by its encoded ID""",
+        description="""Gets a track by ID""",
         params={"track_id": "A Track ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -154,7 +154,7 @@ class FullTrack(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get Track""",
-        description="""Gets a track by its encoded ID. If `show_unlisted` is true, then `handle` and `url_title` are required.""",
+        description="""Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.""",
         params={
             "track_id": "The ID of the track",
             "handle": "The User handle of the track owner",
