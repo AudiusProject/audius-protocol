@@ -1,4 +1,5 @@
 import datetime
+from collections import defaultdict
 
 from flask import request
 from sqlalchemy import and_, desc, func, or_
@@ -124,18 +125,20 @@ def _es_get_feed(args, limit=10):
     unsorted_feed = []
 
     for playlist in playlists:
-        seen.add(("playlist", playlist["playlist_id"]))
+        playlist["item_key"] = item_key(playlist)
+        seen.add(playlist["item_key"])
         # add playlist tracks to seen?
         unsorted_feed.append(playlist)
 
     for track in tracks:
-        seen.add(("track", track["track_id"]))
+        track["item_key"] = item_key(track)
+        seen.add(track["item_key"])
         unsorted_feed.append(track)
 
     # remove duplicates from repost feed
     reposts.reverse()
     for r in reposts:
-        k = (r["repost_type"], r["repost_item_id"])
+        k = r["item_key"]
         if k in seen:
             continue
         seen.add(k)
@@ -159,8 +162,6 @@ def _es_get_feed(args, limit=10):
     reposted_docs = esclient.mget(docs=mget_reposts)
     keyed_reposts = {}
     for doc in reposted_docs["docs"]:
-        # this might be too cute... assumes _index is 'tracks' or 'playlists'
-        t = doc["_index"].rstrip("s")
         if not doc["found"]:
             # MISSING: track or playlist for repost??
             # when can this happen?  a repost for an item not in the tracks or playlists
@@ -168,9 +169,11 @@ def _es_get_feed(args, limit=10):
             # tracks / playlists index?
             # To match existing postgres behavior, probably need to index deleted docs
             # instead of removing from index
-            print("---------------- NOT FOUND", t, doc["_id"])
+            print("---------------- NOT FOUND", doc["_index"], doc["_id"])
             continue
-        keyed_reposts[(t, doc["_id"])] = doc["_source"]
+        s = doc["_source"]
+        s["item_key"] = item_key(s)
+        keyed_reposts[s["item_key"]] = s
 
     # replace repost with underlying items
     sorted_feed = []
@@ -180,7 +183,7 @@ def _es_get_feed(args, limit=10):
             sorted_feed.append(x)
         else:
             # gotcha 2: strings vs int ids
-            k = (x["repost_type"], str(x["repost_item_id"]))
+            k = x["item_key"]
             if k not in keyed_reposts:
                 # MISSING: track or playlist for repost??
                 # from above
@@ -201,26 +204,83 @@ def _es_get_feed(args, limit=10):
         item["user"] = omit_indexed_fields(user_by_id[uid])
 
     # add context: followee_reposts, followee_saves
-    # TODO: do this in ES?
-    if False:
-        track_ids = [x["track_id"] for x in sorted_feed if "track_id" in x]
-        playlist_ids = [x["playlist_id"] for x in sorted_feed if "playlist_id" in x]
-        db = get_db_read_replica()
-        with db.scoped_session() as session:
-            populate_track_metadata(session, track_ids, tracks, current_user_id)
-            populate_playlist_metadata(
-                session,
-                playlist_ids,
-                playlists,
-                [RepostType.playlist, RepostType.album],
-                [SaveType.playlist, SaveType.album],
-                current_user_id,
-            )
+    item_keys = [i["item_key"] for i in sorted_feed]
+    mdsl = [
+        {"index": "reposts"},
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "terms": {
+                                "user_id": {
+                                    "index": "users",
+                                    "id": current_user_id,
+                                    "path": "following_ids",
+                                },
+                            }
+                        },
+                        {"terms": {"item_key": item_keys}},
+                        {"term": {"is_delete": False}},
+                    ]
+                }
+            },
+            "size": limit * 20,  # how mutch to overfetch?
+            "sort": {"created_at": "desc"},
+        },
+        {"index": "saves"},
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "terms": {
+                                "user_id": {
+                                    "index": "users",
+                                    "id": current_user_id,
+                                    "path": "following_ids",
+                                },
+                            }
+                        },
+                        {"terms": {"item_key": item_keys}},
+                        {"term": {"is_delete": False}},
+                    ]
+                }
+            },
+            "size": limit * 20,  # how much to overfetch?
+            "sort": {"created_at": "desc"},
+        },
+    ]
+
+    founds = esclient.msearch(searches=mdsl)
+
+    (reposts, saves) = [hits(r) for r in founds["responses"]]
+
+    follow_reposts = defaultdict(list)
+    follow_saves = defaultdict(list)
+
+    for r in reposts:
+        follow_reposts[r["item_key"]].append(r)
+    for s in saves:
+        follow_saves[s["item_key"]].append(s)
+
+    for item in sorted_feed:
+        item["followee_reposts"] = follow_reposts[item["item_key"]]
+        item["followee_saves"] = follow_saves[item["item_key"]]
 
     # remove extra fields from items
     [omit_indexed_fields(item) for item in sorted_feed]
 
     return sorted_feed[0:limit]
+
+
+def item_key(item):
+    if "track_id" in item:
+        return "track:" + str(item["track_id"])
+    elif "playlist_id" in item:
+        return "playlist:" + str(item["playlist_id"])
+    else:
+        raise Exception("item_key unknown type")
 
 
 def _get_feed(args):
