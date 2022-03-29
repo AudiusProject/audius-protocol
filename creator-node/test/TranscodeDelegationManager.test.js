@@ -11,7 +11,7 @@ const Utils = require('../src/utils')
 const TranscodeDelegationManager = require('../src/components/tracks/TranscodeDelegationManager')
 
 describe('test TranscodeDelegationManager', function () {
-  let libsMock, reqMock, logger
+  let libsMock, reqMock
   beforeEach(async () => {
     libsMock = getLibsMock()
     reqMock = {
@@ -22,7 +22,6 @@ describe('test TranscodeDelegationManager', function () {
       uuid: uuid.v4(),
       libs: libsMock
     }
-    logger = genericLogger.child(reqMock.logContext)
   })
 
   afterEach(async function () {
@@ -120,7 +119,7 @@ describe('test TranscodeDelegationManager', function () {
 
     let resp
     try {
-      resp = await TranscodeDelegationManager.sendTrackToSp(logger, {
+      resp = await TranscodeDelegationManager.sendTrackToSp({
         sp: 'http://some_cn.com',
         req: reqMock
       })
@@ -139,7 +138,7 @@ describe('test TranscodeDelegationManager', function () {
 
     let resp
     try {
-      resp = await TranscodeDelegationManager.sendTrackToSp(logger, {
+      resp = await TranscodeDelegationManager.sendTrackToSp({
         sp: 'http://some_cn.com',
         req: reqMock
       })
@@ -158,13 +157,10 @@ describe('test TranscodeDelegationManager', function () {
       .resolves(expectedUuid)
 
     try {
-      const actualUuid = await TranscodeDelegationManager.sendTrackToSp(
-        logger,
-        {
-          sp: 'http://some_cn.com',
-          req: reqMock
-        }
-      )
+      const actualUuid = await TranscodeDelegationManager.sendTrackToSp({
+        sp: 'http://some_cn.com',
+        req: reqMock
+      })
       assert.strictEqual(actualUuid, expectedUuid)
     } catch (e) {
       assert.fail(
@@ -179,7 +175,7 @@ describe('test TranscodeDelegationManager', function () {
       .rejects(new Error('fetching segment failed'))
 
     try {
-      await TranscodeDelegationManager.fetchFilesAndWriteToFs(logger, {
+      await TranscodeDelegationManager.fetchFilesAndWriteToFs({
         fileNameNoExtension: reqMock.fileNameNoExtension,
         transcodeFilePath: `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/${reqMock.uuid}.mp3`,
         segmentFileNames: ['segment00000.ts'],
@@ -205,7 +201,7 @@ describe('test TranscodeDelegationManager', function () {
       .rejects(new Error('fetching transcode failed'))
 
     try {
-      await TranscodeDelegationManager.fetchFilesAndWriteToFs(logger, {
+      await TranscodeDelegationManager.fetchFilesAndWriteToFs({
         fileNameNoExtension: reqMock.fileNameNoExtension,
         transcodeFilePath: `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/${reqMock.uuid}.mp3`,
         segmentFileNames: ['segment00000.ts'],
@@ -234,7 +230,7 @@ describe('test TranscodeDelegationManager', function () {
       .rejects(new Error('fetching m3u8 failed'))
 
     try {
-      await TranscodeDelegationManager.fetchFilesAndWriteToFs(logger, {
+      await TranscodeDelegationManager.fetchFilesAndWriteToFs({
         fileNameNoExtension: reqMock.fileNameNoExtension,
         transcodeFilePath: `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/${reqMock.uuid}.mp3`,
         segmentFileNames: ['segment00000.ts'],
@@ -263,18 +259,15 @@ describe('test TranscodeDelegationManager', function () {
       .resolves({ data: 'some more more stream' })
 
     try {
-      const resp = await TranscodeDelegationManager.fetchFilesAndWriteToFs(
-        logger,
-        {
-          fileNameNoExtension: reqMock.fileNameNoExtension,
-          transcodeFilePath: `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/${reqMock.uuid}.mp3`,
-          segmentFileNames: ['segment00000.ts'],
-          segmentFilePaths: [
-            `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/segments/segment00000.ts`
-          ],
-          m3u8FilePath: `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/${reqMock.uuid}.m3u8`
-        }
-      )
+      const resp = await TranscodeDelegationManager.fetchFilesAndWriteToFs({
+        fileNameNoExtension: reqMock.fileNameNoExtension,
+        transcodeFilePath: `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/${reqMock.uuid}.mp3`,
+        segmentFileNames: ['segment00000.ts'],
+        segmentFilePaths: [
+          `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/segments/segment00000.ts`
+        ],
+        m3u8FilePath: `/test_file_storage/files/tmp_track_artifacts/${reqMock.uuid}/${reqMock.uuid}.m3u8`
+      })
 
       assert.strictEqual(
         resp.transcodeFilePath,
