@@ -671,7 +671,9 @@ class RelatedUsers(Resource):
 
 
 top_genre_users_route_parser = pagination_parser.copy()
-top_genre_users_route_parser.add_argument("genre", required=False, action="append")
+top_genre_users_route_parser.add_argument(
+    "genre", required=False, action="append", description="List of Genres"
+)
 top_genre_users_response = make_full_response(
     "top_genre_users_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -683,7 +685,6 @@ class FullTopGenreUsers(Resource):
     @full_ns.doc(
         id="""Get Top Users In Genre""",
         description="""Get the Top Users for a Given Genre""",
-        params={"genre": "List of Genres"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(top_genre_users_response)
