@@ -127,8 +127,7 @@ const SetupCommand = Object.freeze({
   HEALTH_CHECK: 'health-check',
   UNSET_SHELL_ENV: 'unset-shell-env',
   UP_UM: 'up-um',
-  UP_WEB_SERVER: 'up-web-server',
-  CLEAN: 'clean'
+  UP_WEB_SERVER: 'up-web-server'
 })
 
 /**
