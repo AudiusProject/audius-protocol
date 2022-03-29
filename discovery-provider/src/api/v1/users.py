@@ -92,7 +92,7 @@ class User(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User""",
-        description="Gets a single user by their encoded user ID",
+        description="Gets a single user by their user ID",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -108,7 +108,7 @@ class FullUser(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User""",
-        description="Gets a single user by their encoded user ID",
+        description="Gets a single user by their user ID",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -168,7 +168,7 @@ class TrackList(Resource):
     @record_metrics
     @ns.doc(
         id="""Get Tracks by User""",
-        description="""Gets the tracks created by a user using the encoded user ID""",
+        description="""Gets the tracks created by a user using their user ID""",
         params={
             "id": "A User ID",
         },
@@ -213,7 +213,7 @@ class FullTrackList(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get Tracks by User""",
-        description="""Gets the tracks created by a user using the encoded user ID""",
+        description="""Gets the tracks created by a user using their user ID""",
         params={
             "id": "A User ID",
         },
