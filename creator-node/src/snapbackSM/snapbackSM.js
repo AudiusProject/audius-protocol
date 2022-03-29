@@ -177,15 +177,18 @@ class SnapbackSM {
 
     // Initialize stateMachineQueue job processor
     this.stateMachineQueue.process(3 /** concurrency */, async (job, done) => {
-      this.log(`SIDTEST this.stateMachineQueue.process() Called`)
+      const jobId = job.id
+      this.log(`SIDTEST this.stateMachineQueue.process() Called jobId ${jobId}`)
       await redis.set('stateMachineQueueLatestJobStart', Date.now())
       try {
         await this.processStateMachineOperation()
         await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
       } catch (e) {
-        this.logError(`StateMachineQueue processing error: ${e}`)
+        this.logError(`StateMachineQueue processing error jobId ${jobId}: ${e}`)
       }
-      this.log(`SIDTEST this.stateMachineQueue.process() Completed`)
+      this.log(
+        `SIDTEST this.stateMachineQueue.process() Completed jobId ${jobId}`
+      )
 
       done()
     })
