@@ -177,6 +177,7 @@ class SnapbackSM {
 
     // Initialize stateMachineQueue job processor
     this.stateMachineQueue.process(1 /** concurrency */, async (job, done) => {
+      this.log(`SIDTEST this.stateMachineQueue.process() Called`)
       await redis.set('stateMachineQueueLatestJobStart', Date.now())
       try {
         await this.processStateMachineOperation()
@@ -184,6 +185,7 @@ class SnapbackSM {
       } catch (e) {
         this.logError(`StateMachineQueue processing error: ${e}`)
       }
+      this.log(`SIDTEST this.stateMachineQueue.process() Completed`)
 
       done()
     })
@@ -845,6 +847,8 @@ class SnapbackSM {
    * @note refer to git history for reference to `processStateMachineOperationOld()`
    */
   async processStateMachineOperation() {
+    this.log(`SIDTEST BEGIN processStateMachineOperation()`)
+
     // Ensure lock available, and acquire it - else error
     const lockKey = 'stateMachineQueueJobLock'
     const lockExp = this.snapbackJobInterval * 2
@@ -855,6 +859,7 @@ class SnapbackSM {
       return
     }
     await redis.lock.setLock(lockKey, lockExp)
+    this.log(`SIDTEST processStateMachineOperation() - lock acquired`)
 
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = [
