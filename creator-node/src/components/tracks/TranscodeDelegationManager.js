@@ -82,9 +82,9 @@ class TranscodeDelegationManager {
       } catch (e) {
         // TODO: delete tmp dir in external SP if fails and continue
         logger.warn(
-          `Could not hand off track: state=${
-            decisionTree.state
-          } err=${e.toString()}`
+          `Could not hand off track: state=${JSON.stringify(
+            decisionTree
+          )} err=${e.toString()}`
         )
         console.error(e)
       }
@@ -276,7 +276,8 @@ class TranscodeDelegationManager {
         // Set content length headers (only applicable in server/node environments).
         // See: https://github.com/axios/axios/issues/1362
         maxContentLength: Infinity,
-        maxBodyLength: Infinity
+        maxBodyLength: Infinity,
+        timeout: 5000 // 5s
       },
       asyncFnTask: 'transcode and segment'
     })
@@ -299,7 +300,8 @@ class TranscodeDelegationManager {
   static async fetchHealthCheck(sp) {
     await axios({
       url: `${sp}/health_check`,
-      method: 'get'
+      method: 'get',
+      timeout: 5000 // 5s
     })
   }
 
@@ -320,7 +322,8 @@ class TranscodeDelegationManager {
       asyncFnParams: {
         url: `${sp}/async_processing_status`,
         params: { uuid, timestamp, signature, spID },
-        method: 'get'
+        method: 'get',
+        timeout: 5000 // 5s
       },
       asyncFnTask: 'fetch track content processing status'
     })
@@ -346,7 +349,8 @@ class TranscodeDelegationManager {
           signature,
           spID
         },
-        responseType: 'stream'
+        responseType: 'stream',
+        timeout: 15000 // 15s
       },
       asyncFnTask: 'fetch segment'
     })
@@ -370,7 +374,8 @@ class TranscodeDelegationManager {
           signature,
           spID
         },
-        responseType: 'stream'
+        responseType: 'stream',
+        timeout: 15000 // 15s
       },
       asyncFnTask: 'fetch transcode'
     })
@@ -394,7 +399,8 @@ class TranscodeDelegationManager {
           signature,
           spID
         },
-        responseType: 'stream'
+        responseType: 'stream',
+        timeout: 15000 // 15s
       },
       asyncFnTask: 'fetch m3u8'
     })
