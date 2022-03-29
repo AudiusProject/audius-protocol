@@ -34,16 +34,17 @@ class PrometheusMetric:
         # CollectorRegistries must be uniquely named
         # NOTE: we only set labelnames once.
         # unsure if overloading is supported.
-        if metric_type == PrometheusType.HISTOGRAM:
+        self.metric_type = metric_type
+        if self.metric_type == PrometheusType.HISTOGRAM:
             self.__init_metric(
                 name, description, labelnames, PrometheusMetric.histograms, Histogram
             )
-        elif metric_type == PrometheusType.GAUGE:
+        elif self.metric_type == PrometheusType.GAUGE:
             self.__init_metric(
                 name, description, labelnames, PrometheusMetric.gauges, Gauge
             )
         else:
-            raise TypeError(f"metric_type '{metric_type}' not found")
+            raise TypeError(f"metric_type '{self.metric_type}' not found")
 
     def reset_timer(self):
         self.start_time = time()
@@ -58,9 +59,15 @@ class PrometheusMetric:
 
     def save(self, value, labels=None):
         if labels:
-            self.metric.labels(**labels).observe(value)
+            if self.metric_type == PrometheusType.HISTOGRAM:
+                self.metric.labels(**labels).observe(value)
+            elif self.metric_type == PrometheusType.GAUGE:
+                self.metric.labels(**labels).set(value)
         else:
-            self.metric.observe(value)
+            if self.metric_type == PrometheusType.HISTOGRAM:
+                self.metric.observe(value)
+            elif self.metric_type == PrometheusType.GAUGE:
+                self.metric.set(value)
 
     @classmethod
     def register_collector(cls, name, collector_func):
