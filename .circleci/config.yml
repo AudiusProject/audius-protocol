@@ -613,8 +613,11 @@ jobs:
           service: solana-programs
       - restore_cache:
           keys:
-            - apt_cache_2
-            - nvm_cache_2
+            - apt_cache-{{ arch }}-{{ .Branch }}
+            - apt_cache
+      - restore_cache:
+            - nvm_cache-{{ arch }}-{{ .Branch }}
+            - nvm_cache
       - run:
           name: Install node
           command: |
@@ -626,13 +629,17 @@ jobs:
             source ~/.bashrc
             nvm install "$NODE_VERSION"
       - save_cache:
-          key: apt_cache_2
+          key: apt_cache-{{ arch }}-{{ .Branch }}
           paths:
-            - /var/cache/apt/archives/
+            - /var/cache/apt/archives
       - save_cache:
-          key: nvm_cache_2
+          key: nvm_cache-{{ arch }}-{{ .Branch }}
           paths:
             - /opt/circleci/.nvm
+      - restore_cache:
+          keys:
+            - cargo_cache-{{ arch }}-{{ .Branch }}
+            - cargo_cache
       - run:
           name: Setup dev dependencies
           command: |
@@ -646,7 +653,7 @@ jobs:
             source /opt/circleci/.nvm/nvm.sh
             npm run install-dev
       - save_cache:
-          key: cargo_cache
+          key: cargo_cache-{{ arch }}-{{ .Branch }}
           paths:
             - cargo
       - restore_cache:
@@ -667,9 +674,6 @@ jobs:
           key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
           paths:
             - solana-programs/anchor/audius-data/node_modules
-      - restore_cache:
-          keys:
-            - cargo_cache
       - run:
           name: anchor program seed CLI tests
           command: |
