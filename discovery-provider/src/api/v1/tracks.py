@@ -28,6 +28,7 @@ from src.api.v1.helpers import (
     stem_from_track,
     success_response,
     trending_parser,
+    trending_parser_paginated,
 )
 from src.api.v1.models.users import user_model_full
 from src.queries.get_feed import get_feed
@@ -558,7 +559,7 @@ class FullUndergroundTrendingWithVersion(FullUndergroundTrending):
 
 
 # Get recommended tracks for a genre and exclude tracks in the exclusion list
-recommended_track_parser = trending_parser.copy()
+recommended_track_parser = trending_parser_paginated.copy()
 recommended_track_parser.add_argument(
     "exclusion_list",
     type=int,
