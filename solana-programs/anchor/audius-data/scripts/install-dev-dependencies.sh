@@ -31,7 +31,8 @@ yarn install
 # init solana keypair
 solana-keygen new --no-bip39-passphrase --force -o "$PROTOCOL_DIR/.config/solana/id.json"
 
-# reload shell 
-exec $SHELL
-
+if [[ "${CI:-false}" == false]]; then
+    # reload shell 
+    exec $SHELL
+fi
 echo "Installed deps for anchor development."
