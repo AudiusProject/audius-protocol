@@ -9,7 +9,7 @@ cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
 echo "Installing dev deps for anchor audius-data development..."
 # install rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source $HOME/.cargo/env
+source "${CARGO_HOME:-"$HOME/.cargo"}/env"
 # pin rustc version
 rustup default "$RUST_VERSION"
 rustup component add rustfmt
