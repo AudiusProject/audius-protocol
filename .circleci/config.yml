@@ -612,10 +612,13 @@ jobs:
       - diff-if-necessary:
           service: solana-programs
       - restore_cache:
+          name: apt-cache
           keys:
             - apt_cache-{{ arch }}-{{ .Branch }}
             - apt_cache
       - restore_cache:
+          name: nvm-cache
+          keys:
             - nvm_cache-{{ arch }}-{{ .Branch }}
             - nvm_cache
       - run:
@@ -637,6 +640,7 @@ jobs:
           paths:
             - /opt/circleci/.nvm
       - restore_cache:
+          name: cargo-cache
           keys:
             - cargo_cache-{{ arch }}-{{ .Branch }}
             - cargo_cache
@@ -657,6 +661,7 @@ jobs:
           paths:
             - cargo
       - restore_cache:
+          name: node-cache
           keys:
             - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
             - anchor-node-deps-
