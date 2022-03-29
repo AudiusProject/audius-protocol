@@ -643,7 +643,8 @@ jobs:
             export CARGO_HOME="cargo"
             export PROTOCOL_DIR="/home/circleci/project"
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            ~/.nvm/versions/node/v14.18.1/bin/npm run install-dev
+            source ~/.nvm/nvm.sh
+            npm run install-dev
       - save_cache:
           key: cargo_cache
           paths:
@@ -660,8 +661,8 @@ jobs:
             source ~/.bashrc
             nvm use "$NODE_VERSION"
             export PROTOCOL_DIR="/home/circleci/project"
-            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            ~/.nvm/versions/node/v14.18.1/bin/npm test
+            source ~/.nvm/nvm.sh
+            npm run test
       - save_cache:
           key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
           paths:
@@ -678,8 +679,9 @@ jobs:
             nvm use "$NODE_VERSION"
             export PROTOCOL_DIR="/home/circleci/project"
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            ~/.nvm/versions/node/v14.18.1/bin/npm localnet-up-ci
-            ~/.nvm/versions/node/v14.18.1/bin/npm run dev-setup
+            source ~/.nvm/nvm.sh
+            npm run localnet-up-ci
+            npm run dev-setup
 
       # - restore_cache:
       #     keys:
