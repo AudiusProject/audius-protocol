@@ -14,14 +14,17 @@ import {
   createPlaylist,
   updatePlaylist,
   deletePlaylist,
-  createContentNode
+  createContentNode,
 } from "../lib/lib";
-import { findDerivedPair, getContentNode, randomCID, randomId, randomString } from "../lib/utils";
+import {
+  findDerivedPair,
+  getContentNode,
+  randomCID,
+  randomId,
+} from "../lib/utils";
 
 import { Command } from "commander";
 import fs = require("fs");
-
-import { readFileSync } from 'fs';
 
 const AUDIUS_PROD_RPC_POOL = "https://audius.rpcpool.com/";
 const LOCALHOST_RPC_POOL = "http://localhost:8899";

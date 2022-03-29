@@ -3,7 +3,7 @@ import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair, randomCID, randomId, randomString } from "../lib/utils";
+import { findDerivedPair, randomCID, randomId } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreatePlaylist,
@@ -15,6 +15,8 @@ import {
   testDeletePlaylist,
   testUpdatePlaylist,
 } from "./test-helpers";
+
+const { SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
 
@@ -151,6 +153,8 @@ describe("audius-data", function () {
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
       playlistOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       adminStorageAccount: adminStorageKeypair.publicKey,
     });
 
@@ -170,6 +174,8 @@ describe("audius-data", function () {
         playlistMetadata,
         userAuthorityKeypair: wrongUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
         adminStorageAccount: adminStorageKeypair.publicKey,
       });
     } catch (e) {
@@ -185,13 +191,16 @@ describe("audius-data", function () {
       adminStorageAccount: adminStorageKeypair.publicKey,
       id: playlistID,
       userStorageAccountPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       metadata: updatedPlaylistMetadata,
     });
   });
 
   it("creating + deleting a playlist", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -246,6 +255,8 @@ describe("audius-data", function () {
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
       playlistOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
     });
 
     await testDeletePlaylist({
@@ -253,6 +264,8 @@ describe("audius-data", function () {
       program,
       id: playlistID,
       playlistOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       baseAuthorityAccount,
       handleBytesArray,
@@ -262,7 +275,8 @@ describe("audius-data", function () {
   });
 
   it("create multiple playlists in parallel", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -321,6 +335,8 @@ describe("audius-data", function () {
         playlistMetadata,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
@@ -333,6 +349,8 @@ describe("audius-data", function () {
         playlistMetadata: playlistMetadata2,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
@@ -345,6 +363,8 @@ describe("audius-data", function () {
         playlistMetadata: playlistMetadata3,
         userAuthorityKeypair: newUserKeypair,
         playlistOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
     ]);
     console.log(`Created 3 playlists in ${Date.now() - start}ms`);
