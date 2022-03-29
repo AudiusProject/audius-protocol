@@ -9,6 +9,7 @@ const { logger: genericLogger } = require('../../logging')
 const {
   generateTimestampAndSignatureForSPVerification
 } = require('../../apiSigning')
+const { removeTrackFolder } = require('../../fileManager')
 
 const CREATOR_NODE_ENDPOINT = config.get('creatorNodeEndpoint')
 const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
@@ -30,7 +31,8 @@ const HAND_OFF_STATES = Object.freeze({
 })
 
 class TranscodeDelegationManager {
-  static logger = genericLogger.child({})
+  static logContext = {}
+  static logger = genericLogger.child(TranscodeDelegationManager.logContext)
 
   static async handOff({ logContext }, req) {
     const logger = TranscodeDelegationManager.initLogger(logContext)
@@ -203,6 +205,7 @@ class TranscodeDelegationManager {
     segmentFileNames,
     segmentFilePaths,
     m3u8FilePath,
+    fileDir,
     sp
   }) {
     const logger = TranscodeDelegationManager.logger
@@ -211,37 +214,43 @@ class TranscodeDelegationManager {
 
     // TODO: parallelize?
 
-    // TODO: if any part of the below fails, we should remove any tmp dirs
+    try {
+      // Get segments and write to tmp disk
+      logger.info({ sp }, `Fetching ${segmentFileNames.length} segments...`)
+      for (let i = 0; i < segmentFileNames.length; i++) {
+        const segmentFileName = segmentFileNames[i]
+        const segmentFilePath = segmentFilePaths[i]
 
-    // Get segments and write to tmp disk
-    logger.info({ sp }, `Fetching ${segmentFileNames.length} segments...`)
-    for (let i = 0; i < segmentFileNames.length; i++) {
-      const segmentFileName = segmentFileNames[i]
-      const segmentFilePath = segmentFilePaths[i]
+        res = await TranscodeDelegationManager.fetchSegment(
+          sp,
+          segmentFileName,
+          fileNameNoExtension
+        )
+        await Utils.writeStreamToFileSystem(res.data, segmentFilePath)
+      }
 
-      res = await TranscodeDelegationManager.fetchSegment(
+      // Get transcode and write to tmp disk
+      logger.info({ sp, transcodeFilePath }, 'Fetching transcode...')
+      res = await TranscodeDelegationManager.fetchTranscode(
         sp,
-        segmentFileName,
         fileNameNoExtension
       )
-      await Utils.writeStreamToFileSystem(res.data, segmentFilePath)
+      await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
+
+      // Get m3u8 file and write to tmp disk
+      logger.info({ sp, m3u8FilePath }, 'Fetching m3u8...')
+      res = await TranscodeDelegationManager.fetchM3U8File(
+        sp,
+        fileNameNoExtension
+      )
+      await Utils.writeStreamToFileSystem(res.data, m3u8FilePath)
+    } catch (e) {
+      logger.error(
+        `Could not complete writing files to disk: ${e.message}. Removing files..`
+      )
+      removeTrackFolder(TranscodeDelegationManager.logContext, fileDir)
+      throw e
     }
-
-    // Get transcode and write to tmp disk
-    logger.info({ sp, transcodeFilePath }, 'Fetching transcode...')
-    res = await TranscodeDelegationManager.fetchTranscode(
-      sp,
-      fileNameNoExtension
-    )
-    await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
-
-    // Get m3u8 file and write to tmp disk
-    logger.info({ sp, m3u8FilePath }, 'Fetching m3u8...')
-    res = await TranscodeDelegationManager.fetchM3U8File(
-      sp,
-      fileNameNoExtension
-    )
-    await Utils.writeStreamToFileSystem(res.data, m3u8FilePath)
 
     return {
       transcodeFilePath,
@@ -416,11 +425,12 @@ class TranscodeDelegationManager {
   }
 
   /**
-   * Initializes the log context
+   * Initializes the log context and logger
    * @param {Object} logContext
    */
   static initLogger(logContext) {
-    logger = genericLogger.child(logContext)
+    TranscodeDelegationManager.logContext = logContext
+    TranscodeDelegationManager.logger = genericLogger.child(logContext)
 
     return logger
   }

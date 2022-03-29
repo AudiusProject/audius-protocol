@@ -61,7 +61,8 @@ class TrackContentUploadManager {
       segmentFileNames,
       segmentFilePaths,
       m3u8FilePath,
-      fileName
+      fileName,
+      fileDir
     }
   }
 
