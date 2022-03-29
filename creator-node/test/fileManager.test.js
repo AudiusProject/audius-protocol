@@ -12,7 +12,7 @@ const ipfsAdd = require('../src/ipfsAdd')
 const {
   saveFileToIPFSFromFS,
   removeTrackFolder,
-  saveFileFromBufferToIPFSAndDisk,
+  saveFileFromBufferToDisk,
   copyMultihashToFs
 } = require('../src/fileManager')
 const config = require('../src/config')
@@ -48,7 +48,7 @@ const segmentsDirPath = 'test/test-segments'
 const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
 
-// consts used for testing saveFileFromBufferToIPFSAndDisk()
+// consts used for testing saveFileFromBufferToDisk()
 const metadata = {
   test: 'field1',
   track_segments: [
@@ -88,28 +88,6 @@ describe('test fileManager', () => {
           e.message,
           'User must be authenticated to save a file'
         )
-      }
-    })
-
-    /**
-     * Given: a file is being saved to ipfs from fs
-     * When: ipfs is down
-     * Then: an error is thrown
-     */
-    it('should throw an error if ipfs wrapper add fails', async () => {
-      sinon
-        .stub(ipfsAdd, 'ipfsAddNonImages')
-        .rejects(new Error('ipfs wrapper add failed!'))
-
-      try {
-        await saveFileToIPFSFromFS(
-          { logContext: { requestID: uuid() } },
-          req.session.cnodeUserUUID,
-          srcPath,
-          true /* enableIPFSAdd */
-        )
-      } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
       }
     })
 
@@ -162,8 +140,7 @@ describe('test fileManager', () => {
         await saveFileToIPFSFromFS(
           { logContext: { requestID } },
           req.session.cnodeUserUUID,
-          srcPath,
-          true /* enableIPFSAdd */
+          srcPath
         )
       } catch (e) {
         assert.fail(e.message)
@@ -204,8 +181,8 @@ describe('test fileManager', () => {
     })
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToIPFSAndDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileFromBufferToIPFSAndDisk()', () => {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test saveFileFromBufferToDisk()', () => {
     /**
      * Given: a file buffer is being saved to ipfs, fs, and db
      * When: cnodeUserUUID is not present
@@ -225,10 +202,9 @@ describe('test fileManager', () => {
       }
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(
+        await saveFileFromBufferToDisk(
           reqOverride,
-          buffer,
-          true /* enableIPFSAdd */
+          buffer
         )
         assert.fail(
           'Should not have passed if cnodeUserUUID is not present in request.'
@@ -252,10 +228,9 @@ describe('test fileManager', () => {
         .rejects(new Error('ipfs wrapper add failed!'))
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(
+        await saveFileFromBufferToDisk(
           req,
-          buffer,
-          true /* enableIPFSAdd */
+          buffer
         )
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
@@ -271,7 +246,7 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'add').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(req, buffer)
+        await saveFileFromBufferToDisk(req, buffer)
         assert.fail('Should not have passed if writing to filesystem fails.')
       } catch (e) {
         assert.ok(e.message)
@@ -290,11 +265,7 @@ describe('test fileManager', () => {
 
       let resp
       try {
-        resp = await saveFileFromBufferToIPFSAndDisk(
-          req,
-          buffer,
-          true /* enableIPFSAdd */
-        )
+        resp = await saveFileFromBufferToDisk(req, buffer)
       } catch (e) {
         assert.fail(e.message)
       }

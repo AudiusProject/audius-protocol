@@ -25,27 +25,16 @@ const SaveFileForMultihashToFSIPFSFallback = config.get(
 const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
 
 /**
- * Adds file to IPFS then saves file to disk under /multihash name
- *
- * If buffer is metadata, await add to ipfs daemon since discovery node checks ipfs first and benefits from increased availability
+ * Saves file to disk under /multihash name
  */
-async function saveFileFromBufferToIPFSAndDisk(
-  req,
-  buffer,
-  enableIPFSAdd = false
-) {
-  // make sure user has authenticated before saving file
+async function saveFileFromBufferToDisk(req, buffer) {
+  // Make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAdd.ipfsAddNonImages(
-    buffer,
-    { pin: false },
-    req.logContext,
-    enableIPFSAdd
-  )
+  // Retrieve multihash
+  const multihash = await ipfsAdd.ipfsAddNonImages(buffer, req.logContext)
 
   // Write file to disk by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -55,31 +44,15 @@ async function saveFileFromBufferToIPFSAndDisk(
 }
 
 /**
- * Given file path on disk, adds file to IPFS + re-saves under /multihash name
- *
- * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
+ * Wrapper for ipfsAddNonImages for a file that's already on disk
  */
-async function saveFileToIPFSFromFS(
-  { logContext },
-  cnodeUserUUID,
-  srcPath,
-  enableIPFSAdd = false
-) {
-  const logger = genericLogger.child(logContext)
-
-  // make sure user has authenticated before saving file
+async function saveFileToIPFSFromFS({ logContext }, cnodeUserUUID, srcPath) {
+  // Make sure user has authenticated before saving file
   if (!cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAdd.ipfsAddNonImages(
-    srcPath,
-    { pin: false },
-    logContext,
-    enableIPFSAdd
-  )
-
+  const multihash = await ipfsAdd.ipfsAddNonImages(srcPath, logContext)
   return multihash
 }
 
@@ -824,7 +797,7 @@ async function removeFile(storagePath) {
 }
 
 module.exports = {
-  saveFileFromBufferToIPFSAndDisk,
+  saveFileFromBufferToDisk,
   saveFileToIPFSFromFS,
   saveFileForMultihashToFS,
   removeTrackFolder,

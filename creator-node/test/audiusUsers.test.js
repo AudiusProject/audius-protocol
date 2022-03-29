@@ -24,8 +24,6 @@ describe('Test AudiusUsers with real IPFS (not mock)', function () {
 
     const userId = 1
 
-    // Setting the env vars before requiring the app will populate the env vars as expected
-    process.env.enableIPFSAddMetadata = true
     const { getApp } = require('./lib/app')
 
     const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)

@@ -15,7 +15,6 @@ const TranscodingQueue = require('../../TranscodingQueue')
 const FileManager = require('../../fileManager')
 
 const SAVE_FILE_TO_IPFS_CONCURRENCY_LIMIT = 10
-const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
 
 /**
  * Manages track content upload in IPFS, the DB, and the file system
@@ -264,7 +263,7 @@ function createSegmentToDurationMap({
 }
 
 /**
- * Save transcode and segment files (in parallel batches) to ipfs and copy to disk.
+ * Save transcode and segment files (in parallel batches) to disk.
  * @param {Object} batchParams
  * @param {string} batchParams.cnodeUserUUID the observed user's uuid
  * @param {string} batchParams.fileDir the dir path of the temp track artifacts
@@ -283,8 +282,7 @@ async function batchSaveFileToIPFSAndCopyFromFS({
   const multihash = await FileManager.saveFileToIPFSFromFS(
     { logContext },
     cnodeUserUUID,
-    transcodeFilePath,
-    ENABLE_IPFS_ADD_TRACKS
+    transcodeFilePath
   )
   const dstPath = await FileManager.copyMultihashToFs(
     multihash,
@@ -314,8 +312,7 @@ async function batchSaveFileToIPFSAndCopyFromFS({
         const multihash = await FileManager.saveFileToIPFSFromFS(
           { logContext: logContext },
           cnodeUserUUID,
-          segmentAbsolutePath,
-          ENABLE_IPFS_ADD_TRACKS
+          segmentAbsolutePath
         )
         const dstPath = await FileManager.copyMultihashToFs(
           multihash,

@@ -8,8 +8,6 @@ const { logger: genericLogger } = require('./logging')
 const { ipfsAddImages } = require('./ipfsAdd')
 const DiskManager = require('./diskManager')
 
-const ENABLE_IPFS_ADD_IMAGES = config.get('enableIPFSAddImages')
-
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xffffffff
 const IMAGE_QUALITY = 90
@@ -139,12 +137,7 @@ module.exports = async (job) => {
   })
   resizes.push(original)
 
-  const ipfsAddResp = await ipfsAddImages(
-    toAdd,
-    { pin: false } /* ipfs add config */,
-    {} /* logContext */,
-    ENABLE_IPFS_ADD_IMAGES
-  )
+  const ipfsAddResp = await ipfsAddImages(toAdd)
 
   // Write all the images to file storage and
   // return the CIDs and storage paths to write to db

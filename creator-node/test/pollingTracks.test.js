@@ -90,8 +90,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     userId = 1
     userWallet = testEthereumConstants.pubKey.toLowerCase()
 
-    process.env.enableIPFSAddTracks = true
-
     const { getApp } = require('./lib/app')
     const appInfo = await getApp(
       ipfsMock,
@@ -877,8 +875,6 @@ describe('test Polling Tracks with real IPFS', function () {
     libsMock = getLibsMock()
 
     userId = 1
-
-    process.env.enableIPFSAddTracks = true
 
     const { getApp } = require('./lib/app')
     const appInfo = await getApp(

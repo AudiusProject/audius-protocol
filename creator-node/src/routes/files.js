@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const contentDisposition = require('content-disposition')
 
+const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
@@ -37,6 +38,7 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
+const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
 
@@ -548,6 +550,55 @@ const getDirCID = async (req, res) => {
   }
 }
 
+/**
+ * Verify that content matches its hash using the IPFS deterministic content hashing algorithm.
+ * @param {Object} req
+ * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
+ * @param {string} dirCID the directory CID from `resizeResp`
+ */
+const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
+  const logger = genericLogger.child(req.logContext)
+  const content = await _generateIpfsAddContent(resizeResp, dirCID)
+
+  // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+  const ipfsAddRespArr = await ipfsAddImages(content, req.logContext)
+
+  // Ensure actual and expected dirCIDs match
+  const ipfsAddRetryDirCID =
+    ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+  if (ipfsAddRetryDirCID !== dirCID) {
+    const errMsg = `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}.`
+    logger.error(errMsg)
+    throw new Error(errMsg)
+  }
+}
+
+/**
+ * Helper fn to generate the input for `ipfsAddImages()`
+ * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @returns {Object[]} follows the structure [{path: <string>, cid: <string>}, ...] with the same number of elements
+ * as the size of `resizeResp`
+ */
+async function _generateIpfsAddContent(resizeResp, dirCID) {
+  const ipfsAddContent = []
+  try {
+    await Promise.all(
+      resizeResp.files.map(async function (file) {
+        const fileBuffer = await fs.readFile(file.storagePath)
+        ipfsAddContent.push({
+          path: file.sourceFile,
+          content: fileBuffer
+        })
+      })
+    )
+  } catch (e) {
+    throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
+  }
+
+  return ipfsAddContent
+}
+
 module.exports = function (app) {
   /**
    * TODO: Eventually deprecate '/track_content_status'
@@ -632,6 +683,9 @@ module.exports = function (app) {
 
       const dirCID = resizeResp.dir.dirCID
 
+      // Ensure image files written to disk match dirCID returned from resizeImage
+      await _verifyContentMatchesHash(req, resizeResp, dirCID)
+
       // Record image file entries in DB
       const transaction = await models.sequelize.transaction()
       try {
@@ -701,7 +755,7 @@ module.exports = function (app) {
    * @param req.query
    * @param {string} req.query.filename the actual filename to retrieve w/in the IPFS directory (e.g. 480x480.jpg)
    * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
-   * rehydrate IPFS asynchronously
+   * rehydrate IPFS asynchronously (REMOVED -- only here for backwards compatibility until the client updates)
    * @dev This route does not handle responses by design, so we can pipe the gateway response.
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
