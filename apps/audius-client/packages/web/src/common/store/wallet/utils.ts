@@ -4,12 +4,12 @@ import { BadgeTier } from 'common/models/BadgeTier'
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { BNAudio, StringAudio, StringWei } from 'common/models/Wallet'
+import { CommonState } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import { stringAudioToBN, stringWeiToAudioBN } from 'common/utils/wallet'
-import { AppState } from 'store/types'
 
-type BadgeTierInfo = {
+export type BadgeTierInfo = {
   tier: BadgeTier
   minAudio: BNAudio
   humanReadableAmount: number
@@ -46,7 +46,7 @@ export const badgeTiers: BadgeTierInfo[] = [
 // Selectors
 
 export const getVerifiedForUser = (
-  state: AppState,
+  state: CommonState,
   { userId }: { userId: ID }
 ) => {
   const user = getUser(state, { id: userId })
@@ -54,7 +54,7 @@ export const getVerifiedForUser = (
 }
 
 export const getWeiBalanceForUser = (
-  state: AppState,
+  state: CommonState,
   { userId }: { userId: ID }
 ) => {
   const accountUser = getAccountUser(state)

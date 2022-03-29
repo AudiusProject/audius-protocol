@@ -331,17 +331,7 @@ export const AccountVerificationScreen = () => {
         <ProfilePicture profile={accountUser} style={styles.profilePicture} />
         <Text style={styles.profileName} variant='h1'>
           {name}
-          <UserBadges
-            user={{
-              balance: accountUser.balance,
-              associated_wallets_balance:
-                accountUser.associated_wallets_balance,
-              name: accountUser.name,
-              is_verified: accountUser.is_verified
-            }}
-            badgeSize={12}
-            hideName
-          />
+          <UserBadges user={accountUser} badgeSize={12} hideName />
         </Text>
         <Text style={styles.profileHandle}>@{handle}</Text>
       </View>

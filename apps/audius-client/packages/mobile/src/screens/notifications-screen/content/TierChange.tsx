@@ -1,7 +1,7 @@
+import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
 import { TierChange as TierChangeNotification } from 'audius-client/src/common/store/notifications/types'
 import { StyleSheet, Text, View } from 'react-native'
 
-import { AudioTier } from 'app/components/audio-rewards'
 import { useTheme } from 'app/utils/theme'
 
 import TwitterShare from './TwitterShare'
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 })
 
 export const tierInfoMap: Record<
-  AudioTier,
+  BadgeTier,
   { label: string; amount: number }
 > = {
   none: {

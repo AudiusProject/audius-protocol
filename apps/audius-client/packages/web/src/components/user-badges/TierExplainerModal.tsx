@@ -5,11 +5,11 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { useProfileTier } from 'common/hooks/wallet'
 import { Tier } from 'pages/audio-rewards-page/Tiers'
 import { DASHBOARD_PAGE } from 'utils/route'
 
 import styles from './TierExplainerModal.module.css'
-import { useProfileTier } from './hooks'
 
 export const messages = {
   title: '$AUDIO VIP Tiers',

@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react'
 
+import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
 import {
   getNotificationEntities,
   getNotificationEntity,
@@ -37,7 +38,6 @@ import IconStars from 'app/assets/images/iconStars.svg'
 import IconTrending from 'app/assets/images/iconTrending.svg'
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
-import { AudioTier } from 'app/components/audio-rewards'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -59,7 +59,7 @@ const USER_LENGTH_LIMIT = 8
 const IS_IOS = Platform.OS === 'ios'
 
 const tierInfoMap: Record<
-  AudioTier,
+  BadgeTier,
   { title: string; icon: React.FC<SvgProps> }
 > = {
   none: {
