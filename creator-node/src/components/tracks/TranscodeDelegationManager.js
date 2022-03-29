@@ -23,10 +23,13 @@ const HAND_OFF_STATES = Object.freeze({
 })
 
 class TranscodeDelegationManager {
+  static logger = genericLogger.child({})
+
   static async handOff({ logContext }, req) {
+    TranscodeDelegationManager.initLogger(logContext)
+
     const decisionTree = { state: HAND_OFF_STATES.INITIALIZED }
     const libs = req.libs
-    const logger = genericLogger.child(logContext)
     let resp = {}
 
     let sps
@@ -45,18 +48,18 @@ class TranscodeDelegationManager {
         decisionTree.state = HAND_OFF_STATES.HANDING_OFF_TO_SP
 
         const transcodeAndSegmentUUID =
-          await TranscodeDelegationManager.sendTrackToSp(logger, { sp, req })
+          await TranscodeDelegationManager.sendTrackToSp({ sp, req })
 
         decisionTree.state = HAND_OFF_STATES.POLLING_FOR_TRANSCODE
         const polledTranscodeResponse =
-          await TranscodeDelegationManager.pollForTranscode(logger, {
+          await TranscodeDelegationManager.pollForTranscode({
             sp,
             uuid: transcodeAndSegmentUUID
           })
 
         decisionTree.state = HAND_OFF_STATES.FETCHING_FILES_AND_WRITING_TO_FS
         const localFilePaths =
-          await TranscodeDelegationManager.fetchFilesAndWriteToFs(logger, {
+          await TranscodeDelegationManager.fetchFilesAndWriteToFs({
             ...polledTranscodeResponse,
             sp,
             fileNameNoExtension: req.fileNameNoExtension
@@ -120,7 +123,7 @@ class TranscodeDelegationManager {
     return Array.from(validSPs)
   }
 
-  static async sendTrackToSp(logger, { sp, req }) {
+  static async sendTrackToSp({ sp, req }) {
     const { fileDir, fileName, fileNameNoExtension, uuid: requestID } = req
 
     await TranscodeDelegationManager.fetchHealthCheck(sp)
@@ -137,7 +140,7 @@ class TranscodeDelegationManager {
     return transcodeAndSegmentUUID
   }
 
-  static async pollForTranscode(logger, { uuid, sp }) {
+  static async pollForTranscode({ uuid, sp }) {
     logger.info(
       { sp },
       `Polling for transcode and segments with uuid=${uuid}...`
@@ -185,17 +188,14 @@ class TranscodeDelegationManager {
     })
   }
 
-  static async fetchFilesAndWriteToFs(
-    logger,
-    {
-      fileNameNoExtension,
-      transcodeFilePath,
-      segmentFileNames,
-      segmentFilePaths,
-      m3u8FilePath,
-      sp
-    }
-  ) {
+  static async fetchFilesAndWriteToFs({
+    fileNameNoExtension,
+    transcodeFilePath,
+    segmentFileNames,
+    segmentFilePaths,
+    m3u8FilePath,
+    sp
+  }) {
     let res
 
     // TODO: parallelize?
@@ -404,6 +404,14 @@ class TranscodeDelegationManager {
       },
       asyncFnTask: 'fetch m3u8'
     })
+  }
+
+  /**
+   * Initializes the log context
+   * @param {Object} logContext
+   */
+  static initLogger(logContext) {
+    logger = genericLogger.child(logContext)
   }
 }
 
