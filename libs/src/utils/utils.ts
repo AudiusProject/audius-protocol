@@ -15,7 +15,7 @@ const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- this should just be esm
-class Utils {
+export class Utils {
   static importDataContractABI (pathStr: string) {
     return importDataContractABIs(pathStr)
   }
@@ -198,11 +198,10 @@ class Utils {
    * this function returns its response; else rejects with `timeoutMessage`
    */
   static async racePromiseWithTimeout (promise: Promise<void>, timeoutMs: number, timeoutMessage: string) {
-    const timeoutPromise = new Promise((resolve, reject) => {
+    // eslint-disable-next-line promise/param-names
+    const timeoutPromise = new Promise((_promise, reject) => {
       setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
     })
     return await Promise.race([promise, timeoutPromise])
   }
 }
-
-export default Utils

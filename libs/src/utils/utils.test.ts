@@ -1,5 +1,5 @@
 import assert from 'assert'
-import Utils from './utils'
+import { Utils } from './utils'
 
 describe('utils', () => {
   it('should decodeMethod correctly', async () => {

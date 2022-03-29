@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, CancelTokenSource } from 'axios'
 import semver from 'semver'
 
-import Utils from './utils'
+import { Utils } from './utils'
 import { promiseFight } from './promiseFight'
 
 interface Request {

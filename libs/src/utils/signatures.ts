@@ -1,4 +1,4 @@
-import Utils from './utils'
+import { Utils } from './utils'
 import { ecsign, toBuffer } from 'ethereumjs-util'
 import { pack } from '@ethersproject/solidity'
 import type Web3 from 'web3'
