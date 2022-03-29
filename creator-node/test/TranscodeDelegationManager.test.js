@@ -1,5 +1,6 @@
 const assert = require('assert')
 const sinon = require('sinon')
+const _ = require('lodash')
 const uuid = require('uuid')
 
 const TestUtils = require('./lib/utils')
@@ -40,7 +41,7 @@ describe('test TranscodeDelegationManager', function () {
       reqMock
     )
 
-    assert.ok(TestUtils.deepEqual({}, resp))
+    assert.ok(_.isEqual({}, resp))
   })
 
   // selectRandomSPs()

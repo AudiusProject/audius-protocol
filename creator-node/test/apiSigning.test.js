@@ -19,7 +19,7 @@ describe('test apiSigning', function () {
         reqSignature: undefined
       })
       assert.fail(
-        'verifyRequesterIsValidSP should have failed with incomplete timestamp/signaturte'
+        'verifyRequesterIsValidSP should have failed with incomplete timestamp/signature'
       )
     } catch (e) {
       assert.ok(
