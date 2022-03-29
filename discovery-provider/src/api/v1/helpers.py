@@ -427,7 +427,6 @@ search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 search_parser.add_argument("query", required=True, description="The search query")
 
 trending_parser = pagination_parser.copy()
-trending_parser.remove_argument("offset")
 trending_parser.add_argument(
     "genre",
     required=False,
