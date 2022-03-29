@@ -613,8 +613,8 @@ jobs:
           service: solana-programs
       - restore_cache:
           keys:
-            - apt_cache_1
-            - nvm_cache_1
+            - apt_cache_2
+            - nvm_cache_2
       - run:
           name: Install node
           command: |
@@ -626,13 +626,13 @@ jobs:
             source ~/.bashrc
             nvm install "$NODE_VERSION"
       - save_cache:
-          key: apt_cache_1
+          key: apt_cache_2
           paths:
-            - ~/.cache/apt-file/
+            - /var/cache/apt/archives/
       - save_cache:
-          key: nvm_cache_1
+          key: nvm_cache_2
           paths:
-            - ~/.nvm
+            - /opt/circleci/.nvm
       - run:
           name: Setup dev dependencies
           command: |
@@ -643,7 +643,7 @@ jobs:
             export CARGO_HOME="cargo"
             export PROTOCOL_DIR="/home/circleci/project"
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            source ~/.nvm/nvm.sh
+            source /opt/circleci/.nvm/nvm.sh
             npm run install-dev
       - save_cache:
           key: cargo_cache
@@ -661,7 +661,7 @@ jobs:
             source ~/.bashrc
             nvm use "$NODE_VERSION"
             export PROTOCOL_DIR="/home/circleci/project"
-            source ~/.nvm/nvm.sh
+            source /opt/circleci/.nvm/nvm.sh
             npm run test
       - save_cache:
           key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
@@ -679,7 +679,7 @@ jobs:
             nvm use "$NODE_VERSION"
             export PROTOCOL_DIR="/home/circleci/project"
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            source ~/.nvm/nvm.sh
+            source /opt/circleci/.nvm/nvm.sh
             npm run localnet-up-ci
             npm run dev-setup
 
