@@ -17,7 +17,7 @@ rustup component add rustfmt
 # install solana
 sh -c "$(curl -sSfL https://release.solana.com/$SOLANA_CLI_VERSION/install)"
 # add solana to PATH
-export PATH="/home/ubuntu/.local/share/solana/install/active_release/bin:$PATH"
+export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
 
 # install yarn
 npm install -g yarn
