@@ -431,10 +431,16 @@ pub mod audius_data {
         if base_pda != base {
             return Err(ErrorCode::Unauthorized.into());
         }
+
         // Reject if update submitted with invalid user authority
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+        validate_user_authority(
+            ctx.program_id,
+            &ctx.accounts.user,
+            &ctx.accounts.user_authority_delegate,
+            &ctx.accounts.authority,
+            &ctx.accounts.authority_delegation_status,
+        )?;
+        
         Ok(())
     }
 
@@ -455,9 +461,15 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+        // validate user has authority and check for delegate
+        validate_user_authority(
+            ctx.program_id,
+            &ctx.accounts.user,
+            &ctx.accounts.user_authority_delegate,
+            &ctx.accounts.authority,
+            &ctx.accounts.authority_delegation_status,
+        )?;
+
         Ok(())
     }
 
@@ -483,10 +495,14 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        // Confirm the authority for this follower has signed the transaction
-        if ctx.accounts.follower_user_storage.authority != ctx.accounts.authority.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+        // validate user has authority and check for delegate
+        validate_user_authority(
+            ctx.program_id,
+            &ctx.accounts.follower_user_storage,
+            &ctx.accounts.user_authority_delegate,
+            &ctx.accounts.authority,
+            &ctx.accounts.authority_delegation_status,
+        )?;
 
         Ok(())
     }
@@ -522,19 +538,21 @@ pub mod audius_data {
         _user_bump: u8,
         user_authority_delegate: Pubkey,
     ) -> Result<()> {
-        // Only permitted to user authority
-        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
-        // TODO validate user
-        // TODO validate Authority delegation is not revoked
+        // validate signer is the user or delegate
+        validate_user_authority(
+            ctx.program_id,
+            &ctx.accounts.user,
+            &ctx.accounts.signer_user_authority_delegate,
+            &ctx.accounts.authority,
+            &ctx.accounts.authority_delegation_status,
+        )?;
 
         // Assign incoming delegate fields
         // Maintain the user's storage account and the incoming delegate authority key
         ctx.accounts
-            .user_authority_delegate_pda
+            .current_user_authority_delegate
             .user_storage_account = ctx.accounts.user.key();
-        ctx.accounts.user_authority_delegate_pda.delegate_authority = user_authority_delegate;
+        ctx.accounts.current_user_authority_delegate.delegate_authority = user_authority_delegate;
         Ok(())
     }
 
@@ -547,15 +565,20 @@ pub mod audius_data {
         _user_authority_delegate: Pubkey,
         _delegate_bump: u8,
     ) -> Result<()> {
-        // Only permitted to user authority
-        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+        // validate signer is the user or delegate
+        validate_user_authority(
+            ctx.program_id,
+            &ctx.accounts.user,
+            &ctx.accounts.signer_user_authority_delegate,
+            &ctx.accounts.authority,
+            &ctx.accounts.authority_delegation_status,
+        )?;
+
         // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
         let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
-        ctx.accounts.user_authority_delegate_pda.delegate_authority = dummy_owner_field;
+        ctx.accounts.current_user_authority_delegate.delegate_authority = dummy_owner_field;
         ctx.accounts
-            .user_authority_delegate_pda
+            .current_user_authority_delegate
             .user_storage_account = dummy_owner_field;
         Ok(())
     }
@@ -761,10 +784,10 @@ pub struct UpdateUser<'info> {
     pub user: Account<'info, User>,
     #[account()]
     pub user_authority: Signer<'info>,
-    /// CHECK: Delegate authority account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
     pub user_authority_delegate: AccountInfo<'info>,
-    /// CHECK: Authority delegation status account, can be defaulted to SystemProgram for no-op
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
     #[account()]
     pub authority_delegation_status: AccountInfo<'info>,
 }
@@ -823,7 +846,7 @@ pub struct RevokeAuthorityDelegationStatus<'info> {
 /// Instruction container to allow user delegation
 /// Allocates a new account that will be used for fallback in auth scenarios
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;32], user_bump:u8, user_authority_delegate: Pubkey)]
+#[instruction(base: Pubkey, handle_seed: [u8;32], user_bump:u8, delegate_pubkey: Pubkey)]
 pub struct AddUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
@@ -835,13 +858,19 @@ pub struct AddUserAuthorityDelegate<'info> {
     #[account(
         init,
         payer = payer,
-        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        seeds = [&user.key().to_bytes()[..32], &delegate_pubkey.to_bytes()[..32]],
         bump,
         space = USER_AUTHORITY_DELEGATE_ACCOUNT_SIZE
     )]
-    pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    pub current_user_authority_delegate: Account<'info, UserAuthorityDelegate>,
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
-    pub user_authority: Signer<'info>,
+    pub signer_user_authority_delegate: AccountInfo<'info>,
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA (default SystemProgram when signer is user)
+    #[account()]
+    pub authority_delegation_status: AccountInfo<'info>,
+    #[account()]
+    pub authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -865,9 +894,15 @@ pub struct RemoveUserAuthorityDelegate<'info> {
         seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
         bump = delegate_bump
     )]
-    pub user_authority_delegate_pda: Account<'info, UserAuthorityDelegate>,
+    pub current_user_authority_delegate: Account<'info, UserAuthorityDelegate>,
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
-    pub user_authority: Signer<'info>,
+    pub signer_user_authority_delegate: AccountInfo<'info>, // provided for authority authentication
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
+    #[account()]
+    pub authority_delegation_status: AccountInfo<'info>,
+    #[account()]
+    pub authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -896,6 +931,12 @@ pub struct ManageEntity<'info> {
     pub user: Account<'info, User>,
     #[account()]
     pub authority: Signer<'info>,
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
+    #[account()]
+    pub user_authority_delegate: AccountInfo<'info>,
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
+    #[account()]
+    pub authority_delegation_status: AccountInfo<'info>,
 }
 
 /// Instruction container for track social action event
@@ -909,8 +950,13 @@ pub struct WriteEntitySocialAction<'info> {
     #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
     pub user: Account<'info, User>,
     #[account()]
-    // User authority field
-    pub authority: Signer<'info>,
+    pub authority: Signer<'info>, 
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
+    #[account()]
+    pub user_authority_delegate: AccountInfo<'info>,
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
+    #[account()]
+    pub authority_delegation_status: AccountInfo<'info>,
 }
 
 /// Instruction container for follow
@@ -925,6 +971,12 @@ pub struct FollowUser<'info> {
     // Confirm the followee PDA matches the expected value provided the target handle and base
     #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle.seed.as_ref()], bump = followee_handle.bump)]
     pub followee_user_storage: Account<'info, User>,
+    /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
+    #[account()]
+    pub user_authority_delegate: AccountInfo<'info>,
+    /// CHECK: When signer is a delegate, validate AuthorityDelegationStatus PDA  (default SystemProgram when signer is user)
+    #[account()]
+    pub authority_delegation_status: AccountInfo<'info>,
     // User update authority field
     #[account(mut)]
     pub authority: Signer<'info>,
