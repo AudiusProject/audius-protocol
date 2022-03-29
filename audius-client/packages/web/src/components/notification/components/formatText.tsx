@@ -8,10 +8,10 @@ import {
   NotificationType,
   Achievement
 } from 'common/store/notifications/types'
+import { badgeTiers } from 'common/store/wallet/utils'
 import { formatCount } from 'common/utils/formatUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import UserBadges, { audioTierMapPng } from 'components/user-badges/UserBadges'
-import { badgeTiers } from 'components/user-badges/utils'
 import { challengeRewardsConfig } from 'pages/audio-rewards-page/config'
 import {
   fullAlbumPage,

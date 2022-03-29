@@ -3,13 +3,13 @@ import React, { useCallback } from 'react'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import { useSelectTierInfo } from 'common/hooks/wallet'
 import { BadgeTier } from 'common/models/BadgeTier'
 import { ID } from 'common/models/Identifiers'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 
 import styles from './ProfilePageBadge.module.css'
-import { useSelectTierInfo } from './hooks'
 
 type ProfilePageBadgeProps = {
   userId: ID

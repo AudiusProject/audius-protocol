@@ -1,3 +1,3 @@
-import { AudioTier } from 'app/components/audio-rewards'
+import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
 
-export const MIN_COLLECTIBLES_TIER: AudioTier = 'silver'
+export const MIN_COLLECTIBLES_TIER: BadgeTier = 'silver'

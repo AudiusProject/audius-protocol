@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { useProfileTier } from 'common/hooks/wallet'
 import Drawer from 'components/drawer/Drawer'
 import {
   audioTierMapPng,
@@ -13,7 +14,6 @@ import { useSelector } from 'utils/reducer'
 import { BadgeTierText } from './ProfilePageBadge'
 import styles from './TierExplainerDrawer.module.css'
 import { messages } from './TierExplainerModal'
-import { useProfileTier } from './hooks'
 
 const TierExplainerDrawer = () => {
   const [isOpen, setIsOpen] = useModalState('TiersExplainer')

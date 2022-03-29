@@ -1,19 +1,18 @@
+import { getProfileUserId } from 'audius-client/src/common/store/pages/profile/selectors'
+import {
+  BadgeTierInfo,
+  badgeTiers
+} from 'audius-client/src/common/store/wallet/utils'
 import { Text, View } from 'react-native'
 
-import { useProfile } from 'app/hooks/selectors'
+import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { AppDrawer } from '../drawer/AppDrawer'
 
 import { IconAudioBadge } from './IconAudioBadge'
 import { TierText } from './TierText'
-import {
-  audioTierRequirements,
-  getAudioTierRank,
-  getUserAudioTier
-} from './audioTier'
-
-import { AudioTierRequirement } from '.'
 
 export const MODAL_NAME = 'TiersExplainer'
 
@@ -67,15 +66,12 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 export const TiersExplainerDrawer = () => {
   const styles = useStyles()
 
-  const profile = useProfile()
+  const profileId = useSelectorWeb(getProfileUserId)
+  const { tier, tierNumber } = useSelectTierInfo(profileId)
 
-  if (!profile) return null
-
-  const tier = getUserAudioTier(profile)
-  const tierRank = getAudioTierRank(tier)
-  const { minAudio } = audioTierRequirements.find(
+  const { minAudio } = badgeTiers.find(
     tierReq => tierReq.tier === tier
-  ) as AudioTierRequirement
+  ) as BadgeTierInfo
 
   const minAudioText = minAudio.toString()
 
@@ -85,7 +81,7 @@ export const TiersExplainerDrawer = () => {
         <IconAudioBadge tier={tier} height={108} width={108} />
         <View style={styles.tierTextGroup}>
           <Text style={styles.tierRank}>
-            {messages.tier} {tierRank}
+            {messages.tier} {tierNumber}
           </Text>
           <TierText style={styles.tierText} tier={tier}>
             {tier}

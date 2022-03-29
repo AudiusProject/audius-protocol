@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import {
@@ -16,7 +17,6 @@ import {
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import { AudioTier } from 'app/components/audio-rewards'
 import { getUserRoute } from 'app/utils/routes'
 import { getTwitterLink } from 'app/utils/twitter'
 
@@ -125,7 +125,7 @@ export const getRewardsText = (notification: ChallengeReward) => ({
   link: null
 })
 
-const tierInfoMap: Record<AudioTier, { label: string; icon: string }> = {
+const tierInfoMap: Record<BadgeTier, { label: string; icon: string }> = {
   none: { label: 'None', icon: '' },
   bronze: { label: 'Bronze', icon: '🥉' },
   silver: { label: 'Silver', icon: '🥈' },
