@@ -230,7 +230,9 @@ class SnapbackSM {
     )
 
     this.log(
-      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; next job in ${60000}ms`
+      `SnapbackSM initialized with manualSyncsDisabled=${
+        this.manualSyncsDisabled
+      }. Added initial stateMachineQueue job; next job in ${60000}ms`
     )
   }
 
@@ -872,7 +874,10 @@ class SnapbackSM {
         time: Date.now()
       }
     ]
-    this._printStateMachineQueueDecisionTree(decisionTree)
+    this._printStateMachineQueueDecisionTree(
+      decisionTree,
+      'BEGIN processStateMachineOperation()'
+    )
 
     try {
       let nodeUsers
@@ -885,7 +890,10 @@ class SnapbackSM {
           vals: { nodeUsersLength: nodeUsers.length },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
+        this._printStateMachineQueueDecisionTree(
+          decisionTree,
+          'getNodeUsers() and sliceUsers() Success'
+        )
       } catch (e) {
         decisionTree.push({
           stage: 'getNodeUsers() or sliceUsers() Error',
@@ -908,7 +916,10 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
+        this._printStateMachineQueueDecisionTree(
+          decisionTree,
+          'getUnhealthyPeers() Success'
+        )
       } catch (e) {
         decisionTree.push({
           stage: 'processStateMachineOperation():getUnhealthyPeers() Error',
@@ -931,7 +942,10 @@ class SnapbackSM {
         },
         time: Date.now()
       })
-      this._printStateMachineQueueDecisionTree(decisionTree)
+      this._printStateMachineQueueDecisionTree(
+        decisionTree,
+        'buildReplicaSetNodesToUserWalletsMap() Success'
+      )
 
       // Setup the mapping of Content Node endpoint to service provider id
       try {
@@ -951,7 +965,10 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
+        this._printStateMachineQueueDecisionTree(
+          decisionTree,
+          `updateEndpointToSpIdMap() Success`
+        )
       } catch (e) {
         // Disable reconfig after failed `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet(
@@ -963,7 +980,10 @@ class SnapbackSM {
           vals: { error: e.message },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
+        this._printStateMachineQueueDecisionTree(
+          decisionTree,
+          `updateEndpointToSpIdMap() Error`
+        )
       }
 
       // Retrieve clock statuses for all users and their current replica sets
@@ -978,7 +998,10 @@ class SnapbackSM {
           stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
+        this._printStateMachineQueueDecisionTree(
+          decisionTree,
+          'retrieveClockStatusesForUsersAcrossReplicaSet() Success'
+        )
       } catch (e) {
         decisionTree.push({
           stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
@@ -1004,7 +1027,10 @@ class SnapbackSM {
         },
         time: Date.now()
       })
-      this._printStateMachineQueueDecisionTree(decisionTree)
+      this._printStateMachineQueueDecisionTree(
+        decisionTree,
+        'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays'
+      )
 
       // Issue all required sync requests
       let numSyncRequestsRequired,
@@ -1034,7 +1060,10 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
+        this._printStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueSyncRequestsToSecondaries() Success'
+        )
       } catch (e) {
         decisionTree.push({
           stage: 'issueSyncRequestsToSecondaries() Error',
@@ -1047,7 +1076,10 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
+        this._printStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueSyncRequestsToSecondaries() Error'
+        )
       }
 
       /**
@@ -1101,7 +1133,10 @@ class SnapbackSM {
           vals: { numUpdateReplicaOpsIssued },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
+        this._printStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueUpdateReplicaSetOp() Success'
+        )
       } catch (e) {
         decisionTree.push({
           stage: 'issueUpdateReplicaSetOp() Error',
@@ -1137,23 +1172,23 @@ class SnapbackSM {
       this.currentModuloSlice = this.currentModuloSlice % this.moduloBase
 
       // Log decision tree
-      this._printStateMachineQueueDecisionTree(decisionTree)
+      this._printStateMachineQueueDecisionTree(decisionTree, 'finally block')
 
       // Release lock
       await redis.lock.removeLock(lockKey)
     }
   }
 
-  _printStateMachineQueueDecisionTree(decisionTree) {
+  _printStateMachineQueueDecisionTree(decisionTree, msg = '') {
     try {
       this.log(
-        `processStateMachineOperation Decision Tree ${JSON.stringify(
+        `SIDTEST - ${msg} - processStateMachineOperation Decision Tree ${JSON.stringify(
           decisionTree
         )}`
       )
     } catch (e) {
       this.logError(
-        `Error printing processStateMachineOperation Decision Tree ${decisionTree}`
+        `SIDTEST - Error printing processStateMachineOperation Decision Tree ${decisionTree}`
       )
     }
   }
