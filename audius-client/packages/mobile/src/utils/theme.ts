@@ -177,12 +177,59 @@ export const matrixTheme = {
   statTileText: '#184F17'
 }
 
-export type ThemeColors =
-  | typeof defaultTheme
-  | typeof darkTheme
-  | typeof matrixTheme
+export type ThemeColors = {
+  background: string
+  backgroundSecondary: string
+  primary: string
+  primaryDark1: string
+  primaryDark2: string
+  primaryLight1: string
+  primaryLight2: string
+  secondary: string
+  secondaryDark1: string
+  secondaryDark2: string
+  secondaryLight1: string
+  secondaryLight2: string
+  neutral: string
+  neutralDark1: string
+  neutralDark2: string
+  neutralDark3: string
+  neutralLight1: string
+  neutralLight2: string
+  neutralLight3: string
+  neutralLight4: string
+  neutralLight5: string
+  neutralLight6: string
+  neutralLight7: string
+  neutralLight8: string
+  neutralLight9: string
+  neutralLight10: string
+  white: string
+  accentRed: string
+  accentRedDark1: string
+  accentRedLight1: string
+  accentGreen: string
+  accentGreenDark1: string
+  accentGreenLight1: string
+  accentOrange: string
+  accentOrangeDark1: string
+  accentOrangeLight1: string
+  accentPurple: string
+  shadow: string
+  staticTwitterBlue: string
+  staticWhite: string
+  staticAccentGreenLight1: string
+  pageHeaderGradientColor1: string
+  pageHeaderGradientColor2: string
+  actionSheetText: string
+  skeleton: string
+  statTileText: string
+}
 
-const themeColorsByThemeVariant = {
+const themeColorsByThemeVariant: Record<
+  Theme.DARK | Theme.DEFAULT | Theme.MATRIX,
+  ThemeColors
+> = {
   [Theme.DEFAULT]: defaultTheme,
   [Theme.DARK]: darkTheme,
   [Theme.MATRIX]: matrixTheme
