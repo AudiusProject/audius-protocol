@@ -177,11 +177,13 @@ class SnapbackSM {
     // Initialize stateMachineQueue job processor
     // - Re-adds job to queue after processing current job, with a fixed delay
     this.stateMachineQueue.process(async (job, done) => {
+      this.log(`SIDTEST this.stateMachineQueue.process() Called`)
       try {
         await this.processStateMachineOperation()
       } catch (e) {
         this.logError(`StateMachineQueue processing error: ${e}`)
       }
+      this.log(`SIDTEST this.stateMachineQueue.process() Completed`)
 
       await utils.timeout(this.snapbackJobInterval)
 
@@ -846,6 +848,7 @@ class SnapbackSM {
    * @note refer to git history for reference to `processStateMachineOperationOld()`
    */
   async processStateMachineOperation() {
+    this.log(`SIDTEST BEGIN processStateMachineOperation()`)
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = [
       {
