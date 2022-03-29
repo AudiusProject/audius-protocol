@@ -33,7 +33,7 @@ class TranscodeDelegationManager {
   static logger = genericLogger.child({})
 
   static async handOff({ logContext }, req) {
-    TranscodeDelegationManager.initLogger(logContext)
+    const logger = TranscodeDelegationManager.initLogger(logContext)
 
     const decisionTree = { state: HAND_OFF_STATES.INITIALIZED }
     const libs = req.libs
@@ -131,6 +131,7 @@ class TranscodeDelegationManager {
   }
 
   static async sendTrackToSp({ sp, req }) {
+    const logger = TranscodeDelegationManager.logger
     const { fileDir, fileName, fileNameNoExtension, uuid: requestID } = req
 
     await TranscodeDelegationManager.fetchHealthCheck(sp)
@@ -148,6 +149,7 @@ class TranscodeDelegationManager {
   }
 
   static async pollForTranscode({ uuid, sp }) {
+    const logger = TranscodeDelegationManager.logger
     logger.info(
       { sp },
       `Polling for transcode and segments with uuid=${uuid}...`
@@ -203,6 +205,8 @@ class TranscodeDelegationManager {
     m3u8FilePath,
     sp
   }) {
+    const logger = TranscodeDelegationManager.logger
+
     let res
 
     // TODO: parallelize?
@@ -417,6 +421,8 @@ class TranscodeDelegationManager {
    */
   static initLogger(logContext) {
     logger = genericLogger.child(logContext)
+
+    return logger
   }
 }
 
