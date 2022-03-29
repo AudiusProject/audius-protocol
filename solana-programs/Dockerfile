@@ -34,7 +34,6 @@ COPY track_listen_count track_listen_count
 COPY cli cli
 COPY claimable-tokens claimable-tokens
 COPY reward-manager reward-manager
-COPY anchor anchor
 
 RUN cd audius_eth_registry && \
     cargo build-bpf && \
@@ -49,8 +48,13 @@ RUN cd audius_eth_registry && \
     cd ../../reward-manager/program && \
     cargo build-bpf && \
     cd ../cli && \
-    cargo build && \
-    cd ../../anchor/audius-data && \
+    cargo build
+
+ARG BUILD_ID
+LABEL prune=true
+LABEL build=$BUILD_ID
+COPY anchor anchor
+RUN cd anchor/audius-data && \
     anchor build 
 
 COPY start.sh ./

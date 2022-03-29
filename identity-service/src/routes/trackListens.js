@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize')
 const moment = require('moment-timezone')
 const retry = require('async-retry')
+const uuidv4 = require('uuid/v4')
 
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
@@ -10,12 +11,11 @@ const solClient = require('../solana-client.js')
 const config = require('../config.js')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
-async function getListenHour () {
-  let listenDate = new Date()
-  listenDate.setMinutes(0)
-  listenDate.setSeconds(0)
-  listenDate.setUTCMilliseconds(0)
-  return listenDate
+function trimToHour (date) {
+  date.setMinutes(0)
+  date.setSeconds(0)
+  date.setUTCMilliseconds(0)
+  return date
 }
 
 const oneDayInMs = (24 * 60 * 60 * 1000)
@@ -30,9 +30,8 @@ const maxLimit = 500
 const defaultOffset = 0
 const minOffset = 0
 
-// Duration for listen tracking redis keys prior to expiry (in seconds)
-// 1 week in in seconds = 7 days * 24hrs * 60 min * 60s
-const redisTxTrackingExpirySeconds = 7 * 24 * 60 * 60
+// Duration for listen tracking redis keys prior to expiry is 1 week (in seconds)
+const redisTxTrackingExpirySeconds = oneWeekInMs / 1000
 
 const getPaginationVars = (limit, offset) => {
   if (!limit) limit = defaultLimit
@@ -164,7 +163,7 @@ const getTrendingTracks = async (
     dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
   }
 
-  let currentHour = await getListenHour()
+  const currentHour = trimToHour(new Date())
   switch (timeFrame) {
     case 'day':
       let oneDayBefore = new Date(currentHour.getTime() - oneDayInMs)
@@ -233,6 +232,9 @@ const initializeExpiringRedisKey = async (redis, key, expiry) => {
   }
 }
 
+const TRACKING_LISTEN_SUBMISSION_KEY = 'listens-tx-submission-ts'
+const TRACKING_LISTEN_SUCCESS_KEY = 'listens-tx-success-ts'
+
 module.exports = function (app) {
   app.get('/tracks/listen/solana/status', handleResponse(async (req, res) => {
     const redis = req.app.get('redis')
@@ -240,14 +242,12 @@ module.exports = function (app) {
     // Expected percent success
     let { percent = 0.9, cutoffMinutes = 60 } = req.query
     let hourlyResponseData = {}
-    let success = 0
-    let submission = 0
     // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
     for (var entry of results) {
       let split = entry.split('::')
       if (split.length >= 2) {
         let hourSuffix = split[1]
-        let trackingRedisKeys = getTrackingListenKeys(hourSuffix)
+        const trackingRedisKeys = getTrackingListenKeys(hourSuffix)
 
         if (!hourlyResponseData.hasOwnProperty(hourSuffix)) {
           hourlyResponseData[hourSuffix] = {
@@ -255,13 +255,18 @@ module.exports = function (app) {
             success: Number(await redis.get(trackingRedisKeys.success)),
             time: new Date(hourSuffix)
           }
-          submission += hourlyResponseData[hourSuffix].submission
-          success += hourlyResponseData[hourSuffix].success
         }
       }
     }
 
-    const percentSuccess = success / submission
+    // Clean up time series entries that are greater than 1 week old
+    const oldestExpireMillis = Date.now() - redisTxTrackingExpirySeconds * 1000
+    await redis.zremrangebyscore(TRACKING_LISTEN_SUBMISSION_KEY, 0, oldestExpireMillis)
+    await redis.zremrangebyscore(TRACKING_LISTEN_SUCCESS_KEY, 0, oldestExpireMillis)
+
+    const totalSuccessCount = await redis.zcount(TRACKING_LISTEN_SUCCESS_KEY, 0, Number.MAX_SAFE_INTEGER)
+    const totalSubmissionCount = await redis.zcount(TRACKING_LISTEN_SUBMISSION_KEY, 0, Number.MAX_SAFE_INTEGER)
+    const totalPercentSuccess = totalSubmissionCount === 0 ? 1 : totalSuccessCount / totalSubmissionCount
     // Sort response in descending time order
     const sortedHourlyData =
       Object.keys(hourlyResponseData)
@@ -269,32 +274,25 @@ module.exports = function (app) {
         .map(key => hourlyResponseData[key])
 
     // Calculate success of submissions before the cutoff
-    let recentSubmissionCount = 0
-    let recentSuccessCount = 0
-    let cutoffTimestamp
     const now = Date.now()
-
-    for (var sortedHourlyEntry of sortedHourlyData) {
-      // Convert diff from ms to minutes
-      const diff = (now - sortedHourlyEntry.time.getTime()) / 60000
-      recentSubmissionCount += sortedHourlyEntry.submission
-      recentSuccessCount += sortedHourlyEntry.success
-      cutoffTimestamp = sortedHourlyEntry.time
-      // Exit calculation
-      if (diff > cutoffMinutes) {
-        break
-      }
-    }
-
-    const recentSuccessPercent = recentSuccessCount / recentSubmissionCount
+    const nowPlusEntropy = now + 9 // Account for the fact that each date has a random UUID appended to it
+    const nowMinusCutoff = now - (cutoffMinutes * 60 * 1000)
+    const recentSuccessCount = await redis.zcount(TRACKING_LISTEN_SUCCESS_KEY, nowMinusCutoff, nowPlusEntropy)
+    const recentSubmissionCount = await redis.zcount(TRACKING_LISTEN_SUBMISSION_KEY, nowMinusCutoff, nowPlusEntropy)
+    const recentSuccessPercent = recentSubmissionCount === 0 ? 1 : recentSuccessCount / recentSubmissionCount
     const recentInfo = {
       recentSubmissionCount,
       recentSuccessCount,
       recentSuccessPercent,
-      cutoffTimestamp
+      cutoffTimestamp: trimToHour(new Date(nowMinusCutoff)).toISOString()
     }
-
-    const resp = { percentSuccess, success, submission, sortedHourlyData, recentInfo }
+    const resp = {
+      totalPercentSuccess,
+      totalSuccessCount,
+      totalSubmissionCount,
+      sortedHourlyData,
+      recentInfo
+    }
     if (recentSuccessPercent < percent) {
       return errorResponseBadRequest(resp)
     }
@@ -315,19 +313,21 @@ module.exports = function (app) {
     const isSolanaListenEnabled = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_LISTEN_ENABLED_SERVER)
     const solanaListen = req.body.solanaListen || isSolanaListenEnabled || false
 
-    let currentHour = await getListenHour()
+    const currentHour = trimToHour(new Date())
     // Dedicated listen flow
     if (solanaListen) {
-      let suffix = currentHour.toISOString()
+      const suffix = currentHour.toISOString()
+      const entropy = uuidv4()
 
       // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
-      let trackingRedisKeys = getTrackingListenKeys(suffix)
+      const trackingRedisKeys = getTrackingListenKeys(suffix)
       await initializeExpiringRedisKey(redis, trackingRedisKeys.submission, redisTxTrackingExpirySeconds)
       await initializeExpiringRedisKey(redis, trackingRedisKeys.success, redisTxTrackingExpirySeconds)
 
       req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId}, ${JSON.stringify(trackingRedisKeys)}`)
 
       await redis.incr(trackingRedisKeys.submission)
+      await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
 
       const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
@@ -342,12 +342,13 @@ module.exports = function (app) {
 
         // Increment success tracker
         await redis.incr(trackingRedisKeys.success)
+        await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, Date.now(), Date.now() + entropy)
 
         return successResponse({
           solTxSignature
         })
       }, {
-        // Retry function 5x by default
+        // Retry function 3x by default
         // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
         minTimeout: 500,
         maxTimeout: 8000,
