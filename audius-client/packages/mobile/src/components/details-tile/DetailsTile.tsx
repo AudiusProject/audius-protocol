@@ -128,8 +128,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
 
   infoValue: {
-    flexShrink: 1,
     lineHeight: 14,
+    flexShrink: 1,
     color: palette.neutral,
     fontSize: 14
   },
@@ -225,7 +225,10 @@ export const DetailsTile = ({
           <Text style={styles.infoLabel} weight='bold'>
             {infoFact.label}
           </Text>
-          <Text style={styles.infoValue} weight='demiBold'>
+          <Text
+            style={[styles.infoValue, infoFact.valueStyle]}
+            weight='demiBold'
+          >
             {infoFact.value}
           </Text>
           <View style={styles.infoIcon}>{infoFact.icon}</View>
