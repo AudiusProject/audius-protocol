@@ -102,7 +102,10 @@ pub enum Instructions {
     /// 1. `[]` Reward manager authority
     /// 2. `[signer]` Funder
     /// 3. `[writable]` new_sender
-    /// 4. `[]` Bunch of old senders which prove adding new one
+    /// 4. `[]` Instruction info
+    /// 5. `[]` Rent sysvar
+    /// 6. `[]` System program id
+    /// 7. `[]` Bunch of old senders which prove adding new one
     /// ...
     CreateSenderPublic(CreateSenderPublicArgs),
 
