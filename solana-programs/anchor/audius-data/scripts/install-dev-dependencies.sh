@@ -31,7 +31,7 @@ yarn install
 # init solana keypair
 solana-keygen new --no-bip39-passphrase --force -o "$PROTOCOL_DIR/.config/solana/id.json"
 
-if [[ "${CI:-false}" == false]]; then
+if [[ "${CI:-false}" == false ]] then
     # reload shell 
     exec $SHELL
 fi
