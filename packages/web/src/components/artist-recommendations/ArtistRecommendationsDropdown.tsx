@@ -2,9 +2,6 @@ import React, { useRef } from 'react'
 
 import { useSpring, animated } from 'react-spring'
 
-import { FeatureFlags } from 'common/services/remote-config'
-import { useFlag } from 'hooks/useRemoteConfig'
-
 import {
   ArtistRecommendations,
   ArtistRecommendationsProps
@@ -26,9 +23,6 @@ const fast = {
 export const ArtistRecommendationsDropdown = (
   props: ArtistRecommendationsDropdownProps
 ) => {
-  const { isEnabled, isLoaded } = useFlag(
-    FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED
-  )
   const { isVisible } = props
   const childRef = useRef<HTMLElement | null>(null)
 
@@ -41,10 +35,6 @@ export const ArtistRecommendationsDropdown = (
     from: { opacity: 0, height: `${childHeight}px` },
     config: fast
   })
-
-  if (!isEnabled || !isLoaded) {
-    return null
-  }
 
   return (
     <animated.div className={styles.dropdown} style={spring}>
