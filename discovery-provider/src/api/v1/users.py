@@ -2,6 +2,7 @@ import logging
 
 from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
+    DescriptiveArgument,
     abort_bad_request_param,
     abort_not_found,
     current_user_parser,
@@ -154,7 +155,7 @@ user_tracks_route_parser.add_argument(
     type=str,
     default="date",
     choices=("date", "plays"),
-    help="Field to sort by",
+    description="Field to sort by",
 )
 
 tracks_response = make_response(
@@ -476,7 +477,7 @@ class FavoritedTracksFull(Resource):
     @full_ns.doc(
         id="""Get Favorites""",
         description="""Gets a user's favorite tracks""",
-        params={"user_id": "A User ID"},
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(pagination_with_current_user_parser)
@@ -513,7 +514,7 @@ class TrackHistoryFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get User's Track History""",
-        params={"user_id": "A User ID"},
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(pagination_with_current_user_parser)
@@ -653,7 +654,7 @@ class RelatedUsers(Resource):
     @full_ns.doc(
         id="""Get Related Users""",
         description="""Gets a list of users that might be of interest to followers of this user.""",
-        params={"user_id": "A User ID"},
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(related_artist_route_parser)
@@ -728,7 +729,9 @@ class FullTopUsers(Resource):
         return success_response(users)
 
 
-associated_wallet_route_parser = reqparse.RequestParser()
+associated_wallet_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
 associated_wallet_route_parser.add_argument("id", required=True)
 associated_wallet_response = make_response(
     "associated_wallets_response", ns, fields.Nested(associated_wallets)
@@ -759,7 +762,9 @@ class AssociatedWalletByUserId(Resource):
         )
 
 
-user_associated_wallet_route_parser = reqparse.RequestParser()
+user_associated_wallet_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
 user_associated_wallet_route_parser.add_argument("associated_wallet", required=True)
 user_associated_wallet_response = make_response(
     "user_associated_wallet_response", ns, fields.Nested(encoded_user_id)
@@ -808,7 +813,9 @@ class ConnectedWallets(Resource):
         )
 
 
-users_by_content_node_route_parser = reqparse.RequestParser()
+users_by_content_node_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
 users_by_content_node_route_parser.add_argument(
     "creator_node_endpoint", required=True, type=str
 )
@@ -843,13 +850,13 @@ class UsersByContentNode(Resource):
         return success_response(users)
 
 
-get_challenges_route_parser = reqparse.RequestParser()
+get_challenges_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 get_challenges_route_parser.add_argument(
     "show_historical",
     required=False,
     type=bool,
     default=False,
-    help="Whether to show challenges that are inactive but completed",
+    description="Whether to show challenges that are inactive but completed",
 )
 get_challenges_response = make_response(
     "get_challenges", ns, fields.List(fields.Nested(challenge_response))
