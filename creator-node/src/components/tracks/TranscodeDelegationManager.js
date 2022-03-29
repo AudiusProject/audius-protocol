@@ -432,7 +432,7 @@ class TranscodeDelegationManager {
     TranscodeDelegationManager.logContext = logContext
     TranscodeDelegationManager.logger = genericLogger.child(logContext)
 
-    return logger
+    return TranscodeDelegationManager.logger
   }
 }
 
