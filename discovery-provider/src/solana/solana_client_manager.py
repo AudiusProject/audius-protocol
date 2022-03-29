@@ -80,6 +80,7 @@ class SolanaClientManager:
         self,
         account: Union[str, Keypair, PublicKey],
         before: Optional[str] = None,
+        until: Optional[str] = None,
         limit: Optional[int] = None,
         retries: Optional[int] = DEFAULT_MAX_RETRIES,
     ):
@@ -94,7 +95,7 @@ class SolanaClientManager:
                         f"solana_client_manager.py | handle_get_signatures_for_address | Fetching {before} {endpoint}"
                     )
                     transactions: ConfirmedSignatureForAddressResponse = (
-                        client.get_signatures_for_address(account, before, limit)
+                        client.get_signatures_for_address(account, before, until, limit)
                     )
                     logger.info(
                         f"solana_client_manager.py | handle_get_signatures_for_address | Finished fetching {before} {endpoint}"
