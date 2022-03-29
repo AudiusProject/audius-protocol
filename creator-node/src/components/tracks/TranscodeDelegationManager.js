@@ -218,20 +218,16 @@ class TranscodeDelegationManager {
 
     // Get transcode and write to tmp disk
     logger.info({ sp, transcodeFilePath }, 'Fetching transcode...')
-    const transcodeFileName = fileNameNoExtension + '-dl.mp3'
     res = await TranscodeDelegationManager.fetchTranscode(
       sp,
-      transcodeFileName,
       fileNameNoExtension
     )
     await Utils.writeStreamToFileSystem(res.data, transcodeFilePath)
 
     // Get m3u8 file and write to tmp disk
     logger.info({ sp, m3u8FilePath }, 'Fetching m3u8...')
-    const m3u8FileName = fileNameNoExtension + '.m3u8'
     res = await TranscodeDelegationManager.fetchM3U8File(
       sp,
-      m3u8FileName,
       fileNameNoExtension
     )
     await Utils.writeStreamToFileSystem(res.data, m3u8FilePath)
@@ -356,7 +352,8 @@ class TranscodeDelegationManager {
     })
   }
 
-  static async fetchTranscode(sp, transcodeFileName, fileNameNoExtension) {
+  static async fetchTranscode(sp, fileNameNoExtension) {
+    const transcodeFileName = fileNameNoExtension + '-dl.mp3'
     const spID = config.get('spID')
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
@@ -381,7 +378,8 @@ class TranscodeDelegationManager {
     })
   }
 
-  static async fetchM3U8File(sp, m3u8FileName, fileNameNoExtension) {
+  static async fetchM3U8File(sp, fileNameNoExtension) {
+    const m3u8FileName = fileNameNoExtension + '.m3u8'
     const spID = config.get('spID')
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
