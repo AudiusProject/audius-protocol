@@ -14,6 +14,13 @@ const CREATOR_NODE_ENDPOINT = config.get('creatorNodeEndpoint')
 const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
 
 const NUMBER_OF_SPS_FOR_HANDOFF_TRACK = 3
+const POLLING_TRANSCODE_AND_SEGMENTS_RETRIES = 50
+const POLLING_TRANSCODE_AND_SEGMENTS_MIN_TIMEOUT = 10000
+const POLLING_TRANSCODE_AND_SEGMENTS_MAX_TIMEOUT = 10000
+const FETCH_STREAM_TIMEOUT_MS = 15000
+const FETCH_PROCESSING_STATUS_TIMEOUT_MS = 5000
+const FETCH_HEALTH_CHECK_TIMEOUT_MS = 5000
+const SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS = 5000
 const HAND_OFF_STATES = Object.freeze({
   INITIALIZED: 'INITIALIZED',
   SELECTING_RANDOM_SPS: 'SELECTING_RANDOM_SPS',
@@ -182,9 +189,9 @@ class TranscodeDelegationManager {
         }
       },
       asyncFnTask: 'polling transcode',
-      retries: 50,
-      minTimeout: 10000,
-      maxTimeout: 10000
+      retries: POLLING_TRANSCODE_AND_SEGMENTS_RETRIES,
+      minTimeout: POLLING_TRANSCODE_AND_SEGMENTS_MIN_TIMEOUT,
+      maxTimeout: POLLING_TRANSCODE_AND_SEGMENTS_MAX_TIMEOUT
     })
   }
 
@@ -273,7 +280,7 @@ class TranscodeDelegationManager {
         // See: https://github.com/axios/axios/issues/1362
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
-        timeout: 5000 // 5s
+        timeout: SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS
       },
       asyncFnTask: 'transcode and segment'
     })
@@ -297,7 +304,7 @@ class TranscodeDelegationManager {
     await axios({
       url: `${sp}/health_check`,
       method: 'get',
-      timeout: 5000 // 5s
+      timeout: FETCH_HEALTH_CHECK_TIMEOUT_MS
     })
   }
 
@@ -319,7 +326,7 @@ class TranscodeDelegationManager {
         url: `${sp}/async_processing_status`,
         params: { uuid, timestamp, signature, spID },
         method: 'get',
-        timeout: 5000 // 5s
+        timeout: FETCH_PROCESSING_STATUS_TIMEOUT_MS
       },
       asyncFnTask: 'fetch track content processing status'
     })
@@ -346,7 +353,7 @@ class TranscodeDelegationManager {
           spID
         },
         responseType: 'stream',
-        timeout: 15000 // 15s
+        timeout: FETCH_STREAM_TIMEOUT_MS
       },
       asyncFnTask: 'fetch segment'
     })
@@ -372,7 +379,7 @@ class TranscodeDelegationManager {
           spID
         },
         responseType: 'stream',
-        timeout: 15000 // 15s
+        timeout: FETCH_STREAM_TIMEOUT_MS
       },
       asyncFnTask: 'fetch transcode'
     })
@@ -398,7 +405,7 @@ class TranscodeDelegationManager {
           spID
         },
         responseType: 'stream',
-        timeout: 15000 // 15s
+        timeout: FETCH_STREAM_TIMEOUT_MS
       },
       asyncFnTask: 'fetch m3u8'
     })
