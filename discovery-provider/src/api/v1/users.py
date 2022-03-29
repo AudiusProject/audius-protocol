@@ -93,7 +93,7 @@ class User(Resource):
     @ns.doc(
         id="""Get User""",
         description="Gets a single user by their encoded user ID",
-        params={"id": "The user's id"},
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(user_response)
@@ -109,7 +109,7 @@ class FullUser(Resource):
     @ns.doc(
         id="""Get User""",
         description="Gets a single user by their encoded user ID",
-        params={"id": "A user ID"},
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(current_user_parser)
@@ -129,7 +129,7 @@ class FullUserHandle(Resource):
     @ns.doc(
         id="""Get User by Handle""",
         description="Gets a single user by their handle",
-        params={"handle": "A user handle"},
+        params={"handle": "A User handle"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(current_user_parser)
