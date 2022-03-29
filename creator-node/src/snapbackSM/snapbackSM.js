@@ -185,9 +185,12 @@ class SnapbackSM {
       }
       this.log(`SIDTEST this.stateMachineQueue.process() Completed`)
 
-      await utils.timeout(this.snapbackJobInterval)
+      await utils.timeout(10000)
 
       await this.stateMachineQueue.add({ startTime: Date.now() })
+      this.log(
+        `SIDTEST this.stateMachineQueue.add() - new job added after 10s delay`
+      )
 
       done()
     })
