@@ -733,7 +733,9 @@ class FullTopUsers(Resource):
 associated_wallet_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
-associated_wallet_route_parser.add_argument("id", required=True)
+associated_wallet_route_parser.add_argument(
+    "id", required=True, description="A User ID"
+)
 associated_wallet_response = make_response(
     "associated_wallets_response", ns, fields.Nested(associated_wallets)
 )
@@ -748,7 +750,6 @@ class AssociatedWalletByUserId(Resource):
     @ns.doc(
         id="""Get Associated Wallets""",
         description="""Get the User's associated wallets""",
-        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(associated_wallet_route_parser)
@@ -766,7 +767,9 @@ class AssociatedWalletByUserId(Resource):
 user_associated_wallet_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
-user_associated_wallet_route_parser.add_argument("associated_wallet", required=True)
+user_associated_wallet_route_parser.add_argument(
+    "associated_wallet", required=True, description="Wallet address"
+)
 user_associated_wallet_response = make_response(
     "user_associated_wallet_response", ns, fields.Nested(encoded_user_id)
 )
@@ -777,7 +780,6 @@ class UserIdByAssociatedWallet(Resource):
     @ns.doc(
         id="""Get User ID from Wallet""",
         description="""Gets a User ID from an associated wallet address""",
-        params={"associated_wallet": "Wallet address"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_associated_wallet_route_parser)
