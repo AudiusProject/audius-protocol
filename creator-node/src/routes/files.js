@@ -854,9 +854,6 @@ async function _addToIpfsWithRetries({
 }
 
 module.exports = function (app) {
-  /**
-   * TODO: Eventually deprecate '/track_content_status'
-   */
   app.get(
     '/async_processing_status',
     handleResponse(async (req, res) => {
