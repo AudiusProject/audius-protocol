@@ -225,12 +225,12 @@ class SnapbackSM {
         startTime: Date.now()
       },
       /** opts */ {
-        repeat: { every: this.snapbackJobInterval }
+        repeat: { every: 30000 }
       }
     )
 
     this.log(
-      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`
+      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; next job in ${30000}ms`
     )
   }
 
