@@ -3,14 +3,11 @@ import { useCallback } from 'react'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { View, Text } from 'react-native'
 
-import {
-  getAudioTierRank,
-  getUserAudioTier,
-  IconAudioBadge
-} from 'app/components/audio-rewards'
+import { IconAudioBadge } from 'app/components/audio-rewards'
 import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
 import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { makeStyles } from 'app/styles/makeStyles'
 
 import { useSelectProfile } from './selectors'
@@ -48,10 +45,11 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 }))
 
 export const ProfileBadge = () => {
-  const profile = useSelectProfile(['balance', 'associated_wallets_balance'])
+  const profile = useSelectProfile(['user_id'])
   const styles = useStyles()
-  const tier = getUserAudioTier(profile)
-  const tierRank = getAudioTierRank(tier)
+
+  const { tier, tierNumber } = useSelectTierInfo(profile.user_id)
+
   const dispatchWeb = useDispatchWeb()
 
   const handlePress = useCallback(() => {
@@ -68,7 +66,7 @@ export const ProfileBadge = () => {
       <IconAudioBadge tier={tier} height={28} width={28} style={styles.badge} />
       <View>
         <Text style={styles.tierNumber}>
-          {messages.tier} {tierRank}
+          {messages.tier} {tierNumber}
         </Text>
         <Text style={styles.tierText}>{tier}</Text>
       </View>

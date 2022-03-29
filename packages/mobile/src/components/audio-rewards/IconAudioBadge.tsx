@@ -1,5 +1,6 @@
 import { ComponentType } from 'react'
 
+import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
 import { SvgProps } from 'react-native-svg'
 
 import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
@@ -7,9 +8,7 @@ import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
 import IconPlatinumBadge from 'app/assets/images/IconPlatinumBadge.svg'
 import IconSilverBadge from 'app/assets/images/IconSilverBadge.svg'
 
-import { AudioTier } from './audioTier'
-
-const audioTierMap: Record<AudioTier, ComponentType<SvgProps> | null> = {
+const audioTierMap: Record<BadgeTier, ComponentType<SvgProps> | null> = {
   none: null,
   bronze: IconBronzeBadge,
   silver: IconSilverBadge,
@@ -18,7 +17,7 @@ const audioTierMap: Record<AudioTier, ComponentType<SvgProps> | null> = {
 }
 
 type IconBadgeProps = SvgProps & {
-  tier: AudioTier
+  tier: BadgeTier
 }
 
 export const IconAudioBadge = (props: IconBadgeProps) => {

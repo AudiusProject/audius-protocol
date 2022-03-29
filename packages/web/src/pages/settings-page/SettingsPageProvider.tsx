@@ -31,8 +31,8 @@ import {
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { setTheme } from 'common/store/ui/theme/actions'
 import { getTheme } from 'common/store/ui/theme/selectors'
+import { makeGetTierAndVerifiedForUser } from 'common/store/wallet/utils'
 import { show } from 'components/music-confetti/store/slice'
-import { makeGetTierAndVerifiedForUser } from 'components/user-badges/utils'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import {

@@ -1,11 +1,11 @@
 import { useContext } from 'react'
 
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
+import { getUserId } from 'audius-client/src/common/store/account/selectors'
 
 import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
-import { getUserAudioTier } from 'app/components/audio-rewards'
 import { SegmentedControl } from 'app/components/core'
 import { ThemeContext } from 'app/components/theme/ThemeContext'
+import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { Theme } from 'app/utils/theme'
 
@@ -26,11 +26,9 @@ const messages = {
 
 export const AppearanceSettingsRow = () => {
   const { theme, setTheme } = useContext(ThemeContext)
-  const accountUser = useSelectorWeb(getAccountUser)
+  const accountId = useSelectorWeb(getUserId)
 
-  if (!accountUser) return null
-
-  const tier = getUserAudioTier(accountUser)
+  const { tier } = useSelectTierInfo(accountId ?? 0)
 
   const appearanceOptions = [
     { key: Theme.AUTO, text: messages.auto },

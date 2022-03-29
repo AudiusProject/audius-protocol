@@ -9,13 +9,11 @@ import {
 } from 'react-native'
 
 import IconVerified from 'app/assets/images/iconVerified.svg'
-import { IconAudioBadge, getUserAudioTier } from 'app/components/audio-rewards'
+import { IconAudioBadge } from 'app/components/audio-rewards'
+import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 
 type UserBadgesProps = {
-  user: Pick<
-    User,
-    'name' | 'associated_wallets_balance' | 'balance' | 'is_verified'
-  >
+  user: Pick<User, 'user_id' | 'name' | 'is_verified'>
   badgeSize?: number
   style?: StyleProp<ViewStyle>
   nameStyle?: StyleProp<TextStyle>
@@ -35,7 +33,7 @@ const styles = StyleSheet.create({
 
 export const UserBadges = (props: UserBadgesProps) => {
   const { user, badgeSize = 14, style, nameStyle, hideName } = props
-  const tier = getUserAudioTier(user)
+  const { tier } = useSelectTierInfo(user.user_id)
 
   return (
     <View style={[styles.container, style]}>

@@ -1,6 +1,6 @@
-import { GradientText, GradientTextProps } from 'app/components/core'
+import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
 
-import { AudioTier } from './audioTier'
+import { GradientText, GradientTextProps } from 'app/components/core'
 
 const tierGradientMap = {
   none: {
@@ -21,7 +21,7 @@ const tierGradientMap = {
 }
 
 type TierTextProps = GradientTextProps & {
-  tier: AudioTier
+  tier: BadgeTier
 }
 
 export const TierText = (props: TierTextProps) => {

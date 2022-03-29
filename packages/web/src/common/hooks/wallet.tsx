@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
-
 import { ID } from 'common/models/Identifiers'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
+import { makeGetTierAndVerifiedForUser } from 'common/store/wallet/utils'
 import { useSelector } from 'utils/reducer'
 
-import { makeGetTierAndVerifiedForUser } from './utils'
+const getTierAndVerifiedForUser = makeGetTierAndVerifiedForUser()
 
 /**
  * Wraps our reselect tier selector in useMemo and useSelector
@@ -13,11 +12,9 @@ import { makeGetTierAndVerifiedForUser } from './utils'
  * @param userId
  */
 export const useSelectTierInfo = (userId: ID) => {
-  const tierAndVerifiedSelector = useMemo(makeGetTierAndVerifiedForUser, [])
-  const res = useSelector(state => {
-    return tierAndVerifiedSelector(state, { userId })
+  return useSelector(state => {
+    return getTierAndVerifiedForUser(state, { userId })
   })
-  return res
 }
 /**
  * Gets the tier for the current profile page, falling back

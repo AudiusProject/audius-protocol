@@ -1,31 +1,11 @@
-import { useMemo } from 'react'
-
-import { ID } from 'audius-client/src/common/models/Identifiers'
+import { badgeTiers } from 'audius-client/src/common/store/wallet/utils'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
-import {
-  badgeTiers,
-  makeGetTierAndVerifiedForUser
-} from 'audius-client/src/components/user-badges/utils'
 
+import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { MIN_COLLECTIBLES_TIER } from './constants'
 import { getIsOwner, useSelectProfile } from './selectors'
-
-/**
- * Wraps our reselect tier selector in useMemo and useSelector
- * to be safe for use in multiple components
- *
- * This was copied over from audius-client and useSelector was replaced
- * with useSelectorWeb.
- */
-export const useSelectTierInfo = (userId: ID) => {
-  const tierAndVerifiedSelector = useMemo(makeGetTierAndVerifiedForUser, [])
-  const res = useSelectorWeb(state => {
-    return tierAndVerifiedSelector(state as any, { userId })
-  })
-  return res
-}
 
 /**
  *
