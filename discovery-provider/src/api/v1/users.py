@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     abort_bad_request_param,
     abort_not_found,
+    current_user_parser,
     decode_with_abort,
     extend_activity,
     extend_challenge_response,
@@ -16,6 +17,8 @@ from src.api.v1.helpers import (
     get_default_max,
     make_full_response,
     make_response,
+    pagination_parser,
+    pagination_with_current_user_parser,
     search_parser,
     success_response,
 )
@@ -68,27 +71,6 @@ full_ns = Namespace("users", description="Full user operations")
 user_response = make_response("user_response", ns, fields.Nested(user_model))
 full_user_response = make_full_response(
     "full_user_response", full_ns, fields.List(fields.Nested(user_model_full))
-)
-
-current_user_parser = reqparse.RequestParser()
-current_user_parser.add_argument(
-    "user_id", required=False, help="The user ID of the user making the request"
-)
-
-pagination_parser = reqparse.RequestParser()
-pagination_parser.add_argument(
-    "offset",
-    required=False,
-    type=int,
-    help="The number of items to skip. Useful for pagination (page number * limit)",
-)
-pagination_parser.add_argument(
-    "limit", required=False, type=int, help="The number of items to fetch per page"
-)
-
-pagination_with_current_user_parser = pagination_parser.copy()
-pagination_with_current_user_parser.add_argument(
-    "user_id", required=False, help="The user ID of the user making the request"
 )
 
 

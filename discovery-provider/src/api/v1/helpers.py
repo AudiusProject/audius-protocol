@@ -361,6 +361,28 @@ full_trending_parser = trending_parser.copy()
 full_trending_parser.add_argument("user_id", required=False)
 
 
+current_user_parser = reqparse.RequestParser()
+current_user_parser.add_argument(
+    "user_id", required=False, help="The user ID of the user making the request"
+)
+
+pagination_parser = reqparse.RequestParser()
+pagination_parser.add_argument(
+    "offset",
+    required=False,
+    type=int,
+    help="The number of items to skip. Useful for pagination (page number * limit)",
+)
+pagination_parser.add_argument(
+    "limit", required=False, type=int, help="The number of items to fetch per page"
+)
+
+pagination_with_current_user_parser = pagination_parser.copy()
+pagination_with_current_user_parser.add_argument(
+    "user_id", required=False, help="The user ID of the user making the request"
+)
+
+
 def success_response(entity):
     return api_helpers.success_response(entity, 200, False)
 
