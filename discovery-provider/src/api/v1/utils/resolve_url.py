@@ -50,6 +50,6 @@ def resolve_url(session, url):
             .one()
         )
         hashed_id = encode_int_id(user.user_id)
-        return ns_url_for(users_ns, "user", user_id=hashed_id)
+        return ns_url_for(users_ns, "user", id=hashed_id)
 
     return None
