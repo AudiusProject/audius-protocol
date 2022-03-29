@@ -1,25 +1,27 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 import { Scrollbar } from '@audius/stems'
+import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { withRouter, NavLink, useHistory } from 'react-router-dom'
+import { NavLink, useHistory, withRouter } from 'react-router-dom'
+import useMeasure from 'react-use-measure'
 
 import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
-import { Name, CreatePlaylistSource } from 'common/models/Analytics'
+import { CreatePlaylistSource, Name } from 'common/models/Analytics'
 import { SquareSizes } from 'common/models/ImageSizes'
 import Status from 'common/models/Status'
 import { FeatureFlags } from 'common/services/remote-config'
 import {
-  getAccountUser,
   getAccountStatus,
+  getAccountUser,
   getPlaylistLibrary
 } from 'common/store/account/selectors'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import {
-  createPlaylist,
-  addTrackToPlaylist
+  addTrackToPlaylist,
+  createPlaylist
 } from 'common/store/cache/collections/actions'
 import {
   toggleNotificationPanel,
@@ -42,6 +44,7 @@ import {
   getIsOpen
 } from 'common/store/ui/createPlaylistModal/selectors'
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
+import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import Droppable from 'components/dragndrop/Droppable'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import CurrentlyPlaying from 'components/nav/desktop/CurrentlyPlaying'
@@ -61,16 +64,16 @@ import { make, useRecord } from 'store/analytics/actions'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import {
-  FEED_PAGE,
-  TRENDING_PAGE,
-  SAVED_PAGE,
-  HISTORY_PAGE,
   DASHBOARD_PAGE,
-  UPLOAD_PAGE,
+  EXPLORE_PAGE,
+  FEED_PAGE,
   fullTrackPage,
-  profilePage,
+  HISTORY_PAGE,
   playlistPage,
-  EXPLORE_PAGE
+  profilePage,
+  SAVED_PAGE,
+  TRENDING_PAGE,
+  UPLOAD_PAGE
 } from 'utils/route'
 
 import NavAudio from './NavAudio'
@@ -115,6 +118,17 @@ const NavColumn = ({
   const record = useRecord()
   const { location } = useHistory()
   const { pathname } = location
+  const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
+    polyfill: ResizeObserver
+  })
+  const scrollbarRef = useRef(null)
+  const [dragScrollingDirection, setDragScrollingDirection] = useState(
+    undefined
+  )
+  const handleChangeDragScrollingDirection = useCallback(newDirection => {
+    setDragScrollingDirection(newDirection)
+  }, [])
+
   const goToSignUp = useCallback(
     source => {
       routeToSignup()
@@ -196,6 +210,13 @@ const NavColumn = ({
     [account, goToSignUp, showActionRequiresAccount, updatePlaylistLastViewedAt]
   )
 
+  const updateScrollTopPosition = useCallback(difference => {
+    if (scrollbarRef != null && scrollbarRef.current !== null) {
+      scrollbarRef.current.scrollTop =
+        scrollbarRef.current.scrollTop + difference
+    }
+  }, [])
+
   /** @param {bool} full whether or not to get the full page link */
   const getTrackPageLink = useCallback(
     (full = false) => {
@@ -266,159 +287,181 @@ const NavColumn = ({
         goToRoute={goToRoute}
         isElectron={isElectron}
       />
-      <div className={cn(styles.navContent, { [styles.show]: navLoaded })}>
-        <Scrollbar className={styles.scrollable}>
-          {account ? (
-            <div className={styles.userHeader}>
-              <div className={styles.accountWrapper}>
-                <DynamicImage
-                  wrapperClassName={styles.wrapperPhoto}
-                  className={styles.dynamicPhoto}
-                  onClick={goToProfile}
-                  image={profileImage}
-                />
-                <div className={styles.userInfoWrapper}>
-                  <div className={styles.name} onClick={goToProfile}>
-                    {name}
-                    <UserBadges
-                      userId={account.user_id}
-                      badgeSize={12}
-                      className={styles.badge}
-                    />
+      <div
+        ref={navBodyContainerMeasureRef}
+        className={cn(styles.navContent, {
+          [styles.show]: navLoaded,
+          [styles.dragScrollingUp]: dragScrollingDirection === 'up',
+          [styles.dragScrollingDown]: dragScrollingDirection === 'down'
+        })}
+      >
+        <Scrollbar
+          containerRef={el => {
+            scrollbarRef.current = el
+          }}
+          className={styles.scrollable}
+        >
+          <DragAutoscroller
+            containerBoundaries={navBodyContainerBoundaries}
+            updateScrollTopPosition={updateScrollTopPosition}
+            onChangeDragScrollingDirection={handleChangeDragScrollingDirection}
+          >
+            {account ? (
+              <div className={styles.userHeader}>
+                <div className={styles.accountWrapper}>
+                  <DynamicImage
+                    wrapperClassName={styles.wrapperPhoto}
+                    className={styles.dynamicPhoto}
+                    onClick={goToProfile}
+                    image={profileImage}
+                  />
+                  <div className={styles.userInfoWrapper}>
+                    <div className={styles.name} onClick={goToProfile}>
+                      {name}
+                      <UserBadges
+                        userId={account.user_id}
+                        badgeSize={12}
+                        className={styles.badge}
+                      />
+                    </div>
+                    <div className={styles.handleContainer}>
+                      <span
+                        className={styles.handle}
+                        onClick={goToProfile}
+                      >{`@${handle}`}</span>
+                    </div>
                   </div>
-                  <div className={styles.handleContainer}>
-                    <span
-                      className={styles.handle}
-                      onClick={goToProfile}
-                    >{`@${handle}`}</span>
+                </div>
+                <NavAudio />
+              </div>
+            ) : (
+              <div className={styles.userHeader}>
+                <div className={styles.accountWrapper}>
+                  <div
+                    className={styles.photo}
+                    style={{ backgroundImage: `url(${imageProfilePicEmpty})` }}
+                    onClick={onClickNavProfile}
+                  />
+                  <div className={styles.userInfoWrapper}>
+                    <div className={styles.haveAccount}>Have an Account?</div>
+                    <div className={styles.logIn} onClick={onClickNavProfile}>
+                      Sign In
+                    </div>
                   </div>
                 </div>
               </div>
-              <NavAudio />
-            </div>
-          ) : (
-            <div className={styles.userHeader}>
-              <div className={styles.accountWrapper}>
-                <div
-                  className={styles.photo}
-                  style={{ backgroundImage: `url(${imageProfilePicEmpty})` }}
-                  onClick={onClickNavProfile}
-                />
-                <div className={styles.userInfoWrapper}>
-                  <div className={styles.haveAccount}>Have an Account?</div>
-                  <div className={styles.logIn} onClick={onClickNavProfile}>
-                    Sign In
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+            )}
 
-          <div className={styles.links}>
-            <div className={styles.linkGroup}>
-              <div className={styles.groupHeader}>Discover</div>
-              <NavLink
-                to={FEED_PAGE}
-                activeClassName='active'
-                className={cn(styles.link, {
-                  [styles.disabledLink]: !account || dragging
-                })}
-                onClick={onClickNavLinkWithAccount}
-              >
-                Feed
-              </NavLink>
-              <NavLink
-                to={TRENDING_PAGE}
-                activeClassName='active'
-                className={cn(styles.link, { [styles.disabledLink]: dragging })}
-              >
-                Trending
-              </NavLink>
-              <NavLink
-                to={EXPLORE_PAGE}
-                exact
-                activeClassName='active'
-                className={cn(styles.link, { [styles.disabledLink]: dragging })}
-              >
-                Explore
-              </NavLink>
-            </div>
-            <div className={styles.linkGroup}>
-              <div className={styles.groupHeader}>Library</div>
-              <Droppable
-                className={styles.droppable}
-                hoverClassName={styles.droppableHover}
-                acceptedKinds={['track', 'album']}
-                acceptOwner={false}
-                onDrop={kind === 'album' ? saveCollection : saveTrack}
-              >
+            <div className={styles.links}>
+              <div className={styles.linkGroup}>
+                <div className={styles.groupHeader}>Discover</div>
                 <NavLink
-                  to={SAVED_PAGE}
+                  to={FEED_PAGE}
                   activeClassName='active'
                   className={cn(styles.link, {
-                    [styles.disabledLink]:
-                      !account ||
-                      (dragging && kind === 'playlist') ||
-                      draggingIsOwner,
-                    [styles.droppableLink]:
-                      dragging &&
-                      !draggingIsOwner &&
-                      (kind === 'track' || kind === 'album')
+                    [styles.disabledLink]: !account || dragging
                   })}
                   onClick={onClickNavLinkWithAccount}
                 >
-                  Favorites
+                  Feed
                 </NavLink>
-              </Droppable>
-              <NavLink
-                to={HISTORY_PAGE}
-                activeClassName='active'
-                className={cn(styles.link, {
-                  [styles.disabledLink]: !account || dragging
-                })}
-                onClick={onClickNavLinkWithAccount}
-              >
-                History
-              </NavLink>
-            </div>
-            <div className={styles.linkGroup}>
-              <Droppable
-                className={styles.droppableGroup}
-                hoverClassName={styles.droppableGroupHover}
-                onDrop={saveCollection}
-                acceptedKinds={['playlist']}
-              >
-                <div
-                  className={cn(styles.groupHeader, {
-                    [styles.droppableLink]: dragging && kind === 'playlist'
+                <NavLink
+                  to={TRENDING_PAGE}
+                  activeClassName='active'
+                  className={cn(styles.link, {
+                    [styles.disabledLink]: dragging
                   })}
                 >
-                  Playlists
-                  <div className={styles.newPlaylist}>
-                    <Tooltip
-                      text={
-                        isPlaylistFoldersEnabled
-                          ? messages.newPlaylistOrFolderTooltip
-                          : messages.newPlaylistTooltip
-                      }
-                      mount='parent'
-                    >
-                      <span>
-                        <Pill
-                          text='New'
-                          icon='save'
-                          onClick={openCreatePlaylist}
-                        />
-                      </span>
-                    </Tooltip>
+                  Trending
+                </NavLink>
+                <NavLink
+                  to={EXPLORE_PAGE}
+                  exact
+                  activeClassName='active'
+                  className={cn(styles.link, {
+                    [styles.disabledLink]: dragging
+                  })}
+                >
+                  Explore
+                </NavLink>
+              </div>
+              <div className={styles.linkGroup}>
+                <div className={styles.groupHeader}>Library</div>
+                <Droppable
+                  className={styles.droppable}
+                  hoverClassName={styles.droppableHover}
+                  acceptedKinds={['track', 'album']}
+                  acceptOwner={false}
+                  onDrop={kind === 'album' ? saveCollection : saveTrack}
+                >
+                  <NavLink
+                    to={SAVED_PAGE}
+                    activeClassName='active'
+                    className={cn(styles.link, {
+                      [styles.disabledLink]:
+                        !account ||
+                        (dragging && kind === 'playlist') ||
+                        draggingIsOwner,
+                      [styles.droppableLink]:
+                        dragging &&
+                        !draggingIsOwner &&
+                        (kind === 'track' || kind === 'album')
+                    })}
+                    onClick={onClickNavLinkWithAccount}
+                  >
+                    Favorites
+                  </NavLink>
+                </Droppable>
+                <NavLink
+                  to={HISTORY_PAGE}
+                  activeClassName='active'
+                  className={cn(styles.link, {
+                    [styles.disabledLink]: !account || dragging
+                  })}
+                  onClick={onClickNavLinkWithAccount}
+                >
+                  History
+                </NavLink>
+              </div>
+              <div className={styles.linkGroup}>
+                <Droppable
+                  className={styles.droppableGroup}
+                  hoverClassName={styles.droppableGroupHover}
+                  onDrop={saveCollection}
+                  acceptedKinds={['playlist']}
+                >
+                  <div
+                    className={cn(styles.groupHeader, {
+                      [styles.droppableLink]: dragging && kind === 'playlist'
+                    })}
+                  >
+                    Playlists
+                    <div className={styles.newPlaylist}>
+                      <Tooltip
+                        text={
+                          isPlaylistFoldersEnabled
+                            ? messages.newPlaylistOrFolderTooltip
+                            : messages.newPlaylistTooltip
+                        }
+                        mount='parent'
+                      >
+                        <span>
+                          <Pill
+                            text='New'
+                            icon='save'
+                            onClick={openCreatePlaylist}
+                          />
+                        </span>
+                      </Tooltip>
+                    </div>
                   </div>
-                </div>
-                <PlaylistLibrary
-                  onClickNavLinkWithAccount={onClickNavLinkWithAccount}
-                />
-              </Droppable>
+                  <PlaylistLibrary
+                    onClickNavLinkWithAccount={onClickNavLinkWithAccount}
+                  />
+                </Droppable>
+              </div>
             </div>
-          </div>
+          </DragAutoscroller>
         </Scrollbar>
         <CreatePlaylistModal
           visible={showCreatePlaylistModal}

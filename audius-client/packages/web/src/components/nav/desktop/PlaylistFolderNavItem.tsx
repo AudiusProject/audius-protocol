@@ -6,6 +6,7 @@ import {
   IconFolderOutline,
   IconKebabHorizontal
 } from '@audius/stems'
+import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
@@ -95,7 +96,9 @@ export const PlaylistFolderNavItem = ({
   const [isHovering, setIsHovering] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const record = useRecord()
-  const [ref, bounds] = useMeasure()
+  const [ref, bounds] = useMeasure({
+    polyfill: ResizeObserver
+  })
   const contentsStyle = useSpring({
     height: isExpanded ? bounds.height : 0,
     opacity: isExpanded ? 100 : 0,
