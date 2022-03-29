@@ -169,11 +169,13 @@
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
-      "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#; docker-compose -f compose/docker-compose.yml down --remove-orphans"
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#; docker-compose -f compose/docker-compose.yml down --remove-orphans",
+      "sudo rm -f creator-node/node_modules"
     ],
     "restart": [
       "cd creator-node; . compose/env/unsetShellEnv.sh",
       "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
+      "sudo rm -f creator-node/node_modules",
       "cd libs/; npm run init-local update-cnode-config #",
       "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
