@@ -30,8 +30,16 @@
   flex-direction: column;
   width: 100%;
   overflow: hidden;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out, box-shadow 0.2s ease;
   flex-grow: 1;
+}
+
+.navContent.dragScrollingUp {
+  box-shadow: inset 0px 8px 5px -5px var(--tile-shadow-3);
+}
+
+.navContent.dragScrollingDown {
+  box-shadow: inset 0px -8px 5px -5px var(--tile-shadow-3);
 }
 
 .navContent.show {
