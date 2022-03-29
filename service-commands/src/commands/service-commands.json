@@ -146,7 +146,7 @@
       "sudo rm -rf solana-programs/reward-manager/target",
       "sudo rm -rf discovery-provider/.venv",
       "sudo rm -rf discovery-provider/.mypy_cache",
-      "sudo rm discovery-provider/*.log"
+      "sudo rm -f discovery-provider/*.log"
     ],
     "register": [
       "cd libs/; npm run init-local register-discovery-node #",
@@ -161,7 +161,7 @@
       "sudo rm -rf solana-programs/reward-manager/target",
       "sudo rm -rf discovery-provider/.venv",
       "sudo rm -rf discovery-provider/.mypy_cache",
-      "sudo rm discovery-provider/*.log",
+      "sudo rm -f discovery-provider/*.log",
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; rm -f *_dump",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
