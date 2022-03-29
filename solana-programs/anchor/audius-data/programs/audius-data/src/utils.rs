@@ -3,7 +3,7 @@ use crate::{ErrorCode, User, UserAuthorityDelegate, AuthorityDelegationStatus, c
 use anchor_lang::{prelude::*, solana_program::system_program};
 
 /// Validate the authority account that signed the transaction
-///  is the user's authority or the user's delegate authority
+/// is the user's authority or the user's delegate authority
 pub fn validate_user_authority<'info>(
     program_id: &Pubkey,
     user: &Account<'info, User>,
@@ -12,7 +12,8 @@ pub fn validate_user_authority<'info>(
     authority_delegation_status: &AccountInfo<'info>,
 ) -> Result<()> {
     if user.authority != authority.key() {
-        // Reject if system program provided as user_authority_delegate or authority_delegation_status
+        // Authority must be a delegate
+        // Reject if user_authority_delegate or authority_delegation_status is not provided
         if (user_authority_delegate.key() == system_program::id()) || (authority_delegation_status.key() == system_program::id()) {
             return Err(ErrorCode::MissingDelegateAccount.into());
         }
