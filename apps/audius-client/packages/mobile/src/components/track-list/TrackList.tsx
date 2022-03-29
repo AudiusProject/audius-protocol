@@ -81,8 +81,7 @@ export const TrackList = ({
     const isActive = track.uid !== undefined && track.uid === playingUid
 
     // The dividers above and belove the active track should be hidden
-    const hideDivider =
-      isActive || tracks.entries[index - 1]?.uid === playingUid
+    const hideDivider = isActive || tracks[index - 1]?.uid === playingUid
 
     return (
       <View>

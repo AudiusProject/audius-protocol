@@ -13,6 +13,7 @@ import {
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles/makeStyles'
+import { useThemeColors } from 'app/utils/theme'
 
 import { TileShadow } from './TileShadow'
 
@@ -68,6 +69,7 @@ export const Tile = <
   props: TileProps<TileComponentType>
 ) => {
   const styles = useStyles()
+  const themeColors = useThemeColors()
 
   const {
     as: TileComponent = defaultElement,
@@ -114,21 +116,23 @@ export const Tile = <
       <TileShadow
         offset={[0, 0]}
         distance={1}
-        startColor='rgba(133, 129, 153, 0.1)'
+        // Approximately 10% opacity on neutral
+        startColor={themeColors.neutral + '1a'}
         borderRadius={borderRadius}
         inset={0}
       />
       <TileShadow
         offset={[0, 1]}
         distance={0}
-        startColor='#e3e3e3'
+        startColor={themeColors.shadow}
         borderRadius={borderRadius}
         inset={0}
       />
       <TileShadow
         offset={[0, 2]}
         distance={7}
-        startColor='rgba(133, 129, 153, 0.1)'
+        // Approximately 10% opacity on neutral
+        startColor={themeColors.neutral + '1a'}
         borderRadius={borderRadius}
         inset={4}
       />
