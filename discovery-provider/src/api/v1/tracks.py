@@ -347,7 +347,12 @@ track_search_result = make_response(
 )
 
 track_search_parser = search_parser.copy()
-track_search_parser.add_argument("only_downloadable", required=False, default=False)
+track_search_parser.add_argument(
+    "only_downloadable",
+    required=False,
+    default=False,
+    description="Return only downloadable tracks",
+)
 
 
 @ns.route("/search")
@@ -356,9 +361,6 @@ class TrackSearchResult(Resource):
     @ns.doc(
         id="""Search Tracks""",
         description="""Search for a track or tracks""",
-        params={
-            "only_downloadable": "Return only downloadable tracks",
-        },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(track_search_result)
