@@ -6,6 +6,7 @@ const retry = require('async-retry')
 const utils = require('../utils')
 const models = require('../models')
 const { logger } = require('../logging')
+const redis = require('../redis.js')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
@@ -79,7 +80,7 @@ const RECONFIG_MODES = Object.freeze({
 
 const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
-const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 30000 // 30s
+const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 5000 // 30s
 
 /*
   SnapbackSM aka Snapback StateMachine
@@ -126,7 +127,7 @@ class SnapbackSM {
       !this.endpoint ||
       !this.delegatePrivateKey
     ) {
-      throw new Error('Missing required configs - cannot start')
+      throw new Error('SnapbackSM: Missing required configs - cannot start')
     }
 
     // State machine queue processes all user operations
@@ -175,17 +176,14 @@ class SnapbackSM {
      */
 
     // Initialize stateMachineQueue job processor
-    // - Re-adds job to queue after processing current job, with a fixed delay
-    this.stateMachineQueue.process(async (job, done) => {
+    this.stateMachineQueue.process(1 /** concurrency */, async (job, done) => {
+      await redis.set('stateMachineQueueLatestJobStart', Date.now())
       try {
         await this.processStateMachineOperation()
+        await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
       } catch (e) {
         this.logError(`StateMachineQueue processing error: ${e}`)
       }
-
-      await utils.timeout(this.snapbackJobInterval)
-
-      await this.stateMachineQueue.add({ startTime: Date.now() })
 
       done()
     })
@@ -218,13 +216,14 @@ class SnapbackSM {
       }
     )
 
-    // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
+    // Enqueue stateMachineQueue jobs on a cron, after an initial delay
+    await utils.timeout(STATE_MACHINE_QUEUE_INIT_DELAY_MS)
     await this.stateMachineQueue.add(
-      {
-        startTime: Date.now() + STATE_MACHINE_QUEUE_INIT_DELAY_MS
+      /** data */ {
+        startTime: Date.now()
       },
-      {
-        delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS
+      /** opts */ {
+        repeat: { every: this.snapbackJobInterval }
       }
     )
 
@@ -251,7 +250,7 @@ class SnapbackSM {
 
   // Initialize queue object with provided name and unix timestamp
   createBullQueue(queueName) {
-    return new Bull(`${queueName}-${Date.now()}`, {
+    return new Bull(queueName, {
       redis: {
         port: this.nodeConfig.get('redisPort'),
         host: this.nodeConfig.get('redisHost')
@@ -846,6 +845,17 @@ class SnapbackSM {
    * @note refer to git history for reference to `processStateMachineOperationOld()`
    */
   async processStateMachineOperation() {
+    // Ensure lock available, and acquire it - else error
+    const lockKey = 'stateMachineQueueJobLock'
+    const lockExp = this.snapbackJobInterval * 2
+    if ((await redis.lock.getLock(lockKey)) === true) {
+      this.log(
+        `[stateMachineQueue] Cannot start new job; lock held by previous job.`
+      )
+      return
+    }
+    await redis.lock.setLock(lockKey, lockExp)
+
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = [
       {
@@ -1122,6 +1132,9 @@ class SnapbackSM {
           `Error printing processStateMachineOperation Decision Tree ${decisionTree}`
         )
       }
+
+      // Release lock
+      await redis.lock.removeLock(lockKey)
     }
   }
 

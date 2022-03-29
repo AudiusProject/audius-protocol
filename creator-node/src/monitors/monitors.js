@@ -34,8 +34,10 @@ const {
   getDailySyncSuccessCount,
   getDailySyncFailCount,
   getLatestSyncSuccessTimestamp,
-  getLatestSyncFailTimestamp
-} = require('./syncHistory')
+  getLatestSyncFailTimestamp,
+  getStateMachineQueueLatestJobSuccess,
+  getStateMachineQueueLatestJobStart
+} = require('./stateMachine')
 const redis = require('../redis')
 
 // Prefix used to key each monitored value in redis
@@ -226,6 +228,20 @@ const LATEST_SYNC_FAIL_TIMESTAMP = {
   type: 'string'
 }
 
+const LATEST_STATE_MACHINE_QUEUE_SUCCESS = {
+  name: 'stateMachineQueueLatestJobSuccess',
+  func: getStateMachineQueueLatestJobSuccess,
+  ttl: 5, // 5 /* mins */ * 60 /* s */,
+  type: 'string'
+}
+
+const LATEST_STATE_MACHINE_QUEUE_START = {
+  name: 'stateMachineQueueLatestJobStart',
+  func: getStateMachineQueueLatestJobStart,
+  ttl: 5, // 5 /* mins */ * 60 /* s */,
+  type: 'string'
+}
+
 const MONITORS = {
   DATABASE_LIVENESS,
   DATABASE_SIZE,
@@ -252,7 +268,9 @@ const MONITORS = {
   DAILY_SYNC_SUCCESS_COUNT,
   DAILY_SYNC_FAIL_COUNT,
   LATEST_SYNC_SUCCESS_TIMESTAMP,
-  LATEST_SYNC_FAIL_TIMESTAMP
+  LATEST_SYNC_FAIL_TIMESTAMP,
+  LATEST_STATE_MACHINE_QUEUE_SUCCESS,
+  LATEST_STATE_MACHINE_QUEUE_START
 }
 
 const getMonitorRedisKey = (monitor) =>

@@ -514,10 +514,10 @@ const config = convict({
     default: 24
   },
   snapbackJobInterval: {
-    doc: 'Interval [ms] that snapbackSM jobs are fired; 1 hour',
+    doc: 'Interval [ms] that snapbackSM jobs are fired',
     format: 'nat',
     env: 'snapbackJobInterval',
-    default: 3600000
+    default: 3600000 // 1hr
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
