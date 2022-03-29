@@ -348,6 +348,12 @@ def decode_ids_array(ids_array):
 
 
 class DescriptiveArgument(reqparse.Argument):
+    """
+    A version of reqparse.Argument that takes an additional "description" param.
+    The "description" is used in the Swagger JSON generation and takes priority over "help".
+    Unlike the "help" param, it does not affect error messages, allowing "help" to be specific to errors.
+    """
+
     def __init__(
         self,
         name,
