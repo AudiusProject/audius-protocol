@@ -602,6 +602,31 @@ jobs:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
 
+  test-solana-programs-anchor:
+    resource_class: large # 4vcpu/8gb
+    machine:
+      image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
+      docker_layer_caching: true
+    environment:
+      PROTOCOL_DIR: /home/circleci/project
+      NVM_VERSION: 0.35.3
+      NODE_VERSION: v14.18.1
+    steps:
+      - checkout
+      - diff-if-necessary:
+          service: solana-programs
+      - run:
+          name: Install node
+          command: |
+            sudo apt update -y && sudo apt upgrade -y && sudo apt install curl -y
+            curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
+            source ~/.bashrc
+            nvm install "$NODE_VERSION"
+      - run:
+          name: Setup dev dependencies
+          command: |
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            npm run install-dev
       - restore_cache:
           keys:
             - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
@@ -609,15 +634,19 @@ jobs:
       - run:
           name: anchor tests
           command: |
-            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
-            solana-keygen new --no-bip39-passphrase
-            cd solana-programs/anchor/audius-data
-            yarn
-            npx anchor test
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            npm test
       - save_cache:
           paths:
             - solana-programs/anchor/audius-data/node_modules
-          key: anchor-ndoe-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+
+      - run:
+          name: anchor program seed CLI tests
+          command: |
+            cd solana-programs/anchor/audius-data
+            npm run localnet-up-ci
+            npm run dev-setup
 
       # - restore_cache:
       #     keys:
@@ -727,6 +756,8 @@ workflows:
 
       - test-solana-programs:
           name: test-solana-programs
+      - test-solana-programs-anchor:
+          name: test-solana-programs-anchor
       - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs
