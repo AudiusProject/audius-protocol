@@ -9,7 +9,7 @@ const models = require('../models')
 const {
   saveFileFromBufferToIPFSAndDisk,
   removeTrackFolder,
-  getTmpTrackUploadArtifactsWithInputUUID,
+  getTmpTrackUploadArtifactsPathWithInputUUID,
   handleTrackContentUpload
 } = require('../fileManager')
 const {
@@ -148,7 +148,7 @@ module.exports = function (app) {
         )
       }
 
-      const basePath = getTmpTrackUploadArtifactsWithInputUUID(uuid)
+      const basePath = getTmpTrackUploadArtifactsPathWithInputUUID(uuid)
       let pathToFile
       if (fileType === 'transcode') {
         pathToFile = path.join(basePath, fileName)

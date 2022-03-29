@@ -641,7 +641,7 @@ const getRandomFileName = () => {
   return getUuid()
 }
 
-const getTmpTrackUploadArtifactsWithInputUUID = (fileName) => {
+const getTmpTrackUploadArtifactsPathWithInputUUID = (fileName) => {
   return path.join(DiskManager.getTmpTrackUploadArtifactsPath(), fileName)
 }
 
@@ -679,7 +679,7 @@ const trackDiskStorage = multer.diskStorage({
       fileName = getRandomFileName()
     }
 
-    const fileDir = getTmpTrackUploadArtifactsWithInputUUID(fileName)
+    const fileDir = getTmpTrackUploadArtifactsPathWithInputUUID(fileName)
     const segmentsDir = getTmpSegmentsPath(fileName)
 
     // create directories for original file and segments
@@ -746,7 +746,6 @@ function getFileExtension(fileName) {
  * @param {string} param.fileName the file name
  * @param {string} param.fileMimeType the file type
  */
-// only used for resumable upload :(  not relevant
 function checkFileType(logger, { fileName, fileMimeType }) {
   const fileExtension = getFileExtension(fileName).slice(1)
   // the function should call `cb` with a boolean to indicate if the file should be accepted
@@ -858,7 +857,7 @@ module.exports = {
   hasEnoughStorageSpace,
   getFileExtension,
   checkFileMiddleware,
-  getTmpTrackUploadArtifactsWithInputUUID,
+  getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
   copyMultihashToFs
 }
