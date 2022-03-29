@@ -9,6 +9,7 @@ const _ = require('lodash')
 const crypto = require('crypto')
 
 const defaultConfig = require('../default-config.json')
+const ipfsAdd = require('../src/ipfsAdd')
 const ipfsClient = require('../src/ipfsClient')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
@@ -106,19 +107,22 @@ describe('test Polling Tracks with mocked IPFS', function () {
     mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId, userWallet)
 
-    // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
+    // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
     const DUMMY_MULTIHASH = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService.js',
       {
-        '../../fileManager': {
-          saveFileToIPFSFromFS: sinon
-            .stub(FileManager, 'saveFileToIPFSFromFS')
+        '../../ipfsAdd': {
+          generateNonImageMultihash: sinon
+            .stub(ipfsAdd, 'generateNonImageMultihash')
             .returns(
               new Promise((resolve) => {
                 return resolve(DUMMY_MULTIHASH)
               })
             ),
+          '@global': true
+        },
+        '../../fileManager': {
           copyMultihashToFs: sinon
             .stub(FileManager, 'copyMultihashToFs')
             .returns(

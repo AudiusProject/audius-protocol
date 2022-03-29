@@ -96,12 +96,12 @@ ipfsAdd.ipfsOnlyHashImages = async (content, options = {}) => {
 }
 
 /**
- * Wrapper that generates multihashes for non-image files (track segments, track transcode, metadata)
+ * Generates multihash for a non-image file (track segment, track transcode, metadata)
  * @param {Buffer|ReadStream|string} content a single Buffer, a ReadStream, or path to an existing file
  * @param {Object?} logContext
- * @returns {string} only hash response cid or ipfs daemon response cid
+ * @returns {string} only hash response cid
  */
-ipfsAdd.generateNonImageMultihashes = async (content, logContext = {}) => {
+ipfsAdd.generateNonImageMultihash = async (content, logContext = {}) => {
   const logger = genericLogger.child(logContext)
 
   const buffer = await _convertToBuffer(content, logger)
@@ -113,7 +113,7 @@ ipfsAdd.generateNonImageMultihashes = async (content, logContext = {}) => {
   )
 
   logger.info(
-    `[ipfsClient - generateNonImageMultihashes()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`
+    `[ipfsClient - generateNonImageMultihash()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`
   )
   return onlyHash
 }
@@ -156,7 +156,7 @@ function _initializeIPFSOnlyHash(content, options) {
 }
 
 /**
- * Convert content to a buffer; used in `generateNonImageMultihashes()`.
+ * Convert content to a buffer; used in `generateNonImageMultihash()`.
  * @param {ReadStream|Buffer|string} content if string, should be file path
  * @param {Object} logger
  * @returns buffer version of content

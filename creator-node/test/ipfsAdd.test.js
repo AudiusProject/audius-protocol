@@ -148,21 +148,21 @@ describe('test ipfsClient with randomized text content', () => {
     assert.ok(!!allResults.reduce(function (a, b) { return (a === b) ? a : NaN }))
   })
 
-  it('[random - generateNonImageMultihashes] passing in improper content throws', async () => {
+  it('[random - generateNonImageMultihash] passing in improper content throws', async () => {
     try {
-      await ipfsAdd.generateNonImageMultihashes(randomText)
+      await ipfsAdd.generateNonImageMultihash(randomText)
       throw new Error('passing in improper data should have failed')
     } catch (e) {
       assert.ok(e.toString().includes('Could not convert content into buffer'))
     }
   })
 
-  it('[random - generateNonImageMultihashes] if `ipfsOnlyHashImages()` errors, `generateNonImageMultihashes()` throws', async () => {
+  it('[random - generateNonImageMultihash] if `ipfsOnlyHashImages()` errors, `generateNonImageMultihash()` throws', async () => {
     sinon.stub(ipfsAdd, 'ipfsOnlyHashNonImages').throws(new Error('failed to generate only hash'))
 
     try {
-      await ipfsAdd.generateNonImageMultihashes(randomTextFilePath)
-      throw new Error('`generateNonImageMultihashes` should throw if `ipfsOnlyHashNonImages` fails')
+      await ipfsAdd.generateNonImageMultihash(randomTextFilePath)
+      throw new Error('`generateNonImageMultihash` should throw if `ipfsOnlyHashNonImages` fails')
     } catch (e) {
       assert.ok(e.toString().includes('failed to generate only hash'))
     }
@@ -316,21 +316,21 @@ describe('test ipfsClient with static content', () => {
       }
     })
 
-    it('[static - generateNonImageMultihashes] passing in improper content throws', async () => {
+    it('[static - generateNonImageMultihash] passing in improper content throws', async () => {
       try {
-        await ipfsAdd.generateNonImageMultihashes('vicky was here hehe')
+        await ipfsAdd.generateNonImageMultihash('vicky was here hehe')
         throw new Error('passing in improper data should have failed')
       } catch (e) {
         assert.ok(e.toString().includes('Could not convert content into buffer'))
       }
     })
 
-    it('[static - generateNonImageMultihashes] if `ipfsOnlyHashImages()` errors, `generateNonImageMultihashes()` throws', async () => {
+    it('[static - generateNonImageMultihash] if `ipfsOnlyHashImages()` errors, `generateNonImageMultihash()` throws', async () => {
       sinon.stub(ipfsAdd, 'ipfsOnlyHashNonImages').throws(new Error('failed to generate only hash'))
 
       try {
-        await ipfsAdd.generateNonImageMultihashes(filePath)
-        throw new Error('`generateNonImageMultihashes` should throw if `ipfsOnlyHashNonImages` fails')
+        await ipfsAdd.generateNonImageMultihash(filePath)
+        throw new Error('`generateNonImageMultihash` should throw if `ipfsOnlyHashNonImages` fails')
       } catch (e) {
         assert.ok(e.toString().includes('failed to generate only hash'))
       }

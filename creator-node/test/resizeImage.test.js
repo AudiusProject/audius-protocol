@@ -61,11 +61,11 @@ describe('test resizeImage', () => {
   })
 
   /**
-   * Given: we are adding the successfully resized images to ipfs
-   * When: adding to ipfs fails
+   * Given: we are generating multihashes for successfully resized images
+   * When: generating the multihashes fails
    * Then: an error is thrown
    */
-  it('should not throw error if ipfs is down', async () => {
+  it('should not throw if generating ipfs multihash failsn', async () => {
     sinon.stub(ipfsAdd, 'generateImageMultihashes').throws(new Error('ipfs generateImageMultihashes failed!'))
     const job = {
       data: {

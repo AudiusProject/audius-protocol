@@ -10,7 +10,6 @@ const ipfs = serviceRegistry.ipfs
 const ipfsLatest = serviceRegistry.ipfsLatest
 const ipfsAdd = require('../src/ipfsAdd')
 const {
-  saveFileToIPFSFromFS,
   removeTrackFolder,
   saveFileFromBufferToDisk,
   copyMultihashToFs
@@ -43,7 +42,7 @@ const req = {
 }
 
 // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
-// consts used for testing saveFileToIpfsFromFs()
+// consts used for testing generateNonImageMultihash()
 const segmentsDirPath = 'test/test-segments'
 const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
@@ -66,31 +65,8 @@ describe('test fileManager', () => {
     sinon.restore()
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileToIpfsFromFs() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileToIpfsFromFs()', () => {
-    /**
-     * Given: a file is being saved to ipfs from fs
-     * When: the cnodeUserUUID is not present
-     * Then: an error is thrown
-     */
-    it('should throw error if cnodeUserUUID is not present', async () => {
-      try {
-        await saveFileToIPFSFromFS(
-          { logContext: { requestID: uuid() } },
-          null,
-          srcPath
-        )
-        assert.fail(
-          'Should not have passed if cnodeUserUUID is not present in request.'
-        )
-      } catch (e) {
-        assert.deepStrictEqual(
-          e.message,
-          'User must be authenticated to save a file'
-        )
-      }
-    })
-
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ generateNonImageMultihash() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test generateNonImageMultihash()', () => {
     /**
      * Given: copyMultihashToFs is called
      * When: file copying fails
@@ -137,10 +113,9 @@ describe('test fileManager', () => {
 
       const requestID = uuid()
       try {
-        await saveFileToIPFSFromFS(
-          { logContext: { requestID } },
-          req.session.cnodeUserUUID,
-          srcPath
+        await ipfsAdd.generateNonImageMultihash(
+          srcPath,
+          { logContext: { requestID } }
         )
       } catch (e) {
         assert.fail(e.message)
@@ -213,7 +188,7 @@ describe('test fileManager', () => {
      */
     it('should throw an error if ipfs wrapper hash fails', async () => {
       sinon
-        .stub(ipfsAdd, 'generateNonImageMultihashes')
+        .stub(ipfsAdd, 'generateNonImageMultihash')
         .rejects(new Error('ipfs wrapper hash failed!'))
 
       try {

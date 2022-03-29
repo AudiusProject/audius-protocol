@@ -738,23 +738,21 @@ module.exports = function (app) {
   /**
    * Serve data hosted by creator node and create download route using query string pattern
    * `...?filename=<file_name.mp3>`.
+   * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
    * @param req
    * @param req.query
    * @param {string} req.query.filename filename to set as the content-disposition header
-   * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
-   * rehydrate IPFS asynchronously (REMOVED -- only here for backwards compatibility until the client updates)
    * @dev This route does not handle responses by design, so we can pipe the response to client.
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:CID', getCID)
 
   /**
-   * Serve images hosted by creator node on IPFS.
+   * Serve images hosted by content node.
+   * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
    * @param req
    * @param req.query
    * @param {string} req.query.filename the actual filename to retrieve w/in the IPFS directory (e.g. 480x480.jpg)
-   * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
-   * rehydrate IPFS asynchronously (REMOVED -- only here for backwards compatibility until the client updates)
    * @dev This route does not handle responses by design, so we can pipe the gateway response.
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
