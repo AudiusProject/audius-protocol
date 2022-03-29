@@ -44,6 +44,31 @@ describe('test TranscodeDelegationManager', function () {
     assert.ok(_.isEqual({}, resp))
   })
 
+  it('When polling for transcode, if polling fails, return empty response', async function () {
+    sinon
+      .stub(TranscodeDelegationManager, 'selectRandomSPs')
+      .resolves(['http://cn1.com', 'http://cn2.com', 'http://cn3.com'])
+
+    const expectedUuid = uuid.v4()
+    sinon
+      .stub(TranscodeDelegationManager, 'sendTrackToSp')
+      .resolves(expectedUuid)
+
+    sinon
+      .stub(TranscodeDelegationManager, 'pollForTranscode')
+      .rejects(new Error('polling failed'))
+
+    try {
+      const resp = await TranscodeDelegationManager.handOff(
+        { logContext: reqMock.logContext },
+        reqMock
+      )
+      assert.ok(_.isEqual({}, resp))
+    } catch (e) {
+      assert.fail(`If polling failed, handOff should not have thrown`)
+    }
+  })
+
   // selectRandomSPs()
 
   it('When libs call fails to get service provider list, throw error', async function () {
@@ -145,37 +170,6 @@ describe('test TranscodeDelegationManager', function () {
       assert.fail(
         `Transcode handoff failed and UUID was not returned: ${e.message}`
       )
-    }
-  })
-
-  it('When polling for transcode, if polling fails, throw error', async function () {
-    sinon.stub(TranscodeDelegationManager, 'fetchHealthCheck').resolves()
-
-    const expectedUuid = uuid.v4()
-    sinon
-      .stub(TranscodeDelegationManager, 'sendTranscodeAndSegmentRequest')
-      .resolves(expectedUuid)
-
-    sinon
-      .stub(TranscodeDelegationManager, 'asyncRetry')
-      .rejects(new Error('polling failed'))
-
-    try {
-      const actualUuid = await TranscodeDelegationManager.sendTrackToSp(
-        logger,
-        {
-          sp: 'http://some_cn.com',
-          req: reqMock
-        }
-      )
-
-      await TranscodeDelegationManager.pollForTranscode(logger, {
-        sp: 'http://some_cn.com',
-        uuid: actualUuid
-      })
-      assert.fail(`If polling failed, fn should have thrown`)
-    } catch (e) {
-      assert.ok(e.message === 'polling failed')
     }
   })
 

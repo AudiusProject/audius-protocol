@@ -177,7 +177,8 @@ class AsyncProcessingQueue {
   }
 
   /**
-   * Processes the input function and adds the response to redis.
+   * Processes the input function and adds the response to redis. Tasks will either be in a
+   * IN_PROGRESS, DONE, or FAILED state.
    * @param {string} task a process in PROCESS_NAMES
    * @param {function} func the processing fn
    * @param {Object} param
