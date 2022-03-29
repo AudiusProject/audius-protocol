@@ -189,7 +189,8 @@ export const TrackScreenDetailsTile = ({
         ) : null,
       isHidden: is_unlisted && !field_visibility?.mood,
       label: 'Mood',
-      value: mood
+      value: mood,
+      valueStyle: { flexShrink: 0, marginTop: -2 }
     },
     { label: 'Credit', value: credits_splits }
   ].filter(({ isHidden, value }) => !isHidden && !!value)

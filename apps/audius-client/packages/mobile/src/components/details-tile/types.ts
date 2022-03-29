@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
+import { TextStyle } from 'react-native'
 
 import { GestureResponderHandler } from 'app/types/gesture'
 
@@ -10,6 +11,7 @@ export type DetailsTileDetail = {
   isHidden?: boolean
   label: string
   value: ReactNode
+  valueStyle?: TextStyle
 }
 
 export type DetailsTileProps = {
