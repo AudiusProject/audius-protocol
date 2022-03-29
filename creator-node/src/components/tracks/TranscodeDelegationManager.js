@@ -38,7 +38,7 @@ class TranscodeDelegationManager {
         decisionTree.state = 'HANDING_OFF_TO_SP'
 
         const transcodeAndSegmentUUID =
-          await TranscodeDelegationManager.handOffToSp(logger, { sp, req })
+          await TranscodeDelegationManager.sendTrackToSp(logger, { sp, req })
 
         decisionTree.state = 'POLLING_FOR_TRANSCODE'
         const polledTranscodeResponse =
@@ -113,7 +113,7 @@ class TranscodeDelegationManager {
     return Array.from(validSPs)
   }
 
-  static async handOffToSp(logger, { sp, req }) {
+  static async sendTrackToSp(logger, { sp, req }) {
     const { fileDir, fileName, fileNameNoExtension, uuid: requestID } = req
 
     await TranscodeDelegationManager.fetchHealthCheck(sp)

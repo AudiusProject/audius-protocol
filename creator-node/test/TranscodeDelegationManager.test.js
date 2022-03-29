@@ -85,7 +85,7 @@ describe('test TranscodeDelegationManager', function () {
     assert.ok(allSPsSet.has(oneSP[0]))
   })
 
-  // handOffToSP()
+  // sendTrackToSp()
 
   it('When handing off transcode request to an sp, if the health check fails, throw error', async function () {
     sinon
@@ -94,7 +94,7 @@ describe('test TranscodeDelegationManager', function () {
 
     let resp
     try {
-      resp = await TranscodeDelegationManager.handOffToSp(logger, {
+      resp = await TranscodeDelegationManager.sendTrackToSp(logger, {
         sp: 'http://some_cn.com',
         req: reqMock
       })
@@ -113,7 +113,7 @@ describe('test TranscodeDelegationManager', function () {
 
     let resp
     try {
-      resp = await TranscodeDelegationManager.handOffToSp(logger, {
+      resp = await TranscodeDelegationManager.sendTrackToSp(logger, {
         sp: 'http://some_cn.com',
         req: reqMock
       })
@@ -132,10 +132,13 @@ describe('test TranscodeDelegationManager', function () {
       .resolves(expectedUuid)
 
     try {
-      const actualUuid = await TranscodeDelegationManager.handOffToSp(logger, {
-        sp: 'http://some_cn.com',
-        req: reqMock
-      })
+      const actualUuid = await TranscodeDelegationManager.sendTrackToSp(
+        logger,
+        {
+          sp: 'http://some_cn.com',
+          req: reqMock
+        }
+      )
       assert.strictEqual(actualUuid, expectedUuid)
     } catch (e) {
       assert.fail(
@@ -157,10 +160,13 @@ describe('test TranscodeDelegationManager', function () {
       .rejects(new Error('polling failed'))
 
     try {
-      const actualUuid = await TranscodeDelegationManager.handOffToSp(logger, {
-        sp: 'http://some_cn.com',
-        req: reqMock
-      })
+      const actualUuid = await TranscodeDelegationManager.sendTrackToSp(
+        logger,
+        {
+          sp: 'http://some_cn.com',
+          req: reqMock
+        }
+      )
 
       await TranscodeDelegationManager.pollForTranscode(logger, {
         sp: 'http://some_cn.com',
