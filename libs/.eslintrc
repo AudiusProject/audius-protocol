@@ -13,6 +13,7 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
     "@typescript-eslint/strict-boolean-expressions": "off",
+    "@typescript-eslint/no-floating-promises": "off",
     "mocha/no-mocha-arrows": "off",
     "mocha/max-top-level-suites": "off"
   }

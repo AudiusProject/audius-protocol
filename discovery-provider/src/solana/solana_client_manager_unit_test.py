@@ -88,7 +88,9 @@ def test_get_signatures_for_address(_):
     # test that it returns the client call response
     client_mocks[0].get_signatures_for_address.return_value = expected_response
     assert (
-        solana_client_manager.get_signatures_for_address("account", "before", "limit")
+        solana_client_manager.get_signatures_for_address(
+            "account", "before", "until", "limit"
+        )
         == expected_response
     )
 
@@ -97,7 +99,9 @@ def test_get_signatures_for_address(_):
     client_mocks[1].get_signatures_for_address.side_effect = Exception()
     client_mocks[2].get_signatures_for_address.return_value = expected_response
     assert (
-        solana_client_manager.get_signatures_for_address("account", "before", "limit")
+        solana_client_manager.get_signatures_for_address(
+            "account", "before", "until", "limit"
+        )
         == expected_response
     )
 
@@ -106,4 +110,6 @@ def test_get_signatures_for_address(_):
     client_mocks[1].get_signatures_for_address.side_effect = Exception()
     client_mocks[2].get_signatures_for_address.side_effect = Exception()
     with pytest.raises(Exception):
-        solana_client_manager.get_signatures_for_address("account", "before", "limit")
+        solana_client_manager.get_signatures_for_address(
+            "account", "before", "until", "limit"
+        )

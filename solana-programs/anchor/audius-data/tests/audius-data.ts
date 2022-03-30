@@ -26,6 +26,7 @@ import {
   testInitUserSolPubkey,
   testDeleteTrack,
   testUpdateTrack,
+  testCreateUserDelegate,
   createSolanaContentNode,
 } from "./test-helpers";
 const { PublicKey, SystemProgram } = anchor.web3;
@@ -37,7 +38,6 @@ describe("audius-data", function () {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
-
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.Provider.env());
 
@@ -74,7 +74,6 @@ describe("audius-data", function () {
       verifierKeypair,
     });
 
-
     const { decodedInstruction, decodedData, accountPubKeys } =
       await getTransactionWithData(program, provider, tx, 0);
 
@@ -85,7 +84,9 @@ describe("audius-data", function () {
     expect(decodedData.verifier.toString()).to.equal(
       verifierKeypair.publicKey.toString()
     );
-    expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
+    expect(accountPubKeys[0]).to.equal(
+      adminStorageKeypair.publicKey.toString()
+    );
     expect(accountPubKeys[2]).to.equal(SystemProgram.programId.toString());
 
     const adminAccount = await program.account.audiusAdmin.fetch(
@@ -154,7 +155,7 @@ describe("audius-data", function () {
   });
 
   it("Initializing + claiming user!", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -254,7 +255,7 @@ describe("audius-data", function () {
   });
 
   it("Initializing + claiming + updating user!", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -374,6 +375,8 @@ describe("audius-data", function () {
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
       trackOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       adminStorageAccount: adminStorageKeypair.publicKey,
     });
 
@@ -393,6 +396,8 @@ describe("audius-data", function () {
         trackMetadata,
         userAuthorityKeypair: wrongUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
         adminStorageAccount: adminStorageKeypair.publicKey,
       });
     } catch (e) {
@@ -408,13 +413,16 @@ describe("audius-data", function () {
       adminStorageAccount: adminStorageKeypair.publicKey,
       id: trackID,
       userStorageAccountPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       metadata: updatedTrackMetadata,
     });
   });
 
   it("Creating user with admin writes enabled should fail", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -461,7 +469,8 @@ describe("audius-data", function () {
   });
 
   it("Creating user with bad message should fail!", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -508,7 +517,8 @@ describe("audius-data", function () {
   });
 
   it("Creating user!", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -574,306 +584,125 @@ describe("audius-data", function () {
       );
   });
 
-  it("Delegating user authority", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
-    const {
-      baseAuthorityAccount,
-      bumpSeed,
-      derivedAddress: newUserAcctPDA,
-    } = await findDerivedPair(
-      program.programId,
-      adminStorageKeypair.publicKey,
-      Buffer.from(handleBytesArray)
-    );
-
-    // disable admin writes
-    await updateAdmin({
+  it("Adding/removing delegate authority (update user)", async function () {
+    const userDelegate = await testCreateUserDelegate({
+      adminKeypair,
+      adminStorageKeypair: adminStorageKeypair,
       program,
-      isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
-    });
-
-    // New sol key that will be used to permission user updates
-    const newUserKeypair = anchor.web3.Keypair.generate();
-
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
-
-    await testCreateUser({
       provider,
-      program,
-      message,
-      ethAccount,
-      baseAuthorityAccount,
-      handleBytesArray,
-      bumpSeed,
-      metadata,
-      newUserKeypair,
-      userId,
-      userStorageAccount: newUserAcctPDA,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      ...getURSMParams(),
     });
-
-    // Init AuthorityDelegationStatus for a new authority
-    const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
-    const authorityDelegationStatusSeeds = [
-      Buffer.from("authority-delegation-status", "utf8"),
-      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
-    ];
-
-    const authorityDelegationStatusRes = await PublicKey.findProgramAddress(
-      authorityDelegationStatusSeeds,
-      program.programId
-    );
-    const authorityDelegationStatusPda = authorityDelegationStatusRes[0];
-
-    const initAuthorityDelegationStatusArgs = {
-      accounts: {
-        delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-        authorityDelegationStatusPda: authorityDelegationStatusPda,
-        payer: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [userAuthorityDelegateKeypair],
-    };
-
-    await program.rpc.initAuthorityDelegationStatus(
-      "authority_name",
-      initAuthorityDelegationStatusArgs
-    );
-
-    // New sol key that will be used as user authority delegate
-    const userAuthorityDelegateSeeds = [
-      newUserAcctPDA.toBytes().slice(0, 32),
-      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
-    ];
-    const res = await PublicKey.findProgramAddress(
-      userAuthorityDelegateSeeds,
-      program.programId
-    );
-    const userAuthorityDelegatePDA = res[0];
-    const userAuthorityDelegateBump = res[1];
-
-    const addUserAuthorityDelegateArgs = {
-      accounts: {
-        admin: adminStorageKeypair.publicKey,
-        user: newUserAcctPDA,
-        userAuthorityDelegatePda: userAuthorityDelegatePDA,
-        userAuthority: newUserKeypair.publicKey,
-        payer: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [newUserKeypair],
-    };
-
-    await program.rpc.addUserAuthorityDelegate(
-      baseAuthorityAccount,
-      handleBytesArray,
-      bumpSeed,
-      userAuthorityDelegateKeypair.publicKey,
-      addUserAuthorityDelegateArgs
-    );
 
     const acctState = await program.account.userAuthorityDelegate.fetch(
-      userAuthorityDelegatePDA
+      userDelegate.userAuthorityDelegatePDA
     );
     const userStoragePdaFromChain = acctState.userStorageAccount;
     const delegateAuthorityFromChain = acctState.delegateAuthority;
     expect(userStoragePdaFromChain.toString(), "user storage pda").to.equal(
-      newUserAcctPDA.toString()
+      userDelegate.userAccountPDA.toString()
     );
     expect(
-      userAuthorityDelegateKeypair.publicKey.toString(),
+      userDelegate.userAuthorityDelegateKeypair.publicKey.toString(),
       "del auth pda"
     ).to.equal(delegateAuthorityFromChain.toString());
     const updatedCID = randomCID();
     await updateUser({
       program,
       metadata: updatedCID,
-      userStorageAccount: newUserAcctPDA,
-      userAuthorityKeypair: userAuthorityDelegateKeypair,
-      userAuthorityDelegate: userAuthorityDelegatePDA,
-      authorityDelegationStatusAccount: authorityDelegationStatusPda,
+      userStorageAccount: userDelegate.userAccountPDA,
+      userAuthorityKeypair: userDelegate.userAuthorityDelegateKeypair,
+      userAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
+      authorityDelegationStatusAccount:
+        userDelegate.authorityDelegationStatusPDA,
     });
     const removeUserAuthorityDelegateArgs = {
       accounts: {
         admin: adminStorageKeypair.publicKey,
-        user: newUserAcctPDA,
-        userAuthorityDelegatePda: userAuthorityDelegatePDA,
-        userAuthority: newUserKeypair.publicKey,
+        user: userDelegate.userAccountPDA,
+        currentUserAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
+        signerUserAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
+        authorityDelegationStatus: userDelegate.authorityDelegationStatusPDA,
+        authority: userDelegate.userKeypair.publicKey,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
       },
-      signers: [newUserKeypair],
+      signers: [userDelegate.userKeypair],
     };
 
-    console.log(`Removing delegate authority ${userAuthorityDelegatePDA}`);
     await program.rpc.removeUserAuthorityDelegate(
-      baseAuthorityAccount,
-      handleBytesArray,
-      bumpSeed,
-      userAuthorityDelegateKeypair.publicKey,
-      userAuthorityDelegateBump,
+      userDelegate.baseAuthorityAccount,
+      userDelegate.userHandleBytesArray,
+      userDelegate.userBumpSeed,
+      userDelegate.userAuthorityDelegateKeypair.publicKey,
+      userDelegate.userAuthorityDelegateBump,
       removeUserAuthorityDelegateArgs
     );
 
     // Confirm account deallocated after removal
-    await pollAccountBalance(provider, userAuthorityDelegatePDA, 0, 100);
+    await pollAccountBalance({
+      provider: provider,
+      targetAccount: userDelegate.userAuthorityDelegatePDA,
+      targetBalance: 0,
+      maxRetries: 100,
+    });
     await expect(
       updateUser({
         program,
         metadata: randomCID(),
-        userStorageAccount: newUserAcctPDA,
-        userAuthorityKeypair: userAuthorityDelegateKeypair,
-        userAuthorityDelegate: userAuthorityDelegatePDA,
-        authorityDelegationStatusAccount: authorityDelegationStatusPda,
+        userStorageAccount: userDelegate.userAccountPDA,
+        userAuthorityKeypair: userDelegate.userAuthorityDelegateKeypair,
+        userAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
+        authorityDelegationStatusAccount:
+          userDelegate.authorityDelegationStatusPDA,
       })
     )
       .to.eventually.be.rejected.and.property("msg")
       .to.include(`No 8 byte discriminator was found on the account`);
   });
 
-  it("Revoking user authority", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
-    const {
-      baseAuthorityAccount,
-      bumpSeed,
-      derivedAddress: newUserAcctPDA,
-    } = await findDerivedPair(
-      program.programId,
-      adminStorageKeypair.publicKey,
-      Buffer.from(handleBytesArray)
-    );
-
-    // disable admin writes
-    await updateAdmin({
+  it("Revoking authority delegation status", async function () {
+    const userDelegate = await testCreateUserDelegate({
+      adminKeypair,
+      adminStorageKeypair,
       program,
-      isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
-    });
-
-    // New sol key that will be used to permission user updates
-    const newUserKeypair = anchor.web3.Keypair.generate();
-
-    // Generate signed SECP instruction
-    // Message as the incoming public key
-    const message = newUserKeypair.publicKey.toBytes();
-
-    await testCreateUser({
       provider,
-      program,
-      message,
-      ethAccount,
-      baseAuthorityAccount,
-      handleBytesArray,
-      bumpSeed,
-      metadata,
-      newUserKeypair,
-      userId,
-      userStorageAccount: newUserAcctPDA,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      ...getURSMParams(),
     });
-
-    // Init AuthorityDelegationStatus for a new authority
-    const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
-    const authorityDelegationStatusSeeds = [
-      Buffer.from("authority-delegation-status", "utf8"),
-      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
-    ];
-
-    const authorityDelegationStatusRes = await PublicKey.findProgramAddress(
-      authorityDelegationStatusSeeds,
-      program.programId
-    );
-    const authorityDelegationStatusPda = authorityDelegationStatusRes[0];
-    const authorityDelegationStatusBump = authorityDelegationStatusRes[1];
-
-    const initAuthorityDelegationStatusArgs = {
-      accounts: {
-        delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-        authorityDelegationStatusPda: authorityDelegationStatusPda,
-        payer: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [userAuthorityDelegateKeypair],
-    };
-
-    await program.rpc.initAuthorityDelegationStatus(
-      "authority_name",
-      initAuthorityDelegationStatusArgs
-    );
-
-    // New sol key that will be used as user authority delegate
-    const userAuthorityDelegateSeeds = [
-      newUserAcctPDA.toBytes().slice(0, 32),
-      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
-    ];
-    const res = await PublicKey.findProgramAddress(
-      userAuthorityDelegateSeeds,
-      program.programId
-    );
-    const userAuthorityDelegatePDA = res[0];
-
-    const addUserAuthorityDelegateArgs = {
-      accounts: {
-        admin: adminStorageKeypair.publicKey,
-        user: newUserAcctPDA,
-        userAuthorityDelegatePda: userAuthorityDelegatePDA,
-        userAuthority: newUserKeypair.publicKey,
-        payer: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [newUserKeypair],
-    };
-
-    await program.rpc.addUserAuthorityDelegate(
-      baseAuthorityAccount,
-      handleBytesArray,
-      bumpSeed,
-      userAuthorityDelegateKeypair.publicKey,
-      addUserAuthorityDelegateArgs
-    );
 
     const acctState = await program.account.userAuthorityDelegate.fetch(
-      userAuthorityDelegatePDA
+      userDelegate.userAuthorityDelegatePDA
     );
     const userStgPdaFromChain = acctState.userStorageAccount;
     const delegateAuthorityFromChain = acctState.delegateAuthority;
     expect(userStgPdaFromChain.toString(), "user stg pda").to.equal(
-      newUserAcctPDA.toString()
+      userDelegate.userAccountPDA.toString()
     );
     expect(
-      userAuthorityDelegateKeypair.publicKey.toString(),
+      userDelegate.userAuthorityDelegateKeypair.publicKey.toString(),
       "del auth pda"
     ).to.equal(delegateAuthorityFromChain.toString());
     const updatedCID = randomCID();
     await updateUser({
       program,
       metadata: updatedCID,
-      userStorageAccount: newUserAcctPDA,
-      userAuthorityKeypair: userAuthorityDelegateKeypair,
-      userAuthorityDelegate: userAuthorityDelegatePDA,
-      authorityDelegationStatusAccount: authorityDelegationStatusPda,
+      userStorageAccount: userDelegate.userAccountPDA,
+      userAuthorityKeypair: userDelegate.userAuthorityDelegateKeypair,
+      userAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
+      authorityDelegationStatusAccount:
+        userDelegate.authorityDelegationStatusPDA,
     });
 
     // revoke authority delegation
     const revokeAuthorityDelegationArgs = {
       accounts: {
-        delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-        authorityDelegationStatusPda: authorityDelegationStatusPda,
+        delegateAuthority: userDelegate.userAuthorityDelegateKeypair.publicKey,
+        authorityDelegationStatusPda: userDelegate.authorityDelegationStatusPDA,
         payer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
       },
-      signers: [userAuthorityDelegateKeypair],
+      signers: [userDelegate.userAuthorityDelegateKeypair],
     };
 
     await program.rpc.revokeAuthorityDelegation(
-      authorityDelegationStatusBump,
+      userDelegate.authorityDelegationStatusBump,
       revokeAuthorityDelegationArgs
     );
 
@@ -882,18 +711,96 @@ describe("audius-data", function () {
       updateUser({
         program,
         metadata: randomCID(),
-        userStorageAccount: newUserAcctPDA,
-        userAuthorityKeypair: userAuthorityDelegateKeypair,
-        userAuthorityDelegate: userAuthorityDelegatePDA,
-        authorityDelegationStatusAccount: authorityDelegationStatusPda,
+        userStorageAccount: userDelegate.userAccountPDA,
+        userAuthorityKeypair: userDelegate.userAuthorityDelegateKeypair,
+        userAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
+        authorityDelegationStatusAccount:
+          userDelegate.authorityDelegationStatusPDA,
       })
     )
       .to.eventually.be.rejected.and.property("msg")
       .to.include(`This authority's delegation status is revoked.`);
   });
 
+  it("delegate adds/removes another delegate", async function () {
+    const firstUserDelegate = await testCreateUserDelegate({
+      adminKeypair,
+      adminStorageKeypair,
+      program,
+      provider,
+    });
+
+    const secondUserDelegate = await testCreateUserDelegate({
+      adminKeypair,
+      adminStorageKeypair,
+      program,
+      provider,
+    });
+
+    const userAuthorityDelegateSeeds = [
+      firstUserDelegate.userAccountPDA.toBytes().slice(0, 32),
+      secondUserDelegate.userAuthorityDelegateKeypair.publicKey
+        .toBytes()
+        .slice(0, 32),
+    ];
+    const res = await PublicKey.findProgramAddress(
+      userAuthorityDelegateSeeds,
+      program.programId
+    );
+    const currentUserAuthorityDelegatePDA = res[0];
+    const currentUserAuthorityDelegateBump = res[1];
+
+    const addUserAuthorityDelegateArgs = {
+      accounts: {
+        admin: adminStorageKeypair.publicKey,
+        user: firstUserDelegate.userAccountPDA,
+        currentUserAuthorityDelegate: currentUserAuthorityDelegatePDA,
+        signerUserAuthorityDelegate: firstUserDelegate.userAuthorityDelegatePDA,
+        authorityDelegationStatus:
+          firstUserDelegate.authorityDelegationStatusPDA,
+        authority: firstUserDelegate.userAuthorityDelegateKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [firstUserDelegate.userAuthorityDelegateKeypair], // the first user's delegate signs
+    };
+
+    await program.rpc.addUserAuthorityDelegate(
+      firstUserDelegate.baseAuthorityAccount,
+      firstUserDelegate.userHandleBytesArray,
+      firstUserDelegate.userBumpSeed,
+      secondUserDelegate.userAuthorityDelegateKeypair.publicKey, // seed for userAuthorityDelegatePda
+      addUserAuthorityDelegateArgs
+    );
+
+    const removeUserAuthorityDelegateArgs = {
+      accounts: {
+        admin: adminStorageKeypair.publicKey,
+        user: firstUserDelegate.userAccountPDA,
+        currentUserAuthorityDelegate: currentUserAuthorityDelegatePDA,
+        signerUserAuthorityDelegate: firstUserDelegate.userAuthorityDelegatePDA,
+        authorityDelegationStatus:
+          firstUserDelegate.authorityDelegationStatusPDA,
+        authority: firstUserDelegate.userAuthorityDelegateKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [firstUserDelegate.userAuthorityDelegateKeypair],
+    };
+
+    await program.rpc.removeUserAuthorityDelegate(
+      firstUserDelegate.baseAuthorityAccount,
+      firstUserDelegate.userHandleBytesArray,
+      firstUserDelegate.userBumpSeed,
+      secondUserDelegate.userAuthorityDelegateKeypair.publicKey, // seed for userAuthorityDelegatePda
+      currentUserAuthorityDelegateBump,
+      removeUserAuthorityDelegateArgs
+    );
+  });
+
   it("creating initialized user should fail", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -965,7 +872,8 @@ describe("audius-data", function () {
     // Message as the incoming public key
     const message = newUserKeypair.publicKey.toBytes();
 
-    const { handleBytesArray: incorrectHandleBytesArray, userId } = initTestConstants();
+    const { handleBytesArray: incorrectHandleBytesArray, userId } =
+      initTestConstants();
 
     const { derivedAddress: incorrectPDA } = await findDerivedPair(
       program.programId,
@@ -997,7 +905,8 @@ describe("audius-data", function () {
   });
 
   it("Verify user", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -1045,7 +954,8 @@ describe("audius-data", function () {
   });
 
   it("creating + deleting a track", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -1100,13 +1010,17 @@ describe("audius-data", function () {
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
       trackOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
     });
 
     await testDeleteTrack({
-      provider,
       program,
+      provider,
       id: trackID,
       trackOwnerPDA: newUserAcctPDA,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       baseAuthorityAccount,
       handleBytesArray,
@@ -1115,8 +1029,287 @@ describe("audius-data", function () {
     });
   });
 
+  it("delegate creates a track (manage entity) + all validation errors", async function () {
+    // create user and delegate
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
+    const {
+      baseAuthorityAccount,
+      bumpSeed: userBumpSeed,
+      derivedAddress: userAccountPDA,
+    } = await findDerivedPair(
+      program.programId,
+      adminStorageKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    );
+
+    // disable admin writes
+    await updateAdmin({
+      program,
+      isWriteEnabled: false,
+      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAuthorityKeypair: adminKeypair,
+    });
+
+    // New sol key that will be used to permission user updates
+    const newUserKeypair = anchor.web3.Keypair.generate();
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    const message = newUserKeypair.publicKey.toBytes();
+
+    await testCreateUser({
+      provider,
+      program,
+      message,
+      ethAccount,
+      baseAuthorityAccount,
+      handleBytesArray,
+      bumpSeed: userBumpSeed,
+      metadata,
+      newUserKeypair,
+      userStorageAccount: userAccountPDA,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      ...getURSMParams(),
+      userId,
+    });
+
+    // New sol key that will be used as user authority delegate
+    const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
+
+    // AuthorityDelegationStatus PDA
+    const authorityDelegationStatusSeeds = [
+      Buffer.from("authority-delegation-status", "utf8"),
+      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+    ];
+    const authorityDelegationStatusRes = await PublicKey.findProgramAddress(
+      authorityDelegationStatusSeeds,
+      program.programId
+    );
+    const authorityDelegationStatusPDA = authorityDelegationStatusRes[0];
+
+    // UserAuthorityDelegate PDA
+    const userAuthorityDelegateSeeds = [
+      userAccountPDA.toBytes().slice(0, 32),
+      userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+    ];
+    const res = await PublicKey.findProgramAddress(
+      userAuthorityDelegateSeeds,
+      program.programId
+    );
+    const userAuthorityDelegatePDA = res[0];
+
+    const trackMetadata = randomCID();
+    const trackID = randomId();
+
+    // Attempt create track before init UserAuthorityDelegate
+    await expect(
+      testCreateTrack({
+        provider,
+        program,
+        id: trackID,
+        baseAuthorityAccount: baseAuthorityAccount,
+        handleBytesArray: handleBytesArray,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        bumpSeed: userBumpSeed,
+        trackMetadata,
+        userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+        trackOwnerPDA: userAccountPDA,
+        userAuthorityDelegateAccountPDA: userAuthorityDelegatePDA,
+        authorityDelegationStatusAccountPDA: authorityDelegationStatusPDA,
+      })
+    ).to.be.rejectedWith(Error);
+
+    const addUserAuthorityDelegateArgs = {
+      accounts: {
+        admin: adminStorageKeypair.publicKey,
+        user: userAccountPDA,
+        currentUserAuthorityDelegate: userAuthorityDelegatePDA,
+        signerUserAuthorityDelegate: SystemProgram.programId,
+        authorityDelegationStatus: SystemProgram.programId,
+        authority: newUserKeypair.publicKey,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [newUserKeypair],
+    };
+
+    // Attempt create track before init AuthorityDelegationStatus
+    await expect(
+      testCreateTrack({
+        provider,
+        program,
+        id: trackID,
+        baseAuthorityAccount: baseAuthorityAccount,
+        handleBytesArray: handleBytesArray,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        bumpSeed: userBumpSeed,
+        trackMetadata,
+        userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+        trackOwnerPDA: userAccountPDA,
+        userAuthorityDelegateAccountPDA: userAuthorityDelegatePDA,
+        authorityDelegationStatusAccountPDA: authorityDelegationStatusPDA,
+      })
+    ).to.be.rejectedWith(Error);
+
+    // Init AuthorityDelegationStatus for a new authority
+    const initAuthorityDelegationStatusArgs = {
+      accounts: {
+        delegateAuthority: userAuthorityDelegateKeypair.publicKey,
+        authorityDelegationStatusPda: authorityDelegationStatusPDA,
+        payer: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [userAuthorityDelegateKeypair],
+    };
+
+    await program.rpc.initAuthorityDelegationStatus(
+      "authority_name",
+      initAuthorityDelegationStatusArgs
+    );
+
+    // Init a user delegate relationship
+    await program.rpc.addUserAuthorityDelegate(
+      baseAuthorityAccount,
+      handleBytesArray,
+      userBumpSeed,
+      userAuthorityDelegateKeypair.publicKey,
+      addUserAuthorityDelegateArgs
+    );
+
+    await expect(
+      testCreateTrack({
+        provider,
+        program,
+        id: trackID,
+        baseAuthorityAccount: baseAuthorityAccount,
+        handleBytesArray: handleBytesArray,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        bumpSeed: userBumpSeed,
+        trackMetadata,
+        userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+        trackOwnerPDA: userAccountPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId, // missing PDA
+        authorityDelegationStatusAccountPDA: authorityDelegationStatusPDA,
+      })
+    ).to.be.rejectedWith(Error);
+
+    await expect(
+      testCreateTrack({
+        provider,
+        program,
+        id: trackID,
+        baseAuthorityAccount: baseAuthorityAccount,
+        handleBytesArray: handleBytesArray,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        bumpSeed: userBumpSeed,
+        trackMetadata,
+        userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+        trackOwnerPDA: userAccountPDA,
+        userAuthorityDelegateAccountPDA: userAuthorityDelegatePDA,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId, // missing PDA
+      })
+    ).to.be.rejectedWith(Error);
+
+    await expect(
+      testCreateTrack({
+        provider,
+        program: anchor.web3.Keypair.generate().publicKey, // wrong program
+        id: trackID,
+        baseAuthorityAccount: baseAuthorityAccount,
+        handleBytesArray: handleBytesArray,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        bumpSeed: userBumpSeed,
+        trackMetadata,
+        userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+        trackOwnerPDA: userAccountPDA,
+        userAuthorityDelegateAccountPDA: userAuthorityDelegatePDA,
+        authorityDelegationStatusAccountPDA: authorityDelegationStatusPDA,
+      })
+    ).to.be.rejectedWith(Error);
+
+    await expect(
+      testCreateTrack({
+        provider,
+        program: anchor.web3.Keypair.generate().publicKey, // wrong program
+        id: trackID,
+        baseAuthorityAccount: baseAuthorityAccount,
+        handleBytesArray: handleBytesArray,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        bumpSeed: userBumpSeed,
+        trackMetadata,
+        userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+        trackOwnerPDA: userAccountPDA,
+        userAuthorityDelegateAccountPDA: userAuthorityDelegatePDA,
+        authorityDelegationStatusAccountPDA: authorityDelegationStatusPDA,
+      })
+    ).to.be.rejectedWith(Error);
+
+    // use different user authority delegate PDA
+    const badUserDelegate = await testCreateUserDelegate({
+      adminKeypair,
+      adminStorageKeypair: adminStorageKeypair,
+      program,
+      provider,
+    });
+
+    await expect(
+      testCreateTrack({
+        provider,
+        program: anchor.web3.Keypair.generate().publicKey, // wrong program
+        id: trackID,
+        baseAuthorityAccount: baseAuthorityAccount,
+        handleBytesArray: handleBytesArray,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        bumpSeed: userBumpSeed,
+        trackMetadata,
+        userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+        trackOwnerPDA: userAccountPDA,
+        userAuthorityDelegateAccountPDA:
+          badUserDelegate.userAuthorityDelegatePDA, // mismatched PDA
+        authorityDelegationStatusAccountPDA: authorityDelegationStatusPDA,
+      })
+    ).to.be.rejectedWith(Error);
+
+    // use different authority delegation status PDA
+
+    await expect(
+      testCreateTrack({
+        provider,
+        program: anchor.web3.Keypair.generate().publicKey, // wrong program
+        id: trackID,
+        baseAuthorityAccount: baseAuthorityAccount,
+        handleBytesArray: handleBytesArray,
+        adminStorageAccount: adminStorageKeypair.publicKey,
+        bumpSeed: userBumpSeed,
+        trackMetadata,
+        userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+        trackOwnerPDA: userAccountPDA,
+        userAuthorityDelegateAccountPDA: userAuthorityDelegatePDA,
+        authorityDelegationStatusAccountPDA:
+          badUserDelegate.authorityDelegationStatusPDA,
+      })
+    ).to.be.rejectedWith(Error);
+
+    await testCreateTrack({
+      provider,
+      program,
+      id: trackID,
+      baseAuthorityAccount: baseAuthorityAccount,
+      handleBytesArray: handleBytesArray,
+      adminStorageAccount: adminStorageKeypair.publicKey,
+      bumpSeed: userBumpSeed,
+      trackMetadata,
+      userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
+      trackOwnerPDA: userAccountPDA,
+      userAuthorityDelegateAccountPDA: userAuthorityDelegatePDA,
+      authorityDelegationStatusAccountPDA: authorityDelegationStatusPDA,
+    });
+  });
+
   it("create multiple tracks in parallel", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } = initTestConstants();
+    const { ethAccount, handleBytesArray, metadata, userId } =
+      initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -1175,6 +1368,8 @@ describe("audius-data", function () {
         trackMetadata,
         userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
       testCreateTrack({
         provider,
@@ -1187,6 +1382,8 @@ describe("audius-data", function () {
         trackMetadata: trackMetadata2,
         userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
       testCreateTrack({
         provider,
@@ -1199,6 +1396,8 @@ describe("audius-data", function () {
         trackMetadata: trackMetadata3,
         userAuthorityKeypair: newUserKeypair,
         trackOwnerPDA: newUserAcctPDA,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
       }),
     ]);
     console.log(`Created 3 tracks in ${Date.now() - start}ms`);

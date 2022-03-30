@@ -21,6 +21,7 @@ from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
@@ -215,7 +216,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     # value from redis cache is None
     if not use_redis_cache or latest_block_num is None or latest_block_hash is None:
         # get latest blockchain state from web3
-        latest_block = web3.eth.getBlock("latest", True)
+        latest_block = web3.eth.get_block("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
@@ -368,6 +369,27 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     return health_results, is_unhealthy
+
+
+def health_check_prometheus_exporter():
+    health_results, is_unhealthy = get_health({})
+
+    PrometheusMetric(
+        "health_check_block_difference_current",
+        "Difference between the latest block and the latest indexed block",
+        metric_type=PrometheusType.GAUGE,
+    ).save(health_results["block_difference"])
+
+    PrometheusMetric(
+        "health_check_latest_indexed_block_num_current",
+        "Latest indexed block number",
+        metric_type=PrometheusType.GAUGE,
+    ).save(health_results["web"]["blocknumber"])
+
+
+PrometheusMetric.register_collector(
+    "health_check_prometheus_exporter", health_check_prometheus_exporter
+)
 
 
 class SolHealthInfo(TypedDict):
@@ -534,7 +556,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
         latest_block_hash = stored_latest_blockhash.decode("utf-8")
 
     if latest_block_num is None or latest_block_hash is None:
-        latest_block = web3.eth.getBlock("latest", True)
+        latest_block = web3.eth.get_block("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 

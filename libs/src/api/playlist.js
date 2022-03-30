@@ -1,5 +1,5 @@
 const { Base, Services } = require('./base')
-const Utils = require('../utils')
+const { Utils } = require('../utils')
 
 const MAX_PLAYLIST_LENGTH = 200
 

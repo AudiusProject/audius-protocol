@@ -1,4 +1,5 @@
 const AudiusLibs = require('@audius/libs')
+const { setDefaultWasm } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')
 
 const config = require('./config')
 const registryAddress = config.get('registryAddress')
@@ -10,6 +11,7 @@ const SOLANA_TOKEN_ADDRESS = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 class AudiusLibsWrapper {
   constructor () {
     this.audiusLibsInstance = null
+    setDefaultWasm('node')
   }
 
   async init () {
