@@ -29,7 +29,7 @@ anchor --version
 yarn install
 
 # init solana keypair
-solana-keygen new --no-bip39-passphrase --force -o "$PROTOCOL_DIR/.config/solana/id.json"
+solana-keygen new --no-bip39-passphrase --force -o "~/.config/solana/id.json"
 
 if [[ "${CI:-false}" == false ]]; then
     # reload shell 
