@@ -132,9 +132,8 @@ class SnapbackSM {
 
     // State machine queue processes all user operations
     this.stateMachineQueue = this.createBullQueue('state-machine', {
-      lockDuration: 1800000, // 30min
+      // lockDuration: 1800000, // 30min
       maxStalledCount: 0, // we never want to re-process stalled job
-
     })
 
     // Sync queues handle issuing sync request from primary -> secondary
@@ -193,10 +192,10 @@ class SnapbackSM {
       done()
     })
     this.stateMachineQueue.on('stalled', function (job) {
-      console.error(`SIDTEST STATEMACHINEQUEUE STALLED`)
+      console.error(`SIDTEST STATEMACHINEQUEUE STALLED ${Date.now()}`)
     })
     this.stateMachineQueue.on('global:stalled', function (job) {
-      console.error(`SIDTEST STATEMACHINEQUEUE GLOBAL:STALLED`)
+      console.error(`SIDTEST STATEMACHINEQUEUE GLOBAL:STALLED ${Date.now()}`)
     })
 
     // Initialize manualSyncQueue job processor
