@@ -1123,17 +1123,6 @@ class SnapbackSM {
         )
       }
 
-      this._addToStateMachineQueueDecisionTree(
-        decisionTree,
-        'END processStateMachineOperation()',
-        {
-          currentModuloSlice: this.currentModuloSlice,
-          moduloBase: this.moduloBase,
-          numSyncRequestsEnqueued,
-          numUpdateReplicaOpsIssued
-        }
-      )
-
       // Log error without throwing - next run will attempt to rectify
     } catch (e) {
       this._addToStateMachineQueueDecisionTree(
@@ -1142,12 +1131,20 @@ class SnapbackSM {
         { error: e.message }
       )
     } finally {
-      // Increment and adjust current slice by this.moduloBase
-      this.currentModuloSlice += 1
-      this.currentModuloSlice = this.currentModuloSlice % this.moduloBase
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'END processStateMachineOperation()',
+        {
+          currentModuloSlice: this.currentModuloSlice,
+          moduloBase: this.moduloBase
+        }
+      )
 
       // Log decision tree
       this._printStateMachineQueueDecisionTree(decisionTree)
+
+      // Increment and adjust current slice by this.moduloBase
+      this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
 
       // Release lock
       await redis.lock.removeLock(lockKey)
