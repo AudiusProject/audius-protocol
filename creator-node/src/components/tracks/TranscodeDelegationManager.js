@@ -30,10 +30,39 @@ const HAND_OFF_STATES = Object.freeze({
   FETCHING_FILES_AND_WRITING_TO_FS: 'FETCHING_FILES_AND_WRITING_TO_FS'
 })
 
+// Handles sending a transcode and segment request to an available node in the network
+
 class TranscodeDelegationManager {
   static logContext = {}
   static logger = genericLogger.child(TranscodeDelegationManager.logContext)
 
+  /**
+   * Wrapper function to:
+   * 1. Select random Content Nodes in the network
+   * 2. Iteratively:
+   *    1. Send the uploaded track artifact to one of the randomly selected SPs
+   *    2. Have the randomly selected SP transcode and segment the uploaded track artifact
+   *    3. Poll the randomly selected SP to see if the transcoding is complete
+   *    4. Fetch and write the files to current node disk if transcode is complete
+   *
+   *    If any of the nested steps above fail, move onto the next SP and try again
+   * 3. Return the transcode path, segment paths, and m3u8 path upon success, or an empty object
+   *    if the hand off was not successful
+   * @param {Object} param
+   * @param {Object} param.logContext
+   * @param {Object} req request data that looks like:
+   * {
+   *    fileName,
+   *    fileDir,
+   *    fileNameNoExtension,
+   *    fileDestination,
+   *    cnodeUserUUID,
+   *    headers
+   * }
+   *
+   * See routes/tracks.js for more information
+   * @returns
+   */
   static async handOff({ logContext }, req) {
     const logger = TranscodeDelegationManager.initLogger(logContext)
 
@@ -76,7 +105,6 @@ class TranscodeDelegationManager {
 
         resp = localFilePaths
 
-        // If any of these fields are not present, throw and retry onto the next sp
         if (
           !resp.transcodeFilePath ||
           !resp.segmentFileNames ||
@@ -89,10 +117,10 @@ class TranscodeDelegationManager {
           )
         }
 
-        // If the above asserts passed, break out of the loop
+        // If the responses are what we expect them to be, break out of the loop as transcode hand off
+        // was successful
         break
       } catch (e) {
-        // TODO: delete tmp dir in external SP if fails and continue
         logger.warn(
           `Could not hand off track: state=${JSON.stringify(
             decisionTree
@@ -105,8 +133,11 @@ class TranscodeDelegationManager {
     return resp
   }
 
-  // If any call fails -> throw error
-
+  /**
+   * Select a default number of random Content Nodes
+   * @param {Object} libs
+   * @returns array of healthy Content Nodes for transcode hand off
+   */
   static async selectRandomSPs(libs) {
     let allSPs = await libs.ethContracts.getServiceProviderList('content-node')
     allSPs = allSPs.map((sp) => sp.endpoint)
@@ -122,7 +153,7 @@ class TranscodeDelegationManager {
     while (validSPs.size < numberOfSps) {
       const index = Utils.getRandomInt(allSPs.length)
       const currentSP = allSPs[index]
-      // do not pick self or a node that has already been chosen
+
       if (currentSP === CREATOR_NODE_ENDPOINT || validSPs.has(currentSP)) {
         continue
       }
@@ -132,9 +163,16 @@ class TranscodeDelegationManager {
     return Array.from(validSPs)
   }
 
+  /**
+   * Sends the uploaded track artifact to the passed in sp
+   * @param {Object} param
+   * @param {string} param.sp the Content Node to hand off the track to
+   * @param {Object} param.req request object with the params {fileDir, fileName, fileNameNoExtension}
+   * @returns the transcoding job uuid
+   */
   static async sendTrackToSp({ sp, req }) {
     const logger = TranscodeDelegationManager.logger
-    const { fileDir, fileName, fileNameNoExtension, uuid: requestID } = req
+    const { fileDir, fileName, fileNameNoExtension } = req
 
     await TranscodeDelegationManager.fetchHealthCheck(sp)
 
@@ -150,6 +188,13 @@ class TranscodeDelegationManager {
     return transcodeAndSegmentUUID
   }
 
+  /**
+   * Polls for the transcode response given the uuid
+   * @param {Object} param
+   * @param {string} param.uuid the uuid of the transcode job used for polling
+   * @param {string} param.sp the Content Node to poll the transcode job for
+   * @returns the transcode job results
+   */
   static async pollForTranscode({ uuid, sp }) {
     const logger = TranscodeDelegationManager.logger
     logger.info(
@@ -199,6 +244,23 @@ class TranscodeDelegationManager {
     })
   }
 
+  /**
+   * Fetches files from the Content Node that handled transcoding, and writes to current
+   * node's filesystem.
+   * @param {Object} param
+   * @param {string} param.fileNameNoExtension the uploaded track artifact file name without the extension
+   * @param {string} param.transcodeFilePath the transcode file path
+   * @param {string[]} param.segmentFileNames an array of segment file names
+   * @param {string} param.m3u8FilePath the m3u8 file path
+   * @param {string} param.fileDir the file directory that holds the transcode, segments, and m3u8 file paths
+   * @param {string} param.sp the Content Node to fetch the content from
+   * @returns {Object}
+   * {
+   *    transcodeFilePath,
+   *    segmentFileNames,
+   *    m3u8FilePath
+   * }
+   */
   static async fetchFilesAndWriteToFs({
     fileNameNoExtension,
     transcodeFilePath,
@@ -259,6 +321,15 @@ class TranscodeDelegationManager {
     }
   }
 
+  /**
+   * Send a transcode and segment request to the input Content Node
+   * @param {Object} param
+   * @param {string} param.sp the Content Node to send the transcode and segment request to
+   * @param {string} param.fileDir the file directory that holds the transcode, segments, and m3u8 file paths
+   * @param {string} param.fileName tthe uploaded track artifact file name
+   * @param {string} param.fileNameNoExtension the uploaded track artifact file name without the extension
+   * @returns the transcode and segment job uuid used for polling
+   */
   static async sendTranscodeAndSegmentRequest({
     sp,
     fileDir,
@@ -301,6 +372,11 @@ class TranscodeDelegationManager {
     return resp.data.data.uuid
   }
 
+  /**
+   * Creates the form data necessary to send over transcode and segment request
+   * @param {string} pathToFile path to the uploaded track artifact
+   * @returns formData object passed in axios to send a transcode and segment request
+   */
   static async createFormData(pathToFile) {
     const fileExists = await fsExtra.pathExists(pathToFile)
     if (!fileExists) {
@@ -313,6 +389,10 @@ class TranscodeDelegationManager {
     return formData
   }
 
+  /**
+   * Wrapper to fetch health check response
+   * @param {string} sp the endpoint to the Content Node
+   */
   static async fetchHealthCheck(sp) {
     await axios({
       url: `${sp}/health_check`,
@@ -347,6 +427,13 @@ class TranscodeDelegationManager {
     return body.data
   }
 
+  /**
+   * Fetches a segment from a sp
+   * @param {string} sp the endpoint of the Content Node to fetch the segment from
+   * @param {string} segmentFileName the filename of the segment
+   * @param {string} fileNameNoExtension the file name of the uploaded track artifact without extension
+   * @returns the fetched segment
+   */
   static async fetchSegment(sp, segmentFileName, fileNameNoExtension) {
     const spID = config.get('spID')
     const { timestamp, signature } =
@@ -372,6 +459,12 @@ class TranscodeDelegationManager {
     })
   }
 
+  /**
+   * Fetches a transcode
+   * @param {string} sp the endpoint of the Content Node to fetch the transcode from
+   * @param {string} fileNameNoExtension the file name of the uploaded track artifact without extension
+   * @returns
+   */
   static async fetchTranscode(sp, fileNameNoExtension) {
     const transcodeFileName = fileNameNoExtension + '-dl.mp3'
     const spID = config.get('spID')
@@ -398,6 +491,12 @@ class TranscodeDelegationManager {
     })
   }
 
+  /**
+   * Fetches a m3u8
+   * @param {string} sp the endpoint of the Content Node to fetch the transcode from
+   * @param {string} fileNameNoExtension the file name of the uploaded track artifact without extension
+   * @returns
+   */
   static async fetchM3U8File(sp, fileNameNoExtension) {
     const m3u8FileName = fileNameNoExtension + '.m3u8'
     const spID = config.get('spID')
