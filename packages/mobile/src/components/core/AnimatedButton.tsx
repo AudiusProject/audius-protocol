@@ -18,6 +18,7 @@ import {
 } from 'react-native'
 import { usePrevious } from 'react-use'
 
+import { medium } from 'app/haptics'
 import { GestureResponderHandler } from 'app/types/gesture'
 import { Theme, useThemeVariant } from 'app/utils/theme'
 
@@ -34,6 +35,7 @@ export type AnimatedButtonProps = {
   renderUnderlay?: (state: PressableStateCallbackType) => ReactNode
   style?: PressableProps['style']
   wrapperStyle?: StyleProp<ViewStyle>
+  haptics?: boolean
 } & PressableProps
 
 export const AnimatedButton = ({
@@ -47,6 +49,7 @@ export const AnimatedButton = ({
   renderUnderlay,
   style,
   wrapperStyle,
+  haptics,
   ...pressableProps
 }: AnimatedButtonProps) => {
   const themeVariant = useThemeVariant()
@@ -104,21 +107,35 @@ export const AnimatedButton = ({
   ])
 
   const handlePress = useCallback(() => {
+    if (haptics) {
+      medium()
+    }
+
     if (hasMultipleStates || !isActive) {
       setIsPlaying(true)
       animationRef.current?.play()
     }
 
     onPress?.()
-  }, [onPress, isActive, setIsPlaying, hasMultipleStates, animationRef])
+  }, [
+    haptics,
+    onPress,
+    isActive,
+    setIsPlaying,
+    hasMultipleStates,
+    animationRef
+  ])
 
   const handleLongPress = useCallback(() => {
     if (onLongPress) {
+      if (haptics) {
+        medium()
+      }
       onLongPress()
     } else {
       handlePress()
     }
-  }, [onLongPress, handlePress])
+  }, [onLongPress, haptics, handlePress])
 
   // For multi state buttons, when `isActive` flips, trigger
   // the animation to run
