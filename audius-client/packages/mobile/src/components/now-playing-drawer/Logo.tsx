@@ -7,7 +7,8 @@ import { NOW_PLAYING_HEIGHT } from './constants'
 
 const styles = StyleSheet.create({
   root: {
-    height: 24
+    height: 24,
+    marginVertical: 8
   }
 })
 

@@ -18,7 +18,7 @@ import { makeStyles } from 'app/styles'
 import { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 
-import { BOTTOM_BAR_HEIGHT } from './constants'
+import { BOTTOM_BAR_BUTTON_HEIGHT } from './constants'
 
 const icons = {
   light: {
@@ -52,11 +52,11 @@ const useStyles = makeStyles(() => ({
   },
   iconWrapper: {
     width: 28,
-    height: BOTTOM_BAR_HEIGHT
+    height: BOTTOM_BAR_BUTTON_HEIGHT
   },
   underlay: {
     width: '100%',
-    height: BOTTOM_BAR_HEIGHT,
+    height: BOTTOM_BAR_BUTTON_HEIGHT,
     position: 'absolute'
   }
 }))

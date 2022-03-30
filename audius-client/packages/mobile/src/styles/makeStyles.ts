@@ -22,7 +22,7 @@ type Styles<T extends NamedStyles<T>, PropsT> = (
   props?: PropsT
 ) => T | NamedStyles<T>
 
-export const makeStyles = <T extends NamedStyles<T> | NamedStyles<any>, PropsT>(
+export const makeStyles = <PropsT, T extends NamedStyles<T> = NamedStyles<any>>(
   styles: Styles<T, PropsT>
 ) => {
   const useStyles = (props?: PropsT): T => {

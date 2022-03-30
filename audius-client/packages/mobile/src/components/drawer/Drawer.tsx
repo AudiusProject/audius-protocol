@@ -148,6 +148,10 @@ export type DrawerProps = {
    */
   onOpen?: () => void
   /**
+   * Disable the SafeAreaView
+   */
+  disableSafeAreaView?: boolean
+  /**
    * Header title if this drawer has a header
    */
   title?: string
@@ -318,11 +322,14 @@ export const Drawer: DrawerComponent = ({
   shouldAnimateShadow,
   onPercentOpen,
   onPanResponderMove,
-  translationAnim: providedTranslationAnim
+  translationAnim: providedTranslationAnim,
+  disableSafeAreaView
 }: DrawerProps) => {
   const styles = useThemedStyles(createStyles(zIndex, shouldAnimateShadow))
 
-  const [drawerHeight, setDrawerHeight] = useState(0)
+  const [drawerHeight, setDrawerHeight] = useState(
+    isFullscreen ? FULL_DRAWER_HEIGHT : 0
+  )
   // isBackgroundVisible will be true until the close animation finishes
   const [isBackgroundVisible, setIsBackgroundVisible] = useState(false)
 
@@ -651,6 +658,37 @@ export const Drawer: DrawerComponent = ({
     }
   }
 
+  const renderContent = () => {
+    const ViewComponent = disableSafeAreaView ? View : SafeAreaView
+
+    const edgeProps = disableSafeAreaView
+      ? undefined
+      : {
+          edges: ['bottom', ...(isFullscreen ? ['top'] : [])] as Edge[]
+        }
+
+    return (
+      <ViewComponent
+        style={isFullscreen ? styles.fullScreenContent : styles.content}
+        onLayout={(event: LayoutChangeEvent) => {
+          if (!isFullscreen) {
+            const { height } = event.nativeEvent.layout
+            setDrawerHeight(height)
+          }
+        }}
+        {...edgeProps}
+      >
+        <DrawerHeader
+          onClose={onClose}
+          title={title}
+          titleIcon={titleIcon}
+          isFullscreen={isFullscreen}
+        />
+        {children}
+      </ViewComponent>
+    )
+  }
+
   return (
     <>
       {shouldBackgroundDim ? renderBackground() : null}
@@ -674,24 +712,7 @@ export const Drawer: DrawerComponent = ({
           }
         ]}
       >
-        <SafeAreaView
-          edges={['bottom', ...((isFullscreen ? ['top'] : []) as Edge[])]}
-          style={isFullscreen ? styles.fullScreenContent : styles.content}
-          onLayout={(event: LayoutChangeEvent) => {
-            if (!isFullscreen) {
-              const { height } = event.nativeEvent.layout
-              setDrawerHeight(height)
-            }
-          }}
-        >
-          <DrawerHeader
-            onClose={onClose}
-            title={title}
-            titleIcon={titleIcon}
-            isFullscreen={isFullscreen}
-          />
-          {children}
-        </SafeAreaView>
+        {renderContent()}
         <View style={styles.skirt} />
       </Animated.View>
     </>
