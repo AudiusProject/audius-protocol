@@ -1127,7 +1127,7 @@ class SnapbackSM {
     } catch (e) {
       this._addToStateMachineQueueDecisionTree(
         decisionTree,
-        'processStateMachineOperation Error',
+        'processStateMachineOperation() Error',
         { error: e.message }
       )
     } finally {
@@ -1174,13 +1174,13 @@ class SnapbackSM {
     }
     try {
       this.log(
-        `processStateMachineOperation Decision Tree${
+        `processStateMachineOperation() Decision Tree${
           msg ? ` - ${msg} - ` : ''
         }${JSON.stringify(decisionTree)}`
       )
     } catch (e) {
       this.logError(
-        `Error printing processStateMachineOperation Decision Tree ${decisionTree}`
+        `Error printing processStateMachineOperation() Decision Tree ${decisionTree}`
       )
     }
   }
