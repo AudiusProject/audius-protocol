@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Parses a `solana balance` command output into the whole number (floor)
 # balance, e.g. 12.02 SOL => 12
 function parse_balance {

@@ -9,7 +9,7 @@
       "rm -rf discovery-provider/compose/env/tmp",
       "cd contracts/; npm run ganache-q",
       "cd eth-contracts/; npm run ganache-q; rm -rf build",
-      "cd solana-programs/; sh stop.sh"
+      "cd solana-programs/; ./stop.sh"
     ]
   },
   "network": {
@@ -52,7 +52,7 @@
     "path": "solana-programs",
     "up": [
       "solana-test-validator --reset --limit-ledger-size 100000 &",
-      "cd solana-programs/; SOLANA_HOST='http://127.0.0.1:8899' sh start.sh > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
+      "cd solana-programs/; SOLANA_HOST='http://127.0.0.1:8899' ./start.sh > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
       "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
       "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
     ],

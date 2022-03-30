@@ -36,6 +36,9 @@ services:
       - '9229:9229'
     networks:
       - audius_dev
+    extra_hosts:
+      # Exposes host.docker.internal on linux systems
+      - "host.docker.internal:host-gateway"
 
 volumes:
   postgres_data:

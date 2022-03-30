@@ -25,6 +25,9 @@ services:
       - '../.:/audius-discovery-provider'
     networks:
       - audius_dev
+    extra_hosts:
+      # Exposes host.docker.internal on linux systems
+      - "host.docker.internal:host-gateway"
 
 networks:
   audius_dev:
