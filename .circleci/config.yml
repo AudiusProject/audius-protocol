@@ -660,6 +660,19 @@ jobs:
           key: cargo_cache-{{ arch }}-{{ .Branch }}
           paths:
             - cargo
+      - run:
+          name: anchor program seed CLI tests
+          command: |
+            export NODE_VERSION="v14.18.1"
+            source ~/.profile
+            source ~/.bashrc
+            nvm use "$NODE_VERSION"
+            export PROTOCOL_DIR="/home/circleci/project"
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            solana-keygen new --no-bip39-passphrase --force -o "~/.config/solana/id.json"
+            source /opt/circleci/.nvm/nvm.sh
+            npm run localnet-up-ci
+            npm run dev-setup
       - restore_cache:
           name: node-cache
           keys:
@@ -674,23 +687,12 @@ jobs:
             nvm use "$NODE_VERSION"
             export PROTOCOL_DIR="/home/circleci/project"
             source /opt/circleci/.nvm/nvm.sh
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             npm run test
       - save_cache:
           key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
           paths:
             - solana-programs/anchor/audius-data/node_modules
-      - run:
-          name: anchor program seed CLI tests
-          command: |
-            export NODE_VERSION="v14.18.1"
-            source ~/.profile
-            source ~/.bashrc
-            nvm use "$NODE_VERSION"
-            export PROTOCOL_DIR="/home/circleci/project"
-            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            source /opt/circleci/.nvm/nvm.sh
-            npm run localnet-up-ci
-            npm run dev-setup
 
       # - restore_cache:
       #     keys:
