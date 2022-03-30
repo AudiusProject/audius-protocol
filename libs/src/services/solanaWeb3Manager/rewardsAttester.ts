@@ -1,18 +1,18 @@
 import { SubmitAndEvaluateError } from "../../api/rewards"
-import utils from "../../utils/utils"
+import { Utils } from "../../utils/utils"
 
-const { decodeHashId } = utils
+const { decodeHashId } = Utils
 
 // `BaseRewardsReporter` is intended to be subclassed, and provides
 // "reporting" functionality to RewardsAttester (i.e. posts to Slack if something notable happens)
-interface BaseRewardsReporter {
- reportSuccess: (args: { userId: number, challengeId: string, amount: number}) => Promise<void>
+class BaseRewardsReporter {
+ async reportSuccess(_: { userId: number, challengeId: string, amount: number, specifier: string}): Promise<void> {}
 
- reportRetry: (args: { userId: number, challengeId: string, amount: number, error: string, phase: string }) => Promise<void>
+ async reportRetry(_: { userId: number, challengeId: string, amount: number, error: string, phase: string }): Promise<void> {}
 
- reportFailure: (args: { userId: number, challengeId: string, amount: number, error: string, phase: string }) => Promise<void>
+ async reportFailure(_: { userId: number, challengeId: string, amount: number, error: string, phase: string }): Promise<void> {}
 
- reportAAORejection: (args: { userId: number, challengeId: string, amount: number, error: string, reason: string }) => Promise<void>
+ async reportAAORejection(_: { userId: number, challengeId: string, amount: number, error: string, reason: string }): Promise<void> {}
 }
 
 const MAX_DISBURSED_CACHE_SIZE = 100
@@ -37,7 +37,7 @@ type ATTESTER_PHASE =
  *
  * @class ThresholdCalculator
  */
-class AttestationDelayCalculator {
+export class AttestationDelayCalculator {
   libs: any
   solanaSecPerSlot: number
   runBehindSec: number
@@ -150,7 +150,7 @@ type ConstructorArgs = {
   }) => void
   getStartingBlockOverride: () => Promise<number | null> | number | null
   maxRetries: number
-  reporter: BaseRewardsReporter
+  reporter?: BaseRewardsReporter
   challengeIdsDenyList: string[]
   endpoints?: string[]
   runBehindSec?: number
@@ -211,7 +211,7 @@ type AttesterState = {
  * process that entire list before fetching new undisbursed rewards. It also maintains a list of
  * recently processed rewards, and filters those out when re-fetching new undisbursed rewards.
  */
-class RewardsAttester {
+export class RewardsAttester {
   private startingBlock: number
   private offset: number
   // Stores a set of identifiers representing
@@ -233,7 +233,7 @@ class RewardsAttester {
   private readonly libs: any
   private readonly logger: Console
   private readonly quorumSize: number
-  private readonly reporter: any // TODO
+  private readonly reporter: BaseRewardsReporter
   private readonly maxRetries: number
   private readonly maxAggregationAttempts: number
   private readonly updateValues: (args: {
@@ -279,7 +279,7 @@ class RewardsAttester {
     updateValues = () => {},
     getStartingBlockOverride = () => null,
     maxRetries = 5,
-    reporter,
+    reporter = new BaseRewardsReporter(),
     challengeIdsDenyList = [],
     endpoints = [],
     runBehindSec = 0,
@@ -842,7 +842,7 @@ class RewardsAttester {
       if (!res.error) {
         successful.push(res)
         this.reporter.reportSuccess({
-          userId: decodeHashId(res.userId),
+          userId: decodeHashId(res.userId) ?? -1,
           challengeId: res.challengeId,
           amount: res.amount,
           specifier: res.specifier,
@@ -850,7 +850,7 @@ class RewardsAttester {
         return false
       }
       return true
-    })
+    }) as Array<AttestationResult & { error: string, phase: string } >
 
     // Filter out responses that are already disbursed
     const stillIncomplete = allErrors.filter(
@@ -860,13 +860,13 @@ class RewardsAttester {
     // Filter to errors needing retry
     const needsRetry = stillIncomplete.filter((res) => {
       const report = {
-        userId: decodeHashId(res.userId),
+        userId: decodeHashId(res.userId) || -1,
         challengeId: res.challengeId,
         amount: res.amount,
         error: res.error,
         phase: res.phase,
         specifier: res.specifier,
-        reason: undefined
+        reason: "unknown"
       }
 
       function getIsAAOError(err?: string): err is string {
@@ -883,7 +883,8 @@ class RewardsAttester {
           [errors.COGNITO_FLOW]: "cognito",
           [errors.BLOCKED]: "blocked",
           [errors.OTHER]: "other",
-        }[error]
+          // Some hacky typing here because we haen't typed the imported error type yet
+        }[error] as unknown as "hcaptcha" | "cognito" | "blocked" | "other"
         report.reason = errorType
         this.reporter.reportAAORejection(report)
       } else if (isFinalAttempt) {
@@ -999,6 +1000,3 @@ class RewardsAttester {
     await this._updateState({ phase })
   }
 }
-
-module.exports = RewardsAttester
-module.exports.AttestationDelayCalculator = AttestationDelayCalculator
