@@ -670,6 +670,7 @@ jobs:
             export PROTOCOL_DIR="/home/circleci/project"
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
+            npm install # wtf
             source /opt/circleci/.nvm/nvm.sh
             npm run localnet-up-ci
             npm run dev-setup
