@@ -41,28 +41,37 @@ import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
 import { PLAY_BAR_HEIGHT } from './constants'
 
-const combinedBottomAreaHeight = BOTTOM_BAR_HEIGHT + PLAY_BAR_HEIGHT
-
 const STATUS_BAR_FADE_CUTOFF = 0.6
 const SKIP_DURATION_SEC = 15
+// If the top screen inset is greater than this,
+// the status bar will be hidden when the drawer is open
+const INSET_STATUS_BAR_HIDE_THRESHOLD = 20
 
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
     paddingTop: 0,
-    height: FULL_DRAWER_HEIGHT - combinedBottomAreaHeight
+    height: FULL_DRAWER_HEIGHT,
+    justifyContent: 'space-evenly'
+  },
+  playBarContainer: {
+    position: 'absolute',
+    width: '100%',
+    top: 0
   },
   controlsContainer: {
-    marginHorizontal: spacing(6)
+    marginHorizontal: spacing(6),
+    marginBottom: spacing(6)
   },
   titleBarContainer: {
     marginBottom: spacing(4)
   },
   artworkContainer: {
+    flexShrink: 1,
     marginBottom: spacing(5)
   },
   trackInfoContainer: {
     marginHorizontal: spacing(6),
-    marginBottom: spacing(4)
+    marginBottom: spacing(3)
   },
   scrubberContainer: {
     marginHorizontal: spacing(6)
@@ -76,8 +85,10 @@ type NowPlayingDrawerProps = {
 const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
-  const styles = useStyles()
   const insets = useSafeAreaInsets()
+  const staticTopInset = useRef(insets.top)
+  const bottomBarHeight = BOTTOM_BAR_HEIGHT + insets.bottom
+  const styles = useStyles()
   const navigation = useNavigation()
 
   const { isOpen, onOpen, onClose } = useDrawer('NowPlaying')
@@ -90,14 +101,6 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
       setIsPlayBarShowing(true)
     }
   }, [isPlaying, isPlayBarShowing])
-
-  useEffect(() => {
-    if (isOpen) {
-      StatusBar.setHidden(true, 'fade')
-    } else {
-      StatusBar.setHidden(false, 'fade')
-    }
-  }, [isOpen])
 
   const handleDrawerCloseFromSwipe = useCallback(() => {
     onClose()
@@ -115,19 +118,42 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
     [drawerPercentOpen]
   )
 
+  useEffect(() => {
+    // The top inset can be 0 initially
+    // Need to get the actual value but preserve it when the
+    // status bar is hidden
+    if (staticTopInset.current === 0 && insets.top > 0) {
+      staticTopInset.current = insets.top
+    }
+  }, [staticTopInset, insets.top])
+
+  useEffect(() => {
+    if (staticTopInset.current > INSET_STATUS_BAR_HIDE_THRESHOLD) {
+      if (isOpen) {
+        StatusBar.setHidden(true, 'fade')
+      } else {
+        StatusBar.setHidden(false, 'fade')
+      }
+    }
+  }, [isOpen])
+
   // Attach to the pan responder of the drawer so that we can animate away
-  // the bottom bar as the drawer is dragged open
+  // the status bar
   const onPanResponderMove = useCallback(
     (e: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-      if (gestureState.vy > 0) {
-        // Dragging downwards
-        if (drawerPercentOpen.current < STATUS_BAR_FADE_CUTOFF) {
-          StatusBar.setHidden(false, 'fade')
-        }
-      } else if (gestureState.vy < 0) {
-        // Dragging upwards
-        if (drawerPercentOpen.current > STATUS_BAR_FADE_CUTOFF) {
-          StatusBar.setHidden(true, 'fade')
+      // Do not hide the status bar for smaller insets
+      // This is to prevent layout shift which breaks the animation
+      if (staticTopInset.current > INSET_STATUS_BAR_HIDE_THRESHOLD) {
+        if (gestureState.vy > 0) {
+          // Dragging downwards
+          if (drawerPercentOpen.current < STATUS_BAR_FADE_CUTOFF) {
+            StatusBar.setHidden(false, 'fade')
+          }
+        } else if (gestureState.vy < 0) {
+          // Dragging upwards
+          if (drawerPercentOpen.current > STATUS_BAR_FADE_CUTOFF) {
+            StatusBar.setHidden(true, 'fade')
+          }
         }
       }
     },
@@ -218,33 +244,42 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
       isOpen={isOpen}
       onClose={handleDrawerCloseFromSwipe}
       onOpen={onDrawerOpen}
-      initialOffsetPosition={combinedBottomAreaHeight}
+      initialOffsetPosition={bottomBarHeight + PLAY_BAR_HEIGHT}
       shouldCloseToInitialOffset={isPlayBarShowing}
       animationStyle={DrawerAnimationStyle.SPRINGY}
       shouldBackgroundDim={false}
       shouldAnimateShadow={false}
-      drawerStyle={{ top: -1 * insets.top, overflow: 'visible' }}
+      drawerStyle={{ overflow: 'visible' }}
       onPercentOpen={onDrawerPercentOpen}
       onPanResponderMove={onPanResponderMove}
       isGestureSupported={isGestureEnabled}
       translationAnim={translationAnim}
+      // Disable safe area view edges because they are handled manually
+      disableSafeAreaView
     >
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          { paddingTop: staticTopInset.current, paddingBottom: insets.bottom }
+        ]}
+      >
         {track && user && (
           <>
-            <PlayBar
-              track={track}
-              user={user}
-              onPress={onDrawerOpen}
-              translationAnim={translationAnim}
-            />
+            <View style={styles.playBarContainer}>
+              <PlayBar
+                track={track}
+                user={user}
+                onPress={onDrawerOpen}
+                translationAnim={translationAnim}
+              />
+            </View>
             <Logo translationAnim={translationAnim} />
             <View style={styles.titleBarContainer}>
               <TitleBar onClose={handleDrawerCloseFromSwipe} />
             </View>
             <Pressable
-              style={styles.artworkContainer}
               onPress={handlePressTitle}
+              style={styles.artworkContainer}
             >
               <Artwork track={track} />
             </Pressable>

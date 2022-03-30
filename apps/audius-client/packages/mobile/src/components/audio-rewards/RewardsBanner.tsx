@@ -32,7 +32,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     alignItems: 'center'
   },
   iconCrown: {
-    fill: palette.white,
+    fill: palette.staticWhite,
     height: 22,
     width: 22,
     marginRight: spacing(1)
@@ -45,13 +45,13 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   titleText: {
     fontSize: 20,
     fontFamily: typography.fontByWeight.heavy,
-    color: palette.white,
+    color: palette.staticWhite,
     textTransform: 'uppercase'
   },
   descriptionText: {
     ...typography.h2,
     marginBottom: 0,
-    color: palette.white,
+    color: palette.staticWhite,
     textTransform: 'uppercase'
   }
 }))
