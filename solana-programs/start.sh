@@ -130,10 +130,6 @@
     anchor build
 
     anchor_program_id=$(solana-keygen pubkey target/deploy/audius_data-keypair.json)
-    admin_keypair_publickey=$(solana-keygen pubkey adminKeypair.json)
-    admin_keypair_privatekey=$(cat adminKeypair.json)
-    admin_storage_keypair_publickey=$(solana-keygen pubkey adminStorageKeypair.json)
-    admin_storage_keypair_privatekey=$(cat adminStorageKeypair.json)
 
     echo "--- Anchor deploy ---- "
     # Deploy anchor program
@@ -142,6 +138,11 @@
     # Initialize Audius Admin account
     yarn run ts-node cli/main.ts -f initAdmin -k ~/.config/solana/id.json -n $SOLANA_HOST
 
+    # Propagate local variables
+    admin_keypair_publickey=$(solana-keygen pubkey adminKeypair.json)
+    admin_keypair_privatekey=$(cat adminKeypair.json)
+    admin_storage_keypair_publickey=$(solana-keygen pubkey adminStorageKeypair.json)
+    admin_storage_keypair_privatekey=$(cat adminStorageKeypair.json)
 } >&2
 
 # Back up 2 directories to audius-protocol/solana-programs
