@@ -669,7 +669,7 @@ jobs:
             nvm use "$NODE_VERSION"
             export PROTOCOL_DIR="/home/circleci/project"
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            solana-keygen new --no-bip39-passphrase --force -o "~/.config/solana/id.json"
+            solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
             source /opt/circleci/.nvm/nvm.sh
             npm run localnet-up-ci
             npm run dev-setup
