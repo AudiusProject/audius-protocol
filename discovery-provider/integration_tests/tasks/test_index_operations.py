@@ -6,7 +6,7 @@ import ipfshttpclient
 import pytest
 import src.utils.multihash
 from chance import chance
-from integration_tests.utils import to_bytes
+from integration_tests.utils import toBytes
 from src.models.models import Block, Track, User
 from src.queries.get_skipped_transactions import get_indexing_error
 from src.utils.helpers import remove_test_file
@@ -66,7 +66,7 @@ def seed_contract_data(task, contracts, web3):
     # Add creator to blockchain
     new_user_tx_hash = user_factory_contract.functions.addUser(
         web3.eth.defaultAccount,
-        to_bytes(new_user_handle, 16),
+        toBytes(new_user_handle, 16),
         new_user_nonce,
         new_user_signature,
     ).transact()

@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import logging
-from typing import Any, Dict, KeysView, List, Tuple
+from typing import Any, Dict, KeysView, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
@@ -9,6 +9,9 @@ from src.tasks.metadata import track_metadata_format, user_metadata_format
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 logger = logging.getLogger(__name__)
+
+GET_METADATA_TIMEOUT_SECONDS = 2
+GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS = 5
 
 
 class IPFSClient:
@@ -66,7 +69,9 @@ class IPFSClient:
                     f"IPFSCLIENT | Invalid URL from provided gateway addr - {url}"
                 )
 
-            async with async_session.get(url, timeout=2) as resp:
+            async with async_session.get(
+                url, timeout=GET_METADATA_TIMEOUT_SECONDS
+            ) as resp:
                 if resp.status == 200:
                     json_resp = await resp.json(content_type=None)
                     return (multihash, json_resp)
@@ -80,7 +85,10 @@ class IPFSClient:
             return None
 
     def _get_gateway_endpoints(
-        self, should_fetch_from_replica_set, user_id, user_to_replica_set
+        self,
+        should_fetch_from_replica_set: bool,
+        user_id: int,
+        user_to_replica_set: Dict[int, str],
     ):
         if should_fetch_from_replica_set and user_id and user_id in user_to_replica_set:
             user_replica_set = user_to_replica_set.get(user_id)
@@ -95,7 +103,7 @@ class IPFSClient:
         fetched_cids: KeysView[str],
         cids_txhash_set: Tuple[str, Any],
         cid_to_user_id: Dict[str, int],
-        user_to_replica_set: Dict[int, List[Any]],
+        user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
         should_fetch_from_replica_set: bool = True,
     ) -> Dict[str, int]:
@@ -135,7 +143,9 @@ class IPFSClient:
                     futures.append(future)
 
             try:
-                for future in asyncio.as_completed(futures, timeout=5):
+                for future in asyncio.as_completed(
+                    futures, timeout=GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS
+                ):
                     try:
                         future_result = await future
                     except asyncio.CancelledError:
