@@ -60,7 +60,7 @@ sh ./scripts/migrate_contracts.sh
 node ./initScripts/local.js distribute
 
 # Run unit tests
-npm run test:units
+npm run test:unit
 
 # run tests
 printf '\nSTART tests:\n\n'
