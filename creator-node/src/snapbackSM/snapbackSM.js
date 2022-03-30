@@ -131,7 +131,11 @@ class SnapbackSM {
     }
 
     // State machine queue processes all user operations
-    this.stateMachineQueue = this.createBullQueue('state-machine')
+    this.stateMachineQueue = this.createBullQueue('state-machine', {
+      lockDuration: 1800000, // 30min
+      maxStalledCount: 0, // we never want to re-process stalled job
+
+    })
 
     // Sync queues handle issuing sync request from primary -> secondary
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
@@ -178,7 +182,6 @@ class SnapbackSM {
     // Initialize stateMachineQueue job processor
     this.stateMachineQueue.process(1 /** concurrency */, async (job, done) => {
       const jobId = job.id
-      this.log(`SIDTEST this.stateMachineQueue.process() Called jobId ${jobId}`)
       await redis.set('stateMachineQueueLatestJobStart', Date.now())
       try {
         await this.processStateMachineOperation()
@@ -186,9 +189,6 @@ class SnapbackSM {
       } catch (e) {
         this.logError(`StateMachineQueue processing error jobId ${jobId}: ${e}`)
       }
-      this.log(
-        `SIDTEST this.stateMachineQueue.process() Completed jobId ${jobId}`
-      )
 
       done()
     })
@@ -262,7 +262,7 @@ class SnapbackSM {
   }
 
   // Initialize queue object with provided name and unix timestamp
-  createBullQueue(queueName) {
+  createBullQueue(queueName, settings = {}) {
     return new Bull(queueName, {
       redis: {
         port: this.nodeConfig.get('redisPort'),
@@ -272,7 +272,8 @@ class SnapbackSM {
         // removeOnComplete is required since the completed jobs data set will grow infinitely until memory exhaustion
         removeOnComplete: true,
         removeOnFail: true
-      }
+      },
+      settings
     })
   }
 
@@ -858,8 +859,6 @@ class SnapbackSM {
    * @note refer to git history for reference to `processStateMachineOperationOld()`
    */
   async processStateMachineOperation() {
-    this.log(`SIDTEST BEGIN processStateMachineOperation()`)
-
     // Ensure lock available, and acquire it - else error
     const lockKey = 'stateMachineQueueJobLock'
     const lockExp = this.snapbackJobInterval * 2
@@ -870,7 +869,6 @@ class SnapbackSM {
       return
     }
     await redis.lock.setLock(lockKey, lockExp)
-    this.log(`SIDTEST processStateMachineOperation() - lock acquired`)
 
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = []
@@ -1186,11 +1184,9 @@ class SnapbackSM {
   }
 
   _addToStateMachineQueueDecisionTree(decisionTree, stage, data = {}) {
-    const obj = { stage, data }
+    const obj = { stage, data, time: Date.now() }
 
     if (decisionTree.length > 0) {
-      obj.time = Date.now()
-
       // Set duration if both objs have time field
       const lastObj = decisionTree[decisionTree.length - 1]
       if (lastObj && lastObj.time) {
