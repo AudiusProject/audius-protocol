@@ -186,9 +186,11 @@ class SnapbackSM {
     // - Re-adds job to queue after processing current job, with a fixed delay
     this.stateMachineQueue.process(async (job, done) => {
       try {
+        this.log(`SIDTEST starting processStateMachineOperation`)
         await this.processStateMachineOperation()
+        this.log(`SIDTEST completed processStateMachineOperation`)
       } catch (e) {
-        this.logError(`StateMachineQueue processing error: ${e}`)
+        this.logError(`SIDTEST StateMachineQueue processing error: ${e}`)
       }
 
       await utils.timeout(this.snapbackJobInterval)
@@ -866,6 +868,7 @@ class SnapbackSM {
         time: Date.now()
       }
     ]
+    this.log(`SIDTEST processStateMachineOperation - 0`)
 
     try {
       let nodeUsers
@@ -878,6 +881,7 @@ class SnapbackSM {
           vals: { nodeUsersLength: nodeUsers.length },
           time: Date.now()
         })
+        this.log(`SIDTEST processStateMachineOperation 1`)
       } catch (e) {
         decisionTree.push({
           stage: 'getNodeUsers() or sliceUsers() Error',
@@ -900,6 +904,7 @@ class SnapbackSM {
           },
           time: Date.now()
         })
+        this.log(`SIDTEST processStateMachineOperation - 2`)
       } catch (e) {
         decisionTree.push({
           stage: 'processStateMachineOperation():getUnhealthyPeers() Error',
@@ -922,6 +927,7 @@ class SnapbackSM {
         },
         time: Date.now()
       })
+      this.log(`SIDTEST processStateMachineOperation - 3`)
 
       // Setup the mapping of Content Node endpoint to service provider id
       try {
@@ -941,6 +947,7 @@ class SnapbackSM {
           },
           time: Date.now()
         })
+        this.log(`SIDTEST processStateMachineOperation - 4`)
       } catch (e) {
         // Disable reconfig after failed `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet(
@@ -952,6 +959,7 @@ class SnapbackSM {
           vals: { error: e.message },
           time: Date.now()
         })
+        this.log(`SIDTEST processStateMachineOperation - 4 - Error`)
       }
 
       // Retrieve clock statuses for all users and their current replica sets
@@ -966,6 +974,7 @@ class SnapbackSM {
           stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
           time: Date.now()
         })
+        this.log(`SIDTEST processStateMachineOperation - 5`)
       } catch (e) {
         decisionTree.push({
           stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
@@ -991,6 +1000,7 @@ class SnapbackSM {
         },
         time: Date.now()
       })
+      this.log(`SIDTEST processStateMachineOperation - 6`)
 
       // Issue all required sync requests
       let numSyncRequestsRequired,
@@ -1020,6 +1030,7 @@ class SnapbackSM {
           },
           time: Date.now()
         })
+        this.log(`SIDTEST processStateMachineOperation - 7`)
       } catch (e) {
         decisionTree.push({
           stage: 'issueSyncRequestsToSecondaries() Error',
@@ -1032,6 +1043,7 @@ class SnapbackSM {
           },
           time: Date.now()
         })
+        this.log(`SIDTEST processStateMachineOperation - 7 Error`)
       }
 
       /**
@@ -1085,6 +1097,7 @@ class SnapbackSM {
           vals: { numUpdateReplicaOpsIssued },
           time: Date.now()
         })
+        this.log(`SIDTEST processStateMachineOperation - 8`)
       } catch (e) {
         decisionTree.push({
           stage: 'issueUpdateReplicaSetOp() Error',
@@ -1106,6 +1119,7 @@ class SnapbackSM {
         },
         time: Date.now()
       })
+      this.log(`SIDTEST processStateMachineOperation - 9`)
 
       // Log error without throwing - next run will attempt to rectify
     } catch (e) {
