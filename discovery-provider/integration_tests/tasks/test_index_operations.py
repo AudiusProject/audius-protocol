@@ -11,7 +11,10 @@ from src.models.models import Block, Track, User
 from src.queries.get_skipped_transactions import get_indexing_error
 from src.utils.helpers import remove_test_file
 from src.utils.indexing_errors import IndexingError
+from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_connection import get_redis
+
+INDEXING_ERROR_KEY = "indexing:error"
 
 redis = get_redis()
 
@@ -189,6 +192,8 @@ class MockResponse:
 
 @pytest.fixture(autouse=True)
 def cleanup():
+    set_json_cached_key(redis, INDEXING_ERROR_KEY, None)  # clear indexing error
+
     yield
     remove_test_file(track_metadata_json_file)
 
@@ -355,68 +360,68 @@ def test_index_operations_tx_receipts_fetch_error(
         assert error["count"] == 1
 
 
-# def test_index_operations_tx_parse_error(celery_app, celery_app_contracts, mocker):
-#     """
-#     Confirm indexer throws IndexingError when the parser throws an error
-#     """
-#     task = celery_app.celery.tasks["update_discovery_provider"]
-#     db = task.db
-#     web3 = celery_app_contracts["web3"]
+def test_index_operations_tx_parse_error(celery_app, celery_app_contracts, mocker):
+    """
+    Confirm indexer throws IndexingError when the parser throws an error
+    """
+    task = celery_app.celery.tasks["update_discovery_provider"]
+    db = task.db
+    web3 = celery_app_contracts["web3"]
 
-#     # patch parse track event to raise an exception
-#     def parse_track_event(*_):
-#         raise Exception("Broken parser")
+    # patch parse track event to raise an exception
+    def parse_track_event(*_):
+        raise Exception("Broken parser")
 
-#     mocker.patch(
-#         "src.tasks.tracks.parse_track_event",
-#         side_effect=parse_track_event,
-#         autospec=True,
-#     )
+    mocker.patch(
+        "src.tasks.tracks.parse_track_event",
+        side_effect=parse_track_event,
+        autospec=True,
+    )
 
-#     seed_data = seed_contract_data(task, celery_app_contracts, web3)
-#     mocker.patch(
-#         "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
-#         return_value=["https://test-content-node.audius.co"],
-#         autospec=True,
-#     )
+    seed_data = seed_contract_data(task, celery_app_contracts, web3)
+    mocker.patch(
+        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        return_value=["https://test-content-node.audius.co"],
+        autospec=True,
+    )
 
-#     mock_response = MockResponse(seed_data["track_metadata"], 200)
-#     mocker.patch(
-#         "aiohttp.ClientSession.get",
-#         return_value=mock_response,
-#         autospec=True,
-#     )
-#     current_block = None
-#     latest_block = None
-#     try:
-#         with db.scoped_session() as session:
-#             # Catch up the indexer
-#             current_block_query = session.query(Block).filter_by(is_current=True).all()
-#             current_block = (
-#                 current_block_query[0].number if len(current_block_query) > 0 else 0
-#             )
-#             latest_block = web3.eth.getBlock("latest", True)
-#             while current_block < latest_block.number:
-#                 # Process a bunch of blocks to make sure we covered everything
-#                 task.run()
-#                 current_block_query = (
-#                     session.query(Block).filter_by(is_current=True).all()
-#                 )
-#                 current_block = (
-#                     current_block_query[0].number if len(current_block_query) > 0 else 0
-#                 )
-#         assert False
-#     except IndexingError:
-#         error = get_indexing_error(redis)
-#         errored_block_in_db_results = (
-#             session.query(Block).filter_by(number=error["blocknumber"]).all()
-#         )  # should not exist
-#         errored_block_in_db = len(errored_block_in_db_results) != 0
-#         # when errored block is in db, it breaks the consensus mechanism
-#         # for discovery nodes staying in sync
-#         assert not errored_block_in_db
-#         assert error["message"] == "Broken parser"
-#         assert error["count"] == 1
+    mock_response = MockResponse(seed_data["track_metadata"], 200)
+    mocker.patch(
+        "aiohttp.ClientSession.get",
+        return_value=mock_response,
+        autospec=True,
+    )
+    current_block = None
+    latest_block = None
+    try:
+        with db.scoped_session() as session:
+            # Catch up the indexer
+            current_block_query = session.query(Block).filter_by(is_current=True).all()
+            current_block = (
+                current_block_query[0].number if len(current_block_query) > 0 else 0
+            )
+            latest_block = web3.eth.getBlock("latest", True)
+            while current_block < latest_block.number:
+                # Process a bunch of blocks to make sure we covered everything
+                task.run()
+                current_block_query = (
+                    session.query(Block).filter_by(is_current=True).all()
+                )
+                current_block = (
+                    current_block_query[0].number if len(current_block_query) > 0 else 0
+                )
+        assert False
+    except IndexingError:
+        error = get_indexing_error(redis)
+        errored_block_in_db_results = (
+            session.query(Block).filter_by(number=error["blocknumber"]).all()
+        )  # should not exist
+        errored_block_in_db = len(errored_block_in_db_results) != 0
+        # when errored block is in db, it breaks the consensus mechanism
+        # for discovery nodes staying in sync
+        assert not errored_block_in_db
+        assert error["message"] == "Broken parser"
+        assert error["count"] == 1
 
 
 def test_index_operations_indexing_error_on_commit(
