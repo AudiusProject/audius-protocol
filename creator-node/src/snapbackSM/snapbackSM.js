@@ -130,11 +130,14 @@ class SnapbackSM {
     }
 
     // State machine queue processes all user operations
-    this.stateMachineQueue = this.createBullQueue('state-machine', {
-      lockDuration: 30000 // 30sec
-    })
+    this.stateMachineQueue = this.createBullQueue('state-machine')
     this.stateMachineQueue.on('stalled', (job) => {
-      this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      // this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+    })
+    this.stateMachineQueue.on('global:stalled', (job) => {
+      // this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
     })
 
     // Sync queues handle issuing sync request from primary -> secondary
@@ -256,7 +259,7 @@ class SnapbackSM {
 
   // Initialize queue object with provided name and unix timestamp
   createBullQueue(queueName, settings = {}) {
-    return new Bull(`${queueName}-${Date.now()}`, {
+    return new Bull(queueName, {
       redis: {
         port: this.nodeConfig.get('redisPort'),
         host: this.nodeConfig.get('redisHost')
