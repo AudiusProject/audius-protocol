@@ -32,11 +32,15 @@ pub enum ClaimableProgramInstruction {
 
     /// Transfer
     ///
-    ///   0. `[w]` Token acc from which tokens will be send (bank account)
-    ///   1. `[w]` Receiver token acc
-    ///   2. `[r]` Banks token account authority
-    ///   3. `[r]` Sysvar instruction id
-    ///   4. `[r]` SPL token account id
+    ///   0. `[sw]` Account to pay for transfer
+    ///   1. `[w]` Token acc from which tokens will be send (bank account)
+    ///   2. `[w]` Receiver token acc
+    ///   3. `[w]` Nonce acc
+    ///   4. `[r]` Banks token account authority
+    ///   5. `[r]` Rent id
+    ///   6. `[r]` Sysvar instruction id
+    ///   7. `[r]` System program id
+    ///   8. `[r]` SPL token account id
     Transfer(EthereumAddress),
 }
 
