@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { getAccountWithPlaylists } from 'audius-client/src/common/store/account/selectors'
 import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
-import { Shadow } from 'react-native-shadow-2'
 
-import Button, { ButtonType } from 'app/components/button'
 import { CollectionList } from 'app/components/collection-list'
-import { VirtualizedScrollView } from 'app/components/core'
+import { VirtualizedScrollView, Button } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+
+import { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScreen'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
@@ -18,7 +19,8 @@ const messages = {
   inputPlaceholder: 'Filter Playlists'
 }
 
-export const PlaylistsTab = ({ navigation }) => {
+export const PlaylistsTab = () => {
+  const navigation = useNavigation<FavoritesTabScreenParamList>()
   const [filterValue, setFilterValue] = useState('')
   const user = useSelectorWeb(getAccountWithPlaylists)
 
@@ -39,6 +41,10 @@ export const PlaylistsTab = ({ navigation }) => {
     )
     .map(playlist => ({ ...playlist, user }))
 
+  const handleNavigateToNewPlaylist = useCallback(() => {
+    navigation.push({ native: { screen: 'CreatePlaylist' } })
+  }, [navigation])
+
   return (
     <VirtualizedScrollView listKey='favorites-playlists-view'>
       {!userPlaylists?.length && !filterValue ? (
@@ -50,20 +56,11 @@ export const PlaylistsTab = ({ navigation }) => {
           onChangeText={setFilterValue}
         />
       )}
-      <Shadow
-        offset={[0, 1]}
-        containerViewStyle={{ alignSelf: 'center', marginVertical: 16 }}
-        viewStyle={{ borderRadius: 4 }}
-        distance={3}
-        startColor='rgba(133,129,153,0.11)'
-      >
-        <Button
-          title='Create a New Playlist'
-          type={ButtonType.COMMON}
-          onPress={() => {}}
-          containerStyle={{ width: 256 }}
-        />
-      </Shadow>
+      <Button
+        title='Create a New Playlist'
+        variant='commonAlt'
+        onPress={handleNavigateToNewPlaylist}
+      />
       <CollectionList
         listKey='favorites-playlists'
         scrollEnabled={false}

@@ -70,6 +70,11 @@ function* createPlaylistAsync(action) {
 
   const playlist = { ...action.formFields }
 
+  // For base64 images (coming from native), convert to a blob
+  if (playlist.artwork?.type === 'base64') {
+    playlist.artwork.file = dataURLtoFile(playlist.artwork.file)
+  }
+
   const event = make(Name.PLAYLIST_START_CREATE, {
     source: action.source,
     artworkSource: playlist.artwork ? playlist.artwork.source : ''

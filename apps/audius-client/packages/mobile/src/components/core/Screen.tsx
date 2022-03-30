@@ -22,7 +22,7 @@ const useStyles = makeStyles(({ palette }, { variant }) => ({
   }
 }))
 
-type ScreenProps = {
+export type ScreenProps = {
   children: ReactNode
   topbarLeft?: Nullable<ReactElement>
   topbarLeftStyle?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>

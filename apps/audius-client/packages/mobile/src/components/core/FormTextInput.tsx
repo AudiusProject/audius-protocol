@@ -14,6 +14,11 @@ import { SvgProps } from 'react-native-svg'
 
 import { makeStyles, StylesProps } from 'app/styles'
 
+const validateRequired = (value: string) => {
+  if (!value) return 'Required'
+  return undefined
+}
+
 const useStyles = makeStyles(({ typography, palette, spacing }) => {
   const inputText = { ...typography.body, color: palette.secondary }
 
@@ -52,6 +57,7 @@ type FormTextInputProps = TextInputProps & {
   name: string
   onChange?: any
   prefix?: string
+  required?: boolean
 } & StylesProps<{
     root: ViewStyle
     label: TextStyle
@@ -65,10 +71,14 @@ export const FormTextInput = ({
   prefix,
   style,
   styles: stylesProp,
+  required,
   ...other
 }: FormTextInputProps) => {
   const styles = useStyles()
-  const [{ value, onChange, onBlur }] = useField<string>(name)
+  const [{ value, onChange, onBlur }] = useField<string>({
+    name,
+    validate: required ? validateRequired : undefined
+  })
 
   return (
     <View

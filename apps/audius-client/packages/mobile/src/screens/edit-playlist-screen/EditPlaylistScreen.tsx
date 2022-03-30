@@ -1,8 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
-import { useNavigation } from '@react-navigation/native'
-import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
-import RandomImage from 'audius-client/src/common/services/RandomImage'
+import { Collection } from 'common/models/Collection'
+import { SquareSizes } from 'common/models/ImageSizes'
 import {
   editPlaylist,
   orderPlaylist,
@@ -15,82 +14,29 @@ import {
 } from 'common/store/ui/createPlaylistModal/selectors'
 import { Formik, FormikProps } from 'formik'
 import { isEqual } from 'lodash'
-import { Pressable, Text, View } from 'react-native'
+import { View } from 'react-native'
 
-import IconCamera from 'app/assets/images/iconCamera.svg'
-import {
-  Screen,
-  TextButton,
-  FormTextInput,
-  FormImageInput
-} from 'app/components/core'
+import { FormScreen } from 'app/components/form-screen'
 import { TrackList } from 'app/components/track-list'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { flexRowCentered, makeStyles } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
+import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
+import { PlaylistImageInput } from './PlaylistImageInput'
+import { PlaylistNameInput } from './PlaylistNameInput'
 import { PlaylistValues } from './types'
 
-const messages = {
-  cancel: 'Cancel',
-  descriptionPlaceholder: 'Give your playlist a description',
-  getRandomArt: 'Get Random Artwork',
-  save: 'Save',
-  title: 'Edit Playlist'
-}
-
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    paddingVertical: spacing(8)
-  },
+const useStyles = makeStyles(({ spacing }) => ({
   footer: {
     paddingBottom: spacing(50)
-  },
-  getRandomArt: {
-    ...flexRowCentered(),
-    justifyContent: 'center',
-    marginTop: spacing(2)
-  },
-  getRandomArtText: {
-    ...typography.body,
-    color: palette.secondary,
-    marginLeft: spacing(2)
-  },
-  description: {
-    minHeight: 100
-  },
-  descriptionLabel: {
-    lineHeight: 28
   }
 }))
 
-const blobToBase64 = (blob: Blob) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result)
-    reader.readAsDataURL(blob)
-  })
-}
-
 const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
   const { values, handleSubmit, handleReset, setFieldValue } = props
-  const navigation = useNavigation()
   const styles = useStyles()
-  const [isProcessingImage, setIsProcessingImage] = useState(false)
-
-  const handlePressGetRandomArtwork = useCallback(async () => {
-    setIsProcessingImage(true)
-    const blob = await RandomImage.get()
-    if (blob) {
-      const url = URL.createObjectURL(blob)
-      const file = await blobToBase64(blob)
-      setFieldValue('artwork', { url, file, type: 'base64' })
-      setIsProcessingImage(false)
-    }
-  }, [setFieldValue])
 
   const handleReorder = useCallback(
     ({ data, from, to }) => {
@@ -133,58 +79,14 @@ const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
 
   const header = (
     <>
-      <View style={styles.header}>
-        <View>
-          <FormImageInput name='artwork' isProcessing={isProcessingImage} />
-          <Pressable
-            onPress={handlePressGetRandomArtwork}
-            style={styles.getRandomArt}
-          >
-            <IconCamera height={18} width={18} />
-            <Text style={styles.getRandomArtText}>{messages.getRandomArt}</Text>
-          </Pressable>
-        </View>
-      </View>
-      <FormTextInput isFirstInput name='playlist_name' label='Name' />
-      <FormTextInput
-        placeholder={messages.descriptionPlaceholder}
-        name='description'
-        label='Description'
-        multiline
-        maxLength={256}
-        styles={{
-          root: styles.description,
-          label: styles.descriptionLabel
-        }}
-      />
+      <PlaylistImageInput />
+      <PlaylistNameInput />
+      <PlaylistDescriptionInput />
     </>
   )
 
   return (
-    <Screen
-      variant='white'
-      title={messages.title}
-      topbarLeft={
-        <TextButton
-          title={messages.cancel}
-          variant='secondary'
-          onPress={() => {
-            navigation.goBack()
-            handleReset()
-          }}
-        />
-      }
-      topbarRight={
-        <TextButton
-          title={messages.save}
-          variant='primary'
-          onPress={() => {
-            handleSubmit()
-            navigation.goBack()
-          }}
-        />
-      }
-    >
+    <FormScreen onSubmit={handleSubmit} onReset={handleReset} goBackOnSubmit>
       {values.tracks ? (
         <TrackList
           hideArt
@@ -193,13 +95,13 @@ const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
           onRemove={handleRemove}
           tracks={values.tracks}
           trackItemAction='remove'
-          ListHeaderComponent={() => header}
-          ListFooterComponent={() => <View style={styles.footer} />}
+          ListHeaderComponent={header}
+          ListFooterComponent={<View style={styles.footer} />}
         />
       ) : (
         header
       )}
-    </Screen>
+    </FormScreen>
   )
 }
 
@@ -216,21 +118,25 @@ export const EditPlaylistScreen = () => {
 
   const handleSubmit = useCallback(
     (values: PlaylistValues) => {
-      values.removedTracks.forEach(({ trackId, timestamp }) => {
-        dispatchWeb(
-          removeTrackFromPlaylist(trackId, playlist?.playlist_id, timestamp)
-        )
-      })
-      if (!isEqual(playlist?.playlist_contents.track_ids, values.track_ids)) {
-        dispatchWeb(
-          orderPlaylist(
-            playlist?.playlist_id,
-            values.track_ids.map(({ track, time }) => ({ id: track, time }))
+      if (playlist) {
+        values.removedTracks.forEach(({ trackId, timestamp }) => {
+          dispatchWeb(
+            removeTrackFromPlaylist(trackId, playlist.playlist_id, timestamp)
           )
+        })
+        if (!isEqual(playlist?.playlist_contents.track_ids, values.track_ids)) {
+          dispatchWeb(
+            orderPlaylist(
+              playlist?.playlist_id,
+              values.track_ids.map(({ track, time }) => ({ id: track, time }))
+            )
+          )
+        }
+        dispatchWeb(
+          editPlaylist(playlist.playlist_id, (values as unknown) as Collection)
         )
+        dispatchWeb(tracksActions.fetchLineupMetadatas())
       }
-      dispatchWeb(editPlaylist(playlist?.playlist_id, values))
-      dispatchWeb(tracksActions.fetchLineupMetadatas())
     },
     [dispatchWeb, playlist]
   )

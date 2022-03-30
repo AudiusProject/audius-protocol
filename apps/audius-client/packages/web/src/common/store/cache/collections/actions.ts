@@ -1,3 +1,7 @@
+import { Collection } from 'common/models/Collection'
+import { ID, UID } from 'common/models/Identifiers'
+import { SquareSizes } from 'common/models/ImageSizes'
+
 export const CREATE_PLAYLIST = 'CREATE_PLAYLIST'
 export const CREATE_PLAYLIST_REQUESTED = 'CREATE_PLAYLIST_REQUESTED'
 export const CREATE_PLAYLIST_SUCCEEDED = 'CREATE_PLAYLIST_SUCCEEDED'
@@ -28,15 +32,13 @@ export const DELETE_PLAYLIST_FAILED = 'DELETE_PLAYLIST_FAILED'
 export const FETCH_COVER_ART = 'TRACKS/FETCH_COVER_ART'
 
 /**
- * @param {integer} tempId
- * @param {object} formFields
- * @param {?integer} initTrackId optional track id to pull artwork from.
+ * @param initTrackId optional track id to pull artwork from.
  */
 export function createPlaylist(
-  tempId,
-  formFields,
-  source,
-  initTrackId = undefined
+  tempId: number | string,
+  formFields: Record<string, unknown>,
+  source: string,
+  initTrackId?: number | null
 ) {
   return { type: CREATE_PLAYLIST, tempId, formFields, source, initTrackId }
 }
@@ -49,11 +51,15 @@ export function createPlaylistSucceeded() {
   return { type: CREATE_PLAYLIST_SUCCEEDED }
 }
 
-export function createPlaylistFailed(error, params, metadata) {
+export function createPlaylistFailed(
+  error: Error,
+  params: Record<string, unknown>,
+  metadata: Record<string, unknown>
+) {
   return { type: CREATE_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function editPlaylist(playlistId, formFields) {
+export function editPlaylist(playlistId: number, formFields: Collection) {
   return { type: EDIT_PLAYLIST, playlistId, formFields }
 }
 
@@ -61,43 +67,74 @@ export function editPlaylistSucceeded() {
   return { type: EDIT_PLAYLIST_SUCCEEDED }
 }
 
-export function editPlaylistFailed(error, params, metadata) {
+export function editPlaylistFailed(
+  error: Error,
+  params: Record<string, unknown>,
+  metadata: Record<string, unknown>
+) {
   return { type: EDIT_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function addTrackToPlaylist(trackId, playlistId) {
+export function addTrackToPlaylist(
+  trackId: ID | null,
+  playlistId: number | string
+) {
   return { type: ADD_TRACK_TO_PLAYLIST, trackId, playlistId }
 }
 
-export function addTrackToPlaylistFailed(error, params, metadata) {
+export function addTrackToPlaylistFailed(
+  error: Error,
+  params: Record<string, unknown>,
+  metadata: Record<string, unknown>
+) {
   return { type: ADD_TRACK_TO_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function removeTrackFromPlaylist(trackId, playlistId, timestamp) {
+export function removeTrackFromPlaylist(
+  trackId: number,
+  playlistId: number,
+  timestamp: number
+) {
   return { type: REMOVE_TRACK_FROM_PLAYLIST, trackId, playlistId, timestamp }
 }
 
-export function removeTrackFromPlaylistFailed(error, params, metadata) {
+export function removeTrackFromPlaylistFailed(
+  error: Error,
+  params: Record<string, unknown>,
+  metadata: Record<string, unknown>
+) {
   return { type: REMOVE_TRACK_FROM_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function orderPlaylist(playlistId, trackIdsAndTimes, trackUids) {
+export function orderPlaylist(
+  playlistId: number,
+  trackIdsAndTimes: { id: ID; time: number }[],
+  trackUids?: UID[]
+) {
   return { type: ORDER_PLAYLIST, playlistId, trackIdsAndTimes, trackUids }
 }
 
-export function orderPlaylistFailed(error, params, metadata) {
+export function orderPlaylistFailed(
+  error: Error,
+  params: Record<string, unknown>,
+  metadata: Record<string, unknown>
+) {
   return { type: ORDER_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function publishPlaylist(playlistId) {
+export function publishPlaylist(playlistId: ID) {
   return { type: PUBLISH_PLAYLIST, playlistId }
 }
 
-export function publishPlaylistFailed(error, params, metadata) {
+export function publishPlaylistFailed(
+  error: Error,
+  params: Record<string, unknown>,
+  metadata: Record<string, unknown>
+) {
   return { type: PUBLISH_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function deletePlaylist(playlistId) {
+export function deletePlaylist(playlistId: ID) {
   return { type: DELETE_PLAYLIST, playlistId }
 }
 
@@ -109,10 +146,14 @@ export function deletePlaylistSucceeded() {
   return { type: DELETE_PLAYLIST_SUCCEEDED }
 }
 
-export function deletePlaylistFailed(error, params, metadata) {
+export function deletePlaylistFailed(
+  error: Error,
+  params: Record<string, unknown>,
+  metadata: Record<string, unknown>
+) {
   return { type: DELETE_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function fetchCoverArt(collectionId, size) {
+export function fetchCoverArt(collectionId: ID, size: SquareSizes) {
   return { type: FETCH_COVER_ART, collectionId, size }
 }

@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useNavigation } from '@react-navigation/native'
 import {
   SquareSizes,
   WidthSizes
@@ -15,12 +14,8 @@ import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import {
-  Screen,
-  TextButton,
-  FormTextInput,
-  FormImageInput
-} from 'app/components/core'
+import { FormTextInput, FormImageInput } from 'app/components/core'
+import { FormScreen } from 'app/components/form-screen'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
@@ -30,11 +25,6 @@ import { makeStyles } from 'app/styles'
 import { getProfile } from '../profile-screen/selectors'
 
 import { ProfileValues, UpdatedProfile } from './types'
-
-const messages = {
-  save: 'Save',
-  cancel: 'Cancel'
-}
 
 const useStyles = makeStyles(({ palette }) => ({
   coverPhoto: {
@@ -52,6 +42,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderWidth: 2,
     borderStyle: 'solid',
     borderColor: palette.white,
+    backgroundColor: palette.neutralLight4,
     zIndex: 100,
     overflow: 'hidden'
   },
@@ -66,32 +57,14 @@ const useStyles = makeStyles(({ palette }) => ({
 
 const EditProfileForm = (props: FormikProps<ProfileValues>) => {
   const { handleSubmit, handleReset } = props
-  const navigation = useNavigation()
   const styles = useStyles()
 
   return (
-    <Screen
+    <FormScreen
       variant='secondary'
-      topbarLeft={
-        <TextButton
-          title={messages.cancel}
-          variant='secondary'
-          onPress={() => {
-            navigation.goBack()
-            handleReset()
-          }}
-        />
-      }
-      topbarRight={
-        <TextButton
-          title={messages.save}
-          variant='primary'
-          onPress={() => {
-            handleSubmit()
-            navigation.goBack()
-          }}
-        />
-      }
+      onReset={handleReset}
+      onSubmit={handleSubmit}
+      goBackOnSubmit
     >
       <FormImageInput
         name='cover_photo'
@@ -130,7 +103,7 @@ const EditProfileForm = (props: FormikProps<ProfileValues>) => {
         <FormTextInput name='website' label='Website' icon={IconLink} />
         <FormTextInput name='donation' label='Donation' icon={IconDonate} />
       </View>
-    </Screen>
+    </FormScreen>
   )
 }
 
