@@ -898,6 +898,7 @@ class SnapbackSM {
           'getNodeUsers() and sliceUsers() Success',
           { nodeUsersLength: nodeUsers.length }
         )
+        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -920,6 +921,7 @@ class SnapbackSM {
             unhealthyPeers: Array.from(unhealthyPeers)
           }
         )
+        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -942,6 +944,7 @@ class SnapbackSM {
             .length
         }
       )
+      this._printStateMachineQueueDecisionTree(decisionTree)
 
       // Setup the mapping of Content Node endpoint to service provider id
       try {
@@ -961,6 +964,7 @@ class SnapbackSM {
             ).length
           }
         )
+        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         // Disable reconfig after failed `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet(
@@ -971,6 +975,7 @@ class SnapbackSM {
           'updateEndpointToSpIdMap() Error',
           { error: e.message }
         )
+        this._printStateMachineQueueDecisionTree(decisionTree)
       }
 
       // Retrieve clock statuses for all users and their current replica sets
@@ -985,6 +990,7 @@ class SnapbackSM {
           decisionTree,
           'retrieveClockStatusesForUsersAcrossReplicaSet() Success'
         )
+        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -1009,6 +1015,7 @@ class SnapbackSM {
           potentialSyncRequestsLength: potentialSyncRequests.length
         }
       )
+      this._printStateMachineQueueDecisionTree(decisionTree)
 
       // Issue all required sync requests
       let numSyncRequestsRequired,
@@ -1038,6 +1045,7 @@ class SnapbackSM {
             enqueueSyncRequestErrors
           }
         )
+        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -1050,6 +1058,7 @@ class SnapbackSM {
             enqueueSyncRequestErrors
           }
         )
+        this._printStateMachineQueueDecisionTree(decisionTree)
       }
 
       /**
@@ -1103,6 +1112,7 @@ class SnapbackSM {
           'issueUpdateReplicaSetOp() Success',
           { numUpdateReplicaOpsIssued }
         )
+        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
