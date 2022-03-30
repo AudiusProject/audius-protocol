@@ -173,6 +173,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const renderRepostButton = () => {
     return (
       <AnimatedButton
+        haptics
         iconLightJSON={[IconRepostOnLight, IconRepostOffLight]}
         iconDarkJSON={[IconRepostOnDark, IconRepostOffDark]}
         iconIndex={track.has_current_user_reposted ? 1 : 0}
@@ -185,6 +186,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const renderFavoriteButton = () => {
     return (
       <AnimatedButton
+        haptics
         iconLightJSON={[IconFavoriteOnLight, IconFavoriteOffLight]}
         iconDarkJSON={[IconFavoriteOnDark, IconFavoriteOffDark]}
         iconIndex={track.has_current_user_saved ? 1 : 0}

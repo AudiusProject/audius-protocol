@@ -36,6 +36,7 @@ export const FavoriteButton = ({ isActive, ...props }: FavoriteButtonProps) => {
   return (
     <AnimatedButton
       {...props}
+      haptics
       iconIndex={isActive ? 1 : 0}
       iconLightJSON={iconLightJSON}
       iconDarkJSON={iconDarkJSON}

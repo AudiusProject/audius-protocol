@@ -32,9 +32,11 @@ export const RepostButton = ({ isActive, ...props }: RepostButtonProps) => {
     ],
     [props.isDisabled, props.wrapperStyle]
   )
+
   return (
     <AnimatedButton
       {...props}
+      haptics
       iconIndex={isActive ? 1 : 0}
       iconLightJSON={iconLightJSON}
       iconDarkJSON={iconDarkJSON}
