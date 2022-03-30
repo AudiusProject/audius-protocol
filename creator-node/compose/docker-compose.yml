@@ -35,6 +35,9 @@ services:
     ports:
       - '${CREATOR_NODE_HOST_PORT}:${CREATOR_NODE_HOST_PORT}'
       - '${CREATOR_NODE_DEBUGGER_PORT}:${CREATOR_NODE_DEBUGGER_PORT}'
+    extra_hosts:
+      # Exposes host.docker.internal on linux systems
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./env/tmp/file-storage-${SP_OWNER_WALLET_INDEX}:/file_storage
       - ..:/usr/src/app
