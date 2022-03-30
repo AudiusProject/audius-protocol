@@ -193,10 +193,10 @@ class SnapbackSM {
       done()
     })
     this.stateMachineQueue.on('stalled', function (job) {
-      this.logError(`SIDTEST STATEMACHINEQUEUE STALLED`)
+      console.error(`SIDTEST STATEMACHINEQUEUE STALLED`)
     })
     this.stateMachineQueue.on('global:stalled', function (job) {
-      this.logError(`SIDTEST STATEMACHINEQUEUE GLOBAL:STALLED`)
+      console.error(`SIDTEST STATEMACHINEQUEUE GLOBAL:STALLED`)
     })
 
     // Initialize manualSyncQueue job processor
