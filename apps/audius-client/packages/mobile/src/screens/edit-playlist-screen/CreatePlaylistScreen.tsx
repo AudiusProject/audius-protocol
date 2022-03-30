@@ -10,13 +10,15 @@ import { FormScreen } from 'app/components/form-screen'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useToast } from 'app/hooks/useToast'
 
 import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
 import { PlaylistImageInput } from './PlaylistImageInput'
 import { PlaylistNameInput } from './PlaylistNameInput'
 
 const messages = {
-  title: 'Create Playlist'
+  title: 'Create Playlist',
+  playlistCreatedToast: 'Playlist Created!'
 }
 
 type PlaylistValues = {
@@ -54,12 +56,12 @@ const initialErrors = {
 
 export const CreatePlaylistScreen = () => {
   const handle = useSelectorWeb(getUserHandle) ?? ''
+  const { toast } = useToast()
 
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const handleSubmit = useCallback(
     (values: PlaylistValues) => {
-      console.log('this should only be called once????')
       const tempId = Date.now().toString()
       dispatchWeb(
         createPlaylist(tempId, values, CreatePlaylistSource.FAVORITES_PAGE)
@@ -68,8 +70,9 @@ export const CreatePlaylistScreen = () => {
         native: { screen: 'Collection', params: { id: parseInt(tempId, 10) } },
         web: { route: playlistPage(handle, values.playlist_name, tempId) }
       })
+      toast({ content: messages.playlistCreatedToast })
     },
-    [dispatchWeb, navigation, handle]
+    [dispatchWeb, navigation, handle, toast]
   )
 
   return (
