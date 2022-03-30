@@ -10,6 +10,7 @@ import {
   Text
 } from 'react-native'
 
+import { light } from 'app/haptics'
 import { makeStyles, StylesProps } from 'app/styles'
 
 // Note, offset is the inner padding of the container div
@@ -124,6 +125,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
   const selectedOption = selectedProp ?? selected
 
   const handleSelectOption = (option: string) => {
+    light()
     onSelectOption?.(option)
     setSelected(option)
   }
