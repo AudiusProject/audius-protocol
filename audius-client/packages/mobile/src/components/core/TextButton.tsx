@@ -1,31 +1,35 @@
+import { ComponentType } from 'react'
+
 import { merge } from 'lodash'
 import {
   ButtonProps,
   TouchableOpacity,
-  TouchableOpacityProps,
-  Text
+  TouchableOpacityProps
 } from 'react-native'
+import { SvgProps } from 'react-native-svg'
 
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-const useStyles = makeStyles(({ typography, palette }, { variant }) => {
+const useStyles = makeStyles(({ palette, spacing }, { variant }) => {
   const variantStyles = {
     primary: {
-      text: {
-        color: palette.primary
+      icon: {
+        fill: palette.primary
       }
     },
     secondary: {
-      text: {
-        color: palette.secondary
+      icon: {
+        fill: palette.secondary
       }
     }
   }
 
   const baseStyles = {
-    text: {
-      ...typography.body
-    }
+    root: { flexDirection: 'row' },
+    iconLeft: { marginRight: spacing(2) },
+    iconRight: { marginLeft: spacing(2) },
+    disabled: { color: palette.neutralLight4 }
   }
 
   return merge(baseStyles, variantStyles[variant])
@@ -34,14 +38,42 @@ const useStyles = makeStyles(({ typography, palette }, { variant }) => {
 type TextButtonProps = TouchableOpacityProps &
   ButtonProps & {
     variant: 'primary' | 'secondary'
+    icon?: ComponentType<SvgProps>
+    iconPosition?: 'left' | 'right'
   }
 
 export const TextButton = (props: TextButtonProps) => {
-  const { title, variant, ...other } = props
+  const {
+    title,
+    variant,
+    icon: Icon,
+    iconPosition,
+    style,
+    disabled,
+    ...other
+  } = props
   const styles = useStyles({ variant })
+
+  const icon = Icon ? (
+    <Icon
+      height={18}
+      width={18}
+      fill={styles.icon.fill}
+      style={iconPosition === 'left' ? styles.iconLeft : styles.iconRight}
+    />
+  ) : null
+
   return (
-    <TouchableOpacity {...other}>
-      <Text style={styles.text}>{title}</Text>
+    <TouchableOpacity
+      style={[styles.root, style]}
+      disabled={disabled}
+      {...other}
+    >
+      {iconPosition === 'left' ? icon : null}
+      <Text color={variant} style={disabled && styles.disabled}>
+        {title}
+      </Text>
+      {iconPosition === 'right' ? icon : null}
     </TouchableOpacity>
   )
 }

@@ -64,6 +64,13 @@ export const useNavigation = <
           : () => {
               console.error('Push is not implemented for this navigator')
             },
+      replace:
+        'replace' in nativeNavigation
+          ? performNavigation(nativeNavigation.replace)
+          : () => {
+              console.error('Replace is not implemented for this navigator')
+            },
+
       // Notifying the web layer of the pop action
       // is handled in `createStackScreen`
       goBack: nativeNavigation.goBack
