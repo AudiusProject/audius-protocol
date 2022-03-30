@@ -158,10 +158,10 @@ class SnapbackSM {
       this.logError(`stateMachineQueue Job Stalled - ID ${job.id}}`)
     })
     this.manualSyncQueue.on('global:stalled', (job) => {
-      this.logError(`stateMachineQueue Job Stalled - ID ${job.id}}`)
+      this.logError(`manualSyncQueue Job Stalled - ID ${job.id}}`)
     })
     this.recurringSyncQueue.on('global:stalled', (job) => {
-      this.logError(`stateMachineQueue Job Stalled - ID ${job.id}}`)
+      this.logError(`recurringSyncQueue Job Stalled - ID ${job.id}}`)
     })
 
     // PeerSetManager instance to determine the peer set and its health state
@@ -885,6 +885,7 @@ class SnapbackSM {
         moduloBase: this.moduloBase
       }
     )
+    this._printStateMachineQueueDecisionTree(decisionTree)
 
     try {
       let nodeUsers
@@ -1158,9 +1159,6 @@ class SnapbackSM {
     decisionTree.push(obj)
   }
 
-  /**
-   * TODO - remove msg param
-   */
   _printStateMachineQueueDecisionTree(decisionTree, msg = '') {
     if (decisionTree.length > 2) {
       const startTime = decisionTree[0].time
