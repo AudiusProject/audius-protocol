@@ -130,7 +130,9 @@ class SnapbackSM {
     }
 
     // State machine queue processes all user operations
-    this.stateMachineQueue = this.createBullQueue('state-machine')
+    this.stateMachineQueue = this.createBullQueue('state-machine', {
+      lockDuration: 10800000 // 3hr
+    })
     this.stateMachineQueue.on('stalled', (job) => {
       // this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
       console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
