@@ -12,11 +12,11 @@
     feepayer_pubkey=$(solana-keygen pubkey feepayer.json)
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 10; do
-        solana airdrop 10 feepayer.json # adjust this number if running against a different endpoint
+        solana airdrop 100 feepayer.json # adjust this number if running against a different endpoint
     done
 
     while test $(solana balance | sed 's/\(\.\| \).*//') -lt 10; do
-        solana airdrop 10
+        solana airdrop 100
     done
 
     cd audius_eth_registry
@@ -113,6 +113,7 @@
     cargo run create-sender --eth-operator-address 0xF24936714293a0FaF39A022138aF58D874289132  --eth-sender-address 0xF24936714293a0FaF39A022138aF58D874289133 --reward-manager $reward_manager_account_key
 
     # Build anchor program
+    echo "Anchor build"
     cd ../../anchor/audius-data
     anchor build
 
@@ -120,6 +121,11 @@
     sed -i "s/Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" Anchor.toml
     sed -i "s/Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" programs/audius-data/src/lib.rs
 
+    anchor_program_id=$(solana-keygen pubkey target/deploy/audius_data-keypair.json)
+    admin_keypair_publickey=$(solana-keygen pubkey adminKeypair.json)
+    admin_storage_keypair_publickey=$(solana-keygen pubkey adminStorageKeypair.json)
+
+    echo "--- Anchor deploy ---- "
     # Deploy anchor program
     anchor deploy --provider.cluster $SOLANA_HOST
 
@@ -133,6 +139,9 @@ cd ../../
 
 cat <<EOF
 {
+    "anchorProgramId": "$anchor_program_id",
+    "anchorAdminKeypairPublicKey": "$admin_keypair_publickey",
+    "anchorAdminStorageKeypairPublicKey": "$admin_storage_keypair_publickey",
     "trackListenCountAddress": "$track_listen_count_address",
     "audiusEthRegistryAddress": "$audius_eth_registry_address",
     "validSigner": "$valid_signer",
