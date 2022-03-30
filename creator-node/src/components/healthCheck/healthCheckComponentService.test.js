@@ -81,10 +81,44 @@ const TranscodingQueueMock = (active = 0, waiting = 0) => {
   }
 }
 
-const AsyncProcessingQueueMock = (active = 0, waiting = 0) => {
+const AsyncProcessingQueueMock = (
+  active = 0,
+  waiting = 0,
+  failed = 0,
+  delayed = 0
+) => {
   return {
     getAsyncProcessingQueueJobs: async () => {
-      return { active, waiting }
+      return {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: waiting
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: active
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: failed
+        },
+        delayed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: delayed
+        }
+      }
     }
   }
 }
@@ -153,8 +187,36 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        delayed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      }
     })
   })
 
@@ -217,8 +279,36 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        delayed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      }
     })
   })
 
@@ -273,8 +363,36 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        delayed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      }
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -342,8 +460,36 @@ describe('Test Health Check Verbose', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        delayed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      }
     })
   })
 
