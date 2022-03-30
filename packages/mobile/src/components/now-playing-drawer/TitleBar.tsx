@@ -1,44 +1,40 @@
-import React from 'react'
-
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import Text from 'app/components/text'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors, useColor } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
+import { useColor } from 'app/utils/theme'
 
 const messages = {
   nowPlaying: 'NOW PLAYING'
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    root: {
-      marginTop: 48,
-      marginLeft: 16,
-      marginRight: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between'
-    },
-    caret: {
-      transform: [{ rotate: '90deg' }]
-    },
-    text: {
-      fontSize: 18,
-      color: themeColors.neutralLight4
-    },
-    offsetRight: {
-      width: 24
-    }
-  })
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  root: {
+    marginTop: spacing(4),
+    marginHorizontal: spacing(4),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  caret: {
+    transform: [{ rotate: '90deg' }]
+  },
+  text: {
+    fontSize: 18,
+    color: palette.neutralLight4
+  },
+  offsetRight: {
+    width: 24
+  }
+}))
 
 type TitleBarProps = {
   onClose: () => void
 }
 
 export const TitleBar = ({ onClose }: TitleBarProps) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const caretColor = useColor('neutralLight4')
   return (
     <View style={styles.root}>

@@ -20,20 +20,21 @@ const createStyles = (themeColors: ThemeColors) =>
     root: {
       marginLeft: spacing,
       marginRight: spacing,
-      width: dimensions.width - spacing * 2,
-      height: dimensions.width - spacing * 2
+      maxHeight: dimensions.width - spacing * 2,
+      alignSelf: 'center'
     },
     shadow: {
-      alignSelf: 'stretch',
-      height: '100%'
+      alignSelf: 'flex-start'
     },
     image: {
+      alignSelf: 'center',
       borderRadius: 8,
       borderColor: themeColors.white,
       borderWidth: 2,
       overflow: 'hidden',
       height: '100%',
-      width: '100%'
+      width: '100%',
+      aspectRatio: 1
     }
   })
 
