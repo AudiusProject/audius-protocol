@@ -130,7 +130,12 @@ class SnapbackSM {
     }
 
     // State machine queue processes all user operations
-    this.stateMachineQueue = this.createBullQueue('state-machine')
+    this.stateMachineQueue = this.createBullQueue('state-machine', {
+      lockDuration: 30000 // 30sec
+    })
+    this.stateMachineQueue.on('stalled', (job) => {
+      this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+    })
 
     // Sync queues handle issuing sync request from primary -> secondary
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
@@ -177,20 +182,15 @@ class SnapbackSM {
     // Initialize stateMachineQueue job processor
     // - Re-adds job to queue after processing current job, with a fixed delay
     this.stateMachineQueue.process(async (job, done) => {
-      this.log(`SIDTEST this.stateMachineQueue.process() Called`)
       try {
         await this.processStateMachineOperation()
       } catch (e) {
         this.logError(`StateMachineQueue processing error: ${e}`)
       }
-      this.log(`SIDTEST this.stateMachineQueue.process() Completed`)
 
-      await utils.timeout(10000)
+      await utils.timeout(this.snapbackJobInterval)
 
       await this.stateMachineQueue.add({ startTime: Date.now() })
-      this.log(
-        `SIDTEST this.stateMachineQueue.add() - new job added after 10s delay`
-      )
 
       done()
     })
@@ -255,7 +255,7 @@ class SnapbackSM {
   }
 
   // Initialize queue object with provided name and unix timestamp
-  createBullQueue(queueName) {
+  createBullQueue(queueName, settings = {}) {
     return new Bull(`${queueName}-${Date.now()}`, {
       redis: {
         port: this.nodeConfig.get('redisPort'),
@@ -265,7 +265,8 @@ class SnapbackSM {
         // removeOnComplete is required since the completed jobs data set will grow infinitely until memory exhaustion
         removeOnComplete: true,
         removeOnFail: true
-      }
+      },
+      settings
     })
   }
 
@@ -851,7 +852,6 @@ class SnapbackSM {
    * @note refer to git history for reference to `processStateMachineOperationOld()`
    */
   async processStateMachineOperation() {
-    this.log(`SIDTEST BEGIN processStateMachineOperation()`)
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = [
       {
@@ -863,7 +863,6 @@ class SnapbackSM {
         time: Date.now()
       }
     ]
-    this._printStateMachineQueueDecisionTree(decisionTree)
 
     try {
       let nodeUsers
@@ -876,7 +875,6 @@ class SnapbackSM {
           vals: { nodeUsersLength: nodeUsers.length },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         decisionTree.push({
           stage: 'getNodeUsers() or sliceUsers() Error',
@@ -899,7 +897,6 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         decisionTree.push({
           stage: 'processStateMachineOperation():getUnhealthyPeers() Error',
@@ -922,7 +919,6 @@ class SnapbackSM {
         },
         time: Date.now()
       })
-      this._printStateMachineQueueDecisionTree(decisionTree)
 
       // Setup the mapping of Content Node endpoint to service provider id
       try {
@@ -942,7 +938,6 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         // Disable reconfig after failed `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet(
@@ -954,7 +949,6 @@ class SnapbackSM {
           vals: { error: e.message },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
       }
 
       // Retrieve clock statuses for all users and their current replica sets
@@ -969,7 +963,6 @@ class SnapbackSM {
           stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         decisionTree.push({
           stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
@@ -995,7 +988,6 @@ class SnapbackSM {
         },
         time: Date.now()
       })
-      this._printStateMachineQueueDecisionTree(decisionTree)
 
       // Issue all required sync requests
       let numSyncRequestsRequired,
@@ -1025,7 +1017,6 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         decisionTree.push({
           stage: 'issueSyncRequestsToSecondaries() Error',
@@ -1038,7 +1029,6 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
       }
 
       /**
@@ -1092,7 +1082,6 @@ class SnapbackSM {
           vals: { numUpdateReplicaOpsIssued },
           time: Date.now()
         })
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         decisionTree.push({
           stage: 'issueUpdateReplicaSetOp() Error',
@@ -1128,21 +1117,17 @@ class SnapbackSM {
       this.currentModuloSlice = this.currentModuloSlice % this.moduloBase
 
       // Log decision tree
-      this._printStateMachineQueueDecisionTree(decisionTree)
-    }
-  }
-
-  _printStateMachineQueueDecisionTree(decisionTree) {
-    try {
-      this.log(
-        `processStateMachineOperation Decision Tree ${JSON.stringify(
-          decisionTree
-        )}`
-      )
-    } catch (e) {
-      this.logError(
-        `Error printing processStateMachineOperation Decision Tree ${decisionTree}`
-      )
+      try {
+        this.log(
+          `processStateMachineOperation Decision Tree ${JSON.stringify(
+            decisionTree
+          )}`
+        )
+      } catch (e) {
+        this.logError(
+          `Error printing processStateMachineOperation Decision Tree ${decisionTree}`
+        )
+      }
     }
   }
 
