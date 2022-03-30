@@ -199,12 +199,9 @@ class AsyncProcessingQueue {
       EXPIRATION_SECONDS
     )
 
-    // Pass in libs for if async fn requires it
-    req.libs = this.libs
-
     let response
     try {
-      response = await func({ logContext }, req)
+      response = await func({ logContext }, { ...req, libs: this.libs })
       state = { task, status: PROCESS_STATES.DONE, resp: response }
       this.logStatus(`Successful ${task}, uuid=${uuid}`, logContext)
       await redisClient.set(
@@ -228,10 +225,6 @@ class AsyncProcessingQueue {
 
       throw e
     }
-
-    // Remove passed in libs in case there are any followup jobs to be added
-    // to the queue, like for `transcodeHandOff` task
-    delete req.libs
 
     return response
   }
