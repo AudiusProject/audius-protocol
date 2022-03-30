@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "ganache": "./node_modules/ganache/dist/node/cli.js -p 8546 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 50 --deterministic true",
-    "ganache-q": "if [[ $(lsof -t -i:8546) ]]; then kill -9 $(lsof -t -i:8546) ; fi",
+    "ganache-q": "./ganache-q.sh",
     "truffle-compile": "./node_modules/.bin/truffle compile",
     "truffle-migrate": "./node_modules/.bin/truffle migrate --reset --network development",
     "truffle-migrate-test": "./node_modules/.bin/truffle migrate --reset --network test_local",

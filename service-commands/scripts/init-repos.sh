@@ -31,7 +31,7 @@ npm install
 # set up solana validator & programs
 cd $PROTOCOL_DIR
 cd solana-programs
-sh init.sh
+./init.sh
 
 # no discovery provider setup needed
 # 'pip install' is performed through Docker for development

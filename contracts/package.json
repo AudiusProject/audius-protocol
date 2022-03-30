@@ -11,7 +11,7 @@
   "private": true,
   "scripts": {
     "ganache": "./node_modules/ganache/dist/node/cli.js -p 8545 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5 --deterministic true",
-    "ganache-q": "if [[ $(lsof -t -i:8545) ]]; then kill -9 $(lsof -t -i:8545) ; fi",
+    "ganache-q": "./ganache-q.sh",
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
     "truffle-compile": "./node_modules/.bin/truffle compile",
