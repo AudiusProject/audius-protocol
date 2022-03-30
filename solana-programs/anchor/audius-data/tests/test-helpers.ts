@@ -25,10 +25,11 @@ import {
   ManagementActions,
   deletePlaylist,
   updatePlaylist,
+  updateAdmin,
 } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
-const { PublicKey } = anchor.web3;
+const { PublicKey, SystemProgram } = anchor.web3;
 
 export const EthWeb3 = new Web3();
 const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
@@ -48,7 +49,7 @@ export const initTestConstants = (): InitTestConsts => {
   const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
   const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
   const metadata = randomCID();
-  const userId = randomId()
+  const userId = randomId();
 
   return {
     ethAccount,
@@ -56,7 +57,7 @@ export const initTestConstants = (): InitTestConsts => {
     handleBytes,
     handleBytesArray,
     metadata,
-    userId
+    userId,
   };
 };
 
@@ -75,7 +76,7 @@ export const testInitUser = async ({
   replicaSetBumps,
   cn1,
   cn2,
-  cn3
+  cn3,
 }) => {
   const tx = await initUser({
     provider,
@@ -92,7 +93,7 @@ export const testInitUser = async ({
     adminKeypair,
     cn1,
     cn2,
-    cn3
+    cn3,
   });
 
   const account = await program.account.user.fetch(userStorageAccount);
@@ -167,7 +168,7 @@ export const testCreateUser = async ({
   cn1,
   cn2,
   cn3,
-  userId
+  userId,
 }) => {
   const tx = await createUser({
     provider,
@@ -186,7 +187,7 @@ export const testCreateUser = async ({
     cn1,
     cn2,
     cn3,
-    userId
+    userId,
   });
 
   const { decodedInstruction, decodedData, accountPubKeys } =
@@ -226,12 +227,16 @@ export const testCreateTrack = async ({
   trackMetadata,
   userAuthorityKeypair,
   trackOwnerPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
 }) => {
   const tx = await createTrack({
     id,
     program,
     userAuthorityKeypair,
     userStorageAccountPDA: trackOwnerPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     metadata: trackMetadata,
     baseAuthorityAccount,
     handleBytesArray,
@@ -259,6 +264,8 @@ export const testDeleteTrack = async ({
   program,
   id,
   trackOwnerPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
   userAuthorityKeypair,
   baseAuthorityAccount,
   handleBytesArray,
@@ -270,6 +277,8 @@ export const testDeleteTrack = async ({
     provider,
     program,
     userStorageAccountPDA: trackOwnerPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     userAuthorityKeypair: userAuthorityKeypair,
     baseAuthorityAccount,
     handleBytesArray,
@@ -295,6 +304,8 @@ export const testUpdateTrack = async ({
   program,
   id,
   userStorageAccountPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
@@ -310,6 +321,8 @@ export const testUpdateTrack = async ({
     adminStorageAccount,
     id,
     userStorageAccountPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     metadata,
     userAuthorityKeypair,
   });
@@ -341,12 +354,16 @@ export const testCreatePlaylist = async ({
   playlistMetadata,
   userAuthorityKeypair,
   playlistOwnerPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
 }) => {
   const tx = await createPlaylist({
     id,
     program,
     userAuthorityKeypair,
     userStorageAccountPDA: playlistOwnerPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     metadata: playlistMetadata,
     baseAuthorityAccount,
     handleBytesArray,
@@ -374,6 +391,8 @@ export const testDeletePlaylist = async ({
   program,
   id,
   playlistOwnerPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
   userAuthorityKeypair,
   baseAuthorityAccount,
   handleBytesArray,
@@ -385,6 +404,8 @@ export const testDeletePlaylist = async ({
     provider,
     program,
     userStorageAccountPDA: playlistOwnerPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     userAuthorityKeypair: userAuthorityKeypair,
     baseAuthorityAccount,
     handleBytesArray,
@@ -410,6 +431,8 @@ export const testUpdatePlaylist = async ({
   program,
   id,
   userStorageAccountPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
@@ -425,6 +448,8 @@ export const testUpdatePlaylist = async ({
     adminStorageAccount,
     id,
     userStorageAccountPDA,
+    userAuthorityDelegateAccountPDA,
+    authorityDelegationStatusAccountPDA,
     metadata,
     userAuthorityKeypair,
   });
@@ -445,21 +470,159 @@ export const testUpdatePlaylist = async ({
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
-export const pollAccountBalance = async (
-  provider: anchor.Provider,
-  targetAccount: anchor.web3.PublicKey,
-  targetBalance: number,
-  maxRetries: number
-) => {
-  let currentBalance = await provider.connection.getBalance(targetAccount);
+export const testCreateUserDelegate = async ({
+  adminKeypair,
+  adminStorageKeypair,
+  program,
+  provider,
+}) => {
+  // disable admin writes
+  await updateAdmin({
+    program,
+    isWriteEnabled: false,
+    adminStorageAccount: adminStorageKeypair.publicKey,
+    adminAuthorityKeypair: adminKeypair,
+  });
+
+  const user = await createSolanaUser(program, provider, adminStorageKeypair);
+
+  // Init AuthorityDelegationStatus for a new authority
+  const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
+  const authorityDelegationStatusSeeds = [
+    Buffer.from("authority-delegation-status", "utf8"),
+    userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+  ];
+
+  const authorityDelegationStatusRes = await PublicKey.findProgramAddress(
+    authorityDelegationStatusSeeds,
+    program.programId
+  );
+  const authorityDelegationStatusPDA = authorityDelegationStatusRes[0];
+  const authorityDelegationStatusBump = authorityDelegationStatusRes[1];
+
+  const initAuthorityDelegationStatusArgs = {
+    accounts: {
+      delegateAuthority: userAuthorityDelegateKeypair.publicKey,
+      authorityDelegationStatusPda: authorityDelegationStatusPDA,
+      payer: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId,
+    },
+    signers: [userAuthorityDelegateKeypair],
+  };
+
+  const initAuthorityDelegationStatusTx =
+    await program.rpc.initAuthorityDelegationStatus(
+      "authority_name",
+      initAuthorityDelegationStatusArgs
+    );
+
+  const {
+    decodedInstruction: authorityDelegationInstruction,
+    decodedData: authorityDelegationInstructionData,
+  } = await getTransactionWithData(
+    program,
+    provider,
+    initAuthorityDelegationStatusTx,
+    0
+  );
+  expect(authorityDelegationInstruction.name).to.equal(
+    "initAuthorityDelegationStatus"
+  );
+  expect(authorityDelegationInstructionData.authorityName).to.equal(
+    "authority_name"
+  );
+
+  // New sol key that will be used as user authority delegate
+  const userAuthorityDelegateSeeds = [
+    user.pda.toBytes().slice(0, 32),
+    userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
+  ];
+  const res = await PublicKey.findProgramAddress(
+    userAuthorityDelegateSeeds,
+    program.programId
+  );
+  const userAuthorityDelegatePDA = res[0];
+  const userAuthorityDelegateBump = res[1];
+
+  const addUserAuthorityDelegateArgs = {
+    accounts: {
+      admin: adminStorageKeypair.publicKey,
+      user: user.pda,
+      currentUserAuthorityDelegate: userAuthorityDelegatePDA,
+      signerUserAuthorityDelegate: SystemProgram.programId,
+      authorityDelegationStatus: SystemProgram.programId,
+      authority: user.keypair.publicKey,
+      payer: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId,
+    },
+    signers: [user.keypair],
+  };
+
+  const addUserAuthorityDelegateTx = await program.rpc.addUserAuthorityDelegate(
+    user.authority,
+    user.handleBytesArray,
+    user.bumpSeed,
+    userAuthorityDelegateKeypair.publicKey,
+    addUserAuthorityDelegateArgs
+  );
+
+  const {
+    decodedInstruction: addUserAuthorityDelegateInstruction,
+    decodedData: addUserAuthorityDelegateData,
+  } = await getTransactionWithData(
+    program,
+    provider,
+    addUserAuthorityDelegateTx,
+    0
+  );
+  expect(addUserAuthorityDelegateInstruction.name).to.equal(
+    "addUserAuthorityDelegate"
+  );
+
+  expect(addUserAuthorityDelegateData.base.toString()).to.equal(
+    user.authority.toString()
+  );
+  expect(addUserAuthorityDelegateData.handleSeed.toString()).to.equal(
+    user.handleBytesArray.toString()
+  );
+  expect(addUserAuthorityDelegateData.userBump).to.equal(user.bumpSeed);
+  expect(
+    addUserAuthorityDelegateData.userAuthorityDelegate.toString()
+  ).to.equal(userAuthorityDelegateKeypair.publicKey.toString());
+
+  return {
+    baseAuthorityAccount: user.authority,
+    userHandleBytesArray: user.handleBytesArray,
+    userBumpSeed: user.bumpSeed,
+    userAccountPDA: user.pda,
+    userAuthorityDelegatePDA,
+    userAuthorityDelegateBump,
+    authorityDelegationStatusPDA,
+    authorityDelegationStatusBump,
+    userKeypair: user.keypair,
+    userAuthorityDelegateKeypair,
+  };
+};
+
+export const pollAccountBalance = async (args: {
+  provider: anchor.Provider;
+  targetAccount: anchor.web3.PublicKey;
+  targetBalance: number;
+  maxRetries: number;
+}) => {
+  let currentBalance = await args.provider.connection.getBalance(
+    args.targetAccount
+  );
   let numRetries = 0;
-  while (currentBalance > targetBalance && numRetries < maxRetries) {
-    currentBalance = await provider.connection.getBalance(targetAccount);
+  while (currentBalance > args.targetBalance && numRetries < args.maxRetries) {
+    currentBalance = await args.provider.connection.getBalance(
+      args.targetAccount
+    );
     numRetries--;
   }
-  if (currentBalance > targetBalance) {
+  if (currentBalance > args.targetBalance) {
     throw new Error(
-      `Account ${targetAccount} failed to reach target balance ${targetBalance} in ${maxRetries} retries. Current balance = ${currentBalance}`
+      `Account ${args.targetAccount} failed to reach target balance ${args.targetBalance} in ${args.maxRetries} retries. Current balance = ${currentBalance}`
     );
   }
 };
@@ -484,7 +647,6 @@ export const confirmLogInTransaction = async (
   }
   return info;
 };
-
 
 export const createSolanaUser = async (
   program: Program<AudiusData>,
@@ -531,7 +693,7 @@ export const createSolanaUser = async (
     cn1: cn1.derivedAddress,
     cn2: cn2.derivedAddress,
     cn3: cn3.derivedAddress,
-    userId: testConsts.userId
+    userId: testConsts.userId,
   });
 
   const account = await program.account.user.fetch(newUserAcctPDA);
@@ -572,7 +734,7 @@ export const createSolanaContentNode = async (props: {
     program: props.program,
     adminKeypair: props.adminKeypair,
     baseAuthorityAccount,
-    adminStgPublicKey: props.adminStorageKeypair.publicKey,
+    adminStoragePublicKey: props.adminStorageKeypair.publicKey,
     contentNodeAuthority: authority.publicKey,
     contentNodeAcct: derivedAddress,
     spID: props.spId,
