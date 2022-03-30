@@ -6,7 +6,7 @@
 # import pytest
 # import src.utils.multihash
 # from chance import chance
-# from integration_tests.utils import to_bytes
+# from integration_tests.utils import toBytes
 # from src.models.models import Block, Track, User
 # from src.queries.get_skipped_transactions import get_indexing_error
 # from src.utils.helpers import remove_test_file
@@ -56,20 +56,20 @@
 #         "primaryType": "AddUserRequest",
 #         "message": {"handle": new_user_handle, "nonce": new_user_nonce},
 #     }
-#     new_user_signature = web3.eth.signTypedData(
-#         web3.eth.defaultAccount, new_user_signature_data
+#     new_user_signature = web3.eth.sign_typed_data(
+#         web3.eth.default_account, new_user_signature_data
 #     )
 
 #     # Add creator to blockchain
 #     new_user_tx_hash = user_factory_contract.functions.addUser(
-#         web3.eth.defaultAccount,
-#         to_bytes(new_user_handle, 16),
+#         web3.eth.default_account,
+#         toBytes(new_user_handle, 16),
 #         new_user_nonce,
 #         new_user_signature,
 #     ).transact()
 
 #     # parse chain transaction results
-#     tx_receipt = web3.eth.waitForTransactionReceipt(new_user_tx_hash)
+#     tx_receipt = web3.eth.wait_for_transaction_receipt(new_user_tx_hash)
 #     tx_new_user_info = user_factory_contract.events.AddUser().processReceipt(tx_receipt)
 #     new_user_args = tx_new_user_info[0].args
 #     user_id_from_event = int(new_user_args._userId)
@@ -144,8 +144,8 @@
 #         },
 #     }
 
-#     new_track_signature = web3.eth.signTypedData(
-#         web3.eth.defaultAccount, new_track_signature_data
+#     new_track_signature = web3.eth.sign_typed_data(
+#         web3.eth.default_account, new_track_signature_data
 #     )
 
 #     # add track to blockchain
@@ -185,7 +185,7 @@
 #         current_block = (
 #             current_block_query[0].number if len(current_block_query) > 0 else 0
 #         )
-#         latest_block = web3.eth.getBlock("latest", True)
+#         latest_block = web3.eth.get_block("latest", True)
 #         while current_block < latest_block.number:
 #             # Process a bunch of blocks to make sure we covered everything
 #             task.run()
@@ -232,7 +232,7 @@
 #             current_block = (
 #                 current_block_query[0].number if len(current_block_query) > 0 else 0
 #             )
-#             latest_block = web3.eth.getBlock("latest", True)
+#             latest_block = web3.eth.get_block("latest", True)
 #             while current_block < latest_block.number:
 #                 # Process a bunch of blocks to make sure we covered everything
 #                 task.run()
@@ -293,7 +293,7 @@
 #             current_block = (
 #                 current_block_query[0].number if len(current_block_query) > 0 else 0
 #             )
-#             latest_block = web3.eth.getBlock("latest", True)
+#             latest_block = web3.eth.get_block("latest", True)
 #             while current_block < latest_block.number:
 #                 # Process a bunch of blocks to make sure we covered everything
 #                 task.run()
@@ -346,7 +346,7 @@
 #             current_block = (
 #                 current_block_query[0].number if len(current_block_query) > 0 else 0
 #             )
-#             latest_block = web3.eth.getBlock("latest", True)
+#             latest_block = web3.eth.get_block("latest", True)
 #             while current_block < latest_block.number:
 #                 # Process a bunch of blocks to make sure we covered everything
 #                 task.run()
@@ -415,7 +415,7 @@
 #             current_block = (
 #                 current_block_query[0].number if len(current_block_query) > 0 else 0
 #             )
-#             latest_block = web3.eth.getBlock("latest", True)
+#             latest_block = web3.eth.get_block("latest", True)
 #             while current_block < latest_block.number:
 #                 # Process a bunch of blocks to make sure we covered everything
 #                 task.run()
@@ -475,7 +475,7 @@
 #         current_block = (
 #             current_block_query[0].number if len(current_block_query) > 0 else 0
 #         )
-#         latest_block = web3.eth.getBlock("latest", True)
+#         latest_block = web3.eth.get_block("latest", True)
 #         while current_block < latest_block.number:
 #             # Process a bunch of blocks to make sure we covered everything
 #             task.run()

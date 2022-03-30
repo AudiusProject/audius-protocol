@@ -126,14 +126,14 @@ def cache_play_health_vars(redis_mock):
 def test_get_health(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns db data"""
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
         block.hash = HexBytes(b"\x02")
         return block
 
     cache_play_health_vars(redis_mock)
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -167,14 +167,14 @@ def test_get_health(web3_mock, redis_mock, db_mock):
 def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns redis data first"""
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
         block.hash = HexBytes(b"\x02")
         return block
 
     cache_play_health_vars(redis_mock)
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -213,14 +213,14 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
 def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns db data if redis data is only partial"""
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
         block.hash = HexBytes(b"\x02")
         return block
 
     cache_play_health_vars(redis_mock)
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -257,14 +257,14 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
 def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
     """Tests that the health check can handle an invalid block in the db"""
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
         block.hash = HexBytes(b"\x02")
         return block
 
     cache_play_health_vars(redis_mock)
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -297,14 +297,14 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
 def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
     """Tests that the health check skips returnning redis data first if explicitly disabled"""
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
         block.hash = HexBytes(b"\x02")
         return block
 
     cache_play_health_vars(redis_mock)
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -343,14 +343,14 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
 def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     """Tests that the health check an unhealthy block difference"""
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 50
         block.hash = HexBytes(b"\x50")
         return block
 
     cache_play_health_vars(redis_mock)
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -393,13 +393,13 @@ def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_m
     }
 
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
         block.hash = HexBytes(b"\x02")
         return block
 
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
     cache_play_health_vars(redis_mock)
 
     # Set up db state
@@ -449,14 +449,14 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
     }
 
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
         block.hash = HexBytes(b"\x02")
         return block
 
     cache_play_health_vars(redis_mock)
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -502,14 +502,14 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
 def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
     """Tests that the health check honors an unhealthy challenge events drift"""
     # Set up web3 eth
-    def getBlock(_u1, _u2):  # unused
+    def get_block(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 50
         block.hash = HexBytes(b"\x50")
         return block
 
     cache_play_health_vars(redis_mock)
-    web3_mock.eth.getBlock = getBlock
+    web3_mock.eth.get_block = get_block
 
     # Set up redis state
     redis_mock.set(challenges_last_processed_event_redis_key, int(time() - 50))
