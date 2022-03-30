@@ -306,7 +306,6 @@ class TrackStream(Resource):
     @record_metrics
     @ns.doc(
         id="""Stream Track""",
-        description="""Get the streamable MP3 file of a track""",
         params={"track_id": "A Track ID"},
         responses={
             200: "Success",
@@ -319,6 +318,8 @@ class TrackStream(Resource):
     @cache(ttl_sec=5, transform=tranform_stream_cache)
     def get(self, track_id):
         """
+        Get the streamable MP3 file of a track
+
         This endpoint accepts the Range header for streaming.
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
         """
@@ -475,7 +476,6 @@ class FullTrending(Resource):
     )
     @full_ns.expect(full_trending_parser)
     @full_ns.marshal_with(full_tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -504,7 +504,6 @@ class FullTrendingWithVersion(FullTrending):
     )
     @full_ns.expect(full_trending_parser)
     @full_ns.marshal_with(full_tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         super().get(self, version)
 
@@ -524,7 +523,6 @@ class FullUndergroundTrending(Resource):
     )
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(full_tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         underground_trending_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.UNDERGROUND_TRACKS
@@ -553,7 +551,6 @@ class FullUndergroundTrendingWithVersion(FullUndergroundTrending):
     )
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(full_tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         super().get(self, version)
 
@@ -638,7 +635,6 @@ class FullRecommendedTracks(Resource):
     )
     @full_ns.expect(full_recommended_track_parser)
     @full_ns.marshal_with(full_tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -669,7 +665,6 @@ class FullRecommendedTracksWithVersion(FullRecommendedTracks):
     )
     @full_ns.expect(full_recommended_track_parser)
     @full_ns.marshal_with(full_tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         super().get(self, version)
 
