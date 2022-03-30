@@ -9,6 +9,7 @@ types-redis==3.5.4
 types-requests==2.25.0
 types-pytz==2021.1.2
 
+# the only version that supports websockets v10.1 (needed for solana py + anchor py)
 web3==6.0.0b1
 Flask==1.0.4
 # pin itsdangerous and markupsafe https://github.com/pallets/flask/issues/4455
