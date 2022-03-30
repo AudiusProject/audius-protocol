@@ -86,7 +86,7 @@ class EventScanner:
         self.event_type = event_type
         self.filters = filters
         self.last_scanned_block = MIN_SCAN_START_BLOCK
-        self.latest_chain_block = self.web3.eth.blockNumber
+        self.latest_chain_block = self.web3.eth.block_number
 
     def restore(self):
         """Restore the last scan state from redis.
@@ -124,7 +124,7 @@ class EventScanner:
     def get_block_timestamp(self, block_num) -> Union[datetime.datetime, None]:
         """Get Ethereum block timestamp"""
         try:
-            block_info = self.web3.eth.getBlock(block_num)
+            block_info = self.web3.eth.get_block(block_num)
         except BlockNotFound:
             # Block was not mined yet,
             # minor chain reorganisation?
@@ -446,7 +446,7 @@ def _fetch_events_for_all_contracts(
 
     # Call JSON-RPC API on your Ethereum node.
     # get_logs() returns raw AttributedDict entries
-    logs = web3.eth.getLogs(event_filter_params)
+    logs = web3.eth.get_logs(event_filter_params)
 
     # Convert raw binary data to Python proxy objects as described by ABI
     all_events = []

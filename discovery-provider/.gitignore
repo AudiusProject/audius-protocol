@@ -51,3 +51,5 @@ server.log
 
 # build in service-commands up
 compose/env/tmp*/
+
+.python-version
