@@ -21,7 +21,7 @@ const SyncMonitoringRetryDelayMs = 15000
 const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 
 // Timeout for fetching batch clock values
-const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
+const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 5000 // 20s
 
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
@@ -176,7 +176,7 @@ class SnapbackSM {
      */
 
     // Initialize stateMachineQueue job processor
-    this.stateMachineQueue.process(3 /** concurrency */, async (job, done) => {
+    this.stateMachineQueue.process(1 /** concurrency */, async (job, done) => {
       const jobId = job.id
       this.log(`SIDTEST this.stateMachineQueue.process() Called jobId ${jobId}`)
       await redis.set('stateMachineQueueLatestJobStart', Date.now())
@@ -194,6 +194,9 @@ class SnapbackSM {
     })
     this.stateMachineQueue.on('stalled', function (job) {
       this.logError(`SIDTEST STATEMACHINEQUEUE STALLED`)
+    })
+    this.stateMachineQueue.on('global:stalled', function (job) {
+      this.logError(`SIDTEST STATEMACHINEQUEUE GLOBAL:STALLED`)
     })
 
     // Initialize manualSyncQueue job processor
@@ -870,16 +873,15 @@ class SnapbackSM {
     this.log(`SIDTEST processStateMachineOperation() - lock acquired`)
 
     // Record all stages of this function along with associated information for use in logging
-    const decisionTree = [
+    const decisionTree = []
+    this._addToStateMachineQueueDecisionTree(
+      decisionTree,
+      'BEGIN processStateMachineOperation()',
       {
-        stage: 'BEGIN processStateMachineOperation()',
-        vals: {
-          currentModuloSlice: this.currentModuloSlice,
-          moduloBase: this.moduloBase
-        },
-        time: Date.now()
+        currentModuloSlice: this.currentModuloSlice,
+        moduloBase: this.moduloBase
       }
-    ]
+    )
     this._printStateMachineQueueDecisionTree(
       decisionTree,
       'BEGIN processStateMachineOperation()'
@@ -891,21 +893,21 @@ class SnapbackSM {
         nodeUsers = await this.peerSetManager.getNodeUsers()
         nodeUsers = this.sliceUsers(nodeUsers)
 
-        decisionTree.push({
-          stage: 'getNodeUsers() and sliceUsers() Success',
-          vals: { nodeUsersLength: nodeUsers.length },
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'getNodeUsers() and sliceUsers() Success',
+          { nodeUsersLength: nodeUsers.length }
+        )
         this._printStateMachineQueueDecisionTree(
           decisionTree,
           'getNodeUsers() and sliceUsers() Success'
         )
       } catch (e) {
-        decisionTree.push({
-          stage: 'getNodeUsers() or sliceUsers() Error',
-          vals: e.message,
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'getNodeUsers() or sliceUsers() Error',
+          { error: e.message }
+        )
         throw new Error(
           `processStateMachineOperation():getNodeUsers()/sliceUsers() Error: ${e.toString()}`
         )
@@ -914,24 +916,24 @@ class SnapbackSM {
       let unhealthyPeers
       try {
         unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
-        decisionTree.push({
-          stage: 'getUnhealthyPeers() Success',
-          vals: {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'getUnhealthyPeers() Success',
+          {
             unhealthyPeerSetLength: unhealthyPeers.size,
             unhealthyPeers: Array.from(unhealthyPeers)
-          },
-          time: Date.now()
-        })
+          }
+        )
         this._printStateMachineQueueDecisionTree(
           decisionTree,
           'getUnhealthyPeers() Success'
         )
       } catch (e) {
-        decisionTree.push({
-          stage: 'processStateMachineOperation():getUnhealthyPeers() Error',
-          vals: e.message,
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'processStateMachineOperation():getUnhealthyPeers() Error',
+          { error: e.message }
+        )
         throw new Error(
           `processStateMachineOperation():getUnhealthyPeers() Error: ${e.toString()}`
         )
@@ -940,14 +942,14 @@ class SnapbackSM {
       // Build map of <replica set node : [array of wallets that are on this replica set node]>
       const replicaSetNodesToUserWalletsMap =
         this.peerSetManager.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
-      decisionTree.push({
-        stage: 'buildReplicaSetNodesToUserWalletsMap() Success',
-        vals: {
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'buildReplicaSetNodesToUserWalletsMap() Success',
+        {
           numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap)
             .length
-        },
-        time: Date.now()
-      })
+        }
+      )
       this._printStateMachineQueueDecisionTree(
         decisionTree,
         'buildReplicaSetNodesToUserWalletsMap() Success'
@@ -962,15 +964,15 @@ class SnapbackSM {
         // Update enabledReconfigModesSet after successful `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet()
 
-        decisionTree.push({
-          stage: `updateEndpointToSpIdMap() Success`,
-          vals: {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'updateEndpointToSpIdMap() Success',
+          {
             endpointToSPIdMapSize: Object.keys(
               this.peerSetManager.endpointToSPIdMap
             ).length
-          },
-          time: Date.now()
-        })
+          }
+        )
         this._printStateMachineQueueDecisionTree(
           decisionTree,
           `updateEndpointToSpIdMap() Success`
@@ -980,12 +982,11 @@ class SnapbackSM {
         this.updateEnabledReconfigModesSet(
           /* override */ RECONFIG_MODES.RECONFIG_DISABLED.key
         )
-
-        decisionTree.push({
-          stage: `updateEndpointToSpIdMap() Error`,
-          vals: { error: e.message },
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'updateEndpointToSpIdMap() Error',
+          { error: e.message }
+        )
         this._printStateMachineQueueDecisionTree(
           decisionTree,
           `updateEndpointToSpIdMap() Error`
@@ -1000,20 +1001,20 @@ class SnapbackSM {
             replicaSetNodesToUserWalletsMap,
             unhealthyPeers
           )
-        decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'retrieveClockStatusesForUsersAcrossReplicaSet() Success'
+        )
         this._printStateMachineQueueDecisionTree(
           decisionTree,
           'retrieveClockStatusesForUsersAcrossReplicaSet() Success'
         )
       } catch (e) {
-        decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
-          vals: e.message,
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
+          { error: e.message }
+        )
         throw new Error(
           'processStateMachineOperation():retrieveClockStatusesForUsersAcrossReplicaSet() Error'
         )
@@ -1024,15 +1025,14 @@ class SnapbackSM {
           nodeUsers,
           unhealthyPeers
         )
-      decisionTree.push({
-        stage:
-          'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
-        vals: {
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
+        {
           requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
           potentialSyncRequestsLength: potentialSyncRequests.length
-        },
-        time: Date.now()
-      })
+        }
+      )
       this._printStateMachineQueueDecisionTree(
         decisionTree,
         'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays'
@@ -1056,32 +1056,32 @@ class SnapbackSM {
           throw new Error('More than 50% of SyncRequests failed to be enqueued')
         }
 
-        decisionTree.push({
-          stage: 'issueSyncRequestsToSecondaries() Success',
-          vals: {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueSyncRequestsToSecondaries() Success',
+          {
             numSyncRequestsRequired,
             numSyncRequestsEnqueued,
             numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
             enqueueSyncRequestErrors
-          },
-          time: Date.now()
-        })
+          }
+        )
         this._printStateMachineQueueDecisionTree(
           decisionTree,
           'issueSyncRequestsToSecondaries() Success'
         )
       } catch (e) {
-        decisionTree.push({
-          stage: 'issueSyncRequestsToSecondaries() Error',
-          vals: {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueSyncRequestsToSecondaries() Error',
+          {
             error: e.message,
             numSyncRequestsRequired,
             numSyncRequestsEnqueued,
             numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
             enqueueSyncRequestErrors
-          },
-          time: Date.now()
-        })
+          }
+        )
         this._printStateMachineQueueDecisionTree(
           decisionTree,
           'issueSyncRequestsToSecondaries() Error'
@@ -1134,44 +1134,44 @@ class SnapbackSM {
             `issueUpdateReplicaSetOp() failed for ${numIssueUpdateReplicaSetOpErrors} users`
           )
 
-        decisionTree.push({
-          stage: 'issueUpdateReplicaSetOp() Success',
-          vals: { numUpdateReplicaOpsIssued },
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueUpdateReplicaSetOp() Success',
+          { numUpdateReplicaOpsIssued }
+        )
         this._printStateMachineQueueDecisionTree(
           decisionTree,
           'issueUpdateReplicaSetOp() Success'
         )
       } catch (e) {
-        decisionTree.push({
-          stage: 'issueUpdateReplicaSetOp() Error',
-          vals: e.message,
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueUpdateReplicaSetOp() Error',
+          { error: e.message }
+        )
         throw new Error(
           'processStateMachineOperation():issueUpdateReplicaSetOp() Error'
         )
       }
 
-      decisionTree.push({
-        stage: 'END processStateMachineOperation()',
-        vals: {
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'END processStateMachineOperation()',
+        {
           currentModuloSlice: this.currentModuloSlice,
           moduloBase: this.moduloBase,
           numSyncRequestsEnqueued,
           numUpdateReplicaOpsIssued
-        },
-        time: Date.now()
-      })
+        }
+      )
 
       // Log error without throwing - next run will attempt to rectify
     } catch (e) {
-      decisionTree.push({
-        stage: 'processStateMachineOperation Error',
-        vals: e.message,
-        time: Date.now()
-      })
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'processStateMachineOperation Error',
+        { error: e.message }
+      )
     } finally {
       // Increment and adjust current slice by this.moduloBase
       this.currentModuloSlice += 1
@@ -1185,6 +1185,25 @@ class SnapbackSM {
     }
   }
 
+  _addToStateMachineQueueDecisionTree(decisionTree, stage, data = {}) {
+    const obj = { stage, data }
+
+    if (decisionTree.length > 0) {
+      obj.time = Date.now()
+
+      // Set duration if both objs have time field
+      const lastObj = decisionTree[decisionTree.length - 1]
+      if (lastObj && lastObj.time) {
+        const duration = obj.time - lastObj.time
+        obj.duration = duration
+      }
+    }
+    decisionTree.push(obj)
+  }
+
+  /**
+   * TODO - remove msg param
+   */
   _printStateMachineQueueDecisionTree(decisionTree, msg = '') {
     try {
       this.log(
