@@ -1,6 +1,6 @@
 import ast
 
-from .flask_decorator_plugin import Visitor
+from .flask_decorator_plugin import Plugin, Visitor
 
 non_route_param_example = """
 @full_ns.route("/<string:track_id>/remixes")
@@ -69,6 +69,69 @@ class Track(Resource):
 """
 
 
+decorator_order_example = """
+@full_ns.route(
+    \"/trending\",
+    defaults={\"version\": DEFAULT_TRENDING_VERSIONS[TrendingType.PLAYLISTS].name},
+    strict_slashes=False,
+)
+@full_ns.route(\"/trending/<string:version>\")
+class FullTrendingPlaylists(Resource):
+    @full_ns.expect(full_trending_playlist_parser)
+    @record_metrics
+    @full_ns.doc(
+        id=\"Get Trending Playlists With Version\",
+        description=\"Returns trending playlists for a time period based on the given trending version\",
+        responses={200: \"Success\", 400: \"Bad request\", 500: \"Server error\"},
+    )
+    @full_ns.marshal_with(full_trending_playlists_response)
+    def get(self, version):
+        \"Get trending playlists\"
+        pass
+"""
+
+doc_false_example = """
+@ns.route(\"/aggregates/routes/trailing/month\", doc=False)
+class AggregateRouteMetricsTrailingMonth(Resource):
+    @cache(ttl_sec=30 * 60)
+    @record_metrics
+    @ns.doc({\"params\": {\"foo\": \"bar\"}})
+    def get(self):
+        \"Gets aggregated route metrics for the last trailing 30 days\"
+        metrics = get_aggregate_route_metrics_trailing_month()
+        response = success_response(metrics)
+        return response
+"""
+
+top_level_expect_example = """
+@ns.route(\"/app_name/trailing/<string:time_range>\")
+@ns.expect(trailing_app_name_parser)
+class TrailingAppNameMetrics(Resource):
+    @ns.doc(
+        id=\"Get Trailing App Name Metrics\",
+        description=\"Gets the trailing app name metrics\",
+    )
+    @ns.marshal_with(app_name_trailing_response)
+    @cache(ttl_sec=3 * 60 * 60)
+    def get(self, time_range):
+        pass
+"""
+
+
+route_doc_example = """
+@ns.route(\"/app_name/trailing/<string:time_range>\", doc={\"params\":{\"time_range\": \"A time range\"}})
+class TrailingAppNameMetrics(Resource):
+    @ns.doc(
+        id=\"Get Trailing App Name Metrics\",
+        description=\"Gets the trailing app name metrics\",
+    )
+    @ns.marshal_with(app_name_trailing_response)
+    @cache(ttl_sec=3 * 60 * 60)
+    def get(self, time_range):
+        pass
+"""
+
+
 def _results(s: str):
     tree = ast.parse(s)
     visitor = Visitor()
@@ -114,12 +177,32 @@ def test_keyword_order():
     assert first_result["code_args"] == ["params"]
 
 
-# Disabled since plugin requires the package to be installed for __version__ to get set
-#
-# def test_plugin_format():
-#     tree = ast.parse(non_route_param_example)
-#     plugin = Plugin(tree)
-#     results = {f"{line}:{col} {msg}" for line, col, msg, _ in plugin.run()}
-#     assert results == {
-#         '8:42 FDP001 Non-route parameter "some_param" specified in @api.doc(). Prefer using @api.expects() with a RequestParser instead for query parameters.'
-#     }
+def test_decorator_order():
+    results = _results(decorator_order_example)
+    assert results[0]["code"] == "FDP002"
+    assert results[0]["code_args"] == ["record_metrics"]
+    assert results[1]["code"] == "FDP002"
+    assert results[1]["code_args"] == ["doc"]
+    assert results[2]["code"] == "FDP004"
+    assert results[2]["code_args"] == ["version"]
+
+
+def test_doc_false():
+    assert not _results(doc_false_example)
+
+
+def test_top_level_expect():
+    assert not _results(top_level_expect_example)
+
+
+def test_route_doc():
+    assert not _results(route_doc_example)
+
+
+def test_plugin_format():
+    tree = ast.parse(non_route_param_example)
+    plugin = Plugin(tree)
+    results = {f"{line}:{col} {msg}" for line, col, msg, _ in plugin.run()}
+    assert results == {
+        '8:42 FDP001 Non-route parameter "some_param" specified in @api.doc(). Prefer using @api.expects() with a RequestParser instead for query parameters.'
+    }
