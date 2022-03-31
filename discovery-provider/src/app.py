@@ -34,6 +34,7 @@ from src.queries import (
     user_signals,
 )
 from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_program_indexer import AnchorDataIndexer
 from src.tasks import celery_app
 from src.utils import helpers
 from src.utils.config import ConfigIni, config_files, shared_config
@@ -539,6 +540,12 @@ def configure_celery(celery, test_config=None):
 
     # Clear last scanned redis block on startup
     delete_last_scanned_eth_block_redis(redis_inst)
+
+    # Initialize Anchor Indexer
+    anchor_program_indexer = AnchorDataIndexer(
+        shared_config["solana"]["anchor_data_program_id"], "user-data", redis_inst
+    )
+    anchor_program_indexer.msg("hi")
 
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
