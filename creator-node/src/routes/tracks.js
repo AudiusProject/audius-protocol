@@ -99,7 +99,8 @@ module.exports = function (app) {
    * Given that the requester is a valid SP, the current Content Node has enough storage,
    * upload the track to the current node and add a transcode and segmenting job to the queue.
    *
-   * This route is part of the transcode handoff logic.
+   * This route is used on an available SP when the primary sends over a transcode and segment request
+   * to initiate the transcode handoff. This route does not run on the primary.
    */
   app.post(
     '/transcode_and_segment',
@@ -126,6 +127,9 @@ module.exports = function (app) {
   /**
    * Given that the request is coming from a valid SP, serve the corresponding file
    * from the transcode handoff
+   *
+   * This route is used on an available SP when the primary requests the transcoded files after
+   * sending the first request for the transcode handoff. This route does not run on the primary.
    */
   app.get(
     '/transcode_and_segment',
