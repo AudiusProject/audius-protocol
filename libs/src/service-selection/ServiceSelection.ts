@@ -223,12 +223,12 @@ export class ServiceSelection {
 
     // If a whitelist is provided, filter down to it
     if (whitelist) {
-      services = services.filter(service => whitelist.has(  isVerbose(service) ? service.endpoint: service))
+      services = services.filter(service => whitelist.has(isVerbose(service) ? service.endpoint : service))
     }
 
     // Key the services by their health check endpoint
     const urlMap = services.reduce<Record<string, Service>>((urlMap, service) => {
-      urlMap[ServiceSelection.getHealthCheckEndpoint(isVerbose(service) ?service.endpoint : service )] = service
+      urlMap[ServiceSelection.getHealthCheckEndpoint(isVerbose(service) ? service.endpoint : service)] = service
       return urlMap
     }, {})
 

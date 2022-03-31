@@ -8,7 +8,6 @@ export type ServiceName = string
 export interface ServiceWithEndpoint {endpoint: string}
 export type Service = ServiceName | ServiceWithEndpoint
 
-
 interface Request {
   id?: number
   url: string
