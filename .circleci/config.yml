@@ -680,6 +680,7 @@ jobs:
             export PROTOCOL_DIR="/home/circleci/project"
             source /opt/circleci/.nvm/nvm.sh
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            npm run build-dev
             npm run test
       - save_cache:
           key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
