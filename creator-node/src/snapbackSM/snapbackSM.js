@@ -192,7 +192,7 @@ class SnapbackSM {
 
     // Initialize stateMachineQueue job processor
     // - Re-adds job to queue after processing current job, with a fixed delay
-    this.stateMachineQueue.process(async (job, done) => {
+    this.stateMachineQueue.process(async (job) => {
       try {
         this.log(`SIDTEST starting processStateMachineOperation - jobInfo: ${JSON.stringify(job)}`)
         await this.processStateMachineOperation()
@@ -204,8 +204,6 @@ class SnapbackSM {
       await utils.timeout(this.snapbackJobInterval)
 
       await this.stateMachineQueue.add({ startTime: Date.now() })
-
-      done()
     })
 
     // Initialize manualSyncQueue job processor
