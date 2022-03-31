@@ -131,21 +131,21 @@ class SnapbackSM {
 
     // State machine queue processes all user operations
     this.stateMachineQueue = this.createBullQueue('state-machine', {
-      lockDuration: 30000, // 30sec
-      maxStalledCount: 0
+      // lockDuration: 30000, // 30sec
+      // maxStalledCount: 0
     })
     this.log(`SIDTEST QUEUE INFO: ${JSON.stringify(this.stateMachineQueue.settings)}`)
     this.stateMachineQueue.on('stalled', (job) => {
-      console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
-      // this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      // console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
     })
     this.stateMachineQueue.on('lock-extension-failed', (job) => {
-      console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
-      // this.logError(`SIDTEST STATEMACHINEQUEUE lock-extension-failed job id ${job.id}`)
+      // console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      this.logError(`SIDTEST STATEMACHINEQUEUE lock-extension-failed job id ${job.id}`)
     })
     this.stateMachineQueue.on('global:stalled', (job) => {
-      // this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
-      console.error(`SIDTEST STATEMACHINEQUEUE GLOBAL:STALLED job id ${job}`)
+      this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      // console.error(`SIDTEST STATEMACHINEQUEUE GLOBAL:STALLED job id ${job}`)
     })
 
     // Sync queues handle issuing sync request from primary -> secondary
