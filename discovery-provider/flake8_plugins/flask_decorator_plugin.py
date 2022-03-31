@@ -74,7 +74,8 @@ class Visitor(ast.NodeVisitor):
                                     for index, key in enumerate(keyword.value.keys)
                                     if isinstance(key, ast.Constant)
                                     and key.value == "params"
-                                )
+                                ),
+                                -1,
                             )
                             if index >= 0:
                                 params = keyword.value.values[index]
