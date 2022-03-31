@@ -148,76 +148,23 @@ describe('test ipfsClient with randomized text content', () => {
     assert.ok(!!allResults.reduce(function (a, b) { return (a === b) ? a : NaN }))
   })
 
-  it('[random - ipfsAddNonImages] passing in a Buffer and `enableIPFSAdd` = true should work', async () => {
-    const buffer = Buffer.from(randomText)
-
-    const onlyHash = await ipfsAdd.ipfsAddNonImages(buffer)
-    const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(buffer, {}, {}, true)
-
-    console.log('buffer', {
-      onlyHash,
-      ipfsLatestAddWithDaemonResp
-    })
-
-    assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
-  })
-
-  it('[random - ipfsAddNonImages] passing in a ReadStream and `enableIPFSAdd` = true should work', async () => {
-    const readStream1 = fs.createReadStream(randomTextFilePath)
-    const onlyHash = await ipfsAdd.ipfsAddNonImages(readStream1)
-
-    const readStream2 = fs.createReadStream(randomTextFilePath)
-    const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(readStream2, {}, {}, true)
-
-    console.log('readstream', {
-      onlyHash,
-      ipfsLatestAddWithDaemonResp
-    })
-
-    assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
-  })
-
-  it('[random - ipfsAddNonImages] passing in a source path and `enableIPFSAdd` = true should work', async () => {
-    const onlyHash = await ipfsAdd.ipfsAddNonImages(randomTextFilePath)
-    const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(randomTextFilePath, {}, {}, true)
-
-    console.log('source path', {
-      onlyHash,
-      ipfsLatestAddWithDaemonResp
-    })
-
-    assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
-  })
-
-  it('[random - ipfsAddNonImages] passing in improper content throws', async () => {
+  it('[random - generateNonImageMultihash] passing in improper content throws', async () => {
     try {
-      await ipfsAdd.ipfsAddNonImages(randomText)
+      await ipfsAdd.generateNonImageMultihash(randomText)
       throw new Error('passing in improper data should have failed')
     } catch (e) {
       assert.ok(e.toString().includes('Could not convert content into buffer'))
     }
   })
 
-  it('[random - ipfsAddNonImages] if `ipfsOnlyHashImages()` errors, `ipfsAddNonImages()` throws', async () => {
+  it('[random - generateNonImageMultihash] if `ipfsOnlyHashImages()` errors, `generateNonImageMultihash()` throws', async () => {
     sinon.stub(ipfsAdd, 'ipfsOnlyHashNonImages').throws(new Error('failed to generate only hash'))
 
     try {
-      await ipfsAdd.ipfsAddNonImages(randomTextFilePath)
-      throw new Error('`ipfsAddNonImages` should throw if `ipfsOnlyHashNonImages` fails')
+      await ipfsAdd.generateNonImageMultihash(randomTextFilePath)
+      throw new Error('`generateNonImageMultihash` should throw if `ipfsOnlyHashNonImages` fails')
     } catch (e) {
       assert.ok(e.toString().includes('failed to generate only hash'))
-    }
-  })
-
-  it('[random - ipfsAddNonImages] if `ipfsOnlyHashImages()` and ipfs daemon hash resp diverges, `ipfsAddNonImages()` throws', async () => {
-    sinon.stub(ipfsAdd, 'ipfsOnlyHashNonImages').returns('QmVHxRocoWgUChLEvfEyDuuD6qJ4PhdDL2dTLcpUy3dSC2'
-    )
-
-    try {
-      await ipfsAdd.ipfsAddNonImages(randomTextFilePath, {}, {}, true)
-      throw new Error('`ipfsAddNonImages` should throw if only hash and daemon hash diverges')
-    } catch (e) {
-      assert.ok(e.toString().includes('are not consistent'))
     }
   })
 })
@@ -369,74 +316,23 @@ describe('test ipfsClient with static content', () => {
       }
     })
 
-    it(`[static - ipfsAddNonImages] passing in a(n) ${type} Buffer and \`enableIPFSAdd\` = true should work`, async () => {
-      const onlyHash = await ipfsAdd.ipfsAddNonImages(buffer)
-      const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(buffer, {}, {}, true)
-
-      console.log('buffer', {
-        onlyHash,
-        ipfsLatestAddWithDaemonResp
-      })
-
-      assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
-    })
-
-    it(`[static - ipfsAddNonImages] passing in a(n) ${type} ReadStream and \`enableIPFSAdd\` = true should work`, async () => {
-      const readStream1 = fs.createReadStream(filePath)
-      const onlyHash = await ipfsAdd.ipfsAddNonImages(readStream1)
-
-      const readStream2 = fs.createReadStream(filePath)
-      const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(readStream2, {}, {}, true)
-
-      console.log('readstream', {
-        onlyHash,
-        ipfsLatestAddWithDaemonResp
-      })
-
-      assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
-    })
-
-    it(`[static - ipfsAddNonImages] passing in a(n) ${type} source path and \`enableIPFSAdd\` = true should work`, async () => {
-      const onlyHash = await ipfsAdd.ipfsAddNonImages(filePath)
-      const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(filePath, {}, {}, true)
-
-      console.log('source path', {
-        onlyHash,
-        ipfsLatestAddWithDaemonResp
-      })
-
-      assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
-    })
-
-    it('[static - ipfsAddNonImages] passing in improper content throws', async () => {
+    it('[static - generateNonImageMultihash] passing in improper content throws', async () => {
       try {
-        await ipfsAdd.ipfsAddNonImages('vicky was here hehe')
+        await ipfsAdd.generateNonImageMultihash('vicky was here hehe')
         throw new Error('passing in improper data should have failed')
       } catch (e) {
         assert.ok(e.toString().includes('Could not convert content into buffer'))
       }
     })
 
-    it('[static - ipfsAddNonImages] if `ipfsOnlyHashImages()` errors, `ipfsAddNonImages()` throws', async () => {
+    it('[static - generateNonImageMultihash] if `ipfsOnlyHashImages()` errors, `generateNonImageMultihash()` throws', async () => {
       sinon.stub(ipfsAdd, 'ipfsOnlyHashNonImages').throws(new Error('failed to generate only hash'))
 
       try {
-        await ipfsAdd.ipfsAddNonImages(filePath)
-        throw new Error('`ipfsAddNonImages` should throw if `ipfsOnlyHashNonImages` fails')
+        await ipfsAdd.generateNonImageMultihash(filePath)
+        throw new Error('`generateNonImageMultihash` should throw if `ipfsOnlyHashNonImages` fails')
       } catch (e) {
         assert.ok(e.toString().includes('failed to generate only hash'))
-      }
-    })
-
-    it('[static - ipfsAddNonImages] if `ipfsOnlyHashImages()` and ipfs daemon hash resp diverges, `ipfsAddNonImages()` throws', async () => {
-      sinon.stub(ipfsAdd, 'ipfsOnlyHashNonImages').returns('QmVHxRocoWgUChLEvfEyDuuD6qJ4PhdDL2dTLcpUy3dSC2'
-      )
-
-      try {
-        await ipfsAdd.ipfsAddNonImages(filePath, {}, {}, true)
-        throw new Error('`ipfsAddNonImages` should throw if only hash and daemon hash diverges')
-      } catch (e) {
-        assert.ok(e.toString().includes('are not consistent'))
       }
     })
   }
