@@ -682,6 +682,7 @@ jobs:
             source /opt/circleci/.nvm/nvm.sh
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             npm run build-dev
+            solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
             npm run deploy-dev
             npm run test
       - save_cache:
