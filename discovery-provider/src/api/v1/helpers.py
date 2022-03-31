@@ -433,12 +433,12 @@ full_trending_parser.add_argument(
 full_trending_parser.add_argument(
     "genre",
     required=False,
-    description="Filter to trending tracks for a specified genre",
+    description="Filter trending to a specified genre",
 )
 full_trending_parser.add_argument(
     "time",
     required=False,
-    description="Get trending tracks over a specified time range",
+    description="Calculate trending over a specified time range",
     type=str,
     choices=("week", "month", "year", "allTime"),
 )
