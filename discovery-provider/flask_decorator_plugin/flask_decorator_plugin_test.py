@@ -1,6 +1,6 @@
 import ast
 
-from flask_decorator_plugin import FDP001, FDP002, FDP003, Plugin
+from flask_decorator_plugin import Plugin, Visitor
 
 non_route_param_example = """
 @full_ns.route("/<string:track_id>/remixes")
@@ -71,23 +71,53 @@ class Track(Resource):
 
 def _results(s: str):
     tree = ast.parse(s)
-    plugin = Plugin(tree)
-    return {f"{line}:{col} {msg}" for line, col, msg, _ in plugin.run()}
+    visitor = Visitor()
+    visitor.visit(tree)
+    return list(
+        map(
+            lambda problem: {
+                "line": problem[0],
+                "col": problem[1],
+                "code": problem[2],
+                "code_args": problem[3],
+            },
+            visitor.problems,
+        )
+    )
 
 
 def test_non_route_param():
-    assert _results(non_route_param_example) == {f"8:42 {FDP001}"}
+    first_result = _results(non_route_param_example)[0]
+    assert first_result["line"] == 8
+    assert first_result["col"] == 42
+    assert first_result["code"] == "FDP001"
+    assert first_result["code_args"] == ["some_param"]
 
 
 def test_variable_route_param():
-    assert _results(variable_route_param_example) == set()
+    assert not _results(variable_route_param_example)
 
 
 def test_attribute_order():
-    assert _results(attribute_order_example) == {
-        f'9:5 {FDP002.format("record_metrics")}'
-    }
+    first_result = _results(attribute_order_example)[0]
+    assert first_result["line"] == 9
+    assert first_result["col"] == 5
+    assert first_result["code"] == "FDP002"
+    assert first_result["code_args"] == ["record_metrics"]
 
 
 def test_keyword_order():
-    assert _results(keyword_order_example) == {f'9:15 {FDP003.format("params")}'}
+    first_result = _results(keyword_order_example)[0]
+    assert first_result["line"] == 9
+    assert first_result["col"] == 15
+    assert first_result["code"] == "FDP003"
+    assert first_result["code_args"] == ["params"]
+
+
+def test_plugin_format():
+    tree = ast.parse(non_route_param_example)
+    plugin = Plugin(tree)
+    results = {f"{line}:{col} {msg}" for line, col, msg, _ in plugin.run()}
+    assert results == {
+        '8:42 FDP001 Non-route parameter "some_param" specified in @api.doc(). Prefer using @api.expects() with a RequestParser instead for query parameters.'
+    }

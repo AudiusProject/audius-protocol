@@ -1,17 +1,18 @@
 import ast
 import re
 import sys
-from typing import Any, Generator, List, Tuple, Type
+from typing import Any, Generator, List, Tuple, Type, Union
 
 if sys.version_info < (3, 8):
     import importlib_metadata
 else:
     import importlib.metadata as importlib_metadata
 
-FDP001 = "FDP001: Non-route parameter specified in @api.doc(). Prefer using @api.expects() with a RequestParser instead for query parameters."
-FDP002 = 'FDP002: Decorator "{0}" out of order, should be higher in decorator list.'
-FDP003 = 'FDP003: Keyword arg "{0}" out of order, should be higher in @api.doc() keyword arg list.'
-
+code_message_map = {
+    "FDP001": 'Non-route parameter "{0}" specified in @api.doc(). Prefer using @api.expects() with a RequestParser instead for query parameters.',
+    "FDP002": 'Decorator "{0}" out of order, should be higher in decorator list.',
+    "FDP003": 'Keyword arg "{0}" out of order, should be higher in @api.doc() keyword arg list.',
+}
 DECORATOR_ORDER_MAP = {
     "record_metrics": 0,
     "doc": 1,
@@ -25,7 +26,7 @@ API_DOC_KEYWORD_ORDER_MAP = {"id": 0, "description": 1, "params": 2, "responses"
 
 class Visitor(ast.NodeVisitor):
     def __init__(self):
-        self.problems: List[Tuple[int, int, str]] = []
+        self.problems: List[Tuple[int, int, str, Union[list, None]]] = []
         self._regex = re.compile(".*<.*:(.*)>.*")
 
     def visit_ClassDef(self, node: ast.ClassDef):
@@ -103,7 +104,7 @@ class Visitor(ast.NodeVisitor):
             )
             if not all(mapped):
                 self.problems.append(
-                    (line_and_col[0], line_and_col[1], FDP002.format(decorator_name))
+                    (line_and_col[0], line_and_col[1], "FDP002", [decorator_name])
                 )
 
     def _check_doc_keyword_order(
@@ -126,7 +127,8 @@ class Visitor(ast.NodeVisitor):
                     (
                         keyword.value.lineno,
                         keyword.value.col_offset,
-                        FDP003.format(keyword.arg),
+                        "FDP003",
+                        [keyword.arg],
                     )
                 )
 
@@ -136,11 +138,7 @@ class Visitor(ast.NodeVisitor):
             for key in keyword.value.keys:
                 if isinstance(key, ast.Constant) and key.value not in route_args:
                     self.problems.append(
-                        (
-                            key.lineno,
-                            key.col_offset,
-                            FDP001,
-                        )
+                        (key.lineno, key.col_offset, "FDP001", [key.value])
                     )
 
 
@@ -154,5 +152,8 @@ class Plugin:
     def run(self) -> Generator[Tuple[int, int, str, Type[Any]], None, None]:
         visitor = Visitor()
         visitor.visit(self._tree)
-        for line, col, message in visitor.problems:
-            yield line, col, message, type(self)
+        for line, col, code, code_args in visitor.problems:
+            message = code_message_map[code]
+            if code_args is not None:
+                message = message.format(*code_args)
+            yield line, col, f"{code} {message}", type(self)
