@@ -6,23 +6,11 @@ import { RepeatMode } from 'common/store/queue/types'
 import { Animated, View, StyleSheet } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconPause from 'app/assets/animations/iconPause.json'
-import IconPlay from 'app/assets/animations/iconPlay.json'
-import IconRepeatAllDark from 'app/assets/animations/iconRepeatAllDark.json'
-import IconRepeatAllLight from 'app/assets/animations/iconRepeatAllLight.json'
-import IconRepeatOffDark from 'app/assets/animations/iconRepeatOffDark.json'
-import IconRepeatOffLight from 'app/assets/animations/iconRepeatOffLight.json'
-import IconRepeatSingleDark from 'app/assets/animations/iconRepeatSingleDark.json'
-import IconRepeatSingleLight from 'app/assets/animations/iconRepeatSingleLight.json'
-import IconShuffleOffDark from 'app/assets/animations/iconShuffleOffDark.json'
-import IconShuffleOffLight from 'app/assets/animations/iconShuffleOffLight.json'
-import IconShuffleOnDark from 'app/assets/animations/iconShuffleOnDark.json'
-import IconShuffleOnLight from 'app/assets/animations/iconShuffleOnLight.json'
 import IconNext from 'app/assets/images/iconNext.svg'
 import IconPodcastBack from 'app/assets/images/iconPodcastBack.svg'
 import IconPodcastForward from 'app/assets/images/iconPodcastForward.svg'
 import IconPrev from 'app/assets/images/iconPrev.svg'
-import { AnimatedButton, IconButton } from 'app/components/core'
+import { IconButton } from 'app/components/core'
 import * as haptics from 'app/haptics'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
@@ -31,6 +19,10 @@ import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { pause, play } from 'app/store/audio/actions'
 import { getPlaying } from 'app/store/audio/selectors'
 import { ThemeColors } from 'app/utils/theme'
+
+import { PlayButton } from './PlayButton'
+import { RepeatButton } from './RepeatButton'
+import { ShuffleButton } from './ShuffleButton'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -123,17 +115,7 @@ export const AudioControls = ({
 
   const renderRepeatButton = () => {
     return (
-      <AnimatedButton
-        iconLightJSON={[
-          IconRepeatAllLight,
-          IconRepeatSingleLight,
-          IconRepeatOffLight
-        ]}
-        iconDarkJSON={[
-          IconRepeatAllDark,
-          IconRepeatSingleDark,
-          IconRepeatOffDark
-        ]}
+      <RepeatButton
         onPress={onPressRepeat}
         style={styles.button}
         wrapperStyle={styles.shuffleRepeatIcons}
@@ -152,10 +134,8 @@ export const AudioControls = ({
   const renderPlayButton = () => {
     return (
       <Animated.View style={{ transform: [{ scale }] }}>
-        <AnimatedButton
+        <PlayButton
           iconIndex={isPlaying ? 1 : 0}
-          iconLightJSON={[IconPlay, IconPause]}
-          iconDarkJSON={[IconPlay, IconPause]}
           onPress={onPressPlayButton}
           onPressIn={handlePressInScale}
           onPressOut={handlePressOutScale}
@@ -176,9 +156,7 @@ export const AudioControls = ({
   }
   const renderShuffleButton = () => {
     return (
-      <AnimatedButton
-        iconLightJSON={[IconShuffleOnLight, IconShuffleOffLight]}
-        iconDarkJSON={[IconShuffleOnDark, IconShuffleOffDark]}
+      <ShuffleButton
         onPress={onPressShuffle}
         style={styles.button}
         wrapperStyle={styles.shuffleRepeatIcons}

@@ -17,9 +17,7 @@ import {
 } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconPause from 'app/assets/animations/iconPause.json'
-import IconPlay from 'app/assets/animations/iconPlay.json'
-import { DynamicImage, AnimatedButton } from 'app/components/core'
+import { DynamicImage } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -29,6 +27,7 @@ import { pause, play } from 'app/store/audio/actions'
 import { getPlaying } from 'app/store/audio/selectors'
 import { ThemeColors } from 'app/utils/theme'
 
+import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT } from './constants'
 
@@ -154,9 +153,7 @@ export const PlayBar = ({
 
   const renderPlayButton = () => {
     return (
-      <AnimatedButton
-        iconLightJSON={[IconPlay, IconPause]}
-        iconDarkJSON={[IconPlay, IconPause]}
+      <PlayButton
         onPress={onPressPlayButton}
         iconIndex={isPlaying ? 1 : 0}
         style={styles.button}
