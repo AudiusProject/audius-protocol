@@ -9,7 +9,7 @@ const extensions = ['.js', '.ts']
 
 export default {
   input: 'lib/lib.ts',
-  output: [{ file: pkg.main, format: 'cjs' }],
+  output: [{ file: pkg.main, format: 'cjs', exports: 'auto' }],
   plugins: [
     commonjs({ extensions }),
     json(),
