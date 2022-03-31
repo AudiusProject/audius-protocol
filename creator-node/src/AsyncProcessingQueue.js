@@ -163,14 +163,22 @@ class AsyncProcessingQueue {
    */
   getFn(task) {
     switch (task) {
+      // Called via /track_content_async route (runs on primary)
       case PROCESS_NAMES.trackContentUpload:
         return trackContentUpload
+
+      // Called via /transcode_and_segment (running on node that has been handed off track)
       case PROCESS_NAMES.transcodeAndSegment:
         return transcodeAndSegment
-      case PROCESS_NAMES.processTranscodeAndSegments:
-        return processTranscodeAndSegments
+
+      // Part 1 of transcode handoff flow - called via /track_content_async if canCurrentNodeHandleTranscode = false (runs on primary)
       case PROCESS_NAMES.transcodeHandOff:
         return transcodeHandOff
+
+      // Part 2 of transcode handoff flow - called by process function in this queue after transcodeHandoff successfully runs (runs on primary)
+      case PROCESS_NAMES.processTranscodeAndSegments:
+        return processTranscodeAndSegments
+
       default:
         return null
     }
