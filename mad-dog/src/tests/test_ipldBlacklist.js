@@ -25,7 +25,6 @@ const {
   getRandomTrackFilePath,
   genRandomString
 } = RandomUtils
-const ipfs = require('../ipfsClient')
 const { logger } = require('../logger.js')
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
@@ -52,7 +51,7 @@ IpldBlacklistTest.newTrackMetadata = async ({
     })
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    const blacklistedCID = await addContentToIpfs({
+    const blacklistedCID = await generateCID({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -129,7 +128,7 @@ IpldBlacklistTest.updateTrackMetadata = async ({
     await executeOne(CREATOR_INDEX, libs => libs.waitForLatestBlock())
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    const blacklistedCID = await addContentToIpfs({
+    const blacklistedCID = await generateCID({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -192,7 +191,7 @@ IpldBlacklistTest.newTrackCoverPhoto = async ({
     })
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    const blacklistedCID = await addContentToIpfs({
+    const blacklistedCID = await generateCID({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -207,8 +206,8 @@ IpldBlacklistTest.newTrackCoverPhoto = async ({
     const metadataObject = getRandomTrackMetadata(userId)
     metadataObject.cover_art = blacklistedCID
 
-    // add metadata object to ipfs to get metadata CID
-    const metadataCID = await addContentToIpfs(metadataObject)
+    // get metadata CID
+    const metadataCID = await generateCID(metadataObject)
 
     // upload track with metadata CID
     const metadataCIDDecoded = Utils.decodeMultihash(metadataCID)
@@ -271,7 +270,7 @@ IpldBlacklistTest.updateTrackCoverPhoto = async ({
     await executeOne(CREATOR_INDEX, libs => libs.waitForLatestBlock())
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    blacklistedCID = await addContentToIpfs({
+    blacklistedCID = await generateCID({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -285,7 +284,7 @@ IpldBlacklistTest.updateTrackCoverPhoto = async ({
     // generate metadata object with blacklisted CID for cover photo
     const metadataObject = getRandomTrackMetadata(userId)
     metadataObject.cover_art = blacklistedCID
-    const metadataCID = await addContentToIpfs(metadataObject)
+    const metadataCID = await generateCID(metadataObject)
     const metadataCIDDecoded = Utils.decodeMultihash(metadataCID)
 
     // update track with blacklisted cover photo cid
@@ -348,7 +347,7 @@ IpldBlacklistTest.updateUserMetadata = async ({
     })
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    const blacklistedCID = await addContentToIpfs({
+    const blacklistedCID = await generateCID({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -408,7 +407,7 @@ IpldBlacklistTest.updateUserProfilePhoto = async ({
     })
 
     // Add blacklisted metadata to ipld blacklist
-    const blacklistedCID = await addContentToIpfs({
+    const blacklistedCID = await generateCID({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -468,7 +467,7 @@ IpldBlacklistTest.updateUserCoverPhoto = async ({
     })
 
     // Add blacklisted metadata to ipld blacklist
-    const blacklistedCID = await addContentToIpfs({
+    const blacklistedCID = await generateCID({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -541,7 +540,7 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
     await executeOne(CREATOR_INDEX, libs => libs.waitForLatestBlock())
 
     // generate random CID to blacklist and add to blacklist
-    const blacklistedCID = await addContentToIpfs({
+    const blacklistedCID = await generateCID({
       randomData: 'data' + randomPlaylistName
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -622,7 +621,7 @@ IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
     await executeOne(CREATOR_INDEX, libs => libs.waitForLatestBlock())
 
     // generate random CID to blacklist and add to blacklist
-    const randomCID = await addContentToIpfs({
+    const randomCID = await generateCID({
       randomData: 'random' + randomPlaylistName
     })
     const randomCIDDecoded = Utils.decodeMultihash(randomCID)
@@ -632,7 +631,7 @@ IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
     })
 
     // generate actual CID to use as update cover photo
-    const cid = await addContentToIpfs({
+    const cid = await generateCID({
       randomData: 'actual' + randomPlaylistName
     })
 
@@ -690,10 +689,51 @@ async function getCreatorId ({
 }
 
 /**
- * Add content to ipfs to generate random CID
- * @param {object} contentObject content in object form to add to ipfs
+ * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context
  */
-async function addContentToIpfs (contentObject) {
+function initializeHashFunc(content, options) {
+  options.onlyHash = true
+  options.cidVersion = 0
+
+  if (typeof content === 'string') {
+    content = new TextEncoder().encode(content)
+  }
+
+  return { options, content }
+}
+
+const block = {
+  get: async (cid) => {
+    throw new Error(`unexpected block API get for ${cid}`)
+  },
+  put: async () => {
+    throw new Error('unexpected block API put')
+  }
+}
+
+/**
+ * Hashes a Buffer into its CID
+ * @param {Buffer} content a buffer of the content
+ * @param {Object?} options options for importer
+ * @returns the CID from content addressing logic
+ */
+async function hashContentBuffer(content, options = {}) {
+  ;({ options, content } = initializeHashFunc(content, options))
+
+  let lastCid
+  for await (const { cid } of importer([{ content }], block, options)) {
+    lastCid = cid
+  }
+
+  return `${lastCid}`
+}
+
+/**
+ * Hashes an object into its CID
+ * @param {object} contentObject content in object form to get a CID for
+ * @return the CID from content addressing logic
+ */
+ async function generateCID(contentObject) {
   let buffer
   try {
     buffer = Buffer.from(JSON.stringify(contentObject))
@@ -704,21 +744,18 @@ async function addContentToIpfs (contentObject) {
     throw new Error(`${errorMsg}: ${e.message}`)
   }
 
-  // add metadata object to ipfs to get CID
-  let ipfsResp
+  // Hash object into CID
+  let generatedCid
   try {
-    ipfsResp = await ipfs.add(buffer, {
-      pin: false
-    })
+    generatedCid = hashContentBuffer(buffer)
   } catch (e) {
-    const errorMsg = 'Could not add content to IPFS'
+    const errorMsg = 'Could generate CID'
     logger.error(errorMsg)
     console.error(e)
     throw new Error(`${errorMsg}: ${e.message}`)
   }
 
-  // return CID
-  return ipfsResp[0].hash
+  return generatedCid
 }
 
 module.exports = IpldBlacklistTest

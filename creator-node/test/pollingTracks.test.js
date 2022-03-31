@@ -9,8 +9,7 @@ const _ = require('lodash')
 const crypto = require('crypto')
 
 const defaultConfig = require('../default-config.json')
-const ipfsAdd = require('../src/ipfsAdd')
-const ipfsClient = require('../src/ipfsClient')
+const fileHasher = require('../src/fileHasher')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -23,7 +22,6 @@ const {
   createStarterCNodeUser,
   testEthereumConstants
 } = require('./lib/dataSeeds')
-const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 const { saveFileToStorage } = require('./lib/helpers')
@@ -72,11 +70,9 @@ function _getTestSegmentFilePathAtIndex(index) {
   return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
 }
 
-describe('test Polling Tracks with mocked IPFS', function () {
+describe('test Polling Tracks with mocks', function () {
   let app,
     server,
-    ipfsMock,
-    ipfsLatestMock,
     libsMock,
     handleTrackContentRoute
   let session, userId, userWallet
@@ -84,8 +80,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
   const spId = 1
 
   beforeEach(async () => {
-    ipfsMock = getIPFSMock()
-    ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
 
     userId = 1
@@ -93,10 +87,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const { getApp } = require('./lib/app')
     const appInfo = await getApp(
-      ipfsMock,
       libsMock,
       BlacklistManager,
-      ipfsLatestMock,
       null,
       spId
     )
@@ -112,9 +104,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService.js',
       {
-        '../../ipfsAdd': {
+        '../../fileHasher': {
           generateNonImageMultihash: sinon
-            .stub(ipfsAdd, 'generateNonImageMultihash')
+            .stub(fileHasher, 'generateNonImageMultihash')
             .returns(
               new Promise((resolve) => {
                 return resolve(DUMMY_MULTIHASH)
@@ -164,19 +156,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
     await server.close()
 
     const appInfo = await getApp(
-      ipfsMock,
       libsMock,
       BlacklistManager,
-      ipfsLatestMock,
       null,
       userId
     )
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
-
-    ipfsLatestMock.add.exactly(64)
-    ipfsLatestMock.pin.add.exactly(32)
 
     // Confirm max audio file size is respected by multer
     const file = fs.readFileSync(testAudioFilePath)
@@ -199,19 +186,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // Reset app
     await server.close()
     const appInfo = await getApp(
-      ipfsMock,
       libsMock,
       BlacklistManager,
-      ipfsLatestMock,
       null,
       userId
     )
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
-
-    ipfsLatestMock.add.exactly(64)
-    ipfsLatestMock.pin.add.exactly(32)
 
     // Confirm max audio file size is respected by multer
     const file = fs.readFileSync(testAudioFileWrongFormatPath)
@@ -228,9 +210,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
   })
 
   it('uploads /track_content_async', async function () {
-    ipfsLatestMock.add.exactly(33)
-    ipfsLatestMock.pin.add.exactly(33)
-
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
@@ -262,8 +241,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const numExpectedFilesForUser = TestAudiusTrackFileNumSegments + 1 // numSegments + 320kbps copy
 
     /** Upload track */
-    ipfsLatestMock.add.exactly(numExpectedFilesForUser)
-    ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     let resp = await handleTrackContentRoute(
       logContext,
@@ -471,8 +448,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const numExpectedFilesForUser = TestAudiusTrackFileNumSegments + 1 // numSegments + 320kbps copy
 
     /** Upload track for user 1 */
-    ipfsLatestMock.add.exactly(numExpectedFilesForUser)
-    ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
     const { fileUUID: fileUUID1, fileDir: fileDir1 } =
       saveFileToStorage(testAudioFilePath)
     await handleTrackContentRoute(
@@ -491,8 +466,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const session2 = await createStarterCNodeUser(userId2, pubKey2)
 
     /** Upload track for user 2 */
-    ipfsLatestMock.add.exactly(numExpectedFilesForUser)
-    ipfsLatestMock.pin.add.exactly(numExpectedFilesForUser)
     const { fileUUID: fileUUID2, fileDir: fileDir2 } =
       saveFileToStorage(testAudioFilePath)
     await handleTrackContentRoute(
@@ -568,8 +541,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
   it('creates Audius track using application logic for /track_content_async', async function () {
-    ipfsLatestMock.add.exactly(34)
-    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
@@ -608,8 +579,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"
   it('fails to create Audius track when segments not provided', async function () {
-    ipfsLatestMock.add.exactly(34)
-    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
@@ -643,8 +612,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"
   it('fails to create Audius track when invalid segment multihashes are provided', async function () {
-    ipfsLatestMock.add.exactly(34)
-    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
@@ -679,8 +646,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"
   it('fails to create Audius track when owner_id is not provided', async function () {
-    ipfsLatestMock.add.exactly(34)
-    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
@@ -712,8 +677,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async" and "creates Audius track" tests
   it('completes Audius track creation', async function () {
-    ipfsLatestMock.add.exactly(34)
-    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(4)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
@@ -759,8 +722,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"
   it('fails to create downloadable track with no track_id and no source_id present', async function () {
-    ipfsLatestMock.add.exactly(34)
-    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
@@ -802,8 +763,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async" and "creates Audius track" tests
   it('creates a downloadable track', async function () {
-    ipfsLatestMock.add.exactly(34)
-    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(4)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
@@ -861,31 +820,24 @@ describe('test Polling Tracks with mocked IPFS', function () {
   })
 })
 
-describe('test Polling Tracks with real IPFS', function () {
+describe('test Polling Tracks with real files', function () {
   let app2,
     server,
     session,
     libsMock,
-    ipfs,
-    ipfsLatest,
     handleTrackContentRoute,
     userId
 
-  /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
+  /** Inits libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
-    ipfs = ipfsClient.ipfs
-    ipfsLatest = ipfsClient.ipfsLatest
-
     libsMock = getLibsMock()
 
     userId = 1
 
     const { getApp } = require('./lib/app')
     const appInfo = await getApp(
-      ipfs,
       libsMock,
       BlacklistManager,
-      ipfsLatest,
       null,
       userId
     )
@@ -1035,27 +987,6 @@ describe('test Polling Tracks with real IPFS', function () {
       .set('User-Id', session.userId)
       .send({ metadata })
       .expect(200)
-  })
-
-  it.skip('should not throw error response if saving metadata to ipfs fails', async function () {
-    sinon.stub(ipfsClient, 'add').rejects(new Error('ipfs add failed!'))
-    const metadata = {
-      test: 'field1',
-      track_segments: [
-        {
-          multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
-          duration: 1000
-        }
-      ],
-      owner_id: 1
-    }
-
-    await request(app2)
-      .post('/tracks/metadata')
-      .set('X-Session-ID', session.sessionToken)
-      .set('User-Id', session.userId)
-      .send({ metadata })
-      .expect(500)
   })
 
   it('successfully adds metadata file to filesystem and db', async function () {
