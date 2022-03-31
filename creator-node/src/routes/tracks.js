@@ -2,7 +2,6 @@ const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
-const readFile = promisify(fs.readFile)
 
 const config = require('../config.js')
 const models = require('../models')
@@ -33,6 +32,8 @@ const {
   ensureValidSPMiddleware
 } = require('../middlewares')
 const { decode } = require('../hashids.js')
+const { getCID, streamFromFileSystem } = require('./files')
+const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const DBManager = require('../dbManager')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
