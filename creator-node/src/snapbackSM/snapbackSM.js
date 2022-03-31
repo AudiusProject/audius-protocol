@@ -229,8 +229,10 @@ class SnapbackSM {
     )
 
     // Enqueue stateMachineQueue jobs on a cron, after an initial delay
-    await utils.timeout(STATE_MACHINE_QUEUE_INIT_DELAY_MS)
-    await this.stateMachineQueue.add(/** data */ { startTime: Date.now() })
+    await this.stateMachineQueue.add(
+      /** data */ { startTime: Date.now() },
+      /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
+    )
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
       /** opts */ {
