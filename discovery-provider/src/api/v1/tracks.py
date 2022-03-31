@@ -711,6 +711,7 @@ class FullTrendingIds(Resource):
             abort_bad_path_param("version", full_ns)
 
         args = trending_ids_route_parser.parse_args()
+        args["limit"] = args.get("limit", 10)
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
@@ -886,7 +887,7 @@ class FullRemixesRoute(Resource):
             "with_users": True,
             "track_id": decoded_id,
             "current_user_id": current_user_id,
-            "limit": format_limit(request_args),
+            "limit": format_limit(request_args, default_limit=10),
             "offset": format_offset(request_args),
         }
         response = get_remixes_of(args)
@@ -919,7 +920,7 @@ class FullRemixingRoute(Resource):
             "with_users": True,
             "track_id": decoded_id,
             "current_user_id": current_user_id,
-            "limit": format_limit(request_args),
+            "limit": format_limit(request_args, default_limit=10),
             "offset": format_offset(request_args),
         }
         tracks = get_remix_track_parents(args)
@@ -1039,7 +1040,7 @@ class MostLoved(Resource):
         request_args = most_loved_parser.parse_args()
         args = {
             "with_users": request_args.get("with_users"),
-            "limit": format_limit(request_args, 100, 25),
+            "limit": format_limit(request_args, max_limit=100, default_limit=25),
             "user_id": get_current_user_id(request_args),
         }
         tracks = get_top_followee_saves("track", args)
@@ -1110,7 +1111,7 @@ class TracksByIDs(Resource):
 
         args = {
             "id": ids_array,
-            "limit": format_limit(request_args, 100, 25),
+            "limit": format_limit(request_args, max_limit=100, default_limit=25),
             "offset": format_offset(request_args),
             "current_user_id": current_user_id,
             "filter_deleted": request_args.get("filter_deleted"),
