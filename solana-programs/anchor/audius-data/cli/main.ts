@@ -242,7 +242,6 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           bumpSeed: args.bumpSeed,
           userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
           authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA,
-          provider: provider
         });
       }
 
