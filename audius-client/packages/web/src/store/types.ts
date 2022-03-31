@@ -9,6 +9,7 @@ import HistoryPageState from 'common/store/pages/history-page/types'
 import RemixesPageReducer from 'common/store/pages/remixes/slice'
 import { SmartCollectionState } from 'common/store/pages/smart-collection/slice'
 import QueueReducer from 'common/store/queue/slice'
+import { ReachabilityState } from 'common/store/reachability/types'
 import RemoteConfigReducer from 'common/store/remote-config/slice'
 import StemsUploadReducer from 'common/store/stems-upload/slice'
 import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
@@ -46,7 +47,6 @@ import { UserListModalState } from './application/ui/userListModal/types'
 import { BackendState } from './backend/types'
 import { ConfirmerState } from './confirmer/types'
 import { DragNDropState } from './dragndrop/types'
-import { ReachabilityState } from './reachability/types'
 
 export type AppState = CommonState & {
   // Config

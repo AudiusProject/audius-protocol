@@ -47,6 +47,8 @@ import trendingUnderground from 'common/store/pages/trending-underground/slice'
 import trending from 'common/store/pages/trending/reducer'
 import { TrendingPageState } from 'common/store/pages/trending/types'
 import queue from 'common/store/queue/slice'
+import reachability from 'common/store/reachability/reducer'
+import { ReachabilityState } from 'common/store/reachability/types'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
@@ -104,6 +106,9 @@ export type CommonStoreContext = {
  */
 export const reducers = (ctx: CommonStoreContext) => ({
   account: accountSlice.reducer,
+
+  // Config
+  reachability,
 
   // Cache
   collections: asCache(collectionsReducer, Kind.COLLECTIONS),
@@ -237,6 +242,9 @@ export const sagas = (ctx: CommonStoreContext) => ({
 
 export type CommonState = {
   account: ReturnType<typeof accountSlice.reducer>
+
+  // Config
+  reachability: ReachabilityState
 
   // Cache
   collections: Cache<Collection>
