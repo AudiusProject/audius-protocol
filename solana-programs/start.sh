@@ -115,6 +115,7 @@
     # Build anchor program
     echo "--- Anchor build ---- "
     cd ../../anchor/audius-data
+    yarn install
 
     # Replace program ID with solana pubkey generated from anchor build
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' programs/audius-data/src/lib.rs)
