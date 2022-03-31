@@ -806,8 +806,6 @@ workflows:
 
       - test-solana-programs:
           name: test-solana-programs
-      - test-solana-programs-anchor:
-          name: test-solana-programs-anchor
       - test-solana-programs-seed-cli:
           name: test-solana-programs-seed-cli
       - docker-build-and-push:
