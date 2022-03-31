@@ -300,14 +300,27 @@ trending_playlist_parser.remove_argument("genre")
     "/trending",
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.PLAYLISTS].name},
     strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Trending Playlists""",
+            "description": """Gets trending playlists for a time period""",
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
+)
+@ns.route(
+    "/trending/<string:version>",
+    doc={
+        "get": {
+            "id": """Get Trending Playlists With Version""",
+            "description": """Gets trending playlists for a time period based on the given trending strategy version""",
+            "params": {"version": "The strategy version of trending to use"},
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
 )
 class TrendingPlaylists(Resource):
     @record_metrics
-    @ns.doc(
-        id="""Get Trending Playlists""",
-        description="""Gets trending playlists for a time period""",
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
     @ns.expect(trending_playlist_parser)
     @ns.marshal_with(trending_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
@@ -335,22 +348,6 @@ class TrendingPlaylists(Resource):
         return success_response(playlists)
 
 
-@ns.route("/trending/<string:version>")
-class TrendingPlaylistsWithVersion(TrendingPlaylists):
-    @record_metrics
-    @ns.doc(
-        id="""Get Trending Playlists With Version""",
-        description="""Gets trending playlists for a time period based on the given trending strategy version""",
-        params={"version": "The strategy version of trending to use"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @ns.expect(trending_playlist_parser)
-    @ns.marshal_with(trending_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
-    def get(self, version):
-        super().get(self, version)
-
-
 full_trending_playlists_response = make_full_response(
     "full_trending_playlists_response",
     full_ns,
@@ -365,14 +362,27 @@ full_trending_playlist_parser.remove_argument("genre")
     "/trending",
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.PLAYLISTS].name},
     strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Trending Playlists""",
+            "description": """Returns trending playlists for a time period""",
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
+)
+@full_ns.route(
+    "/trending/<string:version>",
+    doc={
+        "get": {
+            "id": """Get Trending Playlists With Version""",
+            "description": """Returns trending playlists for a time period based on the given trending version""",
+            "params": {"version": "The strategy version of trending to use"},
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
 )
 class FullTrendingPlaylists(Resource):
     @record_metrics
-    @full_ns.doc(
-        id="""Get Trending Playlists""",
-        description="""Returns trending playlists for a time period""",
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
     @full_ns.expect(full_trending_playlist_parser)
     @full_ns.marshal_with(full_trending_playlists_response)
     def get(self, version):
@@ -391,18 +401,3 @@ class FullTrendingPlaylists(Resource):
         )
         playlists = get_full_trending_playlists(request, args, strategy)
         return success_response(playlists)
-
-
-@full_ns.route("/trending/<string:version>")
-class FullTrendingPlaylistsWithVersion(FullTrendingPlaylists):
-    @record_metrics
-    @full_ns.doc(
-        id="""Get Trending Playlists With Version""",
-        description="""Returns trending playlists for a time period based on the given trending version""",
-        params={"version": "The strategy version of trending to use"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @full_ns.expect(full_trending_playlist_parser)
-    @full_ns.marshal_with(full_trending_playlists_response)
-    def get(self, version):
-        return super().get(self, version)
