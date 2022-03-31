@@ -3,7 +3,7 @@ import { ecsign, toBuffer } from 'ethereumjs-util'
 import { pack } from '@ethersproject/solidity'
 import type Web3 from 'web3'
 
-const sign = (digest: unknown, privateKey: Buffer) => {
+export const sign = (digest: unknown, privateKey: Buffer) => {
   const buffer = toBuffer(digest)
   const signature = ecsign(buffer, privateKey)
   return signature
@@ -30,7 +30,7 @@ export interface ApproveTokens {owner: string, spender: string, value: string}
 
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
-function getPermitDigest (
+export function getPermitDigest (
   web3: Web3,
   name: string,
   address: string,
@@ -61,7 +61,7 @@ export interface TransferTokens {from: string, amount: string, recipientChain: s
 
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `transferTokens`
-function getTransferTokensDigest (
+export function getTransferTokensDigest (
   web3: Web3,
   name: string,
   address: string,
@@ -102,10 +102,4 @@ function getDomainSeparator (web3: Web3, name: string, contractAddress: string, 
     ]
   )
   return Utils.keccak256(encoded)
-}
-
-module.exports = {
-  sign,
-  getPermitDigest,
-  getTransferTokensDigest
 }
