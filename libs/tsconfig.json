@@ -1,6 +1,10 @@
 {
   "extends": "@tsconfig/node16-strictest/tsconfig.json",
   "compilerOptions": {
+    "lib": [
+      "es2021",
+      "dom"
+    ],
     "checkJs": false
   }
 }

@@ -8,7 +8,7 @@ const {
   findAssociatedTokenAddress
 } = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
 const { submitAttestations, evaluateAttestations, createSender, deriveSolanaSenderFromEthAddress } = require('./rewards')

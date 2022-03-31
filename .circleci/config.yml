@@ -425,7 +425,7 @@ jobs:
 
   test-discovery-provider:
     docker:
-      - image: circleci/python:3.8-node-browsers
+      - image: cimg/python:3.9-node
       # Discovery provider dependencies
       - image: circleci/postgres:11.1
         environment:
@@ -450,19 +450,20 @@ jobs:
           name: python-setup
           command: |
             cd discovery-provider
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
+            python3 -m pip install --user virtualenv
+            python3 -m venv env
+            source env/bin/activate
+            pip3 install -r requirements.txt
       - save_cache:
           paths:
-            - discovery-provider/venv/
+            - discovery-provider/env/
           key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
       - run:
           name: python-lint
           command: |
             export PROTOCOL_DIR=/home/circleci/project
             cd discovery-provider
-            source venv/bin/activate
+            source env/bin/activate
             sh scripts/lint.sh
       - restore_cache:
           keys:
@@ -767,6 +768,40 @@ jobs:
             docker push audius/<< parameters.repo >>:$IMAGE_TAG
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
+  docker-build-and-push-updated:
+    docker:
+      - image: cimg/base:2022.03
+    parameters:
+      repo:
+        type: string
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 20.10.11
+      - run:
+          name: Get tag or latest
+          command: |
+            # order of precendence for IMAGE tag is:
+            # 1. CIRCLE_TAG if defined,
+            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+            # 3. 'latest', which is the default
+            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+      - run:
+          name: Docker login
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          name: Docker build << parameters.repo >>
+          command: |
+            cd << parameters.repo >>
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags .
+      - run:
+          name: Docker push << parameters.repo >>
+          command: |
+            docker push audius/<< parameters.repo >>:$IMAGE_TAG
+            docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
+
 workflows:
   # test, build and push all commits
   test-build-and-push:
@@ -797,7 +832,7 @@ workflows:
 
       - test-discovery-provider:
           name: test-discovery-provider
-      - docker-build-and-push:
+      - docker-build-and-push-updated:
           name: build-discovery-provider
           repo: discovery-provider
 
