@@ -21,7 +21,7 @@ const SyncMonitoringRetryDelayMs = 15000
 const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 
 // Timeout for fetching batch clock values
-const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 5000 // 20s
+const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 10000 // 10s
 
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
@@ -80,7 +80,7 @@ const RECONFIG_MODES = Object.freeze({
 
 const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
-const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 10000 // 10s
+const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 30000 // 30s
 
 /*
   SnapbackSM aka Snapback StateMachine
@@ -153,7 +153,7 @@ class SnapbackSM {
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
-    // Add event handlers for all queues
+    // Add stalled event handlers for all queues
     this.stateMachineQueue.on('global:stalled', (job) => {
       this.logError(`stateMachineQueue Job Stalled - ID ${job.id}}`)
     })
@@ -193,7 +193,7 @@ class SnapbackSM {
      */
 
     // Initialize stateMachineQueue job processor
-    this.stateMachineQueue.process(1 /** concurrency */, async (job, done) => {
+    this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
       const jobId = job.id
       await redis.set('stateMachineQueueLatestJobStart', Date.now())
       try {
@@ -202,35 +202,29 @@ class SnapbackSM {
       } catch (e) {
         this.logError(`StateMachineQueue processing error jobId ${jobId}: ${e}`)
       }
-
-      done()
     })
 
     // Initialize manualSyncQueue job processor
     this.manualSyncQueue.process(
       this.MaxManualRequestSyncJobConcurrency,
-      async (job, done) => {
+      async (job) => {
         try {
           await this.processSyncOperation(job, SyncType.Manual)
         } catch (e) {
           this.logError(`ManualSyncQueue processing error: ${e}`)
         }
-
-        done()
       }
     )
 
     // Initialize recurringSyncQueue job processor
     this.recurringSyncQueue.process(
       this.MaxRecurringRequestSyncJobConcurrency,
-      async (job, done) => {
+      async (job) => {
         try {
           await this.processSyncOperation(job, SyncType.Recurring)
         } catch (e) {
           this.logError(`RecurringSyncQueue processing error ${e}`)
         }
-
-        done()
       }
     )
 
@@ -265,7 +259,7 @@ class SnapbackSM {
     logger.error(`SnapbackSM ERROR: ${msg}`)
   }
 
-  // Initialize queue object with provided name and unix timestamp
+  // Initialize bull queue instance with provided name and settings
   createBullQueue(queueName, settings = {}) {
     return new Bull(queueName, {
       redis: {
@@ -859,15 +853,17 @@ class SnapbackSM {
    * - Processes all users in chunks
    * - For every user on an unhealthy replica, issues an updateReplicaSet op to cycle them off
    * - For every (primary) user on a healthy secondary replica, issues SyncRequest op to secondary
-   *
-   * @note refer to git history for reference to `processStateMachineOperationOld()`
    */
   async processStateMachineOperation() {
-    // Ensure lock available, and acquire it - else error
+    /**
+     * Ensure lock available, and acquire it - else error
+     * @notice Bull will not enqueue further jobs if all active spots are full, but this provides added
+     *    assurance, especially if queue concurrency were ever set to > 1
+     */
     const lockKey = 'stateMachineQueueJobLock'
     const lockExp = this.snapbackJobInterval * 2
     if ((await redis.lock.getLock(lockKey)) === true) {
-      this.log(
+      this.logError(
         `[stateMachineQueue] Cannot start new job; lock held by previous job.`
       )
       return
@@ -884,7 +880,6 @@ class SnapbackSM {
         moduloBase: this.moduloBase
       }
     )
-    this._printStateMachineQueueDecisionTree(decisionTree)
 
     try {
       let nodeUsers
@@ -897,7 +892,6 @@ class SnapbackSM {
           'getNodeUsers() and sliceUsers() Success',
           { nodeUsersLength: nodeUsers.length }
         )
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -920,7 +914,6 @@ class SnapbackSM {
             unhealthyPeers: Array.from(unhealthyPeers)
           }
         )
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -943,7 +936,6 @@ class SnapbackSM {
             .length
         }
       )
-      this._printStateMachineQueueDecisionTree(decisionTree)
 
       // Setup the mapping of Content Node endpoint to service provider id
       try {
@@ -963,7 +955,6 @@ class SnapbackSM {
             ).length
           }
         )
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         // Disable reconfig after failed `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet(
@@ -974,7 +965,6 @@ class SnapbackSM {
           'updateEndpointToSpIdMap() Error',
           { error: e.message }
         )
-        this._printStateMachineQueueDecisionTree(decisionTree)
       }
 
       // Retrieve clock statuses for all users and their current replica sets
@@ -989,7 +979,6 @@ class SnapbackSM {
           decisionTree,
           'retrieveClockStatusesForUsersAcrossReplicaSet() Success'
         )
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -1014,7 +1003,6 @@ class SnapbackSM {
           potentialSyncRequestsLength: potentialSyncRequests.length
         }
       )
-      this._printStateMachineQueueDecisionTree(decisionTree)
 
       // Issue all required sync requests
       let numSyncRequestsRequired,
@@ -1044,7 +1032,6 @@ class SnapbackSM {
             enqueueSyncRequestErrors
           }
         )
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -1057,7 +1044,6 @@ class SnapbackSM {
             enqueueSyncRequestErrors
           }
         )
-        this._printStateMachineQueueDecisionTree(decisionTree)
       }
 
       /**
@@ -1111,7 +1097,6 @@ class SnapbackSM {
           'issueUpdateReplicaSetOp() Success',
           { numUpdateReplicaOpsIssued }
         )
-        this._printStateMachineQueueDecisionTree(decisionTree)
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -1122,8 +1107,6 @@ class SnapbackSM {
           'processStateMachineOperation():issueUpdateReplicaSetOp() Error'
         )
       }
-
-      // Log error without throwing - next run will attempt to rectify
     } catch (e) {
       this._addToStateMachineQueueDecisionTree(
         decisionTree,
@@ -1166,6 +1149,7 @@ class SnapbackSM {
   }
 
   _printStateMachineQueueDecisionTree(decisionTree, msg = '') {
+    // Compute and record `fullDuration`
     if (decisionTree.length > 2) {
       const startTime = decisionTree[0].time
       const endTime = decisionTree[decisionTree.length - 1].time

@@ -139,10 +139,12 @@ const healthCheck = async (
     transcodeWaiting,
     fileProcessingActive,
     fileProcessingWaiting,
-    stateMachineQueueLatestJobSuccess:
-      new Date(parseInt(stateMachineQueueLatestJobSuccess)) || null,
-    stateMachineQueueLatestJobStart:
-      new Date(parseInt(stateMachineQueueLatestJobStart)) || null
+    stateMachineQueueLatestJobSuccess: stateMachineQueueLatestJobSuccess
+      ? new Date(parseInt(stateMachineQueueLatestJobSuccess))
+      : null,
+    stateMachineQueueLatestJobStart: stateMachineQueueLatestJobStart
+      ? new Date(parseInt(stateMachineQueueLatestJobStart))
+      : null
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
