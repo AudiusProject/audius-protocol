@@ -39,13 +39,13 @@ import {
   NotificationType,
   Achievement
 } from 'common/store/notifications/types'
+import { getIsReachable } from 'common/store/reachability/selectors'
 import { getBalance } from 'common/store/wallet/slice'
 import AudiusBackend from 'services/AudiusBackend'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { getIsReachable } from 'store/reachability/selectors'
 import { isElectron } from 'utils/clientUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 

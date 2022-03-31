@@ -15,11 +15,11 @@ import {
   getTrendingTrackRanks,
   getUser
 } from 'common/store/pages/track/selectors'
+import { getIsReachable } from 'common/store/reachability/selectors'
 import tracksSagas from 'pages/track-page/store/lineups/tracks/sagas'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { getIsReachable } from 'store/reachability/selectors'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 
 export const TRENDING_BADGE_LIMIT = 10

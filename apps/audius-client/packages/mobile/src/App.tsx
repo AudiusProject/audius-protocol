@@ -12,6 +12,7 @@ import Audio from 'app/components/audio/Audio'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import OAuth from 'app/components/oauth/OAuth'
+import { ReachabilityBar } from 'app/components/reachability-bar'
 import { ThemeProvider } from 'app/components/theme/ThemeContext'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
 import { WebRefContextProvider } from 'app/components/web/WebRef'
@@ -74,6 +75,7 @@ const App = () => {
                   <ThemeProvider>
                     <NavigationContainer>
                       <Airplay />
+                      <ReachabilityBar />
                       <RootScreen />
                       <Drawers />
                       <Modals />

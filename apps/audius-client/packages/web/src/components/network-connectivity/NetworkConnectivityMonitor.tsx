@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 
 import { connect } from 'react-redux'
 
+import { getIsReachable } from 'common/store/reachability/selectors'
 import NoConnectivityContent from 'components/no-connectivity-page/NoConnectivityContent'
-import { getIsReachable } from 'store/reachability/selectors'
 import { AppState } from 'store/types'
 
 type NetworkConnectivityMonitorProps = {

@@ -34,7 +34,6 @@ import confirmer from 'store/confirmer/reducer'
 import dragndrop from 'store/dragndrop/reducer'
 import player from 'store/player/slice'
 import playlistLibrary from 'store/playlist-library/slice'
-import reachability from 'store/reachability/reducer'
 
 import { webStoreContext } from './storeContext'
 
@@ -51,7 +50,6 @@ const createRootReducer = (routeHistory: History) =>
     // Config
     backend,
     confirmer,
-    reachability,
 
     // Account
     passwordReset,

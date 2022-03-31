@@ -1,4 +1,11 @@
-import { takeEvery, call, put, race, select, delay } from 'redux-saga/effects'
+import {
+  takeEvery,
+  call,
+  put,
+  race,
+  select,
+  delay
+} from 'typed-redux-saga/macro'
 
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import { isMobile } from 'utils/clientUtil'
@@ -16,7 +23,8 @@ const REACHABILITY_SHORT_TIMEOUT = 5 * 1000 // 5s
 const REACHABILITY_REQUEST_TIMEOUT = 15 * 1000 // 15s
 
 // Check that a response from REACHABILITY_URL is valid
-const isResponseValid = (response: Response) => response && response.ok
+const isResponseValid = (response: Response | undefined) =>
+  response && response.ok
 
 function* ping() {
   // If there's no reachability url available, consider ourselves reachable
@@ -26,7 +34,7 @@ function* ping() {
   }
 
   try {
-    const { response } = yield race({
+    const { response } = yield* race({
       response: call(fetch, REACHABILITY_URL, { method: 'GET' }),
       timeout: delay(REACHABILITY_REQUEST_TIMEOUT)
     })
@@ -45,47 +53,48 @@ function* ping() {
 
 /** Updates the reachability setting in the store and log-warns of any change. */
 function* updateReachability(isReachable: boolean) {
-  const wasReachable = yield select(getIsReachable)
+  const wasReachable = yield* select(getIsReachable)
   if (isReachable) {
     if (!wasReachable) {
       // not reachable => reachable
       console.warn('App transitioned to reachable state')
     }
-    yield put(setReachable())
+    yield* put(setReachable())
   } else {
     if (wasReachable) {
       // reachable => not reachable
       console.warn('App transitioned to unreachable state')
     }
-    yield put(setUnreachable())
+    yield* put(setUnreachable())
   }
 }
 
 function* reachabilityPollingDaemon() {
   if (NATIVE_MOBILE) {
     // Native mobile: use the system connectivity checks
-    yield takeEvery(MessageType.IS_NETWORK_CONNECTED, function* (
+    yield* takeEvery(MessageType.IS_NETWORK_CONNECTED, function* (
       action: Message
     ) {
       const { isConnected } = action
-      yield call(updateReachability, isConnected)
+
+      yield* call(updateReachability, isConnected)
     })
   } else {
     // Web/Desktop: poll for connectivity
     if (!isMobile()) {
       // TODO: Remove this check when we have build out reachability UI for desktop.
-      yield put(setReachable())
+      yield* put(setReachable())
       return
     }
 
     let failures = 0
     while (true) {
-      const isReachable = yield call(ping)
+      const isReachable = yield* call(ping)
       if (!isReachable) failures += 1
       if (isReachable) failures = 0
-      yield call(updateReachability, failures < 2)
+      yield* call(updateReachability, failures < 2)
 
-      yield delay(
+      yield* delay(
         isReachable ? REACHABILITY_LONG_TIMEOUT : REACHABILITY_SHORT_TIMEOUT
       )
     }

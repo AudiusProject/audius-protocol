@@ -2,7 +2,7 @@ import React from 'react'
 
 import { connect } from 'react-redux'
 
-import { getIsReachable } from 'store/reachability/selectors'
+import { getIsReachable } from 'common/store/reachability/selectors'
 import { AppState } from 'store/types'
 
 import ReachabilityBarContainer from './components/ReachabilityBarContainer'
