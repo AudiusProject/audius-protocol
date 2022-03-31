@@ -8,6 +8,7 @@ const proxyquire = require('proxyquire')
 const _ = require('lodash')
 const crypto = require('crypto')
 
+const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
 const ipfsAdd = require('../src/ipfsAdd')
 const ipfsClient = require('../src/ipfsClient')
@@ -515,6 +516,19 @@ describe('test Polling Tracks with mocked IPFS', function () {
         { walletPublicKey: pubKey2, clock: numExpectedFilesForUser }
       ]
     })
+
+    // Requests with too many wallet keys should be rejected
+    const maxNumWallets = config.get('maxBatchClockStatusBatchSize')
+    const largeWalletPublicKeys = Array.from(
+      { length: maxNumWallets + 1 },
+      (_, i) => i + 'a'
+    )
+    resp = await request(app)
+      .post(`/users/batch_clock_status`)
+      .send({ walletPublicKeys: largeWalletPublicKeys })
+      .expect(400, {
+        error: `Number of wallets must not exceed ${maxNumWallets} (reduce 'walletPublicKeys' field in request body).`
+      })
 
     /** Non-existent user */
     const invalidWallet = 'asdf'
