@@ -1,6 +1,6 @@
 import ast
 
-from flask_decorator_plugin import Visitor
+from .flask_decorator_plugin import Visitor
 
 non_route_param_example = """
 @full_ns.route("/<string:track_id>/remixes")

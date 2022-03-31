@@ -1,12 +1,6 @@
 import ast
 import re
-import sys
 from typing import Any, Generator, List, Tuple, Type, Union
-
-if sys.version_info < (3, 8):
-    import importlib_metadata
-else:
-    import importlib.metadata as importlib_metadata
 
 code_message_map = {
     "FDP001": 'Non-route parameter "{0}" specified in @api.doc(). Prefer using @api.expects() with a RequestParser instead for query parameters.',
@@ -144,7 +138,7 @@ class Visitor(ast.NodeVisitor):
 
 class Plugin:
     name = __name__
-    version = importlib_metadata.version(__name__)
+    version = (1, 0, 0)
 
     def __init__(self, tree: ast.AST):
         self._tree = tree
