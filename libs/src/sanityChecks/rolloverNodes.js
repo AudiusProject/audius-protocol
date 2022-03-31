@@ -1,4 +1,4 @@
-const Utils = require('../utils')
+const { Utils } = require('../utils')
 const CreatorNode = require('../services/creatorNode')
 
 const THREE_SECONDS = 3000

@@ -420,12 +420,6 @@ const config = convict({
     env: 'creatorNodeIsDebug',
     default: false
   },
-  rehydrateMaxConcurrency: {
-    doc: 'Number of concurrent rehydrate queue tasks running',
-    format: 'nat',
-    env: 'rehydrateMaxConcurrency',
-    default: 10
-  },
   snapbackHighestReconfigMode: {
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
@@ -455,12 +449,6 @@ const config = convict({
     format: String,
     env: 'cidWhitelist',
     default: ''
-  },
-  enableRehydrate: {
-    doc: 'Flag to enable or disable rehydrate',
-    format: Boolean,
-    env: 'enableRehydrate',
-    default: true
   },
 
   /** sync / snapback configs */
@@ -628,30 +616,6 @@ const config = convict({
     format: 'BooleanCustom',
     env: 'saveFileForMultihashToFSIPFSFallback',
     default: true
-  },
-  enableIPFSAddTracks: {
-    doc: '[TRACKS] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
-    format: 'BooleanCustom',
-    env: 'enableIPFSAddTracks',
-    default: false
-  },
-  enableIPFSAddImages: {
-    doc: '[IMAGES] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
-    format: 'BooleanCustom',
-    env: 'enableIPFSAddImages',
-    default: false
-  },
-  enableIPFSAddMetadata: {
-    doc: '[METADATA] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
-    format: 'BooleanCustom',
-    env: 'enableIPFSAddMetadata',
-    default: true
-  },
-  IPFSAddTimeoutMs: {
-    doc: 'The default timeout in ms for ipfs add',
-    format: 'nat',
-    env: 'IPFSAddTimeoutMs',
-    default: 90000 // 90s
   },
   healthCheckIpfsTimeoutMs: {
     doc: 'Default timeout for the ipfs health check route in timing add content',
