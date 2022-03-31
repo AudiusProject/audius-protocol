@@ -678,9 +678,13 @@ function canCurrentNodeHandleTranscode({
 
 /**
  * Wrapper around async-retry API.
+ *
+ * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
  * @param {Object} param
  * @param {func} param.asyncFn the fn to asynchronously retry
  * @param {Object} param.asyncFnParams the params to pass into the fn. takes in 1 object
+ * @param {string} param.asyncFnTask the task label used to print on retry. used for debugging purposes
+ * @param {number} param.factor the exponential factor
  * @param {number} [retries=5] the max number of retries. defaulted to 5
  * @param {number} [minTimeout=1000] minimum time to wait after first retry. defaulted to 1000ms
  * @param {number} [maxTimeout=5000] maximum time to wait after first retry. defaulted to 5000ms
@@ -691,6 +695,7 @@ function asyncRetry({
   asyncFnParams,
   asyncFnTask,
   retries = 5,
+  factor = 2, // default for async-retry
   minTimeout = 1000, // default for async-retry
   maxTimeout = 5000
 }) {
@@ -704,6 +709,7 @@ function asyncRetry({
     },
     {
       retries,
+      factor,
       minTimeout,
       maxTimeout,
       onRetry: (err, i) => {
