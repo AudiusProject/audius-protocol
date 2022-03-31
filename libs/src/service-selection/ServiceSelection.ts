@@ -1,12 +1,7 @@
 import { sampleSize } from 'lodash'
-import { raceRequests, allRequests } from '../utils/network'
+import { raceRequests, allRequests, ServiceName, ServiceWithEndpoint, Service, } from '../utils/network'
 import { DECISION_TREE_STATE } from './constants'
 import type { AxiosResponse } from 'axios'
-
-export type ServiceName = string
-export interface ServiceWithEndpoint {endpoint: string}
-
-type Service = ServiceName | ServiceWithEndpoint
 
 function isVerbose (service: Service): service is ServiceWithEndpoint {
   return typeof service !== 'string'
@@ -224,18 +219,16 @@ export class ServiceSelection {
    */
   async findAll ({ verbose = false, whitelist = this.whitelist } = {}) {
     // Get all the services
-    const services = await this.getServices({ verbose })
-
-    const baseServices = services.map(service => isVerbose(service) ? service.endpoint : service)
+    let services = await this.getServices({ verbose })
 
     // If a whitelist is provided, filter down to it
     if (whitelist) {
-      baseServices.filter(service => whitelist.has(service))
+      services = services.filter(service => whitelist.has(  isVerbose(service) ? service.endpoint: service))
     }
 
     // Key the services by their health check endpoint
-    const urlMap = baseServices.reduce<Record<string, string>>((urlMap, s) => {
-      urlMap[ServiceSelection.getHealthCheckEndpoint(s)] = s
+    const urlMap = services.reduce<Record<string, Service>>((urlMap, service) => {
+      urlMap[ServiceSelection.getHealthCheckEndpoint(isVerbose(service) ?service.endpoint : service )] = service
       return urlMap
     }, {})
 
@@ -318,7 +311,7 @@ export class ServiceSelection {
    * @param {{ [key: string]: string}} urlMap health check urls mapped to their cannonical url
    * e.g. https://discoveryprovider.audius.co/health_check => https://discoveryprovider.audius.co
    */
-  isHealthy (response: AxiosResponse, _urlMap: Record<string, string>) {
+  isHealthy (response: AxiosResponse, _urlMap: Record<string, Service>) {
     return response.status === 200
   }
 
