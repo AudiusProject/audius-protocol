@@ -870,7 +870,7 @@ export class RewardsAttester {
       }
 
       function getIsAAOError(err?: string): err is string {
-        return !!err && AAO_ERRORS.has(res)
+        return !!err && AAO_ERRORS.has(err)
       }
 
       const { error } = res
