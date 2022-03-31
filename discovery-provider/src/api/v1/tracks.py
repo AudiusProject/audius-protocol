@@ -418,14 +418,26 @@ class TrackSearchResult(Resource):
     "/trending",
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Trending Tracks""",
+            "description": """Gets the top 100 trending (most popular) tracks on Audius""",
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
+)
+@ns.route(
+    "/trending/<string:version>",
+    doc={
+        "get": {
+            "id": """Get Trending Tracks With Version""",
+            "description": """Gets the top 100 trending (most popular) tracks on Audius using a given trending strategy version""",
+            "params": {"version": "The strategy version of trending to use"},
+        }
+    },
 )
 class Trending(Resource):
     @record_metrics
-    @ns.doc(
-        id="""Get Trending Tracks""",
-        description="""Gets the top 100 trending (most popular) tracks on Audius""",
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
     @ns.expect(trending_parser)
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
@@ -447,33 +459,31 @@ class Trending(Resource):
         return success_response(trending_tracks)
 
 
-@ns.route("/trending/<string:version>")
-class TrendingWithVersion(Trending):
-    @record_metrics
-    @ns.doc(
-        id="""Get Trending Tracks With Version""",
-        description="""Gets the top 100 trending (most popular) tracks on Audius using a given trending strategy version""",
-        params={"version": "The strategy version of trending to use"},
-    )
-    @ns.expect(trending_parser)
-    @ns.marshal_with(tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
-    def get(self, version):
-        super().get(self, version)
-
-
 @full_ns.route(
     "/trending",
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Trending Tracks""",
+            "description": """Gets the top 100 trending (most popular) tracks on Audius""",
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
+)
+@full_ns.route(
+    "/trending/<string:version>",
+    doc={
+        "get": {
+            "id": """Get Trending Tracks With Version""",
+            "description": """Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version""",
+            "params": {"version": "The strategy version of trending to use"},
+        }
+    },
 )
 class FullTrending(Resource):
     @record_metrics
-    @ns.doc(
-        id="""Get Trending Tracks""",
-        description="""Gets the top 100 trending (most popular) tracks on Audius""",
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
+    @ns.doc()
     @full_ns.expect(full_trending_parser)
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
@@ -494,33 +504,31 @@ class FullTrending(Resource):
         return success_response(trending_tracks)
 
 
-@full_ns.route("/trending/<string:version>")
-class FullTrendingWithVersion(FullTrending):
-    @record_metrics
-    @full_ns.doc(
-        id="""Get Trending Tracks With Version""",
-        description="""Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version""",
-        params={"version": "The strategy version of trending to use"},
-    )
-    @full_ns.expect(full_trending_parser)
-    @full_ns.marshal_with(full_tracks_response)
-    def get(self, version):
-        super().get(self, version)
-
-
 @full_ns.route(
     "/trending/underground",
     defaults={
         "version": DEFAULT_TRENDING_VERSIONS[TrendingType.UNDERGROUND_TRACKS].name
     },
     strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Underground Trending Tracks""",
+            "description": """Gets the top 100 trending underground tracks on Audius""",
+        }
+    },
+)
+@full_ns.route(
+    "/trending/underground/<string:version>",
+    doc={
+        "get": {
+            "id": "Get Underground Trending Tracks With Version",
+            "description": "Gets the top 100 trending underground tracks on Audius using a given trending strategy version",
+            "params": {"version": "The strategy version of trending to user"},
+        }
+    },
 )
 class FullUndergroundTrending(Resource):
     @record_metrics
-    @full_ns.doc(
-        id="""Get Underground Trending Tracks""",
-        description="""Gets the top 100 trending underground tracks on Audius""",
-    )
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
@@ -541,20 +549,6 @@ class FullUndergroundTrending(Resource):
         return success_response(trending_tracks)
 
 
-@full_ns.route("/trending/underground/<string:version>")
-class FullUndergroundTrendingWithVersion(FullUndergroundTrending):
-    @record_metrics
-    @full_ns.doc(
-        id="""Get Underground Trending Tracks With Version""",
-        description="""Gets the top 100 trending underground tracks on Audius using a given trending strategy version""",
-        params={"version": "The strategy version of trending to use"},
-    )
-    @full_ns.expect(pagination_with_current_user_parser)
-    @full_ns.marshal_with(full_tracks_response)
-    def get(self, version):
-        super().get(self, version)
-
-
 # Get recommended tracks for a genre and exclude tracks in the exclusion list
 recommended_track_parser = trending_parser_paginated.copy()
 recommended_track_parser.add_argument(
@@ -570,14 +564,27 @@ recommended_track_parser.add_argument(
     "/recommended",
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Recommended Tracks""",
+            "description": """Get recommended tracks""",
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
+)
+@ns.route(
+    "/recommended/<string:version>",
+    doc={
+        "get": {
+            "id": """Get Recommended Tracks With Version""",
+            "description": """Get recommended tracks using the given trending strategy version""",
+            "params": {"version": "The strategy version of trending to use"},
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
 )
 class RecommendedTrack(Resource):
     @record_metrics
-    @ns.doc(
-        id="""Get Recommended Tracks""",
-        description="""Get recommended tracks""",
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
     @ns.expect(recommended_track_parser)
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
@@ -601,21 +608,6 @@ class RecommendedTrack(Resource):
         return success_response(recommended_tracks[:limit])
 
 
-@ns.route("/recommended/<string:version>")
-class RecommendedTrackWithVersion(RecommendedTrack):
-    @record_metrics
-    @ns.doc(
-        id="""Get Recommended Tracks With Version""",
-        description="""Get recommended tracks using the given trending strategy version""",
-        params={"version": "The strategy version of trending to use"},
-    )
-    @ns.expect(recommended_track_parser)
-    @ns.marshal_with(tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
-    def get(self, version):
-        super().get(self, version)
-
-
 full_recommended_track_parser = recommended_track_parser.copy()
 full_recommended_track_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"
@@ -626,13 +618,25 @@ full_recommended_track_parser.add_argument(
     "/recommended",
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Recommended Tracks""",
+            "description": """Get recommended tracks""",
+        }
+    },
+)
+@full_ns.route(
+    "/recommended/<string:version>",
+    doc={
+        "get": {
+            "id": """Get Recommended Tracks With Version""",
+            "description": """Get recommended tracks using the given trending strategy version""",
+            "params": {"version": "The strategy version of trending to use"},
+        }
+    },
 )
 class FullRecommendedTracks(Resource):
     @record_metrics
-    @full_ns.doc(
-        id="""Get Recommended Tracks""",
-        description="""Get recommended tracks""",
-    )
     @full_ns.expect(full_recommended_track_parser)
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
@@ -653,20 +657,6 @@ class FullRecommendedTracks(Resource):
         )
         full_recommended_tracks = get_full_recommended_tracks(request, args, strategy)
         return success_response(full_recommended_tracks[:limit])
-
-
-@full_ns.route("/recommended/<string:version>")
-class FullRecommendedTracksWithVersion(FullRecommendedTracks):
-    @record_metrics
-    @full_ns.doc(
-        id="""Get Recommended Tracks With Version""",
-        description="""Get recommended tracks using the given trending strategy version""",
-        params={"version": "The strategy version of trending to use"},
-    )
-    @full_ns.expect(full_recommended_track_parser)
-    @full_ns.marshal_with(full_tracks_response)
-    def get(self, version):
-        super().get(self, version)
 
 
 trending_ids_route_parser = trending_parser.copy()
@@ -690,14 +680,27 @@ trending_ids_response = make_response(
     "/trending/ids",
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Trending Track IDs""",
+            "description": """Gets the track IDs of the top trending tracks on Audius""",
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
+)
+@full_ns.route(
+    "/trending/ids/<string:version>",
+    doc={
+        "get": {
+            "id": """Get Trending Tracks IDs With Version""",
+            "description": """Gets the track IDs of the top trending tracks on Audius based on the given trending strategy version""",
+            "params": {"version": "The strategy version of trending to use"},
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
 )
 class FullTrendingIds(Resource):
     @record_metrics
-    @ns.doc(
-        id="""Get Trending Track IDs""",
-        description="""Gets the track IDs of the top trending tracks on Audius""",
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
     @full_ns.expect(trending_ids_route_parser)
     @full_ns.marshal_with(trending_ids_response)
     def get(self, version):
@@ -722,21 +725,6 @@ class FullTrendingIds(Resource):
             "year": list(map(get_encoded_track_id, trending_ids["year"])),
         }
         return success_response(res)
-
-
-@full_ns.route("/trending/ids/<string:version>")
-class FullTrendingIdsWithVersion(FullTrendingIds):
-    @record_metrics
-    @ns.doc(
-        id="""Get Trending Tracks IDs With Version""",
-        description="""Gets the track IDs of the top trending tracks on Audius based on the given trending strategy version""",
-        params={"version": "The strategy version of trending to use"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @full_ns.expect(trending_ids_route_parser)
-    @full_ns.marshal_with(trending_ids_response)
-    def get(self, version):
-        super().get(self, version)
 
 
 track_favorites_response = make_full_response(
