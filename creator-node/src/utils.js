@@ -10,14 +10,11 @@ const pipeline = promisify(stream.pipeline)
 
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
-const { ipfs, ipfsLatest } = require('./ipfsClient')
+const { ipfsLatest } = require('./ipfsClient')
 const redis = require('./redis')
 const config = require('./config')
-const BlacklistManager = require('./blacklistManager')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { ipfsAddNonImages } = require('./ipfsAdd')
-
-const readFile = promisify(fs.readFile)
+const { generateNonImageMultihash } = require('./ipfsAdd')
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 const TEN_MINUTES_IN_SECONDS = 60 * 10
@@ -142,32 +139,6 @@ const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
       if (!e.message.includes('Request timed out')) {
         logger.error(`ipfsSingleByteCat - Error: ${e}`)
       }
-      reject(e)
-    }
-  })
-}
-
-/**
- * Stat of a file at given filepath. If ipfs.files.stat() call takes longer than the timeout time or
- * something goes wrong, an error will be thrown.
- */
-const ipfsStat = (CID, logContext, timeout = 1000) => {
-  const logger = genericLogger.child(logContext)
-
-  return new Promise(async (resolve, reject) => {
-    const start = Date.now()
-    const timeoutRef = setTimeout(() => {
-      logger.error(`ipfsStat - Timeout`)
-      reject(new Error('IPFS Stat Timeout'))
-    }, timeout)
-
-    try {
-      const stats = await ipfsLatest.files.stat(`/ipfs/${CID}`)
-      logger.info(`ipfsStat - Retrieved ${CID} in ${Date.now() - start}ms`)
-      clearTimeout(timeoutRef)
-      resolve(stats)
-    } catch (e) {
-      logger.error(`ipfsStat - Error: ${e}`)
       reject(e)
     }
   })
@@ -312,11 +283,8 @@ async function findCIDInNetwork(
       if (resp.data) {
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
-        // verify that the file written matches the hash expected if added to ipfs
-        const ipfsHashOnly = await ipfsAddNonImages(filePath, {
-          onlyHash: true,
-          timeout: 2000
-        })
+        // Verify that the file written matches the hash expected
+        const ipfsHashOnly = await generateNonImageMultihash(filePath)
 
         if (cid !== ipfsHashOnly) {
           await fs.unlink(filePath)
@@ -409,174 +377,6 @@ async function getIfAttemptedStateFix(filePath) {
   return !firstTime
 }
 
-async function rehydrateIpfsFromFsIfNecessary(
-  multihash,
-  storagePath,
-  logContext,
-  filename = null
-) {
-  const logger = genericLogger.child(logContext)
-
-  if (await BlacklistManager.CIDIsInBlacklist(multihash)) {
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - CID ${multihash} is in blacklist; Skipping rehydrate.`
-    )
-    return
-  }
-
-  let ipfsPath = multihash
-  if (filename != null) {
-    // Indicates we are retrieving a directory multihash
-    ipfsPath = `${multihash}/${filename}`
-  }
-
-  let rehydrateNecessary = false
-  try {
-    await ipfsSingleByteCat(ipfsPath, logContext)
-  } catch (e) {
-    // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
-    if (e.message.includes('this dag node is a directory')) {
-      throw new Error(e.message)
-    }
-    rehydrateNecessary = true
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`
-    )
-  }
-  if (!rehydrateNecessary) return
-  // Timed out, must re-add from FS
-  if (!filename) {
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`
-    )
-    try {
-      if (fs.existsSync(storagePath)) {
-        const addResp = await ipfs.addFromFs(storagePath, { pin: false })
-        logger.info(
-          `rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(
-            addResp
-          )}`
-        )
-      } else {
-        logger.info(
-          `rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`
-        )
-      }
-    } catch (e) {
-      logger.error(
-        `rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`
-      )
-    }
-  } else {
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`
-    )
-    const findOriginalFileQuery = await models.File.findAll({
-      where: {
-        dirMultihash: multihash,
-        type: 'image'
-      }
-    })
-    // Add entire directory to recreate original operation
-    // Required to ensure same dirCID as data store
-    const ipfsAddArray = []
-    for (const entry of findOriginalFileQuery) {
-      const sourceFilePath = entry.storagePath
-      try {
-        const bufferedFile = await readFile(sourceFilePath)
-        const originalSource = entry.sourceFile
-        ipfsAddArray.push({
-          path: originalSource,
-          content: bufferedFile
-        })
-      } catch (e) {
-        logger.info(
-          `rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`
-        )
-      }
-    }
-
-    try {
-      const addResp = await ipfs.add(ipfsAddArray, { pin: false })
-      logger.info(
-        `rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`
-      )
-    } catch (e) {
-      logger.error(
-        `rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`
-      )
-    }
-  }
-}
-
-async function rehydrateIpfsDirFromFsIfNecessary(dirHash, logContext) {
-  const logger = genericLogger.child(logContext)
-
-  if (await BlacklistManager.CIDIsInBlacklist(dirHash)) {
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - CID ${dirHash} is in blacklist; Skipping rehydrate.`
-    )
-    return
-  }
-
-  const findOriginalFileQuery = await models.File.findAll({
-    where: {
-      dirMultihash: dirHash,
-      type: 'image'
-    }
-  })
-
-  let rehydrateNecessary = false
-  for (const entry of findOriginalFileQuery) {
-    const filename = entry.fileName
-    const ipfsPath = `${dirHash}/${filename}`
-    logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
-    try {
-      await ipfsSingleByteCat(ipfsPath, logContext)
-    } catch (e) {
-      rehydrateNecessary = true
-      logger.info(
-        `rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`
-      )
-      break
-    }
-  }
-
-  logger.info(
-    `rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`
-  )
-  if (!rehydrateNecessary) return
-
-  // Add entire directory to recreate original operation
-  // Required to ensure same dirCID as data store
-  const ipfsAddArray = []
-  for (const entry of findOriginalFileQuery) {
-    const sourceFilePath = entry.storagePath
-    try {
-      const bufferedFile = await readFile(sourceFilePath)
-      const originalSource = entry.sourceFile
-      ipfsAddArray.push({
-        path: originalSource,
-        content: bufferedFile
-      })
-    } catch (e) {
-      logger.info(
-        `rehydrateIpfsDirFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`
-      )
-    }
-  }
-  try {
-    const addResp = await ipfs.add(ipfsAddArray, { pin: false })
-    logger.info(
-      `rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`
-    )
-  } catch (e) {
-    logger.info(
-      `rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}`
-    )
-  }
-}
-
 async function createDirForFile(fileStoragePath) {
   const dir = path.dirname(fileStoragePath)
   await fs.ensureDir(dir)
@@ -649,13 +449,9 @@ module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
 module.exports.getIPFSPeerId = getIPFSPeerId
-module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
-module.exports.rehydrateIpfsDirFromFsIfNecessary =
-  rehydrateIpfsDirFromFsIfNecessary
 module.exports.ipfsSingleByteCat = ipfsSingleByteCat
 module.exports.ipfsCat = ipfsCat
 module.exports.ipfsGet = ipfsGet
-module.exports.ipfsStat = ipfsStat
 module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
