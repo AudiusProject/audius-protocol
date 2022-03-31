@@ -551,6 +551,7 @@ class FullUndergroundTrending(Resource):
 
 # Get recommended tracks for a genre and exclude tracks in the exclusion list
 recommended_track_parser = trending_parser_paginated.copy()
+recommended_track_parser.remove_argument("offset")
 recommended_track_parser.add_argument(
     "exclusion_list",
     type=int,
