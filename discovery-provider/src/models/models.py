@@ -214,7 +214,7 @@ class User(Base):
     )
 
     # NOTE: There is no actualy primary key in the DB
-    PrimaryKeyConstraint(is_current, user_id, txhash, created_at)
+    PrimaryKeyConstraint(is_current, user_id, txhash)
 
     ModelValidator.init_model_schemas("User")
     fields = get_fields_to_validate("User")
@@ -317,7 +317,7 @@ class Track(Base):
             return f"/{self.user[0].handle}/{self._slug}"
         return ""
 
-    PrimaryKeyConstraint(is_current, track_id, txhash, created_at)
+    PrimaryKeyConstraint(is_current, track_id, txhash)
 
     ModelValidator.init_model_schemas("Track")
     fields = get_fields_to_validate("Track")
@@ -389,7 +389,7 @@ class Playlist(Base):
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
-    PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, txhash, created_at)
+    PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, txhash)
 
     ModelValidator.init_model_schemas("Playlist")
     fields = ["playlist_name", "description"]
@@ -442,9 +442,7 @@ class Repost(Base):
     is_delete = Column(Boolean, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
-    PrimaryKeyConstraint(
-        user_id, repost_item_id, repost_type, is_current, txhash, created_at
-    )
+    PrimaryKeyConstraint(user_id, repost_item_id, repost_type, is_current, txhash)
 
     def __repr__(self):
         return f"<Repost(blockhash={self.blockhash},\
@@ -508,9 +506,7 @@ class Save(Base):
     is_current = Column(Boolean, nullable=False)
     is_delete = Column(Boolean, nullable=False)
 
-    PrimaryKeyConstraint(
-        is_current, user_id, save_item_id, save_type, txhash, created_at
-    )
+    PrimaryKeyConstraint(is_current, user_id, save_item_id, save_type, txhash)
 
     def __repr__(self):
         return f"<Save(blockhash={self.blockhash},\
@@ -978,7 +974,7 @@ class URSMContentNode(Base):
     endpoint = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False)
 
-    PrimaryKeyConstraint(is_current, cnode_sp_id, txhash, created_at)
+    PrimaryKeyConstraint(is_current, cnode_sp_id, txhash)
 
     def __repr__(self):
         return f"<URSMContentNode(blockhash={self.blockhash},\
