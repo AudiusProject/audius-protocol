@@ -2,7 +2,7 @@ const axios = require('axios')
 const FormData = require('form-data')
 const retry = require('async-retry')
 
-const { wait } = require('../../utils').Utils
+const { Utils: { wait } } = require('../../utils')
 const { uuid } = require('../../utils/uuid')
 const SchemaValidator = require('../schemaValidator')
 
