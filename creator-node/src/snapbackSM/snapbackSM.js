@@ -134,12 +134,16 @@ class SnapbackSM {
       lockDuration: 10800000 // 3hr
     })
     this.stateMachineQueue.on('stalled', (job) => {
-      // this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
       console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+    })
+    this.stateMachineQueue.on('lock-extension-failed', (job) => {
+      console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      this.logError(`SIDTEST STATEMACHINEQUEUE lock-extension-failed job id ${job.id}`)
     })
     this.stateMachineQueue.on('global:stalled', (job) => {
       // this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
-      console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
+      console.error(`SIDTEST STATEMACHINEQUEUE GLOBAL:STALLED job id ${job}`)
     })
 
     // Sync queues handle issuing sync request from primary -> secondary
@@ -273,7 +277,7 @@ class SnapbackSM {
         removeOnComplete: true,
         removeOnFail: true
       },
-      settings
+      ...settings
     })
   }
 
