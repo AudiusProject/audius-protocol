@@ -394,7 +394,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
-            "src.tasks.index_solana_user_data"
+            "src.tasks.index_solana_user_data",
         ],
         beat_schedule={
             "update_discovery_provider": {
