@@ -552,8 +552,9 @@ def configure_celery(celery, test_config=None):
         shared_config["solana"]["anchor_data_program_id"],
         "index_solana_user_data",
         redis_inst,
+        db,
+        solana_client_manager,
     )
-    anchor_program_indexer.run()
 
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
