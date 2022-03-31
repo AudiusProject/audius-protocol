@@ -25,26 +25,21 @@ import {
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { View, StyleSheet } from 'react-native'
 
-import IconFavoriteOffDark from 'app/assets/animations/iconFavoriteOffDark.json'
-import IconFavoriteOffLight from 'app/assets/animations/iconFavoriteOffLight.json'
-import IconFavoriteOnDark from 'app/assets/animations/iconFavoriteOnDark.json'
-import IconFavoriteOnLight from 'app/assets/animations/iconFavoriteOnLight.json'
-import IconRepostOffDark from 'app/assets/animations/iconRepostOffDark.json'
-import IconRepostOffLight from 'app/assets/animations/iconRepostOffLight.json'
-import IconRepostOnDark from 'app/assets/animations/iconRepostOnDark.json'
-import IconRepostOnLight from 'app/assets/animations/iconRepostOnLight.json'
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
 import IconChromecast from 'app/assets/images/iconChromecast.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { useAirplay } from 'app/components/audio/Airplay'
-import { AnimatedButton, IconButton } from 'app/components/core'
+import { IconButton } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
 import { useChromecast } from '../audio/GoogleCast'
+
+import { FavoriteButton } from './FavoriteButton'
+import { RepostButton } from './RepostButton'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -170,12 +165,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       />
     )
   }
+
   const renderRepostButton = () => {
     return (
-      <AnimatedButton
-        haptics
-        iconLightJSON={[IconRepostOnLight, IconRepostOffLight]}
-        iconDarkJSON={[IconRepostOnDark, IconRepostOffDark]}
+      <RepostButton
         iconIndex={track.has_current_user_reposted ? 1 : 0}
         onPress={onToggleRepost}
         style={styles.button}
@@ -183,12 +176,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       />
     )
   }
+
   const renderFavoriteButton = () => {
     return (
-      <AnimatedButton
-        haptics
-        iconLightJSON={[IconFavoriteOnLight, IconFavoriteOffLight]}
-        iconDarkJSON={[IconFavoriteOnDark, IconFavoriteOffDark]}
+      <FavoriteButton
         iconIndex={track.has_current_user_saved ? 1 : 0}
         onPress={onToggleFavorite}
         style={styles.button}
@@ -196,6 +187,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       />
     )
   }
+
   const renderShareButton = () => {
     return (
       <IconButton
@@ -205,6 +197,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       />
     )
   }
+
   const renderOptionsButton = () => {
     return (
       <IconButton
@@ -214,6 +207,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       />
     )
   }
+
   return (
     <View style={styles.container}>
       {renderCastButton()}

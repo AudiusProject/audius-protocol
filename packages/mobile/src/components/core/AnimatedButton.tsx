@@ -20,14 +20,12 @@ import { usePrevious } from 'react-use'
 
 import { medium } from 'app/haptics'
 import { GestureResponderHandler } from 'app/types/gesture'
-import { Theme, useThemeVariant } from 'app/utils/theme'
 
 type IconJSON = AnimatedLottieViewProps['source']
 
 export type AnimatedButtonProps = {
   iconIndex?: number
-  iconDarkJSON: IconJSON | IconJSON[]
-  iconLightJSON: IconJSON | IconJSON[]
+  iconJSON: IconJSON | IconJSON[]
   isActive?: boolean
   isDisabled?: boolean
   onLongPress?: GestureResponderHandler
@@ -40,8 +38,7 @@ export type AnimatedButtonProps = {
 
 export const AnimatedButton = ({
   iconIndex: externalIconIndex,
-  iconDarkJSON,
-  iconLightJSON,
+  iconJSON,
   isActive,
   isDisabled = false,
   onLongPress,
@@ -52,18 +49,11 @@ export const AnimatedButton = ({
   haptics,
   ...pressableProps
 }: AnimatedButtonProps) => {
-  const themeVariant = useThemeVariant()
-  const isDarkMode = themeVariant === Theme.DARK
-
   const [iconIndex, setIconIndex] = useState<number>(externalIconIndex ?? 0)
   const [isPlaying, setIsPlaying] = useState(false)
   const animationRef = useRef<LottieView | null>()
   const previousExternalIconIndex = usePrevious(externalIconIndex)
   const previousActiveState = usePrevious(isActive)
-
-  const iconJSON = useMemo(() => {
-    return isDarkMode ? iconDarkJSON : iconLightJSON
-  }, [isDarkMode, iconDarkJSON, iconLightJSON])
 
   // When externalIconIndex is updated, update iconIndex
   // if animation isn't currently playing
