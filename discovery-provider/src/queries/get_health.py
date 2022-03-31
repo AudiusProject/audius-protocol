@@ -216,7 +216,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     # value from redis cache is None
     if not use_redis_cache or latest_block_num is None or latest_block_hash is None:
         # get latest blockchain state from web3
-        latest_block = web3.eth.getBlock("latest", True)
+        latest_block = web3.eth.get_block("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
@@ -556,7 +556,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
         latest_block_hash = stored_latest_blockhash.decode("utf-8")
 
     if latest_block_num is None or latest_block_hash is None:
-        latest_block = web3.eth.getBlock("latest", True)
+        latest_block = web3.eth.get_block("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
