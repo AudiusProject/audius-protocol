@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 
 import { StyleSheet } from 'react-native'
 
-import IconRepostOffDark from 'app/assets/animations/iconRepostTrackTileOffDark.json'
 import IconRepostOffLight from 'app/assets/animations/iconRepostTrackTileOffLight.json'
-import IconRepostOnDark from 'app/assets/animations/iconRepostTrackTileOnDark.json'
 import IconRepostOnLight from 'app/assets/animations/iconRepostTrackTileOnLight.json'
 import { AnimatedButton, AnimatedButtonProps } from 'app/components/core'
+import { colorize } from 'app/utils/colorizeLottie'
+import { useThemeColors } from 'app/utils/theme'
 
 const styles = StyleSheet.create({
   icon: {
@@ -15,15 +15,10 @@ const styles = StyleSheet.create({
   }
 })
 
-const iconLightJSON = [IconRepostOnLight, IconRepostOffLight]
-const iconDarkJSON = [IconRepostOnDark, IconRepostOffDark]
-
-type RepostButtonProps = Omit<
-  AnimatedButtonProps,
-  'iconLightJSON' | 'iconDarkJSON' | 'isDarkMode'
->
+type RepostButtonProps = Omit<AnimatedButtonProps, 'iconJSON' | 'isDarkMode'>
 
 export const RepostButton = ({ isActive, ...props }: RepostButtonProps) => {
+  const { neutralLight4, primary } = useThemeColors()
   const wrapperStyle = useMemo(
     () => [
       styles.icon,
@@ -33,13 +28,36 @@ export const RepostButton = ({ isActive, ...props }: RepostButtonProps) => {
     [props.isDisabled, props.wrapperStyle]
   )
 
+  const ColorizedOnIcon = useMemo(
+    () =>
+      colorize(IconRepostOnLight, {
+        // iconRepost Outlines Comp 1.iconRepost Outlines.Group 1.Fill 1
+        'assets.0.layers.0.shapes.0.it.3.c.k.0.s': neutralLight4,
+        // iconRepost Outlines Comp 1.iconRepost Outlines.Group 1.Fill 1
+        'assets.0.layers.0.shapes.0.it.3.c.k.1.s': primary
+      }),
+    [neutralLight4, primary]
+  )
+
+  const ColorizedOffIcon = useMemo(
+    () =>
+      colorize(IconRepostOffLight, {
+        // iconRepost Outlines Comp 2.iconRepost Outlines.Group 1.Fill 1
+        'assets.0.layers.0.shapes.0.it.3.c.k.0.s': primary,
+        // iconRepost Outlines Comp 2.iconRepost Outlines.Group 1.Fill 1
+        'assets.0.layers.0.shapes.0.it.3.c.k.1.s': neutralLight4
+      }),
+    [neutralLight4, primary]
+  )
+
+  const iconJSON = [ColorizedOnIcon, ColorizedOffIcon]
+
   return (
     <AnimatedButton
       {...props}
       haptics
       iconIndex={isActive ? 1 : 0}
-      iconLightJSON={iconLightJSON}
-      iconDarkJSON={iconDarkJSON}
+      iconJSON={iconJSON}
       wrapperStyle={wrapperStyle}
     />
   )
