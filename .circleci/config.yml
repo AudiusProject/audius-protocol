@@ -601,6 +601,37 @@ jobs:
           paths:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
+      - restore_cache:
+          keys:
+            - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
+            - reward-manager-deps-
+      - run:
+          name: run reward manager tests
+          command: |
+            export PATH=$PWD/solana-release/bin:$PATH
+            cd solana-programs/reward-manager/program
+            cp ../../claimable-tokens/program/target/deploy/claimable_tokens.so .
+            cargo build-bpf
+            cargo test-bpf
+      - save_cache:
+          paths:
+            - solana-programs/reward-manager/program/target
+          key: reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
+      - restore_cache:
+          keys:
+            - track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+            - track-listen-count-deps-
+      - run:
+          name: run track listen count tests
+          command: |
+            export PATH=$PWD/solana-release/bin:$PATH
+            cd solana-programs/track_listen_count
+            cargo build-bpf
+            cargo test-bpf
+      - save_cache:
+          paths:
+            - solana-programs/track_listen_count/target
+          key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
 
   test-solana-programs-anchor:
     resource_class: large # 4vcpu/8gb
@@ -608,19 +639,10 @@ jobs:
       image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
       docker_layer_caching: true
     steps:
+      # TODO implement cache for faster build
       - checkout
       - diff-if-necessary:
           service: solana-programs
-      # - restore_cache:
-      #     name: apt-cache
-      #     keys:
-      #       - apt_cache-{{ arch }}-{{ .Branch }}
-      #       - apt_cache
-      # - restore_cache:
-      #     name: nvm-cache
-      #     keys:
-      #       - nvm_cache-{{ arch }}-{{ .Branch }}
-      #       - nvm_cache
       - run:
           name: Install node
           command: |
@@ -631,19 +653,6 @@ jobs:
             curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
             source ~/.bashrc
             nvm install "$NODE_VERSION"
-      - save_cache:
-          key: apt_cache-{{ arch }}-{{ .Branch }}
-          paths:
-            - /var/cache/apt/archives
-      - save_cache:
-          key: nvm_cache-{{ arch }}-{{ .Branch }}
-          paths:
-            - /opt/circleci/.nvm
-      # - restore_cache:
-      #     name: cargo-cache
-      #     keys:
-      #       - cargo_cache-{{ arch }}-{{ .Branch }}
-      #       - cargo_cache
       - run:
           name: Setup dev dependencies
           command: |
@@ -656,24 +665,6 @@ jobs:
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             source /opt/circleci/.nvm/nvm.sh
             npm run install-dev
-      - save_cache:
-          key: cargo_cache-{{ arch }}-{{ .Branch }}
-          paths:
-            - cargo
-      - run:
-          name: anchor program seed CLI tests
-          command: |
-            export NODE_VERSION="v14.18.1"
-            source ~/.profile
-            source ~/.bashrc
-            nvm use "$NODE_VERSION"
-            export PROTOCOL_DIR="/home/circleci/project"
-            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
-            npm install # wtf
-            source /opt/circleci/.nvm/nvm.sh
-            npm run localnet-up-ci
-            npm run dev-setup
       - restore_cache:
           name: node-cache
           keys:
@@ -695,37 +686,52 @@ jobs:
           paths:
             - solana-programs/anchor/audius-data/node_modules
 
-      # - restore_cache:
-      #     keys:
-      #       - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
-      #       - reward-manager-deps-
-      # - run:
-      #     name: run reward manager tests
-      #     command: |
-      #       export PATH=$PWD/solana-release/bin:$PATH
-      #       cd solana-programs/reward-manager/program
-      #       cp ../../claimable-tokens/program/target/deploy/claimable_tokens.so .
-      #       cargo build-bpf
-      #       cargo test-bpf
-      # - save_cache:
-      #     paths:
-      #       - solana-programs/reward-manager/program/target
-      #     key: reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
-      # - restore_cache:
-      #     keys:
-      #       - track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
-      #       - track-listen-count-deps-
-      # - run:
-      #     name: run track listen count tests
-      #     command: |
-      #       export PATH=$PWD/solana-release/bin:$PATH
-      #       cd solana-programs/track_listen_count
-      #       cargo build-bpf
-      #       cargo test-bpf
-      # - save_cache:
-      #     paths:
-      #       - solana-programs/track_listen_count/target
-      #     key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+  test-solana-programs-seed-cli:
+    resource_class: large # 4vcpu/8gb
+    machine:
+      image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
+      docker_layer_caching: true
+    steps:
+      # TODO implement cache for faster build
+      - checkout
+      - diff-if-necessary:
+          service: solana-programs
+      - run:
+          name: Install node
+          command: |
+            export PROTOCOL_DIR="/home/circleci/project"
+            export NVM_VERSION="v0.35.3"
+            export NODE_VERSION="v14.18.1"
+            sudo apt update -y && sudo apt upgrade -y && sudo apt install curl -y
+            curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
+            source ~/.bashrc
+            nvm install "$NODE_VERSION"
+      - run:
+          name: Setup dev dependencies
+          command: |
+            export NODE_VERSION="v14.18.1"
+            source ~/.profile
+            source ~/.bashrc
+            nvm use "$NODE_VERSION"
+            export CARGO_HOME="cargo"
+            export PROTOCOL_DIR="/home/circleci/project"
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            source /opt/circleci/.nvm/nvm.sh
+            npm run install-dev
+      - run:
+          name: anchor program seed CLI tests
+          command: |
+            export NODE_VERSION="v14.18.1"
+            source ~/.profile
+            source ~/.bashrc
+            nvm use "$NODE_VERSION"
+            export PROTOCOL_DIR="/home/circleci/project"
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
+            npm install # wtf
+            source /opt/circleci/.nvm/nvm.sh
+            npm run localnet-up-ci
+            npm run dev-setup
 
   docker-build-and-push:
     docker:
@@ -765,59 +771,61 @@ workflows:
   # test, build and push all commits
   test-build-and-push:
     jobs:
-      # - test-libs:
-      #     name: test-libs
-      # - docker-build-and-push:
-      #     name: build-libs
-      #     repo: libs
+      - test-libs:
+          name: test-libs
+      - docker-build-and-push:
+          name: build-libs
+          repo: libs
 
-      # - test-contracts:
-      #     name: test-contracts
-      # - docker-build-and-push:
-      #     name: build-contracts
-      #     repo: contracts
+      - test-contracts:
+          name: test-contracts
+      - docker-build-and-push:
+          name: build-contracts
+          repo: contracts
 
-      # - test-eth-contracts:
-      #     name: test-eth-contracts
-      # - docker-build-and-push:
-      #     name: build-eth-contracts
-      #     repo: eth-contracts
+      - test-eth-contracts:
+          name: test-eth-contracts
+      - docker-build-and-push:
+          name: build-eth-contracts
+          repo: eth-contracts
 
-      # - test-creator-node:
-      #     name: test-creator-node
-      # - docker-build-and-push:
-      #     name: build-creator-node
-      #     repo: creator-node
+      - test-creator-node:
+          name: test-creator-node
+      - docker-build-and-push:
+          name: build-creator-node
+          repo: creator-node
 
-      # - test-discovery-provider:
-      #     name: test-discovery-provider
-      # - docker-build-and-push:
-      #     name: build-discovery-provider
-      #     repo: discovery-provider
+      - test-discovery-provider:
+          name: test-discovery-provider
+      - docker-build-and-push:
+          name: build-discovery-provider
+          repo: discovery-provider
 
-      # - test-identity-service:
-      #     name: test-identity-service
-      # - docker-build-and-push:
-      #     name: build-identity-service
-      #     repo: identity-service
+      - test-identity-service:
+          name: test-identity-service
+      - docker-build-and-push:
+          name: build-identity-service
+          repo: identity-service
 
-      # - test-solana-programs:
-      #     name: test-solana-programs
+      - test-solana-programs:
+          name: test-solana-programs
       - test-solana-programs-anchor:
           name: test-solana-programs-anchor
-      # - docker-build-and-push:
-      #     name: build-solana-programs
-      #     repo: solana-programs
+      - test-solana-programs-seed-cli:
+          name: test-solana-programs-seed-cli
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
 
-      # - test-mad-dog-e2e:
-      #     mad-dog-type: test
-      # - hold-test-mad-dog-e2e-full:
-      #     type: approval
-      # - test-mad-dog-e2e:
-      #     name: test-mad-dog-e2e-full
-      #     mad-dog-type: test-nightly
-      #     requires:
-      #       - hold-test-mad-dog-e2e-full
+      - test-mad-dog-e2e:
+          mad-dog-type: test
+      - hold-test-mad-dog-e2e-full:
+          type: approval
+      - test-mad-dog-e2e:
+          name: test-mad-dog-e2e-full
+          mad-dog-type: test-nightly
+          requires:
+            - hold-test-mad-dog-e2e-full
 
   # test master at midnight daily
   test-nightly:
