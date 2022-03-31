@@ -21,7 +21,8 @@ const GetAttestationError = Object.freeze({
   DISCOVERY_NODE_ATTESTATION_ERROR: 'DISCOVERY_NODE_ATTESTATION_ERROR',
   DISCOVERY_NODE_UNKNOWN_RESPONSE: 'DISCOVERY_NODE_UNKNOWN_RESPONSE',
   AAO_ATTESTATION_ERROR: 'AAO_ATTESTATION_ERROR',
-  AAO_ATTESTATION_FAILURE: 'AAO_ATTESTATION_FAILURE',
+  AAO_ATTESTATION_REJECTION: 'AAO_ATTESTATION_REJECTION',
+  AAO_ATTESTATION_UNKNOWN_RESPONSE: 'AAO_ATTESTATION_UNKNOWN_RESPONSE',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 })
 
@@ -461,8 +462,10 @@ class Rewards extends Base {
       const { result, needs } = response.data
 
       if (!result) {
-        logger.error(`Failed to get AAO attestation: needs ${needs}`)
-        const mappedErr = GetAttestationError[needs] || GetAttestationError.AAO_ATTESTATION_FAILURE
+        logger.error(`Failed to get AAO attestation${needs ? `: needs ${needs}` : ''}`)
+        const mappedErr = needs
+          ? GetAttestationError[needs] || GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
+          : AAO_ATTESTATION_REJECTION
         return {
           success: null,
           error: mappedErr
