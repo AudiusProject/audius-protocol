@@ -7,7 +7,7 @@ const readFile = promisify(fs.readFile)
 const config = require('../config.js')
 const models = require('../models')
 const {
-  saveFileFromBufferToIPFSAndDisk,
+  saveFileFromBufferToDisk,
   removeTrackFolder,
   getTmpTrackUploadArtifactsPathWithInputUUID,
   handleTrackContentUpload
@@ -33,15 +33,11 @@ const {
   ensureValidSPMiddleware
 } = require('../middlewares')
 const { decode } = require('../hashids.js')
-const { getCID, streamFromFileSystem } = require('./files')
-const { generateListenTimestampAndSignature } = require('../apiSigning.js')
-
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 
-const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
+const readFile = promisify(fs.readFile)
 
 module.exports = function (app) {
   /**
@@ -173,7 +169,7 @@ module.exports = function (app) {
   )
 
   /**
-   * Given track metadata object, upload and share metadata to IPFS. Return metadata multihash if successful.
+   * Given track metadata object, save metadata to disk. Return metadata multihash if successful.
    * If metadata is for a downloadable track, ensures transcoded master record exists in DB
    */
   app.post(
@@ -240,19 +236,15 @@ module.exports = function (app) {
       const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
       const cnodeUserUUID = req.session.cnodeUserUUID
 
-      // Save file from buffer to IPFS and disk
+      // Save file from buffer to disk
       let multihash, dstPath
       try {
-        const resp = await saveFileFromBufferToIPFSAndDisk(
-          req,
-          metadataBuffer,
-          ENABLE_IPFS_ADD_METADATA
-        )
+        const resp = await saveFileFromBufferToDisk(req, metadataBuffer)
         multihash = resp.multihash
         dstPath = resp.dstPath
       } catch (e) {
         return errorResponseServerError(
-          `/tracks/metadata saveFileFromBufferToIPFSAndDisk op failed: ${e}`
+          `/tracks/metadata saveFileFromBufferToDisk op failed: ${e}`
         )
       }
 
@@ -599,26 +591,12 @@ module.exports = function (app) {
           sourceFile: segmentFile.sourceFile
         }
       })
-      if (!copyFile) {
-        return successResponse({ isDownloadable: true, cid: null })
-      }
 
-      // Asynchronously rehydrate and return CID. If file is not in ipfs, serve from FS
-      try {
-        // Rehydrate master copy if necessary
-        RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(
-          copyFile.multihash,
-          copyFile.storagePath,
-          { logContext: req.logContext }
-        )
-
-        return successResponse({
-          isDownloadable: true,
-          cid: copyFile.multihash
-        })
-      } catch (e) {
-        return successResponse({ isDownloadable: true, cid: null })
-      }
+      // Serve from file system
+      return successResponse({
+        isDownloadable: true,
+        cid: copyFile ? copyFile.multihash : null
+      })
     })
   )
 

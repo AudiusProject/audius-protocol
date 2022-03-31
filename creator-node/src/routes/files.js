@@ -31,18 +31,14 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const {
-  getIPFSPeerId,
-  ipfsSingleByteCat,
-  ipfsStat,
   getAllRegisteredCNodes,
   findCIDInNetwork,
   timeout
 } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { ipfsAddImages } = require('../ipfsAdd')
+const { generateImageMultihashes } = require('../ipfsAdd')
 
 const { promisify } = require('util')
 
@@ -51,7 +47,6 @@ const fsStat = promisify(fs.stat)
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
-const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT = 5
 
 /**
  * Helper method to stream file from file system on creator node
@@ -146,10 +141,9 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
  * Given a CID, return the appropriate file
  * 1. Check if file exists at expected storage path (current and legacy)
  * 1. If found, stream from FS
- * 2. Else, check if CID exists in DB. If not, return 404 error
+ * 2. Else, check if CID exists in DB. If not, return 404 not found error
  * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
- * 4. If not avail in CN network, fetch file from IPFS and stream from IPFS
- * 5. If not avail in IPFS, respond with 400 server error
+ * 4. If not avail in CN network, respond with 400 server error
  */
 const getCID = async (req, res) => {
   if (!(req.params && req.params.CID)) {
@@ -352,38 +346,9 @@ const getCID = async (req, res) => {
   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
 
   /**
-   * If file found on file system:
-   * 1. add background task to rehydrate from disk to IPFS
-   * 2. stream from FS
+   * If the file is found on file system, stream from file system
    */
   if (fileFoundOnFS) {
-    /**
-     * 1. add background task to rehydrate from disk to IPFS
-     */
-    startMs = Date.now()
-    try {
-      RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(
-        CID,
-        storagePath,
-        {
-          logContext: req.logContext
-        }
-      )
-      decisionTree.push({
-        stage: `ADD_REHYDRATE_IPFS_FROM_FS`,
-        time: `${Date.now() - startMs}ms`
-      })
-    } catch (e) {
-      decisionTree.push({
-        stage: `ADD_REHYDRATE_IPFS_FROM_ERROR`,
-        time: `${Date.now() - startMs}ms`,
-        error: `${e.message}`
-      })
-    }
-
-    /**
-     * 2. stream from FS
-     */
     startMs = Date.now()
     try {
       const fsStream = await streamFromFileSystem(
@@ -475,9 +440,9 @@ const getCID = async (req, res) => {
    * If found in DB (means not found in FS):
    * 1. Attempt to retrieve file from network and save to file system
    * 2. If retrieved, stream from file system
-   * 3. Else, continue
+   * 3. Else, error
    */
-  let blockStartMs = Date.now()
+  const blockStartMs = Date.now()
   try {
     startMs = Date.now()
     const libs = req.app.get('audiusLibs')
@@ -511,120 +476,11 @@ const getCID = async (req, res) => {
       time: `${Date.now() - blockStartMs}ms`,
       error: `${e.message}`
     })
-    // continue
-  }
-
-  /**
-   * If found in DB, but not file system or network:
-   * 1. Check avail on IPFS
-   * 2. If avail, stream from IPFS
-   * 3. Else, error
-   */
-  blockStartMs = Date.now()
-  try {
-    // If the IPFS stat call fails or times out, an error is thrown
-    startMs = Date.now()
-    const stat = await ipfsStat(CID, req.logContext, 500 /** timeoutMs */)
-    decisionTree.push({
-      stage: `IPFS_STAT_COMPLETE`,
-      time: `${Date.now() - startMs}ms`
-    })
-
-    // Add content length headers
-    res.set('Accept-Ranges', 'bytes')
-
-    // Stream file from ipfs if cat one byte takes under 500ms
-    // If catReadableStream() promise is rejected, throw an error and stream from file system
-    startMs = Date.now()
-    await new Promise((resolve, reject) => {
-      let stream
-      // If a range header is present, use that to create the ipfs stream
-      const range = getRequestRange(req)
-
-      if (req.params.streamable && range) {
-        let { start, end } = range
-        if (end >= stat.size) {
-          // Set "Requested Range Not Satisfiable" header and exit
-          decisionTree.push({
-            stage: `ERROR_REQUESTED_RANGE_NOT_SATISFIABLE`,
-            time: `${Date.now() - startMs}ms`
-          })
-          logGetCIDDecisionTree(decisionTree, req)
-          res.status(416)
-          return sendResponse(
-            req,
-            res,
-            errorResponseRangeNotSatisfiable('Range not satisfiable')
-          )
-        }
-
-        // set end in case end is undefined or null
-        end = end || stat.size - 1
-
-        // Set length to be end - start + 1 so it matches behavior of fs.createReadStream
-        startMs = Date.now()
-        const length = end - start + 1
-        stream = req.app
-          .get('ipfsAPI')
-          .catReadableStream(CID, { offset: start, length })
-        // Add a content range header to the response
-        res.set('Content-Range', formatContentRange(start, end, stat.size))
-        res.set('Content-Length', end - start + 1)
-        // set 206 "Partial Content" success status response code
-        res.status(206)
-        decisionTree.push({
-          stage: `IPFS_CAT_READABLE_STREAM_PARTIAL_CONTENT_COMPLETE`,
-          time: `${Date.now() - startMs}ms`
-        })
-      } else {
-        stream = req.app.get('ipfsAPI').catReadableStream(CID)
-        res.set('Content-Length', stat.size)
-        decisionTree.push({
-          stage: `IPFS_CAT_READABLE_STREAM_COMPLETE`,
-          time: `${Date.now() - startMs}ms`
-        })
-      }
-
-      startMs = Date.now()
-      stream
-        .on('data', (streamData) => {
-          res.write(streamData)
-        })
-        .on('end', () => {
-          res.end()
-          decisionTree.push({
-            stage: `STREAM_WRITE_COMPLETE`,
-            time: `${Date.now() - startMs}ms`
-          })
-          logGetCIDDecisionTree(decisionTree, req)
-          resolve()
-        })
-        .on('error', (e) => {
-          decisionTree.push({
-            stage: `STREAM_WRITE_ERROR`,
-            time: `${Date.now() - startMs}ms`,
-            val: `${e.message}`
-          })
-          logGetCIDDecisionTree(decisionTree, req)
-          reject(e)
-        })
-    })
-  } catch (e) {
-    // Unset the cache-control header so that a bad response is not cached
-    res.removeHeader('cache-control')
-
-    decisionTree.push({
-      stage: 'STREAM_FROM_IPFS_FAILURE',
-      time: `${Date.now() - blockStartMs}ms`
-    })
-
-    logGetCIDDecisionTree(decisionTree, req)
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }
 
-// Gets a CID in a directory, streaming from the filesystem if available and
-// falling back to IPFS if not
+// Gets a CID in a directory, streaming from the filesystem if available
 const getDirCID = async (req, res) => {
   if (!(req.params && req.params.dirCID && req.params.filename)) {
     return sendResponse(
@@ -634,12 +490,12 @@ const getDirCID = async (req, res) => {
     )
   }
 
-  // Do not act as a public gateway. Only serve IPFS files that are tracked by this creator node.
+  // Do not act as a public gateway. Only serve files that are tracked by this creator node.
   const dirCID = req.params.dirCID
   const filename = req.params.filename
-  const ipfsPath = `${dirCID}/${filename}`
+  const path = `${dirCID}/${filename}`
 
-  const cacheKey = getStoragePathQueryCacheKey(ipfsPath)
+  const cacheKey = getStoragePathQueryCacheKey(path)
 
   let storagePath = await redisClient.get(cacheKey)
   if (!storagePath) {
@@ -665,74 +521,29 @@ const getDirCID = async (req, res) => {
     redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
   }
 
-  // Lop off the last bit of the storage path (the child CID)
-  // to get the parent storage path for IPFS rehydration
-  const parentStoragePath = storagePath.split('/').slice(0, -1).join('/')
-
-  redisClient.incr('ipfsStandaloneReqs')
-  const totalStandaloneIpfsReqs = parseInt(
-    await redisClient.get('ipfsStandaloneReqs')
-  )
-  req.logger.info(`IPFS Standalone Request - ${ipfsPath}`)
-  req.logger.info(
-    `IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`
-  )
-
   // Set the CID cache-control so that client cache the response for 30 days
   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
 
+  // Attempt to stream file to client
   try {
-    // Add rehydrate task to queue to be processed in background
-    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(
-      dirCID,
-      parentStoragePath,
-      { logContext: req.logContext },
-      filename
-    )
-    // Attempt to stream file to client.
     req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
     req.logger.info(`Failed to retrieve ${storagePath} from FS`)
-
-    // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
-    try {
-      // CID is the file CID, parse it from the storagePath
-      const CID = storagePath.split('/').slice(-1).join('')
-      const libs = req.app.get('audiusLibs')
-      await findCIDInNetwork(storagePath, CID, req.logger, libs)
-      return await streamFromFileSystem(req, res, storagePath)
-    } catch (e) {
-      req.logger.error(
-        `Error calling findCIDInNetwork for path ${storagePath}`,
-        e
-      )
-    }
   }
 
+  // Attempt to find and stream CID from other content nodes in the network
   try {
-    // For files not found on disk, attempt to stream from IPFS
-    // Cat 1 byte of CID in ipfs to determine if file exists
-    // If the request takes under 500ms, stream the file from ipfs
-    // else if the request takes over 500ms, throw an error
-    await ipfsSingleByteCat(ipfsPath, req.logContext, 500)
-
-    await new Promise((resolve, reject) => {
-      req.app
-        .get('ipfsAPI')
-        .catReadableStream(ipfsPath)
-        .on('data', (streamData) => {
-          res.write(streamData)
-        })
-        .on('end', () => {
-          res.end()
-          resolve()
-        })
-        .on('error', (e) => {
-          reject(e)
-        })
-    })
+    // CID is the file CID, parse it from the storagePath
+    const CID = storagePath.split('/').slice(-1).join('')
+    const libs = req.app.get('audiusLibs')
+    await findCIDInNetwork(storagePath, CID, req.logger, libs)
+    return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
+    req.logger.error(
+      `Error calling findCIDInNetwork for path ${storagePath}`,
+      e
+    )
     // Unset the cache-control header so that a bad response is not cached
     res.removeHeader('cache-control')
     return sendResponse(req, res, errorResponseServerError(e.message))
@@ -740,44 +551,35 @@ const getDirCID = async (req, res) => {
 }
 
 /**
- * Perform IPFS verification with retries
- *
- * Use retries because for some reason IPFS (very rarely) fails due to some non-deterministic error. Seems to be with the verification step; the files are correct.
- * Wait fixed timeout between each retry, hopefully addresses IPFS non-deterministic errors
+ * Verify that content matches its hash using the IPFS deterministic content hashing algorithm.
  * @param {Object} req
  * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
  * @param {string} dirCID the directory CID from `resizeResp`
- * @param {number?} maxRetries the max number of retries for ipfs verification
- * @param {boolean?} enableIPFSAdd flag to enable or disable ipfs daemon add
  */
-const _dirCIDIPFSVerificationWithRetries = async function (
-  req,
-  resizeResp,
-  dirCID,
-  maxRetries = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT,
-  enableIPFSAdd = false
-) {
-  const ipfsAddContent = await _generateIpfsAddContent(resizeResp, dirCID)
+const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
+  const logger = genericLogger.child(req.logContext)
+  const content = await _generateContentToHash(resizeResp, dirCID)
 
   // Re-compute dirCID from all image files to ensure it matches dirCID returned above
-  await _addToIpfsWithRetries({
-    content: ipfsAddContent,
-    enableIPFSAdd,
-    dirCID,
-    retriesLeft: maxRetries,
-    maxRetries,
-    logContext: req.logContext
-  })
+  const multihashes = await generateImageMultihashes(content, req.logContext)
+
+  // Ensure actual and expected dirCIDs match
+  const computedDirCID = multihashes[multihashes.length - 1].cid.toString()
+  if (computedDirCID !== dirCID) {
+    const errMsg = `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} computedDirCID=${computedDirCID}.`
+    logger.error(errMsg)
+    throw new Error(errMsg)
+  }
 }
 
 /**
- * Helper fn to generate the input for `ipfsAddImages()`
+ * Helper fn to generate the input for `generateImageMultihashes()`
  * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
  * @param {string} dirCID the directory CID from `resizeResp`
  * @returns {Object[]} follows the structure [{path: <string>, cid: <string>}, ...] with the same number of elements
  * as the size of `resizeResp`
  */
-async function _generateIpfsAddContent(resizeResp, dirCID) {
+async function _generateContentToHash(resizeResp, dirCID) {
   const ipfsAddContent = []
   try {
     await Promise.all(
@@ -794,63 +596,6 @@ async function _generateIpfsAddContent(resizeResp, dirCID) {
   }
 
   return ipfsAddContent
-}
-
-/**
- * Helper fn that recurisvely calls itself `maxRetries` amount of times. Will throw if inconsistency still
- * occurs after `maxRetries` attempts.
- * @param {Object[]} content content to add to ipfs. Has the structure [{path: <string>, content: <Buffer>}, ...]
- * @param {boolean} enableIPFSAdd flag to enable adding to ipfs daemon
- * @param {string} dirCID the directory CID from `resizeResp`
- * @param {number} retriesLeft the number of retires left for ipfs verification
- * @param {number} maxRetries the max number of retries for ipfs verification
- * @param {Object} logContext
- */
-async function _addToIpfsWithRetries({
-  content,
-  enableIPFSAdd,
-  dirCID,
-  retriesLeft,
-  maxRetries,
-  logContext
-}) {
-  const logger = genericLogger.child(logContext)
-
-  const ipfsAddRespArr = await ipfsAddImages(
-    content,
-    {
-      pin: false,
-      onlyHash: true,
-      timeout: 1000
-    },
-    logContext,
-    enableIPFSAdd
-  )
-
-  // Ensure actual and expected dirCIDs match
-  const ipfsAddRetryDirCID =
-    ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
-  if (ipfsAddRetryDirCID !== dirCID) {
-    if (--retriesLeft > 0) {
-      logger.warn(
-        `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. ${retriesLeft} retries remaining out of ${maxRetries}. Retrying...`
-      )
-      // If the only hash logic fails on first attempt, successive only hash logic attempts will produce the same results. At this point, add to ipfs
-      await _addToIpfsWithRetries({
-        content,
-        enableIPFSAdd: true,
-        dirCID,
-        retriesLeft,
-        maxRetries,
-        logContext,
-        logger
-      })
-    } else {
-      const errMsg = `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. Failed after all ${maxRetries} retries.`
-      logger.error(errMsg)
-      throw new Error(errMsg)
-    }
-  }
 }
 
 module.exports = function (app) {
@@ -870,7 +615,7 @@ module.exports = function (app) {
   )
 
   /**
-   * Store image in multiple-resolutions on disk + DB and make available via IPFS
+   * Store image in multiple-resolutions on disk + DB
    */
   app.post(
     '/image_upload',
@@ -899,7 +644,7 @@ module.exports = function (app) {
       const originalFileName = req.file.originalname
       const cnodeUserUUID = req.session.cnodeUserUUID
 
-      // Resize the images and add them to IPFS and filestorage
+      // Resize the images and add them to filestorage
       let resizeResp
       try {
         if (req.body.square === 'true') {
@@ -935,7 +680,7 @@ module.exports = function (app) {
       const dirCID = resizeResp.dir.dirCID
 
       // Ensure image files written to disk match dirCID returned from resizeImage
-      await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID)
+      await _verifyContentMatchesHash(req, resizeResp, dirCID)
 
       // Record image file entries in DB
       const transaction = await models.sequelize.transaction()
@@ -987,45 +732,24 @@ module.exports = function (app) {
     })
   )
 
-  app.get(
-    '/ipfs_peer_info',
-    handleResponse(async (req, res) => {
-      const ipfs = req.app.get('ipfsAPI')
-      const ipfsIDObj = await getIPFSPeerId(ipfs)
-      if (req.query.caller_ipfs_id) {
-        try {
-          req.logger.info(`Connection to ${req.query.caller_ipfs_id}`)
-          await ipfs.swarm.connect(req.query.caller_ipfs_id)
-        } catch (e) {
-          if (!e.message.includes('dial to self')) {
-            req.logger.error(e)
-          }
-        }
-      }
-      return successResponse(ipfsIDObj)
-    })
-  )
-
   /**
-   * Serve IPFS data hosted by creator node and create download route using query string pattern
+   * Serve data hosted by creator node and create download route using query string pattern
    * `...?filename=<file_name.mp3>`.
+   * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
    * @param req
    * @param req.query
    * @param {string} req.query.filename filename to set as the content-disposition header
-   * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
-   * rehydrate IPFS asynchronously
    * @dev This route does not handle responses by design, so we can pipe the response to client.
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:CID', getCID)
 
   /**
-   * Serve images hosted by creator node on IPFS.
+   * Serve images hosted by content node.
+   * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
    * @param req
    * @param req.query
    * @param {string} req.query.filename the actual filename to retrieve w/in the IPFS directory (e.g. 480x480.jpg)
-   * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
-   * rehydrate IPFS asynchronously
    * @dev This route does not handle responses by design, so we can pipe the gateway response.
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
