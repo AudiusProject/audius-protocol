@@ -26,7 +26,7 @@ def initialize_blacklist_blocks_table_if_necessary(db):
     target_blockhash = update_ipld_blacklist_task.shared_config["discprov"][
         "start_block"
     ]
-    target_block = update_ipld_blacklist_task.web3.eth.getBlock(target_blockhash, True)
+    target_block = update_ipld_blacklist_task.web3.eth.get_block(target_blockhash, True)
     with db.scoped_session() as session:
         current_block_query_result = session.query(IPLDBlacklistBlock).filter_by(
             is_current=True
@@ -80,7 +80,7 @@ def get_latest_blacklist_block(db):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_ipld_blacklist_task.web3.eth.getBlock(
+        latest_block_from_chain = update_ipld_blacklist_task.web3.eth.get_block(
             "latest", True
         )
         latest_block_number_from_chain = latest_block_from_chain.number
@@ -93,7 +93,7 @@ def get_latest_blacklist_block(db):
             f"IPLDBLACKLIST | get_latest_blacklist_block | "
             f"current={current_block_number} target={target_latest_block_number}"
         )
-        latest_block = update_ipld_blacklist_task.web3.eth.getBlock(
+        latest_block = update_ipld_blacklist_task.web3.eth.get_block(
             target_latest_block_number, True
         )
     return latest_block
@@ -140,8 +140,8 @@ def index_blocks(self, db, blocks_list):
             for tx in block.transactions:
                 tx_hash = update_ipld_blacklist_task.web3.toHex(tx["hash"])
                 tx_target_contract_address = tx["to"]
-                tx_receipt = update_ipld_blacklist_task.web3.eth.getTransactionReceipt(
-                    tx_hash
+                tx_receipt = (
+                    update_ipld_blacklist_task.web3.eth.get_transaction_receipt(tx_hash)
                 )
 
                 # Handle ipld blacklist operations
@@ -301,7 +301,7 @@ def update_ipld_blacklist_task(self):
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
                     else:
-                        latest_block = web3.eth.getBlock(parent_hash, True)
+                        latest_block = web3.eth.get_block(parent_hash, True)
                         intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the

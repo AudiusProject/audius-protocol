@@ -1,5 +1,5 @@
 const abiDecoder = require('abi-decoder')
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 const abiMap = {}
 

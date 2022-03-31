@@ -1,6 +1,6 @@
 const { Base, Services } = require('./base')
 const CreatorNode = require('../services/creatorNode')
-const Utils = require('../utils')
+const { Utils } = require('../utils')
 const retry = require('async-retry')
 
 const TRACK_PROPS = [

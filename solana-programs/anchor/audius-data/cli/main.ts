@@ -115,7 +115,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     verifierKeypair
   });
   await cliVars.provider.connection.confirmTransaction(tx);
-  console.log("Initialized admin.")
+  console.log(`Initialized admin with tx=${tx}`)
 }
 
 type initUserCLIParams = {
@@ -198,7 +198,8 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           handleBytesArray: args.handleBytesArray,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA
+          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA
         });
       } else if (manageAction == ManagementActions.create && entityType == EntityTypesEnumValues.playlist) {
         tx = await createPlaylist({
@@ -211,7 +212,8 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           handleBytesArray: args.handleBytesArray,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA
+          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA
         });
       } else if (manageAction == ManagementActions.update && entityType == EntityTypesEnumValues.playlist) {
         tx = await updatePlaylist({
@@ -224,10 +226,12 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           handleBytesArray: args.handleBytesArray,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA
+          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA
         });
       } else if (manageAction == ManagementActions.delete && entityType == EntityTypesEnumValues.playlist) {
         tx = await deletePlaylist({
+          provider,
           id: args.id,
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
@@ -236,7 +240,8 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           handleBytesArray: args.handleBytesArray,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccountPDA: args.authorityDelegationStatusAccountPDA,
           provider: provider
         });
       }
