@@ -22,7 +22,7 @@ const {
 } = require('../apiHelpers')
 const {
   validateStateForImageDirCIDAndReturnFileUUID,
-  canCurrentNodeHandleTranscode
+  currentNodeShouldHandleTranscode
 } = require('../utils')
 const {
   authMiddleware,
@@ -64,13 +64,13 @@ module.exports = function (app) {
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
 
-      const currentNodeCanHandleTranscode = canCurrentNodeHandleTranscode({
+      const currNodeShouldHandleTranscode = currentNodeShouldHandleTranscode({
         transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
         spID: config.get('spID'),
         libs: AsyncProcessingQueue.getLibs()
       })
 
-      if (currentNodeCanHandleTranscode) {
+      if (currNodeShouldHandleTranscode) {
         await AsyncProcessingQueue.addTrackContentUploadTask({
           logContext: req.logContext,
           req: {

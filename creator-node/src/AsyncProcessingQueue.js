@@ -171,7 +171,7 @@ class AsyncProcessingQueue {
       case PROCESS_NAMES.transcodeAndSegment:
         return transcodeAndSegment
 
-      // Part 1 of transcode handoff flow - called via /track_content_async if canCurrentNodeHandleTranscode = false (runs on primary)
+      // Part 1 of transcode handoff flow - called via /track_content_async if currentNodeShouldHandleTranscode = false (runs on primary)
       case PROCESS_NAMES.transcodeHandOff:
         return transcodeHandOff
 

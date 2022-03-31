@@ -651,29 +651,36 @@ async function runShellCommand(command, args, logger) {
 }
 
 /**
- * A current node can handle a track transcode if:
- * 1. There is enough room in the TranscodingQueue to accept more jobs
- * 2. The spID is set after app init
- * 3. AsyncProcessingQueue libs instance is initialized
+ * A current node should handle a track transcode if there is enough room in the TranscodingQueue to accept more jobs
+ *
+ * If there is not enough room, if
+ * 1. The spID is not set after app init, and
+ * 2. AsyncProcessingQueue libs instance is not initialized,
+ * then the current node should still take in the transcode task
  * @param {Object} param
  * @param {boolean} param.transcodingQueueCanAcceptMoreJobs flag to determine if TranscodingQueue can accept more jobs
  * @param {number} param.spID the spID of the current node
  * @param {Object} param.libs the libs instance in AsyncProcessingQueue
  * @returns whether or not the current node can handle the transcode
  */
-function canCurrentNodeHandleTranscode({
+function currentNodeShouldHandleTranscode({
   transcodingQueueCanAcceptMoreJobs,
   spID,
   libs
 }) {
-  const currentNodeSPIdIsInitialized = Number.isInteger(spID)
-  const libsInstanceIsInitialized = libs !== null
+  // If the TranscodingQueue is available, let current node handle transcode
+  if (transcodingQueueCanAcceptMoreJobs) return true
 
-  return (
-    transcodingQueueCanAcceptMoreJobs &&
-    currentNodeSPIdIsInitialized &&
-    libsInstanceIsInitialized
+  // Else, if spID and libs are not initialized, the track cannot be handed off to another node to transcode.
+  // Continue with the upload on the current node.
+  const currentNodeSPIdIsInitialized = Number.isInteger(spID)
+  const libsInstanceIsInitialized = libs !== null && libs !== undefined
+
+  const currentNodeShouldHandleTranscode = !(
+    currentNodeSPIdIsInitialized && libsInstanceIsInitialized
   )
+
+  return currentNodeShouldHandleTranscode
 }
 
 /**
@@ -736,5 +743,6 @@ module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
-module.exports.canCurrentNodeHandleTranscode = canCurrentNodeHandleTranscode
+module.exports.currentNodeShouldHandleTranscode =
+  currentNodeShouldHandleTranscode
 module.exports.asyncRetry = asyncRetry
