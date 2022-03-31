@@ -5,6 +5,9 @@ import typescript from '@rollup/plugin-typescript'
 
 import pkg from './package.json'
 
+const dependencies = Object.keys(pkg.dependencies)
+const devDependencies = Object.keys(pkg.devDependencies)
+
 const extensions = ['.js', '.ts']
 
 export default {
@@ -16,14 +19,5 @@ export default {
     resolve({ extensions, preferBuiltins: true }),
     typescript({include: ["./lib/lib.ts", "./lib/utils.ts"]})
   ],
-  external: [
-    "@project-serum/anchor",
-    "@solana/web3.js",
-    "web3-core",
-    "secp256k1", 
-    "bn.js",
-    "crypto", 
-    "keccak256",
-    "readable-stream"
-  ] 
+  external: [ ...dependencies, ...devDependencies ] 
 }
