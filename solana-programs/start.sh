@@ -12,11 +12,11 @@
     feepayer_pubkey=$(solana-keygen pubkey feepayer.json)
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 10; do
-        solana airdrop 10 feepayer.json # adjust this number if running against a different endpoint
+        solana airdrop 100 feepayer.json # adjust this number if running against a different endpoint
     done
 
     while test $(solana balance | sed 's/\(\.\| \).*//') -lt 10; do
-        solana airdrop 10
+        solana airdrop 100
     done
 
     cd audius_eth_registry
@@ -113,19 +113,37 @@
     cargo run create-sender --eth-operator-address 0xF24936714293a0FaF39A022138aF58D874289132  --eth-sender-address 0xF24936714293a0FaF39A022138aF58D874289133 --reward-manager $reward_manager_account_key
 
     # Build anchor program
+    echo "--- Anchor build ---- "
     cd ../../anchor/audius-data
-    anchor build
+    yarn install
 
     # Replace program ID with solana pubkey generated from anchor build
-    sed -i "s/Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" Anchor.toml
-    sed -i "s/Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" programs/audius-data/src/lib.rs
+    cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' programs/audius-data/src/lib.rs)
 
+    solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius_data-keypair.json --force
+    anchor_program_id=$(solana-keygen pubkey target/deploy/audius_data-keypair.json)
+    echo "New address for audius-data: $anchor_program_id"
+
+    sed -i "s/$cur_address/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" Anchor.toml
+    sed -i "s/$cur_address/$(solana-keygen pubkey target/deploy/audius_data-keypair.json)/g" programs/audius-data/src/lib.rs
+
+    # Build AFTER updated program ID
+    anchor build
+
+    anchor_program_id=$(solana-keygen pubkey target/deploy/audius_data-keypair.json)
+
+    echo "--- Anchor deploy ---- "
     # Deploy anchor program
     anchor deploy --provider.cluster $SOLANA_HOST
 
     # Initialize Audius Admin account
     yarn run ts-node cli/main.ts -f initAdmin -k ~/.config/solana/id.json -n $SOLANA_HOST
 
+    # Propagate local variables
+    admin_keypair_publickey=$(solana-keygen pubkey adminKeypair.json)
+    admin_keypair_privatekey=$(cat adminKeypair.json)
+    admin_storage_keypair_publickey=$(solana-keygen pubkey adminStorageKeypair.json)
+    admin_storage_keypair_privatekey=$(cat adminStorageKeypair.json)
 } >&2
 
 # Back up 2 directories to audius-protocol/solana-programs
@@ -133,6 +151,11 @@ cd ../../
 
 cat <<EOF
 {
+    "anchorProgramId": "$anchor_program_id",
+    "anchorAdminKeypairPublicKey": "$admin_keypair_publickey",
+    "anchorAdminKeypairPrivateKey": "$admin_keypair_privatekey",
+    "anchorAdminStorageKeypairPublicKey": "$admin_storage_keypair_publickey",
+    "anchorAdminStorageKeypairPrivateKey": "$admin_storage_keypair_privatekey",
     "trackListenCountAddress": "$track_listen_count_address",
     "audiusEthRegistryAddress": "$audius_eth_registry_address",
     "validSigner": "$valid_signer",
