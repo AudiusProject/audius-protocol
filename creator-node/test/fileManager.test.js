@@ -75,6 +75,7 @@ describe('test fileManager', () => {
     it('should throw an error if file copy fails', async () => {
       const fsExtraStub = {
         copyFile: sinon.stub().callsFake(() => {
+          return new Promise((resolve, reject) =>
             reject(new Error('Failed to copy files!!'))
           )
         })
@@ -112,10 +113,9 @@ describe('test fileManager', () => {
 
       const requestID = uuid()
       try {
-        await ipfsAdd.generateNonImageMultihash(
-          srcPath,
-          { logContext: { requestID } }
-        )
+        await ipfsAdd.generateNonImageMultihash(srcPath, {
+          logContext: { requestID }
+        })
       } catch (e) {
         assert.fail(e.message)
       }
@@ -165,10 +165,7 @@ describe('test fileManager', () => {
       }
 
       try {
-        await saveFileFromBufferToDisk(
-          reqOverride,
-          buffer
-        )
+        await saveFileFromBufferToDisk(reqOverride, buffer)
         assert.fail(
           'Should not have passed if cnodeUserUUID is not present in request.'
         )
@@ -191,10 +188,7 @@ describe('test fileManager', () => {
         .rejects(new Error('ipfs wrapper hash failed!'))
 
       try {
-        await saveFileFromBufferToDisk(
-          req,
-          buffer
-        )
+        await saveFileFromBufferToDisk(req, buffer)
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs wrapper hash failed!')
       }
