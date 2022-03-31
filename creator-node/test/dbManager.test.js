@@ -12,6 +12,7 @@ const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
 const DiskManager = require('../src/diskManager')
+const ipfsAdd = require('../src/ipfsAdd')
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -721,27 +722,30 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     }
 
     const uploadTrackState = async () => {
-      // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
-      const MockSavefileMultihash =
+      // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
+      const mockMultihash =
         'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
-          '../../fileManager': {
-            saveFileToIPFSFromFS: sinon
-              .stub(FileManager, 'saveFileToIPFSFromFS')
+          '../../ipfsAdd': {
+            generateNonImageMultihash: sinon
+              .stub(ipfsAdd, 'generateNonImageMultihash')
               .returns(
                 new Promise((resolve, reject) => {
-                  const multihash = MockSavefileMultihash
+                  const multihash = mockMultihash
                   return resolve(multihash)
                 })
               ),
+            '@global': true
+          },
+          '../../fileManager': {
             copyMultihashToFs: sinon
               .stub(FileManager, 'copyMultihashToFs')
               .returns(
                 new Promise((resolve) => {
                   const dstPath = DiskManager.computeFilePath(
-                    MockSavefileMultihash
+                    mockMultihash
                   )
                   return resolve(dstPath)
                 })

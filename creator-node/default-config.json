@@ -38,7 +38,6 @@
   "dataRegistryAddress": "",
   "dataProviderUrl": "http://docker.for.mac.localhost:8545",
   "dataNetworkId": "",
-  "rehydrateMaxConcurrency": 10,
   "creatorNodeEndpoint": "",
   "nodeSyncFileSaveMaxConcurrency": 10,
   "syncQueueMaxConcurrency": 50

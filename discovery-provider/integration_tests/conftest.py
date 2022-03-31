@@ -144,7 +144,7 @@ def init_contracts(config):
     web3 = Web3(HTTPProvider(web3endpoint))
 
     # set pre-funded account as sender
-    web3.eth.defaultAccount = web3.eth.accounts[0]
+    web3.eth.default_account = web3.eth.accounts[0]
 
     registry_address = web3.toChecksumAddress(config["contracts"]["registry"])
 
