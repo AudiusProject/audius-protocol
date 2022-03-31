@@ -131,8 +131,10 @@ class SnapbackSM {
 
     // State machine queue processes all user operations
     this.stateMachineQueue = this.createBullQueue('state-machine', {
-      lockDuration: 10800000 // 3hr
+      lockDuration: 10800000, // 3hr
+      maxStalledCount: 0
     })
+    this.log(`SIDTEST QUEUE INFO: ${JSON.stringify(this.stateMachineQueue.settings)}`)
     this.stateMachineQueue.on('stalled', (job) => {
       console.error(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
       this.logError(`SIDTEST STATEMACHINEQUEUE STALLED job id ${job.id}`)
@@ -192,7 +194,7 @@ class SnapbackSM {
     // - Re-adds job to queue after processing current job, with a fixed delay
     this.stateMachineQueue.process(async (job, done) => {
       try {
-        this.log(`SIDTEST starting processStateMachineOperation`)
+        this.log(`SIDTEST starting processStateMachineOperation - jobInfo: ${JSON.stringify(job)}`)
         await this.processStateMachineOperation()
         this.log(`SIDTEST completed processStateMachineOperation`)
       } catch (e) {
@@ -277,7 +279,7 @@ class SnapbackSM {
         removeOnComplete: true,
         removeOnFail: true
       },
-      ...settings
+      settings
     })
   }
 
