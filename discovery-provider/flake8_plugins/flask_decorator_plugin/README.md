@@ -30,7 +30,7 @@ Using `@api.doc()` for non-route parameters can cause the request parser argumen
 
 ```python
 request_parser = reqparse.RequestParser()
-request_parser.add_argument("user_id", required=True)
+request_parser.add_argument("resource_id", required=True)
 
 
 @api.route("/some-route")
