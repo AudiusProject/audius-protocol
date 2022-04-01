@@ -1,6 +1,6 @@
 const Web3 = require('../src/web3')
 
-const AudiusLibs = require('../src/index')
+const AudiusLibs = require('../dist/index')
 const dataContractsConfig = require('../data-contracts/config.json')
 const ethContractsConfig = require('../eth-contracts/config.json')
 
@@ -18,7 +18,7 @@ async function initAudiusLibs (
   ownerWalletPrivateKey = null
 ) {
   let audiusLibsConfig
-  let ethWallet = ethOwnerWalletOverride === null ? ethContractsConfig.ownerWallet : ethOwnerWalletOverride
+  const ethWallet = ethOwnerWalletOverride === null ? ethContractsConfig.ownerWallet : ethOwnerWalletOverride
   if (useExternalWeb3) {
     const dataWeb3 = new Web3(new Web3.providers.HttpProvider(dataWeb3ProviderEndpoints[0]))
     audiusLibsConfig = {
@@ -37,7 +37,7 @@ async function initAudiusLibs (
       ),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set(['http://docker.for.mac.localhost:5000'])),
       isServer,
-      isDebug,
+      isDebug
     }
   } else {
     audiusLibsConfig = {
@@ -57,14 +57,14 @@ async function initAudiusLibs (
       isDebug
     }
   }
-  let audiusLibs = new AudiusLibs(audiusLibsConfig)
+  const audiusLibs = new AudiusLibs(audiusLibsConfig)
 
   // we need this try/catch because sometimes we call init before a discprov has been brought up
   // in that case, handle that error and continue so we're unblocking scripts that depend on this libs instance for other functionality
   try {
     await audiusLibs.init()
   } catch (e) {
-    console.error(`Couldn't init libs`, e)
+    console.error('Couldn\'t init libs', e)
   }
   return audiusLibs
 }
