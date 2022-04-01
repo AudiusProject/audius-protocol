@@ -548,6 +548,7 @@ class UserSearchResult(Resource):
     @record_metrics
     @ns.doc(
         id="""Search Users""",
+        description="""Search for users that match the given query""",
         params={"query": "Search query"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
