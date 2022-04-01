@@ -15,7 +15,7 @@ from src.solana.solana_transaction_types import (
 )
 
 from src.solana.solana_program_indexer import SolanaProgramIndexer
-from utils.helpers import split_list
+from src.utils.helpers import split_list
 
 logger = logging.getLogger(__name__)
 
