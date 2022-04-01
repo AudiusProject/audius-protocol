@@ -860,7 +860,7 @@ export class RewardsAttester {
     // Filter to errors needing retry
     const needsRetry = stillIncomplete.filter((res) => {
       const report = {
-        userId: decodeHashId(res.userId) || -1,
+        userId: decodeHashId(res.userId) ?? -1,
         challengeId: res.challengeId,
         amount: res.amount,
         error: res.error,
