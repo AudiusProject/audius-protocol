@@ -135,15 +135,16 @@ class SolanaProgramIndexer(IndexerBase):
                 )
             )
             transactions_array = transactions_history["result"]
+            self.msg(f"{transactions_array}")
             if not transactions_array:
                 # This is considered an 'intersection' since there are no further transactions to process but
                 # really represents the end of known history for this ProgramId
                 intersection_found = True
-                logger.info(
-                    f"index_solana_plays.py | No transactions found before {last_tx_signature}"
+                self.msg(
+                    f"No transactions found before {last_tx_signature}"
                 )
             else:
-                with self.db.scoped_session() as read_session:
+                with self._db.scoped_session() as read_session:
                     for tx in transactions_array:
                         tx_sig = tx["signature"]
                         slot = tx["slot"]
@@ -152,8 +153,8 @@ class SolanaProgramIndexer(IndexerBase):
                         elif tx["slot"] <= latest_processed_slot:
                             # Check the tx signature for any txs in the latest batch,
                             # and if not present in DB, add to processing
-                            logger.info(
-                                f"index_solana_plays.py | Latest slot re-traversal\
+                            self.msg(
+                                f"Latest slot re-traversal\
                                 slot={slot}, sig={tx_sig},\
                                 latest_processed_slot(db)={latest_processed_slot}"
                             )
@@ -180,14 +181,14 @@ class SolanaProgramIndexer(IndexerBase):
 
                     # Ensure processing does not grow unbounded
                     if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                        logger.info(
-                            f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries"
+                        self.msg(
+                            f"slicing tx_sigs from {len(transaction_signatures)} entries"
                         )
                         transaction_signatures = transaction_signatures[
                             -TX_SIGNATURES_RESIZE_LENGTH:
                         ]
-                        logger.info(
-                            f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries"
+                        self.msg(
+                            f"sliced tx_sigs to {len(transaction_signatures)} entries"
                         )
 
                     # Reset batch state
@@ -200,7 +201,8 @@ class SolanaProgramIndexer(IndexerBase):
             )
             page_count = page_count + 1
 
-        return transaction_signatures.reverse()
+        transaction_signatures.reverse()
+        return transaction_signatures
 
 
 class AnchorDataIndexer(SolanaProgramIndexer):
