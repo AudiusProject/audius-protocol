@@ -17,7 +17,7 @@ export function encode(id: number): string {
 }
 
 /** Decodes a string id into an int. Returns null if an invalid ID. */
-export function decode(id: string): number|null {
+export function decode(id: string): number | null {
   const ids = hashids.decode(id)
   if (!ids.length) return null
   return ids[0]
