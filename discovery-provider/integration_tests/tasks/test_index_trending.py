@@ -18,7 +18,7 @@ class MockEth:
     def __init__(self, return_block: BlockData):
         self.return_block = return_block
 
-    def getBlock(self, *args):
+    def get_block(self, *args):
         return self.return_block
 
 

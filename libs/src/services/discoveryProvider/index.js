@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 const {
   DEFAULT_UNHEALTHY_BLOCK_DIFF,

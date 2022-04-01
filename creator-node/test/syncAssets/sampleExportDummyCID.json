@@ -963,17 +963,6 @@
           "localClockMax": 37
         }
       }
-    },
-    "ipfsIDObj": {
-      "id": "QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
-      "publicKey": "CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDmuHex9F7CsBpGb/t/R3KhoTSwpQqdaHmDM04G6Otb7zuMPE/OgU3sOCoswmzRNFLJuqVFqjGuhtKmZvbUaz+Lq+mRUFiasxzZYIylBBt2ku0PIhIfmuAg8rXCZBEqDxCGN4PNCWphaaTDYv4OIcwUWo8JpNiYf+BcRymT18tcSLMk/v/MuZQtpd5H7xp6Wtt6RXy0wUZE5q0qPjlooaNmtgzhLxOOKRyBlTlAyZ5Xn4k+knlGIv53T7KQM2mN8W6gfAflhC1HXSM5tVnq3r+E2KFvhUChlESTrfDfPrfU4iVDSU4gmkapWpqxvLMvyU4lVMq/kUPc/c/cYmzGmxZvAgMBAAE=",
-      "addresses": [
-        "/ip4/127.0.0.1/tcp/4001/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
-        "/ip4/172.17.0.2/tcp/4001/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
-        "/ip4/3.238.99.177/tcp/49717/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT"
-      ],
-      "agentVersion": "go-ipfs/0.4.23/6ce9a35",
-      "protocolVersion": "ipfs/0.1.0"
     }
   },
   "cnodeUsers": {
@@ -1939,17 +1928,6 @@
         "localClockMax": 37
       }
     }
-  },
-  "ipfsIDObj": {
-    "id": "QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
-    "publicKey": "CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDmuHex9F7CsBpGb/t/R3KhoTSwpQqdaHmDM04G6Otb7zuMPE/OgU3sOCoswmzRNFLJuqVFqjGuhtKmZvbUaz+Lq+mRUFiasxzZYIylBBt2ku0PIhIfmuAg8rXCZBEqDxCGN4PNCWphaaTDYv4OIcwUWo8JpNiYf+BcRymT18tcSLMk/v/MuZQtpd5H7xp6Wtt6RXy0wUZE5q0qPjlooaNmtgzhLxOOKRyBlTlAyZ5Xn4k+knlGIv53T7KQM2mN8W6gfAflhC1HXSM5tVnq3r+E2KFvhUChlESTrfDfPrfU4iVDSU4gmkapWpqxvLMvyU4lVMq/kUPc/c/cYmzGmxZvAgMBAAE=",
-    "addresses": [
-      "/ip4/127.0.0.1/tcp/4001/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
-      "/ip4/172.17.0.2/tcp/4001/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
-      "/ip4/3.238.99.177/tcp/49717/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT"
-    ],
-    "agentVersion": "go-ipfs/0.4.23/6ce9a35",
-    "protocolVersion": "ipfs/0.1.0"
   },
   "signer": "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25",
   "version": "0.3.25",

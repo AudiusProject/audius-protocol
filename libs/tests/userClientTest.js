@@ -1,6 +1,6 @@
 const assert = require('assert')
 let helpers = require('./helpers')
-let Utils = require('../src/utils')
+let { Utils } = require('../src/utils')
 
 let audiusInstance = helpers.audiusInstance
 let handle = 'handle' + Math.floor(Math.random() * 1000000)

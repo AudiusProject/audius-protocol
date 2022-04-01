@@ -7,15 +7,13 @@ const {
 } = require('../../logging')
 const { getSegmentsDuration } = require('../../segmentDuration')
 
-const config = require('../../config.js')
 const models = require('../../models')
-
+const fileHasher = require('../../fileHasher')
 const DBManager = require('../../dbManager')
 const TranscodingQueue = require('../../TranscodingQueue')
 const FileManager = require('../../fileManager')
 
 const SAVE_FILE_TO_IPFS_CONCURRENCY_LIMIT = 10
-const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
 
 /**
  * Manages track content upload in IPFS, the DB, and the file system
@@ -69,7 +67,7 @@ class TrackContentUploadManager {
   // Helper methods for TrackContentUploadManager
 
   /**
-   * 1. Batch saves the transcode and segments to IPFS and to local dir
+   * 1. Batch saves the transcode and segments to local dir
    * 2. Fetches segment duration to build a map of <segment CID: duration>
    * 3. Adds transcode and segments to DB in Files table
    * 4. Removes the upload artifacts after successful processing
@@ -105,8 +103,7 @@ class TrackContentUploadManager {
 
     let codeBlockTimeStart = getStartTime()
     const { segmentFileIPFSResps, transcodeFileIPFSResp } =
-      await batchSaveFileToIPFSAndCopyFromFS({
-        cnodeUserUUID,
+      await batchSaveFilesToDisk({
         fileDir,
         logContext,
         transcodeFilePath,
@@ -114,7 +111,7 @@ class TrackContentUploadManager {
       })
     logInfoWithDuration(
       { logger, startTime: codeBlockTimeStart },
-      `Successfully saved transcode and segment files to IPFS for file=${fileName}`
+      `Successfully saved transcode and segment files to local file storage for file=${fileName}`
     )
 
     // Retrieve all segment durations as map(segment srcFilePath => segment duration)
@@ -265,27 +262,23 @@ function createSegmentToDurationMap({
 }
 
 /**
- * Save transcode and segment files (in parallel batches) to ipfs and copy to disk.
+ * Save transcode and segment files (in parallel batches) to disk.
  * @param {Object} batchParams
- * @param {string} batchParams.cnodeUserUUID the observed user's uuid
  * @param {string} batchParams.fileDir the dir path of the temp track artifacts
  * @param {Object} batchParams.logContext
  * @param {string} batchParams.transcodeFilePath the transcoded track path
  * @param {string} batchParams.segmentFilePaths the segments path
  * @returns an object of array of segment multihashes, src paths, and dest paths and transcode multihash and path
  */
-async function batchSaveFileToIPFSAndCopyFromFS({
-  cnodeUserUUID,
+async function batchSaveFilesToDisk({
   fileDir,
   logContext,
   transcodeFilePath,
   segmentFileNames
 }) {
-  const multihash = await FileManager.saveFileToIPFSFromFS(
-    { logContext },
-    cnodeUserUUID,
+  const multihash = await fileHasher.generateNonImageMultihash(
     transcodeFilePath,
-    ENABLE_IPFS_ADD_TRACKS
+    { logContext }
   )
   const dstPath = await FileManager.copyMultihashToFs(
     multihash,
@@ -312,11 +305,9 @@ async function batchSaveFileToIPFSAndCopyFromFS({
           'segments',
           segmentFileName
         )
-        const multihash = await FileManager.saveFileToIPFSFromFS(
-          { logContext: logContext },
-          cnodeUserUUID,
+        const multihash = await fileHasher.generateNonImageMultihash(
           segmentAbsolutePath,
-          ENABLE_IPFS_ADD_TRACKS
+          { logContext }
         )
         const dstPath = await FileManager.copyMultihashToFs(
           multihash,

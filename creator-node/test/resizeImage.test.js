@@ -1,5 +1,4 @@
-const { ipfs } = require('../src/ipfsClient')
-const ipfsAdd = require('../src/ipfsAdd')
+const fileHasher = require('../src/fileHasher')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
@@ -61,12 +60,12 @@ describe('test resizeImage', () => {
   })
 
   /**
-   * Given: we are adding the successfully resized images to ipfs
-   * When: adding to ipfs fails
+   * Given: we are generating multihashes for successfully resized images
+   * When: generating the multihashes fails
    * Then: an error is thrown
    */
-  it('should not throw error if ipfs is down', async () => {
-    sinon.stub(ipfsAdd, 'ipfsAddImages').throws(new Error('ipfs add wrapper failed!'))
+  it('should not throw if generating CID fails', async () => {
+    sinon.stub(fileHasher, 'generateImageMultihashes').throws(new Error('generateImageMultihashes failed!'))
     const job = {
       data: {
         file: imageBuffer,
@@ -85,7 +84,7 @@ describe('test resizeImage', () => {
     try {
       await resizeImageJob(job)
     } catch (e) {
-      assert.ok(e.message.includes('ipfs add wrapper failed!'))
+      assert.ok(e.message.includes('generateImageMultihashes failed!'))
     }
   })
 
@@ -181,55 +180,6 @@ describe('test resizeImage', () => {
   })
 
   /**
-   * Given: we have successfully created the resized images to add to ipfs
-   * When: we add the resized images to ipfs
-   * Then: we ensure that what is added to fs is the same as what is added to ipfs
-   */
-  it('should be properly added to ipfs (square)', async () => {
-    const job = {
-      data: {
-        file: imageBuffer,
-        fileName: 'audiusDj',
-        storagePath,
-        sizes: {
-          '150x150.jpg': 150,
-          '480x480.jpg': 480,
-          '1000x1000.jpg': 1000
-        },
-        square: true,
-        logContext: {}
-      }
-    }
-
-    try {
-      await resizeImageJob(job)
-    } catch (e) {
-      console.error(e)
-      assert.fail(e)
-    }
-
-    // check what is in file_storage matches what is in ipfs
-    let ipfsDirContents
-    try {
-      ipfsDirContents = await ipfs.ls(DIR_CID_SQUARE)
-    } catch (e) {
-      console.error(e)
-      assert.fail('Directory not found in ipfs.')
-    }
-
-    // Ensure that there are the same number of files uploaded to ipfs and to disk
-    assert.ok(ipfsDirContents.length === 4)
-
-    // If hash found in ipfs is not found in file_storage, fail
-    ipfsDirContents.map(ipfsFile => {
-      const fsPathForIpfsFile = DiskManager.computeFilePathInDir(DIR_CID_SQUARE, ipfsFile.hash)
-      if (!fs.existsSync(fsPathForIpfsFile)) {
-        assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
-      }
-    })
-  })
-
-  /**
    * Given: we have successfully resized the images (not square)
    * When: the images are added to the filesystem
    * Then: the images should:
@@ -285,54 +235,6 @@ describe('test resizeImage', () => {
         // Remove from set to test that only unique files are added
         dirContentCIDs.delete(file)
       })
-    })
-  })
-
-  /**
-   * Given: we have successfully created the resized images to add to ipfs
-   * When: we add the resized images to ipfs
-   * Then: we ensure that what is added to fs is the same as what is added to ipfs
-   */
-  it('should pass with happy path (not square)', async () => {
-    const job = {
-      data: {
-        file: imageBuffer,
-        fileName: 'audiusDj',
-        storagePath,
-        sizes: {
-          '640x.jpg': 640,
-          '2000x.jpg': 2000
-        },
-        square: false,
-        logContext: {}
-      }
-    }
-
-    try {
-      await resizeImageJob(job)
-    } catch (e) {
-      console.error(e)
-      assert.fail(e)
-    }
-
-    // check what is in file_storage matches what is in ipfs
-    let ipfsDirContents
-    try {
-      ipfsDirContents = await ipfs.ls(DIR_CID_NOT_SQUARE)
-    } catch (e) {
-      console.error(e)
-      assert.fail('Directory not found in ipfs.')
-    }
-
-    // Ensure that there are the same number of files uploaded to ipfs and to disk
-    assert.ok(ipfsDirContents.length === 3)
-
-    // If hash found in ipfs is not found in file_storage, fail
-    ipfsDirContents.map(ipfsFile => {
-      const fsPathForIpfsFile = DiskManager.computeFilePathInDir(DIR_CID_NOT_SQUARE, ipfsFile.hash)
-      if (!fs.existsSync(fsPathForIpfsFile)) {
-        assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
-      }
     })
   })
 })

@@ -2,9 +2,8 @@ const { Buffer } = require('ipfs-http-client')
 const fs = require('fs')
 const { promisify } = require('util')
 
-const config = require('../config.js')
 const models = require('../models')
-const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
+const { saveFileFromBufferToDisk } = require('../fileManager')
 const {
   handleResponse,
   successResponse,
@@ -23,8 +22,6 @@ const {
 const DBManager = require('../dbManager')
 
 const readFile = promisify(fs.readFile)
-
-const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
 
 module.exports = function (app) {
   /**
@@ -45,19 +42,15 @@ module.exports = function (app) {
         return errorResponseBadRequest('Invalid User Metadata')
       }
 
-      // Save file from buffer to IPFS and disk
+      // Save file from buffer to disk
       let multihash, dstPath
       try {
-        const resp = await saveFileFromBufferToIPFSAndDisk(
-          req,
-          metadataBuffer,
-          ENABLE_IPFS_ADD_METADATA
-        )
-        multihash = resp.multihash
+        const resp = await saveFileFromBufferToDisk(req, metadataBuffer)
+        multihash = resp.cid
         dstPath = resp.dstPath
       } catch (e) {
         return errorResponseServerError(
-          `saveFileFromBufferToIPFSAndDisk op failed: ${e}`
+          `saveFileFromBufferToDisk op failed: ${e}`
         )
       }
 
