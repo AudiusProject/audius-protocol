@@ -4,7 +4,7 @@ const {
   getStartTime
 } = require('../../logging')
 
-const TranscodeDelegationManager = require('./TranscodeDelegationManager')
+const TrackTranscodeHandoffManager = require('./TrackTranscodeHandoffManager')
 const TrackContentUploadManager = require('./trackContentUploadManager')
 
 /**
@@ -79,7 +79,7 @@ async function handleTranscodeHandOff(
     headers
   }
 ) {
-  return TranscodeDelegationManager.handOff(
+  return TrackTranscodeHandoffManager.handOff(
     { logContext },
     {
       libs,
