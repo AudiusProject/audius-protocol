@@ -9,6 +9,7 @@ import time
 from functools import reduce
 from json.encoder import JSONEncoder
 from typing import Optional, cast
+from urllib.parse import urljoin
 
 import requests
 from flask import g, request
@@ -361,6 +362,37 @@ def get_valid_multiaddr_from_id_json(id_json):
                 logger.warning(f"returning {multiaddr}")
                 return multiaddr
     return None
+
+
+def get_ipfs_info_from_cnode_endpoint(url, self_multiaddr):
+    id_url = urljoin(url, "ipfs_peer_info")
+    data = {"caller_ipfs_id": self_multiaddr}
+    resp = requests.get(id_url, timeout=5, params=data)
+    json_resp = resp.json()["data"]
+    valid_multiaddr = get_valid_multiaddr_from_id_json(json_resp)
+    if valid_multiaddr is None:
+        raise Exception("Failed to find valid multiaddr")
+    return valid_multiaddr
+
+
+def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
+    logger = logging.getLogger(__name__)
+    if cnode_url_list is None:
+        return
+    redis = update_task.redis
+    cnode_entries = cnode_url_list.split(",")
+    interval = int(update_task.shared_config["discprov"]["peer_refresh_interval"])
+    for cnode_url in cnode_entries:
+        if cnode_url == "":
+            continue
+        try:
+            multiaddr = get_ipfs_info_from_cnode_endpoint(
+                cnode_url, None  # update_task.ipfs_client.ipfs_id_multiaddr()
+            )
+            update_task.ipfs_client.connect_peer(multiaddr)
+            redis.set(cnode_url, multiaddr, interval)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning(f"Error connecting to {cnode_url}, {e}")
 
 
 HASH_MIN_LENGTH = 5

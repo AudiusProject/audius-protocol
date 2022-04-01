@@ -10,8 +10,9 @@ const ipfs = serviceRegistry.ipfs
 const ipfsLatest = serviceRegistry.ipfsLatest
 const ipfsAdd = require('../src/ipfsAdd')
 const {
+  saveFileToIPFSFromFS,
   removeTrackFolder,
-  saveFileFromBufferToDisk,
+  saveFileFromBufferToIPFSAndDisk,
   copyMultihashToFs
 } = require('../src/fileManager')
 const config = require('../src/config')
@@ -42,12 +43,12 @@ const req = {
 }
 
 // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
-// consts used for testing generateNonImageMultihash()
+// consts used for testing saveFileToIpfsFromFs()
 const segmentsDirPath = 'test/test-segments'
 const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
 
-// consts used for testing saveFileFromBufferToDisk()
+// consts used for testing saveFileFromBufferToIPFSAndDisk()
 const metadata = {
   test: 'field1',
   track_segments: [
@@ -65,8 +66,53 @@ describe('test fileManager', () => {
     sinon.restore()
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ generateNonImageMultihash() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test generateNonImageMultihash()', () => {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileToIpfsFromFs() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test saveFileToIpfsFromFs()', () => {
+    /**
+     * Given: a file is being saved to ipfs from fs
+     * When: the cnodeUserUUID is not present
+     * Then: an error is thrown
+     */
+    it('should throw error if cnodeUserUUID is not present', async () => {
+      try {
+        await saveFileToIPFSFromFS(
+          { logContext: { requestID: uuid() } },
+          null,
+          srcPath
+        )
+        assert.fail(
+          'Should not have passed if cnodeUserUUID is not present in request.'
+        )
+      } catch (e) {
+        assert.deepStrictEqual(
+          e.message,
+          'User must be authenticated to save a file'
+        )
+      }
+    })
+
+    /**
+     * Given: a file is being saved to ipfs from fs
+     * When: ipfs is down
+     * Then: an error is thrown
+     */
+    it('should throw an error if ipfs wrapper add fails', async () => {
+      sinon
+        .stub(ipfsAdd, 'ipfsAddNonImages')
+        .rejects(new Error('ipfs wrapper add failed!'))
+
+      try {
+        await saveFileToIPFSFromFS(
+          { logContext: { requestID: uuid() } },
+          req.session.cnodeUserUUID,
+          srcPath,
+          true /* enableIPFSAdd */
+        )
+      } catch (e) {
+        assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
+      }
+    })
+
     /**
      * Given: copyMultihashToFs is called
      * When: file copying fails
@@ -113,9 +159,11 @@ describe('test fileManager', () => {
 
       const requestID = uuid()
       try {
-        await ipfsAdd.generateNonImageMultihash(
+        await saveFileToIPFSFromFS(
+          { logContext: { requestID } },
+          req.session.cnodeUserUUID,
           srcPath,
-          { logContext: { requestID } }
+          true /* enableIPFSAdd */
         )
       } catch (e) {
         assert.fail(e.message)
@@ -142,11 +190,22 @@ describe('test fileManager', () => {
       const syncedSegmentBuf = fs.readFileSync(syncedSegmentPath)
       const originalSegmentBuf = fs.readFileSync(srcPath)
       assert.deepStrictEqual(originalSegmentBuf.compare(syncedSegmentBuf), 0)
+
+      // the segment should be present in IPFS
+      let ipfsResp
+      try {
+        ipfsResp = await ipfs.cat(segmentCID)
+      } catch (e) {
+        // If CID is not present, will throw timeout error
+        assert.fail(e.message)
+      }
+
+      assert.deepStrictEqual(originalSegmentBuf.compare(ipfsResp), 0)
     })
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileFromBufferToDisk()', () => {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToIPFSAndDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test saveFileFromBufferToIPFSAndDisk()', () => {
     /**
      * Given: a file buffer is being saved to ipfs, fs, and db
      * When: cnodeUserUUID is not present
@@ -166,9 +225,10 @@ describe('test fileManager', () => {
       }
 
       try {
-        await saveFileFromBufferToDisk(
+        await saveFileFromBufferToIPFSAndDisk(
           reqOverride,
-          buffer
+          buffer,
+          true /* enableIPFSAdd */
         )
         assert.fail(
           'Should not have passed if cnodeUserUUID is not present in request.'
@@ -186,18 +246,19 @@ describe('test fileManager', () => {
      * When: ipfs is down
      * Then: an error is thrown
      */
-    it('should throw an error if ipfs wrapper hash fails', async () => {
+    it('should throw an error if ipfs wrapper add fails', async () => {
       sinon
-        .stub(ipfsAdd, 'generateNonImageMultihash')
-        .rejects(new Error('ipfs wrapper hash failed!'))
+        .stub(ipfsAdd, 'ipfsAddNonImages')
+        .rejects(new Error('ipfs wrapper add failed!'))
 
       try {
-        await saveFileFromBufferToDisk(
+        await saveFileFromBufferToIPFSAndDisk(
           req,
-          buffer
+          buffer,
+          true /* enableIPFSAdd */
         )
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs wrapper hash failed!')
+        assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
       }
     })
 
@@ -210,7 +271,7 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'add').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
       try {
-        await saveFileFromBufferToDisk(req, buffer)
+        await saveFileFromBufferToIPFSAndDisk(req, buffer)
         assert.fail('Should not have passed if writing to filesystem fails.')
       } catch (e) {
         assert.ok(e.message)
@@ -229,7 +290,11 @@ describe('test fileManager', () => {
 
       let resp
       try {
-        resp = await saveFileFromBufferToDisk(req, buffer)
+        resp = await saveFileFromBufferToIPFSAndDisk(
+          req,
+          buffer,
+          true /* enableIPFSAdd */
+        )
       } catch (e) {
         assert.fail(e.message)
       }
@@ -242,6 +307,16 @@ describe('test fileManager', () => {
       let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
       metadataFileData = sortKeys(JSON.parse(metadataFileData))
       assert.deepStrictEqual(metadataFileData, metadata)
+
+      // check that ipfs contains the metadata file with proper contents
+      let ipfsResp
+      try {
+        ipfsResp = await ipfs.cat(resp.multihash)
+      } catch (e) {
+        assert.fail(e.message)
+      }
+
+      assert.deepStrictEqual(buffer.compare(ipfsResp), 0)
     })
   })
 })

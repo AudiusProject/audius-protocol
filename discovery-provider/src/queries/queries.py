@@ -7,6 +7,8 @@ from src.queries.get_feed import get_feed
 from src.queries.get_follow_intersection_users import get_follow_intersection_users
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
+
+# from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
 from src.queries.get_max_id import get_max_id
 from src.queries.get_playlist_repost_intersection_users import (
     get_playlist_repost_intersection_users,
@@ -604,6 +606,16 @@ def get_ursm_content_nodes():
         return api_helpers.success_response(cnodes)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
+
+# Get this discovery provider's ipfs peer info
+# @bp.route("/ipfs_peer_info", methods=("GET",))
+# def get_ipfs_peer_info_route():
+#     try:
+#         ipfs_peer_info = get_ipfs_peer_info()
+#         return api_helpers.success_response(ipfs_peer_info)
+#     except exceptions.ArgumentError as e:
+#         return api_helpers.error_response(str(e), 400)
 
 
 # Get details for a single play written to Solana

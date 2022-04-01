@@ -25,18 +25,26 @@ const SaveFileForMultihashToFSIPFSFallback = config.get(
 const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
 
 /**
- * Saves file to disk under /multihash name
+ * Adds file to IPFS then saves file to disk under /multihash name
+ *
+ * If buffer is metadata, await add to ipfs daemon since discovery node checks ipfs first and benefits from increased availability
  */
-async function saveFileFromBufferToDisk(req, buffer) {
-  // Make sure user has authenticated before saving file
+async function saveFileFromBufferToIPFSAndDisk(
+  req,
+  buffer,
+  enableIPFSAdd = false
+) {
+  // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  // Retrieve multihash
-  const multihash = await ipfsAdd.generateNonImageMultihash(
+  // Add to IPFS without pinning and retrieve multihash
+  const multihash = await ipfsAdd.ipfsAddNonImages(
     buffer,
-    req.logContext
+    { pin: false },
+    req.logContext,
+    enableIPFSAdd
   )
 
   // Write file to disk by multihash for future retrieval
@@ -44,6 +52,35 @@ async function saveFileFromBufferToDisk(req, buffer) {
   await fs.writeFile(dstPath, buffer)
 
   return { multihash, dstPath }
+}
+
+/**
+ * Given file path on disk, adds file to IPFS + re-saves under /multihash name
+ *
+ * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
+ */
+async function saveFileToIPFSFromFS(
+  { logContext },
+  cnodeUserUUID,
+  srcPath,
+  enableIPFSAdd = false
+) {
+  const logger = genericLogger.child(logContext)
+
+  // make sure user has authenticated before saving file
+  if (!cnodeUserUUID) {
+    throw new Error('User must be authenticated to save a file')
+  }
+
+  // Add to IPFS without pinning and retrieve multihash
+  const multihash = await ipfsAdd.ipfsAddNonImages(
+    srcPath,
+    { pin: false },
+    logContext,
+    enableIPFSAdd
+  )
+
+  return multihash
 }
 
 /**
@@ -459,9 +496,10 @@ async function saveFileForMultihashToFS(
         )
       }
 
-      const ipfsHashOnly = await ipfsAdd.generateNonImageMultihash(
-        expectedStoragePath
-      )
+      const ipfsHashOnly = await ipfsAdd.ipfsAddNonImages(expectedStoragePath, {
+        onlyHash: true,
+        timeout: 10000
+      })
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({
           stage: `File contents don't match IPFS hash multihash`,
@@ -786,7 +824,8 @@ async function removeFile(storagePath) {
 }
 
 module.exports = {
-  saveFileFromBufferToDisk,
+  saveFileFromBufferToIPFSAndDisk,
+  saveFileToIPFSFromFS,
   saveFileForMultihashToFS,
   removeTrackFolder,
   upload,
