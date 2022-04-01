@@ -634,6 +634,12 @@ const config = convict({
     format: String,
     env: 'nodeOperatorEmailAddress',
     default: ''
+  },
+  maxBatchClockStatusBatchSize: {
+    doc: 'Maximum number of wallets the /users/batch_clock_status route will accept at one time',
+    format: 'nat',
+    env: 'maxBatchClockStatusBatchSize',
+    default: 5000
   }
   /**
    * unsupported options at the moment

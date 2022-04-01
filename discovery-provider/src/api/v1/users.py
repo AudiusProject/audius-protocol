@@ -2,8 +2,10 @@ import logging
 
 from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
+    DescriptiveArgument,
     abort_bad_request_param,
     abort_not_found,
+    current_user_parser,
     decode_with_abort,
     extend_activity,
     extend_challenge_response,
@@ -16,6 +18,8 @@ from src.api.v1.helpers import (
     get_default_max,
     make_full_response,
     make_response,
+    pagination_parser,
+    pagination_with_current_user_parser,
     search_parser,
     success_response,
 )
@@ -80,7 +84,7 @@ def get_single_user(user_id, current_user_id):
     return success_response(user)
 
 
-USER_ROUTE = "/<string:user_id>"
+USER_ROUTE = "/<string:id>"
 
 
 @ns.route(USER_ROUTE)
@@ -88,45 +92,51 @@ class User(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User""",
-        params={"user_id": "A User ID"},
+        description="Gets a single user by their user ID",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(user_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
-        """Fetch a single user."""
         user_id = decode_with_abort(user_id, ns)
         return get_single_user(user_id, None)
-
-
-full_user_parser = reqparse.RequestParser()
-full_user_parser.add_argument("user_id", required=False)
 
 
 @full_ns.route(USER_ROUTE)
 class FullUser(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Get User""",
+        description="Gets a single user by their user ID",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(current_user_parser)
     @full_ns.marshal_with(full_user_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         user_id = decode_with_abort(user_id, ns)
-        args = full_user_parser.parse_args()
+        args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
 
         return get_single_user(user_id, current_user_id)
 
 
-full_user_handle_parser = reqparse.RequestParser()
-full_user_handle_parser.add_argument("user_id", required=False)
-
-
 @full_ns.route("/handle/<string:handle>")
 class FullUserHandle(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Get User by Handle""",
+        description="Gets a single user by their handle",
+        params={"handle": "A User handle"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(current_user_parser)
     @full_ns.marshal_with(full_user_response)
     @cache(ttl_sec=5)
     def get(self, handle):
-        args = full_user_handle_parser.parse_args()
+        args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
 
         args = {"handle": handle, "current_user_id": current_user_id}
@@ -137,13 +147,15 @@ class FullUserHandle(Resource):
         return success_response(user)
 
 
-USER_TRACKS_ROUTE = "/<string:user_id>/tracks"
-user_tracks_route_parser = reqparse.RequestParser()
-user_tracks_route_parser.add_argument("user_id", required=False)
-user_tracks_route_parser.add_argument("limit", required=False, type=int)
-user_tracks_route_parser.add_argument("offset", required=False, type=int)
+USER_TRACKS_ROUTE = "/<string:id>/tracks"
+user_tracks_route_parser = pagination_with_current_user_parser.copy()
 user_tracks_route_parser.add_argument(
-    "sort", required=False, type=str, default="date", choices=("date", "plays")
+    "sort",
+    required=False,
+    type=str,
+    default="date",
+    choices=("date", "plays"),
+    description="Field to sort by",
 )
 
 tracks_response = make_response(
@@ -155,20 +167,18 @@ tracks_response = make_response(
 class TrackList(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get User's Tracks""",
+        id="""Get Tracks by User""",
+        description="""Gets the tracks created by a user using their user ID""",
         params={
-            "user_id": "A User ID",
-            "limit": "Limit",
-            "offset": "Offset",
-            "sort": "Sort mode",
+            "id": "A User ID",
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(user_tracks_route_parser)
     @ns.marshal_with(tracks_response)
     @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, user_id, authed_user_id=None):
-        """Fetch a list of tracks for a user."""
         decoded_id = decode_with_abort(user_id, ns)
         args = user_tracks_route_parser.parse_args()
 
@@ -202,20 +212,18 @@ full_tracks_response = make_full_response(
 class FullTrackList(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get User's Tracks""",
+        id="""Get Tracks by User""",
+        description="""Gets the tracks created by a user using their user ID""",
         params={
-            "user_id": "A User ID",
-            "limit": "Limit",
-            "offset": "Offset",
-            "sort": "Sort mode",
+            "id": "A User ID",
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(user_tracks_route_parser)
     @full_ns.marshal_with(full_tracks_response)
     @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, user_id, authed_user_id=None):
-        """Fetch a list of tracks for a user."""
         decoded_id = decode_with_abort(user_id, ns)
         args = user_tracks_route_parser.parse_args()
 
@@ -244,20 +252,18 @@ class FullTrackList(Resource):
 class HandleFullTrackList(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get User's Tracks""",
+        id="""Get Tracks by User Handle""",
+        description="""Gets the tracks created by a user using the user's handle""",
         params={
-            "user_id": "A User ID",
-            "limit": "Limit",
-            "offset": "Offset",
-            "sort": "Sort mode",
+            "handle": "A User handle",
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(user_tracks_route_parser)
     @full_ns.marshal_with(full_tracks_response)
     @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, handle, authed_user_id=None):
-        """Fetch a list of tracks for a user."""
         args = user_tracks_route_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
@@ -281,12 +287,7 @@ class HandleFullTrackList(Resource):
         return success_response(tracks)
 
 
-USER_REPOSTS_ROUTE = "/<string:user_id>/reposts"
-
-user_reposts_route_parser = reqparse.RequestParser()
-user_reposts_route_parser.add_argument("user_id", required=False)
-user_reposts_route_parser.add_argument("limit", required=False, type=int)
-user_reposts_route_parser.add_argument("offset", required=False, type=int)
+USER_REPOSTS_ROUTE = "/<string:id>/reposts"
 
 reposts_response = make_response(
     "reposts", ns, fields.List(fields.Nested(activity_model))
@@ -297,19 +298,19 @@ reposts_response = make_response(
 class RepostList(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get User's Reposts""",
+        id="""Get Reposts""",
+        description="""Gets the given user's reposts""",
         params={
-            "user_id": "A User ID",
-            "limit": "Limit",
-            "offset": "Offset",
+            "id": "A User ID",
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(reposts_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_id = decode_with_abort(user_id, ns)
-        args = user_reposts_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
 
@@ -339,19 +340,19 @@ full_reposts_response = make_full_response(
 class FullRepostList(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get User's Reposts""",
+        id="""Get Reposts""",
+        description="""Gets the given user's reposts""",
         params={
-            "user_id": "A User ID",
-            "limit": "Limit",
-            "offset": "Offset",
+            "id": "A User ID",
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(full_reposts_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_id = decode_with_abort(user_id, ns)
-        args = user_reposts_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
 
@@ -380,18 +381,18 @@ class FullRepostList(Resource):
 class HandleFullRepostList(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get User's Reposts""",
+        id="""Get Reposts by Handle""",
+        description="""Gets the user's reposts by the user handle""",
         params={
-            "user_id": "A User ID",
-            "limit": "Limit",
-            "offset": "Offset",
+            "handle": "A User handle",
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(full_reposts_response)
     @cache(ttl_sec=5)
     def get(self, handle):
-        args = user_reposts_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
         offset = format_offset(args)
@@ -421,36 +422,36 @@ favorites_response = make_response(
 )
 
 
-@ns.route("/<string:user_id>/favorites")
+@ns.route("/<string:id>/favorites")
 class FavoritedTracks(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get User's Favorite Tracks""",
-        params={"user_id": "A User ID"},
+        id="""Get Favorites""",
+        description="""Gets a user's favorite tracks""",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(favorites_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
-        """Fetch favorited tracks for a user."""
         decoded_id = decode_with_abort(user_id, ns)
         favorites = get_saves("tracks", decoded_id)
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
 
 
-tags_route_parser = reqparse.RequestParser()
-tags_route_parser.add_argument("user_id", required=False, type=str)
-tags_route_parser.add_argument("limit", required=False, type=int)
+tags_route_parser = pagination_with_current_user_parser.copy()
+tags_route_parser.remove_argument("offset")
 tags_response = make_response("tags_response", ns, fields.List(fields.String))
 
 
-@ns.route("/<string:user_id>/tags")
+@ns.route("/<string:id>/tags")
 class MostUsedTags(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get User's Most Used Track Tags""",
-        params={"user_id": "A User ID", "limit": "Limit on the number of tags"},
+        id="""Get Top Track Tags""",
+        description="""Gets the most used track tags by a user.""",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(tags_route_parser)
@@ -465,29 +466,26 @@ class MostUsedTags(Resource):
         return success_response(tags)
 
 
-favorite_route_parser = reqparse.RequestParser()
-favorite_route_parser.add_argument("user_id", required=False, type=str)
-favorite_route_parser.add_argument("limit", required=False, type=int)
-favorite_route_parser.add_argument("offset", required=False, type=int)
 favorites_response = make_full_response(
     "favorites_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
 )
 
 
-@full_ns.route("/<string:user_id>/favorites/tracks")
+@full_ns.route("/<string:id>/favorites/tracks")
 class FavoritedTracksFull(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get User's Favorite Tracks""",
-        params={"user_id": "A User ID"},
+        id="""Get Favorites""",
+        description="""Gets a user's favorite tracks""",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(favorite_route_parser)
+    @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(favorites_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch favorited tracks for a user."""
-        args = favorite_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(user_id, ns)
         current_user_id = get_current_user_id(args)
 
@@ -506,29 +504,24 @@ class FavoritedTracksFull(Resource):
         return success_response(tracks)
 
 
-history_route_parser = reqparse.RequestParser()
-history_route_parser.add_argument("user_id", required=False, type=str)
-history_route_parser.add_argument("limit", required=False, type=int)
-history_route_parser.add_argument("offset", required=False, type=int)
 history_response = make_full_response(
     "history_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
 )
 
 
-@full_ns.route("/<string:user_id>/history/tracks")
+@full_ns.route("/<string:id>/history/tracks")
 class TrackHistoryFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get User's Track History""",
-        params={"user_id": "A User ID"},
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(history_route_parser)
+    @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(history_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
-        """Fetch played tracks history for a user."""
-        args = history_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(user_id, ns)
         current_user_id = get_current_user_id(args)
         offset = format_offset(args)
@@ -557,11 +550,10 @@ class UserSearchResult(Resource):
         params={"query": "Search query"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.marshal_with(user_search_result)
     @ns.expect(search_parser)
+    @ns.marshal_with(user_search_result)
     @cache(ttl_sec=600)
     def get(self):
-        """Seach for a user."""
         args = search_parser.parse_args()
         query = args["query"]
         if not query:
@@ -581,30 +573,26 @@ class UserSearchResult(Resource):
         return success_response(users)
 
 
-followers_route_parser = reqparse.RequestParser()
-followers_route_parser.add_argument("user_id", required=False)
-followers_route_parser.add_argument("limit", required=False, type=int)
-followers_route_parser.add_argument("offset", required=False, type=int)
-
 followers_response = make_full_response(
     "followers_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
 
 
-@full_ns.route("/<string:user_id>/followers")
+@full_ns.route("/<string:id>/followers")
 class FollowerUsers(Resource):
     @record_metrics
-    @ns.expect(followers_route_parser)
     @ns.doc(
-        id="""All users that follow the provided user""",
-        params={"user_id": "A User ID", "limit": "Limit", "offset": "Offset"},
+        id="""Get Followers""",
+        description="""All users that follow the provided user""",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(followers_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_id = decode_with_abort(user_id, full_ns)
-        args = followers_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
@@ -619,29 +607,26 @@ class FollowerUsers(Resource):
         return success_response(users)
 
 
-following_route_parser = reqparse.RequestParser()
-following_route_parser.add_argument("user_id", required=False)
-following_route_parser.add_argument("limit", required=False, type=int)
-following_route_parser.add_argument("offset", required=False, type=int)
 following_response = make_full_response(
     "following_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
 
 
-@full_ns.route("/<string:user_id>/following")
+@full_ns.route("/<string:id>/following")
 class FollowingUsers(Resource):
     @record_metrics
-    @full_ns.expect(following_route_parser)
     @full_ns.doc(
-        id="""All users that the provided user follows""",
-        params={"user_id": "A User ID", "limit": "Limit", "offset": "Offset"},
+        id="""Get Followings""",
+        description="""All users that the provided user follows""",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(following_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_id = decode_with_abort(user_id, full_ns)
-        args = following_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
@@ -656,27 +641,27 @@ class FollowingUsers(Resource):
         return success_response(users)
 
 
-related_artist_route_parser = reqparse.RequestParser()
-related_artist_route_parser.add_argument("user_id", required=False)
-related_artist_route_parser.add_argument("limit", required=False, type=int)
+related_artist_route_parser = pagination_with_current_user_parser.copy()
+related_artist_route_parser.remove_argument("offset")
 related_artist_response = make_full_response(
     "related_artist_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
 
 
-@full_ns.route("/<string:user_id>/related")
+@full_ns.route("/<string:id>/related")
 class RelatedUsers(Resource):
     @record_metrics
-    @full_ns.expect(related_artist_route_parser)
     @full_ns.doc(
-        id="""Gets a list of users that might be of interest to followers of this user.""",
-        params={"user_id": "A User ID", "limit": "Limit"},
+        id="""Get Related Users""",
+        description="""Gets a list of users that might be of interest to followers of this user.""",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(related_artist_route_parser)
     @full_ns.marshal_with(related_artist_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
-        args = following_route_parser.parse_args()
+        args = related_artist_route_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         current_user_id = get_current_user_id(args)
         decoded_id = decode_with_abort(user_id, full_ns)
@@ -685,10 +670,10 @@ class RelatedUsers(Resource):
         return success_response(users)
 
 
-top_genre_users_route_parser = reqparse.RequestParser()
-top_genre_users_route_parser.add_argument("genre", required=False, action="append")
-top_genre_users_route_parser.add_argument("limit", required=False, type=int)
-top_genre_users_route_parser.add_argument("offset", required=False, type=int)
+top_genre_users_route_parser = pagination_parser.copy()
+top_genre_users_route_parser.add_argument(
+    "genre", required=False, action="append", description="List of Genres"
+)
 top_genre_users_response = make_full_response(
     "top_genre_users_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -698,8 +683,8 @@ top_genre_users_response = make_full_response(
 class FullTopGenreUsers(Resource):
     @full_ns.expect(top_genre_users_route_parser)
     @full_ns.doc(
-        id="""Get the Top Users for a Given Genre""",
-        params={"genre": "List of Genres", "limit": "Limit", "offset": "Offset"},
+        id="""Get Top Users In Genre""",
+        description="""Get the Top Users for a Given Genre""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(top_genre_users_response)
@@ -721,10 +706,6 @@ class FullTopGenreUsers(Resource):
         return success_response(users)
 
 
-top_users_response_parser = reqparse.RequestParser()
-top_users_response_parser.add_argument("user_id", required=False)
-top_users_response_parser.add_argument("limit", required=False, type=int)
-top_users_response_parser.add_argument("offset", required=False, type=int)
 top_users_response = make_full_response(
     "top_users_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -732,16 +713,16 @@ top_users_response = make_full_response(
 
 @full_ns.route("/top")
 class FullTopUsers(Resource):
-    @full_ns.expect(top_users_response)
     @full_ns.doc(
-        id="""Get the Top Users having at least one track by follower count""",
-        params={"limit": "Limit", "offset": "Offset"},
+        id="""Get Top Users""",
+        description="""Get the Top Users having at least one track by follower count""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(top_users_response)
     @cache(ttl_sec=60 * 60 * 24)
     def get(self):
-        args = top_users_response_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
 
         top_users = get_top_users(current_user_id)
@@ -749,8 +730,12 @@ class FullTopUsers(Resource):
         return success_response(users)
 
 
-associated_wallet_route_parser = reqparse.RequestParser()
-associated_wallet_route_parser.add_argument("id", required=True)
+associated_wallet_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
+associated_wallet_route_parser.add_argument(
+    "id", required=True, description="A User ID"
+)
 associated_wallet_response = make_response(
     "associated_wallets_response", ns, fields.Nested(associated_wallets)
 )
@@ -759,15 +744,15 @@ associated_wallet_response = make_response(
 @ns.deprecated
 @ns.route(
     "/associated_wallets",
-    doc={"description": "Deprecated in favor of /<user_id>/connected_wallets"},
+    doc={"description": "(Deprecated in favor of `/<user_id>/connected_wallets`)"},
 )
-class UserIdByAssociatedWallet(Resource):
-    @ns.expect(associated_wallet_route_parser)
+class AssociatedWalletByUserId(Resource):
     @ns.doc(
-        id="""Get the User's id by associated wallet""",
-        params={"id": "Encoded User ID"},
+        id="""Get Associated Wallets""",
+        description="""Get the User's associated wallets""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(associated_wallet_route_parser)
     @ns.marshal_with(associated_wallet_response)
     @cache(ttl_sec=10)
     def get(self):
@@ -779,21 +764,25 @@ class UserIdByAssociatedWallet(Resource):
         )
 
 
-user_associated_wallet_route_parser = reqparse.RequestParser()
-user_associated_wallet_route_parser.add_argument("associated_wallet", required=True)
+user_associated_wallet_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
+user_associated_wallet_route_parser.add_argument(
+    "associated_wallet", required=True, description="Wallet address"
+)
 user_associated_wallet_response = make_response(
     "user_associated_wallet_response", ns, fields.Nested(encoded_user_id)
 )
 
 
 @ns.route("/id")
-class AssociatedWalletByUserId(Resource):
-    @ns.expect(user_associated_wallet_route_parser)
+class UserIdByAssociatedWallet(Resource):
     @ns.doc(
-        id="""Get the User's associated wallets""",
-        params={"associated_wallet": "Wallet address"},
+        id="""Get User ID from Wallet""",
+        description="""Gets a User ID from an associated wallet address""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(user_associated_wallet_route_parser)
     @ns.marshal_with(user_associated_wallet_response)
     @cache(ttl_sec=10)
     def get(self):
@@ -804,19 +793,17 @@ class AssociatedWalletByUserId(Resource):
         )
 
 
-connected_wallets_route_parser = reqparse.RequestParser()
-connected_wallets_route_parser.add_argument("user_id", required=False)
 connected_wallets_response = make_response(
     "connected_wallets_response", ns, fields.Nested(connected_wallets)
 )
 
 
-@ns.route("/<string:user_id>/connected_wallets")
+@ns.route("/<string:id>/connected_wallets")
 class ConnectedWallets(Resource):
-    @ns.expect(connected_wallets_route_parser)
     @ns.doc(
-        id="""Get the User's erc and spl connected wallets""",
-        params={"user_id": "A User ID"},
+        id="""Get connected wallets""",
+        description="""Get the User's ERC and SPL connected wallets""",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(connected_wallets_response)
@@ -829,7 +816,9 @@ class ConnectedWallets(Resource):
         )
 
 
-users_by_content_node_route_parser = reqparse.RequestParser()
+users_by_content_node_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
 users_by_content_node_route_parser.add_argument(
     "creator_node_endpoint", required=True, type=str
 )
@@ -838,7 +827,7 @@ users_by_content_node_response = make_full_response(
 )
 
 
-@full_ns.route("/content_node/<string:replica_type>")
+@full_ns.route("/content_node/<string:replica_type>", doc=False)
 class UsersByContentNode(Resource):
     @full_ns.marshal_with(users_by_content_node_response)
     # @cache(ttl_sec=30)
@@ -864,24 +853,28 @@ class UsersByContentNode(Resource):
         return success_response(users)
 
 
-get_challenges_route_parser = reqparse.RequestParser()
+get_challenges_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 get_challenges_route_parser.add_argument(
-    "show_historical", required=False, type=bool, default=False
+    "show_historical",
+    required=False,
+    type=bool,
+    default=False,
+    description="Whether to show challenges that are inactive but completed",
 )
 get_challenges_response = make_response(
     "get_challenges", ns, fields.List(fields.Nested(challenge_response))
 )
 
 
-@ns.route("/<string:user_id>/challenges")
+@ns.route("/<string:id>/challenges")
 class GetChallenges(Resource):
     @ns.doc(
-        id="""The users's ID""",
-        params={
-            "show_historical": "Whether to show challenges that are inactive but completed"
-        },
+        id="""Get User Challenges""",
+        description="""Gets all challenges for the given user""",
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(get_challenges_route_parser)
     @ns.marshal_with(get_challenges_response)
     @cache(ttl_sec=5)
     def get(self, user_id: str):
