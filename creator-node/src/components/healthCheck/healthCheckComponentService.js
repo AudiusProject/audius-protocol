@@ -140,10 +140,10 @@ const healthCheck = async (
     fileProcessingActive,
     fileProcessingWaiting,
     stateMachineQueueLatestJobSuccess: stateMachineQueueLatestJobSuccess
-      ? (new Date(parseInt(stateMachineQueueLatestJobSuccess))).toISOString()
+      ? new Date(parseInt(stateMachineQueueLatestJobSuccess)).toISOString()
       : null,
     stateMachineQueueLatestJobStart: stateMachineQueueLatestJobStart
-      ? (new Date(parseInt(stateMachineQueueLatestJobStart))).toISOString()
+      ? new Date(parseInt(stateMachineQueueLatestJobStart)).toISOString()
       : null
   }
 
