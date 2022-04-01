@@ -266,7 +266,7 @@ module.exports = function (app) {
 
     const totalSuccessCount = await redis.zcount(TRACKING_LISTEN_SUCCESS_KEY, 0, Number.MAX_SAFE_INTEGER)
     const totalSubmissionCount = await redis.zcount(TRACKING_LISTEN_SUBMISSION_KEY, 0, Number.MAX_SAFE_INTEGER)
-    const totalPercentSuccess = totalSuccessCount / totalSubmissionCount
+    const totalPercentSuccess = totalSubmissionCount === 0 ? 1 : totalSuccessCount / totalSubmissionCount
     // Sort response in descending time order
     const sortedHourlyData =
       Object.keys(hourlyResponseData)
@@ -279,7 +279,7 @@ module.exports = function (app) {
     const nowMinusCutoff = now - (cutoffMinutes * 60 * 1000)
     const recentSuccessCount = await redis.zcount(TRACKING_LISTEN_SUCCESS_KEY, nowMinusCutoff, nowPlusEntropy)
     const recentSubmissionCount = await redis.zcount(TRACKING_LISTEN_SUBMISSION_KEY, nowMinusCutoff, nowPlusEntropy)
-    const recentSuccessPercent = recentSuccessCount / recentSubmissionCount
+    const recentSuccessPercent = recentSubmissionCount === 0 ? 1 : recentSuccessCount / recentSubmissionCount
     const recentInfo = {
       recentSubmissionCount,
       recentSuccessCount,

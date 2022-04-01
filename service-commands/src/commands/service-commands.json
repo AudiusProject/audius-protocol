@@ -6,7 +6,13 @@
       "docker volume prune -f",
       "docker network prune -f",
       "sudo rm -rf creator-node/compose/env/tmp",
-      "sudo rm -rf discovery-provider/compose/env/tmp"
+      "sudo rm -rf discovery-provider/compose/env/tmp",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log"
     ]
   },
   "network": {
@@ -66,7 +72,7 @@
  "solana-programs": {
     "path": "solana-programs",
     "up": [
-      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
+      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop2 > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
       "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
       "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
     ],
@@ -140,7 +146,13 @@
     ],
     "down": [
       "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
-      "cd discovery-provider; . compose/env/unsetShellEnv.sh"
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log"
     ],
     "register": [
       "cd libs/; npm run init-local register-discovery-node #",
@@ -150,6 +162,12 @@
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "docker volume prune -f",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log",
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; rm -f *_dump",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",

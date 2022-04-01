@@ -65,15 +65,11 @@ const initializeApp = (port, serviceRegistry) => {
   const storagePath = DiskManager.getConfigStoragePath()
 
   // TODO: Can remove these when all routes consume serviceRegistry
-  app.set('ipfsAPI', serviceRegistry.ipfs)
   app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
   app.set('audiusLibs', serviceRegistry.libs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
   app.set('trustedNotifierManager', serviceRegistry.trustedNotifierManager)
-
-  // add a newer version of ipfs as app property
-  app.set('ipfsLatestAPI', serviceRegistry.ipfsLatest)
 
   // Eventually, all components should pull services off the serviceRegistry
   app.set('serviceRegistry', serviceRegistry)
