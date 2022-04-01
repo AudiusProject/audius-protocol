@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict
 
 from sqlalchemy import desc
 from src.models.models import AudiusDataTx
@@ -111,15 +111,19 @@ class SolanaProgramIndexer(IndexerBase):
         """
         raise Exception(BASE_ERROR)
 
+    @abstractmethod
     async def parse_tx(self, tx_sig):
-        self.msg(f"parse_tx {tx_sig}")
+        """
+        Parse an individual transaction, this will also vary based on the program being indexed
+        """
         tx_info = self._solana_client_manager.get_sol_tx_info(tx_sig)
         result: TransactionInfoResult = tx_info["result"]
-        return result
+        return { "tx_sig": tx_sig, "tx_metadata": {}, "result": result }
 
     async def process_txs_batch(self, tx_sig_batch_records):
         self.msg(f"Parsing {tx_sig_batch_records}")
         futures = []
+        tx_sig_futures_map: Dict[str, Dict] = {}
         for tx_sig in tx_sig_batch_records:
             future = asyncio.ensure_future(
                 self.parse_tx(tx_sig)
@@ -131,8 +135,26 @@ class SolanaProgramIndexer(IndexerBase):
             try:
                 future_result = await future
                 self.msg(f"{future_result}")
+                tx_sig_futures_map[future_result["tx_sig"]] = future_result
             except asyncio.CancelledError:
                 pass # Swallow cancelled requests
+
+        # MISSING - Metadata fetch step
+
+        # Committing to DB
+        parsed_transactions = []
+        for tx_sig in tx_sig_batch_records:
+            parsed_transactions.append(tx_sig_futures_map[tx_sig])
+
+        self.validate_and_save_parsed_tx_records(parsed_transactions)
+
+    @abstractmethod
+    def validate_and_save_parsed_tx_records(self, parsed_transactions):
+        """
+        Based parsed transaction information, generate and save appropriate database changes. This will vary based on the program being indexed
+        """
+        raise Exception(BASE_ERROR)
+
 
     def get_transactions_to_process(self):
         """
@@ -269,6 +291,20 @@ class AnchorDataIndexer(SolanaProgramIndexer):
 
         self.msg(f"returning {latest_slot} for highest slot")
         return latest_slot
+
+    def validate_and_save_parsed_tx_records(self, processed_transactions):
+        self.msg(f"validate_and_save anchor {processed_transactions}")
+        with self._db.scoped_session() as session:
+            for transaction in processed_transactions:
+                session.add(AudiusDataTx(
+                    signature=transaction["tx_sig"],
+                    slot=transaction["result"]["slot"]
+                ))
+
+    # TODO - This is where we will deserialize instruction data and accounts
+    # tx_metadata should contain TxType, Deserialized Instruction Data, etc
+    def parse_tx(self, tx_sig):
+        return super().parse_tx(tx_sig)
 
     def process_index_task(self):
         self.msg("AnchorDataIndexer : processing indexing task")
