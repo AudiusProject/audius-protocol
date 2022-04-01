@@ -6,7 +6,6 @@ const fs = require('fs')
 const BlacklistManager = require('../src/blacklistManager')
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
-const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
 const { getMonitorRedisKey, MONITORS } = require('../src/monitors/monitors')
@@ -16,13 +15,11 @@ describe('test ensureStorageMiddleware', () => {
   let app, server, session, libsMock, monitoringQueueMock, userId
 
   beforeEach(async () => {
-    const ipfsMock = getIPFSMock()
-    const ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
 
     userId = 1
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app
