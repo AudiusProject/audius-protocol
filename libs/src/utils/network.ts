@@ -4,6 +4,10 @@ import semver from 'semver'
 import { Utils } from './utils'
 import { promiseFight } from './promiseFight'
 
+export type ServiceName = string
+export interface ServiceWithEndpoint {endpoint: string}
+export type Service = ServiceName | ServiceWithEndpoint
+
 interface Request {
   id?: number
   url: string
@@ -231,7 +235,7 @@ interface AllRequestsConfig {
   * map of actual URL to hit (e.g. https://resource/endpoint)
   * and identifying value (e.g. https://resource)
   */
-  urlMap: Record<string, string>
+  urlMap: Record<string, Service>
   // timeout for any request to be considered bad
   timeout: number
   /* a check invoked for each response.
@@ -251,7 +255,7 @@ async function allRequests ({
 }: AllRequestsConfig) {
   const urls = Object.keys(urlMap)
   const requests = urls.map(async (url) => {
-    return await new Promise<string | null>((resolve) => {
+    return await new Promise<Service | null>((resolve) => {
       axios({
         method: 'get',
         timeout,
@@ -260,7 +264,7 @@ async function allRequests ({
         .then(response => {
           const isValid = validationCheck(response)
           if (isValid) {
-            resolve(urlMap[url] as string)
+            resolve(urlMap[url] as Service)
           } else {
             resolve(null)
           }

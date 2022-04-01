@@ -3,7 +3,7 @@
 /**
  * Adds two columns to the `files` table
  * - fileName: the actual queryable source filename stripped of any prefixes
- * - dirMultihash: if the file is in an IPFS directory, the CID/multihash for the parent dir
+ * - dirMultihash: the CID for the parent dir
  */
 module.exports = {
   up: async (queryInterface, Sequelize) => {

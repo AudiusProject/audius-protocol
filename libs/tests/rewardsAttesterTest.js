@@ -1,8 +1,6 @@
 const assert = require('assert')
 const sinon = require('sinon')
-const RewardsAttester  = require('../src/services/solanaWeb3Manager/rewardsAttester')
-
-const { AttestationDelayCalculator } = RewardsAttester
+const { RewardsAttester, AttestationDelayCalculator } = require('../src/services/solanaWeb3Manager/rewardsAttester')
 
 function MockLibs (getSlot = () => 100, getBlockNumber = () => 100) {
   this.getSlot = getSlot
