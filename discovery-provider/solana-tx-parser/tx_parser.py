@@ -1,15 +1,17 @@
 import asyncio
+import base64
 import os
 from typing import Dict, List, Optional
 
 import base58
 from anchorpy import InstructionCoder
 from construct import Container
+from solana.transaction import Transaction, TransactionInstruction
 from utils import fetch_tx_receipt, get_all_txs_for_program, get_idl
 
 
 def decode_instruction_data(
-    encoded_ix_data: str, instruction_coder: InstructionCoder
+    encoded_ix_data: bytes, instruction_coder: InstructionCoder
 ) -> Optional[Container]:
     ix = base58.b58decode(encoded_ix_data)
     ix_sighash = ix[0:8]
@@ -25,8 +27,8 @@ def decode_instruction_data(
 
 
 def get_instruction_name(
-    encoded_ix_data: str, instruction_coder: InstructionCoder
-) -> str:
+    encoded_ix_data: bytes, instruction_coder: InstructionCoder
+) -> Optional[str]:
     idl_instruction_name = instruction_coder.sighash_to_name.get(
         base58.b58decode(encoded_ix_data)[0:8]
     )
@@ -38,22 +40,19 @@ def get_instruction_name(
 
 
 # Maps account indices for ix context to pubkeys
-def get_instruction_context_accounts(
-    all_account_keys: List[str], instruction: Dict
-) -> List[str]:
-    account_indices = instruction.get("accounts")
-    return [all_account_keys[acct_idx] for acct_idx in account_indices]
+def get_instruction_context_accounts(instruction: TransactionInstruction) -> List[str]:
+    return [str(account_meta.pubkey) for account_meta in instruction.keys]
 
 
 def parse_instruction(
-    instruction: Dict, instruction_coder: InstructionCoder, account_keys: List[str]
+    instruction: TransactionInstruction, instruction_coder: InstructionCoder
 ) -> Dict:
-    encoded_ix_data = instruction.get("data")
+    encoded_ix_data = base58.b58encode(instruction.data)
     idl_instruction_name = get_instruction_name(
         encoded_ix_data=encoded_ix_data,
         instruction_coder=instruction_coder,
     )
-    account_addresses = get_instruction_context_accounts(account_keys, instruction)
+    account_addresses = get_instruction_context_accounts(instruction)
     decoded_data = decode_instruction_data(
         encoded_ix_data=encoded_ix_data,
         instruction_coder=instruction_coder,
@@ -71,15 +70,13 @@ async def parse_tx(tx_hash: str) -> List[Dict]:
     if tx_info is not None:
         idl = get_idl()
         instruction_coder = InstructionCoder(idl)
-        message = tx_info.get("transaction").get("message")
-        instructions = message.get("instructions")
-        account_keys = message.get("accountKeys")
+        encoded_data = tx_info.get("transaction")[0]
+        encoded_data_hex = base64.b64decode(encoded_data).hex()
+        res = Transaction.deserialize(bytes.fromhex(encoded_data_hex))
 
-        for instruction in instructions:
+        for instruction in res.instructions:
             ix_data = parse_instruction(
-                instruction=instruction,
-                instruction_coder=instruction_coder,
-                account_keys=account_keys,
+                instruction=instruction, instruction_coder=instruction_coder
             )
             parsed_instructions.append(ix_data)
     return parsed_instructions

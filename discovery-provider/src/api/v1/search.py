@@ -1,12 +1,13 @@
 import logging  # pylint: disable=C0302
 
-from flask_restx import Namespace, Resource, fields, reqparse
+from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
     extend_playlist,
     extend_track,
     extend_user,
     format_limit,
     format_offset,
+    full_search_parser,
     get_current_user_id,
     make_full_response,
     success_response,
@@ -43,18 +44,6 @@ def extend_search(resp):
     return resp
 
 
-search_route_parser = reqparse.RequestParser()
-search_route_parser.add_argument("user_id", required=False)
-search_route_parser.add_argument(
-    "kind",
-    required=False,
-    type=str,
-    default="all",
-    choices=("all", "users", "tracks", "playlists", "albums"),
-)
-search_route_parser.add_argument("query", required=True, type=str)
-search_route_parser.add_argument("limit", required=False, type=int)
-search_route_parser.add_argument("offset", required=False, type=int)
 search_full_response = make_full_response(
     "search_full_response", full_ns, fields.Nested(search_model)
 )
@@ -62,22 +51,16 @@ search_full_response = make_full_response(
 
 @full_ns.route("/full")
 class FullSearch(Resource):
-    @full_ns.expect(search_route_parser)
     @full_ns.doc(
-        id="""Get Users/Tracks/Playlists/Albums that best match the search query""",
-        params={
-            "user_id": "A User ID of the requesting user to personalize the response",
-            "query": "Search query text",
-            "kind": "The type of response, one of: all, users, tracks, playlists, or albums",
-            "limit": "Limit",
-            "offset": "Offset",
-        },
+        id="Search",
+        description="""Get Users/Tracks/Playlists/Albums that best match the search query""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(full_search_parser)
     @full_ns.marshal_with(search_full_response)
     @cache(ttl_sec=5)
     def get(self):
-        args = search_route_parser.parse_args()
+        args = full_search_parser.parse_args()
         offset = format_offset(args)
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
@@ -105,22 +88,17 @@ search_autocomplete_response = make_full_response(
 
 @full_ns.route("/autocomplete")
 class FullSearchAutocomplete(Resource):
-    @full_ns.expect(search_route_parser)
     @full_ns.doc(
-        id="""Get Users/Tracks/Playlists/albums that best match the search query""",
-        params={
-            "user_id": "A User ID of the requesting user to personalize the response",
-            "query": "Search query text",
-            "kind": "The type of response, one of: all, users, tracks, playlists, or albums",
-            "limit": "Limit",
-            "offset": "Offset",
-        },
+        id="Search Autocomplete",
+        summary="""Get Users/Tracks/Playlists/Albums that best match the search query""",
+        description="""Same as search but optimized for quicker response at the cost of some entity information.""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(full_search_parser)
     @full_ns.marshal_with(search_autocomplete_response)
     @cache(ttl_sec=5)
     def get(self):
-        args = search_route_parser.parse_args()
+        args = full_search_parser.parse_args()
         offset = format_offset(args)
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)

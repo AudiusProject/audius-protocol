@@ -7,14 +7,10 @@ import type { AxiosResponse } from 'axios'
 describe('ServiceSelection', () => {
   it('prefers a healthy service', async () => {
     const good = 'https://good.audius.co'
-    nock(good)
-      .get('/health_check')
-      .reply(200)
+    nock(good).get('/health_check').reply(200)
 
     const bad = 'https://bad.audius.co'
-    nock(bad)
-      .get('/health_check')
-      .reply(400)
+    nock(bad).get('/health_check').reply(400)
 
     const getServices = async () => [good, bad] as string[]
 
@@ -27,15 +23,10 @@ describe('ServiceSelection', () => {
 
   it('prefers a faster service', async () => {
     const fast = 'https://fast.audius.co'
-    nock(fast)
-      .get('/health_check')
-      .reply(200)
+    nock(fast).get('/health_check').reply(200)
 
     const slow = 'https://slow.audius.co'
-    nock(slow)
-      .get('/health_check')
-      .delay(200)
-      .reply(400)
+    nock(slow).get('/health_check').delay(200).reply(400)
 
     const s = new ServiceSelection({
       getServices: async () => [fast, slow]
@@ -46,15 +37,10 @@ describe('ServiceSelection', () => {
 
   it('prefers a slower healthy service', async () => {
     const fast = 'https://fast.audius.co'
-    nock(fast)
-      .get('/health_check')
-      .reply(400)
+    nock(fast).get('/health_check').reply(400)
 
     const slow = 'https://slow.audius.co'
-    nock(slow)
-      .get('/health_check')
-      .delay(200)
-      .reply(200)
+    nock(slow).get('/health_check').delay(200).reply(200)
 
     const s = new ServiceSelection({
       getServices: async () => [fast, slow]
@@ -67,12 +53,13 @@ describe('ServiceSelection', () => {
   it('should find the needle in the haystack', async () => {
     // Single good service
     const needle = 'https://needle.audius.co'
-    nock(needle)
-      .get('/health_check')
-      .reply(200)
+    nock(needle).get('/health_check').reply(200)
     // Many bad services
-    const haystack = Array.from({ length: 20 }, (_, i) => `https://${i}.audius.co`)
-    haystack.forEach(hay => {
+    const haystack = Array.from(
+      { length: 20 },
+      (_, i) => `https://${i}.audius.co`
+    )
+    haystack.forEach((hay) => {
       nock(hay).get('/health_check').reply(400)
     })
 
@@ -87,14 +74,10 @@ describe('ServiceSelection', () => {
 
   it('should pick null if there is no healthy service', async () => {
     const bad1 = 'https://bad1.audius.co'
-    nock(bad1)
-      .get('/health_check')
-      .reply(400)
+    nock(bad1).get('/health_check').reply(400)
 
     const bad2 = 'https://bad2.audius.co'
-    nock(bad2)
-      .get('/health_check')
-      .reply(400)
+    nock(bad2).get('/health_check').reply(400)
 
     const s = new ServiceSelection({
       getServices: async () => [bad1, bad2],
@@ -108,15 +91,10 @@ describe('ServiceSelection', () => {
 
   it('respects a whitelist', async () => {
     const fast = 'https://fast.audius.co'
-    nock(fast)
-      .get('/health_check')
-      .reply(200)
+    nock(fast).get('/health_check').reply(200)
 
     const slow = 'https://slow.audius.co'
-    nock(slow)
-      .get('/health_check')
-      .delay(200)
-      .reply(200)
+    nock(slow).get('/health_check').delay(200).reply(200)
 
     const s = new ServiceSelection({
       getServices: async () => [fast, slow],
@@ -128,15 +106,10 @@ describe('ServiceSelection', () => {
 
   it('respects a blacklist', async () => {
     const fast = 'https://fast.audius.co'
-    nock(fast)
-      .get('/health_check')
-      .reply(200)
+    nock(fast).get('/health_check').reply(200)
 
     const slow = 'https://slow.audius.co'
-    nock(slow)
-      .get('/health_check')
-      .delay(200)
-      .reply(200)
+    nock(slow).get('/health_check').delay(200).reply(200)
 
     const s = new ServiceSelection({
       getServices: async () => [fast, slow],
@@ -148,20 +121,12 @@ describe('ServiceSelection', () => {
 
   it('will recheck unhealthy ones', async () => {
     const atFirstHealthy = 'https://atFirstHealthy.audius.co'
-    nock(atFirstHealthy)
-      .get('/health_check')
-      .reply(200)
-    nock(atFirstHealthy)
-      .get('/health_check')
-      .reply(400)
+    nock(atFirstHealthy).get('/health_check').reply(200)
+    nock(atFirstHealthy).get('/health_check').reply(400)
 
     const atFirstUnhealthy = 'https://atFirstUnhealthy.audius.co'
-    nock(atFirstUnhealthy)
-      .get('/health_check')
-      .reply(400)
-    nock(atFirstUnhealthy)
-      .get('/health_check')
-      .reply(200)
+    nock(atFirstUnhealthy).get('/health_check').reply(400)
+    nock(atFirstUnhealthy).get('/health_check').reply(200)
 
     const s = new ServiceSelection({
       getServices: async () => [atFirstHealthy, atFirstUnhealthy],
@@ -179,7 +144,10 @@ describe('ServiceSelection', () => {
 
 describe('ServiceSelection withBackupCriteria', () => {
   class ServiceSelectionWithBackupCriteria extends ServiceSelection {
-    override isHealthy (response: AxiosResponse, urlMap: Record<string, string>) {
+    override isHealthy(
+      response: AxiosResponse,
+      urlMap: Record<string, string>
+    ) {
       if (response.status === 200) {
         if (response.data.behind) {
           const service = urlMap[response.config.url ?? '']
@@ -199,26 +167,19 @@ describe('ServiceSelection withBackupCriteria', () => {
   // Crude example of how backups can be used
   it('adds backups', async () => {
     const behind1 = 'https://behind1.audius.co'
-    nock(behind1)
-      .get('/health_check')
-      .reply(200, {
-        behind: true
-      })
+    nock(behind1).get('/health_check').reply(200, {
+      behind: true
+    })
 
     const behind2 = 'https://behind2.audius.co'
-    nock(behind2)
-      .get('/health_check')
-      .reply(200, {
-        behind: true
-      })
+    nock(behind2).get('/health_check').reply(200, {
+      behind: true
+    })
 
     const ok = 'https://ok.audius.co'
-    nock(ok)
-      .get('/health_check')
-      .delay(100)
-      .reply(200, {
-        behind: false
-      })
+    nock(ok).get('/health_check').delay(100).reply(200, {
+      behind: false
+    })
 
     const s = new ServiceSelectionWithBackupCriteria({
       getServices: async () => [behind1, behind2, ok]
@@ -234,14 +195,15 @@ describe('ServiceSelection withBackupCriteria', () => {
   it('should use a backup if there is no better option', async () => {
     // Single service that's behind
     const needle = 'https://needle.audius.co'
-    nock(needle)
-      .get('/health_check')
-      .reply(200, {
-        behind: true
-      })
+    nock(needle).get('/health_check').reply(200, {
+      behind: true
+    })
     // Many bad services
-    const haystack = Array.from({ length: 20 }, (_, i) => `https://${i}.audius.co`)
-    haystack.forEach(hay => {
+    const haystack = Array.from(
+      { length: 20 },
+      (_, i) => `https://${i}.audius.co`
+    )
+    haystack.forEach((hay) => {
       nock(hay).get('/health_check').reply(400)
     })
 
@@ -259,19 +221,18 @@ describe('ServiceSelection withBackupCriteria', () => {
   it('should skip over a backup if a better service can be found', async () => {
     // Single good service
     const needle = 'https://needle.audius.co'
-    nock(needle)
-      .get('/health_check')
-      .reply(200)
+    nock(needle).get('/health_check').reply(200)
     // Single service that's behind
     const behind = 'https://behind.audius.co'
-    nock(behind)
-      .get('/health_check')
-      .reply(200, {
-        behind: true
-      })
+    nock(behind).get('/health_check').reply(200, {
+      behind: true
+    })
     // Many bad services
-    const haystack = Array.from({ length: 20 }, (_, i) => `https://${i}.audius.co`)
-    haystack.forEach(hay => {
+    const haystack = Array.from(
+      { length: 20 },
+      (_, i) => `https://${i}.audius.co`
+    )
+    haystack.forEach((hay) => {
       nock(hay).get('/health_check').reply(400)
     })
 
@@ -288,18 +249,16 @@ describe('ServiceSelection withBackupCriteria', () => {
 describe('ServiceSelection withShortCircuit', () => {
   const shortcircuit = 'https://shortcircuit.audius.co'
   class ServiceSelectionWithShortCircuit extends ServiceSelection {
-    override shortcircuit () {
+    override shortcircuit() {
       return shortcircuit
     }
   }
 
   it('uses a short circuit', async () => {
     const other = 'https://other.audius.co'
-    nock(other)
-      .get('/health_check')
-      .reply(200, {
-        behind: true
-      })
+    nock(other).get('/health_check').reply(200, {
+      behind: true
+    })
 
     const s = new ServiceSelectionWithShortCircuit({
       getServices: async () => [other]
@@ -310,11 +269,9 @@ describe('ServiceSelection withShortCircuit', () => {
 
   it('does not use a short circuit when a blacklist is present', async () => {
     const other = 'https://other.audius.co'
-    nock(other)
-      .get('/health_check')
-      .reply(200, {
-        behind: true
-      })
+    nock(other).get('/health_check').reply(200, {
+      behind: true
+    })
 
     const s = new ServiceSelectionWithShortCircuit({
       getServices: async () => [other],
@@ -328,19 +285,13 @@ describe('ServiceSelection withShortCircuit', () => {
 describe('ServiceSelection findAll', () => {
   it('can find all the healthy services', async () => {
     const a = 'https://a.audius.co'
-    nock(a)
-      .get('/health_check')
-      .reply(200)
+    nock(a).get('/health_check').reply(200)
 
     const b = 'https://b.audius.co'
-    nock(b)
-      .get('/health_check')
-      .reply(200)
+    nock(b).get('/health_check').reply(200)
 
     const c = 'https://c.audius.co'
-    nock(c)
-      .get('/health_check')
-      .reply(400)
+    nock(c).get('/health_check').reply(400)
 
     const s = new ServiceSelection({
       getServices: async () => [a, b, c]
@@ -351,20 +302,13 @@ describe('ServiceSelection findAll', () => {
 
   it('will drop slow services', async () => {
     const a = 'https://a.audius.co'
-    nock(a)
-      .get('/health_check')
-      .delay(200)
-      .reply(200)
+    nock(a).get('/health_check').delay(200).reply(200)
 
     const b = 'https://b.audius.co'
-    nock(b)
-      .get('/health_check')
-      .reply(200)
+    nock(b).get('/health_check').reply(200)
 
     const c = 'https://c.audius.co'
-    nock(c)
-      .get('/health_check')
-      .reply(200)
+    nock(c).get('/health_check').reply(200)
 
     const s = new ServiceSelection({
       getServices: async () => [a, b, c],
