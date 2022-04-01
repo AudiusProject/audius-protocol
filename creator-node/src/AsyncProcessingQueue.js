@@ -233,20 +233,55 @@ class AsyncProcessingQueue {
 
       throw e
     }
+  }
+
+  /**
+   * Given the jobs, create a count of the type of tasks.
+   * @param {Object} jobs jobs returned from the queue
+   * @returns {Object} the number of jobs per task
+   * Example response:
+   *
+   * {
+   *    trackContentUpload: 1,
+   *    transcodeAndSegment: 4,
+   *    processTranscodeAndSegments: 0,
+   *    transcodeHandOff: 2
+   *    total: 7
+   * }
+   *
+   */
+  getTasks(jobs) {
+    const response = {
+      trackContentUpload: 0,
+      transcodeAndSegment: 0,
+      processTranscodeAndSegments: 0,
+      transcodeHandOff: 0
+    }
+
+    jobs.forEach((job) => {
+      response[job.data.task] += 1
+    })
+
+    response['total'] = jobs.length
 
     return response
   }
 
   async getAsyncProcessingQueueJobs() {
     const queue = this.queue
-    const [waiting, active] = await Promise.all([
+    const [waiting, active, failed] = await Promise.all([
       queue.getJobs(['waiting']),
-      queue.getJobs(['active'])
+      queue.getJobs(['active']),
+      queue.getJobs(['failed'])
     ])
-    return {
-      waiting: waiting.length,
-      active: active.length
+
+    const allTasks = {
+      waiting: this.getTasks(waiting),
+      active: this.getTasks(active),
+      failed: this.getTasks(failed)
     }
+
+    return allTasks
   }
 
   constructAsyncProcessingKey(uuid) {
