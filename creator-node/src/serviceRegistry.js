@@ -24,7 +24,7 @@ const TrustedNotifierManager = require('./services/TrustedNotifierManager')
  *  - `blackListManager`: responsible for handling blacklisted content
  *  - `monitoringQueue`: recurring job to monitor node state & performance metrics
  *  - `sessionExpirationQueue`: recurring job to clear expired session tokens from Redis and DB
- *  - `asyncProcessingQueue`: queue that processes jobs and adds job responses into redis
+ *  - `asyncProcessingQueue`: queue that processes jobs asynchronously and adds job responses into redis
  *
  *  - `libs`: an instance of Audius Libs
  *  - `snapbackSM`: SnapbackStateMachine is responsible for recurring sync and reconfig operations
@@ -39,7 +39,6 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
-    this.asyncProcessingQueue = new AsyncProcessingQueue()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
@@ -63,7 +62,7 @@ class ServiceRegistry {
     this.libs = await this._initAudiusLibs()
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
-    this.asyncProcessingQueue.setLibs(this.libs)
+    this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
 
     this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
     // do not await on this, if we cannot fetch the notifier from chain, it will stop the content node from coming up

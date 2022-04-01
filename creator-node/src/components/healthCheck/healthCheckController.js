@@ -91,7 +91,7 @@ const healthCheckController = async (req) => {
 
   const { randomBytesToSign } = req.query
 
-  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
+  const AsyncProcessingQueue = req.app.get('serviceRegistry').asyncProcessingQueue
 
   const logger = req.logger
   const response = await healthCheck(
@@ -137,7 +137,7 @@ const healthCheckVerboseController = async (req) => {
     return errorResponseServerError()
   }
 
-  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
+  const AsyncProcessingQueue = req.app.get('serviceRegistry').asyncProcessingQueue
 
   const logger = req.logger
   const healthCheckResponse = await healthCheckVerbose(

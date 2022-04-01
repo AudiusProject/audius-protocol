@@ -63,8 +63,7 @@ module.exports = function (app) {
 
       const currNodeShouldHandleTranscode = currentNodeShouldHandleTranscode({
         transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
-        spID: config.get('spID'),
-        libs: AsyncProcessingQueue.getLibs()
+        spID: config.get('spID')
       })
 
       if (currNodeShouldHandleTranscode) {

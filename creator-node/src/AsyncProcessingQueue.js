@@ -35,7 +35,7 @@ const PROCESS_STATES = Object.freeze({
  */
 
 class AsyncProcessingQueue {
-  constructor() {
+  constructor(libs) {
     this.queue = new Bull('asyncProcessing', {
       redis: {
         host: config.get('redisHost'),
@@ -47,7 +47,7 @@ class AsyncProcessingQueue {
       }
     })
 
-    this.libs = null
+    this.libs = libs
 
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
       const { logContext, task } = job.data
@@ -251,14 +251,6 @@ class AsyncProcessingQueue {
 
   constructAsyncProcessingKey(uuid) {
     return `async:::${uuid}`
-  }
-
-  setLibs(libs) {
-    this.libs = libs
-  }
-
-  getLibs() {
-    return this.libs
   }
 }
 

@@ -7,11 +7,9 @@ const Utils = require('../src/utils')
 
 describe('test src/utils.js', () => {
   it('Current node should handle transcode if TranscodingQueue has room', function () {
-    const mockLibs = {}
     assert.strictEqual(
       Utils.currentNodeShouldHandleTranscode({
         transcodingQueueCanAcceptMoreJobs: true,
-        libs: mockLibs,
         spID: 1
       }),
       true
@@ -19,43 +17,19 @@ describe('test src/utils.js', () => {
   })
 
   it('Current node should handle transcode if spID is not initialized', function () {
-    const mockLibs = {}
     assert.strictEqual(
       Utils.currentNodeShouldHandleTranscode({
         transcodingQueueCanAcceptMoreJobs: true,
-        libs: mockLibs,
         spID: null
       }),
       true
     )
   })
 
-  it('Current node should handle transcode if libs is not set', function () {
+  it('Current node should not handle transcode if there is no room in TranscodingQueue and spID is initialized', function () {
     assert.strictEqual(
       Utils.currentNodeShouldHandleTranscode({
         transcodingQueueCanAcceptMoreJobs: false,
-        libs: null,
-        spID: 1
-      }),
-      true
-    )
-
-    assert.strictEqual(
-      Utils.currentNodeShouldHandleTranscode({
-        transcodingQueueCanAcceptMoreJobs: false,
-        libs: undefined,
-        spID: 1
-      }),
-      true
-    )
-  })
-
-  it('Current node should not handle transcode if there is no room in TranscodingQueue, spID is initialized, and libs is initialized', function () {
-    const mockLibs = {}
-    assert.strictEqual(
-      Utils.currentNodeShouldHandleTranscode({
-        transcodingQueueCanAcceptMoreJobs: false,
-        libs: mockLibs,
         spID: 1
       }),
       false
