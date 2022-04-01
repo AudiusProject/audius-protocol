@@ -5,7 +5,6 @@ const fs = require('fs')
 
 const models = require('../src/models')
 
-const ipfsClient = require('../src/ipfsClient')
 const BlacklistManager = require('../src/blacklistManager')
 const DiskManager = require('../src/diskManager')
 
@@ -13,22 +12,17 @@ const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 
-describe('Test AudiusUsers with real IPFS (not mock)', function () {
-  let app, server, session, libsMock, ipfs, ipfsLatest
+describe('Test AudiusUsers', function () {
+  let app, server, session, libsMock
 
   beforeEach(async () => {
-    ipfs = ipfsClient.ipfs
-    ipfsLatest = ipfsClient.ipfsLatest
-
     libsMock = getLibsMock()
 
     const userId = 1
 
-    // Setting the env vars before requiring the app will populate the env vars as expected
-    process.env.enableIPFSAddMetadata = true
     const { getApp } = require('./lib/app')
 
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app
@@ -94,19 +88,6 @@ describe('Test AudiusUsers with real IPFS (not mock)', function () {
       type: 'metadata'
     } })
     assert.ok(file)
-
-    // check that the metadata file is in IPFS
-    let ipfsResp
-    try {
-      ipfsResp = await ipfs.cat(resp.body.data.metadataMultihash)
-    } catch (e) {
-      // If CID is not present, will throw timeout error
-      assert.fail(e.message)
-    }
-
-    // check that the ipfs content matches what we expect
-    const metadataBuffer = Buffer.from(JSON.stringify(metadata))
-    assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
   })
 
   it('successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
@@ -134,19 +115,6 @@ describe('Test AudiusUsers with real IPFS (not mock)', function () {
       type: 'metadata'
     } })
     assert.ok(file)
-
-    // check that the metadata file is in IPFS
-    let ipfsResp
-    try {
-      ipfsResp = await ipfs.cat(resp.body.data.metadataMultihash)
-    } catch (e) {
-      // If CID is not present, will throw timeout error
-      assert.fail(e.message)
-    }
-
-    // check that the ipfs content matches what we expect
-    const metadataBuffer = Buffer.from(JSON.stringify(metadata))
-    assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
 
     await request(app)
       .post('/audius_users')

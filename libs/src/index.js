@@ -15,8 +15,7 @@ const AudiusABIDecoder = require('./services/ABIDecoder/index')
 const SchemaValidator = require('./services/schemaValidator')
 const UserStateManager = require('./userStateManager')
 const SanityChecks = require('./sanityChecks')
-const Utils = require('./utils')
-const Captcha = Utils.Captcha
+const { Utils, Captcha } = require('./utils')
 
 const Account = require('./api/account')
 const User = require('./api/user')
@@ -29,7 +28,7 @@ const Web3 = require('./web3')
 const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')
-const RewardsAttester = require('./services/solanaWeb3Manager/rewardsAttester')
+const { RewardsAttester } = require('./services/solanaWeb3Manager/rewardsAttester')
 
 class AudiusLibs {
   /**
@@ -303,6 +302,7 @@ class AudiusLibs {
     preferHigherPatchForSecondaries = true
   }) {
     // set version
+
     this.version = packageJSON.version
 
     this.ethWeb3Config = ethWeb3Config

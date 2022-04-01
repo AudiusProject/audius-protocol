@@ -5,19 +5,16 @@ const BlacklistManager = require('../src/blacklistManager')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants } = require('./lib/dataSeeds')
-const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
 describe('test Users', async function () {
-  let app, server, ipfsMock, ipfsLatestMock, libsMock
+  let app, server, libsMock
 
   /** Setup app + global test vars */
   beforeEach(async () => {
-    ipfsMock = getIPFSMock()
-    ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock)
+    const appInfo = await getApp(libsMock, BlacklistManager)
     await BlacklistManager.init()
 
     app = appInfo.app

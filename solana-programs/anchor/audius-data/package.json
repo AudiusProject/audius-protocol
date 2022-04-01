@@ -7,6 +7,7 @@
         "deploy-dev": "anchor deploy",
         "localnet-down": "killall -9 solana-test-validator",
         "localnet-up": "solana-test-validator --reset --limit-ledger-size 100000",
+        "localnet-up-ci": "solana-test-validator --reset --limit-ledger-size 100000 --quiet &",
         "seed-tx": "./scripts/seed-tx.sh",
         "dev-setup": "npm run build-dev && npm run deploy-dev && npm run seed-tx",
         "test": "BROWSER= anchor test",

@@ -5,7 +5,9 @@ const { Base, Services } = require('./base')
 const BN = require('bn.js')
 const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
 const { WAUDIO_DECMIALS } = require('../constants')
-const { decodeHashId } = require('../utils/utils')
+const { Utils } = require('../utils/utils')
+
+const { decodeHashId } = Utils
 
 const GetAttestationError = Object.freeze({
   CHALLENGE_INCOMPLETE: 'CHALLENGE_INCOMPLETE',
@@ -16,11 +18,10 @@ const GetAttestationError = Object.freeze({
   USER_NOT_FOUND: 'USER_NOT_FOUND',
   HCAPTCHA: 'HCAPTCHA',
   COGNITO_FLOW: 'COGNITO_FLOW',
-  BLOCKED: 'BLOCKED',
-  OTHER: 'OTHER',
   DISCOVERY_NODE_ATTESTATION_ERROR: 'DISCOVERY_NODE_ATTESTATION_ERROR',
   DISCOVERY_NODE_UNKNOWN_RESPONSE: 'DISCOVERY_NODE_UNKNOWN_RESPONSE',
   AAO_ATTESTATION_ERROR: 'AAO_ATTESTATION_ERROR',
+  AAO_ATTESTATION_REJECTION: 'AAO_ATTESTATION_REJECTION',
   AAO_ATTESTATION_UNKNOWN_RESPONSE: 'AAO_ATTESTATION_UNKNOWN_RESPONSE',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 })
@@ -454,11 +455,17 @@ class Rewards extends Base {
 
     try {
       const response = await axios(request)
+      // if attestation is successful, 'result' represents a signature
+      // otherwise, 'result' is false
+      // - there may or may not be a value for `needs` if the attestation fails
+      // - depending on whether the user can take an action to attempt remediation
       const { result, needs } = response.data
 
-      if (needs) {
-        logger.error(`Failed to get AAO attestation: needs ${needs}`)
-        const mappedErr = GetAttestationError[needs] || GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
+      if (!result) {
+        logger.error(`Failed to get AAO attestation${needs ? `: needs ${needs}` : ''}`)
+        const mappedErr = needs
+          ? GetAttestationError[needs] || GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
+          : GetAttestationError.AAO_ATTESTATION_REJECTION
         return {
           success: null,
           error: mappedErr

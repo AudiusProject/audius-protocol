@@ -26,8 +26,6 @@ const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 10000 // 10s
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
 
-const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = 5000
-
 const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 
 // Describes the type of sync operation
@@ -719,15 +717,9 @@ class SnapbackSM {
         const walletsOnReplica = replicasToWalletsMap[replica]
 
         // Make requests in batches, sequentially, to ensure POST request body does not exceed max size
-        for (
-          let i = 0;
-          i < walletsOnReplica.length;
-          i += MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
-        ) {
-          const walletsOnReplicaSlice = walletsOnReplica.slice(
-            i,
-            i + MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
-          )
+        const batchSize = this.nodeConfig.get('maxBatchClockStatusBatchSize')
+        for (let i = 0; i < walletsOnReplica.length; i += batchSize) {
+          const walletsOnReplicaSlice = walletsOnReplica.slice(i, i + batchSize)
 
           const axiosReqParams = {
             baseURL: replica,

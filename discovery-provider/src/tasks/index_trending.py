@@ -243,7 +243,7 @@ def get_should_update_trending(
         current_db_block = (
             session.query(Block.blockhash).filter(Block.is_current == True).first()
         )
-        current_block = web3.eth.getBlock(current_db_block[0], True)
+        current_block = web3.eth.get_block(current_db_block[0], True)
         current_timestamp = current_block["timestamp"]
         block_datetime = floor_time(
             datetime.fromtimestamp(current_timestamp), interval_seconds

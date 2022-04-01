@@ -1,15 +1,16 @@
-const Utils = require('./utils.js')
-const { ecsign, toBuffer } = require('ethereumjs-util')
-const { pack } = require('@ethersproject/solidity')
+import { Utils } from './utils'
+import { ecsign, toBuffer } from 'ethereumjs-util'
+import { pack } from '@ethersproject/solidity'
+import type Web3 from 'web3'
 
-const sign = (digest, privateKey) => {
+export const sign = (digest: unknown, privateKey: Buffer) => {
   const buffer = toBuffer(digest)
   const signature = ecsign(buffer, privateKey)
   return signature
 }
 
 // lazyload permitTypehash to avoid a web3 race
-let _permitTypehash = null
+let _permitTypehash: null | string = null
 const getPermitTypehash = () => {
   if (!_permitTypehash) {
     _permitTypehash = Utils.keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
@@ -17,7 +18,7 @@ const getPermitTypehash = () => {
   return _permitTypehash
 }
 
-let _transferTokensTypehash = null
+let _transferTokensTypehash: null | string = null
 const getTransferTokensTypeHash = () => {
   if (!_transferTokensTypehash) {
     _transferTokensTypehash = Utils.keccak256('TransferTokens(address from,uint256 amount,uint16 recipientChain,bytes32 recipient,uint256 artbiterFee,uint32 nonce,uint256 deadline)')
@@ -25,16 +26,18 @@ const getTransferTokensTypeHash = () => {
   return _transferTokensTypehash
 }
 
+export interface ApproveTokens {owner: string, spender: string, value: string}
+
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
-function getPermitDigest (
-  web3,
-  name,
-  address,
-  chainId,
-  approve,
-  nonce,
-  deadline
+export function getPermitDigest (
+  web3: Web3,
+  name: string,
+  address: string,
+  chainId: string,
+  approve: ApproveTokens,
+  nonce: boolean,
+  deadline: string
 ) {
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
 
@@ -54,16 +57,18 @@ function getPermitDigest (
   return Utils.keccak256(encoded)
 }
 
+export interface TransferTokens {from: string, amount: string, recipientChain: string, recipient: string, arbiterFee: string}
+
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `transferTokens`
-function getTransferTokensDigest (
-  web3,
-  name,
-  address,
-  chainId,
-  transferTokens,
-  nonce,
-  deadline
+export function getTransferTokensDigest (
+  web3: Web3,
+  name: string,
+  address: string,
+  chainId: string,
+  transferTokens: TransferTokens,
+  nonce: boolean,
+  deadline: string
 ) {
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
   const innerEncoded = web3.eth.abi.encodeParameters(
@@ -85,7 +90,7 @@ function getTransferTokensDigest (
 }
 
 // Gets the EIP712 domain separator
-function getDomainSeparator (web3, name, contractAddress, chainId) {
+function getDomainSeparator (web3: Web3, name: string, contractAddress: string, chainId: string) {
   const encoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
     [
@@ -97,10 +102,4 @@ function getDomainSeparator (web3, name, contractAddress, chainId) {
     ]
   )
   return Utils.keccak256(encoded)
-}
-
-module.exports = {
-  sign,
-  getPermitDigest,
-  getTransferTokensDigest
 }
