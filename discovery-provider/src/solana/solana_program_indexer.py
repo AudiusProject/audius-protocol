@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -9,11 +10,15 @@ from src.solana.constants import (
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
+from src.solana.solana_transaction_types import (
+    TransactionInfoResult
+)
 
 logger = logging.getLogger(__name__)
 
 BASE_ERROR = "Must be implemented in subclass"
 
+TX_SIGNATURES_PROCESSING_SIZE = 100
 
 class IndexerBase(ABC):
     """
@@ -57,6 +62,9 @@ class IndexerBase(ABC):
         # DO NOT MERGE AS ERROR
         logger.error(f"{self._label} | {msg}")
 
+def split_list(list, n):
+    for i in range(0, len(list), n):
+        yield list[i : i + n]
 
 class SolanaProgramIndexer(IndexerBase):
     """
@@ -103,9 +111,32 @@ class SolanaProgramIndexer(IndexerBase):
         """
         raise Exception(BASE_ERROR)
 
+    async def parse_tx(self, tx_sig):
+        self.msg(f"parse_tx {tx_sig}")
+        tx_info = self._solana_client_manager.get_sol_tx_info(tx_sig)
+        result: TransactionInfoResult = tx_info["result"]
+        return result
+
+    async def process_txs_batch(self, tx_sig_batch_records):
+        self.msg(f"Parsing {tx_sig_batch_records}")
+        futures = []
+        for tx_sig in tx_sig_batch_records:
+            future = asyncio.ensure_future(
+                self.parse_tx(tx_sig)
+            )
+            futures.append(future)
+        for future in asyncio.as_completed(
+            futures, timeout=100000
+        ):
+            try:
+                future_result = await future
+                self.msg(f"{future_result}")
+            except asyncio.CancelledError:
+                pass # Swallow cancelled requests
+
     def get_transactions_to_process(self):
         """
-        Calculate the delta between database and chain tail
+        Calculate the delta between database and chain tail and return an array of arrays containing transaction batches
         """
         latest_processed_slot = self.get_latest_slot()
         # The 'before' value from where we start querying transactions
@@ -241,5 +272,13 @@ class AnchorDataIndexer(SolanaProgramIndexer):
 
     def process_index_task(self):
         self.msg("AnchorDataIndexer : processing indexing task")
-        txs_to_process = self.get_transactions_to_process()
-        self.msg(f"AnchorDataIndexer: processing {txs_to_process}")
+        # Retrieve transactions to process
+        transaction_signatures = self.get_transactions_to_process()
+        self.msg(f"AnchorDataIndexer: processing {transaction_signatures}")
+        # Break down batch into records of size 100
+        for tx_sig_batch in transaction_signatures:
+            for tx_sig_batch_records in split_list(
+                tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
+            ):
+                # Dispatch transactions to processor
+                asyncio.run(self.process_txs_batch(tx_sig_batch_records))
