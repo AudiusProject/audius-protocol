@@ -118,10 +118,9 @@ def test_validate_v1_swagger():
     with app.app_context(), app.test_request_context():
         schema = api_v1.api_v1.__schema__
         errors = validate_schema(schema)
-        print_errors(errors)
-
-        # TODO: Fix all errors and then enable assert
-        # assert not errors
+        if errors:
+            print_errors(errors)
+        assert len(errors) == 0, "Generated Swagger API documentation has no errors"
 
 
 def test_validate_v1_full_swagger():
@@ -131,7 +130,6 @@ def test_validate_v1_full_swagger():
     with app.app_context(), app.test_request_context():
         schema = api_v1.api_v1_full.__schema__
         errors = validate_schema(schema)
-        print_errors(errors)
-
-        # TODO: Fix all errors and then enable assert
-        # assert not errors
+        if errors:
+            print_errors(errors)
+        assert len(errors) == 0, "Generated Swagger API documentation has no errors"
