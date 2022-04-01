@@ -21,7 +21,7 @@ GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS = 5
 
 
 class CIDMetadataClient:
-    """Helper class for Audius Discovery Provider + IPFS interaction"""
+    """Helper class for Audius Discovery Provider + CID Metadata interaction"""
 
     def __init__(
         self,
@@ -30,10 +30,8 @@ class CIDMetadataClient:
         redis=None,
         eth_abi_values=None,
     ):
-        # logger.warning("IPFSCLIENT | initializing")
-
         # Fetch list of registered content nodes to use during init.
-        # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty
+        # During indexing, if cid metadata fetch fails, _cnode_endpoints and user_replica_set are empty
         # it might fail to find content and throw an error. To prevent race conditions between
         # indexing starting and this getting populated, run this on init in the instance
         # in the celery worker
@@ -44,16 +42,18 @@ class CIDMetadataClient:
                 )
             )
             logger.warning(
-                f"IPFSCLIENT | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
+                f"CIDMetadataClient | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
             )
         else:
             self._cnode_endpoints = []
-            logger.warning("IPFSCLIENT | couldn't fetch _cnode_endpoints on init")
+            logger.warning(
+                "CIDMetadataClient | couldn't fetch _cnode_endpoints on init"
+            )
 
     def update_cnode_urls(self, cnode_endpoints):
         if len(cnode_endpoints):
             logger.info(
-                f"IPFSCLIENT | update_cnode_urls with endpoints {cnode_endpoints}"
+                f"CIDMetadataClient | update_cnode_urls with endpoints {cnode_endpoints}"
             )
             self._cnode_endpoints = cnode_endpoints
 
@@ -72,7 +72,7 @@ class CIDMetadataClient:
             validate_url = urlparse(url)
             if not validate_url.scheme:
                 raise Exception(
-                    f"IPFSCLIENT | Invalid URL from provided gateway addr - {url}"
+                    f"CIDMetadataClient | Invalid URL from provided gateway addr - {url}"
                 )
 
             async with async_session.get(
@@ -83,11 +83,11 @@ class CIDMetadataClient:
                     return (multihash, json_resp)
         except asyncio.TimeoutError:
             logger.info(
-                f"IPFSCLIENT | _get_metadata_async TimeoutError fetching gateway address - {url}"
+                f"CIDMetadataClient | _get_metadata_async TimeoutError fetching gateway address - {url}"
             )
             return None
         except Exception as e:
-            logger.info(f"IPFSCLIENT | _get_metadata_async Exception - {str(e)}")
+            logger.info(f"CIDMetadataClient | _get_metadata_async Exception - {str(e)}")
             return None
 
     def _get_gateway_endpoints(
@@ -187,10 +187,10 @@ class CIDMetadataClient:
 
             except asyncio.TimeoutError:
                 logger.info(
-                    "IPFSCLIENT | fetch_metadata_from_gateway_endpoints TimeoutError"
+                    "CIDMetadataClient | fetch_metadata_from_gateway_endpoints TimeoutError"
                 )
             except Exception as e:
-                logger.info("IPFSCLIENT | Error in fetch cid metadata")
+                logger.info("CIDMetadataClient | Error in fetch cid metadata")
                 raise e
         return cid_metadata
 

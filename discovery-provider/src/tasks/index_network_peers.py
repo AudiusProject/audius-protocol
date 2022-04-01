@@ -58,7 +58,7 @@ def update_network_peers(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     redis = update_network_peers.redis
-    ipfs_client = update_network_peers.ipfs_client
+    cid_metadata_client = update_network_peers.cid_metadata_client
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
@@ -89,7 +89,7 @@ def update_network_peers(self):
             peers_list = list(all_peers)
             # Update creator node url list in IPFS Client
             # This list of known nodes is used to traverse and retrieve metadata from gateways
-            ipfs_client.update_cnode_urls(peers_list)
+            cid_metadata_client.update_cnode_urls(peers_list)
         else:
             logger.info(
                 "index_network_peers.py | Failed to acquire update_network_peers"
