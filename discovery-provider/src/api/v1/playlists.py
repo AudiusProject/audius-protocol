@@ -266,6 +266,7 @@ playlist_reposts_response = make_full_response(
 class FullPlaylistReposts(Resource):
     @full_ns.doc(
         id="""Get Users From Playlist Reposts""",
+        description="""Get users that reposted a playlist""",
         params={"playlist_id": "A Playlist ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
