@@ -75,7 +75,8 @@ describe('test Polling Tracks with mocks', function () {
   let app,
     server,
     libsMock,
-    handleTrackContentRoute
+    handleTrackContentRoute,
+    mockServiceRegistry
   let session, userId, userWallet
 
   const spId = 1
@@ -840,7 +841,8 @@ describe('test Polling Tracks with real files', function () {
     session,
     libsMock,
     handleTrackContentRoute,
-    userId
+    userId,
+    mockServiceRegistry
 
   /** Inits libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
@@ -1071,8 +1073,8 @@ describe('test Polling Tracks with real files', function () {
       .set('User-Id', userId)
       .send(trackMetadata)
       .expect(200)
-    trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
-    trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+    // const trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
+    const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
     
     // Complete track creation
     await request(app2)
@@ -1124,8 +1126,8 @@ describe('test Polling Tracks with real files', function () {
      .set('User-Id', userId)
      .send(trackMetadata)
      .expect(200)
-   trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
-   trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+  //  const trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
+   const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
    // Upload track 2 metadata
    const track2Metadata = {
@@ -1141,8 +1143,8 @@ describe('test Polling Tracks with real files', function () {
     .set('User-Id', userId)
     .send(track2Metadata)
     .expect(200)
-  track2MetadataMultihash = track2MetadataResp.body.data.metadataMultihash
-  track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
+  // const track2MetadataMultihash = track2MetadataResp.body.data.metadataMultihash
+  const track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
    
    // Complete track1 creation
    await request(app2)
