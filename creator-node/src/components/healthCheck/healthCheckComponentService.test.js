@@ -81,12 +81,7 @@ const TranscodingQueueMock = (active = 0, waiting = 0) => {
   }
 }
 
-const AsyncProcessingQueueMock = (
-  active = 0,
-  waiting = 0,
-  failed = 0,
-  delayed = 0
-) => {
+const AsyncProcessingQueueMock = (active = 0, waiting = 0, failed = 0) => {
   return {
     getAsyncProcessingQueueJobs: async () => {
       return {
@@ -131,7 +126,11 @@ describe('Test Health Check', function () {
     config.set('dataProviderUrl', 'http://test.dataProviderUrl')
 
     const res = await healthCheck(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
@@ -216,7 +215,10 @@ describe('Test Health Check', function () {
     config.set('manualSyncsDisabled', false)
 
     const res = await healthCheck(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
@@ -293,7 +295,10 @@ describe('Test Health Check', function () {
 
   it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
     const res = await healthCheck(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
@@ -382,7 +387,10 @@ describe('Test Health Check Verbose', function () {
     config.set('manualSyncsDisabled', false)
 
     const res = await healthCheckVerbose(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
@@ -468,7 +476,11 @@ describe('Test Health Check Verbose', function () {
     config.set('manualSyncsDisabled', false)
 
     const verboseRes = await healthCheckVerbose(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
@@ -477,7 +489,11 @@ describe('Test Health Check Verbose', function () {
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
     const defaultRes = await healthCheck(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,

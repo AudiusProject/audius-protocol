@@ -262,7 +262,7 @@ class AsyncProcessingQueue {
       response[job.data.task] += 1
     })
 
-    response['total'] = jobs.length
+    response.total = jobs.length
 
     return response
   }
