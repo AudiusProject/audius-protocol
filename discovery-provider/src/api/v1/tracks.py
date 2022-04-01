@@ -822,7 +822,12 @@ class FullTrackStems(Resource):
 
 track_remixables_route_parser = pagination_with_current_user_parser.copy()
 track_remixables_route_parser.remove_argument("offset")
-track_remixables_route_parser.add_argument("with_users", required=False, type=bool)
+track_remixables_route_parser.add_argument(
+    "with_users",
+    required=False,
+    type=bool,
+    description="Boolean to include user info with tracks",
+)
 
 
 @full_ns.route("/remixables")
@@ -831,9 +836,6 @@ class FullRemixableTracks(Resource):
     @full_ns.doc(
         id="""Get Remixable Tracks""",
         description="""Gets a list of tracks that have stems available for remixing""",
-        params={
-            "with_users": "Boolean to include user info with tracks",
-        },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(track_remixables_route_parser)
@@ -927,20 +929,32 @@ class FullRemixingRoute(Resource):
       window: (string) The window from now() to look back over. Supports  all standard SqlAlchemy interval notation (week, month, year, etc.).
       limit?: (number) default=25, max=100
 """
-best_new_releases_parser = reqparse.RequestParser()
+best_new_releases_parser = current_user_parser.copy()
 best_new_releases_parser.add_argument(
     "window", required=True, choices=("week", "month", "year"), type=str
 )
-best_new_releases_parser.add_argument("user_id", required=True, type=str)
-best_new_releases_parser.add_argument("limit", required=False, default=25, type=int)
 best_new_releases_parser.add_argument(
-    "with_users", required=False, default=True, type=bool
+    "limit",
+    required=False,
+    default=25,
+    type=int,
+    description="The number of tracks to get",
+)
+best_new_releases_parser.add_argument(
+    "with_users",
+    required=False,
+    type=bool,
+    description="Boolean to include user info with tracks",
 )
 
 
 @full_ns.route("/best_new_releases")
 class BestNewReleases(Resource):
     @record_metrics
+    @full_ns.doc(
+        id="Best New Releases",
+        description='Gets the tracks found on the "Best New Releases" smart playlist',
+    )
     @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=10)
     def get(self):
@@ -970,27 +984,36 @@ This is generated in the following manner:
   - Sort combined results by 'timestamp' field and return
 """
 
-under_the_radar_parser = reqparse.RequestParser()
-under_the_radar_parser.add_argument("user_id", required=True, type=str)
+under_the_radar_parser = pagination_with_current_user_parser.copy()
 under_the_radar_parser.add_argument(
     "filter",
     required=False,
     default="all",
     choices=("all", "repost", "original"),
     type=str,
+    description="Filters for activity that is original vs reposts",
 )
-under_the_radar_parser.add_argument("limit", required=False, default=25, type=int)
-under_the_radar_parser.add_argument("offset", required=False, default=0, type=int)
-under_the_radar_parser.add_argument("tracks_only", required=False, type=bool)
 under_the_radar_parser.add_argument(
-    "with_users", required=False, default=True, type=bool
+    "tracks_only",
+    required=False,
+    type=bool,
+    description="Whether to only include tracks",
+)
+under_the_radar_parser.add_argument(
+    "with_users",
+    required=False,
+    type=bool,
+    description="Boolean to include user info with tracks",
 )
 
 
 @full_ns.route("/under_the_radar")
 class UnderTheRadar(Resource):
     @record_metrics
-    @full_ns.doc(id="""Get Under the Radar Tracks""", description="""""")
+    @full_ns.doc(
+        id="""Get Under the Radar Tracks""",
+        description="""Gets the tracks found on the \"Under the Radar\" smart playlist""",
+    )
     @full_ns.expect(under_the_radar_parser)
     @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=10)
@@ -1009,10 +1032,20 @@ class UnderTheRadar(Resource):
         return success_response(feed_results)
 
 
-most_loved_parser = reqparse.RequestParser()
-most_loved_parser.add_argument("user_id", required=True, type=str)
-most_loved_parser.add_argument("limit", required=False, default=25, type=int)
-most_loved_parser.add_argument("with_users", required=False, type=bool)
+most_loved_parser = current_user_parser.copy()
+most_loved_parser.add_argument(
+    "limit",
+    required=False,
+    default=25,
+    type=int,
+    description="Number of tracks to fetch",
+)
+most_loved_parser.add_argument(
+    "with_users",
+    required=False,
+    type=bool,
+    description="Boolean to include user info with tracks",
+)
 
 
 @full_ns.route("/most_loved")
@@ -1089,6 +1122,7 @@ by_ids_parser.add_argument(
 @full_ns.route("/by_ids")
 class TracksByIDs(Resource):
     @record_metrics
+    @full_ns.doc(id="Get Tracks By Ids", description="Gets multiple tracks by IDs")
     @full_ns.expect(by_ids_parser)
     @full_ns.marshal_with(full_tracks_response)
     @auth_middleware()
