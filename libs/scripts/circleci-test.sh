@@ -43,7 +43,7 @@ cd ../libs/
 sh ./scripts/migrate_contracts.sh
 
 # Run unit tests
-npm run test:units
+npm run test:unit
 
 # run tests
 printf '\nSTART tests:\n\n'

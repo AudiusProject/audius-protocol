@@ -13,7 +13,7 @@ const ClaimDistributionClient = require('./claimDistributionClient')
 const WormholeClient = require('./wormholeClient')
 const EthRewardsManagerClient = require('./ethRewardsManagerClient')
 const TrustedNotifierManagerClient = require('./trustedNotifierManagerClient')
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
 const RegistryABI = Utils.importEthContractABI('Registry.json').abi

@@ -1,8 +1,11 @@
 # pylint: disable=C0302
+import asyncio
 import concurrent.futures
 import logging
 import time
+from datetime import datetime
 from operator import itemgetter, or_
+from typing import Any, Dict, Set, Tuple
 
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -31,7 +34,6 @@ from src.queries.get_skipped_transactions import (
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
-from src.tasks.metadata import track_metadata_format, user_metadata_format
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.tracks import track_event_types_lookup, track_state_update
@@ -49,7 +51,6 @@ from src.utils.index_blocks_performance import (
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
-from src.utils.ipfs_lib import NEW_BLOCK_TIMEOUT_SECONDS
 from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
@@ -123,7 +124,7 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
 
     target_blockhash = None
     target_blockhash = update_task.shared_config["discprov"]["start_block"]
-    target_block = update_task.web3.eth.getBlock(target_blockhash, True)
+    target_block = update_task.web3.eth.get_block(target_blockhash, True)
 
     with db.scoped_session() as session:
         current_block_query_result = session.query(Block).filter_by(is_current=True)
@@ -186,7 +187,7 @@ def get_latest_block(db: SessionManager):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+        latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
@@ -196,12 +197,12 @@ def get_latest_block(db: SessionManager):
         logger.info(
             f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
-        latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
+        latest_block = update_task.web3.eth.get_block(target_latest_block_number, True)
     return latest_block
 
 
 def update_latest_block_redis():
-    latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+    latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
     default_indexing_interval_seconds = int(
         update_task.shared_config["discprov"]["block_processing_interval_sec"]
     )
@@ -222,7 +223,7 @@ def update_latest_block_redis():
 def fetch_tx_receipt(transaction):
     web3 = update_task.web3
     tx_hash = web3.toHex(transaction["hash"])
-    receipt = web3.eth.getTransactionReceipt(tx_hash)
+    receipt = web3.eth.get_transaction_receipt(tx_hash)
     response = {}
     response["tx_receipt"] = receipt
     response["tx_hash"] = tx_hash
@@ -259,22 +260,25 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-def fetch_ipfs_metadata(
+def fetch_cid_metadata(
     db,
     user_factory_txs,
     track_factory_txs,
-    block_number,
-    block_hash,
 ):
+    start_time = datetime.now()
     user_contract = update_task.user_contract
     track_contract = update_task.track_contract
 
-    blacklisted_cids = set()
-    cids = set()
-    cid_type = {}
-    # cid -> user_id lookup to make fetching replica set more efficient
-    cid_to_user_id = {}
+    blacklisted_cids: Set[str] = set()
+    cids_txhash_set: Tuple[str, Any] = set()
+    cid_type: Dict[str, str] = {}  # cid -> entity type track / user
 
+    # cid -> user_id lookup to make fetching replica set more efficient
+    cid_to_user_id: Dict[str, int] = {}
+
+    cid_metadata: Dict[str, str] = {}  # cid -> metadata
+
+    # fetch transactions
     with db.scoped_session() as session:
         for tx_receipt in user_factory_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -285,7 +289,7 @@ def fetch_ipfs_metadata(
                 event_args = entry["args"]
                 cid = helpers.multihash_digest_to_cid(event_args._multihashDigest)
                 if not is_blacklisted_ipld(session, cid):
-                    cids.add((cid, txhash))
+                    cids_txhash_set.add((cid, txhash))
                     cid_type[cid] = "user"
                 else:
                     blacklisted_cids.add(cid)
@@ -311,7 +315,7 @@ def fetch_ipfs_metadata(
                     )
                     cid = multihash.to_b58_string(buf)
                     if not is_blacklisted_ipld(session, cid):
-                        cids.add((cid, txhash))
+                        cids_txhash_set.add((cid, txhash))
                         cid_type[cid] = "track"
                     else:
                         blacklisted_cids.add(cid)
@@ -328,45 +332,47 @@ def fetch_ipfs_metadata(
             .all()
         )
 
-    ipfs_metadata = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        futures = []
-        futures_map = {}
-        for cid, txhash in cids:
-            metadata_format = (
-                track_metadata_format
-                if cid_type[cid] == "track"
-                else user_metadata_format
+    # first attempt - fetch all CIDs from replica set
+    try:
+        cid_metadata.update(
+            asyncio.run(
+                update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=True,
+                )
             )
-            user_replica_set = None
-            user_id = cid_to_user_id[cid]
-            if user_id and user_id in user_to_replica_set:
-                user_replica_set = user_to_replica_set[
-                    user_id
-                ]  # user or track owner's replica set
-            future = executor.submit(
-                update_task.ipfs_client.get_metadata,
-                cid,
-                metadata_format,
-                user_replica_set,
+        )
+    except asyncio.TimeoutError:
+        # swallow exception on first attempt fetching from replica set
+        pass
+
+    # second attempt - fetch missing CIDs from other cnodes
+    if len(cid_metadata) != len(cids_txhash_set):
+        cid_metadata.update(
+            asyncio.run(
+                update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=False,
+                )
             )
-            futures.append(future)
-            futures_map[future] = [cid, txhash]
+        )
 
-        for future in concurrent.futures.as_completed(
-            futures, timeout=NEW_BLOCK_TIMEOUT_SECONDS * 1.2
-        ):
-            cid, txhash = futures_map[future]
-            try:
-                ipfs_metadata[cid] = future.result()
-            except Exception as e:
-                logger.info("Error in fetch ipfs metadata")
-                blockhash = update_task.web3.toHex(block_hash)
-                raise IndexingError(
-                    "prefetch-cids", block_number, blockhash, txhash, str(e)
-                ) from e
+    if cid_type and len(cid_metadata) != len(cid_type.keys()):
+        missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+        raise Exception(missing_cids_msg)
 
-    return ipfs_metadata, blacklisted_cids
+    logger.info(
+        f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
+    )
+    return cid_metadata, blacklisted_cids
 
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
@@ -472,7 +478,7 @@ def add_indexed_block_to_redis(block, redis):
 def process_state_changes(
     main_indexing_task,
     session,
-    ipfs_metadata,
+    cid_metadata,
     blacklisted_cids,
     tx_type_to_grouped_lists_map,
     block,
@@ -499,7 +505,7 @@ def process_state_changes(
             block_number,
             block_timestamp,
             block_hash,
-            ipfs_metadata,
+            cid_metadata,
             blacklisted_cids,
         ]
 
@@ -652,12 +658,13 @@ def index_blocks(self, db, blocks_list):
                     fetch_ipfs_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
+                    cid_metadata, blacklisted_cids = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
-                        block_number,
-                        block_hash,
+                    )
+                    logger.info(
+                        f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
                     )
                     # Record the time this took in redis
                     duration_ms = round(
@@ -700,7 +707,7 @@ def index_blocks(self, db, blocks_list):
                     changed_entity_ids_map = process_state_changes(
                         self,
                         session,
-                        ipfs_metadata,
+                        cid_metadata,
                         blacklisted_cids,
                         txs_grouped_by_type,
                         block,
@@ -713,8 +720,13 @@ def index_blocks(self, db, blocks_list):
                         f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
 
-                except IndexingError as err:
-                    create_and_raise_indexing_error(err, redis)
+                except Exception as e:
+
+                    blockhash = update_task.web3.toHex(block_hash)
+                    indexing_error = IndexingError(
+                        "prefetch-cids", block_number, blockhash, None, str(e)
+                    )
+                    create_and_raise_indexing_error(indexing_error, redis)
 
             try:
                 commit_start_time = time.time()
@@ -1187,7 +1199,7 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
                     else:
-                        latest_block = web3.eth.getBlock(parent_hash, True)
+                        latest_block = web3.eth.get_block(parent_hash, True)
                         intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the
@@ -1248,7 +1260,7 @@ def update_task(self):
                 f"index.py | update_task | {self.request.id} | Processing complete within session"
             )
         else:
-            logger.warning(
+            logger.error(
                 f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
             )
     except Exception as e:

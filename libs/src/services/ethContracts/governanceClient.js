@@ -1,5 +1,5 @@
 const ContractClient = require('../contracts/ContractClient')
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 /**
  * Transform a method name and its argument types into a string-composed

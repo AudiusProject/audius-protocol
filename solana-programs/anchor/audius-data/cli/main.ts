@@ -14,14 +14,17 @@ import {
   createPlaylist,
   updatePlaylist,
   deletePlaylist,
-  createContentNode
+  createContentNode,
 } from "../lib/lib";
-import { findDerivedPair, getContentNode, randomCID, randomId, randomString } from "../lib/utils";
+import {
+  findDerivedPair,
+  getContentNode,
+  randomCID,
+  randomId,
+} from "../lib/utils";
 
 import { Command } from "commander";
 import fs = require("fs");
-
-import { readFileSync } from 'fs';
 
 const AUDIUS_PROD_RPC_POOL = "https://audius.rpcpool.com/";
 const LOCALHOST_RPC_POOL = "http://localhost:8899";
@@ -111,7 +114,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     verifierKeypair
   });
   await cliVars.provider.connection.confirmTransaction(tx);
-  console.log("Initialized admin.")
+  console.log(`Initialized admin with tx=${tx}`)
 }
 
 type initUserCLIParams = {
@@ -194,6 +197,8 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           handleBytesArray: args.handleBytesArray,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
+          userAuthorityDelegateAccountPDA: anchor.web3.SystemProgram.programId,
+          authorityDelegationStatusAccountPDA: anchor.web3.SystemProgram.programId
         });
       } else if (manageAction == ManagementActions.create && entityType == EntityTypesEnumValues.playlist) {
         tx = await createPlaylist({
@@ -206,6 +211,8 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           handleBytesArray: args.handleBytesArray,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
+          userAuthorityDelegateAccountPDA: anchor.web3.SystemProgram.programId,
+          authorityDelegationStatusAccountPDA: anchor.web3.SystemProgram.programId
         });
       } else if (manageAction == ManagementActions.update && entityType == EntityTypesEnumValues.playlist) {
         tx = await updatePlaylist({
@@ -218,9 +225,12 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           handleBytesArray: args.handleBytesArray,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
+          userAuthorityDelegateAccountPDA: anchor.web3.SystemProgram.programId,
+          authorityDelegationStatusAccountPDA: anchor.web3.SystemProgram.programId
         });
       } else if (manageAction == ManagementActions.delete && entityType == EntityTypesEnumValues.playlist) {
         tx = await deletePlaylist({
+          provider,
           id: args.id,
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
@@ -229,6 +239,8 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
           handleBytesArray: args.handleBytesArray,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
+          userAuthorityDelegateAccountPDA: anchor.web3.SystemProgram.programId,
+          authorityDelegationStatusAccountPDA: anchor.web3.SystemProgram.programId
         });
       }
 
@@ -345,7 +357,7 @@ switch (options.function) {
         program: cliVars.program,
         baseAuthorityAccount,
         adminKeypair,
-        adminStgPublicKey: adminStorageKeypair.publicKey,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
         contentNodeAuthority:contentNodeAuthority.publicKey,
         contentNodeAcct: cnInfo.derivedAddress,
         spID: cnInfo.spId,
@@ -434,6 +446,8 @@ switch (options.function) {
             metadata: randomCID(),
             userAuthorityKeypair: userSolKeypair,
             userStorageAccountPDA: options.userStoragePubkey,
+            userAuthorityDelegateAccountPDA: anchor.web3.SystemProgram.programId,
+            authorityDelegationStatusAccountPDA: anchor.web3.SystemProgram.programId
           }, cliVars.provider, ManagementActions.create, EntityTypesEnumValues.track)
         );
       }
@@ -468,6 +482,8 @@ switch (options.function) {
             metadata: randomCID(),
             userAuthorityKeypair: userSolKeypair,
             userStorageAccountPDA: options.userStoragePubkey,
+            userAuthorityDelegateAccountPDA: anchor.web3.SystemProgram.programId,
+            authorityDelegationStatusAccountPDA: anchor.web3.SystemProgram.programId
           }, cliVars.provider, ManagementActions.create, EntityTypesEnumValues.playlist)
         );
       }
@@ -499,6 +515,8 @@ switch (options.function) {
         metadata: randomCID(),
         userAuthorityKeypair: userSolKeypair,
         userStorageAccountPDA: options.userStoragePubkey,
+        userAuthorityDelegateAccountPDA: anchor.web3.SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: anchor.web3.SystemProgram.programId
       }, cliVars.provider, ManagementActions.update, EntityTypesEnumValues.playlist);
       console.log(
         `Updated playlist ${playlistId} in ${Date.now() - start}ms`
@@ -527,6 +545,8 @@ switch (options.function) {
         metadata: randomCID(),
         userAuthorityKeypair: userSolKeypair,
         userStorageAccountPDA: options.userStoragePubkey,
+        userAuthorityDelegateAccountPDA: anchor.web3.SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: anchor.web3.SystemProgram.programId
       }, cliVars.provider, ManagementActions.update, EntityTypesEnumValues.playlist);
       console.log(
         `Deleted playlist ${playlistId} in ${Date.now() - start}ms`

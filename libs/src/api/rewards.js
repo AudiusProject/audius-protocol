@@ -5,7 +5,9 @@ const { Base, Services } = require('./base')
 const BN = require('bn.js')
 const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
 const { WAUDIO_DECMIALS } = require('../constants')
-const { decodeHashId } = require('../utils/utils')
+const { Utils } = require('../utils/utils')
+
+const { decodeHashId } = Utils
 
 const GetAttestationError = Object.freeze({
   CHALLENGE_INCOMPLETE: 'CHALLENGE_INCOMPLETE',

@@ -8,14 +8,16 @@ import {
   createSolanaContentNode,
   initTestConstants,
   testCreateUser,
+  testCreateUserDelegate,
 } from "./test-helpers";
+
+const { SystemProgram } = anchor.web3;
 
 const UserActionEnumValues = {
   unfollowUser: { unfollowUser: {} },
   followUser: { followUser: {} },
   invalidEnumValue: { invalidEnum: {} },
 };
-
 describe("follows", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
@@ -166,6 +168,7 @@ describe("follows", function () {
         newUserKeypair: newUser1Key,
         userStorageAccount: userStorageAccount1,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
+        userId: constants1.userId,
         ...getURSMParams(),
       });
 
@@ -181,6 +184,7 @@ describe("follows", function () {
         newUserKeypair: newUser2Key,
         userStorageAccount: userStorageAccount2,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
+        userId: constants2.userId,
         ...getURSMParams(),
       });
     });
@@ -190,10 +194,11 @@ describe("follows", function () {
       const followArgs = {
         accounts: {
           audiusAdmin: adminStorageKeypair.publicKey,
-          payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
           followeeUserStorage: userStorageAccount2,
+          userAuthorityDelegate: SystemProgram.programId,
+          authorityDelegationStatus: SystemProgram.programId,
         },
         signers: [newUser1Key],
       };
@@ -222,8 +227,66 @@ describe("follows", function () {
       expect(decodedData.followeeHandle.seed).to.deep.equal(
         constants2.handleBytesArray
       );
-      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
-      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
+      expect(accountPubKeys[0]).to.equal(
+        adminStorageKeypair.publicKey.toString()
+      );
+      expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
+    });
+
+    it("delegate follows user", async function () {
+      const userDelegate = await testCreateUserDelegate({
+        adminKeypair,
+        adminStorageKeypair: adminStorageKeypair,
+        program,
+        provider,
+      });
+
+      // Submit a tx where user 1 follows user 2
+      const followArgs = {
+        accounts: {
+          audiusAdmin: adminStorageKeypair.publicKey,
+          authority: userDelegate.userAuthorityDelegateKeypair.publicKey,
+          followerUserStorage: userDelegate.userAccountPDA,
+          followeeUserStorage: userStorageAccount2,
+          userAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
+          authorityDelegationStatus: userDelegate.authorityDelegationStatusPDA,
+        },
+        signers: [userDelegate.userAuthorityDelegateKeypair],
+      };
+
+      const followTx = await program.rpc.followUser(
+        baseAuthorityAccount,
+        UserActionEnumValues.followUser,
+        {
+          seed: userDelegate.userHandleBytesArray,
+          bump: userDelegate.userBumpSeed,
+        },
+        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
+        followArgs
+      );
+
+      const { decodedInstruction, decodedData, accountPubKeys } =
+        await getTransactionWithData(program, provider, followTx, 0);
+
+      expect(decodedInstruction.name).to.equal("followUser");
+      expect(decodedData.base.toString()).to.equal(
+        baseAuthorityAccount.toString()
+      );
+      expect(decodedData.userAction).to.deep.equal(
+        UserActionEnumValues.followUser
+      );
+      expect(decodedData.followerHandle.seed).to.deep.equal(
+        userDelegate.userHandleBytesArray
+      );
+      expect(decodedData.followeeHandle.seed).to.deep.equal(
+        constants2.handleBytesArray
+      );
+      expect(accountPubKeys[0]).to.equal(
+        adminStorageKeypair.publicKey.toString()
+      );
+      expect(accountPubKeys[5]).to.equal(
+        userDelegate.userAuthorityDelegateKeypair.publicKey.toString()
+      );
     });
 
     it("unfollow user", async function () {
@@ -235,6 +298,8 @@ describe("follows", function () {
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
           followeeUserStorage: userStorageAccount2,
+          userAuthorityDelegate: SystemProgram.programId,
+          authorityDelegationStatus: SystemProgram.programId,
         },
         signers: [newUser1Key],
       };
@@ -262,8 +327,10 @@ describe("follows", function () {
       expect(decodedData.followeeHandle.seed).to.deep.equal(
         constants2.handleBytesArray
       );
-      expect(accountPubKeys[0]).to.equal(adminStorageKeypair.publicKey.toString());
-      expect(accountPubKeys[3]).to.equal(newUser1Key.publicKey.toString());
+      expect(accountPubKeys[0]).to.equal(
+        adminStorageKeypair.publicKey.toString()
+      );
+      expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
     });
 
     it("submit invalid follow action", async function () {
@@ -276,6 +343,8 @@ describe("follows", function () {
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
           followeeUserStorage: userStorageAccount2,
+          userAuthorityDelegate: SystemProgram.programId,
+          authorityDelegationStatus: SystemProgram.programId,
         },
         signers: [newUser1Key],
       };
@@ -307,6 +376,8 @@ describe("follows", function () {
           authority: newUser1Key.publicKey,
           followerUserStorage: userStorageAccount1,
           followeeUserStorage: wrongUserKeypair.publicKey,
+          userAuthorityDelegate: SystemProgram.programId,
+          authorityDelegationStatus: SystemProgram.programId,
         },
         signers: [newUser1Key],
       };

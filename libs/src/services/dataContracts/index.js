@@ -1,4 +1,4 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 // load classes wrapping contracts
 const RegistryClient = require('./registryClient')

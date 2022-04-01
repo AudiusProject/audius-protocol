@@ -8,7 +8,9 @@ const proxyquire = require('proxyquire')
 const _ = require('lodash')
 const crypto = require('crypto')
 
+const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
+const ipfsAdd = require('../src/ipfsAdd')
 const ipfsClient = require('../src/ipfsClient')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
@@ -90,8 +92,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     userId = 1
     userWallet = testEthereumConstants.pubKey.toLowerCase()
 
-    process.env.enableIPFSAddTracks = true
-
     const { getApp } = require('./lib/app')
     const appInfo = await getApp(
       ipfsMock,
@@ -108,19 +108,22 @@ describe('test Polling Tracks with mocked IPFS', function () {
     mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId, userWallet)
 
-    // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
+    // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
     const DUMMY_MULTIHASH = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService.js',
       {
-        '../../fileManager': {
-          saveFileToIPFSFromFS: sinon
-            .stub(FileManager, 'saveFileToIPFSFromFS')
+        '../../ipfsAdd': {
+          generateNonImageMultihash: sinon
+            .stub(ipfsAdd, 'generateNonImageMultihash')
             .returns(
               new Promise((resolve) => {
                 return resolve(DUMMY_MULTIHASH)
               })
             ),
+          '@global': true
+        },
+        '../../fileManager': {
           copyMultihashToFs: sinon
             .stub(FileManager, 'copyMultihashToFs')
             .returns(
@@ -514,6 +517,19 @@ describe('test Polling Tracks with mocked IPFS', function () {
       ]
     })
 
+    // Requests with too many wallet keys should be rejected
+    const maxNumWallets = config.get('maxBatchClockStatusBatchSize')
+    const largeWalletPublicKeys = Array.from(
+      { length: maxNumWallets + 1 },
+      (_, i) => i + 'a'
+    )
+    resp = await request(app)
+      .post(`/users/batch_clock_status`)
+      .send({ walletPublicKeys: largeWalletPublicKeys })
+      .expect(400, {
+        error: `Number of wallets must not exceed ${maxNumWallets} (reduce 'walletPublicKeys' field in request body).`
+      })
+
     /** Non-existent user */
     const invalidWallet = 'asdf'
     resp = await request(app)
@@ -878,8 +894,6 @@ describe('test Polling Tracks with real IPFS', function () {
 
     userId = 1
 
-    process.env.enableIPFSAddTracks = true
-
     const { getApp } = require('./lib/app')
     const appInfo = await getApp(
       ipfs,
@@ -1058,7 +1072,7 @@ describe('test Polling Tracks with real IPFS', function () {
       .expect(500)
   })
 
-  it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
+  it('successfully adds metadata file to filesystem and db', async function () {
     const metadata = sortKeys({
       test: 'field1',
       track_segments: [
@@ -1097,19 +1111,6 @@ describe('test Polling Tracks with real IPFS', function () {
       }
     })
     assert.ok(file)
-
-    // check that the metadata file is in IPFS
-    let ipfsResp
-    try {
-      ipfsResp = await ipfs.cat(resp.body.data.metadataMultihash)
-    } catch (e) {
-      // If CID is not present, will throw timeout error
-      assert.fail(e.message)
-    }
-
-    // check that the ipfs content matches what we expect
-    const metadataBuffer = Buffer.from(JSON.stringify(metadata))
-    assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
   })
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
