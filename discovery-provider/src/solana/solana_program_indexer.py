@@ -20,6 +20,7 @@ BASE_ERROR = "Must be implemented in subclass"
 
 TX_SIGNATURES_PROCESSING_SIZE = 100
 
+
 class IndexerBase(ABC):
     """
     Base indexer class - handles lock acquisition to guarantee single entrypoint
@@ -149,7 +150,7 @@ class SolanaProgramIndexer(IndexerBase):
         self.validate_and_save_parsed_tx_records(parsed_transactions)
 
     @abstractmethod
-    def validate_and_save_parsed_tx_records(self, parsed_transactions):
+    def validate_and_save_parsed_tx_records(self, parsed_transactions, metadata_dictionary):
         """
         Based parsed transaction information, generate and save appropriate database changes. This will vary based on the program being indexed
         """
@@ -307,10 +308,9 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         return super().parse_tx(tx_sig)
 
     def process_index_task(self):
-        self.msg("AnchorDataIndexer : processing indexing task")
+        self.msg("Processing indexing task")
         # Retrieve transactions to process
         transaction_signatures = self.get_transactions_to_process()
-        self.msg(f"AnchorDataIndexer: processing {transaction_signatures}")
         # Break down batch into records of size 100
         for tx_sig_batch in transaction_signatures:
             for tx_sig_batch_records in split_list(
@@ -318,3 +318,4 @@ class AnchorDataIndexer(SolanaProgramIndexer):
             ):
                 # Dispatch transactions to processor
                 asyncio.run(self.process_txs_batch(tx_sig_batch_records))
+        self.msg("Finished processing indexing task")
