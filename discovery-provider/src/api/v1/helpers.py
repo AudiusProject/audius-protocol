@@ -347,18 +347,108 @@ def decode_ids_array(ids_array):
     return list(map(lambda id: decode_string_id(id), ids_array))
 
 
-search_parser = reqparse.RequestParser()
-search_parser.add_argument("query", required=True)
-search_parser.add_argument("only_downloadable", required=False, default=False)
+class DescriptiveArgument(reqparse.Argument):
+    """
+    A version of reqparse.Argument that takes an additional "description" param.
+    The "description" is used in the Swagger JSON generation and takes priority over "help".
+    Unlike the "help" param, it does not affect error messages, allowing "help" to be specific to errors.
+    """
 
-trending_parser = reqparse.RequestParser()
-trending_parser.add_argument("genre", required=False)
-trending_parser.add_argument("time", required=False)
-trending_parser.add_argument("limit", required=False)
-trending_parser.add_argument("offset", required=False)
+    def __init__(
+        self,
+        name,
+        default=None,
+        dest=None,
+        required=False,
+        ignore=False,
+        type=reqparse.text_type,
+        location=(
+            "json",
+            "values",
+        ),
+        choices=(),
+        action="store",
+        help=None,
+        operators=("=",),
+        case_sensitive=True,
+        store_missing=True,
+        trim=False,
+        nullable=True,
+        description=None,
+    ):
+        super().__init__(
+            name,
+            default,
+            dest,
+            required,
+            ignore,
+            type,
+            location,
+            choices,
+            action,
+            help,
+            operators,
+            case_sensitive,
+            store_missing,
+            trim,
+            nullable,
+        )
+        self.description = description
 
-full_trending_parser = trending_parser.copy()
-full_trending_parser.add_argument("user_id", required=False)
+    @property
+    def __schema__(self):
+        param = super().__schema__
+        param["description"] = self.description
+        return param
+
+
+current_user_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+current_user_parser.add_argument(
+    "user_id", required=False, help="The user ID of the user making the request"
+)
+
+
+pagination_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+pagination_parser.add_argument(
+    "offset",
+    required=False,
+    type=int,
+    description="The number of items to skip. Useful for pagination (page number * limit)",
+)
+pagination_parser.add_argument(
+    "limit", required=False, type=int, description="The number of items to fetch"
+)
+pagination_with_current_user_parser = pagination_parser.copy()
+pagination_with_current_user_parser.add_argument(
+    "user_id", required=False, description="The user ID of the user making the request"
+)
+
+search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+search_parser.add_argument("query", required=True, description="The search query")
+
+full_trending_parser = pagination_parser.copy()
+full_trending_parser.add_argument(
+    "user_id", required=False, description="The user ID of the user making the request"
+)
+full_trending_parser.add_argument(
+    "genre",
+    required=False,
+    description="Filter to trending tracks for a specified genre",
+)
+full_trending_parser.add_argument(
+    "time",
+    required=False,
+    description="Get trending tracks over a specified time range",
+    type=str,
+    choices=("week", "month", "year", "allTime"),
+)
+
+trending_parser_paginated = full_trending_parser.copy()
+trending_parser_paginated.remove_argument("user_id")
+
+trending_parser = trending_parser_paginated.copy()
+trending_parser.remove_argument("limit")
+trending_parser.remove_argument("offset")
 
 
 def success_response(entity):
