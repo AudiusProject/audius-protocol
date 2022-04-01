@@ -31,13 +31,6 @@ class AsyncProcessingQueueMock {
         processTranscodeAndSegments: 0,
         transcodeHandOff: 0,
         total: 0
-      },
-      delayed: {
-        trackContentUpload: 0,
-        transcodeAndSegment: 0,
-        processTranscodeAndSegments: 0,
-        transcodeHandOff: 0,
-        total: 0
       }
     }
   }

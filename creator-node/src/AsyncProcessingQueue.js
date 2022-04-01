@@ -228,7 +228,7 @@ class AsyncProcessingQueue {
 
       throw e
     }
-
+  }
 
   /**
    * Given the jobs, create a count of the type of tasks.
@@ -267,15 +267,13 @@ class AsyncProcessingQueue {
     const [waiting, active, failed, delayed] = await Promise.all([
       queue.getJobs(['waiting']),
       queue.getJobs(['active']),
-      queue.getJobs(['failed']),
-      queue.getJobs(['delayed'])
+      queue.getJobs(['failed'])
     ])
 
     const allTasks = {
       waiting: this.getTasks(waiting),
       active: this.getTasks(active),
-      failed: this.getTasks(failed),
-      delayed: this.getTasks(delayed)
+      failed: this.getTasks(failed)
     }
 
     return allTasks

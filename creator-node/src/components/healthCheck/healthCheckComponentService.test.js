@@ -110,13 +110,6 @@ const AsyncProcessingQueueMock = (
           processTranscodeAndSegments: 0,
           transcodeHandOff: 0,
           total: failed
-        },
-        delayed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: delayed
         }
       }
     }
@@ -208,13 +201,6 @@ describe('Test Health Check', function () {
           processTranscodeAndSegments: 0,
           transcodeHandOff: 0,
           total: 0
-        },
-        delayed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
         }
       }
     })
@@ -300,13 +286,6 @@ describe('Test Health Check', function () {
           processTranscodeAndSegments: 0,
           transcodeHandOff: 0,
           total: 0
-        },
-        delayed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
         }
       }
     })
@@ -379,13 +358,6 @@ describe('Test Health Check', function () {
           total: 0
         },
         failed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        },
-        delayed: {
           trackContentUpload: 0,
           transcodeAndSegment: 0,
           processTranscodeAndSegments: 0,
@@ -476,13 +448,6 @@ describe('Test Health Check Verbose', function () {
           total: 0
         },
         failed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        },
-        delayed: {
           trackContentUpload: 0,
           transcodeAndSegment: 0,
           processTranscodeAndSegments: 0,
