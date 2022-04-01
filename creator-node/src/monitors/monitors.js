@@ -27,6 +27,7 @@ const {
   getRedisUsedMemory,
   getRedisTotalMemory
 } = require('./redis')
+const { getIPFSReadWriteStatus } = require('./ipfs')
 const {
   get30DayRollingSyncSuccessCount,
   get30DayRollingSyncFailCount,
@@ -164,6 +165,13 @@ const REDIS_TOTAL_MEMORY = {
   type: 'int'
 }
 
+const IPFS_READ_WRITE_STATUS = {
+  name: 'IPFSReadWriteStatus',
+  func: getIPFSReadWriteStatus,
+  ttl: 60 * 1,
+  type: 'json'
+}
+
 // The rolling window count of successful syncs
 // The window is for 30 days
 // Keep the rolling window count ttl to 1 hour (refreshes every hour)
@@ -254,6 +262,7 @@ const MONITORS = {
   REDIS_NUM_KEYS,
   REDIS_USED_MEMORY,
   REDIS_TOTAL_MEMORY,
+  IPFS_READ_WRITE_STATUS,
   THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT,
   THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT,
   DAILY_SYNC_SUCCESS_COUNT,

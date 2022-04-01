@@ -17,6 +17,9 @@ const {
   destroyUsers
 } = require('./lib/dataSeeds')
 const BlacklistManager = require('../src/blacklistManager')
+const ipfsClient = require('../src/ipfsClient')
+const ipfs = ipfsClient.ipfs
+const ipfsLatest = ipfsClient.ipfsLatest
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
@@ -45,8 +48,10 @@ describe('test nodesync', async function () {
 
   const setupDepsAndApp = async function () {
     const appInfo = await getApp(
+      ipfs,
       libsMock,
       BlacklistManager,
+      ipfsLatest,
       null,
       userId
     )
@@ -913,9 +918,16 @@ describe('test nodesync', async function () {
       maxExportClockValueRange = originalMaxExportClockValueRange
       process.env.maxExportClockValueRange = maxExportClockValueRange
 
+      // Mock ipfs.swarm.connect() function for test purposes
+      ipfsClient.ipfs.swarm.connect = async function () {
+        return { Strings: [] }
+      }
+
       const appInfo = await getApp(
+        ipfsClient.ipfs,
         libsMock,
         BlacklistManager,
+        ipfsClient.ipfsLatest,
         null,
         userId
       )
@@ -923,8 +935,10 @@ describe('test nodesync', async function () {
       app = appInfo.app
 
       serviceRegistryMock = getServiceRegistryMock(
+        ipfsClient.ipfs,
         libsMock,
-        BlacklistManager
+        BlacklistManager,
+        ipfsClient.ipfsLatest
       )
     })
 

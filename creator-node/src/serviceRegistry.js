@@ -1,5 +1,6 @@
 const AudiusLibs = require('@audius/libs')
 const redisClient = require('./redis')
+const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
@@ -21,6 +22,8 @@ const TrustedNotifierManager = require('./services/TrustedNotifierManager')
  * Services:
  *  - `nodeConfig`: exposes config object
  *  - `redis`: Redis Client
+ *  - `ipfs`: IPFS Client
+ *  - `ipfsLatest`: IPFS Client, latest version
  *  - `blackListManager`: responsible for handling blacklisted content
  *  - `monitoringQueue`: recurring job to monitor node state & performance metrics
  *  - `sessionExpirationQueue`: recurring job to clear expired session tokens from Redis and DB
@@ -36,6 +39,8 @@ class ServiceRegistry {
   constructor() {
     this.nodeConfig = config
     this.redis = redisClient
+    this.ipfs = ipfs
+    this.ipfsLatest = ipfsLatest
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
@@ -57,6 +62,10 @@ class ServiceRegistry {
    * Configure all services
    */
   async initServices() {
+    // Initialize private IPFS gateway counters
+    this.redis.set('ipfsGatewayReqs', 0)
+    this.redis.set('ipfsStandaloneReqs', 0)
+
     await this.blacklistManager.init()
 
     // init libs
@@ -86,6 +95,20 @@ class ServiceRegistry {
   }
 
   /**
+   * Returns the ipfs instance
+   */
+  getIPFS() {
+    return this.ipfs
+  }
+
+  /**
+   * @returns the ipfsLatest instance
+   */
+  getIPFSLatest() {
+    return this.ipfsLatest
+  }
+
+  /**
    * Some services require the node server to be running in order to initialize. Run those here.
    * Specifically:
    *  - recover node L1 identity (requires node health check from server to return success)
@@ -105,7 +128,13 @@ class ServiceRegistry {
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.syncQueue = new SyncQueue(this.nodeConfig, this.redis, this)
+    this.syncQueue = new SyncQueue(
+      this.nodeConfig,
+      this.redis,
+      this.ipfs,
+      this.ipfsLatest,
+      this
+    )
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely

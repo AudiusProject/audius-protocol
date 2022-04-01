@@ -123,7 +123,11 @@ async function processSync(
     }
 
     const { data: body } = resp
-    if (!body.data.hasOwnProperty('cnodeUsers')) {
+    if (
+      !body.data.hasOwnProperty('cnodeUsers') ||
+      !body.data.hasOwnProperty('ipfsIDObj') ||
+      !body.data.ipfsIDObj.hasOwnProperty('addresses')
+    ) {
       throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
 
@@ -133,6 +137,25 @@ async function processSync(
         localMaxClockVal + 1
       }`
     )
+
+    try {
+      // Attempt to connect directly to target CNode's IPFS node
+      // async function runs in the background
+      _initBootstrapAndRefreshPeers(
+        serviceRegistry,
+        logger,
+        body.data.ipfsIDObj.addresses,
+        redisKey
+      )
+      logger.info(redisKey, 'IPFS Nodes connected + data export received')
+    } catch (e) {
+      // if there's an error peering to an IPFS node, do not stop execution
+      // since we have other fallbacks, keep going on with sync
+      logger.error(
+        `Error in _nodeSync calling _initBootstrapAndRefreshPeers for redisKey ${redisKey}`,
+        e
+      )
+    }
 
     /**
      * For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
@@ -566,6 +589,46 @@ async function processSync(
   }
 
   return errorObj
+}
+
+/**
+ * Given IPFS node peer addresses, add to bootstrap peers list and manually connect
+ **/
+async function _initBootstrapAndRefreshPeers(
+  { ipfs },
+  logger,
+  targetIPFSPeerAddresses,
+  redisKey
+) {
+  logger.info(redisKey, 'Initializing Bootstrap Peers:')
+
+  // Get own IPFS node's peer addresses
+  const ipfsID = await ipfs.id()
+  if (!ipfsID.hasOwnProperty('addresses')) {
+    throw new Error('failed to retrieve ipfs node addresses')
+  }
+  const ipfsPeerAddresses = ipfsID.addresses
+
+  // For each targetPeerAddress, add to trusted peer list and open connection.
+  for (const targetPeerAddress of targetIPFSPeerAddresses) {
+    if (
+      targetPeerAddress.includes('ip6') ||
+      targetPeerAddress.includes('127.0.0.1')
+    )
+      continue
+    if (ipfsPeerAddresses.includes(targetPeerAddress)) {
+      logger.info(redisKey, 'ipfs addresses are same - do not connect')
+      continue
+    }
+
+    // Add to list of bootstrap peers.
+    let results = await ipfs.bootstrap.add(targetPeerAddress)
+    logger.info(redisKey, 'ipfs bootstrap add results:', results)
+
+    // Manually connect to peer.
+    results = await ipfs.swarm.connect(targetPeerAddress)
+    logger.info(redisKey, 'peer connection results:', results.Strings[0])
+  }
 }
 
 module.exports = processSync

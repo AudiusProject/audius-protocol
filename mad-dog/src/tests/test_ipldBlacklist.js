@@ -25,8 +25,8 @@ const {
   getRandomTrackFilePath,
   genRandomString
 } = RandomUtils
+const ipfs = require('../ipfsClient')
 const { logger } = require('../logger.js')
-const fileHasher = require('../utils/fileHasher')
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 
@@ -52,7 +52,7 @@ IpldBlacklistTest.newTrackMetadata = async ({
     })
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    const blacklistedCID = await generateCID({
+    const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -129,7 +129,7 @@ IpldBlacklistTest.updateTrackMetadata = async ({
     await executeOne(CREATOR_INDEX, libs => libs.waitForLatestBlock())
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    const blacklistedCID = await generateCID({
+    const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -192,7 +192,7 @@ IpldBlacklistTest.newTrackCoverPhoto = async ({
     })
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    const blacklistedCID = await generateCID({
+    const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -207,8 +207,8 @@ IpldBlacklistTest.newTrackCoverPhoto = async ({
     const metadataObject = getRandomTrackMetadata(userId)
     metadataObject.cover_art = blacklistedCID
 
-    // get metadata CID
-    const metadataCID = await generateCID(metadataObject)
+    // add metadata object to ipfs to get metadata CID
+    const metadataCID = await addContentToIpfs(metadataObject)
 
     // upload track with metadata CID
     const metadataCIDDecoded = Utils.decodeMultihash(metadataCID)
@@ -271,7 +271,7 @@ IpldBlacklistTest.updateTrackCoverPhoto = async ({
     await executeOne(CREATOR_INDEX, libs => libs.waitForLatestBlock())
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    blacklistedCID = await generateCID({
+    blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -285,7 +285,7 @@ IpldBlacklistTest.updateTrackCoverPhoto = async ({
     // generate metadata object with blacklisted CID for cover photo
     const metadataObject = getRandomTrackMetadata(userId)
     metadataObject.cover_art = blacklistedCID
-    const metadataCID = await generateCID(metadataObject)
+    const metadataCID = await addContentToIpfs(metadataObject)
     const metadataCIDDecoded = Utils.decodeMultihash(metadataCID)
 
     // update track with blacklisted cover photo cid
@@ -348,7 +348,7 @@ IpldBlacklistTest.updateUserMetadata = async ({
     })
 
     // generate and add cid to be blacklisted as ipld blacklist txn
-    const blacklistedCID = await generateCID({
+    const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -408,7 +408,7 @@ IpldBlacklistTest.updateUserProfilePhoto = async ({
     })
 
     // Add blacklisted metadata to ipld blacklist
-    const blacklistedCID = await generateCID({
+    const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -468,7 +468,7 @@ IpldBlacklistTest.updateUserCoverPhoto = async ({
     })
 
     // Add blacklisted metadata to ipld blacklist
-    const blacklistedCID = await generateCID({
+    const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -541,7 +541,7 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
     await executeOne(CREATOR_INDEX, libs => libs.waitForLatestBlock())
 
     // generate random CID to blacklist and add to blacklist
-    const blacklistedCID = await generateCID({
+    const blacklistedCID = await addContentToIpfs({
       randomData: 'data' + randomPlaylistName
     })
     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
@@ -622,7 +622,7 @@ IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
     await executeOne(CREATOR_INDEX, libs => libs.waitForLatestBlock())
 
     // generate random CID to blacklist and add to blacklist
-    const randomCID = await generateCID({
+    const randomCID = await addContentToIpfs({
       randomData: 'random' + randomPlaylistName
     })
     const randomCIDDecoded = Utils.decodeMultihash(randomCID)
@@ -632,7 +632,7 @@ IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
     })
 
     // generate actual CID to use as update cover photo
-    const cid = await generateCID({
+    const cid = await addContentToIpfs({
       randomData: 'actual' + randomPlaylistName
     })
 
@@ -690,11 +690,10 @@ async function getCreatorId ({
 }
 
 /**
- * Hashes an object into its CID
- * @param {object} contentObject content in object form to get a CID for
- * @return the CID from content addressing logic
+ * Add content to ipfs to generate random CID
+ * @param {object} contentObject content in object form to add to ipfs
  */
- async function generateCID(contentObject) {
+async function addContentToIpfs (contentObject) {
   let buffer
   try {
     buffer = Buffer.from(JSON.stringify(contentObject))
@@ -705,18 +704,21 @@ async function getCreatorId ({
     throw new Error(`${errorMsg}: ${e.message}`)
   }
 
-  // Hash object into CID
-  let generatedCid
+  // add metadata object to ipfs to get CID
+  let ipfsResp
   try {
-    generatedCid = fileHasher.ipfsOnlyHashNonImages(buffer)
+    ipfsResp = await ipfs.add(buffer, {
+      pin: false
+    })
   } catch (e) {
-    const errorMsg = 'Could generate CID'
+    const errorMsg = 'Could not add content to IPFS'
     logger.error(errorMsg)
     console.error(e)
     throw new Error(`${errorMsg}: ${e.message}`)
   }
 
-  return generatedCid
+  // return CID
+  return ipfsResp[0].hash
 }
 
 module.exports = IpldBlacklistTest

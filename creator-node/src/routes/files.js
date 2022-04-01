@@ -38,7 +38,7 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { generateImageMultihashes } = require('../fileHasher')
+const { generateImageMultihashes } = require('../ipfsAdd')
 
 const { promisify } = require('util')
 
@@ -580,12 +580,12 @@ const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
  * as the size of `resizeResp`
  */
 async function _generateContentToHash(resizeResp, dirCID) {
-  const contentToHash = []
+  const ipfsAddContent = []
   try {
     await Promise.all(
       resizeResp.files.map(async function (file) {
         const fileBuffer = await fs.readFile(file.storagePath)
-        contentToHash.push({
+        ipfsAddContent.push({
           path: file.sourceFile,
           content: fileBuffer
         })
@@ -595,7 +595,7 @@ async function _generateContentToHash(resizeResp, dirCID) {
     throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
   }
 
-  return contentToHash
+  return ipfsAddContent
 }
 
 module.exports = function (app) {

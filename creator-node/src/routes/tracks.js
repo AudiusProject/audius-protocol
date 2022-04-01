@@ -142,7 +142,7 @@ module.exports = function (app) {
       let multihash, dstPath
       try {
         const resp = await saveFileFromBufferToDisk(req, metadataBuffer)
-        multihash = resp.cid
+        multihash = resp.multihash
         dstPath = resp.dstPath
       } catch (e) {
         return errorResponseServerError(

@@ -5,6 +5,7 @@ const fs = require('fs')
 
 const models = require('../src/models')
 
+const ipfsClient = require('../src/ipfsClient')
 const BlacklistManager = require('../src/blacklistManager')
 const DiskManager = require('../src/diskManager')
 
@@ -12,17 +13,20 @@ const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 
-describe('Test AudiusUsers', function () {
-  let app, server, session, libsMock
+describe('Test AudiusUsers with real IPFS (not mock)', function () {
+  let app, server, session, libsMock, ipfs, ipfsLatest
 
   beforeEach(async () => {
+    ipfs = ipfsClient.ipfs
+    ipfsLatest = ipfsClient.ipfsLatest
+
     libsMock = getLibsMock()
 
     const userId = 1
 
     const { getApp } = require('./lib/app')
 
-    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app

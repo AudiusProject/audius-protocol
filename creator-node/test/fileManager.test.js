@@ -5,7 +5,10 @@ const fs = require('fs-extra')
 const path = require('path')
 const proxyquire = require('proxyquire')
 
-const fileHasher = require('../src/fileHasher')
+const { serviceRegistry } = require('../src/serviceRegistry')
+const ipfs = serviceRegistry.ipfs
+const ipfsLatest = serviceRegistry.ipfsLatest
+const ipfsAdd = require('../src/ipfsAdd')
 const {
   removeTrackFolder,
   saveFileFromBufferToDisk,
@@ -18,7 +21,11 @@ const DiskManager = require('../src/diskManager')
 
 const storagePath = config.get('storagePath')
 
-const reqFnStubs = { storagePath }
+const reqFnStubs = {
+  ipfsAPI: ipfs,
+  ipfsLatestAPI: ipfsLatest,
+  storagePath
+}
 const req = {
   session: {
     cnodeUserUUID: uuid()
@@ -106,7 +113,7 @@ describe('test fileManager', () => {
 
       const requestID = uuid()
       try {
-        await fileHasher.generateNonImageMultihash(
+        await ipfsAdd.generateNonImageMultihash(
           srcPath,
           { logContext: { requestID } }
         )
@@ -141,7 +148,7 @@ describe('test fileManager', () => {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   describe('test saveFileFromBufferToDisk()', () => {
     /**
-     * Given: a file buffer is being saved to fs and db
+     * Given: a file buffer is being saved to ipfs, fs, and db
      * When: cnodeUserUUID is not present
      * Then: an error is thrown
      */
@@ -181,7 +188,7 @@ describe('test fileManager', () => {
      */
     it('should throw an error if ipfs wrapper hash fails', async () => {
       sinon
-        .stub(fileHasher, 'generateNonImageMultihash')
+        .stub(ipfsAdd, 'generateNonImageMultihash')
         .rejects(new Error('ipfs wrapper hash failed!'))
 
       try {
@@ -195,12 +202,12 @@ describe('test fileManager', () => {
     })
 
     /**
-     * Given: a file buffer is being saved to file storage and db
+     * Given: a file buffer is being saved to ipfs, fs, and db
      * When: writing to filesystem fails
      * Then: an error is thrown
      */
     it('should throw an error if writing file to filesystem fails', async () => {
-      sinon.stub(fileHasher, 'generateNonImageMultihash').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
+      sinon.stub(ipfs, 'add').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
       try {
         await saveFileFromBufferToDisk(req, buffer)
@@ -211,9 +218,9 @@ describe('test fileManager', () => {
     })
 
     /**
-     * Given: a file buffer is being saved to fs and db
+     * Given: a file buffer is being saved to ipfs, fs, and db
      * When: everything works as expected
-     * Then: fs and db should have the buffer contents
+     * Then: ipfs, fs, and db should have the buffer contents
      */
     it('should pass saving file from buffer (happy path)', async () => {
       sinon
@@ -228,7 +235,7 @@ describe('test fileManager', () => {
       }
 
       // check that the metadata file was written to storagePath under its multihash
-      const metadataPath = DiskManager.computeFilePath(resp.cid)
+      const metadataPath = DiskManager.computeFilePath(resp.multihash)
       assert.ok(fs.existsSync(metadataPath))
 
       // check that the contents of the metadata file is what we expect

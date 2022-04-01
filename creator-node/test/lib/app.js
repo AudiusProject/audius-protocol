@@ -6,7 +6,11 @@ const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
 const SyncQueue = require('../../src/services/sync/syncQueue')
 const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
 
-async function getApp (libsClient, blacklistManager, setMockFn = null, spId = null) {
+// Initialize private IPFS gateway counters
+redisClient.set('ipfsGatewayReqs', 0)
+redisClient.set('ipfsStandaloneReqs', 0)
+
+async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null, setMockFn = null, spId = null) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
   // as all files that consume it
@@ -19,14 +23,17 @@ async function getApp (libsClient, blacklistManager, setMockFn = null, spId = nu
   if (spId) nodeConfig.set('spID', spId)
 
   const mockServiceRegistry = {
+    ipfs: ipfsClient,
+    ipfsLatest: ipfsLatestClient || ipfsClient,
     libs: libsClient,
     blacklistManager: blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
     asyncProcessingQueue: new AsyncProcessingQueueMock(),
+    // syncQueue: new SyncQueue(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient),
     nodeConfig
   }
-  mockServiceRegistry.syncQueue = new SyncQueue(nodeConfig, redisClient, mockServiceRegistry)
+  mockServiceRegistry.syncQueue = new SyncQueue(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient, mockServiceRegistry)
   mockServiceRegistry.trustedNotifierManager = new TrustedNotifierManager(nodeConfig, libsClient)
 
   // Update the import to be the mocked ServiceRegistry instance
@@ -42,13 +49,15 @@ async function getApp (libsClient, blacklistManager, setMockFn = null, spId = nu
   return appInfo
 }
 
-function getServiceRegistryMock (libsClient, blacklistManager) {
+function getServiceRegistryMock (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null) {
   return {
+    ipfs: ipfsClient,
+    ipfsLatest: ipfsLatestClient || ipfsClient,
     libs: libsClient,
     blacklistManager: blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
-    syncQueue: new SyncQueue(nodeConfig, redisClient),
+    syncQueue: new SyncQueue(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient),
     nodeConfig
   }
 }

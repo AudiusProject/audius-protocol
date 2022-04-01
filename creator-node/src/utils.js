@@ -1,19 +1,25 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs-extra')
 const path = require('path')
+const { BufferListStream } = require('bl')
 const axios = require('axios')
 const spawn = require('child_process').spawn
 const stream = require('stream')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
 
+const { logger: genericLogger } = require('./logging')
 const models = require('./models')
+const { ipfsLatest } = require('./ipfsClient')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { generateNonImageMultihash } = require('./fileHasher')
+const { generateNonImageMultihash } = require('./ipfsAdd')
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
+const TEN_MINUTES_IN_SECONDS = 60 * 10
+
+let ipfsIDObj
 
 class Utils {
   static verifySignature(data, sig) {
@@ -90,6 +96,133 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
   )
   return dirFile.fileUUID
 }
+
+async function getIPFSPeerId(ipfs) {
+  // Assumes the ipfs id returns the correct address from IPFS. May need to set the correct values in
+  // the IPFS pod. Command is:
+  // ipfs config --json Addresses.Announce '["/ip4/<public ip>/tcp/<public port>"]'
+  // the public port is the port mapped to IPFS' port 4001
+  if (!ipfsIDObj) {
+    ipfsIDObj = await ipfs.id()
+    setInterval(async () => {
+      ipfsIDObj = await ipfs.id()
+    }, TEN_MINUTES_IN_SECONDS * 1000)
+  }
+
+  return ipfsIDObj
+}
+
+/**
+ * Cat single byte of file at given filepath. If ipfs.cat() call takes longer than the timeout time or
+ * something goes wrong, an error will be thrown.
+ */
+const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
+  const logger = genericLogger.child(logContext)
+
+  return new Promise(async (resolve, reject) => {
+    const start = Date.now()
+
+    try {
+      // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+      // don't keep track of the results as this call is a proof-of-concept that the file exists in ipfs
+      /* eslint-disable-next-line no-unused-vars */
+      for await (const chunk of ipfsLatest.cat(path, { length: 1, timeout })) {
+        continue
+      }
+      logger.info(
+        `ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`
+      )
+      resolve()
+    } catch (e) {
+      // Expected message for e is `TimeoutError: Request timed out`
+      // if it's not that message, log out the error
+      if (!e.message.includes('Request timed out')) {
+        logger.error(`ipfsSingleByteCat - Error: ${e}`)
+      }
+      reject(e)
+    }
+  })
+}
+
+/**
+ * Call ipfs.cat on a path with optional timeout and length parameters
+ * @param {*} serviceRegistry
+ * @param {*} logger
+ * @param {*} path IPFS cid for file
+ * @param {*} timeout timeout for IPFS op in ms
+ * @param {*} length length of data to retrieve from file
+ * @returns {Buffer}
+ */
+const ipfsCat = ({ ipfsLatest }, logger, path, timeout = 1000, length = null) =>
+  new Promise(async (resolve, reject) => {
+    const start = Date.now()
+
+    try {
+      const chunks = []
+      const options = {}
+      if (length) options.length = length
+      if (timeout) options.timeout = timeout
+
+      // using a js timeout because IPFS cat sometimes does not resolve the timeout and gets
+      // stuck in this function indefinitely
+      // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
+      setTimeout(() => {
+        return reject(new Error('ipfsCat timed out'))
+      }, 2 * timeout)
+
+      // ipfsLatest.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+      /* eslint-disable-next-line no-unused-vars */
+      for await (const chunk of ipfsLatest.cat(path, options)) {
+        chunks.push(chunk)
+      }
+      logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
+      resolve(Buffer.concat(chunks))
+    } catch (e) {
+      reject(e)
+    }
+  })
+
+/**
+ * Call ipfs.get on a path with an optional timeout
+ * @param {*} serviceRegistry
+ * @param {*} logger
+ * @param {String} path IPFS cid for file
+ * @param {Number} timeout timeout in ms
+ * @returns {BufferListStream}
+ */
+const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) =>
+  new Promise(async (resolve, reject) => {
+    const start = Date.now()
+
+    try {
+      const chunks = []
+      const options = {}
+      if (timeout) options.timeout = timeout
+
+      // using a js timeout because IPFS get sometimes does not resolve the timeout and gets
+      // stuck in this function indefinitely
+      // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
+      setTimeout(() => {
+        return reject(new Error('ipfsGet timed out'))
+      }, 2 * timeout)
+
+      // ipfsLatest.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+      /* eslint-disable-next-line no-unused-vars */
+      for await (const file of ipfsLatest.get(path, options)) {
+        if (!file.content) continue
+
+        const content = new BufferListStream()
+        for await (const chunk of file.content) {
+          content.append(chunk)
+        }
+        resolve(content)
+      }
+      logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
+      resolve(Buffer.concat(chunks))
+    } catch (e) {
+      reject(e)
+    }
+  })
 
 /**
  *
@@ -315,6 +448,10 @@ async function runShellCommand(command, args, logger) {
 module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
+module.exports.getIPFSPeerId = getIPFSPeerId
+module.exports.ipfsSingleByteCat = ipfsSingleByteCat
+module.exports.ipfsCat = ipfsCat
+module.exports.ipfsGet = ipfsGet
 module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork

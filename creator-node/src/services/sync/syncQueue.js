@@ -13,9 +13,11 @@ class SyncQueue {
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
    *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
-  constructor(nodeConfig, redis, serviceRegistry) {
+  constructor(nodeConfig, redis, ipfs, ipfsLatest, serviceRegistry) {
     this.nodeConfig = nodeConfig
     this.redis = redis
+    this.ipfs = ipfs
+    this.ipfsLatest = ipfsLatest
     this.serviceRegistry = serviceRegistry
 
     this.queue = new Bull('sync-processing-queue', {

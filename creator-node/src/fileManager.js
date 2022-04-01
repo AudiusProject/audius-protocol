@@ -9,7 +9,7 @@ const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const fileHasher = require('./fileHasher')
+const ipfsAdd = require('./ipfsAdd')
 const { findCIDInNetwork } = require('./utils')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
@@ -17,6 +17,10 @@ const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // D
 
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
+
+const SaveFileForMultihashToFSIPFSFallback = config.get(
+  'saveFileForMultihashToFSIPFSFallback'
+)
 
 const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
 
@@ -29,18 +33,22 @@ async function saveFileFromBufferToDisk(req, buffer) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  const cid = await fileHasher.generateNonImageMultihash(buffer, req.logContext)
+  // Retrieve multihash
+  const multihash = await ipfsAdd.generateNonImageMultihash(
+    buffer,
+    req.logContext
+  )
 
-  // Write file to disk by cid for future retrieval
-  const dstPath = DiskManager.computeFilePath(cid)
+  // Write file to disk by multihash for future retrieval
+  const dstPath = DiskManager.computeFilePath(multihash)
   await fs.writeFile(dstPath, buffer)
 
-  return { cid, dstPath }
+  return { multihash, dstPath }
 }
 
 /**
- * Store file copy by CID for future retrieval
- * @param {String} multihash CID which will be computed into a destination path to copy to
+ * Store file copy by multihash for future retrieval
+ * @param {String} multihash ipfs add multihash response
  * @param {String} srcPath path to content to copy
  * @param {Object} logContext
  * @returns the destination path of where the content was copied to
@@ -68,18 +76,18 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
 /**
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
- *    creating directories
+ * creating directories, changing IPFS gateway urls before calling _saveFileForMultihashToFS
  * 2. attempt to fetch the CID from a variety of sources
  * 3. return boolean failure content retrieval or content verification failure
  * @param {Object} serviceRegistry
  * @param {Object} logger
- * @param {String} multihash CID
+ * @param {String} multihash IPFS cid
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
  *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
  * @param {Array} gatewaysToTry List of gateway endpoints to try
- * @param {String?} fileNameForImage file name if the CID is image in dir.
+ * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
- * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
+ * @param {number?} trackId if the multihash is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
  * @return {Boolean} true if success, false if error
  */
@@ -174,6 +182,8 @@ async function saveFileForMultihashToFS(
      * Attempts to fetch CID:
      *  - If file already stored on disk, return immediately.
      *  - If file not already stored, request from user's replica set gateways in parallel.
+     *  - If not found, call ipfs.cat(timeout=1000ms)
+     *  - If not found, call ipfs.get(timeout=1000ms)
      * Each step, if successful, stores retrieved file to disk.
      */
 
@@ -279,7 +289,110 @@ async function saveFileForMultihashToFS(
       }
     }
 
-    // If file is not found on disk, check nodes on the rest of the network
+    // If file not found through gateways, check local ipfs node.
+    if (!fileFound && SaveFileForMultihashToFSIPFSFallback) {
+      logger.debug(
+        `checking if ${multihash} already available on local ipfs node`
+      )
+      try {
+        decisionTree.push({
+          stage: 'About to retrieve file from local ipfs node with cat',
+          vals: multihash,
+          time: Date.now()
+        })
+
+        // ipfsCat returns a Buffer
+        const fileBuffer = await Utils.ipfsCat(
+          serviceRegistry,
+          logger,
+          multihash,
+          1000
+        )
+
+        fileFound = true
+        logger.debug(`Retrieved file for ${multihash} from  with cat`)
+        decisionTree.push({
+          stage: 'Retrieved file from local ipfs node with cat',
+          vals: multihash,
+          time: Date.now()
+        })
+
+        // Write file to disk.
+        await fs.writeFile(expectedStoragePath, fileBuffer)
+
+        logger.info(
+          `wrote file to ${expectedStoragePath}, obtained via ipfs cat`
+        )
+        decisionTree.push({
+          stage: 'Wrote file to disk',
+          vals: expectedStoragePath,
+          time: Date.now()
+        })
+      } catch (e) {
+        logger.warn(
+          `Multihash ${multihash} is not available on local ipfs node ${e.message}`
+        )
+        decisionTree.push({
+          stage: 'File not available on local ipfs node with cat',
+          vals: multihash,
+          time: Date.now()
+        })
+      }
+    }
+
+    // If file not already available on local ipfs node or via gateways, fetch from IPFS.
+    if (!fileFound && SaveFileForMultihashToFSIPFSFallback) {
+      logger.debug(`Attempting to get ${multihash} from IPFS`)
+      try {
+        decisionTree.push({
+          stage: 'About to retrieve file from local ipfs node with get',
+          vals: multihash,
+          time: Date.now()
+        })
+
+        // ipfsGet returns a BufferListStream object which is not a buffer
+        // not compatible into writeFile directly, but it can be streamed to a file
+        const fileBL = await Utils.ipfsGet(
+          serviceRegistry,
+          logger,
+          multihash,
+          1000
+        )
+
+        logger.debug(
+          `retrieved file for multihash ${multihash} from local ipfs node`
+        )
+        decisionTree.push({
+          stage: 'Retrieved file from local ipfs node with get',
+          vals: multihash,
+          time: Date.now()
+        })
+
+        // Write file to disk.
+        await Utils.writeStreamToFileSystem(fileBL, expectedStoragePath)
+
+        fileFound = true
+        logger.info(
+          `wrote file to ${expectedStoragePath}, obtained via ipfs get`
+        )
+        decisionTree.push({
+          stage: 'Wrote file to disk',
+          vals: expectedStoragePath,
+          time: Date.now()
+        })
+      } catch (e) {
+        logger.warn(
+          `Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`
+        )
+        decisionTree.push({
+          stage: 'File not available on local ipfs node with ipfs get',
+          vals: multihash,
+          time: Date.now()
+        })
+      }
+    }
+
+    // if not found in gateways or IPFS, check nodes on the rest of the network
     if (!fileFound) {
       try {
         const libs = serviceRegistry.libs
@@ -314,15 +427,18 @@ async function saveFileForMultihashToFS(
       }
     }
 
-    // error if file was not found on any gateway
+    // error if file was not found on any gateway or ipfs
     if (!fileFound) {
+      const retrievalSourcesString = SaveFileForMultihashToFSIPFSFallback
+        ? 'ipfs & other creator node gateways'
+        : 'creator node gateways'
       decisionTree.push({
-        stage: `Failed to retrieve file for multihash after trying creator node gateways`,
+        stage: `Failed to retrieve file for multihash after trying ${retrievalSourcesString}`,
         vals: multihash,
         time: Date.now()
       })
       throw new Error(
-        `Failed to retrieve file for multihash ${multihash} after trying creator node gateways`
+        `Failed to retrieve file for multihash ${multihash} after trying ${retrievalSourcesString}`
       )
     }
 
@@ -343,7 +459,7 @@ async function saveFileForMultihashToFS(
         )
       }
 
-      const ipfsHashOnly = await fileHasher.generateNonImageMultihash(
+      const ipfsHashOnly = await ipfsAdd.generateNonImageMultihash(
         expectedStoragePath
       )
       if (multihash !== ipfsHashOnly) {

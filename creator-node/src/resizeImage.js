@@ -4,7 +4,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const { logger: genericLogger } = require('./logging')
-const { generateImageMultihashes } = require('./fileHasher')
+const { generateImageMultihashes } = require('./ipfsAdd')
 const DiskManager = require('./diskManager')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
