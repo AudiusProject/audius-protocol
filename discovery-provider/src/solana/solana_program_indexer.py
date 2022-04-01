@@ -63,10 +63,6 @@ class IndexerBase(ABC):
         # DO NOT MERGE AS ERROR
         logger.error(f"{self._label} | {msg}")
 
-def split_list(list, n):
-    for i in range(0, len(list), n):
-        yield list[i : i + n]
-
 class SolanaProgramIndexer(IndexerBase):
     """
     Generic indexer class for Solana programs
@@ -100,6 +96,8 @@ class SolanaProgramIndexer(IndexerBase):
     def get_tx_in_db(self, session: Any, tx_sig: str):
         """
         Return a boolean value indicating whether tx signature is found
+        @param session: DB session
+        @param tx_sig: transaction signature to look up
         """
         raise Exception("Must be implemented in subclass")
 
@@ -115,11 +113,20 @@ class SolanaProgramIndexer(IndexerBase):
     @abstractmethod
     async def parse_tx(self, tx_sig):
         """
-        Parse an individual transaction, this will also vary based on the program being indexed
+        Parse an individual transaction, this will vary based on the program being indexed
+        @param tx_sig: transaction signature to be parsed
         """
         tx_info = self._solana_client_manager.get_sol_tx_info(tx_sig)
         result: TransactionInfoResult = tx_info["result"]
         return { "tx_sig": tx_sig, "tx_metadata": {}, "result": result }
+
+    @abstractmethod
+    async def fetch_ipfs_metadata(self, parsed_transactions):
+        '''
+        Fetch all metadata objects in parallel (if required). Certain indexing tasks will not require this step and can skip appropriately
+        @param parsed_transactions: Array of transactions containing deserialized information, ideally pointing to a metadata object
+        '''
+        return {}
 
     async def process_txs_batch(self, tx_sig_batch_records):
         self.msg(f"Parsing {tx_sig_batch_records}")
@@ -140,19 +147,22 @@ class SolanaProgramIndexer(IndexerBase):
             except asyncio.CancelledError:
                 pass # Swallow cancelled requests
 
-        # MISSING - Metadata fetch step
-
         # Committing to DB
         parsed_transactions = []
         for tx_sig in tx_sig_batch_records:
             parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
-        self.validate_and_save_parsed_tx_records(parsed_transactions)
+        # Fetch metadata in parallel
+        metadata_dictionary = self.fetch_ipfs_metadata(parsed_transactions)
+
+        self.validate_and_save_parsed_tx_records(parsed_transactions, metadata_dictionary)
 
     @abstractmethod
     def validate_and_save_parsed_tx_records(self, parsed_transactions, metadata_dictionary):
         """
         Based parsed transaction information, generate and save appropriate database changes. This will vary based on the program being indexed
+        @param parsed_transactions: Array of transaction signatures in order
+        @param metadata_dictionary: Dictionary of remote metadata
         """
         raise Exception(BASE_ERROR)
 
@@ -257,65 +267,3 @@ class SolanaProgramIndexer(IndexerBase):
 
         transaction_signatures.reverse()
         return transaction_signatures
-
-
-class AnchorDataIndexer(SolanaProgramIndexer):
-    """
-    Indexer for the audius user data layer
-    """
-
-    def get_tx_in_db(self, session: Any, tx_sig: str):
-        exists = False
-        tx_sig_db_count = (
-            session.query(AudiusDataTx).filter(AudiusDataTx.signature == tx_sig)
-        ).count()
-        exists = tx_sig_db_count > 0
-        self.msg(f"{tx_sig} exists={exists}")
-        return exists
-
-    def get_latest_slot(self):
-        latest_slot = None
-        with self._db.scoped_session() as session:
-            highest_slot_query = (
-                session.query(AudiusDataTx)
-                .filter(AudiusDataTx.slot != None)
-                .filter(AudiusDataTx.signature != None)
-                .order_by(desc(AudiusDataTx.slot))
-            ).first()
-            # Can be None prior to first write operations
-            if highest_slot_query is not None:
-                latest_slot = highest_slot_query.slot
-
-        # If no slots have yet been recorded, assume all are valid
-        if latest_slot is None:
-            latest_slot = 0
-
-        self.msg(f"returning {latest_slot} for highest slot")
-        return latest_slot
-
-    def validate_and_save_parsed_tx_records(self, processed_transactions):
-        self.msg(f"validate_and_save anchor {processed_transactions}")
-        with self._db.scoped_session() as session:
-            for transaction in processed_transactions:
-                session.add(AudiusDataTx(
-                    signature=transaction["tx_sig"],
-                    slot=transaction["result"]["slot"]
-                ))
-
-    # TODO - This is where we will deserialize instruction data and accounts
-    # tx_metadata should contain TxType, Deserialized Instruction Data, etc
-    def parse_tx(self, tx_sig):
-        return super().parse_tx(tx_sig)
-
-    def process_index_task(self):
-        self.msg("Processing indexing task")
-        # Retrieve transactions to process
-        transaction_signatures = self.get_transactions_to_process()
-        # Break down batch into records of size 100
-        for tx_sig_batch in transaction_signatures:
-            for tx_sig_batch_records in split_list(
-                tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
-            ):
-                # Dispatch transactions to processor
-                asyncio.run(self.process_txs_batch(tx_sig_batch_records))
-        self.msg("Finished processing indexing task")

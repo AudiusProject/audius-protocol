@@ -478,3 +478,7 @@ def time_method(func):
 
 def get_tx_arg(tx, arg_name):
     return getattr(tx["args"], arg_name)
+
+def split_list(list, n):
+    for i in range(0, len(list), n):
+        yield list[i : i + n]

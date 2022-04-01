@@ -37,6 +37,7 @@ from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
     latest_sol_play_program_tx_key,
 )
+from utils.helpers import split_list
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
@@ -458,10 +459,6 @@ def parse_sol_tx_batch(
     )
     return None
 
-
-def split_list(list, n):
-    for i in range(0, len(list), n):
-        yield list[i : i + n]
 
 
 # Push to head of array containing seen transactions

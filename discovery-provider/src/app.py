@@ -34,7 +34,7 @@ from src.queries import (
     user_signals,
 )
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_program_indexer import AnchorDataIndexer
+from src.solana.anchor_program_indexer import AnchorDataIndexer
 from src.tasks import celery_app
 from src.utils import helpers
 from src.utils.config import ConfigIni, config_files, shared_config
@@ -554,6 +554,7 @@ def configure_celery(celery, test_config=None):
         redis_inst,
         db,
         solana_client_manager,
+        # TODO: Embed IDL for anchor py consumption
     )
 
     # Clear existing locks used in tasks if present
