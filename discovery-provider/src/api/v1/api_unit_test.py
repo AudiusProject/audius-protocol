@@ -13,6 +13,8 @@ method_order = {
     "options": 6,
 }
 
+MAX_DESCRIPTION_CHARS = 120
+
 
 def make_error(msg="", method=None, path=None):
     return {
@@ -30,14 +32,18 @@ def validate_schema(schema):
         for method, request in resource.items():
             if method != "parameters":
                 # Check request endpoints have descriptions
-                if "description" not in request:
+                if "description" not in request or request["description"] is None:
                     errors.append(
                         make_error(
                             "Missing endpoint description annotation", method, path
                         )
                     )
                 # Check long descriptions have a summary
-                elif len(request["description"]) > 120 and "summary" not in request:
+                elif (
+                    MAX_DESCRIPTION_CHARS >= 0
+                    and len(request["description"]) > MAX_DESCRIPTION_CHARS
+                    and ("summary" not in request or request["summary"] is None)
+                ):
                     errors.append(
                         make_error(
                             f'Description too long ({len(request["description"])}) and no summary provided',
@@ -55,7 +61,10 @@ def validate_schema(schema):
                 # Check method level request parameters have descriptions
                 if "parameters" in request:
                     for parameter in request["parameters"]:
-                        if "description" not in parameter:
+                        if (
+                            "description" not in parameter
+                            or parameter["description"] is None
+                        ):
                             errors.append(
                                 make_error(
                                     f'Missing parameter description annotation for "{parameter["name"]}"',
@@ -66,7 +75,10 @@ def validate_schema(schema):
             else:
                 # Check route level request parameters have descriptions
                 for parameter in request:
-                    if "description" not in parameter:
+                    if (
+                        "description" not in parameter
+                        or parameter["description"] is None
+                    ):
                         errors.append(
                             make_error(
                                 f'Missing parameter description annotation for "{parameter["name"]}"',
