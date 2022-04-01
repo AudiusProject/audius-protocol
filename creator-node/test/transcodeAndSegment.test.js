@@ -5,7 +5,6 @@ const uuid = require('uuid')
 const BlacklistManager = require('../src/blacklistManager')
 
 const { getApp } = require('./lib/app')
-const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
 describe('test transcode_and_segment route', function () {
@@ -17,10 +16,8 @@ describe('test transcode_and_segment route', function () {
 
   beforeEach(async function () {
     const appInfo = await getApp(
-      /* ipfsMock */ getIPFSMock(),
       /* libsMock */ getLibsMock(),
       BlacklistManager,
-      /* ipfsLatestMock */ getIPFSMock(true),
       /* setMockFn */ null,
       1 /* spId */
     )
