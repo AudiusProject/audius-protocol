@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 
 from flask import redirect
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields, inputs, reqparse
+from flask_restx import Namespace, Resource, fields, inputs
 from src.api.v1.helpers import (
     abort_bad_path_param,
     abort_bad_request_param,
@@ -1083,7 +1083,9 @@ class LatestTrack(Resource):
 
 
 by_ids_parser = pagination_with_current_user_parser.copy()
-by_ids_parser.add_argument("id", required=True, action="append")
+by_ids_parser.add_argument(
+    "id", required=True, action="append", description="A Track ID"
+)
 by_ids_parser.add_argument(
     "sort",
     required=False,
