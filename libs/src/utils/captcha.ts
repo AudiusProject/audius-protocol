@@ -5,7 +5,7 @@ declare global {
   interface Window {
     grecaptcha: {
       ready: (callback: () => void) => Promise<void>
-      execute: (siteKey: string, config: {action: string}) => Promise<string>
+      execute: (siteKey: string, config: { action: string }) => Promise<string>
     }
   }
 }
@@ -21,7 +21,7 @@ interface CaptchaConfig {
 export class Captcha {
   siteKey: string
   serviceKey: string
-  constructor ({ siteKey, serviceKey }: CaptchaConfig) {
+  constructor({ siteKey, serviceKey }: CaptchaConfig) {
     this.siteKey = siteKey
     this.serviceKey = serviceKey
 
@@ -33,7 +33,7 @@ export class Captcha {
    * Intended to be called by clients. Will generate a token used to calculate recaptcha score.
    * @param action name for this "action" for grouping
    */
-  async generate (action: string) {
+  async generate(action: string) {
     if (!this.siteKey) {
       throw new Error('No siteKey provided')
     }
@@ -46,12 +46,11 @@ export class Captcha {
       throw new Error('No captcha found, did you forget to import it?')
     }
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve) => {
       window.grecaptcha.ready(() => {
-        window.grecaptcha.execute(this.siteKey, { action })
-          .then((token) => {
-            resolve(token)
-          })
+        window.grecaptcha.execute(this.siteKey, { action }).then((token) => {
+          resolve(token)
+        })
       })
     })
   }
@@ -65,7 +64,7 @@ export class Captcha {
    *    {boolean | null} ok - whether score > minScore (false if something went wrong)
    *    {number | null} score - the raw score [0, 1] (or null if a score was not computed)
    */
-  async verify (token: string, minScore = 0.5) {
+  async verify(token: string, minScore = 0.5) {
     if (!this.serviceKey) {
       throw new Error('No serviceKey provided')
     }
@@ -77,14 +76,12 @@ export class Captcha {
     formData.append('secret', this.serviceKey)
 
     try {
-      const resp = await axios.post(
-        VERIFY_ENDPOINT,
-        formData,
-        {
-          headers: formData.getHeaders(),
-          adapter: IS_BROWSER ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http')
-        }
-      )
+      const resp = await axios.post(VERIFY_ENDPOINT, formData, {
+        headers: formData.getHeaders(),
+        adapter: IS_BROWSER
+          ? require('axios/lib/adapters/xhr')
+          : require('axios/lib/adapters/http')
+      })
 
       score = resp.data.score
       ok = score >= minScore
