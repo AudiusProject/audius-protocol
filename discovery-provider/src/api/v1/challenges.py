@@ -151,7 +151,7 @@ create_sender_attest_parser = reqparse.RequestParser(argument_class=DescriptiveA
 create_sender_attest_parser.add_argument(
     "sender_eth_address",
     required=True,
-    description="The address of the discovery node to attest for",
+    description="The address of the discovery provider to attest for",
 )
 
 create_sender_attestation_response = make_response(
