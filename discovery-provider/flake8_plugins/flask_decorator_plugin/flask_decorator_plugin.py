@@ -5,10 +5,11 @@ from typing import Any, Dict, Generator, List, Tuple, Type, TypedDict, Union
 from flake8.options.manager import OptionManager
 
 code_message_map = {
-    "FDP001": 'Non-route parameter "{0}" specified in @api.doc(). Prefer using @api.expects() with a RequestParser instead for query parameters.',
+    "FDP001": 'Non-route parameter "{0}" specified in @api.doc(). Use @api.expects() with a RequestParser instead for query parameters.',
     "FDP002": 'Decorators out of order. Decorator "{0}" should be above "{1}" in function decorator list.',
     "FDP003": 'Keyword args out of order. Arg "{0}" should be above "{1}" in @api.doc() keyword arg list.',
     "FDP004": 'Route parameter "{0}" missing from @api.doc() params. Are you missing an @api.expect()?',
+    "FDP005": 'Missing ID for resource method "{0}". Define an ID using @api.doc(id="<some pretty id>").',
 }
 
 ROUTE_HTTP_METHODS = ["get", "post", "put", "delete"]
@@ -69,10 +70,11 @@ def find_and_process_route_doc(
     decorator: ast.Call, route_args_dict: Dict[str, RouteArgEntry]
 ):
     """Finds and processes the @api.route() doc argument"""
+    methods_with_ids = []
     for keyword in decorator.keywords:
         if keyword.arg == "doc":
             if isinstance(keyword.value, ast.Constant) and keyword.value.value == False:
-                return False
+                return (False, [])
             # Check if doc has params documented for route_args
             elif isinstance(keyword.value, ast.Dict):
                 try:
@@ -87,7 +89,10 @@ def find_and_process_route_doc(
                     # Err on the side of caution and mark them all as seen
                     for key in route_args_dict:
                         route_args_dict[key]["seen"] = True
-    return True
+                methods_with_ids = [
+                    method for method in get_method_ids_from_route_doc(keyword.value)
+                ]
+    return (True, methods_with_ids)
 
 
 def find_param_descriptions_in_route_doc(doc: ast.Dict):
@@ -112,6 +117,19 @@ def find_param_descriptions_in_route_doc(doc: ast.Dict):
                                         yield key.value
                         else:
                             raise UnknownParamKey
+
+
+def get_method_ids_from_route_doc(doc: ast.Dict):
+    """Gets all the methods that have an operation id from a route doc"""
+    for key, method_doc in parse_ast_dict(doc):
+        if isinstance(key, ast.Constant):
+            if key.value in ROUTE_HTTP_METHODS:
+                method = key.value
+                if isinstance(method_doc, ast.Dict):
+                    for key, _ in parse_ast_dict(method_doc):
+                        if isinstance(key, ast.Constant):
+                            if key.value == "id":
+                                yield method
 
 
 def check_order(item: str, processed: List[str], order_map: Dict[str, int]):
@@ -146,15 +164,17 @@ class Visitor(ast.NodeVisitor):
         can_check_route_args = False
         has_documented_route = False
         has_class_level_expect = False
+        methods_with_ids = []
         for decorator in node.decorator_list:
             if isinstance(decorator, ast.Call):
                 if is_route_decorator(decorator):
                     if parse_route_args(decorator, route_args_dict):
                         can_check_route_args = True
 
-                    is_route_documented = find_and_process_route_doc(
-                        decorator, route_args_dict
-                    )
+                    (
+                        is_route_documented,
+                        methods_with_ids,
+                    ) = find_and_process_route_doc(decorator, route_args_dict)
                     if is_route_documented:
                         has_documented_route = True
                 elif is_api_expect_decorator(decorator):
@@ -182,13 +202,15 @@ class Visitor(ast.NodeVisitor):
                                 processed_keywords: List[str] = []
                                 for keyword in decorator.keywords:
                                     if can_check_route_args:
-                                        self._check_route_params(
+                                        self._check_doc_params_only_routes(
                                             keyword, route_args_dict
                                         )
                                     if keyword.arg:
                                         self._check_doc_keyword_order(
                                             keyword, processed_keywords
                                         )
+                                    if keyword.arg == "id":
+                                        methods_with_ids.append(child.name)
                         # Function decorators (eg. @cache())
                         elif isinstance(decorator.func, ast.Name):
                             self._check_decorator_order(
@@ -203,13 +225,23 @@ class Visitor(ast.NodeVisitor):
                             processed_decorators,
                             (decorator.lineno, decorator.col_offset),
                         )
+                # Check that method has a custom id
+                if child.name not in methods_with_ids:
+                    self.problems.append(
+                        (
+                            child.lineno,
+                            child.col_offset,
+                            "FDP005",
+                            [child.name],
+                        )
+                    )
 
         # Skip check if there's a toplevel @api.expect() as that could document them.
         if not has_class_level_expect:
             self._check_route_args_have_descriptions(route_args_dict)
         self.generic_visit(node)
 
-    def _check_route_params(
+    def _check_doc_params_only_routes(
         self, keyword: ast.keyword, route_args: Dict[str, RouteArgEntry]
     ):
         """Checks that the @api.doc() decorator only includes params for the route."""

@@ -160,6 +160,33 @@ class Trending(Resource):
         pass
 """
 
+doc_id_missing_example = """
+@full_ns.route(\"/genre/top\")
+class FullTopGenreUsers(Resource):
+    @full_ns.doc(
+        description=\"Get the Top Users for a Given Genre\",
+    )
+    def get(self):
+        pass
+"""
+
+doc_missing_example = """
+@full_ns.route(\"/genre/top\")
+class FullTopGenreUsers(Resource):
+    def get(self):
+        pass
+"""
+
+method_id_in_route_doc_example = """
+@full_ns.route(\"/genre/top\", doc={\"get\": {\"id\": \"foo\"}})
+class FullTopGenreUsers(Resource):
+    @full_ns.doc(
+        description=\"Get the Top Users for a Given Genre\",
+    )
+    def get(self):
+        pass
+"""
+
 
 def _results(s: str):
     tree = ast.parse(s)
@@ -235,10 +262,22 @@ def test_route_level_param():
     assert not _results(route_doc_get_params_example)
 
 
+def test_doc_id_missing():
+    assert _results(doc_id_missing_example)[0]["code"] == "FDP005"
+
+
+def test_doc_missing():
+    assert _results(doc_missing_example)[0]["code"] == "FDP005"
+
+
+def test_method_id_in_route():
+    assert not _results(method_id_in_route_doc_example)
+
+
 def test_plugin_format():
     tree = ast.parse(non_route_param_example)
     plugin = Plugin(tree)
     results = {f"{line}:{col} {msg}" for line, col, msg, _ in plugin.run()}
     assert results == {
-        '8:42 FDP001 Non-route parameter "some_param" specified in @api.doc(). Prefer using @api.expects() with a RequestParser instead for query parameters.'
+        '8:42 FDP001 Non-route parameter "some_param" specified in @api.doc(). Use @api.expects() with a RequestParser instead for query parameters.'
     }
