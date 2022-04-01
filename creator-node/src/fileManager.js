@@ -29,7 +29,6 @@ async function saveFileFromBufferToDisk(req, buffer) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  // Retrieve CID
   const cid = await fileHasher.generateNonImageMultihash(buffer, req.logContext)
 
   // Write file to disk by cid for future retrieval
@@ -40,8 +39,8 @@ async function saveFileFromBufferToDisk(req, buffer) {
 }
 
 /**
- * Store file copy by multihash for future retrieval
- * @param {String} multihash ipfs add multihash response
+ * Store file copy by CID for future retrieval
+ * @param {String} multihash CID which will be computed into a destination path to copy to
  * @param {String} srcPath path to content to copy
  * @param {Object} logContext
  * @returns the destination path of where the content was copied to
@@ -69,18 +68,18 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
 /**
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
- * creating directories, changing IPFS gateway urls before calling _saveFileForMultihashToFS
+ *    creating directories
  * 2. attempt to fetch the CID from a variety of sources
  * 3. return boolean failure content retrieval or content verification failure
  * @param {Object} serviceRegistry
  * @param {Object} logger
- * @param {String} multihash IPFS cid
+ * @param {String} multihash CID
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
  *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
  * @param {Array} gatewaysToTry List of gateway endpoints to try
- * @param {String?} fileNameForImage file name if the multihash is image in dir.
+ * @param {String?} fileNameForImage file name if the CID is image in dir.
  *                  eg original.jpg or 150x150.jpg
- * @param {number?} trackId if the multihash is of a segment type, the trackId to which it belongs to
+ * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
  * @return {Boolean} true if success, false if error
  */
@@ -175,8 +174,6 @@ async function saveFileForMultihashToFS(
      * Attempts to fetch CID:
      *  - If file already stored on disk, return immediately.
      *  - If file not already stored, request from user's replica set gateways in parallel.
-     *  - If not found, call ipfs.cat(timeout=1000ms)
-     *  - If not found, call ipfs.get(timeout=1000ms)
      * Each step, if successful, stores retrieved file to disk.
      */
 

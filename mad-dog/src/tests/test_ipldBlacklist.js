@@ -26,6 +26,7 @@ const {
   genRandomString
 } = RandomUtils
 const { logger } = require('../logger.js')
+const fileHasher = require('../utils/fileHasher')
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 
@@ -689,46 +690,6 @@ async function getCreatorId ({
 }
 
 /**
- * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context
- */
-function initializeHashFunc(content, options) {
-  options.onlyHash = true
-  options.cidVersion = 0
-
-  if (typeof content === 'string') {
-    content = new TextEncoder().encode(content)
-  }
-
-  return { options, content }
-}
-
-const block = {
-  get: async (cid) => {
-    throw new Error(`unexpected block API get for ${cid}`)
-  },
-  put: async () => {
-    throw new Error('unexpected block API put')
-  }
-}
-
-/**
- * Hashes a Buffer into its CID
- * @param {Buffer} content a buffer of the content
- * @param {Object?} options options for importer
- * @returns the CID from content addressing logic
- */
-async function hashContentBuffer(content, options = {}) {
-  ;({ options, content } = initializeHashFunc(content, options))
-
-  let lastCid
-  for await (const { cid } of importer([{ content }], block, options)) {
-    lastCid = cid
-  }
-
-  return `${lastCid}`
-}
-
-/**
  * Hashes an object into its CID
  * @param {object} contentObject content in object form to get a CID for
  * @return the CID from content addressing logic
@@ -747,7 +708,7 @@ async function hashContentBuffer(content, options = {}) {
   // Hash object into CID
   let generatedCid
   try {
-    generatedCid = hashContentBuffer(buffer)
+    generatedCid = fileHasher.ipfsOnlyHashNonImages(buffer)
   } catch (e) {
     const errorMsg = 'Could generate CID'
     logger.error(errorMsg)
