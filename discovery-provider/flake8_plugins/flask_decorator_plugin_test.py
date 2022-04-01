@@ -131,10 +131,42 @@ class TrailingAppNameMetrics(Resource):
         pass
 """
 
+route_doc_get_params_example = """
+@ns.route(
+    \"/trending\",
+    doc={
+        \"get\": {
+            "id": \"Get Trending Tracks\",
+            "description": \"Gets the top 100 trending (most popular) tracks on Audius\",
+        }
+    },
+)
+@ns.route(
+    \"/trending/<string:version>\",
+    doc={
+        \"get\": {
+            \"id\": \"Get Trending Tracks With Version\",
+            \"description\": \"Gets the top 100 trending (most popular) tracks on Audius using a given trending strategy version\",
+            \"params\": {\"version\": \"The strategy version of trending to use\"},
+        }
+    },
+)
+class Trending(Resource):
+    @record_metrics
+    @ns.expect(trending_parser)
+    @ns.marshal_with(tracks_response)
+    @cache(ttl_sec=TRENDING_TTL_SEC)
+    def get(self, version):
+        pass
+"""
+
 
 def _results(s: str):
     tree = ast.parse(s)
-    visitor = Visitor()
+    visitor = Visitor(
+        decorator_order=["record_metrics", "doc", "expect", "marshal_with", "cache"],
+        api_doc_keyword_order=["id", "description", "params", "responses"],
+    )
     visitor.visit(tree)
     return list(
         map(
@@ -166,7 +198,7 @@ def test_attribute_order():
     assert first_result["line"] == 9
     assert first_result["col"] == 5
     assert first_result["code"] == "FDP002"
-    assert first_result["code_args"] == ["record_metrics"]
+    assert first_result["code_args"] == ["record_metrics", "doc"]
 
 
 def test_keyword_order():
@@ -174,15 +206,15 @@ def test_keyword_order():
     assert first_result["line"] == 9
     assert first_result["col"] == 15
     assert first_result["code"] == "FDP003"
-    assert first_result["code_args"] == ["params"]
+    assert first_result["code_args"] == ["params", "responses"]
 
 
 def test_decorator_order():
     results = _results(decorator_order_example)
     assert results[0]["code"] == "FDP002"
-    assert results[0]["code_args"] == ["record_metrics"]
+    assert results[0]["code_args"] == ["record_metrics", "expect"]
     assert results[1]["code"] == "FDP002"
-    assert results[1]["code_args"] == ["doc"]
+    assert results[1]["code_args"] == ["doc", "expect"]
     assert results[2]["code"] == "FDP004"
     assert results[2]["code_args"] == ["version"]
 
@@ -197,6 +229,10 @@ def test_top_level_expect():
 
 def test_route_doc():
     assert not _results(route_doc_example)
+
+
+def test_route_level_param():
+    assert not _results(route_doc_get_params_example)
 
 
 def test_plugin_format():
