@@ -1,4 +1,4 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 class RegistryClient {
   constructor (web3Manager, contractABI, contractAddress) {

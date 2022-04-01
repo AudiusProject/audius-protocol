@@ -1,6 +1,6 @@
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
-const Utils = require('../utils')
+const { Utils } = require('../utils')
 const { AuthHeaders } = require('../constants')
 const {
   getPermitDigest, sign

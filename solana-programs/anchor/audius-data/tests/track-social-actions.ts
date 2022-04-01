@@ -17,10 +17,13 @@ import { AudiusData } from "../target/types/audius_data";
 import {
   createSolanaContentNode,
   createSolanaUser,
+  testCreateUserDelegate,
 } from "./test-helpers";
+const { SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
 
+const contentNodes = {};
 describe("track-actions", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
@@ -67,21 +70,21 @@ describe("track-actions", function () {
   });
 
   it("Initializing Content Node accounts!", async function () {
-    await createSolanaContentNode({
+    contentNodes["1"] = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
       adminStorageKeypair,
       spId: new anchor.BN(1),
     });
-    await createSolanaContentNode({
+    contentNodes["2"] = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
       adminStorageKeypair,
       spId: new anchor.BN(2),
     });
-    await createSolanaContentNode({
+    contentNodes["3"] = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
@@ -93,17 +96,19 @@ describe("track-actions", function () {
   it("Delete save for a track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await deleteTrackSave({
+    const txHash = await deleteTrackSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
@@ -125,17 +130,19 @@ describe("track-actions", function () {
   it("Save a newly created track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await addTrackSave({
+    const txHash = await addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
@@ -157,17 +164,19 @@ describe("track-actions", function () {
   it("Repost a track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await addTrackRepost({
+    const txHash = await addTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
@@ -186,21 +195,65 @@ describe("track-actions", function () {
     );
   });
 
+  it("Delegate reposts a track", async function () {
+    const userDelegate = await testCreateUserDelegate({
+      adminKeypair,
+      adminStorageKeypair: adminStorageKeypair,
+      program,
+      provider,
+    });
+
+    const txHash = await addTrackRepost({
+      program,
+      baseAuthorityAccount: userDelegate.baseAuthorityAccount,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userStorageAccountPDA: userDelegate.userAccountPDA,
+      userAuthorityDelegateAccountPDA: userDelegate.userAuthorityDelegatePDA,
+      authorityDelegationStatusAccountPDA:
+        userDelegate.authorityDelegationStatusPDA,
+      userAuthorityKeypair: userDelegate.userAuthorityDelegateKeypair,
+      handleBytesArray: userDelegate.userHandleBytesArray,
+      bumpSeed: userDelegate.userBumpSeed,
+      id: randomString(10),
+    });
+    const info = await getTransaction(provider, txHash);
+    const instructionCoder = program.coder.instruction as BorshInstructionCoder;
+    const decodedInstruction = instructionCoder.decode(
+      info.transaction.message.instructions[0].data,
+      "base58"
+    );
+    const userHandle = String.fromCharCode(
+      ...userDelegate.userHandleBytesArray
+    );
+    const instructionHandle = String.fromCharCode(
+      ...decodedInstruction.data.userHandle.seed
+    );
+    assert.equal(instructionHandle, userHandle);
+    expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
+      EntitySocialActionEnumValues.addRepost
+    );
+    expect(decodedInstruction.data.entityType).to.deep.equal(
+      EntityTypesEnumValues.track
+    );
+  });
+
   it("Delete repost for a track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await deleteTrackRepost({
+    const txHash = await deleteTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
+      userAuthorityDelegateAccountPDA: SystemProgram.programId,
+      authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: user.keypair,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
 
-    const info = await getTransaction(provider, tx);
+    const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,

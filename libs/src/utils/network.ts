@@ -1,8 +1,12 @@
 import axios, { AxiosRequestConfig, AxiosResponse, CancelTokenSource } from 'axios'
 import semver from 'semver'
 
-import Utils from './utils'
+import { Utils } from './utils'
 import { promiseFight } from './promiseFight'
+
+export type ServiceName = string
+export interface ServiceWithEndpoint {endpoint: string}
+export type Service = ServiceName | ServiceWithEndpoint
 
 interface Request {
   id?: number
@@ -141,6 +145,9 @@ async function timeRequests ({
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- this is a return type
+type RequestResponses = {blob: AxiosResponse, url: string} | AxiosResponse | void
+
 /**
  * Races multiple requests
  * @param urls
@@ -170,7 +177,7 @@ async function raceRequests (
     // 2. We give requests the opportunity to get canceled if other's are very fast
     await Utils.wait(timeBetweenRequests * i)
     if (hasFinished) return
-    return await new Promise((resolve, reject) => {
+    return await new Promise<RequestResponses>((resolve, reject) => {
       axios({
         method: 'get',
         url,
@@ -202,12 +209,12 @@ async function raceRequests (
     requests.push(Utils.wait(timeout))
   }
   let response
-  let errored
+  let errored: AxiosResponse[]
   try {
-    const { val, errored: e } = await promiseFight(requests, /* captureErrorred */ true)
+    const { val, errored: e } = await promiseFight<RequestResponses, AxiosResponse>(requests, true)
     response = val
     errored = e
-  } catch (e) {
+  } catch (e: any) {
     response = null
     errored = e
   }
@@ -215,7 +222,7 @@ async function raceRequests (
     source.cancel('Fetch already succeeded')
   })
 
-  if (response?.url && response.blob) {
+  if (response && 'url' in response && 'blob' in response) {
     callback(response.url)
     return { response: response.blob, errored }
   }
@@ -228,13 +235,13 @@ interface AllRequestsConfig {
   * map of actual URL to hit (e.g. https://resource/endpoint)
   * and identifying value (e.g. https://resource)
   */
-  urlMap: Record<string, string>
+  urlMap: Record<string, Service>
   // timeout for any request to be considered bad
   timeout: number
   /* a check invoked for each response.
- *  If invalid, the response is filtered out.
- *  (response: any) => boolean
- */
+   *  If invalid, the response is filtered out.
+   *  (response: any) => boolean
+   */
   validationCheck: (_: AxiosResponse) => boolean
 }
 
@@ -248,7 +255,7 @@ async function allRequests ({
 }: AllRequestsConfig) {
   const urls = Object.keys(urlMap)
   const requests = urls.map(async (url) => {
-    return await new Promise<string | null>((resolve) => {
+    return await new Promise<Service | null>((resolve) => {
       axios({
         method: 'get',
         timeout,
@@ -257,7 +264,7 @@ async function allRequests ({
         .then(response => {
           const isValid = validationCheck(response)
           if (isValid) {
-            resolve(urlMap[url] as string)
+            resolve(urlMap[url] as Service)
           } else {
             resolve(null)
           }
