@@ -8,9 +8,7 @@ const config = require('./config')
 const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
-const { logIpfsPeerIds } = require('./ipfsClient')
 const { serviceRegistry } = require('./serviceRegistry')
-const { pinCID } = require('./pinCID')
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
@@ -113,16 +111,12 @@ const startApp = async () => {
       await connectToDBAndRunMigrations()
     }
 
-    await logIpfsPeerIds()
-
     const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
     await serviceRegistry.initServices()
     logger.info(`Initialized services (Node running in ${nodeMode})`)
 
     appInfo = initializeApp(getPort(), serviceRegistry)
     logger.info('Initialized app and server')
-
-    await pinCID(serviceRegistry.ipfsLatest)
 
     // Some Services cannot start until server is up. Start them now
     // No need to await on this as this process can take a while and can run in the background
