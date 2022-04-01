@@ -465,7 +465,7 @@ class Rewards extends Base {
         logger.error(`Failed to get AAO attestation${needs ? `: needs ${needs}` : ''}`)
         const mappedErr = needs
           ? GetAttestationError[needs] || GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
-          : AAO_ATTESTATION_REJECTION
+          : GetAttestationError.AAO_ATTESTATION_REJECTION
         return {
           success: null,
           error: mappedErr
