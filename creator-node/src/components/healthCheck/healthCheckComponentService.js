@@ -91,8 +91,8 @@ const healthCheck = async (
 
   const { active: transcodeActive, waiting: transcodeWaiting } =
     await getTranscodeQueueJobs()
-  const { active: fileProcessingActive, waiting: fileProcessingWaiting } =
-    await getAsyncProcessingQueueJobs()
+
+  const asyncProcessingQueueJobs = await getAsyncProcessingQueueJobs()
 
   const response = {
     ...versionInfo,
@@ -133,8 +133,7 @@ const healthCheck = async (
     snapbackJobInterval,
     transcodeActive,
     transcodeWaiting,
-    fileProcessingActive,
-    fileProcessingWaiting
+    asyncProcessingQueue: asyncProcessingQueueJobs
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
