@@ -839,7 +839,11 @@ export class RewardsAttester {
     shouldReselect: boolean
   }> {
     const errors = SubmitAndEvaluateError
-    const AAO_ERRORS = new Set([errors.HCAPTCHA, errors.COGNITO_FLOW])
+    const AAO_ERRORS = new Set([
+      errors.HCAPTCHA,
+      errors.COGNITO_FLOW,
+      errors.AAO_ATTESTATION_REJECTION
+    ])
     // Account for errors from DN aggregation + Solana program
     // CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
     // safe to assume those won't work if we see them at this point.
@@ -897,10 +901,11 @@ export class RewardsAttester {
       if (isAAOError) {
         noRetry.push(res)
         const errorType = {
-          [errors.HCAPTCHA]: 'hcaptcha',
-          [errors.COGNITO_FLOW]: 'cognito'
+          [errors.HCAPTCHA]: "hcaptcha",
+          [errors.COGNITO_FLOW]: "cognito",
+          [errors.AAO_ATTESTATION_REJECTION]: "rejection"
           // Some hacky typing here because we haen't typed the imported error type yet
-        }[error] as unknown as 'hcaptcha' | 'cognito'
+        }[error] as unknown as "hcaptcha" | "cognito" | "rejection"
         report.reason = errorType
         this.reporter.reportAAORejection(report)
       } else if (isFinalAttempt) {
