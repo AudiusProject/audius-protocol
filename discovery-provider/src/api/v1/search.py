@@ -90,14 +90,17 @@ search_autocomplete_response = make_full_response(
 class FullSearchAutocomplete(Resource):
     @full_ns.doc(
         id="Search Autocomplete",
-        summary="""Get Users/Tracks/Playlists/Albums that best match the search query""",
-        description="""Same as search but optimized for quicker response at the cost of some entity information.""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(full_search_parser)
     @full_ns.marshal_with(search_autocomplete_response)
     @cache(ttl_sec=5)
     def get(self):
+        """
+        Get Users/Tracks/Playlists/Albums that best match the search query
+
+        Same as search but optimized for quicker response at the cost of some entity information.
+        """
         args = full_search_parser.parse_args()
         offset = format_offset(args)
         limit = format_limit(args)
