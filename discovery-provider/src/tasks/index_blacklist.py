@@ -168,6 +168,7 @@ def index_blocks(self, db, blocks_list):
                 ipld_blacklist_factory_txs,
                 block_number,
                 block_timestamp,
+                get_contract_addresses(),
             )
 
         # Add the block number of the most recently processed ipld block to redis
