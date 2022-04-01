@@ -514,6 +514,7 @@ class TrackHistoryFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get User's Track History""",
+        description="""Get the tracks the user recently listened to.""",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
