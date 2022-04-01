@@ -40,10 +40,7 @@ describe('Test createNewDataRecord()', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(
-      getLibsMock(),
-      BlacklistManager
-    )
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
@@ -639,7 +636,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
   const userId = 1
 
   // Create the req context for handleTrackContentRoute
-  function getReqObj (fileUUID, fileDir, session) {
+  function getReqObj(fileUUID, fileDir, session) {
     return {
       fileName: `${fileUUID}.mp3`,
       fileDir,
@@ -648,23 +645,13 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     }
   }
 
-  let session,
-    app,
-    cnodeUser,
-    cnodeUserUUID,
-    server,
-    libsMock
+  let session, app, cnodeUser, cnodeUserUUID, server, libsMock
 
   /** Init server to run DB migrations */
   before(async () => {
     const spId = 1
     libsMock = getLibsMock()
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      spId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
     server = appInfo.server
     app = appInfo.app
     mockServiceRegistry = appInfo.mockServiceRegistry
@@ -712,8 +699,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
 
     const uploadTrackState = async () => {
       // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
-      const mockMultihash =
-        'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+      const mockMultihash = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
@@ -733,9 +719,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
               .stub(FileManager, 'copyMultihashToFs')
               .returns(
                 new Promise((resolve) => {
-                  const dstPath = DiskManager.computeFilePath(
-                    mockMultihash
-                  )
+                  const dstPath = DiskManager.computeFilePath(mockMultihash)
                   return resolve(dstPath)
                 })
               ),
@@ -756,8 +740,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
         track_segments: trackSegments,
         source_file: sourceFile,
         transcodedTrackUUID
-      } =
-        trackContentResp
+      } = trackContentResp
       const trackMetadata = {
         test: 'field1',
         track_segments: trackSegments,
@@ -864,10 +847,7 @@ describe('Test fetchFilesHashFromDB()', async () => {
 
   /** Init server to run DB migrations */
   before(async () => {
-    const appInfo = await getApp(
-      getLibsMock(),
-      BlacklistManager,
-    )
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 

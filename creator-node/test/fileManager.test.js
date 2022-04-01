@@ -106,10 +106,9 @@ describe('test fileManager', () => {
 
       const requestID = uuid()
       try {
-        await fileHasher.generateNonImageMultihash(
-          srcPath,
-          { logContext: { requestID } }
-        )
+        await fileHasher.generateNonImageMultihash(srcPath, {
+          logContext: { requestID }
+        })
       } catch (e) {
         assert.fail(e.message)
       }
@@ -194,7 +193,9 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw an error if writing file to filesystem fails', async () => {
-      sinon.stub(fileHasher, 'generateNonImageMultihash').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
+      sinon
+        .stub(fileHasher, 'generateNonImageMultihash')
+        .resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
       try {
         await saveFileFromBufferToDisk(req, buffer)

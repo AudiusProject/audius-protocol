@@ -46,7 +46,7 @@ const logContext = {
 }
 
 // Create the req context for handleTrackContentRoute
-function getReqObj (fileUUID, fileDir, session) {
+function getReqObj(fileUUID, fileDir, session) {
   return {
     fileName: `${fileUUID}.mp3`,
     fileDir,
@@ -59,7 +59,7 @@ function getReqObj (fileUUID, fileDir, session) {
  * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir
  * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
  */
-function _getTestSegmentFilePathAtIndex (index) {
+function _getTestSegmentFilePathAtIndex(index) {
   let suffix = '000'
 
   if (index >= 0 && index < 10) suffix += `0${index}`
@@ -70,10 +70,7 @@ function _getTestSegmentFilePathAtIndex (index) {
 }
 
 describe('test Polling Tracks with mocks', function () {
-  let app,
-    server,
-    libsMock,
-    handleTrackContentRoute
+  let app, server, libsMock, handleTrackContentRoute
   let session, userId, userWallet
 
   const spId = 1
@@ -85,12 +82,7 @@ describe('test Polling Tracks with mocks', function () {
     userWallet = testEthereumConstants.pubKey.toLowerCase()
 
     const { getApp } = require('./lib/app')
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      spId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
     await BlacklistManager.init()
 
     app = appInfo.app
@@ -153,12 +145,7 @@ describe('test Polling Tracks with mocks', function () {
     // Reset app
     await server.close()
 
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      userId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
@@ -183,12 +170,7 @@ describe('test Polling Tracks with mocks', function () {
 
     // Reset app
     await server.close()
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      userId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
@@ -832,12 +814,7 @@ describe('test Polling Tracks with mocks', function () {
 })
 
 describe('test Polling Tracks with real files', function () {
-  let app2,
-    server,
-    session,
-    libsMock,
-    handleTrackContentRoute,
-    userId
+  let app2, server, session, libsMock, handleTrackContentRoute, userId
 
   /** Inits libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
@@ -846,12 +823,7 @@ describe('test Polling Tracks with real files', function () {
     userId = 1
 
     const { getApp } = require('./lib/app')
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      userId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     await BlacklistManager.init()
 
     app2 = appInfo.app

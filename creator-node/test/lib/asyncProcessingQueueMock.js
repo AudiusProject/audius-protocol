@@ -1,6 +1,5 @@
 const AsyncProcessingQueue = require('../../src/AsyncProcessingQueue')
 
-// TODO: do we need this?
 class AsyncProcessingQueueMock {
   constructor() {
     const apq = new AsyncProcessingQueue()
