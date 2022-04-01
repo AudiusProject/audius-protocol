@@ -9,7 +9,7 @@ cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
 echo "Installing dev deps for anchor audius-data development..."
 # install rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source $HOME/.cargo/env
+source "${CARGO_HOME:-"$HOME/.cargo"}/env"
 # pin rustc version
 rustup default "$RUST_VERSION"
 rustup component add rustfmt
@@ -17,7 +17,7 @@ rustup component add rustfmt
 # install solana
 sh -c "$(curl -sSfL https://release.solana.com/$SOLANA_CLI_VERSION/install)"
 # add solana to PATH
-export PATH="/home/ubuntu/.local/share/solana/install/active_release/bin:$PATH"
+export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
 
 # install yarn
 npm install -g yarn
@@ -29,9 +29,10 @@ anchor --version
 yarn install
 
 # init solana keypair
-solana-keygen new --no-bip39-passphrase --force -o "$PROTOCOL_DIR/.config/solana/id.json"
+solana-keygen new --no-bip39-passphrase --force -o "~/.config/solana/id.json"
 
-# reload shell 
-exec $SHELL
-
+if [[ "${CI:-false}" == false ]]; then
+    # reload shell 
+    exec $SHELL
+fi
 echo "Installed deps for anchor development."

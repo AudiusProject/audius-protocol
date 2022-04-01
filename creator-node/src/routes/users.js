@@ -5,6 +5,7 @@ const { promisify } = require('util')
 const randomBytes = promisify(crypto.randomBytes)
 const _ = require('lodash')
 
+const config = require('../config')
 const models = require('../models')
 const sequelize = models.sequelize
 const {
@@ -269,6 +270,14 @@ module.exports = function (app) {
     handleResponse(async (req, res) => {
       const { walletPublicKeys } = req.body
       const walletPublicKeysSet = new Set(walletPublicKeys)
+
+      // Enforce max # of wallets to prevent high db query time
+      const maxNumWallets = config.get('maxBatchClockStatusBatchSize')
+      if (walletPublicKeysSet.size > maxNumWallets) {
+        return errorResponseBadRequest(
+          `Number of wallets must not exceed ${maxNumWallets} (reduce 'walletPublicKeys' field in request body).`
+        )
+      }
 
       const returnFilesHash = !!req.query.returnFilesHash // default false
 

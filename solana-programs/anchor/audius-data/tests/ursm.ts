@@ -67,7 +67,7 @@ describe("replicaSet", function () {
       program,
       adminKeypair,
       baseAuthorityAccount,
-      adminStgPublicKey: adminStorageKeypair.publicKey,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
       contentNodeAuthority: authority.publicKey,
       contentNodeAcct: derivedAddress,
       spID,
@@ -125,7 +125,7 @@ describe("replicaSet", function () {
       provider,
       program,
       baseAuthorityAccount,
-      adminStgPublicKey: adminStorageKeypair.publicKey,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
       contentNodeAcct: derivedAddress,
       spID,
       contentNodeAuthority: authority.publicKey,
@@ -285,15 +285,18 @@ describe("replicaSet", function () {
       Buffer.from("sp_id", "utf8"),
       spID.toBuffer("le", 2),
     ]);
-    const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-      await findDerivedPair(program.programId, adminStorageKeypair.publicKey, seed);
+    const { baseAuthorityAccount } = await findDerivedPair(
+      program.programId,
+      adminStorageKeypair.publicKey,
+      seed
+    );
     const updatedAuthority = anchor.web3.Keypair.generate();
 
     await publicCreateOrUpdateContentNode({
       provider,
       program,
       baseAuthorityAccount,
-      adminStgPublicKey: adminStorageKeypair.publicKey,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
       contentNodeAuthority: updatedAuthority.publicKey,
       contentNodeAcct: cnToUpdate.pda,
       spID: cnToUpdate.spId,
@@ -313,10 +316,13 @@ describe("replicaSet", function () {
         authority: cn3.authority,
         seedBump: cn3.seedBump,
       },
-    })
+    });
 
     const account = await program.account.contentNode.fetch(cnToUpdate.pda);
-    expect(account.authority.toBase58(), 'updated content node authority to be set').to.equal(updatedAuthority.publicKey.toBase58())
+    expect(
+      account.authority.toBase58(),
+      "updated content node authority to be set"
+    ).to.equal(updatedAuthority.publicKey.toBase58());
   });
 
   it("Deletes a Content Node with the proposers", async function () {
@@ -332,7 +338,11 @@ describe("replicaSet", function () {
       spID.toBuffer("le", 2),
     ]);
     const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-      await findDerivedPair(program.programId, adminStorageKeypair.publicKey, seed);
+      await findDerivedPair(
+        program.programId,
+        adminStorageKeypair.publicKey,
+        seed
+      );
 
     const initAudiusAdminBalance = await provider.connection.getBalance(
       adminKeypair.publicKey
@@ -343,7 +353,7 @@ describe("replicaSet", function () {
       program,
       baseAuthorityAccount,
       adminAuthorityPublicKey: adminKeypair.publicKey,
-      adminStgPublicKey: adminStorageKeypair.publicKey,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
       cnDelete: {
         pda: derivedAddress,
         authority: cnToDelete.authority,
@@ -420,18 +430,23 @@ describe("replicaSet", function () {
       baseAuthorityAccount,
       userAcct: user.pda,
       userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
-      adminStgPublicKey: adminStorageKeypair.publicKey,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
       replicaSet: [2, 3, 6],
-      replicaSetBumps: [cn2.seedBump.bump, cn3.seedBump.bump, cn6.seedBump.bump],
+      replicaSetBumps: [
+        cn2.seedBump.bump,
+        cn3.seedBump.bump,
+        cn6.seedBump.bump,
+      ],
       contentNodeAuthority: cn2.authority,
       cn1: cn2.pda,
       cn2: cn3.pda,
       cn3: cn6.pda,
     });
     const updatedUser = await program.account.user.fetch(user.pda);
-    expect(updatedUser.replicaSet, "Expect user replicaSet to be updates").to.deep.equal([
-      2, 3, 6,
-    ]);
+    expect(
+      updatedUser.replicaSet,
+      "Expect user replicaSet to be updates"
+    ).to.deep.equal([2, 3, 6]);
   });
 
   it("Updates a user replica set with the user's athority", async function () {
@@ -457,18 +472,23 @@ describe("replicaSet", function () {
       baseAuthorityAccount,
       userAcct: user.pda,
       userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
-      adminStgPublicKey: adminStorageKeypair.publicKey,
+      adminStoragePublicKey: adminStorageKeypair.publicKey,
       replicaSet: [6, 7, 8],
-      replicaSetBumps: [cn6.seedBump.bump, cn7.seedBump.bump, cn8.seedBump.bump],
+      replicaSetBumps: [
+        cn6.seedBump.bump,
+        cn7.seedBump.bump,
+        cn8.seedBump.bump,
+      ],
       contentNodeAuthority: user.keypair,
       cn1: cn6.pda,
       cn2: cn7.pda,
       cn3: cn8.pda,
     });
     const updatedUser = await program.account.user.fetch(user.pda);
-    expect(updatedUser.replicaSet, "Expect user replicaSet to be updates").to.deep.equal([
-      6, 7, 8,
-    ]);
+    expect(
+      updatedUser.replicaSet,
+      "Expect user replicaSet to be updates"
+    ).to.deep.equal([6, 7, 8]);
   });
 
   it("Fail on update to a user's replica set with a non authority", async function () {
@@ -496,9 +516,13 @@ describe("replicaSet", function () {
         baseAuthorityAccount,
         userAcct: user.pda,
         userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
-        adminStgPublicKey: adminStorageKeypair.publicKey,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
         replicaSet: [2, 7, 8],
-        replicaSetBumps: [cn2.seedBump.bump, cn7.seedBump.bump, cn8.seedBump.bump],
+        replicaSetBumps: [
+          cn2.seedBump.bump,
+          cn7.seedBump.bump,
+          cn8.seedBump.bump,
+        ],
         contentNodeAuthority: cn7.authority,
         cn1: cn2.pda,
         cn2: cn7.pda,

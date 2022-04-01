@@ -3,6 +3,7 @@ import time
 from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 from redis import Redis
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from spl.token.client import Token
@@ -310,7 +311,7 @@ def refresh_user_ids(
                 # Write to user_balance_changes table
                 needs_balance_change_update[user_id] = {
                     "user_id": user_id,
-                    "blocknumber": eth_web3.eth.blockNumber,
+                    "blocknumber": eth_web3.eth.block_number,
                     "current_balance": str(current_total_balance),
                     "previous_balance": str(prev_total_balance),
                 }
@@ -456,7 +457,7 @@ def get_audio_token(solana_client: Client):
         conn=solana_client,
         pubkey=WAUDIO_MINT_PUBKEY,
         program_id=SPL_TOKEN_PROGRAM_ID_PUBKEY,
-        payer=[],  # not making any txs so payer is not required
+        payer=Keypair.generate(),  # not making any txs so payer is not required
     )
     return waudio_token
 
