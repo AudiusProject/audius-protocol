@@ -5,7 +5,6 @@ const path = require('path')
 
 const BlacklistManager = require('../src/blacklistManager')
 const models = require('../src/models')
-const ipfsClient = require('../src/ipfsClient')
 const redis = require('../src/redis')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 
@@ -31,9 +30,6 @@ describe('test ContentBlacklist', function () {
   let ids = []
 
   beforeEach(async () => {
-    const ipfs = ipfsClient.ipfs
-    const ipfsLatest = ipfsClient.ipfsLatest
-
     libsMock = setupLibsMock(libsMock)
 
     process.env.delegateOwnerWallet = DELEGATE_OWNER_WALLET
@@ -41,7 +37,7 @@ describe('test ContentBlacklist', function () {
 
     userId = 1
 
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app

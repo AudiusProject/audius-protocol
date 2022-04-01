@@ -10,7 +10,7 @@ const _ = require('lodash')
 const { logger: genericLogger } = require('./logging')
 const { Stream } = require('stream')
 
-const ipfsAdd = {}
+const fileHasher = {}
 
 // Base functionality for only hash logic taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
@@ -26,12 +26,12 @@ const block = {
 }
 
 /**
- * Custom fn to generate the content-hashing logic without adding content to ipfs daemon.
+ * Custom fn to generate the content-hashing logic
  * @param {Buffer} content a buffer of the content
  * @param {Object?} options options for importer
- * @returns the cid from content addressing logic only
+ * @returns the cid from content addressing logic
  */
-ipfsAdd.ipfsOnlyHashNonImages = async (content, options = {}) => {
+fileHasher.ipfsOnlyHashNonImages = async (content, options = {}) => {
   ;({ options, content } = _initializeIPFSOnlyHash(content, options))
 
   let lastCid
@@ -43,7 +43,7 @@ ipfsAdd.ipfsOnlyHashNonImages = async (content, options = {}) => {
 }
 
 /**
- * Custom fn to generate the content-hashing logic without adding content to ipfs daemon.
+ * Custom fn to generate the content-hashing logic
  * @param {Object[]} content an Object[] with the structure [{ path: string, content: buffer }, ...]
  * @param {Object?} options options for importer
  * @returns an Object[] with the structure [{path: <string>, cid: <string>, size: <number>}]
@@ -77,7 +77,7 @@ ipfsAdd.ipfsOnlyHashNonImages = async (content, options = {}) => {
     }
   ]
 */
-ipfsAdd.ipfsOnlyHashImages = async (content, options = {}) => {
+fileHasher.ipfsOnlyHashImages = async (content, options = {}) => {
   ;({ options, content } = _initializeIPFSOnlyHash(content, options))
 
   const resps = []
@@ -96,25 +96,27 @@ ipfsAdd.ipfsOnlyHashImages = async (content, options = {}) => {
 }
 
 /**
- * Generates multihash for a non-image file (track segment, track transcode, metadata)
+ * Generates CID for a non-image file (track segment, track transcode, metadata)
  * @param {Buffer|ReadStream|string} content a single Buffer, a ReadStream, or path to an existing file
  * @param {Object?} logContext
  * @returns {string} only hash response cid
  */
-ipfsAdd.generateNonImageMultihash = async (content, logContext = {}) => {
+fileHasher.generateNonImageMultihash = async (content, logContext = {}) => {
   const logger = genericLogger.child(logContext)
 
   const buffer = await _convertToBuffer(content, logger)
 
   const startOnlyHash = hrtime.bigint()
-  const onlyHash = await ipfsAdd.ipfsOnlyHashNonImages(buffer)
+  const onlyHash = await fileHasher.ipfsOnlyHashNonImages(buffer)
+
   const durationOnlyHashMs = convertNanosToMillis(
     hrtime.bigint() - startOnlyHash
   )
 
   logger.info(
-    `[ipfsClient - generateNonImageMultihash()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`
+    `[fileHasher - generateNonImageMultihash()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`
   )
+
   return onlyHash
 }
 
@@ -124,18 +126,18 @@ ipfsAdd.generateNonImageMultihash = async (content, logContext = {}) => {
  * @param {Object?} logContext
  * @returns {Object[]} only hash responses with the structure [{path: <string>, cid: <string>, size: <number>}]
  */
-ipfsAdd.generateImageMultihashes = async (content, logContext = {}) => {
+fileHasher.generateImageMultihashes = async (content, logContext = {}) => {
   const logger = genericLogger.child(logContext)
 
   const startOnlyHash = hrtime.bigint()
-  const multihashes = await ipfsAdd.ipfsOnlyHashImages(content)
+  const multihashes = await fileHasher.ipfsOnlyHashImages(content)
   const durationOnlyHashMs = convertNanosToMillis(
     hrtime.bigint() - startOnlyHash
   )
 
   const multihashesStr = JSON.stringify(multihashes)
   logger.info(
-    `[ipfsClient - generateImageMultihashes()] onlyHash=${multihashesStr} onlyHashDuration=${durationOnlyHashMs}ms`
+    `[fileHasher - generateImageMultihashes()] onlyHash=${multihashesStr} onlyHashDuration=${durationOnlyHashMs}ms`
   )
   return multihashes
 }
@@ -176,7 +178,7 @@ async function _convertToBuffer(content, logger) {
       buffer = await fsReadFile(content)
     }
   } catch (e) {
-    const errMsg = `[ipfsClient - _convertToBuffer()] Could not convert content into buffer: ${e.toString()}`
+    const errMsg = `[fileHasher - _convertToBuffer()] Could not convert content into buffer: ${e.toString()}`
     logger.error(errMsg)
     throw new Error(errMsg)
   }
@@ -184,4 +186,4 @@ async function _convertToBuffer(content, logger) {
   return buffer
 }
 
-module.exports = ipfsAdd
+module.exports = fileHasher
