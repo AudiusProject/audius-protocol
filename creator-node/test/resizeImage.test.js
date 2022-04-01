@@ -1,5 +1,4 @@
-const { ipfs } = require('../src/ipfsClient')
-const ipfsAdd = require('../src/ipfsAdd')
+const fileHasher = require('../src/fileHasher')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
@@ -65,8 +64,8 @@ describe('test resizeImage', () => {
    * When: generating the multihashes fails
    * Then: an error is thrown
    */
-  it('should not throw if generating ipfs multihash failsn', async () => {
-    sinon.stub(ipfsAdd, 'generateImageMultihashes').throws(new Error('ipfs generateImageMultihashes failed!'))
+  it('should not throw if generating CID fails', async () => {
+    sinon.stub(fileHasher, 'generateImageMultihashes').throws(new Error('generateImageMultihashes failed!'))
     const job = {
       data: {
         file: imageBuffer,
@@ -85,7 +84,7 @@ describe('test resizeImage', () => {
     try {
       await resizeImageJob(job)
     } catch (e) {
-      assert.ok(e.message.includes('ipfs add wrapper failed!'))
+      assert.ok(e.message.includes('generateImageMultihashes failed!'))
     }
   })
 

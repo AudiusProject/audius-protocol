@@ -611,18 +611,6 @@ const config = convict({
     env: 'skippedCIDRetryQueueMaxAgeHr',
     default: 8760 // 1 year in hrs
   },
-  saveFileForMultihashToFSIPFSFallback: {
-    doc: 'Boolean indicating if `saveFileForMultihashToFS()` should fallback to IPFS retrieval if gateway retrieval fails',
-    format: 'BooleanCustom',
-    env: 'saveFileForMultihashToFSIPFSFallback',
-    default: true
-  },
-  healthCheckIpfsTimeoutMs: {
-    doc: 'Default timeout for the ipfs health check route in timing add content',
-    format: 'nat',
-    env: 'healthCheckIpfsTimeoutMs',
-    default: 30000 // 30s
-  },
   openRestyCacheCIDEnabled: {
     doc: 'Flag to enable or disable OpenResty',
     format: 'BooleanCustom',
