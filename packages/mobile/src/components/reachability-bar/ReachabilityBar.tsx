@@ -19,14 +19,14 @@ const springConfig = {
 
 const useStyles = makeStyles(({ palette, typography }) => ({
   root: {
+    zIndex: 2,
     position: 'absolute',
-    width: '100%',
-    top: 40,
-    zIndex: 2
+    width: '100%'
   },
   container: {
-    overflow: 'hidden',
-    width: '100%'
+    // height of the app bar
+    marginTop: 40,
+    overflow: 'hidden'
   },
   text: {
     textAlign: 'center',
@@ -41,7 +41,8 @@ const useStyles = makeStyles(({ palette, typography }) => ({
 
 export const ReachabilityBar = () => {
   const translationAnim = useRef(new Animated.Value(-40)).current
-  const isNotReachable = useSelectorWeb(getIsReachable) === true
+  const isNotReachable = useSelectorWeb(getIsReachable) === false
+
   const styles = useStyles()
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export const ReachabilityBar = () => {
   }, [isNotReachable, translationAnim])
 
   return (
-    <SafeAreaView style={styles.root} edges={['top']}>
+    <SafeAreaView style={styles.root} edges={['top']} pointerEvents='none'>
       <View style={styles.container}>
         <Animated.Text
           style={[
