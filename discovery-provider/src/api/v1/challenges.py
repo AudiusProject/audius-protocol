@@ -151,7 +151,7 @@ create_sender_attest_parser = reqparse.RequestParser(argument_class=DescriptiveA
 create_sender_attest_parser.add_argument(
     "sender_eth_address",
     required=True,
-    description="The address of the discovery provider to attest for",
+    description="The address of the discovery node to attest for",
 )
 
 create_sender_attestation_response = make_response(
@@ -163,14 +163,17 @@ create_sender_attestation_response = make_response(
 class CreateSenderAttestation(Resource):
     @ns.doc(
         id="""Get Create Sender Attestation""",
-        summary="""Creates an attestation for a discovery provider""",
-        description="""Produces an attestation that a specified discovery node is a validated, on-chain discovery provider that can be used to sign challenges.""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(create_sender_attest_parser)
     @ns.marshal_with(create_sender_attestation_response)
     @cache(ttl_sec=5)
     def get(self):
+        """
+        Creates an attestation for a discovery node that it can attest for challenges.
+
+        Produces an attestation that a specified discovery node is a validated, on-chain discovery node that can be used to sign challenges.
+        """
         args = create_sender_attest_parser.parse_args(strict=True)
         sender_eth_address = args["sender_eth_address"]
         try:
