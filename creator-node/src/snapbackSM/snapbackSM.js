@@ -856,13 +856,13 @@ class SnapbackSM {
      */
     const lockKey = 'stateMachineQueueJobLock'
     const lockExp = this.snapbackJobInterval * 2
-    if ((await redis.lock.getLock(lockKey)) === true) {
+    const acquired = await redis.lock.acquireLock(lockKey, lockExp)
+    if (!acquired) {
       this.logError(
         `[stateMachineQueue] Cannot start new job; lock held by previous job.`
       )
       return
     }
-    await redis.lock.setLock(lockKey, lockExp)
 
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = []
