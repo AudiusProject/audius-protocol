@@ -102,16 +102,11 @@ export const ProfileTabNavigator = ({
     scrollY: animatedValue
   })
 
-  const screenOptions = {
-    lazy: true
-  }
-
   if (isArtist) {
     return (
       <CollapsibleTabNavigator
         renderHeader={renderHeader}
         animatedValue={animatedValue}
-        screenOptions={screenOptions}
       >
         {trackScreen}
         {albumsScreen}
@@ -126,7 +121,6 @@ export const ProfileTabNavigator = ({
     <CollapsibleTabNavigator
       renderHeader={renderHeader}
       animatedValue={animatedValue}
-      screenOptions={screenOptions}
     >
       {repostsScreen}
       {playlistsScreen}
