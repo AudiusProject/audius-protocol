@@ -84,11 +84,7 @@ export const CollapsibleTabNavigator = ({
       collapsibleOptions={{
         renderHeader,
         disableSnap: true,
-        animatedValue,
-        // Lazy empirically helps with reducing "content offset" jumping.
-        // Potentially related issue (not from the v2 codebase though)
-        // https://github.com/PedroBern/react-native-collapsible-tab-view/pull/120
-        lazy: true
+        animatedValue
       }}
       initialRouteName={initialScreenName}
       tabBar={props => <TopTabBar {...props} />}
