@@ -2,7 +2,7 @@ const Web3 = require('../../web3')
 const sigUtil = require('eth-sig-util')
 const retry = require('async-retry')
 const { estimateGas } = require('../../utils/estimateGas')
-const AudiusABIDecoder = require('../ABIDecoder/index')
+const { AudiusABIDecoder } = require('../ABIDecoder/index')
 const EthereumWallet = require('ethereumjs-wallet')
 let XMLHttpRequestRef
 if (typeof window === 'undefined' || window === null) {
