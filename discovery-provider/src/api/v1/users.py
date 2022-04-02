@@ -549,7 +549,6 @@ class UserSearchResult(Resource):
     @ns.doc(
         id="""Search Users""",
         description="""Search for users that match the given query""",
-        params={"query": "Search query"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(search_parser)
@@ -683,12 +682,12 @@ top_genre_users_response = make_full_response(
 
 @full_ns.route("/genre/top")
 class FullTopGenreUsers(Resource):
-    @full_ns.expect(top_genre_users_route_parser)
     @full_ns.doc(
         id="""Get Top Users In Genre""",
         description="""Get the Top Users for a Given Genre""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(top_genre_users_route_parser)
     @full_ns.marshal_with(top_genre_users_response)
     @cache(ttl_sec=60 * 60 * 24)
     def get(self):
