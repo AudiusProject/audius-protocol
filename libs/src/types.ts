@@ -1,1 +1,1 @@
-export { Utils } from './utils'
+export { Utils, FileHasher } from './utils'
