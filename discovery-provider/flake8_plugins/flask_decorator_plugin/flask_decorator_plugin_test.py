@@ -1,7 +1,7 @@
 import ast
 
-from flask_decorator_plugin import Plugin
-from visitor import Visitor
+from flake8_plugins.flask_decorator_plugin.flask_decorator_plugin import Plugin
+from flake8_plugins.flask_decorator_plugin.visitor import Visitor
 
 non_route_param_example = """
 @full_ns.route("/<string:track_id>/remixes")

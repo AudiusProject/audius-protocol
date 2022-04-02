@@ -2,7 +2,7 @@ import ast
 from typing import Any, Generator, List, Tuple, Type
 
 from flake8.options.manager import OptionManager
-from visitor import Visitor
+from flake8_plugins.flask_decorator_plugin.visitor import Visitor
 
 code_message_map = {
     "FDP001": 'Non-route parameter "{0}" specified in @api.doc(). Use @api.expects() with a RequestParser instead for query parameters.',

@@ -1,7 +1,7 @@
 import ast
 from typing import Dict, List, Tuple, Union
 
-from visitor_helpers import (
+from flake8_plugins.flask_decorator_plugin.visitor_helpers import (
     ROUTE_HTTP_METHODS,
     RouteArgEntry,
     find_and_process_route_doc,
