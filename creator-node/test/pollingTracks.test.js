@@ -1073,7 +1073,6 @@ describe('test Polling Tracks with real files', function () {
       .set('User-Id', userId)
       .send(trackMetadata)
       .expect(200)
-    // const trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
     const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
     
     // Complete track creation
@@ -1126,7 +1125,6 @@ describe('test Polling Tracks with real files', function () {
      .set('User-Id', userId)
      .send(trackMetadata)
      .expect(200)
-  //  const trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
    const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
    // Upload track 2 metadata
