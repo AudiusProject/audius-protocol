@@ -479,12 +479,12 @@ pub mod audius_data {
     /// in order to facilitate the scenario where an 'initialized' user follows an 'unitialized' user
     /// Note that both follow and unfollow are handled in this single function through an enum, with identical
     /// validation for both paths.
-    pub fn follow_user(
-        ctx: Context<FollowUser>,
+    pub fn write_user_social_action(
+        ctx: Context<WriteUserSocialAction>,
         base: Pubkey,
         _user_action: UserAction,
-        _follower_handle: UserHandle,
-        _followee_handle: UserHandle,
+        _source_user_handle: UserHandle,
+        _target_user_handle: UserHandle,
     ) -> Result<()> {
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
@@ -498,7 +498,7 @@ pub mod audius_data {
         // validate user has authority and check for delegate
         validate_user_authority(
             ctx.program_id,
-            &ctx.accounts.follower_user_storage,
+            &ctx.accounts.source_user_storage,
             &ctx.accounts.user_authority_delegate,
             &ctx.accounts.authority,
             &ctx.accounts.authority_delegation_status,
@@ -959,18 +959,18 @@ pub struct WriteEntitySocialAction<'info> {
     pub authority_delegation_status: AccountInfo<'info>,
 }
 
-/// Instruction container for follow
+/// Instruction container for user social actions
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_instr:UserAction, follower_handle: UserHandle, followee_handle: UserHandle)]
-pub struct FollowUser<'info> {
+#[instruction(base: Pubkey, user_instr:UserAction, source_user_handle: UserHandle, target_user_handle: UserHandle)]
+pub struct WriteUserSocialAction<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
-    // Confirm the follower PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], follower_handle.seed.as_ref()], bump = follower_handle.bump)]
-    pub follower_user_storage: Account<'info, User>,
-    // Confirm the followee PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle.seed.as_ref()], bump = followee_handle.bump)]
-    pub followee_user_storage: Account<'info, User>,
+    // Confirm the source user PDA matches the expected value provided the target handle and base
+    #[account(mut, seeds = [&base.to_bytes()[..32], source_user_handle.seed.as_ref()], bump = source_user_handle.bump)]
+    pub source_user_storage: Account<'info, User>,
+    // Confirm the target user PDA matches the expected value provided the target handle and base
+    #[account(mut, seeds = [&base.to_bytes()[..32], target_user_handle.seed.as_ref()], bump = target_user_handle.bump)]
+    pub target_user_storage: Account<'info, User>,
     /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
     pub user_authority_delegate: AccountInfo<'info>,
@@ -987,7 +987,6 @@ pub struct FollowUser<'info> {
 #[instruction(base: Pubkey, user_handle: UserHandle)]
 pub struct UpdateIsVerified<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
-    // Confirm the follower PDA matches the expected value provided the target handle and base
     #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
     pub user: Account<'info, User>,
     pub verifier: Signer<'info>,
@@ -1039,6 +1038,8 @@ pub struct AuthorityDelegationStatus {
 pub enum UserAction {
     FollowUser,
     UnfollowUser,
+    SubscribeUser,
+    UnsubscribeUser,
 }
 
 // Track actions enum, used to save / repost based on function arguments
