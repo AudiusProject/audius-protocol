@@ -10,7 +10,7 @@ const crypto = require('crypto')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-const fileHasher = require('../src/fileHasher')
+const { FileHasher } = require('@audius/libs')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -72,11 +72,7 @@ function _getTestSegmentFilePathAtIndex(index) {
 }
 
 describe('test Polling Tracks with mocks', function () {
-  let app,
-    server,
-    libsMock,
-    handleTrackContentRoute,
-    mockServiceRegistry
+  let app, server, libsMock, handleTrackContentRoute
   let session, userId, userWallet
 
   const spId = 1
@@ -88,27 +84,21 @@ describe('test Polling Tracks with mocks', function () {
     userWallet = testEthereumConstants.pubKey.toLowerCase()
 
     const { getApp } = require('./lib/app')
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      spId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
     await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
-    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId, userWallet)
 
-    // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
+    // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
     const DUMMY_MULTIHASH = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService.js',
       {
-        '../../fileHasher': {
-          generateNonImageMultihash: sinon
-            .stub(fileHasher, 'generateNonImageMultihash')
+        '@audius/libs': {
+          generateNonImageCid: sinon
+            .stub(FileHasher, 'generateNonImageCid')
             .returns(
               new Promise((resolve) => {
                 return resolve(DUMMY_MULTIHASH)
@@ -157,12 +147,7 @@ describe('test Polling Tracks with mocks', function () {
     // Reset app
     await server.close()
 
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      userId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
@@ -187,12 +172,7 @@ describe('test Polling Tracks with mocks', function () {
 
     // Reset app
     await server.close()
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      userId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
@@ -836,13 +816,7 @@ describe('test Polling Tracks with mocks', function () {
 })
 
 describe('test Polling Tracks with real files', function () {
-  let app2,
-    server,
-    session,
-    libsMock,
-    handleTrackContentRoute,
-    userId,
-    mockServiceRegistry
+  let app2, server, session, libsMock, handleTrackContentRoute, userId
 
   /** Inits libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
@@ -851,17 +825,11 @@ describe('test Polling Tracks with real files', function () {
     userId = 1
 
     const { getApp } = require('./lib/app')
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      userId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     await BlacklistManager.init()
 
     app2 = appInfo.app
     server = appInfo.server
-    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId)
 
     handleTrackContentRoute =
@@ -1049,18 +1017,18 @@ describe('test Polling Tracks with real files', function () {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('POST /tracks tests', async function () {
     // Upload track content
-     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
-     const {
-       track_segments: trackSegments,
-       transcodedTrackUUID,
-       source_file: sourceFile
-      } = await handleTrackContentRoute(
-       logContext,
-       getReqObj(fileUUID, fileDir, session)
-     )
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const {
+      track_segments: trackSegments,
+      transcodedTrackUUID,
+      source_file: sourceFile
+    } = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session)
+    )
 
-     // Upload track metadata
-     const trackMetadata = {
+    // Upload track metadata
+    const trackMetadata = {
       metadata: {
         owner_id: userId,
         track_segments: trackSegments
@@ -1074,7 +1042,7 @@ describe('test Polling Tracks with real files', function () {
       .send(trackMetadata)
       .expect(200)
     const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
-    
+
     // Complete track creation
     await request(app2)
       .post('/tracks')
@@ -1095,18 +1063,19 @@ describe('test Polling Tracks with real files', function () {
       track_segments: trackSegments,
       transcodedTrackUUID,
       source_file: sourceFile
-     } = await handleTrackContentRoute(
+    } = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
     )
 
     // Upload same track content again
-    const { fileUUID: fileUUID2, fileDir: fileDir2 } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID: fileUUID2, fileDir: fileDir2 } =
+      saveFileToStorage(testAudioFilePath)
     const {
       track_segments: track2Segments,
       transcodedTrackUUID: transcodedTrack2UUID,
       source_file: sourceFile2
-     } = await handleTrackContentRoute(
+    } = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID2, fileDir2, session)
     )

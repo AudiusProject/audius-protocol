@@ -1,4 +1,4 @@
-const fileHasher = require('../src/fileHasher')
+const { FileHasher } = require('@audius/libs')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
@@ -10,7 +10,9 @@ const assert = require('assert')
 
 // Image buffer for audiusDj.png test image
 const imageTestDir = 'resizeImageAssets'
-const imageBuffer = fs.readFileSync(path.join(__dirname, imageTestDir, 'audiusDj.png'))
+const imageBuffer = fs.readFileSync(
+  path.join(__dirname, imageTestDir, 'audiusDj.png')
+)
 
 let storagePath = config.get('storagePath')
 
@@ -55,7 +57,11 @@ describe('test resizeImage', () => {
       assert.fail('Should not have passed if Jimp reads bad image buffer')
     } catch (e) {
       console.error(e)
-      assert.ok(e.message.includes('Could not generate image buffer during image resize'))
+      assert.ok(
+        e.message.includes(
+          'Could not generate image buffer during image resize'
+        )
+      )
     }
   })
 
@@ -65,7 +71,9 @@ describe('test resizeImage', () => {
    * Then: an error is thrown
    */
   it('should not throw if generating CID fails', async () => {
-    sinon.stub(fileHasher, 'generateImageMultihashes').throws(new Error('generateImageMultihashes failed!'))
+    sinon
+      .stub(FileHasher, 'generateImageCids')
+      .throws(new Error('generateImageCids failed!'))
     const job = {
       data: {
         file: imageBuffer,
@@ -84,7 +92,7 @@ describe('test resizeImage', () => {
     try {
       await resizeImageJob(job)
     } catch (e) {
-      assert.ok(e.message.includes('generateImageMultihashes failed!'))
+      assert.ok(e.message.includes('generateImageCids failed!'))
     }
   })
 
@@ -111,7 +119,9 @@ describe('test resizeImage', () => {
 
     try {
       await resizeImageJob(job)
-      assert.fail('Should not have passed if making new directory at path fails')
+      assert.fail(
+        'Should not have passed if making new directory at path fails'
+      )
     } catch (e) {
       console.error(e)
       assert.ok(e.message)
@@ -162,14 +172,16 @@ describe('test resizeImage', () => {
       // Check that 4 files (tentatively 150x150, 480x480, 1000x1000, original) are present
       assert.deepStrictEqual(files.length, 4)
 
-      files.map(file => {
+      files.map((file) => {
         // Check that (150x150, 480x480, 1000x1000, original) files exist
         assert.ok(dirContentCIDs.has(file))
 
         // Check (150x150, 480x480, 1000x1000, original) file contents are proper
         // by comparing the buffers
         const fsBuf = fs.readFileSync(path.join(dirPath, file))
-        const expectedBuf = fs.readFileSync(path.join(__dirname, imageTestDir, DIR_CID_SQUARE, file))
+        const expectedBuf = fs.readFileSync(
+          path.join(__dirname, imageTestDir, DIR_CID_SQUARE, file)
+        )
         // If comparison does not return 0, buffers are not the same
         assert.deepStrictEqual(fsBuf.compare(expectedBuf), 0)
 
@@ -222,13 +234,15 @@ describe('test resizeImage', () => {
       // Check that 3 files (tentatively 640x, 2000x, original) are present
       assert.deepStrictEqual(files.length, 3)
 
-      files.map(file => {
+      files.map((file) => {
         // Check that (640x, 2000x, original) files exist
         assert.ok(dirContentCIDs.has(file))
 
         // Check (640x, 2000x, original) file contents are proper by comparing the buffers
         const fsBuf = fs.readFileSync(path.join(dirPath, file))
-        const expectedBuf = fs.readFileSync(path.join(__dirname, imageTestDir, DIR_CID_NOT_SQUARE, file))
+        const expectedBuf = fs.readFileSync(
+          path.join(__dirname, imageTestDir, DIR_CID_NOT_SQUARE, file)
+        )
         // If comparison does not return 0, buffers are not the same
         assert.deepStrictEqual(expectedBuf.compare(fsBuf), 0)
 

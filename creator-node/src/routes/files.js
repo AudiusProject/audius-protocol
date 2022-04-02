@@ -38,7 +38,7 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { generateImageMultihashes } = require('../fileHasher')
+const { FileHasher } = require('@audius/libs')
 
 const { promisify } = require('util')
 
@@ -561,7 +561,10 @@ const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
   const content = await _generateContentToHash(resizeResp, dirCID)
 
   // Re-compute dirCID from all image files to ensure it matches dirCID returned above
-  const multihashes = await generateImageMultihashes(content, req.logContext)
+  const multihashes = await FileHasher.generateImageCids(
+    content,
+    req.logContext
+  )
 
   // Ensure actual and expected dirCIDs match
   const computedDirCID = multihashes[multihashes.length - 1].cid.toString()
@@ -573,7 +576,7 @@ const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
 }
 
 /**
- * Helper fn to generate the input for `generateImageMultihashes()`
+ * Helper fn to generate the input for `generateImageCids()`
  * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
  * @param {string} dirCID the directory CID from `resizeResp`
  * @returns {Object[]} follows the structure [{path: <string>, cid: <string>}, ...] with the same number of elements
@@ -592,7 +595,7 @@ async function _generateContentToHash(resizeResp, dirCID) {
       })
     )
   } catch (e) {
-    throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
+    throw new Error(`Failed to build hashing array for dirCID ${dirCID} ${e}`)
   }
 
   return contentToHash
@@ -742,7 +745,7 @@ module.exports = function (app) {
    * @dev This route does not handle responses by design, so we can pipe the response to client.
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
-  app.get('/ipfs/:CID', getCID)
+  app.get(['/ipfs/:CID', '/content/:CID'], getCID)
 
   /**
    * Serve images hosted by content node.
@@ -753,7 +756,7 @@ module.exports = function (app) {
    * @dev This route does not handle responses by design, so we can pipe the gateway response.
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
-  app.get('/ipfs/:dirCID/:filename', getDirCID)
+  app.get(['/ipfs/:dirCID/:filename', '/content/:dirCID/:filename'], getDirCID)
 
   /**
    * Serves information on existence of given cids

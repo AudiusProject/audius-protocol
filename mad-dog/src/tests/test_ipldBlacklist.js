@@ -26,7 +26,7 @@ const {
   genRandomString
 } = RandomUtils
 const { logger } = require('../logger.js')
-const fileHasher = require('../utils/fileHasher')
+const { FileHasher } = require('@audius/libs')
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 
@@ -708,7 +708,7 @@ async function getCreatorId ({
   // Hash object into CID
   let generatedCid
   try {
-    generatedCid = fileHasher.ipfsOnlyHashNonImages(buffer)
+    generatedCid = FileHasher.hashNonImages(buffer)
   } catch (e) {
     const errorMsg = 'Could generate CID'
     logger.error(errorMsg)
