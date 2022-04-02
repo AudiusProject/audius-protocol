@@ -370,8 +370,8 @@ class TrackSearchResult(Resource):
         description="""Search for a track or tracks""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.marshal_with(track_search_result)
     @ns.expect(track_search_parser)
+    @ns.marshal_with(track_search_result)
     @cache(ttl_sec=600)
     def get(self):
         args = track_search_parser.parse_args()
@@ -1055,8 +1055,8 @@ class MostLoved(Resource):
         id="""Get Most Loved Tracks""",
         description="""Gets the tracks found on the \"Most Loved\" smart playlist""",
     )
-    @full_ns.marshal_with(full_tracks_response)
     @full_ns.expect(most_loved_parser)
+    @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=10)
     def get(self):
         request_args = most_loved_parser.parse_args()
