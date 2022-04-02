@@ -32,18 +32,6 @@ const config = convict({
     env: 'dbConnectionPoolMax',
     default: 100
   },
-  ipfsHost: {
-    doc: 'IPFS host address',
-    format: String,
-    env: 'ipfsHost',
-    default: null
-  },
-  ipfsPort: {
-    doc: 'IPFS port',
-    format: 'port',
-    env: 'ipfsPort',
-    default: null
-  },
   storagePath: {
     doc: 'File system path to store raw files that are uploaded',
     format: String,

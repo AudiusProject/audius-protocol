@@ -8,15 +8,15 @@ const {
 const { getSegmentsDuration } = require('../../segmentDuration')
 
 const models = require('../../models')
-const fileHasher = require('../../fileHasher')
+const { FileHasher } = require('@audius/libs')
 const DBManager = require('../../dbManager')
 const TranscodingQueue = require('../../TranscodingQueue')
 const FileManager = require('../../fileManager')
 
-const SAVE_FILE_TO_IPFS_CONCURRENCY_LIMIT = 10
+const SEGMENT_FILE_BATCH_SIZE = 10
 
 /**
- * Manages track content upload in IPFS, the DB, and the file system
+ * Manages track content upload in the DB and file system
  */
 class TrackContentUploadManager {
   /**
@@ -101,7 +101,7 @@ class TrackContentUploadManager {
     const logger = genericLogger.child(logContext)
 
     let codeBlockTimeStart = getStartTime()
-    const { segmentFileIPFSResps, transcodeFileIPFSResp } =
+    const { segmentFileResult, transcodeFileResult } =
       await batchSaveFilesToDisk({
         fileDir,
         logContext,
@@ -125,7 +125,7 @@ class TrackContentUploadManager {
     )
 
     const trackSegments = createSegmentToDurationMap({
-      segmentFileIPFSResps,
+      segmentFileResult,
       segmentDurations,
       logContext,
       fileDir
@@ -133,11 +133,11 @@ class TrackContentUploadManager {
 
     codeBlockTimeStart = getStartTime()
     const transcodeFileUUID = await addFilesToDb({
-      transcodeFileIPFSResp,
+      transcodeFileResult,
       fileName,
       fileDir,
       cnodeUserUUID,
-      segmentFileIPFSResps,
+      segmentFileResult,
       logContext,
       logger
     })
@@ -149,7 +149,7 @@ class TrackContentUploadManager {
     FileManager.removeTrackFolder({ logContext }, fileDir)
 
     return {
-      transcodedTrackCID: transcodeFileIPFSResp.multihash,
+      transcodedTrackCID: transcodeFileResult.multihash,
       transcodedTrackUUID: transcodeFileUUID,
       track_segments: trackSegments,
       source_file: fileName
@@ -160,20 +160,20 @@ class TrackContentUploadManager {
 /**
  * Record entries for transcode and segment files in DB
  * @param {Object} dbParams
- * @param {Object} dbParams.transcodeFileIPFSResp object of transcode multihash and path
+ * @param {Object} dbParams.transcodeFileResult object of transcode multihash and path
  * @param {string} dbParams.fileName the file name of the uploaded track (<cid>.<file type extension>)
  * @param {string} dbParams.fileDir the dir path of the temp track artifacts
  * @param {string} dbParams.cnodeUserUUID the observed user's uuid
- * @param {Object} dbParams.segmentFileIPFSResps an array of { multihash, srcPath: segmentFilePath, dstPath }
+ * @param {Object} dbParams.segmentFileResult an array of { multihash, srcPath: segmentFilePath, dstPath }
  * @param {Object} dbParams.logContext
  * @returns the transcoded file's uuid
  */
 async function addFilesToDb({
-  transcodeFileIPFSResp,
+  transcodeFileResult,
   fileName,
   fileDir,
   cnodeUserUUID,
-  segmentFileIPFSResps,
+  segmentFileResult,
   logContext
 }) {
   const transaction = await models.sequelize.transaction()
@@ -181,9 +181,9 @@ async function addFilesToDb({
   try {
     // Record transcode file entry in DB
     const createTranscodeFileQueryObj = {
-      multihash: transcodeFileIPFSResp.multihash,
+      multihash: transcodeFileResult.multihash,
       sourceFile: fileName,
-      storagePath: transcodeFileIPFSResp.dstPath,
+      storagePath: transcodeFileResult.dstPath,
       type: models.File.Types.copy320
     }
     const file = await DBManager.createNewDataRecord(
@@ -196,7 +196,7 @@ async function addFilesToDb({
 
     // Record all segment file entries in DB
     // Must be written sequentially to ensure clock values are correctly incremented and populated
-    for (const { multihash, dstPath } of segmentFileIPFSResps) {
+    for (const { multihash, dstPath } of segmentFileResult) {
       const createSegmentFileQueryObj = {
         multihash,
         sourceFile: fileName,
@@ -227,22 +227,22 @@ async function addFilesToDb({
 /**
  * For all segments, build array of (segment multihash, segment duration)
  * @param {Object} params
- * @param {Object} params.segmentFileIPFSResps an array of { multihash, srcPath: segmentFilePath, dstPath }
+ * @param {Object} params.segmentFileResult an array of { multihash, srcPath: segmentFilePath, dstPath }
  * @param {Object} params.segmentDurations mapping of segment filePath (segmentName) => segment duration
  * @param {string} params.fileDir the dir path of the temp track artifacts
  * @param {Object} params.logContext
  * @returns an array of track segments with the structure { multihash, duration }
  */
 function createSegmentToDurationMap({
-  segmentFileIPFSResps,
+  segmentFileResult,
   segmentDurations,
   fileDir,
   logContext
 }) {
-  let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
+  let trackSegments = segmentFileResult.map((segmentFile) => {
     return {
-      multihash: segmentFileIPFSResp.multihash,
-      duration: segmentDurations[segmentFileIPFSResp.srcPath]
+      multihash: segmentFile.multihash,
+      duration: segmentDurations[segmentFile.srcPath]
     }
   })
 
@@ -275,26 +275,21 @@ async function batchSaveFilesToDisk({
   transcodeFilePath,
   segmentFileNames
 }) {
-  const multihash = await fileHasher.generateNonImageMultihash(
-    transcodeFilePath,
-    { logContext }
-  )
+  const cid = await FileHasher.generateNonImageCid(transcodeFilePath, {
+    logContext
+  })
   const dstPath = await FileManager.copyMultihashToFs(
-    multihash,
+    cid,
     transcodeFilePath,
     logContext
   )
-  const transcodeFileIPFSResp = { multihash, dstPath }
+  const transcodeFileResult = { multihash: cid, dstPath }
 
-  let segmentFileIPFSResps = []
-  for (
-    let i = 0;
-    i < segmentFileNames.length;
-    i += SAVE_FILE_TO_IPFS_CONCURRENCY_LIMIT
-  ) {
+  let segmentFileResult = []
+  for (let i = 0; i < segmentFileNames.length; i += SEGMENT_FILE_BATCH_SIZE) {
     const segmentFileNameSlice = segmentFileNames.slice(
       i,
-      i + SAVE_FILE_TO_IPFS_CONCURRENCY_LIMIT
+      i + SEGMENT_FILE_BATCH_SIZE
     )
 
     const sliceResps = await Promise.all(
@@ -304,7 +299,7 @@ async function batchSaveFilesToDisk({
           'segments',
           segmentFileName
         )
-        const multihash = await fileHasher.generateNonImageMultihash(
+        const multihash = await FileHasher.generateNonImageCid(
           segmentAbsolutePath,
           { logContext }
         )
@@ -317,9 +312,9 @@ async function batchSaveFilesToDisk({
       })
     )
 
-    segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
+    segmentFileResult = segmentFileResult.concat(sliceResps)
   }
 
-  return { segmentFileIPFSResps, transcodeFileIPFSResp }
+  return { segmentFileResult, transcodeFileResult }
 }
 module.exports = TrackContentUploadManager

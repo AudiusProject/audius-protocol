@@ -9,7 +9,7 @@ const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const fileHasher = require('./fileHasher')
+const { FileHasher } = require('@audius/libs')
 const { findCIDInNetwork } = require('./utils')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
@@ -29,7 +29,7 @@ async function saveFileFromBufferToDisk(req, buffer) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  const cid = await fileHasher.generateNonImageMultihash(buffer, req.logContext)
+  const cid = await FileHasher.generateNonImageCid(buffer, req.logContext)
 
   // Write file to disk by cid for future retrieval
   const dstPath = DiskManager.computeFilePath(cid)
@@ -343,18 +343,18 @@ async function saveFileForMultihashToFS(
         )
       }
 
-      const ipfsHashOnly = await fileHasher.generateNonImageMultihash(
+      const expectedCid = await FileHasher.generateNonImageCid(
         expectedStoragePath
       )
-      if (multihash !== ipfsHashOnly) {
+      if (multihash !== expectedCid) {
         decisionTree.push({
-          stage: `File contents don't match IPFS hash multihash`,
-          vals: ipfsHashOnly,
+          stage: `File contents don't match their expected CID`,
+          vals: expectedCid,
           time: Date.now()
         })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
         throw new Error(
-          `File contents don't match IPFS hash multihash: ${multihash} result: ${ipfsHashOnly}`
+          `File contents don't their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
         )
       }
       decisionTree.push({
