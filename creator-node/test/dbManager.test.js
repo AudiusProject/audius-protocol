@@ -655,7 +655,8 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     cnodeUser,
     cnodeUserUUID,
     server,
-    libsMock
+    libsMock,
+    mockServiceRegistry
 
   /** Init server to run DB migrations */
   before(async () => {
