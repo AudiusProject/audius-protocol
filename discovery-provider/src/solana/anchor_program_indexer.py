@@ -3,7 +3,7 @@ import base64
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import base58
 from anchorpy import Idl, InstructionCoder
@@ -116,7 +116,15 @@ class AnchorDataIndexer(SolanaProgramIndexer):
     def _parse_instruction(self, instruction: TransactionInstruction) -> Dict:
         encoded_ix_data = base58.b58encode(instruction.data)
         idl_instruction_name = self._get_instruction_name(encoded_ix_data)
-        return {"instruction_name": idl_instruction_name}
+        account_addresses = self._get_instruction_context_accounts(instruction)
+        decoded_data = self._decode_instruction_data(
+            encoded_ix_data, self._instruction_coder
+        )
+        return {
+            "instruction_name": idl_instruction_name,
+            "accounts": account_addresses,
+            "data": decoded_data,
+        }
 
     def _init_instruction_coder(self):
         idl = self._get_idl()
@@ -126,6 +134,11 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         path = Path(AUDIUS_DATA_IDL_PATH)
         with path.open() as f:
             data = json.load(f)
+
+        # Modify 'metadata':'address' field if mismatched with config
+        if data["metadata"]["address"] != self._program_id:
+            data["metadata"]["address"] = self._program_id
+
         idl = Idl.from_json(data)
         return idl
 
@@ -133,8 +146,26 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         idl_instruction_name = self._instruction_coder.sighash_to_name.get(
             base58.b58decode(encoded_ix_data)[0:8]
         )
-        self.msg(f"Instruction name: {idl_instruction_name}")
         if idl_instruction_name == None:
-            self.msg(f"No instruction found in idl matching {idl_instruction_name}")
             return ""
         return idl_instruction_name
+
+    # Maps account indices for ix context to pubkeys
+    def _get_instruction_context_accounts(
+        self,
+        instruction: TransactionInstruction,
+    ) -> List[str]:
+        return [str(account_meta.pubkey) for account_meta in instruction.keys]
+
+    def _decode_instruction_data(
+        self, encoded_ix_data: bytes, instruction_coder: InstructionCoder
+    ) -> Any:
+        ix = base58.b58decode(encoded_ix_data)
+        ix_sighash = ix[0:8]
+        data = ix[8:]
+        decoder = instruction_coder.sighash_layouts.get(ix_sighash)
+        if not decoder:
+            return None
+        else:
+            decoded_data = decoder.parse(data)
+            return decoded_data
