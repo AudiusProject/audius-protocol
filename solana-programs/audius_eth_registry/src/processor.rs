@@ -123,7 +123,7 @@ impl Processor {
     ) -> Result<Vec<(Instruction, u16)>, AudiusError> {
         let mut v: Vec<(Instruction, u16)> = Vec::new();
         // Index of current instruction in tx
-        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
+        let index = sysvar::instructions::load_current_index_checked(&instruction_info).map_err(|_| AudiusError::Secp256InstructionLosing.into())?;
         // Indicates no instructions present
         if index == 0 {
             return Err(AudiusError::Secp256InstructionLosing.into());
@@ -136,9 +136,9 @@ impl Processor {
         // Iterate over all instructions and recover SECP instruction
         let mut iterator = 0;
         while iterator < index {
-            let secp_instruction = sysvar::instructions::load_instruction_at(
+            let secp_instruction = sysvar::instructions::load_instruction_at_checked(
                 iterator as usize,
-                &instruction_info.data.borrow(),
+                &instruction_info,
             )
             .map_err(|_| AudiusError::SignatureMissing)?;
 
@@ -690,12 +690,14 @@ impl PrintProgramError for AudiusError {
 
 #[cfg(test)]
 mod tests {
+    use {std::sync::Arc};
     use crate::processor::Processor;
     use sha3::Digest;
     use solana_program::{instruction::Instruction, pubkey::Pubkey, secp256k1_program};
     use solana_sdk::{
         secp256k1_instruction::{construct_eth_pubkey, SecpSignatureOffsets},
         transaction::Transaction,
+        feature_set::FeatureSet
     };
 
     #[test]
@@ -766,7 +768,8 @@ mod tests {
         };
 
         let tx = Transaction::new_with_payer(&[dummy_instruction, secp_instruction], None);
-        assert!(tx.verify_precompiles(false).is_ok());
+        let feature_set = Arc::new(FeatureSet::all_enabled());
+        assert!(tx.verify_precompiles(&feature_set).is_ok());
         // Failure due to offsets mismatch
         assert!(Processor::validate_eth_signature(
             real_eth_pubkey.clone(),
