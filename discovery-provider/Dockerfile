@@ -32,10 +32,6 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
 
 COPY requirements.txt requirements.txt
 
-# Install Rust for anchor.py dependency
-RUN curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
-    source $HOME/.cargo/env
-
 RUN apk add libseccomp-dev && \
     # Upgrade pip to accomodate anchor.py installation
     python3 -m pip install --upgrade pip && \

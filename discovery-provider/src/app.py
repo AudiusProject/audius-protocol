@@ -518,8 +518,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_solana_user_data": {
                 "task": "index_solana_user_data",
-                # TODO: Lower this interval before merge
-                "schedule": timedelta(seconds=1),
+                "schedule": timedelta(seconds=5),
             },
         },
         task_serializer="json",

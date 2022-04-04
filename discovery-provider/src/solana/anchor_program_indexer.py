@@ -90,7 +90,6 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         encoded_data = tx_receipt["result"].get("transaction")[0]
         encoded_data_hex = base64.b64decode(encoded_data).hex()
         res = Transaction.deserialize(bytes.fromhex(encoded_data_hex))
-        # self.msg(f"{tx_sig} - {t} - {tx_receipt} - {res}")
         for instruction in res.instructions:
             parsed_instr = self._parse_instruction(instruction)
             self.msg(f"{tx_sig} | {parsed_instr}")
