@@ -42,6 +42,10 @@ domains.getIPLDBlacklistFactoryDomain = function (chainId, contractAddress) {
   return getDomainData('IPLD Blacklist Factory', '1', chainId, contractAddress)
 }
 
+domains.getUserReplicaSetManagerDomain = function (chainId, contractAddress) {
+  return getDomainData('User Replica Set Manager', '1', chainId, contractAddress)
+}
+
 const schemas = {}
 
 /* contract signing domain */
@@ -207,6 +211,24 @@ schemas.deletePlaylistSaveRequest = schemas.playlistSaveRequest
 
 schemas.addIPLDBlacklist = [
   { name: 'multihashDigest', type: 'bytes32' },
+  { name: 'nonce', type: 'bytes32' }
+]
+
+// User replica set manager schemas
+schemas.proposeAddOrUpdateContentNode = [
+  { name: 'cnodeSpId', type: 'uint' },
+  { name: 'cnodeDelegateOwnerWallet', type: 'address' },
+  { name: 'cnodeOwnerWallet', type: 'address' },
+  { name: 'proposerSpId', type: 'uint' },
+  { name: 'nonce', type: 'bytes32' }
+]
+
+schemas.updateReplicaSet = [
+  { name: 'userId', type: 'uint' },
+  { name: 'primaryId', type: 'uint' },
+  { name: 'secondaryIdsHash', type: 'bytes32' },
+  { name: 'oldPrimaryId', type: 'uint' },
+  { name: 'oldSecondaryIdsHash', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
@@ -773,29 +795,84 @@ generators.addIPLDToBlacklistRequestData = function (chainId, contractAddress, m
   )
 }
 
+/* User Replica Set Manager Generators */
+generators.getProposeAddOrUpdateContentNodeRequestData = function (
+  chainId,
+  contractAddress,
+  cnodeSpId,
+  cnodeDelegateOwnerWallet,
+  cnodeOwnerWallet,
+  proposerSpId,
+  nonce
+) {
+  const message = {
+    cnodeSpId,
+    cnodeDelegateOwnerWallet,
+    cnodeOwnerWallet,
+    proposerSpId,
+    nonce
+  }
+  return getRequestData(
+    domains.getUserReplicaSetManagerDomain,
+    chainId,
+    contractAddress,
+    'ProposeAddOrUpdateContentNode',
+    schemas.proposeAddOrUpdateContentNode,
+    message
+  )
+}
+
+generators.getUpdateReplicaSetRequestData = function (
+  chainId,
+  contractAddress,
+  userId,
+  primaryId,
+  secondaryIdsHash,
+  oldPrimaryId,
+  oldSecondaryIdsHash,
+  nonce
+) {
+  const message = {
+    userId,
+    primaryId,
+    secondaryIdsHash,
+    oldPrimaryId,
+    oldSecondaryIdsHash,
+    nonce
+  }
+  return getRequestData(
+    domains.getUserReplicaSetManagerDomain,
+    chainId,
+    contractAddress,
+    'UpdateReplicaSet',
+    schemas.updateReplicaSet,
+    message
+  )
+}
+
 /** Return a secure random hex string of nChar length in a browser-compatible way
  *  Taken from https://stackoverflow.com/questions/37378237/how-to-generate-a-random-token-of-32-bit-in-javascript
  */
 function browserRandomHash (nChar) {
   // convert number of characters to number of bytes
-  var nBytes = Math.ceil(nChar = (+nChar || 8) / 2)
+  const nBytes = Math.ceil(nChar = (+nChar || 8) / 2)
 
   // create a typed array of that many bytes
-  var u = new Uint8Array(nBytes)
+  const u = new Uint8Array(nBytes)
 
   // populate it wit crypto-random values
   window.crypto.getRandomValues(u)
 
   // convert it to an Array of Strings (e.g. '01', 'AF', ..)
-  var zpad = function (str) {
+  const zpad = function (str) {
     return '00'.slice(str.length) + str
   }
-  var a = Array.prototype.map.call(u, function (x) {
+  const a = Array.prototype.map.call(u, function (x) {
     return zpad(x.toString(16))
   })
 
   // Array of String to String
-  var str = a.join('').toLowerCase()
+  let str = a.join('').toLowerCase()
   // and snip off the excess digit if we want an odd number
   if (nChar % 2) str = str.slice(1)
 

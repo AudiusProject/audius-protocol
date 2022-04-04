@@ -1,19 +1,24 @@
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
-const Utils = require('../utils')
-const { getPermitDigest, sign } = require('../utils/signatures')
+const { Utils } = require('../utils')
+const { AuthHeaders } = require('../constants')
+const {
+  getPermitDigest, sign
+} = require('../utils/signatures')
+
 class Account extends Base {
   constructor (userApi, ...services) {
     super(...services)
 
     this.User = userApi
 
-    this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
     this.signUp = this.signUp.bind(this)
     this.generateRecoveryLink = this.generateRecoveryLink.bind(this)
+    this.confirmCredentials = this.confirmCredentials.bind(this)
+    this.changePassword = this.changePassword.bind(this)
     this.resetPassword = this.resetPassword.bind(this)
     this.checkIfEmailRegistered = this.checkIfEmailRegistered.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
@@ -24,6 +29,8 @@ class Account extends Base {
     this.searchFull = this.searchFull.bind(this)
     this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.searchTags = this.searchTags.bind(this)
+    this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
+    this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
   }
 
   /**
@@ -90,103 +97,105 @@ class Account extends Base {
    * @param {string} email
    * @param {string} password
    * @param {Object} metadata
-   * @param {?boolean} [isCreator] whether or not the user is a content creator.
    * @param {?File} [profilePictureFile] an optional file to upload as the profile picture
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
    * @param {?boolean} [host] The host url used for the recovery email
-   */
+   * @param {?boolean} [createWAudioUserBank] an optional flag to create the solana user bank account
+   * @param {?Function} [handleUserBankOutcomes] an optional callback to record user bank outcomes
+   * @param {?Object} [userBankOutcomes] an optional object with request, succes, and failure keys to record user bank outcomes
+   * @param {?string} [feePayerOverride] an optional string in case the client wants to switch between fee payers
+   * @param {?boolean} [generateRecoveryLink] an optional flag to skip generating recovery link for testing purposes
+  */
   async signUp (
     email,
     password,
     metadata,
-    isCreator = false,
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
-    host = (typeof window !== 'undefined' && window.location.origin) || null
+    host = (typeof window !== 'undefined' && window.location.origin) || null,
+    createWAudioUserBank = false,
+    handleUserBankOutcomes = () => {},
+    userBankOutcomes = {},
+    feePayerOverride = null,
+    generateRecoveryLink = true
   ) {
-    let userId
-
     const phases = {
-      ADD_CREATOR: 'ADD_CREATOR',
+      ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      SOLANA_USER_BANK_CREATION: 'SOLANA_USER_BANK_CREATION',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
       ADD_USER: 'ADD_USER'
     }
-
     let phase = ''
+    let userId, blockHash, blockNumber
+
     try {
-      if (isCreator) {
-        if (this.web3Manager.web3IsExternal()) {
-          // Creator and external web3 (e.g. MetaMask)
-          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
-          phase = phases.ADD_CREATOR
-          userId = await this.User.addCreator(metadata)
-
-          phase = phases.CREATE_USER_RECORD
-          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        } else {
-          // Creator and identity service web3
-          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-          // If an owner wallet already exists, don't try to recreate it
-          if (!hasWallet) {
-            phase = phases.HEDGEHOG_SIGNUP
-            const ownerWallet = await this.hedgehog.signUp(email, password)
-            await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
-          }
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_CREATOR
-          userId = await this.User.addCreator(metadata)
-        }
+      if (this.web3Manager.web3IsExternal()) {
+        phase = phases.CREATE_USER_RECORD
+        await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
       } else {
-        if (this.web3Manager.web3IsExternal()) {
-          // Non-creator and external web3 (e.g. MetaMask)
-          this.REQUIRES(Services.IDENTITY_SERVICE)
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_USER
-          userId = await this.User.addUser(metadata)
-
-          phase = phases.CREATE_USER_RECORD
-          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        } else {
-          // Non-creator and identity service web3
-          this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-          // If an owner wallet already exists, don't try to recreate it
-          if (!hasWallet) {
-            phase = phases.HEDGEHOG_SIGNUP
-            const ownerWallet = await this.hedgehog.signUp(email, password)
-            await this.web3Manager.setOwnerWallet(ownerWallet)
+        this.REQUIRES(Services.HEDGEHOG)
+        // If an owner wallet already exists, don't try to recreate it
+        if (!hasWallet) {
+          phase = phases.HEDGEHOG_SIGNUP
+          const ownerWallet = await this.hedgehog.signUp(email, password)
+          await this.web3Manager.setOwnerWallet(ownerWallet)
+          if (generateRecoveryLink) {
             await this.generateRecoveryLink({ handle: metadata.handle, host })
           }
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_USER
-          userId = await this.User.addUser(metadata)
         }
       }
-    } catch (err) {
-      return { error: err.message, phase }
+
+      // Create a wAudio user bank address.
+      // If userbank creation fails, we still proceed
+      // through signup
+      if (createWAudioUserBank && this.solanaWeb3Manager) {
+        phase = phases.SOLANA_USER_BANK_CREATION;
+        // Fire and forget createUserBank. In the case of failure, we will
+        // retry to create user banks in a later session before usage
+        (async () => {
+          try {
+            handleUserBankOutcomes(userBankOutcomes.Request)
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank(feePayerOverride)
+            if (error || errorCode) {
+              console.error(
+                `Failed to create userbank, with err: ${error}, ${errorCode}`
+              )
+              handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
+            } else {
+              console.log('Successfully created userbank!')
+              handleUserBankOutcomes('Create User Bank: Success')
+            }
+          } catch (err) {
+            console.error(`Got error creating userbank: ${err}, continuing...`)
+            handleUserBankOutcomes(userBankOutcomes.Failure, { error: err.toString() })
+          }
+        })()
+      }
+
+      // Add user to chain
+      phase = phases.ADD_USER
+      const response = await this.User.addUser(metadata)
+      userId = response.userId
+      blockHash = response.blockHash
+      blockNumber = response.blockNumber
+
+      // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
+      phase = phases.ADD_REPLICA_SET
+      metadata = await this.User.assignReplicaSet({ userId })
+
+      // Upload profile pic and cover photo to primary Content Node and sync across secondaries
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
+    } catch (e) {
+      return { error: e.message, phase, errorStatus: e.response ? e.response.status : null }
     }
-
-    metadata.user_id = userId
-    metadata.wallet = this.web3Manager.getWalletAddress()
-    this.userStateManager.setCurrentUser(metadata)
-
-    return { userId, error: false }
+    return { blockHash, blockNumber, userId }
   }
 
   /**
@@ -197,7 +206,7 @@ class Account extends Base {
   async generateRecoveryLink ({ handle, host } = {}) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     try {
-      let recoveryInfo = await this.hedgehog.generateRecoveryInfo()
+      const recoveryInfo = await this.hedgehog.generateRecoveryInfo()
       handle = handle || this.userStateManager.getCurrentUser().handle
 
       const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
@@ -220,6 +229,14 @@ class Account extends Base {
 
   async resetPassword (email, newpassword) {
     return this.hedgehog.resetPassword(email, newpassword)
+  }
+
+  async changePassword (email, newpassword, oldpassword) {
+    return this.hedgehog.changePassword(email, newpassword, oldpassword)
+  }
+
+  async confirmCredentials (email, password) {
+    return this.hedgehog.confirmCredentials(email, password)
   }
 
   /**
@@ -279,7 +296,7 @@ class Account extends Base {
   async updateCreatorNodeEndpoint (url) {
     this.REQUIRES(Services.CREATOR_NODE)
 
-    let user = this.userStateManager.getCurrentUser()
+    const user = this.userStateManager.getCurrentUser()
     if (user.is_creator) {
       await this.creatorNode.setEndpoint(url)
       // Only a creator will have a creator node endpoint
@@ -388,20 +405,103 @@ class Account extends Base {
   }
 
   /**
-   * Sends `amount` tokens to `recipientAddress` by way of `relayerAddress`
+   * Sends `amount` tokens to `recipientAddress`
    */
   async permitAndSendTokens (recipientAddress, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
     const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
     await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
-    await this.sendTokens(myWalletAddress, recipientAddress, amount)
+    await this.sendTokens(myWalletAddress, recipientAddress, selectedEthWallet, amount)
   }
 
   /**
-   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   * Sends Eth `amount` tokens to `solanaAccount` by way of the wormhole
+   * 1.) Permits the eth relay to proxy send tokens on behalf of the user
+   * 2.) Transfers the tokens on the eth side to the wormhole contract
+   * 3.) Gathers attestations from wormhole oracles and relizes the tokens on sol
    */
-  async permitProxySendTokens (owner, relayerAddress, amount) {
+  async sendTokensFromEthToSol (amount, solanaAccount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const phases = {
+      PERMIT_PROXY_SEND: 'PERMIT_PROXY_SEND',
+      TRANSFER_TOKENS: 'TRANSFER_TOKENS',
+      ATTEST_AND_COMPLETE_TRANSFER: 'ATTEST_AND_COMPLETE_TRANSFER'
+    }
+    let phase = phases.PERMIT_PROXY_SEND
+    const logs = [`Send tokens from eth to sol to ${solanaAccount} for ${amount.toString()}`]
+    try {
+      const myWalletAddress = this.web3Manager.getWalletAddress()
+      const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
+      const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+      await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
+
+      logs.push('Completed permit proxy send tokens')
+      phase = phases.TRANSFER_TOKENS
+      const transferTokensTx = await this.wormholeClient.transferTokensToEthWormhole(
+        myWalletAddress, amount, solanaAccount, selectedEthWallet
+      )
+
+      const transferTransactionHash = transferTokensTx.txHash
+      logs.push(`Completed transfer tokens with tx ${transferTransactionHash}`)
+      phase = phases.ATTEST_AND_COMPLETE_TRANSFER
+
+      const response = await this.wormholeClient.attestAndCompleteTransferEthToSol(transferTransactionHash)
+      if (response.transactionSignature) {
+        logs.push(`Receive sol wrapped tokens in tx ${response.transactionSignature}`)
+      }
+      return {
+        txSignature: response.transactionSignature,
+        phase: response.phase,
+        error: response.error || null,
+        logs: logs.concat(response.logs)
+      }
+    } catch (error) {
+      return {
+        error: error.message,
+        phase,
+        logs
+      }
+    }
+  }
+
+  /**
+   * Sends Eth `amount` tokens to `solanaAccount` on the identity service
+   * by way of the wormhole.
+   */
+  async proxySendTokensFromEthToSol (amount, solanaAccount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const myWalletAddress = this.web3Manager.getWalletAddress()
+    const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    const permitMethod = await this.getPermitProxySendTokensMethod(myWalletAddress, wormholeAddress, amount)
+    const permit = await this.ethWeb3Manager.getRelayMethodParams(this.ethContracts.AudiusTokenClient.contractAddress, permitMethod, selectedEthWallet)
+    const transferTokensMethod = await this.wormholeClient.getTransferTokensToEthWormholeMethod(
+
+      myWalletAddress, amount, solanaAccount, selectedEthWallet
+    )
+    const transferTokens = await this.ethWeb3Manager.getRelayMethodParams(this.ethContracts.WormholeClient.contractAddress, transferTokensMethod, selectedEthWallet)
+    return this.identityService.wormholeRelay({
+      senderAddress: myWalletAddress,
+      permit,
+      transferTokens
+    })
+  }
+
+  /**
+   * Sends `amount` tokens to `ethAccount` by way of the wormhole
+   * 1.) Creates a solana root wallet
+   * 2.) Sends the tokens from the user bank account to the solana wallet
+   * 3.) Permits the solana wallet to approve transfer to wormhole
+   * 4.) Transfers to the wrapped audio to the sol wormhole contract
+   * 5.) Gathers attestations from wormhole oracles and realizes the tokens on eth
+   */
+  async sendTokensFromSolToEth (amount, ethAccount) {
+    const { error, logs, phase } = await this.wormholeClient.sendTokensFromSolToEthViaWormhole(amount, ethAccount)
+    return { error, logs, phase }
+  }
+
+  async _getPermitProxySendTokensParams (owner, relayerAddress, amount) {
     const web3 = this.ethWeb3Manager.getWeb3()
     const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
     const chainId = await new Promise(resolve => web3.eth.getChainId((_, chainId) => resolve(chainId)))
@@ -409,13 +509,13 @@ class Account extends Base {
     const tokenAddress = this.ethContracts.AudiusTokenClient.contractAddress
 
     // Submit permit request to give address approval, via relayer
-    let nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
+    const nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
     const currentBlockNumber = await web3.eth.getBlockNumber()
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
     // 1 hour, sufficiently far in future
-    let deadline = currentBlock.timestamp + (60 * 60 * 1)
+    const deadline = currentBlock.timestamp + (60 * 60 * 1)
 
-    let digest = getPermitDigest(
+    const digest = getPermitDigest(
       web3,
       name,
       tokenAddress,
@@ -424,7 +524,21 @@ class Account extends Base {
       nonce,
       deadline
     )
-    let result = sign(digest, myPrivateKey)
+    const result = sign(digest, myPrivateKey)
+    return {
+      result,
+      deadline
+    }
+  }
+
+  /**
+   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   */
+  async permitProxySendTokens (owner, relayerAddress, amount) {
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
     const tx = await this.ethContracts.AudiusTokenClient.permit(
       owner,
       relayerAddress,
@@ -432,18 +546,53 @@ class Account extends Base {
       deadline,
       result.v,
       result.r,
-      result.s,
-      { from: owner }
+      result.s
     )
     return tx
   }
 
   /**
+   * Gets the permit method to proxy send tokens `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   */
+  async getPermitProxySendTokensMethod (owner, relayerAddress, amount) {
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
+    const contractMethod = this.ethContracts.AudiusTokenClient.AudiusTokenContract.methods.permit(
+      owner,
+      relayerAddress,
+      amount,
+      deadline,
+      result.v,
+      result.r,
+      result.s
+    )
+    return contractMethod
+  }
+
+  /**
    * Sends `amount` tokens to `address` from `owner`
    */
-  async sendTokens (owner, address, amount) {
+  async sendTokens (owner, address, relayer, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    return this.ethContracts.AudiusTokenClient.transferFrom(owner, address, amount)
+    return this.ethContracts.AudiusTokenClient.transferFrom(owner, address, relayer, amount)
+  }
+
+  /**
+   * Updates the minimum delegation amount for a user in identity
+   * NOTE: Requests eth account signature
+   */
+  async updateMinimumDelegationAmount (amount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = await this.ethWeb3Manager.sign(message)
+    const wallet = this.ethWeb3Manager.getWalletAddress()
+    return this.identityService.updateMinimumDelegationAmount(wallet, amount, {
+      [AuthHeaders.MESSAGE]: message,
+      [AuthHeaders.SIGNATURE]: signature
+    })
   }
 }
 

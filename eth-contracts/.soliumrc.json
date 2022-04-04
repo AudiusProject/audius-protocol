@@ -10,6 +10,14 @@
     "max-len":          ["error", 99],
     "no-unused-vars":   ["error"],
     "pragma-on-top":    ["error"],
+    "error-reason":     [
+      "error",
+      {
+        "revert": true,
+        "require": true,
+        "errorMessageMaxLength": 160
+      }
+    ],
     "function-order":   [
       "error",
       {

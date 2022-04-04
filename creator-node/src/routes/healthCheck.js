@@ -1,129 +1,142 @@
-const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
-const { sequelize } = require('../models')
+const {
+  handleResponse,
+  successResponse,
+  errorResponseServerError
+} = require('../apiHelpers')
 const config = require('../config.js')
-const versionInfo = require('../../.version.json')
-const disk = require('diskusage')
+const path = require('path')
+const versionInfo = require(path.join(process.cwd(), '.version.json'))
 
-const MAX_DB_CONNECTIONS = 90
-const MAX_DISK_USAGE_PERCENT = 90 // 90%
+const { getMonitors, MONITORS } = require('../monitors/monitors')
+
+const DiskManager = require('../diskManager')
+
+const MAX_DB_CONNECTIONS = config.get('dbConnectionPoolMax')
 
 module.exports = function (app) {
-  /**
-   * Performs diagnostic ipfs operations to confirm functionality
-   */
-  app.get('/health_check/ipfs', handleResponse(async (req, res) => {
-    const ipfs = req.app.get('ipfsAPI')
-    try {
-      const start = Date.now()
-      const timestamp = start.toString()
-      const content = Buffer.from(timestamp)
-
-      // Add new buffer created from timestamp (without pin)
-      const results = await ipfs.add(content, { pin: false })
-      const hash = results[0].hash // "Qm...WW"
-
-      // Retrieve and validate hash from local node
-      const ipfsResp = await ipfs.get(hash)
-      const ipfsRespStr = ipfsResp[0].content.toString()
-      const isValidResponse = (ipfsRespStr === timestamp)
-
-      // Test pin ops if requested
-      if (req.query.pin === 'true') {
-        await ipfs.pin.add(hash)
-        await ipfs.pin.rm(hash)
-      }
-
-      const duration = `${Date.now() - start}ms`
-      return successResponse({ hash, isValidResponse, duration })
-    } catch (e) {
-      return errorResponseServerError({ error: e })
-    }
-  }))
-
   /**
    * Exposes current and max db connection stats.
    * Returns error if db connection threshold exceeded, else success.
    */
-  app.get('/db_check', handleResponse(async (req, res) => {
-    const verbose = (req.query.verbose === 'true')
-    const maxConnections = parseInt(req.query.maxConnections) || MAX_DB_CONNECTIONS
+  app.get(
+    '/db_check',
+    handleResponse(async (req, res) => {
+      const verbose = req.query.verbose === 'true'
+      const maxConnections =
+        parseInt(req.query.maxConnections) || MAX_DB_CONNECTIONS
 
-    let numConnections = 0
-    let connectionInfo = null
-    let activeConnections = null
-    let idleConnections = null
+      // Get number of open DB connections
+      const [numConnections, connectionInfo] = await getMonitors([
+        MONITORS.DATABASE_CONNECTIONS,
+        MONITORS.DATABASE_CONNECTION_INFO
+      ])
 
-    // Get number of open DB connections
-    let numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_creator_node'")
-    if (numConnectionsQuery && numConnectionsQuery[0] && numConnectionsQuery[0][0] && numConnectionsQuery[0][0].numbackends) {
-      numConnections = numConnectionsQuery[0][0].numbackends
-    }
+      // Get detailed connection info
+      let activeConnections = null
+      let idleConnections = null
+      if (connectionInfo) {
+        activeConnections = connectionInfo.filter(
+          (conn) => conn.state === 'active'
+        ).length
+        idleConnections = connectionInfo.filter(
+          (conn) => conn.state === 'idle'
+        ).length
+      }
 
-    // Get detailed connection info
-    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_creator_node'"))
-    if (connectionInfoQuery && connectionInfoQuery[0]) {
-      connectionInfo = connectionInfoQuery[0]
-      activeConnections = (connectionInfo.filter(conn => conn.state === 'active')).length
-      idleConnections = (connectionInfo.filter(conn => conn.state === 'idle')).length
-    }
+      const resp = {
+        git: process.env.GIT_SHA,
+        connectionStatus: {
+          total: numConnections,
+          active: activeConnections,
+          idle: idleConnections
+        },
+        maxConnections: maxConnections
+      }
 
-    const resp = {
-      'git': process.env.GIT_SHA,
-      connectionStatus: {
-        total: numConnections,
-        active: activeConnections,
-        idle: idleConnections
-      },
-      maxConnections: maxConnections
-    }
+      if (verbose) {
+        resp.connectionInfo = connectionInfo
+      }
 
-    if (verbose) { resp.connectionInfo = connectionInfo }
+      return numConnections >= maxConnections
+        ? errorResponseServerError(resp)
+        : successResponse(resp)
+    })
+  )
 
-    return (numConnections >= maxConnections) ? errorResponseServerError(resp) : successResponse(resp)
-  }))
+  app.get(
+    '/version',
+    handleResponse(async (req, res) => {
+      if (config.get('isReadOnlyMode')) {
+        return errorResponseServerError()
+      }
 
-  app.get('/version', handleResponse(async (req, res) => {
-    const info = {
-      ...versionInfo,
-      country: config.get('serviceCountry'),
-      latitude: config.get('serviceLatitude'),
-      longitude: config.get('serviceLongitude')
-    }
-    return successResponse(info)
-  }))
+      const info = {
+        ...versionInfo,
+        country: config.get('serviceCountry'),
+        latitude: config.get('serviceLatitude'),
+        longitude: config.get('serviceLongitude')
+      }
+      return successResponse(info)
+    })
+  )
 
   /**
    * Exposes current and max disk usage stats.
    * Returns error if max disk usage exceeded, else success.
    */
-  app.get('/disk_check', handleResponse(async (req, res) => {
-    const maxUsageBytes = parseInt(req.query.maxUsageBytes)
-    const maxUsagePercent = parseInt(req.query.maxUsagePercent) || MAX_DISK_USAGE_PERCENT
+  app.get(
+    '/disk_check',
+    handleResponse(async (req, res) => {
+      const maxUsageBytes = parseInt(req.query.maxUsageBytes)
+      const maxUsagePercent =
+        parseInt(req.query.maxUsagePercent) ||
+        config.get('maxStorageUsedPercent')
 
-    const path = config.get('storagePath')
-    const { available, total } = await disk.check(path)
-    const usagePercent = Math.round((total - available) * 100 / total)
+      const storagePath = DiskManager.getConfigStoragePath()
+      const [total, used] = await getMonitors([
+        MONITORS.STORAGE_PATH_SIZE,
+        MONITORS.STORAGE_PATH_USED
+      ])
+      const available = total - used
 
-    const resp = {
-      available: _formatBytes(available),
-      total: _formatBytes(total),
-      usagePercent: `${usagePercent}%`,
-      maxUsagePercent: `${maxUsagePercent}%`
-    }
+      const usagePercent = Math.round((used * 100) / total)
 
-    if (maxUsageBytes) { resp.maxUsage = _formatBytes(maxUsageBytes) }
+      const resp = {
+        available: _formatBytes(available),
+        total: _formatBytes(total),
+        usagePercent: `${usagePercent}%`,
+        maxUsagePercent: `${maxUsagePercent}%`,
+        storagePath
+      }
 
-    if (usagePercent >= maxUsagePercent ||
-      (maxUsageBytes && (total - available) >= maxUsageBytes)
-    ) {
-      return errorResponseServerError(resp)
-    } else {
-      return successResponse(resp)
-    }
-  }))
+      if (maxUsageBytes) {
+        resp.maxUsage = _formatBytes(maxUsageBytes)
+      }
+
+      if (
+        usagePercent >= maxUsagePercent ||
+        (maxUsageBytes && total - available >= maxUsageBytes)
+      ) {
+        return errorResponseServerError(resp)
+      } else {
+        return successResponse(resp)
+      }
+    })
+  )
+
+  app.get(
+    '/ip_check',
+    handleResponse(async (req, res) => {
+      const { ip } = req
+
+      return successResponse({
+        ip: ip || ''
+      })
+    })
+  )
 }
 
-function _formatBytes (bytes, decimals = 2) {
+function _formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes'
 
   const k = 1024

@@ -1,6 +1,5 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const GovernedContractClient = require('../contracts/GovernedContractClient')
-const DEFAULT_GAS_AMOUNT = 1000000
 
 class DelegateManagerClient extends GovernedContractClient {
   constructor (
@@ -29,8 +28,7 @@ class DelegateManagerClient extends GovernedContractClient {
       amount
     )
     const tx = await this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
     return {
       txReceipt: tx,
@@ -41,16 +39,22 @@ class DelegateManagerClient extends GovernedContractClient {
     }
   }
 
+  /* Pass either delegator or serviceProvider filters */
   async getIncreaseDelegateStakeEvents ({
     delegator,
+    serviceProvider,
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('IncreaseDelegatedStake', {
+    const filter = {}
+    if (delegator) {
+      filter._delegator = delegator
+    } else {
+      filter._serviceProvider = serviceProvider
+    }
+    const events = await contract.getPastEvents('IncreaseDelegatedStake', {
       fromBlock: queryStartBlock,
-      filter: {
-        _delegator: delegator
-      }
+      filter
     })
 
     return events.map(event => ({
@@ -63,19 +67,81 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getDecreaseDelegateStakeEvents ({
     delegator,
+    serviceProvider,
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('UndelegateStakeRequestEvaluated', {
+    const filter = {}
+    if (delegator) {
+      filter._delegator = delegator
+    }
+    if (serviceProvider) {
+      filter._serviceProvider = serviceProvider
+    }
+
+    const events = await contract.getPastEvents('UndelegateStakeRequestEvaluated', {
       fromBlock: queryStartBlock,
-      filter: {
-        _delegator: delegator
-      }
+      filter
     })
     return events.map(event => ({
       blockNumber: parseInt(event.blockNumber),
       delegator: event.returnValues._delegator,
-      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      amount: Utils.toBN(event.returnValues._amount),
+      serviceProvider: event.returnValues._serviceProvider
+    }))
+  }
+
+  async getUndelegateStakeRequestedEvents ({
+    delegator,
+    serviceProvider,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (delegator) {
+      filter._delegator = delegator
+    }
+    if (serviceProvider) {
+      filter._serviceProvider = serviceProvider
+    }
+
+    const events = await contract.getPastEvents('UndelegateStakeRequested', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock),
+      delegator: event.returnValues._delegator,
+      amount: Utils.toBN(event.returnValues._amount),
+      serviceProvider: event.returnValues._serviceProvider
+    }))
+  }
+
+  async getUndelegateStakeCancelledEvents ({
+    delegator,
+    serviceProvider,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (delegator) {
+      filter._delegator = delegator
+    }
+    if (serviceProvider) {
+      filter._serviceProvider = serviceProvider
+    }
+
+    const events = await contract.getPastEvents('UndelegateStakeRequestCancelled', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      delegator: event.returnValues._delegator,
+      amount: Utils.toBN(event.returnValues._amount),
       serviceProvider: event.returnValues._serviceProvider
     }))
   }
@@ -85,7 +151,7 @@ class DelegateManagerClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('Claim', {
+    const events = await contract.getPastEvents('Claim', {
       fromBlock: queryStartBlock,
       filter: {
         _claimer: claimer
@@ -104,7 +170,7 @@ class DelegateManagerClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('Slash', {
+    const events = await contract.getPastEvents('Slash', {
       fromBlock: queryStartBlock,
       filter: {
         _target: target
@@ -123,7 +189,7 @@ class DelegateManagerClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('DelegatorRemoved', {
+    const events = await contract.getPastEvents('DelegatorRemoved', {
       fromBlock: queryStartBlock,
       filter: {
         _target: target
@@ -144,18 +210,16 @@ class DelegateManagerClient extends GovernedContractClient {
       amount
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
-  async cancelUndelegateStake () {
+  async cancelUndelegateStakeRequest () {
     const method = await this.getMethod(
-      'cancelUndelegateStake'
+      'cancelUndelegateStakeRequest'
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -165,26 +229,27 @@ class DelegateManagerClient extends GovernedContractClient {
     )
 
     const tx = await this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
 
     return {
       txReceipt: tx,
-      delegator: tx.events.DecreaseDelegatedStake.returnValues._delegator,
-      serviceProvider: tx.events.DecreaseDelegatedStake.returnValues._serviceProvider,
-      decreaseAmount: Utils.toBN(tx.events.DecreaseDelegatedStake.returnValues._decreaseAmount)
+      delegator: tx.events.UndelegateStakeRequestEvaluated.returnValues._delegator,
+      serviceProvider: tx.events.UndelegateStakeRequestEvaluated.returnValues._serviceProvider,
+      decreaseAmount: Utils.toBN(tx.events.UndelegateStakeRequestEvaluated.returnValues._amount)
     }
   }
 
-  async claimRewards (serviceProvider) {
+  async claimRewards (serviceProvider, txRetries = 5) {
     const method = await this.getMethod(
       'claimRewards',
       serviceProvider
     )
     return this.web3Manager.sendTransaction(
       method,
-      DEFAULT_GAS_AMOUNT
+      null,
+      null,
+      txRetries
     )
   }
 
@@ -195,20 +260,18 @@ class DelegateManagerClient extends GovernedContractClient {
       delegator
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
-  async cancelRemoveDelegator (serviceProvider, delegator) {
+  async cancelRemoveDelegatorRequest (serviceProvider, delegator) {
     const method = await this.getMethod(
-      'cancelRemoveDelegator',
+      'cancelRemoveDelegatorRequest',
       serviceProvider,
       delegator
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -219,14 +282,13 @@ class DelegateManagerClient extends GovernedContractClient {
       delegator
     )
     const tx = await this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
     return {
       txReceipt: tx,
-      delegator: tx.events.DelegatorRemoved.returnValues._delegator,
-      serviceProvider: tx.events.DelegatorRemoved.returnValues._serviceProvider,
-      unstakedAmount: Utils.toBN(tx.events.DelegatorRemoved.returnValues._unstakedAmount)
+      delegator: tx.events.RemoveDelegatorRequestEvaluated.returnValues._delegator,
+      serviceProvider: tx.events.RemoveDelegatorRequestEvaluated.returnValues._serviceProvider,
+      unstakedAmount: Utils.toBN(tx.events.RemoveDelegatorRequestEvaluated.returnValues._unstakedAmount)
     }
   }
 
@@ -245,6 +307,15 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getTotalDelegatedToServiceProvider',
       serviceProvider
+    )
+    const info = await method.call()
+    return Utils.toBN(info)
+  }
+
+  async getTotalDelegatorStake (delegator) {
+    const method = await this.getMethod(
+      'getTotalDelegatorStake',
+      delegator
     )
     const info = await method.call()
     return Utils.toBN(info)
@@ -370,8 +441,7 @@ class DelegateManagerClient extends GovernedContractClient {
       duration
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -381,8 +451,7 @@ class DelegateManagerClient extends GovernedContractClient {
       duration
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 }

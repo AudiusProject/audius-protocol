@@ -1,6 +1,6 @@
 const assert = require('assert')
 let helpers = require('./helpers')
-let Utils = require('../src/utils')
+let { Utils } = require('../src/utils')
 
 let audiusInstance = helpers.audiusInstance
 let handle = 'handle' + Math.floor(Math.random() * 1000000)
@@ -10,7 +10,7 @@ before(async function () {
 })
 
 it('should call getUser on invalid value and verify blockchain is empty', async function () {
-  let creator = await audiusInstance.contracts.UserFactoryClient.getUser(-1)
+  let creator = await audiusInstance.contracts.UserFactoryClient.getUser(0)
   assert.strictEqual(creator.wallet, '0x0000000000000000000000000000000000000000')
 })
 

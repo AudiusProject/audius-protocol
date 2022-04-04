@@ -1,6 +1,6 @@
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -25,16 +25,20 @@ function _extends() { _extends = Object.assign || function (target) { for (var i
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var AudiusImage = function AudiusImage() {
-  return _react["default"].createElement("img", {
+  return /*#__PURE__*/_react["default"].createElement("img", {
     src: "https://gallery.mailchimp.com/f351897a27ff0a641b8acd9ab/images/b1070e55-9487-4acb-abce-e755484cce46.png",
     style: {
       maxWidth: '240px',
@@ -45,7 +49,7 @@ var AudiusImage = function AudiusImage() {
 };
 
 var WhatYouMissed = function WhatYouMissed() {
-  return _react["default"].createElement("img", {
+  return /*#__PURE__*/_react["default"].createElement("img", {
     src: "https://download.audius.co/static-resources/email/whatYouMissed.png",
     style: {
       maxWidth: '490px',
@@ -57,7 +61,7 @@ var WhatYouMissed = function WhatYouMissed() {
 
 var UnreadNotifications = function UnreadNotifications(_ref) {
   var message = _ref.message;
-  return _react["default"].createElement("p", {
+  return /*#__PURE__*/_react["default"].createElement("p", {
     className: 'avenir',
     style: {
       color: 'rgba(133,129,153,0.5)',
@@ -70,16 +74,21 @@ var UnreadNotifications = function UnreadNotifications(_ref) {
   }, message);
 };
 
+var getNumberSuffix = function getNumberSuffix(num) {
+  if (num === 1) return 'st';else if (num === 2) return 'nd';else if (num === 3) return 'rd';
+  return 'th';
+};
+
 var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.NotificationType.Favorite, function (notification) {
   var _notification$users = _slicedToArray(notification.users, 1),
       user = _notification$users[0];
 
-  return "".concat(user.name, " favorited your ").concat(notification.entity.name);
+  return "".concat(user.name, " favorited your ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Repost, function (notification) {
   var _notification$users2 = _slicedToArray(notification.users, 1),
       user = _notification$users2[0];
 
-  return "".concat(user.name, " reposted your ").concat(notification.entity.name);
+  return "".concat(user.name, " reposted your ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Follow, function (notification) {
   var _notification$users3 = _slicedToArray(notification.users, 1),
       user = _notification$users3[0];
@@ -92,8 +101,12 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     var entity = notification.entity.type.toLowerCase();
     return "Your ".concat(entity, " ").concat(notification.entity.name, " has reached over ").concat(notification.value, " ").concat(notification.achievement, "s");
   } else {
-    return "You have reached over ".concat(notification.value, " Followers ");
+    return "You have reached over ".concat(notification.value, " Followers");
   }
+}), _defineProperty(_snippetMap, _Notification.NotificationType.TrendingTrack, function (notification) {
+  var rank = notification.rank;
+  var suffix = getNumberSuffix(rank);
+  return "Your Track ".concat(notification.entity.title, " is ").concat(notification.rank).concat(suffix, " on Trending Right Now!");
 }), _defineProperty(_snippetMap, _Notification.NotificationType.UserSubscription, function (notification) {
   var _notification$users4 = _slicedToArray(notification.users, 1),
       user = _notification$users4[0];
@@ -102,7 +115,7 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     return "".concat(user.name, " released ").concat(notification.entity.count, " new ").concat(notification.entity.type);
   }
 
-  return "".concat(user.name, " released a new ").concat(notification.entity.type, "  ").concat(notification.entity.name);
+  return "".concat(user.name, " released a new ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.RemixCreate, function (notification) {
   var parentTrack = notification.parentTrack;
   return "New remix of your track ".concat(parentTrack.title);
@@ -113,6 +126,8 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     return t.ownerId === parentTrackUser.userId;
   });
   return "".concat(parentTrackUser.name, " Co-signed your Remix of ").concat(parentTrack.title);
+}), _defineProperty(_snippetMap, _Notification.NotificationType.ChallengeReward, function (notification) {
+  return "You've earned $AUDIO for completing challenges";
 }), _snippetMap);
 
 var mapNotification = function mapNotification(notification) {
@@ -150,12 +165,12 @@ var getSnippet = function getSnippet(notifications) {
 };
 
 var Body = function Body(props) {
-  return _react["default"].createElement("body", {
+  return /*#__PURE__*/_react["default"].createElement("body", {
     bgcolor: "#FFFFFF",
     style: {
       backgroundColor: '#FFFFFF'
     }
-  }, _react["default"].createElement("p", {
+  }, /*#__PURE__*/_react["default"].createElement("p", {
     style: {
       display: 'none',
       fontSize: '1px',
@@ -169,7 +184,7 @@ var Body = function Body(props) {
     dangerouslySetInnerHTML: {
       __html: "".concat(getSnippet(props.notifications), "\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        ")
     }
-  }), _react["default"].createElement("center", null, _react["default"].createElement("table", {
+  }), /*#__PURE__*/_react["default"].createElement("center", null, /*#__PURE__*/_react["default"].createElement("table", {
     align: "center",
     border: "0",
     cellpadding: "0",
@@ -180,21 +195,21 @@ var Body = function Body(props) {
     style: {
       backgroundColor: '#FFFFFF'
     }
-  }, _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     align: "center",
     valign: "top",
     id: "bodyCell"
-  }, _react["default"].createElement(AudiusImage, null))), _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, /*#__PURE__*/_react["default"].createElement(AudiusImage, null))), /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     align: "center",
     valign: "top",
     id: "bodyCell"
-  }, _react["default"].createElement(WhatYouMissed, null))), _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, /*#__PURE__*/_react["default"].createElement(WhatYouMissed, null))), /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     align: "center",
     valign: "top",
     id: "bodyCell"
-  }, _react["default"].createElement(UnreadNotifications, {
+  }, /*#__PURE__*/_react["default"].createElement(UnreadNotifications, {
     message: props.subject
-  }))), _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }))), /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     align: "center",
     valign: "top",
     id: "bodyCell",
@@ -204,10 +219,10 @@ var Body = function Body(props) {
       marginBottom: '32px'
     }
   }, props.notifications.map(function (notification, ind) {
-    return _react["default"].createElement(_Notification["default"], _extends({
+    return /*#__PURE__*/_react["default"].createElement(_Notification["default"], _extends({
       key: ind
     }, mapNotification(notification)));
-  }))), _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }))), /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     align: "center",
     valign: "top",
     id: "bodyCell",
@@ -215,19 +230,19 @@ var Body = function Body(props) {
       padding: '24px 0px 32px',
       width: '100%'
     }
-  }, _react["default"].createElement("table", {
+  }, /*#__PURE__*/_react["default"].createElement("table", {
     cellspacing: "0",
     cellpadding: "0",
     style: {
       margin: '0px auto'
     }
-  }, _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     style: {
       borderRadius: '17px',
       margin: '0px auto'
     },
     bgcolor: "#7E1BCC"
-  }, _react["default"].createElement("a", {
+  }, /*#__PURE__*/_react["default"].createElement("a", {
     href: "https://audius.co/feed?openNotifications=true",
     target: "_blank",
     style: {
@@ -238,11 +253,13 @@ var Body = function Body(props) {
       fontWeight: 'bold',
       display: 'inline-block'
     }
-  }, "See more on Audius")))))), _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, "See more on Audius")))))), /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     style: {
       paddingBottom: '25px'
     }
-  }, _react["default"].createElement(_Footer["default"], null))))));
+  }, /*#__PURE__*/_react["default"].createElement(_Footer["default"], {
+    copyrightYear: props.copyrightYear
+  }))))));
 };
 
 var _default = Body;

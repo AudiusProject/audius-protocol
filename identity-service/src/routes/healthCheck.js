@@ -4,21 +4,25 @@ const { handleResponse, successResponse, errorResponseServerError } = require('.
 const { sequelize } = require('../models')
 const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
+const solanaWeb3 = require('@solana/web3.js')
 const Web3 = require('web3')
+const audiusLibsWrapper = require('../audiusLibsInstance')
+const {
+  NOTIFICATION_JOB_LAST_SUCCESS_KEY,
+  NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY,
+  NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY
+} = require('../notifications/index.js')
 
 const axios = require('axios')
-
-let notifDiscProv = config.get('notificationDiscoveryProvider')
+const moment = require('moment')
+const { REDIS_ATTESTER_STATE } = require('../utils/configureAttester.js')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
-const RELAY_HEALTH_MIN_NUM_USERS = 3 // min number of users affected to qualify for error
 const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query params
-// if (txs on blockchain / attempted) is less than this percent, health check will error
-// eg. 10 transactions on chain but 120 attempts should error
-const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.75
+const RELAY_HEALTH_MIN_TRANSACTIONS = 5 // min number of tx's that must have happened within block diff
 const RELAY_HEALTH_ACCOUNTS = new Set(config.get('relayerWallets').map(wallet => wallet.publicKey))
 const ETH_RELAY_HEALTH_ACCOUNTS = new Set(config.get('ethRelayerWallets').map(wallet => wallet.publicKey))
 
@@ -47,7 +51,7 @@ module.exports = function (app) {
     let blockDiff = parseInt(req.query.blockDiff, 10) || RELAY_HEALTH_TEN_MINS_AGO_BLOCKS
     let maxTransactions = parseInt(req.query.maxTransactions, 10) || RELAY_HEALTH_MAX_TRANSACTIONS
     let maxErrors = parseInt(req.query.maxErrors, 10) || RELAY_HEALTH_MAX_ERRORS
-    let sentVsAttemptThreshold = parseFloat(req.query.sentVsAttemptThreshold) || RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD
+    let minTransactions = parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
     let isVerbose = req.query.verbose || false
 
     // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
@@ -121,8 +125,6 @@ module.exports = function (app) {
     }
 
     let isError = false
-    if (Object.keys(failureTxs).length >= RELAY_HEALTH_MIN_NUM_USERS &&
-      flatten(Object.values(failureTxs)).length > maxErrors) isError = true
 
     // delete old entries from set in redis
     const epochOneHourAgo = Math.floor(Date.now() / 1000) - 3600
@@ -134,11 +136,12 @@ module.exports = function (app) {
     const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, maxBlockTime)
     const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, maxBlockTime)
     const failureTxsInRedis = await redis.zrangebyscore('relayTxFailures', minBlockTime, maxBlockTime)
-    if ((txCounter / attemptedTxsInRedis.length) < sentVsAttemptThreshold) isError = true
+    if (txCounter < minTransactions) isError = true
 
     const serverResponse = {
       blockchain: {
         numberOfTransactions: txCounter,
+        minTransactions,
         numberOfFailedTransactions: flatten(Object.values(failureTxs)).length,
         failedTransactionHashes: failureTxs,
         startBlock: startBlockNumber,
@@ -175,55 +178,91 @@ module.exports = function (app) {
   }))
 
   app.get('/balance_check', handleResponse(async (req, res) => {
-    let minimumBalance = parseFloat(config.get('minimumBalance'))
+    let { minimumBalance, minimumRelayerBalance } = req.query
+    minimumBalance = parseFloat(minimumBalance || config.get('minimumBalance'))
+    minimumRelayerBalance = parseFloat(minimumRelayerBalance || config.get('minimumRelayerBalance'))
     let belowMinimumBalances = []
     let balances = []
 
     // run fundRelayerIfEmpty so it'll auto top off any accounts below the threshold
-    await fundRelayerIfEmpty()
-
-    for (let account of RELAY_HEALTH_ACCOUNTS) {
-      let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
-      balances.push({ account, balance })
-      if (balance < minimumBalance) {
-        belowMinimumBalances.push({ account, balance })
-      }
+    try {
+      await fundRelayerIfEmpty()
+    } catch (err) {
+      req.logger.error(`Failed to fund relayer with error: ${err}`)
     }
 
+    balances = await Promise.all(
+      [...RELAY_HEALTH_ACCOUNTS].map(async account => {
+        let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
+        if (balance < minimumBalance) {
+          belowMinimumBalances.push({ account, balance })
+        }
+        return { account, balance }
+      })
+    )
+
+    const relayerPublicKey = config.get('relayerPublicKey')
+    const relayerBalance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(relayerPublicKey), 'ether'))
+    const relayerAboveMinimum = relayerBalance >= minimumRelayerBalance
+
     // no accounts below minimum balance
-    if (!belowMinimumBalances.length) {
+    if (!belowMinimumBalances.length && relayerAboveMinimum) {
       return successResponse({
         'above_balance_minimum': true,
         'minimum_balance': minimumBalance,
-        'balances': balances
+        'balances': balances,
+        'relayer': {
+          'wallet': relayerPublicKey,
+          'balance': relayerBalance,
+          'above_balance_minimum': relayerAboveMinimum
+        }
       })
     } else {
       return errorResponseServerError({
         'above_balance_minimum': false,
         'minimum_balance': minimumBalance,
         'balances': balances,
-        'below_minimum_balance': belowMinimumBalances
+        'below_minimum_balance': belowMinimumBalances,
+        'relayer': {
+          'wallet': relayerPublicKey,
+          'balance': relayerBalance,
+          'above_balance_minimum': relayerAboveMinimum
+        }
       })
     }
   }))
 
   app.get('/eth_balance_check', handleResponse(async (req, res) => {
-    let minimumBalance = parseFloat(config.get('ethMinimumBalance'))
+    let { minimumBalance, minimumFunderBalance } = req.query
+    minimumBalance = parseFloat(minimumBalance || config.get('ethMinimumBalance'))
+    minimumFunderBalance = parseFloat(minimumFunderBalance || config.get('ethMinimumFunderBalance'))
+    let funderAddress = config.get('ethFunderAddress')
+    let funderBalance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(funderAddress), 'ether'))
+    let funderAboveMinimum = funderBalance >= minimumFunderBalance
     let belowMinimumBalances = []
-    let balances = []
-    for (let account of ETH_RELAY_HEALTH_ACCOUNTS) {
-      let balance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(account), 'ether'))
-      balances.push({ account, balance })
-      if (balance < minimumBalance) {
-        belowMinimumBalances.push({ account, balance })
-      }
-    }
+
+    const balances = await Promise.all(
+      [...ETH_RELAY_HEALTH_ACCOUNTS].map(async account => {
+        let balance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(account), 'ether'))
+        if (balance < minimumBalance) {
+          belowMinimumBalances.push({ account, balance })
+        }
+        return { account, balance }
+      })
+    )
+
     let balanceResponse = {
       'minimum_balance': minimumBalance,
-      'balances': balances
+      'balances': balances,
+      'funder': {
+        'wallet': funderAddress,
+        'balance': funderBalance,
+        'above_balance_minimum': funderAboveMinimum
+      }
     }
+
     // no accounts below minimum balance
-    if (!belowMinimumBalances.length) {
+    if (!belowMinimumBalances.length && funderAboveMinimum) {
       return successResponse({
         'above_balance_minimum': true,
         ...balanceResponse
@@ -237,7 +276,50 @@ module.exports = function (app) {
     }
   }))
 
+  app.get('/sol_balance_check', handleResponse(async (req, res) => {
+    const minimumBalance = parseFloat(req.query.minimumBalance || config.get('solMinimumBalance'))
+    const solanaFeePayerWallets = config.get('solanaFeePayerWallets')
+    const libs = req.app.get('audiusLibs')
+    const connection = libs.solanaWeb3Manager.connection
+
+    let solanaFeePayerBalances = {}
+    let belowMinimumBalances = []
+
+    if (solanaFeePayerWallets) {
+      await Promise.all([...solanaFeePayerWallets].map(async wallet => {
+        const feePayerPubKey = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(wallet.privateKey)).publicKey
+        const feePayerBase58 = feePayerPubKey.toBase58()
+        const balance = await connection.getBalance(feePayerPubKey)
+        if (balance < minimumBalance) {
+          belowMinimumBalances.push({ wallet: feePayerBase58, balance })
+        }
+        solanaFeePayerBalances[feePayerBase58] = balance
+        return { wallet: feePayerBase58, balance }
+      }))
+    }
+
+    const solanaFeePayerBalancesArr = Object.keys(solanaFeePayerBalances).map(key => [key, solanaFeePayerBalances[key]])
+
+    if (belowMinimumBalances.length === 0) {
+      return successResponse({
+        above_balance_minimum: true,
+        minimum_balance: minimumBalance,
+        balances: solanaFeePayerBalancesArr
+      })
+    }
+
+    return errorResponseServerError({
+      above_balance_minimum: false,
+      minimum_balance: minimumBalance,
+      belowMinimumBalances,
+      balances: solanaFeePayerBalancesArr
+    })
+  }))
+
   app.get('/notification_check', handleResponse(async (req, res) => {
+    let { maxBlockDifference, maxDrift } = req.query
+    maxBlockDifference = maxBlockDifference || 100
+
     let highestBlockNumber = await models.NotificationAction.max('blocknumber')
     if (!highestBlockNumber) {
       highestBlockNumber = config.get('notificationStartBlock')
@@ -247,20 +329,44 @@ module.exports = function (app) {
     if (maxFromRedis) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
-    let discProvHealthCheck = (await axios({
+
+    // Get job success timestamps
+    const notificationJobLastSuccess = await redis.get(NOTIFICATION_JOB_LAST_SUCCESS_KEY)
+    const notificationEmailsJobLastSuccess = await redis.get(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY)
+    const notificationAnnouncementsJobLastSuccess = await redis.get(NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY)
+
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
+    let body = (await axios({
       method: 'get',
-      url: `${notifDiscProv}/health_check`
+      url: `${discoveryProvider.discoveryProviderEndpoint}/health_check`
     })).data
-    let discProvDbHighestBlock = discProvHealthCheck['db']['number']
+    let discProvDbHighestBlock = body.data['db']['number']
     let notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
     let resp = {
-      'discProv': discProvHealthCheck,
+      'discProv': body.data,
       'identity': highestBlockNumber,
-      'notifBlockDiff': notifBlockDiff
+      'notifBlockDiff': notifBlockDiff,
+      notificationJobLastSuccess,
+      notificationEmailsJobLastSuccess,
+      notificationAnnouncementsJobLastSuccess
     }
-    if (notifBlockDiff > 100) {
+
+    // Test if last runs were recent enough
+    let withinBounds = true
+    if (maxDrift) {
+      const cutoff = moment().subtract(maxDrift, 'seconds')
+      const isWithinBounds = (key) => key ? moment(key).isAfter(cutoff) : true
+      withinBounds = (
+        isWithinBounds(notificationJobLastSuccess) &&
+        isWithinBounds(notificationEmailsJobLastSuccess) &&
+        isWithinBounds(notificationAnnouncementsJobLastSuccess)
+      )
+    }
+    if (!withinBounds || notifBlockDiff > maxBlockDifference) {
       return errorResponseServerError(resp)
     }
+
     return successResponse(resp)
   }))
 
@@ -278,13 +384,13 @@ module.exports = function (app) {
     let idleConnections = null
 
     // Get number of open DB connections
-    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_identity_service'")
+    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_centralized_service'")
     if (numConnectionsQuery && numConnectionsQuery[0] && numConnectionsQuery[0][0] && numConnectionsQuery[0][0].numbackends) {
       numConnections = numConnectionsQuery[0][0].numbackends
     }
 
     // Get detailed connection info
-    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_identity_service'"))
+    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_centralized_service'"))
     if (connectionInfoQuery && connectionInfoQuery[0]) {
       connectionInfo = connectionInfoQuery[0]
       activeConnections = (connectionInfo.filter(conn => conn.state === 'active')).length
@@ -304,5 +410,32 @@ module.exports = function (app) {
     if (verbose) { resp.connectionInfo = connectionInfo }
 
     return (numConnections >= maxConnections) ? errorResponseServerError(resp) : successResponse(resp)
+  }))
+
+  /**
+   * Healthcheck the rewards attester
+   * Accepts optional query params `maxDrift` and `maxSuccessDrift`, which
+   * correspond to the last seen attempted challenge attestation, and the last sucessful
+   * attestation, respectively.
+   */
+  app.get('/rewards_check', handleResponse(async (req, res) => {
+    const { maxDrift, maxSuccessDrift } = req.query
+    const redis = req.app.get('redis')
+    let state = await redis.get(REDIS_ATTESTER_STATE)
+    if (!state) {
+      return errorResponseServerError('No last state')
+    }
+    state = JSON.parse(state)
+
+    const { lastChallengeTime, lastSuccessChallengeTime, phase } = state
+    const lastChallengeDelta = lastChallengeTime ? (Date.now() - lastChallengeTime) / 1000 : Number.POSITIVE_INFINITY
+    const lastSuccessChallengeDelta = lastSuccessChallengeTime ? (Date.now() - lastSuccessChallengeTime) / 1000 : Number.POSITIVE_INFINITY
+
+    // Only use the deltas if the corresponding drift parameter exists
+    const isHealthy = (!maxDrift || lastChallengeDelta < maxDrift) &&
+      (!maxSuccessDrift || lastSuccessChallengeDelta < maxSuccessDrift)
+
+    const resp = { phase, lastChallengeDelta, lastSuccessChallengeDelta }
+    return (isHealthy ? successResponse : errorResponseServerError)(resp)
   }))
 }

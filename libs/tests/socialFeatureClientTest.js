@@ -1,6 +1,6 @@
 const assert = require('assert')
 let helpers = require('./helpers')
-let Utils = require('../src/utils')
+let { Utils } = require('../src/utils')
 
 let audiusInstance = helpers.audiusInstance
 
@@ -43,7 +43,7 @@ it('Should add + delete playlist repost', async function () {
   assert.ok(creatorId && Number.isInteger(creatorId), 'invalid creatorId')
 
   // add playlist
-  const playlistId = await audiusInstance.contracts.PlaylistFactoryClient.createPlaylist(
+  const { playlistId } = await audiusInstance.contracts.PlaylistFactoryClient.createPlaylist(
     creatorId,
     'initialPlaylistName',
     false,

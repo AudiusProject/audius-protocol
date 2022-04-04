@@ -324,6 +324,7 @@ contract('Governance.sol', async (accounts) => {
       initializeArgumentTypesArray,
       [0x0, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, proxyDeployerAddress]
     )
+
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,

@@ -6,6 +6,8 @@ const config = require('../config.js')
 const audiusNotificationUrl = config.get('audiusNotificationUrl')
 
 async function pushAnnouncementNotifications () {
+  let time = Date.now()
+
   // Read-only tx
   const tx = await models.sequelize.transaction()
   try {
@@ -24,7 +26,8 @@ async function pushAnnouncementNotifications () {
     await tx.commit()
 
     // Drain pending announcements
-    await drainPublishedAnnouncements()
+    const numProcessedNotifs = await drainPublishedAnnouncements(logger)
+    logger.info(`pushAnnouncementNotifications - processed ${numProcessedNotifs} notifs in ${Date.now() - time}ms`)
   } catch (e) {
     logger.error(`pushAnnouncementNotifications error: ${e}`)
     await tx.rollback() // abort the tx
@@ -64,7 +67,7 @@ async function _pushAnnouncement (notif, tx) {
     await publishAnnouncement(msg, userId, tx, true, title)
   }))
 
-  // Update database record with notifiation id
+  // Update database record with notification id
   await models.PushedAnnouncementNotifications.create({ announcementId: notif.id })
 }
 

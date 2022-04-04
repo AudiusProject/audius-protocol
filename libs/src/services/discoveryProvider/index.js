@@ -1,9 +1,9 @@
 const axios = require('axios')
 
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 const {
-  UNHEALTHY_BLOCK_DIFF,
+  DEFAULT_UNHEALTHY_BLOCK_DIFF,
   REQUEST_TIMEOUT_MS
 } = require('./constants')
 
@@ -15,19 +15,67 @@ const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
+const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
 
+/**
+ * Constructs a service class for a discovery node
+ * @param {Set<string>?} whitelist whether or not to only include specified nodes in selection
+ * @param {UserStateManager} userStateManager singleton UserStateManager instance
+ * @param {EthContracts} ethContracts singleton EthContracts instance
+ * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
+ * @param {function} selectionCallback invoked when a discovery node is selected
+ * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+ *  @param {function} monitoringCallbacks.request
+ *  @param {function} monitoringCallbacks.healthCheck
+ * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
+ * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+ * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
+ * @param {number?} unhealthyBlockDiff the number of missed blocks after which we would consider a discovery node unhealthy
+ */
 class DiscoveryProvider {
-  constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback) {
+  constructor (
+    whitelist,
+    blacklist,
+    userStateManager,
+    ethContracts,
+    web3Manager,
+    reselectTimeout,
+    selectionCallback,
+    monitoringCallbacks = {},
+    selectionRequestTimeout,
+    selectionRequestRetries,
+    unhealthySlotDiffPlays,
+    unhealthyBlockDiff
+  ) {
     this.whitelist = whitelist
+    this.blacklist = blacklist
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
 
+    this.unhealthyBlockDiff = unhealthyBlockDiff || DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection({
       whitelist: this.whitelist,
+      blacklist: this.blacklist,
       reselectTimeout,
-      selectionCallback
+      selectionCallback,
+      monitoringCallbacks,
+      requestTimeout: selectionRequestTimeout,
+      unhealthySlotDiffPlays: unhealthySlotDiffPlays,
+      unhealthyBlockDiff: this.unhealthyBlockDiff
     }, this.ethContracts)
+    this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
+    this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
+    this.unhealthySlotDiffPlays = unhealthySlotDiffPlays
+
+    // Keep track of the number of times a request 404s so we know when a true 404 occurs
+    // Due to incident where some discovery nodes may erroneously be missing content #flare-51,
+    // we treat 404s differently than generic 4xx's or other 5xx errors.
+    // In the case of a 404, try a few other nodes
+    this.request404Count = 0
+    this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
+
+    this.monitoringCallbacks = monitoringCallbacks
   }
 
   async init () {
@@ -45,8 +93,18 @@ class DiscoveryProvider {
     this.discoveryProviderEndpoint = endpoint
   }
 
+  setUnhealthyBlockDiff (updatedBlockDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {
+    this.unhealthyBlockDiff = updatedBlockDiff
+    this.serviceSelector.setUnhealthyBlockDiff(updatedBlockDiff)
+  }
+
+  setUnhealthySlotDiffPlays (updatedDiff) {
+    this.unhealthySlotDiffPlays = updatedDiff
+    this.serviceSelector.setUnhealthySlotDiffPlays(updatedDiff)
+  }
+
   /**
-   * get users with all relevant user data
+   * Get users with all relevant user data
    * can be filtered by providing an integer array of ids
    * @param {number} limit
    * @param {number} offset
@@ -118,6 +176,20 @@ class DiscoveryProvider {
   }
 
   /**
+   * Gets a particular track by its creator's handle and the track's URL slug
+   * @param {string} handle the handle of the owner of the track
+   * @param {string} slug the URL slug of the track, generally the title urlized
+   * @returns {Object} the requested track's metadata
+   */
+  async getTracksByHandleAndSlug (handle, slug) {
+    // Note: retries are disabled here because the v1 API response returns a 404 instead
+    // of an empty array, which can cause a retry storm.
+    // TODO: Rewrite this API with something more effective, change makeRequest to
+    // support 404s and not retry & use AudiusAPIClient.
+    return this._makeRequest(Requests.getTracksByHandleAndSlug(handle, slug), /* retry */ false)
+  }
+
+  /**
    * @typedef {Object} getTracksIdentifier
    * @property {string} handle
    * @property {number} id
@@ -135,6 +207,22 @@ class DiscoveryProvider {
       identifiers,
       withUsers
     )
+    return this._makeRequest(req)
+  }
+
+  /**
+   * Gets random tracks from trending tracks for a given genre.
+   * If genre not given, will return trending tracks across all genres.
+   * Excludes specified track ids.
+   *
+   * @param {string} genre
+   * @param {number} limit
+   * @param {number[]} exclusionList
+   * @param {string} time
+   * @returns {(Array)} track
+   */
+  async getRandomTracks (genre, limit, exclusionList, time) {
+    const req = Requests.getRandomTracks(genre, limit, exclusionList, time)
     return this._makeRequest(req)
   }
 
@@ -465,14 +553,193 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getURSMContentNodes (ownerWallet = null) {
+    const req = Requests.getURSMContentNodes(ownerWallet)
+    return this._makeRequest(req)
+  }
+
+  async getNotifications (minBlockNumber, trackIds, timeout) {
+    const req = Requests.getNotifications(minBlockNumber, trackIds, timeout)
+    return this._makeRequest(req)
+  }
+
+  async getSolanaNotifications (minSlotNumber, timeout) {
+    const req = Requests.getSolanaNotifications(minSlotNumber, timeout)
+    return this._makeRequest(req)
+  }
+
+  async getTrackListenMilestones (timeout = null) {
+    const req = Requests.getTrackListenMilestones(timeout)
+    return this._makeRequest(req)
+  }
+
+  async getChallengeAttestation (challengeId, encodedUserId, specifier, oracleAddress, discoveryProviderEndpoint) {
+    const req = Requests.getChallengeAttestation(challengeId, encodedUserId, specifier, oracleAddress)
+    const { data } = await this._performRequestWithMonitoring(req, discoveryProviderEndpoint)
+    return data
+  }
+
+  async getCreateSenderAttestation (senderEthAddress, discoveryProviderEndpoint) {
+    const req = Requests.getCreateSenderAttestation(senderEthAddress)
+    const { data } = await this._performRequestWithMonitoring(req, discoveryProviderEndpoint)
+    return data
+  }
+
+  async getUndisbursedChallenges (limit = null, offset = null, completedBlockNumber = null, encodedUserId = null) {
+    const req = Requests.getUndisbursedChallenges(limit, offset, completedBlockNumber, encodedUserId)
+    const res = await this._makeRequest(req)
+    if (!res) return []
+    return res.map(r => ({ ...r, amount: parseInt(r.amount) }))
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
-  // TODO(DM) - standardize this to axios like audius service and creator node
-  // requestObj consists of multiple properties
-  // endpoint - base route
-  // urlParams - string of url params to be appended after base route
-  // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, attemptedRetries = 0) {
+  /**
+   * Performs a single request, defined in the request, via axios, calling any
+   * monitoring callbacks as needed.
+   *
+   * @param {{
+     endpoint: string,
+     urlParams: string,
+     queryParams: object,
+     method: string,
+     headers: object,
+   }} requestObj
+   * @param {string} discoveryProviderEndpoint
+   * @returns
+   * @memberof DiscoveryProvider
+   */
+  async _performRequestWithMonitoring (requestObj, discoveryProviderEndpoint) {
+    const axiosRequest = this._createDiscProvRequest(requestObj, discoveryProviderEndpoint)
+    let response
+    let parsedResponse
+
+    const url = new URL(axiosRequest.url)
+    const start = Date.now()
+    try {
+      response = await axios(axiosRequest)
+      const duration = Date.now() - start
+      parsedResponse = Utils.parseDataFromResponse(response)
+
+      // Fire monitoring callbacks for request success case
+      if (this.monitoringCallbacks.request) {
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            signer: response.data.signer,
+            signature: response.data.signature,
+            requestMethod: axiosRequest.method,
+            status: response.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
+      }
+    } catch (e) {
+      const resp = e.response || {}
+      const duration = Date.now() - start
+      const errMsg = e.response && e.response.data ? e.response.data : e
+
+      // Fire monitoring callbaks for request failure case
+      if (this.monitoringCallbacks.request) {
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            requestMethod: axiosRequest.method,
+            status: resp.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
+      }
+      if (resp && resp.status === 404) {
+        // We have 404'd. Throw that error message back out
+        throw new Error('404')
+      }
+
+      throw errMsg
+    }
+    return parsedResponse
+  }
+
+  /**
+   * Gets how many blocks behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of blocks
+   * @param {Object} parsedResponse health check response object
+   * @returns {number | null} a number of blocks if behind or null if not behind
+   */
+  async _getBlocksBehind (parsedResponse) {
+    try {
+      const {
+        latest_indexed_block: indexedBlock,
+        latest_chain_block: chainBlock
+      } = parsedResponse
+
+      const blockDiff = chainBlock - indexedBlock
+      if (blockDiff > this.unhealthyBlockDiff) {
+        return blockDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return this.unhealthyBlockDiff
+    }
+  }
+
+  /**
+   * Gets how many plays slots behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of slots
+   * @param {Object} parsedResponse health check response object
+   * @returns {number | null} a number of slots if behind or null if not behind
+   */
+  async _getPlaysSlotsBehind (parsedResponse) {
+    if (!this.unhealthySlotDiffPlays) return null
+
+    try {
+      const {
+        latest_indexed_slot_plays: indexedSlotPlays,
+        latest_chain_slot_plays: chainSlotPlays
+      } = parsedResponse
+
+      const slotDiff = chainSlotPlays - indexedSlotPlays
+      if (slotDiff > this.unhealthySlotDiffPlays) {
+        return slotDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return this.unhealthySlotDiffPlays
+    }
+  }
+
+  /**
+   * Makes a request to a discovery node, reselecting if necessary
+   * @param {{
+   *  endpoint: string
+   *  urlParams: object
+   *  queryParams: object
+   *  method: string
+   *  headers: object
+   * }} {
+   *  endpoint: the base route
+   *  urlParams: string of URL params to be concatenated after base route
+   *  queryParams: URL query (search) params
+   *  method: string HTTP method
+   * }
+   * @param {boolean?} retry whether to retry on failure
+   * @param {number?} attemptedRetries number of attempted retries (stops retrying at max)
+   */
+  async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
     try {
       const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
 
@@ -488,56 +755,85 @@ class DiscoveryProvider {
       console.error(e)
       return
     }
-
-    let axiosRequest = this.createDiscProvRequest(requestObj)
-
-    let response
     let parsedResponse
     try {
-      response = await axios(axiosRequest)
-      parsedResponse = Utils.parseDataFromResponse(response)
+      parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
     } catch (e) {
-      console.error(`Failed to make Discovery Provider request: ${e}`)
-      return this._makeRequest(requestObj, attemptedRetries + 1)
-    }
+      const failureStr = 'Failed to make Discovery Provider request, '
+      const attemptStr = `attempt #${attemptedRetries}, `
+      const errorStr = `error ${JSON.stringify(e.message)}, `
+      const requestStr = `request: ${JSON.stringify(requestObj)}`
+      const fullErrString = `${failureStr}${attemptStr}${errorStr}${requestStr}`
 
-    if (
-      this.ethContracts &&
-      !this.ethContracts.isInRegressedMode() &&
-      'latest_indexed_block' in parsedResponse &&
-      'latest_chain_block' in parsedResponse
-    ) {
-      const {
-        latest_indexed_block: indexedBlock,
-        latest_chain_block: chainBlock
-      } = parsedResponse
+      console.warn(fullErrString)
 
-      if (
-        !chainBlock ||
-        !indexedBlock ||
-        (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
-      ) {
-        // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
-        // hopes it will catch up
-        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request...`)
-        return this._makeRequest(requestObj, attemptedRetries + 1)
+      if (retry) {
+        if (e.message === '404') {
+          this.request404Count += 1
+          if (this.request404Count < this.maxRequestsForTrue404) {
+            // In the case of a 404, retry with a different discovery node entirely
+            // using selectionRequestRetries + 1 to force reselection
+            return this._makeRequest(requestObj, retry, this.selectionRequestRetries + 1)
+          } else {
+            this.request404Count = 0
+            return null
+          }
+        }
+
+        // In the case of an unknown error, retry with attempts += 1
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
+
+      return null
     }
 
+    // Validate health check response
+
+    // Regressed mode signals we couldn't find a node that wasn't behind by some measure
+    // so we should should pick something
+    const notInRegressedMode = this.ethContracts && !this.ethContracts.isInRegressedMode()
+
+    const blockDiff = await this._getBlocksBehind(parsedResponse)
+    if (notInRegressedMode && blockDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
+      }
+      return null
+    }
+
+    const playsSlotDiff = await this._getPlaysSlotsBehind(parsedResponse)
+    if (notInRegressedMode && playsSlotDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
+      }
+      return null
+    }
+
+    // Reset 404 counts
+    this.request404Count = 0
+
+    // Everything looks good, return the data!
     return parsedResponse.data
   }
 
   /**
-   * Gets the healthy discovery provider endpoint used in creating the axious request later.
+   * Gets the healthy discovery provider endpoint used in creating the axios request later.
    * If the number of retries is over the max count for retires, clear the cache and reselect
    * another healthy discovery provider. Else, return the current discovery provider endpoint
-   * @param {int} attemptedRetries the number of attempted requests made to the current disc prov endpoint
+   * @param {number} attemptedRetries the number of attempted requests made to the current disc prov endpoint
    */
   async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
     let endpoint = this.discoveryProviderEndpoint
-    if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
+    if (attemptedRetries > this.selectionRequestRetries) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
-      console.info(`Attempted max retries with endpoint ${this.discoveryProviderEndpoint}`)
+      console.info(`Attempted max retries with endpoint ${endpoint}`)
+      this.serviceSelector.addUnhealthy(endpoint)
 
       // Clear the cached endpoint and select new endpoint from backups
       this.serviceSelector.clearCached()
@@ -553,29 +849,43 @@ class DiscoveryProvider {
   }
 
   /**
-   * Creates the discovery provider axiox request object with necessary configs
+   * Creates the discovery provider axios request object with necessary configs
    * @param {object} requestObj
+   * @param {string} discoveryProviderEndpoint
    */
-  createDiscProvRequest (requestObj) {
+  _createDiscProvRequest (requestObj, discoveryProviderEndpoint) {
     let requestUrl
 
-    if (urlJoin && urlJoin.default) {
-      requestUrl = urlJoin.default(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
-    } else {
-      requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+    // Sanitize URL params if needed
+    if (requestObj.queryParams) {
+      Object.entries(requestObj.queryParams).forEach(([k, v]) => {
+        if (v === undefined || v === null) {
+          delete requestObj.queryParams[k]
+        }
+      })
     }
 
-    const headers = {}
+    if (urlJoin && urlJoin.default) {
+      requestUrl = urlJoin.default(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+    } else {
+      requestUrl = urlJoin(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+    }
+
+    let headers = {}
+    if (requestObj.headers) {
+      headers = requestObj.headers
+    }
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId
     }
 
+    const timeout = requestObj.timeout || this.selectionRequestTimeout
     let axiosRequest = {
       url: requestUrl,
       headers: headers,
       method: (requestObj.method || 'get'),
-      timeout: REQUEST_TIMEOUT_MS
+      timeout
     }
 
     if (requestObj.method === 'post' && requestObj.data) {

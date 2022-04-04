@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 <<COMMENT
 CircleCI Specific Test Script
@@ -7,8 +8,7 @@ COMMENT
 
 ##### INIT DATA CONTRACTS #####
 
-if [ -d "../contracts" ]
-then
+if [ -d "../contracts" ]; then
   echo "Audius contracts repo is present"
   cd ../contracts/
 else
@@ -21,8 +21,7 @@ npm run truffle-migrate
 
 ##### INIT ETH CONTRACTS #####
 
-if [ -d "../eth-contracts" ]
-then
+if [ -d "../eth-contracts" ]; then
   echo "Audius eth-contracts repo is present"
   cd ../eth-contracts/
 else
@@ -43,11 +42,12 @@ cd ../libs/
 # - Eth contracts config: AudiusToken contract address
 sh ./scripts/migrate_contracts.sh
 
-set -e
+# Run unit tests
+npm run test:unit
 
 # run tests
 printf '\nSTART tests:\n\n'
-node_modules/.bin/mocha tests/index.js
+node_modules/.bin/ts-mocha tests/index.js
 
 # run linter
-node_modules/.bin/standard
+npm run lint

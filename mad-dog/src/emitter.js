@@ -1,5 +1,6 @@
 const EventEmitter = require('events')
 const { logger } = require('./logger.js')
+const { racePromiseWithTimeout } = require('./helpers.js')
 
 /**
  * Emitter event types.
@@ -19,14 +20,14 @@ const Event = Object.freeze({
  */
 const tick = async (emitter, intervalSeconds, totalDurationSeconds) => {
   const token = setInterval(() => {
-    logger.info('Tick')
+    logger.info(`Tick at interval ${intervalSeconds * 1000}`)
     emitter.emit(Event.TICK)
   }, intervalSeconds * 1000)
 
-  return new Promise(res => {
+  return new Promise(resolve => {
     setTimeout(() => {
       clearInterval(token)
-      res()
+      resolve()
     }, totalDurationSeconds * 1000)
   })
 }
@@ -38,8 +39,9 @@ const tick = async (emitter, intervalSeconds, totalDurationSeconds) => {
  * tick events to specify interactions with the audius protocol.
  */
 class EmitterBasedTest {
-  constructor({ tickIntervalSeconds, testDurationSeconds }) {
+  constructor ({ tickIntervalSeconds, testDurationSeconds }) {
     this.emitter = new EventEmitter()
+    this.emitter.setMaxListeners(100)
     this.inFlightCount = 0
     this.isTicking = false
     this.tickIntervalSeconds = tickIntervalSeconds
@@ -56,15 +58,15 @@ class EmitterBasedTest {
     )
   }
 
-  emit(eventType, event) {
+  emit (eventType, event) {
     this.emitter.emit(eventType, event)
   }
 
   /**
-   * Begin the test.
+   * Run test.
    * Returns when all inflight requests and ticks are completed.
    */
-  async start() {
+  async run () {
     logger.info('Beginning ticking.')
     this.isTicking = true
     await tick(this.emitter, this.tickIntervalSeconds, this.testDurationSeconds)
@@ -74,21 +76,21 @@ class EmitterBasedTest {
     // Await any pending requests if necessary
     if (this.inFlightCount > 0) {
       logger.info(`Awaiting [${this.inFlightCount}] inflight requests.`)
-      await this.inFlightPromise
+      await racePromiseWithTimeout(this.inFlightPromise, 300000, 'Failed to resolve all inflight requests in 300000ms')
     }
     logger.info('Test done.')
   }
 
-  registerOnRequestListener(listener) {
+  registerOnRequestListener (listener) {
     this.emitter.on(Event.REQUEST, request => {
       this.inFlightCount += 1
-      logger.info(`Handling request: [${request.type}]]`)
+      logger.info(`Handling request: [${request.type}]`)
       logger.info(`[${this.inFlightCount}] requests in flight.`)
       listener(request, this.emit)
     })
   }
 
-  registerOnResponseListener(listener) {
+  registerOnResponseListener (listener) {
     this.emitter.on(Event.RESPONSE, res => {
       this.inFlightCount -= 1
       logger.info(`Handling response: [${res.type}]`)
@@ -103,7 +105,7 @@ class EmitterBasedTest {
     })
   }
 
-  registerOnTickListener(listener) {
+  registerOnTickListener (listener) {
     this.emitter.on(Event.TICK, () => {
       listener(this.emit)
     })

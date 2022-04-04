@@ -46,7 +46,7 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
     for (let userToEmail of emailUsers) {
       let userEmail = userToEmail.email
 
-      let sent = await renderAndSendEmail(
+      let sent = await renderAndSendDownloadAppEmail(
         mg,
         userEmail
       )
@@ -64,14 +64,17 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
 }
 
 // Master function to render and send email for a given userId
-async function renderAndSendEmail (
+async function renderAndSendDownloadAppEmail (
   mg,
   userEmail
 ) {
   try {
     logger.info(`render and send download app email: ${userEmail}`)
 
-    const downloadAppHtml = downloadAppTemplate({})
+    const copyrightYear = new Date().getFullYear().toString()
+    const downloadAppHtml = downloadAppTemplate({
+      copyright_year: copyrightYear
+    })
 
     const emailParams = {
       from: 'The Audius Team <team@audius.co>',
@@ -86,7 +89,7 @@ async function renderAndSendEmail (
 
     return true
   } catch (e) {
-    logger.error(`Error in renderAndSendEmail ${e}`)
+    logger.error(`Error in renderAndSendDownloadAppEmail ${e}`)
     return false
   }
 }

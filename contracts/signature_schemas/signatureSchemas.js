@@ -42,6 +42,10 @@ domains.getIPLDBlacklistFactoryDomain = function (chainId, contractAddress) {
   return getDomainData('IPLD Blacklist Factory', '1', chainId, contractAddress)
 }
 
+domains.getUserReplicaSetManagerDomain = function (chainId, contractAddress) {
+  return getDomainData('User Replica Set Manager', '1', chainId, contractAddress)
+}
+
 const schemas = {}
 
 /* contract signing domain */
@@ -207,6 +211,24 @@ schemas.deletePlaylistSaveRequest = schemas.playlistSaveRequest
 
 schemas.addIPLDBlacklist = [
   { name: 'multihashDigest', type: 'bytes32' },
+  { name: 'nonce', type: 'bytes32' }
+]
+
+// User replica set manager schemas
+schemas.proposeAddOrUpdateContentNode = [
+  { name: 'cnodeSpId', type: 'uint' },
+  { name: 'cnodeDelegateOwnerWallet', type: 'address' },
+  { name: 'cnodeOwnerWallet', type: 'address' },
+  { name: 'proposerSpId', type: 'uint' },
+  { name: 'nonce', type: 'bytes32' }
+]
+
+schemas.updateReplicaSet = [
+  { name: 'userId', type: 'uint' },
+  { name: 'primaryId', type: 'uint' },
+  { name: 'secondaryIdsHash', type: 'bytes32' },
+  { name: 'oldPrimaryId', type: 'uint' },
+  { name: 'oldSecondaryIdsHash', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
@@ -769,6 +791,61 @@ generators.addIPLDToBlacklistRequestData = function (chainId, contractAddress, m
     contractAddress,
     'AddIPLDToBlacklistRequest',
     schemas.addIPLDBlacklist,
+    message
+  )
+}
+
+/* User Replica Set Manager Generators */
+generators.getProposeAddOrUpdateContentNodeRequestData = function (
+  chainId,
+  contractAddress,
+  cnodeSpId,
+  cnodeDelegateOwnerWallet,
+  cnodeOwnerWallet,
+  proposerSpId,
+  nonce
+) {
+  const message = {
+    cnodeSpId,
+    cnodeDelegateOwnerWallet,
+    cnodeOwnerWallet,
+    proposerSpId,
+    nonce
+  }
+  return getRequestData(
+    domains.getUserReplicaSetManagerDomain,
+    chainId,
+    contractAddress,
+    'ProposeAddOrUpdateContentNode',
+    schemas.proposeAddOrUpdateContentNode,
+    message
+  )
+}
+
+generators.getUpdateReplicaSetRequestData = function (
+  chainId,
+  contractAddress,
+  userId,
+  primaryId,
+  secondaryIdsHash,
+  oldPrimaryId,
+  oldSecondaryIdsHash,
+  nonce
+) {
+  const message = {
+    userId,
+    primaryId,
+    secondaryIdsHash,
+    oldPrimaryId,
+    oldSecondaryIdsHash,
+    nonce
+  }
+  return getRequestData(
+    domains.getUserReplicaSetManagerDomain,
+    chainId,
+    contractAddress,
+    'UpdateReplicaSet',
+    schemas.updateReplicaSet,
     message
   )
 }

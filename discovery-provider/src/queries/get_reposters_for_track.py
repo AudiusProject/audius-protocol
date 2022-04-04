@@ -1,67 +1,52 @@
-from sqlalchemy import func, desc
-
+from sqlalchemy import desc, func
 from src import exceptions
-from src.models import User, Track, Repost, RepostType, Follow
+from src.models import AggregateUser, Repost, RepostType, Track, User
+from src.queries import response_name_constants
+from src.queries.query_helpers import add_query_pagination, populate_user_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries import response_name_constants
-from src.queries.query_helpers import populate_user_metadata, add_query_pagination
 
 
 def get_reposters_for_track(args):
     user_results = []
-    current_user_id = args.get('current_user_id')
-    repost_track_id = args.get('repost_track_id')
-    limit = args.get('limit')
-    offset = args.get('offset')
+    current_user_id = args.get("current_user_id")
+    repost_track_id = args.get("repost_track_id")
+    limit = args.get("limit")
+    offset = args.get("offset")
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
         # Ensure Track exists for provided repost_track_id.
-        track_entry = session.query(Track).filter(
-            Track.track_id == repost_track_id,
-            Track.is_current == True
-        ).first()
-        if track_entry is None:
-            raise exceptions.NotFoundError('Resource not found for provided track id')
-
-        # Subquery to get all (user_id, follower_count) entries from Follows table.
-        follower_count_subquery = (
-            session.query(
-                Follow.followee_user_id,
-                func.count(Follow.followee_user_id).label(
-                    response_name_constants.follower_count)
-            )
-            .filter(
-                Follow.is_current == True,
-                Follow.is_delete == False
-            )
-            .group_by(Follow.followee_user_id)
-            .subquery()
+        track_entry = (
+            session.query(Track)
+            .filter(Track.track_id == repost_track_id, Track.is_current == True)
+            .first()
         )
+        if track_entry is None:
+            raise exceptions.NotFoundError("Resource not found for provided track id")
 
         # Get all Users that reposted track, ordered by follower_count desc & paginated.
         query = (
             session.query(
                 User,
                 # Replace null values from left outer join with 0 to ensure sort works correctly.
-                (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(
-                    response_name_constants.follower_count)
+                (func.coalesce(AggregateUser.follower_count, 0)).label(
+                    response_name_constants.follower_count
+                ),
             )
             # Left outer join to associate users with their follower count.
-            .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
+            .outerjoin(AggregateUser, AggregateUser.user_id == User.user_id)
             .filter(
                 User.is_current == True,
                 # Only select users that reposted given track.
                 User.user_id.in_(
-                    session.query(Repost.user_id)
-                    .filter(
+                    session.query(Repost.user_id).filter(
                         Repost.repost_item_id == repost_track_id,
                         Repost.repost_type == RepostType.track,
                         Repost.is_current == True,
-                        Repost.is_delete == False
+                        Repost.is_delete == False,
                     )
-                )
+                ),
             )
             .order_by(desc(response_name_constants.follower_count))
         )
@@ -72,7 +57,8 @@ def get_reposters_for_track(args):
             users, _ = zip(*user_results)
             user_results = helpers.query_result_to_list(users)
             # bundle peripheral info into user results
-            user_ids = [user['user_id'] for user in user_results]
+            user_ids = [user["user_id"] for user in user_results]
             user_results = populate_user_metadata(
-                session, user_ids, user_results, current_user_id)
+                session, user_ids, user_results, current_user_id
+            )
     return user_results

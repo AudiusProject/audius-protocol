@@ -7,7 +7,7 @@
             "additionalProperties": true,
             "properties": {
                 "name": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "profile_picture": {
@@ -37,6 +37,25 @@
                 "location": {
                     "type": ["string", "null"],
                     "default": null
+                },
+                "associated_wallets": {
+                    "$ref": "#/definitions/AssociatedWallets"
+                },
+                "associated_sol_wallets": {
+                    "$ref": "#/definitions/AssociatedSOLWallets"
+                },
+                "collectibles": {
+                    "$ref": "#/definitions/Collectibles"
+                },
+                "playlist_library": {
+                    "$ref": "#/definitions/PlaylistLibrary"
+                },
+                "events": {
+                    "$ref": "#/definitions/Events"
+                },
+                "is_deactivated": {
+                    "type": "boolean",
+                    "default": false
                 }
             },
             "required": [
@@ -56,6 +75,156 @@
             "maxLength": 46,
             "pattern": "^Qm[a-zA-Z0-9]{44}$",
             "title": "CID"
+        },
+        "AssociatedWallets": {
+            "type": ["object", "null"],
+            "default": null,
+            "patternProperties": {
+                "^0x[a-fA-F0-9]{40}$": { "$ref": "#/definitions/WalletMetadata" }
+            },
+            "additionalProperties": false,
+            "properties": {},
+            "required": [],
+            "$comment": "",
+            "title": "AssociatedWallets"
+        },
+        "AssociatedSOLWallets": {
+            "type": ["object", "null"],
+            "default": null,
+            "patternProperties": {
+                "^[a-zA-Z0-9]{44}$": { "$ref": "#/definitions/WalletMetadata" }
+            },
+            "additionalProperties": false,
+            "properties": {},
+            "required": [],
+            "$comment": "",
+            "title": "AssociatedSOLWallets"
+        },
+        "WalletMetadata": {
+            "type": ["object"],
+            "additionalProperties": true,
+            "properties": {
+                "signature": {
+                    "type": "string"
+                }
+            },
+            "required": ["signature"],
+            "$comment": "",
+            "title": "WalletMetadata"
+        },
+        "Collectible": {
+            "type": "object",
+            "additionalProperties": false
+        },
+        "Collectibles": {
+            "type": ["object", "null"],
+            "default": null,
+            "additionalProperties": {
+                "$ref": "#/definitions/Collectible"
+            },
+            "properties": {
+                "order": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "order"
+            ]
+        },
+        "PlaylistIdentifier": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "playlist"
+                },
+                "playlist_id": {
+                    "type": "integer"
+                }
+            }
+
+        },
+        "ExplorePlaylistIdentifier": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "explore_playlist"
+                },
+                "playlist_id": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z \/-?]+$"
+                }
+            }
+        },
+        "PlaylistLibraryIdentifier": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/PlaylistIdentifier"
+                },
+                {
+                    "$ref": "#/definitions/ExplorePlaylistIdentifier"
+                }
+            ]
+        },
+        "PlaylistLibraryFolder": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "folder"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/definitions/PlaylistLibraryFolder"
+                            },
+                            {
+                                "$ref": "#/definitions/PlaylistLibraryIdentifier"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "PlaylistLibrary": {
+            "type": ["object", "null"],
+            "default": null,
+            "properties": {
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/definitions/PlaylistLibraryFolder"
+                            },
+                            {
+                                "$ref": "#/definitions/PlaylistLibraryIdentifier"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "Events": {
+            "type": ["object", "null"],
+            "default": null,
+            "properties": {
+                "referrer": {
+                    "type": "integer"
+                },
+                "is_mobile_user": {
+                    "type": "boolean"
+                }
+            }
         }
     }
 }

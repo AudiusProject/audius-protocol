@@ -1,6 +1,6 @@
 const { Base, Services } = require('./base')
 const CreatorNode = require('../services/creatorNode')
-const Utils = require('../utils')
+const { Utils } = require('../utils')
 const retry = require('async-retry')
 
 const TRACK_PROPS = [
@@ -25,9 +25,7 @@ class Track extends Base {
     super(...args)
     this.getTracks = this.getTracks.bind(this)
     this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
-    this.getTracks = this.getTracks.bind(this)
-    this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
-    this.getUnlistedTracks = this.getUnlistedTracks.bind(this)
+    this.getRandomTracks = this.getRandomTracks.bind(this)
     this.getStemsForTrack = this.getStemsForTrack.bind(this)
     this.getRemixesOfTrack = this.getRemixesOfTrack.bind(this)
     this.getRemixTrackParents = this.getRemixTrackParents.bind(this)
@@ -80,6 +78,16 @@ class Track extends Base {
   }
 
   /**
+   * Gets tracks by their slug and owner handle
+   * @param {string} handle the owner's handle
+   * @param {string} slug the track's slug, including collision identifiers
+   */
+  async getTracksByHandleAndSlug (handle, slug) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getTracksByHandleAndSlug(handle, slug)
+  }
+
+  /**
    * @typedef {Object} getTracksIdentifier
    * @property {string} handle
    * @property {number} id
@@ -98,14 +106,19 @@ class Track extends Base {
   }
 
   /**
-   * Gets all unlisted track for a user.
-   * Will only return tracks for the currently authed user.
+   * Gets random tracks from trending tracks for a given genre.
+   * If genre not given, will return trending tracks across all genres.
+   * Excludes specified track ids.
    *
-   * @returns {(Array)} tracks array of tracks
+   * @param {string} genre
+   * @param {number} limit
+   * @param {number[]} exclusionList
+   * @param {string} time
+   * @returns {(Array)} track
    */
-  async getUnlistedTracks () {
-    this.REQUIRES(Services.CREATOR_NODE)
-    return this.creatorNode.getUnlistedTracks()
+  async getRandomTracks (genre, limit, exclusionList, time) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getRandomTracks(genre, limit, exclusionList, time)
   }
 
   /**
@@ -314,13 +327,28 @@ class Track extends Base {
       const {
         metadataMultihash,
         metadataFileUUID,
-        transcodedTrackUUID
-      } = await this.creatorNode.uploadTrackContent(
-        trackFile,
-        coverArtFile,
-        metadata,
-        onProgress
-      )
+        transcodedTrackUUID,
+        transcodedTrackCID
+      } = await retry(async (bail, num) => {
+        return this.creatorNode.uploadTrackContent(
+          trackFile,
+          coverArtFile,
+          metadata,
+          onProgress
+        )
+      }, {
+        // Retry function 3x
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: 3,
+        onRetry: (err, i) => {
+          if (err) {
+            console.log('uploadTrackContent retry error: ', err)
+          }
+        }
+      })
 
       phase = phases.ADDING_TRACK
 
@@ -341,7 +369,7 @@ class Track extends Base {
         txReceipt.blockNumber,
         transcodedTrackUUID
       )
-      return { trackId, error: false }
+      return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId, transcodedTrackCID, error: false }
     } catch (e) {
       return {
         error: e.message,
@@ -383,7 +411,8 @@ class Track extends Base {
         trackFile,
         coverArtFile,
         metadata,
-        onProgress)
+        onProgress
+      )
     }, {
     // Retry function 3x
     // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
@@ -393,8 +422,7 @@ class Track extends Base {
       retries: 3,
       onRetry: (err, i) => {
         if (err) {
-          // eslint-disable-next-line no-console
-          console.log('Retry error : ', err)
+          console.log('uploadTrackContentToCreatorNode retry error: ', err)
         }
       }
     })
@@ -413,7 +441,7 @@ class Track extends Base {
       throw new Error('No users loaded for this wallet')
     }
 
-    let addedToChain = []
+    const addedToChain = []
     let requestFailed = false
     await Promise.all(
       trackMultihashAndUUIDList.map(async (trackInfo, i) => {
@@ -422,7 +450,7 @@ class Track extends Base {
 
           // Write metadata to chain
           const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-          let { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
+          const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
             ownerId,
             multihashDecoded.digest,
             multihashDecoded.hashFn,
@@ -443,7 +471,7 @@ class Track extends Base {
       return { error: true, trackIds: addedToChain.filter(Boolean).map(x => x.trackId) }
     }
 
-    let associatedWithCreatorNode = []
+    const associatedWithCreatorNode = []
     try {
       await Promise.all(
         addedToChain.map(async chainTrackInfo => {
@@ -501,7 +529,7 @@ class Track extends Base {
     )
     // Re-associate the track id with the new metadata
     await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
-    return trackId
+    return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId }
   }
 
   /**
@@ -509,12 +537,18 @@ class Track extends Base {
    * @param {string} unauthUuid account for those not logged in
    * @param {number} trackId listened to
    */
-  async logTrackListen (trackId, unauthUuid) {
+  async logTrackListen (trackId, unauthUuid, solanaListen = false) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const accountId = this.userStateManager.getCurrentUserId()
 
     const userId = accountId || unauthUuid
-    return this.identityService.logTrackListen(trackId, userId)
+    return this.identityService.logTrackListen(
+      trackId,
+      userId,
+      null,
+      null,
+      solanaListen
+    )
   }
 
   /** Adds a repost for a given user and track

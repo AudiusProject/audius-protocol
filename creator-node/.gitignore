@@ -13,3 +13,5 @@ local-storage/
 test_file_storage/
 coverage/
 .nyc_output/
+compose/env/tmp*/
+file_storage/

@@ -1,7 +1,7 @@
 const Web3 = require('../src/web3')
 const path = require('path')
 
-const { setServiceVersion } = require('./helpers/version')
+const { setServiceVersion, addServiceType } = require('./helpers/version')
 const { getStakingParameters } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 
@@ -9,7 +9,7 @@ const AudiusLibs = require('../src/index')
 
 const isServer = true
 
-let args = process.argv
+const args = process.argv
 if (args.length < 3) {
   _throwArgError()
 }
@@ -21,21 +21,35 @@ if (args.length < 3) {
  * */
 const run = async () => {
   try {
-    let configFile = args[2]
-    let commandToRun = args[3]
+    const configFile = args[2]
+    const commandToRun = args[3]
     const config = require(path.join(__dirname, configFile))
 
-    let privateKey = _getEnv('AUDIUS_PRIVATE_KEY')
-    let ownerWallet = _getEnv('AUDIUS_OWNER_WALLET')
-    let audiusLibs = await getAudiusLibs(config, privateKey, ownerWallet)
+    const privateKey = _getEnv('AUDIUS_PRIVATE_KEY')
+    const ownerWallet = _getEnv('AUDIUS_OWNER_WALLET')
+    const audiusLibs = await getAudiusLibs(config, privateKey, ownerWallet)
     switch (commandToRun) {
       case 'setversion':
         const serviceType = args[4]
         const versionStr = args[5]
+        let dryRun = true
+        // if args[6] is defined and the value is either bool or string false, set dryRun to false
+        if (args[6] && (['false', false].includes(args[6]))) {
+          dryRun = false
+        }
         if (!serviceType || !versionStr) {
           throw new Error('missing arguments - format: node mainnet.js setversion <serviceType> <versionStr>')
         }
-        await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey)
+        await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey, dryRun)
+        break
+      case 'addservicetype':
+        const newServiceType = args[4]
+        const serviceTypeMin = args[5]
+        const serviceTypeMax = args[6]
+        if (!newServiceType || !serviceTypeMin || !serviceTypeMax) {
+          throw new Error('missing arguments - format: node mainnet.js addservicetype <serviceType> <serviceTypeMin> <serviceTypeMax>')
+        }
+        await addServiceType(audiusLibs, newServiceType, serviceTypeMin, serviceTypeMax, privateKey)
         break
       case 'getclaim':
         await getClaimInfo(audiusLibs)
@@ -73,7 +87,7 @@ function getLibsConfig (config, privateKey, ownerWallet) {
   console.log(ownerWallet)
 
   const dataWeb3 = new Web3(new Web3.providers.HttpProvider(config.dataWeb3ProviderEndpoint))
-  let web3DataContractConfig = {
+  const web3DataContractConfig = {
     registryAddress: config.dataRegistryAddress,
     useExternalWeb3: true,
     externalWeb3Config: {
@@ -98,8 +112,8 @@ function getLibsConfig (config, privateKey, ownerWallet) {
 }
 
 async function getAudiusLibs (config, privateKey, ownerWallet) {
-  let audiusLibsConfig = getLibsConfig(config, privateKey, ownerWallet)
-  let audiusLibs = new AudiusLibs(audiusLibsConfig)
+  const audiusLibsConfig = getLibsConfig(config, privateKey, ownerWallet)
+  const audiusLibs = new AudiusLibs(audiusLibsConfig)
   await audiusLibs.init()
   return audiusLibs
 }

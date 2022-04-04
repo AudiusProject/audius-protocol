@@ -6,12 +6,22 @@ class AudiusTokenClient {
 
     this.web3 = this.ethWeb3Manager.getWeb3()
     this.AudiusTokenContract = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
+
+    this.bustCacheNonce = 0
   }
 
   /* ------- GETTERS ------- */
 
+  async bustCache () {
+    this.bustCacheNonce += 1
+  }
+
   async balanceOf (account) {
-    const balance = await this.AudiusTokenContract.methods.balanceOf(account).call()
+    let args
+    if (this.bustCacheNonce > 0) {
+      args = { _audiusBustCache: this.bustCacheNonce }
+    }
+    const balance = await this.AudiusTokenContract.methods.balanceOf(account).call(args)
     return this.web3.utils.toBN(balance)
   }
 
@@ -23,7 +33,10 @@ class AudiusTokenClient {
 
   // Get the name of the contract
   async nonces (wallet) {
-    const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call()
+    // Pass along a unique param so the nonce value is always not cached
+    const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call({
+      _audiusBustCache: Date.now()
+    })
     const number = this.web3.utils.toBN(nonce).toNumber()
     return number
   }
@@ -36,12 +49,14 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 
-  async transferFrom (owner, recipient, amount) {
+  async transferFrom (owner, recipient, relayer, amount) {
     const method = this.AudiusTokenContract.methods.transferFrom(owner, recipient, amount)
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress,
-      owner
+      owner,
+      relayer,
+      /* retries */ 0
     )
     return { txReceipt: tx }
   }
@@ -66,7 +81,11 @@ class AudiusTokenClient {
       s
     )
     const tx = await this.ethWeb3Manager.relayTransaction(
-      contractMethod, this.contractAddress, owner
+      contractMethod,
+      this.contractAddress,
+      owner,
+      spender,
+      /* retries */ 0
     )
     return tx
   }
@@ -81,10 +100,22 @@ class AudiusTokenClient {
     } else {
       tx = await this.ethWeb3Manager.sendTransaction(
         contractMethod,
-        1000000,
         this.contractAddress,
-        privateKey)
+        privateKey
+      )
     }
+    return { txReceipt: tx }
+  }
+
+  async approveProxyTokens (owner, spender, value, relayer) {
+    const method = this.AudiusTokenContract.methods.approve(spender, value)
+    const tx = await this.ethWeb3Manager.relayTransaction(
+      method,
+      this.contractAddress,
+      owner,
+      relayer,
+      /* retries */ 0
+    )
     return { txReceipt: tx }
   }
 }

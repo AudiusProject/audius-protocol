@@ -1,17 +1,43 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const GovernedContractClient = require('../contracts/GovernedContractClient')
-const DEFAULT_GAS_AMOUNT = 200000
 
 class ServiceTypeManagerClient extends GovernedContractClient {
-  async setServiceVersion (serviceType, serviceVersion, privateKey = null) {
+  /**
+   *
+   * @param {String} serviceType Type of service to set the version, either `discovery-node` or `content-node`
+   * @param {String} serviceVersion Version string to set on chain
+   * @param {String?} privateKey Optional privateKey to pass along to web3Manager sendTransaction
+   * @param {Boolean?} dryRun Optional parameter to return the generated parameters without sending tx
+   * @returns comma-separated String of serviceType and serviceVersion if dryRun; else response from web3Manager.sendTransaction
+   */
+  async setServiceVersion (serviceType, serviceVersion, privateKey = null, dryRun = false) {
     const method = await this.getGovernedMethod(
       'setServiceVersion',
       Utils.utf8ToHex(serviceType),
       Utils.utf8ToHex(serviceVersion)
     )
+
+    if (dryRun) {
+      return `${Utils.utf8ToHex(serviceType)},${Utils.utf8ToHex(serviceVersion)}`
+    }
+
     return this.web3Manager.sendTransaction(
       method,
-      DEFAULT_GAS_AMOUNT,
+      (await this.governanceClient.getAddress()),
+      privateKey
+    )
+  }
+
+  async addServiceType (serviceType, serviceTypeMin, serviceTypeMax, privateKey = null) {
+    const method = await this.getGovernedMethod(
+      'addServiceType',
+      Utils.utf8ToHex(serviceType),
+      serviceTypeMin,
+      serviceTypeMax
+    )
+
+    return this.web3Manager.sendTransaction(
+      method,
       (await this.governanceClient.getAddress()),
       privateKey
     )
@@ -25,14 +51,14 @@ class ServiceTypeManagerClient extends GovernedContractClient {
 
   async getCurrentVersion (serviceType) {
     const method = await this.getMethod('getCurrentVersion', Utils.utf8ToHex(serviceType))
-    let hexVersion = await method.call()
+    const hexVersion = await method.call()
     return Utils.hexToUtf8(hexVersion)
   }
 
   async getVersion (serviceType, serviceTypeIndex) {
-    let serviceTypeBytes32 = Utils.utf8ToHex(serviceType)
+    const serviceTypeBytes32 = Utils.utf8ToHex(serviceType)
     const method = await this.getMethod('getVersion', serviceTypeBytes32, serviceTypeIndex)
-    let version = await method.call()
+    const version = await method.call()
     return Utils.hexToUtf8(version)
   }
 

@@ -1,0 +1,194 @@
+#!/usr/bin/env python3.9
+"""Script to help with deployment of audius nodes"""
+
+import argparse
+import os
+import subprocess
+import sys
+
+DEFAULT_PROTOCOL_DIR = os.path.join(os.path.dirname(__file__), "../../")
+PROTOCOL_DIR = os.getenv("PROTOCOL_DIR", DEFAULT_PROTOCOL_DIR)
+
+
+def create_instance(provider, image, disk_size, machine_type, name):
+    """Create instance with provided options"""
+    subprocess.run(
+        [
+            "bash",
+            f"{PROTOCOL_DIR}/service-commands/scripts/create-instance.sh",
+            *(["-p", provider] if provider else []),
+            *(["-i", image] if image else []),
+            *(["-d", disk_size] if disk_size else []),
+            *(["-m", machine_type] if machine_type else []),
+            name,
+        ],
+        check=False,
+    )
+
+
+def setup(
+    provider, service, user, config, fast, protocol_git_ref, client_git_ref, name
+):
+    """Setup a environment suitable for development on a remote machine"""
+    subprocess.run(
+        [
+            "bash",
+            f"{PROTOCOL_DIR}/service-commands/scripts/setup-instance.sh",
+            *(["-p", provider] if provider else []),
+            *(["-u", user] if user else []),
+            *(["-c", config] if config else []),
+            *(["-r", protocol_git_ref] if protocol_git_ref else []),
+            *(["-l", client_git_ref] if client_git_ref else []),
+            *(["-f"] if fast else []),
+            service,
+            name,
+        ],
+        check=False,
+    )
+
+
+def setup_js(options):
+    subprocess.run(
+        [
+            "node",
+            f"{PROTOCOL_DIR}/service-commands/scripts/setup.js",
+            *options,
+        ],
+        check=False,
+    )
+
+
+def seed(options):
+    subprocess.run(
+        [
+            "node",
+            f"{PROTOCOL_DIR}/service-commands/scripts/seed.js",
+            *options,
+        ],
+        check=False,
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser(exit_on_error=False)
+
+    subparser = parser.add_subparsers(
+        title="operations",
+        dest="operation",
+        required=True,
+    )
+
+    parser_create_instance = subparser.add_parser(
+        "create-instance",
+        help="create instance on azure/gcp with specified options",
+    )
+
+    parser_create_instance.add_argument(
+        "--provider",
+        choices=["azure", "gcp"],
+        help="the provider to create the instance on (default: gcp)",
+    )
+
+    parser_create_instance.add_argument(
+        "--image",
+        type=str,
+        help="image to use for creating the instance; use the format project=<project>,(family=<family>|image=<image>) for specifying images on gcp (defaults: UbuntuLTS (azure), project=ubuntu-os-cloud,family=ubuntu-2004-lts (gcp))",
+    )
+
+    parser_create_instance.add_argument(
+        "--disk-size",
+        help="size of disk in gb to use for the instance (default: 256GB)",
+    )
+
+    parser_create_instance.add_argument(
+        "--machine-type",
+        type=str,
+        help="machine type to use for the instance (defaults: Standard_F8s_v2 (azure), n2-custom-12-24576 (gcp))",
+    )
+
+    parser_create_instance.add_argument(
+        "name",
+        help="name to assign to the created instance",
+    )
+
+    parser_setup = subparser.add_parser(
+        "setup",
+        help="setup specified service on a remote machine",
+    )
+
+    parser_setup.add_argument(
+        "--provider",
+        choices=["azure", "gcp"],
+        help="provider on which the remote machine exists (default: gcp)",
+    )
+
+    parser_setup.add_argument(
+        "--user",
+        help="user to login as (default: ubuntu)",
+    )
+
+    parser_setup.add_argument(
+        "--config",
+        help="audius-cli config to use (only used for creator-node and discovery-provider)",
+    )
+
+    parser_setup.add_argument(
+        "--fast",
+        action="store_true",
+        help="expect instance to be using prebaked dev image (only used for remote-dev and only supported on gcp)",
+    )
+
+    parser_setup.add_argument(
+        "--protocol-git-ref",
+        help="git ref to use for audius-protocol (only used for remote-dev) (default: master)",
+    )
+
+    parser_setup.add_argument(
+        "--client-git-ref",
+        help="git ref to use for audius-client (only used for remote-dev) (default: master)",
+    )
+
+    parser_setup.add_argument(
+        "service",
+        choices=["creator-node", "discovery-provider", "remote-dev"],
+        help="service to setup on the remote machine",
+    )
+
+    parser_setup.add_argument(
+        "name",
+        help="name of machine on which to setup the service",
+    )
+
+    try:
+        args = parser.parse_args()
+
+        if args.operation == "create-instance":
+            create_instance(
+                args.provider,
+                args.image,
+                args.disk_size,
+                args.machine_type,
+                args.name,
+            )
+        elif args.operation == "setup":
+            setup(
+                args.provider,
+                args.service,
+                args.user,
+                args.config,
+                args.fast,
+                args.protocol_git_ref,
+                args.client_git_ref,
+                args.name,
+            )
+    except argparse.ArgumentError:
+        if sys.argv[1] == "seed":
+            options = sys.argv[2:]
+            seed(options)
+        else:
+            options = sys.argv[1:]
+            setup_js(options)
+
+
+if __name__ == "__main__":
+    main()

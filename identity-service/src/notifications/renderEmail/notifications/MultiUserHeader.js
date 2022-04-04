@@ -16,7 +16,7 @@ var MAX_USERS = 9;
 var MultiUserHeader = function MultiUserHeader(_ref) {
   var users = _ref.users;
   var hasExtra = users.length > MAX_USERS;
-  return _react["default"].createElement("table", {
+  return /*#__PURE__*/_react["default"].createElement("table", {
     align: "center",
     border: "0",
     width: "100%",
@@ -26,7 +26,7 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
       margin: '0px',
       padding: '0px'
     }
-  }, _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     valign: "top",
     className: "headerNotification",
     height: "100%",
@@ -35,7 +35,7 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
       padding: '0px 0px 12px 0px',
       borderBottom: '1px solid #F2F2F4'
     }
-  }, _react["default"].createElement("table", {
+  }, /*#__PURE__*/_react["default"].createElement("table", {
     align: "center",
     border: "0",
     cellpadding: "0",
@@ -44,10 +44,10 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
       margin: '0px',
       padding: '0px'
     }
-  }, _react["default"].createElement("tr", null, users.slice(0, MAX_USERS).map(function (user) {
-    return _react["default"].createElement("td", {
+  }, /*#__PURE__*/_react["default"].createElement("tr", null, users.slice(0, MAX_USERS).map(function (user) {
+    return /*#__PURE__*/_react["default"].createElement("td", {
       colSpan: "1"
-    }, _react["default"].createElement("img", {
+    }, /*#__PURE__*/_react["default"].createElement("img", {
       src: user.image,
       style: {
         height: '32px',
@@ -58,9 +58,9 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
       alt: user.name,
       title: user.name
     }));
-  }), hasExtra && _react["default"].createElement("td", {
+  }), hasExtra && /*#__PURE__*/_react["default"].createElement("td", {
     colSpan: "1"
-  }, _react["default"].createElement("table", {
+  }, /*#__PURE__*/_react["default"].createElement("table", {
     align: "center",
     border: "0",
     cellpadding: "0",
@@ -75,7 +75,7 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
       borderRadius: '50%',
       border: '1px solid #C2C0CC'
     }
-  }, _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, /*#__PURE__*/_react["default"].createElement("tr", null, /*#__PURE__*/_react["default"].createElement("td", {
     className: 'avenir',
     style: {
       textAlign: 'center',

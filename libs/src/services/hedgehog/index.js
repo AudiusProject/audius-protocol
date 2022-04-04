@@ -10,7 +10,7 @@ class HedgehogWrapper {
   // Therefore, we need to define this.audiusServiceEndpoint, to satisfy all the deps of the
   // requestToAudiusService and make it execute correctly
 
-  constructor (identityService) {
+  constructor (identityService, useLocalStorage = true) {
     this.identityService = identityService
 
     this.getFn = async (obj) => {
@@ -25,15 +25,20 @@ class HedgehogWrapper {
       return this.identityService.setUserFn(obj)
     }
 
-    const hedgehog = new Hedgehog(this.getFn, this.setAuthFn, this.setUserFn)
+    const hedgehog = new Hedgehog(
+      this.getFn,
+      this.setAuthFn,
+      this.setUserFn,
+      useLocalStorage
+    )
 
     // we override the login function here because getFn needs both lookupKey and email
     // in identity service, but hedgehog only sends lookupKey
     hedgehog.login = async (email, password) => {
-      let lookupKey = await WalletManager.createAuthLookupKey(email, password)
+      const lookupKey = await WalletManager.createAuthLookupKey(email, password)
 
       // hedgehog property is called username so being consistent instead of calling it email
-      let data = await this.getFn({ lookupKey: lookupKey, username: email })
+      const data = await this.getFn({ lookupKey: lookupKey, username: email })
 
       if (data && data.iv && data.cipherText) {
         const { walletObj, entropy } = await WalletManager.decryptCipherTextAndRetrieveWallet(
@@ -58,16 +63,20 @@ class HedgehogWrapper {
      * @param {String} username username
      */
     hedgehog.generateRecoveryInfo = async () => {
-      let entropy = await WalletManager.getEntropyFromLocalStorage()
+      const entropy = await WalletManager.getEntropyFromLocalStorage()
       if (entropy === null) {
         throw new Error('generateRecoveryLink - missing entropy')
       }
-      let btoa = window.btoa
-      if (!btoa) {
-        throw new Error('generateRecoveryLink - missing required btoa function')
+      let btoa // binary to base64 ASCII conversion
+      let currentHost
+      if (typeof window !== 'undefined' && window && window.btoa) {
+        btoa = window.btoa
+        currentHost = window.location.origin
+      } else {
+        btoa = str => Buffer.from(str, 'binary').toString('base64')
+        currentHost = 'localhost'
       }
-      let currentHost = window.location.origin
-      let recoveryInfo = {}
+      const recoveryInfo = {}
       recoveryInfo.login = btoa(entropy)
       recoveryInfo.host = currentHost
       return recoveryInfo

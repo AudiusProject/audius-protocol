@@ -1,6 +1,5 @@
 const ContractClient = require('../contracts/ContractClient')
-
-const DEFAULT_GAS_AMOUNT = 200000
+const { Utils } = require('../../utils')
 
 /**
  * Transform a method name and its argument types into a string-composed
@@ -93,7 +92,7 @@ class GovernanceClient extends ContractClient {
       signature,
       callData
     )
-    return this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return this.web3Manager.sendTransaction(method)
   }
 
   async getVotingQuorumPercent () {
@@ -120,7 +119,7 @@ class GovernanceClient extends ContractClient {
       signature,
       callData
     )
-    return this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return this.web3Manager.sendTransaction(method)
   }
 
   async getProposalById (
@@ -147,7 +146,7 @@ class GovernanceClient extends ContractClient {
 
   async getProposals (queryStartBlock = 0) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalSubmitted', {
+    const events = await contract.getPastEvents('ProposalSubmitted', {
       fromBlock: queryStartBlock
     })
     return events.map(this.formatProposalEvent)
@@ -155,7 +154,7 @@ class GovernanceClient extends ContractClient {
 
   async getProposalsForAddresses (addresses, queryStartBlock = 0) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalSubmitted', {
+    const events = await contract.getPastEvents('ProposalSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
         _proposer: addresses
@@ -204,8 +203,7 @@ class GovernanceClient extends ContractClient {
       name,
       description
     )
-    // Increased gas because submitting can be expensive
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
+    const tx = await this.web3Manager.sendTransaction(method)
     if (tx && tx.events && tx.events.ProposalSubmitted && tx.events.ProposalSubmitted.returnValues) {
       const id = tx.events.ProposalSubmitted.returnValues._proposalId
       return id
@@ -222,7 +220,7 @@ class GovernanceClient extends ContractClient {
       proposalId,
       vote
     )
-    await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    await this.web3Manager.sendTransaction(method)
   }
 
   async updateVote ({
@@ -234,7 +232,7 @@ class GovernanceClient extends ContractClient {
       proposalId,
       vote
     )
-    await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    await this.web3Manager.sendTransaction(method)
   }
 
   async evaluateProposalOutcome (
@@ -244,8 +242,7 @@ class GovernanceClient extends ContractClient {
       'evaluateProposalOutcome',
       proposalId
     )
-    // Increase gas because evaluating proposals can be expensive
-    const outcome = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
+    const outcome = await this.web3Manager.sendTransaction(method)
     return outcome
   }
 
@@ -268,10 +265,10 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalVoteSubmitted', {
+    const events = await contract.getPastEvents('ProposalVoteSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
-        proposalId: proposalId
+        _proposalId: proposalId
       }
     })
     return events.map(this.formatVote)
@@ -282,7 +279,7 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalVoteUpdated', {
+    const events = await contract.getPastEvents('ProposalVoteUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         _proposalId: proposalId
@@ -296,7 +293,7 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalVoteSubmitted', {
+    const events = await contract.getPastEvents('ProposalVoteSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
         _voter: addresses
@@ -310,7 +307,7 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalVoteUpdated', {
+    const events = await contract.getPastEvents('ProposalVoteUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         _voter: addresses
@@ -393,6 +390,35 @@ class GovernanceClient extends ContractClient {
       voterStake: this.toBN(event._voterStake),
       blockNumber: voteEvent.blockNumber
     }
+  }
+
+  /**
+   *
+   * @param {Number} proposalId id of the governance proposal
+   * @returns {BN} amount of tokens in wei required to reach quorum
+   */
+  async calculateQuorum (proposalId) {
+    const { submissionBlockNumber } = await this.getProposalById(proposalId)
+
+    // represented as a value > 0, eg 5% is 5
+    const quoroumPercent = await this.getVotingQuorumPercent()
+
+    // retrieve stake at the time of proposal from Staking client
+    const totalStakeAtProposal = await this.stakingProxyClient.totalStakedAt(submissionBlockNumber)
+
+    // quorum = (total staked at proposal * quorum percent) / 100
+    // the divmod function returns an object with both the quotient (div) and the remainder (mod)
+    // { div, mod }
+    const quorumStakeDivMod = (totalStakeAtProposal.mul(Utils.toBN(quoroumPercent))).divmod(Utils.toBN(100))
+
+    let quorumStake = quorumStakeDivMod.div
+
+    // if there's a non-zero remainder, round up
+    if (!quorumStakeDivMod.mod.isZero()) {
+      quorumStake = quorumStakeDivMod.div.add(Utils.toBN(1))
+    }
+
+    return quorumStake
   }
 }
 

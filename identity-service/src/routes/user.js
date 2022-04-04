@@ -1,6 +1,7 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const authMiddleware = require('../authMiddleware')
+const captchaMiddleware = require('../captchaMiddleware')
 
 module.exports = function (app) {
   /**
@@ -8,7 +9,7 @@ module.exports = function (app) {
    * This is one part of a two part route along with POST /authentication
    * The user handle is not written here. that's added in /user/associate
    */
-  app.post('/user', handleResponse(async (req, res, next) => {
+  app.post('/user', captchaMiddleware, handleResponse(async (req, res, next) => {
     // body should contain {username, walletAddress}
     // username is actually email, but hedgehog sends username
     let body = req.body

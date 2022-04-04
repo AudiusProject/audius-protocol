@@ -57,6 +57,24 @@ const config = convict({
     env: 'logLevel',
     default: 'info'
   },
+  tikTokAPIKey: {
+    doc: 'TikTok API key',
+    format: String,
+    env: 'tikTokAPIKey',
+    default: null
+  },
+  tikTokAPISecret: {
+    doc: 'TikTok API Secret',
+    format: String,
+    env: 'tikTokAPISecret',
+    default: null
+  },
+  tikTokAuthOrigin: {
+    doc: 'The CORS allowed origin set on the /tikTok/access_token route',
+    format: String,
+    env: 'tikTokAuthOrigin',
+    default: null
+  },
   twitterAPIKey: {
     doc: 'Twitter API key',
     format: String,
@@ -81,6 +99,18 @@ const config = convict({
     env: 'instagramAPISecret',
     default: null
   },
+  instagramRedirectUrl: {
+    doc: 'Instagram API Redirect url',
+    format: String,
+    env: 'instagramRedirectUrl',
+    default: null
+  },
+  instagramProfileUrl: {
+    doc: 'Instagram profile url',
+    format: String,
+    env: 'instagramProfileUrl',
+    default: 'https://www.instagram.com/%USERNAME%/channel/?__a=1'
+  },
   relayerPrivateKey: {
     doc: 'L2 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
     format: String,
@@ -98,6 +128,12 @@ const config = convict({
     doc: 'L2 Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
     format: 'string-array',
     env: 'relayerWallets',
+    default: null
+  },
+  ethFunderAddress: {
+    doc: 'L1 Relayer Address. The source of the funds when funding wallets. (Only used in balance_check and eth_balance_check to check if enough funds exist)',
+    format: String,
+    env: 'ethFunderAddress',
     default: null
   },
   ethRelayerWallets: {
@@ -150,16 +186,22 @@ const config = convict({
     env: 'rateLimitingTwitterLimit',
     default: null
   },
+  rateLimitingTikTokLimit: {
+    doc: 'TikTok requests per hour rate limit',
+    format: 'nat',
+    env: 'rateLimitingTikTokLimit',
+    default: null
+  },
   rateLimitingListensPerTrackPerHour: {
     doc: 'Listens per track per user per Hour',
     format: 'nat',
     env: 'rateLimitingListensPerTrackPerHour',
     default: null
   },
-  rateLimitingListensPerIPPerHour: {
+  rateLimitingListensPerIPTrackPerHour: {
     doc: 'Listens per track per IP per Hour',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerHour',
+    env: 'rateLimitingListensPerIPTrackPerHour',
     default: null
   },
   rateLimitingListensPerTrackPerDay: {
@@ -168,10 +210,28 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerDay',
     default: null
   },
-  rateLimitingListensPerIPPerDay: {
+  rateLimitingListensPerIPTrackPerDay: {
     doc: 'Listens per track per IP per Day',
     format: 'nat',
+    env: 'rateLimitingListensPerIPTrackPerDay',
+    default: null
+  },
+  rateLimitingListensPerIPPerHour: {
+    doc: 'Listens per IP per Hour',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPPerHour',
+    default: null
+  },
+  rateLimitingListensPerIPPerDay: {
+    doc: 'Listens per IP per Day',
+    format: 'nat',
     env: 'rateLimitingListensPerIPPerDay',
+    default: null
+  },
+  rateLimitingListensPerIPPerWeek: {
+    doc: 'Listens per IP per Week',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPPerWeek',
     default: null
   },
   rateLimitingEthRelaysPerIPPerDay: {
@@ -192,10 +252,10 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerWeek',
     default: null
   },
-  rateLimitingListensPerIPPerWeek: {
+  rateLimitingListensPerIPTrackPerWeek: {
     doc: 'Listens per track per IP per Week',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerWeek',
+    env: 'rateLimitingListensPerIPTrackPerWeek',
     default: null
   },
   rateLimitingListensIPWhitelist: {
@@ -204,10 +264,35 @@ const config = convict({
     env: 'rateLimitingListensIPWhitelist',
     default: null
   },
+  endpointRateLimits: {
+    doc: `A serialized objects of rate limits with the form {
+      <req.path>: {
+        <req.method>:
+          [
+            {
+              expiry: <seconds>,
+              max: <count>
+            },
+            ...
+          ],
+          ...
+        }
+      }
+    `,
+    format: String,
+    env: 'endpointRateLimits',
+    default: '{}'
+  },
   minimumBalance: {
     doc: 'Minimum token balance below which /balance_check fails',
     format: Number,
     env: 'minimumBalance',
+    default: null
+  },
+  minimumRelayerBalance: {
+    doc: 'Minimum token balance for relayer below which /balance_check fails',
+    format: Number,
+    env: 'minimumRelayerBalance',
     default: null
   },
   ethMinimumBalance: {
@@ -215,6 +300,18 @@ const config = convict({
     format: Number,
     env: 'ethMinimumBalance',
     default: 0.5
+  },
+  ethMinimumFunderBalance: {
+    doc: 'Minimum eth balance for funder below which /eth_balance_check fails',
+    format: Number,
+    env: 'ethMinimumFunderBalance',
+    default: 0.5
+  },
+  solMinimumBalance: {
+    doc: 'Minimum SOL balance below which /sol_balance_check fails',
+    format: Number,
+    env: 'solMinimumBalance',
+    default: 1000000000
   },
   mailgunApiKey: {
     doc: 'Mailgun API key used to send emails',
@@ -241,11 +338,11 @@ const config = convict({
     default: 0,
     env: 'notificationStartBlock'
   },
-  notificationDiscoveryProvider: {
-    doc: 'Whitelisted discovery provider to query notifications',
-    format: String,
-    default: 'http://localhost:5000',
-    env: 'notificationDiscoveryProvider'
+  solanaNotificationStartSlot: {
+    doc: 'First slot to start solana notification indexing from',
+    format: Number,
+    default: 0,
+    env: 'solanaNotificationStartSlot'
   },
   ethTokenAddress: {
     doc: 'ethTokenAddress',
@@ -436,6 +533,258 @@ const config = convict({
     format: String,
     env: 'defiPulseApiKey',
     default: ''
+  },
+  ethRelayerProdGasTier: {
+    doc: 'One of averageGweiHex/fastGweiHex/fastestGweiHex',
+    format: String,
+    env: 'ethRelayerProdGasTier',
+    default: 'fastestGweiHex'
+  },
+  scoreSecret: {
+    doc: 'The secret necessary to view user captcha and cognito flow scores',
+    format: String,
+    env: 'scoreSecret',
+    default: 'score_secret'
+  },
+  recaptchaServiceKey: {
+    doc: 'The service key for Google recaptcha v3 API',
+    format: String,
+    env: 'recaptchaServiceKey',
+    default: ''
+  },
+  hCaptchaSecret: {
+    doc: 'The secret for hCaptcha account verification',
+    format: String,
+    env: 'hCaptchaSecret',
+    default: ''
+  },
+  cognitoAPISecret: {
+    doc: 'API Secret for Cognito',
+    format: String,
+    env: 'cognitoAPISecret',
+    default: ''
+  },
+  cognitoAPIKey: {
+    doc: 'API Key for Cognito',
+    format: String,
+    env: 'cognitoAPIKey',
+    default: ''
+  },
+  cognitoBaseUrl: {
+    doc: 'Base URL for Cognito API',
+    format: String,
+    env: 'cognitoBaseUrl',
+    default: ''
+  },
+  cognitoTemplateId: {
+    doc: 'Template for using Cognito Flow API',
+    format: String,
+    env: 'cognitoTemplateId',
+    default: ''
+  },
+  solanaEndpoint: {
+    doc: 'The Solana RPC endpoint to make requests against',
+    format: String,
+    env: 'solanaEndpoint',
+    default: null
+  },
+  solanaTrackListenCountAddress: {
+    doc: 'solanaTrackListenCountAddress',
+    format: String,
+    default: '',
+    env: 'solanaTrackListenCountAddress'
+  },
+  solanaAudiusEthRegistryAddress: {
+    doc: 'solanaAudiusEthRegistryAddress',
+    format: String,
+    default: '',
+    env: 'solanaAudiusEthRegistryAddress'
+  },
+  solanaValidSigner: {
+    doc: 'solanaValidSigner',
+    format: String,
+    default: '',
+    env: 'solanaValidSigner'
+  },
+  solanaFeePayerWallets: {
+    doc: 'solanaFeePayerWallets - Stringified array like[{ privateKey: [] },...]',
+    format: 'string-array',
+    default: [],
+    env: 'solanaFeePayerWallets'
+  },
+  solanaSignerPrivateKey: {
+    doc: 'solanaSignerPrivateKey',
+    format: String,
+    default: '',
+    env: 'solanaSignerPrivateKey'
+  },
+  solanaTxCommitmentLevel: {
+    doc: 'solanaTxCommitmentLevel',
+    format: String,
+    default: 'processed',
+    env: 'solanaTxCommitmentLevel'
+  },
+  solanaMintAddress: {
+    doc: 'The address of our SPL token',
+    format: String,
+    default: '',
+    env: 'solanaMintAddress'
+  },
+  solanaClaimableTokenProgramAddress: {
+    doc: 'The address of our Claimable Token program',
+    format: String,
+    default: '',
+    env: 'solanaClaimableTokenProgramAddress'
+  },
+  solanaRewardsManagerProgramId: {
+    doc: 'The address of our Rewards Manager program',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerProgramId'
+  },
+  solanaRewardsManagerProgramPDA: {
+    doc: 'The PDA of this Rewards Manager deployment',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerProgramPDA'
+  },
+  solanaRewardsManagerTokenPDA: {
+    doc: 'The PDA for the Rewards Manager token account',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerTokenPDA'
+  },
+  solanaConfirmationTimeout: {
+    doc: 'The timeout used to send solana transactions through solanaWeb3 connection in ms',
+    format: Number,
+    default: '60000',
+    env: 'solanaConfirmationTimeout'
+  },
+  rewardsQuorumSize: {
+    doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
+    format: Number,
+    default: '2',
+    env: 'rewardsQuorumSize'
+  },
+  aaoEndpoint: {
+    doc: 'AAO Endpoint for fetching attestations',
+    format: String,
+    default: 'http://anti-abuse-oracle_anti_abuse_oracle_1:8000',
+    env: 'aaoEndpoint'
+  },
+  aaoAddress: {
+    doc: 'AAO eth address',
+    format: String,
+    default: '',
+    env: 'aaoAddress'
+  },
+  sentryDSN: {
+    doc: 'Sentry DSN key',
+    format: String,
+    env: 'sentryDSN',
+    default: ''
+  },
+  ethGasMultiplier: {
+    doc: 'Constant value to multiply the configured FAST gas price by - in order to optimize tx success',
+    format: Number,
+    env: 'ethGasMultiplier',
+    default: 1.2
+  },
+  optimizelySdkKey: {
+    doc: 'Optimizely SDK key to use to fetch remote configuration',
+    format: String,
+    env: 'optimizelySdkKey',
+    default: 'MX4fYBgANQetvmBXGpuxzF'
+  },
+  discoveryProviderWhitelist: {
+    doc: 'Whitelisted discovery providers to select from (comma-separated)',
+    format: String,
+    env: 'discoveryProviderWhitelist',
+    default: ''
+  },
+  clusterForkProcessCount: {
+    doc: 'The number of express server processes to initialize in the this app "cluster"',
+    format: Number,
+    env: 'clusterForkProcessCount',
+    default: 1
+  },
+  minSolanaNotificationSlot: {
+    doc: 'The slot number to start indexing if no slots defined',
+    format: Number,
+    env: 'minSolanaNotificationSlot',
+    default: 105400000
+  },
+  successAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for success in audio / rewards events',
+    format: String,
+    env: 'successAudioReporterSlackUrl',
+    default: ''
+  },
+  errorAudioReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in audio / rewards events',
+    format: String,
+    env: 'errorAudioReporterSlackUrl',
+    default: ''
+  },
+  errorWormholeReporterSlackUrl: {
+    doc: 'The slack url to post messages for errors in wormhole transfers',
+    format: String,
+    env: 'errorWormholeReporterSlackUrl',
+    default: ''
+  },
+  wormholeRPCHosts: {
+    doc: 'Wormhole RPC Host',
+    format: String,
+    env: 'wormholeRPCHosts',
+    default: ''
+  },
+  solBridgeAddress: {
+    doc: 'Sol bridge address for wormhole',
+    format: String,
+    env: 'solBridgeAddress',
+    default: ''
+  },
+  solTokenBridgeAddress: {
+    doc: 'Sol token bridge address for wormhole',
+    format: String,
+    env: 'solTokenBridgeAddress',
+    default: ''
+  },
+  ethBridgeAddress: {
+    doc: 'Eth bridge address for wormhole',
+    format: String,
+    env: 'ethBridgeAddress',
+    default: ''
+  },
+  ethTokenBridgeAddress: {
+    doc: 'Eth token bridge address for wormhole',
+    format: String,
+    env: 'ethTokenBridgeAddress',
+    default: ''
+  },
+  websiteHost: {
+    doc: 'Audius website host',
+    format: String,
+    env: 'websiteHost',
+    default: 'https://audius.co'
+  },
+  amplitudeAPIKey: {
+    doc: 'Amplitude API key',
+    format: String,
+    env: 'amplitudeAPIKey',
+    default: ''
+  },
+  cognitoIdentityHashSalt: {
+    doc: 'Hash salt',
+    format: String,
+    env: 'cognitoIdentityHashSalt',
+    default: ''
+  },
+  cognitoRetrySecret: {
+    doc: 'The secret necessary to request a retry for the cognito flow',
+    format: String,
+    env: 'cognitoRetrySecret',
+    default: ''
   }
 })
 
@@ -454,6 +803,32 @@ if (fs.existsSync('eth-contract-config.json')) {
     ethRegistryAddress: ethContractConfig.registryAddress,
     ethOwnerWallet: ethContractConfig.ownerWallet,
     ethWallets: ethContractConfig.allWallets
+  })
+}
+
+if (fs.existsSync('solana-program-config.json')) {
+  let solanaContractConfig = require('../solana-program-config.json')
+  config.load({
+    solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
+    solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
+    solanaValidSigner: solanaContractConfig.validSigner,
+    solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
+    solanaEndpoint: solanaContractConfig.endpoint,
+    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
+
+    solanaMintAddress: solanaContractConfig.splToken,
+    solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
+    solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
+    solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
+    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount
+  })
+}
+
+if (fs.existsSync('aao-config.json')) {
+  let aaoConfig = require('../aao-config.json')
+  console.log('rewards: ' + JSON.stringify(aaoConfig))
+  config.load({
+    aaoAddress: aaoConfig[0]
   })
 }
 

@@ -14,36 +14,29 @@ def get_previously_private_playlists(args):
         date = args.get("date")
 
         playlist_after_date = (
-            session.query(
-                Playlist.playlist_id,
-                Playlist.updated_at
-            ).distinct(
-                Playlist.playlist_id
-            ).filter(
-                Playlist.is_private == False,
-                Playlist.updated_at >= date
-            ).subquery()
+            session.query(Playlist.playlist_id, Playlist.updated_at)
+            .distinct(Playlist.playlist_id)
+            .filter(Playlist.is_private == False, Playlist.updated_at >= date)
+            .subquery()
         )
 
         playlist_before_date = (
-            session.query(
-                Playlist.playlist_id,
-                Playlist.updated_at
-            ).distinct(
-                Playlist.playlist_id
-            ).filter(
-                Playlist.is_private == True,
-                Playlist.updated_at < date
-            ).subquery()
+            session.query(Playlist.playlist_id, Playlist.updated_at)
+            .distinct(Playlist.playlist_id)
+            .filter(Playlist.is_private == True, Playlist.updated_at < date)
+            .subquery()
         )
 
-        previously_private_results = session.query(
-            playlist_before_date.c['playlist_id']
-        ).join(
-            playlist_after_date,
-            playlist_after_date.c['playlist_id'] == playlist_before_date.c['playlist_id'],
-        ).all()
+        previously_private_results = (
+            session.query(playlist_before_date.c["playlist_id"])
+            .join(
+                playlist_after_date,
+                playlist_after_date.c["playlist_id"]
+                == playlist_before_date.c["playlist_id"],
+            )
+            .all()
+        )
 
         playlist_ids = [result[0] for result in previously_private_results]
 
-    return {'ids': playlist_ids}
+    return {"ids": playlist_ids}

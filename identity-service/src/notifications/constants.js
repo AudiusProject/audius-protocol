@@ -25,7 +25,10 @@ const notificationTypes = Object.freeze({
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
   MilestoneListen: 'MilestoneListen',
-  Announcement: 'Announcement'
+  Announcement: 'Announcement',
+  TrendingTrack: 'TrendingTrack',
+  ChallengeReward: 'ChallengeReward',
+  PlaylistUpdate: 'PlaylistUpdate'
 })
 
 const actionEntityTypes = Object.freeze({
@@ -38,7 +41,10 @@ const actionEntityTypes = Object.freeze({
 const dayInHours = 24
 const weekInHours = 168
 const notificationJobType = 'notificationProcessJob'
+const solanaNotificationJobType = 'solanaNotificationProcessJob'
 const announcementJobType = 'pushAnnouncementsJob'
+const unreadEmailJobType = 'unreadEmailJob'
+const downloadEmailJobType = 'downloadEmailJobType'
 
 const deviceType = Object.freeze({
   Mobile: 'mobile',
@@ -51,6 +57,9 @@ module.exports = {
   dayInHours,
   weekInHours,
   notificationJobType,
+  solanaNotificationJobType,
   announcementJobType,
+  unreadEmailJobType,
+  downloadEmailJobType,
   deviceType
 }

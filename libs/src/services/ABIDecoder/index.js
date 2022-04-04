@@ -1,5 +1,5 @@
 const abiDecoder = require('abi-decoder')
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 const abiMap = {}
 
@@ -16,6 +16,7 @@ loadABI('DiscoveryProviderFactory.json')
 loadABI('SocialFeatureFactory.json')
 loadABI('PlaylistFactory.json')
 loadABI('UserLibraryFactory.json')
+loadABI('UserReplicaSetManager.json')
 
 class AudiusABIDecoder {
   static decodeMethod (contractName, encodedABI) {

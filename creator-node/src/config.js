@@ -1,13 +1,17 @@
 const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
+const process = require('process')
+const path = require('path')
+
+// can't import logger here due to possible circular dependency, use console
 
 // Custom boolean format used to ensure that empty string '' is evaluated as false
 // https://github.com/mozilla/node-convict/issues/380
 convict.addFormat({
   name: 'BooleanCustom',
   validate: function (val) {
-    return (typeof val === 'boolean') || (typeof val === 'string')
+    return typeof val === 'boolean' || typeof val === 'string'
   },
   coerce: function (val) {
     return val === true || val === 'true'
@@ -22,6 +26,12 @@ const config = convict({
     env: 'dbUrl',
     default: null
   },
+  dbConnectionPoolMax: {
+    doc: 'Max connections in database pool',
+    format: 'nat',
+    env: 'dbConnectionPoolMax',
+    default: 100
+  },
   ipfsHost: {
     doc: 'IPFS host address',
     format: String,
@@ -33,18 +43,6 @@ const config = convict({
     format: 'port',
     env: 'ipfsPort',
     default: null
-  },
-  ipfsClusterIP: {
-    doc: 'The IP address of the node in the kube cluster running ipfs to expose it so outside nodes can peer into it',
-    format: 'ipaddress',
-    env: 'ipfsClusterIP',
-    default: '127.0.0.1' // somewhat of a hack because convict requires non-null values, will check for this value when used
-  },
-  ipfsClusterPort: {
-    doc: 'The port of the node in the kube cluster running ipfs to expose it so outside nodes can peer into it',
-    format: 'port',
-    env: 'ipfsClusterPort',
-    default: 0
   },
   storagePath: {
     doc: 'File system path to store raw files that are uploaded',
@@ -63,18 +61,38 @@ const config = convict({
     format: Array,
     env: 'allowedUploadFileExtensions',
     default: [
-      'mp2', 'mp3', 'mpga',
-      'mp4', 'm4a', 'm4p', 'm4b', 'm4r', 'm4v',
-      'wav', 'wave',
+      'mp2',
+      'mp3',
+      'mpga',
+      'mp4',
+      'm4a',
+      'm4p',
+      'm4b',
+      'm4r',
+      'm4v',
+      'wav',
+      'wave',
       'flac',
-      'aif', 'aiff', 'aifc',
-      'ogg', 'ogv', 'oga', 'ogx', 'ogm', 'spx', 'opus',
-      '3gp', 'aac',
-      'amr', '3ga',
+      'aif',
+      'aiff',
+      'aifc',
+      'ogg',
+      'ogv',
+      'oga',
+      'ogx',
+      'ogm',
+      'spx',
+      'opus',
+      '3gp',
+      'aac',
+      'amr',
+      '3ga',
       'awb',
       'xwma',
       'webm',
-      'ts', 'tsv', 'tsa'
+      'ts',
+      'tsv',
+      'tsa'
     ]
   },
   redisPort: {
@@ -95,7 +113,7 @@ const config = convict({
       https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_settimeout_msecs_callback
     `,
     format: 'nat',
-    env: 'timeout',
+    env: 'setTimeout',
     default: 60 * 60 * 1000 // 1 hour
   },
   timeout: {
@@ -131,6 +149,29 @@ const config = convict({
     env: 'logLevel',
     default: null
   },
+
+  /**
+   * Rate limit configs
+   */
+  endpointRateLimits: {
+    doc: `A serialized objects of rate limits with the form {
+      <req.path>: {
+        <req.method>:
+          [
+            {
+              expiry: <seconds>,
+              max: <count>
+            },
+            ...
+          ],
+          ...
+        }
+      }
+    `,
+    format: String,
+    env: 'endpointRateLimits',
+    default: '{}'
+  },
   rateLimitingAudiusUserReqLimit: {
     doc: 'Total requests per hour rate limit for /audius_user routes',
     format: 'nat',
@@ -161,6 +202,19 @@ const config = convict({
     env: 'rateLimitingTrackReqLimit',
     default: null
   },
+  rateLimitingBatchCidsExistLimit: {
+    doc: 'Total requests per hour rate limit for /track routes',
+    format: 'nat',
+    env: 'rateLimitingBatchCidsExistLimit',
+    default: null
+  },
+  URSMRequestForSignatureReqLimit: {
+    doc: 'Total requests per hour rate limit for /ursm_request_for_signature route',
+    format: 'nat',
+    env: 'URSMRequestForSignatureReqLimit',
+    default: null
+  },
+
   maxAudioFileSizeBytes: {
     doc: 'Maximum file size for audio file uploads in bytes',
     format: 'nat',
@@ -251,6 +305,13 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
+  // `env` property is not defined as this should never be passed in as an envvar and should only be set programatically
+  isRegisteredOnURSM: {
+    doc: 'boolean indicating whether or not node has been registered on dataContracts UserReplicaSetManager contract (URSM)',
+    format: Boolean,
+    default: false
+  },
+
   spID: {
     doc: 'ID of creator node in ethContracts ServiceProviderFactory',
     format: Number,
@@ -305,29 +366,11 @@ const config = convict({
     env: 'spOwnerWalletIndex',
     default: 0
   },
-  isUserMetadataNode: {
-    doc: 'Flag indicating whether to run this node for user metadata (non creators) only',
-    format: Boolean,
-    env: 'isUserMetadataNode',
-    default: false
-  },
   isReadOnlyMode: {
     doc: 'Flag indicating whether to run this node in read only mode (no writes)',
     format: Boolean,
     env: 'isReadOnlyMode',
     default: false
-  },
-  userMetadataNodeUrl: {
-    doc: 'address for user metadata node',
-    format: String,
-    env: 'userMetadataNodeUrl',
-    default: ''
-  },
-  debounceTime: {
-    doc: 'sync debounce time',
-    format: 'nat',
-    env: 'debounceTime',
-    default: 30000 // 30000ms = 30s
   },
   dataRegistryAddress: {
     doc: 'data contracts registry address',
@@ -353,12 +396,17 @@ const config = convict({
     env: 'creatorNodeEndpoint',
     default: null
   },
-  // Service selection
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
     format: String,
     env: 'discoveryProviderWhitelist',
     default: ''
+  },
+  discoveryNodeUnhealthyBlockDiff: {
+    doc: 'Number of missed blocks after which a discovery node would be considered unhealthy',
+    format: 'nat',
+    env: 'discoveryNodeUnhealthyBlockDiff',
+    default: 500
   },
   identityService: {
     doc: 'Identity service endpoint to record creator-node driven plays against',
@@ -372,20 +420,231 @@ const config = convict({
     env: 'creatorNodeIsDebug',
     default: false
   },
-  rehydrateMaxConcurrency: {
-    doc: 'Number of concurrent rehydrate queue tasks running',
+  snapbackHighestReconfigMode: {
+    doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
+    format: String,
+    env: 'snapbackHighestReconfigMode',
+    default: 'RECONFIG_DISABLED'
+  },
+  devMode: {
+    doc: 'Used to differentiate production vs dev mode for node',
+    format: 'BooleanCustom',
+    env: 'devMode',
+    default: false
+  },
+  maxStorageUsedPercent: {
+    doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
     format: 'nat',
-    env: 'rehydrateMaxConcurrency',
+    env: 'maxStorageUsedPercent',
+    default: 95
+  },
+  pinAddCIDs: {
+    doc: 'Array of comma separated CIDs to pin',
+    format: String,
+    env: 'pinAddCIDs',
+    default: ''
+  },
+  cidWhitelist: {
+    doc: 'Array of comma separated CIDs to whitelist. Takes precedent over blacklist',
+    format: String,
+    env: 'cidWhitelist',
+    default: ''
+  },
+
+  /** sync / snapback configs */
+
+  debounceTime: {
+    doc: 'sync debounce time in ms',
+    format: 'nat',
+    env: 'debounceTime',
+    default: 0 // 0ms
+  },
+  maxExportClockValueRange: {
+    doc: 'Maximum range of clock values to export at once to prevent process OOM',
+    format: Number,
+    env: 'maxExportClockValueRange',
+    default: 10000
+  },
+  nodeSyncFileSaveMaxConcurrency: {
+    doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
+    format: 'nat',
+    env: 'nodeSyncFileSaveMaxConcurrency',
     default: 10
   },
-  snapbackDevModeEnabled: {
-    doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
-    format: 'BooleanCustom',
-    env: 'snapbackDevModeEnabled',
+  syncQueueMaxConcurrency: {
+    doc: 'Max concurrency of SyncQueue',
+    format: 'nat',
+    env: 'syncQueueMaxConcurrency',
+    default: 50
+  },
+  issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
+    doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
+    format: 'nat',
+    env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
+    default: 5000 // 5000ms = 5s (prod default)
+  },
+  enforceWriteQuorum: {
+    doc: 'Boolean flag indicating whether or not primary should reject write on 2/3 replication across replica set',
+    format: Boolean,
+    env: 'enforceWriteQuorum',
     default: false
+  },
+  manualSyncsDisabled: {
+    doc: 'Disables issuing of manual syncs in order to test SnapbackSM Recurring Sync logic.',
+    format: 'BooleanCustom',
+    env: 'manualSyncsDisabled',
+    default: false
+  },
+  snapbackModuloBase: {
+    doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
+    format: 'nat',
+    env: 'snapbackModuloBase',
+    default: 24
+  },
+  snapbackJobInterval: {
+    doc: 'Interval [ms] that snapbackSM jobs are fired; 1 hour',
+    format: 'nat',
+    env: 'snapbackJobInterval',
+    default: 3600000
+  },
+  maxManualRequestSyncJobConcurrency: {
+    doc: 'Max bull queue concurrency for manual sync request jobs',
+    format: 'nat',
+    env: 'maxManualRequestSyncJobConcurrency',
+    default: 15
+  },
+  maxRecurringRequestSyncJobConcurrency: {
+    doc: 'Max bull queue concurrency for recurring sync request jobs',
+    format: 'nat',
+    env: 'maxRecurringRequestSyncJobConcurrency',
+    default: 5
+  },
+  peerHealthCheckRequestTimeout: {
+    doc: 'Timeout [ms] for checking health check route',
+    format: 'nat',
+    env: 'peerHealthCheckRequestTimeout',
+    default: 2000
+  },
+  minimumStoragePathSize: {
+    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set; 100gb',
+    format: 'nat',
+    env: 'minimumStoragePathSize',
+    default: 100000000000
+  },
+  minimumMemoryAvailable: {
+    doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
+    format: 'nat',
+    env: 'minimumMemoryAvailable',
+    default: 2000000000
+  },
+  maxFileDescriptorsAllocatedPercentage: {
+    doc: 'Max file descriptors allocated percentage on node to be a viable option in peer set',
+    format: 'nat',
+    env: 'maxFileDescriptorsAllocatedPercentage',
+    default: 95
+  },
+  minimumDailySyncCount: {
+    doc: 'Minimum count of daily syncs that need to have occurred to consider daily sync history',
+    format: 'nat',
+    env: 'minimumDailySyncCount',
+    default: 50
+  },
+  minimumRollingSyncCount: {
+    doc: 'Minimum count of rolling syncs that need to have occurred to consider rolling sync history',
+    format: 'nat',
+    env: 'minimumRollingSyncCount',
+    default: 5000
+  },
+  minimumSuccessfulSyncCountPercentage: {
+    doc: 'Minimum percentage of failed syncs to be considered healthy in peer health computation',
+    format: 'nat',
+    env: 'minimumSuccessfulSyncCountPercentage',
+    // TODO: Update to higher percentage when higher threshold of syncs are passing
+    default: 0
+  },
+  minimumSecondaryUserSyncSuccessPercent: {
+    doc: 'Minimum percent of successful Syncs for a user on a secondary for the secondary to be considered healthy for that user. Ensures that a single failure will not cycle out secondary.',
+    format: 'nat',
+    env: 'minimumSecondaryUserSyncSuccessPercent',
+    default: 50
+  },
+  minimumFailedSyncRequestsBeforeReconfig: {
+    doc: '[on Primary] Minimum number of failed SyncRequests from Primary before it cycles Secondary out of replica set',
+    format: 'nat',
+    env: 'minimumFailedSyncRequestsBeforeReconfig',
+    default: 20
+  },
+  maxNumberSecondsPrimaryRemainsUnhealthy: {
+    doc: 'The max number of seconds since first failed health check that a primary can still be marked as healthy',
+    format: 'nat',
+    env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
+    // 24 hours in seconds
+    default: 86400
+  },
+  secondaryUserSyncDailyFailureCountThreshold: {
+    doc: 'Max number of sync failures for a secondary for a user per day before stopping further SyncRequest issuance',
+    format: 'nat',
+    env: 'secondaryUserSyncDailyFailureCountThreshold',
+    default: 20
+  },
+  maxSyncMonitoringDurationInMs: {
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion',
+    format: 'nat',
+    env: 'maxSyncMonitoringDurationInMs',
+    default: 300000 // 5min (prod default)
+  },
+  syncRequestMaxUserFailureCountBeforeSkip: {
+    doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
+    format: 'nat',
+    env: 'syncRequestMaxUserFailureCountBeforeSkip',
+    default: 10
+  },
+  skippedCIDsRetryQueueJobIntervalMs: {
+    doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',
+    format: 'nat',
+    env: 'skippedCIDsRetryQueueJobIntervalMs',
+    default: 3600000 // 1hr in ms
+  },
+  skippedCIDRetryQueueMaxAgeHr: {
+    doc: 'Max age (hours) of skipped CIDs to retry in SkippedCIDsRetryQueue',
+    format: 'nat',
+    env: 'skippedCIDRetryQueueMaxAgeHr',
+    default: 8760 // 1 year in hrs
+  },
+  openRestyCacheCIDEnabled: {
+    doc: 'Flag to enable or disable OpenResty',
+    format: 'BooleanCustom',
+    env: 'openRestyCacheCIDEnabled',
+    default: false
+  },
+  minimumTranscodingSlotsAvailable: {
+    doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',
+    format: 'nat',
+    env: 'minimumTranscodingSlotsAvailable',
+    default: 1
+  },
+  trustedNotifierID: {
+    doc: 'To select a trusted notifier, set to a value >= 1 corresponding to the index of the notifier on chain. 0 means no trusted notifier selected and self manage notifications',
+    format: 'nat',
+    env: 'trustedNotifierID',
+    default: 1
+  },
+  nodeOperatorEmailAddress: {
+    doc: 'Email address for the node operator where they will respond in a timely manner. Must be defined if trustedNotifierID is set to 0',
+    format: String,
+    env: 'nodeOperatorEmailAddress',
+    default: ''
+  },
+  maxBatchClockStatusBatchSize: {
+    doc: 'Maximum number of wallets the /users/batch_clock_status route will accept at one time',
+    format: 'nat',
+    env: 'maxBatchClockStatusBatchSize',
+    default: 5000
   }
+  /**
+   * unsupported options at the moment
+   */
 
-  // unsupported options at the moment
   // awsBucket: {
   //   doc: 'AWS S3 bucket to upload files to',
   //   format: String,
@@ -411,24 +670,26 @@ const config = convict({
  * So if registryAddress or ownerWallet env variables are defined, they take precendence.
  */
 
+const pathTo = (fileName) => path.join(process.cwd(), fileName)
+
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
-if (fs.existsSync('eth-contract-config.json')) {
-  let ethContractConfig = require('../eth-contract-config.json')
+if (fs.existsSync(pathTo('eth-contract-config.json'))) {
+  const ethContractConfig = require(pathTo('eth-contract-config.json'))
   config.load({
-    'ethTokenAddress': ethContractConfig.audiusTokenAddress,
-    'ethRegistryAddress': ethContractConfig.registryAddress,
-    'ethOwnerWallet': ethContractConfig.ownerWallet,
-    'ethWallets': ethContractConfig.allWallets
+    ethTokenAddress: ethContractConfig.audiusTokenAddress,
+    ethRegistryAddress: ethContractConfig.registryAddress,
+    ethOwnerWallet: ethContractConfig.ownerWallet,
+    ethWallets: ethContractConfig.allWallets
   })
 }
 
-if (fs.existsSync('contract-config.json')) {
-  const dataContractConfig = require('../contract-config.json')
+if (fs.existsSync(pathTo('contract-config.json'))) {
+  const dataContractConfig = require(pathTo('contract-config.json'))
   config.load({
-    'dataRegistryAddress': dataContractConfig.registryAddress
+    dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
 
@@ -437,13 +698,19 @@ config.validate()
 
 // Retrieves and populates IP info configs
 const asyncConfig = async () => {
-  const ipinfo = await axios.get('https://ipinfo.io')
-  const country = ipinfo.data.country
-  const [lat, long] = ipinfo.data.loc.split(',')
+  try {
+    const ipinfo = await axios.get('https://ipinfo.io')
+    const country = ipinfo.data.country
+    const [lat, long] = ipinfo.data.loc.split(',')
 
-  if (!config.get('serviceCountry')) config.set('serviceCountry', country)
-  if (!config.get('serviceLatitude')) config.set('serviceLatitude', lat)
-  if (!config.get('serviceLongitude')) config.set('serviceLongitude', long)
+    if (!config.get('serviceCountry')) config.set('serviceCountry', country)
+    if (!config.get('serviceLatitude')) config.set('serviceLatitude', lat)
+    if (!config.get('serviceLongitude')) config.set('serviceLongitude', long)
+  } catch (e) {
+    console.error(
+      `config.js:asyncConfig(): Failed to retrieve IP info || ${e.message}`
+    )
+  }
 }
 
 config.asyncConfig = asyncConfig

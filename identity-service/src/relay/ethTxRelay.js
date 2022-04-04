@@ -2,19 +2,18 @@ const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
 const axios = require('axios')
 const config = require('../config')
-const ethRelayerConfigs = config.get('ethRelayerWallets')
 const { ethWeb3 } = require('../web3')
 const { logger } = require('../logging')
+const { Lock } = require('../redis')
 
 const ENVIRONMENT = config.get('environment')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 
 // L1 relayer wallets
-let ethRelayerWallets = [...ethRelayerConfigs] // will be array of { locked, publicKey, privateKey }
-ethRelayerWallets.forEach(wallet => {
-  wallet.locked = false
-})
+const ethRelayerWallets = config.get('ethRelayerWallets') // { publicKey, privateKey }
+
+const generateETHWalletLockKey = (publicKey) => `ETH_RELAYER_WALLET:${publicKey}`
 
 async function delay (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -38,15 +37,16 @@ const getEthRelayerFunds = async (walletPublicKey) => {
 }
 
 const selectEthWallet = async (walletPublicKey, reqLogger) => {
-  reqLogger.info(`Acquiring lock for ${walletPublicKey}`)
-  let ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
-  while (ethRelayerWallets[ethWalletIndex].locked) {
+  reqLogger.info(`L1 txRelay - Acquiring lock for ${walletPublicKey}`)
+  const ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
+  const selectedRelayerWallet = ethRelayerWallets[ethWalletIndex]
+
+  while ((await Lock.setLock(generateETHWalletLockKey(selectedRelayerWallet.publicKey))) !== true) {
     await delay(200)
   }
-  ethRelayerWallets[ethWalletIndex].locked = true
-  reqLogger.info(`Locking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
+  reqLogger.info(`L1 txRelay - Locking ${selectedRelayerWallet.publicKey}, index=${ethWalletIndex}}`)
   return {
-    selectedEthRelayerWallet: ethRelayerWallets[ethWalletIndex],
+    selectedEthRelayerWallet: selectedRelayerWallet,
     ethWalletIndex
   }
 }
@@ -66,7 +66,9 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
 
   // Select the 'fast' gas price
-  let ethRelayGasPrice = ethGasPriceInfo.averageGweiHex
+  let ethRelayGasPrice = ethGasPriceInfo[config.get('ethRelayerProdGasTier')]
+  ethRelayGasPrice = ethRelayGasPrice * parseFloat(config.get('ethGasMultiplier'))
+
   let resp
   try {
     resp = await createAndSendEthTransaction(
@@ -88,11 +90,23 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   } finally {
     req.logger.info(`L1 txRelay - Unlocking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
     // Unlock wallet
-    ethRelayerWallets[ethWalletIndex].locked = false
+    await Lock.clearLock(generateETHWalletLockKey(ethRelayerWallets[ethWalletIndex].publicKey))
   }
 
   req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
   return resp
+}
+
+const estimateEthTransactionGas = async (senderAddress, to, data) => {
+  const ethWalletIndex = getEthRelayerWalletIndex(senderAddress)
+  const selectedRelayerWallet = ethRelayerWallets[ethWalletIndex]
+  const toChecksumAddress = ethWeb3.utils.toChecksumAddress
+  const estimatedGas = await ethWeb3.eth.estimateGas({
+    from: toChecksumAddress(selectedRelayerWallet.publicKey),
+    to: toChecksumAddress(to),
+    data
+  })
+  return estimatedGas
 }
 
 const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, gasLimit = null, data = null) => {
@@ -110,7 +124,7 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }
-  logger.info(`Final params: ${JSON.stringify(txParams)}`)
+  logger.info(`L1 txRelay - Final params: ${JSON.stringify(txParams)}`)
   if (data) {
     txParams = { ...txParams, data }
   }
@@ -131,7 +145,8 @@ const getProdGasInfo = async (redis, logger) => {
   if (ENVIRONMENT === 'development') {
     return {
       fastGweiHex: GANACHE_GAS_PRICE,
-      averageGweiHex: GANACHE_GAS_PRICE
+      averageGweiHex: GANACHE_GAS_PRICE,
+      fastestGweiHex: GANACHE_GAS_PRICE
     }
   }
   const prodGasPriceKey = 'eth-gas-prod-price-info'
@@ -202,9 +217,11 @@ const fundEthRelayerIfEmpty = async () => {
 }
 
 module.exports = {
+  estimateEthTransactionGas,
   fundEthRelayerIfEmpty,
   sendEthTransaction,
   queryEthRelayerWallet,
   getEthRelayerFunds,
-  getProdGasInfo
+  getProdGasInfo,
+  generateETHWalletLockKey
 }

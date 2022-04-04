@@ -1,6 +1,7 @@
-const { ipfs } = require('../src/ipfsClient')
+const fileHasher = require('../src/fileHasher')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
+const DiskManager = require('../src/diskManager')
 
 const fs = require('fs')
 const path = require('path')
@@ -11,12 +12,7 @@ const assert = require('assert')
 const imageTestDir = 'resizeImageAssets'
 const imageBuffer = fs.readFileSync(path.join(__dirname, imageTestDir, 'audiusDj.png'))
 
-// Will need a '.' in front of storagePath to look at current dir
-// a '/' will search the root dir
 let storagePath = config.get('storagePath')
-if (storagePath.startsWith('/')) {
-  storagePath = '.' + storagePath
-}
 
 // CIDs for audiusDj.png
 const DIR_CID_SQUARE = 'QmNfiyESzN4rNQikeHUiF4HBfAEKF38DTo1JtiDMukqwE9'
@@ -64,12 +60,12 @@ describe('test resizeImage', () => {
   })
 
   /**
-   * Given: we are adding the successfully resized images to ipfs
-   * When: adding to ipfs fails
+   * Given: we are generating multihashes for successfully resized images
+   * When: generating the multihashes fails
    * Then: an error is thrown
    */
-  it('should throw error if ipfs is down', async () => {
-    sinon.stub(ipfs, 'add').throws(new Error('ipfs is down!'))
+  it('should not throw if generating CID fails', async () => {
+    sinon.stub(fileHasher, 'generateImageMultihashes').throws(new Error('generateImageMultihashes failed!'))
     const job = {
       data: {
         file: imageBuffer,
@@ -87,10 +83,8 @@ describe('test resizeImage', () => {
 
     try {
       await resizeImageJob(job)
-      assert.fail('Should not have passed if ipfs is down')
     } catch (e) {
-      console.error(e)
-      assert.deepStrictEqual(e.message, 'ipfs is down!')
+      assert.ok(e.message.includes('generateImageMultihashes failed!'))
     }
   })
 
@@ -156,7 +150,7 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = path.join(storagePath, DIR_CID_SQUARE)
+    const dirPath = DiskManager.computeFilePath(DIR_CID_SQUARE)
     assert.ok(fs.existsSync(dirPath))
 
     const dirContentCIDs = new Set([CID_150, CID_480, CID_1000, CID_ORIGINAL])
@@ -182,56 +176,6 @@ describe('test resizeImage', () => {
         // Remove from set to test that only unique files are added
         dirContentCIDs.delete(file)
       })
-    })
-  })
-
-  /**
-   * Given: we have successfully created the resized images to add to ipfs
-   * When: we add the resized images to ipfs
-   * Then: we ensure that what is added to fs is the same as what is added to ipfs
-   */
-  it('should be properly added to ipfs (square)', async () => {
-    const job = {
-      data: {
-        file: imageBuffer,
-        fileName: 'audiusDj',
-        storagePath,
-        sizes: {
-          '150x150.jpg': 150,
-          '480x480.jpg': 480,
-          '1000x1000.jpg': 1000
-        },
-        square: true,
-        logContext: {}
-      }
-    }
-
-    // let resizeImageResp
-    try {
-      await resizeImageJob(job)
-    } catch (e) {
-      console.error(e)
-      assert.fail(e)
-    }
-
-    // check what is in file_storage matches what is in ipfs
-    let ipfsDirContents
-    try {
-      ipfsDirContents = await ipfs.ls(DIR_CID_SQUARE)
-    } catch (e) {
-      console.error(e)
-      assert.fail('Directory not found in ipfs.')
-    }
-
-    // Ensure that there are the same number of files uploaded to ipfs and to disk
-    assert.ok(ipfsDirContents.length === 4)
-
-    // If hash found in ipfs is not found in file_storage, fail
-    ipfsDirContents.map(ipfsFile => {
-      const fsPathForIpfsFile = path.join(storagePath, DIR_CID_SQUARE, ipfsFile.hash)
-      if (!fs.existsSync(fsPathForIpfsFile)) {
-        assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
-      }
     })
   })
 
@@ -266,7 +210,7 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = path.join(storagePath, DIR_CID_NOT_SQUARE)
+    const dirPath = DiskManager.computeFilePath(DIR_CID_NOT_SQUARE)
     assert.ok(fs.existsSync(dirPath))
 
     const dirContentCIDs = new Set([CID_640, CID_2000, CID_ORIGINAL])
@@ -291,54 +235,6 @@ describe('test resizeImage', () => {
         // Remove from set to test that only unique files are added
         dirContentCIDs.delete(file)
       })
-    })
-  })
-
-  /**
-   * Given: we have successfully created the resized images to add to ipfs
-   * When: we add the resized images to ipfs
-   * Then: we ensure that what is added to fs is the same as what is added to ipfs
-   */
-  it('should pass with happy path (not square)', async () => {
-    const job = {
-      data: {
-        file: imageBuffer,
-        fileName: 'audiusDj',
-        storagePath,
-        sizes: {
-          '640x.jpg': 640,
-          '2000x.jpg': 2000
-        },
-        square: false,
-        logContext: {}
-      }
-    }
-
-    try {
-      await resizeImageJob(job)
-    } catch (e) {
-      console.error(e)
-      assert.fail(e)
-    }
-
-    // check what is in file_storage matches what is in ipfs
-    let ipfsDirContents
-    try {
-      ipfsDirContents = await ipfs.ls(DIR_CID_NOT_SQUARE)
-    } catch (e) {
-      console.error(e)
-      assert.fail('Directory not found in ipfs.')
-    }
-
-    // Ensure that there are the same number of files uploaded to ipfs and to disk
-    assert.ok(ipfsDirContents.length === 3)
-
-    // If hash found in ipfs is not found in file_storage, fail
-    ipfsDirContents.map(ipfsFile => {
-      const fsPathForIpfsFile = path.join(storagePath, DIR_CID_NOT_SQUARE, ipfsFile.hash)
-      if (!fs.existsSync(fsPathForIpfsFile)) {
-        assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
-      }
     })
   })
 })

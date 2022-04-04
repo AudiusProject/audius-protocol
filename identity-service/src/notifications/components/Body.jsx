@@ -44,14 +44,21 @@ const UnreadNotifications = ({ message }) => (
   </p>
 )
 
+const getNumberSuffix = (num) => {
+  if (num === 1) return 'st'
+  else if (num === 2) return 'nd'
+  else if (num === 3) return 'rd'
+  return 'th'
+}
+
 const snippetMap = {
   [NotificationType.Favorite] (notification) {
     const [user] = notification.users
-    return `${user.name} favorited your ${notification.entity.name}`
+    return `${user.name} favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   [NotificationType.Repost] (notification) {
     const [user] = notification.users
-    return `${user.name} reposted your ${notification.entity.name}`
+    return `${user.name} reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   [NotificationType.Follow] (notification) {
     const [user] = notification.users
@@ -65,15 +72,20 @@ const snippetMap = {
       const entity = notification.entity.type.toLowerCase()
       return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
     } else {
-      return `You have reached over ${notification.value} Followers `
+      return `You have reached over ${notification.value} Followers`
     }
+  },
+  [NotificationType.TrendingTrack] (notification) {
+    const rank = notification.rank
+    const suffix = getNumberSuffix(rank)
+    return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Trending Right Now!`
   },
   [NotificationType.UserSubscription] (notification) {
     const [user] = notification.users
     if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
       return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
     }
-    return `${user.name} released a new ${notification.entity.type}  ${notification.entity.name}`
+    return `${user.name} released a new ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   [NotificationType.RemixCreate] (notification) {
     const { parentTrack } = notification
@@ -83,6 +95,9 @@ const snippetMap = {
     const { parentTrackUser, parentTracks } = notification
     const parentTrack = parentTracks.find(t => t.ownerId === parentTrackUser.userId)
     return `${parentTrackUser.name} Co-signed your Remix of ${parentTrack.title}`
+  },
+  [NotificationType.ChallengeReward] (notification) {
+    return `You've earned $AUDIO for completing challenges`
   }
 }
 
@@ -205,7 +220,7 @@ const Body = (props) => {
           </tr>
           <tr>
             <td style={{ paddingBottom: '25px' }}>
-              <Footer />
+              <Footer copyrightYear={props.copyrightYear} />
             </td>
           </tr>
         </table>

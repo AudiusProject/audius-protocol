@@ -20,7 +20,7 @@ def to_varint(number: int) -> bytes:
     """
     buf = b""
     while True:
-        towrite = number & 0x7f
+        towrite = number & 0x7F
         number >>= 7
         if number:
             buf += _byte(towrite | 0x80)
@@ -43,7 +43,7 @@ def from_stream(stream: BytesIO, offset: int = 0) -> Tuple[int, int]:
     stream.seek(offset)
     while True:
         i = _read_one(stream)
-        result |= (i & 0x7f) << shift
+        result |= (i & 0x7F) << shift
         shift += 7
         if not i & 0x80:
             return result, offset + shift // 7

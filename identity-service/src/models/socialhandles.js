@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING
     },
+    tikTokHandle: {
+      allowNull: true,
+      type: DataTypes.STRING
+    },
     pinnedTrackId: {
       allowNull: true,
       type: DataTypes.INTEGER

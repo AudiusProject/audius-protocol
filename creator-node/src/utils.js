@@ -1,211 +1,116 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
-const { promisify } = require('util')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
-const mkdir = promisify(fs.mkdir)
-const { BufferListStream } = require('bl')
 const axios = require('axios')
+const spawn = require('child_process').spawn
+const stream = require('stream')
+const { promisify } = require('util')
+const pipeline = promisify(stream.pipeline)
 
-const { logger: genericLogger } = require('./logging')
 const models = require('./models')
-const { ipfs, ipfsLatest } = require('./ipfsClient')
 const redis = require('./redis')
-
 const config = require('./config')
-const BlacklistManager = require('./blacklistManager')
 const { generateTimestampAndSignature } = require('./apiSigning')
+const { generateNonImageMultihash } = require('./fileHasher')
+
+const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
 class Utils {
-  static verifySignature (data, sig) {
+  static verifySignature(data, sig) {
     return recoverPersonalSignature({ data, sig })
   }
 
-  static async timeout (ms) {
-    console.log(`starting timeout of ${ms}`)
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
-}
-
-async function getFileUUIDForImageCID (req, imageCID) {
-  const ipfs = req.app.get('ipfsAPI')
-  if (imageCID) { // assumes imageCIDs are optional params
-    // Ensure CID points to a dir, not file
-    let cidIsFile = false
-    try {
-      await ipfs.cat(imageCID, { length: 1 })
-      cidIsFile = true
-    } catch (e) {
-      // Ensure file exists for dirCID
-      const dirFile = await models.File.findOne({
-        where: { multihash: imageCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'dir' }
-      })
-      if (!dirFile) {
-        throw new Error(`No file stored in DB for dir CID ${imageCID}`)
-      }
-
-      // Ensure file refs exist in DB for every file in dir
-      const dirContents = await ipfs.ls(imageCID)
-      req.logger.info(dirContents)
-
-      // Iterates through directory contents but returns upon first iteration
-      // TODO: refactor to remove for-loop
-      for (let fileObj of dirContents) {
-        if (!fileObj.hasOwnProperty('hash') || !fileObj.hash) {
-          throw new Error(`Malformatted dir contents for dirCID ${imageCID}. Cannot process.`)
-        }
-
-        const imageFile = await models.File.findOne({
-          where: { multihash: fileObj.hash, cnodeUserUUID: req.session.cnodeUserUUID, type: 'image' }
-        })
-        if (!imageFile) {
-          throw new Error(`No file ref stored in DB for CID ${fileObj.hash} in dirCID ${imageCID}`)
-        }
-        return dirFile.fileUUID
-      }
+  static async timeout(ms, log = true) {
+    if (log) {
+      console.log(`starting timeout of ${ms}`)
     }
-    if (cidIsFile) {
-      throw new Error(`CID ${imageCID} must point to a valid directory on IPFS`)
-    }
-  } else return null
-}
-
-async function getIPFSPeerId (ipfs, config) {
-  const ipfsClusterIP = config.get('ipfsClusterIP')
-  const ipfsClusterPort = config.get('ipfsClusterPort')
-
-  let ipfsIDObj = await ipfs.id()
-
-  // if it's a real host and port, generate a new ipfs id and override the addresses with this value
-  // if it's local or these variables aren't passed in, just return the regular ipfs.id() result
-  if (ipfsClusterIP && ipfsClusterPort !== null && ipfsClusterIP !== '127.0.0.1' && ipfsClusterPort !== 0) {
-    const addressStr = `/ip4/${ipfsClusterIP}/tcp/${ipfsClusterPort}/ipfs/${ipfsIDObj.id}`
-    ipfsIDObj.addresses = [addressStr]
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
-
-  return ipfsIDObj
 }
 
 /**
- * Cat single byte of file at given filepath. If ipfs.cat() call takes longer than the timeout time or
- * something goes wrong, an error will be thrown.
-*/
-const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
-  const logger = genericLogger.child(logContext)
+ * Ensure DB and disk records exist for dirCID and its contents
+ * Return fileUUID for dir DB record
+ * This function does not do further validation since image_upload provides remaining guarantees
+ */
+async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
+  // This handles case where a user/track metadata obj contains no image CID
+  if (!imageDirCID) {
+    return null
+  }
+  req.logger.info(
+    `Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
+  )
 
-  return new Promise(async (resolve, reject) => {
-    const start = Date.now()
-
-    try {
-      // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
-      // don't keep track of the results as this call is a proof-of-concept that the file exists in ipfs
-      /* eslint-disable-next-line no-unused-vars */
-      for await (const chunk of ipfsLatest.cat(path, { length: 1, timeout })) {
-        continue
-      }
-      logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
-      resolve()
-    } catch (e) {
-      // Expected message for e is `TimeoutError: Request timed out`
-      // if it's not that message, log out the error
-      if (!e.message.includes('Request timed out')) {
-        logger.error(`ipfsSingleByteCat - Error: ${e}`)
-      }
-      reject(e)
+  // Ensure file exists for dirCID
+  const dirFile = await models.File.findOne({
+    where: {
+      multihash: imageDirCID,
+      cnodeUserUUID: req.session.cnodeUserUUID,
+      type: 'dir'
     }
   })
-}
+  if (!dirFile) {
+    throw new Error(`No file stored in DB for imageDirCID ${imageDirCID}`)
+  }
 
-/**
- * Stat of a file at given filepath. If ipfs.files.stat() call takes longer than the timeout time or
- * something goes wrong, an error will be thrown.
-*/
-const ipfsStat = (CID, logContext, timeout = 1000) => {
-  const logger = genericLogger.child(logContext)
+  // Ensure dir exists on disk
+  if (!(await fs.pathExists(dirFile.storagePath))) {
+    throw new Error(
+      `No dir found on disk for imageDirCID ${imageDirCID} at expected path ${dirFile.storagePath}`
+    )
+  }
 
-  return new Promise(async (resolve, reject) => {
-    const start = Date.now()
-    const timeoutRef = setTimeout(() => {
-      logger.error(`ipfsStat - Timeout`)
-      reject(new Error('IPFS Stat Timeout'))
-    }, timeout)
-
-    try {
-      const stats = await ipfsLatest.files.stat(`/ipfs/${CID}`)
-      logger.info(`ipfsStat - Retrieved ${CID} in ${Date.now() - start}ms`)
-      clearTimeout(timeoutRef)
-      resolve(stats)
-    } catch (e) {
-      logger.error(`ipfsStat - Error: ${e}`)
-      reject(e)
+  const imageFiles = await models.File.findAll({
+    where: {
+      dirMultihash: imageDirCID,
+      cnodeUserUUID: req.session.cnodeUserUUID,
+      type: 'image'
     }
   })
+  if (!imageFiles) {
+    throw new Error(
+      `No image file records found in DB for imageDirCID ${imageDirCID}`
+    )
+  }
+
+  // Ensure every file exists on disk
+  await Promise.all(
+    imageFiles.map(async function (imageFile) {
+      if (!(await fs.pathExists(imageFile.storagePath))) {
+        throw new Error(
+          `No file found on disk for imageDirCID ${imageDirCID} image file at path ${imageFile.path}`
+        )
+      }
+    })
+  )
+
+  req.logger.info(
+    `Completed validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
+  )
+  return dirFile.fileUUID
 }
 
 /**
- * Call ipfs.cat on a path with optional timeout and length parameters
- * @param {*} path IPFS cid for file
- * @param {*} req request object
- * @param {*} timeout timeout for IPFS op in ms
- * @param {*} length length of data to retrieve from file
- * @returns {Buffer}
+ *
+ * @param {String} filePath location of the file on disk
+ * @param {String} cid content hash of the file
+ * @param {Object} logger logger object
+ * @param {Object} libs libs instance
+ * @param {Integer?} trackId optional trackId that corresponds to the cid, see file_lookup route for more info
+ * @param {Array?} excludeList optional array of content nodes to exclude in network wide search
+ * @returns {Boolean} returns true if the file was found in the network
  */
-const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
-  const start = Date.now()
-  let ipfs = req.app.get('ipfsLatestAPI')
+async function findCIDInNetwork(
+  filePath,
+  cid,
+  logger,
+  libs,
+  trackId = null,
+  excludeList = []
+) {
+  let found = false
 
-  try {
-    let chunks = []
-    let options = {}
-    if (length) options.length = length
-    if (timeout) options.timeout = timeout
-    // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
-    /* eslint-disable-next-line no-unused-vars */
-    for await (const chunk of ipfs.cat(path, options)) {
-      chunks.push(chunk)
-    }
-    req.logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
-    resolve(Buffer.concat(chunks))
-  } catch (e) {
-    req.logger.error(`ipfsCat - Error: ${e}`)
-    reject(e)
-  }
-})
-
-/**
- * Call ipfs.get on a path with an optional timeout
- * @param {String} path IPFS cid for file
- * @param {Object} req request object
- * @param {Number} timeout timeout in ms
- * @returns {BufferListStream}
- */
-const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
-  const start = Date.now()
-  let ipfs = req.app.get('ipfsLatestAPI')
-
-  try {
-    let chunks = []
-    let options = {}
-    if (timeout) options.timeout = timeout
-    // ipfs.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
-    /* eslint-disable-next-line no-unused-vars */
-    for await (const file of ipfs.get(path, options)) {
-      if (!file.content) continue
-
-      const content = new BufferListStream()
-      for await (const chunk of file.content) {
-        content.append(chunk)
-      }
-      resolve(content)
-    }
-    req.logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
-    resolve(Buffer.concat(chunks))
-  } catch (e) {
-    req.logger.error(`ipfsGet - Error: ${e}`)
-    reject(e)
-  }
-})
-
-async function findCIDInNetwork (filePath, cid, logger, libs) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -213,13 +118,21 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
   const creatorNodes = await getAllRegisteredCNodes(libs)
   if (!creatorNodes.length) return
 
+  // Remove excluded nodes from list of creator nodes, no-op if empty list or nothing passed in
+  const creatorNodesFiltered = creatorNodes.filter(
+    (c) => !excludeList.includes(c.endpoint)
+  )
+
   // generate signature
   const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
-  const { signature, timestamp } = generateTimestampAndSignature({ filePath, delegateWallet }, config.get('delegatePrivateKey'))
+  const { signature, timestamp } = generateTimestampAndSignature(
+    { filePath, delegateWallet },
+    config.get('delegatePrivateKey')
+  )
   let node
 
-  for (let index = 0; index < creatorNodes.length; index++) {
-    node = creatorNodes[index]
+  for (let index = 0; index < creatorNodesFiltered.length; index++) {
+    node = creatorNodesFiltered[index]
     try {
       const resp = await axios({
         method: 'get',
@@ -228,7 +141,8 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
           filePath,
           timestamp,
           delegateWallet,
-          signature
+          signature,
+          trackId
         },
         responseType: 'stream',
         timeout: 1000
@@ -236,53 +150,90 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
       if (resp.data) {
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
-        // verify that the file written matches the hash expected if added to ipfs
-        const content = fs.createReadStream(filePath)
-        for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 2000 })) {
-          if (cid !== result.cid.toString()) {
-            await fs.unlink(filePath)
-            logger.error(`File contents don't match IPFS hash cid: ${cid} result: ${result.cid.toString()}`)
-          }
-        }
+        // Verify that the file written matches the hash expected
+        const ipfsHashOnly = await generateNonImageMultihash(filePath)
 
-        logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
+        if (cid !== ipfsHashOnly) {
+          await fs.unlink(filePath)
+          logger.error(
+            `findCIDInNetwork - File contents don't match IPFS hash cid: ${cid} result: ${ipfsHashOnly}`
+          )
+        }
+        found = true
+        logger.info(
+          `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
+        )
         break
       }
     } catch (e) {
+      logger.error(`findCIDInNetwork error - ${e.toString()}`)
       // since this is a function running in the background intended to fix state, don't error
       // and stop the flow of execution for functions that call it
       continue
     }
   }
+
+  return found
 }
 
 /**
- * Get all creator nodes registered on chain from a cached redis value
+ * Get all Content Nodes registered on chain, excluding self
+ * Fetches from Redis if available, else fetches from chain and updates Redis value
+ * @returns {Object[]} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
  */
-async function getAllRegisteredCNodes (libs) {
+async function getAllRegisteredCNodes(libs, logger) {
   const cacheKey = 'all_registered_cnodes'
 
+  let CNodes
   try {
+    // Fetch from Redis if present
     const cnodesList = await redis.get(cacheKey)
     if (cnodesList) {
       return JSON.parse(cnodesList)
     }
 
-    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
-    creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
-    redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30) // cache this for 30 minutes
-    return creatorNodes
+    // Else, fetch from chain
+    let creatorNodes =
+      await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
+        'content-node'
+      )
+
+    // Filter out self endpoint
+    creatorNodes = creatorNodes.filter(
+      (node) => node.endpoint !== config.get('creatorNodeEndpoint')
+    )
+
+    // Write fetched value to Redis with 30min expiry
+    await redis.set(
+      cacheKey,
+      JSON.stringify(creatorNodes),
+      'EX',
+      THIRTY_MINUTES_IN_SECONDS
+    )
+
+    CNodes = creatorNodes
   } catch (e) {
-    console.error('Error getting values in getAllRegisteredCNodes', e)
+    if (logger) {
+      logger.error(
+        `Error getting values in getAllRegisteredCNodes: ${e.message}`
+      )
+    } else {
+      console.error(
+        `Error getting values in getAllRegisteredCNodes: ${e.message}`
+      )
+    }
+
+    CNodes = []
   }
-  return []
+
+  return CNodes
 }
 
 /**
  * Return if a fix has already been attempted in today for this filePath
  * @param {String} filePath path of CID on the file system
  */
-async function getIfAttemptedStateFix (filePath) {
+async function getIfAttemptedStateFix(filePath) {
   // key is `attempted_fs_fixes:<today's date>`
   // the date function just generates the ISOString and removes the timestamp component
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
@@ -293,165 +244,78 @@ async function getIfAttemptedStateFix (filePath) {
   return !firstTime
 }
 
-async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
-  const logger = genericLogger.child(logContext)
-
-  if (await BlacklistManager.CIDIsInBlacklist(multihash)) {
-    logger.info(`rehydrateIpfsFromFsIfNecessary - CID ${multihash} is in blacklist; Skipping rehydrate.`)
-    return
-  }
-
-  let ipfsPath = multihash
-  if (filename != null) {
-    // Indicates we are retrieving a directory multihash
-    ipfsPath = `${multihash}/${filename}`
-  }
-
-  let rehydrateNecessary = false
-  try {
-    await ipfsSingleByteCat(ipfsPath, logContext)
-  } catch (e) {
-    // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
-    if (e.message.includes('this dag node is a directory')) {
-      throw new Error(e.message)
-    }
-    rehydrateNecessary = true
-    logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
-  }
-  if (!rehydrateNecessary) return
-  // Timed out, must re-add from FS
-  if (!filename) {
-    logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
-    try {
-      if (fs.existsSync(storagePath)) {
-        let addResp = await ipfs.addFromFs(storagePath, { pin: false })
-        logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
-      } else {
-        logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
-      }
-    } catch (e) {
-      logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
-    }
-  } else {
-    logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
-    let findOriginalFileQuery = await models.File.findAll({
-      where: {
-        dirMultihash: multihash,
-        type: 'image'
-      }
-    })
-    // Add entire directory to recreate original operation
-    // Required to ensure same dirCID as data store
-    let ipfsAddArray = []
-    for (var entry of findOriginalFileQuery) {
-      let sourceFilePath = entry.storagePath
-      try {
-        let bufferedFile = fs.readFileSync(sourceFilePath)
-        let originalSource = entry.sourceFile
-        ipfsAddArray.push({
-          path: originalSource,
-          content: bufferedFile
-        })
-      } catch (e) {
-        logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
-      }
-    }
-
-    try {
-      let addResp = await ipfsLatest.add(ipfsAddArray, { pin: false })
-      logger.info(`rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`)
-    } catch (e) {
-      logger.error(`rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`)
-    }
-  }
-}
-
-async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
-  const logger = genericLogger.child(logContext)
-
-  if (await BlacklistManager.CIDIsInBlacklist(dirHash)) {
-    logger.info(`rehydrateIpfsFromFsIfNecessary - CID ${dirHash} is in blacklist; Skipping rehydrate.`)
-    return
-  }
-
-  let findOriginalFileQuery = await models.File.findAll({
-    where: {
-      dirMultihash: dirHash,
-      type: 'image'
-    }
-  })
-
-  let rehydrateNecessary = false
-  for (let entry of findOriginalFileQuery) {
-    const filename = entry.fileName
-    let ipfsPath = `${dirHash}/${filename}`
-    logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
-    try {
-      await ipfsSingleByteCat(ipfsPath, logContext)
-    } catch (e) {
-      rehydrateNecessary = true
-      logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
-      break
-    }
-  }
-
-  logger.info(`rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`)
-  if (!rehydrateNecessary) return
-
-  // Add entire directory to recreate original operation
-  // Required to ensure same dirCID as data store
-  let ipfsAddArray = []
-  for (let entry of findOriginalFileQuery) {
-    let sourceFilePath = entry.storagePath
-    try {
-      let bufferedFile = fs.readFileSync(sourceFilePath)
-      let originalSource = entry.sourceFile
-      ipfsAddArray.push({
-        path: originalSource,
-        content: bufferedFile
-      })
-    } catch (e) {
-      logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
-    }
-  }
-  try {
-    let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
-  } catch (e) {
-    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}, ${ipfsAddArray}`)
-  }
-}
-
-async function createDirForFile (fileStoragePath) {
+async function createDirForFile(fileStoragePath) {
   const dir = path.dirname(fileStoragePath)
-  await mkdir(dir, { recursive: true })
+  await fs.ensureDir(dir)
 }
 
-async function writeStreamToFileSystem (stream, expectedStoragePath, createDir = false) {
+/**
+ * Given an input stream and a destination file path, this function writes the contents
+ * of the stream to disk at expectedStoragePath
+ * @param {stream} inputStream Stream to persist to disk
+ * @param {String} expectedStoragePath path in local file system to store
+ * @param {Boolean?} createDir if true, will ensure the expectedStoragePath path exists so we don't have errors from folders missing
+ */
+async function writeStreamToFileSystem(
+  inputStream,
+  expectedStoragePath,
+  createDir = false
+) {
   if (createDir) {
     await createDirForFile(expectedStoragePath)
   }
 
-  const destinationStream = fs.createWriteStream(expectedStoragePath)
-  stream.pipe(destinationStream)
+  await _streamFileToDiskHelper(inputStream, expectedStoragePath)
+}
+
+/**
+ * Cleaner way to handle piping data between streams since this handles all
+ * events such as finish, error, end etc in addition to being async/awaited
+ * @param {stream} inputStream Stream to persist to disk
+ * @param {String} expectedStoragePath path in local file system to store
+ */
+async function _streamFileToDiskHelper(inputStream, expectedStoragePath) {
+  // https://nodejs.org/en/docs/guides/backpressuring-in-streams/
+  await pipeline(
+    inputStream, // input stream
+    fs.createWriteStream(expectedStoragePath) // output stream
+  )
+}
+
+/**
+ * Generic function to run shell commands, eg `ls -alh`
+ * @param {String} command Command you want to execute from the shell eg `ls`
+ * @param {Array} args array of string quoted arguments to pass eg ['-alh']
+ * @param {Object} logger logger object with context
+ */
+async function runShellCommand(command, args, logger) {
   return new Promise((resolve, reject) => {
-    destinationStream.on('finish', () => {
-      resolve()
+    const proc = spawn(command, args)
+    let stdout = ''
+    let stderr = ''
+    proc.stdout.on('data', (data) => (stdout += data.toString()))
+    proc.stderr.on('data', (data) => (stderr += data.toString()))
+
+    proc.on('close', (code) => {
+      if (code === 0) {
+        logger.info(
+          `Successfully executed command ${command} ${args} with output: \n${stdout}`
+        )
+        resolve()
+      } else {
+        logger.error(
+          `Error while executing command ${command} ${args} with stdout: \n${stdout}, \nstderr: \n${stderr}`
+        )
+        reject(new Error(`Error while executing command ${command} ${args}`))
+      }
     })
-    destinationStream.on('error', err => { reject(err) })
-    stream.on('error', err => { destinationStream.end(); reject(err) })
   })
 }
 
 module.exports = Utils
-module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
-module.exports.getIPFSPeerId = getIPFSPeerId
-module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
-module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
-module.exports.ipfsSingleByteCat = ipfsSingleByteCat
-module.exports.ipfsCat = ipfsCat
-module.exports.ipfsGet = ipfsGet
-module.exports.ipfsStat = ipfsStat
+module.exports.validateStateForImageDirCIDAndReturnFileUUID =
+  validateStateForImageDirCIDAndReturnFileUUID
 module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
+module.exports.runShellCommand = runShellCommand

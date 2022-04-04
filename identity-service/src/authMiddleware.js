@@ -2,10 +2,9 @@ const axios = require('axios')
 const { recoverPersonalSignature } = require('eth-sig-util')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 
-const config = require('./config.js')
 const models = require('./models')
 
-const notifDiscProv = config.get('notificationDiscoveryProvider')
+const audiusLibsWrapper = require('./audiusLibsInstance')
 
 /**
  * queryDiscprovForUserId - Queries the discovery provider for the user w/ the walletaddress
@@ -13,9 +12,11 @@ const notifDiscProv = config.get('notificationDiscoveryProvider')
  * @returns {object} User Metadata object
  */
 const queryDiscprovForUserId = async (walletAddress, handle) => {
+  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
   const response = await axios({
     method: 'get',
-    url: `${notifDiscProv}/users`,
+    url: `${discoveryProvider.discoveryProviderEndpoint}/users`,
     params: {
       wallet: walletAddress
     }
@@ -52,26 +53,66 @@ async function authMiddleware (req, res, next) {
     if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
     if (!signature) throw new Error('[Error]: Encoded data signature missing')
 
-    let walletAddress = recoverPersonalSignature({ data: encodedDataMessage, sig: signature })
-    const user = await models.User.findOne({
+    const walletAddress = recoverPersonalSignature({ data: encodedDataMessage, sig: signature })
+    let user = await models.User.findOne({
       where: { walletAddress },
-      attributes: ['id', 'blockchainUserId', 'createdAt']
+      attributes: ['id', 'blockchainUserId', 'walletAddress', 'createdAt', 'handle']
     })
     if (!user) throw new Error(`[Error]: no user found for wallet address ${walletAddress}`)
 
-    if (user && user.blockchainUserId) {
-      req.user = user
-      next()
-    } else {
+    if (!user.blockchainUserId || !user.handle) {
       const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
-      await user.update({ blockchainUserId: discprovUser.user_id })
-      req.user = user
-      next()
+      user = await user.update({ blockchainUserId: discprovUser.user_id, handle: discprovUser.handle })
     }
+    req.user = user
+    next()
   } catch (err) {
     const errorResponse = errorResponseBadRequest('[Error]: The wallet address is not associated with a user id')
     return sendResponse(req, res, errorResponse)
   }
 }
 
+/**
+ * Parameterized version of authentication middleware
+ * @param {{
+ *  shouldRespondBadRequest, whether or not to return server error on auth failure
+ * }: {
+ *  shouldRespondBadRequest: boolean
+ * }}
+ * @returns function `authMiddleware`
+ */
+const parameterizedAuthMiddleware = ({ shouldRespondBadRequest }) => {
+  return async (req, res, next) => {
+    try {
+      const encodedDataMessage = req.get('Encoded-Data-Message')
+      const signature = req.get('Encoded-Data-Signature')
+      const handle = req.query.handle
+
+      if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
+      if (!signature) throw new Error('[Error]: Encoded data signature missing')
+
+      const walletAddress = recoverPersonalSignature({ data: encodedDataMessage, sig: signature })
+      const user = await models.User.findOne({
+        where: { walletAddress },
+        attributes: ['id', 'blockchainUserId', 'walletAddress', 'createdAt', 'handle']
+      })
+      if (!user) throw new Error(`[Error]: no user found for wallet address ${walletAddress}`)
+
+      if (!user.blockchainUserId || !user.handle) {
+        const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
+        await user.update({ blockchainUserId: discprovUser.user_id, handle: discprovUser.handle })
+      }
+      req.user = user
+      next()
+    } catch (err) {
+      if (shouldRespondBadRequest) {
+        const errorResponse = errorResponseBadRequest('[Error]: The wallet address is not associated with a user id')
+        return sendResponse(req, res, errorResponse)
+      }
+      next()
+    }
+  }
+}
+
 module.exports = authMiddleware
+module.exports.parameterizedAuthMiddleware = parameterizedAuthMiddleware

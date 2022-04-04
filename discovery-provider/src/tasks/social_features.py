@@ -1,126 +1,161 @@
 import logging
 from datetime import datetime
-from src import contract_addresses
-from src.models import Repost, RepostType, Follow, Playlist
+from typing import Dict, Set, Tuple
+
+from sqlalchemy.orm.session import Session
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.database_task import DatabaseTask
+from src.models import Follow, Playlist, Repost, RepostType
+from src.tasks.index_related_artists import queue_related_artist_calculation
+from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
 
 def social_feature_state_update(
-        self, update_task, session, social_feature_factory_txs, block_number, block_timestamp
-):
-    """Return int representing number of social feature related state changes in this transaction"""
-
+    self,
+    update_task: DatabaseTask,
+    session: Session,
+    social_feature_factory_txs,
+    block_number,
+    block_timestamp,
+    block_hash,
+    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
+) -> Tuple[int, Set]:
+    """Return Tuple containing int representing number of social feature related state changes in this transaction and empty Set (to align with other _state_update function signatures)"""
+    empty_set: Set[int] = set()
     num_total_changes = 0
     if not social_feature_factory_txs:
-        return num_total_changes
+        return num_total_changes, empty_set
 
-    social_feature_factory_abi = update_task.abi_values["SocialFeatureFactory"]["abi"]
-    social_feature_factory_contract = update_task.web3.eth.contract(
-        address=contract_addresses["social_feature_factory"],
-        abi=social_feature_factory_abi,
-    )
+    challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
     # stores net state changes of all reposts and follows and corresponding events in current block
     #   track_repost_state_changes = { "user_id": { "track_id": {__Repost__} } }
     #   playlist_repost_state_changes = { "user_id": { "playlist_id": {__Repost__} } }
     #   follow_state_changes = { "follower_user_id": { "followee_user_id": {__Follow__} } }
-    track_repost_state_changes = {}
-    playlist_repost_state_changes = {}
-    follow_state_changes = {}
+    track_repost_state_changes: Dict[int, Dict[int, Repost]] = {}
+    playlist_repost_state_changes: Dict[int, Dict[int, Repost]] = {}
+    follow_state_changes: Dict[int, Dict[int, Follow]] = {}
 
     for tx_receipt in social_feature_factory_txs:
-        add_track_repost(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            track_repost_state_changes,
-        )
-        delete_track_repost(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            track_repost_state_changes,
-        )
-        add_playlist_repost(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            playlist_repost_state_changes,
-        )
-        delete_playlist_repost(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            playlist_repost_state_changes,
-        )
-        add_follow(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            follow_state_changes,
-        )
-        delete_follow(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            follow_state_changes,
-        )
+        try:
+            add_track_repost(
+                self,
+                update_task.social_feature_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                track_repost_state_changes,
+            )
+            delete_track_repost(
+                self,
+                update_task.social_feature_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                track_repost_state_changes,
+            )
+            add_playlist_repost(
+                self,
+                update_task.social_feature_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                playlist_repost_state_changes,
+            )
+            delete_playlist_repost(
+                self,
+                update_task.social_feature_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                playlist_repost_state_changes,
+            )
+            add_follow(
+                self,
+                update_task.social_feature_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                follow_state_changes,
+            )
+            delete_follow(
+                self,
+                update_task.social_feature_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                follow_state_changes,
+            )
+        except Exception as e:
+            logger.info("Error in parse track transaction")
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            blockhash = update_task.web3.toHex(block_hash)
+            raise IndexingError(
+                "social_feature", block_number, blockhash, txhash, str(e)
+            ) from e
 
     # bulk process all repost and follow changes
 
-    for repost_user_id in track_repost_state_changes:
-        for repost_track_id in track_repost_state_changes[repost_user_id]:
-            invalidate_old_repost(session, repost_user_id, repost_track_id, RepostType.track)
-            session.add(track_repost_state_changes[repost_user_id][repost_track_id])
-        num_total_changes += len(track_repost_state_changes[repost_user_id])
+    for repost_user_id, repost_track_ids in track_repost_state_changes.items():
+        for repost_track_id in repost_track_ids:
+            invalidate_old_repost(
+                session, repost_user_id, repost_track_id, RepostType.track
+            )
+            repost = repost_track_ids[repost_track_id]
+            session.add(repost)
+            dispatch_challenge_repost(challenge_bus, repost, block_number)
+        num_total_changes += len(repost_track_ids)
 
-    for repost_user_id in playlist_repost_state_changes:
-        for repost_playlist_id in playlist_repost_state_changes[repost_user_id]:
+    for repost_user_id, repost_playlist_ids in playlist_repost_state_changes.items():
+        for repost_playlist_id in repost_playlist_ids:
             invalidate_old_repost(
                 session,
                 repost_user_id,
                 repost_playlist_id,
-                playlist_repost_state_changes[repost_user_id][repost_playlist_id].repost_type
+                repost_playlist_ids[repost_playlist_id].repost_type,
             )
-            session.add(playlist_repost_state_changes[repost_user_id][repost_playlist_id])
-        num_total_changes += len(playlist_repost_state_changes[repost_user_id])
+            repost = repost_playlist_ids[repost_playlist_id]
+            session.add(repost)
+            dispatch_challenge_repost(challenge_bus, repost, block_number)
+        num_total_changes += len(repost_playlist_ids)
 
-    for follower_user_id in follow_state_changes:
-        for followee_user_id in follow_state_changes[follower_user_id]:
+    for follower_user_id, followee_user_ids in follow_state_changes.items():
+        for followee_user_id in followee_user_ids:
             invalidate_old_follow(session, follower_user_id, followee_user_id)
-            session.add(follow_state_changes[follower_user_id][followee_user_id])
-        num_total_changes += len(follow_state_changes[follower_user_id])
+            follow = followee_user_ids[followee_user_id]
+            session.add(follow)
+            dispatch_challenge_follow(challenge_bus, follow, block_number)
+            queue_related_artist_calculation(update_task.redis, followee_user_id)
+        num_total_changes += len(followee_user_ids)
+    return num_total_changes, empty_set
 
-    return num_total_changes
+
+# ####### HELPERS ####### #
 
 
-######## HELPERS ########
+def dispatch_challenge_repost(bus: ChallengeEventBus, repost, block_number):
+    bus.dispatch(ChallengeEvent.repost, block_number, repost.user_id)
+
+
+def dispatch_challenge_follow(bus: ChallengeEventBus, follow, block_number):
+    bus.dispatch(ChallengeEvent.follow, block_number, follow.follower_user_id)
 
 
 def invalidate_old_repost(session, repost_user_id, repost_item_id, repost_type):
@@ -131,7 +166,7 @@ def invalidate_old_repost(session, repost_user_id, repost_item_id, repost_type):
             Repost.user_id == repost_user_id,
             Repost.repost_item_id == repost_item_id,
             Repost.repost_type == repost_type,
-            Repost.is_current == True
+            Repost.is_current == True,
         )
         .update({"is_current": False})
     )
@@ -146,7 +181,7 @@ def invalidate_old_follow(session, follower_user_id, followee_user_id):
         .filter(
             Follow.follower_user_id == follower_user_id,
             Follow.followee_user_id == followee_user_id,
-            Follow.is_current == True
+            Follow.is_current == True,
         )
         .update({"is_current": False})
     )
@@ -155,30 +190,37 @@ def invalidate_old_follow(session, follower_user_id, followee_user_id):
 
 
 def add_track_repost(
-        self,
-        social_feature_factory_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        track_repost_state_changes,
+    self,
+    social_feature_factory_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    track_repost_state_changes,
 ):
-    new_track_repost_events = social_feature_factory_contract.events.TrackRepostAdded().processReceipt(
-        tx_receipt
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+    new_track_repost_events = (
+        social_feature_factory_contract.events.TrackRepostAdded().processReceipt(
+            tx_receipt
+        )
     )
     for event in new_track_repost_events:
         event_args = event["args"]
         repost_user_id = event_args._userId
         repost_track_id = event_args._trackId
 
-        if (repost_user_id in track_repost_state_changes) \
-                and (repost_track_id in track_repost_state_changes[repost_user_id]):
-            track_repost_state_changes[repost_user_id][repost_track_id].is_delete = False
+        if (repost_user_id in track_repost_state_changes) and (
+            repost_track_id in track_repost_state_changes[repost_user_id]
+        ):
+            track_repost_state_changes[repost_user_id][
+                repost_track_id
+            ].is_delete = False
         else:
             repost = Repost(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=repost_user_id,
                 repost_item_id=repost_track_id,
                 repost_type=RepostType.track,
@@ -193,30 +235,35 @@ def add_track_repost(
 
 
 def delete_track_repost(
-        self,
-        social_feature_factory_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        track_repost_state_changes
+    self,
+    social_feature_factory_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    track_repost_state_changes,
 ):
-    new_repost_events = social_feature_factory_contract.events.TrackRepostDeleted().processReceipt(
-        tx_receipt
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+    new_repost_events = (
+        social_feature_factory_contract.events.TrackRepostDeleted().processReceipt(
+            tx_receipt
+        )
     )
     for event in new_repost_events:
         event_args = event["args"]
         repost_user_id = event_args._userId
         repost_track_id = event_args._trackId
 
-        if (repost_user_id in track_repost_state_changes) \
-                and (repost_track_id in track_repost_state_changes[repost_user_id]):
+        if (repost_user_id in track_repost_state_changes) and (
+            repost_track_id in track_repost_state_changes[repost_user_id]
+        ):
             track_repost_state_changes[repost_user_id][repost_track_id].is_delete = True
         else:
             repost = Repost(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=repost_user_id,
                 repost_item_id=repost_track_id,
                 repost_type=RepostType.track,
@@ -231,17 +278,20 @@ def delete_track_repost(
 
 
 def add_playlist_repost(
-        self,
-        social_feature_factory_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        playlist_repost_state_changes,
+    self,
+    social_feature_factory_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    playlist_repost_state_changes,
 ):
-    new_playlist_repost_events = social_feature_factory_contract.events.PlaylistRepostAdded().processReceipt(
-        tx_receipt
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+    new_playlist_repost_events = (
+        social_feature_factory_contract.events.PlaylistRepostAdded().processReceipt(
+            tx_receipt
+        )
     )
     for event in new_playlist_repost_events:
         event_args = event["args"]
@@ -249,21 +299,28 @@ def add_playlist_repost(
         repost_playlist_id = event_args._playlistId
         repost_type = RepostType.playlist
 
-        playlist_entries = session.query(Playlist).filter(
-            Playlist.is_current == True,
-            Playlist.playlist_id == repost_playlist_id
-        ).all()
+        playlist_entries = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True, Playlist.playlist_id == repost_playlist_id
+            )
+            .all()
+        )
 
         if playlist_entries and playlist_entries[0].is_album:
             repost_type = RepostType.album
 
-        if (repost_user_id in playlist_repost_state_changes) \
-                and (repost_playlist_id in playlist_repost_state_changes[repost_user_id]):
-            playlist_repost_state_changes[repost_user_id][repost_playlist_id].is_delete = False
+        if (repost_user_id in playlist_repost_state_changes) and (
+            repost_playlist_id in playlist_repost_state_changes[repost_user_id]
+        ):
+            playlist_repost_state_changes[repost_user_id][
+                repost_playlist_id
+            ].is_delete = False
         else:
             repost = Repost(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=repost_user_id,
                 repost_item_id=repost_playlist_id,
                 repost_type=repost_type,
@@ -272,23 +329,30 @@ def add_playlist_repost(
                 created_at=block_datetime,
             )
             if repost_user_id in playlist_repost_state_changes:
-                playlist_repost_state_changes[repost_user_id][repost_playlist_id] = repost
+                playlist_repost_state_changes[repost_user_id][
+                    repost_playlist_id
+                ] = repost
             else:
-                playlist_repost_state_changes[repost_user_id] = {repost_playlist_id: repost}
+                playlist_repost_state_changes[repost_user_id] = {
+                    repost_playlist_id: repost
+                }
 
 
 def delete_playlist_repost(
-        self,
-        social_feature_factory_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        playlist_repost_state_changes,
+    self,
+    social_feature_factory_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    playlist_repost_state_changes,
 ):
-    new_playlist_repost_events = social_feature_factory_contract.events.PlaylistRepostDeleted().processReceipt(
-        tx_receipt
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+    new_playlist_repost_events = (
+        social_feature_factory_contract.events.PlaylistRepostDeleted().processReceipt(
+            tx_receipt
+        )
     )
     for event in new_playlist_repost_events:
         event_args = event["args"]
@@ -296,21 +360,28 @@ def delete_playlist_repost(
         repost_playlist_id = event_args._playlistId
         repost_type = RepostType.playlist
 
-        playlist_entries = session.query(Playlist).filter(
-            Playlist.is_current == True,
-            Playlist.playlist_id == repost_playlist_id
-        ).all()
+        playlist_entries = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True, Playlist.playlist_id == repost_playlist_id
+            )
+            .all()
+        )
 
         if playlist_entries and playlist_entries[0].is_album:
             repost_type = RepostType.album
 
-        if (repost_user_id in playlist_repost_state_changes) \
-                and (repost_playlist_id in playlist_repost_state_changes[repost_user_id]):
-            playlist_repost_state_changes[repost_user_id][repost_playlist_id].is_delete = True
+        if (repost_user_id in playlist_repost_state_changes) and (
+            repost_playlist_id in playlist_repost_state_changes[repost_user_id]
+        ):
+            playlist_repost_state_changes[repost_user_id][
+                repost_playlist_id
+            ].is_delete = True
         else:
             repost = Repost(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=repost_user_id,
                 repost_item_id=repost_playlist_id,
                 repost_type=repost_type,
@@ -319,34 +390,46 @@ def delete_playlist_repost(
                 created_at=block_datetime,
             )
             if repost_user_id in playlist_repost_state_changes:
-                playlist_repost_state_changes[repost_user_id][repost_playlist_id] = repost
+                playlist_repost_state_changes[repost_user_id][
+                    repost_playlist_id
+                ] = repost
             else:
-                playlist_repost_state_changes[repost_user_id] = {repost_playlist_id: repost}
+                playlist_repost_state_changes[repost_user_id] = {
+                    repost_playlist_id: repost
+                }
 
 
 def add_follow(
-        self,
-        social_feature_factory_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        follow_state_changes
+    self,
+    social_feature_factory_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    follow_state_changes,
 ):
-    new_follow_events = social_feature_factory_contract.events.UserFollowAdded().processReceipt(tx_receipt)
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+    new_follow_events = (
+        social_feature_factory_contract.events.UserFollowAdded().processReceipt(
+            tx_receipt
+        )
+    )
 
     for entry in new_follow_events:
         event_args = entry["args"]
         follower_user_id = event_args._followerUserId
         followee_user_id = event_args._followeeUserId
 
-        if (follower_user_id in follow_state_changes) and (followee_user_id in follow_state_changes[follower_user_id]):
+        if (follower_user_id in follow_state_changes) and (
+            followee_user_id in follow_state_changes[follower_user_id]
+        ):
             follow_state_changes[follower_user_id][followee_user_id].is_delete = False
         else:
             follow = Follow(
                 blockhash=update_task.web3.toHex(entry.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 follower_user_id=follower_user_id,
                 followee_user_id=followee_user_id,
                 is_current=True,
@@ -360,28 +443,36 @@ def add_follow(
 
 
 def delete_follow(
-        self,
-        social_feature_factory_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        follow_state_changes
+    self,
+    social_feature_factory_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    follow_state_changes,
 ):
-    new_follow_events = social_feature_factory_contract.events.UserFollowDeleted().processReceipt(tx_receipt)
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+    new_follow_events = (
+        social_feature_factory_contract.events.UserFollowDeleted().processReceipt(
+            tx_receipt
+        )
+    )
 
     for entry in new_follow_events:
         event_args = entry["args"]
         follower_user_id = event_args._followerUserId
         followee_user_id = event_args._followeeUserId
 
-        if (follower_user_id in follow_state_changes) and (followee_user_id in follow_state_changes[follower_user_id]):
+        if (follower_user_id in follow_state_changes) and (
+            followee_user_id in follow_state_changes[follower_user_id]
+        ):
             follow_state_changes[follower_user_id][followee_user_id].is_delete = True
         else:
             follow = Follow(
                 blockhash=update_task.web3.toHex(entry.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 follower_user_id=follower_user_id,
                 followee_user_id=followee_user_id,
                 is_current=True,

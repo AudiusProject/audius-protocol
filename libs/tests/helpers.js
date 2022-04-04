@@ -63,7 +63,7 @@ async function initializeLibConfig (ownerWallet) {
 }
 
 const getRandomLocalhost = () => {
-  return 'http://localhost:' + Math.floor(1000 + Math.random() * 9000)
+  return 'https://localhost:' + Math.floor(1000 + Math.random() * 9000)
 }
 
 const deregisterSPEndpoint = async (libs, account, type) => {

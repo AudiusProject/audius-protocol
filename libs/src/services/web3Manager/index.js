@@ -1,7 +1,9 @@
 const Web3 = require('../../web3')
 const sigUtil = require('eth-sig-util')
 const retry = require('async-retry')
+const { estimateGas } = require('../../utils/estimateGas')
 const AudiusABIDecoder = require('../ABIDecoder/index')
+const EthereumWallet = require('ethereumjs-wallet')
 let XMLHttpRequestRef
 if (typeof window === 'undefined' || window === null) {
   XMLHttpRequestRef = require('xmlhttprequest').XMLHttpRequest
@@ -9,7 +11,7 @@ if (typeof window === 'undefined' || window === null) {
   XMLHttpRequestRef = window.XMLHttpRequest
 }
 
-const DEFAULT_GAS_AMOUNT = 1011968
+const DEFAULT_GAS_LIMIT = 2000000
 
 /** singleton class to be instantiated and persisted with every AudiusLibs */
 class Web3Manager {
@@ -48,6 +50,12 @@ class Web3Manager {
       // either user has external web3 but it's not configured, or doesn't have web3
       this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoints[0], 10000))
       this.useExternalWeb3 = false
+
+      if (web3Config.internalWeb3Config.privateKey) {
+        const pkeyBuffer = Buffer.from(web3Config.internalWeb3Config.privateKey, 'hex')
+        this.ownerWallet = EthereumWallet.fromPrivateKey(pkeyBuffer)
+        return
+      }
 
       // create private key pair here if it doesn't already exist
       const storedWallet = this.hedgehog.getWallet()
@@ -125,8 +133,24 @@ class Web3Manager {
 
   async signTypedData (signatureData) {
     if (this.useExternalWeb3) {
-      return ethSignTypedData(this.getWeb3(), this.getWalletAddress(), signatureData)
+      return ethSignTypedData(
+        this.getWeb3(),
+        this.getWalletAddress(),
+        signatureData
+      )
     } else {
+      // Due to changes in ethereumjs-util's toBuffer method as of v6.2.0
+      // non hex-prefixed string values are not permitted and need to be
+      // provided directly as a buffer.
+      // https://github.com/ethereumjs/ethereumjs-util/releases/tag/v6.2.0
+      Object.keys(signatureData.message).forEach(key => {
+        if (
+          typeof signatureData.message[key] === 'string' &&
+          !signatureData.message[key].startsWith('0x')
+        ) {
+          signatureData.message[key] = Buffer.from(signatureData.message[key])
+        }
+      })
       return sigUtil.signTypedData(
         this.ownerWallet.getPrivateKey(),
         { data: signatureData }
@@ -138,12 +162,16 @@ class Web3Manager {
     contractMethod,
     contractRegistryKey,
     contractAddress,
-    txGasLimit = DEFAULT_GAS_AMOUNT,
-    txRetries = 5
+    txRetries = 5,
+    txGasLimit = null
   ) {
+    const gasLimit = txGasLimit || await estimateGas({
+      method: contractMethod,
+      gasLimitMaximum: DEFAULT_GAS_LIMIT
+    })
     if (this.useExternalWeb3) {
       return contractMethod.send(
-        { from: this.ownerWallet, gas: txGasLimit }
+        { from: this.ownerWallet, gas: gasLimit }
       )
     } else {
       const encodedABI = contractMethod.encodeABI()
@@ -154,7 +182,7 @@ class Web3Manager {
           contractAddress,
           this.ownerWallet.getAddressString(),
           encodedABI,
-          txGasLimit
+          gasLimit
         )
       }, {
         // Retry function 5x by default
@@ -165,12 +193,12 @@ class Web3Manager {
         retries: txRetries,
         onRetry: (err, i) => {
           if (err) {
-            console.log(`Retry error : ${err}`)
+            console.log(`libs web3Manager transaction send retry error : ${err}`)
           }
         }
       })
 
-      const receipt = response['receipt']
+      const receipt = response.receipt
 
       // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
       // above) parses the event log into an 'events' key on the transaction receipt and
@@ -186,13 +214,13 @@ class Web3Manager {
         decoded.forEach((evt) => {
           const returnValues = {}
           evt.events.forEach((arg) => {
-            returnValues[arg['name']] = arg['value']
+            returnValues[arg.name] = arg.value
           })
-          events[evt['name']] = { returnValues }
+          events[evt.name] = { returnValues }
         })
-        receipt['events'] = events
+        receipt.events = events
       }
-      return response['receipt']
+      return response.receipt
     }
   }
 

@@ -1,32 +1,42 @@
 const { sampleSize } = require('lodash')
+
 const { Base } = require('./base')
 const { timeRequests } = require('../utils/network')
+const { CreatorNodeSelection } = require('../services/creatorNode/CreatorNodeSelection')
 
-const CREATOR_NODE_SERVICE_NAME = 'creator-node'
-const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
+const CONTENT_NODE_SERVICE_NAME = 'content-node'
+const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'
+
+// Default timeout for each content node's sync and health check
+const CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT = 7500
+// Default time at which responses are considered equal weighting.
+// Content nodes that reply within 200ms of eachother are given equal footing
+// in selection
+const CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA = 200
 
 /**
  * API methods to interact with Audius service providers.
  * Types of services include:
- *    - Creator Node (host creator content)
- *    - Discovery Provider (index and make content queryable)
+ *    - Content Node (host creator content)
+ *    - Discovery Node (index and make content queryable)
  * Retrieving lists of available services, etc. are found here.
  */
 class ServiceProvider extends Base {
-  /* ------- CREATOR NODE  ------- */
+  /* ------- Content Node  ------- */
 
   async listCreatorNodes () {
-    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
+    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(CONTENT_NODE_SERVICE_NAME)
   }
 
   /**
-   * Fetches healthy creator nodes filtered down to a given whitelist and blacklist
+   * Fetches healthy Content Nodes filtered down to a given whitelist and blacklist
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
    */
   async getSelectableCreatorNodes (
     whitelist = null,
-    blacklist = null
+    blacklist = null,
+    timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   ) {
     let creatorNodes = await this.listCreatorNodes()
 
@@ -40,88 +50,99 @@ class ServiceProvider extends Base {
     }
 
     // Time requests and get version info
-    const timings = await timeRequests(
-      creatorNodes.map(node => ({
+    const timings = await timeRequests({
+      requests: creatorNodes.map(node => ({
         id: node.endpoint,
-        url: `${node.endpoint}/version`
-      }))
-    )
+        url: `${node.endpoint}/health_check/verbose`
+      })),
+      sortByVersion: true,
+      timeout
+    })
 
-    let services = {}
+    const services = {}
     timings.forEach(timing => {
-      services[timing.request.id] = timing.response.data
+      if (timing.response) services[timing.request.id] = timing.response.data.data
     })
 
     return services
   }
 
   /**
-   * Fetches healthy creator nodes and autoselects a primary
-   * and two secondaries
+   * Fetches healthy Content Nodes and autoselects a primary
+   * and two secondaries.
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
-   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
+   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
+   * @param {boolean} performSyncCheck whether or not to perform sync check
+   * @param {number?} timeout ms applied to each request made to a content node
    * @returns { primary, secondaries, services }
    * // primary: string
-   * // secondaries: Array<string>
-   * // services: { creatorNodeEndpoint: versionInfo }
+   * // secondaries: string[]
+   * // services: { creatorNodeEndpoint: healthCheckResponse }
    */
-  async autoSelectCreatorNodes (
+  async autoSelectCreatorNodes ({
     numberOfNodes = 3,
     whitelist = null,
-    blacklist = null
-  ) {
-    let creatorNodes = await this.listCreatorNodes()
-
-    // Filter whitelist
-    if (whitelist) {
-      creatorNodes = creatorNodes.filter(node => whitelist.has(node.endpoint))
-    }
-    // Filter blacklist
-    if (blacklist) {
-      creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
-    }
-
-    // Filter to healthy nodes
-    creatorNodes = (await Promise.all(
-      creatorNodes.map(async node => {
-        try {
-          const { isBehind, isConfigured } = await this.creatorNode.getSyncStatus(node.endpoint)
-          return isConfigured && isBehind ? false : node.endpoint
-        } catch (e) {
-          return false
-        }
-      })
-    ))
-      .filter(Boolean)
-
-    // Time requests and autoselect nodes
-    const timings = await timeRequests(
-      creatorNodes.map(node => ({
-        id: node,
-        url: `${node}/version`
-      }))
-    )
-
-    let services = {}
-    timings.forEach(timing => {
-      services[timing.request.id] = timing.response.data
+    blacklist = null,
+    performSyncCheck = true,
+    timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT,
+    equivalencyDelta = CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA,
+    preferHigherPatchForPrimary = true,
+    preferHigherPatchForSecondaries = true,
+    log = true
+  }) {
+    const creatorNodeSelection = new CreatorNodeSelection({
+      creatorNode: this.creatorNode,
+      ethContracts: this.ethContracts,
+      numberOfNodes,
+      whitelist,
+      blacklist,
+      timeout,
+      equivalencyDelta,
+      preferHigherPatchForPrimary,
+      preferHigherPatchForSecondaries
     })
-    // Primary: select the lowest-latency
-    const primary = timings[0] ? timings[0].request.id : null
 
-    // Secondaries: select randomly
-    // TODO: Implement geolocation-based selection
-    const secondaries = sampleSize(timings.slice(1), numberOfNodes - 1)
-      .map(timing => timing.request.id)
-
+    const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck, log)
     return { primary, secondaries, services }
   }
 
-  /* ------- DISCOVERY PROVIDER ------ */
+  /* ------- Discovery Node ------ */
 
   async listDiscoveryProviders () {
-    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_PROVIDER_SERVICE_NAME)
+    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_NODE_SERVICE_NAME)
+  }
+
+  /**
+   * Returns a list of discovery nodes of size `quorumSize` that belong to
+   * unique service operators.
+   * Throws if unable to find a large enough list.
+   * @param {number} quorumSize
+   * @param {any[]} discoveryProviders the verbose list of discovery providers to select from
+   */
+  async getUniquelyOwnedDiscoveryNodes (quorumSize, discoveryProviders = []) {
+    if (!discoveryProviders || discoveryProviders.length === 0) {
+      discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true })
+    }
+    // Group nodes by owner
+    const grouped = discoveryProviders.reduce((acc, curr) => {
+      if (curr.owner in acc) {
+        acc[curr.owner].push(curr)
+      } else {
+        acc[curr.owner] = [curr]
+      }
+      return acc
+    }, {})
+
+    if (Object.keys(grouped) < quorumSize) {
+      throw new Error('Not enough unique owners to choose from')
+    }
+
+    // Select quorumSize owners from the groups
+    const owners = sampleSize(Object.keys(grouped), quorumSize)
+
+    // Select 1 node from each owner selected
+    return owners.map(owner => sampleSize(grouped[owner], 1)[0].endpoint)
   }
 }
 

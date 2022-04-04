@@ -1,0 +1,12 @@
+export COMPOSE_PROJECT_NAME="cn-um"
+export CREATOR_NODE_HOST_PORT=4099
+export CREATOR_NODE_DB_HOST_PORT=4499
+export CREATOR_NODE_REDIS_HOST_PORT=4399
+export CREATOR_NODE_IS_USER_METADATA=true
+
+export creatorNodeEndpoint=http://cn-um_creator-node_1:4099
+
+# Dummy values to enable service startup
+export delegateOwnerWallet=0xbc5cec55f1aac494a59d2c4dbbd1503111e74dd2
+export delegatePrivateKey=0x55e5ff23adc1669279e1c0cabe2f6129459c578e0af51751a18a3be7df60d9c9
+export spOwnerWallet=0xbc5cec55f1aac494a59d2c4dbbd1503111e74dd2

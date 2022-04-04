@@ -15,8 +15,8 @@ import logging
 
 
 # revision identifiers, used by Alembic.
-revision = '6bd5882912c8'
-down_revision = '3065a825c5f8'
+revision = "6bd5882912c8"
+down_revision = "3065a825c5f8"
 branch_labels = None
 depends_on = None
 
@@ -25,7 +25,8 @@ def upgrade():
     connection = op.get_bind()
 
     # DB setup
-    connection.execute('''
+    connection.execute(
+        """
       -- create custom text search dictionary to include stop words and not normalize words
       CREATE TEXT SEARCH DICTIONARY audius_ts_dict (
           TEMPLATE = pg_catalog.simple
@@ -40,10 +41,12 @@ def upgrade():
 
       -- loads extension into db; pg_trgm = compares string similarity by trigram matching
       CREATE EXTENSION pg_trgm;
-    ''')
+    """
+    )
 
     # Track search index
-    connection.execute('''
+    connection.execute(
+        """
       -- since search fields are spread across multiple tables, denormalize data via materialized view
       --  - use custom text search config in building documents
       --  - document consists of every word from dictionary present in given dataset
@@ -67,10 +70,12 @@ def upgrade():
 
       -- add index on above materialized view
       CREATE INDEX track_words_idx ON track_lexeme_dict USING gin(word gin_trgm_ops);
-    ''')
+    """
+    )
 
     # User search index
-    connection.execute('''
+    connection.execute(
+        """
       -- since search fields are spread across multiple tables, denormalize data via materialized view
       --  - use custom text search config in building documents
       --  - document consists of every word from dictionary present in given dataset
@@ -93,7 +98,8 @@ def upgrade():
 
       -- add index on above materialized view
       CREATE INDEX user_words_idx ON user_lexeme_dict USING gin(word gin_trgm_ops);
-    ''')
+    """
+    )
 
 
 def downgrade():

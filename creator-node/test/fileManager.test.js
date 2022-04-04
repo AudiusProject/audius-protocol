@@ -1,24 +1,24 @@
 const assert = require('assert')
 const sinon = require('sinon')
 const uuid = require('uuid/v4')
-const fs = require('fs')
-const fsExtra = require('fs-extra')
+const fs = require('fs-extra')
 const path = require('path')
+const proxyquire = require('proxyquire')
 
-const { ipfs } = require('../src/ipfsClient')
-const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
+const fileHasher = require('../src/fileHasher')
+const {
+  removeTrackFolder,
+  saveFileFromBufferToDisk,
+  copyMultihashToFs
+} = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
-
 const { sortKeys } = require('../src/apiSigning')
+const DiskManager = require('../src/diskManager')
 
-let storagePath = config.get('storagePath')
-storagePath = storagePath.charAt(0) === '/' ? storagePath.slice(1) : storagePath
+const storagePath = config.get('storagePath')
 
-const reqFnStubs = {
-  ipfsAPI: ipfs,
-  storagePath
-}
+const reqFnStubs = { storagePath }
 const req = {
   session: {
     cnodeUserUUID: uuid()
@@ -28,22 +28,27 @@ const req = {
     error: () => {}
   },
   app: {
-    get: key => {
+    get: (key) => {
       return reqFnStubs[key]
     }
   }
 }
 
 // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
-// consts used for testing saveFileToIpfsFromFs()
+// consts used for testing generateNonImageMultihash()
 const segmentsDirPath = 'test/test-segments'
-const sourceFile = 'segment001.ts'
+const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
 
-// consts used for testing saveFileFromBufferToIPFSAndDisk()
+// consts used for testing saveFileFromBufferToDisk()
 const metadata = {
   test: 'field1',
-  track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+  track_segments: [
+    {
+      multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+      duration: 1000
+    }
+  ],
   owner_id: 1
 }
 const buffer = Buffer.from(JSON.stringify(metadata))
@@ -53,58 +58,33 @@ describe('test fileManager', () => {
     sinon.restore()
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileToIpfsFromFs() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileToIpfsFromFs()', () => {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ generateNonImageMultihash() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test generateNonImageMultihash()', () => {
     /**
-     * Given: a file is being saved to ipfs from fs
-     * When: the cnodeUserUUID is not present
-     * Then: an error is thrown
-     */
-    it('should throw error if cnodeUserUUID is not present', async () => {
-      const reqOverride = {
-        session: {},
-        logger: {
-          info: () => {}
-        },
-        app: {
-          get: () => { return path.join(storagePath) }
-        }
-      }
-
-      try {
-        await saveFileToIPFSFromFS(reqOverride, srcPath)
-        assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
-      } catch (e) {
-        assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
-      }
-    })
-
-    /**
-     * Given: a file is being saved to ipfs from fs
-     * When: ipfs is down
-     * Then: an error is thrown
-     */
-    it('should throw an error if ipfs is down', async () => {
-      sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
-
-      try {
-        await saveFileToIPFSFromFS(req, srcPath)
-        assert.fail('Should not have passed if ipfs is down.')
-      } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs is down!')
-      }
-    })
-
-    /**
-     * Given: a file is being saved to ipfs from fs
+     * Given: copyMultihashToFs is called
      * When: file copying fails
      * Then: an error is thrown
      */
     it('should throw an error if file copy fails', async () => {
-      sinon.stub(fs, 'copyFileSync').throws(new Error('Failed to copy files!!'))
+      const fsExtraStub = {
+        copyFile: sinon.stub().callsFake(() => {
+          return new Promise((resolve, reject) =>
+            reject(new Error('Failed to copy files!!'))
+          )
+        })
+      }
+      const { copyMultihashToFs } = proxyquire('../src/fileManager', {
+        'fs-extra': fsExtraStub
+      })
 
       try {
-        await saveFileToIPFSFromFS(req, srcPath)
+        await copyMultihashToFs(
+          'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
+          srcPath,
+          {
+            logContext: { requestID: uuid() }
+          }
+        )
         assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to copy files!!')
@@ -120,41 +100,48 @@ describe('test fileManager', () => {
      *  - that segment should be present in IPFS
      */
     it('should pass saving file to ipfs from fs (happy path)', async () => {
-      sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
+      sinon
+        .stub(models.File, 'create')
+        .returns({ dataValues: { fileUUID: 'uuid' } })
 
+      const requestID = uuid()
       try {
-        await saveFileToIPFSFromFS(req, srcPath)
+        await fileHasher.generateNonImageMultihash(
+          srcPath,
+          { logContext: { requestID } }
+        )
       } catch (e) {
         assert.fail(e.message)
       }
 
+      try {
+        await copyMultihashToFs(
+          'QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd',
+          srcPath,
+          {
+            logContext: { requestID }
+          }
+        )
+      } catch (e) {
+        assert.fail('Error should not have been thrown', e)
+      }
+
       // 1 segment should be saved in <storagePath>/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd
       const segmentCID = 'QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd'
-      const syncedSegmentPath = path.join(storagePath, segmentCID)
+      const syncedSegmentPath = DiskManager.computeFilePath(segmentCID)
       assert.ok(fs.existsSync(syncedSegmentPath))
 
       // the segment content should match the original sourcefile
       const syncedSegmentBuf = fs.readFileSync(syncedSegmentPath)
       const originalSegmentBuf = fs.readFileSync(srcPath)
       assert.deepStrictEqual(originalSegmentBuf.compare(syncedSegmentBuf), 0)
-
-      // the segment should be present in IPFS
-      let ipfsResp
-      try {
-        ipfsResp = await ipfs.cat(segmentCID)
-      } catch (e) {
-        // If CID is not present, will throw timeout error
-        assert.fail(e.message)
-      }
-
-      assert.deepStrictEqual(originalSegmentBuf.compare(ipfsResp), 0)
     })
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToIPFSAndDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileFromBufferToIPFSAndDisk()', () => {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test saveFileFromBufferToDisk()', () => {
     /**
-     * Given: a file buffer is being saved to ipfs, fs, and db
+     * Given: a file buffer is being saved to fs and db
      * When: cnodeUserUUID is not present
      * Then: an error is thrown
      */
@@ -165,15 +152,25 @@ describe('test fileManager', () => {
           info: () => {}
         },
         app: {
-          get: () => { return path.join(storagePath) }
+          get: () => {
+            return DiskManager.getConfigStoragePath()
+          }
         }
       }
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(reqOverride, buffer)
-        assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
+        await saveFileFromBufferToDisk(
+          reqOverride,
+          buffer
+        )
+        assert.fail(
+          'Should not have passed if cnodeUserUUID is not present in request.'
+        )
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
+        assert.deepStrictEqual(
+          e.message,
+          'User must be authenticated to save a file'
+        )
       }
     })
 
@@ -182,27 +179,31 @@ describe('test fileManager', () => {
      * When: ipfs is down
      * Then: an error is thrown
      */
-    it('should throw an error if ipfs is down', async () => {
-      sinon.stub(ipfs, 'add').rejects(new Error('ipfs is down!'))
+    it('should throw an error if ipfs wrapper hash fails', async () => {
+      sinon
+        .stub(fileHasher, 'generateNonImageMultihash')
+        .rejects(new Error('ipfs wrapper hash failed!'))
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(req, buffer)
-        assert.fail('Should not have passed if ipfs is down.')
+        await saveFileFromBufferToDisk(
+          req,
+          buffer
+        )
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs is down!')
+        assert.deepStrictEqual(e.message, 'ipfs wrapper hash failed!')
       }
     })
 
     /**
-     * Given: a file buffer is being saved to ipfs, fs, and db
+     * Given: a file buffer is being saved to file storage and db
      * When: writing to filesystem fails
      * Then: an error is thrown
      */
     it('should throw an error if writing file to filesystem fails', async () => {
-      sinon.stub(ipfs, 'add').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
+      sinon.stub(fileHasher, 'generateNonImageMultihash').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(req, buffer)
+        await saveFileFromBufferToDisk(req, buffer)
         assert.fail('Should not have passed if writing to filesystem fails.')
       } catch (e) {
         assert.ok(e.message)
@@ -210,38 +211,30 @@ describe('test fileManager', () => {
     })
 
     /**
-    * Given: a file buffer is being saved to ipfs, fs, and db
-    * When: everything works as expected
-    * Then: ipfs, fs, and db should have the buffer contents
-    */
+     * Given: a file buffer is being saved to fs and db
+     * When: everything works as expected
+     * Then: fs and db should have the buffer contents
+     */
     it('should pass saving file from buffer (happy path)', async () => {
-      sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
+      sinon
+        .stub(models.File, 'create')
+        .returns({ dataValues: { fileUUID: 'uuid' } })
 
       let resp
       try {
-        resp = await saveFileFromBufferToIPFSAndDisk(req, buffer)
+        resp = await saveFileFromBufferToDisk(req, buffer)
       } catch (e) {
         assert.fail(e.message)
       }
 
       // check that the metadata file was written to storagePath under its multihash
-      const metadataPath = path.join(storagePath, resp.multihash)
+      const metadataPath = DiskManager.computeFilePath(resp.cid)
       assert.ok(fs.existsSync(metadataPath))
 
       // check that the contents of the metadata file is what we expect
       let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
       metadataFileData = sortKeys(JSON.parse(metadataFileData))
       assert.deepStrictEqual(metadataFileData, metadata)
-
-      // check that ipfs contains the metadata file with proper contents
-      let ipfsResp
-      try {
-        ipfsResp = await ipfs.cat(resp.multihash)
-      } catch (e) {
-        assert.fail(e.message)
-      }
-
-      assert.deepStrictEqual(buffer.compare(ipfsResp), 0)
     })
   })
 })
@@ -253,7 +246,7 @@ describe('test removeTrackFolder()', async function () {
   // copy test dir into /test_file_storage dir to be deleted by removeTrackFolder()
   beforeEach(async function () {
     // uses `fs-extra` module for recursive directory copy since base `fs` module doesn't provide this
-    await fsExtra.copy(testTrackUploadDir, storagePath)
+    await fs.copy(testTrackUploadDir, storagePath)
   })
 
   afterEach(async function () {
@@ -269,7 +262,9 @@ describe('test removeTrackFolder()', async function () {
     assert.ok(fs.existsSync(trackSourceFileDir))
     assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'segments')))
     assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'master.mp3')))
-    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'trackManifest.m3u8')))
+    assert.ok(
+      fs.existsSync(path.join(trackSourceFileDir, 'trackManifest.m3u8'))
+    )
     assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'transcode.mp3')))
 
     // Call removeTrackFolder + expect success

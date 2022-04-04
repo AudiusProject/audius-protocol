@@ -23,7 +23,8 @@ fi
 # echo commands from here out
 # useful to know what the test script is actually doing
 set -x
-docker run --name audius_ganache_cli_test -d -p 8555:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0
+
+docker run --name audius_ganache_cli_test -d -p 8555:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 -a 50
 
 # compile and lint
 ./node_modules/.bin/truffle compile
@@ -44,5 +45,5 @@ else
 fi
 
 # tear down
-docker rm -f audius_ganache_cli_test
-rm -rf ./build/
+# docker rm -f audius_ganache_cli_test
+# rm -rf ./build/

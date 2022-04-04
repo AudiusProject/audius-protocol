@@ -1,41 +1,43 @@
-import logging # pylint: disable=C0302
-import pickle
+import logging  # pylint: disable=C0302
+from datetime import datetime
 
-from src.utils import redis_connection
+from dateutil import parser
 from src.models import User
-from src.utils import helpers
-from src.utils.redis_cache import get_user_id_cache_key
+from src.utils import helpers, redis_connection
+from src.utils.redis_cache import (
+    get_all_json_cached_key,
+    get_user_id_cache_key,
+    set_json_cached_key,
+)
 
 logger = logging.getLogger(__name__)
 
 # Cache unpopulated users for 5 min
-ttl_sec = 5*60
+ttl_sec = 5 * 60
+
+user_datetime_fields = []
+for column in User.__table__.c:
+    if column.type.python_type == datetime:
+        user_datetime_fields.append(column.name)
+
 
 def get_cached_users(user_ids):
-    redis_user_id_keys = map(get_user_id_cache_key, user_ids)
+    redis_user_id_keys = list(map(get_user_id_cache_key, user_ids))
     redis = redis_connection.get_redis()
-    cached_values = redis.mget(redis_user_id_keys)
-
-    users = []
-    for val in cached_values:
-        if val is not None:
-            try:
-                user = pickle.loads(val)
-                users.append(user)
-            except Exception as e:
-                logger.warning(f"Unable to deserialize cached user: {e}")
-                users.append(None)
-        else:
-            users.append(None)
+    users = get_all_json_cached_key(redis, redis_user_id_keys)
+    for user in users:
+        if user:
+            for field in user_datetime_fields:
+                if user[field]:
+                    user[field] = parser.parse(user[field])
     return users
 
 
 def set_users_in_cache(users):
     redis = redis_connection.get_redis()
     for user in users:
-        key = get_user_id_cache_key(user['user_id'])
-        serialized = pickle.dumps(user)
-        redis.set(key, serialized, ttl_sec)
+        key = get_user_id_cache_key(user["user_id"])
+        set_json_cached_key(redis, key, user, ttl_sec)
 
 
 def get_unpopulated_users(session, user_ids):
@@ -58,20 +60,18 @@ def get_unpopulated_users(session, user_ids):
     cached_users = {}
     for cached_user in cached_users_results:
         if cached_user:
-            cached_users[cached_user['user_id']] = cached_user
+            cached_users[cached_user["user_id"]] = cached_user
 
-    user_ids_to_fetch = filter(
-        lambda user_id: user_id not in cached_users, user_ids)
+    user_ids_to_fetch = filter(lambda user_id: user_id not in cached_users, user_ids)
 
     users = (
-        session
-        .query(User)
+        session.query(User)
         .filter(User.is_current == True, User.wallet != None, User.handle != None)
         .filter(User.user_id.in_(user_ids_to_fetch))
         .all()
     )
     users = helpers.query_result_to_list(users)
-    queried_users = {user['user_id']: user for user in users}
+    queried_users = {user["user_id"]: user for user in users}
 
     set_users_in_cache(users)
 

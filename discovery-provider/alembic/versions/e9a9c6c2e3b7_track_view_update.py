@@ -10,15 +10,16 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e9a9c6c2e3b7'
-down_revision = '3acec9065c7f'
+revision = "e9a9c6c2e3b7"
+down_revision = "3acec9065c7f"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     connection = op.get_bind()
-    connection.execute('''
+    connection.execute(
+        """
         --- Update track_lexeme_dict to exclude tags as part of search
         DROP MATERIALIZED VIEW track_lexeme_dict;
         DROP INDEX IF EXISTS track_words_idx;
@@ -37,7 +38,8 @@ def upgrade():
       
        -- add index on above materialized view
        CREATE INDEX track_words_idx ON track_lexeme_dict USING gin(word gin_trgm_ops);
-    ''')
+    """
+    )
     # ### end Alembic commands ###
 
 

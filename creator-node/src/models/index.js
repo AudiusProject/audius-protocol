@@ -13,24 +13,25 @@ const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
   logging: globalConfig.get('printSequelizeLogs'),
   operatorsAliases: false,
   pool: {
-    max: 100,
+    max: globalConfig.get('dbConnectionPoolMax'),
     min: 5,
     acquire: 60000,
     idle: 10000
   }
 })
 
-fs
-  .readdirSync(__dirname)
-  .filter(file => {
-    return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js')
+fs.readdirSync(__dirname)
+  .filter((file) => {
+    return (
+      file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js'
+    )
   })
-  .forEach(file => {
-    const model = sequelize['import'](path.join(__dirname, file))
+  .forEach((file) => {
+    const model = sequelize.import(path.join(__dirname, file))
     db[model.name] = model
   })
 
-Object.keys(db).forEach(modelName => {
+Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db)
   }

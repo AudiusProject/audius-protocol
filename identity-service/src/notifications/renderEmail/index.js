@@ -11,13 +11,13 @@ var _Body = _interopRequireDefault(require("./Body"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var NotificationEmail = function NotificationEmail(props) {
-  return _react["default"].createElement("html", null, _react["default"].createElement(_Head["default"], {
+  return /*#__PURE__*/_react["default"].createElement("html", null, /*#__PURE__*/_react["default"].createElement(_Head["default"], {
     title: props.title
-  }), _react["default"].createElement(_Body["default"], props));
+  }), /*#__PURE__*/_react["default"].createElement(_Body["default"], props));
 };
 
 var renderNotificationsEmail = function renderNotificationsEmail(props) {
-  return _server["default"].renderToString(_react["default"].createElement(NotificationEmail, props));
+  return _server["default"].renderToString( /*#__PURE__*/_react["default"].createElement(NotificationEmail, props));
 };
 
 module.exports = renderNotificationsEmail;

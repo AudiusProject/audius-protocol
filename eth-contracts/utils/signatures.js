@@ -11,6 +11,10 @@ export const PERMIT_TYPEHASH = keccak256(
   toUtf8Bytes('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
 )
 
+export const TRANSFER_TOKENS_TYPEHASH = keccak256(
+  toUtf8Bytes('TransferTokens(address from,uint256 amount,uint16 recipientChain,bytes32 recipient,uint256 artbiterFee,uint32 nonce,uint256 deadline)')
+)
+
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
 export function getPermitDigest(
@@ -33,6 +37,54 @@ export function getPermitDigest(
           defaultAbiCoder.encode(
             ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint256'],
             [PERMIT_TYPEHASH, approve.owner, approve.spender, approve.value, nonce, deadline]
+          )
+        ),
+      ]
+    )
+  )
+}
+
+// Returns the EIP712 hash which should be signed by the user
+// in order to make a call to `transferTokens`
+export function getTransferTokensDigest(
+  name,
+  address,
+  chainId,
+  transferTokens,
+  nonce,
+  deadline
+) {
+  const DOMAIN_SEPARATOR = getDomainSeparator(name, address, chainId)
+
+  return keccak256(
+    solidityPack(
+      ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
+      [
+        '0x19',
+        '0x01',
+        DOMAIN_SEPARATOR,
+        keccak256(
+          defaultAbiCoder.encode(
+            [
+              'bytes32', 
+              'address',
+              'uint256',
+              'uint16',
+              'bytes32',
+              'uint256',
+              'uint32',
+              'uint256'
+            ],
+            [
+              TRANSFER_TOKENS_TYPEHASH,
+              transferTokens.from,
+            	transferTokens.amount,
+              transferTokens.recipientChain,
+            	transferTokens.recipient,
+            	transferTokens.arbiterFee,
+            	nonce,
+              deadline
+            ]
           )
         ),
       ]

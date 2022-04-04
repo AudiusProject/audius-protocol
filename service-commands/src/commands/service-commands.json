@@ -1,107 +1,219 @@
 {
   "all": {
     "down": [
-      "SERVICES=$(docker ps -aq); if [[ -n $SERVICES ]]; then docker stop ${SERVICES} && docker rm ${SERVICES}; fi",
+      "SERVICES=$(docker ps -aq); if [ \"$SERVICES\" != \"\" ]; then docker stop ${SERVICES} && docker rm ${SERVICES}; fi",
       "docker container prune -f",
       "docker volume prune -f",
-      "docker network prune -f"
+      "docker network prune -f",
+      "sudo rm -rf creator-node/compose/env/tmp",
+      "sudo rm -rf discovery-provider/compose/env/tmp",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log"
     ]
   },
   "network": {
-    "up": ["docker network create -d bridge audius_dev"],
-    "down": ["docker network rm audius_dev"]
+    "up": [
+      "export DOCKER_CLIENT_TIMEOUT=360",
+      "export COMPOSE_HTTP_TIMEOUT=360",
+      "docker network create -d bridge audius_dev || true"
+    ],
+    "down": [
+      "docker network rm audius_dev || true"
+    ]
   },
   "contracts": {
     "up": [
       "cd contracts/",
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5",
       "echo 'Waiting for ganache to fully come online...'",
-      "sleep 5",
+      "sleep 10",
       "echo 'Migrating contracts'",
-      "cd contracts/; node_modules/.bin/truffle migrate",
-      "echo 'Writing flask config'",
-      "cd contracts/; node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run"
+      "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
+      "echo 'Writing configs'",
+      "cd contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
-    "down": ["cd contracts/; npm run ganache-q"]
+    "down": [
+      "cd contracts/; npm run ganache-q"
+    ]
   },
   "eth-contracts": {
     "path": "eth-contracts",
     "up": [
-      "cd eth-contracts/",
-      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100",
+      "cd eth-contracts/; sudo rm -rf build",
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate"
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 12 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
+      "echo 'Writing configs'",
+      "cd eth-contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
-    "down": ["cd eth-contracts/; npm run ganache-q"]
+    "down": [
+      "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
+    ]
+  },
+ "solana-validator": {
+   "protocol": "http",
+   "host": "localhost",
+   "port": 8899,
+   "health_check_endpoint": "",
+   "up": [
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.8.14 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 100000'"
+   ],
+    "down": [
+      "docker container stop solana || true",
+      "docker container rm solana || true"
+    ]
+ },
+ "solana-programs": {
+    "path": "solana-programs",
+    "up": [
+      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop2 > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
+      "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
+      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
+    ],
+    "add-sender": [
+      "cd solana-programs/reward-manager/cli; cargo run create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
+    ]
   },
   "ipfs": {
-    "up": ["libs/scripts/ipfs.sh up local-ipfs-node"],
-    "down": ["libs/scripts/ipfs.sh down local-ipfs-node"]
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node"
+    ]
   },
   "ipfs-2": {
-    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-2 6011 6012"],
-    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-2"]
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-2 6011 6012"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-2"
+    ]
   },
   "ipfs-3": {
-    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-3 6021 6022"],
-    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-3"]
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-3 6021 6022"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-3"
+    ]
   },
   "ipfs-4": {
-    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-4 6031 6032"],
-    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-4"]
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-4 6031 6032"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-4"
+    ]
   },
   "init-contracts-info": {
-    "up": ["cd libs/; sh ./scripts/migrate_contracts.sh"]
+    "up": [
+      "cd libs/; sh ./scripts/migrate_contracts.sh >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
+    ]
   },
   "init-token-versions": {
-    "up": ["cd libs/; node initScripts/local.js init-all"]
+    "up": [
+      "cd libs/; npm run init-local init-all"
+    ]
   },
   "discovery-provider": {
     "protocol": "http",
-    "host": "audius-disc-prov_web-server_1",
+    "host": "dn1_web-server_1",
     "port": 5000,
+    "health_check_endpoint": "health_check",
     "up": [
+      "cd libs/initScripts; node configureLocalDiscProv.js",
+      "cd libs/; npm run init-local configure-discprov-wallet #",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml up --build -d",
+      "cd discovery-provider; rm -f *_dump",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
+      "echo 'Waiting 5 seconds...'",
+      "sleep 5"
+    ],
+    "up-web-server": [
+      "cd libs/initScripts; node configureLocalDiscProv.js",
+      "cd libs/; npm run init-local configure-discprov-wallet #",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
     "down": [
-      "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml down"
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log"
     ],
-    "register": ["cd libs/; node initScripts/local.js register-discprov-1"]
-  },
-  "content-service": {
-    "protocol": "http",
-    "host": "localhost",
-    "port": 8432,
-    "up": [
-      "docker-compose -f content-service/docker-compose/docker-compose.full.yml up --build -d"
+    "register": [
+      "cd libs/; npm run init-local register-discovery-node #",
+      "cd service-commands/; node scripts/rewardManagerLocal.js register-discovery-node #"
     ],
-    "down": [
-      "docker-compose -f content-service/docker-compose/docker-compose.full.yml down"
+    "restart": [
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "docker volume prune -f",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log",
+      "cd libs/initScripts; node configureLocalDiscProv.js",
+      "cd discovery-provider; rm -f *_dump",
+      "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
+      "echo 'Waiting 5 seconds...'",
+      "sleep 5"
     ]
   },
   "creator-node": {
     "protocol": "http",
     "host": "localhost",
     "port": 4000,
+    "health_check_endpoint": "health_check",
     "up": [
-      "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; mkdir -p compose/env/tmp/file-storage-#; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
-      "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#; docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
-    "register": ["cd libs/; node initScripts/local.js register-cnode #"],
-    "update-delegate-wallet": ["cd libs/; node initScripts/local.js update-cnode-config #"]
+    "restart": [
+      "cd creator-node; . compose/env/unsetShellEnv.sh",
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
+      "cd libs/; npm run init-local update-cnode-config #",
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/unsetShellEnv.sh"
+    ],
+    "register": [
+      "cd libs/; npm run init-local register-cnode #"
+    ],
+    "deregister": [
+      "cd libs/; npm run init-local deregister-cnode #"
+    ],
+    "update-delegate-wallet": [
+      "cd libs/; npm run init-local update-cnode-config #"
+    ],
+    "unset-shell-env": [
+      "cd creator-node; . compose/env/unsetShellEnv.sh"
+    ]
   },
   "identity-service": {
     "protocol": "http",
-    "host": "localhost",
+    "host": "audius-identity-service_identity-service_1",
     "port": 7000,
+    "health_check_endpoint": "health_check",
     "up": [
       "cd identity-service/; docker-compose -f compose/docker-compose.full.yml up --build -d",
       "echo 'Waiting 15 seconds...'",
@@ -112,9 +224,62 @@
     ]
   },
   "distribute": {
-    "up": ["node libs/initScripts/local.js distribute"]
+    "up": [
+      "node libs/initScripts/local.js distribute"
+    ]
+  },
+  "account": {
+    "up": [
+      "node libs/initScripts/local.js print-accounts"
+    ]
   },
   "init-repos": {
-    "up": [". scripts/init-repos.sh"]
+    "up": [
+      ". $PROTOCOL_DIR/service-commands/scripts/init-repos.sh"
+    ]
+  },
+  "user-replica-set-manager": {
+    "up": [
+      "cd libs; npm run init-local update-userreplicasetmanager-init-config",
+      "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
+    ]
+  },
+  "aao": {
+    "up": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Starting AAO...'",
+      "cd $AAO_DIR; ./scripts/configureLocal.sh; docker-compose -f docker-compose-dev.yml up -d",
+      "cp ~/.audius/aao-config.json $PROTOCOL_DIR/identity-service",
+      "sleep 5",
+      "echo 'AAO Started'"
+    ],
+    "register": [
+      "cd service-commands; ./scripts/registerAAO.sh"
+    ],
+    "down": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Stopping AAO...'",
+      "cd $AAO_DIR; docker-compose -f docker-compose-dev.yml down"
+    ]
+  },
+  "tn": {
+    "up": [
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "echo 'Starting TN...'",
+      "cd $TN_DIR; . scripts/start.sh dev",
+      "sleep 5",
+      "echo 'TN Started, registering on chain'",
+      "cd libs/; npm run init-local register-trusted-notifier"
+    ],
+    "restart": [
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "cd $TN_DIR; . scripts/stop.sh dev",
+      "cd $TN_DIR; . scripts/start.sh dev"
+    ],
+    "down": [
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "echo 'Stopping TN...'",
+      "cd $TN_DIR; . scripts/stop.sh dev"
+    ]
   }
 }

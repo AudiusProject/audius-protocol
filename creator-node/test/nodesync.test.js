@@ -1,350 +1,1049 @@
 const request = require('supertest')
-const models = require('../src/models')
-const { getApp } = require('./lib/app')
-const { getLibsMock } = require('./lib/libsMock')
-const { getIPFSMock } = require('./lib/ipfsMock')
-const { createStarterCNodeUser, testEthereumConstants, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
-const BlacklistManager = require('../src/blacklistManager')
-const ipfsClient = require('../src/ipfsClient')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const assert = require('assert')
 const _ = require('lodash')
-const { stringifiedDateFields } = require('./lib/utils')
 const nock = require('nock')
+const sinon = require('sinon')
+
 const config = require('../src/config')
+const models = require('../src/models')
+const { getApp, getServiceRegistryMock } = require('./lib/app')
+const { getLibsMock } = require('./lib/libsMock')
+const libsMock = getLibsMock()
+const {
+  createStarterCNodeUser,
+  testEthereumConstants,
+  destroyUsers
+} = require('./lib/dataSeeds')
+const BlacklistManager = require('../src/blacklistManager')
+
+const redisClient = require('../src/redis')
+const { stringifiedDateFields } = require('./lib/utils')
+const processSync = require('../src/services/sync/processSync')
+const { uploadTrack } = require('./lib/helpers')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
-const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
+const sampleExportDummyCIDPath = path.resolve(
+  __dirname,
+  'syncAssets/sampleExportDummyCID.json'
+)
+const sampleExportDummyCIDFromClock2Path = path.resolve(
+  __dirname,
+  'syncAssets/sampleExportDummyCIDFromClock2.json'
+)
 
-describe('test nodesync', function () {
-  let server, app
+describe('test nodesync', async function () {
+  let server, app, mockServiceRegistry, userId
 
+  const originalMaxExportClockValueRange = config.get(
+    'maxExportClockValueRange'
+  )
+  let maxExportClockValueRange = originalMaxExportClockValueRange
+
+  userId = 1
+
+  const setupDepsAndApp = async function () {
+    const appInfo = await getApp(
+      libsMock,
+      BlacklistManager,
+      null,
+      userId
+    )
+    server = appInfo.server
+    app = appInfo.app
+    mockServiceRegistry = appInfo.mockServiceRegistry
+  }
+
+  /** Wipe DB + Redis */
+  beforeEach(async function () {
+    try {
+      await destroyUsers()
+    } catch (e) {
+      // do nothing
+    }
+    await redisClient.flushdb()
+  })
+
+  /**
+   * Wipe DB, server, and redis state
+   */
   afterEach(async function () {
-    await destroyUsers()
+    await sinon.restore()
     await server.close()
   })
 
-  describe('test export', function () {
-    beforeEach(async function () {
-      const ipfs = ipfsClient.ipfs
-      const libsMock = getLibsMock()
-      const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
-      server = appInfo.server
-      app = appInfo.app
-    })
+  describe('test /export route', async function () {
+    let cnodeUserUUID,
+      sessionToken,
+      metadataMultihash,
+      metadataFileUUID,
+      transcodedTrackCID,
+      transcodedTrackUUID,
+      trackSegments,
+      sourceFile
+    let trackMetadataMultihash, trackMetadataFileUUID
 
-    it('should export the correct json blob for db state with a track and user', async function () {
-      // SETUP
+    const { pubKey } = testEthereumConstants
 
-      const MAX_CLOCK_VAL = 37
-
+    const createUserAndTrack = async function () {
       // Create user
-      const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser()
-      await getCNodeUser(cnodeUserUUID)
+      ;({ cnodeUserUUID, sessionToken, userId } = await createStarterCNodeUser(
+        userId
+      ))
 
-      // Set user metadata
+      // Upload user metadata
       const metadata = {
         metadata: {
           testField: 'testValue'
         }
       }
-      const { body: { data: { metadataMultihash, metadataFileUUID } } } = await request(app)
+      const userMetadataResp = await request(app)
         .post('/audius_users/metadata')
         .set('X-Session-ID', sessionToken)
+        .set('User-Id', userId)
         .send(metadata)
+        .expect(200)
+      metadataMultihash = userMetadataResp.body.data.metadataMultihash
+      metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
 
+      // Associate user with with blockchain ID
       const associateRequest = {
         blockchainUserId: 1,
         metadataFileUUID,
         blockNumber: 10
       }
-
-      // Associate user with metadata
       await request(app)
-        .post('/audius_users/')
+        .post('/audius_users')
         .set('X-Session-ID', sessionToken)
+        .set('User-Id', userId)
         .send(associateRequest)
+        .expect(200)
 
-      // Upload a track
-      const file = fs.readFileSync(testAudioFilePath)
-      // set track content
-      const { body: { transcodedTrackCID, transcodedTrackUUID, track_segments: trackSegments, source_file: sourceFile } } = await request(app)
-        .post('/track_content')
-        .attach('file', file, { filename: 'fname.mp3' })
-        .set('Content-Type', 'multipart/form-data')
-        .set('X-Session-ID', sessionToken)
+      /** Upload a track */
 
-      // set track metadata
+      const trackUploadResponse = await uploadTrack(
+        testAudioFilePath,
+        cnodeUserUUID,
+        mockServiceRegistry.blacklistManager
+      )
+
+      transcodedTrackUUID = trackUploadResponse.transcodedTrackUUID
+      trackSegments = trackUploadResponse.track_segments
+      sourceFile = trackUploadResponse.source_file
+      transcodedTrackCID = trackUploadResponse.transcodedTrackCID
+
+      // Upload track metadata
       const trackMetadata = {
-        test: 'field1',
-        owner_id: 1,
-        track_segments: trackSegments
+        metadata: {
+          test: 'field1',
+          owner_id: 1,
+          track_segments: trackSegments
+        },
+        source_file: sourceFile
       }
-      const { body: { metadataMultihash: trackMetadataMultihash, metadataFileUUID: trackMetadataFileUUID } } = await request(app)
+      const trackMetadataResp = await request(app)
         .post('/tracks/metadata')
         .set('X-Session-ID', sessionToken)
-        .send({ metadata: trackMetadata, source_file: sourceFile })
-      // associate track metadata with track
+        .set('User-Id', userId)
+        .send(trackMetadata)
+        .expect(200)
+      trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
+      trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+
+      // associate track + track metadata with blockchain ID
       await request(app)
         .post('/tracks')
         .set('X-Session-ID', sessionToken)
+        .set('User-Id', userId)
         .send({
           blockchainTrackId: 1,
           blockNumber: 10,
           metadataFileUUID: trackMetadataFileUUID,
           transcodedTrackUUID
         })
+    }
 
-      // Test: export
+    describe('Confirm export object matches DB state with a user and track', async function () {
+      beforeEach(setupDepsAndApp)
 
-      const { pubKey } = testEthereumConstants
-      const { body: exportBody } = await request(app)
-        .get(`/export?wallet_public_key=${pubKey.toLowerCase()}`)
+      beforeEach(createUserAndTrack)
 
-      // Verify
+      it('Test default export', async function () {
+        // confirm maxExportClockValueRange > cnodeUser.clock
+        const cnodeUserClock = (
+          await models.CNodeUser.findOne({
+            where: { cnodeUserUUID },
+            raw: true
+          })
+        ).clock
+        assert.ok(cnodeUserClock <= maxExportClockValueRange)
 
-      // Get user metadata
-      const userMetadataFile = stringifiedDateFields((await models.File.findOne({
-        where: {
-          multihash: metadataMultihash,
-          fileUUID: metadataFileUUID,
-          clock: 1
-        },
-        raw: true
-      })))
+        const { body: exportBody } = await request(app).get(
+          `/export?wallet_public_key=${pubKey.toLowerCase()}`
+        )
 
-      // get transcoded track file
-      const copy320 = stringifiedDateFields((await models.File.findOne({
-        where: {
-          multihash: transcodedTrackCID,
-          fileUUID: transcodedTrackUUID,
-          type: 'copy320'
-        },
-        raw: true
-      })))
+        /**
+         * Verify
+         */
 
-      // get segment files
-      const segmentHashes = trackSegments.map(t => t.multihash)
-      const segmentFiles = await Promise.all(segmentHashes.map(async (hash, i) => {
-        const segment = await models.File.findOne({
-          where: {
-            multihash: hash,
-            type: 'track'
-          },
-          raw: true
-        })
-        return stringifiedDateFields(segment)
-      }))
+        // Get user metadata
+        const userMetadataFile = stringifiedDateFields(
+          await models.File.findOne({
+            where: {
+              multihash: metadataMultihash,
+              fileUUID: metadataFileUUID,
+              clock: 1
+            },
+            raw: true
+          })
+        )
 
-      // Get track metadata file
-      const trackMetadataFile = stringifiedDateFields(await models.File.findOne({
-        where: {
-          multihash: trackMetadataMultihash,
-          fileUUID: trackMetadataFileUUID,
-          clock: 36
-        },
-        raw: true
-      }))
+        // get transcoded track file
+        const copy320 = stringifiedDateFields(
+          await models.File.findOne({
+            where: {
+              multihash: transcodedTrackCID,
+              fileUUID: transcodedTrackUUID,
+              type: 'copy320'
+            },
+            raw: true
+          })
+        )
 
-      // get audiusUser
-      const audiusUser = stringifiedDateFields(await models.AudiusUser.findOne({
-        where: {
-          metadataFileUUID,
-          clock: 2
-        },
-        raw: true
-      }))
+        // get segment files
+        const segmentHashes = trackSegments.map((t) => t.multihash)
+        const segmentFiles = await Promise.all(
+          segmentHashes.map(async (hash, i) => {
+            const segment = await models.File.findOne({
+              where: {
+                multihash: hash,
+                type: 'track'
+              },
+              raw: true
+            })
+            return stringifiedDateFields(segment)
+          })
+        )
 
-      // get cnodeUser
-      const cnodeUser = stringifiedDateFields(await models.CNodeUser.findOne({
-        where: {
-          clock: MAX_CLOCK_VAL,
-          cnodeUserUUID
-        },
-        raw: true
-      }))
+        // Get track metadata file
+        const trackMetadataFile = stringifiedDateFields(
+          await models.File.findOne({
+            where: {
+              multihash: trackMetadataMultihash,
+              fileUUID: trackMetadataFileUUID,
+              clock: 36
+            },
+            raw: true
+          })
+        )
 
-      // get clock records
-      const clockRecords = await Promise.all(_.range(1, MAX_CLOCK_VAL + 1).map(async (i) => {
-        const record = await models.ClockRecord.findOne({
-          where: {
-            clock: i,
-            cnodeUserUUID
-          },
-          raw: true
-        })
-        return stringifiedDateFields(record)
-      }))
+        // get audiusUser
+        const audiusUser = stringifiedDateFields(
+          await models.AudiusUser.findOne({
+            where: {
+              metadataFileUUID,
+              clock: 2
+            },
+            raw: true
+          })
+        )
 
-      // get track file
-      const trackFile = stringifiedDateFields(await models.Track.findOne({
-        where: {
-          clock: MAX_CLOCK_VAL,
-          cnodeUserUUID,
-          metadataFileUUID: trackMetadataFileUUID
-        },
-        raw: true
-      }))
+        // get cnodeUser
+        const cnodeUser = stringifiedDateFields(
+          await models.CNodeUser.findOne({
+            where: {
+              cnodeUserUUID
+            },
+            raw: true
+          })
+        )
 
-      // construct the expected response
-      const expectedData = {
-        [cnodeUserUUID]: {
-          ...cnodeUser,
-          audiusUsers: [
-            audiusUser
-          ],
-          tracks: [trackFile],
-          files: [userMetadataFile, copy320, ...segmentFiles, trackMetadataFile],
-          clockRecords
+        // get clock records
+        const clockRecords = (
+          await models.ClockRecord.findAll({
+            where: { cnodeUserUUID },
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // get track file
+        const trackFile = stringifiedDateFields(
+          await models.Track.findOne({
+            where: {
+              cnodeUserUUID,
+              metadataFileUUID: trackMetadataFileUUID
+            },
+            raw: true
+          })
+        )
+
+        const clockInfo = {
+          localClockMax: cnodeUser.clock,
+          requestedClockRangeMin: 0,
+          requestedClockRangeMax: maxExportClockValueRange - 1
         }
-      }
 
-      // compare exported data
-      const exportedUserData = exportBody.data.cnodeUsers
-      assert.deepStrictEqual(exportedUserData, expectedData)
-      assert.deepStrictEqual(clockRecords.length, MAX_CLOCK_VAL)
+        // construct the expected response
+        const expectedData = {
+          [cnodeUserUUID]: {
+            ...cnodeUser,
+            audiusUsers: [audiusUser],
+            tracks: [trackFile],
+            files: [
+              userMetadataFile,
+              copy320,
+              ...segmentFiles,
+              trackMetadataFile
+            ],
+            clockRecords,
+            clockInfo
+          }
+        }
+
+        // compare exported data
+        const exportedUserData = exportBody.data.cnodeUsers
+        assert.deepStrictEqual(clockRecords.length, cnodeUserClock)
+        assert.deepStrictEqual(exportedUserData, expectedData)
+      })
+    })
+
+    describe('Confirm export works for user with data exceeding maxExportClockValueRange', async function () {
+      /**
+       * override maxExportClockValueRange to smaller value for testing
+       */
+      beforeEach(async function () {
+        maxExportClockValueRange = 10
+        process.env.maxExportClockValueRange = maxExportClockValueRange
+      })
+
+      beforeEach(setupDepsAndApp)
+
+      beforeEach(createUserAndTrack)
+
+      /**
+       * unset maxExportClockValueRange
+       */
+      afterEach(async function () {
+        delete process.env.maxExportClockValueRange
+      })
+
+      it('Export from clock = 0', async function () {
+        const requestedClockRangeMin = 0
+        const requestedClockRangeMax = maxExportClockValueRange - 1
+
+        // confirm maxExportClockValueRange < cnodeUser.clock
+        const cnodeUserClock = (
+          await models.CNodeUser.findOne({
+            where: { cnodeUserUUID },
+            raw: true
+          })
+        ).clock
+        assert.ok(cnodeUserClock > maxExportClockValueRange)
+
+        const { body: exportBody } = await request(app).get(
+          `/export?wallet_public_key=${pubKey.toLowerCase()}`
+        )
+
+        /**
+         * Verify
+         */
+
+        // get cnodeUser
+        const cnodeUser = stringifiedDateFields(
+          await models.CNodeUser.findOne({
+            where: {
+              cnodeUserUUID
+            },
+            raw: true
+          })
+        )
+        cnodeUser.clock = requestedClockRangeMax
+
+        // get clockRecords
+        const clockRecords = (
+          await models.ClockRecord.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // Get audiusUsers
+        const audiusUsers = (
+          await models.AudiusUser.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // get tracks
+        const tracks = (
+          await models.Track.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // get files
+        const files = (
+          await models.File.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        const clockInfo = {
+          requestedClockRangeMin,
+          requestedClockRangeMax,
+          localClockMax: requestedClockRangeMax
+        }
+
+        // construct the expected response
+        const expectedData = {
+          [cnodeUserUUID]: {
+            ...cnodeUser,
+            audiusUsers,
+            tracks,
+            files,
+            clockRecords,
+            clockInfo
+          }
+        }
+
+        // compare exported data
+        const exportedUserData = exportBody.data.cnodeUsers
+        assert.deepStrictEqual(exportedUserData, expectedData)
+        // when requesting from 0, exported data set is 1 less than expected range since clock values are 1-indexed
+        assert.deepStrictEqual(
+          clockRecords.length,
+          maxExportClockValueRange - 1
+        )
+      })
+
+      it('Export from clock = 10', async function () {
+        const clockRangeMin = 10
+        const requestedClockRangeMin = clockRangeMin
+        const requestedClockRangeMax =
+          clockRangeMin + (maxExportClockValueRange - 1)
+
+        // confirm maxExportClockValueRange < cnodeUser.clock
+        const cnodeUserClock = (
+          await models.CNodeUser.findOne({
+            where: { cnodeUserUUID },
+            raw: true
+          })
+        ).clock
+        assert.ok(cnodeUserClock > maxExportClockValueRange)
+
+        const { body: exportBody } = await request(app).get(
+          `/export?wallet_public_key=${pubKey.toLowerCase()}&clock_range_min=${requestedClockRangeMin}`
+        )
+
+        /**
+         * Verify
+         */
+
+        // get cnodeUser
+        const cnodeUser = stringifiedDateFields(
+          await models.CNodeUser.findOne({
+            where: {
+              cnodeUserUUID
+            },
+            raw: true
+          })
+        )
+        cnodeUser.clock = requestedClockRangeMax
+
+        // get clockRecords
+        const clockRecords = (
+          await models.ClockRecord.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // Get audiusUsers
+        const audiusUsers = (
+          await models.AudiusUser.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // get tracks
+        const tracks = (
+          await models.Track.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // get files
+        const files = (
+          await models.File.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        const clockInfo = {
+          requestedClockRangeMin,
+          requestedClockRangeMax,
+          localClockMax: requestedClockRangeMax
+        }
+
+        // construct the expected response
+        const expectedData = {
+          [cnodeUserUUID]: {
+            ...cnodeUser,
+            audiusUsers,
+            tracks,
+            files,
+            clockRecords,
+            clockInfo
+          }
+        }
+
+        // compare exported data
+        const exportedUserData = exportBody.data.cnodeUsers
+        assert.deepStrictEqual(exportedUserData, expectedData)
+        assert.deepStrictEqual(clockRecords.length, maxExportClockValueRange)
+      })
+
+      it('Export from clock = 30 where range exceeds final value', async function () {
+        const clockRangeMin = 30
+        const requestedClockRangeMin = clockRangeMin
+        const requestedClockRangeMax =
+          clockRangeMin + (maxExportClockValueRange - 1)
+
+        // confirm cnodeUser.clock < (requestedClockRangeMin + maxExportClockValueRange)
+        const cnodeUserClock = (
+          await models.CNodeUser.findOne({
+            where: { cnodeUserUUID },
+            raw: true
+          })
+        ).clock
+        assert.ok(
+          cnodeUserClock < requestedClockRangeMin + maxExportClockValueRange
+        )
+
+        const { body: exportBody } = await request(app).get(
+          `/export?wallet_public_key=${pubKey.toLowerCase()}&clock_range_min=${requestedClockRangeMin}`
+        )
+
+        /**
+         * Verify
+         */
+
+        // get cnodeUser
+        const cnodeUser = stringifiedDateFields(
+          await models.CNodeUser.findOne({
+            where: {
+              cnodeUserUUID
+            },
+            raw: true
+          })
+        )
+        cnodeUser.clock = Math.min(cnodeUser.clock, requestedClockRangeMax)
+
+        // get clockRecords
+        const clockRecords = (
+          await models.ClockRecord.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // Get audiusUsers
+        const audiusUsers = (
+          await models.AudiusUser.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // get tracks
+        const tracks = (
+          await models.Track.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        // get files
+        const files = (
+          await models.File.findAll({
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: requestedClockRangeMax
+              }
+            },
+            order: [['clock', 'ASC']],
+            raw: true
+          })
+        ).map(stringifiedDateFields)
+
+        const clockInfo = {
+          requestedClockRangeMin,
+          requestedClockRangeMax,
+          localClockMax: cnodeUser.clock
+        }
+
+        // construct the expected response
+        const expectedData = {
+          [cnodeUserUUID]: {
+            ...cnodeUser,
+            audiusUsers,
+            tracks,
+            files,
+            clockRecords,
+            clockInfo
+          }
+        }
+
+        // compare exported data
+        const exportedUserData = exportBody.data.cnodeUsers
+        assert.deepStrictEqual(exportedUserData, expectedData)
+        assert.deepStrictEqual(
+          clockRecords.length,
+          cnodeUser.clock - requestedClockRangeMin + 1
+        )
+      })
     })
   })
 
-  describe('test sync', function () {
-    beforeEach(async function () {
-      const ipfsMock = getIPFSMock()
+  describe('Test processSync function', async function () {
+    let serviceRegistryMock
 
-      // Make ipfs add return the cid
-      // used to create the readstream.
-      // Used in the final step of
-      // `saveFileForMultihash`
-      ipfsMock.add = function * (content) {
-        const { path } = content
-        const cid = path.split('/')[1]
-        yield {
-          cid: {
-            toString: () => cid
-          }
+    const TEST_ENDPOINT = 'http://test-cn.co'
+    const { pubKey } = testEthereumConstants
+    const userWallets = [pubKey.toLowerCase()]
+
+    const createUser = async function () {
+      // Create user
+      const session = await createStarterCNodeUser(userId)
+
+      // Upload user metadata
+      const metadata = {
+        metadata: {
+          testField: 'testValue'
         }
       }
+      const userMetadataResp = await request(app)
+        .post('/audius_users/metadata')
+        .set('X-Session-ID', session.sessionToken)
+        .set('User-Id', session.userId)
+        .send(metadata)
+        .expect(200)
 
-      const libsMock = getLibsMock()
-      const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
-      server = appInfo.server
-      app = appInfo.app
-    })
+      const metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
 
-    it('inserts the correct db entries for a given export blob', async function () {
-      // Setup
+      // Associate user with with blockchain ID
+      const associateRequest = {
+        blockchainUserId: 1,
+        metadataFileUUID,
+        blockNumber: 10
+      }
+      await request(app)
+        .post('/audius_users')
+        .set('X-Session-ID', session.sessionToken)
+        .set('User-Id', session.userId)
+        .send(associateRequest)
+        .expect(200)
 
-      const TEST_ENDPOINT = 'http://test-cn.co'
-      const userMetadataURI = config.get('userMetadataNodeUrl')
-      const { pubKey } = testEthereumConstants
+      return session.cnodeUserUUID
+    }
 
-      // Get the saved export
-      const sampleExport = JSON.parse(fs.readFileSync(sampleExportPath))
+    const unpackSampleExportData = (sampleExportFilePath) => {
+      const sampleExport = JSON.parse(fs.readFileSync(sampleExportFilePath))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
-      const audiusUser = cnodeUser.audiusUsers[0]
-      const { tracks, files, clockRecords } = cnodeUser
+      const { audiusUsers, tracks, files, clockRecords } = cnodeUser
 
-      // Setup mocked responses
+      return {
+        sampleExport,
+        cnodeUser,
+        audiusUsers,
+        tracks,
+        files,
+        clockRecords
+      }
+    }
+
+    const setupMocks = (sampleExport) => {
+      // Mock /export route response
       nock(TEST_ENDPOINT)
         .persist()
-        .get(uri => uri.includes('/export'))
+        .get((uri) => uri.includes('/export'))
         .reply(200, sampleExport)
 
-      nock(userMetadataURI)
+      // This text 'audius is cool' is mapped to the hash in the dummy json data
+      // If changes are made to the response body, make the corresponding changes to the hash too
+      nock('http://mock-cn1.audius.co')
         .persist()
-        .get(uri => uri.includes('/ipfs'))
-        .reply(200, { data: Buffer.alloc(32) })
+        .get((uri) =>
+          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(200, 'audius is cool')
 
-      // test: sync
+      nock('http://mock-cn2.audius.co')
+        .persist()
+        .get((uri) =>
+          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(200, 'audius is cool')
 
-      const { sessionToken } = await createStarterCNodeUser()
-      await request(app)
-        .post('/sync')
-        .set('X-Session-ID', sessionToken)
-        .send({
-          wallet: [pubKey.toLowerCase()],
-          creator_node_endpoint: TEST_ENDPOINT,
-          immediate: true
-        }).expect(200)
+      nock('http://mock-cn3.audius.co')
+        .persist()
+        .get((uri) =>
+          uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(200, 'audius is cool')
+    }
 
-      // verify: expected files are all on disc
+    const verifyLocalCNodeUserStateForUser = async (exportedCnodeUser) => {
+      exportedCnodeUser = _.pick(exportedCnodeUser, [
+        'cnodeUserUUID',
+        'walletPublicKey',
+        'lastLogin',
+        'latestBlockNumber',
+        'clock',
+        'createdAt'
+      ])
 
-      // verify clock records
-      for (let exportedRecord of clockRecords) {
-        const { cnodeUserUUID, clock, sourceTable, createdAt, updatedAt } = exportedRecord
-        const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
+      const localCNodeUser = stringifiedDateFields(
+        await models.CNodeUser.findOne({
           where: {
-            clock,
-            cnodeUserUUID,
-            sourceTable,
-            createdAt,
-            updatedAt
+            walletPublicKey: exportedCnodeUser.walletPublicKey
           },
           raw: true
-        }))
-        assert.deepStrictEqual(localRecord, exportedRecord)
+        })
+      )
+
+      assert.deepStrictEqual(
+        _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
+        _.omit(exportedCnodeUser, ['cnodeUserUUID', 'updatedAt'])
+      )
+
+      const newCNodeUserUUID = localCNodeUser.cnodeUserUUID
+      return newCNodeUserUUID
+    }
+
+    /**
+     * Verifies local state for user with CNodeUserUUID for AudiusUsers, Tracks, Files, and ClockRecords tables
+     */
+    const verifyLocalStateForUser = async ({
+      cnodeUserUUID,
+      exportedAudiusUsers,
+      exportedClockRecords,
+      exportedFiles,
+      exportedTracks
+    }) => {
+      /**
+       * Verify local AudiusUsers table state matches export
+       */
+      for (const exportedAudiusUser of exportedAudiusUsers) {
+        const localAudiusUser = stringifiedDateFields(
+          await models.AudiusUser.findOne({
+            where: {
+              cnodeUserUUID,
+              clock: exportedAudiusUser.clock
+            },
+            raw: true
+          })
+        )
+        assert.deepStrictEqual(
+          _.omit(localAudiusUser, ['cnodeUserUUID']),
+          _.omit(exportedAudiusUser, ['cnodeUserUUID'])
+        )
       }
 
-      // verify files
-      for (let exportedFile of files) {
-        const { fileUUID, cnodeUserUUID, multihash, clock } = exportedFile
-        const localFile = stringifiedDateFields(await models.File.findOne({
-          where: {
-            clock,
-            cnodeUserUUID,
-            multihash,
-            fileUUID
-          },
-          raw: true
-        }))
-        assert.deepStrictEqual(localFile, exportedFile)
+      /**
+       * Verify local Tracks table state matches export
+       */
+      for (const exportedTrack of exportedTracks) {
+        const { clock, blockchainId, metadataFileUUID } = exportedTrack
+        const localFile = stringifiedDateFields(
+          await models.Track.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              blockchainId,
+              metadataFileUUID
+            },
+            raw: true
+          })
+        )
+        assert.deepStrictEqual(
+          _.omit(localFile, ['cnodeUserUUID']),
+          _.omit(exportedTrack, ['cnodeUserUUID'])
+        )
       }
 
-      // verify tracks
-      for (let exportedTrack of tracks) {
-        const { cnodeUserUUID, clock, blockchainId, metadataFileUUID } = exportedTrack
-        const localFile = stringifiedDateFields(await models.Track.findOne({
-          where: {
-            clock,
-            cnodeUserUUID,
-            blockchainId,
-            metadataFileUUID
-          },
-          raw: true
-        }))
-        assert.deepStrictEqual(localFile, exportedTrack)
+      /**
+       * Verify local Files table state matches export
+       */
+      for (const exportedFile of exportedFiles) {
+        const { fileUUID, multihash, clock } = exportedFile
+        const localFile = stringifiedDateFields(
+          await models.File.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              multihash,
+              fileUUID
+            },
+            raw: true
+          })
+        )
+        assert.deepStrictEqual(
+          _.omit(localFile, ['cnodeUserUUID']),
+          _.omit(exportedFile, ['cnodeUserUUID'])
+        )
       }
 
-      // verify AudiusUser
-      const localAudiusUser = stringifiedDateFields(await models.AudiusUser.findOne({
-        where: {
-          cnodeUserUUID: audiusUser.cnodeUserUUID,
-          clock: audiusUser.clock
-        },
-        raw: true
-      }))
-
-      const exportedCnodeUser = {
-        cnodeUserUUID: cnodeUser.cnodeUserUUID,
-        walletPublicKey: cnodeUser.walletPublicKey,
-        lastLogin: cnodeUser.lastLogin,
-        latestBlockNumber: cnodeUser.latestBlockNumber,
-        clock: cnodeUser.clock,
-        createdAt: cnodeUser.createdAt
+      /**
+       * Verify local ClockRecords table state matches export
+       */
+      for (const exportedRecord of exportedClockRecords) {
+        const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
+        const localRecord = stringifiedDateFields(
+          await models.ClockRecord.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              sourceTable,
+              createdAt,
+              updatedAt
+            },
+            raw: true
+          })
+        )
+        assert.deepStrictEqual(
+          _.omit(localRecord, ['cnodeUserUUID']),
+          _.omit(exportedRecord, ['cnodeUserUUID'])
+        )
       }
 
-      assert.deepStrictEqual(localAudiusUser, audiusUser)
+      /**
+       * TODO - Verify all expected files are on disk
+       */
+    }
 
-      // verify CNodeUser
-      let localCnodeUser = stringifiedDateFields(await models.CNodeUser.find({
-        where: {
-          cnodeUserUUID: cnodeUser.cnodeUserUUID
-        },
-        raw: true
-      }))
-      localCnodeUser = _.omit(localCnodeUser, ['updatedAt'])
+    /**
+     * Setup deps + mocks + app
+     */
+    beforeEach(async function () {
+      nock.cleanAll()
 
-      assert.deepStrictEqual(localCnodeUser, exportedCnodeUser)
+      maxExportClockValueRange = originalMaxExportClockValueRange
+      process.env.maxExportClockValueRange = maxExportClockValueRange
+
+      const appInfo = await getApp(
+        libsMock,
+        BlacklistManager,
+        null,
+        userId
+      )
+      server = appInfo.server
+      app = appInfo.app
+
+      serviceRegistryMock = getServiceRegistryMock(
+        libsMock,
+        BlacklistManager
+      )
+    })
+
+    it('Syncs correctly from clean user state with mocked export object', async function () {
+      const {
+        sampleExport,
+        cnodeUser: exportedCnodeUser,
+        audiusUsers: exportedAudiusUsers,
+        tracks: exportedTracks,
+        files: exportedFiles,
+        clockRecords: exportedClockRecords
+      } = unpackSampleExportData(sampleExportDummyCIDPath)
+
+      setupMocks(sampleExport)
+
+      // Confirm local user state is empty before sync
+      const initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
+
+      // Call processSync
+      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+
+      const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
+        exportedCnodeUser
+      )
+
+      await verifyLocalStateForUser({
+        cnodeUserUUID: newCNodeUserUUID,
+        exportedAudiusUsers,
+        exportedClockRecords,
+        exportedFiles,
+        exportedTracks
+      })
+    })
+
+    it('Syncs correctly when cnodeUser data already exists locally', async function () {
+      const {
+        sampleExport,
+        cnodeUser: exportedCnodeUser,
+        audiusUsers: exportedAudiusUsers,
+        tracks: exportedTracks,
+        files: exportedFiles,
+        clockRecords: exportedClockRecords
+      } = unpackSampleExportData(sampleExportDummyCIDFromClock2Path)
+
+      setupMocks(sampleExport)
+
+      // Confirm local user state is empty before sync
+      const initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
+
+      // seed user state locally with different cnodeUserUUID
+      const cnodeUserUUID = await createUser()
+
+      // Confirm local user state exists before sync
+      const localCNodeUserCount = await models.CNodeUser.count({
+        where: { cnodeUserUUID }
+      })
+      assert.strictEqual(localCNodeUserCount, 1)
+
+      // Call processSync
+      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+
+      await verifyLocalCNodeUserStateForUser(exportedCnodeUser)
+
+      await verifyLocalStateForUser({
+        cnodeUserUUID,
+        exportedAudiusUsers,
+        exportedClockRecords,
+        exportedFiles,
+        exportedTracks
+      })
+    })
+
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true', async () => {
+      const {
+        sampleExport,
+        cnodeUser: exportedCnodeUser,
+        audiusUsers: exportedAudiusUsers,
+        tracks: exportedTracks,
+        files: exportedFiles,
+        clockRecords: exportedClockRecords
+      } = unpackSampleExportData(sampleExportDummyCIDPath)
+
+      setupMocks(sampleExport)
+
+      // Confirm local user state is empty before sync
+      const initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
+
+      // seed local user state with different cnodeUserUUID
+      const cnodeUserUUID = await createUser()
+
+      // Confirm local user state exists before sync
+      const localCNodeUserCount = await models.CNodeUser.count({
+        where: { cnodeUserUUID }
+      })
+      assert.strictEqual(localCNodeUserCount, 1)
+
+      // Call processSync with `forceResync` = true
+      await processSync(
+        serviceRegistryMock,
+        userWallets,
+        TEST_ENDPOINT,
+        /* blockNumber */ null,
+        /* forceResync */ true
+      )
+
+      const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
+        exportedCnodeUser
+      )
+
+      await verifyLocalStateForUser({
+        cnodeUserUUID: newCNodeUserUUID,
+        exportedAudiusUsers,
+        exportedClockRecords,
+        exportedFiles,
+        exportedTracks
+      })
     })
   })
 })

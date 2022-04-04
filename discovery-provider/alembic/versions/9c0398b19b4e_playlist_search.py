@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9c0398b19b4e'
-down_revision = '9e9acd8a115a'
+revision = "9c0398b19b4e"
+down_revision = "9e9acd8a115a"
 branch_labels = None
 depends_on = None
 
@@ -20,7 +20,8 @@ def upgrade():
     connection = op.get_bind()
 
     # playlist search index
-    connection.execute('''
+    connection.execute(
+        """
       -- since search fields are spread across multiple tables, denormalize data via materialized view
       --  - use custom text search config in building documents
       --  - document consists of every word from dictionary present in given dataset
@@ -42,9 +43,11 @@ def upgrade():
 
       -- add index on above materialized view
       CREATE INDEX playlist_words_idx ON playlist_lexeme_dict USING gin(word gin_trgm_ops);
-    ''')
+    """
+    )
 
-    connection.execute('''
+    connection.execute(
+        """
       -- since search fields are spread across multiple tables, denormalize data via materialized view
       --  - use custom text search config in building documents
       --  - document consists of every word from dictionary present in given dataset
@@ -66,7 +69,9 @@ def upgrade():
 
       -- add index on above materialized view
       CREATE INDEX album_words_idx ON album_lexeme_dict USING gin(word gin_trgm_ops);
-    ''')
+    """
+    )
+
 
 def downgrade():
     pass

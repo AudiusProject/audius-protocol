@@ -5,8 +5,32 @@ import { parseTxWithAssertsAndResp, parseTxWithResp } from '../utils/parser'
 import { getUserFromFactory, getNetworkIdForContractInstance } from '../utils/getters'
 import { toStr, eth_signTypedData } from '../utils/util'
 import { validateObj } from '../utils/validator'
+import { web3New } from '../utils/web3New'
 
 const signatureSchemas = require('../../signature_schemas/signatureSchemas')
+
+/** UserReplicaSetManager functions */
+export const updateReplicaSet = async (userReplicaSetManager, userId, primary, secondaries, oldPrimary, oldSecondaries, senderAcct) => {
+  const nonce = signatureSchemas.getNonce()
+  const chainId = getNetworkIdForContractInstance(userReplicaSetManager)
+  let secondariesHash = web3New.utils.soliditySha3(web3New.eth.abi.encodeParameter('uint[]', secondaries.map(x => x.toNumber())))
+  let oldSecondariesHash = web3New.utils.soliditySha3(web3New.eth.abi.encodeParameter('uint[]', oldSecondaries.map(x => x.toNumber())))
+  let signatureData = signatureSchemas.generators.getUpdateReplicaSetRequestData(
+    chainId,
+    userReplicaSetManager.address,
+    userId,
+    primary,
+    secondariesHash,
+    oldPrimary,
+    oldSecondariesHash,
+    nonce
+  )
+  // Sign with senderAcct
+  let sig = await eth_signTypedData(senderAcct, signatureData)
+  let tx = await userReplicaSetManager.updateReplicaSet(userId, primary, secondaries, oldPrimary, oldSecondaries, nonce, sig)
+  parseTxWithAssertsAndResp(tx, 'UpdateReplicaSet', { _userId: userId, _primaryId: primary, _secondaryIds: secondaries })
+  return tx
+}
 
 /** Adds user to blockchain using function input fields,
   *   validates emitted event and user data on-chain

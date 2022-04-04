@@ -1,6 +1,0 @@
-{
-  "ipfsHost": "localhost",
-  "dbUrl": "postgres://postgres:postgres@127.0.0.1:5432/audius_content_service",
-  "port": 8000,
-  "logLevel": "debug"
-}

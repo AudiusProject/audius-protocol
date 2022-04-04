@@ -1,6 +1,8 @@
-const addIPLDToBlacklist = async (libsWrapper, digest, blacklisterAddressPrivateKey = null) => {
-    const ipldTxReceipt = await libsWrapper.addIPLDToBlacklist(digest, blacklisterAddressPrivateKey)
-    return ipldTxReceipt
+const IpldBlacklist = {}
+
+IpldBlacklist.addIPLDToBlacklist = async (libsWrapper, digest, blacklisterAddressPrivateKey = null) => {
+  const ipldTxReceipt = await libsWrapper.addIPLDToBlacklist(digest, blacklisterAddressPrivateKey)
+  return ipldTxReceipt
 }
 
-module.exports = { addIPLDToBlacklist }
+module.exports = IpldBlacklist

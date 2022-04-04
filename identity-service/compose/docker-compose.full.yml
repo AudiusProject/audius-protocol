@@ -33,6 +33,7 @@ services:
       - ../../libs:/usr/src/audius-libs
     ports:
       - '7000:7000'
+      - '9229:9229'
     networks:
       - audius_dev
 

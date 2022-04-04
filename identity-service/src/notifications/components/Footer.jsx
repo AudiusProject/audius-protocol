@@ -49,7 +49,7 @@ const MadeWithLove = () => (
   </div>
 )
 
-const AllRightsReserved = () => (
+const AllRightsReserved = ({ copyrightYear }) => (
   <div
     className={'gilroy'}
     style={{
@@ -58,7 +58,7 @@ const AllRightsReserved = () => (
       fontSize: '14px'
     }}
   >
-    &copy; 2019 Audius, Inc. All Rights Reserved.
+    &copy; {copyrightYear} Audius, Inc. All Rights Reserved.
   </div>
 )
 
@@ -106,7 +106,7 @@ const Footer = (props) => {
             margin: '0px'
           }}
         >
-          <AllRightsReserved />
+          <AllRightsReserved copyrightYear={props.copyrightYear} />
         </td>
       </tr>
       <tr>

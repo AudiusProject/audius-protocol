@@ -1,9 +1,7 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const GovernedContractClient = require('../contracts/GovernedContractClient')
 const axios = require('axios')
 const { range } = require('lodash')
-
-const DEFAULT_GAS_AMOUNT = 200000
 
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
@@ -28,6 +26,10 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
     const sanitizedEndpoint = endpoint.replace(/\/$/, '')
 
+    if (!this.isDebug && !Utils.isHttps(sanitizedEndpoint)) {
+      throw new Error('Domain name not using https protocol!')
+    }
+
     if (!this.isDebug && !Utils.isFQDN(sanitizedEndpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
@@ -42,12 +44,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       timeout: 1000
     }
     const resp = await axios(axiosRequestObj)
-    let endpointServiceType
-    try {
-      endpointServiceType = resp.data.data.service
-    } catch (e) {
-      endpointServiceType = resp.data.service
-    }
+    const endpointServiceType = resp.data.data.service
 
     if (serviceType !== endpointServiceType) {
       throw new Error('Attempting to register endpoint with mismatched service type')
@@ -85,6 +82,136 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       this.web3Manager.getWalletAddress())
   }
 
+  async getRegisteredServiceProviderEvents ({
+    serviceType,
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (owner) {
+      filter._owner = owner
+    }
+    if (serviceType) {
+      filter._serviceType = serviceType
+    }
+    const events = await contract.getPastEvents('RegisteredServiceProvider', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      spID: parseInt(event.returnValues._spID),
+      serviceType: Utils.hexToUtf8(event.returnValues._serviceType),
+      owner: event.returnValues._owner,
+      endpoint: event.returnValues._endpoint,
+      stakeAmount: Utils.toBN(event.returnValues._stakeAmount)
+    }))
+  }
+
+  async getDeregisteredServiceProviderEvents ({
+    serviceType,
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (owner) {
+      filter._owner = owner
+    }
+    if (serviceType) {
+      filter._serviceType = serviceType
+    }
+    const events = await contract.getPastEvents('DeregisteredServiceProvider', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      spID: parseInt(event.returnValues._spID),
+      serviceType: Utils.hexToUtf8(event.returnValues._serviceType),
+      owner: event.returnValues._owner,
+      endpoint: event.returnValues._endpoint,
+      stakeAmount: Utils.toBN(event.returnValues._stakeAmount)
+    }))
+  }
+
+  async getIncreasedStakeEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('IncreasedStake', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      increaseAmount: Utils.toBN(event.returnValues._increaseAmount),
+      newStakeAmount: Utils.toBN(event.returnValues._newStakeAmount)
+    }))
+  }
+
+  async getDecreasedStakeEvaluatedEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('DecreaseStakeRequestEvaluated', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      newStakeAmount: Utils.toBN(event.returnValues._newStakeAmount)
+    }))
+  }
+
+  async getDecreasedStakeRequestedEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('DecreaseStakeRequested', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock)
+    }))
+  }
+
+  async getDecreasedStakeCancelledEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('DecreaseStakeRequestCancelled', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock)
+    }))
+  }
+
   // Get the deregistered service's most recent endpoint and delegate owner wallet
   async getDeregisteredService ({
     serviceType,
@@ -92,8 +219,8 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let service = { endpoint: '', delegateOwnerWallet: '' }
-    let registerEvents = await contract.getPastEvents('RegisteredServiceProvider', {
+    const service = { endpoint: '', delegateOwnerWallet: '' }
+    const registerEvents = await contract.getPastEvents('RegisteredServiceProvider', {
       fromBlock: queryStartBlock,
       filter: {
         _spID: spID,
@@ -107,7 +234,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       service.owner = _owner
     }
 
-    let endpointUpdateEvents = await contract.getPastEvents('EndpointUpdated', {
+    const endpointUpdateEvents = await contract.getPastEvents('EndpointUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         _spID: spID,
@@ -120,7 +247,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       service.endpoint = _newEndpoint
     }
 
-    let walletEvents = await contract.getPastEvents('DelegateOwnerWalletUpdated', {
+    const walletEvents = await contract.getPastEvents('DelegateOwnerWalletUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         _spID: spID,
@@ -297,12 +424,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }
 
     const resp = await axios(axiosRequestObj)
-    let serviceType
-    try {
-      serviceType = resp.data.data.service
-    } catch (e) {
-      serviceType = resp.data.service
-    }
+    const serviceType = resp.data.data.service
 
     const serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
     const info = await this.getServiceEndpointInfo(serviceType, serviceProviderId)
@@ -331,6 +453,10 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return spInfo
   }
 
+  /**
+   * Returns all service providers of requested `serviceType`
+   * Returns array of objects with schema { blockNumber, delegateOwnerWallet, endpoint, owner, spID, type }
+   */
   async getServiceProviderList (serviceType) {
     const numberOfProviders = await this.getTotalServiceTypeProviders(serviceType)
 
@@ -348,8 +474,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       duration
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -377,7 +502,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       updatedDelegateOwnerWallet
     )
 
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -388,7 +513,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       oldEndpoint,
       newEndpoint
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -398,7 +523,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       ownerAddress,
       deployerCut
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -416,7 +541,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       'cancelUpdateDeployerCut',
       ownerAddress
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -425,7 +550,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       'updateDeployerCut',
       ownerAddress
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -435,7 +560,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       ownerAddress,
       newAmount
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 }

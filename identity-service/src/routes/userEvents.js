@@ -1,4 +1,4 @@
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 
@@ -49,7 +49,7 @@ module.exports = function (app) {
     } catch (e) {
       req.logger.error(e)
       console.log(e)
-      return errorResponseBadRequest('Unable to create user event')
+      return errorResponseServerError('Unable to create user event')
     }
   }))
 }

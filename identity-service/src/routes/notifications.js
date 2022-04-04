@@ -29,7 +29,10 @@ const NotificationType = Object.freeze({
   MilestoneListen: 'MilestoneListen',
   MilestoneFollow: 'MilestoneFollow',
   RemixCreate: 'RemixCreate',
-  RemixCosign: 'RemixCosign'
+  RemixCosign: 'RemixCosign',
+  TrendingTrack: 'TrendingTrack',
+  ChallengeReward: 'ChallengeReward',
+  TierChange: 'TierChange'
 })
 
 const ClientNotificationTypes = new Set([
@@ -38,7 +41,10 @@ const ClientNotificationTypes = new Set([
   NotificationType.Favorite,
   NotificationType.Announcement,
   NotificationType.UserSubscription,
-  NotificationType.Milestone
+  NotificationType.Milestone,
+  NotificationType.TrendingTrack,
+  NotificationType.ChallengeReward,
+  NotificationType.TierChange
 ])
 
 const Entity = Object.freeze({
@@ -175,11 +181,33 @@ const formatRemixCosign = (notification) => {
   }
 }
 
+const formatTrendingTrack = (notification) => {
+  const [time, genre] = notification.actions[0].actionEntityType.split(':')
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.TrendingTrack,
+    entityType: Entity.Track,
+    entityId: notification.entityId,
+    rank: notification.actions[0].actionEntityId,
+    time,
+    genre
+  }
+}
+
+const formatChallengeReward = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.ChallengeReward,
+    challengeId: notification.actions[0].actionEntityType
+  }
+}
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
   isRead: notification.isRead,
-  timestamp: notification.timestamp
+  isViewed: notification.isViewed,
+  timestamp: notification.timestamp || notification.createdAt
 })
 
 const notificationResponseMap = {
@@ -199,7 +227,9 @@ const notificationResponseMap = {
   [NotificationType.MilestoneListen]: formatMilestone,
   [NotificationType.MilestoneFollow]: formatMilestone,
   [NotificationType.RemixCreate]: formatRemixCreate,
-  [NotificationType.RemixCosign]: formatRemixCosign
+  [NotificationType.RemixCosign]: formatRemixCosign,
+  [NotificationType.TrendingTrack]: formatTrendingTrack,
+  [NotificationType.ChallengeReward]: formatChallengeReward
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
@@ -212,8 +242,8 @@ const notificationResponseMap = {
 function mergeAudiusAnnoucements (announcements, notifications) {
   const allNotifications = announcements.concat(notifications)
   allNotifications.sort((a, b) => {
-    let aDate = moment(a.datePublished || a.timestamp)
-    let bDate = moment(b.datePublished || b.timestamp)
+    let aDate = moment(a.datePublished || a.timestamp || a.createdAt)
+    let bDate = moment(b.datePublished || b.timestamp || b.createdAt)
     return bDate - aDate
   })
   return allNotifications
@@ -274,7 +304,7 @@ module.exports = function (app) {
    * Fetches the notifications for the specified userId
    * urlQueryParam: {number} limit        Max number of notifications to return, Cannot exceed 100
    * urlQueryParam: {number?} timeOffset  A timestamp reference offset for fetch notification before this date
-   * urlQueryParam: {boolean?} withRemix  A boolean to fetch notifications with remixes
+   * urlQueryParam: {boolean?} withRewards  A boolean to fetch notifications with challenge rewards
    *
    * TODO: Validate userId
    * NOTE: The `createdDate` param can/should be changed to the user sending their wallet &
@@ -283,16 +313,28 @@ module.exports = function (app) {
   app.get('/notifications', authMiddleware, handleResponse(async (req) => {
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    const { blockchainUserId: userId, createdAt } = req.user
+    const { blockchainUserId: userId, createdAt, walletAddress } = req.user
     const createdDate = moment(createdAt)
     if (!timeOffset.isValid()) {
       return errorResponseBadRequest(`Invalid Date params`)
     }
 
-    const withRemixQuery = req.query.withRemix === 'true' ? {} : {
-      type: { [models.Sequelize.Op.notIn]: [NotificationType.RemixCreate, NotificationType.RemixCosign] }
+    const filterNotificationTypes = []
+    const filterSolanaNotificationTypes = []
+
+    if (req.query.withRewards !== 'true') {
+      filterSolanaNotificationTypes.push(NotificationType.ChallengeReward)
     }
 
+    const queryFilter = filterNotificationTypes.length > 0 ? {
+      type: { [models.Sequelize.Op.notIn]: filterNotificationTypes }
+    } : {}
+
+    const solanaQueryFilter = filterSolanaNotificationTypes.length > 0 ? {
+      type: { [models.Sequelize.Op.notIn]: filterSolanaNotificationTypes }
+    } : {}
+
+    req.logger.warn({ filterNotificationTypes })
     if (isNaN(limit) || limit > 100) {
       return errorResponseBadRequest(
         `Limit and offset number be integers with a max limit of 100`
@@ -303,7 +345,7 @@ module.exports = function (app) {
         where: {
           userId,
           isHidden: false,
-          ...withRemixQuery,
+          ...queryFilter,
           timestamp: {
             [models.Sequelize.Op.lt]: timeOffset.toDate()
           }
@@ -319,19 +361,54 @@ module.exports = function (app) {
         }],
         limit
       })
+
+      const solanaNotifications = await models.SolanaNotification.findAll({
+        where: {
+          userId,
+          isHidden: false,
+          ...solanaQueryFilter,
+          createdAt: {
+            [models.Sequelize.Op.lt]: timeOffset.toDate()
+          }
+        },
+        order: [
+          ['createdAt', 'DESC'],
+          ['entityId', 'ASC']
+        ],
+        include: [{
+          model: models.SolanaNotificationAction,
+          required: true,
+          as: 'actions'
+        }],
+        limit
+      })
+
       let unViewedCount = await models.Notification.findAll({
         where: {
           userId,
           isViewed: false,
           isRead: false,
           isHidden: false,
-          ...withRemixQuery
+          ...queryFilter
         },
         include: [{ model: models.NotificationAction, as: 'actions', required: true, attributes: [] }],
         attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
         group: ['Notification.id']
       })
-      unViewedCount = unViewedCount.length
+      let unViewedSolanaCount = await models.SolanaNotification.findAll({
+        where: {
+          userId,
+          isViewed: false,
+          isRead: false,
+          isHidden: false,
+          ...queryFilter
+        },
+        include: [{ model: models.SolanaNotificationAction, as: 'actions', required: true, attributes: [] }],
+        attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
+        group: ['SolanaNotification.id']
+      })
+
+      unViewedCount = unViewedCount.length + unViewedSolanaCount.length
 
       const viewedAnnouncements = await models.Notification.findAll({
         where: { userId, isViewed: true, type: NotificationType.Announcement }
@@ -350,16 +427,38 @@ module.exports = function (app) {
 
       const unreadAnnouncementCount = validUserAnnouncements.length - viewedAnnouncementCount
       const userNotifications = formatNotifications(
-        notifications.concat(filteredViewedAnnouncements),
+        notifications.concat(solanaNotifications).concat(filteredViewedAnnouncements),
         announcementsAfterFilter
       )
+
+      let playlistUpdates = []
+      if (walletAddress) {
+        const result = await models.UserEvents.findOne({
+          attributes: ['playlistUpdates'],
+          where: { walletAddress }
+        })
+        const playlistUpdatesResult = result && result.playlistUpdates
+        if (playlistUpdatesResult) {
+          const thirtyDaysAgo = moment().utc().subtract(30, 'days').valueOf()
+          playlistUpdates = Object.keys(playlistUpdatesResult)
+            .filter(playlistId =>
+              playlistUpdatesResult[playlistId].userLastViewed >= thirtyDaysAgo &&
+              playlistUpdatesResult[playlistId].lastUpdated >= thirtyDaysAgo &&
+              playlistUpdatesResult[playlistId].userLastViewed < playlistUpdatesResult[playlistId].lastUpdated
+            )
+            .map(id => parseInt(id))
+            .filter(Boolean)
+        }
+      }
 
       return successResponse({
         message: 'success',
         notifications: userNotifications.slice(0, limit),
-        totalUnread: unreadAnnouncementCount + unViewedCount
+        totalUnread: unreadAnnouncementCount + unViewedCount,
+        playlistUpdates
       })
     } catch (err) {
+      req.logger.error(`[Error] Unable to retrieve notifications for user: ${userId}`, err)
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notifications for user: ${userId}`
       })
@@ -418,6 +517,10 @@ module.exports = function (app) {
           update,
           { where: { id: notificationId } }
         )
+        await models.SolanaNotification.update(
+          update,
+          { where: { id: notificationId } }
+        )
         return successResponse({ message: 'success' })
       }
     } catch (err) {
@@ -447,6 +550,11 @@ module.exports = function (app) {
       }
 
       await models.Notification.update(
+        update,
+        { where: { userId } }
+      )
+
+      await models.SolanaNotification.update(
         update,
         { where: { userId } }
       )

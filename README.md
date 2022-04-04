@@ -32,7 +32,6 @@ These off-chain services are run by community members via the Audius staking sys
 | [`creator-node`](creator-node)                  | Maintains the availability of users' content on IPFS including user metadata, images, and audio content
 | [`discovery-provider`](discovery-provider)      | Indexes and stores the contents of the audius contracts on the ethereum blockchain for clients to query via an API
 | [`identity-service`](identity-service)          | Stores encrypted auth ciphertexts, does Twitter oauth and relays transactions on behalf of users
-| [`content-service`](content-service)            | Monitors Audius activity and intelligently caches content to increase availability
 
 ### Audius Smart Contracts
 

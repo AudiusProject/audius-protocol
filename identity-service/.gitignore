@@ -11,7 +11,8 @@ local-storage/
 local-test/
 contract-config.json
 eth-contract-config.json
-docker-compose/.development.env
+solana-program-config.json
+aao-config.json
 .nyc_output/
 coverage/
 

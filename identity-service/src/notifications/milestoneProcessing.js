@@ -39,9 +39,6 @@ async function indexMilestones (milestones, owners, metadata, listenCounts, audi
 
   // Index favorite milestones
   await updateFavoriteMilestones(milestones.favorite_counts, owners, blocknumber, timestamp, audiusLibs, tx)
-
-  // Index listens
-  await updateTrackListenMilestones(listenCounts, blocknumber, timestamp, audiusLibs, tx)
 }
 
 /**
@@ -243,7 +240,7 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
  * Listens Milestones
  *
  */
-async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp, audiusLibs, tx) {
+async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp, audiusLibs, tx) { // eslint-disable-line no-unused-vars
   const listensMilestoneNotificationType = notificationTypes.MilestoneListen
 
   for (var entry of listenCounts) {
@@ -374,7 +371,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       }]
     }
 
-    const metadata = await fetchNotificationMetadata(audiusLibs, milestoneValue, [notifStub])
+    const metadata = await fetchNotificationMetadata(audiusLibs, [milestoneValue], [notifStub])
     const mapNotification = notificationResponseMap[milestoneType]
     try {
       let msgGenNotif = {
@@ -384,7 +381,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata)
       const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
       logger.debug(`processMilestone - message: ${msg}`)
-      const title = notificationResponseTitleMap[notificationTypes.Milestone]
+      const title = notificationResponseTitleMap[notificationTypes.Milestone]()
       let types = []
       if (notifyMobile) types.push(deviceType.Mobile)
       if (notifyBrowserPush) types.push(deviceType.Browser)

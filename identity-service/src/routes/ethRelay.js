@@ -21,7 +21,11 @@ module.exports = function (app) {
       } catch (e) {
         req.logger.error('Error in transaction:', e.message, reqBodySHA)
 
-        return sendResponse(req, res, errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`))
+        return sendResponse(
+          req,
+          res,
+          errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}, ${e.message}`)
+        )
       }
     } else {
       return sendResponse(
@@ -44,14 +48,5 @@ module.exports = function (app) {
   app.get('/eth_gas_price', handleResponse(async (req, res, next) => {
     let gasInfo = await ethTxRelay.getProdGasInfo(req.app.get('redis'), req.logger)
     return successResponse(gasInfo)
-  }))
-
-  /**
-   * Queries and returns all registered content nodes from chain
-   */
-  app.get('/registered_creator_nodes', handleResponse(async (req, res, next) => {
-    const audiusLibsInstance = req.app.get('audiusLibs')
-    const creatorNodes = await audiusLibsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node')
-    return successResponse(creatorNodes)
   }))
 }

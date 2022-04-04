@@ -1,15 +1,14 @@
 const Jimp = require('jimp')
 const ExifParser = require('exif-parser')
-const { logger: genericLogger } = require('./logging')
-const { ipfs } = require('./ipfsClient')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
-const { promisify } = require('util')
-const writeFile = promisify(fs.writeFile)
-const mkdir = promisify(fs.mkdir)
+
+const { logger: genericLogger } = require('./logging')
+const { generateImageMultihashes } = require('./fileHasher')
+const DiskManager = require('./diskManager')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
-const COLOR_WHITE = 0xFFFFFFFF
+const COLOR_WHITE = 0xffffffff
 const IMAGE_QUALITY = 90
 const MIME_TYPE_JPEG = 'image/jpeg'
 
@@ -21,7 +20,7 @@ const MIME_TYPE_JPEG = 'image/jpeg'
  * @return {Buffer} the converted image
  * @dev TODO - replace with child node process bc need for speed
  */
-async function resizeImage (image, maxWidth, square, logger) {
+async function resizeImage(image, maxWidth, square, logger) {
   let img = image.clone()
   // eslint-disable-next-line
   let exif
@@ -40,16 +39,18 @@ async function resizeImage (image, maxWidth, square, logger) {
 
   img = _exifRotate(img, exif)
   img.background(COLOR_WHITE)
-  let width = img.bitmap.width
-  let height = img.bitmap.height
+  const width = img.bitmap.width
+  const height = img.bitmap.height
 
   if (square) {
     // If both sides are larger than maxWidth, resizing must occur
     if (width > maxWidth && height > maxWidth) {
-      width > height ? img.resize(Jimp.AUTO, maxWidth) : img.resize(maxWidth, Jimp.AUTO)
+      width > height
+        ? img.resize(Jimp.AUTO, maxWidth)
+        : img.resize(maxWidth, Jimp.AUTO)
     }
     // Crop the image to be square
-    let min = Math.min(img.bitmap.width, img.bitmap.height)
+    const min = Math.min(img.bitmap.width, img.bitmap.height)
     img.cover(min, min)
   } else {
     // Resize to max width and crop at crazy height
@@ -67,7 +68,7 @@ async function resizeImage (image, maxWidth, square, logger) {
 
 // Copied directly from Jimp.
 // https://github.com/oliver-moran/jimp/blob/12248941fd481121dc5372f6a8154f01930c8d0f/packages/core/src/utils/image-bitmap.js#L31
-function _exifRotate (img, exif) {
+function _exifRotate(img, exif) {
   if (exif && exif.tags && exif.tags.Orientation) {
     switch (exif.tags.Orientation) {
       case 1: // Horizontal (normal)
@@ -103,14 +104,7 @@ function _exifRotate (img, exif) {
 }
 
 module.exports = async (job) => {
-  const {
-    file,
-    fileName,
-    storagePath,
-    sizes,
-    square,
-    logContext
-  } = job.data
+  const { file, fileName, sizes, square, logContext } = job.data
   const logger = genericLogger.child(logContext)
 
   // Read the image once, clone it later on
@@ -123,12 +117,12 @@ module.exports = async (job) => {
 
   // Resize all the images
   const resizes = await Promise.all(
-    Object.keys(sizes).map(size => {
+    Object.keys(sizes).map((size) => {
       return resizeImage(img, sizes[size], square, logger)
     })
   )
 
-  // Add all the images to IPFS including the original
+  // Compute multihash/CID of all the images, including the original
   const toAdd = Object.keys(sizes).map((size, i) => {
     return {
       path: path.join(fileName, size),
@@ -142,45 +136,44 @@ module.exports = async (job) => {
   })
   resizes.push(original)
 
-  const ipfsAddResp = await ipfs.add(
-    toAdd,
-    { pin: false }
-  )
+  const multihashes = await generateImageMultihashes(toAdd)
 
   // Write all the images to file storage and
   // return the CIDs and storage paths to write to db
   // in the main thread
-  const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
-  const dirDestPath = path.join(storagePath, dirCID)
+  const dirCID = multihashes[multihashes.length - 1].cid
+  const dirDestPath = DiskManager.computeFilePath(dirCID)
 
   const resp = {
     dir: { dirCID, dirDestPath },
     files: []
   }
 
+  // Create dir on disk
+  await fs.ensureDir(dirDestPath)
+
+  // Save all image file buffers to disk
   try {
-    await mkdir(dirDestPath)
+    // Slice multihashes to remove dir entry at last index
+    const multihashesMinusDir = multihashes.slice(0, multihashes.length - 1)
+
+    await Promise.all(
+      multihashesMinusDir.map(async (multihash, i) => {
+        // Save file to disk
+        const destPath = DiskManager.computeFilePathInDir(dirCID, multihash.cid)
+        await fs.writeFile(destPath, resizes[i])
+
+        // Append saved file info to response object
+        resp.files.push({
+          multihash: multihash.cid,
+          sourceFile: multihash.path,
+          storagePath: destPath
+        })
+      })
+    )
   } catch (e) {
-    // if error = 'already exists', ignore else throw
-    if (e.message.indexOf('already exists') < 0) throw e
+    throw new Error(`Failed to write files to disk after resizing ${e}`)
   }
-
-  const ipfsFileResps = ipfsAddResp.slice(0, ipfsAddResp.length - 1)
-  await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
-    logger.info('file CID', fileResp.hash)
-
-    // Save file to disk
-    const destPath = path.join(storagePath, dirCID, fileResp.hash)
-    await writeFile(destPath, resizes[i])
-
-    logger.info('Added file', fileResp, file)
-
-    resp.files.push({
-      multihash: fileResp.hash,
-      sourceFile: fileResp.path,
-      storagePath: destPath
-    })
-  }))
 
   return Promise.resolve(resp)
 }

@@ -33,7 +33,7 @@ In a dedicated console window, execute the following command to bring up the con
 $ npm run ganache
 
 > audius-contracts@1.0.0 ganache /Development/audius-contracts
-> docker run --name audius_ganache_cli -d -p 8545:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0
+> docker run --name audius_ganache_cli -d -p 8545:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000
 
 b35518d9f0982faafb228ed4e13f5d811de35111dbf90834a86a6f19d7190b1b
 ```

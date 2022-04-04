@@ -1,6 +1,6 @@
 const assert = require('assert')
 let helpers = require('./helpers')
-let Utils = require('../src/utils')
+let {Utils} = require('../src/utils')
 
 let audiusInstance = helpers.audiusInstance
 let playlistOwnerId
@@ -57,7 +57,7 @@ it('should create album', async function () {
 
 it('should create and delete playlist', async function () {
   // create playlist
-  const playlistId = await audiusInstance.contracts.PlaylistFactoryClient.createPlaylist(
+  const { playlistId } = await audiusInstance.contracts.PlaylistFactoryClient.createPlaylist(
     playlistOwnerId,
     initialPlaylistName,
     initialIsPrivate,
@@ -65,7 +65,7 @@ it('should create and delete playlist', async function () {
     playlistTracks)
 
   // delete playlist + validate
-  const deletedPlaylistId = await audiusInstance.contracts.PlaylistFactoryClient.deletePlaylist(playlistId)
+  const { playlistId: deletedPlaylistId } = await audiusInstance.contracts.PlaylistFactoryClient.deletePlaylist(playlistId)
   assert.strictEqual(playlistId, deletedPlaylistId)
 })
 

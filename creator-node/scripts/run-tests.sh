@@ -3,6 +3,14 @@
 set -o xtrace
 set -e
 
+while getopts d flag
+do
+  echo ${flag}
+  case "${flag}" in
+      d) debug=true;
+  esac
+done
+
 IPFS_CONTAINER=cn-test-ipfs-node
 DB_CONTAINER='cn_test_db'
 REDIS_CONTAINER='cn_test_redis'
@@ -14,6 +22,17 @@ fi
 
 export storagePath='./test_file_storage'
 export logLevel='info'
+export printSequelizeLogs=false
+
+if [ "${debug}" ]; then
+  # If the -d debug flag is provided, run the tests with no timeout so that
+  # debugging does not get interrupted
+  UNIT_TIMEOUT=0
+  INTEGRATION_TIMEOUT=0
+else
+  UNIT_TIMEOUT=2000
+  INTEGRATION_TIMEOUT=30000
+fi
 
 tear_down () {
   set +e
@@ -23,20 +42,23 @@ tear_down () {
   docker container rm $IPFS_CONTAINER
   docker container rm $DB_CONTAINER
   docker container rm $REDIS_CONTAINER
+  docker volume prune -f
   set -e
 }
 
 run_unit_tests () {
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha --recursive 'src/**/*.test.js' --exit
+  ./node_modules/mocha/bin/mocha --require ts-node/register --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' --exit
 }
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha test/*.test.js --timeout 30000 --exit
+  ./node_modules/mocha/bin/mocha --require ts-node/register test/*.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
 }
 
-if [ "$1" == "standalone_creator" ]; then
+ARG1=${@:$OPTIND:1}
+
+if [ "${ARG1}" == "standalone_creator" ]; then
   export ipfsPort=6901
   export redisPort=4377
   PG_PORT=1432
@@ -60,9 +82,9 @@ if [ "$1" == "standalone_creator" ]; then
     docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:5.0.4
     sleep 1
   fi
-elif [ "$1" == "teardown" ]; then
+elif [ "${ARG1}" == "teardown" ]; then
   tear_down
-elif [ "$1" == "unit_test" ]; then
+elif [ "${ARG1}" == "unit_test" ]; then
   run_unit_tests
   exit
 fi
@@ -86,16 +108,29 @@ if [ -z "${isCIBuild}" ]; then
   docker exec -i $DB_CONTAINER /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 fi
 
+# delete and recreate the storage path for the test so it doesn't reuse assets from previous runs
+rm -rf $storagePath
 mkdir -p $storagePath
 
 # linter
-./node_modules/.bin/standard
+npm run lint
 
 # setting delegate keys for app to start
 export delegateOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 export delegatePrivateKey="0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d"
-export creatorNodeEndpoint="http://localhost:5000"
+export creatorNodeEndpoint="http://mock-cn1.audius.co"
 export spOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
+
+# Setting peerSetManager env vars
+export peerHealthCheckRequestTimeout=2000
+# bytes; 10gb
+export minimumStoragePathSize=10000000000
+# bytes; 2gb 
+export minimumMemoryAvailable=2000000000
+export maxFileDescriptorsAllocatedPercentage=95
+export minimumDailySyncCount=5
+export minimumRollingSyncCount=10
+export minimumSuccessfulSyncCountPercentage=50
 
 # tests
 run_unit_tests

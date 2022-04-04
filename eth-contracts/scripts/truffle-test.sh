@@ -32,9 +32,8 @@ set -x
 # -a = number of accounts to generate on startup
 docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 -a 500 -k istanbul
 
-# compile and lint
+# compile
 ./node_modules/.bin/truffle compile
-# ./scripts/lint.sh
 
 # run truffle tests
 if [ $# -eq 0 ]

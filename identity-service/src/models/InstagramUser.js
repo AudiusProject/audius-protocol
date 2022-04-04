@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
     uuid: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -25,7 +30,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     }
-  }, {})
+  }, {
+    indexes: [{
+      fields: [`((profile->>'username'))`],
+      unique: false,
+      name: 'instagram_users_profile_username_idx'
+    }]
+  })
 
   return InstagramUser
 }

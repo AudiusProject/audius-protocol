@@ -1,35 +1,19 @@
-### Trello Card Link
-
-
 ### Description
 
+<!-- What is the purpose of this PR? What is the current behavior? New behavior? Relevant links and/or information pertaining to PR? -->
 
-### Services
+### Tests
 
-- [ ] Discovery Provider
-- [ ] Creator Node
-- [ ] Identity Service
-- [ ] Libs
-- [ ] Contracts
-- [ ] Service Commands
-- [ ] Mad Dog
+<!-- List the manual tests and repro instructions to verify that this PR works as anticipated. Include log analysis if possible. If this change impacts clients, make sure that you have tested the clients! -->
 
-### Does it touch a critical flow like Discovery indexing, Creator Node track upload, Creator Node gateway, or Creator Node file system?
-Delete an option.
-- 🚨 Yes, this touches <flow>
-- ✅ Nope
+### How will this change be monitored? Are there sufficient logs?
+
+<!-- For features that are critical or could fail silently please describe the monitoring/alerting being added. -->
 
 
-### How Has This Been Tested?
+<!--
+================ REMINDER: ================
+If this PR touches a critical flow (such as Indexing, Uploads, Gateway or the Filesystem), make sure to add the `requires-special-attention` label.
 
-Please describe the tests that you ran to verify your changes. Provide repro instructions & any configuration.
-Include log analysis if applicable.
-
-1. Test 1
-- Step 1
-- Step 2
-- Step 3
-
-Please list the unit test(s) you added to verify your changes.
-
-1. Unit test 1
+** Add relevant labels as necessary. **
+-->

@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b3084b7bc025'
-down_revision = '61a2ec64d2cb'
+revision = "b3084b7bc025"
+down_revision = "61a2ec64d2cb"
 branch_labels = None
 depends_on = None
 
@@ -21,7 +21,8 @@ depends_on = None
 # because of it.
 def upgrade():
     connection = op.get_bind()
-    connection.execute('''
+    connection.execute(
+        """
       --- Filter deletes from track_lexeme_dict.
 
       DROP MATERIALIZED VIEW track_lexeme_dict;
@@ -108,7 +109,8 @@ def upgrade():
       ) AS words;
       CREATE INDEX playlist_words_idx ON playlist_lexeme_dict USING gin(word gin_trgm_ops);
       CREATE INDEX album_words_idx ON album_lexeme_dict USING gin(word gin_trgm_ops);
-    ''')
+    """
+    )
 
 
 def downgrade():

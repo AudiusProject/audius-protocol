@@ -3,6 +3,13 @@ const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
 const { actionEntityTypes, notificationTypes } = require('./constants')
 
+const getRankSuffix = (num) => {
+  if (num === 1) return 'st'
+  else if (num === 2) return 'nd'
+  else if (num === 3) return 'rd'
+  return 'th'
+}
+
 const formatFavorite = (notification, metadata, entity) => {
   return {
     type: NotificationType.Favorite,
@@ -44,6 +51,22 @@ const formatMilestone = (achievement) => (notification, metadata) => {
     entity: getMilestoneEntity(notification, metadata),
     value: notification.actions[0].actionEntityId,
     achievement
+  }
+}
+
+function formatTrendingTrack (notification, metadata) {
+  const trackId = notification.entityId
+  const track = metadata.tracks[trackId]
+  if (!notification.actions.length === 1) return null
+  const rank = notification.actions[0].actionEntityId
+  const type = notification.actions[0].actionEntityType
+  const [time, genre] = type.split(':')
+  return {
+    type: NotificationType.TrendingTrack,
+    entity: track,
+    rank,
+    time,
+    genre
   }
 }
 
@@ -113,6 +136,15 @@ function formatRemixCosign (notification, metadata) {
   }
 }
 
+function formatChallengeReward (notification) {
+  const challengeId = notification.actions[0].actionEntityType
+  return {
+    type: NotificationType.ChallengeReward,
+    challengeId,
+    rewardAmount: challengeInfoMap[challengeId].amount
+  }
+}
+
 const notificationResponseMap = {
   [NotificationType.Follow]: formatFollow,
   [NotificationType.FavoriteTrack]: (notification, metadata) => {
@@ -171,11 +203,17 @@ const notificationResponseMap = {
   [NotificationType.RemixCosign]: (notification, metadata) => {
     return formatRemixCosign(notification, metadata)
   },
+  [NotificationType.TrendingTrack]: (notification, metadata) => {
+    return formatTrendingTrack(notification, metadata)
+  },
+  [NotificationType.ChallengeReward]: (notification, metadata) => {
+    return formatChallengeReward(notification, metadata)
+  },
   [NotificationType.Announcement]: formatAnnouncement,
-  [NotificationType.MilestoneRepost]: formatMilestone('Repost'),
-  [NotificationType.MilestoneFavorite]: formatMilestone('Favorite'),
-  [NotificationType.MilestoneListen]: formatMilestone('Listen'),
-  [NotificationType.MilestoneFollow]: formatMilestone('Follow')
+  [NotificationType.MilestoneRepost]: formatMilestone('repost'),
+  [NotificationType.MilestoneFavorite]: formatMilestone('favorite'),
+  [NotificationType.MilestoneListen]: formatMilestone('listen'),
+  [NotificationType.MilestoneFollow]: formatMilestone('follow')
 }
 
 const NewFavoriteTitle = 'New Favorite'
@@ -184,24 +222,62 @@ const NewFollowerTitle = 'New Follower'
 const NewMilestoneTitle = 'Congratulations! 🎉'
 const NewSubscriptionUpdateTitle = 'New Artist Update'
 
-// TODO verify these...
+const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
 
+const challengeInfoMap = {
+  'profile-completion': {
+    title: '✅️ Complete your Profile',
+    amount: 1
+  },
+  'listen-streak': {
+    title: '🎧 Listening Streak: 7 Days',
+    amount: 1
+  },
+  'track-upload': {
+    title: '🎶 Upload 5 Tracks',
+    amount: 1
+  },
+  'referrals': {
+    title: '📨 Invite your Friends',
+    amount: 1
+  },
+  'referred': {
+    title: '📨 Invite your Friends',
+    amount: 1
+  },
+  'ref-v': {
+    title: '📨 Invite your Fans',
+    amount: 1
+  },
+  'connect-verified': {
+    title: '✅️ Link Verified Accounts',
+    amount: 5
+  },
+  'mobile-install': {
+    title: '📲 Get the App',
+    amount: 1
+  }
+}
+
 const notificationResponseTitleMap = {
-  [NotificationType.Follow]: NewFollowerTitle,
-  [NotificationType.FavoriteTrack]: NewFavoriteTitle,
-  [NotificationType.FavoritePlaylist]: NewFavoriteTitle,
-  [NotificationType.FavoriteAlbum]: NewFavoriteTitle,
-  [NotificationType.RepostTrack]: NewRepostTitle,
-  [NotificationType.RepostPlaylist]: NewRepostTitle,
-  [NotificationType.RepostAlbum]: NewRepostTitle,
-  [NotificationType.CreateTrack]: NewSubscriptionUpdateTitle,
-  [NotificationType.CreateAlbum]: NewSubscriptionUpdateTitle,
-  [NotificationType.CreatePlaylist]: NewSubscriptionUpdateTitle,
-  [NotificationType.Milestone]: NewMilestoneTitle,
-  [NotificationType.RemixCreate]: RemixCreateTitle,
-  [NotificationType.RemixCosign]: RemixCosignTitle
+  [NotificationType.Follow]: () => NewFollowerTitle,
+  [NotificationType.FavoriteTrack]: () => NewFavoriteTitle,
+  [NotificationType.FavoritePlaylist]: () => NewFavoriteTitle,
+  [NotificationType.FavoriteAlbum]: () => NewFavoriteTitle,
+  [NotificationType.RepostTrack]: () => NewRepostTitle,
+  [NotificationType.RepostPlaylist]: () => NewRepostTitle,
+  [NotificationType.RepostAlbum]: () => NewRepostTitle,
+  [NotificationType.CreateTrack]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.CreateAlbum]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.CreatePlaylist]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.MilestoneListen]: () => NewMilestoneTitle,
+  [NotificationType.Milestone]: () => NewMilestoneTitle,
+  [NotificationType.TrendingTrack]: () => TrendingTrackTitle,
+  [NotificationType.RemixCreate]: () => RemixCreateTitle,
+  [NotificationType.RemixCosign]: () => RemixCosignTitle,
+  [NotificationType.ChallengeReward]: (notification) => challengeInfoMap[notification.challengeId].title
 }
 
 function formatNotificationProps (notifications, metadata) {
@@ -232,9 +308,9 @@ const pushNotificationMessagesMap = {
   [notificationTypes.Milestone] (notification) {
     if (notification.entity) {
       const entity = notification.entity.type.toLowerCase()
-      return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
+      return `Your ${entity} ${notification.entity.name} has reached over ${notification.value.toLocaleString()} ${notification.achievement}s`
     } else {
-      return `You have reached over ${notification.value} Followers `
+      return `You have reached over ${notification.value.toLocaleString()} Followers `
     }
   },
   [notificationTypes.Create.base] (notification) {
@@ -250,10 +326,22 @@ const pushNotificationMessagesMap = {
   },
   [notificationTypes.RemixCosign] (notification) {
     return `${notification.parentTrackUser.name} Co-Signed your Remix of ${notification.remixTrack.title}`
+  },
+  [notificationTypes.TrendingTrack] (notification) {
+    const rank = notification.rank
+    const rankSuffix = getRankSuffix(rank)
+    return `Your Track ${notification.entity.title} is ${notification.rank}${rankSuffix} on Trending Right Now! 🍾`
+  },
+  [notificationTypes.ChallengeReward] (notification) {
+    return notification.challengeId === 'referred'
+      ? `You’ve received ${challengeInfoMap[notification.challengeId].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
+      : `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
   }
 }
 
 module.exports = {
+  challengeInfoMap,
+  getRankSuffix,
   formatNotificationProps,
   notificationResponseMap,
   notificationResponseTitleMap,

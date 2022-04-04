@@ -1,6 +1,5 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const ContractClient = require('../contracts/ContractClient')
-const DEFAULT_GAS_AMOUNT = 1000000
 
 class ClaimsManagerClient extends ContractClient {
   /* ------- GETTERS ------- */
@@ -88,14 +87,37 @@ class ClaimsManagerClient extends ContractClient {
   }
 
   // Returns boolean indicating whether a claim is considered pending
-  async initiateRound () {
+  async initiateRound (txRetries = 5) {
     const method = await this.getMethod(
       'initiateRound'
     )
     return this.web3Manager.sendTransaction(
       method,
-      DEFAULT_GAS_AMOUNT
+      null,
+      null,
+      txRetries
     )
+  }
+
+  // Fetches the claim processed events
+  async getClaimProcessedEvents ({
+    claimer,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('ClaimProcessed', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _claimer: claimer
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      claimer: event.returnValues._claimer,
+      rewards: Utils.toBN(event.returnValues._rewards),
+      oldTotal: Utils.toBN(event.returnValues._oldTotal),
+      newTotal: Utils.toBN(event.returnValues._newTotal)
+    }))
   }
 }
 
